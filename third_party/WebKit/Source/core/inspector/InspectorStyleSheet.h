@@ -35,7 +35,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -117,7 +116,7 @@ private:
 
     String m_id;
     Listener* m_listener;
-    std::unique_ptr<LineEndings> m_lineEndings;
+    OwnPtr<LineEndings> m_lineEndings;
 };
 
 class InspectorStyleSheet : public InspectorStyleSheetBase {

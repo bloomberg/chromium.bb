@@ -40,9 +40,7 @@
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/HashTraits.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -71,9 +69,9 @@ private:
 template<typename T>
 class DOMObjectHolder : public DOMObjectHolderBase {
 public:
-    static std::unique_ptr<DOMObjectHolder<T>> create(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
+    static PassOwnPtr<DOMObjectHolder<T>> create(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
     {
-        return wrapUnique(new DOMObjectHolder(isolate, object, wrapper));
+        return adoptPtr(new DOMObjectHolder(isolate, object, wrapper));
     }
 
 private:
@@ -96,7 +94,7 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(v8::Isolate* isolate, int wo
 DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate, int worldId, int extensionGroup)
     : m_worldId(worldId)
     , m_extensionGroup(extensionGroup)
-    , m_domDataStore(wrapUnique(new DOMDataStore(isolate, isMainWorld())))
+    , m_domDataStore(adoptPtr(new DOMDataStore(isolate, isMainWorld())))
 {
 }
 
@@ -307,7 +305,7 @@ void DOMWrapperWorld::registerDOMObjectHolder(v8::Isolate* isolate, T* object, v
 
 template void DOMWrapperWorld::registerDOMObjectHolder(v8::Isolate*, ScriptFunction*, v8::Local<v8::Value>);
 
-void DOMWrapperWorld::registerDOMObjectHolderInternal(std::unique_ptr<DOMObjectHolderBase> holderBase)
+void DOMWrapperWorld::registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolderBase> holderBase)
 {
     ASSERT(!m_domObjectHolders.contains(holderBase.get()));
     holderBase->setWorld(this);

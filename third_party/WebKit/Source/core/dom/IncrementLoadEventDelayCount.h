@@ -8,7 +8,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
@@ -21,7 +20,7 @@ class IncrementLoadEventDelayCount {
     WTF_MAKE_NONCOPYABLE(IncrementLoadEventDelayCount);
 
 public:
-    static std::unique_ptr<IncrementLoadEventDelayCount> create(Document&);
+    static PassOwnPtr<IncrementLoadEventDelayCount> create(Document&);
     ~IncrementLoadEventDelayCount();
 
     // Increments the new document's count and decrements the old count.

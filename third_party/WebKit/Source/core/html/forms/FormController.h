@@ -28,7 +28,6 @@
 #include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicStringHash.h"
-#include <memory>
 
 namespace blink {
 
@@ -73,7 +72,7 @@ inline void FormControlState::append(const String& value)
     m_values.append(value);
 }
 
-using SavedFormStateMap = HashMap<AtomicString, std::unique_ptr<SavedFormState>>;
+using SavedFormStateMap = HashMap<AtomicString, OwnPtr<SavedFormState>>;
 
 class DocumentState final : public GarbageCollected<DocumentState> {
 public:

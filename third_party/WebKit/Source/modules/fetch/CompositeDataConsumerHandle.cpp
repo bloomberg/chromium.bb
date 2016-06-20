@@ -10,10 +10,8 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Locker.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace blink {
 
@@ -34,14 +32,14 @@ private:
 class CompositeDataConsumerHandle::Context final : public ThreadSafeRefCounted<Context> {
 public:
     using Token = unsigned;
-    static PassRefPtr<Context> create(std::unique_ptr<WebDataConsumerHandle> handle) { return adoptRef(new Context(std::move(handle))); }
+    static PassRefPtr<Context> create(PassOwnPtr<WebDataConsumerHandle> handle) { return adoptRef(new Context(std::move(handle))); }
     ~Context()
     {
         ASSERT(!m_readerThread);
         ASSERT(!m_reader);
         ASSERT(!m_client);
     }
-    std::unique_ptr<ReaderImpl> obtainReader(Client* client)
+    PassOwnPtr<ReaderImpl> obtainReader(Client* client)
     {
         MutexLocker locker(m_mutex);
         ASSERT(!m_readerThread);
@@ -51,7 +49,7 @@ public:
         m_client = client;
         m_readerThread = Platform::current()->currentThread();
         m_reader = m_handle->obtainReader(m_client);
-        return wrapUnique(new ReaderImpl(this));
+        return adoptPtr(new ReaderImpl(this));
     }
     void detachReader()
     {
@@ -66,7 +64,7 @@ public:
         m_readerThread = nullptr;
         m_client = nullptr;
     }
-    void update(std::unique_ptr<WebDataConsumerHandle> handle)
+    void update(PassOwnPtr<WebDataConsumerHandle> handle)
     {
         MutexLocker locker(m_mutex);
         m_handle = std::move(handle);
@@ -108,7 +106,7 @@ public:
     }
 
 private:
-    explicit Context(std::unique_ptr<WebDataConsumerHandle> handle)
+    explicit Context(PassOwnPtr<WebDataConsumerHandle> handle)
         : m_handle(std::move(handle))
         , m_readerThread(nullptr)
         , m_client(nullptr)
@@ -145,8 +143,8 @@ private:
         m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Context::updateReader, this, m_token));
     }
 
-    std::unique_ptr<Reader> m_reader;
-    std::unique_ptr<WebDataConsumerHandle> m_handle;
+    OwnPtr<Reader> m_reader;
+    OwnPtr<WebDataConsumerHandle> m_handle;
     // Note: Holding a WebThread raw pointer is not generally safe, but we can
     // do that in this case because:
     //  1. Destructing a ReaderImpl when the bound thread ends is a user's
@@ -194,14 +192,14 @@ CompositeDataConsumerHandle::Updater::Updater(PassRefPtr<Context> context)
 
 CompositeDataConsumerHandle::Updater::~Updater() {}
 
-void CompositeDataConsumerHandle::Updater::update(std::unique_ptr<WebDataConsumerHandle> handle)
+void CompositeDataConsumerHandle::Updater::update(PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT(handle);
     ASSERT(m_thread->isCurrentThread());
     m_context->update(std::move(handle));
 }
 
-CompositeDataConsumerHandle::CompositeDataConsumerHandle(std::unique_ptr<WebDataConsumerHandle> handle, Updater** updater)
+CompositeDataConsumerHandle::CompositeDataConsumerHandle(PassOwnPtr<WebDataConsumerHandle> handle, Updater** updater)
     : m_context(Context::create(std::move(handle)))
 {
     *updater = new Updater(m_context);
@@ -211,7 +209,7 @@ CompositeDataConsumerHandle::~CompositeDataConsumerHandle() { }
 
 WebDataConsumerHandle::Reader* CompositeDataConsumerHandle::obtainReaderInternal(Client* client)
 {
-    return m_context->obtainReader(client).release();
+    return m_context->obtainReader(client).leakPtr();
 }
 
 } // namespace blink

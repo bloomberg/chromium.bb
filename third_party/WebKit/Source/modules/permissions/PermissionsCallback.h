@@ -13,6 +13,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+
 #include <memory>
 
 namespace blink {
@@ -26,7 +27,7 @@ class ScriptPromiseResolver;
 class PermissionsCallback final
     : public WebCallbacks<std::unique_ptr<WebVector<WebPermissionStatus>>, void> {
 public:
-    PermissionsCallback(ScriptPromiseResolver*, std::unique_ptr<Vector<WebPermissionType>>, std::unique_ptr<Vector<int>>);
+    PermissionsCallback(ScriptPromiseResolver*, PassOwnPtr<Vector<WebPermissionType>>, PassOwnPtr<Vector<int>>);
     ~PermissionsCallback() = default;
 
     void onSuccess(std::unique_ptr<WebVector<WebPermissionStatus>>) override;
@@ -36,12 +37,12 @@ private:
     Persistent<ScriptPromiseResolver> m_resolver;
 
     // The permission types which were passed to the client to be requested.
-    std::unique_ptr<Vector<WebPermissionType>> m_internalPermissions;
+    OwnPtr<Vector<WebPermissionType>> m_internalPermissions;
 
     // Maps each index in the caller vector to the corresponding index in the
     // internal vector (i.e. the vector passsed to the client) such that both
     // indices have the same WebPermissionType.
-    std::unique_ptr<Vector<int>> m_callerIndexToInternalIndex;
+    OwnPtr<Vector<int>> m_callerIndexToInternalIndex;
 
     WTF_MAKE_NONCOPYABLE(PermissionsCallback);
 };

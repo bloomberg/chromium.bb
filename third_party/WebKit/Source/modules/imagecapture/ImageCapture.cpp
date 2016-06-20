@@ -20,7 +20,6 @@
 #include "public/platform/ServiceRegistry.h"
 #include "public/platform/WebImageCaptureFrameGrabber.h"
 #include "public/platform/WebMediaStreamTrack.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -160,7 +159,7 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState, ExceptionState& 
 
     // Create |m_frameGrabber| the first time.
     if (!m_frameGrabber)
-        m_frameGrabber = wrapUnique(Platform::current()->createImageCaptureFrameGrabber());
+        m_frameGrabber = adoptPtr(Platform::current()->createImageCaptureFrameGrabber());
 
     if (!m_frameGrabber) {
         resolver->reject(DOMException::create(UnknownError, "Couldn't create platform resources"));

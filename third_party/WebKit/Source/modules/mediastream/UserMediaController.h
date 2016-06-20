@@ -27,6 +27,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "modules/mediastream/UserMediaClient.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

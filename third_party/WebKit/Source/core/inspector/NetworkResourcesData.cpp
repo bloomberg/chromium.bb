@@ -32,7 +32,6 @@
 #include "core/fetch/Resource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceResponse.h"
-#include <memory>
 
 namespace blink {
 
@@ -208,7 +207,7 @@ void NetworkResourcesData::responseReceived(const String& requestId, const Strin
 
     String filePath = response.downloadedFilePath();
     if (!filePath.isEmpty()) {
-        std::unique_ptr<BlobData> blobData = BlobData::create();
+        OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendFile(filePath);
         AtomicString mimeType;
         if (response.isHTTP())

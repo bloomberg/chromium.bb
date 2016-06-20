@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 
 #if INSIDE_BLINK
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 #endif
 
 namespace blink {
@@ -153,7 +153,7 @@ class WebCryptoAlgorithm {
 public:
 #if INSIDE_BLINK
     WebCryptoAlgorithm() { }
-    BLINK_PLATFORM_EXPORT WebCryptoAlgorithm(WebCryptoAlgorithmId, std::unique_ptr<WebCryptoAlgorithmParams>);
+    BLINK_PLATFORM_EXPORT WebCryptoAlgorithm(WebCryptoAlgorithmId, PassOwnPtr<WebCryptoAlgorithmParams>);
 #endif
 
     BLINK_PLATFORM_EXPORT static WebCryptoAlgorithm createNull();

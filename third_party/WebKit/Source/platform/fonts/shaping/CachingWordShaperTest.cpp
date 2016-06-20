@@ -10,8 +10,6 @@
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -28,13 +26,13 @@ protected:
         font.update(nullptr);
         ASSERT_TRUE(font.canShapeWordByWord());
         fallbackFonts = nullptr;
-        cache = wrapUnique(new ShapeCache());
+        cache = adoptPtr(new ShapeCache());
     }
 
     FontCachePurgePreventer fontCachePurgePreventer;
     FontDescription fontDescription;
     Font font;
-    std::unique_ptr<ShapeCache> cache;
+    OwnPtr<ShapeCache> cache;
     HashSet<const SimpleFontData*>* fallbackFonts;
     unsigned startIndex = 0;
     unsigned numGlyphs = 0;
@@ -119,7 +117,7 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightFillGlyphBuffer)
     GlyphBuffer glyphBuffer;
     shaper.fillGlyphBuffer(&font, textRun, fallbackFonts, &glyphBuffer, 0, 3);
 
-    std::unique_ptr<ShapeCache> referenceCache = wrapUnique(new ShapeCache());
+    OwnPtr<ShapeCache> referenceCache = adoptPtr(new ShapeCache());
     CachingWordShaper referenceShaper(referenceCache.get());
     GlyphBuffer referenceGlyphBuffer;
     font.setCanShapeWordByWordForTesting(false);
@@ -144,7 +142,7 @@ TEST_F(CachingWordShaperTest, CommonAccentRightToLeftFillGlyphBuffer)
     GlyphBuffer glyphBuffer;
     shaper.fillGlyphBuffer(&font, textRun, fallbackFonts, &glyphBuffer, 1, 6);
 
-    std::unique_ptr<ShapeCache> referenceCache = wrapUnique(new ShapeCache());
+    OwnPtr<ShapeCache> referenceCache = adoptPtr(new ShapeCache());
     CachingWordShaper referenceShaper(referenceCache.get());
     GlyphBuffer referenceGlyphBuffer;
     font.setCanShapeWordByWordForTesting(false);

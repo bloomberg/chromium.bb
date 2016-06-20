@@ -32,8 +32,9 @@
 
 #include "platform/Histogram.h"
 #include "platform/image-decoders/png/PNGImageDecoder.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Threading.h"
+
 #include <algorithm>
 
 namespace blink {
@@ -195,7 +196,7 @@ bool ICOImageDecoder::decodeAtIndex(size_t index)
 
     if (imageType == BMP) {
         if (!m_bmpReaders[index]) {
-            m_bmpReaders[index] = wrapUnique(new BMPImageReader(this, dirEntry.m_imageOffset, 0, true));
+            m_bmpReaders[index] = adoptPtr(new BMPImageReader(this, dirEntry.m_imageOffset, 0, true));
             m_bmpReaders[index]->setData(m_data.get());
         }
         // Update the pointer to the buffer as it could change after
@@ -210,7 +211,7 @@ bool ICOImageDecoder::decodeAtIndex(size_t index)
     if (!m_pngDecoders[index]) {
         AlphaOption alphaOption = m_premultiplyAlpha ? AlphaPremultiplied : AlphaNotPremultiplied;
         GammaAndColorProfileOption colorOptions = m_ignoreGammaAndColorProfile ? GammaAndColorProfileIgnored : GammaAndColorProfileApplied;
-        m_pngDecoders[index] = wrapUnique(new PNGImageDecoder(alphaOption, colorOptions, m_maxDecodedBytes, dirEntry.m_imageOffset));
+        m_pngDecoders[index] = adoptPtr(new PNGImageDecoder(alphaOption, colorOptions, m_maxDecodedBytes, dirEntry.m_imageOffset));
         setDataForPNGDecoderAtIndex(index);
     }
     // Fail if the size the PNGImageDecoder calculated does not match the size

@@ -40,14 +40,12 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, PageOverlay::Delegate* delegate)
+PassOwnPtr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, PageOverlay::Delegate* delegate)
 {
-    return wrapUnique(new PageOverlay(viewImpl, delegate));
+    return adoptPtr(new PageOverlay(viewImpl, delegate));
 }
 
 PageOverlay::PageOverlay(WebViewImpl* viewImpl, PageOverlay::Delegate* delegate)

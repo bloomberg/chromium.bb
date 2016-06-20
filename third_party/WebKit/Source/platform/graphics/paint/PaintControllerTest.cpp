@@ -15,7 +15,6 @@
 #include "platform/graphics/paint/SubsequenceRecorder.h"
 #include "platform/testing/FakeDisplayItemClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -39,7 +38,7 @@ private:
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
-    std::unique_ptr<PaintController> m_paintController;
+    OwnPtr<PaintController> m_paintController;
     bool m_originalSlimmingPaintV2Enabled;
 };
 

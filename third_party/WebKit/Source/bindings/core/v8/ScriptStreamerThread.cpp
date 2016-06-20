@@ -10,8 +10,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -74,11 +72,11 @@ void ScriptStreamerThread::taskDone()
 WebThread& ScriptStreamerThread::platformThread()
 {
     if (!isRunning())
-        m_thread = wrapUnique(Platform::current()->createThread("ScriptStreamerThread"));
+        m_thread = adoptPtr(Platform::current()->createThread("ScriptStreamerThread"));
     return *m_thread;
 }
 
-void ScriptStreamerThread::runScriptStreamingTask(std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task, ScriptStreamer* streamer)
+void ScriptStreamerThread::runScriptStreamingTask(PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask> task, ScriptStreamer* streamer)
 {
     TRACE_EVENT1("v8,devtools.timeline", "v8.parseOnBackground", "data", InspectorParseScriptEvent::data(streamer->scriptResourceIdentifier(), streamer->scriptURLString()));
     // Running the task can and will block: SourceStream::GetSomeData will get

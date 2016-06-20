@@ -32,7 +32,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include <memory>
 
 namespace blink {
 
@@ -70,7 +69,7 @@ TEST(GraphicsContextTest, pictureRecording)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    std::unique_ptr<PaintController> paintController = PaintController::create();
+    OwnPtr<PaintController> paintController = PaintController::create();
     GraphicsContext context(*paintController);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -103,7 +102,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
     FloatRect bounds(0, 0, 100, 100);
 
-    std::unique_ptr<PaintController> paintController = PaintController::create();
+    OwnPtr<PaintController> paintController = PaintController::create();
     GraphicsContext context(*paintController);
     context.beginRecording(bounds);
 

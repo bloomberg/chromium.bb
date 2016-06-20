@@ -35,7 +35,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -48,7 +47,7 @@ public:
     TextResourceDecoderBuilder(const AtomicString& mimeType, const AtomicString& encoding);
     ~TextResourceDecoderBuilder();
 
-    std::unique_ptr<TextResourceDecoder> buildFor(Document*);
+    PassOwnPtr<TextResourceDecoder> buildFor(Document*);
 
     const AtomicString& mimeType() const { return m_mimeType; }
     const AtomicString& encoding() const { return m_encoding; }
@@ -56,7 +55,7 @@ public:
     void clear();
 
 private:
-    std::unique_ptr<TextResourceDecoder> createDecoderInstance(Document*);
+    PassOwnPtr<TextResourceDecoder> createDecoderInstance(Document*);
     void setupEncoding(TextResourceDecoder*, Document*);
 
     AtomicString m_mimeType;

@@ -30,8 +30,6 @@
 
 #include "core/css/resolver/StyleResolverStats.h"
 
-#include <memory>
-
 namespace blink {
 
 void StyleResolverStats::reset()
@@ -65,9 +63,9 @@ bool StyleResolverStats::allCountersEnabled() const
     return allCountersEnabled;
 }
 
-std::unique_ptr<TracedValue> StyleResolverStats::toTracedValue() const
+PassOwnPtr<TracedValue> StyleResolverStats::toTracedValue() const
 {
-    std::unique_ptr<TracedValue> tracedValue = TracedValue::create();
+    OwnPtr<TracedValue> tracedValue = TracedValue::create();
     tracedValue->setInteger("sharedStyleLookups", sharedStyleLookups);
     tracedValue->setInteger("sharedStyleCandidates", sharedStyleCandidates);
     tracedValue->setInteger("sharedStyleFound", sharedStyleFound);

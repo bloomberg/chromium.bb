@@ -40,8 +40,8 @@
 #include "public/web/WebDevToolsAgent.h"
 #include "web/InspectorEmulationAgent.h"
 #include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -135,7 +135,7 @@ private:
     void dispatchMessageFromFrontend(int sessionId, const String& method, const String& message);
 
     friend class WebDevToolsAgent;
-    static void runDebuggerTask(int sessionId, std::unique_ptr<WebDevToolsAgent::MessageDescriptor>);
+    static void runDebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor>);
 
     bool attached() const { return m_session.get(); }
 

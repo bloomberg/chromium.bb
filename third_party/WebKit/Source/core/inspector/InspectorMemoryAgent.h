@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Memory.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

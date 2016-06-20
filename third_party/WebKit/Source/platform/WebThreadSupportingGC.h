@@ -11,7 +11,8 @@
 #include "public/platform/WebThread.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -28,8 +29,8 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
     USING_FAST_MALLOC(WebThreadSupportingGC);
     WTF_MAKE_NONCOPYABLE(WebThreadSupportingGC);
 public:
-    static std::unique_ptr<WebThreadSupportingGC> create(const char* name, bool perThreadHeapEnabled = false);
-    static std::unique_ptr<WebThreadSupportingGC> createForThread(WebThread*, bool perThreadHeapEnabled = false);
+    static PassOwnPtr<WebThreadSupportingGC> create(const char* name, bool perThreadHeapEnabled = false);
+    static PassOwnPtr<WebThreadSupportingGC> createForThread(WebThread*, bool perThreadHeapEnabled = false);
     ~WebThreadSupportingGC();
 
     void postTask(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task)
@@ -79,13 +80,13 @@ public:
 private:
     WebThreadSupportingGC(const char* name, WebThread*, bool perThreadHeapEnabled);
 
-    std::unique_ptr<GCTaskRunner> m_gcTaskRunner;
+    OwnPtr<GCTaskRunner> m_gcTaskRunner;
 
     // m_thread is guaranteed to be non-null after this instance is constructed.
     // m_owningThread is non-null unless this instance is constructed for an
     // existing thread via createForThread().
     WebThread* m_thread = nullptr;
-    std::unique_ptr<WebThread> m_owningThread;
+    OwnPtr<WebThread> m_owningThread;
     bool m_perThreadHeapEnabled;
 };
 

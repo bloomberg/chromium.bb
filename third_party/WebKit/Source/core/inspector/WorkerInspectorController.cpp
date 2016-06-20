@@ -41,6 +41,7 @@
 #include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

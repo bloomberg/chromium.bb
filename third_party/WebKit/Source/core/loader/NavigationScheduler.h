@@ -37,9 +37,10 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -85,7 +86,7 @@ private:
     static bool mustReplaceCurrentItem(LocalFrame* targetFrame);
 
     Member<LocalFrame> m_frame;
-    std::unique_ptr<CancellableTaskFactory> m_navigateTaskFactory;
+    OwnPtr<CancellableTaskFactory> m_navigateTaskFactory;
     Member<ScheduledNavigation> m_redirect;
     WebScheduler::NavigatingFrameType m_frameType; // Exists because we can't deref m_frame in destructor.
 };

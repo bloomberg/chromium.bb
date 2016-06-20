@@ -36,6 +36,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/network/ResourceRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

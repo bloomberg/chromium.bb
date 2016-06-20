@@ -12,9 +12,7 @@
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/TextPosition.h"
-#include <memory>
 
 namespace blink {
 
@@ -25,9 +23,9 @@ class PreloadRequest {
 public:
     enum RequestType { RequestTypePreload, RequestTypePreconnect, RequestTypeLinkRelPreload };
 
-    static std::unique_ptr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const ReferrerPolicy referrerPolicy, const FetchRequest::ResourceWidth& resourceWidth = FetchRequest::ResourceWidth(), const ClientHintsPreferences& clientHintsPreferences = ClientHintsPreferences(), RequestType requestType = RequestTypePreload)
+    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const ReferrerPolicy referrerPolicy, const FetchRequest::ResourceWidth& resourceWidth = FetchRequest::ResourceWidth(), const ClientHintsPreferences& clientHintsPreferences = ClientHintsPreferences(), RequestType requestType = RequestTypePreload)
     {
-        return wrapUnique(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, resourceWidth, clientHintsPreferences, requestType, referrerPolicy));
+        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, resourceWidth, clientHintsPreferences, requestType, referrerPolicy));
     }
 
     bool isSafeToSendToAnotherThread() const;
@@ -106,7 +104,7 @@ private:
     IntegrityMetadataSet m_integrityMetadata;
 };
 
-typedef Vector<std::unique_ptr<PreloadRequest>> PreloadRequestStream;
+typedef Vector<OwnPtr<PreloadRequest>> PreloadRequestStream;
 
 } // namespace blink
 

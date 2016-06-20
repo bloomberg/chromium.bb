@@ -23,10 +23,8 @@
  */
 
 #include "modules/webaudio/BiquadFilterNode.h"
-
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "platform/Histogram.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -41,7 +39,7 @@ BiquadFilterNode::BiquadFilterNode(AbstractAudioContext& context)
         AudioHandler::NodeTypeBiquadFilter,
         *this,
         context.sampleRate(),
-        wrapUnique(new BiquadProcessor(
+        adoptPtr(new BiquadProcessor(
             context.sampleRate(),
             1,
             m_frequency->handler(),

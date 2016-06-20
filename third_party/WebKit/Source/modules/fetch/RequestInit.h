@@ -9,9 +9,9 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/Referrer.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -29,7 +29,7 @@ public:
     Member<Headers> headers;
     Dictionary headersDictionary;
     String contentType;
-    std::unique_ptr<FetchDataConsumerHandle> body;
+    OwnPtr<FetchDataConsumerHandle> body;
     Referrer referrer;
     String mode;
     String credentials;

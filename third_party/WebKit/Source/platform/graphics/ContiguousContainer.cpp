@@ -6,11 +6,10 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/ContainerAnnotations.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/allocator/PartitionAlloc.h"
 #include "wtf/allocator/Partitions.h"
 #include <algorithm>
-#include <memory>
 
 namespace blink {
 
@@ -175,7 +174,7 @@ ContiguousContainerBase::Buffer*
 ContiguousContainerBase::allocateNewBufferForNextAllocation(size_t bufferSize, const char* typeName)
 {
     ASSERT(m_buffers.isEmpty() || m_endIndex == m_buffers.size() - 1);
-    std::unique_ptr<Buffer> newBuffer = wrapUnique(new Buffer(bufferSize, typeName));
+    OwnPtr<Buffer> newBuffer = adoptPtr(new Buffer(bufferSize, typeName));
     Buffer* bufferToReturn = newBuffer.get();
     m_buffers.append(std::move(newBuffer));
     m_endIndex = m_buffers.size() - 1;

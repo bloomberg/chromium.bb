@@ -14,8 +14,6 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -76,7 +74,7 @@ TestPaintArtifact& TestPaintArtifact::chunk(const PaintChunkProperties& properti
 
 TestPaintArtifact& TestPaintArtifact::rectDrawing(const FloatRect& bounds, Color color)
 {
-    std::unique_ptr<DummyRectClient> client = wrapUnique(new DummyRectClient(bounds, color));
+    OwnPtr<DummyRectClient> client = adoptPtr(new DummyRectClient(bounds, color));
     m_displayItemList.allocateAndConstruct<DrawingDisplayItem>(
         *client, DisplayItem::DrawingFirst, client->makePicture());
     m_dummyClients.append(std::move(client));
@@ -86,7 +84,7 @@ TestPaintArtifact& TestPaintArtifact::rectDrawing(const FloatRect& bounds, Color
 TestPaintArtifact& TestPaintArtifact::foreignLayer(const FloatPoint& location, const IntSize& size, scoped_refptr<cc::Layer> layer)
 {
     FloatRect floatBounds(location, FloatSize(size));
-    std::unique_ptr<DummyRectClient> client = wrapUnique(new DummyRectClient(floatBounds, Color::transparent));
+    OwnPtr<DummyRectClient> client = adoptPtr(new DummyRectClient(floatBounds, Color::transparent));
     m_displayItemList.allocateAndConstruct<ForeignLayerDisplayItem>(
         *client, DisplayItem::ForeignLayerFirst, std::move(layer), location, size);
     m_dummyClients.append(std::move(client));

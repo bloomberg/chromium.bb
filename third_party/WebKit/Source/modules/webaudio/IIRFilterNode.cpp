@@ -10,7 +10,6 @@
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "platform/Histogram.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -19,7 +18,7 @@ IIRFilterNode::IIRFilterNode(AbstractAudioContext& context, const Vector<double>
 {
     setHandler(AudioBasicProcessorHandler::create(
         AudioHandler::NodeTypeIIRFilter, *this, context.sampleRate(),
-        wrapUnique(new IIRProcessor(context.sampleRate(), 1, feedforwardCoef, feedbackCoef))));
+        adoptPtr(new IIRProcessor(context.sampleRate(), 1, feedforwardCoef, feedbackCoef))));
 
     // Histogram of the IIRFilter order.  createIIRFilter ensures that the length of |feedbackCoef|
     // is in the range [1, IIRFilter::kMaxOrder + 1].  The order is one less than the length of this

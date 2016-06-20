@@ -55,8 +55,6 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -122,11 +120,11 @@ public:
     Document* originDocument() const { return m_originDocument.get(); }
     bool replacesCurrentItem() const { return m_replacesCurrentItem; }
     bool isLocationChange() const { return m_isLocationChange; }
-    std::unique_ptr<UserGestureIndicator> createUserGestureIndicator()
+    PassOwnPtr<UserGestureIndicator> createUserGestureIndicator()
     {
         if (m_wasUserGesture &&  m_userGestureToken)
-            return wrapUnique(new UserGestureIndicator(m_userGestureToken));
-        return wrapUnique(new UserGestureIndicator(DefinitelyNotProcessingUserGesture));
+            return adoptPtr(new UserGestureIndicator(m_userGestureToken));
+        return adoptPtr(new UserGestureIndicator(DefinitelyNotProcessingUserGesture));
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -159,7 +157,7 @@ protected:
 
     void fire(LocalFrame* frame) override
     {
-        std::unique_ptr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(originDocument(), m_url, "_self", m_shouldCheckMainWorldContentSecurityPolicy);
         request.setReplacesCurrentItem(replacesCurrentItem());
         request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
@@ -187,7 +185,7 @@ public:
 
     void fire(LocalFrame* frame) override
     {
-        std::unique_ptr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(originDocument(), url(), "_self");
         request.setReplacesCurrentItem(replacesCurrentItem());
         if (equalIgnoringFragmentIdentifier(frame->document()->url(), request.resourceRequest().url()))
@@ -226,7 +224,7 @@ public:
 
     void fire(LocalFrame* frame) override
     {
-        std::unique_ptr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         ResourceRequest resourceRequest = frame->loader().resourceRequestForReload(FrameLoadTypeReload, KURL(), ClientRedirectPolicy::ClientRedirect);
         if (resourceRequest.isNull())
             return;
@@ -252,7 +250,7 @@ public:
 
     void fire(LocalFrame* frame) override
     {
-        std::unique_ptr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         SubstituteData substituteData(SharedBuffer::create(), "text/plain", "UTF-8", KURL(), ForceSynchronousLoad);
         FrameLoadRequest request(originDocument(), url(), substituteData);
         request.setReplacesCurrentItem(true);
@@ -277,7 +275,7 @@ public:
 
     void fire(LocalFrame* frame) override
     {
-        std::unique_ptr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest frameRequest = m_submission->createFrameLoadRequest(originDocument());
         frameRequest.setReplacesCurrentItem(replacesCurrentItem());
         maybeLogScheduledNavigationClobber(ScheduledNavigationType::ScheduledFormSubmission, frame, frameRequest, gestureIndicator.get());

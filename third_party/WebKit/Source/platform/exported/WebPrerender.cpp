@@ -32,8 +32,6 @@
 
 #include "platform/Prerender.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -49,11 +47,11 @@ public:
 
 private:
     explicit ExtraDataContainer(WebPrerender::ExtraData* extraData)
-        : m_extraData(wrapUnique(extraData))
+        : m_extraData(adoptPtr(extraData))
     {
     }
 
-    std::unique_ptr<WebPrerender::ExtraData> m_extraData;
+    OwnPtr<WebPrerender::ExtraData> m_extraData;
 };
 
 } // namespace

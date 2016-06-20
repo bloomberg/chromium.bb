@@ -39,10 +39,11 @@
 #include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/dtoa/utils.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -96,7 +97,7 @@ TEST(IDBRequestTest, ConnectionsAfterStopping)
     Persistent<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::create();
 
     {
-        std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+        OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
         EXPECT_CALL(*backend, abort(transactionId))
             .Times(1);
         EXPECT_CALL(*backend, close())
@@ -109,7 +110,7 @@ TEST(IDBRequestTest, ConnectionsAfterStopping)
     }
 
     {
-        std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+        OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
         EXPECT_CALL(*backend, close())
             .Times(1);
         IDBOpenDBRequest* request = IDBOpenDBRequest::create(scope.getScriptState(), callbacks, transactionId, version);

@@ -8,7 +8,6 @@
 #include "core/animation/InterpolationValue.h"
 #include "core/animation/PairwiseInterpolationValue.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -29,7 +28,7 @@ public:
     static bool equalValues(const InterpolationValue&, const InterpolationValue&, EqualNonInterpolableValuesCallback);
 
     using NonInterpolableValuesAreCompatibleCallback = bool (*)(const NonInterpolableValue*, const NonInterpolableValue*);
-    using CompositeItemCallback = void (*)(std::unique_ptr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
+    using CompositeItemCallback = void (*)(OwnPtr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
     static void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationType&, const InterpolationValue&, NonInterpolableValuesAreCompatibleCallback, CompositeItemCallback);
 };
 
@@ -70,7 +69,7 @@ InterpolationValue ListInterpolationFunctions::createList(size_t length, CreateI
 {
     if (length == 0)
         return createEmptyList();
-    std::unique_ptr<InterpolableList> interpolableList = InterpolableList::create(length);
+    OwnPtr<InterpolableList> interpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(length);
     for (size_t i = 0; i < length; i++) {
         InterpolationValue item = createItem(i);

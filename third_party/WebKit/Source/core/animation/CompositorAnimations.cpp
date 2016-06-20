@@ -53,10 +53,9 @@
 #include "platform/geometry/FloatBox.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "wtf/PtrUtil.h"
+
 #include <algorithm>
 #include <cmath>
-#include <memory>
 
 namespace blink {
 
@@ -333,14 +332,14 @@ void CompositorAnimations::startAnimationOnCompositor(const Element& element, in
 
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
-    Vector<std::unique_ptr<CompositorAnimation>> animations;
+    Vector<OwnPtr<CompositorAnimation>> animations;
     getAnimationOnCompositor(timing, group, startTime, timeOffset, keyframeEffect, animations, animationPlaybackRate);
     ASSERT(!animations.isEmpty());
     for (auto& compositorAnimation : animations) {
         int id = compositorAnimation->id();
         CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
         ASSERT(compositorPlayer);
-        compositorPlayer->addAnimation(compositorAnimation.release());
+        compositorPlayer->addAnimation(compositorAnimation.leakPtr());
         startedAnimationIds.append(id);
     }
     ASSERT(!startedAnimationIds.isEmpty());
@@ -511,7 +510,7 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
 void addKeyframeToCurve(CompositorFilterAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
     const AnimatableValue* value, const TimingFunction* keyframeTimingFunction)
 {
-    std::unique_ptr<CompositorFilterOperations> ops = CompositorFilterOperations::create();
+    OwnPtr<CompositorFilterOperations> ops = CompositorFilterOperations::create();
     toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
 
     CompositorFilterKeyframe filterKeyframe(keyframe->offset(), std::move(ops));
@@ -528,7 +527,7 @@ void addKeyframeToCurve(CompositorFloatAnimationCurve& curve, Keyframe::Property
 void addKeyframeToCurve(CompositorTransformAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
     const AnimatableValue* value, const TimingFunction* keyframeTimingFunction)
 {
-    std::unique_ptr<CompositorTransformOperations> ops = CompositorTransformOperations::create();
+    OwnPtr<CompositorTransformOperations> ops = CompositorTransformOperations::create();
     toCompositorTransformOperations(toAnimatableTransform(value)->transformOperations(), ops.get());
 
     CompositorTransformKeyframe transformKeyframe(keyframe->offset(), std::move(ops));
@@ -556,7 +555,7 @@ void addKeyframesToCurve(PlatformAnimationCurveType& curve, const AnimatableValu
 
 } // namespace
 
-void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int group, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<std::unique_ptr<CompositorAnimation>>& animations, double animationPlaybackRate)
+void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int group, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<OwnPtr<CompositorAnimation>>& animations, double animationPlaybackRate)
 {
     ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;
@@ -577,11 +576,11 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
         getKeyframeValuesForProperty(&effect, property, scale, values);
 
         CompositorTargetProperty::Type targetProperty;
-        std::unique_ptr<CompositorAnimationCurve> curve;
+        OwnPtr<CompositorAnimationCurve> curve;
         switch (property.cssProperty()) {
         case CSSPropertyOpacity: {
             targetProperty = CompositorTargetProperty::OPACITY;
-            std::unique_ptr<CompositorFloatAnimationCurve> floatCurve = CompositorFloatAnimationCurve::create();
+            OwnPtr<CompositorFloatAnimationCurve> floatCurve = CompositorFloatAnimationCurve::create();
             addKeyframesToCurve(*floatCurve, values);
             setTimingFunctionOnCurve(*floatCurve, timing.timingFunction.get());
             curve = std::move(floatCurve);
@@ -590,7 +589,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
         case CSSPropertyWebkitFilter:
         case CSSPropertyBackdropFilter: {
             targetProperty = CompositorTargetProperty::FILTER;
-            std::unique_ptr<CompositorFilterAnimationCurve> filterCurve = CompositorFilterAnimationCurve::create();
+            OwnPtr<CompositorFilterAnimationCurve> filterCurve = CompositorFilterAnimationCurve::create();
             addKeyframesToCurve(*filterCurve, values);
             setTimingFunctionOnCurve(*filterCurve, timing.timingFunction.get());
             curve = std::move(filterCurve);
@@ -601,7 +600,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
         case CSSPropertyTranslate:
         case CSSPropertyTransform: {
             targetProperty = CompositorTargetProperty::TRANSFORM;
-            std::unique_ptr<CompositorTransformAnimationCurve> transformCurve = CompositorTransformAnimationCurve::create();
+            OwnPtr<CompositorTransformAnimationCurve> transformCurve = CompositorTransformAnimationCurve::create();
             addKeyframesToCurve(*transformCurve, values);
             setTimingFunctionOnCurve(*transformCurve, timing.timingFunction.get());
             curve = std::move(transformCurve);
@@ -613,7 +612,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
         }
         ASSERT(curve.get());
 
-        std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(*curve, targetProperty, group, 0);
+        OwnPtr<CompositorAnimation> animation = CompositorAnimation::create(*curve, targetProperty, group, 0);
 
         if (!std::isnan(startTime))
             animation->setStartTime(startTime);

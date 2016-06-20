@@ -37,6 +37,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

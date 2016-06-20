@@ -34,8 +34,7 @@
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/EventDispatcher.h"
 #include "core/events/EventTarget.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -55,8 +54,8 @@ ScopedEventQueue::~ScopedEventQueue()
 void ScopedEventQueue::initialize()
 {
     ASSERT(!s_instance);
-    std::unique_ptr<ScopedEventQueue> instance = wrapUnique(new ScopedEventQueue);
-    s_instance = instance.release();
+    OwnPtr<ScopedEventQueue> instance = adoptPtr(new ScopedEventQueue);
+    s_instance = instance.leakPtr();
 }
 
 void ScopedEventQueue::enqueueEventDispatchMediator(EventDispatchMediator* mediator)

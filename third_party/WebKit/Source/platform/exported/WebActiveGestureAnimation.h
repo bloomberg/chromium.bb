@@ -29,7 +29,8 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -44,19 +45,19 @@ class PLATFORM_EXPORT WebActiveGestureAnimation {
     USING_FAST_MALLOC(WebActiveGestureAnimation);
     WTF_MAKE_NONCOPYABLE(WebActiveGestureAnimation);
 public:
-    static std::unique_ptr<WebActiveGestureAnimation> createAtAnimationStart(std::unique_ptr<WebGestureCurve>, WebGestureCurveTarget*);
-    static std::unique_ptr<WebActiveGestureAnimation> createWithTimeOffset(std::unique_ptr<WebGestureCurve>, WebGestureCurveTarget*, double startTime);
+    static PassOwnPtr<WebActiveGestureAnimation> createAtAnimationStart(PassOwnPtr<WebGestureCurve>, WebGestureCurveTarget*);
+    static PassOwnPtr<WebActiveGestureAnimation> createWithTimeOffset(PassOwnPtr<WebGestureCurve>, WebGestureCurveTarget*, double startTime);
     ~WebActiveGestureAnimation();
 
     bool animate(double time);
 
 private:
     // Assumes a valid WebGestureCurveTarget that outlives the animation.
-    WebActiveGestureAnimation(std::unique_ptr<WebGestureCurve>, WebGestureCurveTarget*, double startTime, bool waitingForFirstTick);
+    WebActiveGestureAnimation(PassOwnPtr<WebGestureCurve>, WebGestureCurveTarget*, double startTime, bool waitingForFirstTick);
 
     double m_startTime;
     bool m_waitingForFirstTick;
-    std::unique_ptr<WebGestureCurve> m_curve;
+    OwnPtr<WebGestureCurve> m_curve;
     WebGestureCurveTarget* m_target;
 };
 

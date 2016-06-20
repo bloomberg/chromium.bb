@@ -33,7 +33,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -61,7 +60,7 @@ private:
 
     size_t m_impulseResponseLength;
 
-    Vector<std::unique_ptr<ReverbConvolver>> m_convolvers;
+    Vector<OwnPtr<ReverbConvolver>> m_convolvers;
 
     // For "True" stereo processing
     RefPtr<AudioBus> m_tempBuffer;

@@ -39,7 +39,6 @@
 #include "public/platform/WebCachePolicy.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -407,7 +406,7 @@ void ImageResource::error(const ResourceError& error)
     notifyObservers();
 }
 
-void ImageResource::responseReceived(const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
+void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT(!handle);
     ASSERT(!m_multipartParser);

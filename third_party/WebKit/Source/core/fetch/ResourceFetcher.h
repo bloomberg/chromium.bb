@@ -42,7 +42,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/text/StringHash.h"
-#include <memory>
 
 namespace blink {
 
@@ -190,10 +189,10 @@ private:
 
     Timer<ResourceFetcher> m_resourceTimingReportTimer;
 
-    using ResourceTimingInfoMap = HeapHashMap<Member<Resource>, std::unique_ptr<ResourceTimingInfo>>;
+    using ResourceTimingInfoMap = HeapHashMap<Member<Resource>, OwnPtr<ResourceTimingInfo>>;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
 
-    Vector<std::unique_ptr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
+    Vector<OwnPtr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
 
     ResourceLoaderSet m_loaders;
     ResourceLoaderSet m_nonBlockingLoaders;

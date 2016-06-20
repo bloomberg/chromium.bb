@@ -5,9 +5,8 @@
 #define TerminatedArray_h
 
 #include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/allocator/Partitions.h"
-#include <memory>
 
 namespace WTF {
 
@@ -67,7 +66,7 @@ public:
         return count;
     }
 
-    // Match Allocator semantics to be able to use std::unique_ptr<TerminatedArray>.
+    // Match Allocator semantics to be able to use OwnPtr<TerminatedArray>.
     void operator delete(void* p) { ::WTF::Partitions::fastFree(p); }
 
 private:
@@ -75,8 +74,8 @@ private:
     // of TerminateArray and manage their lifetimes.
     struct Allocator {
         STATIC_ONLY(Allocator);
-        using PassPtr = std::unique_ptr<TerminatedArray>;
-        using Ptr = std::unique_ptr<TerminatedArray>;
+        using PassPtr = PassOwnPtr<TerminatedArray>;
+        using Ptr = OwnPtr<TerminatedArray>;
 
         static PassPtr release(Ptr& ptr)
         {
@@ -85,12 +84,12 @@ private:
 
         static PassPtr create(size_t capacity)
         {
-            return wrapUnique(static_cast<TerminatedArray*>(WTF::Partitions::fastMalloc(capacity * sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T))));
+            return adoptPtr(static_cast<TerminatedArray*>(WTF::Partitions::fastMalloc(capacity * sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T))));
         }
 
         static PassPtr resize(Ptr ptr, size_t capacity)
         {
-            return wrapUnique(static_cast<TerminatedArray*>(WTF::Partitions::fastRealloc(ptr.release(), capacity * sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T))));
+            return adoptPtr(static_cast<TerminatedArray*>(WTF::Partitions::fastRealloc(ptr.leakPtr(), capacity * sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T))));
         }
     };
 

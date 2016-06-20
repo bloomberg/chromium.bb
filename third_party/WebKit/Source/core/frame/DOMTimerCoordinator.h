@@ -7,7 +7,7 @@
 
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -25,7 +25,7 @@ class DOMTimerCoordinator {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(DOMTimerCoordinator);
 public:
-    explicit DOMTimerCoordinator(std::unique_ptr<WebTaskRunner>);
+    explicit DOMTimerCoordinator(PassOwnPtr<WebTaskRunner>);
 
     // Creates and installs a new timer. Returns the assigned ID.
     int installNewTimeout(ExecutionContext*, ScheduledAction*, int timeout, bool singleShot);
@@ -45,7 +45,7 @@ public:
     // deeper timer nesting level, see DOMTimer::DOMTimer.
     void setTimerNestingLevel(int level) { m_timerNestingLevel = level; }
 
-    void setTimerTaskRunner(std::unique_ptr<WebTaskRunner>);
+    void setTimerTaskRunner(PassOwnPtr<WebTaskRunner>);
 
     WebTaskRunner* timerTaskRunner() const { return m_timerTaskRunner.get(); }
 
@@ -59,7 +59,7 @@ private:
 
     int m_circularSequentialID;
     int m_timerNestingLevel;
-    std::unique_ptr<WebTaskRunner> m_timerTaskRunner;
+    OwnPtr<WebTaskRunner> m_timerTaskRunner;
 };
 
 } // namespace blink

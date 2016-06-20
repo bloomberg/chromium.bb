@@ -39,8 +39,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 using namespace blink;
 
@@ -355,7 +354,7 @@ private:
 
 @interface BlinkScrollbarPartAnimation : NSObject {
     Scrollbar* _scrollbar;
-    std::unique_ptr<BlinkScrollbarPartAnimationTimer> _timer;
+    OwnPtr<BlinkScrollbarPartAnimationTimer> _timer;
     RetainPtr<ScrollbarPainter> _scrollbarPainter;
     FeatureToAnimate _featureToAnimate;
     CGFloat _startValue;
@@ -372,7 +371,7 @@ private:
     if (!self)
         return nil;
 
-    _timer = wrapUnique(new BlinkScrollbarPartAnimationTimer(self, duration));
+    _timer = adoptPtr(new BlinkScrollbarPartAnimationTimer(self, duration));
     _scrollbar = scrollbar;
     _featureToAnimate = featureToAnimate;
     _startValue = startValue;
@@ -683,7 +682,7 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     : ScrollAnimatorBase(scrollableArea)
     , m_initialScrollbarPaintTaskFactory(CancellableTaskFactory::create(this, &ScrollAnimatorMac::initialScrollbarPaintTask))
     , m_sendContentAreaScrolledTaskFactory(CancellableTaskFactory::create(this, &ScrollAnimatorMac::sendContentAreaScrolledTask))
-    , m_taskRunner(wrapUnique(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone()))
+    , m_taskRunner(adoptPtr(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone()))
     , m_haveScrolledSincePageLoad(false)
     , m_needsScrollerStyleUpdate(false)
 {

@@ -39,12 +39,14 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
+
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 
@@ -87,8 +89,8 @@ public:
         virtual ~Client() { }
         virtual void hideHighlight() { }
         virtual void highlightNode(Node*, const InspectorHighlightConfig&, bool omitTooltip) { }
-        virtual void highlightQuad(std::unique_ptr<FloatQuad>, const InspectorHighlightConfig&) { }
-        virtual void setInspectMode(SearchMode searchMode, std::unique_ptr<InspectorHighlightConfig>) { }
+        virtual void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&) { }
+        virtual void setInspectMode(SearchMode searchMode, PassOwnPtr<InspectorHighlightConfig>) { }
         virtual void setInspectedNode(Node*) { }
     };
 
@@ -198,7 +200,7 @@ private:
     void innerEnable();
 
     void setSearchingForNode(ErrorString*, SearchMode, const Maybe<protocol::DOM::HighlightConfig>&);
-    std::unique_ptr<InspectorHighlightConfig> highlightConfigFromInspectorObject(ErrorString*, const Maybe<protocol::DOM::HighlightConfig>& highlightInspectorObject);
+    PassOwnPtr<InspectorHighlightConfig> highlightConfigFromInspectorObject(ErrorString*, const Maybe<protocol::DOM::HighlightConfig>& highlightInspectorObject);
 
     // Node-related methods.
     typedef HeapHashMap<Member<Node>, int> NodeToIdMap;
@@ -226,7 +228,7 @@ private:
 
     void discardFrontendBindings();
 
-    void innerHighlightQuad(std::unique_ptr<FloatQuad>, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor);
+    void innerHighlightQuad(PassOwnPtr<FloatQuad>, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor);
 
     bool pushDocumentUponHandlelessOperation(ErrorString*);
 

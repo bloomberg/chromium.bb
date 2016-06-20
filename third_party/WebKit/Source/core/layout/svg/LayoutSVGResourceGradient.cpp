@@ -22,9 +22,6 @@
 
 #include "core/layout/svg/LayoutSVGResourceGradient.h"
 
-#include "wtf/PtrUtil.h"
-#include <memory>
-
 namespace blink {
 
 LayoutSVGResourceGradient::LayoutSVGResourceGradient(SVGGradientElement* node)
@@ -73,9 +70,9 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(const LayoutObject&
     if (gradientUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
         return SVGPaintServer::invalid();
 
-    std::unique_ptr<GradientData>& gradientData = m_gradientMap.add(&object, nullptr).storedValue->value;
+    OwnPtr<GradientData>& gradientData = m_gradientMap.add(&object, nullptr).storedValue->value;
     if (!gradientData)
-        gradientData = wrapUnique(new GradientData);
+        gradientData = adoptPtr(new GradientData);
 
     // Create gradient object
     if (!gradientData->gradient) {

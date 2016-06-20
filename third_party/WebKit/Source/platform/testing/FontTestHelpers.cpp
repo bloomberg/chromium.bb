@@ -9,9 +9,9 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 namespace testing {
@@ -50,12 +50,12 @@ public:
     void fontCacheInvalidated() override { }
 
 private:
-    TestFontSelector(std::unique_ptr<FontCustomPlatformData> customPlatformData)
+    TestFontSelector(PassOwnPtr<FontCustomPlatformData> customPlatformData)
         : m_customPlatformData(std::move(customPlatformData))
     {
     }
 
-    std::unique_ptr<FontCustomPlatformData> m_customPlatformData;
+    OwnPtr<FontCustomPlatformData> m_customPlatformData;
 };
 
 } // namespace

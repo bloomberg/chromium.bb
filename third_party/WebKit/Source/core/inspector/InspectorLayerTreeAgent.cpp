@@ -57,7 +57,6 @@
 #include "public/platform/WebLayer.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -399,7 +398,7 @@ void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const Str
     const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
-    std::unique_ptr<Vector<char>> base64Data = snapshot->replay(fromStep.fromMaybe(0), toStep.fromMaybe(0), scale.fromMaybe(1.0));
+    OwnPtr<Vector<char>> base64Data = snapshot->replay(fromStep.fromMaybe(0), toStep.fromMaybe(0), scale.fromMaybe(1.0));
     if (!base64Data) {
         *errorString = "Image encoding failed";
         return;
@@ -424,7 +423,7 @@ void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const St
     FloatRect rect;
     if (clipRect.isJust())
         parseRect(clipRect.fromJust(), &rect);
-    std::unique_ptr<PictureSnapshot::Timings> timings = snapshot->profile(minRepeatCount.fromMaybe(1), minDuration.fromMaybe(0), clipRect.isJust() ? &rect : 0);
+    OwnPtr<PictureSnapshot::Timings> timings = snapshot->profile(minRepeatCount.fromMaybe(1), minDuration.fromMaybe(0), clipRect.isJust() ? &rect : 0);
     *outTimings = Array<Array<double>>::create();
     for (size_t i = 0; i < timings->size(); ++i) {
         const Vector<double>& row = (*timings)[i];

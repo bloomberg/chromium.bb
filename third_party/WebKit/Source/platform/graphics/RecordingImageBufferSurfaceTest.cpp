@@ -17,9 +17,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 using testing::Test;
 
@@ -78,10 +78,10 @@ class MockSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
 public:
     MockSurfaceFactory() : m_createSurfaceCount(0) { }
 
-    virtual std::unique_ptr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
+    virtual PassOwnPtr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
     {
         m_createSurfaceCount++;
-        return wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode));
+        return adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode));
     }
 
     virtual ~MockSurfaceFactory() { }
@@ -96,15 +96,15 @@ class RecordingImageBufferSurfaceTest : public Test {
 protected:
     RecordingImageBufferSurfaceTest()
     {
-        std::unique_ptr<MockSurfaceFactory> surfaceFactory = wrapUnique(new MockSurfaceFactory());
+        OwnPtr<MockSurfaceFactory> surfaceFactory = adoptPtr(new MockSurfaceFactory());
         m_surfaceFactory = surfaceFactory.get();
-        std::unique_ptr<RecordingImageBufferSurface> testSurface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), std::move(surfaceFactory)));
+        OwnPtr<RecordingImageBufferSurface> testSurface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), std::move(surfaceFactory)));
         m_testSurface = testSurface.get();
         // We create an ImageBuffer in order for the testSurface to be
         // properly initialized with a GraphicsContext
         m_imageBuffer = ImageBuffer::create(std::move(testSurface));
         EXPECT_FALSE(!m_imageBuffer);
-        m_fakeImageBufferClient = wrapUnique(new FakeImageBufferClient(m_imageBuffer.get()));
+        m_fakeImageBufferClient = adoptPtr(new FakeImageBufferClient(m_imageBuffer.get()));
         m_imageBuffer->setClient(m_fakeImageBufferClient.get());
     }
 
@@ -226,8 +226,8 @@ public:
 private:
     MockSurfaceFactory* m_surfaceFactory;
     RecordingImageBufferSurface* m_testSurface;
-    std::unique_ptr<FakeImageBufferClient> m_fakeImageBufferClient;
-    std::unique_ptr<ImageBuffer> m_imageBuffer;
+    OwnPtr<FakeImageBufferClient> m_fakeImageBufferClient;
+    OwnPtr<ImageBuffer> m_imageBuffer;
 };
 
 namespace {

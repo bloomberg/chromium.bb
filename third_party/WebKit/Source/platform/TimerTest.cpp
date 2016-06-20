@@ -11,9 +11,7 @@
 #include "public/platform/WebViewScheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/RefCounted.h"
-#include <memory>
 #include <queue>
 
 using testing::ElementsAre;
@@ -22,10 +20,10 @@ namespace blink {
 namespace {
 double gCurrentTimeSecs = 0.0;
 
-// This class exists because gcc doesn't know how to move an std::unique_ptr.
+// This class exists because gcc doesn't know how to move an OwnPtr.
 class RefCountedTaskContainer : public RefCounted<RefCountedTaskContainer> {
 public:
-    explicit RefCountedTaskContainer(WebTaskRunner::Task* task) : m_task(wrapUnique(task)) { }
+    explicit RefCountedTaskContainer(WebTaskRunner::Task* task) : m_task(adoptPtr(task)) { }
 
     ~RefCountedTaskContainer() { }
 
@@ -35,7 +33,7 @@ public:
     }
 
 private:
-    std::unique_ptr<WebTaskRunner::Task> m_task;
+    OwnPtr<WebTaskRunner::Task> m_task;
 };
 
 class DelayedTask {
@@ -202,7 +200,7 @@ private:
 
 class FakeWebThread : public WebThread {
 public:
-    FakeWebThread() : m_webScheduler(wrapUnique(new MockWebScheduler())) { }
+    FakeWebThread() : m_webScheduler(adoptPtr(new MockWebScheduler())) { }
     ~FakeWebThread() override { }
 
     virtual bool isCurrentThread() const
@@ -239,13 +237,13 @@ public:
     }
 
 private:
-    std::unique_ptr<MockWebScheduler> m_webScheduler;
+    OwnPtr<MockWebScheduler> m_webScheduler;
 };
 
 class TimerTestPlatform : public TestingPlatformSupport {
 public:
     TimerTestPlatform()
-        : m_webThread(wrapUnique(new FakeWebThread())) { }
+        : m_webThread(adoptPtr(new FakeWebThread())) { }
     ~TimerTestPlatform() override { }
 
     WebThread* currentThread() override
@@ -284,7 +282,7 @@ private:
         return static_cast<MockWebScheduler*>(m_webThread->scheduler());
     }
 
-    std::unique_ptr<FakeWebThread> m_webThread;
+    OwnPtr<FakeWebThread> m_webThread;
 };
 
 class TimerTest : public testing::Test {

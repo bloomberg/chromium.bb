@@ -36,7 +36,6 @@
 #include "public/platform/WebFileUtilities.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
-#include <memory>
 
 namespace blink {
 
@@ -55,35 +54,35 @@ static String getContentTypeFromFileName(const String& name, File::ContentTypeLo
     return type;
 }
 
-static std::unique_ptr<BlobData> createBlobDataForFileWithType(const String& path, const String& contentType)
+static PassOwnPtr<BlobData> createBlobDataForFileWithType(const String& path, const String& contentType)
 {
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(contentType);
     blobData->appendFile(path);
     return blobData;
 }
 
-static std::unique_ptr<BlobData> createBlobDataForFile(const String& path, File::ContentTypeLookupPolicy policy)
+static PassOwnPtr<BlobData> createBlobDataForFile(const String& path, File::ContentTypeLookupPolicy policy)
 {
     return createBlobDataForFileWithType(path, getContentTypeFromFileName(path, policy));
 }
 
-static std::unique_ptr<BlobData> createBlobDataForFileWithName(const String& path, const String& fileSystemName, File::ContentTypeLookupPolicy policy)
+static PassOwnPtr<BlobData> createBlobDataForFileWithName(const String& path, const String& fileSystemName, File::ContentTypeLookupPolicy policy)
 {
     return createBlobDataForFileWithType(path, getContentTypeFromFileName(fileSystemName, policy));
 }
 
-static std::unique_ptr<BlobData> createBlobDataForFileWithMetadata(const String& fileSystemName, const FileMetadata& metadata)
+static PassOwnPtr<BlobData> createBlobDataForFileWithMetadata(const String& fileSystemName, const FileMetadata& metadata)
 {
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(getContentTypeFromFileName(fileSystemName, File::WellKnownContentTypes));
     blobData->appendFile(metadata.platformPath, 0, metadata.length, metadata.modificationTime / msPerSecond);
     return blobData;
 }
 
-static std::unique_ptr<BlobData> createBlobDataForFileSystemURL(const KURL& fileSystemURL, const FileMetadata& metadata)
+static PassOwnPtr<BlobData> createBlobDataForFileSystemURL(const KURL& fileSystemURL, const FileMetadata& metadata)
 {
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(getContentTypeFromFileName(fileSystemURL.path(), File::WellKnownContentTypes));
     blobData->appendFileSystemURL(fileSystemURL, 0, metadata.length, metadata.modificationTime / msPerSecond);
     return blobData;
@@ -108,7 +107,7 @@ File* File::create(ExecutionContext* context, const HeapVector<ArrayBufferOrArra
     if (normalizeLineEndingsToNative)
         UseCounter::count(context, UseCounter::FileAPINativeLineEndings);
 
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(options.type().lower());
     populateBlobData(blobData.get(), fileBits, normalizeLineEndingsToNative);
 
@@ -278,7 +277,7 @@ Blob* File::slice(long long start, long long end, const String& contentType, Exc
     clampSliceOffsets(size, start, end);
 
     long long length = end - start;
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(contentType);
     if (!m_fileSystemURL.isEmpty()) {
         blobData->appendFileSystemURL(m_fileSystemURL, start, length, modificationTimeMS / msPerSecond);

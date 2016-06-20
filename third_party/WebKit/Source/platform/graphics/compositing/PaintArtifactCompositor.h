@@ -8,8 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace cc {
 class Layer;
@@ -62,8 +62,8 @@ private:
     scoped_refptr<cc::Layer> layerForPaintChunk(const PaintArtifact&, const PaintChunk&, gfx::Vector2dF& layerOffset);
 
     scoped_refptr<cc::Layer> m_rootLayer;
-    std::unique_ptr<WebLayer> m_webLayer;
-    Vector<std::unique_ptr<ContentLayerClientImpl>> m_contentLayerClients;
+    OwnPtr<WebLayer> m_webLayer;
+    Vector<OwnPtr<ContentLayerClientImpl>> m_contentLayerClients;
 };
 
 } // namespace blink

@@ -64,8 +64,8 @@
 #include "web/WebEmbeddedWorkerImpl.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
+
 #include <utility>
 
 namespace blink {
@@ -124,7 +124,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
     String origin;
     if (!sourceOrigin.isUnique())
         origin = sourceOrigin.toString();
-    ServiceWorker* source = ServiceWorker::from(m_workerGlobalScope->getExecutionContext(), wrapUnique(handle.release()));
+    ServiceWorker* source = ServiceWorker::from(m_workerGlobalScope->getExecutionContext(), adoptPtr(handle.release()));
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
 
     Event* event = ExtendableMessageEvent::create(value, origin, ports, source, observer);
@@ -217,7 +217,7 @@ bool ServiceWorkerGlobalScopeProxy::hasFetchEventHandler()
     return m_workerGlobalScope->hasEventListeners(EventTypeNames::fetch);
 }
 
-void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, PassOwnPtr<SourceLocation> location)
 {
     client().reportException(errorMessage, location->lineNumber(), location->columnNumber(), location->url());
 }

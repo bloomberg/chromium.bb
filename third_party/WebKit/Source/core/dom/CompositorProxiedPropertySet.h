@@ -9,7 +9,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
@@ -18,7 +17,7 @@ class CompositorProxiedPropertySet final {
     WTF_MAKE_NONCOPYABLE(CompositorProxiedPropertySet);
     USING_FAST_MALLOC(CompositorProxiedPropertySet);
 public:
-    static std::unique_ptr<CompositorProxiedPropertySet> create();
+    static PassOwnPtr<CompositorProxiedPropertySet> create();
     virtual ~CompositorProxiedPropertySet();
 
     bool isEmpty() const;

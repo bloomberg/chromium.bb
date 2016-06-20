@@ -11,7 +11,6 @@
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -21,7 +20,7 @@ protected:
     HTMLDocument& document() const { return *m_document; }
 
 private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
     Persistent<HTMLDocument> m_document;
 };
 

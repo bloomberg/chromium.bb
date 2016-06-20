@@ -39,7 +39,6 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/StringHash.h"
 
 namespace blink {
@@ -172,7 +171,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     if (m_keyframeGroups)
         return;
 
-    m_keyframeGroups = wrapUnique(new KeyframeGroupMap);
+    m_keyframeGroups = adoptPtr(new KeyframeGroupMap);
     RefPtr<TimingFunction> zeroOffsetEasing = m_defaultKeyframeEasing;
     for (const auto& keyframe : normalizedKeyframes(getFrames())) {
         if (keyframe->offset() == 0)
@@ -182,7 +181,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
             KeyframeGroupMap::iterator groupIter = m_keyframeGroups->find(property);
             PropertySpecificKeyframeGroup* group;
             if (groupIter == m_keyframeGroups->end())
-                group = m_keyframeGroups->add(property, wrapUnique(new PropertySpecificKeyframeGroup)).storedValue->value.get();
+                group = m_keyframeGroups->add(property, adoptPtr(new PropertySpecificKeyframeGroup)).storedValue->value.get();
             else
                 group = groupIter->value.get();
 

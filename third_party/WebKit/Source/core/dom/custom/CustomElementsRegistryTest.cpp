@@ -71,7 +71,7 @@ protected:
     void SetUp() override
     {
         CustomElementsRegistryTestBase::SetUp();
-        m_page.reset(DummyPageHolder::create(IntSize(1, 1)).release());
+        m_page.reset(DummyPageHolder::create(IntSize(1, 1)).leakPtr());
     }
 
     void TearDown() override

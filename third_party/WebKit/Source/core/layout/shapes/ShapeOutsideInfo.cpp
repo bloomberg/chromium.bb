@@ -36,7 +36,6 @@
 #include "core/layout/LayoutImage.h"
 #include "platform/LengthFunctions.h"
 #include "public/platform/Platform.h"
-#include <memory>
 
 namespace blink {
 
@@ -120,7 +119,7 @@ static bool isValidRasterShapeRect(const LayoutRect& rect)
     return (rect.width().toFloat() * rect.height().toFloat() * 4.0) < maxImageSizeBytes;
 }
 
-std::unique_ptr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, float shapeImageThreshold, WritingMode writingMode, float margin) const
+PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, float shapeImageThreshold, WritingMode writingMode, float margin) const
 {
     const LayoutSize& imageSize = styleImage->imageSize(m_layoutBox, m_layoutBox.style()->effectiveZoom(), m_referenceBoxLogicalSize);
 

@@ -18,9 +18,7 @@
 #include "platform/TraceEvent.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/Deque.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/TextEncodingRegistry.h"
-#include <memory>
 
 namespace blink {
 
@@ -181,7 +179,7 @@ public:
         , m_queueTailPosition(0)
         , m_bookmarkPosition(0)
         , m_lengthOfBOM(0)
-        , m_loadingTaskRunner(wrapUnique(loadingTaskRunner->clone()))
+        , m_loadingTaskRunner(adoptPtr(loadingTaskRunner->clone()))
     {
     }
 
@@ -389,7 +387,7 @@ private:
     // m_queueLeadPosition references with a mutex.
     size_t m_lengthOfBOM; // Used by both threads; guarded by m_mutex.
 
-    std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
+    OwnPtr<WebTaskRunner> m_loadingTaskRunner;
 };
 
 size_t ScriptStreamer::s_smallScriptThreshold = 30 * 1024;
@@ -502,7 +500,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         const char* data = 0;
         size_t length = resource->resourceBuffer()->getSomeData(data, static_cast<size_t>(0));
 
-        std::unique_ptr<TextResourceDecoder> decoder(TextResourceDecoder::create("application/javascript", resource->encoding()));
+        OwnPtr<TextResourceDecoder> decoder(TextResourceDecoder::create("application/javascript", resource->encoding()));
         lengthOfBOM = decoder->checkForBOM(data, length);
 
         // Maybe the encoding changed because we saw the BOM; get the encoding
@@ -535,10 +533,10 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         ASSERT(!m_source);
         m_stream = new SourceStream(m_loadingTaskRunner.get());
         // m_source takes ownership of m_stream.
-        m_source = wrapUnique(new v8::ScriptCompiler::StreamedSource(m_stream, m_encoding));
+        m_source = adoptPtr(new v8::ScriptCompiler::StreamedSource(m_stream, m_encoding));
 
         ScriptState::Scope scope(m_scriptState.get());
-        std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> scriptStreamingTask(wrapUnique(v8::ScriptCompiler::StartStreamingScript(m_scriptState->isolate(), m_source.get(), m_compileOptions)));
+        OwnPtr<v8::ScriptCompiler::ScriptStreamingTask> scriptStreamingTask(adoptPtr(v8::ScriptCompiler::StartStreamingScript(m_scriptState->isolate(), m_source.get(), m_compileOptions)));
         if (!scriptStreamingTask) {
             // V8 cannot stream the script.
             suppressStreaming();
@@ -591,7 +589,7 @@ ScriptStreamer::ScriptStreamer(PendingScript* script, Type scriptType, ScriptSta
     , m_scriptURLString(m_resource->url().copy().getString())
     , m_scriptResourceIdentifier(m_resource->identifier())
     , m_encoding(v8::ScriptCompiler::StreamedSource::TWO_BYTE) // Unfortunately there's no dummy encoding value in the enum; let's use one we don't stream.
-    , m_loadingTaskRunner(wrapUnique(loadingTaskRunner->clone()))
+    , m_loadingTaskRunner(adoptPtr(loadingTaskRunner->clone()))
 {
 }
 

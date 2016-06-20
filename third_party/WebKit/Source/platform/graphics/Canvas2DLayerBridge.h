@@ -37,11 +37,11 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
-#include <memory>
 
 class SkImage;
 struct SkImageInfo;
@@ -146,7 +146,7 @@ public:
         virtual ~Logger() { }
     };
 
-    void setLoggerForTesting(std::unique_ptr<Logger>);
+    void setLoggerForTesting(PassOwnPtr<Logger>);
 
 private:
 #if USE_IOSURFACE_FOR_2D_CANVAS
@@ -185,7 +185,7 @@ private:
         MailboxInfo() {}
     };
 
-    Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
+    Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
     gpu::gles2::GLES2Interface* contextGL();
     void startRecording();
     void skipQueuedDrawCommands();
@@ -233,14 +233,14 @@ private:
     // changing texture bindings.
     void resetSkiaTextureBinding();
 
-    std::unique_ptr<SkPictureRecorder> m_recorder;
+    OwnPtr<SkPictureRecorder> m_recorder;
     RefPtr<SkSurface> m_surface;
     RefPtr<SkImage> m_hibernationImage;
     int m_initialSurfaceSaveCount;
-    std::unique_ptr<WebExternalTextureLayer> m_layer;
-    std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
-    std::unique_ptr<SharedContextRateLimiter> m_rateLimiter;
-    std::unique_ptr<Logger> m_logger;
+    OwnPtr<WebExternalTextureLayer> m_layer;
+    OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
+    OwnPtr<SharedContextRateLimiter> m_rateLimiter;
+    OwnPtr<Logger> m_logger;
     WeakPtrFactory<Canvas2DLayerBridge> m_weakPtrFactory;
     ImageBuffer* m_imageBuffer;
     int m_msaaSampleCount;

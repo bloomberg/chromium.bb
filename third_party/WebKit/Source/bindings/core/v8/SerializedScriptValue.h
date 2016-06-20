@@ -36,9 +36,13 @@
 #include "core/CoreExport.h"
 #include "wtf/HashMap.h"
 #include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/typed_arrays/ArrayBufferContents.h"
-#include <memory>
 #include <v8.h>
+
+namespace WTF {
+
+class ArrayBufferContents;
+
+}
 
 namespace blink {
 
@@ -127,8 +131,8 @@ private:
 
 private:
     String m_data;
-    std::unique_ptr<ArrayBufferContentsArray> m_arrayBufferContentsArray;
-    std::unique_ptr<ImageBitmapContentsArray> m_imageBitmapContentsArray;
+    OwnPtr<ArrayBufferContentsArray> m_arrayBufferContentsArray;
+    OwnPtr<ImageBitmapContentsArray> m_imageBitmapContentsArray;
     BlobDataHandleMap m_blobDataHandles;
     intptr_t m_externallyAllocatedMemory;
 

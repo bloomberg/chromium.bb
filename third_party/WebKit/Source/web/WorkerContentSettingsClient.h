@@ -33,7 +33,6 @@
 
 #include "core/workers/WorkerClients.h"
 #include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 
@@ -44,7 +43,7 @@ class WebWorkerContentSettingsClientProxy;
 class WorkerContentSettingsClient final : public GarbageCollectedFinalized<WorkerContentSettingsClient>, public Supplement<WorkerClients> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
 public:
-    static WorkerContentSettingsClient* create(std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+    static WorkerContentSettingsClient* create(PassOwnPtr<WebWorkerContentSettingsClientProxy>);
     virtual ~WorkerContentSettingsClient();
 
     bool requestFileSystemAccessSync();
@@ -56,12 +55,12 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<WorkerClients>::trace(visitor); }
 
 private:
-    explicit WorkerContentSettingsClient(std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+    explicit WorkerContentSettingsClient(PassOwnPtr<WebWorkerContentSettingsClientProxy>);
 
-    std::unique_ptr<WebWorkerContentSettingsClientProxy> m_proxy;
+    OwnPtr<WebWorkerContentSettingsClientProxy> m_proxy;
 };
 
-void provideContentSettingsClientToWorker(WorkerClients*, std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+void provideContentSettingsClientToWorker(WorkerClients*, PassOwnPtr<WebWorkerContentSettingsClientProxy>);
 
 } // namespace blink
 

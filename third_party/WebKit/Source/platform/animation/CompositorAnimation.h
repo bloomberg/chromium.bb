@@ -9,7 +9,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
+
 #include <memory>
 
 namespace cc {
@@ -28,9 +29,9 @@ public:
     using Direction = cc::Animation::Direction;
     using FillMode = cc::Animation::FillMode;
 
-    static std::unique_ptr<CompositorAnimation> create(const blink::CompositorAnimationCurve& curve, CompositorTargetProperty::Type target, int groupId, int animationId)
+    static PassOwnPtr<CompositorAnimation> create(const blink::CompositorAnimationCurve& curve, CompositorTargetProperty::Type target, int groupId, int animationId)
     {
-        return wrapUnique(new CompositorAnimation(curve, target, animationId, groupId));
+        return adoptPtr(new CompositorAnimation(curve, target, animationId, groupId));
     }
 
     ~CompositorAnimation();
@@ -67,7 +68,7 @@ public:
 
     std::unique_ptr<cc::Animation> passAnimation();
 
-    std::unique_ptr<CompositorFloatAnimationCurve> floatCurveForTesting() const;
+    PassOwnPtr<CompositorFloatAnimationCurve> floatCurveForTesting() const;
 
 private:
     CompositorAnimation(const CompositorAnimationCurve&, CompositorTargetProperty::Type, int animationId, int groupId);

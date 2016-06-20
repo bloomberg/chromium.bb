@@ -19,7 +19,6 @@
 #include "platform/text/TextStream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include <memory>
 
 namespace blink {
 
@@ -129,7 +128,7 @@ protected:
     }
 
 private:
-    std::unique_ptr<DummyPageHolder> m_pageHolder;
+    OwnPtr<DummyPageHolder> m_pageHolder;
     Persistent<MockPrintContext> m_printContext;
 };
 

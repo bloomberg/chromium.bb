@@ -31,7 +31,7 @@
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 
 #include "platform/image-decoders/FastSharedBufferReader.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -80,7 +80,7 @@ bool BMPImageDecoder::decodeHelper(bool onlySize)
         return false;
 
     if (!m_reader) {
-        m_reader = wrapUnique(new BMPImageReader(this, m_decodedOffset, imgDataOffset, false));
+        m_reader = adoptPtr(new BMPImageReader(this, m_decodedOffset, imgDataOffset, false));
         m_reader->setData(m_data.get());
     }
 

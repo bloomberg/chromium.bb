@@ -10,7 +10,6 @@
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "platform/graphics/Color.h"
-#include <memory>
 
 namespace blink {
 
@@ -48,7 +47,7 @@ public:
 
     static ImmutableStylePropertySet* parseInlineStyleDeclaration(const String&, Element*);
 
-    static std::unique_ptr<Vector<double>> parseKeyframeKeyList(const String&);
+    static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
     static StyleRuleKeyframe* parseKeyframeRule(const CSSParserContext&, const String&);
 
     static bool parseSupportsCondition(const String&);

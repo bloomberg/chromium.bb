@@ -48,9 +48,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/DataLog.h"
 #include "wtf/LeakAnnotations.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/allocator/Partitions.h"
-#include <memory>
 
 namespace blink {
 
@@ -219,15 +217,15 @@ void ThreadHeapStats::decreaseAllocatedSpace(size_t delta)
 }
 
 ThreadHeap::ThreadHeap()
-    : m_regionTree(wrapUnique(new RegionTree()))
-    , m_heapDoesNotContainCache(wrapUnique(new HeapDoesNotContainCache))
-    , m_safePointBarrier(wrapUnique(new SafePointBarrier()))
-    , m_freePagePool(wrapUnique(new FreePagePool))
-    , m_orphanedPagePool(wrapUnique(new OrphanedPagePool))
-    , m_markingStack(wrapUnique(new CallbackStack()))
-    , m_postMarkingCallbackStack(wrapUnique(new CallbackStack()))
-    , m_globalWeakCallbackStack(wrapUnique(new CallbackStack()))
-    , m_ephemeronStack(wrapUnique(new CallbackStack(CallbackStack::kMinimalBlockSize)))
+    : m_regionTree(adoptPtr(new RegionTree()))
+    , m_heapDoesNotContainCache(adoptPtr(new HeapDoesNotContainCache))
+    , m_safePointBarrier(adoptPtr(new SafePointBarrier()))
+    , m_freePagePool(adoptPtr(new FreePagePool))
+    , m_orphanedPagePool(adoptPtr(new OrphanedPagePool))
+    , m_markingStack(adoptPtr(new CallbackStack()))
+    , m_postMarkingCallbackStack(adoptPtr(new CallbackStack()))
+    , m_globalWeakCallbackStack(adoptPtr(new CallbackStack()))
+    , m_ephemeronStack(adoptPtr(new CallbackStack(CallbackStack::kMinimalBlockSize)))
 {
     if (ThreadState::current()->isMainThread())
         s_mainThreadHeap = this;
@@ -488,7 +486,7 @@ void ThreadHeap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType 
     RELEASE_ASSERT(!state->isGCForbidden());
     state->completeSweep();
 
-    std::unique_ptr<Visitor> visitor = Visitor::create(state, gcType);
+    OwnPtr<Visitor> visitor = Visitor::create(state, gcType);
 
     SafePointScope safePointScope(stackState, state);
 
@@ -581,7 +579,7 @@ void ThreadHeap::collectGarbageForTerminatingThread(ThreadState* state)
         // ahead while it is running, hence the termination GC does not enter a
         // safepoint. VisitorScope will not enter also a safepoint scope for
         // ThreadTerminationGC.
-        std::unique_ptr<Visitor> visitor = Visitor::create(state, BlinkGC::ThreadTerminationGC);
+        OwnPtr<Visitor> visitor = Visitor::create(state, BlinkGC::ThreadTerminationGC);
 
         ThreadState::NoAllocationScope noAllocationScope(state);
 

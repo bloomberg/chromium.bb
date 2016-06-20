@@ -6,6 +6,7 @@
 #define CompositorMutableStateProvider_h
 
 #include "platform/PlatformExport.h"
+
 #include <cstdint>
 #include <memory>
 

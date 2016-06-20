@@ -33,14 +33,12 @@
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<ServiceWorkerThread> ServiceWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
+PassOwnPtr<ServiceWorkerThread> ServiceWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
 {
-    return wrapUnique(new ServiceWorkerThread(workerLoaderProxy, workerReportingProxy));
+    return adoptPtr(new ServiceWorkerThread(workerLoaderProxy, workerReportingProxy));
 }
 
 ServiceWorkerThread::ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
@@ -53,7 +51,7 @@ ServiceWorkerThread::~ServiceWorkerThread()
 {
 }
 
-WorkerGlobalScope* ServiceWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
+WorkerGlobalScope* ServiceWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return ServiceWorkerGlobalScope::create(this, std::move(startupData));
 }

@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
 namespace blink {

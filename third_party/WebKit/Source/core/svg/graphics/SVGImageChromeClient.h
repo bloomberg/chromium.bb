@@ -33,7 +33,6 @@
 #include "core/CoreExport.h"
 #include "core/loader/EmptyClients.h"
 #include "platform/Timer.h"
-#include <memory>
 
 namespace blink {
 
@@ -62,7 +61,7 @@ private:
     void animationTimerFired(Timer<SVGImageChromeClient>*);
 
     SVGImage* m_image;
-    std::unique_ptr<Timer<SVGImageChromeClient>> m_animationTimer;
+    OwnPtr<Timer<SVGImageChromeClient>> m_animationTimer;
     enum {
         Running,
         Suspended,

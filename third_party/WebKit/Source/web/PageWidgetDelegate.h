@@ -35,6 +35,7 @@
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebWidget.h"
 #include "web/WebExport.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 

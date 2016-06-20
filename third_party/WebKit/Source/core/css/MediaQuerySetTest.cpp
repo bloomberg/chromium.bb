@@ -6,6 +6,7 @@
 
 #include "core/css/MediaList.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

@@ -33,11 +33,10 @@
 #include "platform/audio/VectorMath.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioBus.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
+#include "wtf/OwnPtr.h"
 #include <assert.h>
 #include <math.h>
-#include <memory>
+#include <algorithm>
 
 namespace blink {
 
@@ -63,7 +62,7 @@ AudioBus::AudioBus(unsigned numberOfChannels, size_t length, bool allocate)
     m_channels.reserveInitialCapacity(numberOfChannels);
 
     for (unsigned i = 0; i < numberOfChannels; ++i) {
-        std::unique_ptr<AudioChannel> channel = allocate ? wrapUnique(new AudioChannel(length)) : wrapUnique(new AudioChannel(0, length));
+        PassOwnPtr<AudioChannel> channel = allocate ? adoptPtr(new AudioChannel(length)) : adoptPtr(new AudioChannel(0, length));
         m_channels.append(std::move(channel));
     }
 
@@ -490,7 +489,7 @@ void AudioBus::copyWithGainFrom(const AudioBus &sourceBus, float* lastMixGain, f
 
     if (framesToDezipper) {
         if (!m_dezipperGainValues.get() || m_dezipperGainValues->size() < framesToDezipper)
-            m_dezipperGainValues = wrapUnique(new AudioFloatArray(framesToDezipper));
+            m_dezipperGainValues = adoptPtr(new AudioFloatArray(framesToDezipper));
 
         float* gainValues = m_dezipperGainValues->data();
         for (unsigned i = 0; i < framesToDezipper; ++i) {

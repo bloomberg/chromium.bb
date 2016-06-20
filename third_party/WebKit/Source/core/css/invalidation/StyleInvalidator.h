@@ -8,7 +8,6 @@
 #include "core/css/invalidation/PendingInvalidations.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
@@ -129,7 +128,7 @@ private:
         RecursionData* m_data;
     };
 
-    using PendingInvalidationMap = HeapHashMap<Member<Element>, std::unique_ptr<PendingInvalidations>>;
+    using PendingInvalidationMap = HeapHashMap<Member<Element>, OwnPtr<PendingInvalidations>>;
 
     PendingInvalidations& ensurePendingInvalidations(Element&);
 

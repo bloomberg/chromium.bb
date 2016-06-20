@@ -46,8 +46,6 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -85,12 +83,12 @@ public:
 private:
     ResourceFetcherTestMockFetchContext()
         : m_policy(CachePolicyVerify)
-        , m_runner(wrapUnique(new MockTaskRunner))
+        , m_runner(adoptPtr(new MockTaskRunner))
         , m_complete(false)
     { }
 
     CachePolicy m_policy;
-    std::unique_ptr<MockTaskRunner> m_runner;
+    OwnPtr<MockTaskRunner> m_runner;
     bool m_complete;
 };
 
@@ -356,7 +354,7 @@ public:
     // No callbacks should be received except for the notifyFinished()
     // triggered by ResourceLoader::cancel().
     void dataSent(Resource*, unsigned long long, unsigned long long) override { ASSERT_TRUE(false); }
-    void responseReceived(Resource*, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override { ASSERT_TRUE(false); }
+    void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override { ASSERT_TRUE(false); }
     void setSerializedCachedMetadata(Resource*, const char*, size_t) override { ASSERT_TRUE(false); }
     void dataReceived(Resource*, const char*, size_t) override { ASSERT_TRUE(false); }
     void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override { ASSERT_TRUE(false); }

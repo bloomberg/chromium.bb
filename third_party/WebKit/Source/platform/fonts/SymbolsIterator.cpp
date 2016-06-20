@@ -4,7 +4,6 @@
 
 #include "SymbolsIterator.h"
 
-#include "wtf/PtrUtil.h"
 #include <unicode/uchar.h>
 #include <unicode/uniset.h>
 
@@ -13,7 +12,7 @@ namespace blink {
 using namespace WTF::Unicode;
 
 SymbolsIterator::SymbolsIterator(const UChar* buffer, unsigned bufferSize)
-    : m_utf16Iterator(wrapUnique(new UTF16TextIterator(buffer, bufferSize)))
+    : m_utf16Iterator(adoptPtr(new UTF16TextIterator(buffer, bufferSize)))
     , m_bufferSize(bufferSize)
     , m_nextChar(0)
     , m_atEnd(bufferSize == 0)

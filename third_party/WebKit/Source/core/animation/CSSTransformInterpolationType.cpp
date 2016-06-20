@@ -12,8 +12,6 @@
 #include "core/css/resolver/TransformBuilder.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -109,9 +107,9 @@ InterpolationValue convertTransform(const TransformOperations& transform)
 
 class InheritedTransformChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<InheritedTransformChecker> create(const TransformOperations& inheritedTransform)
+    static PassOwnPtr<InheritedTransformChecker> create(const TransformOperations& inheritedTransform)
     {
-        return wrapUnique(new InheritedTransformChecker(inheritedTransform));
+        return adoptPtr(new InheritedTransformChecker(inheritedTransform));
     }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
@@ -162,7 +160,7 @@ InterpolationValue CSSTransformInterpolationType::maybeConvertValue(const CSSVal
                 primitiveValue.accumulateLengthArray(lengthArray);
             }
         }
-        std::unique_ptr<InterpolationType::ConversionChecker> lengthUnitsChecker = LengthUnitsChecker::maybeCreate(std::move(lengthArray), state);
+        OwnPtr<InterpolationType::ConversionChecker> lengthUnitsChecker = LengthUnitsChecker::maybeCreate(std::move(lengthArray), state);
 
         if (lengthUnitsChecker)
             conversionCheckers.append(std::move(lengthUnitsChecker));

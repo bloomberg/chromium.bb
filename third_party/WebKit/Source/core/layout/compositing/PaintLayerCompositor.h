@@ -30,7 +30,6 @@
 #include "core/layout/compositing/CompositingReasonFinder.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "wtf/HashMap.h"
-#include <memory>
 
 namespace blink {
 
@@ -220,7 +219,7 @@ private:
     Scrollbar* graphicsLayerToScrollbar(const GraphicsLayer*) const;
 
     LayoutView& m_layoutView;
-    std::unique_ptr<GraphicsLayer> m_rootContentLayer;
+    OwnPtr<GraphicsLayer> m_rootContentLayer;
 
     CompositingReasonFinder m_compositingReasonFinder;
 
@@ -245,16 +244,16 @@ private:
     RootLayerAttachment m_rootLayerAttachment;
 
     // Enclosing container layer, which clips for iframe content
-    std::unique_ptr<GraphicsLayer> m_containerLayer;
-    std::unique_ptr<GraphicsLayer> m_scrollLayer;
+    OwnPtr<GraphicsLayer> m_containerLayer;
+    OwnPtr<GraphicsLayer> m_scrollLayer;
 
     // Enclosing layer for overflow controls and the clipping layer
-    std::unique_ptr<GraphicsLayer> m_overflowControlsHostLayer;
+    OwnPtr<GraphicsLayer> m_overflowControlsHostLayer;
 
     // Layers for overflow controls
-    std::unique_ptr<GraphicsLayer> m_layerForHorizontalScrollbar;
-    std::unique_ptr<GraphicsLayer> m_layerForVerticalScrollbar;
-    std::unique_ptr<GraphicsLayer> m_layerForScrollCorner;
+    OwnPtr<GraphicsLayer> m_layerForHorizontalScrollbar;
+    OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
+    OwnPtr<GraphicsLayer> m_layerForScrollCorner;
 };
 
 } // namespace blink

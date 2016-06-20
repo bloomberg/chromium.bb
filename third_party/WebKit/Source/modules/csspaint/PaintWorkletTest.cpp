@@ -13,7 +13,7 @@
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
 #include "modules/csspaint/WindowPaintWorklet.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -39,7 +39,7 @@ public:
     }
 
 protected:
-    std::unique_ptr<DummyPageHolder> m_page;
+    OwnPtr<DummyPageHolder> m_page;
 };
 
 TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition)

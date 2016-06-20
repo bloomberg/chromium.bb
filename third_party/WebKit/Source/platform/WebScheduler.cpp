@@ -7,6 +7,7 @@
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 

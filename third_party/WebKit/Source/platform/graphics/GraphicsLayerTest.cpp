@@ -43,8 +43,7 @@
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -52,15 +51,15 @@ class GraphicsLayerTest : public testing::Test {
 public:
     GraphicsLayerTest()
     {
-        m_clipLayer = wrapUnique(new FakeGraphicsLayer(&m_client));
-        m_scrollElasticityLayer = wrapUnique(new FakeGraphicsLayer(&m_client));
-        m_graphicsLayer = wrapUnique(new FakeGraphicsLayer(&m_client));
+        m_clipLayer = adoptPtr(new FakeGraphicsLayer(&m_client));
+        m_scrollElasticityLayer = adoptPtr(new FakeGraphicsLayer(&m_client));
+        m_graphicsLayer = adoptPtr(new FakeGraphicsLayer(&m_client));
         m_clipLayer->addChild(m_scrollElasticityLayer.get());
         m_scrollElasticityLayer->addChild(m_graphicsLayer.get());
         m_graphicsLayer->platformLayer()->setScrollClipLayer(
             m_clipLayer->platformLayer());
         m_platformLayer = m_graphicsLayer->platformLayer();
-        m_layerTreeView = wrapUnique(new WebLayerTreeViewImplForTesting);
+        m_layerTreeView = adoptPtr(new WebLayerTreeViewImplForTesting);
         ASSERT(m_layerTreeView);
         m_layerTreeView->setRootLayer(*m_clipLayer->platformLayer());
         m_layerTreeView->registerViewportLayers(
@@ -78,12 +77,12 @@ public:
 
 protected:
     WebLayer* m_platformLayer;
-    std::unique_ptr<FakeGraphicsLayer> m_graphicsLayer;
-    std::unique_ptr<FakeGraphicsLayer> m_scrollElasticityLayer;
-    std::unique_ptr<FakeGraphicsLayer> m_clipLayer;
+    OwnPtr<FakeGraphicsLayer> m_graphicsLayer;
+    OwnPtr<FakeGraphicsLayer> m_scrollElasticityLayer;
+    OwnPtr<FakeGraphicsLayer> m_clipLayer;
 
 private:
-    std::unique_ptr<WebLayerTreeView> m_layerTreeView;
+    OwnPtr<WebLayerTreeView> m_layerTreeView;
     FakeGraphicsLayerClient m_client;
 };
 
@@ -99,19 +98,19 @@ public:
         return m_compositorPlayer.get();
     }
 
-    std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
+    OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
 };
 
 TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 {
     ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
 
-    std::unique_ptr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
+    OwnPtr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
     curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0.0, 0.0), CubicBezierTimingFunction::EaseType::EASE);
-    std::unique_ptr<CompositorAnimation> floatAnimation(CompositorAnimation::create(*curve, CompositorTargetProperty::OPACITY, 0, 0));
+    OwnPtr<CompositorAnimation> floatAnimation(CompositorAnimation::create(*curve, CompositorTargetProperty::OPACITY, 0, 0));
     int animationId = floatAnimation->id();
 
-    std::unique_ptr<CompositorAnimationTimeline> compositorTimeline = CompositorAnimationTimeline::create();
+    OwnPtr<CompositorAnimationTimeline> compositorTimeline = CompositorAnimationTimeline::create();
     AnimationPlayerForTesting player;
 
     layerTreeView()->attachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
@@ -120,7 +119,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
     player.compositorPlayer()->attachLayer(m_platformLayer);
     ASSERT_TRUE(player.compositorPlayer()->isLayerAttached());
 
-    player.compositorPlayer()->addAnimation(floatAnimation.release());
+    player.compositorPlayer()->addAnimation(floatAnimation.leakPtr());
 
     ASSERT_TRUE(m_platformLayer->hasActiveAnimationForTesting());
 

@@ -10,7 +10,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -132,7 +131,7 @@ TEST(CustomElementTest, StateByParser)
     const char* bodyContent = "<div id=div></div>"
         "<a-a id=v1v0></a-a>"
         "<font-face id=v0></font-face>";
-    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
+    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create();
     Document& document = pageHolder->document();
     document.body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
 
@@ -167,7 +166,7 @@ TEST(CustomElementTest, StateByCreateElement)
         { "font-face", CustomElementState::Uncustomized, Element::V0WaitingForUpgrade },
         { "_-X", CustomElementState::Uncustomized, Element::V0WaitingForUpgrade },
     };
-    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
+    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create();
     Document& document = pageHolder->document();
     for (const auto& data : createElementData) {
         Element* element = document.createElement(data.name, ASSERT_NO_EXCEPTION);

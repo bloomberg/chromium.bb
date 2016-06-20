@@ -39,8 +39,6 @@
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 using blink::WebIDBDatabase;
 
@@ -65,9 +63,9 @@ namespace {
 
 class DeactivateTransactionTask : public V8PerIsolateData::EndOfScopeTask {
 public:
-    static std::unique_ptr<DeactivateTransactionTask> create(IDBTransaction* transaction)
+    static PassOwnPtr<DeactivateTransactionTask> create(IDBTransaction* transaction)
     {
-        return wrapUnique(new DeactivateTransactionTask(transaction));
+        return adoptPtr(new DeactivateTransactionTask(transaction));
     }
 
     void run() override

@@ -27,14 +27,12 @@
 #include "wtf/text/TextCodecICU.h"
 
 #include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StringExtras.h"
 #include "wtf/Threading.h"
 #include "wtf/WTFThreadData.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 #include <unicode/ucnv.h>
 #include <unicode/ucnv_cb.h>
 
@@ -53,9 +51,9 @@ static UConverter*& cachedConverterICU()
     return wtfThreadData().cachedConverterICU().converter;
 }
 
-std::unique_ptr<TextCodec> TextCodecICU::create(const TextEncoding& encoding, const void*)
+PassOwnPtr<TextCodec> TextCodecICU::create(const TextEncoding& encoding, const void*)
 {
-    return wrapUnique(new TextCodecICU(encoding));
+    return adoptPtr(new TextCodecICU(encoding));
 }
 
 void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)

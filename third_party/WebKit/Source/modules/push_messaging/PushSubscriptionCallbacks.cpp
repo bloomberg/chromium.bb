@@ -10,7 +10,6 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/modules/push_messaging/WebPushSubscription.h"
 #include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -31,7 +30,7 @@ void PushSubscriptionCallbacks::onSuccess(std::unique_ptr<WebPushSubscription> w
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
-    m_resolver->resolve(PushSubscription::take(m_resolver.get(), wrapUnique(webPushSubscription.release()), m_serviceWorkerRegistration));
+    m_resolver->resolve(PushSubscription::take(m_resolver.get(), adoptPtr(webPushSubscription.release()), m_serviceWorkerRegistration));
 }
 
 void PushSubscriptionCallbacks::onError(const WebPushError& error)

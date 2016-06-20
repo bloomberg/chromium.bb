@@ -33,7 +33,6 @@
 
 #include "core/frame/LocalFrame.h"
 #include "platform/heap/Handle.h"
-#include <memory>
 
 namespace blink {
 
@@ -49,17 +48,17 @@ public:
     void requestPermission(MIDIAccessInitializer*, const MIDIOptions&);
     void cancelPermissionRequest(MIDIAccessInitializer*);
 
-    static MIDIController* create(std::unique_ptr<MIDIClient>);
+    static MIDIController* create(PassOwnPtr<MIDIClient>);
     static const char* supplementName();
     static MIDIController* from(LocalFrame* frame) { return static_cast<MIDIController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<LocalFrame>::trace(visitor); }
 
 protected:
-    explicit MIDIController(std::unique_ptr<MIDIClient>);
+    explicit MIDIController(PassOwnPtr<MIDIClient>);
 
 private:
-    std::unique_ptr<MIDIClient> m_client;
+    OwnPtr<MIDIClient> m_client;
 };
 
 } // namespace blink

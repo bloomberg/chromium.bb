@@ -29,7 +29,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
-#include <memory>
 
 namespace blink {
 
@@ -45,8 +44,8 @@ public:
     using IDBRequest::onSuccess;
 
     void onBlocked(int64_t existingVersion) override;
-    void onUpgradeNeeded(int64_t oldVersion, std::unique_ptr<WebIDBDatabase>, const IDBDatabaseMetadata&, WebIDBDataLoss, String dataLossMessage) override;
-    void onSuccess(std::unique_ptr<WebIDBDatabase>, const IDBDatabaseMetadata&) override;
+    void onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&, WebIDBDataLoss, String dataLossMessage) override;
+    void onSuccess(PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&) override;
     void onSuccess(int64_t oldVersion) override;
 
     // EventTarget

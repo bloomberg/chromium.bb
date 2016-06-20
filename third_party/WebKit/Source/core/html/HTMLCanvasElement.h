@@ -46,7 +46,6 @@
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/heap/Handle.h"
-#include <memory>
 
 #define CanvasDefaultInterpolationQuality InterpolationLow
 
@@ -186,9 +185,9 @@ public:
 
     DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    void createImageBufferUsingSurfaceForTesting(std::unique_ptr<ImageBufferSurface>);
+    void createImageBufferUsingSurfaceForTesting(PassOwnPtr<ImageBufferSurface>);
 
-    static void registerRenderingContextFactory(std::unique_ptr<CanvasRenderingContextFactory>);
+    static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);
     void updateExternallyAllocatedMemory() const;
 
     void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
@@ -213,7 +212,7 @@ private:
     explicit HTMLCanvasElement(Document&);
     void dispose();
 
-    using ContextFactoryVector = Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
+    using ContextFactoryVector = Vector<OwnPtr<CanvasRenderingContextFactory>>;
     static ContextFactoryVector& renderingContextFactories();
     static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 
@@ -223,9 +222,9 @@ private:
 
     void reset();
 
-    std::unique_ptr<ImageBufferSurface> createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount);
+    PassOwnPtr<ImageBufferSurface> createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount);
     void createImageBuffer();
-    void createImageBufferInternal(std::unique_ptr<ImageBufferSurface> externalSurface);
+    void createImageBufferInternal(PassOwnPtr<ImageBufferSurface> externalSurface);
     bool shouldUseDisplayList(const IntSize& deviceSize);
 
     void setSurfaceSize(const IntSize&);
@@ -253,12 +252,12 @@ private:
     // after the first attempt failed.
     mutable bool m_didFailToCreateImageBuffer;
     bool m_imageBufferIsClear;
-    std::unique_ptr<ImageBuffer> m_imageBuffer;
+    OwnPtr<ImageBuffer> m_imageBuffer;
 
     mutable RefPtr<Image> m_copiedImage; // FIXME: This is temporary for platforms that have to copy the image buffer to render (and for CSSCanvasValue).
 
     // Used for OffscreenCanvas that controls this HTML canvas element
-    std::unique_ptr<CanvasSurfaceLayerBridge> m_surfaceLayerBridge;
+    OwnPtr<CanvasSurfaceLayerBridge> m_surfaceLayerBridge;
 };
 
 } // namespace blink

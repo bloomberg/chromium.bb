@@ -61,7 +61,6 @@
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <math.h>
 
@@ -4200,7 +4199,7 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
     }
 
     if (!m_overflow)
-        m_overflow = wrapUnique(new BoxOverflowModel(clientBox, borderBoxRect()));
+        m_overflow = adoptPtr(new BoxOverflowModel(clientBox, borderBoxRect()));
 
     m_overflow->addLayoutOverflow(overflowRect);
 }
@@ -4215,7 +4214,7 @@ void LayoutBox::addSelfVisualOverflow(const LayoutRect& rect)
         return;
 
     if (!m_overflow)
-        m_overflow = wrapUnique(new BoxOverflowModel(noOverflowRect(), borderBox));
+        m_overflow = adoptPtr(new BoxOverflowModel(noOverflowRect(), borderBox));
 
     m_overflow->addSelfVisualOverflow(rect);
 }
@@ -4233,7 +4232,7 @@ void LayoutBox::addContentsVisualOverflow(const LayoutRect& rect)
         return;
 
     if (!m_overflow)
-        m_overflow = wrapUnique(new BoxOverflowModel(noOverflowRect(), borderBox));
+        m_overflow = adoptPtr(new BoxOverflowModel(noOverflowRect(), borderBox));
     m_overflow->addContentsVisualOverflow(rect);
 }
 

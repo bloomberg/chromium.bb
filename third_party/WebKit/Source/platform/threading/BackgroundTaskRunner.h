@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Functional.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

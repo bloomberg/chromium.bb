@@ -41,7 +41,6 @@
 #include "public/platform/WebURLLoaderClient.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
@@ -96,7 +95,7 @@ private:
 
     void didFailLoading(LocalFrame*);
 
-    std::unique_ptr<WebURLLoader> m_loader;
+    OwnPtr<WebURLLoader> m_loader;
     Timer<PingLoader> m_timeout;
     String m_url;
     unsigned long m_identifier;

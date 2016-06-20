@@ -50,11 +50,11 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
+
 #include <algorithm>
-#include <memory>
 
 namespace blink {
 
@@ -132,7 +132,7 @@ FloatSize DragImage::clampedImageScale(const IntSize& imageSize, const IntSize& 
     return imageScale;
 }
 
-std::unique_ptr<DragImage> DragImage::create(Image* image,
+PassOwnPtr<DragImage> DragImage::create(Image* image,
     RespectImageOrientationEnum shouldRespectImageOrientation, float deviceScaleFactor,
     InterpolationQuality interpolationQuality, float opacity, FloatSize imageScale)
 {
@@ -153,7 +153,7 @@ std::unique_ptr<DragImage> DragImage::create(Image* image,
     if (!resizedImage || !resizedImage->asLegacyBitmap(&bm, SkImage::kRO_LegacyBitmapMode))
         return nullptr;
 
-    return wrapUnique(new DragImage(bm, deviceScaleFactor, interpolationQuality));
+    return adoptPtr(new DragImage(bm, deviceScaleFactor, interpolationQuality));
 }
 
 static Font deriveDragLabelFont(int size, FontWeight fontWeight, const FontDescription& systemFont)
@@ -167,7 +167,7 @@ static Font deriveDragLabelFont(int size, FontWeight fontWeight, const FontDescr
     return result;
 }
 
-std::unique_ptr<DragImage> DragImage::create(const KURL& url, const String& inLabel, const FontDescription& systemFont, float deviceScaleFactor)
+PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, const FontDescription& systemFont, float deviceScaleFactor)
 {
     const Font labelFont = deriveDragLabelFont(kDragLinkLabelFontSize, FontWeightBold, systemFont);
     const Font urlFont = deriveDragLabelFont(kDragLinkUrlFontSize, FontWeightNormal, systemFont);
@@ -213,7 +213,7 @@ std::unique_ptr<DragImage> DragImage::create(const KURL& url, const String& inLa
     // fill the background
     IntSize scaledImageSize = imageSize;
     scaledImageSize.scale(deviceScaleFactor);
-    std::unique_ptr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize));
+    OwnPtr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize));
     if (!buffer)
         return nullptr;
 

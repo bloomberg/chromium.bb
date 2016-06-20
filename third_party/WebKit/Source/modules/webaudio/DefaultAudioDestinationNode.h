@@ -27,7 +27,7 @@
 
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "platform/audio/AudioDestination.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -54,7 +54,7 @@ private:
     explicit DefaultAudioDestinationHandler(AudioNode&);
     void createDestination();
 
-    std::unique_ptr<AudioDestination> m_destination;
+    OwnPtr<AudioDestination> m_destination;
     String m_inputDeviceId;
     unsigned m_numberOfInputChannels;
 };

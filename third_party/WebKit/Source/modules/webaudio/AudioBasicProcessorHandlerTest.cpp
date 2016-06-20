@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
+#include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/audio/AudioProcessor.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -30,14 +28,14 @@ public:
     MockProcessorNode(AbstractAudioContext& context)
         : AudioNode(context)
     {
-        setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeWaveShaper, *this, 48000, wrapUnique(new MockAudioProcessor())));
+        setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeWaveShaper, *this, 48000, adoptPtr(new MockAudioProcessor())));
         handler().initialize();
     }
 };
 
 TEST(AudioBasicProcessorHandlerTest, ProcessorFinalization)
 {
-    std::unique_ptr<DummyPageHolder> page = DummyPageHolder::create();
+    OwnPtr<DummyPageHolder> page = DummyPageHolder::create();
     OfflineAudioContext* context = OfflineAudioContext::create(&page->document(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
     MockProcessorNode* node = new MockProcessorNode(*context);
     AudioBasicProcessorHandler& handler = static_cast<AudioBasicProcessorHandler&>(node->handler());

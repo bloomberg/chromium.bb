@@ -10,7 +10,7 @@
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/mediasession/WebMediaSession.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -37,9 +37,9 @@ public:
 private:
     friend class MediaSessionTest;
 
-    explicit MediaSession(std::unique_ptr<WebMediaSession>);
+    explicit MediaSession(PassOwnPtr<WebMediaSession>);
 
-    std::unique_ptr<WebMediaSession> m_webMediaSession;
+    OwnPtr<WebMediaSession> m_webMediaSession;
     Member<MediaMetadata> m_metadata;
 };
 

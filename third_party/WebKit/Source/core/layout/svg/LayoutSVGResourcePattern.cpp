@@ -31,8 +31,6 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -77,7 +75,7 @@ PatternData* LayoutSVGResourcePattern::patternForLayoutObject(const LayoutObject
     return m_patternMap.set(&object, buildPatternData(object)).storedValue->value.get();
 }
 
-std::unique_ptr<PatternData> LayoutSVGResourcePattern::buildPatternData(const LayoutObject& object)
+PassOwnPtr<PatternData> LayoutSVGResourcePattern::buildPatternData(const LayoutObject& object)
 {
     // If we couldn't determine the pattern content element root, stop here.
     const PatternAttributes& attributes = this->attributes();
@@ -109,7 +107,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::buildPatternData(const La
             tileTransform.scale(clientBoundingBox.width(), clientBoundingBox.height());
     }
 
-    std::unique_ptr<PatternData> patternData = wrapUnique(new PatternData);
+    OwnPtr<PatternData> patternData = adoptPtr(new PatternData);
     patternData->pattern = Pattern::createPicturePattern(asPicture(tileBounds, tileTransform));
 
     // Compute pattern space transformation.

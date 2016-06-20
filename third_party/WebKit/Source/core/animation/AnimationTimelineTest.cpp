@@ -42,7 +42,6 @@
 #include "platform/weborigin/KURL.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -88,7 +87,7 @@ protected:
         timeline->scheduleNextService();
     }
 
-    std::unique_ptr<DummyPageHolder> pageHolder;
+    OwnPtr<DummyPageHolder> pageHolder;
     Persistent<Document> document;
     Persistent<Element> element;
     Persistent<AnimationTimeline> timeline;

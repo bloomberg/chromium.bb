@@ -38,7 +38,6 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -82,7 +81,7 @@ void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
         if (!frame().host())
             return;
         if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), url)) {
-            std::unique_ptr<SourceLocation> location = SourceLocation::captureWithFullStackTrace();
+            OwnPtr<SourceLocation> location = SourceLocation::captureWithFullStackTrace();
             if (!location->isUnknown())
                 stackTrace = location->toString();
         }

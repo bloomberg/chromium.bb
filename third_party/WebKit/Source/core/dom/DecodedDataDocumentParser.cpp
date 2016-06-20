@@ -28,7 +28,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentEncodingData.h"
 #include "core/html/parser/TextResourceDecoder.h"
-#include <memory>
 
 namespace blink {
 
@@ -42,7 +41,7 @@ DecodedDataDocumentParser::~DecodedDataDocumentParser()
 {
 }
 
-void DecodedDataDocumentParser::setDecoder(std::unique_ptr<TextResourceDecoder> decoder)
+void DecodedDataDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
 {
     // If the decoder is explicitly unset rather than having ownership
     // transferred away by takeDecoder(), we need to make sure it's recreated
@@ -56,7 +55,7 @@ TextResourceDecoder* DecodedDataDocumentParser::decoder()
     return m_decoder.get();
 }
 
-std::unique_ptr<TextResourceDecoder> DecodedDataDocumentParser::takeDecoder()
+PassOwnPtr<TextResourceDecoder> DecodedDataDocumentParser::takeDecoder()
 {
     return std::move(m_decoder);
 }

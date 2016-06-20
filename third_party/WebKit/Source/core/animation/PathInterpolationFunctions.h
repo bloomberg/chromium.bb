@@ -7,7 +7,6 @@
 
 #include "core/animation/InterpolationType.h"
 #include "core/svg/SVGPathByteStream.h"
-#include <memory>
 
 namespace blink {
 
@@ -15,7 +14,7 @@ class StylePath;
 
 class PathInterpolationFunctions {
 public:
-    static std::unique_ptr<SVGPathByteStream> appliedValue(const InterpolableValue&, const NonInterpolableValue*);
+    static PassOwnPtr<SVGPathByteStream> appliedValue(const InterpolableValue&, const NonInterpolableValue*);
 
     static void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationType&, const InterpolationValue&);
 

@@ -7,7 +7,6 @@
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -40,8 +39,8 @@ TEST(FetchDataLoaderTest, LoadAsBlob)
     WebDataConsumerHandle::Client *client = nullptr;
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
     RefPtr<BlobDataHandle> blobDataHandle;
@@ -60,7 +59,7 @@ TEST(FetchDataLoaderTest, LoadAsBlob)
     EXPECT_CALL(checkpoint, Call(4));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -81,8 +80,8 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed)
     WebDataConsumerHandle::Client *client = nullptr;
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
@@ -100,7 +99,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed)
     EXPECT_CALL(checkpoint, Call(4));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -116,8 +115,8 @@ TEST(FetchDataLoaderTest, LoadAsBlobCancel)
 {
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
@@ -130,7 +129,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobCancel)
     EXPECT_CALL(checkpoint, Call(3));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -141,15 +140,15 @@ TEST(FetchDataLoaderTest, LoadAsBlobCancel)
 
 TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithSameContentType)
 {
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendBytes(kQuickBrownFox, kQuickBrownFoxLengthWithTerminatingNull);
     blobData->setContentType("text/test");
     RefPtr<BlobDataHandle> inputBlobDataHandle = BlobDataHandle::create(std::move(blobData), kQuickBrownFoxLengthWithTerminatingNull);
 
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
     RefPtr<BlobDataHandle> blobDataHandle;
@@ -164,7 +163,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithSameContentType)
     EXPECT_CALL(checkpoint, Call(3));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -180,15 +179,15 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithSameContentType)
 
 TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithDifferentContentType)
 {
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendBytes(kQuickBrownFox, kQuickBrownFoxLengthWithTerminatingNull);
     blobData->setContentType("text/different");
     RefPtr<BlobDataHandle> inputBlobDataHandle = BlobDataHandle::create(std::move(blobData), kQuickBrownFoxLengthWithTerminatingNull);
 
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
     RefPtr<BlobDataHandle> blobDataHandle;
@@ -203,7 +202,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithDifferentContent
     EXPECT_CALL(checkpoint, Call(3));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -222,8 +221,8 @@ TEST(FetchDataLoaderTest, LoadAsArrayBuffer)
     WebDataConsumerHandle::Client *client = nullptr;
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsArrayBuffer();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
     DOMArrayBuffer* arrayBuffer = nullptr;
@@ -241,7 +240,7 @@ TEST(FetchDataLoaderTest, LoadAsArrayBuffer)
     EXPECT_CALL(checkpoint, Call(4));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -262,8 +261,8 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferFailed)
     WebDataConsumerHandle::Client *client = nullptr;
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsArrayBuffer();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
@@ -280,7 +279,7 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferFailed)
     EXPECT_CALL(checkpoint, Call(4));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -296,8 +295,8 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferCancel)
 {
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsArrayBuffer();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
@@ -309,7 +308,7 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferCancel)
     EXPECT_CALL(checkpoint, Call(3));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -323,8 +322,8 @@ TEST(FetchDataLoaderTest, LoadAsString)
     WebDataConsumerHandle::Client *client = nullptr;
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsString();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
@@ -341,7 +340,7 @@ TEST(FetchDataLoaderTest, LoadAsString)
     EXPECT_CALL(checkpoint, Call(4));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -358,8 +357,8 @@ TEST(FetchDataLoaderTest, LoadAsStringWithNullBytes)
     WebDataConsumerHandle::Client *client = nullptr;
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsString();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
@@ -376,7 +375,7 @@ TEST(FetchDataLoaderTest, LoadAsStringWithNullBytes)
     EXPECT_CALL(checkpoint, Call(4));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -393,8 +392,8 @@ TEST(FetchDataLoaderTest, LoadAsStringError)
     WebDataConsumerHandle::Client *client = nullptr;
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsString();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
@@ -411,7 +410,7 @@ TEST(FetchDataLoaderTest, LoadAsStringError)
     EXPECT_CALL(checkpoint, Call(4));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -427,8 +426,8 @@ TEST(FetchDataLoaderTest, LoadAsStringCancel)
 {
     Checkpoint checkpoint;
 
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsString();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
@@ -440,7 +439,7 @@ TEST(FetchDataLoaderTest, LoadAsStringCancel)
     EXPECT_CALL(checkpoint, Call(3));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);

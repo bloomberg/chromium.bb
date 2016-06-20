@@ -33,11 +33,11 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
 #include <libxml/tree.h>
-#include <memory>
 
 namespace blink {
 
@@ -165,7 +165,7 @@ private:
 
     xmlParserCtxtPtr context() const { return m_context ? m_context->context() : 0; }
     RefPtr<XMLParserContext> m_context;
-    Deque<std::unique_ptr<PendingCallback>> m_pendingCallbacks;
+    Deque<OwnPtr<PendingCallback>> m_pendingCallbacks;
     Vector<xmlChar> m_bufferedText;
 
     Member<ContainerNode> m_currentNode;

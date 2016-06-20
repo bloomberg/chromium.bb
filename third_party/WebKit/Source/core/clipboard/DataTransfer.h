@@ -32,7 +32,6 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 
@@ -84,7 +83,7 @@ public:
     void setDragImageResource(ImageResource*, const IntPoint&);
     void setDragImageElement(Node*, const IntPoint&);
 
-    std::unique_ptr<DragImage> createDragImage(IntPoint& dragLocation, LocalFrame*) const;
+    PassOwnPtr<DragImage> createDragImage(IntPoint& dragLocation, LocalFrame*) const;
     void declareAndWriteDragImage(Element*, const KURL&, const String& title);
     void writeURL(Node*, const KURL&, const String&);
     void writeSelection(const FrameSelection&);

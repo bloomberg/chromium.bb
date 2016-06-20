@@ -33,7 +33,6 @@
 
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/bmp/BMPImageReader.h"
-#include <memory>
 
 namespace blink {
 
@@ -160,9 +159,9 @@ private:
     IconDirectoryEntries m_dirEntries;
 
     // The image decoders for the various frames.
-    typedef Vector<std::unique_ptr<BMPImageReader>> BMPReaders;
+    typedef Vector<OwnPtr<BMPImageReader>> BMPReaders;
     BMPReaders m_bmpReaders;
-    typedef Vector<std::unique_ptr<PNGImageDecoder>> PNGDecoders;
+    typedef Vector<OwnPtr<PNGImageDecoder>> PNGDecoders;
     PNGDecoders m_pngDecoders;
 
     // Valid only while a BMPImageReader is decoding, this holds the size

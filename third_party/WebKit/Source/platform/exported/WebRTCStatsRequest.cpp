@@ -35,6 +35,7 @@
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebRTCStatsResponse.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

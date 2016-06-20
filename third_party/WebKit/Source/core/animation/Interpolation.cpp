@@ -4,8 +4,6 @@
 
 #include "core/animation/Interpolation.h"
 
-#include <memory>
-
 namespace blink {
 
 namespace {
@@ -35,7 +33,7 @@ bool typesMatch(const InterpolableValue* start, const InterpolableValue* end)
 
 } // namespace
 
-Interpolation::Interpolation(std::unique_ptr<InterpolableValue> start, std::unique_ptr<InterpolableValue> end)
+Interpolation::Interpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
     : m_start(std::move(start))
     , m_end(std::move(end))
     , m_cachedFraction(0)

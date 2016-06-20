@@ -10,9 +10,8 @@
 #include "platform/animation/CompositorFloatKeyframe.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace cc {
 class KeyframedFloatAnimationCurve;
@@ -28,14 +27,14 @@ namespace blink {
 class PLATFORM_EXPORT CompositorFloatAnimationCurve : public CompositorAnimationCurve {
     WTF_MAKE_NONCOPYABLE(CompositorFloatAnimationCurve);
 public:
-    static std::unique_ptr<CompositorFloatAnimationCurve> create()
+    static PassOwnPtr<CompositorFloatAnimationCurve> create()
     {
-        return wrapUnique(new CompositorFloatAnimationCurve());
+        return adoptPtr(new CompositorFloatAnimationCurve());
     }
 
     ~CompositorFloatAnimationCurve() override;
 
-    static std::unique_ptr<CompositorFloatAnimationCurve> CreateForTesting(std::unique_ptr<cc::KeyframedFloatAnimationCurve>);
+    static PassOwnPtr<CompositorFloatAnimationCurve> CreateForTesting(std::unique_ptr<cc::KeyframedFloatAnimationCurve>);
     Vector<CompositorFloatKeyframe> keyframesForTesting() const;
 
     // TODO(loyso): Erase these methods once blink/cc timing functions unified.

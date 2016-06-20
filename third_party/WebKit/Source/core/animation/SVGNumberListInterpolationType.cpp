@@ -7,7 +7,6 @@
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/UnderlyingLengthChecker.h"
 #include "core/svg/SVGNumberList.h"
-#include <memory>
 
 namespace blink {
 
@@ -19,7 +18,7 @@ InterpolationValue SVGNumberListInterpolationType::maybeConvertNeutral(const Int
     if (underlyingLength == 0)
         return nullptr;
 
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(underlyingLength);
+    OwnPtr<InterpolableList> result = InterpolableList::create(underlyingLength);
     for (size_t i = 0; i < underlyingLength; i++)
         result->set(i, InterpolableNumber::create(0));
     return InterpolationValue(std::move(result));
@@ -31,7 +30,7 @@ InterpolationValue SVGNumberListInterpolationType::maybeConvertSVGValue(const SV
         return nullptr;
 
     const SVGNumberList& numberList = toSVGNumberList(svgValue);
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(numberList.length());
+    OwnPtr<InterpolableList> result = InterpolableList::create(numberList.length());
     for (size_t i = 0; i < numberList.length(); i++)
         result->set(i, InterpolableNumber::create(numberList.at(i)->value()));
     return InterpolationValue(std::move(result));
@@ -46,14 +45,14 @@ PairwiseInterpolationValue SVGNumberListInterpolationType::maybeMergeSingles(Int
     return InterpolationType::maybeMergeSingles(std::move(start), std::move(end));
 }
 
-static void padWithZeroes(std::unique_ptr<InterpolableValue>& listPointer, size_t paddedLength)
+static void padWithZeroes(OwnPtr<InterpolableValue>& listPointer, size_t paddedLength)
 {
     InterpolableList& list = toInterpolableList(*listPointer);
 
     if (list.length() >= paddedLength)
         return;
 
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(paddedLength);
+    OwnPtr<InterpolableList> result = InterpolableList::create(paddedLength);
     size_t i = 0;
     for (; i < list.length(); i++)
         result->set(i, std::move(list.getMutable(i)));

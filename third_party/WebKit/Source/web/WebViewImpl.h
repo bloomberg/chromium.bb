@@ -63,9 +63,9 @@
 #include "web/WebExport.h"
 #include "wtf/Compiler.h"
 #include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -642,7 +642,7 @@ private:
     // An object that can be used to manipulate m_page->settings() without linking
     // against WebCore. This is lazily allocated the first time GetWebSettings()
     // is called.
-    std::unique_ptr<WebSettingsImpl> m_webSettings;
+    OwnPtr<WebSettingsImpl> m_webSettings;
 
     // A copy of the web drop data object we received from the browser.
     Persistent<DataObject> m_currentDragData;
@@ -702,7 +702,7 @@ private:
     RefPtr<WebPagePopupImpl> m_pagePopup;
 
     Persistent<DevToolsEmulator> m_devToolsEmulator;
-    std::unique_ptr<PageOverlay> m_pageColorOverlay;
+    OwnPtr<PageOverlay> m_pageColorOverlay;
 
     // Whether the webview is rendering transparently.
     bool m_isTransparent;
@@ -724,13 +724,13 @@ private:
     static const WebInputEvent* m_currentInputEvent;
 
     MediaKeysClientImpl m_mediaKeysClientImpl;
-    std::unique_ptr<WebActiveGestureAnimation> m_gestureAnimation;
+    OwnPtr<WebActiveGestureAnimation> m_gestureAnimation;
     WebPoint m_positionOnFlingStart;
     WebPoint m_globalPositionOnFlingStart;
     int m_flingModifier;
     WebGestureDevice m_flingSourceDevice;
-    Vector<std::unique_ptr<LinkHighlightImpl>> m_linkHighlights;
-    std::unique_ptr<CompositorAnimationTimeline> m_linkHighlightsTimeline;
+    Vector<OwnPtr<LinkHighlightImpl>> m_linkHighlights;
+    OwnPtr<CompositorAnimationTimeline> m_linkHighlightsTimeline;
     Persistent<FullscreenController> m_fullscreenController;
 
     WebColor m_baseBackgroundColor;
@@ -754,7 +754,7 @@ private:
 
     WebPageImportanceSignals m_pageImportanceSignals;
 
-    const std::unique_ptr<WebViewScheduler> m_scheduler;
+    const OwnPtr<WebViewScheduler> m_scheduler;
 
     // Manages the layer tree created for this page in Slimming Paint v2.
     PaintArtifactCompositor m_paintArtifactCompositor;

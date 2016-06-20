@@ -25,12 +25,11 @@
 
 #include "wtf/text/TextCodecLatin1.h"
 
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextCodecASCIIFastPath.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace WTF {
 
@@ -91,9 +90,9 @@ void TextCodecLatin1::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("x-cp1252", "windows-1252");
 }
 
-static std::unique_ptr<TextCodec> newStreamingTextDecoderWindowsLatin1(const TextEncoding&, const void*)
+static PassOwnPtr<TextCodec> newStreamingTextDecoderWindowsLatin1(const TextEncoding&, const void*)
 {
-    return wrapUnique(new TextCodecLatin1);
+    return adoptPtr(new TextCodecLatin1);
 }
 
 void TextCodecLatin1::registerCodecs(TextCodecRegistrar registrar)

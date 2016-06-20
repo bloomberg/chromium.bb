@@ -35,15 +35,13 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
 class DOMActivityLoggerContainer : public V8DOMActivityLogger {
 public:
-    explicit DOMActivityLoggerContainer(std::unique_ptr<WebDOMActivityLogger> logger)
+    explicit DOMActivityLoggerContainer(PassOwnPtr<WebDOMActivityLogger> logger)
         : m_domActivityLogger(std::move(logger))
     {
     }
@@ -86,7 +84,7 @@ private:
         return WebString();
     }
 
-    std::unique_ptr<WebDOMActivityLogger> m_domActivityLogger;
+    OwnPtr<WebDOMActivityLogger> m_domActivityLogger;
 };
 
 bool hasDOMActivityLogger(int worldId, const WebString& extensionId)
@@ -97,7 +95,7 @@ bool hasDOMActivityLogger(int worldId, const WebString& extensionId)
 void setDOMActivityLogger(int worldId, const WebString& extensionId, WebDOMActivityLogger* logger)
 {
     DCHECK(logger);
-    V8DOMActivityLogger::setActivityLogger(worldId, extensionId, wrapUnique(new DOMActivityLoggerContainer(wrapUnique(logger))));
+    V8DOMActivityLogger::setActivityLogger(worldId, extensionId, adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
 }
 
 } // namespace blink

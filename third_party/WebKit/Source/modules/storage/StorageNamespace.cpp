@@ -30,12 +30,10 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebStorageArea.h"
 #include "public/platform/WebStorageNamespace.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
-StorageNamespace::StorageNamespace(std::unique_ptr<WebStorageNamespace> webStorageNamespace)
+StorageNamespace::StorageNamespace(PassOwnPtr<WebStorageNamespace> webStorageNamespace)
     : m_webStorageNamespace(std::move(webStorageNamespace))
 {
 }
@@ -50,12 +48,12 @@ StorageArea* StorageNamespace::localStorageArea(SecurityOrigin* origin)
     static WebStorageNamespace* localStorageNamespace = nullptr;
     if (!localStorageNamespace)
         localStorageNamespace = Platform::current()->createLocalStorageNamespace();
-    return StorageArea::create(wrapUnique(localStorageNamespace->createStorageArea(origin->toString())), LocalStorage);
+    return StorageArea::create(adoptPtr(localStorageNamespace->createStorageArea(origin->toString())), LocalStorage);
 }
 
 StorageArea* StorageNamespace::storageArea(SecurityOrigin* origin)
 {
-    return StorageArea::create(wrapUnique(m_webStorageNamespace->createStorageArea(origin->toString())), SessionStorage);
+    return StorageArea::create(adoptPtr(m_webStorageNamespace->createStorageArea(origin->toString())), SessionStorage);
 }
 
 bool StorageNamespace::isSameNamespace(const WebStorageNamespace& sessionNamespace) const

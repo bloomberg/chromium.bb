@@ -12,6 +12,7 @@
 #include "modules/payments/PaymentDetails.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
 #include <ostream> // NOLINT
 
 namespace blink {

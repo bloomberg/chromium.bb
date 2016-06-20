@@ -50,8 +50,6 @@
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -459,7 +457,7 @@ private:
     PaintLayerScrollableAreaRareData& ensureRareData()
     {
         if (!m_rareData)
-            m_rareData = wrapUnique(new PaintLayerScrollableAreaRareData());
+            m_rareData = adoptPtr(new PaintLayerScrollableAreaRareData());
         return *m_rareData.get();
     }
 
@@ -511,7 +509,7 @@ private:
 
     ScrollAnchor m_scrollAnchor;
 
-    std::unique_ptr<PaintLayerScrollableAreaRareData> m_rareData;
+    OwnPtr<PaintLayerScrollableAreaRareData> m_rareData;
 
 #if ENABLE(ASSERT)
     bool m_hasBeenDisposed;

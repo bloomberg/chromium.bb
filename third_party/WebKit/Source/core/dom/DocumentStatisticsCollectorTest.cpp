@@ -13,7 +13,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -37,7 +36,7 @@ protected:
     void setHtmlInnerHTML(const String&);
 
 private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };
 
 void DocumentStatisticsCollectorTest::SetUp()

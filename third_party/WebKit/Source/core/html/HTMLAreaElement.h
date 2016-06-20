@@ -26,7 +26,6 @@
 #include "core/CoreExport.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "platform/geometry/LayoutRect.h"
-#include <memory>
 
 namespace blink {
 
@@ -68,7 +67,7 @@ private:
     enum Shape { Default, Poly, Rect, Circle };
     void invalidateCachedPath();
 
-    mutable std::unique_ptr<Path> m_path;
+    mutable OwnPtr<Path> m_path;
     Vector<double> m_coords;
     Shape m_shape;
 };

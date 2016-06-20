@@ -30,11 +30,11 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringHash.h"
-#include <memory>
 #include <utility>
 
 namespace blink {
@@ -49,9 +49,9 @@ public:
     ~HTTPHeaderMap();
 
     // Gets a copy of the data suitable for passing to another thread.
-    std::unique_ptr<CrossThreadHTTPHeaderMapData> copyData() const;
+    PassOwnPtr<CrossThreadHTTPHeaderMapData> copyData() const;
 
-    void adopt(std::unique_ptr<CrossThreadHTTPHeaderMapData>);
+    void adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData>);
 
     typedef HashMap<AtomicString, AtomicString, CaseFoldingHash> MapType;
     typedef MapType::AddResult AddResult;

@@ -39,11 +39,12 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/typed_arrays/Uint8ClampedArray.h"
-#include <memory>
 
 namespace gpu {
 namespace gles2 {
@@ -75,8 +76,8 @@ class PLATFORM_EXPORT ImageBuffer {
     WTF_MAKE_NONCOPYABLE(ImageBuffer);
     USING_FAST_MALLOC(ImageBuffer);
 public:
-    static std::unique_ptr<ImageBuffer> create(const IntSize&, OpacityMode = NonOpaque, ImageInitializationMode = InitializeImagePixels);
-    static std::unique_ptr<ImageBuffer> create(std::unique_ptr<ImageBufferSurface>);
+    static PassOwnPtr<ImageBuffer> create(const IntSize&, OpacityMode = NonOpaque, ImageInitializationMode = InitializeImagePixels);
+    static PassOwnPtr<ImageBuffer> create(PassOwnPtr<ImageBufferSurface>);
 
     virtual ~ImageBuffer();
 
@@ -146,7 +147,7 @@ public:
     intptr_t getGPUMemoryUsage() { return m_gpuMemoryUsage; }
 
 protected:
-    ImageBuffer(std::unique_ptr<ImageBufferSurface>);
+    ImageBuffer(PassOwnPtr<ImageBufferSurface>);
 
 private:
     enum SnapshotState {
@@ -155,7 +156,7 @@ private:
         DrawnToAfterSnapshot,
     };
     mutable SnapshotState m_snapshotState;
-    std::unique_ptr<ImageBufferSurface> m_surface;
+    OwnPtr<ImageBufferSurface> m_surface;
     ImageBufferClient* m_client;
 
     mutable intptr_t m_gpuMemoryUsage;

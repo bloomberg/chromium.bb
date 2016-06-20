@@ -11,7 +11,6 @@
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -63,7 +62,7 @@ public:
         v8::MicrotasksScope::PerformCheckpoint(isolate());
     }
 
-    std::unique_ptr<DummyPageHolder> m_pageHolder;
+    OwnPtr<DummyPageHolder> m_pageHolder;
     ScriptState* getScriptState() const { return ScriptState::forMainWorld(&m_pageHolder->frame()); }
     ExecutionContext* getExecutionContext() const { return &m_pageHolder->document(); }
     v8::Isolate* isolate() const { return getScriptState()->isolate(); }

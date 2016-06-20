@@ -27,7 +27,6 @@
 #define PNGImageDecoder_h
 
 #include "platform/image-decoders/ImageDecoder.h"
-#include <memory>
 
 namespace blink {
 
@@ -57,7 +56,7 @@ private:
     // data coming, sets the "decode failure" flag.
     void decode(bool onlySize);
 
-    std::unique_ptr<PNGImageReader> m_reader;
+    OwnPtr<PNGImageReader> m_reader;
     const unsigned m_offset;
 };
 

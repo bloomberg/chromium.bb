@@ -11,7 +11,6 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace v8 {
 class PromiseRejectMessage;
@@ -32,7 +31,7 @@ public:
     ~RejectedPromises();
     void dispose();
 
-    void rejectedWithNoHandler(ScriptState*, v8::PromiseRejectMessage, const String& errorMessage, std::unique_ptr<SourceLocation>, AccessControlStatus);
+    void rejectedWithNoHandler(ScriptState*, v8::PromiseRejectMessage, const String& errorMessage, PassOwnPtr<SourceLocation>, AccessControlStatus);
     void handlerAdded(v8::PromiseRejectMessage);
 
     void processQueue();
@@ -42,14 +41,14 @@ private:
 
     RejectedPromises();
 
-    using MessageQueue = Deque<std::unique_ptr<Message>>;
-    std::unique_ptr<MessageQueue> createMessageQueue();
+    using MessageQueue = Deque<OwnPtr<Message>>;
+    PassOwnPtr<MessageQueue> createMessageQueue();
 
-    void processQueueNow(std::unique_ptr<MessageQueue>);
-    void revokeNow(std::unique_ptr<Message>);
+    void processQueueNow(PassOwnPtr<MessageQueue>);
+    void revokeNow(PassOwnPtr<Message>);
 
     MessageQueue m_queue;
-    Vector<std::unique_ptr<Message>> m_reportedAsErrors;
+    Vector<OwnPtr<Message>> m_reportedAsErrors;
 };
 
 } // namespace blink

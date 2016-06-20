@@ -39,8 +39,6 @@
 #include "core/page/CustomContextMenuProvider.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -146,7 +144,7 @@ void ContextMenuController::showContextMenuAtPoint(LocalFrame* frame, float x, f
     showContextMenu(nullptr);
 }
 
-std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(Event* event)
+PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(Event* event)
 {
     ASSERT(event);
 
@@ -157,7 +155,7 @@ std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(Event* eve
     return createContextMenu(event->target()->toNode()->document().frame(), mouseEvent->absoluteLocation());
 }
 
-std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(LocalFrame* frame, const LayoutPoint& location)
+PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(LocalFrame* frame, const LayoutPoint& location)
 {
     HitTestRequest::HitTestRequestType type = HitTestRequest::ReadOnly | HitTestRequest::Active;
     HitTestResult result(type, location);
@@ -170,7 +168,7 @@ std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(LocalFrame
 
     m_hitTestResult = result;
 
-    return wrapUnique(new ContextMenu);
+    return adoptPtr(new ContextMenu);
 }
 
 void ContextMenuController::showContextMenu(Event* event)

@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

@@ -37,8 +37,6 @@
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 #include <hb-ot.h>
 #include <hb.h>
@@ -114,11 +112,11 @@ public:
 private:
     explicit HbFontCacheEntry(hb_font_t* font)
         : m_hbFont(HbFontUniquePtr(font))
-        , m_hbFontData(wrapUnique(new HarfBuzzFontData()))
+        , m_hbFontData(adoptPtr(new HarfBuzzFontData()))
     { };
 
     HbFontUniquePtr m_hbFont;
-    std::unique_ptr<HarfBuzzFontData> m_hbFontData;
+    OwnPtr<HarfBuzzFontData> m_hbFontData;
 };
 
 typedef HashMap<uint64_t, RefPtr<HbFontCacheEntry>, WTF::IntHash<uint64_t>, WTF::UnsignedWithZeroKeyHashTraits<uint64_t>> HarfBuzzFontCache;

@@ -75,8 +75,8 @@ mailing address.
 #include "platform/image-decoders/gif/GIFImageReader.h"
 
 #include "platform/Histogram.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
+
 #include <string.h>
 
 using blink::GIFImageDecoder;
@@ -336,7 +336,7 @@ bool GIFFrameContext::decode(blink::FastSharedBufferReader* reader, blink::GIFIm
         if (!isDataSizeDefined() || !isHeaderDefined())
             return true;
 
-        m_lzwContext = wrapUnique(new GIFLZWContext(client, this));
+        m_lzwContext = adoptPtr(new GIFLZWContext(client, this));
         if (!m_lzwContext->prepareToDecode()) {
             m_lzwContext.reset();
             return false;
@@ -827,7 +827,7 @@ void GIFImageReader::setRemainingBytes(size_t remainingBytes)
 void GIFImageReader::addFrameIfNecessary()
 {
     if (m_frames.isEmpty() || m_frames.last()->isComplete())
-        m_frames.append(wrapUnique(new GIFFrameContext(m_frames.size())));
+        m_frames.append(adoptPtr(new GIFFrameContext(m_frames.size())));
 }
 
 // FIXME: Move this method to close to doLZW().

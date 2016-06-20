@@ -9,16 +9,15 @@
 #include "modules/mediacapturefromelement/OnRequestCanvasDrawListener.h"
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 #include "platform/mediastream/MediaStreamCenter.h"
-#include <memory>
 
 namespace blink {
 
-CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, HTMLCanvasElement* element, std::unique_ptr<WebCanvasCaptureHandler> handler)
+CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, HTMLCanvasElement* element, PassOwnPtr<WebCanvasCaptureHandler> handler)
 {
     return new CanvasCaptureMediaStreamTrack(component, element, std::move(handler));
 }
 
-CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, HTMLCanvasElement* element, std::unique_ptr<WebCanvasCaptureHandler> handler, double frameRate)
+CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, HTMLCanvasElement* element, PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
 {
     return new CanvasCaptureMediaStreamTrack(component, element, std::move(handler), frameRate);
 }
@@ -57,7 +56,7 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(const CanvasCapture
     m_canvasElement->addListener(m_drawListener.get());
 }
 
-CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, HTMLCanvasElement* element, std::unique_ptr<WebCanvasCaptureHandler> handler)
+CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, HTMLCanvasElement* element, PassOwnPtr<WebCanvasCaptureHandler> handler)
     : MediaStreamTrack(element->getExecutionContext(), component)
     , m_canvasElement(element)
 {
@@ -66,7 +65,7 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponen
     m_canvasElement->addListener(m_drawListener.get());
 }
 
-CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, HTMLCanvasElement* element, std::unique_ptr<WebCanvasCaptureHandler> handler, double frameRate)
+CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, HTMLCanvasElement* element, PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
     : MediaStreamTrack(element->getExecutionContext(), component)
     , m_canvasElement(element)
 {

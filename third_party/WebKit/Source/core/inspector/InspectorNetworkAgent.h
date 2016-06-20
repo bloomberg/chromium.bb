@@ -38,6 +38,7 @@
 #include "core/inspector/protocol/Network.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

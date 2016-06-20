@@ -11,8 +11,6 @@
 #include "public/platform/modules/mediasession/WebMediaSession.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -29,13 +27,13 @@ protected:
     {
         // The MediaSession takes ownership of the WebMediaSession, and the
         // caller must take care to not end up with a stale pointer.
-        return new MediaSession(wrapUnique(webMediaSession));
+        return new MediaSession(adoptPtr(webMediaSession));
     }
 
     Document& document() { return m_page->document(); }
     ScriptState* mainScriptState() { return ScriptState::forMainWorld(document().frame()); }
 private:
-    std::unique_ptr<DummyPageHolder> m_page;
+    OwnPtr<DummyPageHolder> m_page;
 };
 
 namespace {

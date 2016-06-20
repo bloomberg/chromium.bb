@@ -11,7 +11,6 @@
 #include "public/platform/WebURLRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 
@@ -76,7 +75,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_STREQ("http://www.example.com/referrer.htm", original.httpReferrer().utf8().data());
     EXPECT_EQ(ReferrerPolicyDefault, original.getReferrerPolicy());
 
-    std::unique_ptr<CrossThreadResourceRequestData> data1(original.copyData());
+    OwnPtr<CrossThreadResourceRequestData> data1(original.copyData());
     ResourceRequest copy1(data1.get());
 
     EXPECT_STREQ("http://www.example.com/test.htm", copy1.url().getString().utf8().data());
@@ -111,7 +110,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     copy1.setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
     copy1.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
 
-    std::unique_ptr<CrossThreadResourceRequestData> data2(copy1.copyData());
+    OwnPtr<CrossThreadResourceRequestData> data2(copy1.copyData());
     ResourceRequest copy2(data2.get());
     EXPECT_TRUE(copy2.allowStoredCredentials());
     EXPECT_TRUE(copy2.reportUploadProgress());

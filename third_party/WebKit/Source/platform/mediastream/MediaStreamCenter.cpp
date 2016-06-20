@@ -40,8 +40,7 @@
 #include "public/platform/WebMediaStreamCenter.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -53,7 +52,7 @@ MediaStreamCenter& MediaStreamCenter::instance()
 }
 
 MediaStreamCenter::MediaStreamCenter()
-    : m_private(wrapUnique(Platform::current()->createMediaStreamCenter(this)))
+    : m_private(adoptPtr(Platform::current()->createMediaStreamCenter(this)))
 {
 }
 
@@ -122,11 +121,11 @@ void MediaStreamCenter::didCreateMediaStreamTrack(MediaStreamComponent* track)
         m_private->didCreateMediaStreamTrack(track);
 }
 
-std::unique_ptr<AudioSourceProvider> MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(MediaStreamComponent* track)
+PassOwnPtr<AudioSourceProvider> MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(MediaStreamComponent* track)
 {
     ASSERT_UNUSED(track, track);
     if (m_private)
-        return MediaStreamWebAudioSource::create(wrapUnique(m_private->createWebAudioSourceFromMediaStreamTrack(track)));
+        return MediaStreamWebAudioSource::create(adoptPtr(m_private->createWebAudioSourceFromMediaStreamTrack(track)));
 
     return nullptr;
 }

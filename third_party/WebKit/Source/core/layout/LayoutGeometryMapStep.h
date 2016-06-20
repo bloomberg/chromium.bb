@@ -30,7 +30,7 @@
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/Allocator.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -63,7 +63,7 @@ struct LayoutGeometryMapStep {
     }
     const LayoutObject* m_layoutObject;
     LayoutSize m_offset;
-    std::unique_ptr<TransformationMatrix> m_transform; // Includes offset if non-null.
+    OwnPtr<TransformationMatrix> m_transform; // Includes offset if non-null.
     // If m_offsetForFixedPosition could only apply to the fixed position steps, we may be able to merge
     // with m_offsetForStickyPosition and simplify mapping.
     LayoutSize m_offsetForFixedPosition;

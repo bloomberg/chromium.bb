@@ -36,7 +36,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Path.h"
 #include "platform/text/WritingMode.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -76,10 +76,10 @@ public:
         Path shape;
         Path marginShape;
     };
-    static std::unique_ptr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, float margin);
-    static std::unique_ptr<Shape> createRasterShape(Image*, float threshold, const LayoutRect& imageRect, const LayoutRect& marginRect, WritingMode, float margin);
-    static std::unique_ptr<Shape> createEmptyRasterShape(WritingMode, float margin);
-    static std::unique_ptr<Shape> createLayoutBoxShape(const FloatRoundedRect&, WritingMode, float margin);
+    static PassOwnPtr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, float margin);
+    static PassOwnPtr<Shape> createRasterShape(Image*, float threshold, const LayoutRect& imageRect, const LayoutRect& marginRect, WritingMode, float margin);
+    static PassOwnPtr<Shape> createEmptyRasterShape(WritingMode, float margin);
+    static PassOwnPtr<Shape> createLayoutBoxShape(const FloatRoundedRect&, WritingMode, float margin);
 
     virtual ~Shape() { }
 

@@ -30,6 +30,7 @@
 #include "core/inspector/protocol/ApplicationCache.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

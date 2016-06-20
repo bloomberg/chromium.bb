@@ -34,7 +34,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace blink {
 
@@ -77,9 +76,9 @@ private:
 
     // Holding a m_lock is required when accessing m_hrtfDatabase since we access it from multiple threads.
     Mutex m_lock;
-    std::unique_ptr<HRTFDatabase> m_hrtfDatabase;
+    OwnPtr<HRTFDatabase> m_hrtfDatabase;
 
-    std::unique_ptr<WebThread> m_thread;
+    OwnPtr<WebThread> m_thread;
 
     float m_databaseSampleRate;
 };

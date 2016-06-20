@@ -45,11 +45,10 @@
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Compiler.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/Unicode.h"
+
 #include <algorithm>
 #include <hb.h>
-#include <memory>
 #include <unicode/uchar.h>
 #include <unicode/uscript.h>
 
@@ -115,7 +114,7 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run)
     : Shaper(font, run)
     , m_normalizedBufferLength(0)
 {
-    m_normalizedBuffer = wrapArrayUnique(new UChar[m_textRun.length() + 1]);
+    m_normalizedBuffer = adoptArrayPtr(new UChar[m_textRun.length() + 1]);
     normalizeCharacters(m_textRun, m_textRun.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);
     setFontFeatures();
 }
@@ -468,7 +467,7 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
             ShapeResult::RunInfo* run = new ShapeResult::RunInfo(currentFont,
                 direction, ICUScriptToHBScript(currentRunScript),
                 startIndex, numGlyphsToInsert, numCharacters);
-            shapeResult->insertRun(wrapUnique(run), lastChangePosition,
+            shapeResult->insertRun(adoptPtr(run), lastChangePosition,
                 numGlyphsToInsert,
                 harfBuzzBuffer);
         }
@@ -682,7 +681,7 @@ PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(const Font* f
     const TextRun& textRun, float positionOffset, unsigned count)
 {
     const SimpleFontData* fontData = font->primaryFont();
-    std::unique_ptr<ShapeResult::RunInfo> run = wrapUnique(new ShapeResult::RunInfo(fontData,
+    OwnPtr<ShapeResult::RunInfo> run = adoptPtr(new ShapeResult::RunInfo(fontData,
         // Tab characters are always LTR or RTL, not TTB, even when isVerticalAnyUpright().
         textRun.rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
         HB_SCRIPT_COMMON, 0, count, count));

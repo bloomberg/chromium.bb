@@ -9,6 +9,7 @@
 #include "platform/graphics/Path.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

@@ -40,7 +40,6 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -89,7 +88,7 @@ protected:
     Persistent<AnimationTimeline> timeline;
     Persistent<Animation> animation;
     TrackExceptionState exceptionState;
-    std::unique_ptr<DummyPageHolder> pageHolder;
+    OwnPtr<DummyPageHolder> pageHolder;
 };
 
 TEST_F(AnimationAnimationTest, InitialState)

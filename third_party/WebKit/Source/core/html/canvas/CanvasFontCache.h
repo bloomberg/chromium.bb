@@ -13,7 +13,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -56,7 +55,7 @@ private:
     HashMap<String, Font> m_fontsResolvedUsingDefaultStyle;
     MutableStylePropertyMap m_fetchedFonts;
     ListHashSet<String> m_fontLRUList;
-    std::unique_ptr<FontCachePurgePreventer> m_mainCachePurgePreventer;
+    OwnPtr<FontCachePurgePreventer> m_mainCachePurgePreventer;
     Member<Document> m_document;
     RefPtr<ComputedStyle> m_defaultFontStyle;
     bool m_pruningScheduled;

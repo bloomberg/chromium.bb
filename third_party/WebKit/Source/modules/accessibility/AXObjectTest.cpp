@@ -8,7 +8,6 @@
 #include "core/dom/Element.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -19,7 +18,7 @@ protected:
 private:
     void SetUp() override;
 
-    std::unique_ptr<DummyPageHolder> m_pageHolder;
+    OwnPtr<DummyPageHolder> m_pageHolder;
 };
 
 void AXObjectTest::SetUp()

@@ -28,7 +28,6 @@
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -83,7 +82,7 @@ protected:
 TEST_F(ImageDecodingStoreTest, insertDecoder)
 {
     const SkISize size = SkISize::Make(1, 1);
-    std::unique_ptr<ImageDecoder> decoder = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder = MockImageDecoder::create(this);
     decoder->setSize(1, 1);
     const ImageDecoder* refDecoder = decoder.get();
     ImageDecodingStore::instance().insertDecoder(m_generator.get(), std::move(decoder));
@@ -100,9 +99,9 @@ TEST_F(ImageDecodingStoreTest, insertDecoder)
 
 TEST_F(ImageDecodingStoreTest, evictDecoder)
 {
-    std::unique_ptr<ImageDecoder> decoder1 = MockImageDecoder::create(this);
-    std::unique_ptr<ImageDecoder> decoder2 = MockImageDecoder::create(this);
-    std::unique_ptr<ImageDecoder> decoder3 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder1 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder2 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder3 = MockImageDecoder::create(this);
     decoder1->setSize(1, 1);
     decoder2->setSize(2, 2);
     decoder3->setSize(3, 3);
@@ -127,9 +126,9 @@ TEST_F(ImageDecodingStoreTest, evictDecoder)
 
 TEST_F(ImageDecodingStoreTest, decoderInUseNotEvicted)
 {
-    std::unique_ptr<ImageDecoder> decoder1 = MockImageDecoder::create(this);
-    std::unique_ptr<ImageDecoder> decoder2 = MockImageDecoder::create(this);
-    std::unique_ptr<ImageDecoder> decoder3 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder1 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder2 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder3 = MockImageDecoder::create(this);
     decoder1->setSize(1, 1);
     decoder2->setSize(2, 2);
     decoder3->setSize(3, 3);
@@ -156,7 +155,7 @@ TEST_F(ImageDecodingStoreTest, decoderInUseNotEvicted)
 TEST_F(ImageDecodingStoreTest, removeDecoder)
 {
     const SkISize size = SkISize::Make(1, 1);
-    std::unique_ptr<ImageDecoder> decoder = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder = MockImageDecoder::create(this);
     decoder->setSize(1, 1);
     const ImageDecoder* refDecoder = decoder.get();
     ImageDecodingStore::instance().insertDecoder(m_generator.get(), std::move(decoder));

@@ -7,11 +7,10 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
-StyleRuleKeyframe::StyleRuleKeyframe(std::unique_ptr<Vector<double>> keys, StylePropertySet* properties)
+StyleRuleKeyframe::StyleRuleKeyframe(PassOwnPtr<Vector<double>> keys, StylePropertySet* properties)
 : StyleRuleBase(Keyframe)
 , m_properties(properties)
 , m_keys(*keys)
@@ -37,7 +36,7 @@ bool StyleRuleKeyframe::setKeyText(const String& keyText)
 {
     ASSERT(!keyText.isNull());
 
-    std::unique_ptr<Vector<double>> keys = CSSParser::parseKeyframeKeyList(keyText);
+    OwnPtr<Vector<double>> keys = CSSParser::parseKeyframeKeyList(keyText);
     if (!keys || keys->isEmpty())
         return false;
 

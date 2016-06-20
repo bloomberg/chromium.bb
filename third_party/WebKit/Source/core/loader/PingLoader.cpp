@@ -54,7 +54,7 @@
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -141,7 +141,7 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
     frame->document()->fetcher()->context().willStartLoadingResource(m_identifier, request, Resource::Image);
     frame->document()->fetcher()->context().dispatchWillSendRequest(m_identifier, request, ResourceResponse(), initiatorInfo);
 
-    m_loader = wrapUnique(Platform::current()->createURLLoader());
+    m_loader = adoptPtr(Platform::current()->createURLLoader());
     ASSERT(m_loader);
     WrappedResourceRequest wrappedRequest(request);
     wrappedRequest.setAllowStoredCredentials(credentialsAllowed == AllowStoredCredentials);

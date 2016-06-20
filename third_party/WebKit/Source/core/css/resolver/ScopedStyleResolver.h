@@ -32,6 +32,8 @@
 #include "core/dom/TreeScope.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

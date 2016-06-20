@@ -24,6 +24,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/StringHash.h"
 
 namespace blink {

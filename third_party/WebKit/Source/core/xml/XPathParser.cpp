@@ -33,7 +33,6 @@
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathPath.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringHash.h"
 
@@ -501,7 +500,7 @@ void Parser::registerString(String* s)
 
     ASSERT(!m_strings.contains(s));
 
-    m_strings.add(wrapUnique(s));
+    m_strings.add(adoptPtr(s));
 }
 
 void Parser::deleteString(String* s)

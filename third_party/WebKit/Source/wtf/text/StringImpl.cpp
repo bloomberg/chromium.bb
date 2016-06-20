@@ -26,7 +26,8 @@
 
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/LeakAnnotations.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/allocator/PartitionAlloc.h"
 #include "wtf/allocator/Partitions.h"
@@ -36,7 +37,6 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringToNumber.h"
 #include <algorithm>
-#include <memory>
 #include <unicode/translit.h>
 #include <unicode/unistr.h>
 
@@ -793,8 +793,8 @@ PassRefPtr<StringImpl> StringImpl::upper(const AtomicString& localeIdentifier)
 
     // TODO(jungshik): Cache transliterator if perf penaly warrants it for Greek.
     UErrorCode status = U_ZERO_ERROR;
-    std::unique_ptr<icu::Transliterator> translit =
-        wrapUnique(icu::Transliterator::createInstance(transliteratorId, UTRANS_FORWARD, status));
+    OwnPtr<icu::Transliterator> translit =
+        adoptPtr(icu::Transliterator::createInstance(transliteratorId, UTRANS_FORWARD, status));
     if (U_FAILURE(status))
         return upper();
 

@@ -26,8 +26,9 @@
 #include "wtf/HashMap.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include <memory>
@@ -103,14 +104,14 @@ private:
     int* m_destructNumber;
 };
 
-using OwnPtrHashMap = HashMap<int, std::unique_ptr<DestructCounter>>;
+using OwnPtrHashMap = HashMap<int, OwnPtr<DestructCounter>>;
 
 TEST(HashMapTest, OwnPtrAsValue)
 {
     int destructNumber = 0;
     OwnPtrHashMap map;
-    map.add(1, wrapUnique(new DestructCounter(1, &destructNumber)));
-    map.add(2, wrapUnique(new DestructCounter(2, &destructNumber)));
+    map.add(1, adoptPtr(new DestructCounter(1, &destructNumber)));
+    map.add(2, adoptPtr(new DestructCounter(2, &destructNumber)));
 
     DestructCounter* counter1 = map.get(1);
     EXPECT_EQ(1, counter1->get());
@@ -119,12 +120,12 @@ TEST(HashMapTest, OwnPtrAsValue)
     EXPECT_EQ(0, destructNumber);
 
     for (OwnPtrHashMap::iterator iter = map.begin(); iter != map.end(); ++iter) {
-        std::unique_ptr<DestructCounter>& ownCounter = iter->value;
+        OwnPtr<DestructCounter>& ownCounter = iter->value;
         EXPECT_EQ(iter->key, ownCounter->get());
     }
     ASSERT_EQ(0, destructNumber);
 
-    std::unique_ptr<DestructCounter> ownCounter1 = map.take(1);
+    OwnPtr<DestructCounter> ownCounter1 = map.take(1);
     EXPECT_EQ(ownCounter1.get(), counter1);
     EXPECT_FALSE(map.contains(1));
     EXPECT_EQ(0, destructNumber);
@@ -242,7 +243,7 @@ public:
 private:
     int m_v;
 };
-using IntSimpleMap = HashMap<int, std::unique_ptr<SimpleClass>>;
+using IntSimpleMap = HashMap<int, OwnPtr<SimpleClass>>;
 
 TEST(HashMapTest, AddResult)
 {
@@ -253,10 +254,10 @@ TEST(HashMapTest, AddResult)
     EXPECT_EQ(0, result.storedValue->value.get());
 
     SimpleClass* simple1 = new SimpleClass(1);
-    result.storedValue->value = wrapUnique(simple1);
+    result.storedValue->value = adoptPtr(simple1);
     EXPECT_EQ(simple1, map.get(1));
 
-    IntSimpleMap::AddResult result2 = map.add(1, wrapUnique(new SimpleClass(2)));
+    IntSimpleMap::AddResult result2 = map.add(1, adoptPtr(new SimpleClass(2)));
     EXPECT_FALSE(result2.isNewEntry);
     EXPECT_EQ(1, result.storedValue->key);
     EXPECT_EQ(1, result.storedValue->value->v());

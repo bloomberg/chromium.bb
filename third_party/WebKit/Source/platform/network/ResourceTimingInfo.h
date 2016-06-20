@@ -37,9 +37,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 
@@ -49,14 +47,14 @@ class PLATFORM_EXPORT ResourceTimingInfo {
     USING_FAST_MALLOC(ResourceTimingInfo);
     WTF_MAKE_NONCOPYABLE(ResourceTimingInfo);
 public:
-    static std::unique_ptr<ResourceTimingInfo> create(const AtomicString& type, const double time, bool isMainResource)
+    static PassOwnPtr<ResourceTimingInfo> create(const AtomicString& type, const double time, bool isMainResource)
     {
-        return wrapUnique(new ResourceTimingInfo(type, time, isMainResource));
+        return adoptPtr(new ResourceTimingInfo(type, time, isMainResource));
     }
-    static std::unique_ptr<ResourceTimingInfo> adopt(std::unique_ptr<CrossThreadResourceTimingInfoData>);
+    static PassOwnPtr<ResourceTimingInfo> adopt(PassOwnPtr<CrossThreadResourceTimingInfoData>);
 
     // Gets a copy of the data suitable for passing to another thread.
-    std::unique_ptr<CrossThreadResourceTimingInfoData> copyData() const;
+    PassOwnPtr<CrossThreadResourceTimingInfoData> copyData() const;
 
     double initialTime() const { return m_initialTime; }
     bool isMainResource() const { return m_isMainResource; }
@@ -114,15 +112,15 @@ public:
     String m_originalTimingAllowOrigin;
     double m_initialTime;
     double m_loadFinishTime;
-    std::unique_ptr<CrossThreadResourceRequestData> m_initialRequest;
-    std::unique_ptr<CrossThreadResourceResponseData> m_finalResponse;
-    Vector<std::unique_ptr<CrossThreadResourceResponseData>> m_redirectChain;
+    OwnPtr<CrossThreadResourceRequestData> m_initialRequest;
+    OwnPtr<CrossThreadResourceResponseData> m_finalResponse;
+    Vector<OwnPtr<CrossThreadResourceResponseData>> m_redirectChain;
     bool m_isMainResource;
 };
 
 template <>
 struct CrossThreadCopier<ResourceTimingInfo> {
-    typedef WTF::PassedWrapper<std::unique_ptr<CrossThreadResourceTimingInfoData>> Type;
+    typedef WTF::PassedWrapper<PassOwnPtr<CrossThreadResourceTimingInfoData>> Type;
     static Type copy(const ResourceTimingInfo& info) { return passed(info.copyData()); }
 };
 

@@ -8,8 +8,8 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "platform/graphics/CompositorMutableState.h"
 #include "platform/graphics/CompositorMutation.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -36,7 +36,7 @@ CompositorMutableStateProvider::getMutableStateFor(uint64_t elementId)
 
     // Only if this is a new entry do we want to allocate a new mutation.
     if (result.isNewEntry)
-        result.storedValue->value = wrapUnique(new CompositorMutation);
+        result.storedValue->value = adoptPtr(new CompositorMutation);
 
     return wrapUnique(new CompositorMutableState(result.storedValue->value.get(), layers.main, layers.scroll));
 }

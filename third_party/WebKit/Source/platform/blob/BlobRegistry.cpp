@@ -48,7 +48,6 @@
 #include "wtf/Threading.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -89,7 +88,7 @@ static void removeFromOriginMap(const KURL& url)
         originMap()->remove(url.getString());
 }
 
-void BlobRegistry::registerBlobData(const String& uuid, std::unique_ptr<BlobData> data)
+void BlobRegistry::registerBlobData(const String& uuid, PassOwnPtr<BlobData> data)
 {
     blobRegistry()->registerBlobData(uuid, WebBlobData(std::move(data)));
 }

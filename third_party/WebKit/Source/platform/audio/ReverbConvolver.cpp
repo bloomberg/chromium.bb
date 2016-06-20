@@ -26,16 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "platform/audio/ReverbConvolver.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/audio/AudioBus.h"
-#include "platform/audio/ReverbConvolver.h"
 #include "platform/audio/VectorMath.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -90,7 +88,7 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse, size_t renderSli
 
         bool useDirectConvolver = !stageOffset;
 
-        std::unique_ptr<ReverbConvolverStage> stage = wrapUnique(new ReverbConvolverStage(response, totalResponseLength, reverbTotalLatency, stageOffset, stageSize, fftSize, renderPhase, renderSliceSize, &m_accumulationBuffer, useDirectConvolver));
+        OwnPtr<ReverbConvolverStage> stage = adoptPtr(new ReverbConvolverStage(response, totalResponseLength, reverbTotalLatency, stageOffset, stageSize, fftSize, renderPhase, renderSliceSize, &m_accumulationBuffer, useDirectConvolver));
 
         bool isBackgroundStage = false;
 
@@ -118,7 +116,7 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse, size_t renderSli
     // Start up background thread
     // FIXME: would be better to up the thread priority here.  It doesn't need to be real-time, but higher than the default...
     if (useBackgroundThreads && m_backgroundStages.size() > 0)
-        m_backgroundThread = wrapUnique(Platform::current()->createThread("Reverb convolution background thread"));
+        m_backgroundThread = adoptPtr(Platform::current()->createThread("Reverb convolution background thread"));
 }
 
 ReverbConvolver::~ReverbConvolver()

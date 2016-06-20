@@ -31,11 +31,10 @@
 #include "core/frame/SettingsDelegate.h"
 
 #include "core/frame/Settings.h"
-#include <memory>
 
 namespace blink {
 
-SettingsDelegate::SettingsDelegate(std::unique_ptr<Settings> settings)
+SettingsDelegate::SettingsDelegate(PassOwnPtr<Settings> settings)
     : m_settings(std::move(settings))
 {
     if (m_settings)

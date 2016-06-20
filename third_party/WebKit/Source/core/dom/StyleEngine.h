@@ -43,7 +43,6 @@
 #include "wtf/TemporaryChange.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -262,7 +261,7 @@ private:
     HeapHashMap<AtomicString, Member<StyleSheetContents>> m_textToSheetCache;
     HeapHashMap<Member<StyleSheetContents>, AtomicString> m_sheetToTextCache;
 
-    std::unique_ptr<StyleResolverStats> m_styleResolverStats;
+    OwnPtr<StyleResolverStats> m_styleResolverStats;
     unsigned m_styleForElementCount = 0;
 
     friend class StyleEngineTest;

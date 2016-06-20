@@ -35,7 +35,6 @@
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -50,7 +49,7 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>, public ScriptWrap
 public:
     static WebIDBCursorDirection stringToDirection(const String& modeString);
 
-    static IDBCursor* create(std::unique_ptr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    static IDBCursor* create(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();
     DECLARE_TRACE();
     void contextWillBeDestroyed() { m_backend.reset(); }
@@ -84,12 +83,12 @@ public:
     virtual bool isCursorWithValue() const { return false; }
 
 protected:
-    IDBCursor(std::unique_ptr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    IDBCursor(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
 
 private:
     IDBObjectStore* effectiveObjectStore() const;
 
-    std::unique_ptr<WebIDBCursor> m_backend;
+    OwnPtr<WebIDBCursor> m_backend;
     Member<IDBRequest> m_request;
     const WebIDBCursorDirection m_direction;
     Member<IDBAny> m_source;

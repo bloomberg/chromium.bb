@@ -43,7 +43,6 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/clipboard/ClipboardUtilities.h"
-#include <memory>
 
 namespace blink {
 
@@ -244,7 +243,7 @@ void DataTransfer::setDragImageElement(Node* node, const IntPoint& loc)
     setDragImage(0, node, loc);
 }
 
-std::unique_ptr<DragImage> DataTransfer::createDragImage(IntPoint& loc, LocalFrame* frame) const
+PassOwnPtr<DragImage> DataTransfer::createDragImage(IntPoint& loc, LocalFrame* frame) const
 {
     if (m_dragImageElement) {
         loc = m_dragLoc;

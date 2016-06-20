@@ -30,14 +30,11 @@
 
 #include "platform/ContentSettingCallbacks.h"
 
-#include "wtf/PtrUtil.h"
-#include <memory>
-
 namespace blink {
 
-std::unique_ptr<ContentSettingCallbacks> ContentSettingCallbacks::create(std::unique_ptr<SameThreadClosure> allowed, std::unique_ptr<SameThreadClosure> denied)
+PassOwnPtr<ContentSettingCallbacks> ContentSettingCallbacks::create(std::unique_ptr<SameThreadClosure> allowed, std::unique_ptr<SameThreadClosure> denied)
 {
-    return wrapUnique(new ContentSettingCallbacks(std::move(allowed), std::move(denied)));
+    return adoptPtr(new ContentSettingCallbacks(std::move(allowed), std::move(denied)));
 }
 
 ContentSettingCallbacks::ContentSettingCallbacks(std::unique_ptr<SameThreadClosure> allowed, std::unique_ptr<SameThreadClosure> denied)

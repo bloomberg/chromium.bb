@@ -25,8 +25,7 @@
 #include "SkMergeImageFilter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -44,7 +43,7 @@ sk_sp<SkImageFilter> FEMerge::createImageFilter()
 {
     unsigned size = numberOfEffectInputs();
 
-    std::unique_ptr<sk_sp<SkImageFilter>[]> inputRefs = wrapArrayUnique(new sk_sp<SkImageFilter>[size]);
+    OwnPtr<sk_sp<SkImageFilter>[]> inputRefs = adoptArrayPtr(new sk_sp<SkImageFilter>[size]);
     for (unsigned i = 0; i < size; ++i)
         inputRefs[i] = SkiaImageFilterBuilder::build(inputEffect(i), operatingColorSpace());
     SkImageFilter::CropRect rect = getCropRect();

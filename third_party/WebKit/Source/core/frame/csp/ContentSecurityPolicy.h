@@ -39,11 +39,11 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/HashSet.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 #include <utility>
 
 namespace WTF {
@@ -148,7 +148,7 @@ public:
     void addPolicyFromHeaderValue(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
     void reportAccumulatedHeaders(FrameLoaderClient*) const;
 
-    std::unique_ptr<Vector<CSPHeaderAndType>> headers() const;
+    PassOwnPtr<Vector<CSPHeaderAndType>> headers() const;
 
     bool allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineEventHandler(const String& source, const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;

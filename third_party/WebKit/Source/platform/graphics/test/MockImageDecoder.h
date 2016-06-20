@@ -26,8 +26,7 @@
 #ifndef MockImageDecoder_h
 
 #include "platform/image-decoders/ImageDecoder.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -66,7 +65,7 @@ private:
 
 class MockImageDecoder : public ImageDecoder {
 public:
-    static std::unique_ptr<MockImageDecoder> create(MockImageDecoderClient* client) { return wrapUnique(new MockImageDecoder(client)); }
+    static PassOwnPtr<MockImageDecoder> create(MockImageDecoderClient* client) { return adoptPtr(new MockImageDecoder(client)); }
 
     MockImageDecoder(MockImageDecoderClient* client)
         : ImageDecoder(AlphaPremultiplied, GammaAndColorProfileApplied, noDecodedImageByteLimit)
@@ -138,19 +137,19 @@ private:
 
 class MockImageDecoderFactory : public ImageDecoderFactory {
 public:
-    static std::unique_ptr<MockImageDecoderFactory> create(MockImageDecoderClient* client, const SkISize& decodedSize)
+    static PassOwnPtr<MockImageDecoderFactory> create(MockImageDecoderClient* client, const SkISize& decodedSize)
     {
-        return wrapUnique(new MockImageDecoderFactory(client, IntSize(decodedSize.width(), decodedSize.height())));
+        return adoptPtr(new MockImageDecoderFactory(client, IntSize(decodedSize.width(), decodedSize.height())));
     }
 
-    static std::unique_ptr<MockImageDecoderFactory> create(MockImageDecoderClient* client, const IntSize& decodedSize)
+    static PassOwnPtr<MockImageDecoderFactory> create(MockImageDecoderClient* client, const IntSize& decodedSize)
     {
-        return wrapUnique(new MockImageDecoderFactory(client, decodedSize));
+        return adoptPtr(new MockImageDecoderFactory(client, decodedSize));
     }
 
-    std::unique_ptr<ImageDecoder> create() override
+    PassOwnPtr<ImageDecoder> create() override
     {
-        std::unique_ptr<MockImageDecoder> decoder = MockImageDecoder::create(m_client);
+        OwnPtr<MockImageDecoder> decoder = MockImageDecoder::create(m_client);
         decoder->setSize(m_decodedSize.width(), m_decodedSize.height());
         return std::move(decoder);
     }

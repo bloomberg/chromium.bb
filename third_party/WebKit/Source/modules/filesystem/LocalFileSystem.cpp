@@ -42,13 +42,12 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
 #include "wtf/Functional.h"
-#include <memory>
 
 namespace blink {
 
 namespace {
 
-void reportFailure(std::unique_ptr<AsyncFileSystemCallbacks> callbacks, FileError::ErrorCode error)
+void reportFailure(PassOwnPtr<AsyncFileSystemCallbacks> callbacks, FileError::ErrorCode error)
 {
     callbacks->didFail(error);
 }
@@ -57,12 +56,12 @@ void reportFailure(std::unique_ptr<AsyncFileSystemCallbacks> callbacks, FileErro
 
 class CallbackWrapper final : public GarbageCollectedFinalized<CallbackWrapper> {
 public:
-    CallbackWrapper(std::unique_ptr<AsyncFileSystemCallbacks> c)
+    CallbackWrapper(PassOwnPtr<AsyncFileSystemCallbacks> c)
         : m_callbacks(std::move(c))
     {
     }
     virtual ~CallbackWrapper() { }
-    std::unique_ptr<AsyncFileSystemCallbacks> release()
+    PassOwnPtr<AsyncFileSystemCallbacks> release()
     {
         return std::move(m_callbacks);
     }
@@ -70,10 +69,10 @@ public:
     DEFINE_INLINE_TRACE() { }
 
 private:
-    std::unique_ptr<AsyncFileSystemCallbacks> m_callbacks;
+    OwnPtr<AsyncFileSystemCallbacks> m_callbacks;
 };
 
-LocalFileSystem* LocalFileSystem::create(std::unique_ptr<FileSystemClient> client)
+LocalFileSystem* LocalFileSystem::create(PassOwnPtr<FileSystemClient> client)
 {
     return new LocalFileSystem(std::move(client));
 }
@@ -82,7 +81,7 @@ LocalFileSystem::~LocalFileSystem()
 {
 }
 
-void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSystemURL, std::unique_ptr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
     requestFileSystemAccessInternal(context,
@@ -90,7 +89,7 @@ void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSyst
         bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, context, wrapper));
 }
 
-void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, std::unique_ptr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
     requestFileSystemAccessInternal(context,
@@ -98,7 +97,7 @@ void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemTyp
         bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, context, wrapper));
 }
 
-void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType type, std::unique_ptr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     ASSERT(context);
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
@@ -190,7 +189,7 @@ void LocalFileSystem::deleteFileSystemInternal(
     fileSystem->deleteFileSystem(storagePartition, static_cast<WebFileSystemType>(type), callbacks->release());
 }
 
-LocalFileSystem::LocalFileSystem(std::unique_ptr<FileSystemClient> client)
+LocalFileSystem::LocalFileSystem(PassOwnPtr<FileSystemClient> client)
     : m_client(std::move(client))
 {
 }
@@ -210,12 +209,12 @@ LocalFileSystem* LocalFileSystem::from(ExecutionContext& context)
     return static_cast<LocalFileSystem*>(Supplement<WorkerClients>::from(clients, supplementName()));
 }
 
-void provideLocalFileSystemTo(LocalFrame& frame, std::unique_ptr<FileSystemClient> client)
+void provideLocalFileSystemTo(LocalFrame& frame, PassOwnPtr<FileSystemClient> client)
 {
     frame.provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(std::move(client)));
 }
 
-void provideLocalFileSystemToWorker(WorkerClients* clients, std::unique_ptr<FileSystemClient> client)
+void provideLocalFileSystemToWorker(WorkerClients* clients, PassOwnPtr<FileSystemClient> client)
 {
     clients->provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(std::move(client)));
 }

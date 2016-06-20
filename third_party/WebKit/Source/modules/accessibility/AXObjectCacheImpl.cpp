@@ -77,7 +77,6 @@
 #include "modules/accessibility/AXTableHeaderContainer.h"
 #include "modules/accessibility/AXTableRow.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -737,7 +736,7 @@ void AXObjectCacheImpl::updateAriaOwns(const AXObject* owner, const Vector<Strin
             HashSet<AXID>* owners = m_idToAriaOwnersMapping.get(id);
             if (!owners) {
                 owners = new HashSet<AXID>();
-                m_idToAriaOwnersMapping.set(id, wrapUnique(owners));
+                m_idToAriaOwnersMapping.set(id, adoptPtr(owners));
             }
             owners->add(owner->axObjectID());
         }

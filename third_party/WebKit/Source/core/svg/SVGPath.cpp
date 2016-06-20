@@ -30,15 +30,14 @@
 #include "core/svg/SVGPathByteStreamSource.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/graphics/Path.h"
-#include <memory>
 
 namespace blink {
 
 namespace {
 
-std::unique_ptr<SVGPathByteStream> blendPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& toStream, float progress)
+PassOwnPtr<SVGPathByteStream> blendPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& toStream, float progress)
 {
-    std::unique_ptr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
     SVGPathByteStreamBuilder builder(*resultStream);
     SVGPathByteStreamSource fromSource(fromStream);
     SVGPathByteStreamSource toSource(toStream);
@@ -47,9 +46,9 @@ std::unique_ptr<SVGPathByteStream> blendPathByteStreams(const SVGPathByteStream&
     return resultStream;
 }
 
-std::unique_ptr<SVGPathByteStream> addPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
+PassOwnPtr<SVGPathByteStream> addPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
 {
-    std::unique_ptr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
     SVGPathByteStreamBuilder builder(*resultStream);
     SVGPathByteStreamSource fromSource(fromStream);
     SVGPathByteStreamSource bySource(byStream);
@@ -58,7 +57,7 @@ std::unique_ptr<SVGPathByteStream> addPathByteStreams(const SVGPathByteStream& f
     return resultStream;
 }
 
-std::unique_ptr<SVGPathByteStream> conditionallyAddPathByteStreams(std::unique_ptr<SVGPathByteStream> fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
+PassOwnPtr<SVGPathByteStream> conditionallyAddPathByteStreams(PassOwnPtr<SVGPathByteStream> fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
 {
     if (fromStream->isEmpty() || byStream.isEmpty())
         return fromStream;
@@ -92,7 +91,7 @@ SVGPath* SVGPath::clone() const
 
 SVGParsingError SVGPath::setValueAsString(const String& string)
 {
-    std::unique_ptr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     SVGParsingError parseStatus = buildByteStreamFromString(string, *byteStream);
     m_pathValue = CSSPathValue::create(std::move(byteStream));
     return parseStatus;
@@ -100,7 +99,7 @@ SVGParsingError SVGPath::setValueAsString(const String& string)
 
 SVGPropertyBase* SVGPath::cloneForAnimation(const String& value) const
 {
-    std::unique_ptr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     buildByteStreamFromString(value, *byteStream);
     return SVGPath::create(CSSPathValue::create(std::move(byteStream)));
 }
@@ -131,7 +130,7 @@ void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement, floa
     const SVGPath& from = toSVGPath(*fromValue);
     const SVGPathByteStream* fromStream = &from.byteStream();
 
-    std::unique_ptr<SVGPathByteStream> copy;
+    OwnPtr<SVGPathByteStream> copy;
     if (isToAnimation) {
         copy = byteStream().clone();
         fromStream = copy.get();
@@ -150,7 +149,7 @@ void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement, floa
         }
     }
 
-    std::unique_ptr<SVGPathByteStream> newStream = blendPathByteStreams(*fromStream, toStream, percentage);
+    OwnPtr<SVGPathByteStream> newStream = blendPathByteStreams(*fromStream, toStream, percentage);
 
     // Handle additive='sum'.
     if (animationElement->isAdditive() && !isToAnimation)

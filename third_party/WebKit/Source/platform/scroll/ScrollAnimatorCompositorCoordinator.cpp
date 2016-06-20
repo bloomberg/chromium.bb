@@ -14,8 +14,6 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -78,10 +76,10 @@ bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() cons
 }
 
 bool ScrollAnimatorCompositorCoordinator::addAnimation(
-    std::unique_ptr<CompositorAnimation> animation)
+    PassOwnPtr<CompositorAnimation> animation)
 {
     if (m_compositorPlayer->isLayerAttached()) {
-        m_compositorPlayer->addAnimation(animation.release());
+        m_compositorPlayer->addAnimation(animation.leakPtr());
         return true;
     }
     return false;

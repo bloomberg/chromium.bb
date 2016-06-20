@@ -30,7 +30,6 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTableSection.h"
 #include "platform/LengthFunctions.h"
-#include <memory>
 
 namespace blink {
 
@@ -367,7 +366,7 @@ private:
     int m_intrinsicPaddingBefore;
     int m_intrinsicPaddingAfter;
 
-    std::unique_ptr<CollapsedBorderValues> m_collapsedBorderValues;
+    OwnPtr<CollapsedBorderValues> m_collapsedBorderValues;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCell, isTableCell());

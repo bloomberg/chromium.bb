@@ -28,7 +28,6 @@
 #include "platform/graphics/Gradient.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
-#include <memory>
 
 namespace blink {
 
@@ -62,7 +61,7 @@ protected:
 
 private:
     bool m_shouldCollectGradientAttributes : 1;
-    HashMap<const LayoutObject*, std::unique_ptr<GradientData>> m_gradientMap;
+    HashMap<const LayoutObject*, OwnPtr<GradientData>> m_gradientMap;
 };
 
 } // namespace blink

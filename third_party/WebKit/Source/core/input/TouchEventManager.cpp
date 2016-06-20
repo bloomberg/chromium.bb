@@ -18,8 +18,6 @@
 #include "platform/Histogram.h"
 #include "platform/PlatformTouchEvent.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 
 namespace blink {
@@ -471,7 +469,7 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
             isSameOrigin = true;
     }
 
-    std::unique_ptr<UserGestureIndicator> gestureIndicator;
+    OwnPtr<UserGestureIndicator> gestureIndicator;
     if (isTap || isSameOrigin) {
         UserGestureUtilizedCallback* callback = 0;
         // These are cases we'd like to migrate to not hold a user gesture.
@@ -482,9 +480,9 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
             callback = this;
         }
         if (m_touchSequenceUserGestureToken)
-            gestureIndicator = wrapUnique(new UserGestureIndicator(m_touchSequenceUserGestureToken.release(), callback));
+            gestureIndicator = adoptPtr(new UserGestureIndicator(m_touchSequenceUserGestureToken.release(), callback));
         else
-            gestureIndicator = wrapUnique(new UserGestureIndicator(DefinitelyProcessingUserGesture, callback));
+            gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture, callback));
         m_touchSequenceUserGestureToken = UserGestureIndicator::currentToken();
     }
 

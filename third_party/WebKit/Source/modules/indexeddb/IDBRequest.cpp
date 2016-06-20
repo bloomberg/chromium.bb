@@ -44,7 +44,6 @@
 #include "modules/indexeddb/IDBValue.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
-#include <memory>
 
 using blink::WebIDBCursor;
 
@@ -250,7 +249,7 @@ void IDBRequest::onSuccess(const Vector<String>& stringList)
     onSuccessInternal(IDBAny::create(domStringList));
 }
 
-void IDBRequest::onSuccess(std::unique_ptr<WebIDBCursor> backend, IDBKey* key, IDBKey* primaryKey, PassRefPtr<IDBValue> value)
+void IDBRequest::onSuccess(PassOwnPtr<WebIDBCursor> backend, IDBKey* key, IDBKey* primaryKey, PassRefPtr<IDBValue> value)
 {
     IDB_TRACE("IDBRequest::onSuccess(IDBCursor)");
     if (!shouldEnqueueEvent())

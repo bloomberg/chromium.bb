@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorConsoleAgent.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

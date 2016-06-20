@@ -25,6 +25,7 @@
 
 #include "core/xml/XSLStyleSheet.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

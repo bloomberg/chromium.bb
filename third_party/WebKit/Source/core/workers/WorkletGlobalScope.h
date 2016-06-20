@@ -13,7 +13,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/heap/Handle.h"
-#include <memory>
 
 namespace blink {
 
@@ -55,7 +54,7 @@ public:
     }
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
-    void logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation>) final;
+    void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) final;
 
     DECLARE_VIRTUAL_TRACE();
 

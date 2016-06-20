@@ -11,8 +11,6 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -57,9 +55,9 @@ class ParentLengthListChecker : public InterpolationType::ConversionChecker {
 public:
     ~ParentLengthListChecker() final {}
 
-    static std::unique_ptr<ParentLengthListChecker> create(CSSPropertyID property, const Vector<Length>& inheritedLengthList)
+    static PassOwnPtr<ParentLengthListChecker> create(CSSPropertyID property, const Vector<Length>& inheritedLengthList)
     {
-        return wrapUnique(new ParentLengthListChecker(property, inheritedLengthList));
+        return adoptPtr(new ParentLengthListChecker(property, inheritedLengthList));
     }
 
 private:

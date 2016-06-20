@@ -37,7 +37,7 @@
 #include "platform/graphics/ImageSource.h"
 #include "platform/image-decoders/ImageAnimation.h"
 #include "wtf/Forward.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -164,7 +164,7 @@ private:
     RefPtr<SkImage> m_cachedFrame; // A cached copy of the most recently-accessed frame.
     size_t m_cachedFrameIndex; // Index of the frame that is cached.
 
-    std::unique_ptr<Timer<BitmapImage>> m_frameTimer;
+    OwnPtr<Timer<BitmapImage>> m_frameTimer;
     int m_repetitionCount; // How many total animation loops we should do.  This will be cAnimationNone if this image type is incapable of animation.
     RepetitionCountStatus m_repetitionCountStatus;
     int m_repetitionsComplete;  // How many repetitions we've finished.

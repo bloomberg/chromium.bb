@@ -32,7 +32,6 @@
 #include "core/html/parser/HTMLSourceTracker.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/XSSAuditor.h"
-#include <memory>
 
 namespace blink {
 
@@ -60,7 +59,7 @@ private:
     HTMLInputStream m_input;
     HTMLToken m_token;
     HTMLSourceTracker m_sourceTracker;
-    std::unique_ptr<HTMLTokenizer> m_tokenizer;
+    OwnPtr<HTMLTokenizer> m_tokenizer;
     XSSAuditor m_xssAuditor;
 };
 

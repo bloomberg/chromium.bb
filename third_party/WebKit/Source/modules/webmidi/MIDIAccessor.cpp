@@ -32,18 +32,16 @@
 
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "public/platform/Platform.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 using blink::WebString;
 
 namespace blink {
 
 // Factory method
-std::unique_ptr<MIDIAccessor> MIDIAccessor::create(MIDIAccessorClient* client)
+PassOwnPtr<MIDIAccessor> MIDIAccessor::create(MIDIAccessorClient* client)
 {
-    return wrapUnique(new MIDIAccessor(client));
+    return adoptPtr(new MIDIAccessor(client));
 }
 
 MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client)
@@ -51,7 +49,7 @@ MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client)
 {
     DCHECK(client);
 
-    m_accessor = wrapUnique(Platform::current()->createMIDIAccessor(this));
+    m_accessor = adoptPtr(Platform::current()->createMIDIAccessor(this));
 
     DCHECK(m_accessor);
 }

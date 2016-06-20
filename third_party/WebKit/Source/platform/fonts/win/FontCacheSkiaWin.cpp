@@ -40,8 +40,6 @@
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/win/FontFallbackWin.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -357,7 +355,7 @@ static bool typefacesHasStretchSuffix(const AtomicString& family,
     return false;
 }
 
-std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(const FontDescription& fontDescription,
+PassOwnPtr<FontPlatformData> FontCache::createFontPlatformData(const FontDescription& fontDescription,
     const FontFaceCreationParams& creationParams, float fontSize)
 {
     ASSERT(creationParams.creationType() == CreateFontByFamily);
@@ -395,7 +393,7 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(const FontDe
         }
     }
 
-    std::unique_ptr<FontPlatformData> result = wrapUnique(new FontPlatformData(tf,
+    OwnPtr<FontPlatformData> result = adoptPtr(new FontPlatformData(tf,
         name.data(),
         fontSize,
         (fontDescription.weight() >= FontWeight600 && !tf->isBold()) || fontDescription.isSyntheticBold(),

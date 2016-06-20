@@ -36,7 +36,8 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+
 #include <unicode/uchar.h>
 
 namespace blink {
@@ -206,8 +207,8 @@ private:
         "sizeof(FingerprintSourceData) must be a multiple of UChar");
 
     typedef unsigned Fingerprint;
-    typedef HashMap<Fingerprint, std::unique_ptr<Supercluster>> SuperclusterMap;
-    typedef Vector<std::unique_ptr<Cluster>> ClusterStack;
+    typedef HashMap<Fingerprint, OwnPtr<Supercluster>> SuperclusterMap;
+    typedef Vector<OwnPtr<Cluster>> ClusterStack;
 
     // Fingerprints are computed during style recalc, for (some subset of)
     // blocks that will become cluster roots.
@@ -223,7 +224,7 @@ private:
         bool hasFingerprints() const { return !m_fingerprints.isEmpty(); }
     private:
         typedef HashMap<const LayoutObject*, Fingerprint> FingerprintMap;
-        typedef HashMap<Fingerprint, std::unique_ptr<BlockSet>> ReverseFingerprintMap;
+        typedef HashMap<Fingerprint, OwnPtr<BlockSet>> ReverseFingerprintMap;
 
         FingerprintMap m_fingerprints;
         ReverseFingerprintMap m_blocksForFingerprint;

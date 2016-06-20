@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

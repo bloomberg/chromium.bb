@@ -17,7 +17,8 @@
 #include "modules/fetch/FetchDataLoader.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -31,7 +32,7 @@ public:
     // Needed because we have to release |m_reader| promptly.
     EAGERLY_FINALIZE();
     // |handle| cannot be null and cannot be locked.
-    BodyStreamBuffer(ScriptState*, std::unique_ptr<FetchDataConsumerHandle> /* handle */);
+    BodyStreamBuffer(ScriptState*, PassOwnPtr<FetchDataConsumerHandle> /* handle */);
     // |ReadableStreamOperations::isReadableStream(stream)| must hold.
     BodyStreamBuffer(ScriptState*, ScriptValue stream);
 
@@ -80,11 +81,11 @@ private:
     void processData();
     void endLoading();
     void stopLoading();
-    std::unique_ptr<FetchDataConsumerHandle> releaseHandle();
+    PassOwnPtr<FetchDataConsumerHandle> releaseHandle();
 
     RefPtr<ScriptState> m_scriptState;
-    std::unique_ptr<FetchDataConsumerHandle> m_handle;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
+    OwnPtr<FetchDataConsumerHandle> m_handle;
+    OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
     Member<ReadableByteStream> m_stream;
     // We need this member to keep it alive while loading.
     Member<FetchDataLoader> m_loader;

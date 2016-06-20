@@ -15,17 +15,15 @@
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
-BluetoothRemoteGATTService::BluetoothRemoteGATTService(std::unique_ptr<WebBluetoothRemoteGATTService> webService)
+BluetoothRemoteGATTService::BluetoothRemoteGATTService(PassOwnPtr<WebBluetoothRemoteGATTService> webService)
     : m_webService(std::move(webService))
 {
 }
 
-BluetoothRemoteGATTService* BluetoothRemoteGATTService::take(ScriptPromiseResolver*, std::unique_ptr<WebBluetoothRemoteGATTService> webService)
+BluetoothRemoteGATTService* BluetoothRemoteGATTService::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothRemoteGATTService> webService)
 {
     if (!webService) {
         return nullptr;
@@ -48,14 +46,14 @@ public:
 
         if (m_quantity == mojom::WebBluetoothGATTQueryQuantity::SINGLE) {
             DCHECK_EQ(1u, webCharacteristics.size());
-            m_resolver->resolve(BluetoothRemoteGATTCharacteristic::take(m_resolver, wrapUnique(webCharacteristics[0])));
+            m_resolver->resolve(BluetoothRemoteGATTCharacteristic::take(m_resolver, adoptPtr(webCharacteristics[0])));
             return;
         }
 
         HeapVector<Member<BluetoothRemoteGATTCharacteristic>> characteristics;
         characteristics.reserveInitialCapacity(webCharacteristics.size());
         for (WebBluetoothRemoteGATTCharacteristicInit* webCharacteristic : webCharacteristics) {
-            characteristics.append(BluetoothRemoteGATTCharacteristic::take(m_resolver, wrapUnique(webCharacteristic)));
+            characteristics.append(BluetoothRemoteGATTCharacteristic::take(m_resolver, adoptPtr(webCharacteristic)));
         }
         m_resolver->resolve(characteristics);
     }

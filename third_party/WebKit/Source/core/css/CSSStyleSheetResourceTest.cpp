@@ -31,10 +31,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -59,7 +57,7 @@ protected:
     Document* document() { return &m_page->document(); }
 
     Persistent<MemoryCache> m_originalMemoryCache;
-    std::unique_ptr<DummyPageHolder> m_page;
+    OwnPtr<DummyPageHolder> m_page;
 };
 
 TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
@@ -85,8 +83,8 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
             CSSImageValue::create(String("image"), imageURL),
             CSSImageValue::create(String("image"), imageURL),
             CSSPrimitiveValue::create(1.0, CSSPrimitiveValue::UnitType::Number));
-        Vector<std::unique_ptr<CSSParserSelector>> selectors;
-        selectors.append(wrapUnique(new CSSParserSelector()));
+        Vector<OwnPtr<CSSParserSelector>> selectors;
+        selectors.append(adoptPtr(new CSSParserSelector()));
         selectors[0]->setMatch(CSSSelector::Id);
         selectors[0]->setValue("foo");
         CSSProperty property(CSSPropertyBackground, *crossfade);

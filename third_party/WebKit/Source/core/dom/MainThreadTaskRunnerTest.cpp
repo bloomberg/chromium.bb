@@ -33,7 +33,8 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Forward.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -45,7 +46,7 @@ static void markBoolean(bool* toBeMarked)
 TEST(MainThreadTaskRunnerTest, PostTask)
 {
     NullExecutionContext* context = new NullExecutionContext();
-    std::unique_ptr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
+    OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
     bool isMarked = false;
 
     runner->postTask(BLINK_FROM_HERE, createSameThreadTask(&markBoolean, &isMarked));
@@ -57,7 +58,7 @@ TEST(MainThreadTaskRunnerTest, PostTask)
 TEST(MainThreadTaskRunnerTest, SuspendTask)
 {
     NullExecutionContext* context = new NullExecutionContext();
-    std::unique_ptr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
+    OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
     bool isMarked = false;
 
     context->setTasksNeedSuspension(true);
@@ -75,7 +76,7 @@ TEST(MainThreadTaskRunnerTest, SuspendTask)
 TEST(MainThreadTaskRunnerTest, RemoveRunner)
 {
     NullExecutionContext* context = new NullExecutionContext();
-    std::unique_ptr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
+    OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
     bool isMarked = false;
 
     context->setTasksNeedSuspension(true);

@@ -26,17 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "modules/webaudio/PeriodicWave.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/OscillatorNode.h"
-#include "modules/webaudio/PeriodicWave.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/VectorMath.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
-#include <memory>
 
 namespace blink {
 
@@ -244,7 +242,7 @@ void PeriodicWave::createBandLimitedTables(const float* realData, const float* i
 
         // Create the band-limited table.
         unsigned waveSize = periodicWaveSize();
-        std::unique_ptr<AudioFloatArray> table = wrapUnique(new AudioFloatArray(waveSize));
+        OwnPtr<AudioFloatArray> table = adoptPtr(new AudioFloatArray(waveSize));
         adjustV8ExternalMemory(waveSize * sizeof(float));
         m_bandLimitedTables.append(std::move(table));
 

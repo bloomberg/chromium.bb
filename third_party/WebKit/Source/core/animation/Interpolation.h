@@ -9,7 +9,6 @@
 #include "core/animation/InterpolableValue.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
-#include <memory>
 
 namespace blink {
 
@@ -31,14 +30,14 @@ public:
     virtual bool dependsOnUnderlyingValue() const { return false; }
 
 protected:
-    const std::unique_ptr<InterpolableValue> m_start;
-    const std::unique_ptr<InterpolableValue> m_end;
+    const OwnPtr<InterpolableValue> m_start;
+    const OwnPtr<InterpolableValue> m_end;
 
     mutable double m_cachedFraction;
     mutable int m_cachedIteration;
-    mutable std::unique_ptr<InterpolableValue> m_cachedValue;
+    mutable OwnPtr<InterpolableValue> m_cachedValue;
 
-    Interpolation(std::unique_ptr<InterpolableValue> start, std::unique_ptr<InterpolableValue> end);
+    Interpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end);
 
 private:
     InterpolableValue* getCachedValueForTesting() const { return m_cachedValue.get(); }

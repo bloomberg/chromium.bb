@@ -22,6 +22,7 @@
 #include "web/FindInPageCoordinates.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
+#include "wtf/OwnPtr.h"
 
 using blink::testing::runPendingTasks;
 

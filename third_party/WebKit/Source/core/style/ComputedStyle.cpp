@@ -32,10 +32,10 @@
 #include "core/layout/TextAutosizer.h"
 #include "core/style/AppliedTextDecoration.h"
 #include "core/style/BorderEdge.h"
-#include "core/style/ComputedStyleConstants.h"
 #include "core/style/ContentData.h"
-#include "core/style/CursorData.h"
 #include "core/style/DataEquivalency.h"
+#include "core/style/ComputedStyleConstants.h"
+#include "core/style/CursorData.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleImage.h"
@@ -52,8 +52,8 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
+
 #include <algorithm>
-#include <memory>
 
 namespace blink {
 
@@ -406,7 +406,7 @@ ComputedStyle* ComputedStyle::addCachedPseudoStyle(PassRefPtr<ComputedStyle> pse
     ComputedStyle* result = pseudo.get();
 
     if (!m_cachedPseudoStyles)
-        m_cachedPseudoStyles = wrapUnique(new PseudoStyleCache);
+        m_cachedPseudoStyles = adoptPtr(new PseudoStyleCache);
 
     m_cachedPseudoStyles->append(pseudo);
 
@@ -1149,9 +1149,9 @@ const CounterDirectiveMap* ComputedStyle::counterDirectives() const
 
 CounterDirectiveMap& ComputedStyle::accessCounterDirectives()
 {
-    std::unique_ptr<CounterDirectiveMap>& map = rareNonInheritedData.access()->m_counterDirectives;
+    OwnPtr<CounterDirectiveMap>& map = rareNonInheritedData.access()->m_counterDirectives;
     if (!map)
-        map = wrapUnique(new CounterDirectiveMap);
+        map = adoptPtr(new CounterDirectiveMap);
     return *map;
 }
 

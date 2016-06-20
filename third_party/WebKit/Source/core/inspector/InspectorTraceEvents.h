@@ -13,7 +13,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
-#include <memory>
 
 namespace v8 {
 class Function;
@@ -57,8 +56,8 @@ class XMLHttpRequest;
 enum ResourceLoadPriority : int;
 
 namespace InspectorLayoutEvent {
-std::unique_ptr<TracedValue> beginData(FrameView*);
-std::unique_ptr<TracedValue> endData(LayoutObject* rootForThisLayout);
+PassOwnPtr<TracedValue> beginData(FrameView*);
+PassOwnPtr<TracedValue> endData(LayoutObject* rootForThisLayout);
 }
 
 namespace InspectorScheduleStyleInvalidationTrackingEvent {
@@ -67,10 +66,10 @@ extern const char Class[];
 extern const char Id[];
 extern const char Pseudo[];
 
-std::unique_ptr<TracedValue> attributeChange(Element&, const InvalidationSet&, const QualifiedName&);
-std::unique_ptr<TracedValue> classChange(Element&, const InvalidationSet&, const AtomicString&);
-std::unique_ptr<TracedValue> idChange(Element&, const InvalidationSet&, const AtomicString&);
-std::unique_ptr<TracedValue> pseudoChange(Element&, const InvalidationSet&, CSSSelector::PseudoType);
+PassOwnPtr<TracedValue> attributeChange(Element&, const InvalidationSet&, const QualifiedName&);
+PassOwnPtr<TracedValue> classChange(Element&, const InvalidationSet&, const AtomicString&);
+PassOwnPtr<TracedValue> idChange(Element&, const InvalidationSet&, const AtomicString&);
+PassOwnPtr<TracedValue> pseudoChange(Element&, const InvalidationSet&, CSSSelector::PseudoType);
 } // namespace InspectorScheduleStyleInvalidationTrackingEvent
 
 #define TRACE_SCHEDULE_STYLE_INVALIDATION(element, invalidationSet, changeType, ...) \
@@ -82,7 +81,7 @@ std::unique_ptr<TracedValue> pseudoChange(Element&, const InvalidationSet&, CSSS
         InspectorScheduleStyleInvalidationTrackingEvent::changeType((element), (invalidationSet), __VA_ARGS__));
 
 namespace InspectorStyleRecalcInvalidationTrackingEvent {
-std::unique_ptr<TracedValue> data(Node*, const StyleChangeReasonForTracing&);
+PassOwnPtr<TracedValue> data(Node*, const StyleChangeReasonForTracing&);
 }
 
 String descendantInvalidationSetToIdString(const InvalidationSet&);
@@ -96,9 +95,9 @@ extern const char InvalidationSetMatchedId[];
 extern const char InvalidationSetMatchedTagName[];
 extern const char PreventStyleSharingForParent[];
 
-std::unique_ptr<TracedValue> data(Element&, const char* reason);
-std::unique_ptr<TracedValue> selectorPart(Element&, const char* reason, const InvalidationSet&, const String&);
-std::unique_ptr<TracedValue> invalidationList(Element&, const Vector<RefPtr<InvalidationSet>>&);
+PassOwnPtr<TracedValue> data(Element&, const char* reason);
+PassOwnPtr<TracedValue> selectorPart(Element&, const char* reason, const InvalidationSet&, const String&);
+PassOwnPtr<TracedValue> invalidationList(Element&, const Vector<RefPtr<InvalidationSet>>&);
 } // namespace InspectorStyleInvalidatorInvalidateEvent
 
 #define TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason) \
@@ -162,80 +161,80 @@ extern const char ScrollbarChanged[];
 typedef const char LayoutInvalidationReasonForTracing[];
 
 namespace InspectorLayoutInvalidationTrackingEvent {
-std::unique_ptr<TracedValue> CORE_EXPORT data(const LayoutObject*, LayoutInvalidationReasonForTracing);
+PassOwnPtr<TracedValue> CORE_EXPORT data(const LayoutObject*, LayoutInvalidationReasonForTracing);
 }
 
 namespace InspectorPaintInvalidationTrackingEvent {
-std::unique_ptr<TracedValue> data(const LayoutObject*, const LayoutObject& paintContainer);
+PassOwnPtr<TracedValue> data(const LayoutObject*, const LayoutObject& paintContainer);
 }
 
 namespace InspectorScrollInvalidationTrackingEvent {
-std::unique_ptr<TracedValue> data(const LayoutObject&);
+PassOwnPtr<TracedValue> data(const LayoutObject&);
 }
 
 namespace InspectorChangeResourcePriorityEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, const ResourceLoadPriority&);
+PassOwnPtr<TracedValue> data(unsigned long identifier, const ResourceLoadPriority&);
 }
 
 namespace InspectorSendRequestEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
+PassOwnPtr<TracedValue> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
 }
 
 namespace InspectorReceiveResponseEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, LocalFrame*, const ResourceResponse&);
+PassOwnPtr<TracedValue> data(unsigned long identifier, LocalFrame*, const ResourceResponse&);
 }
 
 namespace InspectorReceiveDataEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, LocalFrame*, int encodedDataLength);
+PassOwnPtr<TracedValue> data(unsigned long identifier, LocalFrame*, int encodedDataLength);
 }
 
 namespace InspectorResourceFinishEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, double finishTime, bool didFail);
+PassOwnPtr<TracedValue> data(unsigned long identifier, double finishTime, bool didFail);
 }
 
 namespace InspectorTimerInstallEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, int timerId, int timeout, bool singleShot);
+PassOwnPtr<TracedValue> data(ExecutionContext*, int timerId, int timeout, bool singleShot);
 }
 
 namespace InspectorTimerRemoveEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, int timerId);
+PassOwnPtr<TracedValue> data(ExecutionContext*, int timerId);
 }
 
 namespace InspectorTimerFireEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, int timerId);
+PassOwnPtr<TracedValue> data(ExecutionContext*, int timerId);
 }
 
 namespace InspectorIdleCallbackRequestEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, int id, double timeout);
+PassOwnPtr<TracedValue> data(ExecutionContext*, int id, double timeout);
 }
 
 namespace InspectorIdleCallbackCancelEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, int id);
+PassOwnPtr<TracedValue> data(ExecutionContext*, int id);
 }
 
 namespace InspectorIdleCallbackFireEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, int id, double allottedMilliseconds, bool timedOut);
+PassOwnPtr<TracedValue> data(ExecutionContext*, int id, double allottedMilliseconds, bool timedOut);
 }
 
 namespace InspectorAnimationFrameEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, int callbackId);
+PassOwnPtr<TracedValue> data(ExecutionContext*, int callbackId);
 }
 
 namespace InspectorParseHtmlEvent {
-std::unique_ptr<TracedValue> beginData(Document*, unsigned startLine);
-std::unique_ptr<TracedValue> endData(unsigned endLine);
+PassOwnPtr<TracedValue> beginData(Document*, unsigned startLine);
+PassOwnPtr<TracedValue> endData(unsigned endLine);
 }
 
 namespace InspectorParseAuthorStyleSheetEvent {
-std::unique_ptr<TracedValue> data(const CSSStyleSheetResource*);
+PassOwnPtr<TracedValue> data(const CSSStyleSheetResource*);
 }
 
 namespace InspectorXhrReadyStateChangeEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, XMLHttpRequest*);
+PassOwnPtr<TracedValue> data(ExecutionContext*, XMLHttpRequest*);
 }
 
 namespace InspectorXhrLoadEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, XMLHttpRequest*);
+PassOwnPtr<TracedValue> data(ExecutionContext*, XMLHttpRequest*);
 }
 
 namespace InspectorLayerInvalidationTrackingEvent {
@@ -245,7 +244,7 @@ extern const char RemovedFromSquashingLayer[];
 extern const char ReflectionLayerChanged[];
 extern const char NewCompositedLayer[];
 
-std::unique_ptr<TracedValue> data(const PaintLayer*, const char* reason);
+PassOwnPtr<TracedValue> data(const PaintLayer*, const char* reason);
 }
 
 #define TRACE_LAYER_INVALIDATION(LAYER, REASON) \
@@ -257,89 +256,89 @@ std::unique_ptr<TracedValue> data(const PaintLayer*, const char* reason);
         InspectorLayerInvalidationTrackingEvent::data((LAYER), (REASON)));
 
 namespace InspectorPaintEvent {
-std::unique_ptr<TracedValue> data(LayoutObject*, const LayoutRect& clipRect, const GraphicsLayer*);
+PassOwnPtr<TracedValue> data(LayoutObject*, const LayoutRect& clipRect, const GraphicsLayer*);
 }
 
 namespace InspectorPaintImageEvent {
-std::unique_ptr<TracedValue> data(const LayoutImage&);
-std::unique_ptr<TracedValue> data(const LayoutObject&, const StyleImage&);
-std::unique_ptr<TracedValue> data(const LayoutObject*, const ImageResource&);
+PassOwnPtr<TracedValue> data(const LayoutImage&);
+PassOwnPtr<TracedValue> data(const LayoutObject&, const StyleImage&);
+PassOwnPtr<TracedValue> data(const LayoutObject*, const ImageResource&);
 }
 
 namespace InspectorCommitLoadEvent {
-std::unique_ptr<TracedValue> data(LocalFrame*);
+PassOwnPtr<TracedValue> data(LocalFrame*);
 }
 
 namespace InspectorMarkLoadEvent {
-std::unique_ptr<TracedValue> data(LocalFrame*);
+PassOwnPtr<TracedValue> data(LocalFrame*);
 }
 
 namespace InspectorScrollLayerEvent {
-std::unique_ptr<TracedValue> data(LayoutObject*);
+PassOwnPtr<TracedValue> data(LayoutObject*);
 }
 
 namespace InspectorUpdateLayerTreeEvent {
-std::unique_ptr<TracedValue> data(LocalFrame*);
+PassOwnPtr<TracedValue> data(LocalFrame*);
 }
 
 namespace InspectorEvaluateScriptEvent {
-std::unique_ptr<TracedValue> data(LocalFrame*, const String& url, const WTF::TextPosition&);
+PassOwnPtr<TracedValue> data(LocalFrame*, const String& url, const WTF::TextPosition&);
 }
 
 namespace InspectorParseScriptEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, const String& url);
+PassOwnPtr<TracedValue> data(unsigned long identifier, const String& url);
 }
 
 namespace InspectorCompileScriptEvent {
-std::unique_ptr<TracedValue> data(const String& url, const WTF::TextPosition&);
+PassOwnPtr<TracedValue> data(const String& url, const WTF::TextPosition&);
 }
 
 namespace InspectorFunctionCallEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, const v8::Local<v8::Function>&);
+PassOwnPtr<TracedValue> data(ExecutionContext*, const v8::Local<v8::Function>&);
 }
 
 namespace InspectorUpdateCountersEvent {
-std::unique_ptr<TracedValue> data();
+PassOwnPtr<TracedValue> data();
 }
 
 namespace InspectorInvalidateLayoutEvent {
-std::unique_ptr<TracedValue> data(LocalFrame*);
+PassOwnPtr<TracedValue> data(LocalFrame*);
 }
 
 namespace InspectorRecalculateStylesEvent {
-std::unique_ptr<TracedValue> data(LocalFrame*);
+PassOwnPtr<TracedValue> data(LocalFrame*);
 }
 
 namespace InspectorEventDispatchEvent {
-std::unique_ptr<TracedValue> data(const Event&);
+PassOwnPtr<TracedValue> data(const Event&);
 }
 
 namespace InspectorTimeStampEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, const String& message);
+PassOwnPtr<TracedValue> data(ExecutionContext*, const String& message);
 }
 
 namespace InspectorTracingSessionIdForWorkerEvent {
-std::unique_ptr<TracedValue> data(const String& sessionId, const String& workerId, WorkerThread*);
+PassOwnPtr<TracedValue> data(const String& sessionId, const String& workerId, WorkerThread*);
 }
 
 namespace InspectorTracingStartedInFrame {
-std::unique_ptr<TracedValue> data(const String& sessionId, LocalFrame*);
+PassOwnPtr<TracedValue> data(const String& sessionId, LocalFrame*);
 }
 
 namespace InspectorSetLayerTreeId {
-std::unique_ptr<TracedValue> data(const String& sessionId, int layerTreeId);
+PassOwnPtr<TracedValue> data(const String& sessionId, int layerTreeId);
 }
 
 namespace InspectorAnimationEvent {
-std::unique_ptr<TracedValue> data(const Animation&);
+PassOwnPtr<TracedValue> data(const Animation&);
 }
 
 namespace InspectorAnimationStateEvent {
-std::unique_ptr<TracedValue> data(const Animation&);
+PassOwnPtr<TracedValue> data(const Animation&);
 }
 
 namespace InspectorHitTestEvent {
-std::unique_ptr<TracedValue> endData(const HitTestRequest&, const HitTestLocation&, const HitTestResult&);
+PassOwnPtr<TracedValue> endData(const HitTestRequest&, const HitTestLocation&, const HitTestResult&);
 }
 
 CORE_EXPORT String toHexString(const void* p);

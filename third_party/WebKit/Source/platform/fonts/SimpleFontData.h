@@ -35,9 +35,9 @@
 #include "platform/fonts/TypesettingFeatures.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringHash.h"
-#include <memory>
 
 namespace blink {
 
@@ -144,7 +144,7 @@ private:
 
     FontPlatformData m_platformData;
 
-    mutable std::unique_ptr<GlyphMetricsMap<FloatRect>> m_glyphToBoundsMap;
+    mutable OwnPtr<GlyphMetricsMap<FloatRect>> m_glyphToBoundsMap;
     mutable GlyphMetricsMap<float> m_glyphToWidthMap;
 
     bool m_isTextOrientationFallback;
@@ -161,7 +161,7 @@ private:
         USING_FAST_MALLOC(DerivedFontData);
         WTF_MAKE_NONCOPYABLE(DerivedFontData);
     public:
-        static std::unique_ptr<DerivedFontData> create(bool forCustomFont);
+        static PassOwnPtr<DerivedFontData> create(bool forCustomFont);
         ~DerivedFontData();
 
         bool forCustomFont;
@@ -177,7 +177,7 @@ private:
         }
     };
 
-    mutable std::unique_ptr<DerivedFontData> m_derivedFontData;
+    mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
     RefPtr<CustomFontData> m_customFontData;
 };
@@ -193,7 +193,7 @@ ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const
 
     bounds = platformBoundsForGlyph(glyph);
     if (!m_glyphToBoundsMap)
-        m_glyphToBoundsMap = wrapUnique(new GlyphMetricsMap<FloatRect>);
+        m_glyphToBoundsMap = adoptPtr(new GlyphMetricsMap<FloatRect>);
     m_glyphToBoundsMap->setMetricsForGlyph(glyph, bounds);
     return bounds;
 }

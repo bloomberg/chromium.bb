@@ -7,7 +7,6 @@
 #include "core/animation/Interpolation.h"
 #include "core/animation/PropertyHandle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -15,7 +14,7 @@ namespace {
 
 class SampleInterpolation : public Interpolation {
 public:
-    static PassRefPtr<Interpolation> create(std::unique_ptr<InterpolableValue> start, std::unique_ptr<InterpolableValue> end)
+    static PassRefPtr<Interpolation> create(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
     {
         return adoptRef(new SampleInterpolation(std::move(start), std::move(end)));
     }
@@ -25,7 +24,7 @@ public:
         return PropertyHandle(CSSPropertyBackgroundColor);
     }
 private:
-    SampleInterpolation(std::unique_ptr<InterpolableValue> start, std::unique_ptr<InterpolableValue> end)
+    SampleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
         : Interpolation(std::move(start), std::move(end))
     {
     }
@@ -59,7 +58,7 @@ protected:
         base.scaleAndAdd(scale, add);
     }
 
-    PassRefPtr<Interpolation> interpolateLists(std::unique_ptr<InterpolableList> listA, std::unique_ptr<InterpolableList> listB, double progress)
+    PassRefPtr<Interpolation> interpolateLists(PassOwnPtr<InterpolableList> listA, PassOwnPtr<InterpolableList> listB, double progress)
     {
         RefPtr<Interpolation> i = SampleInterpolation::create(std::move(listA), std::move(listB));
         i->interpolate(0, progress);
@@ -89,12 +88,12 @@ TEST_F(AnimationInterpolableValueTest, InterpolateBools)
 
 TEST_F(AnimationInterpolableValueTest, SimpleList)
 {
-    std::unique_ptr<InterpolableList> listA = InterpolableList::create(3);
+    OwnPtr<InterpolableList> listA = InterpolableList::create(3);
     listA->set(0, InterpolableNumber::create(0));
     listA->set(1, InterpolableNumber::create(42));
     listA->set(2, InterpolableNumber::create(20.5));
 
-    std::unique_ptr<InterpolableList> listB = InterpolableList::create(3);
+    OwnPtr<InterpolableList> listB = InterpolableList::create(3);
     listB->set(0, InterpolableNumber::create(100));
     listB->set(1, InterpolableNumber::create(-200));
     listB->set(2, InterpolableNumber::create(300));
@@ -108,16 +107,16 @@ TEST_F(AnimationInterpolableValueTest, SimpleList)
 
 TEST_F(AnimationInterpolableValueTest, NestedList)
 {
-    std::unique_ptr<InterpolableList> listA = InterpolableList::create(3);
+    OwnPtr<InterpolableList> listA = InterpolableList::create(3);
     listA->set(0, InterpolableNumber::create(0));
-    std::unique_ptr<InterpolableList> subListA = InterpolableList::create(1);
+    OwnPtr<InterpolableList> subListA = InterpolableList::create(1);
     subListA->set(0, InterpolableNumber::create(100));
     listA->set(1, std::move(subListA));
     listA->set(2, InterpolableBool::create(false));
 
-    std::unique_ptr<InterpolableList> listB = InterpolableList::create(3);
+    OwnPtr<InterpolableList> listB = InterpolableList::create(3);
     listB->set(0, InterpolableNumber::create(100));
-    std::unique_ptr<InterpolableList> subListB = InterpolableList::create(1);
+    OwnPtr<InterpolableList> subListB = InterpolableList::create(1);
     subListB->set(0, InterpolableNumber::create(50));
     listB->set(1, std::move(subListB));
     listB->set(2, InterpolableBool::create(true));
@@ -131,7 +130,7 @@ TEST_F(AnimationInterpolableValueTest, NestedList)
 
 TEST_F(AnimationInterpolableValueTest, ScaleAndAddNumbers)
 {
-    std::unique_ptr<InterpolableNumber> base = InterpolableNumber::create(10);
+    OwnPtr<InterpolableNumber> base = InterpolableNumber::create(10);
     scaleAndAdd(*base, 2, *InterpolableNumber::create(1));
     EXPECT_FLOAT_EQ(21, base->value());
 
@@ -146,11 +145,11 @@ TEST_F(AnimationInterpolableValueTest, ScaleAndAddNumbers)
 
 TEST_F(AnimationInterpolableValueTest, ScaleAndAddLists)
 {
-    std::unique_ptr<InterpolableList> baseList = InterpolableList::create(3);
+    OwnPtr<InterpolableList> baseList = InterpolableList::create(3);
     baseList->set(0, InterpolableNumber::create(5));
     baseList->set(1, InterpolableNumber::create(10));
     baseList->set(2, InterpolableNumber::create(15));
-    std::unique_ptr<InterpolableList> addList = InterpolableList::create(3);
+    OwnPtr<InterpolableList> addList = InterpolableList::create(3);
     addList->set(0, InterpolableNumber::create(1));
     addList->set(1, InterpolableNumber::create(2));
     addList->set(2, InterpolableNumber::create(3));

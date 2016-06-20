@@ -13,7 +13,6 @@
 #include "platform/animation/CompositorFloatAnimationCurve.h"
 #include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
 #include "platform/animation/CompositorTransformAnimationCurve.h"
-#include <memory>
 
 using cc::Animation;
 using cc::AnimationIdProvider;
@@ -127,7 +126,7 @@ std::unique_ptr<cc::Animation> CompositorAnimation::passAnimation()
     return std::move(m_animation);
 }
 
-std::unique_ptr<CompositorFloatAnimationCurve> CompositorAnimation::floatCurveForTesting() const
+PassOwnPtr<CompositorFloatAnimationCurve> CompositorAnimation::floatCurveForTesting() const
 {
     const cc::AnimationCurve* curve = m_animation->curve();
     DCHECK_EQ(cc::AnimationCurve::FLOAT, curve->Type());

@@ -8,7 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -28,7 +28,7 @@ public:
 
     typedef unsigned PanningModel;
 
-    static std::unique_ptr<Spatializer> create(PanningModel, float sampleRate);
+    static PassOwnPtr<Spatializer> create(PanningModel, float sampleRate);
     virtual ~Spatializer();
 
     // Handle sample-accurate panning by AudioParam automation.

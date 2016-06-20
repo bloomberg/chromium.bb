@@ -39,7 +39,6 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
@@ -302,7 +301,7 @@ private:
     bool m_focused : 1;
 
     // Controls text granularity used to adjust the selection's extent in moveRangeSelectionExtent.
-    std::unique_ptr<GranularityStrategy> m_granularityStrategy;
+    OwnPtr<GranularityStrategy> m_granularityStrategy;
 
     const Member<FrameCaret> m_frameCaret;
 };

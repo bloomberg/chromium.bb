@@ -11,8 +11,6 @@
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ShadowList.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -43,9 +41,9 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertInitial(const Sty
 
 class ParentShadowListChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<ParentShadowListChecker> create(CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
+    static PassOwnPtr<ParentShadowListChecker> create(CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
     {
-        return wrapUnique(new ParentShadowListChecker(property, shadowList));
+        return adoptPtr(new ParentShadowListChecker(property, shadowList));
     }
 
 private:

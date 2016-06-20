@@ -29,11 +29,9 @@
 #include "wtf/text/Collator.h"
 
 #include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StringExtras.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 #include <stdlib.h>
 #include <string.h>
 #include <unicode/ucol.h>
@@ -56,9 +54,9 @@ Collator::Collator(const char* locale)
     setEquivalentLocale(m_locale, m_equivalentLocale);
 }
 
-std::unique_ptr<Collator> Collator::userDefault()
+PassOwnPtr<Collator> Collator::userDefault()
 {
-    return wrapUnique(new Collator(0));
+    return adoptPtr(new Collator(0));
 }
 
 Collator::~Collator()

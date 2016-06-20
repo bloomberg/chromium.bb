@@ -31,8 +31,8 @@
 
 #include "core/dom/DocumentType.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/input/EventHandler.h"
@@ -45,6 +45,7 @@
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

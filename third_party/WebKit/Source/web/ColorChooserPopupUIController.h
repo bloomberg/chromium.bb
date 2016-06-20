@@ -28,6 +28,7 @@
 
 #include "core/page/PagePopupClient.h"
 #include "web/ColorChooserUIController.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 

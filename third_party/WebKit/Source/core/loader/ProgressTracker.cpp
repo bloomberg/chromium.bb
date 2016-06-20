@@ -36,7 +36,6 @@
 #include "platform/Logging.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 
 using namespace std;
@@ -169,7 +168,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const Resource
         item->bytesReceived = 0;
         item->estimatedLength = estimatedLength;
     } else {
-        m_progressItems.set(identifier, wrapUnique(new ProgressItem(estimatedLength)));
+        m_progressItems.set(identifier, adoptPtr(new ProgressItem(estimatedLength)));
     }
 }
 

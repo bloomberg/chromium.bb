@@ -25,9 +25,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Forward.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -55,7 +55,7 @@ public:
     ~MockWorkerReportingProxy() override { }
 
     MOCK_METHOD2(reportExceptionMock, void(const String& errorMessage, SourceLocation*));
-    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+    void reportException(const String& errorMessage, PassOwnPtr<SourceLocation> location)
     {
         reportExceptionMock(errorMessage, location.get());
     }
@@ -86,7 +86,7 @@ public:
         WorkerReportingProxy& mockWorkerReportingProxy)
         : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider), mockWorkerReportingProxy)
         , m_workerBackingThread(WorkerBackingThread::createForTest("Test thread"))
-        , m_scriptLoadedEvent(wrapUnique(new WaitableEvent()))
+        , m_scriptLoadedEvent(adoptPtr(new WaitableEvent()))
     {
     }
 
@@ -94,7 +94,7 @@ public:
 
     WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
 
-    WorkerGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
+    WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
 
     void waitUntilScriptLoaded()
     {
@@ -108,7 +108,7 @@ public:
 
     void startWithSourceCode(SecurityOrigin* securityOrigin, const String& source)
     {
-        std::unique_ptr<Vector<CSPHeaderAndType>> headers = wrapUnique(new Vector<CSPHeaderAndType>());
+        OwnPtr<Vector<CSPHeaderAndType>> headers = adoptPtr(new Vector<CSPHeaderAndType>());
         CSPHeaderAndType headerAndType("contentSecurityPolicy", ContentSecurityPolicyHeaderTypeReport);
         headers->append(headerAndType);
 
@@ -130,19 +130,19 @@ public:
 
     void waitForInit()
     {
-        std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
+        OwnPtr<WaitableEvent> completionEvent = adoptPtr(new WaitableEvent());
         workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WaitableEvent::signal, AllowCrossThreadAccess(completionEvent.get())));
         completionEvent->wait();
     }
 
 private:
-    std::unique_ptr<WorkerBackingThread> m_workerBackingThread;
-    std::unique_ptr<WaitableEvent> m_scriptLoadedEvent;
+    OwnPtr<WorkerBackingThread> m_workerBackingThread;
+    OwnPtr<WaitableEvent> m_scriptLoadedEvent;
 };
 
 class FakeWorkerGlobalScope : public WorkerGlobalScope {
 public:
-    FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThreadForTest* thread, std::unique_ptr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
+    FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThreadForTest* thread, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
         : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), std::move(starterOriginPrivilegeData), workerClients)
         , m_thread(thread)
     {
@@ -163,7 +163,7 @@ public:
         return EventTargetNames::DedicatedWorkerGlobalScope;
     }
 
-    void logExceptionToConsole(const String&, std::unique_ptr<SourceLocation>) override
+    void logExceptionToConsole(const String&, PassOwnPtr<SourceLocation>) override
     {
     }
 
@@ -171,7 +171,7 @@ private:
     WorkerThreadForTest* m_thread;
 };
 
-inline WorkerGlobalScope* WorkerThreadForTest::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
+inline WorkerGlobalScope* WorkerThreadForTest::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return new FakeWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, this, std::move(startupData->m_starterOriginPrivilegeData), std::move(startupData->m_workerClients));
 }

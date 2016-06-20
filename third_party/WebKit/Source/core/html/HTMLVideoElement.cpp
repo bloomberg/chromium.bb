@@ -46,7 +46,6 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/WebCanvas.h"
-#include <memory>
 
 namespace blink {
 
@@ -295,7 +294,7 @@ PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageStatus* s
 
     IntSize intrinsicSize(videoWidth(), videoHeight());
     // FIXME: Not sure if we dhould we be doing anything with the AccelerationHint argument here?
-    std::unique_ptr<ImageBuffer> imageBuffer = ImageBuffer::create(intrinsicSize);
+    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(intrinsicSize);
     if (!imageBuffer) {
         *status = InvalidSourceImageStatus;
         return nullptr;

@@ -41,7 +41,6 @@
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
 
 namespace blink {

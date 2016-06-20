@@ -22,10 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/DelayDSPKernel.h"
 #include "modules/webaudio/DelayProcessor.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "modules/webaudio/DelayDSPKernel.h"
 
 namespace blink {
 
@@ -42,9 +40,9 @@ DelayProcessor::~DelayProcessor()
         uninitialize();
 }
 
-std::unique_ptr<AudioDSPKernel> DelayProcessor::createKernel()
+PassOwnPtr<AudioDSPKernel> DelayProcessor::createKernel()
 {
-    return wrapUnique(new DelayDSPKernel(this));
+    return adoptPtr(new DelayDSPKernel(this));
 }
 
 } // namespace blink

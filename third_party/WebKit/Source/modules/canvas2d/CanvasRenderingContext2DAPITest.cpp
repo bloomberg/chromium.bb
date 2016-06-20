@@ -20,7 +20,6 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 using ::testing::Mock;
 
@@ -39,7 +38,7 @@ protected:
     void createContext(OpacityMode);
 
 private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
     Persistent<HTMLDocument> m_document;
     Persistent<HTMLCanvasElement> m_canvasElement;
 

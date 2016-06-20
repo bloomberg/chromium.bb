@@ -45,7 +45,6 @@
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -295,11 +294,11 @@ private:
     // This mirrors the known compositor state. It is created when a compositor
     // animation is started. Updated once the start time is known and each time
     // modifications are pushed to the compositor.
-    std::unique_ptr<CompositorState> m_compositorState;
+    OwnPtr<CompositorState> m_compositorState;
     bool m_compositorPending;
     int m_compositorGroup;
 
-    std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
+    OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
 
     bool m_currentTimePending;
     bool m_stateIsBeingUpdated;

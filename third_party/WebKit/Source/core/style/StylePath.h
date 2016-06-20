@@ -6,10 +6,10 @@
 #define StylePath_h
 
 #include "platform/heap/Handle.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -19,7 +19,7 @@ class SVGPathByteStream;
 
 class StylePath : public RefCounted<StylePath> {
 public:
-    static PassRefPtr<StylePath> create(std::unique_ptr<SVGPathByteStream>);
+    static PassRefPtr<StylePath> create(PassOwnPtr<SVGPathByteStream>);
     ~StylePath();
 
     static StylePath* emptyPath();
@@ -35,10 +35,10 @@ public:
     bool operator==(const StylePath&) const;
 
 private:
-    explicit StylePath(std::unique_ptr<SVGPathByteStream>);
+    explicit StylePath(PassOwnPtr<SVGPathByteStream>);
 
-    std::unique_ptr<SVGPathByteStream> m_byteStream;
-    mutable std::unique_ptr<Path> m_path;
+    OwnPtr<SVGPathByteStream> m_byteStream;
+    mutable OwnPtr<Path> m_path;
     mutable float m_pathLength;
 };
 

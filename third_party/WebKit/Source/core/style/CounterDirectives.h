@@ -31,7 +31,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
-#include <memory>
 
 namespace blink {
 
@@ -107,7 +106,7 @@ inline bool operator!=(const CounterDirectives& a, const CounterDirectives& b) {
 
 typedef HashMap<AtomicString, CounterDirectives> CounterDirectiveMap;
 
-std::unique_ptr<CounterDirectiveMap> clone(const CounterDirectiveMap&);
+PassOwnPtr<CounterDirectiveMap> clone(const CounterDirectiveMap&);
 
 } // namespace blink
 

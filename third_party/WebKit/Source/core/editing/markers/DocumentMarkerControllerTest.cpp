@@ -41,7 +41,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -61,7 +60,7 @@ protected:
     void setBodyInnerHTML(const char*);
 
 private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };
 
 Text* DocumentMarkerControllerTest::createTextNode(const char* textContents)

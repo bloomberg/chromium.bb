@@ -10,7 +10,6 @@
 #include "modules/encryptedmedia/MediaKeySystemConfiguration.h"
 #include "public/platform/WebContentDecryptionModuleAccess.h"
 #include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 
@@ -18,7 +17,7 @@ class MediaKeySystemAccess final : public GarbageCollectedFinalized<MediaKeySyst
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    MediaKeySystemAccess(const String& keySystem, std::unique_ptr<WebContentDecryptionModuleAccess>);
+    MediaKeySystemAccess(const String& keySystem, PassOwnPtr<WebContentDecryptionModuleAccess>);
     virtual ~MediaKeySystemAccess();
 
     const String& keySystem() const { return m_keySystem; }
@@ -29,7 +28,7 @@ public:
 
 private:
     const String m_keySystem;
-    std::unique_ptr<WebContentDecryptionModuleAccess> m_access;
+    OwnPtr<WebContentDecryptionModuleAccess> m_access;
 };
 
 } // namespace blink

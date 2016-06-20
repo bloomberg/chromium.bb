@@ -6,13 +6,12 @@
 
 #include "core/dom/Document.h"
 #include "platform/weborigin/KURL.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::data(Document* document, unsigned long identifier, const KURL& url, const String& protocol)
+PassOwnPtr<TracedValue> InspectorWebSocketCreateEvent::data(Document* document, unsigned long identifier, const KURL& url, const String& protocol)
 {
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("identifier", identifier);
     value->setString("url", url.getString());
     value->setString("frame", toHexString(document->frame()));
@@ -22,9 +21,9 @@ std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::data(Document* docum
     return value;
 }
 
-std::unique_ptr<TracedValue> InspectorWebSocketEvent::data(Document* document, unsigned long identifier)
+PassOwnPtr<TracedValue> InspectorWebSocketEvent::data(Document* document, unsigned long identifier)
 {
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("identifier", identifier);
     value->setString("frame", toHexString(document->frame()));
     setCallStack(value.get());

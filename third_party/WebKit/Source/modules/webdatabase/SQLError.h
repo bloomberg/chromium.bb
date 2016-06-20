@@ -30,26 +30,24 @@
 #define SQLError_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
 class SQLErrorData {
     USING_FAST_MALLOC(SQLErrorData);
 public:
-    static std::unique_ptr<SQLErrorData> create(unsigned code, const String& message)
+    static PassOwnPtr<SQLErrorData> create(unsigned code, const String& message)
     {
-        return wrapUnique(new SQLErrorData(code, message));
+        return adoptPtr(new SQLErrorData(code, message));
     }
 
-    static std::unique_ptr<SQLErrorData> create(unsigned code, const char* message, int sqliteCode, const char* sqliteMessage)
+    static PassOwnPtr<SQLErrorData> create(unsigned code, const char* message, int sqliteCode, const char* sqliteMessage)
     {
         return create(code, String::format("%s (%d %s)", message, sqliteCode, sqliteMessage));
     }
 
-    static std::unique_ptr<SQLErrorData> create(const SQLErrorData& data)
+    static PassOwnPtr<SQLErrorData> create(const SQLErrorData& data)
     {
         return create(data.code(), data.message());
     }

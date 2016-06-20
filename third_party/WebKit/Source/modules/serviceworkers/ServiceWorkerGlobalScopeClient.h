@@ -41,7 +41,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
@@ -80,8 +79,8 @@ public:
     virtual void didHandleNotificationCloseEvent(int eventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult) = 0;
-    virtual void postMessageToClient(const WebString& clientUUID, const WebString& message, std::unique_ptr<WebMessagePortChannelArray>) = 0;
-    virtual void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, std::unique_ptr<WebMessagePortChannelArray>) = 0;
+    virtual void postMessageToClient(const WebString& clientUUID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
+    virtual void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) = 0;
     virtual void claim(WebServiceWorkerClientsClaimCallbacks*) = 0;
     virtual void focus(const WebString& clientUUID, WebServiceWorkerClientCallbacks*) = 0;

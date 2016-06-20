@@ -5,14 +5,12 @@
 #include "core/dom/IncrementLoadEventDelayCount.h"
 
 #include "core/dom/Document.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<IncrementLoadEventDelayCount> IncrementLoadEventDelayCount::create(Document& document)
+PassOwnPtr<IncrementLoadEventDelayCount> IncrementLoadEventDelayCount::create(Document& document)
 {
-    return wrapUnique(new IncrementLoadEventDelayCount(document));
+    return adoptPtr(new IncrementLoadEventDelayCount(document));
 }
 
 IncrementLoadEventDelayCount::IncrementLoadEventDelayCount(Document& document)

@@ -14,8 +14,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "public/platform/WebRTCCertificateGenerator.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -445,7 +443,7 @@ bool SerializedScriptValueReaderForModules::readRTCCertificate(v8::Local<v8::Val
     if (!readWebCoreString(&pemCertificate))
         return false;
 
-    std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator = wrapUnique(
+    OwnPtr<WebRTCCertificateGenerator> certificateGenerator = adoptPtr(
         Platform::current()->createRTCCertificateGenerator());
 
     std::unique_ptr<WebRTCCertificate> certificate(

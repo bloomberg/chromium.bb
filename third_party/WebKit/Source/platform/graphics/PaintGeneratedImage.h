@@ -7,6 +7,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GeneratedImage.h"
+#include "wtf/OwnPtr.h"
 
 class SkPicture;
 

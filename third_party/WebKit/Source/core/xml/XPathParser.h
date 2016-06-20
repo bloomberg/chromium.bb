@@ -30,7 +30,6 @@
 #include "core/xml/XPathPredicate.h"
 #include "core/xml/XPathStep.h"
 #include "wtf/Allocator.h"
-#include <memory>
 
 namespace blink {
 
@@ -109,7 +108,7 @@ private:
     int m_lastTokenType;
     Member<XPathNSResolver> m_resolver;
 
-    HashSet<std::unique_ptr<String>> m_strings;
+    HashSet<OwnPtr<String>> m_strings;
 };
 
 } // namespace XPath

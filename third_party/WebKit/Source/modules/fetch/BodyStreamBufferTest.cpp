@@ -15,8 +15,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -32,7 +31,7 @@ using MockFetchDataLoaderClient = DataConsumerHandleTestUtil::MockFetchDataLoade
 
 class FakeLoaderFactory : public FetchBlobDataConsumerHandle::LoaderFactory {
 public:
-    std::unique_ptr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
+    PassOwnPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
     {
         ASSERT_NOT_REACHED();
         return nullptr;
@@ -51,7 +50,7 @@ protected:
     ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
     ExecutionContext* getExecutionContext() { return &m_page->document(); }
 
-    std::unique_ptr<DummyPageHolder> m_page;
+    OwnPtr<DummyPageHolder> m_page;
 
     ScriptValue eval(const char* s)
     {
@@ -94,7 +93,7 @@ TEST_F(BodyStreamBufferTest, Tee)
     EXPECT_CALL(*client2, didFetchDataLoadedString(String("hello, world")));
     EXPECT_CALL(checkpoint, Call(4));
 
-    std::unique_ptr<DataConsumerHandleTestUtil::ReplayingHandle> handle = DataConsumerHandleTestUtil::ReplayingHandle::create();
+    OwnPtr<DataConsumerHandleTestUtil::ReplayingHandle> handle = DataConsumerHandleTestUtil::ReplayingHandle::create();
     handle->add(DataConsumerHandleTestUtil::Command(DataConsumerHandleTestUtil::Command::Data, "hello, "));
     handle->add(DataConsumerHandleTestUtil::Command(DataConsumerHandleTestUtil::Command::Data, "world"));
     handle->add(DataConsumerHandleTestUtil::Command(DataConsumerHandleTestUtil::Command::Done));
@@ -174,7 +173,7 @@ TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream)
 
 TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle)
 {
-    std::unique_ptr<BlobData> data = BlobData::create();
+    OwnPtr<BlobData> data = BlobData::create();
     data->appendText("hello", false);
     auto size = data->length();
     RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create(std::move(data), size);
@@ -194,7 +193,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle)
 TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull)
 {
     // This handle is not drainable.
-    std::unique_ptr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
+    OwnPtr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
     BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), std::move(handle));
 
     EXPECT_FALSE(buffer->isStreamLocked());
@@ -250,7 +249,7 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData)
 TEST_F(BodyStreamBufferTest, DrainAsFormDataReturnsNull)
 {
     // This handle is not drainable.
-    std::unique_ptr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
+    OwnPtr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
     BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), std::move(handle));
 
     EXPECT_FALSE(buffer->isStreamLocked());
@@ -294,7 +293,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer)
     EXPECT_CALL(*client, didFetchDataLoadedArrayBufferMock(_)).WillOnce(SaveArg<0>(&arrayBuffer));
     EXPECT_CALL(checkpoint, Call(2));
 
-    std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
+    OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
     BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
@@ -326,7 +325,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob)
     EXPECT_CALL(*client, didFetchDataLoadedBlobHandleMock(_)).WillOnce(SaveArg<0>(&blobDataHandle));
     EXPECT_CALL(checkpoint, Call(2));
 
-    std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
+    OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
     BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
@@ -356,7 +355,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsString)
     EXPECT_CALL(*client, didFetchDataLoadedString(String("hello")));
     EXPECT_CALL(checkpoint, Call(2));
 
-    std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
+    OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
     BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
@@ -452,7 +451,7 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer)
     EXPECT_CALL(*client, didFetchDataLoadedString(String("hello")));
     EXPECT_CALL(checkpoint, Call(2));
 
-    std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
+    OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
     Persistent<BodyStreamBuffer> buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
@@ -467,7 +466,7 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer)
 // TODO(hiroshige): Merge this class into MockFetchDataConsumerHandle.
 class MockFetchDataConsumerHandleWithMockDestructor : public DataConsumerHandleTestUtil::MockFetchDataConsumerHandle {
 public:
-    static std::unique_ptr<::testing::StrictMock<MockFetchDataConsumerHandleWithMockDestructor>> create() { return wrapUnique(new ::testing::StrictMock<MockFetchDataConsumerHandleWithMockDestructor>); }
+    static PassOwnPtr<::testing::StrictMock<MockFetchDataConsumerHandleWithMockDestructor>> create() { return adoptPtr(new ::testing::StrictMock<MockFetchDataConsumerHandleWithMockDestructor>); }
 
     ~MockFetchDataConsumerHandleWithMockDestructor() override
     {
@@ -482,8 +481,8 @@ TEST_F(BodyStreamBufferTest, SourceHandleAndReaderShouldBeDestructedWhenCanceled
     ScriptState::Scope scope(getScriptState());
     using MockHandle = MockFetchDataConsumerHandleWithMockDestructor;
     using MockReader = DataConsumerHandleTestUtil::MockFetchDataConsumerReader;
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
 
     Checkpoint checkpoint;
     InSequence s;
@@ -495,7 +494,7 @@ TEST_F(BodyStreamBufferTest, SourceHandleAndReaderShouldBeDestructedWhenCanceled
     EXPECT_CALL(checkpoint, Call(2));
 
     // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
+    ASSERT_TRUE(reader.leakPtr());
 
     BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), std::move(handle));
     checkpoint.Call(1);

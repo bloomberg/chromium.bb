@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
-#include <memory>
 
 namespace blink {
 
@@ -58,7 +57,7 @@ public:
         deleteSelectorsIfNeeded();
     }
 
-    static CSSSelectorList adoptSelectorVector(Vector<std::unique_ptr<CSSParserSelector>>& selectorVector);
+    static CSSSelectorList adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector);
     CSSSelectorList copy() const;
 
     bool isValid() const { return !!m_selectorArray; }

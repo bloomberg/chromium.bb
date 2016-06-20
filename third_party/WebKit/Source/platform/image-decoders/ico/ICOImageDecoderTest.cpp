@@ -6,16 +6,14 @@
 
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
 namespace {
 
-std::unique_ptr<ImageDecoder> createDecoder()
+PassOwnPtr<ImageDecoder> createDecoder()
 {
-    return wrapUnique(new ICOImageDecoder(ImageDecoder::AlphaNotPremultiplied, ImageDecoder::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
+    return adoptPtr(new ICOImageDecoder(ImageDecoder::AlphaNotPremultiplied, ImageDecoder::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
 }
 
 }

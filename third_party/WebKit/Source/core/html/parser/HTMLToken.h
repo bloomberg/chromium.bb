@@ -29,8 +29,7 @@
 #include "core/dom/Attribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/Forward.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -200,7 +199,7 @@ public:
     {
         ASSERT(m_type == Uninitialized);
         m_type = DOCTYPE;
-        m_doctypeData = wrapUnique(new DoctypeData);
+        m_doctypeData = adoptPtr(new DoctypeData);
     }
 
     void beginDOCTYPE(UChar character)
@@ -255,7 +254,7 @@ public:
         m_doctypeData->m_systemIdentifier.append(character);
     }
 
-    std::unique_ptr<DoctypeData> releaseDoctypeData()
+    PassOwnPtr<DoctypeData> releaseDoctypeData()
     {
         return std::move(m_doctypeData);
     }
@@ -473,7 +472,7 @@ private:
     Attribute* m_currentAttribute;
 
     // For DOCTYPE
-    std::unique_ptr<DoctypeData> m_doctypeData;
+    OwnPtr<DoctypeData> m_doctypeData;
 };
 
 } // namespace blink

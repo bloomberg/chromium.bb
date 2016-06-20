@@ -13,7 +13,7 @@
 #include "platform/blob/BlobData.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/TextEncoding.h"
-#include <memory>
+
 #include <v8.h>
 
 namespace blink {
@@ -63,7 +63,7 @@ DOMArrayBuffer* PushMessageData::arrayBuffer() const
 
 Blob* PushMessageData::blob() const
 {
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendBytes(m_data.data(), m_data.size());
 
     // Note that the content type of the Blob object is deliberately not being

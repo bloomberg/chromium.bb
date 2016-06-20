@@ -10,7 +10,8 @@
 #include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -21,9 +22,9 @@ class MODULES_EXPORT ServiceWorkerWindowClient final : public ServiceWorkerClien
     DEFINE_WRAPPERTYPEINFO();
 public:
     // To be used by CallbackPromiseAdapter.
-    using WebType = std::unique_ptr<WebServiceWorkerClientInfo>;
+    using WebType = OwnPtr<WebServiceWorkerClientInfo>;
 
-    static ServiceWorkerWindowClient* take(ScriptPromiseResolver*, std::unique_ptr<WebServiceWorkerClientInfo>);
+    static ServiceWorkerWindowClient* take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerClientInfo>);
 
     static ServiceWorkerWindowClient* create(const WebServiceWorkerClientInfo&);
     ~ServiceWorkerWindowClient() override;

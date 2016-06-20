@@ -32,10 +32,10 @@
 
 #include "core/style/BasicShapes.h"
 #include "platform/graphics/Path.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -105,7 +105,7 @@ public:
     {
         ASSERT(m_shape);
         m_path.reset();
-        m_path = wrapUnique(new Path);
+        m_path = adoptPtr(new Path);
         m_shape->path(*m_path, boundingRect);
         m_path->setWindRule(m_shape->getWindRule());
         return *m_path;
@@ -121,7 +121,7 @@ private:
     }
 
     RefPtr<BasicShape> m_shape;
-    std::unique_ptr<Path> m_path;
+    OwnPtr<Path> m_path;
 };
 
 DEFINE_TYPE_CASTS(ShapeClipPathOperation, ClipPathOperation, op, op->type() == ClipPathOperation::SHAPE, op.type() == ClipPathOperation::SHAPE);

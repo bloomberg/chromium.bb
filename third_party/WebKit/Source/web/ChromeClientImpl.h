@@ -36,7 +36,7 @@
 #include "core/page/WindowFeatures.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "web/WebExport.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -184,7 +184,7 @@ public:
 
     void didObserveNonGetFetchFromScript() const override;
 
-    std::unique_ptr<WebFrameScheduler> createFrameScheduler(BlameContext*) override;
+    PassOwnPtr<WebFrameScheduler> createFrameScheduler(BlameContext*) override;
 
     double lastFrameTimeMonotonic() const override;
 

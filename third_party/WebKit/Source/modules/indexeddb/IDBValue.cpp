@@ -7,7 +7,6 @@
 #include "platform/blob/BlobData.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/modules/indexeddb/WebIDBValue.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -20,8 +19,8 @@ IDBValue::IDBValue(const WebIDBValue& value)
 
 IDBValue::IDBValue(PassRefPtr<SharedBuffer> data, const WebVector<WebBlobInfo>& webBlobInfo, IDBKey* primaryKey, const IDBKeyPath& keyPath)
     : m_data(data)
-    , m_blobData(wrapUnique(new Vector<RefPtr<BlobDataHandle>>()))
-    , m_blobInfo(wrapUnique(new Vector<WebBlobInfo>(webBlobInfo.size())))
+    , m_blobData(adoptPtr(new Vector<RefPtr<BlobDataHandle>>()))
+    , m_blobInfo(adoptPtr(new Vector<WebBlobInfo>(webBlobInfo.size())))
     , m_primaryKey(primaryKey && primaryKey->isValid() ? primaryKey : nullptr)
     , m_keyPath(keyPath)
 {
@@ -33,8 +32,8 @@ IDBValue::IDBValue(PassRefPtr<SharedBuffer> data, const WebVector<WebBlobInfo>& 
 
 IDBValue::IDBValue(const IDBValue* value, IDBKey* primaryKey, const IDBKeyPath& keyPath)
     : m_data(value->m_data)
-    , m_blobData(wrapUnique(new Vector<RefPtr<BlobDataHandle>>()))
-    , m_blobInfo(wrapUnique(new Vector<WebBlobInfo>(value->m_blobInfo->size())))
+    , m_blobData(adoptPtr(new Vector<RefPtr<BlobDataHandle>>()))
+    , m_blobInfo(adoptPtr(new Vector<WebBlobInfo>(value->m_blobInfo->size())))
     , m_primaryKey(primaryKey)
     , m_keyPath(keyPath)
 {

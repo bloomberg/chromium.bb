@@ -14,7 +14,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {

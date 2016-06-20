@@ -42,7 +42,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
 #include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 
@@ -404,15 +403,15 @@ private:
     RecursiveMutex m_threadAttachMutex;
     ThreadStateSet m_threads;
     ThreadHeapStats m_stats;
-    std::unique_ptr<RegionTree> m_regionTree;
-    std::unique_ptr<HeapDoesNotContainCache> m_heapDoesNotContainCache;
-    std::unique_ptr<SafePointBarrier> m_safePointBarrier;
-    std::unique_ptr<FreePagePool> m_freePagePool;
-    std::unique_ptr<OrphanedPagePool> m_orphanedPagePool;
-    std::unique_ptr<CallbackStack> m_markingStack;
-    std::unique_ptr<CallbackStack> m_postMarkingCallbackStack;
-    std::unique_ptr<CallbackStack> m_globalWeakCallbackStack;
-    std::unique_ptr<CallbackStack> m_ephemeronStack;
+    OwnPtr<RegionTree> m_regionTree;
+    OwnPtr<HeapDoesNotContainCache> m_heapDoesNotContainCache;
+    OwnPtr<SafePointBarrier> m_safePointBarrier;
+    OwnPtr<FreePagePool> m_freePagePool;
+    OwnPtr<OrphanedPagePool> m_orphanedPagePool;
+    OwnPtr<CallbackStack> m_markingStack;
+    OwnPtr<CallbackStack> m_postMarkingCallbackStack;
+    OwnPtr<CallbackStack> m_globalWeakCallbackStack;
+    OwnPtr<CallbackStack> m_ephemeronStack;
     BlinkGC::GCReason m_lastGCReason;
 
     static ThreadHeap* s_mainThreadHeap;

@@ -86,9 +86,8 @@
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebViewScheduler.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -115,7 +114,7 @@ public:
 
         m_bounds.setWidth(m_bounds.width() * deviceScaleFactor);
         m_bounds.setHeight(m_bounds.height() * deviceScaleFactor);
-        m_pictureBuilder = wrapUnique(new SkPictureBuilder(SkRect::MakeIWH(m_bounds.width(), m_bounds.height())));
+        m_pictureBuilder = adoptPtr(new SkPictureBuilder(SkRect::MakeIWH(m_bounds.width(), m_bounds.height())));
 
         AffineTransform transform;
         transform.scale(deviceScaleFactor, deviceScaleFactor);
@@ -125,7 +124,7 @@ public:
 
     GraphicsContext& context() { return m_pictureBuilder->context(); }
 
-    std::unique_ptr<DragImage> createImage()
+    PassOwnPtr<DragImage> createImage()
     {
         if (m_draggedNode && m_draggedNode->layoutObject())
             m_draggedNode->layoutObject()->updateDragState(false);
@@ -149,7 +148,7 @@ private:
     Member<Node> m_draggedNode;
     FloatRect m_bounds;
     float m_opacity;
-    std::unique_ptr<SkPictureBuilder> m_pictureBuilder;
+    OwnPtr<SkPictureBuilder> m_pictureBuilder;
 };
 
 inline float parentPageZoomFactor(LocalFrame* frame)
@@ -596,7 +595,7 @@ double LocalFrame::devicePixelRatio() const
     return ratio;
 }
 
-std::unique_ptr<DragImage> LocalFrame::nodeImage(Node& node)
+PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 {
     m_view->updateAllLifecyclePhasesExceptPaint();
     LayoutObject* layoutObject = node.layoutObject();
@@ -620,7 +619,7 @@ std::unique_ptr<DragImage> LocalFrame::nodeImage(Node& node)
     return dragImageBuilder.createImage();
 }
 
-std::unique_ptr<DragImage> LocalFrame::dragImageForSelection(float opacity)
+PassOwnPtr<DragImage> LocalFrame::dragImageForSelection(float opacity)
 {
     if (!selection().isRange())
         return nullptr;

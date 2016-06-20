@@ -31,7 +31,6 @@
 #include "public/platform/WebThread.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -99,7 +98,7 @@ private:
     RefPtr<AudioBus> m_renderBus;
 
     // Rendering thread.
-    std::unique_ptr<WebThread> m_renderThread;
+    OwnPtr<WebThread> m_renderThread;
 
     // These variables are for counting the number of frames for the current
     // progress and the remaining frames to be processed.

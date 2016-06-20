@@ -71,7 +71,6 @@
 #include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"
-#include <memory>
 
 namespace blink {
 
@@ -149,12 +148,12 @@ static bool hasTextContent(Resource* cachedResource)
     return type == Resource::CSSStyleSheet || type == Resource::XSLStyleSheet || type == Resource::Script || type == Resource::Raw || type == Resource::ImportResource || type == Resource::MainResource;
 }
 
-static std::unique_ptr<TextResourceDecoder> createResourceTextDecoder(const String& mimeType, const String& textEncodingName)
+static PassOwnPtr<TextResourceDecoder> createResourceTextDecoder(const String& mimeType, const String& textEncodingName)
 {
     if (!textEncodingName.isEmpty())
         return TextResourceDecoder::create("text/plain", textEncodingName);
     if (DOMImplementation::isXMLMIMEType(mimeType)) {
-        std::unique_ptr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
+        OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
         decoder->useLenientXMLDecoding();
         return decoder;
     }
@@ -164,7 +163,7 @@ static std::unique_ptr<TextResourceDecoder> createResourceTextDecoder(const Stri
         return TextResourceDecoder::create("text/plain", "UTF-8");
     if (DOMImplementation::isTextMIMEType(mimeType))
         return TextResourceDecoder::create("text/plain", "ISO-8859-1");
-    return std::unique_ptr<TextResourceDecoder>();
+    return PassOwnPtr<TextResourceDecoder>();
 }
 
 static void maybeEncodeTextContent(const String& textContent, PassRefPtr<SharedBuffer> buffer, String* result, bool* base64Encoded)
@@ -189,7 +188,7 @@ bool InspectorPageAgent::sharedBufferContent(PassRefPtr<SharedBuffer> buffer, co
         return false;
 
     String textContent;
-    std::unique_ptr<TextResourceDecoder> decoder = createResourceTextDecoder(mimeType, textEncodingName);
+    OwnPtr<TextResourceDecoder> decoder = createResourceTextDecoder(mimeType, textEncodingName);
     WTF::TextEncoding encoding(textEncodingName);
 
     if (decoder) {

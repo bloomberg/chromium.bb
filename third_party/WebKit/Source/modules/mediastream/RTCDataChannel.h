@@ -34,7 +34,6 @@
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
 #include "wtf/Compiler.h"
-#include <memory>
 
 namespace blink {
 
@@ -56,7 +55,7 @@ class MODULES_EXPORT RTCDataChannel final
     DEFINE_WRAPPERTYPEINFO();
     USING_PRE_FINALIZER(RTCDataChannel, dispose);
 public:
-    static RTCDataChannel* create(ExecutionContext*, std::unique_ptr<WebRTCDataChannelHandler>);
+    static RTCDataChannel* create(ExecutionContext*, PassOwnPtr<WebRTCDataChannelHandler>);
     static RTCDataChannel* create(ExecutionContext*, WebRTCPeerConnectionHandler*, const String& label, const WebRTCDataChannelInit&, ExceptionState&);
     ~RTCDataChannel() override;
 
@@ -117,13 +116,13 @@ public:
     void didDetectError() override;
 
 private:
-    RTCDataChannel(ExecutionContext*, std::unique_ptr<WebRTCDataChannelHandler>);
+    RTCDataChannel(ExecutionContext*, PassOwnPtr<WebRTCDataChannelHandler>);
     void dispose();
 
     void scheduleDispatchEvent(Event*);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
 
-    std::unique_ptr<WebRTCDataChannelHandler> m_handler;
+    OwnPtr<WebRTCDataChannelHandler> m_handler;
 
     WebRTCDataChannelHandlerClient::ReadyState m_readyState;
 

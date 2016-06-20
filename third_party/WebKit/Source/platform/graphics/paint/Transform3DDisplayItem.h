@@ -9,6 +9,7 @@
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/Assertions.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

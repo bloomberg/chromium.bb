@@ -15,7 +15,6 @@
 #include "platform/AsyncMethodRunner.h"
 #include "public/platform/WebMediaRecorderHandler.h"
 #include "public/platform/WebMediaRecorderHandlerClient.h"
-#include <memory>
 
 namespace blink {
 
@@ -103,9 +102,9 @@ private:
 
     State m_state;
 
-    std::unique_ptr<BlobData> m_blobData;
+    OwnPtr<BlobData> m_blobData;
 
-    std::unique_ptr<WebMediaRecorderHandler> m_recorderHandler;
+    OwnPtr<WebMediaRecorderHandler> m_recorderHandler;
 
     Member<AsyncMethodRunner<MediaRecorder>> m_dispatchScheduledEventRunner;
     HeapVector<Member<Event>> m_scheduledEvents;

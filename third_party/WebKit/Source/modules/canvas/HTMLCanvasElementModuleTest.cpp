@@ -12,7 +12,6 @@
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -22,7 +21,7 @@ protected:
     {
         Page::PageClients pageClients;
         fillWithEmptyClients(pageClients);
-        std::unique_ptr<DummyPageHolder> m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
+        OwnPtr<DummyPageHolder> m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
         Persistent<HTMLDocument> m_document = toHTMLDocument(&m_dummyPageHolder->document());
         m_document->documentElement()->setInnerHTML("<body><canvas id='c'></canvas></body>", ASSERT_NO_EXCEPTION);
         m_document->view()->updateAllLifecyclePhases();

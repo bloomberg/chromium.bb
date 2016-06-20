@@ -37,7 +37,6 @@
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -60,7 +59,7 @@ private:
     TextEncoder(const WTF::TextEncoding&);
 
     WTF::TextEncoding m_encoding;
-    std::unique_ptr<WTF::TextCodec> m_codec;
+    OwnPtr<WTF::TextCodec> m_codec;
 };
 
 } // namespace blink

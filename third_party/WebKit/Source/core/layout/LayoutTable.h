@@ -30,7 +30,6 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/style/CollapsedBorderValue.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -475,7 +474,7 @@ private:
     //
     // As the algorithm is dependent on the style, this field is nullptr before
     // the first style is applied in styleDidChange().
-    std::unique_ptr<TableLayoutAlgorithm> m_tableLayout;
+    OwnPtr<TableLayoutAlgorithm> m_tableLayout;
 
     // A sorted list of all unique border values that we want to paint.
     //

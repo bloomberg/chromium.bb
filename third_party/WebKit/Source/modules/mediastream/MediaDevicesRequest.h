@@ -31,6 +31,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaDeviceInfo.h"
 #include "platform/heap/Handle.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

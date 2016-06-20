@@ -10,6 +10,7 @@
 #include "core/animation/Keyframe.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/TimingFunction.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

@@ -48,7 +48,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 #include <stdint.h>
 
 namespace blink {
@@ -128,7 +127,7 @@ public:
     // WebSocketChannelClient functions.
     void didConnect(const String& subprotocol, const String& extensions) override;
     void didReceiveTextMessage(const String& message) override;
-    void didReceiveBinaryMessage(std::unique_ptr<Vector<char>>) override;
+    void didReceiveBinaryMessage(PassOwnPtr<Vector<char>>) override;
     void didError() override;
     void didConsumeBufferedAmount(uint64_t) override;
     void didStartClosingHandshake() override;

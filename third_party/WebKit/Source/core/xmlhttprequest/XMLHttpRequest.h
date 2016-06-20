@@ -37,12 +37,13 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -156,7 +157,7 @@ private:
     SecurityOrigin* getSecurityOrigin() const;
 
     void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    void didReceiveResponse(unsigned long identifier, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
+    void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void didReceiveData(const char* data, unsigned dataLength) override;
     // When responseType is set to "blob", didDownloadData() is called instead
     // of didReceiveData().
@@ -192,7 +193,7 @@ private:
     bool responseIsXML() const;
     bool responseIsHTML() const;
 
-    std::unique_ptr<TextResourceDecoder> createDecoder() const;
+    PassOwnPtr<TextResourceDecoder> createDecoder() const;
 
     void initResponseDocument();
     void parseDocumentChunk(const char* data, unsigned dataLength);
@@ -264,13 +265,13 @@ private:
     Member<Blob> m_responseBlob;
     Member<Stream> m_responseLegacyStream;
 
-    std::unique_ptr<ThreadableLoader> m_loader;
+    OwnPtr<ThreadableLoader> m_loader;
     State m_state;
 
     ResourceResponse m_response;
     String m_finalResponseCharset;
 
-    std::unique_ptr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
 
     ScriptString m_responseText;
     Member<Document> m_responseDocument;

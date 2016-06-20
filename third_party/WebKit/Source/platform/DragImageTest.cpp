@@ -43,9 +43,10 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -124,7 +125,7 @@ TEST(DragImageTest, NullHandling)
 TEST(DragImageTest, NonNullHandling)
 {
     RefPtr<TestImage> testImage(TestImage::create(IntSize(2, 2)));
-    std::unique_ptr<DragImage> dragImage = DragImage::create(testImage.get());
+    OwnPtr<DragImage> dragImage = DragImage::create(testImage.get());
     ASSERT_TRUE(dragImage);
 
     dragImage->scale(0.5, 0.5);
@@ -157,9 +158,9 @@ TEST(DragImageTest, TrimWhitespace)
     fontDescription.setWeight(FontWeightNormal);
     fontDescription.setStyle(FontStyleNormal);
 
-    std::unique_ptr<DragImage> testImage =
+    OwnPtr<DragImage> testImage =
         DragImage::create(url, testLabel, fontDescription, deviceScaleFactor);
-    std::unique_ptr<DragImage> expectedImage =
+    OwnPtr<DragImage> expectedImage =
         DragImage::create(url, expectedLabel, fontDescription, deviceScaleFactor);
 
     EXPECT_EQ(testImage->size().width(), expectedImage->size().width());
@@ -192,7 +193,7 @@ TEST(DragImageTest, InvalidRotatedBitmapImage)
     // Create a DragImage from it. In MSAN builds, this will cause a failure if
     // the pixel memory is not initialized, if we have to respect non-default
     // orientation.
-    std::unique_ptr<DragImage> dragImage = DragImage::create(image.get(), RespectImageOrientation);
+    OwnPtr<DragImage> dragImage = DragImage::create(image.get(), RespectImageOrientation);
 
     // With an invalid pixel ref, BitmapImage should have no backing SkImage => we don't allocate
     // a DragImage.
@@ -222,7 +223,7 @@ TEST(DragImageTest, InterpolationNone)
     }
 
     RefPtr<TestImage> testImage = TestImage::create(fromSkSp(SkImage::MakeFromBitmap(testBitmap)));
-    std::unique_ptr<DragImage> dragImage = DragImage::create(testImage.get(), DoNotRespectImageOrientation, 1, InterpolationNone);
+    OwnPtr<DragImage> dragImage = DragImage::create(testImage.get(), DoNotRespectImageOrientation, 1, InterpolationNone);
     ASSERT_TRUE(dragImage);
     dragImage->scale(2, 2);
     const SkBitmap& dragBitmap = dragImage->bitmap();

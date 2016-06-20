@@ -38,8 +38,8 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
-#include <memory>
 
 namespace blink {
 
@@ -91,7 +91,7 @@ public:
     explicit ResourceRequest(CrossThreadResourceRequestData*);
 
     // Gets a copy of the data suitable for passing to another thread.
-    std::unique_ptr<CrossThreadResourceRequestData> copyData() const;
+    PassOwnPtr<CrossThreadResourceRequestData> copyData() const;
 
     bool isNull() const;
     bool isEmpty() const;
@@ -307,7 +307,7 @@ public:
     RefPtr<SecurityOrigin> m_requestorOrigin;
 
     String m_httpMethod;
-    std::unique_ptr<CrossThreadHTTPHeaderMapData> m_httpHeaders;
+    OwnPtr<CrossThreadHTTPHeaderMapData> m_httpHeaders;
     RefPtr<EncodedFormData> m_httpBody;
     RefPtr<EncodedFormData> m_attachedCredential;
     bool m_allowStoredCredentials;

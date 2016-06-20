@@ -33,7 +33,8 @@
 #include "platform/audio/AudioArray.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -91,7 +92,7 @@ protected:
     unsigned m_lastPreDelayFrames;
     void setPreDelayTime(float);
 
-    Vector<std::unique_ptr<AudioFloatArray>> m_preDelayBuffers;
+    Vector<OwnPtr<AudioFloatArray>> m_preDelayBuffers;
     int m_preDelayReadIndex;
     int m_preDelayWriteIndex;
 

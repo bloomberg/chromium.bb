@@ -42,8 +42,6 @@
 #include "public/web/WebSpeechRecognitionResult.h"
 #include "public/web/WebSpeechRecognizer.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -51,9 +49,9 @@ SpeechRecognitionClientProxy::~SpeechRecognitionClientProxy()
 {
 }
 
-std::unique_ptr<SpeechRecognitionClientProxy> SpeechRecognitionClientProxy::create(WebSpeechRecognizer* recognizer)
+PassOwnPtr<SpeechRecognitionClientProxy> SpeechRecognitionClientProxy::create(WebSpeechRecognizer* recognizer)
 {
-    return wrapUnique(new SpeechRecognitionClientProxy(recognizer));
+    return adoptPtr(new SpeechRecognitionClientProxy(recognizer));
 }
 
 void SpeechRecognitionClientProxy::start(SpeechRecognition* recognition, const SpeechGrammarList* grammarList, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack* audioTrack)

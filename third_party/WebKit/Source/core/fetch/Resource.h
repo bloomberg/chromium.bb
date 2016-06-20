@@ -37,8 +37,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -181,7 +181,7 @@ public:
     // already been made to not follow it.
     virtual void willNotFollowRedirect() {}
 
-    virtual void responseReceived(const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>);
+    virtual void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
     void setResponse(const ResourceResponse&);
     const ResourceResponse& response() const { return m_response; }
 

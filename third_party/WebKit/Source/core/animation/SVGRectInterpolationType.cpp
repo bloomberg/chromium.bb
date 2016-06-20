@@ -7,7 +7,6 @@
 #include "core/animation/StringKeyframe.h"
 #include "core/svg/SVGRect.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -21,7 +20,7 @@ enum RectComponentIndex {
 
 InterpolationValue SVGRectInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(RectComponentIndexCount);
+    OwnPtr<InterpolableList> result = InterpolableList::create(RectComponentIndexCount);
     for (size_t i = 0; i < RectComponentIndexCount; i++)
         result->set(i, InterpolableNumber::create(0));
     return InterpolationValue(std::move(result));
@@ -33,7 +32,7 @@ InterpolationValue SVGRectInterpolationType::maybeConvertSVGValue(const SVGPrope
         return nullptr;
 
     const SVGRect& rect = toSVGRect(svgValue);
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(RectComponentIndexCount);
+    OwnPtr<InterpolableList> result = InterpolableList::create(RectComponentIndexCount);
     result->set(RectX, InterpolableNumber::create(rect.x()));
     result->set(RectY, InterpolableNumber::create(rect.y()));
     result->set(RectWidth, InterpolableNumber::create(rect.width()));

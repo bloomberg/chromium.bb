@@ -47,8 +47,6 @@
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
 #include "core/dom/ExecutionContextTask.h"
@@ -84,7 +82,7 @@ static void writeDebugInfo(LayoutObject* layoutObject, const AtomicString& outpu
         node = toDocument(node)->documentElement();
     if (!node->isElementNode())
         return;
-    node->document().postTask(wrapUnique(new WriteDebugInfoTask(toElement(node), output)));
+    node->document().postTask(adoptPtr(new WriteDebugInfoTask(toElement(node), output)));
 }
 
 void TextAutosizer::writeClusterDebugInfo(Cluster* cluster)
@@ -363,7 +361,7 @@ void TextAutosizer::prepareClusterStack(const LayoutObject* layoutObject)
         m_blocksThatHaveBegunLayout.add(block);
 #endif
         if (Cluster* cluster = maybeCreateCluster(block))
-            m_clusterStack.append(wrapUnique(cluster));
+            m_clusterStack.append(adoptPtr(cluster));
     }
 }
 
@@ -377,7 +375,7 @@ void TextAutosizer::beginLayout(LayoutBlock* block, SubtreeLayoutScope* layouter
     ASSERT(!m_clusterStack.isEmpty() || block->isLayoutView());
 
     if (Cluster* cluster = maybeCreateCluster(block))
-        m_clusterStack.append(wrapUnique(cluster));
+        m_clusterStack.append(adoptPtr(cluster));
 
     ASSERT(!m_clusterStack.isEmpty());
 
@@ -767,12 +765,12 @@ TextAutosizer::Supercluster* TextAutosizer::getSupercluster(const LayoutBlock* b
     if (!roots || roots->size() < 2 || !roots->contains(block))
         return nullptr;
 
-    SuperclusterMap::AddResult addResult = m_superclusters.add(fingerprint, std::unique_ptr<Supercluster>());
+    SuperclusterMap::AddResult addResult = m_superclusters.add(fingerprint, PassOwnPtr<Supercluster>());
     if (!addResult.isNewEntry)
         return addResult.storedValue->value.get();
 
     Supercluster* supercluster = new Supercluster(roots);
-    addResult.storedValue->value = wrapUnique(supercluster);
+    addResult.storedValue->value = adoptPtr(supercluster);
     return supercluster;
 }
 
@@ -1095,9 +1093,9 @@ void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(const LayoutBlock
 {
     add(block, fingerprint);
 
-    ReverseFingerprintMap::AddResult addResult = m_blocksForFingerprint.add(fingerprint, std::unique_ptr<BlockSet>());
+    ReverseFingerprintMap::AddResult addResult = m_blocksForFingerprint.add(fingerprint, PassOwnPtr<BlockSet>());
     if (addResult.isNewEntry)
-        addResult.storedValue->value = wrapUnique(new BlockSet);
+        addResult.storedValue->value = adoptPtr(new BlockSet);
     addResult.storedValue->value->add(block);
 #if ENABLE(ASSERT)
     assertMapsAreConsistent();

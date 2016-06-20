@@ -33,7 +33,7 @@
 #include "platform/audio/FFTFrame.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -63,8 +63,8 @@ public:
     int inputReadIndex() const { return m_inputReadIndex; }
 
 private:
-    std::unique_ptr<FFTFrame> m_fftKernel;
-    std::unique_ptr<FFTConvolver> m_fftConvolver;
+    OwnPtr<FFTFrame> m_fftKernel;
+    OwnPtr<FFTConvolver> m_fftConvolver;
 
     AudioFloatArray m_preDelayBuffer;
 
@@ -80,8 +80,8 @@ private:
     AudioFloatArray m_temporaryBuffer;
 
     bool m_directMode;
-    std::unique_ptr<AudioFloatArray> m_directKernel;
-    std::unique_ptr<DirectConvolver> m_directConvolver;
+    OwnPtr<AudioFloatArray> m_directKernel;
+    OwnPtr<DirectConvolver> m_directConvolver;
 };
 
 } // namespace blink

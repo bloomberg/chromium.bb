@@ -48,6 +48,7 @@
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/LeakAnnotations.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/allocator/PageAllocator.h"
 #include "wtf/allocator/Partitions.h"

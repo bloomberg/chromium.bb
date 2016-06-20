@@ -32,9 +32,8 @@
 #include "ui/gfx/skia_util.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
 #include <algorithm>
-#include <memory>
 #include <utility>
 
 namespace blink {
@@ -69,7 +68,7 @@ PaintArtifactCompositor::PaintArtifactCompositor()
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
     m_rootLayer = cc::Layer::Create();
-    m_webLayer = wrapUnique(Platform::current()->compositorSupport()->createLayerFromCCLayer(m_rootLayer.get()));
+    m_webLayer = adoptPtr(Platform::current()->compositorSupport()->createLayerFromCCLayer(m_rootLayer.get()));
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor()
@@ -374,7 +373,7 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
     // The common case: create a layer for painted content.
     gfx::Rect combinedBounds = enclosingIntRect(paintChunk.bounds);
     scoped_refptr<cc::DisplayItemList> displayList = recordPaintChunk(paintArtifact, paintChunk, combinedBounds);
-    std::unique_ptr<ContentLayerClientImpl> contentLayerClient = wrapUnique(
+    OwnPtr<ContentLayerClientImpl> contentLayerClient = adoptPtr(
         new ContentLayerClientImpl(std::move(displayList), gfx::Rect(combinedBounds.size())));
 
     layerOffset = combinedBounds.OffsetFromOrigin();

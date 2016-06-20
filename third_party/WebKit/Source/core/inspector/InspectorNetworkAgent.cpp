@@ -74,7 +74,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/Base64.h"
-#include <memory>
 
 namespace blink {
 
@@ -184,7 +183,7 @@ private:
     String m_mimeType;
     String m_textEncodingName;
     std::unique_ptr<GetResponseBodyCallback> m_callback;
-    std::unique_ptr<FileReaderLoader> m_loader;
+    OwnPtr<FileReaderLoader> m_loader;
     RefPtr<SharedBuffer> m_rawData;
 };
 

@@ -9,7 +9,6 @@
 #include "platform/audio/AudioDSPKernel.h"
 #include "platform/audio/AudioDSPKernelProcessor.h"
 #include "platform/audio/IIRFilter.h"
-#include <memory>
 
 namespace blink {
 
@@ -21,7 +20,7 @@ public:
         const Vector<double>& feedforwardCoef, const Vector<double>& feedbackCoef);
     ~IIRProcessor() override;
 
-    std::unique_ptr<AudioDSPKernel> createKernel() override;
+    PassOwnPtr<AudioDSPKernel> createKernel() override;
 
     void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
 
@@ -37,7 +36,7 @@ private:
     AudioDoubleArray m_feedback;
     AudioDoubleArray m_feedforward;
     // This holds the IIR kernel for computing the frequency response.
-    std::unique_ptr<IIRDSPKernel> m_responseKernel;
+    OwnPtr<IIRDSPKernel> m_responseKernel;
 };
 
 } // namespace blink

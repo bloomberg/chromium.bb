@@ -33,8 +33,6 @@
 #include "platform/audio/AudioPullFIFO.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -45,9 +43,9 @@ const unsigned renderBufferSize = 128;
 const size_t fifoSize = 8192;
 
 // Factory method: Chromium-implementation
-std::unique_ptr<AudioDestination> AudioDestination::create(AudioIOCallback& callback, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, const PassRefPtr<SecurityOrigin>& securityOrigin)
+PassOwnPtr<AudioDestination> AudioDestination::create(AudioIOCallback& callback, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, const PassRefPtr<SecurityOrigin>& securityOrigin)
 {
-    return wrapUnique(new AudioDestination(callback, inputDeviceId, numberOfInputChannels, numberOfOutputChannels, sampleRate, securityOrigin));
+    return adoptPtr(new AudioDestination(callback, inputDeviceId, numberOfInputChannels, numberOfOutputChannels, sampleRate, securityOrigin));
 }
 
 AudioDestination::AudioDestination(AudioIOCallback& callback, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, const PassRefPtr<SecurityOrigin>& securityOrigin)
@@ -91,7 +89,7 @@ AudioDestination::AudioDestination(AudioIOCallback& callback, const String& inpu
     if (m_callbackBufferSize + renderBufferSize > fifoSize)
         return;
 
-    m_audioDevice = wrapUnique(Platform::current()->createAudioDevice(m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels, sampleRate, this, inputDeviceId, securityOrigin));
+    m_audioDevice = adoptPtr(Platform::current()->createAudioDevice(m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels, sampleRate, this, inputDeviceId, securityOrigin));
     ASSERT(m_audioDevice);
 
     // Record the sizes if we successfully created an output device.
@@ -103,10 +101,10 @@ AudioDestination::AudioDestination(AudioIOCallback& callback, const String& inpu
     // contains enough data, the data will be provided directly.
     // Otherwise, the FIFO will call the provider enough times to
     // satisfy the request for data.
-    m_fifo = wrapUnique(new AudioPullFIFO(*this, numberOfOutputChannels, fifoSize, renderBufferSize));
+    m_fifo = adoptPtr(new AudioPullFIFO(*this, numberOfOutputChannels, fifoSize, renderBufferSize));
 
     // Input buffering.
-    m_inputFifo = wrapUnique(new AudioFIFO(numberOfInputChannels, fifoSize));
+    m_inputFifo = adoptPtr(new AudioFIFO(numberOfInputChannels, fifoSize));
 
     // If the callback size does not match the render size, then we need to buffer some
     // extra silence for the input. Otherwise, we can over-consume the input FIFO.

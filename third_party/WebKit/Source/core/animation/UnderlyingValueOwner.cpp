@@ -4,8 +4,6 @@
 
 #include "core/animation/UnderlyingValueOwner.h"
 
-#include <memory>
-
 namespace blink {
 
 struct NullValueWrapper {
@@ -44,7 +42,7 @@ void UnderlyingValueOwner::set(const InterpolationType& type, InterpolationValue
     m_value = &m_valueOwner;
 }
 
-void UnderlyingValueOwner::set(std::unique_ptr<TypedInterpolationValue> value)
+void UnderlyingValueOwner::set(PassOwnPtr<TypedInterpolationValue> value)
 {
     if (value)
         set(value->type(), std::move(value->mutableValue()));

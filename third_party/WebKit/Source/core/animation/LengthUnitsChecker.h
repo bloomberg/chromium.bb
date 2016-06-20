@@ -8,14 +8,12 @@
 #include "core/animation/InterpolationType.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
 class LengthUnitsChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<LengthUnitsChecker> maybeCreate(CSSLengthArray&& lengthArray, const StyleResolverState& state)
+    static PassOwnPtr<LengthUnitsChecker> maybeCreate(CSSLengthArray&& lengthArray, const StyleResolverState& state)
     {
         bool create = false;
         size_t lastIndex = 0;
@@ -28,7 +26,7 @@ public:
         }
         if (!create)
             return nullptr;
-        return wrapUnique(new LengthUnitsChecker(std::move(lengthArray), lastIndex));
+        return adoptPtr(new LengthUnitsChecker(std::move(lengthArray), lastIndex));
     }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final

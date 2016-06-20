@@ -32,8 +32,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 #include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -59,7 +58,7 @@ public:
         , m_rawPointer(nullptr)
         , m_silent(true)
     {
-        m_memBuffer = wrapUnique(new AudioFloatArray(length));
+        m_memBuffer = adoptPtr(new AudioFloatArray(length));
     }
 
     // A "blank" audio channel -- must call set() before it's useful...
@@ -134,7 +133,7 @@ private:
     size_t m_length;
 
     float* m_rawPointer;
-    std::unique_ptr<AudioFloatArray> m_memBuffer;
+    OwnPtr<AudioFloatArray> m_memBuffer;
     bool m_silent;
 };
 

@@ -32,7 +32,7 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -84,7 +84,7 @@ private:
     bool m_finalProgressChangedSent;
     double m_progressValue;
 
-    HashMap<unsigned long, std::unique_ptr<ProgressItem>> m_progressItems;
+    HashMap<unsigned long, OwnPtr<ProgressItem>> m_progressItems;
 };
 
 } // namespace blink

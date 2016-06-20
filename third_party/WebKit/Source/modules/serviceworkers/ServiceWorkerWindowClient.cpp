@@ -16,11 +16,10 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
 #include "public/platform/WebString.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
-ServiceWorkerWindowClient* ServiceWorkerWindowClient::take(ScriptPromiseResolver*, std::unique_ptr<WebServiceWorkerClientInfo> webClient)
+ServiceWorkerWindowClient* ServiceWorkerWindowClient::take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerClientInfo> webClient)
 {
     return webClient ? ServiceWorkerWindowClient::create(*webClient) : nullptr;
 }

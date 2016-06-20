@@ -14,11 +14,10 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "modules/mediasession/MediaMetadata.h"
 #include "modules/mediasession/MediaSessionError.h"
-#include <memory>
 
 namespace blink {
 
-MediaSession::MediaSession(std::unique_ptr<WebMediaSession> webMediaSession)
+MediaSession::MediaSession(PassOwnPtr<WebMediaSession> webMediaSession)
     : m_webMediaSession(std::move(webMediaSession))
 {
     DCHECK(m_webMediaSession);
@@ -29,7 +28,7 @@ MediaSession* MediaSession::create(ExecutionContext* context, ExceptionState& ex
     Document* document = toDocument(context);
     LocalFrame* frame = document->frame();
     FrameLoaderClient* client = frame->loader().client();
-    std::unique_ptr<WebMediaSession> webMediaSession = client->createWebMediaSession();
+    OwnPtr<WebMediaSession> webMediaSession = client->createWebMediaSession();
     if (!webMediaSession) {
         exceptionState.throwDOMException(NotSupportedError, "Missing platform implementation.");
         return nullptr;

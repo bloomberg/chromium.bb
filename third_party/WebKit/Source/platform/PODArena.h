@@ -29,11 +29,11 @@
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/allocator/Partitions.h"
-#include <memory>
 #include <stdint.h>
 
 namespace blink {
@@ -132,7 +132,7 @@ protected:
         if (!ptr) {
             if (roundedSize > m_currentChunkSize)
                 m_currentChunkSize = roundedSize;
-            m_chunks.append(wrapUnique(new Chunk(m_allocator.get(), m_currentChunkSize)));
+            m_chunks.append(adoptPtr(new Chunk(m_allocator.get(), m_currentChunkSize)));
             m_current = m_chunks.last().get();
             ptr = m_current->allocate(roundedSize);
         }
@@ -194,7 +194,7 @@ protected:
     RefPtr<Allocator> m_allocator;
     Chunk* m_current;
     size_t m_currentChunkSize;
-    Vector<std::unique_ptr<Chunk>> m_chunks;
+    Vector<OwnPtr<Chunk>> m_chunks;
 };
 
 } // namespace blink

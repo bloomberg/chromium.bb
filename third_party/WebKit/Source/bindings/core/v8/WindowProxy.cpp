@@ -62,6 +62,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/CString.h"
 #include <algorithm>

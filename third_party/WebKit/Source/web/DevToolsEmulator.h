@@ -10,7 +10,7 @@
 #include "public/platform/WebViewportStyle.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "wtf/Forward.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -83,8 +83,8 @@ private:
     bool m_originalDeviceSupportsMouse;
     bool m_originalDeviceSupportsTouch;
     int m_originalMaxTouchPoints;
-    std::unique_ptr<IntPoint> m_lastPinchAnchorCss;
-    std::unique_ptr<IntPoint> m_lastPinchAnchorDip;
+    OwnPtr<IntPoint> m_lastPinchAnchorCss;
+    OwnPtr<IntPoint> m_lastPinchAnchorDip;
 
     bool m_embedderScriptEnabled;
     bool m_scriptExecutionDisabled;

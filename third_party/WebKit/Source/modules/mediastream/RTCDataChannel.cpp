@@ -33,8 +33,6 @@
 #include "core/fileapi/Blob.h"
 #include "modules/mediastream/RTCPeerConnection.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -53,7 +51,7 @@ static void throwNoBlobSupportException(ExceptionState& exceptionState)
     exceptionState.throwDOMException(NotSupportedError, "Blob support not implemented yet");
 }
 
-RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, std::unique_ptr<WebRTCDataChannelHandler> handler)
+RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, PassOwnPtr<WebRTCDataChannelHandler> handler)
 {
     DCHECK(handler);
     RTCDataChannel* channel = new RTCDataChannel(context, std::move(handler));
@@ -64,7 +62,7 @@ RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, std::unique_pt
 
 RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, WebRTCPeerConnectionHandler* peerConnectionHandler, const String& label, const WebRTCDataChannelInit& init, ExceptionState& exceptionState)
 {
-    std::unique_ptr<WebRTCDataChannelHandler> handler = wrapUnique(peerConnectionHandler->createDataChannel(label, init));
+    OwnPtr<WebRTCDataChannelHandler> handler = adoptPtr(peerConnectionHandler->createDataChannel(label, init));
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "RTCDataChannel is not supported");
         return nullptr;
@@ -75,7 +73,7 @@ RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, WebRTCPeerConn
     return channel;
 }
 
-RTCDataChannel::RTCDataChannel(ExecutionContext* context, std::unique_ptr<WebRTCDataChannelHandler> handler)
+RTCDataChannel::RTCDataChannel(ExecutionContext* context, PassOwnPtr<WebRTCDataChannelHandler> handler)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_handler(std::move(handler))

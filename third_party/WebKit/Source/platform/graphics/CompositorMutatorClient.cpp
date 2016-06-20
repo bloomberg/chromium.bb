@@ -12,8 +12,6 @@
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
 #include "platform/graphics/CompositorMutator.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -38,7 +36,7 @@ bool CompositorMutatorClient::Mutate(
     TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::Mutate");
     double monotonicTimeNow = (monotonicTime - base::TimeTicks()).InSecondsF();
     if (!m_mutations)
-        m_mutations = wrapUnique(new CompositorMutations);
+        m_mutations = adoptPtr(new CompositorMutations);
     CompositorMutableStateProvider compositorState(treeImpl, m_mutations.get());
     bool shouldReinvoke = m_mutator->mutate(monotonicTimeNow, &compositorState);
     return shouldReinvoke;
@@ -59,7 +57,7 @@ base::Closure CompositorMutatorClient::TakeMutations()
 
     return base::Bind(&CompositorMutationsTarget::applyMutations,
         base::Unretained(m_mutationsTarget),
-        base::Owned(m_mutations.release()));
+        base::Owned(m_mutations.leakPtr()));
 }
 
 void CompositorMutatorClient::setNeedsMutate()
@@ -68,7 +66,7 @@ void CompositorMutatorClient::setNeedsMutate()
     m_client->SetNeedsMutate();
 }
 
-void CompositorMutatorClient::setMutationsForTesting(std::unique_ptr<CompositorMutations> mutations)
+void CompositorMutatorClient::setMutationsForTesting(PassOwnPtr<CompositorMutations> mutations)
 {
     m_mutations = std::move(mutations);
 }

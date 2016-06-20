@@ -84,7 +84,7 @@ protected:
     }
 
 private:
-    std::unique_ptr<DummyPageHolder> m_page;
+    OwnPtr<DummyPageHolder> m_page;
     Persistent<NotificationResourcesLoader> m_loader;
     std::unique_ptr<WebNotificationResources> m_resources;
 };

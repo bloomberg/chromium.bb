@@ -36,7 +36,6 @@
 #include "core/style/CachedUAStyle.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedData.h"
-#include <memory>
 
 namespace blink {
 
@@ -181,7 +180,7 @@ private:
 
     FontBuilder m_fontBuilder;
 
-    std::unique_ptr<CachedUAStyle> m_cachedUAStyle;
+    OwnPtr<CachedUAStyle> m_cachedUAStyle;
 
     ElementStyleResources m_elementStyleResources;
 

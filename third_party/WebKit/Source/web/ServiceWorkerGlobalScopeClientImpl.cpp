@@ -34,7 +34,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -122,14 +122,14 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleSyncEvent(int syncEventID, Web
     m_client.didHandleSyncEvent(syncEventID, result);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(const WebString& clientUUID, const WebString& message, std::unique_ptr<WebMessagePortChannelArray> webChannels)
+void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(const WebString& clientUUID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray> webChannels)
 {
-    m_client.postMessageToClient(clientUUID, message, webChannels.release());
+    m_client.postMessageToClient(clientUUID, message, webChannels.leakPtr());
 }
 
-void ServiceWorkerGlobalScopeClientImpl::postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient& client, const WebString& message, std::unique_ptr<WebMessagePortChannelArray> webChannels)
+void ServiceWorkerGlobalScopeClientImpl::postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient& client, const WebString& message, PassOwnPtr<WebMessagePortChannelArray> webChannels)
 {
-    m_client.postMessageToCrossOriginClient(client, message, webChannels.release());
+    m_client.postMessageToCrossOriginClient(client, message, webChannels.leakPtr());
 }
 
 void ServiceWorkerGlobalScopeClientImpl::skipWaiting(WebServiceWorkerSkipWaitingCallbacks* callbacks)

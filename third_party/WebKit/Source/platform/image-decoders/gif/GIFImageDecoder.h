@@ -28,7 +28,7 @@
 
 #include "platform/image-decoders/ImageDecoder.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 class GIFImageReader;
 
@@ -86,7 +86,7 @@ private:
 
     bool m_currentBufferSawAlpha;
     mutable int m_repetitionCount;
-    std::unique_ptr<GIFImageReader> m_reader;
+    OwnPtr<GIFImageReader> m_reader;
 };
 
 } // namespace blink

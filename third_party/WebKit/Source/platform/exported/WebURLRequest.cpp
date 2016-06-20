@@ -39,8 +39,6 @@
 #include "public/platform/WebURL.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -56,11 +54,11 @@ public:
 
 private:
     explicit ExtraDataContainer(WebURLRequest::ExtraData* extraData)
-        : m_extraData(wrapUnique(extraData))
+        : m_extraData(adoptPtr(extraData))
     {
     }
 
-    std::unique_ptr<WebURLRequest::ExtraData> m_extraData;
+    OwnPtr<WebURLRequest::ExtraData> m_extraData;
 };
 
 } // namespace

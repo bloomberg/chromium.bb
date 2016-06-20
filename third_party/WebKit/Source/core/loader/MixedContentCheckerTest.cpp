@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
 #include <base/macros.h>
-#include <memory>
 
 namespace blink {
 
@@ -49,7 +48,7 @@ TEST(MixedContentCheckerTest, IsMixedContent)
 
 TEST(MixedContentCheckerTest, ContextTypeForInspector)
 {
-    std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(1, 1));
+    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(1, 1));
     dummyPageHolder->frame().document()->setSecurityOrigin(SecurityOrigin::createFromString("http://example.test"));
 
     ResourceRequest notMixedContent("https://example.test/foo.jpg");
@@ -88,7 +87,7 @@ namespace {
 TEST(MixedContentCheckerTest, HandleCertificateError)
 {
     MockFrameLoaderClient* client = new MockFrameLoaderClient;
-    std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(1, 1), nullptr, client);
+    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(1, 1), nullptr, client);
 
     KURL mainResourceUrl(KURL(), "https://example.test");
     KURL displayedUrl(KURL(), "https://example-displayed.test");

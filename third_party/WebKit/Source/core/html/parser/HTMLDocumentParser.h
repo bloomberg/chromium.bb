@@ -47,9 +47,9 @@
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/Deque.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/TextPosition.h"
-#include <memory>
 
 namespace blink {
 
@@ -94,7 +94,7 @@ public:
     struct ParsedChunk {
         USING_FAST_MALLOC(ParsedChunk);
     public:
-        std::unique_ptr<CompactHTMLTokenStream> tokens;
+        OwnPtr<CompactHTMLTokenStream> tokens;
         PreloadRequestStream preloads;
         ViewportDescriptionWrapper viewport;
         XSSInfoStream xssInfos;
@@ -111,7 +111,7 @@ public:
 
     void appendBytes(const char* bytes, size_t length) override;
     void flush() final;
-    void setDecoder(std::unique_ptr<TextResourceDecoder>) final;
+    void setDecoder(PassOwnPtr<TextResourceDecoder>) final;
 
 protected:
     void insert(const SegmentedString&) final;
@@ -149,9 +149,9 @@ private:
 
     void startBackgroundParser();
     void stopBackgroundParser();
-    void validateSpeculations(std::unique_ptr<ParsedChunk> lastChunk);
-    void discardSpeculationsAndResumeFrom(std::unique_ptr<ParsedChunk> lastChunk, std::unique_ptr<HTMLToken>, std::unique_ptr<HTMLTokenizer>);
-    size_t processParsedChunkFromBackgroundParser(std::unique_ptr<ParsedChunk>);
+    void validateSpeculations(PassOwnPtr<ParsedChunk> lastChunk);
+    void discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk> lastChunk, PassOwnPtr<HTMLToken>, PassOwnPtr<HTMLTokenizer>);
+    size_t processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
     void pumpPendingSpeculations();
 
     bool canTakeNextToken();
@@ -175,7 +175,7 @@ private:
     bool inPumpSession() const { return m_pumpSessionNestingLevel > 0; }
     bool shouldDelayEnd() const { return inPumpSession() || isWaitingForScripts() || isScheduledForResume() || isExecutingScript(); }
 
-    std::unique_ptr<HTMLPreloadScanner> createPreloadScanner();
+    PassOwnPtr<HTMLPreloadScanner> createPreloadScanner();
 
     int preloadInsertion(const SegmentedString& source);
     void evaluateAndPreloadScriptForDocumentWrite(const String& source);
@@ -185,13 +185,13 @@ private:
     HTMLParserOptions m_options;
     HTMLInputStream m_input;
 
-    std::unique_ptr<HTMLToken> m_token;
-    std::unique_ptr<HTMLTokenizer> m_tokenizer;
+    OwnPtr<HTMLToken> m_token;
+    OwnPtr<HTMLTokenizer> m_tokenizer;
     Member<HTMLScriptRunner> m_scriptRunner;
     Member<HTMLTreeBuilder> m_treeBuilder;
-    std::unique_ptr<HTMLPreloadScanner> m_preloadScanner;
-    std::unique_ptr<HTMLPreloadScanner> m_insertionPreloadScanner;
-    std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
+    OwnPtr<HTMLPreloadScanner> m_preloadScanner;
+    OwnPtr<HTMLPreloadScanner> m_insertionPreloadScanner;
+    OwnPtr<WebTaskRunner> m_loadingTaskRunner;
     Member<HTMLParserScheduler> m_parserScheduler;
     HTMLSourceTracker m_sourceTracker;
     TextPosition m_textPosition;
@@ -200,15 +200,15 @@ private:
 
     // FIXME: m_lastChunkBeforeScript, m_tokenizer, m_token, and m_input should be combined into a single state object
     // so they can be set and cleared together and passed between threads together.
-    std::unique_ptr<ParsedChunk> m_lastChunkBeforeScript;
-    Deque<std::unique_ptr<ParsedChunk>> m_speculations;
+    OwnPtr<ParsedChunk> m_lastChunkBeforeScript;
+    Deque<OwnPtr<ParsedChunk>> m_speculations;
     WeakPtrFactory<HTMLDocumentParser> m_weakFactory;
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
     Member<HTMLResourcePreloader> m_preloader;
     PreloadRequestStream m_queuedPreloads;
     Vector<String> m_queuedDocumentWriteScripts;
     RefPtr<ParsedChunkQueue> m_parsedChunkQueue;
-    std::unique_ptr<DocumentWriteEvaluator> m_evaluator;
+    OwnPtr<DocumentWriteEvaluator> m_evaluator;
 
     bool m_shouldUseThreading;
     bool m_endWasDelayed;

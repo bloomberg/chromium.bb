@@ -43,7 +43,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/WorkerContentSettingsClient.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -55,7 +54,7 @@ InProcessWorkerGlobalScopeProxy* DedicatedWorkerGlobalScopeProxyProviderImpl::cr
         WorkerClients* workerClients = WorkerClients::create();
         provideIndexedDBClientToWorker(workerClients, IndexedDBClientImpl::create());
         provideLocalFileSystemToWorker(workerClients, LocalFileSystemClient::create());
-        provideContentSettingsClientToWorker(workerClients, wrapUnique(webFrame->client()->createWorkerContentSettingsClientProxy()));
+        provideContentSettingsClientToWorker(workerClients, adoptPtr(webFrame->client()->createWorkerContentSettingsClientProxy()));
         // FIXME: call provideServiceWorkerContainerClientToWorker here when we
         // support ServiceWorker in dedicated workers (http://crbug.com/371690)
         return new DedicatedWorkerMessagingProxy(worker, workerClients);

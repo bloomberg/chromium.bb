@@ -26,15 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFElevation.h"
+#include <math.h>
+#include <algorithm>
+#include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFPanner.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/StringHash.h"
-#include <algorithm>
-#include <math.h>
-#include <memory>
 
 namespace blink {
 
@@ -98,7 +96,7 @@ static PassRefPtr<AudioBus> getConcatenatedImpulseResponsesForSubject(const Stri
 }
 #endif
 
-bool HRTFElevation::calculateKernelsForAzimuthElevation(int azimuth, int elevation, float sampleRate, const String& subjectName, std::unique_ptr<HRTFKernel>& kernelL, std::unique_ptr<HRTFKernel>& kernelR)
+bool HRTFElevation::calculateKernelsForAzimuthElevation(int azimuth, int elevation, float sampleRate, const String& subjectName, OwnPtr<HRTFKernel>& kernelL, OwnPtr<HRTFKernel>& kernelR)
 {
     // Valid values for azimuth are 0 -> 345 in 15 degree increments.
     // Valid values for elevation are -45 -> +90 in 15 degree increments.
@@ -221,15 +219,15 @@ static int maxElevations[] = {
     45 //  345
 };
 
-std::unique_ptr<HRTFElevation> HRTFElevation::createForSubject(const String& subjectName, int elevation, float sampleRate)
+PassOwnPtr<HRTFElevation> HRTFElevation::createForSubject(const String& subjectName, int elevation, float sampleRate)
 {
     bool isElevationGood = elevation >= -45 && elevation <= 90 && (elevation / 15) * 15 == elevation;
     ASSERT(isElevationGood);
     if (!isElevationGood)
         return nullptr;
 
-    std::unique_ptr<HRTFKernelList> kernelListL = wrapUnique(new HRTFKernelList(NumberOfTotalAzimuths));
-    std::unique_ptr<HRTFKernelList> kernelListR = wrapUnique(new HRTFKernelList(NumberOfTotalAzimuths));
+    OwnPtr<HRTFKernelList> kernelListL = adoptPtr(new HRTFKernelList(NumberOfTotalAzimuths));
+    OwnPtr<HRTFKernelList> kernelListR = adoptPtr(new HRTFKernelList(NumberOfTotalAzimuths));
 
     // Load convolution kernels from HRTF files.
     int interpolatedIndex = 0;
@@ -258,11 +256,11 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createForSubject(const String& sub
         }
     }
 
-    std::unique_ptr<HRTFElevation> hrtfElevation = wrapUnique(new HRTFElevation(std::move(kernelListL), std::move(kernelListR), elevation, sampleRate));
+    OwnPtr<HRTFElevation> hrtfElevation = adoptPtr(new HRTFElevation(std::move(kernelListL), std::move(kernelListR), elevation, sampleRate));
     return hrtfElevation;
 }
 
-std::unique_ptr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(HRTFElevation* hrtfElevation1, HRTFElevation* hrtfElevation2, float x, float sampleRate)
+PassOwnPtr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(HRTFElevation* hrtfElevation1, HRTFElevation* hrtfElevation2, float x, float sampleRate)
 {
     ASSERT(hrtfElevation1 && hrtfElevation2);
     if (!hrtfElevation1 || !hrtfElevation2)
@@ -270,8 +268,8 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(HRTFEl
 
     ASSERT(x >= 0.0 && x < 1.0);
 
-    std::unique_ptr<HRTFKernelList> kernelListL = wrapUnique(new HRTFKernelList(NumberOfTotalAzimuths));
-    std::unique_ptr<HRTFKernelList> kernelListR = wrapUnique(new HRTFKernelList(NumberOfTotalAzimuths));
+    OwnPtr<HRTFKernelList> kernelListL = adoptPtr(new HRTFKernelList(NumberOfTotalAzimuths));
+    OwnPtr<HRTFKernelList> kernelListR = adoptPtr(new HRTFKernelList(NumberOfTotalAzimuths));
 
     HRTFKernelList* kernelListL1 = hrtfElevation1->kernelListL();
     HRTFKernelList* kernelListR1 = hrtfElevation1->kernelListR();
@@ -287,7 +285,7 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(HRTFEl
     // Interpolate elevation angle.
     double angle = (1.0 - x) * hrtfElevation1->elevationAngle() + x * hrtfElevation2->elevationAngle();
 
-    std::unique_ptr<HRTFElevation> hrtfElevation = wrapUnique(new HRTFElevation(std::move(kernelListL), std::move(kernelListR), static_cast<int>(angle), sampleRate));
+    OwnPtr<HRTFElevation> hrtfElevation = adoptPtr(new HRTFElevation(std::move(kernelListL), std::move(kernelListR), static_cast<int>(angle), sampleRate));
     return hrtfElevation;
 }
 

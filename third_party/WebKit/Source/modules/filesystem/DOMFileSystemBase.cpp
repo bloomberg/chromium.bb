@@ -48,9 +48,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
-#include <memory>
 
 namespace blink {
 
@@ -222,7 +222,7 @@ void DOMFileSystemBase::getMetadata(const EntryBase* entry, MetadataCallback* su
         return;
     }
 
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks(MetadataCallbacks::create(successCallback, errorCallback, m_context, this));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(MetadataCallbacks::create(successCallback, errorCallback, m_context, this));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
     fileSystem()->readMetadata(createFileSystemURL(entry), std::move(callbacks));
 }
@@ -269,7 +269,7 @@ void DOMFileSystemBase::move(const EntryBase* source, EntryBase* parent, const S
         return;
     }
 
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, parent->filesystem(), destinationPath, source->isDirectory()));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, parent->filesystem(), destinationPath, source->isDirectory()));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
     fileSystem()->move(createFileSystemURL(source), parent->filesystem()->createFileSystemURL(destinationPath), std::move(callbacks));
@@ -288,7 +288,7 @@ void DOMFileSystemBase::copy(const EntryBase* source, EntryBase* parent, const S
         return;
     }
 
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, parent->filesystem(), destinationPath, source->isDirectory()));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, parent->filesystem(), destinationPath, source->isDirectory()));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
     fileSystem()->copy(createFileSystemURL(source), parent->filesystem()->createFileSystemURL(destinationPath), std::move(callbacks));
@@ -308,7 +308,7 @@ void DOMFileSystemBase::remove(const EntryBase* entry, VoidCallback* successCall
         return;
     }
 
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks(VoidCallbacks::create(successCallback, errorCallback, m_context, this));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(VoidCallbacks::create(successCallback, errorCallback, m_context, this));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
     fileSystem()->remove(createFileSystemURL(entry), std::move(callbacks));
@@ -328,7 +328,7 @@ void DOMFileSystemBase::removeRecursively(const EntryBase* entry, VoidCallback* 
         return;
     }
 
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks(VoidCallbacks::create(successCallback, errorCallback, m_context, this));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(VoidCallbacks::create(successCallback, errorCallback, m_context, this));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
     fileSystem()->removeRecursively(createFileSystemURL(entry), std::move(callbacks));
@@ -360,7 +360,7 @@ void DOMFileSystemBase::getFile(const EntryBase* entry, const String& path, cons
         return;
     }
 
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, this, absolutePath, false));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, this, absolutePath, false));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
     if (flags.createFlag())
@@ -382,7 +382,7 @@ void DOMFileSystemBase::getDirectory(const EntryBase* entry, const String& path,
         return;
     }
 
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, this, absolutePath, true));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, this, absolutePath, true));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
     if (flags.createFlag())
@@ -400,7 +400,7 @@ int DOMFileSystemBase::readDirectory(DirectoryReaderBase* reader, const String& 
 
     ASSERT(DOMFilePath::isAbsolute(path));
 
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks(EntriesCallbacks::create(successCallback, errorCallback, m_context, reader, path));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntriesCallbacks::create(successCallback, errorCallback, m_context, reader, path));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
     return fileSystem()->readDirectory(createFileSystemURL(path), std::move(callbacks));

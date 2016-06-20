@@ -8,7 +8,6 @@
 #include "core/dom/DOMException.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -16,7 +15,7 @@ void NavigateClientCallback::onSuccess(std::unique_ptr<WebServiceWorkerClientInf
 {
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
-    m_resolver->resolve(ServiceWorkerWindowClient::take(m_resolver.get(), wrapUnique(clientInfo.release())));
+    m_resolver->resolve(ServiceWorkerWindowClient::take(m_resolver.get(), adoptPtr(clientInfo.release())));
 }
 
 void NavigateClientCallback::onError(const WebServiceWorkerError& error)

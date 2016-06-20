@@ -22,17 +22,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "modules/webaudio/AudioBufferSourceNode.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
 #include "modules/webaudio/AbstractAudioContext.h"
-#include "modules/webaudio/AudioBufferSourceNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/FloatConversion.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
 
 namespace blink {
@@ -370,8 +369,8 @@ void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer, ExceptionState& ex
 
         output(0).setNumberOfChannels(numberOfChannels);
 
-        m_sourceChannels = wrapArrayUnique(new const float* [numberOfChannels]);
-        m_destinationChannels = wrapArrayUnique(new float* [numberOfChannels]);
+        m_sourceChannels = adoptArrayPtr(new const float* [numberOfChannels]);
+        m_destinationChannels = adoptArrayPtr(new float* [numberOfChannels]);
 
         for (unsigned i = 0; i < numberOfChannels; ++i)
             m_sourceChannels[i] = buffer->getChannelData(i)->data();

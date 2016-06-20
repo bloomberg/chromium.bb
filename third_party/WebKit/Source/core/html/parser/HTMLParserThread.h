@@ -36,7 +36,8 @@
 #include "platform/WebThreadSupportingGC.h"
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -57,7 +58,7 @@ private:
     void setupHTMLParserThread();
     void cleanupHTMLParserThread(WaitableEvent*);
 
-    std::unique_ptr<WebThreadSupportingGC> m_thread;
+    OwnPtr<WebThreadSupportingGC> m_thread;
 };
 
 } // namespace blink

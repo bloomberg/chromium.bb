@@ -11,9 +11,9 @@
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/WeakPtr.h"
-#include <memory>
 #include <type_traits>
 
 namespace blink {
@@ -37,15 +37,15 @@ public:
     // variety, which will refer back to the owner heap object safely (but weakly.)
     //
     template<typename T>
-    static std::unique_ptr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<IsGarbageCollectedType<T>::value>::type* = nullptr)
+    static PassOwnPtr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<IsGarbageCollectedType<T>::value>::type* = nullptr)
     {
-        return wrapUnique(new CancellableTaskFactory(WTF::bind(method, CrossThreadWeakPersistentThisPointer<T>(thisObject))));
+        return adoptPtr(new CancellableTaskFactory(WTF::bind(method, CrossThreadWeakPersistentThisPointer<T>(thisObject))));
     }
 
     template<typename T>
-    static std::unique_ptr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<!IsGarbageCollectedType<T>::value>::type* = nullptr)
+    static PassOwnPtr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<!IsGarbageCollectedType<T>::value>::type* = nullptr)
     {
-        return wrapUnique(new CancellableTaskFactory(WTF::bind(method, thisObject)));
+        return adoptPtr(new CancellableTaskFactory(WTF::bind(method, thisObject)));
     }
 
     bool isPending() const

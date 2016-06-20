@@ -77,7 +77,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
-#include <memory>
 
 namespace blink {
 
@@ -335,7 +334,7 @@ Blob* XMLHttpRequest::responseBlob()
             // copying the bytes between the browser and the renderer.
             m_responseBlob = Blob::create(createBlobDataHandleFromResponse());
         } else {
-            std::unique_ptr<BlobData> blobData = BlobData::create();
+            OwnPtr<BlobData> blobData = BlobData::create();
             size_t size = 0;
             if (m_binaryResponseBuilder && m_binaryResponseBuilder->size()) {
                 size = m_binaryResponseBuilder->size();
@@ -1024,7 +1023,7 @@ bool XMLHttpRequest::internalAbort()
     // If, window.onload contains open() and send(), m_loader will be set to
     // non 0 value. So, we cannot continue the outer open(). In such case,
     // just abort the outer open() by returning false.
-    std::unique_ptr<ThreadableLoader> loader = std::move(m_loader);
+    OwnPtr<ThreadableLoader> loader = std::move(m_loader);
     loader->cancel();
 
     // If abort() called internalAbort() and a nested open() ended up
@@ -1437,7 +1436,7 @@ void XMLHttpRequest::didFailLoadingFromBlob()
 PassRefPtr<BlobDataHandle> XMLHttpRequest::createBlobDataHandleFromResponse()
 {
     ASSERT(m_downloadingToFile);
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     String filePath = m_response.downloadedFilePath();
     // If we errored out or got no data, we return an empty handle.
     if (!filePath.isEmpty() && m_lengthDownloadedToFile) {
@@ -1510,7 +1509,7 @@ void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long lon
     }
 }
 
-void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
+void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(handle, !handle);
     WTF_LOG(Network, "XMLHttpRequest %p didReceiveResponse(%lu)", this, identifier);
@@ -1545,7 +1544,7 @@ void XMLHttpRequest::parseDocumentChunk(const char* data, unsigned len)
     m_responseDocumentParser->appendBytes(data, len);
 }
 
-std::unique_ptr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
+PassOwnPtr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
 {
     if (m_responseTypeCode == ResponseTypeJSON)
         return TextResourceDecoder::create("application/json", "UTF-8");
@@ -1555,7 +1554,7 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
 
     // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
     if (responseIsXML()) {
-        std::unique_ptr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
+        OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
         // Don't stop on encoding errors, unlike it is done for other kinds
         // of XML resources. This matches the behavior of previous WebKit
         // versions, Firefox and Opera.

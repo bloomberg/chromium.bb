@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/FormAssociatedElement.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

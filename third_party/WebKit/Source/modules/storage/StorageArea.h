@@ -29,8 +29,9 @@
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -50,7 +51,7 @@ enum StorageType {
 class MODULES_EXPORT StorageArea final : public GarbageCollectedFinalized<StorageArea>, public LocalFrameLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(StorageArea);
 public:
-    static StorageArea* create(std::unique_ptr<WebStorageArea>, StorageType);
+    static StorageArea* create(PassOwnPtr<WebStorageArea>, StorageType);
 
     virtual ~StorageArea();
 
@@ -73,11 +74,11 @@ public:
     DECLARE_TRACE();
 
 private:
-    StorageArea(std::unique_ptr<WebStorageArea>, StorageType);
+    StorageArea(PassOwnPtr<WebStorageArea>, StorageType);
 
     static bool isEventSource(Storage*, WebStorageArea* sourceAreaInstance);
 
-    std::unique_ptr<WebStorageArea> m_storageArea;
+    OwnPtr<WebStorageArea> m_storageArea;
     StorageType m_storageType;
     bool m_canAccessStorageCachedResult;
 };

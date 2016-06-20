@@ -33,7 +33,9 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+
 #include <memory>
 #include <stdint.h>
 
@@ -76,8 +78,8 @@ public:
         const char* argNames[],
         const unsigned char argTypes[],
         const unsigned long long argValues[],
-        std::unique_ptr<TracedValue>,
-        std::unique_ptr<TracedValue>,
+        PassOwnPtr<TracedValue>,
+        PassOwnPtr<TracedValue>,
         unsigned flags);
     static TraceEvent::TraceEventHandle addTraceEvent(char phase,
         const unsigned char* categoryEnabledFlag,

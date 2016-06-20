@@ -38,7 +38,6 @@
 #include "public/web/WebEmbeddedWorker.h"
 #include "public/web/WebEmbeddedWorkerStartData.h"
 #include "public/web/WebFrameClient.h"
-#include <memory>
 
 namespace blink {
 
@@ -57,7 +56,7 @@ class WebEmbeddedWorkerImpl final
     , private WorkerLoaderProxyProvider {
     WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
 public:
-    WebEmbeddedWorkerImpl(std::unique_ptr<WebServiceWorkerContextClient>, std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+    WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient>, PassOwnPtr<WebWorkerContentSettingsClientProxy>);
     ~WebEmbeddedWorkerImpl() override;
 
     // WebEmbeddedWorker overrides.
@@ -96,20 +95,20 @@ private:
 
     WebEmbeddedWorkerStartData m_workerStartData;
 
-    std::unique_ptr<WebServiceWorkerContextClient> m_workerContextClient;
+    OwnPtr<WebServiceWorkerContextClient> m_workerContextClient;
 
     // This is kept until startWorkerContext is called, and then passed on
     // to WorkerContext.
-    std::unique_ptr<WebWorkerContentSettingsClientProxy> m_contentSettingsClient;
+    OwnPtr<WebWorkerContentSettingsClientProxy> m_contentSettingsClient;
 
     // We retain ownership of this one which is for use on the
     // main thread only.
-    std::unique_ptr<WebServiceWorkerNetworkProvider> m_networkProvider;
+    OwnPtr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
     // Kept around only while main script loading is ongoing.
     RefPtr<WorkerScriptLoader> m_mainScriptLoader;
 
-    std::unique_ptr<WorkerThread> m_workerThread;
+    OwnPtr<WorkerThread> m_workerThread;
     RefPtr<WorkerLoaderProxy> m_loaderProxy;
     Persistent<ServiceWorkerGlobalScopeProxy> m_workerGlobalScopeProxy;
     Persistent<WorkerInspectorProxy> m_workerInspectorProxy;

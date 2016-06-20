@@ -31,7 +31,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/Histogram.h"
 #include "public/platform/Platform.h"
-#include <memory>
 
 namespace blink {
 
@@ -60,7 +59,7 @@ static void preconnectHost(PreloadRequest* request, const NetworkHintsInterface&
     networkHintsInterface.preconnectHost(host, request->crossOrigin());
 }
 
-void HTMLResourcePreloader::preload(std::unique_ptr<PreloadRequest> preload, const NetworkHintsInterface& networkHintsInterface)
+void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload, const NetworkHintsInterface& networkHintsInterface)
 {
     if (preload->isPreconnect()) {
         preconnectHost(preload.get(), networkHintsInterface);

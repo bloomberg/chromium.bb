@@ -45,8 +45,6 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace {
 enum {
@@ -90,7 +88,7 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
 PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
 {
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
-    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!contextProvider)
         return nullptr;
     RefPtr<Canvas2DLayerBridge> layerBridge;
@@ -98,9 +96,9 @@ PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size,
     return layerBridge.release();
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
     : m_contextProvider(std::move(contextProvider))
-    , m_logger(wrapUnique(new Logger))
+    , m_logger(adoptPtr(new Logger))
     , m_weakPtrFactory(this)
     , m_imageBuffer(0)
     , m_msaaSampleCount(msaaSampleCount)
@@ -139,7 +137,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
 void Canvas2DLayerBridge::startRecording()
 {
     DCHECK(m_isDeferralEnabled);
-    m_recorder = wrapUnique(new SkPictureRecorder);
+    m_recorder = adoptPtr(new SkPictureRecorder);
     m_recorder->beginRecording(m_size.width(), m_size.height(), nullptr);
     if (m_imageBuffer) {
         m_imageBuffer->resetCanvas(m_recorder->getRecordingCanvas());
@@ -147,7 +145,7 @@ void Canvas2DLayerBridge::startRecording()
     m_recordingPixelCount = 0;
 }
 
-void Canvas2DLayerBridge::setLoggerForTesting(std::unique_ptr<Logger> logger)
+void Canvas2DLayerBridge::setLoggerForTesting(PassOwnPtr<Logger> logger)
 {
     m_logger = std::move(logger);
 }
@@ -486,7 +484,7 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
         reportSurfaceCreationFailure();
 
     if (m_surface && surfaceIsAccelerated && !m_layer) {
-        m_layer = wrapUnique(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+        m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
         m_layer->setOpaque(m_opacityMode == Opaque);
         m_layer->setBlendBackgroundColor(m_opacityMode != Opaque);
         GraphicsLayer::registerContentsLayer(m_layer->layer());
@@ -750,7 +748,7 @@ bool Canvas2DLayerBridge::restoreSurface()
 
     gpu::gles2::GLES2Interface* sharedGL = nullptr;
     m_layer->clearTexture();
-    m_contextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    m_contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (m_contextProvider)
         sharedGL = m_contextProvider->contextGL();
 

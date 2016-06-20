@@ -33,7 +33,6 @@
 #include "core/layout/shapes/Shape.h"
 #include "core/layout/shapes/ShapeInterval.h"
 #include "platform/geometry/FloatPolygon.h"
-#include <memory>
 
 namespace blink {
 
@@ -62,7 +61,7 @@ private:
 class PolygonShape final : public Shape {
     WTF_MAKE_NONCOPYABLE(PolygonShape);
 public:
-    PolygonShape(std::unique_ptr<Vector<FloatPoint>> vertices, WindRule fillRule)
+    PolygonShape(PassOwnPtr<Vector<FloatPoint>> vertices, WindRule fillRule)
         : Shape()
         , m_polygon(std::move(vertices), fillRule)
     {

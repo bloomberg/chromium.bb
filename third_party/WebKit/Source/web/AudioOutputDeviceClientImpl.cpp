@@ -8,7 +8,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include <memory>
 
 namespace blink {
 
@@ -25,13 +24,13 @@ AudioOutputDeviceClientImpl::~AudioOutputDeviceClientImpl()
 {
 }
 
-void AudioOutputDeviceClientImpl::checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext* context, const WebString& sinkId, std::unique_ptr<WebSetSinkIdCallbacks> callbacks)
+void AudioOutputDeviceClientImpl::checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext* context, const WebString& sinkId, PassOwnPtr<WebSetSinkIdCallbacks> callbacks)
 {
     DCHECK(context);
     DCHECK(context->isDocument());
     Document* document = toDocument(context);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-    webFrame->client()->checkIfAudioSinkExistsAndIsAuthorized(sinkId, WebSecurityOrigin(context->getSecurityOrigin()), callbacks.release());
+    webFrame->client()->checkIfAudioSinkExistsAndIsAuthorized(sinkId, WebSecurityOrigin(context->getSecurityOrigin()), callbacks.leakPtr());
 }
 
 } // namespace blink

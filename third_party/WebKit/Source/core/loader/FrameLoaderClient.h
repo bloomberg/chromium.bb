@@ -48,7 +48,6 @@
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -175,9 +174,9 @@ public:
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const = 0;
     virtual Widget* createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually, DetachedPluginPolicy) = 0;
 
-    virtual std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebMediaPlayerSource&, WebMediaPlayerClient*) = 0;
+    virtual PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebMediaPlayerSource&, WebMediaPlayerClient*) = 0;
 
-    virtual std::unique_ptr<WebMediaSession> createWebMediaSession() = 0;
+    virtual PassOwnPtr<WebMediaSession> createWebMediaSession() = 0;
 
     virtual ObjectContentType getObjectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
 
@@ -244,7 +243,7 @@ public:
 
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) { }
 
-    virtual std::unique_ptr<WebServiceWorkerProvider> createServiceWorkerProvider() = 0;
+    virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() = 0;
 
     virtual bool isControlledByServiceWorker(DocumentLoader&) = 0;
 
@@ -252,7 +251,7 @@ public:
 
     virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return 0; }
 
-    virtual std::unique_ptr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) = 0;
+    virtual PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) = 0;
 
     virtual void dispatchDidChangeManifest() { }
 

@@ -30,6 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 

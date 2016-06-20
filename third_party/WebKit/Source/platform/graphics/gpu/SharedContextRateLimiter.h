@@ -9,7 +9,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -39,13 +40,13 @@ class SharedContextRateLimiter final {
     USING_FAST_MALLOC(SharedContextRateLimiter);
     WTF_MAKE_NONCOPYABLE(SharedContextRateLimiter);
 public:
-    static std::unique_ptr<SharedContextRateLimiter> create(unsigned maxPendingTicks);
+    static PassOwnPtr<SharedContextRateLimiter> create(unsigned maxPendingTicks);
     void tick();
     void reset();
 private:
     SharedContextRateLimiter(unsigned maxPendingTicks);
 
-    std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
+    OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
     Deque<GLuint> m_queries;
     unsigned m_maxPendingTicks;
     bool m_canUseSyncQueries;

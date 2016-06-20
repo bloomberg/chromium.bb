@@ -12,7 +12,9 @@
 #include "platform/PlatformExport.h"
 #include "platform/web_memory_allocator_dump.h"
 #include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -156,7 +158,7 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
   // Those pointers are valid only within the scope of the call and can be
   // safely torn down once the WebProcessMemoryDump itself is destroyed.
   HashMap<base::trace_event::MemoryAllocatorDump*,
-          std::unique_ptr<WebMemoryAllocatorDump>> memory_allocator_dumps_;
+          OwnPtr<WebMemoryAllocatorDump>> memory_allocator_dumps_;
 
   // Stores SkTraceMemoryDump for the current ProcessMemoryDump.
   std::vector<std::unique_ptr<skia::SkiaTraceMemoryDumpImpl>> sk_trace_dump_list_;

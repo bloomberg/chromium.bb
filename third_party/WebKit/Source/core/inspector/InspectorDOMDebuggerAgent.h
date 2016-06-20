@@ -37,6 +37,7 @@
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/protocol/DOMDebugger.h"
 #include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

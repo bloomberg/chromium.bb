@@ -38,7 +38,6 @@
 #include "wtf/Forward.h"
 #include "wtf/HashTraits.h"
 #include "wtf/TypeTraits.h"
-#include <memory>
 
 namespace blink {
 
@@ -262,7 +261,7 @@ public:
         WeakProcessing,
     };
 
-    static std::unique_ptr<Visitor> create(ThreadState*, BlinkGC::GCType);
+    static PassOwnPtr<Visitor> create(ThreadState*, BlinkGC::GCType);
 
     virtual ~Visitor();
 

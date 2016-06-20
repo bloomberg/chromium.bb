@@ -32,8 +32,8 @@
 #include "third_party/skia/include/core/SkRWBuffer.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 class SkImage;
 
@@ -47,9 +47,9 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
     WTF_MAKE_NONCOPYABLE(DeferredImageDecoder);
     USING_FAST_MALLOC(DeferredImageDecoder);
 public:
-    static std::unique_ptr<DeferredImageDecoder> create(const SharedBuffer& data, ImageDecoder::AlphaOption, ImageDecoder::GammaAndColorProfileOption);
+    static PassOwnPtr<DeferredImageDecoder> create(const SharedBuffer& data, ImageDecoder::AlphaOption, ImageDecoder::GammaAndColorProfileOption);
 
-    static std::unique_ptr<DeferredImageDecoder> createForTesting(std::unique_ptr<ImageDecoder>);
+    static PassOwnPtr<DeferredImageDecoder> createForTesting(PassOwnPtr<ImageDecoder>);
 
     ~DeferredImageDecoder();
 
@@ -74,7 +74,7 @@ public:
     bool hotSpot(IntPoint&) const;
 
 private:
-    explicit DeferredImageDecoder(std::unique_ptr<ImageDecoder> actualDecoder);
+    explicit DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder);
 
     friend class DeferredImageDecoderTest;
     ImageFrameGenerator* frameGenerator() { return m_frameGenerator.get(); }
@@ -86,9 +86,9 @@ private:
 
     // Copy of the data that is passed in, used by deferred decoding.
     // Allows creating readonly snapshots that may be read in another thread.
-    std::unique_ptr<SkRWBuffer> m_rwBuffer;
+    OwnPtr<SkRWBuffer> m_rwBuffer;
     bool m_allDataReceived;
-    std::unique_ptr<ImageDecoder> m_actualDecoder;
+    OwnPtr<ImageDecoder> m_actualDecoder;
 
     String m_filenameExtension;
     IntSize m_size;

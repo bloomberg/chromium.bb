@@ -99,7 +99,6 @@
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 using blink::WebURLRequest;
 
@@ -1598,9 +1597,9 @@ SecurityContext::InsecureNavigationsSet* FrameLoader::insecureNavigationsToUpgra
     return toLocalFrame(parentFrame)->document()->insecureNavigationsToUpgrade();
 }
 
-std::unique_ptr<TracedValue> FrameLoader::toTracedValue() const
+PassOwnPtr<TracedValue> FrameLoader::toTracedValue() const
 {
-    std::unique_ptr<TracedValue> tracedValue = TracedValue::create();
+    OwnPtr<TracedValue> tracedValue = TracedValue::create();
     tracedValue->beginDictionary("frame");
     tracedValue->setString("id_ref", String::format("0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(m_frame.get()))));
     tracedValue->endDictionary();

@@ -32,7 +32,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollableArea.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -262,8 +262,8 @@ private:
     // See the class comment for more details.
     LayoutState* m_layoutState;
 
-    std::unique_ptr<ViewFragmentationContext> m_fragmentationContext;
-    std::unique_ptr<PaintLayerCompositor> m_compositor;
+    OwnPtr<ViewFragmentationContext> m_fragmentationContext;
+    OwnPtr<PaintLayerCompositor> m_compositor;
     RefPtr<IntervalArena> m_intervalArena;
 
     LayoutQuote* m_layoutQuoteHead;

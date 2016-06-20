@@ -34,7 +34,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -47,7 +47,7 @@ class CORE_EXPORT WorkerReportingProxy {
 public:
     virtual ~WorkerReportingProxy() { }
 
-    virtual void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>) = 0;
+    virtual void reportException(const String& errorMessage, PassOwnPtr<SourceLocation>) = 0;
     virtual void reportConsoleMessage(ConsoleMessage*) = 0;
     virtual void postMessageToPageInspector(const String&) = 0;
     virtual void postWorkerConsoleAgentEnabled() = 0;

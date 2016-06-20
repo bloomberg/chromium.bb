@@ -40,7 +40,6 @@
 #include "public/platform/Platform.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/WTF.h"
 #include "wtf/allocator/Partitions.h"
 #include <base/bind.h>
@@ -50,7 +49,6 @@
 #include <base/test/launcher/unit_test_launcher.h>
 #include <base/test/test_suite.h>
 #include <cc/blink/web_compositor_support_impl.h>
-#include <memory>
 
 namespace {
 
@@ -82,7 +80,7 @@ int main(int argc, char** argv)
 
     base::StatisticsRecorder::Initialize();
 
-    std::unique_ptr<DummyPlatform> platform = wrapUnique(new DummyPlatform);
+    OwnPtr<DummyPlatform> platform = adoptPtr(new DummyPlatform);
     blink::Platform::setCurrentPlatformForTesting(platform.get());
 
     WTF::Partitions::initialize(nullptr);
@@ -105,7 +103,7 @@ int main(int argc, char** argv)
 
         mojo::edk::Init();
         base::TestIOThread testIoThread(base::TestIOThread::kAutoStart);
-        std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipcSupport(wrapUnique(new mojo::edk::test::ScopedIPCSupport(testIoThread.task_runner())));
+        WTF::OwnPtr<mojo::edk::test::ScopedIPCSupport> ipcSupport(adoptPtr(new mojo::edk::test::ScopedIPCSupport(testIoThread.task_runner())));
         result = base::LaunchUnitTests(argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));
 
         blink::ThreadState::detachMainThread();

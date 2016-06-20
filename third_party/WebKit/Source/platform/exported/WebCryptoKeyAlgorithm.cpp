@@ -30,9 +30,8 @@
 
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
-#include <memory>
 
 namespace blink {
 
@@ -44,24 +43,24 @@ WebCryptoAlgorithm createHash(WebCryptoAlgorithmId hash)
 
 class WebCryptoKeyAlgorithmPrivate : public ThreadSafeRefCounted<WebCryptoKeyAlgorithmPrivate> {
 public:
-    WebCryptoKeyAlgorithmPrivate(WebCryptoAlgorithmId id, std::unique_ptr<WebCryptoKeyAlgorithmParams> params)
+    WebCryptoKeyAlgorithmPrivate(WebCryptoAlgorithmId id, PassOwnPtr<WebCryptoKeyAlgorithmParams> params)
         : id(id)
         , params(std::move(params))
     {
     }
 
     WebCryptoAlgorithmId id;
-    std::unique_ptr<WebCryptoKeyAlgorithmParams> params;
+    OwnPtr<WebCryptoKeyAlgorithmParams> params;
 };
 
-WebCryptoKeyAlgorithm::WebCryptoKeyAlgorithm(WebCryptoAlgorithmId id, std::unique_ptr<WebCryptoKeyAlgorithmParams> params)
+WebCryptoKeyAlgorithm::WebCryptoKeyAlgorithm(WebCryptoAlgorithmId id, PassOwnPtr<WebCryptoKeyAlgorithmParams> params)
     : m_private(adoptRef(new WebCryptoKeyAlgorithmPrivate(id, std::move(params))))
 {
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, WebCryptoKeyAlgorithmParams* params)
 {
-    return WebCryptoKeyAlgorithm(id, wrapUnique(params));
+    return WebCryptoKeyAlgorithm(id, adoptPtr(params));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createAes(WebCryptoAlgorithmId id, unsigned short keyLengthBits)
@@ -70,14 +69,14 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createAes(WebCryptoAlgorithmId id, 
     // FIXME: Move this somewhere more general.
     if (keyLengthBits != 128 && keyLengthBits != 192 && keyLengthBits != 256)
         return WebCryptoKeyAlgorithm();
-    return WebCryptoKeyAlgorithm(id, wrapUnique(new WebCryptoAesKeyAlgorithmParams(keyLengthBits)));
+    return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoAesKeyAlgorithmParams(keyLengthBits)));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createHmac(WebCryptoAlgorithmId hash, unsigned keyLengthBits)
 {
     if (!WebCryptoAlgorithm::isHash(hash))
         return WebCryptoKeyAlgorithm();
-    return WebCryptoKeyAlgorithm(WebCryptoAlgorithmIdHmac, wrapUnique(new WebCryptoHmacKeyAlgorithmParams(createHash(hash), keyLengthBits)));
+    return WebCryptoKeyAlgorithm(WebCryptoAlgorithmIdHmac, adoptPtr(new WebCryptoHmacKeyAlgorithmParams(createHash(hash), keyLengthBits)));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsaHashed(WebCryptoAlgorithmId id, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, WebCryptoAlgorithmId hash)
@@ -85,12 +84,12 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsaHashed(WebCryptoAlgorithmI
     // FIXME: Verify that id is an RSA algorithm which expects a hash
     if (!WebCryptoAlgorithm::isHash(hash))
         return WebCryptoKeyAlgorithm();
-    return WebCryptoKeyAlgorithm(id, wrapUnique(new WebCryptoRsaHashedKeyAlgorithmParams(modulusLengthBits, publicExponent, publicExponentSize, createHash(hash))));
+    return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoRsaHashedKeyAlgorithmParams(modulusLengthBits, publicExponent, publicExponentSize, createHash(hash))));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createEc(WebCryptoAlgorithmId id, WebCryptoNamedCurve namedCurve)
 {
-    return WebCryptoKeyAlgorithm(id, wrapUnique(new WebCryptoEcKeyAlgorithmParams(namedCurve)));
+    return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoEcKeyAlgorithmParams(namedCurve)));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createWithoutParams(WebCryptoAlgorithmId id)

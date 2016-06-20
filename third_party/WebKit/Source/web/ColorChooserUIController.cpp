@@ -32,7 +32,6 @@
 #include "public/web/WebColorSuggestion.h"
 #include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -99,7 +98,7 @@ void ColorChooserUIController::openColorChooser()
     WebFrameClient* webFrameClient = frame->client();
     if (!webFrameClient)
         return;
-    m_chooser = wrapUnique(webFrameClient->createColorChooser(
+    m_chooser = adoptPtr(webFrameClient->createColorChooser(
         this, static_cast<WebColor>(m_client->currentColor().rgb()), m_client->suggestions()));
 }
 

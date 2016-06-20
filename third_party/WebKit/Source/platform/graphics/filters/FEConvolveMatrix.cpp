@@ -28,8 +28,7 @@
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/CheckedNumeric.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -151,7 +150,7 @@ sk_sp<SkImageFilter> FEConvolveMatrix::createImageFilter()
     SkIPoint target = SkIPoint::Make(m_targetOffset.x(), m_targetOffset.y());
     SkMatrixConvolutionImageFilter::TileMode tileMode = toSkiaTileMode(m_edgeMode);
     bool convolveAlpha = !m_preserveAlpha;
-    std::unique_ptr<SkScalar[]> kernel = wrapArrayUnique(new SkScalar[numElements]);
+    OwnPtr<SkScalar[]> kernel = adoptArrayPtr(new SkScalar[numElements]);
     for (int i = 0; i < numElements; ++i)
         kernel[i] = SkFloatToScalar(m_kernelMatrix[numElements - 1 - i]);
     SkImageFilter::CropRect cropRect = getCropRect();

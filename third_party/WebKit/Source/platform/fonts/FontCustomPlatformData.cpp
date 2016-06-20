@@ -39,8 +39,7 @@
 #include "platform/fonts/WebFontDecoder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -57,7 +56,7 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold,
     return FontPlatformData(m_typeface.get(), "", size, bold && !m_typeface->isBold(), italic && !m_typeface->isItalic(), orientation);
 }
 
-std::unique_ptr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer, String& otsParseMessage)
+PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer, String& otsParseMessage)
 {
     DCHECK(buffer);
     WebFontDecoder decoder;
@@ -66,7 +65,7 @@ std::unique_ptr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuf
         otsParseMessage = decoder.getErrorString();
         return nullptr;
     }
-    return wrapUnique(new FontCustomPlatformData(typeface.release()));
+    return adoptPtr(new FontCustomPlatformData(typeface.release()));
 }
 
 bool FontCustomPlatformData::supportsFormat(const String& format)

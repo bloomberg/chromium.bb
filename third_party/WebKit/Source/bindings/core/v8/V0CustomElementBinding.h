@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "wtf/Allocator.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
 namespace blink {
@@ -41,7 +41,7 @@ namespace blink {
 class V0CustomElementBinding {
     USING_FAST_MALLOC(V0CustomElementBinding);
 public:
-    static std::unique_ptr<V0CustomElementBinding> create(v8::Isolate*, v8::Local<v8::Object> prototype);
+    static PassOwnPtr<V0CustomElementBinding> create(v8::Isolate*, v8::Local<v8::Object> prototype);
     ~V0CustomElementBinding();
 
 private:

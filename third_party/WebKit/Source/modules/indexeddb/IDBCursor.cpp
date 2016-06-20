@@ -42,19 +42,18 @@
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
 #include <limits>
-#include <memory>
 
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 
 namespace blink {
 
-IDBCursor* IDBCursor::create(std::unique_ptr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursor* IDBCursor::create(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
     return new IDBCursor(std::move(backend), direction, request, source, transaction);
 }
 
-IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursor::IDBCursor(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : m_backend(std::move(backend))
     , m_request(request)
     , m_direction(direction)
@@ -149,7 +148,7 @@ void IDBCursor::advance(unsigned count, ExceptionState& exceptionState)
 
     m_request->setPendingCursor(this);
     m_gotValue = false;
-    m_backend->advance(count, WebIDBCallbacksImpl::create(m_request).release());
+    m_backend->advance(count, WebIDBCallbacksImpl::create(m_request).leakPtr());
 }
 
 void IDBCursor::continueFunction(ScriptState* scriptState, const ScriptValue& keyValue, ExceptionState& exceptionState)
@@ -243,7 +242,7 @@ void IDBCursor::continueFunction(IDBKey* key, IDBKey* primaryKey, ExceptionState
     //        will be on the original context openCursor was called on. Is this right?
     m_request->setPendingCursor(this);
     m_gotValue = false;
-    m_backend->continueFunction(key, primaryKey, WebIDBCallbacksImpl::create(m_request).release());
+    m_backend->continueFunction(key, primaryKey, WebIDBCallbacksImpl::create(m_request).leakPtr());
 }
 
 IDBRequest* IDBCursor::deleteFunction(ScriptState* scriptState, ExceptionState& exceptionState)
@@ -283,7 +282,7 @@ IDBRequest* IDBCursor::deleteFunction(ScriptState* scriptState, ExceptionState& 
     ASSERT(!exceptionState.hadException());
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
-    m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange, WebIDBCallbacksImpl::create(request).release());
+    m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 

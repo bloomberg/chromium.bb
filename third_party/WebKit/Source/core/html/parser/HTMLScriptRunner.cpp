@@ -30,9 +30,9 @@
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/Element.h"
+#include "core/events/Event.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/ScriptLoader.h"
-#include "core/events/Event.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLInputStream.h"
@@ -44,7 +44,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFrameScheduler.h"
 #include <inttypes.h>
-#include <memory>
 
 namespace blink {
 
@@ -52,9 +51,9 @@ namespace {
 
 // TODO(bmcquade): move this to a shared location if we find ourselves wanting
 // to trace similar data elsewhere in the codebase.
-std::unique_ptr<TracedValue> getTraceArgsForScriptElement(Element* element, const TextPosition& textPosition)
+PassOwnPtr<TracedValue> getTraceArgsForScriptElement(Element* element, const TextPosition& textPosition)
 {
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element);
     if (scriptLoader && scriptLoader->resource())
         value->setString("url", scriptLoader->resource()->url().getString());

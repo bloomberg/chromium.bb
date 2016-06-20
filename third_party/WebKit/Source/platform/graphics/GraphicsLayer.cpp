@@ -57,12 +57,10 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
 #include <cmath>
-#include <memory>
 #include <utility>
 
 #ifndef NDEBUG
@@ -109,9 +107,9 @@ static PaintInvalidationTrackingMap& paintInvalidationTrackingMap()
     return map;
 }
 
-std::unique_ptr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerClient* client)
+PassOwnPtr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerClient* client)
 {
-    return wrapUnique(new GraphicsLayer(client));
+    return adoptPtr(new GraphicsLayer(client));
 }
 
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
@@ -150,8 +148,8 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
         m_client->verifyNotPainting();
 #endif
 
-    m_contentLayerDelegate = wrapUnique(new ContentLayerDelegate(this));
-    m_layer = wrapUnique(Platform::current()->compositorSupport()->createContentLayer(m_contentLayerDelegate.get()));
+    m_contentLayerDelegate = adoptPtr(new ContentLayerDelegate(this));
+    m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_contentLayerDelegate.get()));
     m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
     m_layer->layer()->setLayerClient(this);
 }
@@ -1157,7 +1155,7 @@ void GraphicsLayer::setContentsToImage(Image* image, RespectImageOrientationEnum
 
     if (image && skImage) {
         if (!m_imageLayer) {
-            m_imageLayer = wrapUnique(Platform::current()->compositorSupport()->createImageLayer());
+            m_imageLayer = adoptPtr(Platform::current()->compositorSupport()->createImageLayer());
             registerContentsLayer(m_imageLayer->layer());
         }
         m_imageLayer->setImage(skImage.get());
@@ -1180,14 +1178,14 @@ WebLayer* GraphicsLayer::platformLayer() const
 
 void GraphicsLayer::setFilters(const FilterOperations& filters)
 {
-    std::unique_ptr<CompositorFilterOperations> compositorFilters = CompositorFilterOperations::create();
+    OwnPtr<CompositorFilterOperations> compositorFilters = CompositorFilterOperations::create();
     SkiaImageFilterBuilder::buildFilterOperations(filters, compositorFilters.get());
     m_layer->layer()->setFilters(compositorFilters->asFilterOperations());
 }
 
 void GraphicsLayer::setBackdropFilters(const FilterOperations& filters)
 {
-    std::unique_ptr<CompositorFilterOperations> compositorFilters = CompositorFilterOperations::create();
+    OwnPtr<CompositorFilterOperations> compositorFilters = CompositorFilterOperations::create();
     SkiaImageFilterBuilder::buildFilterOperations(filters, compositorFilters.get());
     m_layer->layer()->setBackgroundFilters(compositorFilters->asFilterOperations());
 }

@@ -42,13 +42,12 @@
 #include "modules/webmidi/MIDIOutputMap.h"
 #include "modules/webmidi/MIDIPort.h"
 #include "platform/AsyncMethodRunner.h"
-#include <memory>
 
 namespace blink {
 
 using PortState = MIDIAccessor::MIDIPortState;
 
-MIDIAccess::MIDIAccess(std::unique_ptr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
+MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(executionContext)
     , m_accessor(std::move(accessor))

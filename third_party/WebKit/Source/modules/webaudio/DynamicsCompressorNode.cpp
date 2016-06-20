@@ -22,11 +22,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "modules/webaudio/DynamicsCompressorNode.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/DynamicsCompressorNode.h"
 #include "platform/audio/DynamicsCompressor.h"
-#include "wtf/PtrUtil.h"
 
 // Set output to stereo by default.
 static const unsigned defaultNumberOfOutputChannels = 2;
@@ -106,7 +105,7 @@ void DynamicsCompressorHandler::initialize()
         return;
 
     AudioHandler::initialize();
-    m_dynamicsCompressor = wrapUnique(new DynamicsCompressor(sampleRate(), defaultNumberOfOutputChannels));
+    m_dynamicsCompressor = adoptPtr(new DynamicsCompressor(sampleRate(), defaultNumberOfOutputChannels));
 }
 
 void DynamicsCompressorHandler::clearInternalStateWhenDisabled()

@@ -271,26 +271,6 @@ struct VectorComparer<true, T> {
 };
 
 template <typename T>
-struct VectorElementComparer {
-    STATIC_ONLY(VectorElementComparer);
-    template <typename U>
-    static bool compareElement(const T& left, const U& right)
-    {
-        return left == right;
-    }
-};
-
-template <typename T>
-struct VectorElementComparer<std::unique_ptr<T>> {
-    STATIC_ONLY(VectorElementComparer);
-    template <typename U>
-    static bool compareElement(const std::unique_ptr<T>& left, const U& right)
-    {
-        return left.get() == right;
-    }
-};
-
-template <typename T>
 struct VectorTypeOperations {
     STATIC_ONLY(VectorTypeOperations);
     static void destruct(T* begin, T* end)
@@ -331,12 +311,6 @@ struct VectorTypeOperations {
     static bool compare(const T* a, const T* b, size_t size)
     {
         return VectorComparer<VectorTraits<T>::canCompareWithMemcmp, T>::compare(a, b, size);
-    }
-
-    template <typename U>
-    static bool compareElement(const T& left, U&& right)
-    {
-        return VectorElementComparer<T>::compareElement(left, std::forward<U>(right));
     }
 };
 
@@ -1121,7 +1095,7 @@ size_t Vector<T, inlineCapacity, Allocator>::find(const U& value) const
     const T* b = begin();
     const T* e = end();
     for (const T* iter = b; iter < e; ++iter) {
-        if (TypeOperations::compareElement(*iter, value))
+        if (*iter == value)
             return iter - b;
     }
     return kNotFound;
@@ -1135,7 +1109,7 @@ size_t Vector<T, inlineCapacity, Allocator>::reverseFind(const U& value) const
     const T* iter = end();
     while (iter > b) {
         --iter;
-        if (TypeOperations::compareElement(*iter, value))
+        if (*iter == value)
             return iter - b;
     }
     return kNotFound;

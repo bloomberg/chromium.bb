@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
-#include <memory>
 
 namespace blink {
 
@@ -18,7 +17,7 @@ public:
     DedicatedWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
     ~DedicatedWorkerMessagingProxy() override;
 
-    std::unique_ptr<WorkerThread> createWorkerThread(double originTime) override;
+    PassOwnPtr<WorkerThread> createWorkerThread(double originTime) override;
 };
 
 } // namespace blink

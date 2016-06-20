@@ -8,7 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserSelector.h"
 #include "core/css/parser/CSSParserTokenRange.h"
-#include <memory>
 
 namespace blink {
 
@@ -32,18 +31,18 @@ private:
     CSSSelectorList consumeComplexSelectorList(CSSParserTokenRange&);
     CSSSelectorList consumeCompoundSelectorList(CSSParserTokenRange&);
 
-    std::unique_ptr<CSSParserSelector> consumeComplexSelector(CSSParserTokenRange&);
-    std::unique_ptr<CSSParserSelector> consumeCompoundSelector(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumeComplexSelector(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumeCompoundSelector(CSSParserTokenRange&);
     // This doesn't include element names, since they're handled specially
-    std::unique_ptr<CSSParserSelector> consumeSimpleSelector(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumeSimpleSelector(CSSParserTokenRange&);
 
     bool consumeName(CSSParserTokenRange&, AtomicString& name, AtomicString& namespacePrefix);
 
     // These will return nullptr when the selector is invalid
-    std::unique_ptr<CSSParserSelector> consumeId(CSSParserTokenRange&);
-    std::unique_ptr<CSSParserSelector> consumeClass(CSSParserTokenRange&);
-    std::unique_ptr<CSSParserSelector> consumePseudo(CSSParserTokenRange&);
-    std::unique_ptr<CSSParserSelector> consumeAttribute(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumeId(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumeClass(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumePseudo(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumeAttribute(CSSParserTokenRange&);
 
     CSSSelector::RelationType consumeCombinator(CSSParserTokenRange&);
     CSSSelector::MatchType consumeAttributeMatch(CSSParserTokenRange&);
@@ -52,8 +51,8 @@ private:
     const AtomicString& defaultNamespace() const;
     const AtomicString& determineNamespace(const AtomicString& prefix);
     void prependTypeSelectorIfNeeded(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector*);
-    static std::unique_ptr<CSSParserSelector> addSimpleSelectorToCompound(std::unique_ptr<CSSParserSelector> compoundSelector, std::unique_ptr<CSSParserSelector> simpleSelector);
-    static std::unique_ptr<CSSParserSelector> splitCompoundAtImplicitShadowCrossingCombinator(std::unique_ptr<CSSParserSelector> compoundSelector);
+    static PassOwnPtr<CSSParserSelector> addSimpleSelectorToCompound(PassOwnPtr<CSSParserSelector> compoundSelector, PassOwnPtr<CSSParserSelector> simpleSelector);
+    static PassOwnPtr<CSSParserSelector> splitCompoundAtImplicitShadowCrossingCombinator(PassOwnPtr<CSSParserSelector> compoundSelector);
 
     const CSSParserContext& m_context;
     Member<StyleSheetContents> m_styleSheet; // FIXME: Should be const

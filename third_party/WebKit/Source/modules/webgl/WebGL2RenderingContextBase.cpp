@@ -26,9 +26,9 @@
 #include "modules/webgl/WebGLVertexArrayObject.h"
 #include "platform/CheckedInt.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 using WTF::String;
 
@@ -114,7 +114,7 @@ const GLenum kCompressedTextureFormatsETC2EAC[] = {
     GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
 };
 
-WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
     : WebGLRenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes)
 {
     m_supportedInternalFormatsStorage.insert(kSupportedInternalFormatsStorage, kSupportedInternalFormatsStorage + WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
@@ -405,20 +405,20 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
     switch (pname) {
     case GL_SAMPLES:
         {
-            std::unique_ptr<GLint[]> values;
+            OwnPtr<GLint[]> values;
             GLint length = -1;
             if (!floatType) {
                 contextGL()->GetInternalformativ(target, internalformat, GL_NUM_SAMPLE_COUNTS, 1, &length);
                 if (length <= 0)
                     return WebGLAny(scriptState, DOMInt32Array::create(0));
 
-                values = wrapArrayUnique(new GLint[length]);
+                values = adoptArrayPtr(new GLint[length]);
                 for (GLint ii = 0; ii < length; ++ii)
                     values[ii] = 0;
                 contextGL()->GetInternalformativ(target, internalformat, GL_SAMPLES, length, values.get());
             } else {
                 length = 1;
-                values = wrapArrayUnique(new GLint[1]);
+                values = adoptArrayPtr(new GLint[1]);
                 values[0] = 1;
             }
             return WebGLAny(scriptState, DOMInt32Array::create(values.get(), length));
@@ -2116,7 +2116,7 @@ WebGLActiveInfo* WebGL2RenderingContextBase::getTransformFeedbackVarying(WebGLPr
     if (maxNameLength <= 0) {
         return nullptr;
     }
-    std::unique_ptr<GLchar[]> name = wrapArrayUnique(new GLchar[maxNameLength]);
+    OwnPtr<GLchar[]> name = adoptArrayPtr(new GLchar[maxNameLength]);
     GLsizei length = 0;
     GLsizei size = 0;
     GLenum type = 0;
@@ -2409,7 +2409,7 @@ String WebGL2RenderingContextBase::getActiveUniformBlockName(WebGLProgram* progr
         synthesizeGLError(GL_INVALID_VALUE, "getActiveUniformBlockName", "invalid uniform block index");
         return String();
     }
-    std::unique_ptr<GLchar[]> name = wrapArrayUnique(new GLchar[maxNameLength]);
+    OwnPtr<GLchar[]> name = adoptArrayPtr(new GLchar[maxNameLength]);
 
     GLsizei length = 0;
     contextGL()->GetActiveUniformBlockName(objectOrZero(program), uniformBlockIndex, maxNameLength, &length, name.get());

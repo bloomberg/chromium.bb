@@ -7,15 +7,13 @@
 #include "core/animation/PathInterpolationFunctions.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
 void CSSPathInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
     ASSERT(cssProperty() == CSSPropertyD);
-    std::unique_ptr<SVGPathByteStream> pathByteStream = PathInterpolationFunctions::appliedValue(interpolableValue, nonInterpolableValue);
+    OwnPtr<SVGPathByteStream> pathByteStream = PathInterpolationFunctions::appliedValue(interpolableValue, nonInterpolableValue);
     if (pathByteStream->isEmpty()) {
         environment.state().style()->setD(nullptr);
         return;
@@ -40,9 +38,9 @@ InterpolationValue CSSPathInterpolationType::maybeConvertInitial(const StyleReso
 
 class ParentPathChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<ParentPathChecker> create(PassRefPtr<StylePath> stylePath)
+    static PassOwnPtr<ParentPathChecker> create(PassRefPtr<StylePath> stylePath)
     {
-        return wrapUnique(new ParentPathChecker(stylePath));
+        return adoptPtr(new ParentPathChecker(stylePath));
     }
 
 private:

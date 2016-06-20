@@ -41,9 +41,10 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
 #include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -57,7 +58,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
     USING_FAST_MALLOC(DocumentThreadableLoader);
     public:
         static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        static std::unique_ptr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        static PassOwnPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         ~DocumentThreadableLoader() override;
 
         void start(const ResourceRequest&) override;
@@ -89,7 +90,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         //
         // |this| may be dead after calling these methods.
         void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-        void responseReceived(Resource*, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
+        void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
         void setSerializedCachedMetadata(Resource*, const char*, size_t) override;
         void dataReceived(Resource*, const char* data, size_t dataLength) override;
         void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override;
@@ -108,7 +109,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // common to both sync and async mode.
         //
         // |this| may be dead after calling these method in async mode.
-        void handleResponse(unsigned long identifier, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>);
+        void handleResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
         void handleReceivedData(const char* data, size_t dataLength);
         void handleSuccessfulFinish(unsigned long identifier, double finishTime);
 

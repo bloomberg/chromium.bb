@@ -33,8 +33,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/SegmentReader.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -57,22 +56,22 @@ public:
     uint32_t m_uniqueID;
 };
 
-std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer& data, ImageDecoder::AlphaOption alphaOption, ImageDecoder::GammaAndColorProfileOption colorOptions)
+PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer& data, ImageDecoder::AlphaOption alphaOption, ImageDecoder::GammaAndColorProfileOption colorOptions)
 {
-    std::unique_ptr<ImageDecoder> actualDecoder = ImageDecoder::create(data, alphaOption, colorOptions);
+    OwnPtr<ImageDecoder> actualDecoder = ImageDecoder::create(data, alphaOption, colorOptions);
 
     if (!actualDecoder)
         return nullptr;
 
-    return wrapUnique(new DeferredImageDecoder(std::move(actualDecoder)));
+    return adoptPtr(new DeferredImageDecoder(std::move(actualDecoder)));
 }
 
-std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(std::unique_ptr<ImageDecoder> actualDecoder)
+PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(PassOwnPtr<ImageDecoder> actualDecoder)
 {
-    return wrapUnique(new DeferredImageDecoder(std::move(actualDecoder)));
+    return adoptPtr(new DeferredImageDecoder(std::move(actualDecoder)));
 }
 
-DeferredImageDecoder::DeferredImageDecoder(std::unique_ptr<ImageDecoder> actualDecoder)
+DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
     , m_actualDecoder(std::move(actualDecoder))
     , m_repetitionCount(cAnimationNone)
@@ -130,7 +129,7 @@ void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
 
     if (m_frameGenerator) {
         if (!m_rwBuffer)
-            m_rwBuffer = wrapUnique(new SkRWBuffer(data.size()));
+            m_rwBuffer = adoptPtr(new SkRWBuffer(data.size()));
 
         const char* segment = 0;
         for (size_t length = data.getSomeData(segment, m_rwBuffer->size());

@@ -32,7 +32,6 @@
 
 #include "modules/webmidi/MIDIAccessInitializer.h"
 #include "modules/webmidi/MIDIClient.h"
-#include <memory>
 
 namespace blink {
 
@@ -41,7 +40,7 @@ const char* MIDIController::supplementName()
     return "MIDIController";
 }
 
-MIDIController::MIDIController(std::unique_ptr<MIDIClient> client)
+MIDIController::MIDIController(PassOwnPtr<MIDIClient> client)
     : m_client(std::move(client))
 {
     DCHECK(m_client);
@@ -51,7 +50,7 @@ MIDIController::~MIDIController()
 {
 }
 
-MIDIController* MIDIController::create(std::unique_ptr<MIDIClient> client)
+MIDIController* MIDIController::create(PassOwnPtr<MIDIClient> client)
 {
     return new MIDIController(std::move(client));
 }
@@ -66,7 +65,7 @@ void MIDIController::cancelPermissionRequest(MIDIAccessInitializer* initializer)
     m_client->cancelPermissionRequest(initializer);
 }
 
-void provideMIDITo(LocalFrame& frame, std::unique_ptr<MIDIClient> client)
+void provideMIDITo(LocalFrame& frame, PassOwnPtr<MIDIClient> client)
 {
     MIDIController::provideTo(frame, MIDIController::supplementName(), MIDIController::create(std::move(client)));
 }

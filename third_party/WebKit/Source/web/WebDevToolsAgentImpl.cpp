@@ -90,9 +90,7 @@
 #include "web/WebViewImpl.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -118,7 +116,7 @@ public:
     {
         if (s_instance)
             return;
-        std::unique_ptr<ClientMessageLoopAdapter> instance = wrapUnique(new ClientMessageLoopAdapter(wrapUnique(client->createClientMessageLoop())));
+        OwnPtr<ClientMessageLoopAdapter> instance = adoptPtr(new ClientMessageLoopAdapter(adoptPtr(client->createClientMessageLoop())));
         s_instance = instance.get();
         MainThreadDebugger::instance()->setClientMessageLoop(std::move(instance));
     }
@@ -154,7 +152,7 @@ public:
     }
 
 private:
-    ClientMessageLoopAdapter(std::unique_ptr<WebDevToolsAgentClient::WebKitClientMessageLoop> messageLoop)
+    ClientMessageLoopAdapter(PassOwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> messageLoop)
         : m_runningForDebugBreak(false)
         , m_runningForCreateWindow(false)
         , m_messageLoop(std::move(messageLoop))
@@ -269,7 +267,7 @@ private:
 
     bool m_runningForDebugBreak;
     bool m_runningForCreateWindow;
-    std::unique_ptr<WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
+    OwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
     typedef HashSet<WebViewImpl*> FrozenViewsSet;
     FrozenViewsSet m_frozenViews;
     WebFrameWidgetsSet m_frozenWidgets;
@@ -648,7 +646,7 @@ void WebDevToolsAgentImpl::didProcessTask()
     flushProtocolNotifications();
 }
 
-void WebDevToolsAgentImpl::runDebuggerTask(int sessionId, std::unique_ptr<WebDevToolsAgent::MessageDescriptor> descriptor)
+void WebDevToolsAgentImpl::runDebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor> descriptor)
 {
     WebDevToolsAgent* webagent = descriptor->agent();
     if (!webagent)
@@ -661,8 +659,8 @@ void WebDevToolsAgentImpl::runDebuggerTask(int sessionId, std::unique_ptr<WebDev
 
 void WebDevToolsAgent::interruptAndDispatch(int sessionId, MessageDescriptor* rawDescriptor)
 {
-    // rawDescriptor can't be a std::unique_ptr because interruptAndDispatch is a WebKit API function.
-    MainThreadDebugger::interruptMainThreadAndRun(threadSafeBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId, passed(wrapUnique(rawDescriptor))));
+    // rawDescriptor can't be a PassOwnPtr because interruptAndDispatch is a WebKit API function.
+    MainThreadDebugger::interruptMainThreadAndRun(threadSafeBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId, passed(adoptPtr(rawDescriptor))));
 }
 
 bool WebDevToolsAgent::shouldInterruptForMethod(const WebString& method)

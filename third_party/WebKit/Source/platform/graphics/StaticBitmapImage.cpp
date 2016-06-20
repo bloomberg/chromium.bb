@@ -14,8 +14,6 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -76,7 +74,7 @@ PassRefPtr<SkImage> StaticBitmapImage::imageForCurrentFrame()
     // In the place when we consume an ImageBitmap that is gpu texture backed,
     // create a new SkImage from that texture.
     // TODO(xidachen): make this work on a worker thread.
-    std::unique_ptr<WebGraphicsContext3DProvider> provider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!provider)
         return nullptr;
     GrContext* grContext = provider->grContext();

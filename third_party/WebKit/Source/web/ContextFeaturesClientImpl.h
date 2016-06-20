@@ -32,16 +32,14 @@
 #define ContextFeaturesClientImpl_h
 
 #include "core/dom/ContextFeatures.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
 class ContextFeaturesClientImpl final : public ContextFeaturesClient {
 public:
-    static std::unique_ptr<ContextFeaturesClientImpl> create()
+    static PassOwnPtr<ContextFeaturesClientImpl> create()
     {
-        return wrapUnique(new ContextFeaturesClientImpl());
+        return adoptPtr(new ContextFeaturesClientImpl());
     }
 
     bool isEnabled(Document*, ContextFeatures::FeatureType, bool defaultValue) override;

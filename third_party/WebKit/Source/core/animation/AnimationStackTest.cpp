@@ -13,7 +13,6 @@
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -80,7 +79,7 @@ protected:
         return toLegacyStyleInterpolation(interpolation).currentValue().get();
     }
 
-    std::unique_ptr<DummyPageHolder> pageHolder;
+    OwnPtr<DummyPageHolder> pageHolder;
     Persistent<Document> document;
     Persistent<AnimationTimeline> timeline;
     Persistent<Element> element;

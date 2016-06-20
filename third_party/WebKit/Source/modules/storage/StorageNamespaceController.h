@@ -8,7 +8,7 @@
 #include "core/page/Page.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -33,7 +33,7 @@ public:
 private:
     explicit StorageNamespaceController(StorageClient*);
     static const char* supplementName();
-    std::unique_ptr<StorageNamespace> m_sessionStorage;
+    OwnPtr<StorageNamespace> m_sessionStorage;
     StorageClient* m_client;
     Member<InspectorDOMStorageAgent> m_inspectorAgent;
 };

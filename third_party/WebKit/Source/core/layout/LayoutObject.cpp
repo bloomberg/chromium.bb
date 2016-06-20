@@ -80,7 +80,6 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
-#include <memory>
 #ifndef NDEBUG
 #include <stdio.h>
 #endif
@@ -138,7 +137,7 @@ static SelectionPaintInvalidationMap* selectionPaintInvalidationMap = nullptr;
 
 // The pointer to paint properties is implemented as a global hash map temporarily,
 // to avoid memory regression during the transition towards SPv2.
-typedef HashMap<const LayoutObject*, std::unique_ptr<ObjectPaintProperties>> ObjectPaintPropertiesMap;
+typedef HashMap<const LayoutObject*, OwnPtr<ObjectPaintProperties>> ObjectPaintPropertiesMap;
 static ObjectPaintPropertiesMap& objectPaintPropertiesMap()
 {
     DEFINE_STATIC_LOCAL(ObjectPaintPropertiesMap, staticObjectPaintPropertiesMap, ());
@@ -1171,9 +1170,9 @@ void addJsonObjectForPoint(TracedValue* value, const char* name, const T& point)
     value->endDictionary();
 }
 
-static std::unique_ptr<TracedValue> jsonObjectForPaintInvalidationInfo(const LayoutRect& rect, const String& invalidationReason)
+static PassOwnPtr<TracedValue> jsonObjectForPaintInvalidationInfo(const LayoutRect& rect, const String& invalidationReason)
 {
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     addJsonObjectForRect(value.get(), "rect", rect);
     value->setString("invalidation_reason", invalidationReason);
     return value;
@@ -1328,9 +1327,9 @@ void LayoutObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationStat
     }
 }
 
-static std::unique_ptr<TracedValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutPoint& oldLocation, const LayoutRect& newRect, const LayoutPoint& newLocation)
+static PassOwnPtr<TracedValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutPoint& oldLocation, const LayoutRect& newRect, const LayoutPoint& newLocation)
 {
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     addJsonObjectForRect(value.get(), "oldRect", oldRect);
     addJsonObjectForPoint(value.get(), "oldLocation", oldLocation);
     addJsonObjectForRect(value.get(), "newRect", newRect);

@@ -32,6 +32,7 @@
 
 #include "platform/mediastream/RTCSessionDescriptionRequest.h"
 #include "public/platform/WebRTCSessionDescription.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

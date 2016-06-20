@@ -6,8 +6,6 @@
 
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -35,7 +33,7 @@ TEST_F(CancellableTaskFactoryTest, IsPending_TaskNotCreated)
 TEST_F(CancellableTaskFactoryTest, IsPending_TaskCreated)
 {
     TestCancellableTaskFactory factory(nullptr);
-    std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> task = adoptPtr(factory.cancelAndCreate());
 
     EXPECT_TRUE(factory.isPending());
 }
@@ -48,7 +46,7 @@ TEST_F(CancellableTaskFactoryTest, IsPending_TaskCreatedAndRun)
 {
     TestCancellableTaskFactory factory(WTF::bind(&EmptyFn));
     {
-        std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(factory.cancelAndCreate());
+        OwnPtr<WebTaskRunner::Task> task = adoptPtr(factory.cancelAndCreate());
         task->run();
     }
 
@@ -66,7 +64,7 @@ TEST_F(CancellableTaskFactoryTest, IsPending_TaskCreatedAndDestroyed)
 TEST_F(CancellableTaskFactoryTest, IsPending_TaskCreatedAndCancelled)
 {
     TestCancellableTaskFactory factory(nullptr);
-    std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> task = adoptPtr(factory.cancelAndCreate());
     factory.cancel();
 
     EXPECT_FALSE(factory.isPending());
@@ -74,7 +72,7 @@ TEST_F(CancellableTaskFactoryTest, IsPending_TaskCreatedAndCancelled)
 
 class TestClass {
 public:
-    std::unique_ptr<CancellableTaskFactory> m_factory;
+    OwnPtr<CancellableTaskFactory> m_factory;
 
     TestClass()
         : m_factory(CancellableTaskFactory::create(this, &TestClass::TestFn))
@@ -90,7 +88,7 @@ public:
 TEST_F(CancellableTaskFactoryTest, IsPending_InCallback)
 {
     TestClass testClass;
-    std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(testClass.m_factory->cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> task = adoptPtr(testClass.m_factory->cancelAndCreate());
     task->run();
 }
 
@@ -103,7 +101,7 @@ TEST_F(CancellableTaskFactoryTest, Run_ClosureIsExecuted)
 {
     int executionCount = 0;
     TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
-    std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> task = adoptPtr(factory.cancelAndCreate());
     task->run();
 
     EXPECT_EQ(1, executionCount);
@@ -113,7 +111,7 @@ TEST_F(CancellableTaskFactoryTest, Run_ClosureIsExecutedOnlyOnce)
 {
     int executionCount = 0;
     TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
-    std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> task = adoptPtr(factory.cancelAndCreate());
     task->run();
     task->run();
     task->run();
@@ -125,10 +123,10 @@ TEST_F(CancellableTaskFactoryTest, Run_ClosureIsExecutedOnlyOnce)
 TEST_F(CancellableTaskFactoryTest, Run_FactoryDestructionPreventsExecution)
 {
     int executionCount = 0;
-    std::unique_ptr<WebTaskRunner::Task> task;
+    OwnPtr<WebTaskRunner::Task> task;
     {
         TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
-        task = wrapUnique(factory.cancelAndCreate());
+        task = adoptPtr(factory.cancelAndCreate());
     }
     task->run();
 
@@ -140,15 +138,15 @@ TEST_F(CancellableTaskFactoryTest, Run_TasksInSequence)
     int executionCount = 0;
     TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
 
-    std::unique_ptr<WebTaskRunner::Task> taskA = wrapUnique(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> taskA = adoptPtr(factory.cancelAndCreate());
     taskA->run();
     EXPECT_EQ(1, executionCount);
 
-    std::unique_ptr<WebTaskRunner::Task> taskB = wrapUnique(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> taskB = adoptPtr(factory.cancelAndCreate());
     taskB->run();
     EXPECT_EQ(2, executionCount);
 
-    std::unique_ptr<WebTaskRunner::Task> taskC = wrapUnique(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> taskC = adoptPtr(factory.cancelAndCreate());
     taskC->run();
     EXPECT_EQ(3, executionCount);
 }
@@ -157,7 +155,7 @@ TEST_F(CancellableTaskFactoryTest, Cancel)
 {
     int executionCount = 0;
     TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
-    std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> task = adoptPtr(factory.cancelAndCreate());
     factory.cancel();
     task->run();
 
@@ -169,8 +167,8 @@ TEST_F(CancellableTaskFactoryTest, CreatingANewTaskCancelsPreviousOnes)
     int executionCount = 0;
     TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
 
-    std::unique_ptr<WebTaskRunner::Task> taskA = wrapUnique(factory.cancelAndCreate());
-    std::unique_ptr<WebTaskRunner::Task> taskB = wrapUnique(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> taskA = adoptPtr(factory.cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> taskB = adoptPtr(factory.cancelAndCreate());
 
     taskA->run();
     EXPECT_EQ(0, executionCount);
@@ -203,7 +201,7 @@ public:
     static int s_destructed;
     static int s_invoked;
 
-    std::unique_ptr<CancellableTaskFactory> m_factory;
+    OwnPtr<CancellableTaskFactory> m_factory;
 };
 
 int GCObject::s_destructed = 0;
@@ -214,7 +212,7 @@ int GCObject::s_invoked = 0;
 TEST(CancellableTaskFactoryTest, GarbageCollectedWeak)
 {
     GCObject* object = new GCObject();
-    std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(object->m_factory->cancelAndCreate());
+    OwnPtr<WebTaskRunner::Task> task = adoptPtr(object->m_factory->cancelAndCreate());
     object = nullptr;
     ThreadHeap::collectAllGarbage();
     task->run();

@@ -9,8 +9,6 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -65,9 +63,9 @@ namespace {
 
 class UnderlyingIndentModeChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<UnderlyingIndentModeChecker> create(const IndentMode& mode)
+    static PassOwnPtr<UnderlyingIndentModeChecker> create(const IndentMode& mode)
     {
-        return wrapUnique(new UnderlyingIndentModeChecker(mode));
+        return adoptPtr(new UnderlyingIndentModeChecker(mode));
     }
 
     bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
@@ -85,9 +83,9 @@ private:
 
 class InheritedIndentModeChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<InheritedIndentModeChecker> create(const IndentMode& mode)
+    static PassOwnPtr<InheritedIndentModeChecker> create(const IndentMode& mode)
     {
-        return wrapUnique(new InheritedIndentModeChecker(mode));
+        return adoptPtr(new InheritedIndentModeChecker(mode));
     }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue&) const final

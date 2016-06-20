@@ -25,6 +25,7 @@
 
 #include "platform/geometry/TransformState.h"
 
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

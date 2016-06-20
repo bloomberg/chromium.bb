@@ -57,7 +57,6 @@
 #include "web/FrameLoaderClientImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -196,7 +195,7 @@ bool WebNode::isDocumentTypeNode() const
 
 void WebNode::simulateClick()
 {
-    m_private->getExecutionContext()->postSuspendableTask(wrapUnique(new NodeDispatchSimulatedClickTask(m_private)));
+    m_private->getExecutionContext()->postSuspendableTask(adoptPtr(new NodeDispatchSimulatedClickTask(m_private)));
 }
 
 WebElementCollection WebNode::getElementsByHTMLTagName(const WebString& tag) const

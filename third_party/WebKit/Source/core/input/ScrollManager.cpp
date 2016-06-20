@@ -19,8 +19,6 @@
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/PlatformGestureEvent.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 
 namespace blink {
@@ -248,7 +246,7 @@ ScrollResult ScrollManager::scrollBox(LayoutBox* box,
     // using parts of the scroll customization framework on just this element.
     computeScrollChainForSingleNode(*node, m_currentScrollChain);
 
-    std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
+    OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
     scrollStateData->delta_x = delta.width();
     scrollStateData->delta_y = delta.height();
     scrollStateData->position_x = position.x();
@@ -328,7 +326,7 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(const PlatformGestur
     passScrollGestureEventToWidget(gestureEvent, m_scrollGestureHandlingNode->layoutObject());
     if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
         m_currentScrollChain.clear();
-        std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
+        OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
         scrollStateData->position_x = gestureEvent.position().x();
         scrollStateData->position_y = gestureEvent.position().y();
         scrollStateData->is_beginning = true;
@@ -382,7 +380,7 @@ WebInputEventResult ScrollManager::handleGestureScrollUpdate(const PlatformGestu
         }
 
         if (handleScrollCustomization) {
-            std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
+            OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
             scrollStateData->delta_x = delta.width();
             scrollStateData->delta_y = delta.height();
             scrollStateData->delta_granularity = ScrollByPrecisePixel;
@@ -447,7 +445,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEnd(const PlatformGestureE
     if (node) {
         passScrollGestureEventToWidget(gestureEvent, node->layoutObject());
         if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
-            std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
+            OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
             scrollStateData->is_ending = true;
             scrollStateData->is_in_inertial_phase = gestureEvent.inertialPhase() == ScrollInertialPhaseMomentum;
             scrollStateData->from_user_input = true;

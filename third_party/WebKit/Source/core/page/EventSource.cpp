@@ -55,7 +55,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -222,7 +221,7 @@ ExecutionContext* EventSource::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
+void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(handle, !handle);
     ASSERT(m_state == CONNECTING);

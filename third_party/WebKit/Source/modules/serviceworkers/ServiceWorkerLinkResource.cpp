@@ -13,7 +13,6 @@
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -73,7 +72,7 @@ void ServiceWorkerLinkResource::process()
 
     TrackExceptionState exceptionState;
 
-    NavigatorServiceWorker::serviceWorker(&document, *document.frame()->domWindow()->navigator(), exceptionState)->registerServiceWorkerImpl(&document, scriptURL, scopeURL, wrapUnique(new RegistrationCallback(m_owner)));
+    NavigatorServiceWorker::serviceWorker(&document, *document.frame()->domWindow()->navigator(), exceptionState)->registerServiceWorkerImpl(&document, scriptURL, scopeURL, adoptPtr(new RegistrationCallback(m_owner)));
 }
 
 bool ServiceWorkerLinkResource::hasLoaded() const

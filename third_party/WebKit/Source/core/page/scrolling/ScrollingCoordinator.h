@@ -34,7 +34,6 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 class WebScrollbarLayer;
@@ -96,7 +95,7 @@ public:
     MainThreadScrollingReasons mainThreadScrollingReasons() const;
     bool shouldUpdateScrollLayerPositionOnMainThread() const { return mainThreadScrollingReasons() != 0; }
 
-    std::unique_ptr<WebScrollbarLayer> createSolidColorScrollbarLayer(ScrollbarOrientation, int thumbThickness, int trackStart, bool isLeftSideVerticalScrollbar);
+    PassOwnPtr<WebScrollbarLayer> createSolidColorScrollbarLayer(ScrollbarOrientation, int thumbThickness, int trackStart, bool isLeftSideVerticalScrollbar);
 
     void willDestroyScrollableArea(ScrollableArea*);
     // Returns true if the coordinator handled this change.
@@ -147,15 +146,15 @@ private:
     void setTouchEventTargetRects(LayerHitTestRects&);
     void computeTouchEventTargetRects(LayerHitTestRects&);
 
-    WebScrollbarLayer* addWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation, std::unique_ptr<WebScrollbarLayer>);
+    WebScrollbarLayer* addWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation, PassOwnPtr<WebScrollbarLayer>);
     WebScrollbarLayer* getWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
     void removeWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
 
     bool frameViewIsDirty() const;
 
-    std::unique_ptr<CompositorAnimationTimeline> m_programmaticScrollAnimatorTimeline;
+    OwnPtr<CompositorAnimationTimeline> m_programmaticScrollAnimatorTimeline;
 
-    using ScrollbarMap = HeapHashMap<Member<ScrollableArea>, std::unique_ptr<WebScrollbarLayer>>;
+    using ScrollbarMap = HeapHashMap<Member<ScrollableArea>, OwnPtr<WebScrollbarLayer>>;
     ScrollbarMap m_horizontalScrollbars;
     ScrollbarMap m_verticalScrollbars;
     HashSet<const PaintLayer*> m_layersWithTouchRects;

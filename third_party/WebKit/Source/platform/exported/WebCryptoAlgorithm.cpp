@@ -32,10 +32,9 @@
 
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/ThreadSafeRefCounted.h"
-#include <memory>
 
 namespace blink {
 
@@ -296,17 +295,17 @@ static_assert(10 == WebCryptoOperationLast, "the parameter mapping needs to be u
 
 class WebCryptoAlgorithmPrivate : public ThreadSafeRefCounted<WebCryptoAlgorithmPrivate> {
 public:
-    WebCryptoAlgorithmPrivate(WebCryptoAlgorithmId id, std::unique_ptr<WebCryptoAlgorithmParams> params)
+    WebCryptoAlgorithmPrivate(WebCryptoAlgorithmId id, PassOwnPtr<WebCryptoAlgorithmParams> params)
         : id(id)
         , params(std::move(params))
     {
     }
 
     WebCryptoAlgorithmId id;
-    std::unique_ptr<WebCryptoAlgorithmParams> params;
+    OwnPtr<WebCryptoAlgorithmParams> params;
 };
 
-WebCryptoAlgorithm::WebCryptoAlgorithm(WebCryptoAlgorithmId id, std::unique_ptr<WebCryptoAlgorithmParams> params)
+WebCryptoAlgorithm::WebCryptoAlgorithm(WebCryptoAlgorithmId id, PassOwnPtr<WebCryptoAlgorithmParams> params)
     : m_private(adoptRef(new WebCryptoAlgorithmPrivate(id, std::move(params))))
 {
 }
@@ -318,7 +317,7 @@ WebCryptoAlgorithm WebCryptoAlgorithm::createNull()
 
 WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, WebCryptoAlgorithmParams* params)
 {
-    return WebCryptoAlgorithm(id, wrapUnique(params));
+    return WebCryptoAlgorithm(id, adoptPtr(params));
 }
 
 const WebCryptoAlgorithmInfo* WebCryptoAlgorithm::lookupAlgorithmInfo(WebCryptoAlgorithmId id)

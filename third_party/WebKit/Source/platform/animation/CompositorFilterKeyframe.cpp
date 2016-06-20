@@ -4,11 +4,9 @@
 
 #include "platform/animation/CompositorFilterKeyframe.h"
 
-#include <memory>
-
 namespace blink {
 
-CompositorFilterKeyframe::CompositorFilterKeyframe(double time, std::unique_ptr<CompositorFilterOperations> value)
+CompositorFilterKeyframe::CompositorFilterKeyframe(double time, PassOwnPtr<CompositorFilterOperations> value)
     : m_time(time)
     , m_value(std::move(value))
 {

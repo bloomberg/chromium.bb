@@ -13,6 +13,8 @@
 #include "platform/heap/ThreadState.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Functional.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include <memory>
 

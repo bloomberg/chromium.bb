@@ -21,9 +21,9 @@
 #ifndef WTF_VectorTraits_h
 #define WTF_VectorTraits_h
 
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/TypeTraits.h"
-#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -68,23 +68,23 @@ struct SimpleClassVectorTraits : VectorTraitsBase<T> {
     static const bool canCompareWithMemcmp = true;
 };
 
-// We know std::unique_ptr and RefPtr are simple enough that initializing to 0 and moving
+// We know OwnPtr and RefPtr are simple enough that initializing to 0 and moving
 // with memcpy (and then not destructing the original) will totally work.
 template <typename P>
 struct VectorTraits<RefPtr<P>> : SimpleClassVectorTraits<RefPtr<P>> {};
 
 template <typename P>
-struct VectorTraits<std::unique_ptr<P>> : SimpleClassVectorTraits<std::unique_ptr<P>> {
-    // std::unique_ptr -> std::unique_ptr has a very particular structure that tricks the
+struct VectorTraits<OwnPtr<P>> : SimpleClassVectorTraits<OwnPtr<P>> {
+    // OwnPtr -> PassOwnPtr has a very particular structure that tricks the
     // normal type traits into thinking that the class is "trivially copyable".
     static const bool canCopyWithMemcpy = false;
 };
 static_assert(VectorTraits<RefPtr<int>>::canInitializeWithMemset, "inefficient RefPtr Vector");
 static_assert(VectorTraits<RefPtr<int>>::canMoveWithMemcpy, "inefficient RefPtr Vector");
 static_assert(VectorTraits<RefPtr<int>>::canCompareWithMemcmp, "inefficient RefPtr Vector");
-static_assert(VectorTraits<std::unique_ptr<int>>::canInitializeWithMemset, "inefficient std::unique_ptr Vector");
-static_assert(VectorTraits<std::unique_ptr<int>>::canMoveWithMemcpy, "inefficient std::unique_ptr Vector");
-static_assert(VectorTraits<std::unique_ptr<int>>::canCompareWithMemcmp, "inefficient std::unique_ptr Vector");
+static_assert(VectorTraits<OwnPtr<int>>::canInitializeWithMemset, "inefficient OwnPtr Vector");
+static_assert(VectorTraits<OwnPtr<int>>::canMoveWithMemcpy, "inefficient OwnPtr Vector");
+static_assert(VectorTraits<OwnPtr<int>>::canCompareWithMemcmp, "inefficient OwnPtr Vector");
 
 template <typename First, typename Second>
 struct VectorTraits<std::pair<First, Second>> {

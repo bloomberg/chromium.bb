@@ -45,8 +45,6 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -110,10 +108,10 @@ public:
 
 private:
     ImageResourceTestMockFetchContext()
-        :  m_runner(wrapUnique(new MockTaskRunner))
+        :  m_runner(adoptPtr(new MockTaskRunner))
     { }
 
-    std::unique_ptr<MockTaskRunner> m_runner;
+    OwnPtr<MockTaskRunner> m_runner;
 };
 
 TEST(ImageResourceTest, MultipartImage)

@@ -45,7 +45,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -294,7 +293,7 @@ bool Animation::preCommit(int compositorGroup, bool startOnCompositor)
                 createCompositorPlayer();
 
             if (maybeStartAnimationOnCompositor())
-                m_compositorState = wrapUnique(new CompositorState(*this));
+                m_compositorState = adoptPtr(new CompositorState(*this));
             else
                 cancelIncompatibleAnimationsOnCompositor();
         }

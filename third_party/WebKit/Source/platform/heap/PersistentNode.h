@@ -9,9 +9,7 @@
 #include "platform/heap/ThreadState.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace blink {
 
@@ -174,7 +172,7 @@ private:
 class CrossThreadPersistentRegion final {
     USING_FAST_MALLOC(CrossThreadPersistentRegion);
 public:
-    CrossThreadPersistentRegion() : m_persistentRegion(wrapUnique(new PersistentRegion)) { }
+    CrossThreadPersistentRegion() : m_persistentRegion(adoptPtr(new PersistentRegion)) { }
 
     void allocatePersistentNode(PersistentNode*& persistentNode, void* self, TraceCallback trace)
     {
@@ -244,7 +242,7 @@ private:
     // We don't make CrossThreadPersistentRegion inherit from PersistentRegion
     // because we don't want to virtualize performance-sensitive methods
     // such as PersistentRegion::allocate/freePersistentNode.
-    std::unique_ptr<PersistentRegion> m_persistentRegion;
+    OwnPtr<PersistentRegion> m_persistentRegion;
 
     // Recursive as prepareForThreadStateTermination() clears a PersistentNode's
     // associated Persistent<> -- it in turn freeing the PersistentNode. And both

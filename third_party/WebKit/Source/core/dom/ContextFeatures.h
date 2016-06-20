@@ -30,7 +30,6 @@
 #include "core/CoreExport.h"
 #include "core/page/Page.h"
 #include "platform/heap/Handle.h"
-#include <memory>
 
 namespace blink {
 
@@ -49,7 +48,7 @@ public:
 
     static const char* supplementName();
     static ContextFeatures& defaultSwitch();
-    static ContextFeatures* create(std::unique_ptr<ContextFeaturesClient>);
+    static ContextFeatures* create(PassOwnPtr<ContextFeaturesClient>);
 
     static bool pagePopupEnabled(Document*);
     static bool mutationEventsEnabled(Document*);
@@ -58,27 +57,27 @@ public:
     void urlDidChange(Document*);
 
 private:
-    explicit ContextFeatures(std::unique_ptr<ContextFeaturesClient> client)
+    explicit ContextFeatures(PassOwnPtr<ContextFeaturesClient> client)
         : m_client(std::move(client))
     { }
 
-    std::unique_ptr<ContextFeaturesClient> m_client;
+    OwnPtr<ContextFeaturesClient> m_client;
 };
 
 class ContextFeaturesClient {
     USING_FAST_MALLOC(ContextFeaturesClient);
 public:
-    static std::unique_ptr<ContextFeaturesClient> empty();
+    static PassOwnPtr<ContextFeaturesClient> empty();
 
     virtual ~ContextFeaturesClient() { }
     virtual bool isEnabled(Document*, ContextFeatures::FeatureType, bool defaultValue) { return defaultValue; }
     virtual void urlDidChange(Document*) { }
 };
 
-CORE_EXPORT void provideContextFeaturesTo(Page&, std::unique_ptr<ContextFeaturesClient>);
+CORE_EXPORT void provideContextFeaturesTo(Page&, PassOwnPtr<ContextFeaturesClient>);
 void provideContextFeaturesToDocumentFrom(Document&, Page&);
 
-inline ContextFeatures* ContextFeatures::create(std::unique_ptr<ContextFeaturesClient> client)
+inline ContextFeatures* ContextFeatures::create(PassOwnPtr<ContextFeaturesClient> client)
 {
     return new ContextFeatures(std::move(client));
 }

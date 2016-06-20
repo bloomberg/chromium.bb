@@ -128,10 +128,8 @@
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/Forward.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/dtoa/utils.h"
 #include <map>
-#include <memory>
 #include <stdarg.h>
 #include <v8.h>
 
@@ -256,7 +254,7 @@ protected:
         webViewHelper->resize(WebSize(640, 480));
     }
 
-    std::unique_ptr<DragImage> nodeImageTestSetup(FrameTestHelpers::WebViewHelper* webViewHelper, const std::string& testcase)
+    PassOwnPtr<DragImage> nodeImageTestSetup(FrameTestHelpers::WebViewHelper* webViewHelper, const std::string& testcase)
     {
         registerMockedHttpURLLoad("nodeimage.html");
         webViewHelper->initializeAndLoad(m_baseURL + "nodeimage.html");
@@ -2449,7 +2447,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
     int viewWidth = 500;
     int viewHeight = 500;
 
-    std::unique_ptr<FakeCompositingWebViewClient> fakeCompositingWebViewClient = wrapUnique(new FakeCompositingWebViewClient());
+    OwnPtr<FakeCompositingWebViewClient> fakeCompositingWebViewClient = adoptPtr(new FakeCompositingWebViewClient());
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initialize(true, nullptr, fakeCompositingWebViewClient.get(), nullptr, &configueCompositingWebView);
 
@@ -3424,18 +3422,18 @@ public:
         releaseNotifications.clear();
     }
 
-    Vector<std::unique_ptr<Notification>> createNotifications;
-    Vector<std::unique_ptr<Notification>> releaseNotifications;
+    Vector<OwnPtr<Notification>> createNotifications;
+    Vector<OwnPtr<Notification>> releaseNotifications;
 
  private:
     void didCreateScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int extensionGroup, int worldId) override
     {
-        createNotifications.append(wrapUnique(new Notification(frame, context, worldId)));
+        createNotifications.append(adoptPtr(new Notification(frame, context, worldId)));
     }
 
     void willReleaseScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int worldId) override
     {
-        releaseNotifications.append(wrapUnique(new Notification(frame, context, worldId)));
+        releaseNotifications.append(adoptPtr(new Notification(frame, context, worldId)));
     }
 };
 
@@ -4543,7 +4541,7 @@ public:
 
     void registerSelection(const WebSelection& selection) override
     {
-        m_selection = wrapUnique(new WebSelection(selection));
+        m_selection = adoptPtr(new WebSelection(selection));
     }
 
     void clearSelection() override
@@ -4565,7 +4563,7 @@ public:
 
 private:
     bool m_selectionCleared;
-    std::unique_ptr<WebSelection> m_selection;
+    OwnPtr<WebSelection> m_selection;
 };
 
 class CompositedSelectionBoundsTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
@@ -6254,7 +6252,7 @@ TEST_P(ParameterizedWebFrameTest, FirstNonBlankSubframeNavigation)
 TEST_F(WebFrameTest, overflowHiddenRewrite)
 {
     registerMockedHttpURLLoad("non-scrollable.html");
-    std::unique_ptr<FakeCompositingWebViewClient> fakeCompositingWebViewClient = wrapUnique(new FakeCompositingWebViewClient());
+    OwnPtr<FakeCompositingWebViewClient> fakeCompositingWebViewClient = adoptPtr(new FakeCompositingWebViewClient());
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initialize(true, nullptr, fakeCompositingWebViewClient.get(), nullptr, &configueCompositingWebView);
 
@@ -6970,7 +6968,7 @@ static void nodeImageTestValidation(const IntSize& referenceBitmapSize, DragImag
 TEST_P(ParameterizedWebFrameTest, NodeImageTestCSSTransformDescendant)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
-    std::unique_ptr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-3dtransform-descendant"));
+    OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-3dtransform-descendant"));
     EXPECT_TRUE(dragImage);
 
     nodeImageTestValidation(IntSize(40, 40), dragImage.get());
@@ -6979,7 +6977,7 @@ TEST_P(ParameterizedWebFrameTest, NodeImageTestCSSTransformDescendant)
 TEST_P(ParameterizedWebFrameTest, NodeImageTestCSSTransform)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
-    std::unique_ptr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-transform"));
+    OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-transform"));
     EXPECT_TRUE(dragImage);
 
     nodeImageTestValidation(IntSize(40, 40), dragImage.get());
@@ -6988,7 +6986,7 @@ TEST_P(ParameterizedWebFrameTest, NodeImageTestCSSTransform)
 TEST_P(ParameterizedWebFrameTest, NodeImageTestCSS3DTransform)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
-    std::unique_ptr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-3dtransform"));
+    OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-3dtransform"));
     EXPECT_TRUE(dragImage);
 
     nodeImageTestValidation(IntSize(40, 40), dragImage.get());
@@ -6997,7 +6995,7 @@ TEST_P(ParameterizedWebFrameTest, NodeImageTestCSS3DTransform)
 TEST_P(ParameterizedWebFrameTest, NodeImageTestInlineBlock)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
-    std::unique_ptr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-inlineblock"));
+    OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-inlineblock"));
     EXPECT_TRUE(dragImage);
 
     nodeImageTestValidation(IntSize(40, 40), dragImage.get());
@@ -7006,7 +7004,7 @@ TEST_P(ParameterizedWebFrameTest, NodeImageTestInlineBlock)
 TEST_P(ParameterizedWebFrameTest, NodeImageTestFloatLeft)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
-    std::unique_ptr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-float-left-overflow-hidden"));
+    OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-float-left-overflow-hidden"));
     EXPECT_TRUE(dragImage);
 
     nodeImageTestValidation(IntSize(40, 40), dragImage.get());

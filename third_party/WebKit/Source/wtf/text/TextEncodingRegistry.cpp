@@ -42,7 +42,6 @@
 #include "wtf/text/TextCodecUTF8.h"
 #include "wtf/text/TextCodecUserDefined.h"
 #include "wtf/text/TextEncoding.h"
-#include <memory>
 
 namespace WTF {
 
@@ -244,7 +243,7 @@ static void extendTextCodecMaps()
     pruneBlacklistedCodecs();
 }
 
-std::unique_ptr<TextCodec> newTextCodec(const TextEncoding& encoding)
+PassOwnPtr<TextCodec> newTextCodec(const TextEncoding& encoding)
 {
     MutexLocker lock(encodingRegistryMutex());
 

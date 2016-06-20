@@ -18,7 +18,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -85,7 +84,7 @@ protected:
     }
 
     WebTaskRunner* m_loadingTaskRunner; // NOT OWNED
-    std::unique_ptr<Settings> m_settings;
+    OwnPtr<Settings> m_settings;
     // The Resource and PendingScript where we stream from. These don't really
     // fetch any data outside the test; the test controls the data by calling
     // ScriptResource::appendData.

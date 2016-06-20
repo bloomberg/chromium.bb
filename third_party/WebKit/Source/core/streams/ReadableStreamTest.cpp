@@ -19,7 +19,6 @@
 #include "testing/gmock/include/gmock/gmock-more-actions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -154,7 +153,7 @@ public:
         return stream;
     }
 
-    std::unique_ptr<DummyPageHolder> m_page;
+    OwnPtr<DummyPageHolder> m_page;
     Persistent<MockUnderlyingSource> m_underlyingSource;
 };
 

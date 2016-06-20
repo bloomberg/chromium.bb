@@ -8,7 +8,6 @@
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/NonInterpolableValue.h"
 #include "platform/heap/Handle.h"
-#include <memory>
 
 namespace blink {
 
@@ -17,7 +16,7 @@ namespace blink {
 struct InterpolationValue {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    explicit InterpolationValue(std::unique_ptr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    explicit InterpolationValue(PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
         : interpolableValue(std::move(interpolableValue))
         , nonInterpolableValue(nonInterpolableValue)
     { }
@@ -48,7 +47,7 @@ struct InterpolationValue {
         nonInterpolableValue.clear();
     }
 
-    std::unique_ptr<InterpolableValue> interpolableValue;
+    OwnPtr<InterpolableValue> interpolableValue;
     RefPtr<NonInterpolableValue> nonInterpolableValue;
 };
 

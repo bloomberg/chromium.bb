@@ -7,8 +7,6 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -39,9 +37,9 @@ struct Scale {
         array[2] = z;
     }
 
-    std::unique_ptr<InterpolableValue> createInterpolableValue() const
+    PassOwnPtr<InterpolableValue> createInterpolableValue() const
     {
-        std::unique_ptr<InterpolableList> result = InterpolableList::create(3);
+        OwnPtr<InterpolableList> result = InterpolableList::create(3);
         for (size_t i = 0; i < 3; i++)
             result->set(i, InterpolableNumber::create(array[i]));
         return std::move(result);
@@ -61,9 +59,9 @@ struct Scale {
 
 class ParentScaleChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<ParentScaleChecker> create(const Scale& scale)
+    static PassOwnPtr<ParentScaleChecker> create(const Scale& scale)
     {
-        return wrapUnique(new ParentScaleChecker(scale));
+        return adoptPtr(new ParentScaleChecker(scale));
     }
 
 private:

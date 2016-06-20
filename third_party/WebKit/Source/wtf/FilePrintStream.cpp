@@ -25,9 +25,6 @@
 
 #include "wtf/FilePrintStream.h"
 
-#include "wtf/PtrUtil.h"
-#include <memory>
-
 namespace WTF {
 
 FilePrintStream::FilePrintStream(FILE* file, AdoptionMode adoptionMode)
@@ -43,13 +40,13 @@ FilePrintStream::~FilePrintStream()
     fclose(m_file);
 }
 
-std::unique_ptr<FilePrintStream> FilePrintStream::open(const char* filename, const char* mode)
+PassOwnPtr<FilePrintStream> FilePrintStream::open(const char* filename, const char* mode)
 {
     FILE* file = fopen(filename, mode);
     if (!file)
-        return std::unique_ptr<FilePrintStream>();
+        return PassOwnPtr<FilePrintStream>();
 
-    return wrapUnique(new FilePrintStream(file));
+    return adoptPtr(new FilePrintStream(file));
 }
 
 void FilePrintStream::vprintf(const char* format, va_list argList)

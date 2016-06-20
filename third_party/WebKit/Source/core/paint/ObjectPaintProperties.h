@@ -10,10 +10,9 @@
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -28,9 +27,9 @@ class ObjectPaintProperties {
 public:
     struct LocalBorderBoxProperties;
 
-    static std::unique_ptr<ObjectPaintProperties> create()
+    static PassOwnPtr<ObjectPaintProperties> create()
     {
-        return wrapUnique(new ObjectPaintProperties());
+        return adoptPtr(new ObjectPaintProperties());
     }
 
     // The hierarchy of transform subtree created by a LayoutObject.
@@ -97,7 +96,7 @@ private:
         m_scrollTranslation = translation;
     }
     void setScrollbarPaintOffset(PassRefPtr<TransformPaintPropertyNode> paintOffset) { m_scrollbarPaintOffset = paintOffset; }
-    void setLocalBorderBoxProperties(std::unique_ptr<LocalBorderBoxProperties> properties) { m_localBorderBoxProperties = std::move(properties); }
+    void setLocalBorderBoxProperties(PassOwnPtr<LocalBorderBoxProperties> properties) { m_localBorderBoxProperties = std::move(properties); }
 
     RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
     RefPtr<TransformPaintPropertyNode> m_transform;
@@ -111,7 +110,7 @@ private:
     RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
     RefPtr<TransformPaintPropertyNode> m_scrollbarPaintOffset;
 
-    std::unique_ptr<LocalBorderBoxProperties> m_localBorderBoxProperties;
+    OwnPtr<LocalBorderBoxProperties> m_localBorderBoxProperties;
 };
 
 } // namespace blink

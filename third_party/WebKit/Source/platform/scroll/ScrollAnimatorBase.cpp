@@ -34,6 +34,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

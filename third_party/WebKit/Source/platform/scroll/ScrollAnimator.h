@@ -37,7 +37,6 @@
 #include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
-#include <memory>
 
 namespace blink {
 
@@ -78,7 +77,7 @@ protected:
         double animationStartTime,
         std::unique_ptr<cc::AnimationCurve>) override;
 
-    std::unique_ptr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
+    OwnPtr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
     double m_startTime;
     WTF::TimeFunction m_timeFunction;
 

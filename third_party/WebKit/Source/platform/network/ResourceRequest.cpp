@@ -33,8 +33,6 @@
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -80,9 +78,9 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
     m_redirectStatus = data->m_redirectStatus;
 }
 
-std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
+PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
 {
-    std::unique_ptr<CrossThreadResourceRequestData> data = wrapUnique(new CrossThreadResourceRequestData());
+    OwnPtr<CrossThreadResourceRequestData> data = adoptPtr(new CrossThreadResourceRequestData());
     data->m_url = url().copy();
     data->m_cachePolicy = getCachePolicy();
     data->m_timeoutInterval = timeoutInterval();

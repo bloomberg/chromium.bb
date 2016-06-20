@@ -34,8 +34,8 @@
 #include "bindings/core/v8/V8HTMLEmbedElement.h"
 #include "bindings/core/v8/V8HTMLObjectElement.h"
 #include "core/frame/UseCounter.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -146,7 +146,7 @@ void invokeOnScriptableObject(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (instance.IsEmpty())
         return;
 
-    std::unique_ptr<v8::Local<v8::Value>[] > arguments = wrapArrayUnique(new v8::Local<v8::Value>[info.Length()]);
+    WTF::OwnPtr<v8::Local<v8::Value>[] > arguments = adoptArrayPtr(new v8::Local<v8::Value>[info.Length()]);
     for (int i = 0; i < info.Length(); ++i)
         arguments[i] = info[i];
 

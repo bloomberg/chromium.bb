@@ -34,7 +34,6 @@
 #include "wtf/Threading.h"
 #include "wtf/WTFExport.h"
 #include "wtf/text/StringHash.h"
-#include <memory>
 
 namespace blink {
 
@@ -77,7 +76,7 @@ private:
     AtomicStringTableDestructor m_atomicStringTableDestructor;
     blink::CompressibleStringTable* m_compressibleStringTable;
     blink::CompressibleStringTableDestructor m_compressibleStringTableDestructor;
-    std::unique_ptr<ICUConverterWrapper> m_cachedConverterICU;
+    OwnPtr<ICUConverterWrapper> m_cachedConverterICU;
 
     static ThreadSpecific<WTFThreadData>* staticData;
     friend WTFThreadData& wtfThreadData();

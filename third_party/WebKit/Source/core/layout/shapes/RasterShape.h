@@ -35,7 +35,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "wtf/Assertions.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -64,7 +63,7 @@ public:
         return m_intervals[y + m_offset];
     }
 
-    std::unique_ptr<RasterShapeIntervals> computeShapeMarginIntervals(int shapeMargin) const;
+    PassOwnPtr<RasterShapeIntervals> computeShapeMarginIntervals(int shapeMargin) const;
 
     void buildBoundsPath(Path&) const;
 
@@ -82,7 +81,7 @@ private:
 class RasterShape final : public Shape {
     WTF_MAKE_NONCOPYABLE(RasterShape);
 public:
-    RasterShape(std::unique_ptr<RasterShapeIntervals> intervals, const IntSize& marginRectSize)
+    RasterShape(PassOwnPtr<RasterShapeIntervals> intervals, const IntSize& marginRectSize)
         : m_intervals(std::move(intervals))
         , m_marginRectSize(marginRectSize)
     {
@@ -102,8 +101,8 @@ public:
 private:
     const RasterShapeIntervals& marginIntervals() const;
 
-    std::unique_ptr<RasterShapeIntervals> m_intervals;
-    mutable std::unique_ptr<RasterShapeIntervals> m_marginIntervals;
+    OwnPtr<RasterShapeIntervals> m_intervals;
+    mutable OwnPtr<RasterShapeIntervals> m_marginIntervals;
     IntSize m_marginRectSize;
 };
 

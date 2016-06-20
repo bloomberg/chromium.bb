@@ -28,9 +28,9 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/style/BorderValue.h"
-#include "core/style/ComputedStyleConstants.h"
 #include "core/style/CounterDirectives.h"
 #include "core/style/DataRef.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "core/style/LineClampValue.h"
 #include "core/style/NinePieceImage.h"
 #include "core/style/SVGComputedStyle.h"
@@ -71,9 +71,9 @@
 #include "platform/transforms/TransformOperations.h"
 #include "wtf/Forward.h"
 #include "wtf/LeakAnnotations.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 template<typename T, typename U> inline bool compareEqual(const T& t, const U& u) { return t == static_cast<T>(u); }
 
@@ -153,7 +153,7 @@ protected:
     DataRef<StyleInheritedData> inherited;
 
     // list of associated pseudo styles
-    std::unique_ptr<PseudoStyleCache> m_cachedPseudoStyles;
+    OwnPtr<PseudoStyleCache> m_cachedPseudoStyles;
 
     DataRef<SVGComputedStyle> m_svgStyle;
 

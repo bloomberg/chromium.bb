@@ -29,7 +29,6 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -147,7 +146,7 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         if (RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled()) {
             bodyBuffer = new BodyStreamBuffer(scriptState, bodyValue);
         } else {
-            std::unique_ptr<FetchDataConsumerHandle> bodyHandle;
+            OwnPtr<FetchDataConsumerHandle> bodyHandle;
             reader = ReadableStreamOperations::getReader(scriptState, bodyValue, exceptionState);
             if (exceptionState.hadException()) {
                 reader = ScriptValue();

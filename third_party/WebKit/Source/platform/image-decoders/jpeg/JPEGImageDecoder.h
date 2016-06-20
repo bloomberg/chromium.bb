@@ -27,7 +27,6 @@
 #define JPEGImageDecoder_h
 
 #include "platform/image-decoders/ImageDecoder.h"
-#include <memory>
 
 namespace blink {
 
@@ -48,7 +47,7 @@ public:
     size_t decodedYUVWidthBytes(int component) const override;
     bool canDecodeToYUV() override;
     bool decodeToYUV() override;
-    void setImagePlanes(std::unique_ptr<ImagePlanes>) override;
+    void setImagePlanes(PassOwnPtr<ImagePlanes>) override;
     bool hasImagePlanes() const { return m_imagePlanes.get(); }
 
     bool outputScanlines();
@@ -68,8 +67,8 @@ private:
     // data coming, sets the "decode failure" flag.
     void decode(bool onlySize);
 
-    std::unique_ptr<JPEGImageReader> m_reader;
-    std::unique_ptr<ImagePlanes> m_imagePlanes;
+    OwnPtr<JPEGImageReader> m_reader;
+    OwnPtr<ImagePlanes> m_imagePlanes;
     IntSize m_decodedSize;
 };
 

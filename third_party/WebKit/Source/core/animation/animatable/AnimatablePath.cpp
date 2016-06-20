@@ -8,7 +8,6 @@
 #include "core/svg/SVGPathBlender.h"
 #include "core/svg/SVGPathByteStreamBuilder.h"
 #include "core/svg/SVGPathByteStreamSource.h"
-#include <memory>
 
 namespace blink {
 
@@ -44,7 +43,7 @@ PassRefPtr<AnimatableValue> AnimatablePath::interpolateTo(const AnimatableValue*
     if (usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
 
-    std::unique_ptr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     SVGPathByteStreamBuilder builder(*byteStream);
 
     SVGPathByteStreamSource fromSource(path()->byteStream());

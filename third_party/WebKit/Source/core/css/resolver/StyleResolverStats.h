@@ -33,22 +33,21 @@
 
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class StyleResolverStats {
     USING_FAST_MALLOC(StyleResolverStats);
 public:
-    static std::unique_ptr<StyleResolverStats> create()
+    static PassOwnPtr<StyleResolverStats> create()
     {
-        return wrapUnique(new StyleResolverStats);
+        return adoptPtr(new StyleResolverStats);
     }
 
     void reset();
     bool allCountersEnabled() const;
-    std::unique_ptr<TracedValue> toTracedValue() const;
+    PassOwnPtr<TracedValue> toTracedValue() const;
 
     unsigned sharedStyleLookups;
     unsigned sharedStyleCandidates;

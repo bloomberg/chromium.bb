@@ -8,7 +8,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/inspector/ScriptArguments.h"
 #include "wtf/CurrentTime.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -40,7 +40,7 @@ ConsoleMessage* ConsoleMessage::createForConsoleAPI(MessageLevel level, MessageT
 }
 
 // static
-ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, std::unique_ptr<SourceLocation> location, ScriptArguments* arguments)
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, PassOwnPtr<SourceLocation> location, ScriptArguments* arguments)
 {
     return new ConsoleMessage(source, level, message, std::move(location), arguments);
 }
@@ -54,7 +54,7 @@ ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level,
 ConsoleMessage::ConsoleMessage(MessageSource source,
     MessageLevel level,
     const String& message,
-    std::unique_ptr<SourceLocation> location,
+    PassOwnPtr<SourceLocation> location,
     ScriptArguments* arguments)
     : m_source(source)
     , m_level(level)

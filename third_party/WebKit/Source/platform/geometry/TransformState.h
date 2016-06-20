@@ -33,7 +33,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/Allocator.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -133,7 +133,7 @@ private:
     FloatQuad m_lastPlanarQuad;
 
     // We only allocate the transform if we need to
-    std::unique_ptr<TransformationMatrix> m_accumulatedTransform;
+    OwnPtr<TransformationMatrix> m_accumulatedTransform;
     LayoutSize m_accumulatedOffset;
     bool m_accumulatingTransform;
     bool m_forceAccumulatingTransform;

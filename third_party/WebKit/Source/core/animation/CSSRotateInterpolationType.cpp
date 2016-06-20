@@ -7,8 +7,6 @@
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/Rotation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -92,9 +90,9 @@ InterpolationValue convertRotation(const Rotation& rotation)
 
 class InheritedRotationChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<InheritedRotationChecker> create(const Rotation& inheritedRotation)
+    static PassOwnPtr<InheritedRotationChecker> create(const Rotation& inheritedRotation)
     {
-        return wrapUnique(new InheritedRotationChecker(inheritedRotation));
+        return adoptPtr(new InheritedRotationChecker(inheritedRotation));
     }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final

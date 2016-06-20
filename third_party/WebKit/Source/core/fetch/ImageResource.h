@@ -32,7 +32,6 @@
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "wtf/HashMap.h"
-#include <memory>
 
 namespace blink {
 
@@ -101,7 +100,7 @@ public:
 
     void appendData(const char*, size_t) override;
     void error(const ResourceError&) override;
-    void responseReceived(const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
+    void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void finish(double finishTime = 0.0) override;
 
     // For compatibility, images keep loading even if there are HTTP errors.

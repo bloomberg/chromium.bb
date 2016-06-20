@@ -11,8 +11,8 @@
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace WTF {
 class AtomicString;
@@ -32,10 +32,10 @@ class PresentationConnection final
     DEFINE_WRAPPERTYPEINFO();
 public:
     // For CallbackPromiseAdapter.
-    using WebType = std::unique_ptr<WebPresentationConnectionClient>;
+    using WebType = OwnPtr<WebPresentationConnectionClient>;
 
-    static PresentationConnection* take(ScriptPromiseResolver*, std::unique_ptr<WebPresentationConnectionClient>, PresentationRequest*);
-    static PresentationConnection* take(PresentationController*, std::unique_ptr<WebPresentationConnectionClient>, PresentationRequest*);
+    static PresentationConnection* take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationConnectionClient>, PresentationRequest*);
+    static PresentationConnection* take(PresentationController*, PassOwnPtr<WebPresentationConnectionClient>, PresentationRequest*);
     ~PresentationConnection() override;
 
     // EventTarget implementation.

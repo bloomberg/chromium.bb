@@ -34,8 +34,11 @@
 #include "base/memory/discardable_memory_allocator.h"
 #include "platform/web_process_memory_dump.h"
 #include "wtf/Assertions.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
+
 #include <cstring>
 #include <utility>
 

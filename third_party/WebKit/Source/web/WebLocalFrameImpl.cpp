@@ -114,9 +114,9 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/SubstituteData.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -136,6 +136,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/api/LayoutViewItem.h"
+#include "core/style/StyleInheritedData.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
@@ -148,7 +149,6 @@
 #include "core/page/PrintContext.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/style/StyleInheritedData.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/app_banner/AppBannerController.h"
@@ -235,9 +235,7 @@
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
-#include <memory>
 
 namespace blink {
 
@@ -498,9 +496,9 @@ static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader)
 
 class WebSuspendableTaskWrapper: public SuspendableTask {
 public:
-    static std::unique_ptr<WebSuspendableTaskWrapper> create(std::unique_ptr<WebSuspendableTask> task)
+    static PassOwnPtr<WebSuspendableTaskWrapper> create(PassOwnPtr<WebSuspendableTask> task)
     {
-        return wrapUnique(new WebSuspendableTaskWrapper(std::move(task)));
+        return adoptPtr(new WebSuspendableTaskWrapper(std::move(task)));
     }
 
     void run() override
@@ -514,12 +512,12 @@ public:
     }
 
 private:
-    explicit WebSuspendableTaskWrapper(std::unique_ptr<WebSuspendableTask> task)
+    explicit WebSuspendableTaskWrapper(PassOwnPtr<WebSuspendableTask> task)
         : m_task(std::move(task))
     {
     }
 
-    std::unique_ptr<WebSuspendableTask> m_task;
+    OwnPtr<WebSuspendableTask> m_task;
 };
 
 // WebFrame -------------------------------------------------------------------
@@ -1949,7 +1947,7 @@ void WebLocalFrameImpl::requestRunTask(WebSuspendableTask* task) const
 {
     DCHECK(frame());
     DCHECK(frame()->document());
-    frame()->document()->postSuspendableTask(WebSuspendableTaskWrapper::create(wrapUnique(task)));
+    frame()->document()->postSuspendableTask(WebSuspendableTaskWrapper::create(adoptPtr(task)));
 }
 
 void WebLocalFrameImpl::didCallAddSearchProvider()

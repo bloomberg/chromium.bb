@@ -28,9 +28,9 @@
 #include "modules/webaudio/AudioSourceNode.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/audio/MultiChannelResampler.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace blink {
 
@@ -78,7 +78,7 @@ private:
     unsigned m_sourceNumberOfChannels;
     double m_sourceSampleRate;
 
-    std::unique_ptr<MultiChannelResampler> m_multiChannelResampler;
+    OwnPtr<MultiChannelResampler> m_multiChannelResampler;
 
     // |m_passesCurrentSrcCORSAccessCheck| holds the value of
     // context()->getSecurityOrigin() && context()->getSecurityOrigin()->canRequest(mediaElement()->currentSrc()),

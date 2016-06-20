@@ -28,7 +28,7 @@
 
 #include "core/page/Page.h"
 #include "modules/speech/SpeechRecognitionClient.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -47,16 +47,16 @@ public:
     void stop(SpeechRecognition* recognition) { m_client->stop(recognition); }
     void abort(SpeechRecognition* recognition) { m_client->abort(recognition); }
 
-    static SpeechRecognitionController* create(std::unique_ptr<SpeechRecognitionClient>);
+    static SpeechRecognitionController* create(PassOwnPtr<SpeechRecognitionClient>);
     static const char* supplementName();
     static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(Supplement<Page>::from(page, supplementName())); }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::trace(visitor); }
 
 private:
-    explicit SpeechRecognitionController(std::unique_ptr<SpeechRecognitionClient>);
+    explicit SpeechRecognitionController(PassOwnPtr<SpeechRecognitionClient>);
 
-    std::unique_ptr<SpeechRecognitionClient> m_client;
+    OwnPtr<SpeechRecognitionClient> m_client;
 };
 
 } // namespace blink

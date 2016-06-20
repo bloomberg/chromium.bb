@@ -49,9 +49,9 @@
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -758,7 +758,7 @@ private:
     ScrollingCoordinator* scrollingCoordinator() const;
 
     void prepareLayoutAnalyzer();
-    std::unique_ptr<TracedValue> analyzerCounters();
+    PassOwnPtr<TracedValue> analyzerCounters();
 
     // LayoutObject for the viewport-defining element (see Document::viewportDefiningElement).
     LayoutObject* viewportLayoutObject();
@@ -810,7 +810,7 @@ private:
     unsigned m_nestedLayoutCount;
     Timer<FrameView> m_postLayoutTasksTimer;
     Timer<FrameView> m_updateWidgetsTimer;
-    std::unique_ptr<CancellableTaskFactory> m_renderThrottlingObserverNotificationFactory;
+    OwnPtr<CancellableTaskFactory> m_renderThrottlingObserverNotificationFactory;
 
     bool m_firstLayout;
     bool m_isTransparent;
@@ -834,8 +834,8 @@ private:
 
     Member<ScrollableAreaSet> m_scrollableAreas;
     Member<ScrollableAreaSet> m_animatingScrollableAreas;
-    std::unique_ptr<ResizerAreaSet> m_resizerAreas;
-    std::unique_ptr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
+    OwnPtr<ResizerAreaSet> m_resizerAreas;
+    OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
     unsigned m_stickyPositionObjectCount;
     ViewportConstrainedObjectSet m_backgroundAttachmentFixedObjects;
     Member<FrameViewAutoSizeInfo> m_autoSizeInfo;
@@ -880,7 +880,7 @@ private:
 
     bool m_inUpdateScrollbars;
 
-    std::unique_ptr<LayoutAnalyzer> m_analyzer;
+    OwnPtr<LayoutAnalyzer> m_analyzer;
 
     // Mark if something has changed in the mapping from Frame to GraphicsLayer
     // and the Frame Timing regions should be recalculated.
@@ -926,7 +926,7 @@ private:
         String name;
         PaintInvalidationReason reason;
     };
-    std::unique_ptr<Vector<ObjectPaintInvalidation>> m_trackedObjectPaintInvalidations;
+    OwnPtr<Vector<ObjectPaintInvalidation>> m_trackedObjectPaintInvalidations;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

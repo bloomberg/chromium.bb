@@ -37,7 +37,7 @@
 #include "public/platform/WebString.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 #include "wtf/Forward.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -84,7 +84,7 @@ public:
     bool hasFetchEventHandler() override;
 
     // WorkerReportingProxy overrides:
-    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>) override;
+    void reportException(const String& errorMessage, PassOwnPtr<SourceLocation>) override;
     void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const String&) override;
     void postWorkerConsoleAgentEnabled() override { }

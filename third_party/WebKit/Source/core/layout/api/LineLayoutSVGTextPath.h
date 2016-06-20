@@ -7,7 +7,6 @@
 
 #include "core/layout/api/LineLayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGTextPath.h"
-#include <memory>
 
 namespace blink {
 
@@ -28,7 +27,7 @@ public:
 
     LineLayoutSVGTextPath() { }
 
-    std::unique_ptr<PathPositionMapper> layoutPath() const
+    PassOwnPtr<PathPositionMapper> layoutPath() const
     {
         return toSVGTextPath()->layoutPath();
     }

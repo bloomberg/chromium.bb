@@ -15,6 +15,7 @@
 #include "modules/fetch/Headers.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

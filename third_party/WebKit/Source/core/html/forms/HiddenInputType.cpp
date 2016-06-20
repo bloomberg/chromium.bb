@@ -36,6 +36,7 @@
 #include "core/html/FormData.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

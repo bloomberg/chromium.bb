@@ -7,7 +7,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -20,7 +19,7 @@ SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds, SkMetaData* metaData
 
     m_paintController = PaintController::create();
     m_paintController->beginSkippingCache();
-    m_context = wrapUnique(new GraphicsContext(*m_paintController, disabledMode, metaData));
+    m_context = adoptPtr(new GraphicsContext(*m_paintController, disabledMode, metaData));
 
     if (containingContext) {
         m_context->setDeviceScaleFactor(containingContext->deviceScaleFactor());

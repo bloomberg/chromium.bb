@@ -9,6 +9,8 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "public/platform/WebLayerTreeView.h"
+#include "wtf/PassOwnPtr.h"
+
 #include <memory>
 
 namespace cc {

@@ -44,7 +44,6 @@
 #include "public/platform/PointerProperties.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebViewportStyle.h"
-#include <memory>
 
 namespace blink {
 
@@ -52,7 +51,7 @@ class CORE_EXPORT Settings {
     WTF_MAKE_NONCOPYABLE(Settings);
     USING_FAST_MALLOC(Settings);
 public:
-    static std::unique_ptr<Settings> create();
+    static PassOwnPtr<Settings> create();
 
     GenericFontFamilySettings& genericFontFamilySettings() { return m_genericFontFamilySettings; }
     void notifyGenericFontFamilyChange() { invalidate(SettingsDelegate::FontFamilyChange); }

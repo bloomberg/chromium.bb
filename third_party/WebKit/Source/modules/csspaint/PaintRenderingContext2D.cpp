@@ -5,11 +5,10 @@
 #include "modules/csspaint/PaintRenderingContext2D.h"
 
 #include "platform/graphics/ImageBuffer.h"
-#include <memory>
 
 namespace blink {
 
-PaintRenderingContext2D::PaintRenderingContext2D(std::unique_ptr<ImageBuffer> imageBuffer)
+PaintRenderingContext2D::PaintRenderingContext2D(PassOwnPtr<ImageBuffer> imageBuffer)
     : m_imageBuffer(std::move(imageBuffer))
 {
     m_clipAntialiasing = AntiAliased;

@@ -36,8 +36,6 @@
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -102,11 +100,11 @@ class GCTaskRunner final {
     USING_FAST_MALLOC(GCTaskRunner);
 public:
     explicit GCTaskRunner(WebThread* thread)
-        : m_gcTaskObserver(wrapUnique(new GCTaskObserver))
+        : m_gcTaskObserver(adoptPtr(new GCTaskObserver))
         , m_thread(thread)
     {
         m_thread->addTaskObserver(m_gcTaskObserver.get());
-        ThreadState::current()->addInterruptor(wrapUnique(new MessageLoopInterruptor(thread->getWebTaskRunner())));
+        ThreadState::current()->addInterruptor(adoptPtr(new MessageLoopInterruptor(thread->getWebTaskRunner())));
     }
 
     ~GCTaskRunner()
@@ -115,7 +113,7 @@ public:
     }
 
 private:
-    std::unique_ptr<GCTaskObserver> m_gcTaskObserver;
+    OwnPtr<GCTaskObserver> m_gcTaskObserver;
     WebThread* m_thread;
 };
 

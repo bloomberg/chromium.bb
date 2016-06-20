@@ -9,25 +9,25 @@
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Allocator.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/WeakPtr.h"
-#include <memory>
 
 namespace blink {
 
 // Returns a handle that returns ShouldWait for read / beginRead and
 // UnexpectedError for endRead.
-MODULES_EXPORT std::unique_ptr<WebDataConsumerHandle> createWaitingDataConsumerHandle();
+MODULES_EXPORT PassOwnPtr<WebDataConsumerHandle> createWaitingDataConsumerHandle();
 
 // Returns a handle that returns Done for read / beginRead and
 // UnexpectedError for endRead.
-MODULES_EXPORT std::unique_ptr<WebDataConsumerHandle> createDoneDataConsumerHandle();
+MODULES_EXPORT PassOwnPtr<WebDataConsumerHandle> createDoneDataConsumerHandle();
 
 // Returns a handle that returns UnexpectedError for read / beginRead /
 // endRead.
-MODULES_EXPORT std::unique_ptr<WebDataConsumerHandle> createUnexpectedErrorDataConsumerHandle();
+MODULES_EXPORT PassOwnPtr<WebDataConsumerHandle> createUnexpectedErrorDataConsumerHandle();
 
 // Returns a FetchDataConsumerHandle that wraps WebDataConsumerHandle.
-MODULES_EXPORT std::unique_ptr<FetchDataConsumerHandle> createFetchDataConsumerHandleFromWebHandle(std::unique_ptr<WebDataConsumerHandle>);
+MODULES_EXPORT PassOwnPtr<FetchDataConsumerHandle> createFetchDataConsumerHandleFromWebHandle(PassOwnPtr<WebDataConsumerHandle>);
 
 // A helper class to call Client::didGetReadable() asynchronously after
 // Reader creation.

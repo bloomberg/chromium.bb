@@ -32,7 +32,7 @@
 #define BMPImageDecoder_h
 
 #include "platform/image-decoders/bmp/BMPImageReader.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -74,7 +74,7 @@ private:
     size_t m_decodedOffset;
 
     // The reader used to do most of the BMP decoding.
-    std::unique_ptr<BMPImageReader> m_reader;
+    OwnPtr<BMPImageReader> m_reader;
 };
 
 } // namespace blink

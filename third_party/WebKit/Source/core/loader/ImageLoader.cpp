@@ -51,7 +51,6 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -263,7 +262,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
     // m_pendingTask to null).
     m_pendingTask.clear();
     // Make sure to only decrement the count when we exit this function
-    std::unique_ptr<IncrementLoadEventDelayCount> loadDelayCounter;
+    OwnPtr<IncrementLoadEventDelayCount> loadDelayCounter;
     loadDelayCounter.swap(m_loadDelayCounter);
 
     Document& document = m_element->document();

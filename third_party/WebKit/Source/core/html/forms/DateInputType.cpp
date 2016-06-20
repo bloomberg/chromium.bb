@@ -37,6 +37,7 @@
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "platform/DateComponents.h"
 #include "platform/text/PlatformLocale.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

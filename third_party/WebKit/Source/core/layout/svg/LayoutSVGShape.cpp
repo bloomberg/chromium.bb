@@ -41,7 +41,6 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/StrokeData.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -60,7 +59,7 @@ LayoutSVGShape::~LayoutSVGShape()
 void LayoutSVGShape::createPath()
 {
     if (!m_path)
-        m_path = wrapUnique(new Path());
+        m_path = adoptPtr(new Path());
     *m_path = toSVGGeometryElement(element())->asPath();
     if (m_rareData.get())
         m_rareData->m_cachedNonScalingStrokePath.clear();
@@ -302,7 +301,7 @@ float LayoutSVGShape::strokeWidth() const
 LayoutSVGShapeRareData& LayoutSVGShape::ensureRareData() const
 {
     if (!m_rareData)
-        m_rareData = wrapUnique(new LayoutSVGShapeRareData());
+        m_rareData = adoptPtr(new LayoutSVGShapeRareData());
     return *m_rareData.get();
 }
 

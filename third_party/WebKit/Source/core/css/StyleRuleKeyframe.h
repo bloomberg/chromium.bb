@@ -6,7 +6,6 @@
 #define StyleRuleKeyframe_h
 
 #include "core/css/StyleRule.h"
-#include <memory>
 
 namespace blink {
 
@@ -15,7 +14,7 @@ class StylePropertySet;
 
 class StyleRuleKeyframe final : public StyleRuleBase {
 public:
-    static StyleRuleKeyframe* create(std::unique_ptr<Vector<double>> keys, StylePropertySet* properties)
+    static StyleRuleKeyframe* create(PassOwnPtr<Vector<double>> keys, StylePropertySet* properties)
     {
         return new StyleRuleKeyframe(std::move(keys), properties);
     }
@@ -35,7 +34,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRuleKeyframe(std::unique_ptr<Vector<double>>, StylePropertySet*);
+    StyleRuleKeyframe(PassOwnPtr<Vector<double>>, StylePropertySet*);
 
     Member<StylePropertySet> m_properties;
     Vector<double> m_keys;

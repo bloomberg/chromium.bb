@@ -10,11 +10,11 @@
 #include "wtf/Allocator.h"
 #include "wtf/Compiler.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/TypeTraits.h"
 #include "wtf/Vector.h"
 #include <cstddef>
 #include <iterator>
-#include <memory>
 #include <utility>
 
 namespace blink {
@@ -67,7 +67,7 @@ private:
 
     Buffer* allocateNewBufferForNextAllocation(size_t, const char* typeName);
 
-    Vector<std::unique_ptr<Buffer>> m_buffers;
+    Vector<OwnPtr<Buffer>> m_buffers;
     unsigned m_endIndex;
     size_t m_maxObjectSize;
 };

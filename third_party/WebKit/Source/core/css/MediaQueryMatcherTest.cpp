@@ -8,13 +8,12 @@
 #include "core/css/MediaList.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
 TEST(MediaQueryMatcherTest, LostFrame)
 {
-    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(500, 500));
+    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(500, 500));
     MediaQueryMatcher* matcher = MediaQueryMatcher::create(pageHolder->document());
     MediaQuerySet* querySet = MediaQuerySet::create(MediaTypeNames::all);
     ASSERT_TRUE(matcher->evaluate(querySet));

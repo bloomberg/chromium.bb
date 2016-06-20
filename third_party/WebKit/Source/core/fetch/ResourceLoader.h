@@ -35,7 +35,6 @@
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 
@@ -88,7 +87,7 @@ private:
 
     bool responseNeedsAccessControlCheck() const;
 
-    std::unique_ptr<WebURLLoader> m_loader;
+    OwnPtr<WebURLLoader> m_loader;
     Member<ResourceFetcher> m_fetcher;
     Member<Resource> m_resource;
 };

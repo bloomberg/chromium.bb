@@ -56,6 +56,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "wtf/MathExtras.h"
 #include "wtf/NonCopyingSort.h"
+#include "wtf/PassOwnPtr.h"
 #include <limits>
 
 namespace blink {

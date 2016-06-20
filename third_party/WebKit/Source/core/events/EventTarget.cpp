@@ -46,11 +46,9 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 using namespace WTF;
 
@@ -109,7 +107,7 @@ void reportBlockedEvent(ExecutionContext* context, const Event* event, Registere
         event->type().getString().utf8().data(), lround(delayedSeconds * 1000));
 
     v8::Local<v8::Function> function = eventListenerEffectiveFunction(v8Listener->isolate(), handler);
-    std::unique_ptr<SourceLocation> location = SourceLocation::fromFunction(function);
+    OwnPtr<SourceLocation> location = SourceLocation::fromFunction(function);
     ConsoleMessage* message = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, messageText, std::move(location));
     context->addConsoleMessage(message);
     registeredListener->setBlockedEventWarningEmitted();
@@ -554,7 +552,7 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     size_t i = 0;
     size_t size = entry.size();
     if (!d->firingEventIterators)
-        d->firingEventIterators = wrapUnique(new FiringEventIteratorVector);
+        d->firingEventIterators = adoptPtr(new FiringEventIteratorVector);
     d->firingEventIterators->append(FiringEventIterator(event->type(), i, size));
 
     double blockedEventThreshold = blockedEventsWarningThreshold(context, event);

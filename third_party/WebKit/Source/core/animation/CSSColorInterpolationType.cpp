@@ -8,8 +8,6 @@
 #include "core/css/CSSColorValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/layout/LayoutTheme.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -25,18 +23,18 @@ enum InterpolableColorIndex {
     InterpolableColorIndexCount,
 };
 
-static std::unique_ptr<InterpolableValue> createInterpolableColorForIndex(InterpolableColorIndex index)
+static PassOwnPtr<InterpolableValue> createInterpolableColorForIndex(InterpolableColorIndex index)
 {
     ASSERT(index < InterpolableColorIndexCount);
-    std::unique_ptr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
+    OwnPtr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
     for (int i = 0; i < InterpolableColorIndexCount; i++)
         list->set(i, InterpolableNumber::create(i == index));
     return std::move(list);
 }
 
-std::unique_ptr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(const Color& color)
+PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(const Color& color)
 {
-    std::unique_ptr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
+    OwnPtr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
     list->set(Red, InterpolableNumber::create(color.red() * color.alpha()));
     list->set(Green, InterpolableNumber::create(color.green() * color.alpha()));
     list->set(Blue, InterpolableNumber::create(color.blue() * color.alpha()));
@@ -48,7 +46,7 @@ std::unique_ptr<InterpolableValue> CSSColorInterpolationType::createInterpolable
     return std::move(list);
 }
 
-std::unique_ptr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(CSSValueID keyword)
+PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(CSSValueID keyword)
 {
     switch (keyword) {
     case CSSValueCurrentcolor:
@@ -67,14 +65,14 @@ std::unique_ptr<InterpolableValue> CSSColorInterpolationType::createInterpolable
     }
 }
 
-std::unique_ptr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(const StyleColor& color)
+PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(const StyleColor& color)
 {
     if (color.isCurrentColor())
         return createInterpolableColorForIndex(Currentcolor);
     return createInterpolableColor(color.getColor());
 }
 
-std::unique_ptr<InterpolableValue> CSSColorInterpolationType::maybeCreateInterpolableColor(const CSSValue& value)
+PassOwnPtr<InterpolableValue> CSSColorInterpolationType::maybeCreateInterpolableColor(const CSSValue& value)
 {
     if (value.isColorValue())
         return createInterpolableColor(toCSSColorValue(value).value());
@@ -137,9 +135,9 @@ Color CSSColorInterpolationType::resolveInterpolableColor(const InterpolableValu
 
 class ParentColorChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<ParentColorChecker> create(CSSPropertyID property, const StyleColor& color)
+    static PassOwnPtr<ParentColorChecker> create(CSSPropertyID property, const StyleColor& color)
     {
-        return wrapUnique(new ParentColorChecker(property, color));
+        return adoptPtr(new ParentColorChecker(property, color));
     }
 
 private:
@@ -189,10 +187,10 @@ InterpolationValue CSSColorInterpolationType::maybeConvertValue(const CSSValue& 
     if (cssProperty() == CSSPropertyColor && value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueCurrentcolor)
         return maybeConvertInherit(state, conversionCheckers);
 
-    std::unique_ptr<InterpolableValue> interpolableColor = maybeCreateInterpolableColor(value);
+    OwnPtr<InterpolableValue> interpolableColor = maybeCreateInterpolableColor(value);
     if (!interpolableColor)
         return nullptr;
-    std::unique_ptr<InterpolableList> colorPair = InterpolableList::create(InterpolableColorPairIndexCount);
+    OwnPtr<InterpolableList> colorPair = InterpolableList::create(InterpolableColorPairIndexCount);
     colorPair->set(Unvisited, interpolableColor->clone());
     colorPair->set(Visited, std::move(interpolableColor));
     return InterpolationValue(std::move(colorPair));
@@ -200,7 +198,7 @@ InterpolationValue CSSColorInterpolationType::maybeConvertValue(const CSSValue& 
 
 InterpolationValue CSSColorInterpolationType::convertStyleColorPair(const StyleColor& unvisitedColor, const StyleColor& visitedColor) const
 {
-    std::unique_ptr<InterpolableList> colorPair = InterpolableList::create(InterpolableColorPairIndexCount);
+    OwnPtr<InterpolableList> colorPair = InterpolableList::create(InterpolableColorPairIndexCount);
     colorPair->set(Unvisited, createInterpolableColor(unvisitedColor));
     colorPair->set(Visited, createInterpolableColor(visitedColor));
     return InterpolationValue(std::move(colorPair));

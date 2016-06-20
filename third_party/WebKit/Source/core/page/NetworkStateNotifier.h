@@ -34,7 +34,6 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -143,7 +142,7 @@ private:
     // The ObserverListMap is cross-thread accessed, adding/removing Observers running
     // within an ExecutionContext. Kept off-heap to ease cross-thread allocation and use;
     // the observers are (already) responsible for explicitly unregistering while finalizing.
-    using ObserverListMap = HashMap<UntracedMember<ExecutionContext>, std::unique_ptr<ObserverList>>;
+    using ObserverListMap = HashMap<UntracedMember<ExecutionContext>, OwnPtr<ObserverList>>;
 
     void notifyObserversOfConnectionChangeOnContext(WebConnectionType, double maxBandwidthMbps, ExecutionContext*);
 

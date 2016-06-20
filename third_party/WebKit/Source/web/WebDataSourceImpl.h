@@ -37,8 +37,9 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/web/WebDataSource.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -83,7 +84,7 @@ private:
     mutable WrappedResourceRequest m_requestWrapper;
     mutable WrappedResourceResponse m_responseWrapper;
 
-    std::unique_ptr<ExtraData> m_extraData;
+    OwnPtr<ExtraData> m_extraData;
 };
 
 } // namespace blink

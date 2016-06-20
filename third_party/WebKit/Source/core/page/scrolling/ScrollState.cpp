@@ -7,8 +7,6 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -28,7 +26,7 @@ Element* elementForId(int elementId)
 
 ScrollState* ScrollState::create(ScrollStateInit init)
 {
-    std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
+    OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
     scrollStateData->delta_x = init.deltaX();
     scrollStateData->delta_y = init.deltaY();
     scrollStateData->position_x = init.positionX();
@@ -46,13 +44,13 @@ ScrollState* ScrollState::create(ScrollStateInit init)
     return scrollState;
 }
 
-ScrollState* ScrollState::create(std::unique_ptr<ScrollStateData> data)
+ScrollState* ScrollState::create(PassOwnPtr<ScrollStateData> data)
 {
     ScrollState* scrollState = new ScrollState(std::move(data));
     return scrollState;
 }
 
-ScrollState::ScrollState(std::unique_ptr<ScrollStateData> data)
+ScrollState::ScrollState(PassOwnPtr<ScrollStateData> data)
     : m_data(std::move(data))
 {
 }

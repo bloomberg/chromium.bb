@@ -39,9 +39,7 @@
 
 #include "platform/Histogram.h"
 #include "platform/PlatformInstrumentation.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
-#include <memory>
 
 extern "C" {
 #include <stdio.h> // jpeglib.h needs stdio FILE.
@@ -795,7 +793,7 @@ bool JPEGImageDecoder::decodeToYUV()
     return !failed();
 }
 
-void JPEGImageDecoder::setImagePlanes(std::unique_ptr<ImagePlanes> imagePlanes)
+void JPEGImageDecoder::setImagePlanes(PassOwnPtr<ImagePlanes> imagePlanes)
 {
     m_imagePlanes = std::move(imagePlanes);
 }
@@ -990,7 +988,7 @@ void JPEGImageDecoder::decode(bool onlySize)
         return;
 
     if (!m_reader) {
-        m_reader = wrapUnique(new JPEGImageReader(this));
+        m_reader = adoptPtr(new JPEGImageReader(this));
         m_reader->setData(m_data.get());
     }
 

@@ -32,8 +32,7 @@
 #define LinkedStack_h
 
 #include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace WTF {
 
@@ -46,7 +45,7 @@ public:
     // Iterative cleanup to prevent stack overflow problems.
     ~LinkedStack()
     {
-        std::unique_ptr<Node> ptr = m_head.release();
+        OwnPtr<Node> ptr = m_head.release();
         while (ptr)
             ptr = ptr->m_next.release();
     }
@@ -63,18 +62,18 @@ private:
     class Node {
         USING_FAST_MALLOC(LinkedStack::Node);
     public:
-        Node(const T&, std::unique_ptr<Node> next);
+        Node(const T&, PassOwnPtr<Node> next);
 
         T m_data;
-        std::unique_ptr<Node> m_next;
+        OwnPtr<Node> m_next;
     };
 
-    std::unique_ptr<Node> m_head;
+    OwnPtr<Node> m_head;
     size_t m_size;
 };
 
 template <typename T>
-LinkedStack<T>::Node::Node(const T& data, std::unique_ptr<Node> next)
+LinkedStack<T>::Node::Node(const T& data, PassOwnPtr<Node> next)
     : m_data(data)
     , m_next(next)
 {
@@ -89,7 +88,7 @@ inline bool LinkedStack<T>::isEmpty()
 template <typename T>
 inline void LinkedStack<T>::push(const T& data)
 {
-    m_head = wrapUnique(new Node(data, m_head.release()));
+    m_head = adoptPtr(new Node(data, m_head.release()));
     ++m_size;
 }
 

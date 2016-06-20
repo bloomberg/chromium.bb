@@ -36,8 +36,8 @@
 #include "core/html/parser/ParsedChunkQueue.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/WeakPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -55,8 +55,8 @@ public:
         Configuration();
         HTMLParserOptions options;
         WeakPtr<HTMLDocumentParser> parser;
-        std::unique_ptr<XSSAuditor> xssAuditor;
-        std::unique_ptr<TextResourceDecoder> decoder;
+        OwnPtr<XSSAuditor> xssAuditor;
+        OwnPtr<TextResourceDecoder> decoder;
         RefPtr<ParsedChunkQueue> parsedChunkQueue;
         // outstandingTokenLimit must be greater than or equal to
         // pendingTokenLimit
@@ -64,14 +64,14 @@ public:
         size_t pendingTokenLimit;
     };
 
-    static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, std::unique_ptr<Configuration>, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&, std::unique_ptr<WebTaskRunner>);
+    static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&, PassOwnPtr<WebTaskRunner>);
 
     struct Checkpoint {
         USING_FAST_MALLOC(Checkpoint);
     public:
         WeakPtr<HTMLDocumentParser> parser;
-        std::unique_ptr<HTMLToken> token;
-        std::unique_ptr<HTMLTokenizer> tokenizer;
+        OwnPtr<HTMLToken> token;
+        OwnPtr<HTMLTokenizer> tokenizer;
         HTMLTreeBuilderSimulator::State treeBuilderState;
         HTMLInputCheckpoint inputCheckpoint;
         TokenPreloadScannerCheckpoint preloadScannerCheckpoint;
@@ -80,10 +80,10 @@ public:
 
     void appendRawBytesFromParserThread(const char* data, int dataLength);
 
-    void appendRawBytesFromMainThread(std::unique_ptr<Vector<char>>);
-    void setDecoder(std::unique_ptr<TextResourceDecoder>);
+    void appendRawBytesFromMainThread(PassOwnPtr<Vector<char>>);
+    void setDecoder(PassOwnPtr<TextResourceDecoder>);
     void flush();
-    void resumeFrom(std::unique_ptr<Checkpoint>);
+    void resumeFrom(PassOwnPtr<Checkpoint>);
     void startedChunkWithCheckpoint(HTMLInputCheckpoint);
     void finish();
     void stop();
@@ -91,7 +91,7 @@ public:
     void forcePlaintextForTextDocument();
 
 private:
-    BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>>, std::unique_ptr<Configuration>, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&, std::unique_ptr<WebTaskRunner>);
+    BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&, PassOwnPtr<WebTaskRunner>);
     ~BackgroundHTMLParser();
 
     void appendDecodedBytes(const String&);
@@ -103,14 +103,14 @@ private:
     WeakPtrFactory<BackgroundHTMLParser> m_weakFactory;
     BackgroundHTMLInputStream m_input;
     HTMLSourceTracker m_sourceTracker;
-    std::unique_ptr<HTMLToken> m_token;
-    std::unique_ptr<HTMLTokenizer> m_tokenizer;
+    OwnPtr<HTMLToken> m_token;
+    OwnPtr<HTMLTokenizer> m_tokenizer;
     HTMLTreeBuilderSimulator m_treeBuilderSimulator;
     HTMLParserOptions m_options;
     const size_t m_outstandingTokenLimit;
     WeakPtr<HTMLDocumentParser> m_parser;
 
-    std::unique_ptr<CompactHTMLTokenStream> m_pendingTokens;
+    OwnPtr<CompactHTMLTokenStream> m_pendingTokens;
     const size_t m_pendingTokenLimit;
     PreloadRequestStream m_pendingPreloads;
     // Indices into |m_pendingTokens|.
@@ -118,11 +118,11 @@ private:
     ViewportDescriptionWrapper m_viewportDescription;
     XSSInfoStream m_pendingXSSInfos;
 
-    std::unique_ptr<XSSAuditor> m_xssAuditor;
-    std::unique_ptr<TokenPreloadScanner> m_preloadScanner;
-    std::unique_ptr<TextResourceDecoder> m_decoder;
+    OwnPtr<XSSAuditor> m_xssAuditor;
+    OwnPtr<TokenPreloadScanner> m_preloadScanner;
+    OwnPtr<TextResourceDecoder> m_decoder;
     DocumentEncodingData m_lastSeenEncodingData;
-    std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
+    OwnPtr<WebTaskRunner> m_loadingTaskRunner;
     RefPtr<ParsedChunkQueue> m_parsedChunkQueue;
 
     bool m_startingScript;

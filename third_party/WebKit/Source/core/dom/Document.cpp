@@ -238,7 +238,6 @@
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextEncodingRegistry.h"
-#include <memory>
 
 using namespace WTF;
 using namespace Unicode;
@@ -521,7 +520,7 @@ Document::~Document()
 SelectorQueryCache& Document::selectorQueryCache()
 {
     if (!m_selectorQueryCache)
-        m_selectorQueryCache = wrapUnique(new SelectorQueryCache());
+        m_selectorQueryCache = adoptPtr(new SelectorQueryCache());
     return *m_selectorQueryCache;
 }
 
@@ -2888,7 +2887,7 @@ EventTarget* Document::errorEventTarget()
     return domWindow();
 }
 
-void Document::logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void Document::logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation> location)
 {
     ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location));
     addConsoleMessage(consoleMessage);
@@ -3941,12 +3940,12 @@ Document::EventFactorySet& Document::eventFactories()
 const OriginAccessEntry& Document::accessEntryFromURL()
 {
     if (!m_accessEntryFromURL) {
-        m_accessEntryFromURL = wrapUnique(new OriginAccessEntry(url().protocol(), url().host(), OriginAccessEntry::AllowRegisterableDomains));
+        m_accessEntryFromURL = adoptPtr(new OriginAccessEntry(url().protocol(), url().host(), OriginAccessEntry::AllowRegisterableDomains));
     }
     return *m_accessEntryFromURL;
 }
 
-void Document::registerEventFactory(std::unique_ptr<EventFactoryBase> eventFactory)
+void Document::registerEventFactory(PassOwnPtr<EventFactoryBase> eventFactory)
 {
     DCHECK(!eventFactories().contains(eventFactory.get()));
     eventFactories().add(std::move(eventFactory));
@@ -4378,7 +4377,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
         && m_titleElement->textContent().containsOnlyLatin1()) {
 
         CString originalBytes = m_titleElement->textContent().latin1();
-        std::unique_ptr<TextCodec> codec = newTextCodec(newData.encoding());
+        OwnPtr<TextCodec> codec = newTextCodec(newData.encoding());
         String correctlyDecodedTitle = codec->decode(originalBytes.data(), originalBytes.length(), DataEOF);
         m_titleElement->setTextContent(correctlyDecodedTitle);
     }
@@ -4594,7 +4593,7 @@ void Document::popCurrentScript()
     m_currentScriptStack.removeLast();
 }
 
-void Document::setTransformSource(std::unique_ptr<TransformSource> source)
+void Document::setTransformSource(PassOwnPtr<TransformSource> source)
 {
     m_transformSource = std::move(source);
 }

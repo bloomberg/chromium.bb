@@ -8,8 +8,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 using testing::_;
 using testing::AtMost;
@@ -20,10 +18,10 @@ class WorkerThreadTest : public ::testing::Test {
 public:
     void SetUp() override
     {
-        m_mockWorkerLoaderProxyProvider = wrapUnique(new MockWorkerLoaderProxyProvider());
-        m_mockWorkerReportingProxy = wrapUnique(new MockWorkerReportingProxy());
+        m_mockWorkerLoaderProxyProvider = adoptPtr(new MockWorkerLoaderProxyProvider());
+        m_mockWorkerReportingProxy = adoptPtr(new MockWorkerReportingProxy());
         m_securityOrigin = SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
-        m_workerThread = wrapUnique(new WorkerThreadForTest(
+        m_workerThread = adoptPtr(new WorkerThreadForTest(
             m_mockWorkerLoaderProxyProvider.get(),
             *m_mockWorkerReportingProxy));
         m_mockWorkerThreadLifecycleObserver = new MockWorkerThreadLifecycleObserver(m_workerThread->getWorkerThreadLifecycleContext());
@@ -85,9 +83,9 @@ protected:
     }
 
     RefPtr<SecurityOrigin> m_securityOrigin;
-    std::unique_ptr<MockWorkerLoaderProxyProvider> m_mockWorkerLoaderProxyProvider;
-    std::unique_ptr<MockWorkerReportingProxy> m_mockWorkerReportingProxy;
-    std::unique_ptr<WorkerThreadForTest> m_workerThread;
+    OwnPtr<MockWorkerLoaderProxyProvider> m_mockWorkerLoaderProxyProvider;
+    OwnPtr<MockWorkerReportingProxy> m_mockWorkerReportingProxy;
+    OwnPtr<WorkerThreadForTest> m_workerThread;
     Persistent<MockWorkerThreadLifecycleObserver> m_mockWorkerThreadLifecycleObserver;
 };
 

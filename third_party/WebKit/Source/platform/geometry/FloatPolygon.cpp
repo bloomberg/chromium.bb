@@ -30,7 +30,6 @@
 #include "platform/geometry/FloatPolygon.h"
 
 #include "wtf/MathExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -79,7 +78,7 @@ static unsigned findNextEdgeVertexIndex(const FloatPolygon& polygon, unsigned ve
     return vertexIndex2;
 }
 
-FloatPolygon::FloatPolygon(std::unique_ptr<Vector<FloatPoint>> vertices, WindRule fillRule)
+FloatPolygon::FloatPolygon(PassOwnPtr<Vector<FloatPoint>> vertices, WindRule fillRule)
     : m_vertices(std::move(vertices))
     , m_fillRule(fillRule)
 {

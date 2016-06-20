@@ -15,8 +15,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TracedValue.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -40,7 +38,7 @@ std::unique_ptr<V8StackTrace> captureStackTrace(bool full)
 }
 
 // static
-std::unique_ptr<SourceLocation> SourceLocation::capture(const String& url, unsigned lineNumber, unsigned columnNumber)
+PassOwnPtr<SourceLocation> SourceLocation::capture(const String& url, unsigned lineNumber, unsigned columnNumber)
 {
     std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace(false);
     if (stackTrace && !stackTrace->isEmpty())
@@ -49,7 +47,7 @@ std::unique_ptr<SourceLocation> SourceLocation::capture(const String& url, unsig
 }
 
 // static
-std::unique_ptr<SourceLocation> SourceLocation::capture(ExecutionContext* executionContext)
+PassOwnPtr<SourceLocation> SourceLocation::capture(ExecutionContext* executionContext)
 {
     std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace(false);
     if (stackTrace && !stackTrace->isEmpty())
@@ -69,7 +67,7 @@ std::unique_ptr<SourceLocation> SourceLocation::capture(ExecutionContext* execut
 }
 
 // static
-std::unique_ptr<SourceLocation> SourceLocation::fromMessage(v8::Isolate* isolate, v8::Local<v8::Message> message, ExecutionContext* executionContext)
+PassOwnPtr<SourceLocation> SourceLocation::fromMessage(v8::Isolate* isolate, v8::Local<v8::Message> message, ExecutionContext* executionContext)
 {
     v8::Local<v8::StackTrace> stack = message->GetStackTrace();
     std::unique_ptr<V8StackTrace> stackTrace = nullptr;
@@ -100,23 +98,23 @@ std::unique_ptr<SourceLocation> SourceLocation::fromMessage(v8::Isolate* isolate
 }
 
 // static
-std::unique_ptr<SourceLocation> SourceLocation::create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
+PassOwnPtr<SourceLocation> SourceLocation::create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
 {
-    return wrapUnique(new SourceLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId));
+    return adoptPtr(new SourceLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId));
 }
 
 // static
-std::unique_ptr<SourceLocation> SourceLocation::createFromNonEmptyV8StackTrace(std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
+PassOwnPtr<SourceLocation> SourceLocation::createFromNonEmptyV8StackTrace(std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
 {
     // Retrieve the data before passing the ownership to SourceLocation.
     const String& url = stackTrace->topSourceURL();
     unsigned lineNumber = stackTrace->topLineNumber();
     unsigned columnNumber = stackTrace->topColumnNumber();
-    return wrapUnique(new SourceLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId));
+    return adoptPtr(new SourceLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId));
 }
 
 // static
-std::unique_ptr<SourceLocation> SourceLocation::fromFunction(v8::Local<v8::Function> function)
+PassOwnPtr<SourceLocation> SourceLocation::fromFunction(v8::Local<v8::Function> function)
 {
     if (!function.IsEmpty())
         return SourceLocation::create(toCoreStringWithUndefinedOrNullCheck(function->GetScriptOrigin().ResourceName()), function->GetScriptLineNumber() + 1, function->GetScriptColumnNumber() + 1, nullptr, function->ScriptId());
@@ -124,7 +122,7 @@ std::unique_ptr<SourceLocation> SourceLocation::fromFunction(v8::Local<v8::Funct
 }
 
 // static
-std::unique_ptr<SourceLocation> SourceLocation::captureWithFullStackTrace()
+PassOwnPtr<SourceLocation> SourceLocation::captureWithFullStackTrace()
 {
     std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace(true);
     if (stackTrace && !stackTrace->isEmpty())
@@ -160,14 +158,14 @@ void SourceLocation::toTracedValue(TracedValue* value, const char* name) const
     value->endArray();
 }
 
-std::unique_ptr<SourceLocation> SourceLocation::clone() const
+PassOwnPtr<SourceLocation> SourceLocation::clone() const
 {
-    return wrapUnique(new SourceLocation(m_url, m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->clone() : nullptr, m_scriptId));
+    return adoptPtr(new SourceLocation(m_url, m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->clone() : nullptr, m_scriptId));
 }
 
-std::unique_ptr<SourceLocation> SourceLocation::isolatedCopy() const
+PassOwnPtr<SourceLocation> SourceLocation::isolatedCopy() const
 {
-    return wrapUnique(new SourceLocation(m_url.isolatedCopy(), m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->isolatedCopy() : nullptr, m_scriptId));
+    return adoptPtr(new SourceLocation(m_url.isolatedCopy(), m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->isolatedCopy() : nullptr, m_scriptId));
 }
 
 std::unique_ptr<protocol::Runtime::StackTrace> SourceLocation::buildInspectorObject() const

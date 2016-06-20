@@ -14,6 +14,7 @@
 #include "web/WebExport.h"
 #include "web/WebFrameImplBase.h"
 #include "wtf/Compiler.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 

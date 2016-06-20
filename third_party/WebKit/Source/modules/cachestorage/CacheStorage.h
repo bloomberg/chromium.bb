@@ -15,7 +15,6 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
@@ -48,11 +47,11 @@ private:
     friend class WithCacheCallbacks;
     friend class DeleteCallbacks;
 
-    CacheStorage(GlobalFetch::ScopedFetcher*, std::unique_ptr<WebServiceWorkerCacheStorage>);
+    CacheStorage(GlobalFetch::ScopedFetcher*, PassOwnPtr<WebServiceWorkerCacheStorage>);
     ScriptPromise matchImpl(ScriptState*, const Request*, const CacheQueryOptions&);
 
     Member<GlobalFetch::ScopedFetcher> m_scopedFetcher;
-    std::unique_ptr<WebServiceWorkerCacheStorage> m_webCacheStorage;
+    OwnPtr<WebServiceWorkerCacheStorage> m_webCacheStorage;
     HeapHashMap<String, Member<Cache>> m_nameToCacheMap;
 };
 

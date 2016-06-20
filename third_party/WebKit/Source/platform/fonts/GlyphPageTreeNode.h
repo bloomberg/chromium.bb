@@ -32,10 +32,11 @@
 #include "platform/fonts/GlyphPage.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/Unicode.h"
-#include <memory>
 #include <string.h>
+
 #include <unicode/uscript.h>
 
 namespace blink {
@@ -133,9 +134,9 @@ private:
     static GlyphPageTreeNode* pageZeroRoot;
 
     RefPtr<GlyphPage> m_page;
-    typedef HashMap<const FontData*, std::unique_ptr<GlyphPageTreeNode>> GlyphPageTreeNodeMap;
+    typedef HashMap<const FontData*, OwnPtr<GlyphPageTreeNode>> GlyphPageTreeNodeMap;
     GlyphPageTreeNodeMap m_children;
-    std::unique_ptr<SystemFallbackGlyphPageTreeNode> m_systemFallbackChild;
+    OwnPtr<SystemFallbackGlyphPageTreeNode> m_systemFallbackChild;
 };
 
 class PLATFORM_EXPORT SystemFallbackGlyphPageTreeNode : public GlyphPageTreeNodeBase {

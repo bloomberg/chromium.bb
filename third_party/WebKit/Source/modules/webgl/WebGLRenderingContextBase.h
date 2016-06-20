@@ -48,8 +48,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
+
 #include <set>
 
 namespace blink {
@@ -139,8 +140,8 @@ public:
 
     static unsigned getWebGLVersion(const CanvasRenderingContext*);
 
-    static std::unique_ptr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
-    static std::unique_ptr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(ScriptState*, WebGLContextAttributes, unsigned webGLVersion);
+    static PassOwnPtr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
+    static PassOwnPtr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(ScriptState*, WebGLContextAttributes, unsigned webGLVersion);
     static void forceNextWebGLContextCreationToFail();
 
     int drawingBufferWidth() const;
@@ -430,9 +431,9 @@ protected:
     friend class ScopedTexture2DRestorer;
     friend class ScopedFramebufferRestorer;
 
-    WebGLRenderingContextBase(HTMLCanvasElement*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
-    WebGLRenderingContextBase(OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
-    PassRefPtr<DrawingBuffer> createDrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>);
+    WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
+    WebGLRenderingContextBase(OffscreenCanvas*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
+    PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider>);
     void setupFlags();
 
     // CanvasRenderingContext implementation.
@@ -536,7 +537,7 @@ protected:
         ImageBuffer* imageBuffer(const IntSize&);
     private:
         void bubbleToFront(int idx);
-        std::unique_ptr<std::unique_ptr<ImageBuffer>[]> m_buffers;
+        OwnPtr<OwnPtr<ImageBuffer>[]> m_buffers;
         int m_capacity;
     };
     LRUImageBufferCache m_generatedImageCache;
@@ -585,7 +586,7 @@ protected:
 
     unsigned long m_onePlusMaxNonDefaultTextureUnit;
 
-    std::unique_ptr<Extensions3DUtil> m_extensionsUtil;
+    OwnPtr<Extensions3DUtil> m_extensionsUtil;
 
     enum ExtensionFlags {
         ApprovedExtension               = 0x00,
@@ -1103,8 +1104,8 @@ protected:
     static const char* getTexImageFunctionName(TexImageFunctionID);
 
 private:
-    WebGLRenderingContextBase(HTMLCanvasElement*, OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
-    static std::unique_ptr<WebGraphicsContext3DProvider> createContextProviderInternal(HTMLCanvasElement*, ScriptState*, WebGLContextAttributes, unsigned);
+    WebGLRenderingContextBase(HTMLCanvasElement*, OffscreenCanvas*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
+    static PassOwnPtr<WebGraphicsContext3DProvider> createContextProviderInternal(HTMLCanvasElement*, ScriptState*, WebGLContextAttributes, unsigned);
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());

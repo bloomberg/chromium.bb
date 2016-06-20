@@ -16,7 +16,6 @@
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
-#include <memory>
 
 namespace blink {
 
@@ -31,7 +30,7 @@ DOMDataView* ConvertWebVectorToDataView(const WebVector<uint8_t>& webVector)
 
 } // anonymous namespace
 
-BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(ExecutionContext* context, std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic)
+BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(ExecutionContext* context, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic)
     : ActiveDOMObject(context)
     , m_webCharacteristic(std::move(webCharacteristic))
     , m_stopped(false)
@@ -41,7 +40,7 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(ExecutionCo
     ThreadState::current()->registerPreFinalizer(this);
 }
 
-BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::take(ScriptPromiseResolver* resolver, std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic)
+BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic)
 {
     if (!webCharacteristic) {
         return nullptr;

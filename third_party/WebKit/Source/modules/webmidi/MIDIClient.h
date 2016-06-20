@@ -33,7 +33,6 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include <memory>
 
 namespace blink {
 
@@ -49,7 +48,7 @@ public:
     virtual ~MIDIClient() { }
 };
 
-MODULES_EXPORT void provideMIDITo(LocalFrame&, std::unique_ptr<MIDIClient>);
+MODULES_EXPORT void provideMIDITo(LocalFrame&, PassOwnPtr<MIDIClient>);
 
 } // namespace blink
 

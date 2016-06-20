@@ -22,10 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/BiquadDSPKernel.h"
 #include "modules/webaudio/BiquadProcessor.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "modules/webaudio/BiquadDSPKernel.h"
 
 namespace blink {
 
@@ -47,9 +45,9 @@ BiquadProcessor::~BiquadProcessor()
         uninitialize();
 }
 
-std::unique_ptr<AudioDSPKernel> BiquadProcessor::createKernel()
+PassOwnPtr<AudioDSPKernel> BiquadProcessor::createKernel()
 {
-    return wrapUnique(new BiquadDSPKernel(this));
+    return adoptPtr(new BiquadDSPKernel(this));
 }
 
 void BiquadProcessor::checkForDirtyCoefficients()
@@ -112,7 +110,7 @@ void BiquadProcessor::getFrequencyResponse(int nFrequencies, const float* freque
     // to avoid interfering with the processing running in the audio
     // thread on the main kernels.
 
-    std::unique_ptr<BiquadDSPKernel> responseKernel = wrapUnique(new BiquadDSPKernel(this));
+    OwnPtr<BiquadDSPKernel> responseKernel = adoptPtr(new BiquadDSPKernel(this));
     responseKernel->getFrequencyResponse(nFrequencies, frequencyHz, magResponse, phaseResponse);
 }
 

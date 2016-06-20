@@ -39,9 +39,8 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -126,7 +125,7 @@ ResourceRequest WorkerScriptLoader::createResourceRequest(WebAddressSpace creati
     return request;
 }
 
-void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
+void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     DCHECK(!handle);
     if (response.httpStatusCode() / 100 != 2 && response.httpStatusCode()) {
@@ -170,7 +169,7 @@ void WorkerScriptLoader::didReceiveData(const char* data, unsigned len)
 
 void WorkerScriptLoader::didReceiveCachedMetadata(const char* data, int size)
 {
-    m_cachedMetadata = wrapUnique(new Vector<char>(size));
+    m_cachedMetadata = adoptPtr(new Vector<char>(size));
     memcpy(m_cachedMetadata->data(), data, size);
 }
 

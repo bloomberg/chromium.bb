@@ -37,7 +37,8 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -64,7 +65,7 @@ class DummyPageHolder {
     WTF_MAKE_NONCOPYABLE(DummyPageHolder);
     USING_FAST_MALLOC(DummyPageHolder);
 public:
-    static std::unique_ptr<DummyPageHolder> create(
+    static PassOwnPtr<DummyPageHolder> create(
         const IntSize& initialViewSize = IntSize(),
         Page::PageClients* = 0,
         FrameLoaderClient* = nullptr,

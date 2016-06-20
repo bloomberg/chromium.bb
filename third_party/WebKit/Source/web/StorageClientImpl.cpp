@@ -31,8 +31,6 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -41,11 +39,11 @@ StorageClientImpl::StorageClientImpl(WebViewImpl* webView)
 {
 }
 
-std::unique_ptr<StorageNamespace> StorageClientImpl::createSessionStorageNamespace()
+PassOwnPtr<StorageNamespace> StorageClientImpl::createSessionStorageNamespace()
 {
     if (!m_webView->client())
         return nullptr;
-    return wrapUnique(new StorageNamespace(wrapUnique(m_webView->client()->createSessionStorageNamespace())));
+    return adoptPtr(new StorageNamespace(adoptPtr(m_webView->client()->createSessionStorageNamespace())));
 }
 
 bool StorageClientImpl::canAccessStorage(LocalFrame* frame, StorageType type) const

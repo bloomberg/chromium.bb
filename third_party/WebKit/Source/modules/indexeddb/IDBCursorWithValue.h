@@ -30,7 +30,7 @@
 #include "modules/indexeddb/IndexedDB.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ class IDBTransaction;
 class IDBCursorWithValue final : public IDBCursor {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static IDBCursorWithValue* create(std::unique_ptr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    static IDBCursorWithValue* create(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     ~IDBCursorWithValue() override;
 
     // The value attribute defined in the IDL is simply implemented in IDBCursor (but not exposed via
@@ -51,7 +51,7 @@ public:
     bool isCursorWithValue() const override { return true; }
 
 private:
-    IDBCursorWithValue(std::unique_ptr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    IDBCursorWithValue(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
 };
 
 DEFINE_TYPE_CASTS(IDBCursorWithValue, IDBCursor, cursor, cursor->isCursorWithValue(), cursor.isCursorWithValue());

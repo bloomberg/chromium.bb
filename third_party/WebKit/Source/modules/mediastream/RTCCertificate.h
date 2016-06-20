@@ -35,6 +35,8 @@
 #include "core/dom/DOMTimeStamp.h"
 #include "platform/heap/GarbageCollected.h"
 #include "public/platform/WebRTCCertificate.h"
+#include "wtf/OwnPtr.h"
+
 #include <memory>
 
 namespace blink {
@@ -55,7 +57,7 @@ public:
     DOMTimeStamp expires() const;
 
 private:
-    std::unique_ptr<WebRTCCertificate> m_certificate;
+    OwnPtr<WebRTCCertificate> m_certificate;
 };
 
 } // namespace blink

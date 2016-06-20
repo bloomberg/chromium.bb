@@ -9,8 +9,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "core/dom/ExecutionContext.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -83,7 +81,7 @@ void ScriptPromisePropertyBase::resolveOrReject(State targetState)
     v8::HandleScope handleScope(m_isolate);
     size_t i = 0;
     while (i < m_wrappers.size()) {
-        const std::unique_ptr<ScopedPersistent<v8::Object>>& persistent = m_wrappers[i];
+        const OwnPtr<ScopedPersistent<v8::Object>>& persistent = m_wrappers[i];
         if (persistent->isEmpty()) {
             // wrapper has died.
             // Since v8 GC can run during the iteration and clear the reference,
@@ -131,7 +129,7 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(ScriptState
     v8::Local<v8::Context> context = scriptState->context();
     size_t i = 0;
     while (i < m_wrappers.size()) {
-        const std::unique_ptr<ScopedPersistent<v8::Object>>& persistent = m_wrappers[i];
+        const OwnPtr<ScopedPersistent<v8::Object>>& persistent = m_wrappers[i];
         if (persistent->isEmpty()) {
             // wrapper has died.
             // Since v8 GC can run during the iteration and clear the reference,
@@ -146,7 +144,7 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(ScriptState
         ++i;
     }
     v8::Local<v8::Object> wrapper = holder(m_isolate, context->Global());
-    std::unique_ptr<ScopedPersistent<v8::Object>> weakPersistent = wrapUnique(new ScopedPersistent<v8::Object>);
+    OwnPtr<ScopedPersistent<v8::Object>> weakPersistent = adoptPtr(new ScopedPersistent<v8::Object>);
     weakPersistent->set(m_isolate, wrapper);
     weakPersistent->setWeak(weakPersistent.get(), &clearHandle);
     m_wrappers.append(std::move(weakPersistent));

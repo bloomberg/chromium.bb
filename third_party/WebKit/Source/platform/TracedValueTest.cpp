@@ -7,11 +7,10 @@
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<base::Value> parseTracedValue(std::unique_ptr<TracedValue> value)
+std::unique_ptr<base::Value> parseTracedValue(PassOwnPtr<TracedValue> value)
 {
     base::JSONReader reader;
     CString utf8 = value->toString().utf8();
@@ -20,7 +19,7 @@ std::unique_ptr<base::Value> parseTracedValue(std::unique_ptr<TracedValue> value
 
 TEST(TracedValueTest, FlatDictionary)
 {
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("int", 2014);
     value->setDouble("double", 0.0);
     value->setBoolean("bool", true);
@@ -42,7 +41,7 @@ TEST(TracedValueTest, FlatDictionary)
 
 TEST(TracedValueTest, Hierarchy)
 {
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("i0", 2014);
     value->beginDictionary("dict1");
     value->setInteger("i1", 2014);
@@ -103,7 +102,7 @@ TEST(TracedValueTest, Hierarchy)
 
 TEST(TracedValueTest, Escape)
 {
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("s0", "value0\\");
     value->setString("s1", "value\n1");
     value->setString("s2", "\"value2\"");

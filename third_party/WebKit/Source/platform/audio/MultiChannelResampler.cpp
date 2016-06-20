@@ -26,9 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/AudioBus.h"
 #include "platform/audio/MultiChannelResampler.h"
-#include "wtf/PtrUtil.h"
+#include "platform/audio/AudioBus.h"
 
 namespace blink {
 
@@ -93,7 +92,7 @@ MultiChannelResampler::MultiChannelResampler(double scaleFactor, unsigned number
 {
     // Create each channel's resampler.
     for (unsigned channelIndex = 0; channelIndex < numberOfChannels; ++channelIndex)
-        m_kernels.append(wrapUnique(new SincResampler(scaleFactor)));
+        m_kernels.append(adoptPtr(new SincResampler(scaleFactor)));
 }
 
 void MultiChannelResampler::process(AudioSourceProvider* provider, AudioBus* destination, size_t framesToProcess)

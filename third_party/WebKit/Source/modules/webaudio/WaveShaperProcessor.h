@@ -31,7 +31,6 @@
 #include "platform/audio/AudioDSPKernelProcessor.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace blink {
 
@@ -49,7 +48,7 @@ public:
 
     ~WaveShaperProcessor() override;
 
-    std::unique_ptr<AudioDSPKernel> createKernel() override;
+    PassOwnPtr<AudioDSPKernel> createKernel() override;
 
     void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
 

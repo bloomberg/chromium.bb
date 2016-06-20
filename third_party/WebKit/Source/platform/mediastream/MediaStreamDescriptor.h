@@ -37,7 +37,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -90,7 +89,7 @@ public:
     void setEnded() { m_ended = true; }
 
     ExtraData* getExtraData() const { return m_extraData.get(); }
-    void setExtraData(std::unique_ptr<ExtraData> extraData) { m_extraData = std::move(extraData); }
+    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = std::move(extraData); }
 
     // |m_extraData| may hold pointers to GC objects, and it may touch them in destruction.
     // So this class is eagerly finalized to finalize |m_extraData| promptly.
@@ -108,7 +107,7 @@ private:
     bool m_active;
     bool m_ended;
 
-    std::unique_ptr<ExtraData> m_extraData;
+    OwnPtr<ExtraData> m_extraData;
 };
 
 typedef HeapVector<Member<MediaStreamDescriptor>> MediaStreamDescriptorVector;

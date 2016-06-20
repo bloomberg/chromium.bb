@@ -30,7 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/web/WebColorChooserClient.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -64,7 +64,7 @@ protected:
     ColorChooserUIController(LocalFrame*, ColorChooserClient*);
 
     void openColorChooser();
-    std::unique_ptr<WebColorChooser> m_chooser;
+    OwnPtr<WebColorChooser> m_chooser;
     Member<ColorChooserClient> m_client;
 
     Member<LocalFrame> m_frame;

@@ -7,8 +7,6 @@
 #include "core/animation/CSSLengthInterpolationType.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -65,9 +63,9 @@ static ClipAutos getClipAutos(const ComputedStyle& style)
 
 class ParentAutosChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<ParentAutosChecker> create(const ClipAutos& parentAutos)
+    static PassOwnPtr<ParentAutosChecker> create(const ClipAutos& parentAutos)
     {
-        return wrapUnique(new ParentAutosChecker(parentAutos));
+        return adoptPtr(new ParentAutosChecker(parentAutos));
     }
 
 private:
@@ -113,9 +111,9 @@ class UnderlyingAutosChecker : public InterpolationType::ConversionChecker {
 public:
     ~UnderlyingAutosChecker() final {}
 
-    static std::unique_ptr<UnderlyingAutosChecker> create(const ClipAutos& underlyingAutos)
+    static PassOwnPtr<UnderlyingAutosChecker> create(const ClipAutos& underlyingAutos)
     {
-        return wrapUnique(new UnderlyingAutosChecker(underlyingAutos));
+        return adoptPtr(new UnderlyingAutosChecker(underlyingAutos));
     }
 
     static ClipAutos getUnderlyingAutos(const InterpolationValue& underlying)
@@ -146,7 +144,7 @@ enum ClipComponentIndex {
     ClipComponentIndexCount,
 };
 
-static std::unique_ptr<InterpolableValue> convertClipComponent(const Length& length, double zoom)
+static PassOwnPtr<InterpolableValue> convertClipComponent(const Length& length, double zoom)
 {
     if (length.isAuto())
         return InterpolableList::create(0);
@@ -155,7 +153,7 @@ static std::unique_ptr<InterpolableValue> convertClipComponent(const Length& len
 
 static InterpolationValue createClipValue(const LengthBox& clip, double zoom)
 {
-    std::unique_ptr<InterpolableList> list = InterpolableList::create(ClipComponentIndexCount);
+    OwnPtr<InterpolableList> list = InterpolableList::create(ClipComponentIndexCount);
     list->set(ClipTop, convertClipComponent(clip.top(), zoom));
     list->set(ClipRight, convertClipComponent(clip.right(), zoom));
     list->set(ClipBottom, convertClipComponent(clip.bottom(), zoom));
@@ -196,7 +194,7 @@ static bool isCSSAuto(const CSSPrimitiveValue& value)
     return value.getValueID() == CSSValueAuto;
 }
 
-static std::unique_ptr<InterpolableValue> convertClipComponent(const CSSPrimitiveValue& length)
+static PassOwnPtr<InterpolableValue> convertClipComponent(const CSSPrimitiveValue& length)
 {
     if (isCSSAuto(length))
         return InterpolableList::create(0);
@@ -208,7 +206,7 @@ InterpolationValue CSSClipInterpolationType::maybeConvertValue(const CSSValue& v
     if (!value.isQuadValue())
         return nullptr;
     const CSSQuadValue& quad = toCSSQuadValue(value);
-    std::unique_ptr<InterpolableList> list = InterpolableList::create(ClipComponentIndexCount);
+    OwnPtr<InterpolableList> list = InterpolableList::create(ClipComponentIndexCount);
     list->set(ClipTop, convertClipComponent(*quad.top()));
     list->set(ClipRight, convertClipComponent(*quad.right()));
     list->set(ClipBottom, convertClipComponent(*quad.bottom()));

@@ -6,6 +6,7 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 

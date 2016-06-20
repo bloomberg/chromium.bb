@@ -9,7 +9,6 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "wtf/MathExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -96,7 +95,7 @@ CanvasRenderingContextFactory* OffscreenCanvas::getRenderingContextFactory(int t
     return renderingContextFactories()[type].get();
 }
 
-void OffscreenCanvas::registerRenderingContextFactory(std::unique_ptr<CanvasRenderingContextFactory> renderingContextFactory)
+void OffscreenCanvas::registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory> renderingContextFactory)
 {
     CanvasRenderingContext::ContextType type = renderingContextFactory->getContextType();
     ASSERT(type < CanvasRenderingContext::ContextTypeCount);

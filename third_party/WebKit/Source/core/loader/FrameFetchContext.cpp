@@ -73,8 +73,8 @@
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
+
 #include <algorithm>
-#include <memory>
 
 namespace blink {
 
@@ -397,11 +397,11 @@ bool FrameFetchContext::shouldLoadNewResource(Resource::Type type) const
     return m_documentLoader == frame()->loader().documentLoader();
 }
 
-static std::unique_ptr<TracedValue> loadResourceTraceData(unsigned long identifier, const KURL& url, int priority)
+static PassOwnPtr<TracedValue> loadResourceTraceData(unsigned long identifier, const KURL& url, int priority)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("requestId", requestId);
     value->setString("url", url.getString());
     value->setInteger("priority", priority);

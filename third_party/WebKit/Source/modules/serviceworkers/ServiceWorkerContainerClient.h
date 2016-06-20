@@ -9,7 +9,6 @@
 #include "core/workers/WorkerClients.h"
 #include "modules/ModulesExport.h"
 #include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 
@@ -25,7 +24,7 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 public:
-    static ServiceWorkerContainerClient* create(std::unique_ptr<WebServiceWorkerProvider>);
+    static ServiceWorkerContainerClient* create(PassOwnPtr<WebServiceWorkerProvider>);
     virtual ~ServiceWorkerContainerClient();
 
     WebServiceWorkerProvider* provider() { return m_provider.get(); }
@@ -40,12 +39,12 @@ public:
     }
 
 protected:
-    explicit ServiceWorkerContainerClient(std::unique_ptr<WebServiceWorkerProvider>);
+    explicit ServiceWorkerContainerClient(PassOwnPtr<WebServiceWorkerProvider>);
 
-    std::unique_ptr<WebServiceWorkerProvider> m_provider;
+    OwnPtr<WebServiceWorkerProvider> m_provider;
 };
 
-MODULES_EXPORT void provideServiceWorkerContainerClientToWorker(WorkerClients*, std::unique_ptr<WebServiceWorkerProvider>);
+MODULES_EXPORT void provideServiceWorkerContainerClientToWorker(WorkerClients*, PassOwnPtr<WebServiceWorkerProvider>);
 
 } // namespace blink
 

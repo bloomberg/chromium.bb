@@ -40,7 +40,6 @@
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -55,7 +54,7 @@ class MIDIAccess final : public EventTargetWithInlineData, public ActiveScriptWr
     USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
     USING_PRE_FINALIZER(MIDIAccess, dispose);
 public:
-    static MIDIAccess* create(std::unique_ptr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
+    static MIDIAccess* create(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     {
         MIDIAccess* access = new MIDIAccess(std::move(accessor), sysexEnabled, ports, executionContext);
         access->suspendIfNeeded();
@@ -103,10 +102,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MIDIAccess(std::unique_ptr<MIDIAccessor>, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>&, ExecutionContext*);
+    MIDIAccess(PassOwnPtr<MIDIAccessor>, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>&, ExecutionContext*);
     void dispose();
 
-    std::unique_ptr<MIDIAccessor> m_accessor;
+    OwnPtr<MIDIAccessor> m_accessor;
     bool m_sysexEnabled;
     bool m_hasPendingActivity;
     HeapVector<Member<MIDIInput>> m_inputs;

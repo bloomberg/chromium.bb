@@ -25,12 +25,10 @@
 
 #include "wtf/text/TextCodecUTF8.h"
 
-#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextCodecASCIIFastPath.h"
-#include <memory>
 
 namespace WTF {
 
@@ -38,9 +36,9 @@ using namespace WTF::Unicode;
 
 const int nonCharacter = -1;
 
-std::unique_ptr<TextCodec> TextCodecUTF8::create(const TextEncoding&, const void*)
+PassOwnPtr<TextCodec> TextCodecUTF8::create(const TextEncoding&, const void*)
 {
-    return wrapUnique(new TextCodecUTF8);
+    return adoptPtr(new TextCodecUTF8);
 }
 
 void TextCodecUTF8::registerEncodingNames(EncodingNameRegistrar registrar)

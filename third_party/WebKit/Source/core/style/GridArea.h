@@ -34,6 +34,7 @@
 #include "core/style/GridPositionsResolver.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
 

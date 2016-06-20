@@ -68,9 +68,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/CheckedNumeric.h"
-#include "wtf/PtrUtil.h"
 #include <math.h>
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -210,7 +208,7 @@ CanvasRenderingContextFactory* HTMLCanvasElement::getRenderingContextFactory(int
     return renderingContextFactories()[type].get();
 }
 
-void HTMLCanvasElement::registerRenderingContextFactory(std::unique_ptr<CanvasRenderingContextFactory> renderingContextFactory)
+void HTMLCanvasElement::registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory> renderingContextFactory)
 {
     CanvasRenderingContext::ContextType type = renderingContextFactory->getContextType();
     DCHECK(type < CanvasRenderingContext::ContextTypeCount);
@@ -771,9 +769,9 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
 
 class UnacceleratedSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
 public:
-    virtual std::unique_ptr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
+    virtual PassOwnPtr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
     {
-        return wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode));
+        return adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode));
     }
 
     virtual ~UnacceleratedSurfaceFactory() { }
@@ -790,7 +788,7 @@ bool HTMLCanvasElement::shouldUseDisplayList(const IntSize& deviceSize)
     return true;
 }
 
-std::unique_ptr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount)
+PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount)
 {
     OpacityMode opacityMode = !m_context || m_context->hasAlpha() ? NonOpaque : Opaque;
 
@@ -799,13 +797,13 @@ std::unique_ptr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(
         // If 3d, but the use of the canvas will be for non-accelerated content
         // then make a non-accelerated ImageBuffer. This means copying the internal
         // Image will require a pixel readback, but that is unavoidable in this case.
-        return wrapUnique(new AcceleratedImageBufferSurface(deviceSize, opacityMode));
+        return adoptPtr(new AcceleratedImageBufferSurface(deviceSize, opacityMode));
     }
 
     if (shouldAccelerate(deviceSize)) {
         if (document().settings())
             *msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
-        std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new Canvas2DImageBufferSurface(deviceSize, *msaaSampleCount, opacityMode, Canvas2DLayerBridge::EnableAcceleration));
+        OwnPtr<ImageBufferSurface> surface = adoptPtr(new Canvas2DImageBufferSurface(deviceSize, *msaaSampleCount, opacityMode, Canvas2DLayerBridge::EnableAcceleration));
         if (surface->isValid()) {
             CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreated);
             return surface;
@@ -813,15 +811,15 @@ std::unique_ptr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(
         CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreationFailed);
     }
 
-    std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory());
+    OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory());
 
     if (shouldUseDisplayList(deviceSize)) {
-        std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(deviceSize, std::move(surfaceFactory), opacityMode));
+        OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(deviceSize, std::move(surfaceFactory), opacityMode));
         if (surface->isValid()) {
             CanvasMetrics::countCanvasContextUsage(CanvasMetrics::DisplayList2DCanvasImageBufferCreated);
             return surface;
         }
-        surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory()); // recreate because previous one was released
+        surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory()); // recreate because previous one was released
     }
     auto surface = surfaceFactory->createSurface(deviceSize, opacityMode);
     if (!surface->isValid()) {
@@ -839,7 +837,7 @@ void HTMLCanvasElement::createImageBuffer()
         m_context->loseContext(CanvasRenderingContext::SyntheticLostContext);
 }
 
-void HTMLCanvasElement::createImageBufferInternal(std::unique_ptr<ImageBufferSurface> externalSurface)
+void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface> externalSurface)
 {
     DCHECK(!m_imageBuffer);
 
@@ -850,7 +848,7 @@ void HTMLCanvasElement::createImageBufferInternal(std::unique_ptr<ImageBufferSur
         return;
 
     int msaaSampleCount = 0;
-    std::unique_ptr<ImageBufferSurface> surface;
+    OwnPtr<ImageBufferSurface> surface;
     if (externalSurface) {
         surface = std::move(externalSurface);
     } else {
@@ -959,7 +957,7 @@ ImageBuffer* HTMLCanvasElement::buffer() const
     return m_imageBuffer.get();
 }
 
-void HTMLCanvasElement::createImageBufferUsingSurfaceForTesting(std::unique_ptr<ImageBufferSurface> surface)
+void HTMLCanvasElement::createImageBufferUsingSurfaceForTesting(PassOwnPtr<ImageBufferSurface> surface)
 {
     discardImageBuffer();
     setWidth(surface->size().width());
@@ -1186,7 +1184,7 @@ String HTMLCanvasElement::getIdFromControl(const Element* element)
 
 void HTMLCanvasElement::createSurfaceLayerBridge()
 {
-    m_surfaceLayerBridge = wrapUnique(new CanvasSurfaceLayerBridge());
+    m_surfaceLayerBridge = adoptPtr(new CanvasSurfaceLayerBridge());
 }
 
 } // namespace blink

@@ -29,6 +29,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

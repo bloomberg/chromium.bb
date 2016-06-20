@@ -23,8 +23,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -44,7 +44,7 @@ class SVGResources {
 public:
     SVGResources();
 
-    static std::unique_ptr<SVGResources> buildResources(const LayoutObject*, const SVGComputedStyle&);
+    static PassOwnPtr<SVGResources> buildResources(const LayoutObject*, const SVGComputedStyle&);
     void layoutIfNeeded();
 
     static bool supportsMarkers(const SVGElement&);
@@ -121,9 +121,9 @@ private:
         {
         }
 
-        static std::unique_ptr<ClipperFilterMaskerData> create()
+        static PassOwnPtr<ClipperFilterMaskerData> create()
         {
-            return wrapUnique(new ClipperFilterMaskerData);
+            return adoptPtr(new ClipperFilterMaskerData);
         }
 
         LayoutSVGResourceClipper* clipper;
@@ -143,9 +143,9 @@ private:
         {
         }
 
-        static std::unique_ptr<MarkerData> create()
+        static PassOwnPtr<MarkerData> create()
         {
-            return wrapUnique(new MarkerData);
+            return adoptPtr(new MarkerData);
         }
 
         LayoutSVGResourceMarker* markerStart;
@@ -166,18 +166,18 @@ private:
         {
         }
 
-        static std::unique_ptr<FillStrokeData> create()
+        static PassOwnPtr<FillStrokeData> create()
         {
-            return wrapUnique(new FillStrokeData);
+            return adoptPtr(new FillStrokeData);
         }
 
         LayoutSVGResourcePaintServer* fill;
         LayoutSVGResourcePaintServer* stroke;
     };
 
-    std::unique_ptr<ClipperFilterMaskerData> m_clipperFilterMaskerData;
-    std::unique_ptr<MarkerData> m_markerData;
-    std::unique_ptr<FillStrokeData> m_fillStrokeData;
+    OwnPtr<ClipperFilterMaskerData> m_clipperFilterMaskerData;
+    OwnPtr<MarkerData> m_markerData;
+    OwnPtr<FillStrokeData> m_fillStrokeData;
     LayoutSVGResourceContainer* m_linkedResource;
 };
 

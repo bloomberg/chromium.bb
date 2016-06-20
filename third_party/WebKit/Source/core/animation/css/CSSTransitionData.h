@@ -7,9 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/animation/css/CSSTimingData.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -52,14 +50,14 @@ public:
         String propertyString;
     };
 
-    static std::unique_ptr<CSSTransitionData> create()
+    static PassOwnPtr<CSSTransitionData> create()
     {
-        return wrapUnique(new CSSTransitionData);
+        return adoptPtr(new CSSTransitionData);
     }
 
-    static std::unique_ptr<CSSTransitionData> create(const CSSTransitionData& transitionData)
+    static PassOwnPtr<CSSTransitionData> create(const CSSTransitionData& transitionData)
     {
-        return wrapUnique(new CSSTransitionData(transitionData));
+        return adoptPtr(new CSSTransitionData(transitionData));
     }
 
     bool transitionsMatchForStyleRecalc(const CSSTransitionData& other) const;

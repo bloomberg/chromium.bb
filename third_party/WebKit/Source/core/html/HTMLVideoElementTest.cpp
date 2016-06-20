@@ -14,8 +14,6 @@
 #include "public/platform/WebSize.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -66,9 +64,9 @@ public:
         return new StubFrameLoaderClient;
     }
 
-    std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebMediaPlayerSource&, WebMediaPlayerClient*) override
+    PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebMediaPlayerSource&, WebMediaPlayerClient*) override
     {
-        return wrapUnique(new MockWebMediaPlayer);
+        return adoptPtr(new MockWebMediaPlayer);
     }
 };
 
@@ -95,7 +93,7 @@ protected:
         return static_cast<MockWebMediaPlayer*>(m_video->webMediaPlayer());
     }
 
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
     Persistent<HTMLVideoElement> m_video;
 };
 

@@ -53,9 +53,9 @@
 #include "core/xml/XPathResult.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace blink {
 
@@ -79,7 +79,7 @@ MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 
 MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
     : ThreadDebugger(isolate)
-    , m_taskRunner(wrapUnique(new InspectorTaskRunner()))
+    , m_taskRunner(adoptPtr(new InspectorTaskRunner()))
 {
     MutexLocker locker(creationMutex());
     ASSERT(!s_instance);
@@ -93,7 +93,7 @@ MainThreadDebugger::~MainThreadDebugger()
     s_instance = nullptr;
 }
 
-void MainThreadDebugger::setClientMessageLoop(std::unique_ptr<ClientMessageLoop> clientMessageLoop)
+void MainThreadDebugger::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> clientMessageLoop)
 {
     ASSERT(!m_clientMessageLoop);
     ASSERT(clientMessageLoop);

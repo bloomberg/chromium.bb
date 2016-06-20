@@ -224,7 +224,7 @@ bool ThemePainterMac::paintProgressBar(const LayoutObject& layoutObject, const P
     trackInfo.reserved = 0;
     trackInfo.filler1 = 0;
 
-    std::unique_ptr<ImageBuffer> imageBuffer = ImageBuffer::create(inflatedRect.size());
+    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(inflatedRect.size());
     if (!imageBuffer)
         return true;
 

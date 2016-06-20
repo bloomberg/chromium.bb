@@ -12,6 +12,7 @@
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8InspectorSessionClient.h"
 #include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 

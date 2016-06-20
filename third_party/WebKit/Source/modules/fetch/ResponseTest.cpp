@@ -17,13 +17,11 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 namespace {
 
-std::unique_ptr<WebServiceWorkerResponse> createTestWebServiceWorkerResponse()
+PassOwnPtr<WebServiceWorkerResponse> createTestWebServiceWorkerResponse()
 {
     const KURL url(ParsedURLString, "http://www.webresponse.com/");
     const unsigned short status = 200;
@@ -33,7 +31,7 @@ std::unique_ptr<WebServiceWorkerResponse> createTestWebServiceWorkerResponse()
         const char* value;
     } headers[] = { { "cache-control", "no-cache" }, { "set-cookie", "foop" }, { "foo", "bar" }, { 0, 0 } };
 
-    std::unique_ptr<WebServiceWorkerResponse> webResponse = wrapUnique(new WebServiceWorkerResponse());
+    OwnPtr<WebServiceWorkerResponse> webResponse = adoptPtr(new WebServiceWorkerResponse());
     webResponse->setURL(url);
     webResponse->setStatus(status);
     webResponse->setStatusText(statusText);
@@ -52,7 +50,7 @@ public:
     ExecutionContext* getExecutionContext() { return getScriptState()->getExecutionContext(); }
 
 private:
-    std::unique_ptr<DummyPageHolder> m_page;
+    OwnPtr<DummyPageHolder> m_page;
 };
 
 
@@ -70,7 +68,7 @@ TEST_F(ServiceWorkerResponseTest, FromFetchResponseData)
 
 TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponse)
 {
-    std::unique_ptr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
+    OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     Response* response = Response::create(getScriptState(), *webResponse);
     ASSERT(response);
     EXPECT_EQ(webResponse->url(), response->url());
@@ -91,7 +89,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponse)
 
 TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseDefault)
 {
-    std::unique_ptr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
+    OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeDefault);
     Response* response = Response::create(getScriptState(), *webResponse);
 
@@ -105,7 +103,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseDefault)
 
 TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseBasic)
 {
-    std::unique_ptr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
+    OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeBasic);
     Response* response = Response::create(getScriptState(), *webResponse);
 
@@ -119,7 +117,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseBasic)
 
 TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseCORS)
 {
-    std::unique_ptr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
+    OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeCORS);
     Response* response = Response::create(getScriptState(), *webResponse);
 
@@ -133,7 +131,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseCORS)
 
 TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseOpaque)
 {
-    std::unique_ptr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
+    OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeOpaque);
     Response* response = Response::create(getScriptState(), *webResponse);
 
@@ -189,7 +187,7 @@ void checkResponseStream(ScriptState* scriptState, Response* response, bool chec
 BodyStreamBuffer* createHelloWorldBuffer(ScriptState* scriptState)
 {
     using Command = DataConsumerHandleTestUtil::Command;
-    std::unique_ptr<DataConsumerHandleTestUtil::ReplayingHandle> src(DataConsumerHandleTestUtil::ReplayingHandle::create());
+    OwnPtr<DataConsumerHandleTestUtil::ReplayingHandle> src(DataConsumerHandleTestUtil::ReplayingHandle::create());
     src->add(Command(Command::Data, "Hello, "));
     src->add(Command(Command::Data, "world"));
     src->add(Command(Command::Done));

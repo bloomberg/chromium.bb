@@ -40,7 +40,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -59,7 +58,7 @@ protected:
     void setHtmlInnerHTML(const char*);
 
 private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };
 
 void DocumentTest::SetUp()

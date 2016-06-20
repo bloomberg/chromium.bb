@@ -40,7 +40,8 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebSize.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 class WebLayerTreeView;
@@ -247,15 +248,15 @@ private:
     }
 
     Member<FrameHost> m_frameHost;
-    std::unique_ptr<GraphicsLayer> m_rootTransformLayer;
-    std::unique_ptr<GraphicsLayer> m_innerViewportContainerLayer;
-    std::unique_ptr<GraphicsLayer> m_overscrollElasticityLayer;
-    std::unique_ptr<GraphicsLayer> m_pageScaleLayer;
-    std::unique_ptr<GraphicsLayer> m_innerViewportScrollLayer;
-    std::unique_ptr<GraphicsLayer> m_overlayScrollbarHorizontal;
-    std::unique_ptr<GraphicsLayer> m_overlayScrollbarVertical;
-    std::unique_ptr<WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
-    std::unique_ptr<WebScrollbarLayer> m_webOverlayScrollbarVertical;
+    OwnPtr<GraphicsLayer> m_rootTransformLayer;
+    OwnPtr<GraphicsLayer> m_innerViewportContainerLayer;
+    OwnPtr<GraphicsLayer> m_overscrollElasticityLayer;
+    OwnPtr<GraphicsLayer> m_pageScaleLayer;
+    OwnPtr<GraphicsLayer> m_innerViewportScrollLayer;
+    OwnPtr<GraphicsLayer> m_overlayScrollbarHorizontal;
+    OwnPtr<GraphicsLayer> m_overlayScrollbarVertical;
+    OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
+    OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarVertical;
 
     // Offset of the visual viewport from the main frame's origin, in CSS pixels.
     FloatPoint m_offset;

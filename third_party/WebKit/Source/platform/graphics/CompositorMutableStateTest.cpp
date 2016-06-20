@@ -16,6 +16,7 @@
 #include "platform/graphics/CompositorMutableStateProvider.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 #include <memory>
 
 namespace blink {

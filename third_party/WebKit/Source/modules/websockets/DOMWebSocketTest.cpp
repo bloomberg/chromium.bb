@@ -18,10 +18,10 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 #include <v8.h>
 
 using testing::_;
@@ -52,19 +52,19 @@ public:
     MOCK_METHOD3(send, void(const DOMArrayBuffer&, unsigned, unsigned));
     MOCK_METHOD1(send, void(PassRefPtr<BlobDataHandle>));
     MOCK_METHOD1(sendTextAsCharVectorMock, void(Vector<char>*));
-    void sendTextAsCharVector(std::unique_ptr<Vector<char>> vector)
+    void sendTextAsCharVector(PassOwnPtr<Vector<char>> vector)
     {
         sendTextAsCharVectorMock(vector.get());
     }
     MOCK_METHOD1(sendBinaryAsCharVectorMock, void(Vector<char>*));
-    void sendBinaryAsCharVector(std::unique_ptr<Vector<char>> vector)
+    void sendBinaryAsCharVector(PassOwnPtr<Vector<char>> vector)
     {
         sendBinaryAsCharVectorMock(vector.get());
     }
     MOCK_CONST_METHOD0(bufferedAmount, unsigned());
     MOCK_METHOD2(close, void(int, const String&));
     MOCK_METHOD3(failMock, void(const String&, MessageLevel, SourceLocation*));
-    void fail(const String& reason, MessageLevel level, std::unique_ptr<SourceLocation> location)
+    void fail(const String& reason, MessageLevel level, PassOwnPtr<SourceLocation> location)
     {
         failMock(reason, level, location.get());
     }

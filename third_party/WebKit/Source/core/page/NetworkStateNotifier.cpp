@@ -30,7 +30,6 @@
 #include "core/page/Page.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 
@@ -74,7 +73,7 @@ void NetworkStateNotifier::addObserver(NetworkStateObserver* observer, Execution
     MutexLocker locker(m_mutex);
     ObserverListMap::AddResult result = m_observers.add(context, nullptr);
     if (result.isNewEntry)
-        result.storedValue->value = wrapUnique(new ObserverList);
+        result.storedValue->value = adoptPtr(new ObserverList);
 
     ASSERT(result.storedValue->value->observers.find(observer) == kNotFound);
     result.storedValue->value->observers.append(observer);

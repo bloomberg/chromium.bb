@@ -8,21 +8,19 @@
 #include "core/animation/Timing.h"
 #include "core/animation/css/CSSTimingData.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
 class CSSAnimationData final : public CSSTimingData {
 public:
-    static std::unique_ptr<CSSAnimationData> create()
+    static PassOwnPtr<CSSAnimationData> create()
     {
-        return wrapUnique(new CSSAnimationData);
+        return adoptPtr(new CSSAnimationData);
     }
 
-    static std::unique_ptr<CSSAnimationData> create(const CSSAnimationData& animationData)
+    static PassOwnPtr<CSSAnimationData> create(const CSSAnimationData& animationData)
     {
-        return wrapUnique(new CSSAnimationData(animationData));
+        return adoptPtr(new CSSAnimationData(animationData));
     }
 
     bool animationsMatchForStyleRecalc(const CSSAnimationData& other) const;

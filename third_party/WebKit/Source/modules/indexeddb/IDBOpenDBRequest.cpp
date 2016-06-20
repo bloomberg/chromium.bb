@@ -33,7 +33,6 @@
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
-#include <memory>
 
 using blink::WebIDBDatabase;
 
@@ -79,11 +78,11 @@ void IDBOpenDBRequest::onBlocked(int64_t oldVersion)
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::blocked, oldVersion, newVersionNullable));
 }
 
-void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, std::unique_ptr<WebIDBDatabase> backend, const IDBDatabaseMetadata& metadata, WebIDBDataLoss dataLoss, String dataLossMessage)
+void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase> backend, const IDBDatabaseMetadata& metadata, WebIDBDataLoss dataLoss, String dataLossMessage)
 {
     IDB_TRACE("IDBOpenDBRequest::onUpgradeNeeded()");
     if (m_contextStopped || !getExecutionContext()) {
-        std::unique_ptr<WebIDBDatabase> db = std::move(backend);
+        OwnPtr<WebIDBDatabase> db = std::move(backend);
         db->abort(m_transactionId);
         db->close();
         return;
@@ -111,11 +110,11 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, std::unique_ptr<WebID
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::upgradeneeded, oldVersion, m_version, dataLoss, dataLossMessage));
 }
 
-void IDBOpenDBRequest::onSuccess(std::unique_ptr<WebIDBDatabase> backend, const IDBDatabaseMetadata& metadata)
+void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDatabaseMetadata& metadata)
 {
     IDB_TRACE("IDBOpenDBRequest::onSuccess()");
     if (m_contextStopped || !getExecutionContext()) {
-        std::unique_ptr<WebIDBDatabase> db = std::move(backend);
+        OwnPtr<WebIDBDatabase> db = std::move(backend);
         if (db)
             db->close();
         return;

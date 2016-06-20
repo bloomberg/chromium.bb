@@ -13,7 +13,6 @@
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "platform/AsyncMethodRunner.h"
-#include <memory>
 
 namespace blink {
 
@@ -65,7 +64,7 @@ private:
     void onServiceConnectionError();
 
     Member<MediaStreamTrack> m_streamTrack;
-    std::unique_ptr<WebImageCaptureFrameGrabber> m_frameGrabber;
+    OwnPtr<WebImageCaptureFrameGrabber> m_frameGrabber;
     media::mojom::blink::ImageCapturePtr m_service;
 
     HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;

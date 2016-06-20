@@ -33,8 +33,9 @@
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "web/WebExport.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -58,7 +59,7 @@ public:
         virtual ~Delegate() { }
     };
 
-    static std::unique_ptr<PageOverlay> create(WebViewImpl*, PageOverlay::Delegate*);
+    static PassOwnPtr<PageOverlay> create(WebViewImpl*, PageOverlay::Delegate*);
 
     ~PageOverlay();
 
@@ -82,7 +83,7 @@ private:
 
     WebViewImpl* m_viewImpl;
     Persistent<PageOverlay::Delegate> m_delegate;
-    std::unique_ptr<GraphicsLayer> m_layer;
+    OwnPtr<GraphicsLayer> m_layer;
 };
 
 } // namespace blink

@@ -33,7 +33,6 @@
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -72,7 +71,7 @@ private:
     bool m_hasCallback;
     bool m_hasErrorCallback;
 
-    std::unique_ptr<SQLErrorData> m_error;
+    OwnPtr<SQLErrorData> m_error;
     Member<SQLResultSet> m_resultSet;
 
     int m_permissions;

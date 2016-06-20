@@ -39,9 +39,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebString.h"
 #include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 
@@ -81,7 +79,7 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
             return;
         }
     }
-    std::unique_ptr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -89,16 +87,16 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
         getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "MessagePort cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/334408"));
 
     WebString messageString = message->toWireString();
-    std::unique_ptr<WebMessagePortChannelArray> webChannels = toWebMessagePortChannelArray(std::move(channels));
-    m_entangledChannel->postMessage(messageString, webChannels.release());
+    OwnPtr<WebMessagePortChannelArray> webChannels = toWebMessagePortChannelArray(std::move(channels));
+    m_entangledChannel->postMessage(messageString, webChannels.leakPtr());
 }
 
 // static
-std::unique_ptr<WebMessagePortChannelArray> MessagePort::toWebMessagePortChannelArray(std::unique_ptr<MessagePortChannelArray> channels)
+PassOwnPtr<WebMessagePortChannelArray> MessagePort::toWebMessagePortChannelArray(PassOwnPtr<MessagePortChannelArray> channels)
 {
-    std::unique_ptr<WebMessagePortChannelArray> webChannels;
+    OwnPtr<WebMessagePortChannelArray> webChannels;
     if (channels && channels->size()) {
-        webChannels = wrapUnique(new WebMessagePortChannelArray(channels->size()));
+        webChannels = adoptPtr(new WebMessagePortChannelArray(channels->size()));
         for (size_t i = 0; i < channels->size(); ++i)
             (*webChannels)[i] = (*channels)[i].release();
     }
@@ -108,7 +106,7 @@ std::unique_ptr<WebMessagePortChannelArray> MessagePort::toWebMessagePortChannel
 // static
 MessagePortArray* MessagePort::toMessagePortArray(ExecutionContext* context, const WebMessagePortChannelArray& webChannels)
 {
-    std::unique_ptr<MessagePortChannelArray> channels = wrapUnique(new MessagePortChannelArray(webChannels.size()));
+    OwnPtr<MessagePortChannelArray> channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
     for (size_t i = 0; i < webChannels.size(); ++i)
         (*channels)[i] = WebMessagePortChannelUniquePtr(webChannels[i]);
     return MessagePort::entanglePorts(*context, std::move(channels));
@@ -165,7 +163,7 @@ const AtomicString& MessagePort::interfaceName() const
     return EventTargetNames::MessagePort;
 }
 
-static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<SerializedScriptValue>& message, std::unique_ptr<MessagePortChannelArray>& channels)
+static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<SerializedScriptValue>& message, OwnPtr<MessagePortChannelArray>& channels)
 {
     WebString messageString;
     WebMessagePortChannelArray webChannels;
@@ -173,7 +171,7 @@ static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<Serializ
         return false;
 
     if (webChannels.size()) {
-        channels = wrapUnique(new MessagePortChannelArray(webChannels.size()));
+        channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
         for (size_t i = 0; i < webChannels.size(); ++i)
             (*channels)[i] = WebMessagePortChannelUniquePtr(webChannels[i]);
     }
@@ -181,7 +179,7 @@ static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<Serializ
     return true;
 }
 
-bool MessagePort::tryGetMessage(RefPtr<SerializedScriptValue>& message, std::unique_ptr<MessagePortChannelArray>& channels)
+bool MessagePort::tryGetMessage(RefPtr<SerializedScriptValue>& message, OwnPtr<MessagePortChannelArray>& channels)
 {
     if (!m_entangledChannel)
         return false;
@@ -200,7 +198,7 @@ void MessagePort::dispatchMessages()
         return;
 
     RefPtr<SerializedScriptValue> message;
-    std::unique_ptr<MessagePortChannelArray> channels;
+    OwnPtr<MessagePortChannelArray> channels;
     while (tryGetMessage(message, channels)) {
         // close() in Worker onmessage handler should prevent next message from dispatching.
         if (getExecutionContext()->isWorkerGlobalScope() && toWorkerGlobalScope(getExecutionContext())->isClosing())
@@ -220,7 +218,7 @@ bool MessagePort::hasPendingActivity() const
     return m_started && isEntangled();
 }
 
-std::unique_ptr<MessagePortChannelArray> MessagePort::disentanglePorts(ExecutionContext* context, const MessagePortArray& ports, ExceptionState& exceptionState)
+PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(ExecutionContext* context, const MessagePortArray& ports, ExceptionState& exceptionState)
 {
     if (!ports.size())
         return nullptr;
@@ -247,13 +245,13 @@ std::unique_ptr<MessagePortChannelArray> MessagePort::disentanglePorts(Execution
     UseCounter::count(context, UseCounter::MessagePortsTransferred);
 
     // Passed-in ports passed validity checks, so we can disentangle them.
-    std::unique_ptr<MessagePortChannelArray> portArray = wrapUnique(new MessagePortChannelArray(ports.size()));
+    OwnPtr<MessagePortChannelArray> portArray = adoptPtr(new MessagePortChannelArray(ports.size()));
     for (unsigned i = 0; i < ports.size(); ++i)
         (*portArray)[i] = ports[i]->disentangle();
     return portArray;
 }
 
-MessagePortArray* MessagePort::entanglePorts(ExecutionContext& context, std::unique_ptr<MessagePortChannelArray> channels)
+MessagePortArray* MessagePort::entanglePorts(ExecutionContext& context, PassOwnPtr<MessagePortChannelArray> channels)
 {
     // https://html.spec.whatwg.org/multipage/comms.html#message-ports
     // |ports| should be an empty array, not null even when there is no ports.

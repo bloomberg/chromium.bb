@@ -23,9 +23,9 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -162,7 +162,7 @@ protected:
     v8::Isolate* isolate() { return v8::Isolate::GetCurrent(); }
     ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
 
-    void provide(std::unique_ptr<WebServiceWorkerProvider> provider)
+    void provide(PassOwnPtr<WebServiceWorkerProvider> provider)
     {
         Supplement<Document>::provideTo(m_page->document(), ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(std::move(provider)));
     }
@@ -180,7 +180,7 @@ protected:
     {
         // When the registration is rejected, a register call must not reach
         // the provider.
-        provide(wrapUnique(new NotReachedWebServiceWorkerProvider()));
+        provide(adoptPtr(new NotReachedWebServiceWorkerProvider()));
 
         ServiceWorkerContainer* container = ServiceWorkerContainer::create(getExecutionContext());
         ScriptState::Scope scriptScope(getScriptState());
@@ -194,7 +194,7 @@ protected:
 
     void testGetRegistrationRejected(const String& documentURL, const ScriptValueTest& valueTest)
     {
-        provide(wrapUnique(new NotReachedWebServiceWorkerProvider()));
+        provide(adoptPtr(new NotReachedWebServiceWorkerProvider()));
 
         ServiceWorkerContainer* container = ServiceWorkerContainer::create(getExecutionContext());
         ScriptState::Scope scriptScope(getScriptState());
@@ -205,7 +205,7 @@ protected:
     }
 
 private:
-    std::unique_ptr<DummyPageHolder> m_page;
+    OwnPtr<DummyPageHolder> m_page;
 };
 
 TEST_F(ServiceWorkerContainerTest, Register_NonSecureOriginIsRejected)
@@ -263,9 +263,9 @@ public:
     // StubWebServiceWorkerProvider, but |registerServiceWorker| and
     // other methods must not be called after the
     // StubWebServiceWorkerProvider dies.
-    std::unique_ptr<WebServiceWorkerProvider> provider()
+    PassOwnPtr<WebServiceWorkerProvider> provider()
     {
-        return wrapUnique(new WebServiceWorkerProviderImpl(*this));
+        return adoptPtr(new WebServiceWorkerProviderImpl(*this));
     }
 
     size_t registerCallCount() { return m_registerCallCount; }
@@ -289,14 +289,14 @@ private:
             m_owner.m_registerCallCount++;
             m_owner.m_registerScope = pattern;
             m_owner.m_registerScriptURL = scriptURL;
-            m_registrationCallbacksToDelete.append(wrapUnique(callbacks));
+            m_registrationCallbacksToDelete.append(adoptPtr(callbacks));
         }
 
         void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks* callbacks) override
         {
             m_owner.m_getRegistrationCallCount++;
             m_owner.m_getRegistrationURL = documentURL;
-            m_getRegistrationCallbacksToDelete.append(wrapUnique(callbacks));
+            m_getRegistrationCallbacksToDelete.append(adoptPtr(callbacks));
         }
 
         bool validateScopeAndScriptURL(const WebURL& scope, const WebURL& scriptURL, WebString* errorMessage)
@@ -306,8 +306,8 @@ private:
 
     private:
         StubWebServiceWorkerProvider& m_owner;
-        Vector<std::unique_ptr<WebServiceWorkerRegistrationCallbacks>> m_registrationCallbacksToDelete;
-        Vector<std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks>> m_getRegistrationCallbacksToDelete;
+        Vector<OwnPtr<WebServiceWorkerRegistrationCallbacks>> m_registrationCallbacksToDelete;
+        Vector<OwnPtr<WebServiceWorkerGetRegistrationCallbacks>> m_getRegistrationCallbacksToDelete;
     };
 
 private:

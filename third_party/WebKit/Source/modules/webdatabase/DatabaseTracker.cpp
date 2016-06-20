@@ -88,7 +88,7 @@ void DatabaseTracker::addOpenDatabase(Database* database)
 {
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
     if (!m_openDatabaseMap)
-        m_openDatabaseMap = wrapUnique(new DatabaseOriginMap);
+        m_openDatabaseMap = adoptPtr(new DatabaseOriginMap);
 
     String originString = database->getSecurityOrigin()->toRawString();
     DatabaseNameMap* nameMap = m_openDatabaseMap->get(originString);

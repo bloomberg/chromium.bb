@@ -10,16 +10,15 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
-#include <memory>
 
 namespace blink {
 
-ServiceWorkerContainerClient* ServiceWorkerContainerClient::create(std::unique_ptr<WebServiceWorkerProvider> provider)
+ServiceWorkerContainerClient* ServiceWorkerContainerClient::create(PassOwnPtr<WebServiceWorkerProvider> provider)
 {
     return new ServiceWorkerContainerClient(std::move(provider));
 }
 
-ServiceWorkerContainerClient::ServiceWorkerContainerClient(std::unique_ptr<WebServiceWorkerProvider> provider)
+ServiceWorkerContainerClient::ServiceWorkerContainerClient(PassOwnPtr<WebServiceWorkerProvider> provider)
     : m_provider(std::move(provider))
 {
 }
@@ -52,7 +51,7 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(ExecutionContex
     return client;
 }
 
-void provideServiceWorkerContainerClientToWorker(WorkerClients* clients, std::unique_ptr<WebServiceWorkerProvider> provider)
+void provideServiceWorkerContainerClientToWorker(WorkerClients* clients, PassOwnPtr<WebServiceWorkerProvider> provider)
 {
     clients->provideSupplement(ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(std::move(provider)));
 }

@@ -16,8 +16,6 @@
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 namespace {
@@ -63,7 +61,7 @@ protected:
     void SetUp() override
     {
         m_mockClient = new MockServiceWorkerContextClient();
-        m_worker = wrapUnique(WebEmbeddedWorker::create(m_mockClient, nullptr));
+        m_worker = adoptPtr(WebEmbeddedWorker::create(m_mockClient, nullptr));
 
         WebURL scriptURL = URLTestHelpers::toKURL("https://www.example.com/sw.js");
         WebURLResponse response;
@@ -87,7 +85,7 @@ protected:
 
     WebEmbeddedWorkerStartData m_startData;
     MockServiceWorkerContextClient* m_mockClient;
-    std::unique_ptr<WebEmbeddedWorker> m_worker;
+    OwnPtr<WebEmbeddedWorker> m_worker;
 };
 
 } // namespace

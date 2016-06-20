@@ -35,6 +35,7 @@
 #include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

@@ -29,7 +29,6 @@
 #include "core/css/parser/CSSParserSelector.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace {
     // CSSSelector is one of the top types that consume renderer memory,
@@ -53,7 +52,7 @@ CSSSelectorList CSSSelectorList::copy() const
     return list;
 }
 
-CSSSelectorList CSSSelectorList::adoptSelectorVector(Vector<std::unique_ptr<CSSParserSelector>>& selectorVector)
+CSSSelectorList CSSSelectorList::adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector)
 {
     size_t flattenedSize = 0;
     for (size_t i = 0; i < selectorVector.size(); ++i) {
@@ -69,7 +68,7 @@ CSSSelectorList CSSSelectorList::adoptSelectorVector(Vector<std::unique_ptr<CSSP
         CSSParserSelector* current = selectorVector[i].get();
         while (current) {
             // Move item from the parser selector vector into m_selectorArray without invoking destructor (Ugh.)
-            CSSSelector* currentSelector = current->releaseSelector().release();
+            CSSSelector* currentSelector = current->releaseSelector().leakPtr();
             memcpy(&list.m_selectorArray[arrayIndex], currentSelector, sizeof(CSSSelector));
             WTF::Partitions::fastFree(currentSelector);
 

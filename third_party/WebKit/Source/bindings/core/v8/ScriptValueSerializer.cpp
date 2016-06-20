@@ -29,7 +29,6 @@
 #include "wtf/DateMath.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringUTF8Adaptor.h"
-#include <memory>
 
 // FIXME: consider crashing in debug mode on deserialization errors
 // NOTE: be sure to change wireFormatVersion as necessary!
@@ -1107,7 +1106,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyImageBitmap
         m_writer.writeTransferredImageBitmap(index);
     } else {
         greyObject(object);
-        std::unique_ptr<uint8_t[]> pixelData = imageBitmap->copyBitmapData(PremultiplyAlpha);
+        OwnPtr<uint8_t[]> pixelData = imageBitmap->copyBitmapData(PremultiplyAlpha);
         m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), pixelData.get(), imageBitmap->width() * imageBitmap->height() * 4);
     }
     return nullptr;

@@ -6,6 +6,7 @@
 
 #include "public/platform/modules/push_messaging/WebPushClient.h"
 #include "wtf/Assertions.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

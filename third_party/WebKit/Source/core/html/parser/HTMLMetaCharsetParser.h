@@ -29,10 +29,8 @@
 #include "core/html/parser/HTMLToken.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
-#include <memory>
 
 namespace blink {
 
@@ -41,7 +39,7 @@ class HTMLTokenizer;
 class HTMLMetaCharsetParser {
     WTF_MAKE_NONCOPYABLE(HTMLMetaCharsetParser); USING_FAST_MALLOC(HTMLMetaCharsetParser);
 public:
-    static std::unique_ptr<HTMLMetaCharsetParser> create() { return wrapUnique(new HTMLMetaCharsetParser()); }
+    static PassOwnPtr<HTMLMetaCharsetParser> create() { return adoptPtr(new HTMLMetaCharsetParser()); }
 
     ~HTMLMetaCharsetParser();
 
@@ -55,8 +53,8 @@ private:
 
     bool processMeta();
 
-    std::unique_ptr<HTMLTokenizer> m_tokenizer;
-    std::unique_ptr<TextCodec> m_assumedCodec;
+    OwnPtr<HTMLTokenizer> m_tokenizer;
+    OwnPtr<TextCodec> m_assumedCodec;
     SegmentedString m_input;
     HTMLToken m_token;
     bool m_inHeadSection;

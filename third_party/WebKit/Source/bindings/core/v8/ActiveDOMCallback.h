@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 

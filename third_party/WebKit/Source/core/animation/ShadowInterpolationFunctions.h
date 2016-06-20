@@ -7,7 +7,6 @@
 
 #include "core/animation/InterpolationValue.h"
 #include "core/animation/PairwiseInterpolationValue.h"
-#include <memory>
 
 namespace blink {
 
@@ -19,10 +18,10 @@ class ShadowInterpolationFunctions {
 public:
     static InterpolationValue convertShadowData(const ShadowData&, double zoom);
     static InterpolationValue maybeConvertCSSValue(const CSSValue&);
-    static std::unique_ptr<InterpolableValue> createNeutralInterpolableValue();
+    static PassOwnPtr<InterpolableValue> createNeutralInterpolableValue();
     static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*, const NonInterpolableValue*);
     static PairwiseInterpolationValue maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end);
-    static void composite(std::unique_ptr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
+    static void composite(OwnPtr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
     static ShadowData createShadowData(const InterpolableValue&, const NonInterpolableValue*, const StyleResolverState&);
 };
 

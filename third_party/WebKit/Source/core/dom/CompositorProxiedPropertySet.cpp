@@ -4,14 +4,13 @@
 
 #include "core/dom/CompositorProxiedPropertySet.h"
 
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-std::unique_ptr<CompositorProxiedPropertySet> CompositorProxiedPropertySet::create()
+PassOwnPtr<CompositorProxiedPropertySet> CompositorProxiedPropertySet::create()
 {
-    return wrapUnique(new CompositorProxiedPropertySet);
+    return adoptPtr(new CompositorProxiedPropertySet);
 }
 
 CompositorProxiedPropertySet::CompositorProxiedPropertySet()

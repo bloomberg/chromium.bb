@@ -8,7 +8,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorMutatorClient.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -30,12 +31,12 @@ public:
 
     CompositorMutator* mutator() { return m_mutator.get(); }
 
-    void setMutationsForTesting(std::unique_ptr<CompositorMutations>);
+    void setMutationsForTesting(PassOwnPtr<CompositorMutations>);
 private:
     cc::LayerTreeMutatorClient* m_client;
     CompositorMutationsTarget* m_mutationsTarget;
     Persistent<CompositorMutator> m_mutator;
-    std::unique_ptr<CompositorMutations> m_mutations;
+    OwnPtr<CompositorMutations> m_mutations;
 };
 
 } // namespace blink

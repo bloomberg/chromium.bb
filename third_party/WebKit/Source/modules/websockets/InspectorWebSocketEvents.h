@@ -11,7 +11,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
-#include <memory>
 
 namespace blink {
 
@@ -21,13 +20,13 @@ class KURL;
 class InspectorWebSocketCreateEvent {
     STATIC_ONLY(InspectorWebSocketCreateEvent);
 public:
-    static std::unique_ptr<TracedValue> data(Document*, unsigned long identifier, const KURL&, const String& protocol);
+    static PassOwnPtr<TracedValue> data(Document*, unsigned long identifier, const KURL&, const String& protocol);
 };
 
 class InspectorWebSocketEvent {
     STATIC_ONLY(InspectorWebSocketEvent);
 public:
-    static std::unique_ptr<TracedValue> data(Document*, unsigned long identifier);
+    static PassOwnPtr<TracedValue> data(Document*, unsigned long identifier);
 };
 
 } // namespace blink

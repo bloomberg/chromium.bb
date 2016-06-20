@@ -26,6 +26,8 @@
 #include "core/dom/NodeListsNodeData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

@@ -38,7 +38,6 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -86,7 +85,7 @@ private:
 
     Mutex m_openDatabaseMapGuard;
 
-    mutable std::unique_ptr<DatabaseOriginMap> m_openDatabaseMap;
+    mutable OwnPtr<DatabaseOriginMap> m_openDatabaseMap;
 };
 
 } // namespace blink

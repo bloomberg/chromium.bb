@@ -13,7 +13,6 @@
 #include "core/animation/UnderlyingValueOwner.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
-#include <memory>
 
 namespace blink {
 
@@ -47,7 +46,7 @@ public:
         { }
         const InterpolationType* m_type;
     };
-    using ConversionCheckers = Vector<std::unique_ptr<ConversionChecker>>;
+    using ConversionCheckers = Vector<OwnPtr<ConversionChecker>>;
 
     virtual PairwiseInterpolationValue maybeConvertPairwise(const PropertySpecificKeyframe& startKeyframe, const PropertySpecificKeyframe& endKeyframe, const InterpolationEnvironment& environment, const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
     {

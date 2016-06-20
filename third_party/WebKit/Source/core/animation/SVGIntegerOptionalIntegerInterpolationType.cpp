@@ -6,13 +6,12 @@
 
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/svg/SVGIntegerOptionalInteger.h"
-#include <memory>
 
 namespace blink {
 
 InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(0));
     result->set(1, InterpolableNumber::create(0));
     return InterpolationValue(std::move(result));
@@ -24,7 +23,7 @@ InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertSVGVa
         return nullptr;
 
     const SVGIntegerOptionalInteger& integerOptionalInteger = toSVGIntegerOptionalInteger(svgValue);
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(integerOptionalInteger.firstInteger()->value()));
     result->set(1, InterpolableNumber::create(integerOptionalInteger.secondInteger()->value()));
     return InterpolationValue(std::move(result));

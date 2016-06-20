@@ -10,7 +10,6 @@
 #include "bindings/core/v8/V8PrivateScriptTest.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 // PrivateScriptTest.js is available only in debug builds.
 #ifndef NDEBUG

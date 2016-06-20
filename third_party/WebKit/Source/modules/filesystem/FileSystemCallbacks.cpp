@@ -51,8 +51,6 @@
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/FileMetadata.h"
 #include "public/platform/WebFileWriter.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -106,9 +104,9 @@ void FileSystemCallbacksBase::handleEventOrScheduleCallback(CB* callback)
 
 // EntryCallbacks -------------------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> EntryCallbacks::create(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem, const String& expectedPath, bool isDirectory)
+PassOwnPtr<AsyncFileSystemCallbacks> EntryCallbacks::create(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem, const String& expectedPath, bool isDirectory)
 {
-    return wrapUnique(new EntryCallbacks(successCallback, errorCallback, context, fileSystem, expectedPath, isDirectory));
+    return adoptPtr(new EntryCallbacks(successCallback, errorCallback, context, fileSystem, expectedPath, isDirectory));
 }
 
 EntryCallbacks::EntryCallbacks(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem, const String& expectedPath, bool isDirectory)
@@ -131,9 +129,9 @@ void EntryCallbacks::didSucceed()
 
 // EntriesCallbacks -----------------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> EntriesCallbacks::create(EntriesCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DirectoryReaderBase* directoryReader, const String& basePath)
+PassOwnPtr<AsyncFileSystemCallbacks> EntriesCallbacks::create(EntriesCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DirectoryReaderBase* directoryReader, const String& basePath)
 {
-    return wrapUnique(new EntriesCallbacks(successCallback, errorCallback, context, directoryReader, basePath));
+    return adoptPtr(new EntriesCallbacks(successCallback, errorCallback, context, directoryReader, basePath));
 }
 
 EntriesCallbacks::EntriesCallbacks(EntriesCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DirectoryReaderBase* directoryReader, const String& basePath)
@@ -165,9 +163,9 @@ void EntriesCallbacks::didReadDirectoryEntries(bool hasMore)
 
 // FileSystemCallbacks --------------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> FileSystemCallbacks::create(FileSystemCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, FileSystemType type)
+PassOwnPtr<AsyncFileSystemCallbacks> FileSystemCallbacks::create(FileSystemCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, FileSystemType type)
 {
-    return wrapUnique(new FileSystemCallbacks(successCallback, errorCallback, context, type));
+    return adoptPtr(new FileSystemCallbacks(successCallback, errorCallback, context, type));
 }
 
 FileSystemCallbacks::FileSystemCallbacks(FileSystemCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, FileSystemType type)
@@ -185,9 +183,9 @@ void FileSystemCallbacks::didOpenFileSystem(const String& name, const KURL& root
 
 // ResolveURICallbacks --------------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> ResolveURICallbacks::create(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
+PassOwnPtr<AsyncFileSystemCallbacks> ResolveURICallbacks::create(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
 {
-    return wrapUnique(new ResolveURICallbacks(successCallback, errorCallback, context));
+    return adoptPtr(new ResolveURICallbacks(successCallback, errorCallback, context));
 }
 
 ResolveURICallbacks::ResolveURICallbacks(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
@@ -215,9 +213,9 @@ void ResolveURICallbacks::didResolveURL(const String& name, const KURL& rootURL,
 
 // MetadataCallbacks ----------------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> MetadataCallbacks::create(MetadataCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
+PassOwnPtr<AsyncFileSystemCallbacks> MetadataCallbacks::create(MetadataCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
 {
-    return wrapUnique(new MetadataCallbacks(successCallback, errorCallback, context, fileSystem));
+    return adoptPtr(new MetadataCallbacks(successCallback, errorCallback, context, fileSystem));
 }
 
 MetadataCallbacks::MetadataCallbacks(MetadataCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
@@ -234,9 +232,9 @@ void MetadataCallbacks::didReadMetadata(const FileMetadata& metadata)
 
 // FileWriterBaseCallbacks ----------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::create(FileWriterBase* fileWriter, FileWriterBaseCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
+PassOwnPtr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::create(FileWriterBase* fileWriter, FileWriterBaseCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
 {
-    return wrapUnique(new FileWriterBaseCallbacks(fileWriter, successCallback, errorCallback, context));
+    return adoptPtr(new FileWriterBaseCallbacks(fileWriter, successCallback, errorCallback, context));
 }
 
 FileWriterBaseCallbacks::FileWriterBaseCallbacks(FileWriterBase* fileWriter, FileWriterBaseCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
@@ -246,7 +244,7 @@ FileWriterBaseCallbacks::FileWriterBaseCallbacks(FileWriterBase* fileWriter, Fil
 {
 }
 
-void FileWriterBaseCallbacks::didCreateFileWriter(std::unique_ptr<WebFileWriter> fileWriter, long long length)
+void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<WebFileWriter> fileWriter, long long length)
 {
     m_fileWriter->initialize(std::move(fileWriter), length);
     if (m_successCallback)
@@ -255,9 +253,9 @@ void FileWriterBaseCallbacks::didCreateFileWriter(std::unique_ptr<WebFileWriter>
 
 // SnapshotFileCallback -------------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> SnapshotFileCallback::create(DOMFileSystemBase* filesystem, const String& name, const KURL& url, BlobCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
+PassOwnPtr<AsyncFileSystemCallbacks> SnapshotFileCallback::create(DOMFileSystemBase* filesystem, const String& name, const KURL& url, BlobCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
 {
-    return wrapUnique(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback, context));
+    return adoptPtr(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback, context));
 }
 
 SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem, const String& name, const KURL& url, BlobCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
@@ -283,9 +281,9 @@ void SnapshotFileCallback::didCreateSnapshotFile(const FileMetadata& metadata, P
 
 // VoidCallbacks --------------------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> VoidCallbacks::create(VoidCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
+PassOwnPtr<AsyncFileSystemCallbacks> VoidCallbacks::create(VoidCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
 {
-    return wrapUnique(new VoidCallbacks(successCallback, errorCallback, context, fileSystem));
+    return adoptPtr(new VoidCallbacks(successCallback, errorCallback, context, fileSystem));
 }
 
 VoidCallbacks::VoidCallbacks(VoidCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)

@@ -26,22 +26,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "platform/audio/Panner.h"
 #include "platform/audio/EqualPowerPanner.h"
 #include "platform/audio/HRTFPanner.h"
-#include "platform/audio/Panner.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<Panner> Panner::create(PanningModel model, float sampleRate, HRTFDatabaseLoader* databaseLoader)
+PassOwnPtr<Panner> Panner::create(PanningModel model, float sampleRate, HRTFDatabaseLoader* databaseLoader)
 {
     switch (model) {
     case PanningModelEqualPower:
-        return wrapUnique(new EqualPowerPanner(sampleRate));
+        return adoptPtr(new EqualPowerPanner(sampleRate));
 
     case PanningModelHRTF:
-        return wrapUnique(new HRTFPanner(sampleRate, databaseLoader));
+        return adoptPtr(new HRTFPanner(sampleRate, databaseLoader));
 
     default:
         ASSERT_NOT_REACHED();

@@ -8,7 +8,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -20,7 +19,7 @@ protected:
     void setHtmlInnerHTML(const char* htmlContent);
 
 private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };
 
 void NthIndexCacheTest::SetUp()

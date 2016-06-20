@@ -31,6 +31,7 @@
 #include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

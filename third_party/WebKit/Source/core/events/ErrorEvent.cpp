@@ -31,7 +31,6 @@
 #include "core/events/ErrorEvent.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -59,7 +58,7 @@ ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializ
         m_error = initializer.error();
 }
 
-ErrorEvent::ErrorEvent(const String& message, std::unique_ptr<SourceLocation> location, DOMWrapperWorld* world)
+ErrorEvent::ErrorEvent(const String& message, PassOwnPtr<SourceLocation> location, DOMWrapperWorld* world)
     : Event(EventTypeNames::error, false, true)
     , m_sanitizedMessage(message)
     , m_location(std::move(location))

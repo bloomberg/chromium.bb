@@ -10,8 +10,6 @@
 #include "modules/presentation/PresentationRequest.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -25,7 +23,7 @@ PresentationConnectionCallbacks::PresentationConnectionCallbacks(ScriptPromiseRe
 
 void PresentationConnectionCallbacks::onSuccess(std::unique_ptr<WebPresentationConnectionClient> PresentationConnectionClient)
 {
-    std::unique_ptr<WebPresentationConnectionClient> result(wrapUnique(PresentationConnectionClient.release()));
+    OwnPtr<WebPresentationConnectionClient> result(adoptPtr(PresentationConnectionClient.release()));
 
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;

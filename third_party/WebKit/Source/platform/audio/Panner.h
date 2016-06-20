@@ -32,8 +32,8 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/build_config.h"
-#include <memory>
 
 namespace blink {
 
@@ -54,7 +54,7 @@ public:
 
     typedef unsigned PanningModel;
 
-    static std::unique_ptr<Panner> create(PanningModel, float sampleRate, HRTFDatabaseLoader*);
+    static PassOwnPtr<Panner> create(PanningModel, float sampleRate, HRTFDatabaseLoader*);
 
     virtual ~Panner() { };
 

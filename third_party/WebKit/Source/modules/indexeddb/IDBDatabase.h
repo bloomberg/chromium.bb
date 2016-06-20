@@ -43,9 +43,10 @@
 #include "modules/indexeddb/IndexedDB.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -60,7 +61,7 @@ class MODULES_EXPORT IDBDatabase final
     USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static IDBDatabase* create(ExecutionContext*, std::unique_ptr<WebIDBDatabase>, IDBDatabaseCallbacks*);
+    static IDBDatabase* create(ExecutionContext*, PassOwnPtr<WebIDBDatabase>, IDBDatabaseCallbacks*);
     ~IDBDatabase() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -139,13 +140,13 @@ protected:
     DispatchEventResult dispatchEventInternal(Event*) override;
 
 private:
-    IDBDatabase(ExecutionContext*, std::unique_ptr<WebIDBDatabase>, IDBDatabaseCallbacks*);
+    IDBDatabase(ExecutionContext*, PassOwnPtr<WebIDBDatabase>, IDBDatabaseCallbacks*);
 
     IDBObjectStore* createObjectStore(const String& name, const IDBKeyPath&, bool autoIncrement, ExceptionState&);
     void closeConnection();
 
     IDBDatabaseMetadata m_metadata;
-    std::unique_ptr<WebIDBDatabase> m_backend;
+    OwnPtr<WebIDBDatabase> m_backend;
     Member<IDBTransaction> m_versionChangeTransaction;
     HeapHashMap<int64_t, Member<IDBTransaction>> m_transactions;
 

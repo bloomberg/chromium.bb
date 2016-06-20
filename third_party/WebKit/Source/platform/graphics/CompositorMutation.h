@@ -8,7 +8,6 @@
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "wtf/HashMap.h"
-#include <memory>
 
 namespace blink {
 
@@ -54,7 +53,7 @@ private:
 };
 
 struct CompositorMutations {
-    HashMap<uint64_t, std::unique_ptr<CompositorMutation>> map;
+    HashMap<uint64_t, OwnPtr<CompositorMutation>> map;
 };
 
 } // namespace blink

@@ -39,8 +39,6 @@
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 
 #include "png.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 #if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
 #error version error: compile against a versioned libpng.
@@ -144,10 +142,10 @@ public:
     bool hasAlpha() const { return m_hasAlpha; }
 
     png_bytep interlaceBuffer() const { return m_interlaceBuffer.get(); }
-    void createInterlaceBuffer(int size) { m_interlaceBuffer = wrapArrayUnique(new png_byte[size]); }
+    void createInterlaceBuffer(int size) { m_interlaceBuffer = adoptArrayPtr(new png_byte[size]); }
 #if USE(QCMSLIB)
     png_bytep rowBuffer() const { return m_rowBuffer.get(); }
-    void createRowBuffer(int size) { m_rowBuffer = wrapArrayUnique(new png_byte[size]); }
+    void createRowBuffer(int size) { m_rowBuffer = adoptArrayPtr(new png_byte[size]); }
 #endif
 
 private:
@@ -158,9 +156,9 @@ private:
     size_t m_currentBufferSize;
     bool m_decodingSizeOnly;
     bool m_hasAlpha;
-    std::unique_ptr<png_byte[]> m_interlaceBuffer;
+    OwnPtr<png_byte[]> m_interlaceBuffer;
 #if USE(QCMSLIB)
-    std::unique_ptr<png_byte[]> m_rowBuffer;
+    OwnPtr<png_byte[]> m_rowBuffer;
 #endif
 };
 
@@ -430,7 +428,7 @@ void PNGImageDecoder::decode(bool onlySize)
         return;
 
     if (!m_reader)
-        m_reader = wrapUnique(new PNGImageReader(this, m_offset));
+        m_reader = adoptPtr(new PNGImageReader(this, m_offset));
 
     // If we couldn't decode the image but have received all the data, decoding
     // has failed.

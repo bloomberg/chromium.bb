@@ -7,23 +7,21 @@
 #include "platform/heap/BlinkGC.h"
 #include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/ThreadState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<Visitor> Visitor::create(ThreadState* state, BlinkGC::GCType gcType)
+PassOwnPtr<Visitor> Visitor::create(ThreadState* state, BlinkGC::GCType gcType)
 {
     switch (gcType) {
     case BlinkGC::GCWithSweep:
     case BlinkGC::GCWithoutSweep:
-        return wrapUnique(new MarkingVisitor<Visitor::GlobalMarking>(state));
+        return adoptPtr(new MarkingVisitor<Visitor::GlobalMarking>(state));
     case BlinkGC::TakeSnapshot:
-        return wrapUnique(new MarkingVisitor<Visitor::SnapshotMarking>(state));
+        return adoptPtr(new MarkingVisitor<Visitor::SnapshotMarking>(state));
     case BlinkGC::ThreadTerminationGC:
-        return wrapUnique(new MarkingVisitor<Visitor::ThreadLocalMarking>(state));
+        return adoptPtr(new MarkingVisitor<Visitor::ThreadLocalMarking>(state));
     case BlinkGC::ThreadLocalWeakProcessing:
-        return wrapUnique(new MarkingVisitor<Visitor::WeakProcessing>(state));
+        return adoptPtr(new MarkingVisitor<Visitor::WeakProcessing>(state));
     default:
         ASSERT_NOT_REACHED();
     }

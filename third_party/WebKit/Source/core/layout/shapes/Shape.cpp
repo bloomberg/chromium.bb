@@ -45,33 +45,32 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
-#include <memory>
 
 namespace blink {
 
-static std::unique_ptr<Shape> createInsetShape(const FloatRoundedRect& bounds)
+static PassOwnPtr<Shape> createInsetShape(const FloatRoundedRect& bounds)
 {
     ASSERT(bounds.rect().width() >= 0 && bounds.rect().height() >= 0);
-    return wrapUnique(new BoxShape(bounds));
+    return adoptPtr(new BoxShape(bounds));
 }
 
-static std::unique_ptr<Shape> createCircleShape(const FloatPoint& center, float radius)
+static PassOwnPtr<Shape> createCircleShape(const FloatPoint& center, float radius)
 {
     ASSERT(radius >= 0);
-    return wrapUnique(new RectangleShape(FloatRect(center.x() - radius, center.y() - radius, radius*2, radius*2), FloatSize(radius, radius)));
+    return adoptPtr(new RectangleShape(FloatRect(center.x() - radius, center.y() - radius, radius*2, radius*2), FloatSize(radius, radius)));
 }
 
-static std::unique_ptr<Shape> createEllipseShape(const FloatPoint& center, const FloatSize& radii)
+static PassOwnPtr<Shape> createEllipseShape(const FloatPoint& center, const FloatSize& radii)
 {
     ASSERT(radii.width() >= 0 && radii.height() >= 0);
-    return wrapUnique(new RectangleShape(FloatRect(center.x() - radii.width(), center.y() - radii.height(), radii.width()*2, radii.height()*2), radii));
+    return adoptPtr(new RectangleShape(FloatRect(center.x() - radii.width(), center.y() - radii.height(), radii.width()*2, radii.height()*2), radii));
 }
 
-static std::unique_ptr<Shape> createPolygonShape(std::unique_ptr<Vector<FloatPoint>> vertices, WindRule fillRule)
+static PassOwnPtr<Shape> createPolygonShape(PassOwnPtr<Vector<FloatPoint>> vertices, WindRule fillRule)
 {
-    return wrapUnique(new PolygonShape(std::move(vertices), fillRule));
+    return adoptPtr(new PolygonShape(std::move(vertices), fillRule));
 }
 
 static inline FloatRect physicalRectToLogical(const FloatRect& rect, float logicalBoxHeight, WritingMode writingMode)
@@ -99,14 +98,14 @@ static inline FloatSize physicalSizeToLogical(const FloatSize& size, WritingMode
     return size.transposedSize();
 }
 
-std::unique_ptr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutSize& logicalBoxSize, WritingMode writingMode, float margin)
+PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutSize& logicalBoxSize, WritingMode writingMode, float margin)
 {
     ASSERT(basicShape);
 
     bool horizontalWritingMode = isHorizontalWritingMode(writingMode);
     float boxWidth = horizontalWritingMode ? logicalBoxSize.width().toFloat() : logicalBoxSize.height().toFloat();
     float boxHeight = horizontalWritingMode ? logicalBoxSize.height().toFloat() : logicalBoxSize.width().toFloat();
-    std::unique_ptr<Shape> shape;
+    OwnPtr<Shape> shape;
 
     switch (basicShape->type()) {
 
@@ -136,7 +135,7 @@ std::unique_ptr<Shape> Shape::createShape(const BasicShape* basicShape, const La
         const Vector<Length>& values = polygon->values();
         size_t valuesSize = values.size();
         ASSERT(!(valuesSize % 2));
-        std::unique_ptr<Vector<FloatPoint>> vertices = wrapUnique(new Vector<FloatPoint>(valuesSize / 2));
+        OwnPtr<Vector<FloatPoint>> vertices = adoptPtr(new Vector<FloatPoint>(valuesSize / 2));
         for (unsigned i = 0; i < valuesSize; i += 2) {
             FloatPoint vertex(
                 floatValueForLength(values.at(i), boxWidth),
@@ -180,22 +179,22 @@ std::unique_ptr<Shape> Shape::createShape(const BasicShape* basicShape, const La
     return shape;
 }
 
-std::unique_ptr<Shape> Shape::createEmptyRasterShape(WritingMode writingMode, float margin)
+PassOwnPtr<Shape> Shape::createEmptyRasterShape(WritingMode writingMode, float margin)
 {
-    std::unique_ptr<RasterShapeIntervals> intervals = wrapUnique(new RasterShapeIntervals(0, 0));
-    std::unique_ptr<RasterShape> rasterShape = wrapUnique(new RasterShape(std::move(intervals), IntSize()));
+    OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(0, 0));
+    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(std::move(intervals), IntSize()));
     rasterShape->m_writingMode = writingMode;
     rasterShape->m_margin = margin;
     return std::move(rasterShape);
 }
 
-std::unique_ptr<Shape> Shape::createRasterShape(Image* image, float threshold, const LayoutRect& imageR, const LayoutRect& marginR, WritingMode writingMode, float margin)
+PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const LayoutRect& imageR, const LayoutRect& marginR, WritingMode writingMode, float margin)
 {
     IntRect imageRect = pixelSnappedIntRect(imageR);
     IntRect marginRect = pixelSnappedIntRect(marginR);
 
-    std::unique_ptr<RasterShapeIntervals> intervals = wrapUnique(new RasterShapeIntervals(marginRect.height(), -marginRect.y()));
-    std::unique_ptr<ImageBuffer> imageBuffer = ImageBuffer::create(imageRect.size());
+    OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(marginRect.height(), -marginRect.y()));
+    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageRect.size());
 
     if (image && imageBuffer) {
         // FIXME: This is not totally correct but it is needed to prevent shapes
@@ -235,17 +234,17 @@ std::unique_ptr<Shape> Shape::createRasterShape(Image* image, float threshold, c
         }
     }
 
-    std::unique_ptr<RasterShape> rasterShape = wrapUnique(new RasterShape(std::move(intervals), marginRect.size()));
+    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(std::move(intervals), marginRect.size()));
     rasterShape->m_writingMode = writingMode;
     rasterShape->m_margin = margin;
     return std::move(rasterShape);
 }
 
-std::unique_ptr<Shape> Shape::createLayoutBoxShape(const FloatRoundedRect& roundedRect, WritingMode writingMode, float margin)
+PassOwnPtr<Shape> Shape::createLayoutBoxShape(const FloatRoundedRect& roundedRect, WritingMode writingMode, float margin)
 {
     FloatRect rect(0, 0, roundedRect.rect().width(), roundedRect.rect().height());
     FloatRoundedRect bounds(rect, roundedRect.getRadii());
-    std::unique_ptr<Shape> shape = createInsetShape(bounds);
+    OwnPtr<Shape> shape = createInsetShape(bounds);
     shape->m_writingMode = writingMode;
     shape->m_margin = margin;
 

@@ -29,7 +29,7 @@
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/FFTFrame.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -81,7 +81,7 @@ private:
     RefPtr<AudioBus> m_downMixBus;
 
     size_t m_fftSize;
-    std::unique_ptr<FFTFrame> m_analysisFrame;
+    OwnPtr<FFTFrame> m_analysisFrame;
     void doFFTAnalysis();
 
     // Convert the contents of magnitudeBuffer to byte values, saving the result in |destination|.

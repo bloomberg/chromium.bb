@@ -91,7 +91,6 @@
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include <limits>
 
@@ -3613,7 +3612,7 @@ void HTMLMediaElement::setWebLayer(WebLayer* webLayer)
 
 void HTMLMediaElement::mediaSourceOpened(WebMediaSource* webMediaSource)
 {
-    m_mediaSource->setWebMediaSourceAndOpen(wrapUnique(webMediaSource));
+    m_mediaSource->setWebMediaSourceAndOpen(adoptPtr(webMediaSource));
 }
 
 bool HTMLMediaElement::isInteractiveContent() const

@@ -19,10 +19,10 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -113,7 +113,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
         frameRect.setHeight(frameRect.height() + 1);
         dummyPageHolder().frameView().setFrameRect(frameRect);
     }
-    std::unique_ptr<PaintController> paintController = PaintController::create();
+    OwnPtr<PaintController> paintController = PaintController::create();
     {
         GraphicsContext context(*paintController);
         DrawingRecorder drawingRecorder(context, *dummyPageHolder().frameView().layoutView(), DisplayItem::Caret, LayoutRect::infiniteIntRect());

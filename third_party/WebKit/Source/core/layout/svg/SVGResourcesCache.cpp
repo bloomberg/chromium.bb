@@ -24,7 +24,6 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCycleSolver.h"
 #include "core/svg/SVGDocumentExtensions.h"
-#include <memory>
 
 namespace blink {
 
@@ -44,7 +43,7 @@ void SVGResourcesCache::addResourcesFromLayoutObject(LayoutObject* object, const
     const SVGComputedStyle& svgStyle = style.svgStyle();
 
     // Build a list of all resources associated with the passed LayoutObject.
-    std::unique_ptr<SVGResources> newResources = SVGResources::buildResources(object, svgStyle);
+    OwnPtr<SVGResources> newResources = SVGResources::buildResources(object, svgStyle);
     if (!newResources)
         return;
 
@@ -65,7 +64,7 @@ void SVGResourcesCache::addResourcesFromLayoutObject(LayoutObject* object, const
 
 void SVGResourcesCache::removeResourcesFromLayoutObject(LayoutObject* object)
 {
-    std::unique_ptr<SVGResources> resources = m_cache.take(object);
+    OwnPtr<SVGResources> resources = m_cache.take(object);
     if (!resources)
         return;
 

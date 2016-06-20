@@ -29,9 +29,9 @@
 #include "modules/webaudio/AudioSourceNode.h"
 #include "platform/audio/AudioSourceProvider.h"
 #include "platform/audio/AudioSourceProviderClient.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Threading.h"
-#include <memory>
 
 namespace blink {
 
@@ -39,7 +39,7 @@ class AbstractAudioContext;
 
 class MediaStreamAudioSourceHandler final : public AudioHandler {
 public:
-    static PassRefPtr<MediaStreamAudioSourceHandler> create(AudioNode&, MediaStream&, MediaStreamTrack*, std::unique_ptr<AudioSourceProvider>);
+    static PassRefPtr<MediaStreamAudioSourceHandler> create(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     ~MediaStreamAudioSourceHandler() override;
 
     MediaStream* getMediaStream() { return m_mediaStream.get(); }
@@ -54,7 +54,7 @@ public:
     AudioSourceProvider* getAudioSourceProvider() const { return m_audioSourceProvider.get(); }
 
 private:
-    MediaStreamAudioSourceHandler(AudioNode&, MediaStream&, MediaStreamTrack*, std::unique_ptr<AudioSourceProvider>);
+    MediaStreamAudioSourceHandler(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     // As an audio source, we will never propagate silence.
     bool propagatesSilence() const override { return false; }
 
@@ -62,7 +62,7 @@ private:
     // MediaStreamAudioSourceNode.
     Persistent<MediaStream> m_mediaStream;
     Persistent<MediaStreamTrack> m_audioTrack;
-    std::unique_ptr<AudioSourceProvider> m_audioSourceProvider;
+    OwnPtr<AudioSourceProvider> m_audioSourceProvider;
 
     Mutex m_processLock;
 
@@ -83,7 +83,7 @@ public:
     void setFormat(size_t numberOfChannels, float sampleRate) override;
 
 private:
-    MediaStreamAudioSourceNode(AbstractAudioContext&, MediaStream&, MediaStreamTrack*, std::unique_ptr<AudioSourceProvider>);
+    MediaStreamAudioSourceNode(AbstractAudioContext&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
 };
 
 } // namespace blink

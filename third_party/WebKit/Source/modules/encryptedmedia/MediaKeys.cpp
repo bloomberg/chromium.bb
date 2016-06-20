@@ -38,7 +38,6 @@
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 #define MEDIA_KEYS_LOG_LEVEL 3
 
@@ -117,14 +116,14 @@ public:
     }
 };
 
-MediaKeys* MediaKeys::create(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, std::unique_ptr<WebContentDecryptionModule> cdm)
+MediaKeys* MediaKeys::create(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
 {
     MediaKeys* mediaKeys = new MediaKeys(context, supportedSessionTypes, std::move(cdm));
     mediaKeys->suspendIfNeeded();
     return mediaKeys;
 }
 
-MediaKeys::MediaKeys(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, std::unique_ptr<WebContentDecryptionModule> cdm)
+MediaKeys::MediaKeys(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_supportedSessionTypes(supportedSessionTypes)

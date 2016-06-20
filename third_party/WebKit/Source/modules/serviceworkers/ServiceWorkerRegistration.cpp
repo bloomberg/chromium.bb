@@ -15,8 +15,6 @@
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -34,24 +32,24 @@ void ServiceWorkerRegistration::setInstalling(std::unique_ptr<WebServiceWorker::
 {
     if (!getExecutionContext())
         return;
-    m_installing = ServiceWorker::from(getExecutionContext(), wrapUnique(handle.release()));
+    m_installing = ServiceWorker::from(getExecutionContext(), adoptPtr(handle.release()));
 }
 
 void ServiceWorkerRegistration::setWaiting(std::unique_ptr<WebServiceWorker::Handle> handle)
 {
     if (!getExecutionContext())
         return;
-    m_waiting = ServiceWorker::from(getExecutionContext(), wrapUnique(handle.release()));
+    m_waiting = ServiceWorker::from(getExecutionContext(), adoptPtr(handle.release()));
 }
 
 void ServiceWorkerRegistration::setActive(std::unique_ptr<WebServiceWorker::Handle> handle)
 {
     if (!getExecutionContext())
         return;
-    m_active = ServiceWorker::from(getExecutionContext(), wrapUnique(handle.release()));
+    m_active = ServiceWorker::from(getExecutionContext(), adoptPtr(handle.release()));
 }
 
-ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionContext* executionContext, std::unique_ptr<WebServiceWorkerRegistration::Handle> handle)
+ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
 {
     ASSERT(handle);
 
@@ -95,7 +93,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
     return promise;
 }
 
-ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, std::unique_ptr<WebServiceWorkerRegistration::Handle> handle)
+ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(executionContext)
     , m_handle(std::move(handle))

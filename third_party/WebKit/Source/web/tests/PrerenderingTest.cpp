@@ -44,10 +44,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
 #include <functional>
 #include <list>
-#include <memory>
 
 using namespace blink;
 using blink::URLTestHelpers::toKURL;
@@ -67,7 +66,7 @@ public:
     void setExtraDataForNextPrerender(WebPrerender::ExtraData* extraData)
     {
         DCHECK(!m_extraData);
-        m_extraData = wrapUnique(extraData);
+        m_extraData = adoptPtr(extraData);
     }
 
     WebPrerender releaseWebPrerender()
@@ -92,13 +91,13 @@ private:
     // From WebPrerendererClient:
     void willAddPrerender(WebPrerender* prerender) override
     {
-        prerender->setExtraData(m_extraData.release());
+        prerender->setExtraData(m_extraData.leakPtr());
 
         DCHECK(!prerender->isNull());
         m_webPrerenders.push_back(*prerender);
     }
 
-    std::unique_ptr<WebPrerender::ExtraData> m_extraData;
+    OwnPtr<WebPrerender::ExtraData> m_extraData;
     std::list<WebPrerender> m_webPrerenders;
 };
 

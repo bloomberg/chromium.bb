@@ -29,6 +29,7 @@
 #include "base/tuple.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
@@ -164,6 +165,12 @@ public:
     R operator()(C* c, IncomingParameters&&... parameters)
     {
         return (c->*m_function)(std::forward<IncomingParameters>(parameters)...);
+    }
+
+    template <typename... IncomingParameters>
+    R operator()(const PassOwnPtr<C>& c, IncomingParameters&&... parameters)
+    {
+        return (c.get()->*m_function)(std::forward<IncomingParameters>(parameters)...);
     }
 
     template <typename... IncomingParameters>

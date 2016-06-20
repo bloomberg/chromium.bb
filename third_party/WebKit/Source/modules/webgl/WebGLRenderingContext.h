@@ -28,7 +28,6 @@
 
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
-#include <memory>
 
 namespace blink {
 
@@ -65,8 +64,8 @@ public:
     DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
 private:
-    WebGLRenderingContext(HTMLCanvasElement*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
-    WebGLRenderingContext(OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
+    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
+    WebGLRenderingContext(OffscreenCanvas*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
 
     // Enabled extension objects.
     Member<ANGLEInstancedArrays> m_angleInstancedArrays;

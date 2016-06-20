@@ -35,6 +35,7 @@
 #include "public/platform/WebTaskRunner.h"
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
+#include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
 namespace blink {

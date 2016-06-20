@@ -51,7 +51,6 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -80,7 +79,7 @@ public:
 
     bool hadException;
     String errorMessage;
-    std::unique_ptr<SourceLocation> m_location;
+    OwnPtr<SourceLocation> m_location;
     ScriptValue exception;
     Member<ErrorEvent> m_errorEventFromImportedScript;
 

@@ -6,13 +6,12 @@
 
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
 static const WTF::TextEncoding defaultEncodingForURL(const char* url)
 {
-    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(0, 0));
+    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(0, 0));
     Document& document = pageHolder->document();
     document.setURL(KURL(KURL(), url));
     TextResourceDecoderBuilder decoderBuilder("text/html", nullAtom);

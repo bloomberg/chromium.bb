@@ -36,9 +36,9 @@
 #include "platform/text/TextDirection.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 struct hb_buffer_t;
 
@@ -88,12 +88,12 @@ protected:
     }
 
     void applySpacing(ShapeResultSpacing&, const TextRun&);
-    void insertRun(std::unique_ptr<ShapeResult::RunInfo>, unsigned startGlyph,
+    void insertRun(PassOwnPtr<ShapeResult::RunInfo>, unsigned startGlyph,
         unsigned numGlyphs, hb_buffer_t*);
 
     float m_width;
     FloatRect m_glyphBoundingBox;
-    Vector<std::unique_ptr<RunInfo>> m_runs;
+    Vector<OwnPtr<RunInfo>> m_runs;
     RefPtr<SimpleFontData> m_primaryFont;
 
     unsigned m_numCharacters;

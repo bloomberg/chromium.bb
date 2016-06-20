@@ -18,8 +18,6 @@
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebEncryptedMediaTypes.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -50,7 +48,7 @@ public:
     {
         // NOTE: Continued from step 2.8 of createMediaKeys().
         // 2.9. Let media keys be a new MediaKeys object.
-        MediaKeys* mediaKeys = MediaKeys::create(getExecutionContext(), m_supportedSessionTypes, wrapUnique(cdm));
+        MediaKeys* mediaKeys = MediaKeys::create(getExecutionContext(), m_supportedSessionTypes, adoptPtr(cdm));
 
         // 2.10. Resolve promise with media keys.
         resolve(mediaKeys);
@@ -107,7 +105,7 @@ static Vector<String> convertSessionTypes(const WebVector<WebEncryptedMediaSessi
 
 } // namespace
 
-MediaKeySystemAccess::MediaKeySystemAccess(const String& keySystem, std::unique_ptr<WebContentDecryptionModuleAccess> access)
+MediaKeySystemAccess::MediaKeySystemAccess(const String& keySystem, PassOwnPtr<WebContentDecryptionModuleAccess> access)
     : m_keySystem(keySystem)
     , m_access(std::move(access))
 {

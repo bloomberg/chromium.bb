@@ -39,7 +39,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -71,7 +70,7 @@ public:
     virtual void didReadDirectoryEntries(bool hasMore) { ASSERT_NOT_REACHED(); }
 
     // Called when an AsyncFileWrter has been created successfully.
-    virtual void didCreateFileWriter(std::unique_ptr<WebFileWriter>, long long length) { ASSERT_NOT_REACHED(); }
+    virtual void didCreateFileWriter(PassOwnPtr<WebFileWriter>, long long length) { ASSERT_NOT_REACHED(); }
 
     // Called when there was an error.
     virtual void didFail(int code) = 0;

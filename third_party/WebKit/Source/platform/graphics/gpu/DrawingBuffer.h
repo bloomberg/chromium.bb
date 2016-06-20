@@ -41,8 +41,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
-#include <memory>
 
 namespace gpu {
 namespace gles2 {
@@ -74,7 +75,7 @@ public:
     };
 
     static PassRefPtr<DrawingBuffer> create(
-        std::unique_ptr<WebGraphicsContext3DProvider>,
+        PassOwnPtr<WebGraphicsContext3DProvider>,
         const IntSize&,
         bool premultipliedAlpha,
         bool wantAlphaChannel,
@@ -221,8 +222,8 @@ public:
 
 protected: // For unittests
     DrawingBuffer(
-        std::unique_ptr<WebGraphicsContext3DProvider>,
-        std::unique_ptr<Extensions3DUtil>,
+        PassOwnPtr<WebGraphicsContext3DProvider>,
+        PassOwnPtr<Extensions3DUtil>,
         bool discardFramebufferSupported,
         bool wantAlphaChannel,
         bool premultipliedAlpha,
@@ -367,10 +368,10 @@ private:
     GLfloat m_clearColor[4];
     GLboolean m_colorMask[4];
 
-    std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
+    OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
     // Lifetime is tied to the m_contextProvider.
     gpu::gles2::GLES2Interface* m_gl;
-    std::unique_ptr<Extensions3DUtil> m_extensionsUtil;
+    OwnPtr<Extensions3DUtil> m_extensionsUtil;
     IntSize m_size = { -1, -1 };
     const bool m_discardFramebufferSupported;
     const bool m_wantAlphaChannel;
@@ -430,7 +431,7 @@ private:
     bool m_isHidden = false;
     SkFilterQuality m_filterQuality = kLow_SkFilterQuality;
 
-    std::unique_ptr<WebExternalTextureLayer> m_layer;
+    OwnPtr<WebExternalTextureLayer> m_layer;
 
     // All of the mailboxes that this DrawingBuffer has ever created.
     Vector<RefPtr<MailboxInfo>> m_textureMailboxes;

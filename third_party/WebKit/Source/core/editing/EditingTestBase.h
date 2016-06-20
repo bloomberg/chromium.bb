@@ -8,7 +8,6 @@
 #include "core/editing/Position.h"
 #include "wtf/Forward.h"
 #include <gtest/gtest.h>
-#include <memory>
 #include <string>
 
 namespace blink {
@@ -33,7 +32,7 @@ protected:
     void updateAllLifecyclePhases();
 
 private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };
 
 } // namespace blink

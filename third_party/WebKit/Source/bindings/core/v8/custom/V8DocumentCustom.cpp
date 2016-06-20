@@ -43,10 +43,9 @@
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -77,7 +76,7 @@ void V8Document::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
             return;
         }
         // Wrap up the arguments and call the function.
-        std::unique_ptr<v8::Local<v8::Value>[]> params = wrapArrayUnique(new v8::Local<v8::Value>[info.Length()]);
+        OwnPtr<v8::Local<v8::Value>[]> params = adoptArrayPtr(new v8::Local<v8::Value>[info.Length()]);
         for (int i = 0; i < info.Length(); i++)
             params[i] = info[i];
 

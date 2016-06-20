@@ -50,7 +50,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "wtf/ASCIICType.h"
-#include "wtf/PtrUtil.h"
 #include <cmath>
 #include <limits>
 
@@ -332,7 +331,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
     // initializeNewSession() is called in response to the user calling
     // generateRequest().
     WebContentDecryptionModule* cdm = mediaKeys->contentDecryptionModule();
-    m_session = wrapUnique(cdm->createSession());
+    m_session = adoptPtr(cdm->createSession());
     m_session->setClientInterface(this);
 
     // From https://w3c.github.io/encrypted-media/#createSession:

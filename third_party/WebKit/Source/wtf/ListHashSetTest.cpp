@@ -28,10 +28,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/LinkedHashSet.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 #include <type_traits>
 
 namespace WTF {
@@ -554,14 +552,14 @@ TEST(ListHashSetTest, WithOwnPtr)
 {
     bool deleted1 = false, deleted2 = false;
 
-    typedef ListHashSet<std::unique_ptr<Dummy>> OwnPtrSet;
+    typedef ListHashSet<OwnPtr<Dummy>> OwnPtrSet;
     OwnPtrSet set;
 
     Dummy* ptr1 = new Dummy(deleted1);
     {
         // AddResult in a separate scope to avoid assertion hit,
         // since we modify the container further.
-        OwnPtrSet::AddResult res1 = set.add(wrapUnique(ptr1));
+        OwnPtrSet::AddResult res1 = set.add(adoptPtr(ptr1));
         EXPECT_EQ(res1.storedValue->get(), ptr1);
     }
 
@@ -569,11 +567,11 @@ TEST(ListHashSetTest, WithOwnPtr)
     EXPECT_EQ(1UL, set.size());
     OwnPtrSet::iterator it1 = set.find(ptr1);
     EXPECT_NE(set.end(), it1);
-    EXPECT_EQ(ptr1, (*it1).get());
+    EXPECT_EQ(ptr1, (*it1));
 
     Dummy* ptr2 = new Dummy(deleted2);
     {
-        OwnPtrSet::AddResult res2 = set.add(wrapUnique(ptr2));
+        OwnPtrSet::AddResult res2 = set.add(adoptPtr(ptr2));
         EXPECT_EQ(res2.storedValue->get(), ptr2);
     }
 
@@ -581,7 +579,7 @@ TEST(ListHashSetTest, WithOwnPtr)
     EXPECT_EQ(2UL, set.size());
     OwnPtrSet::iterator it2 = set.find(ptr2);
     EXPECT_NE(set.end(), it2);
-    EXPECT_EQ(ptr2, (*it2).get());
+    EXPECT_EQ(ptr2, (*it2));
 
     set.remove(ptr1);
     EXPECT_TRUE(deleted1);
@@ -594,8 +592,8 @@ TEST(ListHashSetTest, WithOwnPtr)
     deleted2 = false;
     {
         OwnPtrSet set;
-        set.add(wrapUnique(new Dummy(deleted1)));
-        set.add(wrapUnique(new Dummy(deleted2)));
+        set.add(adoptPtr(new Dummy(deleted1)));
+        set.add(adoptPtr(new Dummy(deleted2)));
     }
     EXPECT_TRUE(deleted1);
     EXPECT_TRUE(deleted2);
@@ -603,14 +601,14 @@ TEST(ListHashSetTest, WithOwnPtr)
 
     deleted1 = false;
     deleted2 = false;
-    std::unique_ptr<Dummy> ownPtr1;
-    std::unique_ptr<Dummy> ownPtr2;
+    OwnPtr<Dummy> ownPtr1;
+    OwnPtr<Dummy> ownPtr2;
     ptr1 = new Dummy(deleted1);
     ptr2 = new Dummy(deleted2);
     {
         OwnPtrSet set;
-        set.add(wrapUnique(ptr1));
-        set.add(wrapUnique(ptr2));
+        set.add(adoptPtr(ptr1));
+        set.add(adoptPtr(ptr2));
         ownPtr1 = set.takeFirst();
         EXPECT_EQ(1UL, set.size());
         ownPtr2 = set.take(ptr2);
@@ -619,8 +617,8 @@ TEST(ListHashSetTest, WithOwnPtr)
     EXPECT_FALSE(deleted1);
     EXPECT_FALSE(deleted2);
 
-    EXPECT_EQ(ptr1, ownPtr1.get());
-    EXPECT_EQ(ptr2, ownPtr2.get());
+    EXPECT_EQ(ptr1, ownPtr1);
+    EXPECT_EQ(ptr2, ownPtr2);
 }
 
 class CountCopy final {

@@ -37,7 +37,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "public/platform/Platform.h"
 #include "wtf/LeakAnnotations.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace blink {
@@ -55,8 +54,8 @@ static void microtasksCompletedCallback(v8::Isolate* isolate)
 }
 
 V8PerIsolateData::V8PerIsolateData()
-    : m_isolateHolder(wrapUnique(new gin::IsolateHolder()))
-    , m_stringCache(wrapUnique(new StringCache(isolate())))
+    : m_isolateHolder(adoptPtr(new gin::IsolateHolder()))
+    , m_stringCache(adoptPtr(new StringCache(isolate())))
     , m_hiddenValue(V8HiddenValue::create())
     , m_privateProperty(V8PrivateProperty::create())
     , m_constructorMode(ConstructorMode::CreateNewObject)
@@ -91,9 +90,9 @@ v8::Isolate* V8PerIsolateData::initialize()
     return isolate;
 }
 
-void V8PerIsolateData::enableIdleTasks(v8::Isolate* isolate, std::unique_ptr<gin::V8IdleTaskRunner> taskRunner)
+void V8PerIsolateData::enableIdleTasks(v8::Isolate* isolate, PassOwnPtr<gin::V8IdleTaskRunner> taskRunner)
 {
-    from(isolate)->m_isolateHolder->EnableIdleTasks(std::unique_ptr<gin::V8IdleTaskRunner>(taskRunner.release()));
+    from(isolate)->m_isolateHolder->EnableIdleTasks(std::unique_ptr<gin::V8IdleTaskRunner>(taskRunner.leakPtr()));
 }
 
 void V8PerIsolateData::useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeature feature)
@@ -347,14 +346,14 @@ v8::Local<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const Wrapp
     return v8::Local<v8::Object>::Cast(value)->FindInstanceInPrototypeChain(templ);
 }
 
-void V8PerIsolateData::addEndOfScopeTask(std::unique_ptr<EndOfScopeTask> task)
+void V8PerIsolateData::addEndOfScopeTask(PassOwnPtr<EndOfScopeTask> task)
 {
     m_endOfScopeTasks.append(std::move(task));
 }
 
 void V8PerIsolateData::runEndOfScopeTasks()
 {
-    Vector<std::unique_ptr<EndOfScopeTask>> tasks;
+    Vector<OwnPtr<EndOfScopeTask>> tasks;
     tasks.swap(m_endOfScopeTasks);
     for (const auto& task : tasks)
         task->run();
@@ -366,7 +365,7 @@ void V8PerIsolateData::clearEndOfScopeTasks()
     m_endOfScopeTasks.clear();
 }
 
-void V8PerIsolateData::setThreadDebugger(std::unique_ptr<ThreadDebugger> threadDebugger)
+void V8PerIsolateData::setThreadDebugger(PassOwnPtr<ThreadDebugger> threadDebugger)
 {
     ASSERT(!m_threadDebugger);
     m_threadDebugger = std::move(threadDebugger);

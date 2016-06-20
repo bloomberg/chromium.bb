@@ -43,16 +43,15 @@
 #include "public/platform/WebStorageArea.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include <memory>
 
 namespace blink {
 
-StorageArea* StorageArea::create(std::unique_ptr<WebStorageArea> storageArea, StorageType storageType)
+StorageArea* StorageArea::create(PassOwnPtr<WebStorageArea> storageArea, StorageType storageType)
 {
     return new StorageArea(std::move(storageArea), storageType);
 }
 
-StorageArea::StorageArea(std::unique_ptr<WebStorageArea> storageArea, StorageType storageType)
+StorageArea::StorageArea(PassOwnPtr<WebStorageArea> storageArea, StorageType storageType)
     : LocalFrameLifecycleObserver(nullptr)
     , m_storageArea(std::move(storageArea))
     , m_storageType(storageType)
@@ -210,7 +209,7 @@ bool StorageArea::isEventSource(Storage* storage, WebStorageArea* sourceAreaInst
 {
     ASSERT(storage);
     StorageArea* area = storage->area();
-    return area->m_storageArea.get() == sourceAreaInstance;
+    return area->m_storageArea == sourceAreaInstance;
 }
 
 } // namespace blink

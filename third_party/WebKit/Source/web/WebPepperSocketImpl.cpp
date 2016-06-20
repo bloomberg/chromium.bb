@@ -42,7 +42,6 @@
 #include "web/WebPepperSocketChannelClientProxy.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -165,7 +164,7 @@ void WebPepperSocketImpl::didReceiveTextMessage(const String& payload)
     m_client->didReceiveMessage(WebString(payload));
 }
 
-void WebPepperSocketImpl::didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload)
+void WebPepperSocketImpl::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload)
 {
     switch (m_binaryType) {
     case BinaryTypeBlob:

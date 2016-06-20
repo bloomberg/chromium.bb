@@ -100,10 +100,8 @@
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
-#include <memory>
 
 namespace blink {
 
@@ -1116,12 +1114,12 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
     if (!mouseEvent.fromTouch())
         m_frame->selection().setCaretBlinkingSuspended(false);
 
-    std::unique_ptr<UserGestureIndicator> gestureIndicator;
+    OwnPtr<UserGestureIndicator> gestureIndicator;
 
     if (m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken)
-        gestureIndicator = wrapUnique(new UserGestureIndicator(m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken.release()));
+        gestureIndicator = adoptPtr(new UserGestureIndicator(m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken.release()));
     else
-        gestureIndicator = wrapUnique(new UserGestureIndicator(DefinitelyProcessingUserGesture));
+        gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
 
 #if OS(WIN)
     if (Page* page = m_frame->page())

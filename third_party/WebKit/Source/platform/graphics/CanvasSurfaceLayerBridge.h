@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
 
 namespace cc {
 // TODO(611796): replace SolidColorLayer with SurfaceLayer
@@ -26,7 +26,7 @@ public:
 
 private:
     scoped_refptr<cc::SolidColorLayer> m_solidColorLayer;
-    std::unique_ptr<WebLayer> m_webLayer;
+    OwnPtr<WebLayer> m_webLayer;
 };
 
 }

@@ -32,7 +32,6 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGMaskPainter.h"
 #include "platform/FloatConversion.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -90,7 +89,7 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
         return false;
 
     if (!isIsolationInstalled() && SVGLayoutSupport::isIsolationRequired(&m_object))
-        m_compositingRecorder = wrapUnique(new CompositingRecorder(paintInfo().context, m_object, SkXfermode::kSrcOver_Mode, 1));
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(paintInfo().context, m_object, SkXfermode::kSrcOver_Mode, 1));
 
     return true;
 }
@@ -109,7 +108,7 @@ void SVGPaintContext::applyCompositingIfNecessary()
         style.blendMode() : WebBlendModeNormal;
     if (opacity < 1 || blendMode != WebBlendModeNormal) {
         const FloatRect compositingBounds = m_object.paintInvalidationRectInLocalSVGCoordinates();
-        m_compositingRecorder = wrapUnique(new CompositingRecorder(paintInfo().context, m_object,
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(paintInfo().context, m_object,
             WebCoreCompositeToSkiaComposite(CompositeSourceOver, blendMode), opacity, &compositingBounds));
     }
 }
@@ -129,7 +128,7 @@ bool SVGPaintContext::applyClipIfNecessary(SVGResources* resources)
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
             if (!clipPath->isValid())
                 return false;
-            m_clipPathRecorder = wrapUnique(new ClipPathRecorder(paintInfo().context, m_object, clipPath->path(m_object.objectBoundingBox())));
+            m_clipPathRecorder = adoptPtr(new ClipPathRecorder(paintInfo().context, m_object, clipPath->path(m_object.objectBoundingBox())));
         }
     }
     return true;
@@ -151,7 +150,7 @@ bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources)
         if (m_object.style()->svgStyle().hasFilter())
             return false;
     } else if (LayoutSVGResourceFilter* filter = resources->filter()) {
-        m_filterRecordingContext = wrapUnique(new SVGFilterRecordingContext(paintInfo().context));
+        m_filterRecordingContext = adoptPtr(new SVGFilterRecordingContext(paintInfo().context));
         m_filter = filter;
         GraphicsContext* filterContext = SVGFilterPainter(*filter).prepareEffect(m_object, *m_filterRecordingContext);
         if (!filterContext)
@@ -159,7 +158,7 @@ bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources)
 
         // Because the filter needs to cache its contents we replace the context
         // during filtering with the filter's context.
-        m_filterPaintInfo = wrapUnique(new PaintInfo(*filterContext, m_paintInfo));
+        m_filterPaintInfo = adoptPtr(new PaintInfo(*filterContext, m_paintInfo));
 
         // Because we cache the filter contents and do not invalidate on paint
         // invalidation rect changes, we need to paint the entire filter region

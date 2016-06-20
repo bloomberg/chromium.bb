@@ -8,7 +8,6 @@
 #include "core/animation/SVGLengthInterpolationType.h"
 #include "core/animation/UnderlyingLengthChecker.h"
 #include "core/svg/SVGLengthList.h"
-#include <memory>
 
 namespace blink {
 
@@ -20,7 +19,7 @@ InterpolationValue SVGLengthListInterpolationType::maybeConvertNeutral(const Int
     if (underlyingLength == 0)
         return nullptr;
 
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(underlyingLength);
+    OwnPtr<InterpolableList> result = InterpolableList::create(underlyingLength);
     for (size_t i = 0; i < underlyingLength; i++)
         result->set(i, SVGLengthInterpolationType::neutralInterpolableValue());
     return InterpolationValue(std::move(result));
@@ -32,7 +31,7 @@ InterpolationValue SVGLengthListInterpolationType::maybeConvertSVGValue(const SV
         return nullptr;
 
     const SVGLengthList& lengthList = toSVGLengthList(svgValue);
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(lengthList.length());
+    OwnPtr<InterpolableList> result = InterpolableList::create(lengthList.length());
     for (size_t i = 0; i < lengthList.length(); i++) {
         InterpolationValue component = SVGLengthInterpolationType::convertSVGLength(*lengthList.at(i));
         result->set(i, std::move(component.interpolableValue));

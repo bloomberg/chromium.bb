@@ -75,7 +75,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -166,7 +165,7 @@ const KURL& DocumentLoader::url() const
     return m_request.url();
 }
 
-void DocumentLoader::setSubresourceFilter(std::unique_ptr<WebDocumentSubresourceFilter> subresourceFilter)
+void DocumentLoader::setSubresourceFilter(PassOwnPtr<WebDocumentSubresourceFilter> subresourceFilter)
 {
     m_subresourceFilter = std::move(subresourceFilter);
 }
@@ -371,7 +370,7 @@ void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceRespo
     return;
 }
 
-void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
+void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(resource, m_mainResource == resource);
     ASSERT_UNUSED(handle, !handle);

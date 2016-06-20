@@ -23,6 +23,7 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+
 #include <memory>
 
 namespace blink {
@@ -359,7 +360,7 @@ private:
     WebServiceWorkerResponse m_webResponse;
 };
 
-Cache* Cache::create(GlobalFetch::ScopedFetcher* fetcher, std::unique_ptr<WebServiceWorkerCache> webCache)
+Cache* Cache::create(GlobalFetch::ScopedFetcher* fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
 {
     return new Cache(fetcher, std::move(webCache));
 }
@@ -471,7 +472,7 @@ WebServiceWorkerCache::QueryParams Cache::toWebQueryParams(const CacheQueryOptio
     return webQueryParams;
 }
 
-Cache::Cache(GlobalFetch::ScopedFetcher* fetcher, std::unique_ptr<WebServiceWorkerCache> webCache)
+Cache::Cache(GlobalFetch::ScopedFetcher* fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
     : m_scopedFetcher(fetcher)
     , m_webCache(std::move(webCache))
 {

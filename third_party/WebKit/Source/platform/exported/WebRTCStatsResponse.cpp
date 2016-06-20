@@ -25,6 +25,7 @@
 #include "public/platform/WebRTCStatsResponse.h"
 
 #include "platform/mediastream/RTCStatsResponseBase.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

@@ -25,7 +25,6 @@
 #include "core/layout/svg/SVGTextFragment.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -89,7 +88,7 @@ private:
     bool m_textLengthSpacingInEffect;
 
     // Text on path layout
-    std::unique_ptr<PathPositionMapper> m_textPath;
+    OwnPtr<PathPositionMapper> m_textPath;
     float m_textPathStartOffset;
     float m_textPathCurrentOffset;
     float m_textPathDisplacement;

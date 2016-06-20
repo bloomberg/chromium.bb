@@ -35,9 +35,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/TracedValue.h"
 #include "wtf/Compiler.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -170,28 +168,28 @@ void InvalidationSet::destroy()
 HashSet<AtomicString>& InvalidationSet::ensureClassSet()
 {
     if (!m_classes)
-        m_classes = wrapUnique(new HashSet<AtomicString>);
+        m_classes = adoptPtr(new HashSet<AtomicString>);
     return *m_classes;
 }
 
 HashSet<AtomicString>& InvalidationSet::ensureIdSet()
 {
     if (!m_ids)
-        m_ids = wrapUnique(new HashSet<AtomicString>);
+        m_ids = adoptPtr(new HashSet<AtomicString>);
     return *m_ids;
 }
 
 HashSet<AtomicString>& InvalidationSet::ensureTagNameSet()
 {
     if (!m_tagNames)
-        m_tagNames = wrapUnique(new HashSet<AtomicString>);
+        m_tagNames = adoptPtr(new HashSet<AtomicString>);
     return *m_tagNames;
 }
 
 HashSet<AtomicString>& InvalidationSet::ensureAttributeSet()
 {
     if (!m_attributes)
-        m_attributes = wrapUnique(new HashSet<AtomicString>);
+        m_attributes = adoptPtr(new HashSet<AtomicString>);
     return *m_attributes;
 }
 
@@ -290,7 +288,7 @@ void InvalidationSet::toTracedValue(TracedValue* value) const
 #ifndef NDEBUG
 void InvalidationSet::show() const
 {
-    std::unique_ptr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->beginArray("InvalidationSet");
     toTracedValue(value.get());
     value->endArray();

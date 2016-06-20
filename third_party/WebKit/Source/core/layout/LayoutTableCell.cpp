@@ -34,7 +34,6 @@
 #include "core/style/CollapsedBorderValue.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -923,7 +922,7 @@ void LayoutTableCell::collectBorderValues(LayoutTable::CollapsedBorderValues& bo
         m_collapsedBorderValues = nullptr;
     } else if (!m_collapsedBorderValues) {
         changed = true;
-        m_collapsedBorderValues = wrapUnique(new CollapsedBorderValues(newValues));
+        m_collapsedBorderValues = adoptPtr(new CollapsedBorderValues(newValues));
     } else {
         // We check visuallyEquals so that the table cell is invalidated only if a changed
         // collapsed border is visible in the first place.

@@ -35,9 +35,8 @@
 #include "public/platform/WebAudioDestinationConsumer.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebString.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -45,12 +44,12 @@ namespace {
 
 class ExtraDataContainer : public MediaStreamSource::ExtraData {
 public:
-    ExtraDataContainer(std::unique_ptr<WebMediaStreamSource::ExtraData> extraData) : m_extraData(std::move(extraData)) { }
+    ExtraDataContainer(PassOwnPtr<WebMediaStreamSource::ExtraData> extraData) : m_extraData(std::move(extraData)) { }
 
     WebMediaStreamSource::ExtraData* getExtraData() { return m_extraData.get(); }
 
 private:
-    std::unique_ptr<WebMediaStreamSource::ExtraData> m_extraData;
+    OwnPtr<WebMediaStreamSource::ExtraData> m_extraData;
 };
 
 } // namespace
@@ -155,7 +154,7 @@ void WebMediaStreamSource::setExtraData(ExtraData* extraData)
     if (extraData)
         extraData->setOwner(m_private.get());
 
-    m_private->setExtraData(wrapUnique(new ExtraDataContainer(wrapUnique(extraData))));
+    m_private->setExtraData(adoptPtr(new ExtraDataContainer(adoptPtr(extraData))));
 }
 
 WebMediaConstraints WebMediaStreamSource::constraints()

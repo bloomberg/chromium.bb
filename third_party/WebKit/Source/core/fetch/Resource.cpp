@@ -48,7 +48,6 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
-#include <memory>
 
 namespace blink {
 
@@ -237,7 +236,7 @@ private:
     ResourceCallback();
 
     void runTask();
-    std::unique_ptr<CancellableTaskFactory> m_callbackTaskFactory;
+    OwnPtr<CancellableTaskFactory> m_callbackTaskFactory;
     HeapHashSet<Member<Resource>> m_resourcesWithPendingClients;
 };
 
@@ -568,7 +567,7 @@ bool Resource::unlock()
     return true;
 }
 
-void Resource::responseReceived(const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle>)
+void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle>)
 {
     m_responseTimestamp = currentTime();
     if (m_preloadDiscoveryTime) {

@@ -39,7 +39,6 @@
 #include "core/paint/PaintLayer.h"
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -327,7 +326,7 @@ void LayoutBoxModelObject::invalidateStickyConstraints()
 void LayoutBoxModelObject::createLayer()
 {
     ASSERT(!m_layer);
-    m_layer = wrapUnique(new PaintLayer(this));
+    m_layer = adoptPtr(new PaintLayer(this));
     setHasLayer(true);
     m_layer->insertOnlyThisLayerAfterStyleChange();
 }

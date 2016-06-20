@@ -21,8 +21,7 @@
 
 #include "core/style/CounterDirectives.h"
 
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -34,9 +33,9 @@ bool operator==(const CounterDirectives& a, const CounterDirectives& b)
         && a.resetValue() == b.resetValue();
 }
 
-std::unique_ptr<CounterDirectiveMap> clone(const CounterDirectiveMap& counterDirectives)
+PassOwnPtr<CounterDirectiveMap> clone(const CounterDirectiveMap& counterDirectives)
 {
-    std::unique_ptr<CounterDirectiveMap> result = wrapUnique(new CounterDirectiveMap);
+    OwnPtr<CounterDirectiveMap> result = adoptPtr(new CounterDirectiveMap);
     *result = counterDirectives;
     return result;
 }

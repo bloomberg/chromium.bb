@@ -37,7 +37,6 @@
 #include "core/events/Event.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -48,7 +47,7 @@ public:
     {
         return new ErrorEvent;
     }
-    static ErrorEvent* create(const String& message, std::unique_ptr<SourceLocation> location, DOMWrapperWorld* world)
+    static ErrorEvent* create(const String& message, PassOwnPtr<SourceLocation> location, DOMWrapperWorld* world)
     {
         return new ErrorEvent(message, std::move(location), world);
     }
@@ -83,12 +82,12 @@ public:
 
 private:
     ErrorEvent();
-    ErrorEvent(const String& message, std::unique_ptr<SourceLocation>, DOMWrapperWorld*);
+    ErrorEvent(const String& message, PassOwnPtr<SourceLocation>, DOMWrapperWorld*);
     ErrorEvent(const AtomicString&, const ErrorEventInit&);
 
     String m_unsanitizedMessage;
     String m_sanitizedMessage;
-    std::unique_ptr<SourceLocation> m_location;
+    OwnPtr<SourceLocation> m_location;
     ScriptValue m_error;
 
     RefPtr<DOMWrapperWorld> m_world;

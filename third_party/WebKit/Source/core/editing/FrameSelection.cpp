@@ -77,7 +77,6 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/text/UnicodeUtilities.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include <stdio.h>
 
@@ -1300,9 +1299,9 @@ GranularityStrategy* FrameSelection::granularityStrategy()
         return m_granularityStrategy.get();
 
     if (strategyType == SelectionStrategy::Direction)
-        m_granularityStrategy = wrapUnique(new DirectionGranularityStrategy());
+        m_granularityStrategy = adoptPtr(new DirectionGranularityStrategy());
     else
-        m_granularityStrategy = wrapUnique(new CharacterGranularityStrategy());
+        m_granularityStrategy = adoptPtr(new CharacterGranularityStrategy());
     return m_granularityStrategy.get();
 }
 

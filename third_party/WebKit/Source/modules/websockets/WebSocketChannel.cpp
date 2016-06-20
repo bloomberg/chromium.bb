@@ -38,7 +38,6 @@
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WorkerWebSocketChannel.h"
-#include <memory>
 
 namespace blink {
 
@@ -47,7 +46,7 @@ WebSocketChannel* WebSocketChannel::create(ExecutionContext* context, WebSocketC
     ASSERT(context);
     ASSERT(client);
 
-    std::unique_ptr<SourceLocation> location = SourceLocation::capture(context);
+    OwnPtr<SourceLocation> location = SourceLocation::capture(context);
 
     if (context->isWorkerGlobalScope()) {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);

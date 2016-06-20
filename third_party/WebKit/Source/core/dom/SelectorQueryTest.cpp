@@ -8,7 +8,6 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -20,7 +19,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement)
     document->documentElement()->setInnerHTML("<body><style>span::before { content: 'X' }</style><span></span></body>", ASSERT_NO_EXCEPTION);
 
     CSSSelectorList selectorList = CSSParser::parseSelector(CSSParserContext(*document, nullptr), nullptr, "span::before");
-    std::unique_ptr<SelectorQuery> query = SelectorQuery::adopt(std::move(selectorList));
+    OwnPtr<SelectorQuery> query = SelectorQuery::adopt(std::move(selectorList));
     Element* elm = query->queryFirst(*document);
     EXPECT_EQ(nullptr, elm);
 

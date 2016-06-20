@@ -10,8 +10,6 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -19,9 +17,9 @@ class UnderlyingImageListChecker : public InterpolationType::ConversionChecker {
 public:
     ~UnderlyingImageListChecker() final {}
 
-    static std::unique_ptr<UnderlyingImageListChecker> create(const InterpolationValue& underlying)
+    static PassOwnPtr<UnderlyingImageListChecker> create(const InterpolationValue& underlying)
     {
-        return wrapUnique(new UnderlyingImageListChecker(underlying));
+        return adoptPtr(new UnderlyingImageListChecker(underlying));
     }
 
 private:
@@ -64,9 +62,9 @@ class ParentImageListChecker : public InterpolationType::ConversionChecker {
 public:
     ~ParentImageListChecker() final {}
 
-    static std::unique_ptr<ParentImageListChecker> create(CSSPropertyID property, const StyleImageList& inheritedImageList)
+    static PassOwnPtr<ParentImageListChecker> create(CSSPropertyID property, const StyleImageList& inheritedImageList)
     {
-        return wrapUnique(new ParentImageListChecker(property, inheritedImageList));
+        return adoptPtr(new ParentImageListChecker(property, inheritedImageList));
     }
 
 private:
@@ -110,7 +108,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertValue(const CSSVal
     const CSSValueList& valueList = tempList ? *tempList : toCSSValueList(value);
 
     const size_t length = valueList.length();
-    std::unique_ptr<InterpolableList> interpolableList = InterpolableList::create(length);
+    OwnPtr<InterpolableList> interpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(length);
     for (size_t i = 0; i < length; i++) {
         InterpolationValue component = CSSImageInterpolationType::maybeConvertCSSValue(valueList.item(i), false);

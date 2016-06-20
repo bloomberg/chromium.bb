@@ -46,7 +46,6 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/text/CharacterNames.h"
-#include <memory>
 
 namespace blink {
 
@@ -529,7 +528,7 @@ static void adjustSVGTagNameCase(AtomicHTMLToken* token)
     static PrefixedNameToQualifiedNameMap* caseMap = 0;
     if (!caseMap) {
         caseMap = new PrefixedNameToQualifiedNameMap;
-        std::unique_ptr<const SVGQualifiedName*[]> svgTags = SVGNames::getSVGTags();
+        OwnPtr<const SVGQualifiedName*[]> svgTags = SVGNames::getSVGTags();
         mapLoweredLocalNameToName(caseMap, svgTags.get(), SVGNames::SVGTagsCount);
     }
 
@@ -539,13 +538,13 @@ static void adjustSVGTagNameCase(AtomicHTMLToken* token)
     token->setName(casedName.localName());
 }
 
-template<std::unique_ptr<const QualifiedName*[]> getAttrs(), unsigned length>
+template<PassOwnPtr<const QualifiedName*[]> getAttrs(), unsigned length>
 static void adjustAttributes(AtomicHTMLToken* token)
 {
     static PrefixedNameToQualifiedNameMap* caseMap = 0;
     if (!caseMap) {
         caseMap = new PrefixedNameToQualifiedNameMap;
-        std::unique_ptr<const QualifiedName*[]> attrs = getAttrs();
+        OwnPtr<const QualifiedName*[]> attrs = getAttrs();
         mapLoweredLocalNameToName(caseMap, attrs.get(), length);
     }
 
@@ -584,10 +583,10 @@ static void adjustForeignAttributes(AtomicHTMLToken* token)
     if (!map) {
         map = new PrefixedNameToQualifiedNameMap;
 
-        std::unique_ptr<const QualifiedName*[]> attrs = XLinkNames::getXLinkAttrs();
+        OwnPtr<const QualifiedName*[]> attrs = XLinkNames::getXLinkAttrs();
         addNamesWithPrefix(map, xlinkAtom, attrs.get(), XLinkNames::XLinkAttrsCount);
 
-        std::unique_ptr<const QualifiedName*[]> xmlAttrs = XMLNames::getXMLAttrs();
+        OwnPtr<const QualifiedName*[]> xmlAttrs = XMLNames::getXMLAttrs();
         addNamesWithPrefix(map, xmlAtom, xmlAttrs.get(), XMLNames::XMLAttrsCount);
 
         map->add(WTF::xmlnsAtom, XMLNSNames::xmlnsAttr);

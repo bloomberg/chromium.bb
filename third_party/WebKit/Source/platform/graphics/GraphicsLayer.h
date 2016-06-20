@@ -50,8 +50,9 @@
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerScrollClient.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -71,7 +72,7 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient, public cc::LayerClient, public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); USING_FAST_MALLOC(GraphicsLayer);
 public:
-    static std::unique_ptr<GraphicsLayer> create(GraphicsLayerClient*);
+    static PassOwnPtr<GraphicsLayer> create(GraphicsLayerClient*);
 
     ~GraphicsLayer() override;
 
@@ -356,8 +357,8 @@ private:
 
     int m_paintCount;
 
-    std::unique_ptr<WebContentLayer> m_layer;
-    std::unique_ptr<WebImageLayer> m_imageLayer;
+    OwnPtr<WebContentLayer> m_layer;
+    OwnPtr<WebImageLayer> m_imageLayer;
     WebLayer* m_contentsLayer;
     // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
     // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
@@ -367,13 +368,13 @@ private:
 
     Vector<LinkHighlight*> m_linkHighlights;
 
-    std::unique_ptr<ContentLayerDelegate> m_contentLayerDelegate;
+    OwnPtr<ContentLayerDelegate> m_contentLayerDelegate;
 
     WeakPersistent<ScrollableArea> m_scrollableArea;
     GraphicsLayerDebugInfo m_debugInfo;
     int m_3dRenderingContext;
 
-    std::unique_ptr<PaintController> m_paintController;
+    OwnPtr<PaintController> m_paintController;
 
     IntRect m_previousInterestRect;
 

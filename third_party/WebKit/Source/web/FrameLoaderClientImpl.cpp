@@ -103,11 +103,9 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -805,7 +803,7 @@ Widget* FrameLoaderClientImpl::createPlugin(
     return container;
 }
 
-std::unique_ptr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
+PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
     HTMLMediaElement& htmlMediaElement,
     const WebMediaPlayerSource& source,
     WebMediaPlayerClient* client)
@@ -822,17 +820,17 @@ std::unique_ptr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
 
     HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(htmlMediaElement);
     WebString sinkId(HTMLMediaElementAudioOutputDevice::sinkId(htmlMediaElement));
-    return wrapUnique(webFrame->client()->createMediaPlayer(source,
+    return adoptPtr(webFrame->client()->createMediaPlayer(source,
         client, &encryptedMedia,
         encryptedMedia.contentDecryptionModule(), sinkId, webMediaSession));
 }
 
-std::unique_ptr<WebMediaSession> FrameLoaderClientImpl::createWebMediaSession()
+PassOwnPtr<WebMediaSession> FrameLoaderClientImpl::createWebMediaSession()
 {
     if (!m_webFrame->client())
         return nullptr;
 
-    return wrapUnique(m_webFrame->client()->createMediaSession());
+    return adoptPtr(m_webFrame->client()->createMediaSession());
 }
 
 ObjectContentType FrameLoaderClientImpl::getObjectContentType(
@@ -965,11 +963,11 @@ void FrameLoaderClientImpl::dispatchWillInsertBody()
         m_webFrame->client()->willInsertBody(m_webFrame);
 }
 
-std::unique_ptr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerProvider()
+PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerProvider()
 {
     if (!m_webFrame->client())
         return nullptr;
-    return wrapUnique(m_webFrame->client()->createServiceWorkerProvider());
+    return adoptPtr(m_webFrame->client()->createServiceWorkerProvider());
 }
 
 bool FrameLoaderClientImpl::isControlledByServiceWorker(DocumentLoader& loader)
@@ -989,11 +987,11 @@ SharedWorkerRepositoryClient* FrameLoaderClientImpl::sharedWorkerRepositoryClien
     return m_webFrame->sharedWorkerRepositoryClient();
 }
 
-std::unique_ptr<WebApplicationCacheHost> FrameLoaderClientImpl::createApplicationCacheHost(WebApplicationCacheHostClient* client)
+PassOwnPtr<WebApplicationCacheHost> FrameLoaderClientImpl::createApplicationCacheHost(WebApplicationCacheHostClient* client)
 {
     if (!m_webFrame->client())
         return nullptr;
-    return wrapUnique(m_webFrame->client()->createApplicationCacheHost(client));
+    return adoptPtr(m_webFrame->client()->createApplicationCacheHost(client));
 }
 
 void FrameLoaderClientImpl::dispatchDidChangeManifest()

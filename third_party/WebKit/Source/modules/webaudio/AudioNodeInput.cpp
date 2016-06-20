@@ -24,9 +24,7 @@
 
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
-#include <memory>
 
 namespace blink {
 
@@ -38,9 +36,9 @@ inline AudioNodeInput::AudioNodeInput(AudioHandler& handler)
     m_internalSummingBus = AudioBus::create(1, AudioHandler::ProcessingSizeInFrames);
 }
 
-std::unique_ptr<AudioNodeInput> AudioNodeInput::create(AudioHandler& handler)
+PassOwnPtr<AudioNodeInput> AudioNodeInput::create(AudioHandler& handler)
 {
-    return wrapUnique(new AudioNodeInput(handler));
+    return adoptPtr(new AudioNodeInput(handler));
 }
 
 void AudioNodeInput::connect(AudioNodeOutput& output)

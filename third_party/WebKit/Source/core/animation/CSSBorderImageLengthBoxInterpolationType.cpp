@@ -8,8 +8,6 @@
 #include "core/animation/CSSLengthInterpolationType.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -86,9 +84,9 @@ namespace {
 
 class UnderlyingSideNumbersChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<UnderlyingSideNumbersChecker> create(const SideNumbers& underlyingSideNumbers)
+    static PassOwnPtr<UnderlyingSideNumbersChecker> create(const SideNumbers& underlyingSideNumbers)
     {
-        return wrapUnique(new UnderlyingSideNumbersChecker(underlyingSideNumbers));
+        return adoptPtr(new UnderlyingSideNumbersChecker(underlyingSideNumbers));
     }
 
     static SideNumbers getUnderlyingSideNumbers(const InterpolationValue& underlying)
@@ -111,9 +109,9 @@ private:
 
 class InheritedSideNumbersChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<InheritedSideNumbersChecker> create(CSSPropertyID property, const SideNumbers& inheritedSideNumbers)
+    static PassOwnPtr<InheritedSideNumbersChecker> create(CSSPropertyID property, const SideNumbers& inheritedSideNumbers)
     {
-        return wrapUnique(new InheritedSideNumbersChecker(property, inheritedSideNumbers));
+        return adoptPtr(new InheritedSideNumbersChecker(property, inheritedSideNumbers));
     }
 
 private:
@@ -133,7 +131,7 @@ private:
 
 InterpolationValue convertBorderImageLengthBox(const BorderImageLengthBox& box, double zoom)
 {
-    std::unique_ptr<InterpolableList> list = InterpolableList::create(SideIndexCount);
+    OwnPtr<InterpolableList> list = InterpolableList::create(SideIndexCount);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(SideIndexCount);
     const BorderImageLength* sides[SideIndexCount] = {};
     sides[SideTop] = &box.top();
@@ -193,7 +191,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(c
         return nullptr;
 
     const CSSQuadValue& quad = toCSSQuadValue(value);
-    std::unique_ptr<InterpolableList> list = InterpolableList::create(SideIndexCount);
+    OwnPtr<InterpolableList> list = InterpolableList::create(SideIndexCount);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(SideIndexCount);
     const CSSPrimitiveValue* sides[SideIndexCount] = {};
     sides[SideTop] = quad.top();

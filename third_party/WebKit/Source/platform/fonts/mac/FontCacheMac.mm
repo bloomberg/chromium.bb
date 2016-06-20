@@ -41,9 +41,7 @@
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 // Forward declare Mac SPIs.
 // Request for public API: rdar://13803570
@@ -204,7 +202,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     return getFontData(fontDescription, lucidaGrandeStr, false, shouldRetain);
 }
 
-std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(const FontDescription& fontDescription,
+PassOwnPtr<FontPlatformData> FontCache::createFontPlatformData(const FontDescription& fontDescription,
     const FontFaceCreationParams& creationParams, float fontSize)
 {
     NSFontTraitMask traits = fontDescription.style() ? NSFontItalicTrait : 0;
@@ -234,7 +232,7 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(const FontDe
     // Out-of-process loading occurs for registered fonts stored in non-system locations.
     // When loading fails, we do not want to use the returned FontPlatformData since it will not have
     // a valid SkTypeface.
-    std::unique_ptr<FontPlatformData> platformData = wrapUnique(new FontPlatformData(platformFont, size, syntheticBold, syntheticItalic, fontDescription.orientation()));
+    OwnPtr<FontPlatformData> platformData = adoptPtr(new FontPlatformData(platformFont, size, syntheticBold, syntheticItalic, fontDescription.orientation()));
     if (!platformData->typeface()) {
         return nullptr;
     }

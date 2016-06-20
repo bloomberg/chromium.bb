@@ -36,6 +36,7 @@
 #include "platform/image-decoders/SegmentReader.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
@@ -108,9 +109,9 @@ public:
     // we can't sniff a supported type from the provided data (possibly
     // because there isn't enough data yet).
     // Sets m_maxDecodedBytes to Platform::maxImageDecodedBytes().
-    static std::unique_ptr<ImageDecoder> create(const char* data, size_t length, AlphaOption, GammaAndColorProfileOption);
-    static std::unique_ptr<ImageDecoder> create(const SharedBuffer&, AlphaOption, GammaAndColorProfileOption);
-    static std::unique_ptr<ImageDecoder> create(const SegmentReader&, AlphaOption, GammaAndColorProfileOption);
+    static PassOwnPtr<ImageDecoder> create(const char* data, size_t length, AlphaOption, GammaAndColorProfileOption);
+    static PassOwnPtr<ImageDecoder> create(const SharedBuffer&, AlphaOption, GammaAndColorProfileOption);
+    static PassOwnPtr<ImageDecoder> create(const SegmentReader&, AlphaOption, GammaAndColorProfileOption);
 
     virtual String filenameExtension() const = 0;
 
@@ -263,7 +264,7 @@ public:
 
     virtual bool canDecodeToYUV() { return false; }
     virtual bool decodeToYUV() { return false; }
-    virtual void setImagePlanes(std::unique_ptr<ImagePlanes>) { }
+    virtual void setImagePlanes(PassOwnPtr<ImagePlanes>) { }
 
 protected:
     // Calculates the most recent frame whose image data may be needed in

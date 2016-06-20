@@ -83,8 +83,9 @@
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 #if OS(WIN)
 #include <windows.h>
@@ -800,9 +801,9 @@ static const IntSize maxDragImageSize(float deviceScaleFactor)
     return maxSizeInPixels;
 }
 
-static std::unique_ptr<DragImage> dragImageForImage(Element* element, Image* image, float deviceScaleFactor, const IntPoint& dragOrigin, const IntPoint& imageElementLocation, const IntSize& imageElementSizeInPixels, IntPoint& dragLocation)
+static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, float deviceScaleFactor, const IntPoint& dragOrigin, const IntPoint& imageElementLocation, const IntSize& imageElementSizeInPixels, IntPoint& dragLocation)
 {
-    std::unique_ptr<DragImage> dragImage;
+    OwnPtr<DragImage> dragImage;
     IntPoint origin;
 
     InterpolationQuality interpolationQuality = element->ensureComputedStyle()->imageRendering() == ImageRenderingPixelated ? InterpolationNone : InterpolationHigh;
@@ -838,11 +839,11 @@ static std::unique_ptr<DragImage> dragImageForImage(Element* element, Image* ima
     return dragImage;
 }
 
-static std::unique_ptr<DragImage> dragImageForLink(const KURL& linkURL, const String& linkText, float deviceScaleFactor, const IntPoint& mouseDraggedPoint, IntPoint& dragLoc)
+static PassOwnPtr<DragImage> dragImageForLink(const KURL& linkURL, const String& linkText, float deviceScaleFactor, const IntPoint& mouseDraggedPoint, IntPoint& dragLoc)
 {
     FontDescription fontDescription;
     LayoutTheme::theme().systemFont(blink::CSSValueNone, fontDescription);
-    std::unique_ptr<DragImage> dragImage = DragImage::create(linkURL, linkText, fontDescription, deviceScaleFactor);
+    OwnPtr<DragImage> dragImage = DragImage::create(linkURL, linkText, fontDescription, deviceScaleFactor);
 
     IntSize size = dragImage ? dragImage->size() : IntSize();
     IntPoint dragImageOffset(-size.width() / 2, -LinkDragBorderInset);
@@ -876,7 +877,7 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
     DataTransfer* dataTransfer = state.m_dragDataTransfer.get();
     // We allow DHTML/JS to set the drag image, even if its a link, image or text we're dragging.
     // This is in the spirit of the IE API, which allows overriding of pasteboard data and DragOp.
-    std::unique_ptr<DragImage> dragImage = dataTransfer->createDragImage(dragOffset, src);
+    OwnPtr<DragImage> dragImage = dataTransfer->createDragImage(dragOffset, src);
     if (dragImage) {
         dragLocation = dragLocationForDHTMLDrag(mouseDraggedPoint, dragOrigin, dragOffset, !linkURL.isEmpty());
     }

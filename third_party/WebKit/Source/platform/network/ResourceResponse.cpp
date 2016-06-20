@@ -27,9 +27,7 @@
 #include "platform/network/ResourceResponse.h"
 
 #include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -150,9 +148,9 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     // whatever values may be present in the opaque m_extraData structure.
 }
 
-std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
+PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
 {
-    std::unique_ptr<CrossThreadResourceResponseData> data = wrapUnique(new CrossThreadResourceResponseData);
+    OwnPtr<CrossThreadResourceResponseData> data = adoptPtr(new CrossThreadResourceResponseData);
     data->m_url = url().copy();
     data->m_mimeType = mimeType().getString().isolatedCopy();
     data->m_expectedContentLength = expectedContentLength();
@@ -544,7 +542,7 @@ void ResourceResponse::setDownloadedFilePath(const String& downloadedFilePath)
         m_downloadedFileHandle.clear();
         return;
     }
-    std::unique_ptr<BlobData> blobData = BlobData::create();
+    OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendFile(m_downloadedFilePath);
     blobData->detachFromCurrentThread();
     m_downloadedFileHandle = BlobDataHandle::create(std::move(blobData), -1);

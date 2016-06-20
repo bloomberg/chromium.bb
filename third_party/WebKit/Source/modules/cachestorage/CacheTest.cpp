@@ -24,9 +24,9 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/OwnPtr.h"
+
 #include <algorithm>
-#include <memory>
 #include <string>
 
 namespace blink {
@@ -117,7 +117,7 @@ public:
         checkUrlIfProvided(webRequest.url());
         checkQueryParamsIfProvided(queryParams);
 
-        std::unique_ptr<CacheMatchCallbacks> ownedCallbacks(wrapUnique(callbacks));
+        OwnPtr<CacheMatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onError(m_error);
     }
 
@@ -127,7 +127,7 @@ public:
         checkUrlIfProvided(webRequest.url());
         checkQueryParamsIfProvided(queryParams);
 
-        std::unique_ptr<CacheWithResponsesCallbacks> ownedCallbacks(wrapUnique(callbacks));
+        OwnPtr<CacheWithResponsesCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onError(m_error);
     }
 
@@ -139,7 +139,7 @@ public:
             checkQueryParamsIfProvided(queryParams);
         }
 
-        std::unique_ptr<CacheWithRequestsCallbacks> ownedCallbacks(wrapUnique(callbacks));
+        OwnPtr<CacheWithRequestsCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onError(m_error);
     }
 
@@ -148,7 +148,7 @@ public:
         m_lastErrorWebCacheMethodCalled = "dispatchBatch";
         checkBatchOperationsIfProvided(batchOperations);
 
-        std::unique_ptr<CacheBatchCallbacks> ownedCallbacks(wrapUnique(callbacks));
+        OwnPtr<CacheBatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onError(m_error);
     }
 
@@ -213,7 +213,7 @@ public:
 
     Cache* createCache(ScopedFetcherForTests* fetcher, WebServiceWorkerCache* webCache)
     {
-        return Cache::create(fetcher, wrapUnique(webCache));
+        return Cache::create(fetcher, adoptPtr(webCache));
     }
 
     ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
@@ -306,7 +306,7 @@ private:
     };
 
     // Lifetime is that of the text fixture.
-    std::unique_ptr<DummyPageHolder> m_page;
+    OwnPtr<DummyPageHolder> m_page;
 
     NonThrowableExceptionState m_exceptionState;
 };
@@ -479,7 +479,7 @@ public:
     // From WebServiceWorkerCache:
     void dispatchMatch(CacheMatchCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
-        std::unique_ptr<CacheMatchCallbacks> ownedCallbacks(wrapUnique(callbacks));
+        OwnPtr<CacheMatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onSuccess(m_response);
     }
 
@@ -515,7 +515,7 @@ public:
 
     void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
     {
-        std::unique_ptr<CacheWithRequestsCallbacks> ownedCallbacks(wrapUnique(callbacks));
+        OwnPtr<CacheWithRequestsCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onSuccess(m_requests);
     }
 
@@ -560,13 +560,13 @@ public:
 
     void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
-        std::unique_ptr<CacheWithResponsesCallbacks> ownedCallbacks(wrapUnique(callbacks));
+        OwnPtr<CacheWithResponsesCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onSuccess(m_responses);
     }
 
     void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
     {
-        std::unique_ptr<CacheBatchCallbacks> ownedCallbacks(wrapUnique(callbacks));
+        OwnPtr<CacheBatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onSuccess();
     }
 

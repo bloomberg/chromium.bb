@@ -7,11 +7,10 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/DOMTimer.h"
 #include <algorithm>
-#include <memory>
 
 namespace blink {
 
-DOMTimerCoordinator::DOMTimerCoordinator(std::unique_ptr<WebTaskRunner> timerTaskRunner)
+DOMTimerCoordinator::DOMTimerCoordinator(PassOwnPtr<WebTaskRunner> timerTaskRunner)
     : m_circularSequentialID(0)
     , m_timerNestingLevel(0)
     , m_timerTaskRunner(std::move(timerTaskRunner))
@@ -62,7 +61,7 @@ int DOMTimerCoordinator::nextID()
     }
 }
 
-void DOMTimerCoordinator::setTimerTaskRunner(std::unique_ptr<WebTaskRunner> timerTaskRunner)
+void DOMTimerCoordinator::setTimerTaskRunner(PassOwnPtr<WebTaskRunner> timerTaskRunner)
 {
     m_timerTaskRunner = std::move(timerTaskRunner);
 }

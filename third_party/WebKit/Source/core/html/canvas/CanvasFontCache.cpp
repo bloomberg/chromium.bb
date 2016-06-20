@@ -10,7 +10,6 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/fonts/FontCache.h"
 #include "public/platform/Platform.h"
-#include "wtf/PtrUtil.h"
 
 namespace {
 
@@ -135,7 +134,7 @@ void CanvasFontCache::schedulePruningIfNeeded()
     if (m_pruningScheduled)
         return;
     ASSERT(!m_mainCachePurgePreventer);
-    m_mainCachePurgePreventer = wrapUnique(new FontCachePurgePreventer);
+    m_mainCachePurgePreventer = adoptPtr(new FontCachePurgePreventer);
     Platform::current()->currentThread()->addTaskObserver(this);
     m_pruningScheduled = true;
 }

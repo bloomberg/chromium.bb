@@ -7,8 +7,6 @@
 #include "core/animation/CSSColorInterpolationType.h"
 #include "core/animation/PaintPropertyFunctions.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -27,13 +25,13 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertInitial(const StyleRes
 
 class ParentPaintChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<ParentPaintChecker> create(CSSPropertyID property, const StyleColor& color)
+    static PassOwnPtr<ParentPaintChecker> create(CSSPropertyID property, const StyleColor& color)
     {
-        return wrapUnique(new ParentPaintChecker(property, color));
+        return adoptPtr(new ParentPaintChecker(property, color));
     }
-    static std::unique_ptr<ParentPaintChecker> create(CSSPropertyID property)
+    static PassOwnPtr<ParentPaintChecker> create(CSSPropertyID property)
     {
-        return wrapUnique(new ParentPaintChecker(property));
+        return adoptPtr(new ParentPaintChecker(property));
     }
 
 private:
@@ -75,7 +73,7 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertInherit(const StyleRes
 
 InterpolationValue CSSPaintInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
 {
-    std::unique_ptr<InterpolableValue> interpolableColor = CSSColorInterpolationType::maybeCreateInterpolableColor(value);
+    OwnPtr<InterpolableValue> interpolableColor = CSSColorInterpolationType::maybeCreateInterpolableColor(value);
     if (!interpolableColor)
         return nullptr;
     return InterpolationValue(std::move(interpolableColor));

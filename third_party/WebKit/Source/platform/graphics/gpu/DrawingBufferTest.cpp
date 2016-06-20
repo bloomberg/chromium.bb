@@ -42,9 +42,7 @@
 #include "public/platform/functional/WebFunction.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 using testing::Test;
 using testing::_;
@@ -217,9 +215,9 @@ static const int alternateHeight = 50;
 
 class DrawingBufferForTests : public DrawingBuffer {
 public:
-    static PassRefPtr<DrawingBufferForTests> create(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, PreserveDrawingBuffer preserve)
+    static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, PreserveDrawingBuffer preserve)
     {
-        std::unique_ptr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
+        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
         RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(std::move(contextProvider), std::move(extensionsUtil), preserve));
         bool multisampleExtensionSupported = false;
         if (!drawingBuffer->initialize(size, multisampleExtensionSupported)) {
@@ -229,7 +227,7 @@ public:
         return drawingBuffer.release();
     }
 
-    DrawingBufferForTests(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, std::unique_ptr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
+    DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
         : DrawingBuffer(std::move(contextProvider), std::move(extensionsUtil), false /* discardFramebufferSupported */, true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve, false /* wantDepth */, false /* wantStencil */)
         , m_live(0)
     { }
@@ -245,7 +243,7 @@ public:
 
 class WebGraphicsContext3DProviderForTests : public WebGraphicsContext3DProvider {
 public:
-    WebGraphicsContext3DProviderForTests(std::unique_ptr<gpu::gles2::GLES2Interface> gl)
+    WebGraphicsContext3DProviderForTests(PassOwnPtr<gpu::gles2::GLES2Interface> gl)
         : m_gl(std::move(gl))
     {
     }
@@ -262,16 +260,16 @@ public:
     void setErrorMessageCallback(WebFunction<void(const char*, int32_t id)>) {}
 
 private:
-    std::unique_ptr<gpu::gles2::GLES2Interface> m_gl;
+    OwnPtr<gpu::gles2::GLES2Interface> m_gl;
 };
 
 class DrawingBufferTest : public Test {
 protected:
     void SetUp() override
     {
-        std::unique_ptr<GLES2InterfaceForTests> gl = wrapUnique(new GLES2InterfaceForTests);
+        OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
         m_gl = gl.get();
-        std::unique_ptr<WebGraphicsContext3DProviderForTests> provider = wrapUnique(new WebGraphicsContext3DProviderForTests(std::move(gl)));
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(std::move(gl)));
         m_drawingBuffer = DrawingBufferForTests::create(std::move(provider), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
         CHECK(m_drawingBuffer);
     }
@@ -491,9 +489,9 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
 protected:
     void SetUp() override
     {
-        std::unique_ptr<GLES2InterfaceForTests> gl = wrapUnique(new GLES2InterfaceForTests);
+        OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
         m_gl = gl.get();
-        std::unique_ptr<WebGraphicsContext3DProviderForTests> provider = wrapUnique(new WebGraphicsContext3DProviderForTests(std::move(gl)));
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(std::move(gl)));
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
         m_imageId0 = m_gl->nextImageIdToBeCreated();
         EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId0)).Times(1);
@@ -709,9 +707,9 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
         SCOPED_TRACE(cases[i].testCaseName);
-        std::unique_ptr<DepthStencilTrackingGLES2Interface> gl = wrapUnique(new DepthStencilTrackingGLES2Interface);
+        OwnPtr<DepthStencilTrackingGLES2Interface> gl = adoptPtr(new DepthStencilTrackingGLES2Interface);
         DepthStencilTrackingGLES2Interface* trackingGL = gl.get();
-        std::unique_ptr<WebGraphicsContext3DProviderForTests> provider = wrapUnique(new WebGraphicsContext3DProviderForTests(std::move(gl)));
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(std::move(gl)));
         DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::Preserve;
 
         bool premultipliedAlpha = false;

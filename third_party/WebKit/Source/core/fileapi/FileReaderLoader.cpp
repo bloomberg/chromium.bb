@@ -43,13 +43,12 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "public/platform/WebURLRequest.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -174,7 +173,7 @@ void FileReaderLoader::cleanup()
     }
 }
 
-void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
+void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(handle, !handle);
     if (response.httpStatusCode() != 200) {
@@ -212,9 +211,9 @@ void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse&
         }
 
         if (initialBufferLength < 0)
-            m_rawData = wrapUnique(new ArrayBufferBuilder());
+            m_rawData = adoptPtr(new ArrayBufferBuilder());
         else
-            m_rawData = wrapUnique(new ArrayBufferBuilder(static_cast<unsigned>(initialBufferLength)));
+            m_rawData = adoptPtr(new ArrayBufferBuilder(static_cast<unsigned>(initialBufferLength)));
 
         if (!m_rawData || !m_rawData->isValid()) {
             failed(FileError::NOT_READABLE_ERR);

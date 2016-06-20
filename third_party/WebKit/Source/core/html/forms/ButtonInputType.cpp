@@ -31,6 +31,7 @@
 #include "core/html/forms/ButtonInputType.h"
 
 #include "core/InputTypeNames.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

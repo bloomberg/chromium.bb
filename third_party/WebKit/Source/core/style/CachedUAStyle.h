@@ -25,8 +25,6 @@
 #include "core/style/ComputedStyle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -38,9 +36,9 @@ class CachedUAStyle {
     USING_FAST_MALLOC(CachedUAStyle);
     WTF_MAKE_NONCOPYABLE(CachedUAStyle);
 public:
-    static std::unique_ptr<CachedUAStyle> create(const ComputedStyle* style)
+    static PassOwnPtr<CachedUAStyle> create(const ComputedStyle* style)
     {
-        return wrapUnique(new CachedUAStyle(style));
+        return adoptPtr(new CachedUAStyle(style));
     }
 
     BorderData border;

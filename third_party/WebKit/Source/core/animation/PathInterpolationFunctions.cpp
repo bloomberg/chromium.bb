@@ -12,8 +12,6 @@
 #include "core/svg/SVGPathByteStreamBuilder.h"
 #include "core/svg/SVGPathByteStreamSource.h"
 #include "core/svg/SVGPathParser.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -53,7 +51,7 @@ InterpolationValue PathInterpolationFunctions::convertValue(const SVGPathByteStr
     SVGPathByteStreamSource pathSource(byteStream);
     size_t length = 0;
     PathCoordinates currentCoordinates;
-    Vector<std::unique_ptr<InterpolableValue>> interpolablePathSegs;
+    Vector<OwnPtr<InterpolableValue>> interpolablePathSegs;
     Vector<SVGPathSegType> pathSegTypes;
 
     while (pathSource.hasMoreData()) {
@@ -63,11 +61,11 @@ InterpolationValue PathInterpolationFunctions::convertValue(const SVGPathByteStr
         length++;
     }
 
-    std::unique_ptr<InterpolableList> pathArgs = InterpolableList::create(length);
+    OwnPtr<InterpolableList> pathArgs = InterpolableList::create(length);
     for (size_t i = 0; i < interpolablePathSegs.size(); i++)
         pathArgs->set(i, std::move(interpolablePathSegs[i]));
 
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(PathComponentIndexCount);
+    OwnPtr<InterpolableList> result = InterpolableList::create(PathComponentIndexCount);
     result->set(PathArgsIndex, std::move(pathArgs));
     result->set(PathNeutralIndex, InterpolableNumber::create(0));
 
@@ -79,7 +77,7 @@ InterpolationValue PathInterpolationFunctions::convertValue(const StylePath* sty
     if (stylePath)
         return convertValue(stylePath->byteStream());
 
-    std::unique_ptr<SVGPathByteStream> emptyPath = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> emptyPath = SVGPathByteStream::create();
     return convertValue(*emptyPath);
 }
 
@@ -87,9 +85,9 @@ class UnderlyingPathSegTypesChecker : public InterpolationType::ConversionChecke
 public:
     ~UnderlyingPathSegTypesChecker() final {}
 
-    static std::unique_ptr<UnderlyingPathSegTypesChecker> create(const InterpolationValue& underlying)
+    static PassOwnPtr<UnderlyingPathSegTypesChecker> create(const InterpolationValue& underlying)
     {
-        return wrapUnique(new UnderlyingPathSegTypesChecker(getPathSegTypes(underlying)));
+        return adoptPtr(new UnderlyingPathSegTypesChecker(getPathSegTypes(underlying)));
     }
 
 private:
@@ -113,7 +111,7 @@ private:
 InterpolationValue PathInterpolationFunctions::maybeConvertNeutral(const InterpolationValue& underlying, InterpolationType::ConversionCheckers& conversionCheckers)
 {
     conversionCheckers.append(UnderlyingPathSegTypesChecker::create(underlying));
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(PathComponentIndexCount);
+    OwnPtr<InterpolableList> result = InterpolableList::create(PathComponentIndexCount);
     result->set(PathArgsIndex, toInterpolableList(*underlying.interpolableValue).get(PathArgsIndex)->cloneAndZero());
     result->set(PathNeutralIndex, InterpolableNumber::create(1));
     return InterpolationValue(std::move(result), underlying.nonInterpolableValue.get());
@@ -159,9 +157,9 @@ void PathInterpolationFunctions::composite(UnderlyingValueOwner& underlyingValue
     underlyingValueOwner.mutableValue().nonInterpolableValue = value.nonInterpolableValue.get();
 }
 
-std::unique_ptr<SVGPathByteStream> PathInterpolationFunctions::appliedValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)
+PassOwnPtr<SVGPathByteStream> PathInterpolationFunctions::appliedValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)
 {
-    std::unique_ptr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
     InterpolatedSVGPathSource source(
         toInterpolableList(*toInterpolableList(interpolableValue).get(PathArgsIndex)),
         toSVGPathNonInterpolableValue(nonInterpolableValue)->pathSegTypes());

@@ -38,15 +38,13 @@
 #include "public/web/WebContentSettingsClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerContentSettingsClient.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<FileSystemClient> LocalFileSystemClient::create()
+PassOwnPtr<FileSystemClient> LocalFileSystemClient::create()
 {
-    return wrapUnique(static_cast<FileSystemClient*>(new LocalFileSystemClient()));
+    return adoptPtr(static_cast<FileSystemClient*>(new LocalFileSystemClient()));
 }
 
 LocalFileSystemClient::~LocalFileSystemClient()
@@ -65,7 +63,7 @@ bool LocalFileSystemClient::requestFileSystemAccessSync(ExecutionContext* contex
     return WorkerContentSettingsClient::from(*toWorkerGlobalScope(context))->requestFileSystemAccessSync();
 }
 
-void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* context, std::unique_ptr<ContentSettingCallbacks> callbacks)
+void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* context, PassOwnPtr<ContentSettingCallbacks> callbacks)
 {
     DCHECK(context);
     if (!context->isDocument()) {

@@ -10,7 +10,6 @@
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/ModulesExport.h"
-#include <memory>
 
 namespace blink {
 
@@ -20,7 +19,7 @@ class WorkerThreadStartupData;
 class MODULES_EXPORT CompositorWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static CompositorWorkerGlobalScope* create(CompositorWorkerThread*, std::unique_ptr<WorkerThreadStartupData>, double timeOrigin);
+    static CompositorWorkerGlobalScope* create(CompositorWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
     ~CompositorWorkerGlobalScope() override;
 
     // EventTarget
@@ -39,7 +38,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    CompositorWorkerGlobalScope(const KURL&, const String& userAgent, CompositorWorkerThread*, double timeOrigin, std::unique_ptr<SecurityOrigin::PrivilegeData>, WorkerClients*);
+    CompositorWorkerGlobalScope(const KURL&, const String& userAgent, CompositorWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);
     CompositorWorkerThread* thread() const;
 
     bool m_executingAnimationFrameCallbacks;

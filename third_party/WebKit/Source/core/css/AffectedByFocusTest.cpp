@@ -12,7 +12,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -35,7 +34,7 @@ protected:
     void checkElements(ElementResult expected[], unsigned expectedCount) const;
 
 private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
 
     Persistent<HTMLDocument> m_document;
 };

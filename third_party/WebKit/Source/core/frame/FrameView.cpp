@@ -108,10 +108,8 @@
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
-#include <memory>
 
 namespace blink {
 
@@ -222,7 +220,7 @@ void FrameView::reset()
     m_safeToPropagateScrollToParent = true;
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
-    m_trackedObjectPaintInvalidations = wrapUnique(s_initialTrackAllPaintInvalidations ? new Vector<ObjectPaintInvalidation> : nullptr);
+    m_trackedObjectPaintInvalidations = adoptPtr(s_initialTrackAllPaintInvalidations ? new Vector<ObjectPaintInvalidation> : nullptr);
     m_visuallyNonEmptyCharacterCount = 0;
     m_visuallyNonEmptyPixelCount = 0;
     m_isVisuallyNonEmpty = false;
@@ -837,15 +835,15 @@ void FrameView::prepareLayoutAnalyzer()
         return;
     }
     if (!m_analyzer)
-        m_analyzer = wrapUnique(new LayoutAnalyzer());
+        m_analyzer = adoptPtr(new LayoutAnalyzer());
     m_analyzer->reset();
 }
 
-std::unique_ptr<TracedValue> FrameView::analyzerCounters()
+PassOwnPtr<TracedValue> FrameView::analyzerCounters()
 {
     if (!m_analyzer)
         return TracedValue::create();
-    std::unique_ptr<TracedValue> value = m_analyzer->toTracedValue();
+    OwnPtr<TracedValue> value = m_analyzer->toTracedValue();
     value->setString("host", layoutViewItem().document().location()->host());
     value->setString("frame", String::format("0x%" PRIxPTR, reinterpret_cast<uintptr_t>(m_frame.get())));
     value->setInteger("contentsHeightAfterLayout", layoutViewItem().documentRect().height());
@@ -1309,7 +1307,7 @@ void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object)
 void FrameView::addViewportConstrainedObject(LayoutObject* object)
 {
     if (!m_viewportConstrainedObjects)
-        m_viewportConstrainedObjects = wrapUnique(new ViewportConstrainedObjectSet);
+        m_viewportConstrainedObjects = adoptPtr(new ViewportConstrainedObjectSet);
 
     if (!m_viewportConstrainedObjects->contains(object)) {
         m_viewportConstrainedObjects->add(object);
@@ -2945,7 +2943,7 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
         if (!frame->isLocalFrame())
             continue;
         if (LayoutViewItem layoutView = toLocalFrame(frame)->contentLayoutItem()) {
-            layoutView.frameView()->m_trackedObjectPaintInvalidations = wrapUnique(trackPaintInvalidations ? new Vector<ObjectPaintInvalidation> : nullptr);
+            layoutView.frameView()->m_trackedObjectPaintInvalidations = adoptPtr(trackPaintInvalidations ? new Vector<ObjectPaintInvalidation> : nullptr);
             layoutView.compositor()->setTracksPaintInvalidations(trackPaintInvalidations);
         }
     }
@@ -2981,7 +2979,7 @@ PassRefPtr<JSONArray> FrameView::trackedObjectPaintInvalidationsAsJSON() const
 void FrameView::addResizerArea(LayoutBox& resizerBox)
 {
     if (!m_resizerAreas)
-        m_resizerAreas = wrapUnique(new ResizerAreaSet);
+        m_resizerAreas = adoptPtr(new ResizerAreaSet);
     m_resizerAreas->add(&resizerBox);
 }
 

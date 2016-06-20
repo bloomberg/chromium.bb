@@ -28,9 +28,9 @@
 #include "base/gtest_prod_util.h"
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioNode.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace blink {
 
@@ -58,7 +58,7 @@ private:
     double tailTime() const override;
     double latencyTime() const override;
 
-    std::unique_ptr<Reverb> m_reverb;
+    OwnPtr<Reverb> m_reverb;
     // This Persistent doesn't make a reference cycle including the owner
     // ConvolverNode.
     Persistent<AudioBuffer> m_buffer;

@@ -45,7 +45,6 @@
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace v8 {
 class Isolate;
@@ -79,12 +78,12 @@ class Visitor;
 // Since a pre-finalizer adds pressure on GC performance, you should use it
 // only if necessary.
 //
-// A pre-finalizer is similar to the HeapHashMap<WeakMember<Foo>, std::unique_ptr<Disposer>>
+// A pre-finalizer is similar to the HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>>
 // idiom.  The difference between this and the idiom is that pre-finalizer
 // function is called whenever an object is destructed with this feature.  The
-// HeapHashMap<WeakMember<Foo>, std::unique_ptr<Disposer>> idiom requires an assumption
+// HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>> idiom requires an assumption
 // that the HeapHashMap outlives objects pointed by WeakMembers.
-// FIXME: Replace all of the HeapHashMap<WeakMember<Foo>, std::unique_ptr<Disposer>>
+// FIXME: Replace all of the HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>>
 // idiom usages with the pre-finalizer if the replacement won't cause
 // performance regressions.
 //
@@ -335,7 +334,7 @@ public:
     void leaveSafePoint(SafePointAwareMutexLocker* = nullptr);
     bool isAtSafePoint() const { return m_atSafePoint; }
 
-    void addInterruptor(std::unique_ptr<BlinkGCInterruptor>);
+    void addInterruptor(PassOwnPtr<BlinkGCInterruptor>);
 
     void recordStackEnd(intptr_t* endOfStack)
     {
@@ -601,7 +600,7 @@ private:
     void reportMemoryToV8();
 
     // Should only be called under protection of threadAttachMutex().
-    const Vector<std::unique_ptr<BlinkGCInterruptor>>& interruptors() const { return m_interruptors; }
+    const Vector<OwnPtr<BlinkGCInterruptor>>& interruptors() const { return m_interruptors; }
 
     friend class SafePointAwareMutexLocker;
     friend class SafePointBarrier;
@@ -622,7 +621,7 @@ private:
 
     ThreadHeap* m_heap;
     ThreadIdentifier m_thread;
-    std::unique_ptr<PersistentRegion> m_persistentRegion;
+    OwnPtr<PersistentRegion> m_persistentRegion;
     BlinkGC::StackState m_stackState;
 #if OS(WIN) && COMPILER(MSVC)
     size_t m_threadStackSize;
@@ -633,7 +632,7 @@ private:
     void* m_safePointScopeMarker;
     Vector<Address> m_safePointStackCopy;
     bool m_atSafePoint;
-    Vector<std::unique_ptr<BlinkGCInterruptor>> m_interruptors;
+    Vector<OwnPtr<BlinkGCInterruptor>> m_interruptors;
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
     size_t m_gcForbiddenCount;
@@ -683,7 +682,7 @@ private:
     // since there will be less than 2^8 types of objects in common cases.
     static const int likelyToBePromptlyFreedArraySize = (1 << 8);
     static const int likelyToBePromptlyFreedArrayMask = likelyToBePromptlyFreedArraySize - 1;
-    std::unique_ptr<int[]> m_likelyToBePromptlyFreed;
+    OwnPtr<int[]> m_likelyToBePromptlyFreed;
 
     // Stats for heap memory of this thread.
     size_t m_allocatedObjectSize;

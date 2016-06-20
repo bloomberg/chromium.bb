@@ -7,16 +7,14 @@
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
 namespace {
 
-std::unique_ptr<ImageDecoder> createDecoder()
+PassOwnPtr<ImageDecoder> createDecoder()
 {
-    return wrapUnique(new BMPImageDecoder(ImageDecoder::AlphaNotPremultiplied, ImageDecoder::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
+    return adoptPtr(new BMPImageDecoder(ImageDecoder::AlphaNotPremultiplied, ImageDecoder::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
 }
 
 } // anonymous namespace
@@ -27,7 +25,7 @@ TEST(BMPImageDecoderTest, isSizeAvailable)
     RefPtr<SharedBuffer> data = readFile(bmpFile);
     ASSERT_TRUE(data.get());
 
-    std::unique_ptr<ImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     decoder->setData(data.get(), true);
     EXPECT_TRUE(decoder->isSizeAvailable());
     EXPECT_EQ(256, decoder->size().width());
@@ -40,7 +38,7 @@ TEST(BMPImageDecoderTest, parseAndDecode)
     RefPtr<SharedBuffer> data = readFile(bmpFile);
     ASSERT_TRUE(data.get());
 
-    std::unique_ptr<ImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     decoder->setData(data.get(), true);
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
@@ -58,7 +56,7 @@ TEST(BMPImageDecoderTest, emptyImage)
     RefPtr<SharedBuffer> data = readFile(bmpFile);
     ASSERT_TRUE(data.get());
 
-    std::unique_ptr<ImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     decoder->setData(data.get(), true);
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);

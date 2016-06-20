@@ -90,7 +90,7 @@
 #include "public/platform/WebRTCStatsRequest.h"
 #include "public/platform/WebRTCVoidRequest.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
+
 #include <memory>
 
 namespace blink {
@@ -455,7 +455,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, RTCConfiguration
         return;
     }
 
-    m_peerHandler = wrapUnique(Platform::current()->createRTCPeerConnectionHandler(this));
+    m_peerHandler = adoptPtr(Platform::current()->createRTCPeerConnectionHandler(this));
     if (!m_peerHandler) {
         m_closed = true;
         m_stopped = true;
@@ -747,7 +747,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
     }
     DCHECK(!keyParams.isNull());
 
-    std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator = wrapUnique(
+    OwnPtr<WebRTCCertificateGenerator> certificateGenerator = adoptPtr(
         Platform::current()->createRTCCertificateGenerator());
 
     // |keyParams| was successfully constructed, but does the certificate generator support these parameters?
@@ -1102,7 +1102,7 @@ void RTCPeerConnection::didAddRemoteDataChannel(WebRTCDataChannelHandler* handle
     if (m_signalingState == SignalingStateClosed)
         return;
 
-    RTCDataChannel* channel = RTCDataChannel::create(getExecutionContext(), wrapUnique(handler));
+    RTCDataChannel* channel = RTCDataChannel::create(getExecutionContext(), adoptPtr(handler));
     scheduleDispatchEvent(RTCDataChannelEvent::create(EventTypeNames::datachannel, false, false, channel));
 }
 

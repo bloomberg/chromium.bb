@@ -30,8 +30,6 @@
 #include "core/layout/shapes/RasterShape.h"
 
 #include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -74,10 +72,10 @@ IntShapeInterval MarginIntervalGenerator::intervalAt(int y) const
     return IntShapeInterval(m_x1 - dx, m_x2 + dx);
 }
 
-std::unique_ptr<RasterShapeIntervals> RasterShapeIntervals::computeShapeMarginIntervals(int shapeMargin) const
+PassOwnPtr<RasterShapeIntervals> RasterShapeIntervals::computeShapeMarginIntervals(int shapeMargin) const
 {
     int marginIntervalsSize = (offset() > shapeMargin) ? size() : size() - offset() * 2 + shapeMargin * 2;
-    std::unique_ptr<RasterShapeIntervals> result = wrapUnique(new RasterShapeIntervals(marginIntervalsSize, std::max(shapeMargin, offset())));
+    OwnPtr<RasterShapeIntervals> result = adoptPtr(new RasterShapeIntervals(marginIntervalsSize, std::max(shapeMargin, offset())));
     MarginIntervalGenerator marginIntervalGenerator(shapeMargin);
 
     for (int y = bounds().y(); y < bounds().maxY(); ++y) {

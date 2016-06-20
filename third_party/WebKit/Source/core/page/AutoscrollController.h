@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

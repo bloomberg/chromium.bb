@@ -30,9 +30,9 @@
 #include "core/layout/HitTestResult.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -68,13 +68,13 @@ public:
 private:
     ContextMenuController(Page*, ContextMenuClient*);
 
-    std::unique_ptr<ContextMenu> createContextMenu(Event*);
-    std::unique_ptr<ContextMenu> createContextMenu(LocalFrame*, const LayoutPoint&);
+    PassOwnPtr<ContextMenu> createContextMenu(Event*);
+    PassOwnPtr<ContextMenu> createContextMenu(LocalFrame*, const LayoutPoint&);
     void populateCustomContextMenu(const Event&);
     void showContextMenu(Event*);
 
     ContextMenuClient* m_client;
-    std::unique_ptr<ContextMenu> m_contextMenu;
+    OwnPtr<ContextMenu> m_contextMenu;
     Member<ContextMenuProvider> m_menuProvider;
     HitTestResult m_hitTestResult;
 };

@@ -48,10 +48,8 @@
 #include "public/web/WebDataSource.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/HashSet.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 #include <limits.h>
-#include <memory>
 
 namespace blink {
 
@@ -81,11 +79,11 @@ void HTTPRequestHeaderValidator::visitHeader(const WebString& name, const WebStr
 class AssociatedURLLoader::ClientAdapter final : public DocumentThreadableLoaderClient {
     WTF_MAKE_NONCOPYABLE(ClientAdapter);
 public:
-    static std::unique_ptr<ClientAdapter> create(AssociatedURLLoader*, WebURLLoaderClient*, const WebURLLoaderOptions&);
+    static PassOwnPtr<ClientAdapter> create(AssociatedURLLoader*, WebURLLoaderClient*, const WebURLLoaderOptions&);
 
     // ThreadableLoaderClient
     void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) override;
-    void didReceiveResponse(unsigned long, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
+    void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void didDownloadData(int /*dataLength*/) override;
     void didReceiveData(const char*, unsigned /*dataLength*/) override;
     void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
@@ -125,9 +123,9 @@ private:
     bool m_didFail;
 };
 
-std::unique_ptr<AssociatedURLLoader::ClientAdapter> AssociatedURLLoader::ClientAdapter::create(AssociatedURLLoader* loader, WebURLLoaderClient* client, const WebURLLoaderOptions& options)
+PassOwnPtr<AssociatedURLLoader::ClientAdapter> AssociatedURLLoader::ClientAdapter::create(AssociatedURLLoader* loader, WebURLLoaderClient* client, const WebURLLoaderOptions& options)
 {
-    return wrapUnique(new ClientAdapter(loader, client, options));
+    return adoptPtr(new ClientAdapter(loader, client, options));
 }
 
 AssociatedURLLoader::ClientAdapter::ClientAdapter(AssociatedURLLoader* loader, WebURLLoaderClient* client, const WebURLLoaderOptions& options)
@@ -160,7 +158,7 @@ void AssociatedURLLoader::ClientAdapter::didSendData(unsigned long long bytesSen
     m_client->didSendData(m_loader, bytesSent, totalBytesToBeSent);
 }
 
-void AssociatedURLLoader::ClientAdapter::didReceiveResponse(unsigned long, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
+void AssociatedURLLoader::ClientAdapter::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(handle, !handle);
     if (!m_client)

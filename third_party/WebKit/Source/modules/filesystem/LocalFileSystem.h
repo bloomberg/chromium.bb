@@ -37,7 +37,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
-#include <memory>
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -53,12 +53,12 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
     USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
     WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 public:
-    static LocalFileSystem* create(std::unique_ptr<FileSystemClient>);
+    static LocalFileSystem* create(PassOwnPtr<FileSystemClient>);
     ~LocalFileSystem();
 
-    void resolveURL(ExecutionContext*, const KURL&, std::unique_ptr<AsyncFileSystemCallbacks>);
-    void requestFileSystem(ExecutionContext*, FileSystemType, long long size, std::unique_ptr<AsyncFileSystemCallbacks>);
-    void deleteFileSystem(ExecutionContext*, FileSystemType, std::unique_ptr<AsyncFileSystemCallbacks>);
+    void resolveURL(ExecutionContext*, const KURL&, PassOwnPtr<AsyncFileSystemCallbacks>);
+    void requestFileSystem(ExecutionContext*, FileSystemType, long long size, PassOwnPtr<AsyncFileSystemCallbacks>);
+    void deleteFileSystem(ExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>);
 
     FileSystemClient* client() const { return m_client.get(); }
 
@@ -72,7 +72,7 @@ public:
     }
 
 private:
-    explicit LocalFileSystem(std::unique_ptr<FileSystemClient>);
+    explicit LocalFileSystem(PassOwnPtr<FileSystemClient>);
 
     WebFileSystem* getFileSystem() const;
     void fileSystemNotAvailable(ExecutionContext*, CallbackWrapper*);
@@ -83,7 +83,7 @@ private:
     void resolveURLInternal(ExecutionContext*, const KURL&, CallbackWrapper*);
     void deleteFileSystemInternal(ExecutionContext*, FileSystemType, CallbackWrapper*);
 
-    std::unique_ptr<FileSystemClient> m_client;
+    OwnPtr<FileSystemClient> m_client;
 };
 
 } // namespace blink

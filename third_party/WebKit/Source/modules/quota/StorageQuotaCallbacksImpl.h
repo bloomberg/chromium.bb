@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/ModulesExport.h"
 #include "platform/StorageQuotaCallbacks.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

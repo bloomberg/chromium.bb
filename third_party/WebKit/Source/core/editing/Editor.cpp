@@ -87,7 +87,6 @@
 #include "core/svg/SVGImageElement.h"
 #include "platform/KillRing.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/CharacterNames.h"
 
 namespace blink {
@@ -769,7 +768,7 @@ Editor::Editor(LocalFrame& frame)
     , m_shouldStartNewKillRingSequence(false)
     // This is off by default, since most editors want this behavior (this matches IE but not FF).
     , m_shouldStyleWithCSS(false)
-    , m_killRing(wrapUnique(new KillRing))
+    , m_killRing(adoptPtr(new KillRing))
     , m_areMarkedTextMatchesHighlighted(false)
     , m_defaultParagraphSeparator(EditorParagraphSeparatorIsDiv)
     , m_overwriteModeEnabled(false)

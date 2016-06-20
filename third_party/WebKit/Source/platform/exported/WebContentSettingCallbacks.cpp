@@ -6,13 +6,12 @@
 
 #include "platform/ContentSettingCallbacks.h"
 #include "wtf/RefCounted.h"
-#include <memory>
 
 namespace blink {
 
 class WebContentSettingCallbacksPrivate : public RefCounted<WebContentSettingCallbacksPrivate> {
 public:
-    static PassRefPtr<WebContentSettingCallbacksPrivate> create(std::unique_ptr<ContentSettingCallbacks> callbacks)
+    static PassRefPtr<WebContentSettingCallbacksPrivate> create(PassOwnPtr<ContentSettingCallbacks> callbacks)
     {
         return adoptRef(new WebContentSettingCallbacksPrivate(std::move(callbacks)));
     }
@@ -20,11 +19,11 @@ public:
     ContentSettingCallbacks* callbacks() { return m_callbacks.get(); }
 
 private:
-    WebContentSettingCallbacksPrivate(std::unique_ptr<ContentSettingCallbacks> callbacks) : m_callbacks(std::move(callbacks)) { }
-    std::unique_ptr<ContentSettingCallbacks> m_callbacks;
+    WebContentSettingCallbacksPrivate(PassOwnPtr<ContentSettingCallbacks> callbacks) : m_callbacks(std::move(callbacks)) { }
+    OwnPtr<ContentSettingCallbacks> m_callbacks;
 };
 
-WebContentSettingCallbacks::WebContentSettingCallbacks(std::unique_ptr<ContentSettingCallbacks>&& callbacks)
+WebContentSettingCallbacks::WebContentSettingCallbacks(PassOwnPtr<ContentSettingCallbacks>&& callbacks)
 {
     m_private = WebContentSettingCallbacksPrivate::create(std::move(callbacks));
 }

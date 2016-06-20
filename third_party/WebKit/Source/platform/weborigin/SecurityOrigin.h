@@ -35,7 +35,6 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -252,8 +251,8 @@ public:
         bool m_canLoadLocalResources;
         bool m_blockLocalAccessFromLocalOrigin;
     };
-    std::unique_ptr<PrivilegeData> createPrivilegeData() const;
-    void transferPrivilegesFrom(std::unique_ptr<PrivilegeData>);
+    PassOwnPtr<PrivilegeData> createPrivilegeData() const;
+    void transferPrivilegesFrom(PassOwnPtr<PrivilegeData>);
 
     void setUniqueOriginIsPotentiallyTrustworthy(bool isUniqueOriginPotentiallyTrustworthy);
 

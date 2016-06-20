@@ -35,6 +35,7 @@
 #include "core/inspector/protocol/LayerTree.h"
 #include "platform/Timer.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 

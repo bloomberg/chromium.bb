@@ -17,7 +17,6 @@
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -36,7 +35,7 @@ protected:
 
     Document& document() const { return pageHolder->document(); }
 
-    std::unique_ptr<DummyPageHolder> pageHolder;
+    OwnPtr<DummyPageHolder> pageHolder;
     Persistent<Element> element;
     TrackExceptionState exceptionState;
 };

@@ -34,7 +34,8 @@
 #include "public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "public/platform/modules/webmidi/WebMIDIAccessorClient.h"
 #include "wtf/Allocator.h"
-#include <memory>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -43,7 +44,7 @@ class MIDIAccessorClient;
 class MIDIAccessor final : public WebMIDIAccessorClient {
     USING_FAST_MALLOC(MIDIAccessor);
 public:
-    static std::unique_ptr<MIDIAccessor> create(MIDIAccessorClient*);
+    static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
 
     ~MIDIAccessor() override { }
 
@@ -66,7 +67,7 @@ private:
     explicit MIDIAccessor(MIDIAccessorClient*);
 
     MIDIAccessorClient* m_client;
-    std::unique_ptr<WebMIDIAccessor> m_accessor;
+    OwnPtr<WebMIDIAccessor> m_accessor;
 };
 
 } // namespace blink

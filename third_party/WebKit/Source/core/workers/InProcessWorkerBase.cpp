@@ -14,7 +14,6 @@
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
-#include <memory>
 
 namespace blink {
 
@@ -37,7 +36,7 @@ void InProcessWorkerBase::postMessage(ExecutionContext* context, PassRefPtr<Seri
 {
     DCHECK(m_contextProxy);
     // Disentangle the port in preparation for sending it to the remote context.
-    std::unique_ptr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
     m_contextProxy->postMessageToWorkerGlobalScope(message, std::move(channels));
