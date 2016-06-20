@@ -96,15 +96,16 @@ public class ExternalAuthUtils {
      * @return whether the currently running application is signed with Google keys.
      */
     public boolean isChromeGoogleSigned(Context context) {
-        return isGoogleSigned(context, context.getPackageName());
+        return isGoogleSigned(
+                context.getApplicationContext().getPackageManager(), context.getPackageName());
     }
 
     /**
      * Returns whether the call is originating from a Google-signed package.
-     * @param appContext the current context.
+     * @param pm Package manager to use for getting package related info.
      * @param packageName The package name to inquire about.
      */
-    public boolean isGoogleSigned(Context context, String packageName) {
+    public boolean isGoogleSigned(PackageManager pm, String packageName) {
         // This is overridden in a subclass.
         return false;
     }
@@ -128,7 +129,7 @@ public class ExternalAuthUtils {
         for (String packageName : callingPackages) {
             if (!TextUtils.isEmpty(packageToMatch) && !packageName.equals(packageToMatch)) continue;
             matchFound = true;
-            if ((shouldBeGoogleSigned && !isGoogleSigned(context, packageName))
+            if ((shouldBeGoogleSigned && !isGoogleSigned(pm, packageName))
                     || (shouldBeSystem && !isSystemBuild(pm, packageName))) {
                 return false;
             }
@@ -215,7 +216,7 @@ public class ExternalAuthUtils {
     public boolean canUseFirstPartyGooglePlayServices(
             Context context, UserRecoverableErrorHandler userRecoverableErrorHandler) {
         return canUseGooglePlayServices(context, userRecoverableErrorHandler)
-                && isChromeGoogleSigned(context);
+                && isGoogleSigned(context.getPackageManager(), context.getPackageName());
     }
 
     /**
