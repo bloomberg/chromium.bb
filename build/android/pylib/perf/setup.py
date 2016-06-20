@@ -102,8 +102,10 @@ def Setup(test_options, active_devices):
       flaky_steps = json.load(f)
 
   def TestRunnerFactory(device, shard_index):
-    return test_runner.TestRunner(
-        test_options, device, shard_index, len(all_devices),
-        steps_dict, flaky_steps)
+    if str(device) in active_devices:
+      return test_runner.TestRunner(
+          test_options, device, shard_index, len(all_devices),
+          steps_dict, flaky_steps)
+    return None
 
   return (TestRunnerFactory, sorted_step_names, all_devices)
