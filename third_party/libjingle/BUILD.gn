@@ -26,9 +26,7 @@ config("jingle_unexported_configs") {
   ]
 
   include_dirs = [
-    "overrides",
     "../../third_party/webrtc_overrides",
-    "source",
     "../../testing/gtest/include",
     "../../third_party",
     "../../third_party/libyuv/include",
@@ -40,8 +38,6 @@ config("jingle_unexported_configs") {
 config("jingle_public_configs") {
   include_dirs = [
     "../../third_party/webrtc_overrides",
-    "overrides",
-    "source",
     "../../testing/gtest/include",
     "../../third_party",
   ]
@@ -225,7 +221,7 @@ static_library("libjingle") {
     ]
   } else {
     # Otherwise, we just add the field_trial which redirects to base.
-    sources += [ "overrides/field_trial.cc" ]
+    sources += [ "../webrtc_overrides/field_trial.cc" ]
   }
 
   configs += [ ":jingle_unexported_configs" ]
@@ -233,10 +229,13 @@ static_library("libjingle") {
 }
 
 if (enable_webrtc) {
+  # TODO(kjellander): Move this target into //third_party/webrtc_overrides as
+  # soon as the work in bugs.webrtc.org/4256 has gotten rid of the duplicated
+  # source listings above.
   source_set("libjingle_webrtc") {
     sources = [
-      "overrides/init_webrtc.cc",
-      "overrides/init_webrtc.h",
+      "../webrtc_overrides/init_webrtc.cc",
+      "../webrtc_overrides/init_webrtc.h",
     ]
     configs += [ ":jingle_unexported_configs" ]
     public_configs = [ ":jingle_public_configs" ]

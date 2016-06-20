@@ -28,9 +28,7 @@
       'WEBRTC_CHROMIUM_BUILD',
     ],
     'include_dirs': [
-      './overrides',
       '../../third_party/webrtc_overrides',
-      './source',
       '../..',
       '../../testing/gtest/include',
       '../../third_party',
@@ -50,8 +48,6 @@
     'direct_dependent_settings': {
       'include_dirs': [
         '../../third_party/webrtc_overrides',
-        './overrides',
-        './source',
         '../..',
         '../../testing/gtest/include',
         '../../third_party',
@@ -363,12 +359,16 @@
           ],
         },  # target libjingle_webrtc_common
         {
+          # TODO(kjellander): Move this target into
+          # //third_party/webrtc_overrides as soon as the work in
+          # bugs.webrtc.org/4256 has gotten rid of the duplicated source
+          # listings above.
           # GN version: //third_party/libjingle:libjingle_webrtc
           'target_name': 'libjingle_webrtc',
           'type': 'static_library',
           'sources': [
-            'overrides/init_webrtc.cc',
-            'overrides/init_webrtc.h',
+            '../webrtc_overrides/init_webrtc.cc',
+            '../webrtc_overrides/init_webrtc.h',
           ],
           'dependencies': [
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:audio_processing',

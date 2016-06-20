@@ -64,7 +64,7 @@
 #endif
 
 #if defined(ENABLE_WEBRTC)
-#include "third_party/libjingle/overrides/init_webrtc.h"
+#include "third_party/webrtc_overrides/init_webrtc.h"
 #endif
 
 #if defined(SANITIZER_COVERAGE)

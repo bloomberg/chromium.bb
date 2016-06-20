@@ -4,7 +4,6 @@
 
 {
   'variables': {
-    'libjingle_source': "source",
     'webrtc_base': "../webrtc/base",
     'webrtc_xmllite': "../webrtc/libjingle/xmllite",
     'webrtc_p2p': "../webrtc/p2p",
@@ -44,7 +43,6 @@
         'timezone=_timezone',
       ],
       'include_dirs': [
-        './<(libjingle_source)',
         '../',
       ],
       'includes': ['libjingle_common.gypi', ],
@@ -254,7 +252,7 @@
       'sources!': [
         # For NACL, we have the field_trial_default and don't need the
         # field_trail.cc.
-        'overrides/field_trial.cc',
+        '../webrtc_overrides/field_trial.cc',
       ],
       'sources/': [
         ['exclude', '/mac[a-z]+\\.(h|cc)$'],
@@ -269,8 +267,6 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          './overrides',
-          './<(libjingle_source)',
           '../../third_party/webrtc_overrides',
           '../../third_party',
           '../../third_party/webrtc',

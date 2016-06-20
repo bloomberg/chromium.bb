@@ -9,7 +9,7 @@
     'webrtc_xmpp': "../webrtc/libjingle/xmpp",
   },
   'sources': [
-    'overrides/field_trial.cc',
+    '../webrtc_overrides/field_trial.cc',
     '<(webrtc_p2p)/base/asyncstuntcpsocket.cc',
     '<(webrtc_p2p)/base/asyncstuntcpsocket.h',
     '<(webrtc_p2p)/base/basicpacketsocketfactory.cc',

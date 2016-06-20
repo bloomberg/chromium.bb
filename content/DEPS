@@ -66,6 +66,7 @@ include_rules = [
   "+third_party/sqlite",
   "+third_party/khronos",
   "+third_party/webrtc",
+  "+third_party/webrtc_overrides",
   "+third_party/zlib/google",
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
