@@ -123,8 +123,8 @@ void BookmarkBarInstructionsView::UpdateColors() {
   if (!theme_provider)
     return;
   updated_colors_ = true;
-  SkColor text_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
+  SkColor text_color = theme_provider->GetColor(
+      ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT);
   instructions_->SetEnabledColor(text_color);
   if (!import_link_)
     return;

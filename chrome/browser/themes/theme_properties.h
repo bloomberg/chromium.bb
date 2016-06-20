@@ -107,6 +107,9 @@ class ThemeProperties {
     // The color of a background tab, as well as the new tab button.
     COLOR_BACKGROUND_TAB,
 
+    // The color of the "instructions text" in an empty bookmarks bar.
+    COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT,
+
     // Colors used for the detached (NTP) bookmark bar.
     COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
     COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR,
