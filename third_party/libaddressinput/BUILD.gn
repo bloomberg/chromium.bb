@@ -48,7 +48,7 @@ grit("strings") {
 config("libaddressinput_config") {
   defines = [
     "I18N_ADDRESSINPUT_USE_BASICTYPES_OVERRIDE=1",
-    "I18N_ADDRESS_VALIDATION_DATA_URL=\"https://i18napis.appspot.com/ssl-aggregate-address/\"",
+    "I18N_ADDRESS_VALIDATION_DATA_URL=\"https://chromium-i18n.appspot.com/ssl-aggregate-address/\"",
   ]
   include_dirs = [
     "src/cpp/include",

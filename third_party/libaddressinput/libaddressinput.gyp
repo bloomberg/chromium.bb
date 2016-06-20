@@ -105,7 +105,7 @@
       ],
       'direct_dependent_settings': {
         'defines': [
-          'I18N_ADDRESS_VALIDATION_DATA_URL="https://i18napis.appspot.com/ssl-aggregate-address/"',
+          'I18N_ADDRESS_VALIDATION_DATA_URL="https://chromium-i18n.appspot.com/ssl-aggregate-address/"',
         ],
       },
       'dependencies': [
