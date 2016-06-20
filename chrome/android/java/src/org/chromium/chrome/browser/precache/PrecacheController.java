@@ -361,6 +361,8 @@ public class PrecacheController {
                 recordPeriodicTaskIntervalHistogram();
                 cancelPrecacheCompletionTask(mAppContext);
             }
+            registerDeviceStateReceiver();
+            acquirePrecachingWakeLock();
             startPrecachingAfterSyncInit();
             return GcmNetworkManager.RESULT_SUCCESS;
         }
@@ -389,8 +391,6 @@ public class PrecacheController {
     @VisibleForTesting
     void startPrecaching() {
         Log.v(TAG, "precache session has started");
-        registerDeviceStateReceiver();
-        acquirePrecachingWakeLock();
 
         mHandler.postDelayed(mTimeoutRunnable, MAX_PRECACHE_DURATION_SECONDS * 1000);
 
