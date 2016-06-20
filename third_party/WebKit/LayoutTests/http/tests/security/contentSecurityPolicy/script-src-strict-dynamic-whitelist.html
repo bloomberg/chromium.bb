@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-abcdefg' 'unsafe-dynamic' http://localhost:8000">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-abcdefg' 'strict-dynamic' http://localhost:8000">
     <script src="/resources/testharness.js" nonce="abcdefg"></script>
     <script src="/resources/testharnessreport.js" nonce="abcdefg"></script>
 </head>
@@ -26,7 +26,7 @@
             assert_equals(loaded[generateURL("write")], undefined);
             assert_true(blocked[24]);
           }, 1));
-        }, "Script injected via 'document.write' is not allowed with 'unsafe-dynamic', even if whitelisted.");
+        }, "Script injected via 'document.write' is not allowed with 'strict-dynamic', even if whitelisted.");
 
         async_test(function (t) {
           document.write("<scr" + "ipt defer src='" + generateURL("write-defer") + "'></scr" + "ipt>");
@@ -34,7 +34,7 @@
             assert_equals(loaded[generateURL("write-defer")], undefined);
             assert_true(blocked[32]);
           }, 1));
-        }, "Deferred script injected via 'document.write' is not allowed with 'unsafe-dynamic', even if whitelisted.");
+        }, "Deferred script injected via 'document.write' is not allowed with 'strict-dynamic', even if whitelisted.");
 
         async_test(function (t) {
           document.write("<scr" + "ipt async src='" + generateURL("write-async") + "'></scr" + "ipt>");
@@ -42,7 +42,7 @@
             assert_equals(loaded[generateURL("write-async")], undefined);
             assert_true(blocked[40]);
           }, 1));
-        }, "Async script injected via 'document.write' is not allowed with 'unsafe-dynamic', even if whitelisted.");
+        }, "Async script injected via 'document.write' is not allowed with 'strict-dynamic', even if whitelisted.");
     </script>
 </body>
 </html>

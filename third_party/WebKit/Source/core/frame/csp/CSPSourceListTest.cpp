@@ -54,9 +54,9 @@ TEST_F(CSPSourceListTest, BasicMatchingNone)
     EXPECT_FALSE(sourceList.matches(KURL(base, "https://example.test/")));
 }
 
-TEST_F(CSPSourceListTest, BasicMatchingUnsafeDynamic)
+TEST_F(CSPSourceListTest, BasicMatchingStrictDynamic)
 {
-    String sources = "'unsafe-dynamic'";
+    String sources = "'strict-dynamic'";
     CSPSourceList sourceList(csp.get(), "script-src");
     parseSourceList(sourceList, sources);
 

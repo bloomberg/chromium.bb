@@ -52,7 +52,7 @@ private:
     void addSourceStar();
     void addSourceUnsafeInline();
     void addSourceUnsafeEval();
-    void addSourceUnsafeDynamic();
+    void addSourceStrictDynamic();
     void addSourceUnsafeHashedAttributes();
     void addSourceNonce(const String& nonce);
     void addSourceHash(const ContentSecurityPolicyHashAlgorithm&, const DigestValue& hash);

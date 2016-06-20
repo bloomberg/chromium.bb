@@ -287,7 +287,7 @@ bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* direct
 
     String suffix = String();
     if (checkDynamic(directive))
-        suffix = " 'unsafe-dynamic' is present, so host-based whitelisting is disabled.";
+        suffix = " 'strict-dynamic' is present, so host-based whitelisting is disabled.";
     if (directive == m_defaultSrc)
         suffix = suffix + " Note that '" + effectiveDirective + "' was not explicitly set, so 'default-src' is used as a fallback.";
 
