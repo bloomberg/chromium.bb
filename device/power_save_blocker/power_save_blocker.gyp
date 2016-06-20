@@ -28,6 +28,19 @@
         'power_save_blocker_x11.cc',
       ],
       'conditions': [
+        ['use_x11==1 and chromeos==0', {
+          'dependencies': [
+            '../../build/linux/system.gyp:xext',
+            '../../build/linux/system.gyp:xscrnsaver',
+            '../../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+          ],
+        }],
+        ['use_dbus==1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:dbus',
+            '../../dbus/dbus.gyp:dbus',
+          ],
+        }],
         ['chromeos==1', {
           'sources!': [
             'power_save_blocker_ozone.cc',
