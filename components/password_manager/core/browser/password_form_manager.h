@@ -482,7 +482,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Set of forms from PasswordStore that correspond to the current site and
   // that are not in |best_matches_|.
-  ScopedVector<autofill::PasswordForm> not_best_matches_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> not_best_matches_;
 
   // Federated credentials relevant to the observed form. They are neither
   // filled not saved by this PasswordFormManager, so they are kept separately
