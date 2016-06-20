@@ -11,6 +11,8 @@
 #include "chrome/renderer/chrome_mock_render_thread.h"
 #include "content/public/test/render_view_test.h"
 
+class ChromeContentRendererClient;
+
 namespace autofill {
 class AutofillAgent;
 class TestPasswordAutofillAgent;
@@ -33,6 +35,10 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   content::ContentClient* CreateContentClient() override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
+
+  // Initializes commonly needed global state and renderer client parts.
+  // Use when overriding CreateContentRendererClient.
+  void InitChromeContentRendererClient(ChromeContentRendererClient* client);
 
   void EnableUserGestureSimulationForAutofill();
   void DisableUserGestureSimulationForAutofill();

@@ -13,17 +13,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
-#include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/test_utils.h"
-#include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/renderer/dispatcher.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -200,17 +196,7 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
 
   content::ContentRendererClient* CreateContentRendererClient() override {
     ChromeContentRendererClient* client = new TestChromeContentRendererClient();
-#if defined(ENABLE_EXTENSIONS)
-    extension_dispatcher_delegate_.reset(
-        new ChromeExtensionsDispatcherDelegate());
-    ChromeExtensionsRendererClient* ext_client =
-        ChromeExtensionsRendererClient::GetInstance();
-    ext_client->SetExtensionDispatcherForTest(base::WrapUnique(
-        new extensions::Dispatcher(extension_dispatcher_delegate_.get())));
-#endif
-#if defined(ENABLE_SPELLCHECK)
-    client->SetSpellcheck(new SpellCheck());
-#endif
+    InitChromeContentRendererClient(client);
     return client;
   }
 
