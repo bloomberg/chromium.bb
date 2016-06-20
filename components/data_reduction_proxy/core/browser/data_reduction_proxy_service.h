@@ -137,6 +137,9 @@ class DataReductionProxyService
   void AddObserver(DataReductionProxyServiceObserver* observer);
   void RemoveObserver(DataReductionProxyServiceObserver* observer);
 
+  // Sets the reporting fraction in the pingback client.
+  void SetPingbackReportingFraction(float pingback_reporting_fraction);
+
   // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
     return compression_stats_.get();

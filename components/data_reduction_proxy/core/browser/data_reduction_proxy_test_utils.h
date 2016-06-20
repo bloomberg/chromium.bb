@@ -103,6 +103,7 @@ class TestDataReductionProxyConfigServiceClient
       DataReductionProxyMutableConfigValues* config_values,
       DataReductionProxyConfig* config,
       DataReductionProxyEventCreator* event_creator,
+      DataReductionProxyIOData* io_data,
       net::NetLog* net_log,
       ConfigStorer config_storer);
 
@@ -192,7 +193,6 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       std::unique_ptr<DataReductionProxyEventCreator> event_creator,
       std::unique_ptr<DataReductionProxyRequestOptions> request_options,
       std::unique_ptr<DataReductionProxyConfigurator> configurator,
-      std::unique_ptr<DataReductionProxyConfigServiceClient> config_client,
       net::NetLog* net_log,
       bool enabled);
   ~TestDataReductionProxyIOData() override;
@@ -204,6 +204,10 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
     return configurator_.get();
   }
 
+  void set_config_client(
+      std::unique_ptr<DataReductionProxyConfigServiceClient> config_client) {
+    config_client_ = std::move(config_client);
+  }
   DataReductionProxyConfigServiceClient* config_client() const {
     return config_client_.get();
   }
@@ -217,9 +221,19 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
     return weak_factory_.GetWeakPtr();
   }
 
+  // Records the reporting fraction that was set by parsing a config.
+  void SetPingbackReportingFraction(float pingback_reporting_fraction) override;
+
+  float pingback_reporting_fraction() const {
+    return pingback_reporting_fraction_;
+  }
+
  private:
   // Allowed SetDataReductionProxyService to be re-entrant.
   bool service_set_;
+
+  // Reporting fraction last set via SetPingbackReportingFraction.
+  float pingback_reporting_fraction_;
 };
 
 // Test version of |DataStore|. Uses an in memory hash map to store data.

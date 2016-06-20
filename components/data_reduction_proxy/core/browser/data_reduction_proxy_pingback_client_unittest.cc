@@ -7,11 +7,13 @@
 #include <memory>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
@@ -37,16 +39,23 @@ class TestDataReductionProxyPingbackClient
   TestDataReductionProxyPingbackClient(
       net::URLRequestContextGetter* url_request_context_getter)
       : DataReductionProxyPingbackClient(url_request_context_getter),
-        should_send_pingback_(false) {}
+        should_override_random_(false),
+        override_value_(0.0f) {}
 
-  void set_should_send_pingback(bool should_send_pingback) {
-    should_send_pingback_ = should_send_pingback;
+  void OverrideRandom(bool should_override_random, float override_value) {
+    should_override_random_ = should_override_random;
+    override_value_ = override_value;
   }
 
  private:
-  bool ShouldSendPingback() const override { return should_send_pingback_; }
+  float GenerateRandomFloat() const override {
+    if (should_override_random_)
+      return override_value_;
+    return DataReductionProxyPingbackClient::GenerateRandomFloat();
+  }
 
-  bool should_send_pingback_;
+  bool should_override_random_;
+  float override_value_;
 };
 
 class DataReductionProxyPingbackClientTest : public testing::Test {
@@ -93,7 +102,8 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
 TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
-  pingback_client()->set_should_send_pingback(true);
+  pingback_client()->OverrideRandom(true, 0.5f);
+  pingback_client()->SetPingbackReportingFraction(1.0f);
   CreateAndSendPingback();
 
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
@@ -125,7 +135,8 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
 TEST_F(DataReductionProxyPingbackClientTest, SendTwoPingbacks) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
-  pingback_client()->set_should_send_pingback(true);
+  pingback_client()->OverrideRandom(true, 0.5f);
+  pingback_client()->SetPingbackReportingFraction(1.0f);
   CreateAndSendPingback();
   CreateAndSendPingback();
 
@@ -140,9 +151,50 @@ TEST_F(DataReductionProxyPingbackClientTest, SendTwoPingbacks) {
 TEST_F(DataReductionProxyPingbackClientTest, NoPingbackSent) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
-  pingback_client()->set_should_send_pingback(false);
+  pingback_client()->OverrideRandom(true, 0.5f);
+  pingback_client()->SetPingbackReportingFraction(0.0f);
   CreateAndSendPingback();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
+}
+
+TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
+  Init();
+  EXPECT_FALSE(factory()->GetFetcherByID(0));
+
+  // Verify that if the random number is less than the reporting fraction, the
+  // pingback is created.
+  pingback_client()->SetPingbackReportingFraction(0.5f);
+  pingback_client()->OverrideRandom(true, 0.4f);
+  CreateAndSendPingback();
+  net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
+  EXPECT_TRUE(test_fetcher);
+  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+
+  // Verify that if the random number is greater than the reporting fraction,
+  // the pingback is not created.
+  pingback_client()->OverrideRandom(true, 0.6f);
+  CreateAndSendPingback();
+  test_fetcher = factory()->GetFetcherByID(0);
+  EXPECT_FALSE(test_fetcher);
+
+  // Verify that if the random number is equal to the reporting fraction, the
+  // pingback is not created. Specifically, if the reporting fraction is zero,
+  // and the random number is zero, no pingback is sent.
+  pingback_client()->SetPingbackReportingFraction(0.0f);
+  pingback_client()->OverrideRandom(true, 0.0f);
+  CreateAndSendPingback();
+  test_fetcher = factory()->GetFetcherByID(0);
+  EXPECT_FALSE(test_fetcher);
+
+  // Verify that the command line flag forces a pingback.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxyForcePingback);
+  pingback_client()->SetPingbackReportingFraction(0.0f);
+  pingback_client()->OverrideRandom(true, 1.0f);
+  CreateAndSendPingback();
+  test_fetcher = factory()->GetFetcherByID(0);
+  EXPECT_TRUE(test_fetcher);
+  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
 }
 
 }  // namespace data_reduction_proxy

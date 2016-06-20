@@ -38,12 +38,20 @@ class DataReductionProxyPingbackClient : public net::URLFetcherDelegate {
   virtual void SendPingback(const DataReductionProxyData& data,
                             const DataReductionProxyPageLoadTiming& timing);
 
+  // Sets the probability of actually sending a pingback to the server for any
+  // call to SendPingback.
+  void SetPingbackReportingFraction(float pingback_reporting_fraction);
+
+ protected:
+  // Generates a float in the range [0, 1). Virtualized in testing.
+  virtual float GenerateRandomFloat() const;
+
  private:
   // URLFetcherDelegate implmentation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Whether a pingback should be sent. Virtualized for testing.
-  virtual bool ShouldSendPingback() const;
+  // Whether a pingback should be sent.
+  bool ShouldSendPingback() const;
 
   // Creates an URLFetcher that will POST to |secure_proxy_url_| using
   // |url_request_context_|. The max retires is set to 5.
@@ -60,6 +68,9 @@ class DataReductionProxyPingbackClient : public net::URLFetcherDelegate {
 
   // Serialized data to send to the data saver proxy server.
   std::list<std::string> data_to_send_;
+
+  // The probability of sending a pingback to the server.
+  float pingback_reporting_fraction_;
 
   base::ThreadChecker thread_checker_;
 

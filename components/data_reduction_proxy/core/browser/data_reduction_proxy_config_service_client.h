@@ -41,6 +41,7 @@ namespace data_reduction_proxy {
 class ClientConfig;
 class DataReductionProxyConfig;
 class DataReductionProxyEventCreator;
+class DataReductionProxyIOData;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyParams;
 class DataReductionProxyRequestOptions;
@@ -95,6 +96,7 @@ class DataReductionProxyConfigServiceClient
       DataReductionProxyMutableConfigValues* config_values,
       DataReductionProxyConfig* config,
       DataReductionProxyEventCreator* event_creator,
+      DataReductionProxyIOData* io_data,
       net::NetLog* net_log,
       ConfigStorer config_storer);
 
@@ -208,6 +210,9 @@ class DataReductionProxyConfigServiceClient
 
   // The caller must ensure that the |event_creator_| outlives this instance.
   DataReductionProxyEventCreator* event_creator_;
+
+  // The caller must ensure that the |io_data_| outlives this instance.
+  DataReductionProxyIOData* io_data_;
 
   // The caller must ensure that the |net_log_| outlives this instance.
   net::NetLog* net_log_;

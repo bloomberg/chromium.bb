@@ -83,12 +83,20 @@ ClientConfig CreateConfig(const std::string& session_key,
                           int primary_port,
                           ProxyServer_ProxyScheme secondary_scheme,
                           const std::string& secondary_host,
-                          int secondary_port) {
+                          int secondary_port,
+                          float reporting_fraction) {
   ClientConfig config;
 
   config.set_session_key(session_key);
   config.mutable_refresh_duration()->set_seconds(expire_duration_seconds);
   config.mutable_refresh_duration()->set_nanos(expire_duration_nanoseconds);
+
+  // Leave the pageload_metrics_config empty when |reporting_fraction| is not
+  // inclusively between zero and one.
+  if (reporting_fraction >= 0.0f && reporting_fraction <= 1.0f) {
+    config.mutable_pageload_metrics_config()->set_reporting_fraction(
+        reporting_fraction);
+  }
   ProxyServer* primary_proxy =
       config.mutable_proxy_config()->add_http_proxy_servers();
   primary_proxy->set_scheme(primary_scheme);
@@ -165,21 +173,52 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     ClientConfig config =
         CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
                      ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
-                     ProxyServer_ProxyScheme_HTTP, "fallback.net", 80);
+                     ProxyServer_ProxyScheme_HTTP, "fallback.net", 80, 0.5f);
     config.SerializeToString(&config_);
     encoded_config_ = EncodeConfig(config);
 
-    ClientConfig previous_config =
-        CreateConfig(kOldSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-                     ProxyServer_ProxyScheme_HTTPS, "old.origin.net", 443,
-                     ProxyServer_ProxyScheme_HTTP, "old.fallback.net", 80);
+    ClientConfig previous_config = CreateConfig(
+        kOldSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+        ProxyServer_ProxyScheme_HTTPS, "old.origin.net", 443,
+        ProxyServer_ProxyScheme_HTTP, "old.fallback.net", 80, 0.0f);
     previous_config.SerializeToString(&previous_config_);
 
     ClientConfig persisted =
         CreateConfig(kPersistedSessionKey, kConfigRefreshDurationSeconds, 0,
                      ProxyServer_ProxyScheme_HTTPS, "persisted.net", 443,
-                     ProxyServer_ProxyScheme_HTTP, "persisted.net", 80);
+                     ProxyServer_ProxyScheme_HTTP, "persisted.net", 80, 0.0f);
     loaded_config_ = EncodeConfig(persisted);
+
+    ClientConfig zero_reporting_fraction_config =
+        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+                     ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+                     ProxyServer_ProxyScheme_HTTP, "origin.net", 0, 0.0f);
+    zero_reporting_fraction_encoded_config_ =
+        EncodeConfig(zero_reporting_fraction_config);
+
+    ClientConfig one_reporting_fraction_config =
+        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+                     ProxyServer_ProxyScheme_HTTPS, "", 443,
+                     ProxyServer_ProxyScheme_HTTP, "", 0, 1.0f);
+    one_reporting_fraction_encoded_config_ =
+        EncodeConfig(one_reporting_fraction_config);
+
+    // Passing in -1.0f as the reporting fraction causes the
+    // |empty_reporting_fraction_config| to have no pageload_metrics_config()
+    // set.
+    ClientConfig empty_reporting_fraction_config =
+        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+                     ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+                     ProxyServer_ProxyScheme_HTTP, "origin.net", 0, -1.0f);
+    empty_reporting_fraction_encoded_config_ =
+        EncodeConfig(empty_reporting_fraction_config);
+
+    ClientConfig half_reporting_fraction_config =
+        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+                     ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+                     ProxyServer_ProxyScheme_HTTP, "origin.net", 0, 0.5f);
+    half_reporting_fraction_encoded_config_ =
+        EncodeConfig(half_reporting_fraction_config);
 
     success_reads_[0] = net::MockRead("HTTP/1.1 200 OK\r\n\r\n");
     success_reads_[1] =
@@ -217,6 +256,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     EXPECT_EQ(kSuccessSessionKey, request_options()->GetSecureSession());
     // The config should be persisted on the pref.
     EXPECT_EQ(encoded_config(), persisted_config());
+    EXPECT_EQ(0.5f, pingback_reporting_fraction());
   }
 
   void VerifyRemoteSuccessWithOldConfig() {
@@ -261,6 +301,10 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return test_context_->GetConfiguredProxiesForHttp();
   }
 
+  float pingback_reporting_fraction() const {
+    return test_context_->io_data()->pingback_reporting_fraction();
+  }
+
   void RunUntilIdle() {
     test_context_->RunUntilIdle();
   }
@@ -301,6 +345,18 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   const std::string& previous_success_response() const {
     return previous_config_;
+  }
+  const std::string& empty_reporting_fraction_encoded_config() const {
+    return empty_reporting_fraction_encoded_config_;
+  }
+  const std::string& one_reporting_fraction_encoded_config() const {
+    return one_reporting_fraction_encoded_config_;
+  }
+  const std::string& zero_reporting_fraction_encoded_config() const {
+    return zero_reporting_fraction_encoded_config_;
+  }
+  const std::string& half_reporting_fraction_encoded_config() const {
+    return half_reporting_fraction_encoded_config_;
   }
 
   bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) const {
@@ -378,6 +434,18 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   // An encoded config that represents a previously saved configuration.
   std::string loaded_config_;
+
+  // A configuration where the pingback reporting fraction is not set.
+  std::string empty_reporting_fraction_encoded_config_;
+
+  // A configuration where the pingback reporting fraction is set to 1.0f.
+  std::string one_reporting_fraction_encoded_config_;
+
+  // A configuration where the pingback reporting fraction is set to 0.0f.
+  std::string zero_reporting_fraction_encoded_config_;
+
+  // A configuration where the pingback reporting fraction is set to 0.5f.
+  std::string half_reporting_fraction_encoded_config_;
 
   // Mock socket data.
   std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers_;
@@ -969,6 +1037,50 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
             GetConfiguredProxiesForHttp());
   EXPECT_TRUE(persisted_config().empty());
   EXPECT_FALSE(request_options()->GetSecureSession().empty());
+}
+
+// Verifies that setting a client config sets the pingback reporting fraction
+// correctly to 0.0f.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       ApplySerializedConfigZeroReportingFraction) {
+  Init(true, false, std::string());
+  // ApplySerializedConfig should apply the encoded config.
+  config_client()->ApplySerializedConfig(
+      zero_reporting_fraction_encoded_config());
+  EXPECT_EQ(0.0f, pingback_reporting_fraction());
+}
+
+// Verifies that setting a client config sets the pingback reporting fraction
+// correctly to 0.0f when the pingback is not set in the protobuf.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       ApplySerializedConfigEmptyReportingFraction) {
+  Init(true, false, std::string());
+  // ApplySerializedConfig should apply the encoded config.
+  config_client()->ApplySerializedConfig(
+      empty_reporting_fraction_encoded_config());
+  EXPECT_EQ(0.0f, pingback_reporting_fraction());
+}
+
+// Verifies that setting a client config sets the pingback reporting fraction
+// correctly to 1.0f.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       ApplySerializedConfigOneReportingFraction) {
+  Init(true, false, std::string());
+  // ApplySerializedConfig should apply the encoded config.
+  config_client()->ApplySerializedConfig(
+      one_reporting_fraction_encoded_config());
+  EXPECT_EQ(1.0f, pingback_reporting_fraction());
+}
+
+// Verifies that setting a client config sets the pingback reporting fraction
+// correctly to 0.5f.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       ApplySerializedConfigHalfReportingFraction) {
+  Init(true, false, std::string());
+  // ApplySerializedConfig should apply the encoded config.
+  config_client()->ApplySerializedConfig(
+      half_reporting_fraction_encoded_config());
+  EXPECT_EQ(0.5f, pingback_reporting_fraction());
 }
 
 #if defined(OS_ANDROID)

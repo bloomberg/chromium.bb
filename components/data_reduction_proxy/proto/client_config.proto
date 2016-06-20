@@ -25,6 +25,14 @@ message ClientConfig {
   // for some time thereafter. If both refresh_duration and refresh_time are
   // present, refresh_duration should take priority.
   optional Duration refresh_duration = 4;
+  // Configuration information for reporting pageload metrics.
+  optional PageloadMetricsConfig pageload_metrics_config = 5;
+}
+
+// The configuration for reporting pageload metrics.
+message PageloadMetricsConfig {
+  // The fraction of pageloads for which to report pageload metrics.
+  optional float reporting_fraction = 1;
 }
 
 // N.B.:

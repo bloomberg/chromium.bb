@@ -262,6 +262,12 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
                             enabled, at_startup));
 }
 
+void DataReductionProxyService::SetPingbackReportingFraction(
+    float pingback_reporting_fraction) {
+  DCHECK(CalledOnValidThread());
+  pingback_client_->SetPingbackReportingFraction(pingback_reporting_fraction);
+}
+
 void DataReductionProxyService::LoadHistoricalDataUsage(
     const HistoricalDataUsageCallback& load_data_usage_callback) {
   std::unique_ptr<std::vector<DataUsageBucket>> data_usage(

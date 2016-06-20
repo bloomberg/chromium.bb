@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
@@ -103,6 +104,7 @@ TestDataReductionProxyConfigServiceClient::
         DataReductionProxyMutableConfigValues* config_values,
         DataReductionProxyConfig* config,
         DataReductionProxyEventCreator* event_creator,
+        DataReductionProxyIOData* io_data,
         net::NetLog* net_log,
         ConfigStorer config_storer)
     : DataReductionProxyConfigServiceClient(std::move(params),
@@ -111,6 +113,7 @@ TestDataReductionProxyConfigServiceClient::
                                             config_values,
                                             config,
                                             event_creator,
+                                            io_data,
                                             net_log,
                                             config_storer),
 #if defined(OS_ANDROID)
@@ -217,17 +220,17 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     std::unique_ptr<DataReductionProxyEventCreator> event_creator,
     std::unique_ptr<DataReductionProxyRequestOptions> request_options,
     std::unique_ptr<DataReductionProxyConfigurator> configurator,
-    std::unique_ptr<DataReductionProxyConfigServiceClient> config_client,
     net::NetLog* net_log,
     bool enabled)
-    : DataReductionProxyIOData(), service_set_(false) {
+    : DataReductionProxyIOData(),
+      service_set_(false),
+      pingback_reporting_fraction_(0.0f) {
   io_task_runner_ = task_runner;
   ui_task_runner_ = task_runner;
   config_ = std::move(config);
   event_creator_ = std::move(event_creator);
   request_options_ = std::move(request_options);
   configurator_ = std::move(configurator);
-  config_client_ = std::move(config_client);
   net_log_ = net_log;
   bypass_stats_.reset(new DataReductionProxyBypassStats(
       config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
@@ -236,6 +239,11 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
 }
 
 TestDataReductionProxyIOData::~TestDataReductionProxyIOData() {
+}
+
+void TestDataReductionProxyIOData::SetPingbackReportingFraction(
+    float pingback_reporting_fraction) {
+  pingback_reporting_fraction_ = pingback_reporting_fraction;
 }
 
 void TestDataReductionProxyIOData::SetDataReductionProxyService(
@@ -429,21 +437,6 @@ DataReductionProxyTestContext::Builder::Build() {
         new DataReductionProxyRequestOptions(client_, config.get()));
   }
 
-  if (use_test_config_client_) {
-    test_context_flags |= USE_TEST_CONFIG_CLIENT;
-    config_client.reset(new TestDataReductionProxyConfigServiceClient(
-        std::move(params), request_options.get(), raw_mutable_config,
-        config.get(), event_creator.get(), net_log.get(),
-        base::Bind(&TestConfigStorer::StoreSerializedConfig,
-                   base::Unretained(config_storer.get()))));
-  } else if (use_config_client_) {
-    config_client.reset(new DataReductionProxyConfigServiceClient(
-        std::move(params), GetBackoffPolicy(), request_options.get(),
-        raw_mutable_config, config.get(), event_creator.get(), net_log.get(),
-        base::Bind(&TestConfigStorer::StoreSerializedConfig,
-                   base::Unretained(config_storer.get()))));
-  }
-
   std::unique_ptr<DataReductionProxySettings> settings(
       new DataReductionProxySettings());
   if (skip_settings_initialization_) {
@@ -462,9 +455,26 @@ DataReductionProxyTestContext::Builder::Build() {
   std::unique_ptr<TestDataReductionProxyIOData> io_data(
       new TestDataReductionProxyIOData(
           task_runner, std::move(config), std::move(event_creator),
-          std::move(request_options), std::move(configurator),
-          std::move(config_client), net_log.get(), true /* enabled */));
+          std::move(request_options), std::move(configurator), net_log.get(),
+          true /* enabled */));
   io_data->SetSimpleURLRequestContextGetter(request_context_getter);
+
+  if (use_test_config_client_) {
+    test_context_flags |= USE_TEST_CONFIG_CLIENT;
+    config_client.reset(new TestDataReductionProxyConfigServiceClient(
+        std::move(params), io_data->request_options(), raw_mutable_config,
+        io_data->config(), io_data->event_creator(), io_data.get(),
+        net_log.get(), base::Bind(&TestConfigStorer::StoreSerializedConfig,
+                                  base::Unretained(config_storer.get()))));
+  } else if (use_config_client_) {
+    config_client.reset(new DataReductionProxyConfigServiceClient(
+        std::move(params), GetBackoffPolicy(), io_data->request_options(),
+        raw_mutable_config, io_data->config(), io_data->event_creator(),
+        io_data.get(), net_log.get(),
+        base::Bind(&TestConfigStorer::StoreSerializedConfig,
+                   base::Unretained(config_storer.get()))));
+  }
+  io_data->set_config_client(std::move(config_client));
 
   std::unique_ptr<DataReductionProxyTestContext> test_context(
       new DataReductionProxyTestContext(

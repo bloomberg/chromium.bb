@@ -145,7 +145,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     // caller is owned by |this|.
     config_client_.reset(new DataReductionProxyConfigServiceClient(
         std::move(params), GetBackoffPolicy(), request_options_.get(),
-        raw_mutable_config, config_.get(), event_creator_.get(), net_log_,
+        raw_mutable_config, config_.get(), event_creator_.get(), this, net_log_,
         base::Bind(&DataReductionProxyIOData::StoreSerializedConfig,
                    base::Unretained(this))));
   }
@@ -205,6 +205,15 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
 bool DataReductionProxyIOData::IsEnabled() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return enabled_;
+}
+
+void DataReductionProxyIOData::SetPingbackReportingFraction(
+    float pingback_reporting_fraction) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyService::SetPingbackReportingFraction,
+                 service_, pingback_reporting_fraction));
 }
 
 std::unique_ptr<net::URLRequestInterceptor>

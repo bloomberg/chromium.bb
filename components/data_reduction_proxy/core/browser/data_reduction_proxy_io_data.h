@@ -121,6 +121,10 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Returns true if the Data Reduction Proxy is enabled and false otherwise.
   bool IsEnabled() const;
 
+  // Changes the reporting fraction for the pingback service to
+  // |pingback_reporting_fraction|. Overridden in testing.
+  virtual void SetPingbackReportingFraction(float pingback_reporting_fraction);
+
   // Various accessor methods.
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();

@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 
+#include "base/rand_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -65,7 +66,8 @@ std::string SerializeData(const DataReductionProxyData& request_data,
 DataReductionProxyPingbackClient::DataReductionProxyPingbackClient(
     net::URLRequestContextGetter* url_request_context)
     : url_request_context_(url_request_context),
-      pingback_url_(util::AddApiKeyToUrl(params::GetPingbackURL())) {}
+      pingback_url_(util::AddApiKeyToUrl(params::GetPingbackURL())),
+      pingback_reporting_fraction_(0.0) {}
 
 DataReductionProxyPingbackClient::~DataReductionProxyPingbackClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -116,9 +118,20 @@ DataReductionProxyPingbackClient::MaybeCreateFetcherForDataAndStart(
 }
 
 bool DataReductionProxyPingbackClient::ShouldSendPingback() const {
-  // TODO(ryansturm): Modulate the frequency of sending a pingback based on a
-  // client config parameter. crbug.com/616805
-  return params::IsForcePingbackEnabledViaFlags();
+  return params::IsForcePingbackEnabledViaFlags() ||
+         GenerateRandomFloat() < pingback_reporting_fraction_;
+}
+
+float DataReductionProxyPingbackClient::GenerateRandomFloat() const {
+  return static_cast<float>(base::RandDouble());
+}
+
+void DataReductionProxyPingbackClient::SetPingbackReportingFraction(
+    float pingback_reporting_fraction) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_LE(0.0f, pingback_reporting_fraction);
+  DCHECK_GE(1.0f, pingback_reporting_fraction);
+  pingback_reporting_fraction_ = pingback_reporting_fraction;
 }
 
 }  // namespace data_reduction_proxy
