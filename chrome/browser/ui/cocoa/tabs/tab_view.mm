@@ -200,11 +200,6 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   if ([self isClosing])
     return nil;
 
-  // Sheets, being window-modal, should block contextual menus. For some reason
-  // they do not. Disallow them ourselves.
-  if ([[self window] attachedSheet])
-    return nil;
-
   return [controller_ menu];
 }
 

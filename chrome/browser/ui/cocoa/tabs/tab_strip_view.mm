@@ -227,6 +227,17 @@
   return YES;
 }
 
+// When displaying a modal sheet, interaction with the tabs (e.g. middle-click
+// to close a tab) should be blocked. -[NSWindow sendEvent] blocks left-click,
+// but not others. To prevent clicks going to subviews, absorb them here. This
+// is also done in FastResizeView, but TabStripView is in the title bar, so is
+// not contained in a FastResizeView.
+- (NSView*)hitTest:(NSPoint)aPoint {
+  if ([[self window] attachedSheet])
+    return self;
+  return [super hitTest:aPoint];
+}
+
 // Trap double-clicks and make them miniaturize the browser window.
 - (void)mouseUp:(NSEvent*)event {
   // Bail early if double-clicks are disabled.

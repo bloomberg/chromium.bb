@@ -27,5 +27,14 @@
   return YES;
 }
 
+// Override -[NSView hitTest:] to prevent mouse events reaching subviews while
+// the window is displaying a modal sheet. Without this, context menus can be
+// shown on a right-click and trigger all kinds of things (e.g. Print).
+- (NSView*)hitTest:(NSPoint)aPoint {
+  if ([[self window] attachedSheet])
+    return self;
+  return [super hitTest:aPoint];
+}
+
 @end
 
