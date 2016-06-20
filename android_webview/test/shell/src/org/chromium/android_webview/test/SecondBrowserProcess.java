@@ -15,6 +15,7 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.shell.R;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
@@ -56,7 +57,8 @@ public class SecondBrowserProcess extends Service {
         CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
         AwResource.setResources(this.getResources());
         AwResource.setConfigKeySystemUuidMapping(R.array.config_key_system_uuid_mapping);
-        AwBrowserProcess.loadLibrary(this);
-        AwBrowserProcess.start(this);
+        ContextUtils.initApplicationContext(getApplicationContext());
+        AwBrowserProcess.loadLibrary();
+        AwBrowserProcess.start();
     }
 }

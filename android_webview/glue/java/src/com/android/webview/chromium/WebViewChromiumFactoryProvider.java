@@ -118,10 +118,11 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         // WebView needs to make sure to always use the wrapped application context.
         ContextUtils.initApplicationContext(
-                ResourcesContextWrapperFactory.get(mWebViewDelegate.getApplication()));
+                ResourcesContextWrapperFactory.get(
+                        mWebViewDelegate.getApplication().getApplicationContext()));
 
         if (isBuildDebuggable()) {
-            // Suppress the StrictMode violation as this codepath is only hit on debugglable builds.
+            // Suppress the StrictMode violation as this codepath is only hit on debuggable builds.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
             CommandLine.initFromFile(COMMAND_LINE_FILE);
             StrictMode.setThreadPolicy(oldPolicy);
@@ -131,7 +132,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         ThreadUtils.setWillOverrideUiThread();
         // Load chromium library.
-        AwBrowserProcess.loadLibrary(ContextUtils.getApplicationContext());
+        AwBrowserProcess.loadLibrary();
 
         final PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
 
@@ -139,14 +140,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         System.loadLibrary("webviewchromium_plat_support");
 
         // Use shared preference to check for package downgrade.
-        mWebViewPrefs = mWebViewDelegate.getApplication().getSharedPreferences(
+        mWebViewPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
                 CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
         int lastVersion = mWebViewPrefs.getInt(VERSION_CODE_PREF, 0);
         int currentVersion = packageInfo.versionCode;
         if (!versionCodeGE(currentVersion, lastVersion)) {
             // The WebView package has been downgraded since we last ran in this application.
             // Delete the WebView data directory's contents.
-            String dataDir = PathUtils.getDataDirectory(mWebViewDelegate.getApplication());
+            String dataDir = PathUtils.getDataDirectory(ContextUtils.getApplicationContext());
             Log.i(TAG, "WebView package downgraded from " + lastVersion + " to " + currentVersion
                             + "; deleting contents of " + dataDir);
             deleteContents(new File(dataDir));
@@ -286,7 +287,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         initNetworkChangeNotifier(context);
         final int extraBindFlags = 0;
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, extraBindFlags);
-        AwBrowserProcess.start(context);
+        AwBrowserProcess.start();
 
         if (isBuildDebuggable()) {
             setWebContentsDebuggingEnabled(true);
@@ -313,7 +314,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         // Start listening for data reduction proxy setting changes.
         mProxyManager = new AwDataReductionProxyManager();
-        mProxyManager.start(mWebViewDelegate.getApplication());
+        mProxyManager.start(ContextUtils.getApplicationContext());
     }
 
     boolean hasStarted() {

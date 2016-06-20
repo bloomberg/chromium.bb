@@ -30,7 +30,7 @@ public class AwTestRunnerActivity extends Activity {
 
         AwShellResourceProvider.registerResources(this);
         ContextUtils.initApplicationContext(getApplicationContext());
-        AwBrowserProcess.loadLibrary(this);
+        AwBrowserProcess.loadLibrary();
 
         mLinearLayout = new LinearLayout(this);
         mLinearLayout.setOrientation(LinearLayout.VERTICAL);

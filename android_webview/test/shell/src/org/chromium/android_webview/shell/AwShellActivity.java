@@ -40,6 +40,7 @@ import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.content.app.ContentApplication;
@@ -79,7 +80,8 @@ public class AwShellActivity extends Activity {
         ContentApplication.initCommandLine(this);
         waitForDebuggerIfNeeded();
 
-        AwBrowserProcess.loadLibrary(this);
+        ContextUtils.initApplicationContext(getApplicationContext());
+        AwBrowserProcess.loadLibrary();
 
         if (CommandLine.getInstance().hasSwitch(AwShellSwitches.ENABLE_ATRACE)) {
             Log.e(TAG, "Enabling Android trace.");
@@ -129,7 +131,7 @@ public class AwShellActivity extends Activity {
     }
 
     private AwTestContainerView createAwTestContainerView() {
-        AwBrowserProcess.start(this);
+        AwBrowserProcess.start();
         AwTestContainerView testContainerView = new AwTestContainerView(this, true);
         AwContentsClient awContentsClient = new NullContentsClient() {
             private View mCustomView;

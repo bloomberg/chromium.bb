@@ -40,12 +40,12 @@ public abstract class AwBrowserProcess {
      * to run webview in this process. Does not create threads; safe to call from zygote.
      * Note: it is up to the caller to ensure this is only called once.
      */
-    public static void loadLibrary(Context context) {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
-        ContextUtils.initApplicationContext(context.getApplicationContext());
+    public static void loadLibrary() {
+        Context appContext = ContextUtils.getApplicationContext();
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, appContext);
         try {
             LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW);
-            libraryLoader.loadNow(context);
+            libraryLoader.loadNow(appContext);
             // Switch the command line implementation from Java to native.
             // It's okay for the WebView to do this before initialization because we have
             // setup the JNI bindings by this point.
@@ -69,23 +69,23 @@ public abstract class AwBrowserProcess {
      * Starts the chromium browser process running within this process. Creates threads
      * and performs other per-app resource allocations; must not be called from zygote.
      * Note: it is up to the caller to ensure this is only called once.
-     * @param context The Android application context
      */
-    public static void start(final Context context) {
-        tryObtainingDataDirLockOrDie(context);
+    public static void start() {
+        tryObtainingDataDirLockOrDie();
         // We must post to the UI thread to cover the case that the user
         // has invoked Chromium startup by using the (thread-safe)
         // CookieManager rather than creating a WebView.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                Context appContext = ContextUtils.getApplicationContext();
                 // The policies are used by browser startup, so we need to register the policy
                 // providers before starting the browser process. This only registers java objects
                 // and doesn't need the native library.
-                CombinedPolicyProvider.get().registerProvider(new AwPolicyProvider(context));
+                CombinedPolicyProvider.get().registerProvider(new AwPolicyProvider(appContext));
 
                 try {
-                    BrowserStartupController.get(context, LibraryProcessType.PROCESS_WEBVIEW)
+                    BrowserStartupController.get(appContext, LibraryProcessType.PROCESS_WEBVIEW)
                             .startBrowserProcessesSync(!CommandLine.getInstance().hasSwitch(
                                             AwSwitches.WEBVIEW_SANDBOXED_RENDERER));
                 } catch (ProcessInitException e) {
@@ -95,11 +95,11 @@ public abstract class AwBrowserProcess {
         });
     }
 
-    private static void tryObtainingDataDirLockOrDie(Context context) {
+    private static void tryObtainingDataDirLockOrDie() {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
-            String dataPath = PathUtils.getDataDirectory(context);
+            String dataPath = PathUtils.getDataDirectory(ContextUtils.getApplicationContext());
             File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
             boolean success = false;
             try {

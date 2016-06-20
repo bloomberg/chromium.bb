@@ -90,11 +90,12 @@ public class AwTestBase
     }
 
     protected void startBrowserProcess() throws Exception {
-        final Context context = getActivity();
+        // The activity must be launched in order for proper webview statics to be setup.
+        getActivity();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                AwBrowserProcess.start(context);
+                AwBrowserProcess.start();
             }
         });
     }
