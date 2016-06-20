@@ -312,6 +312,8 @@ void SkiaBitLocker::releaseIfNeeded() {
 }
 
 CGContextRef SkiaBitLocker::cgContext() {
+  releaseIfNeeded(); // This flushes any prior bitmap use
+
   SkIRect clip_bounds;
   if (!canvas_->getClipDeviceBounds(&clip_bounds)) {
     // If the clip is empty, then there is nothing to draw. The caller may
@@ -320,8 +322,6 @@ CGContextRef SkiaBitLocker::cgContext() {
     bitmapIsDummy_ = true;
     clip_bounds = SkIRect::MakeXYWH(0, 0, 1, 1);
   }
-
-  releaseIfNeeded(); // This flushes any prior bitmap use
 
   // remember the top/left, in case we need to compose this later
   bitmapOffset_.set(clip_bounds.x(), clip_bounds.y());
