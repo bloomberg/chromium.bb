@@ -218,6 +218,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['mac'], bug=617820)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_copyteximage2d.html',
+        ['mac'], bug=620067)
     # This one's flaky on AMD, NVIDIA and Intel GPUs, but the
     # GPU-specific expectations aren't working properly.
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
