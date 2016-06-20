@@ -57,6 +57,8 @@ public:
     void RegisterV8Reference(const std::pair<void*, void*>& internalFields);
     bool AdvanceTracing(double deadlineInMs, v8::EmbedderHeapTracer::AdvanceTracingActions) override;
     void TraceEpilogue() override;
+    void AbortTracing() override;
+    void EnterFinalPause() override;
 
     template <typename T>
     void markWrapper(const v8::Persistent<T>* handle) const
@@ -82,6 +84,7 @@ private:
     bool markWrapperHeader(const ScriptWrappable*) const override;
     bool markWrapperHeader(const void* garbageCollected) const override;
     bool m_tracingInProgress = false;
+    void performCleanup();
     /**
      * Collection of ScriptWrappables we need to trace from. We assume it is
      * safe to hold on to the raw pointers because:

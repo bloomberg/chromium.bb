@@ -27,11 +27,23 @@ void ScriptWrappableVisitor::TracePrologue()
     m_tracingInProgress = true;
 }
 
-void ScriptWrappableVisitor::TraceEpilogue()
+void ScriptWrappableVisitor::EnterFinalPause()
 {
     ActiveScriptWrappable::traceActiveScriptWrappables(m_isolate, this);
-    AdvanceTracing(0, AdvanceTracingActions(ForceCompletionAction::FORCE_COMPLETION));
+}
 
+void ScriptWrappableVisitor::TraceEpilogue()
+{
+    performCleanup();
+}
+
+void ScriptWrappableVisitor::AbortTracing()
+{
+    performCleanup();
+}
+
+void ScriptWrappableVisitor::performCleanup()
+{
     for (auto header : m_headersToUnmark) {
         header->unmarkWrapperHeader();
     }
