@@ -15,6 +15,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/i18n/message_formatter.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/strings/string_piece.h"
@@ -209,6 +210,8 @@ int main(int argc, char* const argv[]) {
 
   char* const* lang_list = argv;
   int lang_list_count = argc;
+
+  base::i18n::InitializeICU();
 
   // Parse the version file and build our string
   NSString* version_string = ApplicationVersionString(version_file_path);
