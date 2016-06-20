@@ -2,3 +2,6 @@
 HarfBuzzShaperTest.ResolveCandidateRunsLatin
 HarfBuzzShaperTest.ResolveCandidateRunsLeadingCommon
 HarfBuzzShaperTest.ResolveCandidateRunsUnicodeVariants
+
+# https://crbug.com/621488
+ICOImageDecoderTests.parseAndDecodeByteByByte
