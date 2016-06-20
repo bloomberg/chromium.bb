@@ -585,6 +585,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.TabPersistentStore.MetadataFileSize">
+  <owner>wnwen@chromium.org</owner>
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>The number of bytes written for the tab metadata file.</summary>
+</histogram>
+
 <histogram name="AndroidTabCloseUndo.Toast"
     enum="AndroidTabCloseUndoToastEvent">
   <owner>dtrainor@chromium.org</owner>
@@ -92809,7 +92815,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ReadSavedStateTime"/>
   <suffix name="RestoreTabPrefetchTime"/>
   <suffix name="RestoreTabTime"/>
+  <suffix name="SaveListTime"/>
   <suffix name="SaveStateTime"/>
+  <suffix name="SaveTabsTime"/>
   <affected-histogram name="Android.StrictMode.TabPersistentStore"/>
 </histogram_suffixes>
 

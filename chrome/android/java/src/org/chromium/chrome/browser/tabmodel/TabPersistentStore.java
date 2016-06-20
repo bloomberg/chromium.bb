@@ -40,6 +40,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -178,6 +179,7 @@ public class TabPersistentStore extends TabPersister {
 
     private SharedPreferences mPreferences;
     private AsyncTask<Void, Void, DataInputStream> mPrefetchTabListTask;
+    private byte[] mLastSavedMetadata;
 
     @VisibleForTesting
     AsyncTask<Void, Void, TabState> mPrefetchActiveTabTask;
@@ -258,7 +260,7 @@ public class TabPersistentStore extends TabPersister {
     private void logExecutionTime(String name, long time) {
         if (LibraryLoader.isInitialized()) {
             RecordHistogram.recordTimesHistogram("Android.StrictMode.TabPersistentStore." + name,
-                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+                    SystemClock.uptimeMillis() - time, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -266,7 +268,7 @@ public class TabPersistentStore extends TabPersister {
         // Temporarily allowing disk access. TODO: Fix. See http://b/5518024
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            long time = SystemClock.elapsedRealtime();
+            long saveStateStartTime = SystemClock.uptimeMillis();
             // The list of tabs should be saved first in case our activity is terminated early.
             // Explicitly toss out any existing SaveListTask because they only save the TabModel as
             // it looked when the SaveListTask was first created.
@@ -276,6 +278,7 @@ public class TabPersistentStore extends TabPersister {
             } catch (IOException e) {
                 Log.w(TAG, "Error while saving tabs state; will attempt to continue...", e);
             }
+            logExecutionTime("SaveListTime", saveStateStartTime);
 
             // Add current tabs to save because they did not get a save signal yet.
             Tab currentStandardTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(false));
@@ -310,6 +313,7 @@ public class TabPersistentStore extends TabPersister {
                 mSaveTabTask = null;
             }
 
+            long saveTabsStartTime = SystemClock.uptimeMillis();
             // Synchronously save any remaining unsaved tabs (hopefully very few).
             for (Tab tab : mTabsToSave) {
                 int id = tab.getId();
@@ -331,7 +335,8 @@ public class TabPersistentStore extends TabPersister {
                 }
             }
             mTabsToSave.clear();
-            logExecutionTime("SaveStateTime", time);
+            logExecutionTime("SaveTabsTime", saveTabsStartTime);
+            logExecutionTime("SaveStateTime", saveStateStartTime);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -341,7 +346,7 @@ public class TabPersistentStore extends TabPersister {
      * Restore saved state. Must be called before any tabs are added to the list.
      */
     public void loadState() {
-        long time = SystemClock.elapsedRealtime();
+        long time = SystemClock.uptimeMillis();
         waitForMigrationToFinish();
         logExecutionTime("LoadStateTime", time);
 
@@ -350,11 +355,11 @@ public class TabPersistentStore extends TabPersister {
         mNormalTabsRestored = new SparseIntArray();
         mIncognitoTabsRestored = new SparseIntArray();
         try {
-            time = SystemClock.elapsedRealtime();
+            time = SystemClock.uptimeMillis();
             assert mTabModelSelector.getModel(true).getCount() == 0;
             assert mTabModelSelector.getModel(false).getCount() == 0;
             checkAndUpdateMaxTabId();
-            long timeWaitingForPrefetch = SystemClock.elapsedRealtime();
+            long timeWaitingForPrefetch = SystemClock.uptimeMillis();
             DataInputStream stream = mPrefetchTabListTask.get();
             logExecutionTime("LoadStateInternalPrefetchTime", timeWaitingForPrefetch);
             readSavedStateFile(stream,
@@ -440,11 +445,11 @@ public class TabPersistentStore extends TabPersister {
         // 2. restoreTab is used to preempt async queue and restore immediately on the UI thread.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            long time = SystemClock.elapsedRealtime();
+            long time = SystemClock.uptimeMillis();
             TabState state;
             int restoredTabId = mPreferences.getInt(PREF_ACTIVE_TAB_ID, Tab.INVALID_TAB_ID);
             if (restoredTabId == tabToRestore.id && mPrefetchActiveTabTask != null) {
-                long timeWaitingForPrefetch = SystemClock.elapsedRealtime();
+                long timeWaitingForPrefetch = SystemClock.uptimeMillis();
                 state = mPrefetchActiveTabTask.get();
                 logExecutionTime("RestoreTabPrefetchTime", timeWaitingForPrefetch);
             } else {
@@ -713,7 +718,14 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private void saveListToFile(byte[] listData) {
+        if (Arrays.equals(mLastSavedMetadata, listData)) return;
+
         saveListToFile(getStateDirectory(), listData);
+        mLastSavedMetadata = listData;
+        if (LibraryLoader.isInitialized()) {
+            RecordHistogram.recordCountHistogram(
+                    "Android.TabPersistentStore.MetadataFileSize", listData.length);
+        }
     }
 
     /**
@@ -810,7 +822,7 @@ public class TabPersistentStore extends TabPersister {
 
     private int readSavedStateFile(DataInputStream stream, OnTabStateReadCallback callback)
             throws IOException {
-        long time = SystemClock.elapsedRealtime();
+        long time = SystemClock.uptimeMillis();
         int nextId = 0;
         boolean skipUrlRead = false;
         boolean skipIncognitoCount = false;
