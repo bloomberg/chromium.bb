@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -34,6 +35,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using autofill::FormStructure;
@@ -48,10 +50,6 @@ typedef autofill::SavePasswordProgressLogger Logger;
 namespace password_manager {
 
 namespace {
-
-// Experiment information
-const char kFillOnAccountSelectFieldTrialName[] = "FillOnAccountSelect";
-const char kFillOnAccountSelectFieldTrialEnabledGroup[] = "Enable";
 
 PasswordForm CopyAndModifySSLValidity(const PasswordForm& orig,
                                       bool ssl_valid) {
@@ -120,22 +118,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> SplitFederatedMatches(
 }
 
 bool ShouldShowInitialPasswordAccountSuggestions() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName(kFillOnAccountSelectFieldTrialName);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          autofill::switches::kDisableFillOnAccountSelect)) {
-    return false;
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          autofill::switches::kEnableFillOnAccountSelect)) {
-    return true;
-  }
-
-  return base::StartsWith(group_name,
-                          kFillOnAccountSelectFieldTrialEnabledGroup,
-                          base::CompareCase::SENSITIVE);
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kFillOnAccountSelect);
 }
 
 }  // namespace

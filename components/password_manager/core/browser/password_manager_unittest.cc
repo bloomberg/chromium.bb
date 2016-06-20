@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -124,6 +125,18 @@ ACTION_P(SaveToScopedPtr, scoped) { scoped->reset(arg0); }
 class PasswordManagerTest : public testing::Test {
  protected:
   void SetUp() override {
+    // TODO(jww): The following FeatureList clear can be removed once
+    // https://crbug.com/620435 is resolved. This cleanup is needed because on
+    // some platforms (e.g. iOS), the base::FeatureList is not reset betwen
+    // test runs, so if these unit tests are run right after some other unit
+    // tests that turn on a feature, that might affect these tests. In
+    // particular, the earlier fill-on-account-select unit tests turned on
+    // their respective Feature and that was incorrectly left on for these
+    // tests.
+    base::FeatureList::ClearInstanceForTesting();
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    base::FeatureList::SetInstance(std::move(feature_list));
+
     store_ = new testing::StrictMock<MockPasswordStore>;
     EXPECT_CALL(*store_, ReportMetrics(_, _)).Times(AnyNumber());
     CHECK(store_->Init(syncer::SyncableService::StartSyncFlare()));

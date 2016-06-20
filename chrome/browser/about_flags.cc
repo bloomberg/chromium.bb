@@ -357,14 +357,6 @@ const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
     switches::kExtensionContentVerificationEnforceStrict },
 };
 
-const FeatureEntry::Choice kFillOnAccountSelectChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    autofill::switches::kDisableFillOnAccountSelect, "" },
-  { IDS_FLAGS_FILL_ON_ACCOUNT_SELECT_ENABLE_HIGHLIGHTING,
-    autofill::switches::kEnableFillOnAccountSelect, "" },
-};
-
 const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL,
@@ -1430,9 +1422,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-touch-hover", IDS_FLAGS_TOUCH_HOVER_NAME,
      IDS_FLAGS_TOUCH_HOVER_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE("enable-touch-hover")},
-    {"enable-fill-on-account-select", IDS_FILL_ON_ACCOUNT_SELECT_NAME,
-     IDS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION, kOsAll,
-     MULTI_VALUE_TYPE(kFillOnAccountSelectChoices)},
 #if defined(OS_CHROMEOS)
     {"enable-wifi-credential-sync",  // FLAGS:RECORD_UMA
      IDS_FLAGS_WIFI_CREDENTIAL_SYNC_NAME,
@@ -1927,6 +1916,9 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableEolNotification)},
 #endif  // defined(OS_CHROMEOS)
 
+    {"fill-on-account-select", IDS_FILL_ON_ACCOUNT_SELECT_NAME,
+     IDS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

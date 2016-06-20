@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -21,7 +21,6 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -33,6 +32,7 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -705,8 +705,11 @@ class PasswordFormManagerFillOnAccountSelectTest
   PasswordFormManagerFillOnAccountSelectTest() {}
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        autofill::switches::kEnableFillOnAccountSelect);
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    std::vector<const base::Feature*> enabled_features;
+    std::vector<const base::Feature*> disabled_features;
+    enabled_features.push_back(&features::kFillOnAccountSelect);
+    SetFeatures(enabled_features, disabled_features, std::move(feature_list));
     PasswordFormManagerTest::SetUp();
   }
 };

@@ -55,6 +55,11 @@ const base::Feature kPasswordImportExport = {"password-import-export",
 const base::Feature kViewPasswords = {"view-passwords",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the experiment for the password manager to only fill on account
+// selection, rather than autofilling on page load, with highlighting of fields.
+const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace password_manager

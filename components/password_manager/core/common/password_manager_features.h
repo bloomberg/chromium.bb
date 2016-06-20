@@ -27,6 +27,7 @@ extern const base::Feature kProtectSyncCredential;
 extern const base::Feature kProtectSyncCredentialOnReauth;
 extern const base::Feature kPasswordImportExport;
 extern const base::Feature kViewPasswords;
+extern const base::Feature kFillOnAccountSelect;
 
 }  // namespace features
 
