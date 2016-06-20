@@ -20,6 +20,8 @@
             'ToV8ForModules.h',
             'V8BindingForModules.cpp',
             'V8BindingForModules.h',
+            'V8IDBObserverCallback.cpp',
+            'V8IDBObserverCallback.h',
             'V8ServiceWorkerMessageEventInternal.h',
             'WebGLAny.cpp',
             'WebGLAny.h',

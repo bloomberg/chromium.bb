@@ -44,6 +44,8 @@ IDBValue::IDBValue(const IDBValue* value, IDBKey* primaryKey, const IDBKeyPath& 
     }
 }
 
+IDBValue::~IDBValue() {}
+
 PassRefPtr<IDBValue> IDBValue::create()
 {
     return adoptRef(new IDBValue());

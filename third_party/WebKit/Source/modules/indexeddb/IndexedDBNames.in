@@ -20,3 +20,9 @@ done
 # https://www.w3.org/Bugs/Public/show_bug.cgi?id=22370
 none
 total
+
+# https://github.com/WICG/indexed-db-observers/blob/gh-pages/EXPLAINER.md#records
+add
+put
+delete ImplementedAs=kDelete
+clear

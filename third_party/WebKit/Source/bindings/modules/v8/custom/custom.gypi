@@ -9,6 +9,7 @@
             'V8CustomSQLStatementErrorCallback.cpp',
             'V8DeviceMotionEventCustom.cpp',
             'V8ExtendableMessageEventCustom.cpp',
+            'V8IDBObserverCustom.cpp',
             'V8ServiceWorkerMessageEventCustom.cpp',
         ],
     },

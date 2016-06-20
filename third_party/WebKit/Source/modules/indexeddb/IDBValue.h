@@ -24,6 +24,7 @@ public:
     static PassRefPtr<IDBValue> create();
     static PassRefPtr<IDBValue> create(const WebIDBValue&);
     static PassRefPtr<IDBValue> create(const IDBValue*, IDBKey*, const IDBKeyPath&);
+    ~IDBValue();
 
     bool isNull() const;
     Vector<String> getUUIDs() const;
