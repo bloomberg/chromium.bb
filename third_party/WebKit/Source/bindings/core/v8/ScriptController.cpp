@@ -56,6 +56,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -98,6 +99,7 @@ DEFINE_TRACE(ScriptController)
 void ScriptController::clearForClose()
 {
     m_windowProxyManager->clearForClose();
+    MainThreadDebugger::instance()->didClearContextsForFrame(frame());
 }
 
 void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
@@ -265,6 +267,7 @@ void ScriptController::clearWindowProxy()
     // V8 binding expects ScriptController::clearWindowProxy only be called
     // when a frame is loading a new page. This creates a new context for the new page.
     m_windowProxyManager->clearForNavigation();
+    MainThreadDebugger::instance()->didClearContextsForFrame(frame());
 }
 
 void ScriptController::setCaptureCallStackForUncaughtExceptions(v8::Isolate* isolate, bool value)

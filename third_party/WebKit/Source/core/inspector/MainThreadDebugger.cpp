@@ -100,13 +100,18 @@ void MainThreadDebugger::setClientMessageLoop(std::unique_ptr<ClientMessageLoop>
     m_clientMessageLoop = std::move(clientMessageLoop);
 }
 
+void MainThreadDebugger::didClearContextsForFrame(LocalFrame* frame)
+{
+    DCHECK(isMainThread());
+    if (frame->localFrameRoot() == frame)
+        debugger()->resetContextGroup(contextGroupId(frame));
+}
+
 void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* frame, SecurityOrigin* origin)
 {
     ASSERT(isMainThread());
     v8::HandleScope handles(scriptState->isolate());
     DOMWrapperWorld& world = scriptState->world();
-    if (frame->localFrameRoot() == frame && world.isMainWorld())
-        debugger()->resetContextGroup(contextGroupId(frame));
     debugger()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame), scriptState->getExecutionContext()->isDocument()));
 }
 

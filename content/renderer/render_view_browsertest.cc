@@ -74,6 +74,7 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPerformance.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
@@ -383,6 +384,7 @@ class DevToolsAgentTest : public RenderViewImplTest {
  public:
   void Attach() {
     notifications_ = std::vector<std::string>();
+    expecting_pause_ = false;
     std::string host_id = "host_id";
     agent()->OnAttach(host_id, 17);
     agent()->send_protocol_message_callback_for_test_ = base::Bind(
@@ -410,15 +412,29 @@ class DevToolsAgentTest : public RenderViewImplTest {
 
   void OnDevToolsMessage(
       int, int, const std::string& message, const std::string&) {
-    last_received_message_ = message;
-    std::unique_ptr<base::DictionaryValue> root(
-        static_cast<base::DictionaryValue*>(
-            base::JSONReader::Read(message).release()));
+    last_message_ = base::WrapUnique(static_cast<base::DictionaryValue*>(
+        base::JSONReader::Read(message).release()));
     int id;
-    if (!root->GetInteger("id", &id)) {
+    if (!last_message_->GetInteger("id", &id)) {
       std::string notification;
-      EXPECT_TRUE(root->GetString("method", &notification));
+      EXPECT_TRUE(last_message_->GetString("method", &notification));
       notifications_.push_back(notification);
+
+      if (notification == "Debugger.paused" && expecting_pause_) {
+        base::ListValue* call_frames;
+        EXPECT_TRUE(last_message_->GetList("params.callFrames", &call_frames));
+        if (call_frames) {
+          EXPECT_EQ(call_frames_count_,
+                    static_cast<int>(call_frames->GetSize()));
+        }
+        expecting_pause_ = false;
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::Bind(&DevToolsAgentTest::DispatchDevToolsMessage,
+                       base::Unretained(this),
+                       "Debugger.resume",
+                       "{\"id\":100,\"method\":\"Debugger.resume\"}"));
+      }
     }
   }
 
@@ -431,7 +447,14 @@ class DevToolsAgentTest : public RenderViewImplTest {
     return result;
   }
 
-  std::string LastReceivedMessage() const { return last_received_message_; }
+  base::DictionaryValue* LastReceivedMessage() {
+    return last_message_.get();
+  }
+
+  void ExpectPauseAndResume(int call_frames_count) {
+    expecting_pause_ = true;
+    call_frames_count_ = call_frames_count;
+  }
 
  private:
   DevToolsAgent* agent() {
@@ -439,7 +462,9 @@ class DevToolsAgentTest : public RenderViewImplTest {
   }
 
   std::vector<std::string> notifications_;
-  std::string last_received_message_;
+  std::unique_ptr<base::DictionaryValue> last_message_;
+  int call_frames_count_;
+  bool expecting_pause_;
 };
 
 class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
@@ -2485,9 +2510,7 @@ TEST_F(DevToolsAgentTest, RuntimeCallFunctionOnRunMicrotasks) {
                           "}"
                           "}");
 
-  std::unique_ptr<base::DictionaryValue> root(
-      static_cast<base::DictionaryValue*>(
-          base::JSONReader::Read(LastReceivedMessage()).release()));
+  base::DictionaryValue* root = LastReceivedMessage();
   const base::Value* object_id;
   ASSERT_TRUE(root->Get("result.result.objectId", &object_id));
   std::string object_id_str;
@@ -2506,6 +2529,25 @@ TEST_F(DevToolsAgentTest, RuntimeCallFunctionOnRunMicrotasks) {
                               "}"
                               "}");
   EXPECT_EQ(1, CountNotifications("Console.messageAdded"));
+}
+
+TEST_F(DevToolsAgentTest, CallFramesInIsolatedWorld) {
+  LoadHTML("<body>page</body>");
+  blink::WebScriptSource source1(
+      WebString::fromUTF8("function func1() { debugger; }"));
+  frame()->GetWebFrame()->executeScriptInIsolatedWorld(17, &source1, 1, 1);
+
+  Attach();
+  DispatchDevToolsMessage("Debugger.enable",
+                          "{\"id\":1,\"method\":\"Debugger.enable\"}");
+
+  ExpectPauseAndResume(3);
+  blink::WebScriptSource source2(
+      WebString::fromUTF8("function func2() { func1(); }; func2();"));
+  frame()->GetWebFrame()->executeScriptInIsolatedWorld(17, &source2, 1, 1);
+
+  EXPECT_FALSE(IsPaused());
+  Detach();
 }
 
 }  // namespace content
