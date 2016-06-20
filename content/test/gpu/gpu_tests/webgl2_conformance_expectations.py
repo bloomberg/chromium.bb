@@ -410,8 +410,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux only.
     self.Fail('deqp/data/gles3/shaders/functions.html',
         ['linux'], bug=483282)
-    self.Fail('deqp/functional/gles3/uniformapi/random.html',
-        ['linux'], bug=616558)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
@@ -436,6 +434,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia', 'no_angle'], bug=606498)
     self.Fail('deqp/functional/gles3/negativebufferapi.html',
         ['linux', 'nvidia', 'no_angle'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformapi/random.html',
+        ['linux', 'nvidia'], bug=621178)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('deqp/functional/gles3/buffercopy.html',
