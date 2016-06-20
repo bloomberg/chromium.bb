@@ -15,7 +15,10 @@
 #endif
 
 #if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
+#include "components/mus/public/cpp/input_devices/input_device_client.h"
+#include "components/mus/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
+#include "services/shell/public/cpp/connector.h"
 #include "services/shell/runner/common/client_util.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif
@@ -51,6 +54,12 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
   content::MojoShellConnection* mojo_shell_connection =
       content::MojoShellConnection::GetForProcess();
   if (mojo_shell_connection && shell::ShellIsRemote()) {
+    input_device_client_.reset(new mus::InputDeviceClient());
+    mus::mojom::InputDeviceServerPtr server;
+    mojo_shell_connection->GetConnector()->ConnectToInterface("mojo:mus",
+                                                              &server);
+    input_device_client_->Connect(std::move(server));
+
     window_manager_connection_ = views::WindowManagerConnection::Create(
         mojo_shell_connection->GetConnector(),
         mojo_shell_connection->GetIdentity());

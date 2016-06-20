@@ -39,6 +39,7 @@ source_set("lib") {
     "//cc/surfaces",
     "//components/mus/common:mus_common",
     "//components/mus/public/cpp",
+    "//components/mus/public/cpp/input_devices",
     "//components/mus/public/interfaces",
     "//components/user_manager",
     "//components/wallpaper",

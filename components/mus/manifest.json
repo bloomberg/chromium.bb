@@ -11,6 +11,7 @@
         "mus::mojom::DisplayManager",
         "mus::mojom::Gpu",
         "mus::mojom::GpuService",
+        "mus::mojom::InputDeviceServer",
         "mus::mojom::WindowTreeFactory"
       ],
       "test": [

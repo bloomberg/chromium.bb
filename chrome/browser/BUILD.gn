@@ -622,6 +622,7 @@ target(chrome_browser_target_type, "browser") {
     ]
     deps += [
       "//components/mus/public/cpp",
+      "//components/mus/public/cpp/input_devices",
       "//content/public/common",
       "//ui/aura",
       "//ui/compositor",

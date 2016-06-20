@@ -16,7 +16,6 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "ui/events/devices/device_data_manager.h"
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus.h"
@@ -104,9 +103,7 @@ void WindowManagerConnection::RemovePointerWatcher(PointerWatcher* watcher) {
 WindowManagerConnection::WindowManagerConnection(
     shell::Connector* connector,
     const shell::Identity& identity)
-    : connector_(connector),
-      identity_(identity),
-      created_device_data_manager_(false) {
+    : connector_(connector), identity_(identity) {
   lazy_tls_ptr.Pointer()->Set(this);
   client_.reset(new mus::WindowTreeClient(this, nullptr, nullptr));
   client_->ConnectViaWindowTreeFactory(connector_);
@@ -117,14 +114,6 @@ WindowManagerConnection::WindowManagerConnection(
   std::unique_ptr<ClipboardMus> clipboard(new ClipboardMus);
   clipboard->Init(connector);
   ui::Clipboard::SetClipboardForCurrentThread(std::move(clipboard));
-
-  if (!ui::DeviceDataManager::HasInstance()) {
-    // TODO(sad): We should have a DeviceDataManager implementation that talks
-    // to a mojo service to learn about the input-devices on the system.
-    // http://crbug.com/601981
-    ui::DeviceDataManager::CreateInstance();
-    created_device_data_manager_ = true;
-  }
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
       &WindowManagerConnection::CreateNativeWidgetMus,
@@ -137,8 +126,6 @@ WindowManagerConnection::~WindowManagerConnection() {
   // we are still valid.
   client_.reset();
   ui::Clipboard::DestroyClipboardForCurrentThread();
-  if (created_device_data_manager_)
-    ui::DeviceDataManager::DeleteInstance();
   lazy_tls_ptr.Pointer()->Set(nullptr);
 
   if (ViewsDelegate::GetInstance()) {

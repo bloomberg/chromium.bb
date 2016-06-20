@@ -23,13 +23,17 @@ InputDeviceServer::~InputDeviceServer() {
 }
 
 void InputDeviceServer::RegisterAsObserver() {
-  if (!manager_) {
+  if (!manager_ && ui::DeviceDataManager::HasInstance()) {
     manager_ = ui::DeviceDataManager::GetInstance();
     manager_->AddObserver(this);
   }
 }
 
-void InputDeviceServer::RegisterInterface(shell::Connection* connection) {
+bool InputDeviceServer::IsRegisteredAsObserver() const {
+  return manager_ != nullptr;
+}
+
+void InputDeviceServer::AddInterface(shell::Connection* connection) {
   DCHECK(manager_);
   connection->AddInterface<mojom::InputDeviceServer>(this);
 }

@@ -9,6 +9,7 @@
 
 #include "ash/sysui/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
+#include "components/mus/public/cpp/input_devices/input_device_client.h"
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/shell_client.h"
@@ -48,6 +49,9 @@ class SysUIApplication
   mojo::BindingSet<mash::shelf::mojom::ShelfController>
       shelf_controller_bindings_;
   mojo::BindingSet<mojom::WallpaperController> wallpaper_controller_bindings_;
+
+  // Subscribes to updates about input-devices.
+  ::mus::InputDeviceClient input_device_client_;
 
   DISALLOW_COPY_AND_ASSIGN(SysUIApplication);
 };

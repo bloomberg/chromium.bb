@@ -29,11 +29,13 @@ class InputDeviceServer
 
   // Registers this instance as a local observer with DeviceDataManager.
   void RegisterAsObserver();
+  bool IsRegisteredAsObserver() const;
 
-  // Registers interface with the shell connection so remote observers can
-  // connect. You should have already called RegisterAsObserver() to get
-  // local input-device event updates.
-  void RegisterInterface(shell::Connection* connection);
+  // Adds interface with the shell connection so remote observers can connect.
+  // You should have already called RegisterAsObserver() to get local
+  // input-device event updates and checked it was successful by calling
+  // IsRegisteredAsObserver().
+  void AddInterface(shell::Connection* connection);
 
   // mojom::InputDeviceServer:
   void AddObserver(mojom::InputDeviceObserverMojoPtr observer) override;

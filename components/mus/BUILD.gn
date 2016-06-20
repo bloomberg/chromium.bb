@@ -86,6 +86,7 @@ source_set("lib") {
     "//components/mus/gles2",
     "//components/mus/gpu",
     "//components/mus/gpu/display_compositor",
+    "//components/mus/input_devices",
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//components/mus/ws:lib",

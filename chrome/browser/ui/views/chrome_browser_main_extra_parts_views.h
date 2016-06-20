@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
+namespace mus {
+class InputDeviceClient;
+}
+
 namespace views {
 class ViewsDelegate;
 class WindowManagerConnection;
@@ -39,6 +43,9 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
 #endif
 #if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
   std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
+
+  // Subscribes to updates about input-devices.
+  std::unique_ptr<mus::InputDeviceClient> input_device_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViews);

@@ -31,6 +31,7 @@
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/mus/public/cpp/property_type_converters.h"
+#include "components/mus/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "services/catalog/public/cpp/resource_loader.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/aura/env.h"
@@ -49,7 +50,6 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "ui/events/devices/device_data_manager.h"
 #endif
 
 using views::ViewsDelegate;
@@ -282,7 +282,6 @@ class AshInit {
     message_center::MessageCenter::Initialize();
 
 #if defined(OS_CHROMEOS)
-    ui::DeviceDataManager::CreateInstance();
     chromeos::DBusThreadManager::Initialize();
     bluez::BluezDBusManager::Initialize(
         chromeos::DBusThreadManager::Get()->GetSystemBus(),
@@ -311,6 +310,10 @@ void SysUIApplication::Initialize(::shell::Connector* connector,
                                   uint32_t id) {
   ash_init_.reset(new AshInit());
   ash_init_->Initialize(connector, identity);
+
+  mus::mojom::InputDeviceServerPtr server;
+  connector->ConnectToInterface("mojo:mus", &server);
+  input_device_client_.Connect(std::move(server));
 }
 
 bool SysUIApplication::AcceptConnection(::shell::Connection* connection) {

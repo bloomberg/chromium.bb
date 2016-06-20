@@ -180,6 +180,11 @@ void MusApp::Initialize(shell::Connector* connector,
   event_source_ = ui::PlatformEventSource::CreateDefault();
 #endif
 
+  // This needs to happen after DeviceDataManager has been constructed. That
+  // happens either during OzonePlatform or PlatformEventSource initialization,
+  // so keep this line below both of those.
+  input_device_server_.RegisterAsObserver();
+
   if (use_chrome_gpu_command_buffer_) {
     GpuServiceMus::GetInstance();
   } else {
@@ -209,6 +214,11 @@ bool MusApp::AcceptConnection(Connection* connection) {
   } else {
     connection->AddInterface<Gpu>(this);
   }
+
+  // On non-Linux platforms there will be no DeviceDataManager instance and no
+  // purpose in adding the Mojo interface to connect to.
+  if (input_device_server_.IsRegisteredAsObserver())
+    input_device_server_.AddInterface(connection);
 
   return true;
 }

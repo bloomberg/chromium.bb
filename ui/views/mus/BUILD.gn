@@ -77,7 +77,6 @@ component("mus") {
     "//ui/display/mojo",
     "//ui/events",
     "//ui/events:events_base",
-    "//ui/events/devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",

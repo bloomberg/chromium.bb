@@ -7,12 +7,14 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/mus/input_devices/input_device_server.h"
 #include "components/mus/public/interfaces/clipboard.mojom.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
@@ -150,6 +152,9 @@ class MusApp
   PendingRequests pending_requests_;
 
   UserIdToUserState user_id_to_user_state_;
+
+  // Provides input-device information via Mojo IPC.
+  InputDeviceServer input_device_server_;
 
   bool test_config_;
   bool use_chrome_gpu_command_buffer_;
