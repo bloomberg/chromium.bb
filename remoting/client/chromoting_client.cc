@@ -9,8 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/base/constants.h"
+#include "remoting/client/audio_consumer.h"
 #include "remoting/client/audio_decode_scheduler.h"
-#include "remoting/client/audio_player.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/protocol/authenticator.h"
@@ -31,13 +31,13 @@ namespace remoting {
 ChromotingClient::ChromotingClient(ClientContext* client_context,
                                    ClientUserInterface* user_interface,
                                    protocol::VideoRenderer* video_renderer,
-                                   std::unique_ptr<AudioPlayer> audio_player)
+                                   base::WeakPtr<AudioConsumer> audio_consumer)
     : user_interface_(user_interface), video_renderer_(video_renderer) {
   DCHECK(client_context->main_task_runner()->BelongsToCurrentThread());
-  if (audio_player) {
+  if (audio_consumer) {
     audio_decode_scheduler_.reset(new AudioDecodeScheduler(
         client_context->main_task_runner(),
-        client_context->audio_decode_task_runner(), std::move(audio_player)));
+        client_context->audio_decode_task_runner(), audio_consumer));
   }
 }
 

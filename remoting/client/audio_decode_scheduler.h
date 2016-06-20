@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/protocol/audio_stub.h"
 
 namespace base {
@@ -23,14 +24,14 @@ class SessionConfig;
 
 class AudioDecoder;
 class AudioPacket;
-class AudioPlayer;
+class AudioConsumer;
 
 class AudioDecodeScheduler : public protocol::AudioStub {
  public:
   AudioDecodeScheduler(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
-      std::unique_ptr<AudioPlayer> audio_player);
+      base::WeakPtr<AudioConsumer> audio_consumer);
   ~AudioDecodeScheduler() override;
 
   // Initializes decoder with the information from the protocol config.

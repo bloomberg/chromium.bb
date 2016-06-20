@@ -278,6 +278,7 @@
     ],
 
     'remoting_client_sources': [
+      'client/audio_consumer.h',
       'client/audio_decode_scheduler.cc',
       'client/audio_decode_scheduler.h',
       'client/audio_player.cc',

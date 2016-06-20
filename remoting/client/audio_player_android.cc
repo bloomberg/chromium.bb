@@ -15,7 +15,7 @@ static_assert(AudioPlayer::kChannels == 2,
               "AudioPlayer must be feeding 2 channels data.");
 const int kChannelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
 
-AudioPlayerAndroid::AudioPlayerAndroid() {
+AudioPlayerAndroid::AudioPlayerAndroid() : weak_factory_(this) {
   if (slCreateEngine(&engine_object_, 0, nullptr, 0, nullptr, nullptr) !=
           SL_RESULT_SUCCESS ||
       (*engine_object_)->Realize(engine_object_, SL_BOOLEAN_FALSE) !=
@@ -39,6 +39,10 @@ AudioPlayerAndroid::~AudioPlayerAndroid() {
   if (engine_object_) {
     (*engine_object_)->Destroy(engine_object_);
   }
+}
+
+base::WeakPtr<AudioPlayerAndroid> AudioPlayerAndroid::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 uint32_t AudioPlayerAndroid::GetSamplesPerFrame() {

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/audio.h"
 #include "ppapi/cpp/instance.h"
 #include "remoting/client/audio_player.h"
@@ -25,12 +26,16 @@ class PepperAudioPlayer : public AudioPlayer {
 
   bool ResetAudioPlayer(AudioPacket::SamplingRate sampling_rate) override;
 
+  base::WeakPtr<PepperAudioPlayer> GetWeakPtr();
+
  private:
   pp::Instance* instance_;
   pp::Audio audio_;
 
   // The count of sample frames per channel in an audio buffer.
   uint32_t samples_per_frame_;
+
+  base::WeakPtrFactory<PepperAudioPlayer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperAudioPlayer);
 };

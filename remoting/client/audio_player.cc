@@ -5,6 +5,7 @@
 #include "remoting/client/audio_player.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -22,11 +23,9 @@ AudioPlayer::AudioPlayer()
 }
 
 AudioPlayer::~AudioPlayer() {
-  base::AutoLock auto_lock(lock_);
-  ResetQueue();
 }
 
-void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet) {
+void AudioPlayer::AddAudioPacket(std::unique_ptr<AudioPacket> packet) {
   CHECK_EQ(1, packet->data_size());
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
   DCHECK_NE(AudioPacket::SAMPLING_RATE_INVALID, packet->sampling_rate());
@@ -59,7 +58,7 @@ void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet) {
   base::AutoLock auto_lock(lock_);
 
   queued_bytes_ += packet->data(0).size();
-  queued_packets_.push_back(packet.release());
+  queued_packets_.push_back(std::move(packet));
 
   int max_buffer_size_ =
       kMaxQueueLatencyMs * sampling_rate_ * kSampleSizeBytes * kChannels /
@@ -67,10 +66,13 @@ void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet) {
   while (queued_bytes_ > max_buffer_size_) {
     queued_bytes_ -= queued_packets_.front()->data(0).size() - bytes_consumed_;
     DCHECK_GE(queued_bytes_, 0);
-    delete queued_packets_.front();
     queued_packets_.pop_front();
     bytes_consumed_ = 0;
   }
+}
+
+void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet) {
+  AddAudioPacket(std::move(packet));
 }
 
 // static
@@ -83,7 +85,7 @@ void AudioPlayer::AudioPlayerCallback(void* samples,
 
 void AudioPlayer::ResetQueue() {
   lock_.AssertAcquired();
-  STLDeleteElements(&queued_packets_);
+  queued_packets_.clear();
   queued_bytes_ = 0;
   bytes_consumed_ = 0;
 }
@@ -109,7 +111,6 @@ void AudioPlayer::FillWithSamples(void* samples, uint32_t buffer_size) {
 
     // Pop off the packet if we've already consumed all its bytes.
     if (queued_packets_.front()->data(0).size() == bytes_consumed_) {
-      delete queued_packets_.front();
       queued_packets_.pop_front();
       bytes_consumed_ = 0;
       continue;

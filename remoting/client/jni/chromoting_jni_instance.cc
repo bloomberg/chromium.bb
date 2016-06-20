@@ -46,7 +46,7 @@ const bool kXmppUseTls = true;
 // Interval at which to log performance statistics, if enabled.
 const int kPerfStatsIntervalMs = 60000;
 
-}
+}  // namespace
 
 ChromotingJniInstance::ChromotingJniInstance(
     ChromotingJniRuntime* jni_runtime,
@@ -400,9 +400,13 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   video_renderer_.reset(new SoftwareVideoRenderer(
       client_context_->decode_task_runner(), view_.get(), perf_tracker_.get()));
 
-  client_.reset(
-      new ChromotingClient(client_context_.get(), this, video_renderer_.get(),
-                           base::WrapUnique(new AudioPlayerAndroid())));
+  if (!audio_player_) {
+    audio_player_.reset(new AudioPlayerAndroid());
+  }
+
+  client_.reset(new ChromotingClient(client_context_.get(), this,
+                                     video_renderer_.get(),
+                                     audio_player_->GetWeakPtr()));
 
   signaling_.reset(
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
@@ -503,6 +507,7 @@ void ChromotingJniInstance::LogPerfStats() {
 void ChromotingJniInstance::ReleaseResources() {
   // |client_| must be torn down before |signaling_|.
   client_.reset();
+  audio_player_.reset();
   video_renderer_.reset();
   view_.reset();
   signaling_.reset();

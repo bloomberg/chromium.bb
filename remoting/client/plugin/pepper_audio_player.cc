@@ -15,15 +15,17 @@ const int kFrameSizeMs = 40;
 namespace remoting {
 
 PepperAudioPlayer::PepperAudioPlayer(pp::Instance* instance)
-    : instance_(instance),
-      samples_per_frame_(0) {
-}
+    : instance_(instance), samples_per_frame_(0), weak_factory_(this) {}
 
 PepperAudioPlayer::~PepperAudioPlayer() {
 }
 
 uint32_t PepperAudioPlayer::GetSamplesPerFrame() {
   return samples_per_frame_;
+}
+
+base::WeakPtr<PepperAudioPlayer> PepperAudioPlayer::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 bool PepperAudioPlayer::ResetAudioPlayer(

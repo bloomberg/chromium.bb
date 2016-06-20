@@ -658,9 +658,12 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   if (!plugin_view_.is_null())
     video_renderer_->OnViewChanged(plugin_view_);
 
-  client_.reset(
-      new ChromotingClient(&context_, this, video_renderer_.get(),
-                           base::WrapUnique(new PepperAudioPlayer(this))));
+  if (!audio_player_) {
+    audio_player_.reset(new PepperAudioPlayer(this));
+  }
+
+  client_.reset(new ChromotingClient(&context_, this, video_renderer_.get(),
+                                     audio_player_->GetWeakPtr()));
 
   // Setup the signal strategy.
   signal_strategy_.reset(new DelegatingSignalStrategy(
@@ -973,6 +976,7 @@ void ChromotingInstance::Disconnect() {
   mouse_input_filter_.set_input_stub(nullptr);
   client_.reset();
   video_renderer_.reset();
+  audio_player_.reset();
   stats_update_timer_.Stop();
 }
 
@@ -1058,7 +1062,7 @@ bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
                                  size_t message_start,
                                  const std::string& str) {
   PP_LogLevel log_level = PP_LOGLEVEL_ERROR;
-  switch(severity) {
+  switch (severity) {
     case logging::LOG_INFO:
       log_level = PP_LOGLEVEL_TIP;
       break;

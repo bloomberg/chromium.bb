@@ -13,20 +13,24 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "remoting/client/audio_consumer.h"
 #include "remoting/proto/audio.pb.h"
 
 namespace remoting {
 
-class AudioPlayer {
+class AudioPlayer : public AudioConsumer {
  public:
   // The number of channels in the audio stream (only supporting stereo audio
   // for now).
   static const int kChannels = 2;
   static const int kSampleSizeBytes = 2;
 
-  virtual ~AudioPlayer();
+  ~AudioPlayer() override;
 
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet);
+
+  // AudioConsumer implementation.
+  void AddAudioPacket(std::unique_ptr<AudioPacket> packet) override;
 
  protected:
   AudioPlayer();
@@ -50,7 +54,7 @@ class AudioPlayer {
  private:
   friend class AudioPlayerTest;
 
-  typedef std::list<AudioPacket*> AudioPacketQueue;
+  typedef std::list<std::unique_ptr<AudioPacket>> AudioPacketQueue;
 
   void ResetQueue();
 

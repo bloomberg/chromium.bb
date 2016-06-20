@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_CHROMOTING_JNI_INSTANCE_H_
-#define REMOTING_CLIENT_CHROMOTING_JNI_INSTANCE_H_
+#ifndef REMOTING_CLIENT_JNI_CHROMOTING_JNI_INSTANCE_H_
+#define REMOTING_CLIENT_JNI_CHROMOTING_JNI_INSTANCE_H_
 
 #include <memory>
 #include <string>
@@ -30,6 +30,7 @@ class PerformanceTracker;
 class VideoRenderer;
 }  // namespace protocol
 
+class AudioPlayerAndroid;
 class ChromotingJniRuntime;
 class JniClient;
 class JniDisplayHandler;
@@ -179,6 +180,8 @@ class ChromotingJniInstance
   std::unique_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
   protocol::ThirdPartyTokenFetchedCallback third_party_token_fetched_callback_;
 
+  std::unique_ptr<AudioPlayerAndroid> audio_player_;
+
   // Indicates whether to establish a new pairing with this host. This is
   // modified in ProvideSecret(), but thereafter to be used only from the
   // network thread. (This is safe because ProvideSecret() is invoked at most
@@ -209,4 +212,4 @@ class ChromotingJniInstance
 
 }  // namespace remoting
 
-#endif
+#endif  // REMOTING_CLIENT_JNI_CHROMOTING_JNI_INSTANCE_H_

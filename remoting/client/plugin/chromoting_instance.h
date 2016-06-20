@@ -60,6 +60,7 @@ class DesktopVector;
 
 namespace remoting {
 
+class PepperAudioPlayer;
 class ChromotingClient;
 class ClientContext;
 class DelegatingSignalStrategy;
@@ -248,6 +249,7 @@ class ChromotingInstance : public ClientUserInterface,
   std::unique_ptr<jingle_glue::JingleThreadWrapper> thread_wrapper_;
   ClientContext context_;
   protocol::PerformanceTracker perf_tracker_;
+  std::unique_ptr<PepperAudioPlayer> audio_player_;
   std::unique_ptr<PepperVideoRenderer> video_renderer_;
   pp::View plugin_view_;
 

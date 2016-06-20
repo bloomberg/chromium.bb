@@ -41,6 +41,21 @@ source_set("client") {
   }
 }
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_audio_consumer.cc",
+    "fake_audio_consumer.h",
+  ]
+
+  public_deps = [
+    "//remoting/protocol:test_support",
+    "//testing/gmock",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -48,6 +63,7 @@ source_set("unit_tests") {
   # be compiled on all platforms.
   set_sources_assignment_filter([])
   sources = [
+    "audio_decode_scheduler_unittest.cc",
     "audio_player_unittest.cc",
     "chromoting_client_runtime_unittest.cc",
     "client_status_logger_unittest.cc",
@@ -70,6 +86,7 @@ source_set("unit_tests") {
 
   deps = [
     ":client",
+    ":test_support",
     "//remoting/proto",
     "//testing/gmock",
     "//testing/gtest",
