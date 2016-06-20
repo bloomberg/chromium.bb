@@ -70,7 +70,7 @@
         }],
 
         # ARM optimizations
-        [ '(target_arch=="arm" or target_arch=="arm64") and OS!="ios"', {
+        [ '(target_arch=="arm" or target_arch=="arm64") and OS!="ios" and arm_neon==1', {
           'defines': [
             'PNG_ARM_NEON_OPT=2',
             'PNG_ARM_NEON_IMPLEMENTATION=1',
