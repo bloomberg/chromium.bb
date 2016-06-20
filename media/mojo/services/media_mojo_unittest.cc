@@ -59,7 +59,7 @@ class MediaShellTest : public shell::test::ShellTest {
   MediaShellTest()
       : ShellTest("exe:media_mojo_unittests"),
         renderer_client_binding_(&renderer_client_),
-        video_demuxer_stream_(DemuxerStream::VIDEO) {}
+        video_stream_(DemuxerStream::VIDEO) {}
   ~MediaShellTest() override {}
 
   void SetUp() override {
@@ -102,16 +102,17 @@ class MediaShellTest : public shell::test::ShellTest {
                           bool expected_result) {
     service_factory_->CreateRenderer(mojo::GetProxy(&renderer_));
 
-    video_demuxer_stream_.set_video_decoder_config(video_config);
+    video_stream_.set_video_decoder_config(video_config);
 
-    mojom::DemuxerStreamPtr video_stream;
-    new MojoDemuxerStreamImpl(&video_demuxer_stream_, GetProxy(&video_stream));
+    mojom::DemuxerStreamPtr video_stream_proxy;
+    mojo_video_stream_.reset(new MojoDemuxerStreamImpl(
+        &video_stream_, GetProxy(&video_stream_proxy)));
 
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     renderer_->Initialize(renderer_client_binding_.CreateInterfacePtrAndBind(),
-                          nullptr, std::move(video_stream),
+                          nullptr, std::move(video_stream_proxy),
                           base::Bind(&MediaShellTest::OnRendererInitialized,
                                      base::Unretained(this)));
   }
@@ -128,7 +129,8 @@ class MediaShellTest : public shell::test::ShellTest {
   StrictMock<MockRendererClient> renderer_client_;
   mojo::Binding<mojom::RendererClient> renderer_client_binding_;
 
-  StrictMock<MockDemuxerStream> video_demuxer_stream_;
+  StrictMock<MockDemuxerStream> video_stream_;
+  std::unique_ptr<MojoDemuxerStreamImpl> mojo_video_stream_;
 
  private:
   std::unique_ptr<shell::Connection> connection_;
