@@ -20,6 +20,11 @@ Any ${ISOLATED_OUTDIR} on the command line will be replaced by the location of a
 temporary directory upon execution of the command specified in the .isolated
 file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
+
+Any ${SWARMING_BOT_FILE} on the command line will be replaced by the value of
+the --bot-file parameter. This file is used by a swarming bot to communicate
+state of the host to tasks. It is written to by the swarming bot's
+on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
 __version__ = '0.8.1'
