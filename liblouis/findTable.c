@@ -1,20 +1,22 @@
-/*
- Copyright (C) 2015 Bert Frees
+/* liblouis Braille Translation and Back-Translation Library
+
+Copyright (C) 2015 Bert Frees
  
- This file is free software; you can redistribute it and/or modify it under
- the terms of the Lesser or Library GNU General Public License as published by
- the Free Software Foundation; either version 3, or (at your option) any later
- version.
- 
- This file is distributed in the hope that it will be useful, but WITHOUT ANY
- WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- A PARTICULAR PURPOSE.  See the Library GNU General Public License for more
- details.
- 
- You should have received a copy of the Library GNU General Public License
- along with this program; see the file COPYING.  If not, write to the Free
- Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- USA.
+This file is part of liblouis.
+
+liblouis is free software: you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 2.1 of the License, or
+(at your option) any later version.
+
+liblouis is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
+
 */
 
 #include <config.h>

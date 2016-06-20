@@ -20,8 +20,8 @@ screenreader for Linux. It has, however, gone far beyond these
 routines. In Linux and Mac OSX it is a shared library, and in Windows
 it is a DLL.
 
-Liblouis is free software licensed under the [GNU Lesser GPL][] (see
-the file COPYING.LIB).
+Liblouis is free software licensed under the [GNU Lesser GPL, version 2.1][] (see
+the file COPYING.LESSER).
 
 The command line tools, are licensed under the [GNU GPL][] (see the
 file COPYING).
@@ -95,7 +95,7 @@ Boyer.
 [Orca]: http://live.gnome.org/Orca
 [ViewPlus]: http://www.viewplus.com
 [BRLTTY]: http://mielke.cc/brltty/
-[GNU Lesser GPL]: https://www.gnu.org/licenses/lgpl.html
+[GNU Lesser GPL, version 2.1]: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
 [GNU GPL]: https://www.gnu.org/licenses/gpl.html
 [liblouisutdml]: http://www.liblouis.org/
 [liblouis documentation]: http://www.liblouis.org/documentation/liblouis.html
