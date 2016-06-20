@@ -629,10 +629,10 @@
 
       # Currently the official bots set mini_installer_official_deps=1
       # but it's not clear if that's actually used anywhere.
-      'win': 'gyp_official',
+      'win': 'gn_official',
       'win-asan': 'gyp_official_syzyasan',
       'win-pgo': 'gyp_official_winpgo',
-      'win64': 'gyp_official_x64',
+      'win64': 'gn_official_x64',
       'win64-pgo': 'gyp_official_winpgo_x64',
     },
 
@@ -643,9 +643,9 @@
       'precise64 beta': 'gn_official',
       'precise64 stable': 'gn_official',
       'precise64 trunk': 'gn_official',
-      'win beta': 'gyp_official_six_concurrent_links',
-      'win stable': 'gyp_official_six_concurrent_links',
-      'win trunk': 'gyp_official_six_concurrent_links',
+      'win beta': 'gn_official_six_concurrent_links',
+      'win stable': 'gn_official_six_concurrent_links',
+      'win trunk': 'gn_official_six_concurrent_links',
     },
 
     'tryserver.blink': {
@@ -1335,8 +1335,8 @@
       'gyp', 'official', 'syzyasan',
     ],
 
-    'gyp_official_six_concurrent_links': [
-      'gyp', 'official', 'six_concurrent_links',
+    'gn_official_six_concurrent_links': [
+      'gn', 'official', 'six_concurrent_links',
     ],
 
     # TODO(crbug.com/595947) - figure out how to handle PGO, which needs
@@ -1349,8 +1349,8 @@
       'gyp', 'error', 'x64',
     ],
 
-    'gyp_official_x64': [
-      'gyp', 'official', 'x64',
+    'gn_official_x64': [
+      'gn', 'official', 'x64',
     ],
 
     'gyp_release_bot': [
