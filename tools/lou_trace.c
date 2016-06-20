@@ -94,10 +94,10 @@ static char *
 print_chars(const widechar * buffer, int length) {
   static uint8_t result_buf[BUFSIZE];
   size_t result_len = BUFSIZE - 1;
-#ifndef HAVE_UCS4
-    u16_to_u8(buffer, length, &result_buf, &result_len);
-#else
+#ifdef WIDECHARS_ARE_UCS4
     u32_to_u8(buffer, length, &result_buf, &result_len);
+#else
+    u16_to_u8(buffer, length, &result_buf, &result_len);
 #endif
   result_buf[result_len] = 0;
   return result_buf;
