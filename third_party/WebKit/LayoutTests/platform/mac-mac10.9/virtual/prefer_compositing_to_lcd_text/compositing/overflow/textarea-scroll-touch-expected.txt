@@ -1,13 +1,16 @@
   
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutTextControl TEXTAREA",
           "position": [18, 18],
           "bounds": [206, 126],
           "contentsOpaque": true,
@@ -16,24 +19,29 @@
           "backgroundColor": "#CCCCCC",
           "children": [
             {
+              "name": "Scrolling Layer",
               "position": [1, 1],
               "bounds": [189, 124],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [189, 308],
                   "drawsContent": true
                 }
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [206, 126],
               "children": [
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [190, 1],
                   "bounds": [15, 109]
                 },
                 {
+                  "name": "Scroll Corner Layer",
                   "position": [190, 110],
                   "bounds": [15, 15],
                   "drawsContent": true
@@ -43,6 +51,7 @@
           ]
         },
         {
+          "name": "LayoutTextControl TEXTAREA",
           "position": [248, 18],
           "bounds": [206, 126],
           "contentsOpaque": true,
@@ -51,24 +60,29 @@
           "backgroundColor": "#CCCCCC",
           "children": [
             {
+              "name": "Scrolling Layer",
               "position": [1, 1],
               "bounds": [189, 124],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [189, 308],
                   "drawsContent": true
                 }
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [206, 126],
               "children": [
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [190, 1],
                   "bounds": [15, 109]
                 },
                 {
+                  "name": "Scroll Corner Layer",
                   "position": [190, 110],
                   "bounds": [15, 15],
                   "drawsContent": true

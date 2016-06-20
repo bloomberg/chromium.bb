@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -10,48 +12,54 @@
           "object": "LayoutSVGText text",
           "rect": [8, 8, 300, 100],
           "reason": "SVG resource change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "none"
-        },
-        {
-          "object": "InlineTextBox 'X'",
-          "reason": "none"
-        },
-        {
-          "object": "InlineTextBox 'Y'",
-          "reason": "none"
-        },
-        {
-          "object": "InlineTextBox 'Z'",
-          "reason": "none"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "reason": "none"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "reason": "none"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "reason": "none"
-        },
-        {
-          "object": "LayoutSVGResourcePattern pattern id='pat'",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "reason": "none"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGResourcePattern pattern id='pat'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "none"
+    },
+    {
+      "object": "InlineTextBox 'X'",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "none"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "none"
+    },
+    {
+      "object": "InlineTextBox 'Y'",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "none"
+    },
+    {
+      "object": "InlineTextBox 'Z'",
+      "reason": "none"
     }
   ]
 }

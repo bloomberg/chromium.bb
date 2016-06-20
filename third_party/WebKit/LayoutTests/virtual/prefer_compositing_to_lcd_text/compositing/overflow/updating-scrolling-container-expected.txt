@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV id='container'",
           "position": [8, 108],
           "bounds": [210, 210],
           "shouldFlattenTransform": false,
@@ -20,34 +23,34 @@
           ],
           "children": [
             {
+              "name": "Scrolling Layer",
               "position": [5, 5],
               "bounds": [185, 185],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [400, 400],
-                  "drawsContent": true,
-                  "paintInvalidations": [
-                    {
-                      "object": "LayoutBlockFlow DIV id='container'",
-                      "reason": "style change"
-                    }
-                  ]
+                  "drawsContent": true
                 }
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [210, 210],
               "children": [
                 {
+                  "name": "Horizontal Scrollbar Layer",
                   "position": [5, 190],
                   "bounds": [185, 15]
                 },
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [190, 5],
                   "bounds": [15, 185]
                 },
                 {
+                  "name": "Scroll Corner Layer",
                   "position": [190, 190],
                   "bounds": [15, 15],
                   "drawsContent": true
@@ -57,6 +60,12 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='container'",
+      "reason": "style change"
     }
   ]
 }

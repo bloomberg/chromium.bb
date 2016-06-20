@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -57,6 +59,48 @@
           "reason": "style change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGEllipse circle id='t4'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGPath polygon",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGContainer use id='t1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGViewportContainer svg id='poly'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGPath polygon",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGContainer use id='t2'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGViewportContainer svg id='poly'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGPath polygon",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGPath polygon id='t3'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGPath polygon",
+      "reason": "style change"
     }
   ]
 }

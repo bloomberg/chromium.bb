@@ -1,4 +1,5 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "paintingPhases": [
     "GraphicsLayerPaintBackground",
@@ -7,6 +8,7 @@
   ],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "paintingPhases": [
@@ -16,6 +18,7 @@
       ],
       "children": [
         {
+          "name": "LayoutBlockFlow HTML",
           "bounds": [800, 242],
           "drawsContent": true,
           "paintingPhases": [
@@ -24,6 +27,7 @@
           ],
           "children": [
             {
+              "name": "LayoutBlockFlow (relative positioned) DIV class='composited'",
               "position": [29, 31],
               "bounds": [80, 10],
               "contentsOpaque": true,
@@ -36,6 +40,7 @@
               ]
             },
             {
+              "name": "LayoutBlockFlow HTML (foreground) Layer",
               "bounds": [800, 242],
               "drawsContent": true,
               "paintingPhases": [
@@ -43,6 +48,7 @@
               ]
             },
             {
+              "name": "LayoutBlockFlow DIV class='container'",
               "position": [28, 20],
               "bounds": [202, 202],
               "shouldFlattenTransform": false,
@@ -54,6 +60,7 @@
               ],
               "children": [
                 {
+                  "name": "Scrolling Layer",
                   "position": [1, 1],
                   "bounds": [185, 185],
                   "shouldFlattenTransform": false,
@@ -64,6 +71,7 @@
                   ],
                   "children": [
                     {
+                      "name": "Scrolling Contents Layer",
                       "bounds": [185, 715],
                       "drawsContent": true,
                       "paintingPhases": [
@@ -75,6 +83,7 @@
                   ]
                 },
                 {
+                  "name": "Overflow Controls Host Layer",
                   "bounds": [202, 202],
                   "paintingPhases": [
                     "GraphicsLayerPaintBackground",
@@ -83,6 +92,7 @@
                   ],
                   "children": [
                     {
+                      "name": "Horizontal Scrollbar Layer",
                       "position": [1, 186],
                       "bounds": [185, 15],
                       "paintingPhases": [
@@ -92,6 +102,7 @@
                       ]
                     },
                     {
+                      "name": "Vertical Scrollbar Layer",
                       "position": [186, 1],
                       "bounds": [15, 185],
                       "paintingPhases": [
@@ -101,6 +112,7 @@
                       ]
                     },
                     {
+                      "name": "Scroll Corner Layer",
                       "position": [186, 186],
                       "bounds": [15, 15],
                       "drawsContent": true,

@@ -1,0 +1,37 @@
+{
+  "bounds": [785, 2016],
+  "children": [
+    {
+      "bounds": [785, 2016],
+      "contentsOpaque": true,
+      "children": [
+        {
+          "bounds": [785, 2016],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [0, 250],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backfaceVisibility": "hidden",
+              "backgroundColor": "#FF0000"
+            },
+            {
+              "bounds": [785, 2016],
+              "drawsContent": true
+            },
+            {
+              "position": [0, 250],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#008000"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

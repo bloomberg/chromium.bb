@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,12 +17,22 @@
           "object": "LayoutSVGRect rect id='poke'",
           "rect": [32, 32, 64, 64],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "reason": "none"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGRect rect id='poke'",
+      "reason": "style change"
     }
   ]
 }

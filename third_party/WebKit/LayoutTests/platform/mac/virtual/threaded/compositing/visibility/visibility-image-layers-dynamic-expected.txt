@@ -4,23 +4,28 @@
 Initial
 
 {
+  "name": "Content Root Layer",
   "bounds": [785, 626],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 626],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='composited container'",
           "position": [18, 10],
           "bounds": [749, 144]
         },
         {
+          "name": "LayoutBlockFlow DIV class='composited hidden container'",
           "position": [14, 314],
           "bounds": [757, 152],
           "contentsVisible": false,
           "children": [
             {
+              "name": "LayoutImage IMG class='visible composited box'",
               "position": [24, 24],
               "bounds": [100, 100]
             }
@@ -33,29 +38,35 @@ Initial
 After step 1
 
 {
-  "bounds": [785, 1051],
+  "name": "Content Root Layer",
+  "bounds": [785, 1126],
   "children": [
     {
-      "bounds": [785, 1051],
+      "name": "LayoutView #document",
+      "bounds": [785, 1126],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='composited container'",
           "position": [18, 10],
           "bounds": [749, 144],
           "children": [
             {
+              "name": "LayoutImage IMG class='hidden composited box'",
               "position": [20, 20],
               "bounds": [100, 100]
             }
           ]
         },
         {
+          "name": "LayoutBlockFlow DIV class='composited hidden container'",
           "position": [14, 314],
           "bounds": [757, 152],
           "contentsVisible": false,
           "children": [
             {
+              "name": "LayoutImage IMG class='visible composited box'",
               "position": [24, 24],
               "bounds": [100, 100]
             }
@@ -68,40 +79,48 @@ After step 1
 After step 2
 
 {
-  "bounds": [785, 1565],
+  "name": "Content Root Layer",
+  "bounds": [785, 1730],
   "children": [
     {
-      "bounds": [785, 1565],
+      "name": "LayoutView #document",
+      "bounds": [785, 1730],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='composited container'",
           "position": [18, 10],
           "bounds": [749, 144],
           "children": [
             {
+              "name": "LayoutImage IMG class='hidden composited box'",
               "position": [20, 20],
               "bounds": [100, 100]
             }
           ]
         },
         {
+          "name": "LayoutBlockFlow DIV class='composited hidden container'",
           "position": [14, 160],
           "bounds": [757, 152],
           "drawsContent": true,
           "children": [
             {
+              "name": "LayoutImage IMG class='composited box'",
               "position": [24, 24],
               "bounds": [100, 100]
             }
           ]
         },
         {
+          "name": "LayoutBlockFlow DIV class='composited hidden container'",
           "position": [14, 314],
           "bounds": [757, 152],
           "contentsVisible": false,
           "children": [
             {
+              "name": "LayoutImage IMG class='visible composited box'",
               "position": [24, 24],
               "bounds": [100, 100]
             }

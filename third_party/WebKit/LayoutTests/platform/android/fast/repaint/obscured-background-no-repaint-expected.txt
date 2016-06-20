@@ -1,0 +1,11 @@
+{
+  "bounds": [785, 672],
+  "children": [
+    {
+      "bounds": [785, 672],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
+
