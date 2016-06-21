@@ -31,4 +31,4 @@ struct CRXFileInfo {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_CRX_FILE_H_
+#endif  // EXTENSIONS_BROWSER_CRX_FILE_INFO_H_
