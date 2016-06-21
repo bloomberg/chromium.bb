@@ -3186,7 +3186,8 @@ bool GLES2DecoderImpl::Initialize(
   if (workarounds().gl_clear_broken) {
     DCHECK(!clear_framebuffer_blit_.get());
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glClearWorkaroundInit");
-    clear_framebuffer_blit_.reset(new ClearFramebufferResourceManager(this));
+    clear_framebuffer_blit_.reset(
+        new ClearFramebufferResourceManager(this, features()));
     if (LOCAL_PEEK_GL_ERROR("glClearWorkaroundInit") != GL_NO_ERROR)
       return false;
   }

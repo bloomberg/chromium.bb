@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_CLEAR_FRAMEBUFFER_H_
 
 #include "base/macros.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"
 
@@ -20,7 +21,9 @@ class GLES2Decoder;
 
 class GPU_EXPORT ClearFramebufferResourceManager {
  public:
-  ClearFramebufferResourceManager(const gles2::GLES2Decoder* decoder);
+  ClearFramebufferResourceManager(
+      const gles2::GLES2Decoder* decoder,
+      const gles2::FeatureInfo::FeatureFlags& feature_flags);
   ~ClearFramebufferResourceManager();
 
 
@@ -35,7 +38,8 @@ class GPU_EXPORT ClearFramebufferResourceManager {
                         GLint clear_stencil_value);
 
  private:
-  void Initialize(const gles2::GLES2Decoder* decoder);
+  void Initialize(const gles2::GLES2Decoder* decoder,
+                  const gles2::FeatureInfo::FeatureFlags& feature_flags);
   void Destroy();
 
   // The attributes used during invocation of the extension.
@@ -43,6 +47,7 @@ class GPU_EXPORT ClearFramebufferResourceManager {
 
   bool initialized_;
   GLuint program_;
+  GLuint vao_;
   GLuint depth_handle_;
   GLuint color_handle_;
   GLuint buffer_id_;
