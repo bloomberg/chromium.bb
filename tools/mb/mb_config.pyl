@@ -227,8 +227,8 @@
 
     'chromium.gpu': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
-      'GPU Mac Builder': 'swarming_gpu_tests_gyp_release_trybot',
-      'GPU Mac Builder (dbg)': 'swarming_gpu_tests_gyp_debug_trybot',
+      'GPU Mac Builder': 'swarming_gpu_tests_gn_release_trybot',
+      'GPU Mac Builder (dbg)': 'swarming_gpu_tests_gn_debug_trybot',
       'GPU Linux Builder (dbg)': 'swarming_gpu_tests_gn_debug_trybot',
       'GPU Linux Builder': 'swarming_gpu_tests_gn_release_trybot',
       'GPU Win Builder': 'swarming_gpu_tests_gn_release_trybot_x86',
@@ -253,8 +253,8 @@
       'Android Release (Nexus 9)': 'android_gn_release_trybot_arm64',
       'GPU Linux Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_trybot',
       'GPU Linux Builder': 'swarming_gpu_fyi_tests_gn_release_trybot',
-      'GPU Mac Builder': 'swarming_gpu_fyi_tests_gyp_release_trybot',
-      'GPU Mac Builder (dbg)': 'swarming_gpu_fyi_tests_gyp_debug_trybot',
+      'GPU Mac Builder': 'swarming_gpu_fyi_tests_gn_release_trybot',
+      'GPU Mac Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_trybot',
       'GPU Win Builder': 'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x86',
       'GPU Win Builder (dbg)':
         'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_x86',
@@ -799,13 +799,13 @@
       'mac_chromium_archive_rel_ng': 'noswarming_gyp_release_trybot',
       'mac_chromium_asan_rel_ng': 'swarming_asan_dcheck_gyp_release_bot',
       'mac_chromium_asan_variable': 'findit',
-      'mac_chromium_compile_dbg_ng': 'swarming_gyp_debug_trybot',
-      'mac_chromium_compile_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
-      'mac_chromium_dbg_ng': 'swarming_gyp_debug_trybot',
+      'mac_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot',
+      'mac_chromium_compile_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
+      'mac_chromium_dbg_ng': 'swarming_gn_debug_trybot',
       'mac_chromium_gn_dbg': 'gn_debug_bot',
       'mac_chromium_gn_rel': 'gn_release_trybot',
       'mac_chromium_gn_upload': 'gn_release_bot',
-      'mac_chromium_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
+      'mac_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'mac_chromium_variable': 'findit',
       'mac_chromium_variable_10.10': 'findit',
       'mac_chromium_variable_10.10_layout': 'findit',
@@ -1680,10 +1680,6 @@
       'swarming', 'gpu_tests', 'gn', 'release_trybot', 'x86',
     ],
 
-    'swarming_gpu_tests_gyp_debug_trybot': [
-      'swarming', 'gpu_tests', 'gyp', 'debug_trybot',
-    ],
-
     'swarming_gpu_tests_gyp_release_bot': [
       'swarming', 'gpu_tests', 'gyp', 'release_bot',
     ],
@@ -1836,10 +1832,6 @@
 
     'swarming_gyp_debug_bot': [
       'swarming', 'gyp', 'debug_bot',
-    ],
-
-    'swarming_gyp_debug_trybot': [
-      'swarming', 'gyp', 'debug_trybot',
     ],
 
     'swarming_gn_release_trybot_arm': [

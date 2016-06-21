@@ -41,11 +41,11 @@ group("telemetry_chrome_test") {
   data = [
     "//tools/perf/chrome_telemetry_build/",
     "//third_party/catapult/",
+    "//components/crash/content/tools/generate_breakpad_symbols.py",
   ]
 
   if (is_win) {
     data_deps += [ "//chrome:reorder_imports" ]
-    data += [ "//components/crash/content/tools/generate_breakpad_symbols.py" ]
   }
 
   if (is_linux) {
@@ -53,7 +53,15 @@ group("telemetry_chrome_test") {
       "//tools/xdisplaycheck",
       "//breakpad:dump_syms($host_toolchain)",
     ]
-    data += [ "//components/crash/content/tools/generate_breakpad_symbols.py" ]
+  }
+
+  if (is_mac) {
+    data_deps += [
+      "//breakpad:dump_syms",
+      "//chrome:chrome_framework",
+      "//chrome:chrome_helper_app",
+      "//third_party/crashpad/crashpad/tools:crashpad_database_util",
+    ]
   }
 
   if (is_win && (symbol_level == 1 || symbol_level == 2)) {
