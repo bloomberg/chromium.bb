@@ -39,13 +39,6 @@ namespace net {
 
 namespace {
 
-// A certificate for www.paypal.com with a NULL byte in the common name.
-// From http://www.gossamer-threads.com/lists/fulldisc/full-disclosure/70363
-unsigned char paypal_null_fingerprint[] = {
-  0x4c, 0x88, 0x9e, 0x28, 0xd7, 0x7a, 0x44, 0x1e, 0x13, 0xf2, 0x6a, 0xba,
-  0x1f, 0xe8, 0x1b, 0xd6, 0xab, 0x7b, 0xe8, 0xd7
-};
-
 // Mock CertVerifyProc that sets the CertVerifyResult to a given value for
 // all certificates that are Verify()'d
 class MockCertVerifyProc : public CertVerifyProc {
@@ -207,6 +200,10 @@ TEST_F(CertVerifyProcTest, MAYBE_EVVerification) {
 // a bug to track a failing test than a false sense of security due to
 // false positive).
 TEST_F(CertVerifyProcTest, DISABLED_PaypalNullCertParsing) {
+  // A certificate for www.paypal.com with a NULL byte in the common name.
+  // From http://www.gossamer-threads.com/lists/fulldisc/full-disclosure/70363
+  SHA256HashValue paypal_null_fingerprint = {{0x00}};
+
   scoped_refptr<X509Certificate> paypal_null_cert(
       X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(paypal_null_der),
@@ -214,10 +211,8 @@ TEST_F(CertVerifyProcTest, DISABLED_PaypalNullCertParsing) {
 
   ASSERT_NE(static_cast<X509Certificate*>(NULL), paypal_null_cert.get());
 
-  const SHA1HashValue& fingerprint =
-      paypal_null_cert->fingerprint();
-  for (size_t i = 0; i < 20; ++i)
-    EXPECT_EQ(paypal_null_fingerprint[i], fingerprint.data[i]);
+  EXPECT_EQ(paypal_null_fingerprint, X509Certificate::CalculateFingerprint256(
+                                         paypal_null_cert->os_cert_handle()));
 
   int flags = 0;
   CertVerifyResult verify_result;

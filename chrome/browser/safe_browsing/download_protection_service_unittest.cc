@@ -24,6 +24,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -1743,9 +1744,12 @@ TEST_F(DownloadProtectionServiceTest, GetCertificateWhitelistStrings) {
   scoped_refptr<net::X509Certificate> issuer_cert(
       ReadTestCertificate("issuer.pem"));
   ASSERT_TRUE(issuer_cert.get());
-  std::string cert_base = "cert/" + base::HexEncode(
-      issuer_cert->fingerprint().data,
-      sizeof(issuer_cert->fingerprint().data));
+  std::string issuer_der;
+  net::X509Certificate::GetDEREncoded(issuer_cert->os_cert_handle(),
+                                      &issuer_der);
+  std::string hashed = base::SHA1HashString(issuer_der);
+  std::string cert_base =
+      "cert/" + base::HexEncode(hashed.data(), hashed.size());
 
   scoped_refptr<net::X509Certificate> cert(ReadTestCertificate("test_cn.pem"));
   ASSERT_TRUE(cert.get());

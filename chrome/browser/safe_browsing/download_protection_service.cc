@@ -20,6 +20,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -1675,8 +1676,10 @@ void DownloadProtectionService::GetCertificateWhitelistStrings(
     paths_to_check.insert(ou_tokens[i]);
   }
 
-  std::string issuer_fp = base::HexEncode(issuer.fingerprint().data,
-                                          sizeof(issuer.fingerprint().data));
+  std::string issuer_der;
+  net::X509Certificate::GetDEREncoded(issuer.os_cert_handle(), &issuer_der);
+  std::string hashed = base::SHA1HashString(issuer_der);
+  std::string issuer_fp = base::HexEncode(hashed.data(), hashed.size());
   for (std::set<std::string>::iterator it = paths_to_check.begin();
        it != paths_to_check.end(); ++it) {
     whitelist_strings->push_back("cert/" + issuer_fp + *it);

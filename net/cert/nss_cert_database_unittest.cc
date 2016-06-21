@@ -23,6 +23,7 @@
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/base/crypto_module.h"
+#include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
@@ -108,7 +109,14 @@ class CertDatabaseNSSTest : public testing::Test {
     CERT_DestroyCertList(cert_list);
 
     // Sort the result so that test comparisons can be deterministic.
-    std::sort(result.begin(), result.end(), X509Certificate::LessThan());
+    std::sort(
+        result.begin(), result.end(),
+        [](const scoped_refptr<X509Certificate>& lhs,
+           const scoped_refptr<X509Certificate>& rhs) {
+          return SHA256HashValueLessThan()(
+              X509Certificate::CalculateFingerprint256(lhs->os_cert_handle()),
+              X509Certificate::CalculateFingerprint256(rhs->os_cert_handle()));
+        });
     return result;
   }
 

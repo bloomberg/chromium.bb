@@ -2983,8 +2983,8 @@ class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {
       content::WebContents* contents,
       const GURL& request_url) const override {
     net::SSLInfo ssl_info;
-    ssl_info.cert = new net::X509Certificate(
-        request_url.host(), "CA", base::Time::Max(), base::Time::Max());
+    ssl_info.cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     return new SSLBlockingPage(
         contents, net::ERR_CERT_CONTAINS_ERRORS, ssl_info, request_url, 0,
         base::Time::NowFromSystemTime(), nullptr, base::Callback<void(bool)>());

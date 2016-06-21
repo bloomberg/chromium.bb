@@ -46,7 +46,7 @@ class CertPolicy {
 
  private:
   // The set of fingerprints of allowed certificates.
-  std::map<net::SHA1HashValue, net::CertStatus, net::SHA1HashValueLessThan>
+  std::map<net::SHA256HashValue, net::CertStatus, net::SHA256HashValueLessThan>
       allowed_;
 };
 

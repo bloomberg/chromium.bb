@@ -18,8 +18,10 @@
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread.h"
+#include "net/base/test_data_directory.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
+#include "net/test/cert_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -262,10 +264,8 @@ class RequestTrackerTest : public PlatformTest {
         net::HttpResponseInfo* response =
             const_cast<net::HttpResponseInfo*>(&requests_[i]->response_info());
 
-        response->ssl_info.cert = new net::X509Certificate(
-            "subject", "issuer",
-            base::Time::Now() - base::TimeDelta::FromDays(2),
-            base::Time::Now() + base::TimeDelta::FromDays(2));
+        response->ssl_info.cert = net::ImportCertFromFile(
+            net::GetTestCertsDirectory(), "ok_cert.pem");
         response->ssl_info.cert_status = 0;  // No errors.
         response->ssl_info.security_bits = 128;
 

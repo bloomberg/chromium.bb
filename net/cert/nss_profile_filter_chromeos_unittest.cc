@@ -7,12 +7,15 @@
 #include <cert.h>
 #include <pk11pub.h>
 #include <secmod.h>
+
+#include <algorithm>
 #include <utility>
 
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "crypto/scoped_test_nss_db.h"
+#include "net/base/hash_value.h"
 #include "net/base/test_data_directory.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +52,14 @@ CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
   CERT_DestroyCertList(cert_list);
 
   // Sort the result so that test comparisons can be deterministic.
-  std::sort(result.begin(), result.end(), X509Certificate::LessThan());
+  std::sort(
+      result.begin(), result.end(),
+      [](const scoped_refptr<X509Certificate>& lhs,
+         const scoped_refptr<X509Certificate>& rhs) {
+        return SHA256HashValueLessThan()(
+            X509Certificate::CalculateFingerprint256(lhs->os_cert_handle()),
+            X509Certificate::CalculateFingerprint256(rhs->os_cert_handle()));
+      });
   return result;
 }
 

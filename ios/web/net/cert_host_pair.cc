@@ -8,18 +8,22 @@
 
 namespace web {
 
-CertHostPair::CertHostPair(const scoped_refptr<net::X509Certificate>& cert,
-                           const std::string& host)
-    : cert(cert), host(host) {}
+CertHostPair::CertHostPair(scoped_refptr<net::X509Certificate> cert,
+                           std::string host)
+    : cert_(std::move(cert)),
+      host_(std::move(host)),
+      cert_hash_(net::X509Certificate::CalculateChainFingerprint256(
+          cert_->os_cert_handle(),
+          cert_->GetIntermediateCertificates())) {}
 
 CertHostPair::CertHostPair(const CertHostPair& other) = default;
 
 CertHostPair::~CertHostPair() {}
 
 bool CertHostPair::operator<(const CertHostPair& other) const {
-  if (host != other.host)
-    return host < other.host;
-  return net::X509Certificate::LessThan()(cert, other.cert);
+  if (host_ != other.host_)
+    return host_ < other.host_;
+  return net::SHA256HashValueLessThan()(cert_hash_, other.cert_hash_);
 }
 
 }  // web

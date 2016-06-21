@@ -35,8 +35,8 @@ TEST_F(CertHostPairTest, Construction) {
   scoped_refptr<net::X509Certificate> cert = GetCert(kCertFileName1);
   ASSERT_TRUE(cert);
   CertHostPair pair(cert, kHostName1);
-  EXPECT_EQ(cert, pair.cert);
-  EXPECT_EQ(std::string(kHostName1), pair.host);
+  EXPECT_EQ(cert, pair.cert_);
+  EXPECT_EQ(std::string(kHostName1), pair.host_);
 }
 
 // Tests comparision with different certs and hosts.
@@ -48,8 +48,10 @@ TEST_F(CertHostPairTest, ComparisonWithDifferentCertsAndHosts) {
   CertHostPair pair1(cert1, kHostName1);
   CertHostPair pair2(cert2, kHostName2);
 
-  EXPECT_TRUE(pair2 < pair1);
-  EXPECT_FALSE(pair1 < pair2);
+  EXPECT_FALSE(pair1 < pair1);
+  EXPECT_FALSE(pair2 < pair2);
+  EXPECT_TRUE((pair1 < pair2 && !(pair2 < pair1)) ||
+              (pair2 < pair1 && !(pair1 < pair2)));
 }
 
 // Tests comparision with same cert.
@@ -61,8 +63,10 @@ TEST_F(CertHostPairTest, ComparisonWithSameCert) {
   CertHostPair pair1(cert1, kHostName1);
   CertHostPair pair2(cert2, kHostName2);
 
-  EXPECT_TRUE(pair2 < pair1);
-  EXPECT_FALSE(pair1 < pair2);
+  EXPECT_FALSE(pair1 < pair1);
+  EXPECT_FALSE(pair2 < pair2);
+  EXPECT_TRUE((pair1 < pair2 && !(pair2 < pair1)) ||
+              (pair2 < pair1 && !(pair1 < pair2)));
 }
 
 // Tests comparision with same host.
@@ -74,8 +78,10 @@ TEST_F(CertHostPairTest, ComparisonWithSameHost) {
   CertHostPair pair1(cert1, kHostName1);
   CertHostPair pair2(cert2, kHostName1);
 
-  EXPECT_TRUE(pair1 < pair2);
-  EXPECT_FALSE(pair2 < pair1);
+  EXPECT_FALSE(pair1 < pair1);
+  EXPECT_FALSE(pair2 < pair2);
+  EXPECT_TRUE((pair1 < pair2 && !(pair2 < pair1)) ||
+              (pair2 < pair1 && !(pair1 < pair2)));
 }
 
 // Tests comparision with same cert and host.
@@ -87,6 +93,8 @@ TEST_F(CertHostPairTest, ComparisonWithSameCertAndHost) {
   CertHostPair pair1(cert1, kHostName1);
   CertHostPair pair2(cert2, kHostName1);
 
+  EXPECT_FALSE(pair1 < pair1);
+  EXPECT_FALSE(pair2 < pair2);
   EXPECT_FALSE(pair1 < pair2);
   EXPECT_FALSE(pair2 < pair1);
 }

@@ -20,11 +20,6 @@ ExactMatchCertVerifier::ExactMatchCertVerifier(
     : engine_cert_(std::move(engine_cert)) {
   DCHECK(engine_cert_);
 
-  net::SHA1HashValue sha1_hash;
-  sha1_hash = net::X509Certificate::CalculateFingerprint(
-      engine_cert_->os_cert_handle());
-  engine_cert_hashes_.push_back(net::HashValue(sha1_hash));
-
   net::SHA256HashValue sha256_hash;
   sha256_hash = net::X509Certificate::CalculateFingerprint256(
       engine_cert_->os_cert_handle());

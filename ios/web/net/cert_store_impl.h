@@ -31,7 +31,28 @@ class CertStoreImpl : public CertStore {
  private:
   friend struct base::DefaultSingletonTraits<CertStoreImpl>;
 
-  RequestTrackerDataMemoizingStore<net::X509Certificate> store_;
+  // Utility structure that allows memoization to be based on the
+  // hash of |cert|'s certificate chain, to avoid needing to compare
+  // every certificate individually. This is purely an optimization.
+  class HashAndCert : public base::RefCountedThreadSafe<HashAndCert> {
+   public:
+    HashAndCert();
+
+    // Comparator for RendererDataMemoizingStore.
+    struct LessThan {
+      bool operator()(const scoped_refptr<HashAndCert>& lhs,
+                      const scoped_refptr<HashAndCert>& rhs) const;
+    };
+
+    net::SHA256HashValue chain_hash;
+    scoped_refptr<net::X509Certificate> cert;
+
+   private:
+    friend class base::RefCountedThreadSafe<HashAndCert>;
+
+    ~HashAndCert();
+  };
+  RequestTrackerDataMemoizingStore<HashAndCert> store_;
 
   DISALLOW_COPY_AND_ASSIGN(CertStoreImpl);
 };

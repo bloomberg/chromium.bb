@@ -20,6 +20,7 @@
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/base/crypto_module.h"
+#include "net/base/hash_value.h"
 #include "net/cert/cert_type.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
@@ -182,8 +183,15 @@ class ONCCertificateImporterImplTest : public testing::Test {
     }
     CERT_DestroyCertList(cert_list);
 
-    // Sort the result so that test comparisons can be deterministic.
-    std::sort(result.begin(), result.end(), net::X509Certificate::LessThan());
+    std::sort(result.begin(), result.end(),
+              [](const scoped_refptr<net::X509Certificate>& lhs,
+                 const scoped_refptr<net::X509Certificate>& rhs) {
+                return net::SHA256HashValueLessThan()(
+                    net::X509Certificate::CalculateFingerprint256(
+                        lhs->os_cert_handle()),
+                    net::X509Certificate::CalculateFingerprint256(
+                        rhs->os_cert_handle()));
+              });
     return result;
   }
 };
