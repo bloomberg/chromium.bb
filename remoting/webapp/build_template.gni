@@ -225,8 +225,9 @@ template("desktop_remoting_webapp") {
       "$target_gen_dir/credits.html",
     ]
 
-    # TODO(crbug.com/584516) - fix OOM issues and re-enable on win.
-    if (enable_nacl && !is_win) {
+    # Windows debug builds of remoting_client_plugin_newlib.pexe trigger OOM in
+    # arm-nacl-ld.gold.exe - enable for release builds only on Windows.
+    if (enable_nacl && (!is_win || !is_debug)) {
       pnacl_tc = "//build/toolchain/nacl:newlib_pnacl"
       pexe_label = "//remoting/client/plugin:remoting_client_plugin_newlib"
       pexe_dir = get_label_info("${pexe_label}($pnacl_tc)", "root_out_dir")
@@ -256,8 +257,9 @@ template("desktop_remoting_webapp") {
       "//remoting/webapp:credits",
     ]
 
-    # TODO(crbug.com/584516) - fix OOM issues and re-enable on win.
-    if (enable_nacl && !is_win) {
+    # Windows debug builds of remoting_client_plugin_newlib.pexe trigger OOM in
+    # arm-nacl-ld.gold.exe - enable for release builds only on Windows.
+    if (enable_nacl && (!is_win || !is_debug)) {
       deps += [ "${pexe_label}($pnacl_tc)" ]
       if (is_debug) {
         deps += [ "${pexe_label}_debug($pnacl_tc)" ]
