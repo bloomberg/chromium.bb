@@ -153,11 +153,14 @@ void LayoutMenuList::styleDidChange(StyleDifference diff, const ComputedStyle* o
 
     bool fontChanged = !oldStyle || oldStyle->font() != style()->font();
     if (fontChanged)
-        updateOptionsHeightWidth();
+        m_optionsChanged = true;
 }
 
-void LayoutMenuList::updateOptionsHeightWidth()
+void LayoutMenuList::updateOptionsHeightWidth() const
 {
+    if (!m_optionsChanged)
+        return;
+
     float maxOptionHeight = 0;
     float maxOptionWidth = 0;
     const HeapVector<Member<HTMLElement>>& listItems = selectElement()->listItems();
@@ -191,24 +194,16 @@ void LayoutMenuList::updateOptionsHeightWidth()
         }
     }
 
-    int height = static_cast<int>(ceilf(maxOptionHeight));
-    int width = static_cast<int>(ceilf(maxOptionWidth));
-    if (m_optionsWidth == width && m_optionsHeight == height)
-        return;
+    m_optionsWidth = static_cast<int>(ceilf(maxOptionWidth));
+    m_optionsHeight = static_cast<int>(ceilf(maxOptionHeight));
+    m_optionsChanged = false;
+}
 
-    auto invalidationReason = LayoutInvalidationReason::Unknown;
-    if (m_optionsWidth != width) {
-        m_optionsWidth = width;
-        invalidationReason = LayoutInvalidationReason::MenuWidthChanged;
-    }
-
-    if (m_optionsHeight != height) {
-        m_optionsHeight = height;
-        invalidationReason = LayoutInvalidationReason::MenuHeightChanged;
-    }
-
-    if (parent())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(invalidationReason);
+void LayoutMenuList::setOptionsChanged(bool changed)
+{
+    m_optionsChanged = changed;
+    if (changed && parent())
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::MenuOptionsChanged);
 }
 
 float LayoutMenuList::computeTextHeight(const TextRun& textRun, const ComputedStyle& computedStyle) const
@@ -224,16 +219,6 @@ float LayoutMenuList::computeTextWidth(const TextRun& textRun, const ComputedSty
 }
 
 void LayoutMenuList::updateFromElement()
-{
-    if (m_optionsChanged) {
-        updateOptionsHeightWidth();
-        m_optionsChanged = false;
-    }
-
-    updateText();
-}
-
-void LayoutMenuList::updateText()
 {
     setTextFromOption(selectElement()->optionIndexToBeShown());
 }
@@ -329,6 +314,7 @@ LayoutRect LayoutMenuList::controlClipRect(const LayoutPoint& additionalOffset) 
 
 void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
+    updateOptionsHeightWidth();
     maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(styleRef())) + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
     if (!style()->width().hasPercent())
         minLogicalWidth = maxLogicalWidth;
@@ -337,6 +323,7 @@ void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, 
 void LayoutMenuList::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop,
     LogicalExtentComputedValues& computedValues) const
 {
+    updateOptionsHeightWidth();
     logicalHeight = LayoutUnit(m_optionsHeight) + borderAndPaddingHeight()
         + LayoutUnit(cInnerBlockVerticalPaddingEm * style()->computedFontSize());
     LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
