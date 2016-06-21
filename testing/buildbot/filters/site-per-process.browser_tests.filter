@@ -26,9 +26,6 @@
 -ExtensionURLRewriteBrowserTest.NewTabPageURL
 -IsolatedAppTest.*
 
-# crbug.com/589177: ProcessManagerBrowserTest.FrameClassification is flaky with --site-per-process
--ProcessManagerBrowserTest.FrameClassification
-
 # crbug.com/603261: WebrtcEventLogApiTest tests failing on Site Isolation FYI bot
 -WebrtcEventLogApiTest.TestStartTimedWebRtcEventLogging
 -WebrtcEventLogApiTest.TestStartStopWebRtcEventLogging
