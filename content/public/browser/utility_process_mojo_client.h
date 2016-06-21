@@ -28,15 +28,18 @@ namespace content {
 template <class MojoInterface>
 class UtilityProcessMojoClient {
  public:
-  UtilityProcessMojoClient(const base::string16& process_name,
-                           const base::Closure& on_error_callback)
-      : on_error_callback_(on_error_callback) {
-    DCHECK(!on_error_callback_.is_null());
+  explicit UtilityProcessMojoClient(const base::string16& process_name) {
     helper_.reset(new Helper(process_name));
   }
 
   ~UtilityProcessMojoClient() {
     BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, helper_.release());
+  }
+
+  // Sets the error callback. A valid callback must be set before calling
+  // Start().
+  void set_error_callback(const base::Closure& on_error_callback) {
+    on_error_callback_ = on_error_callback;
   }
 
   // Disables the sandbox in the utility process.
@@ -48,14 +51,13 @@ class UtilityProcessMojoClient {
   // Starts the utility process and connect to the remote Mojo service.
   void Start() {
     DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(!on_error_callback_.is_null());
     DCHECK(!start_called_);
 
     start_called_ = true;
 
     mojo::InterfaceRequest<MojoInterface> req = mojo::GetProxy(&service_);
-
     service_.set_connection_error_handler(on_error_callback_);
-
     helper_->Start(MojoInterface::Name_, req.PassMessagePipe());
   }
 

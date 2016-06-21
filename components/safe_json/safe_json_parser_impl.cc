@@ -38,10 +38,10 @@ void SafeJsonParserImpl::StartOnIOThread() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   mojo_json_parser_.reset(
       new content::UtilityProcessMojoClient<mojom::SafeJsonParser>(
-          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_JSON_PARSER_NAME),
-          base::Bind(&SafeJsonParserImpl::OnConnectionError,
-                     base::Unretained(this))));
+          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_JSON_PARSER_NAME)));
 
+  mojo_json_parser_->set_error_callback(base::Bind(
+      &SafeJsonParserImpl::OnConnectionError, base::Unretained(this)));
   mojo_json_parser_->Start();
 
   mojo_json_parser_->service()->Parse(

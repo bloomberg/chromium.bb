@@ -22,9 +22,11 @@ class UtilityProcessMojoClientBrowserTest : public ContentBrowserTest {
  public:
   void StartMojoService(bool disable_sandbox) {
     mojo_client_.reset(new UtilityProcessMojoClient<mojom::TestMojoService>(
-        base::ASCIIToUTF16("TestMojoProcess"),
+        base::ASCIIToUTF16("TestMojoProcess")));
+
+    mojo_client_->set_error_callback(
         base::Bind(&UtilityProcessMojoClientBrowserTest::OnConnectionError,
-                   base::Unretained(this))));
+                   base::Unretained(this)));
 
     // This test case needs to have the sandbox disabled.
     if (disable_sandbox)
