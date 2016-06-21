@@ -1004,15 +1004,10 @@ class ProfileSyncService : public sync_driver::SyncService,
   // this object was created on.
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<ProfileSyncService> weak_factory_;
+  // This weak factory invalidates its issued pointers when Sync is disabled.
+  base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_;
 
-  // We don't use |weak_factory_| for the StartupController because the weak
-  // ptrs should be bound to the lifetime of ProfileSyncService and not to the
-  // [Initialize -> sync disabled/shutdown] lifetime.  We don't pass
-  // StartupController an Unretained reference to future-proof against
-  // the controller impl changing to post tasks. Therefore, we have a separate
-  // factory.
-  base::WeakPtrFactory<ProfileSyncService> startup_controller_weak_factory_;
+  base::WeakPtrFactory<ProfileSyncService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

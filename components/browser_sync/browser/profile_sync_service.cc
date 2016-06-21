@@ -234,8 +234,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
           base_directory_.Append(base::FilePath(kSyncDataFolderName))),
       catch_up_configure_in_progress_(false),
       passphrase_prompt_triggered_by_version_(false),
-      weak_factory_(this),
-      startup_controller_weak_factory_(this) {
+      sync_enabled_weak_factory_(this),
+      weak_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(sync_client_);
   std::string last_version = sync_prefs_.GetLastRunVersion();
@@ -265,11 +265,13 @@ bool ProfileSyncService::CanSyncStart() const {
 void ProfileSyncService::Initialize() {
   sync_client_->Initialize();
 
+  // We don't pass StartupController an Unretained reference to future-proof
+  // against the controller impl changing to post tasks.
   startup_controller_.reset(new browser_sync::StartupController(
       &sync_prefs_,
       base::Bind(&ProfileSyncService::CanBackendStart, base::Unretained(this)),
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
-                 startup_controller_weak_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr())));
   std::unique_ptr<browser_sync::LocalSessionEventRouter> router(
       sync_client_->GetSyncSessionsClient()->GetLocalSessionEventRouter());
   local_device_ = sync_client_->GetSyncApiComponentFactory()
@@ -282,9 +284,9 @@ void ProfileSyncService::Initialize() {
       sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
       std::move(router),
       base::Bind(&ProfileSyncService::NotifyForeignSessionUpdated,
-                 weak_factory_.GetWeakPtr()),
+                 sync_enabled_weak_factory_.GetWeakPtr()),
       base::Bind(&ProfileSyncService::TriggerRefresh,
-                 weak_factory_.GetWeakPtr(),
+                 sync_enabled_weak_factory_.GetWeakPtr(),
                  syncer::ModelTypeSet(syncer::SESSIONS))));
 
   if (channel_ == version_info::Channel::UNKNOWN &&
@@ -375,8 +377,9 @@ void ProfileSyncService::Initialize() {
   AddObserver(sync_error_controller_.get());
 #endif
 
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
-      &ProfileSyncService::OnMemoryPressure, weak_factory_.GetWeakPtr())));
+  memory_pressure_listener_.reset(new base::MemoryPressureListener(
+      base::Bind(&ProfileSyncService::OnMemoryPressure,
+                 sync_enabled_weak_factory_.GetWeakPtr())));
   startup_controller_->Reset(GetRegisteredDataTypes());
   startup_controller_->TryStart();
 }
@@ -511,7 +514,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       credentials, delete_stale_data,
       std::unique_ptr<syncer::SyncManagerFactory>(
           new syncer::SyncManagerFactory()),
-      MakeWeakHandle(weak_factory_.GetWeakPtr()),
+      MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr()),
       base::Bind(browser_sync::ChromeReportUnrecoverableError, channel_),
       http_post_provider_factory_getter, std::move(saved_nigori_state_));
 }
@@ -643,10 +646,9 @@ void ProfileSyncService::OnGetTokenFailure(
       next_token_request_time_ = base::Time::Now() +
           request_access_token_backoff_.GetTimeUntilRelease();
       request_access_token_retry_timer_.Start(
-            FROM_HERE,
-            request_access_token_backoff_.GetTimeUntilRelease(),
-            base::Bind(&ProfileSyncService::RequestAccessToken,
-                        weak_factory_.GetWeakPtr()));
+          FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
+          base::Bind(&ProfileSyncService::RequestAccessToken,
+                     sync_enabled_weak_factory_.GetWeakPtr()));
       NotifyObservers();
       break;
     }
@@ -768,7 +770,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   base::TimeDelta shutdown_time = base::Time::Now() - shutdown_start_time;
   UMA_HISTOGRAM_TIMES("Sync.Shutdown.BackendDestroyedTime", shutdown_time);
 
-  weak_factory_.InvalidateWeakPtrs();
+  sync_enabled_weak_factory_.InvalidateWeakPtrs();
 
   startup_controller_->Reset(GetRegisteredDataTypes());
 
@@ -894,10 +896,10 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 
   // Shut all data types down.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &ProfileSyncService::ShutdownImpl, weak_factory_.GetWeakPtr(),
-          delete_sync_database ? syncer::DISABLE_SYNC : syncer::STOP_SYNC));
+      FROM_HERE, base::Bind(&ProfileSyncService::ShutdownImpl,
+                            sync_enabled_weak_factory_.GetWeakPtr(),
+                            delete_sync_database ? syncer::DISABLE_SYNC
+                                                 : syncer::STOP_SYNC));
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
@@ -1106,10 +1108,9 @@ void ProfileSyncService::OnConnectionStatusChange(
     } else  {
       request_access_token_backoff_.InformOfRequest(false);
       request_access_token_retry_timer_.Start(
-          FROM_HERE,
-          request_access_token_backoff_.GetTimeUntilRelease(),
+          FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
           base::Bind(&ProfileSyncService::RequestAccessToken,
-                     weak_factory_.GetWeakPtr()));
+                     sync_enabled_weak_factory_.GetWeakPtr()));
     }
   } else {
     // Reset backoff time after successful connection.
@@ -1300,8 +1301,9 @@ void ProfileSyncService::BeginConfigureCatchUpBeforeClear() {
 
 void ProfileSyncService::ClearAndRestartSyncForPassphraseEncryption() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  backend_->ClearServerData(base::Bind(
-      &ProfileSyncService::OnClearServerDataDone, weak_factory_.GetWeakPtr()));
+  backend_->ClearServerData(
+      base::Bind(&ProfileSyncService::OnClearServerDataDone,
+                 sync_enabled_weak_factory_.GetWeakPtr()));
 }
 
 void ProfileSyncService::OnClearServerDataDone() {
