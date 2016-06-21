@@ -432,12 +432,14 @@ TEST_F(LogoTrackerTest, CTAURLHasComma) {
 TEST_F(LogoTrackerTest, CTATransparentHasCommas) {
   GURL url_with_fp = GoogleAppendQueryparamsToLogoURL(
       GURL("http://logourl.com/path"), "abc123", true, true);
-  EXPECT_EQ("http://logourl.com/path?async=es_dfp:abc123,cta:1,transp:1",
-            url_with_fp.spec());
+  EXPECT_EQ(
+      "http://logourl.com/path?async=es_dfp:abc123,cta:1,transp:1,graybg:1",
+      url_with_fp.spec());
 
   url_with_fp = GoogleAppendQueryparamsToLogoURL(
       GURL("http://logourl.com/?a=b"), "", true, true);
-  EXPECT_EQ("http://logourl.com/?a=b&async=cta:1,transp:1", url_with_fp.spec());
+  EXPECT_EQ("http://logourl.com/?a=b&async=cta:1,transp:1,graybg:1",
+            url_with_fp.spec());
 }
 
 TEST_F(LogoTrackerTest, DownloadAndCacheLogo) {

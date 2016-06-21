@@ -43,8 +43,10 @@ GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
     if (wants_cta)
       params.push_back("cta:1");
 
-    if (transparent)
+    if (transparent) {
       params.push_back("transp:1");
+      params.push_back("graybg:1");
+    }
 
     query += base::JoinString(params, ",");
     GURL::Replacements replacements;
