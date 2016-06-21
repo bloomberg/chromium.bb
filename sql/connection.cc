@@ -36,6 +36,7 @@
 #include "third_party/sqlite/sqlite3.h"
 
 #if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+#include "base/ios/ios_util.h"
 #include "third_party/sqlite/src/ext/icu/sqliteicu.h"
 #endif
 
@@ -857,9 +858,11 @@ std::string Connection::CollectCorruptionInfo() {
 size_t Connection::GetAppropriateMmapSize() {
   AssertIOAllowed();
 
-#if defined(OS_IOS)
-  // iOS SQLite does not support memory mapping.
-  return 0;
+#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    // iOS SQLite does not support memory mapping.
+    return 0;
+  }
 #endif
 
   // How much to map if no errors are found.  50MB encompasses the 99th

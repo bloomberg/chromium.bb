@@ -18,6 +18,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
+#if defined(OS_IOS)
+#include "base/ios/ios_util.h"
+#endif
+
 // Test that certain features are/are-not enabled in our SQLite.
 
 namespace {
@@ -151,6 +155,13 @@ TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
 // If the platform cannot support SQLite mmap'ed I/O, make sure SQLite isn't
 // offering to support it.
 TEST_F(SQLiteFeaturesTest, NoMmap) {
+#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    // iOS 10 added mmap support for sqlite.
+    return;
+  }
+#endif
+
   // For recent versions of SQLite, SQLITE_MAX_MMAP_SIZE=0 can be used to
   // disable mmap support.  Alternately, sqlite3_config() could be used.  In
   // that case, the pragma will run successfully, but the size will always be 0.
@@ -166,7 +177,9 @@ TEST_F(SQLiteFeaturesTest, NoMmap) {
   sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
   ASSERT_TRUE(!s.Step() || !s.ColumnInt64(0));
 }
-#else
+#endif
+
+#if !defined(MOJO_APPTEST_IMPL)
 // Verify that OS file writes are reflected in the memory mapping of a
 // memory-mapped file.  Normally SQLite writes to memory-mapped files using
 // memcpy(), which should stay consistent.  Our SQLite is slightly patched to
@@ -174,6 +187,13 @@ TEST_F(SQLiteFeaturesTest, NoMmap) {
 // version doesn't reflect the OS file writes, SQLite's memory-mapped I/O should
 // be disabled on this platform using SQLITE_MAX_MMAP_SIZE=0.
 TEST_F(SQLiteFeaturesTest, Mmap) {
+#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    // iOS9's sqlite does not support mmap, so this test must be skipped.
+    return;
+  }
+#endif
+
   // Try to turn on mmap'ed I/O.
   ignore_result(db().Execute("PRAGMA mmap_size = 1048576"));
   {

@@ -25,6 +25,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
+#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+#include "base/ios/ios_util.h"
+#endif
+
 namespace sql {
 namespace test {
 
@@ -1435,13 +1439,15 @@ TEST_F(SQLConnectionTest, MmapInitiallyEnabled) {
   }
 }
 
-// Test specific operation of the GetAppropriateMmapSize() helper.
-#if defined(OS_IOS)
 TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
-  ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
-}
-#else
-TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
+#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+  // Mmap is not supported on iOS9.
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
+    return;
+  }
+#endif
+
   const size_t kMmapAlot = 25 * 1024 * 1024;
   int64_t mmap_status = MetaTable::kMmapFailure;
 
@@ -1477,7 +1483,6 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
   ASSERT_TRUE(MetaTable::GetMmapStatus(&db(), &mmap_status));
   ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
 }
-#endif
 
 // To prevent invalid SQL from accidentally shipping to production, prepared
 // statements which fail to compile with SQLITE_ERROR call DLOG(FATAL).  This
