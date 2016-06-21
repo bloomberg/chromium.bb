@@ -25,7 +25,9 @@ libbrlcheck_la_SOURCES =			\
 # following is needed to make sure the symbols are resolved from the
 # liblouis library. Otherwise we get missing symbol errors when
 # compiling the test suite, which depends on libbrlcheck.
-libbrlcheck_la_LIBADD = $(top_builddir)/liblouis/liblouis.la
+libbrlcheck_la_LIBADD =					\
+	$(top_builddir)/liblouis/liblouis.la		\
+	$(top_builddir)/tools/gnulib/libgnutools.la
 
 bin_PROGRAMS =					\
 	lou_allround				\
