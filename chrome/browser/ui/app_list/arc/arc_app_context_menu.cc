@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/grit/generated_resources.h"
 
 ArcAppContextMenu::ArcAppContextMenu(
@@ -43,6 +44,10 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case LAUNCH_NEW:
       delegate()->ExecuteLaunchCommand(event_flags);
+      break;
+    case TOGGLE_PIN:
+      TogglePin(
+          ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id()));
       break;
     case UNINSTALL:
       UninstallPackage();

@@ -89,16 +89,23 @@ bool AppContextMenu::GetAcceleratorForCommandId(int command_id,
   return false;
 }
 
+void AppContextMenu::TogglePin(const std::string& shelf_app_id) {
+  DCHECK_EQ(AppListControllerDelegate::PIN_EDITABLE,
+      controller_->GetPinnable(shelf_app_id));
+  if (controller_->IsAppPinned(shelf_app_id))
+    controller_->UnpinApp(shelf_app_id);
+  else
+    controller_->PinApp(shelf_app_id);
+}
+
 void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  if (command_id == TOGGLE_PIN &&
-      controller_->GetPinnable(app_id_) ==
-          AppListControllerDelegate::PIN_EDITABLE) {
-    if (controller_->IsAppPinned(app_id_))
-      controller_->UnpinApp(app_id_);
-    else
-      controller_->PinApp(app_id_);
-  } else if (command_id == CREATE_SHORTCUTS) {
-    controller_->DoCreateShortcutsFlow(profile_, app_id_);
+  switch (command_id) {
+    case TOGGLE_PIN:
+      TogglePin(app_id_);
+      break;
+    case CREATE_SHORTCUTS:
+      controller_->DoCreateShortcutsFlow(profile_, app_id_);
+      break;
   }
 }
 

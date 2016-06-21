@@ -65,6 +65,9 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   // items.
   virtual void BuildMenu(ui::SimpleMenuModel* menu_model);
 
+  // Helper that toggles pinning state of provided app.
+  void TogglePin(const std::string& shelf_app_id);
+
   const std::string& app_id() const { return app_id_; }
   Profile* profile() const { return profile_; }
   AppContextMenuDelegate* delegate() const { return delegate_; }
