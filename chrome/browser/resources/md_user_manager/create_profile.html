@@ -1,6 +1,7 @@
 <link rel="import" href="/import_supervised_user.html">
 <link rel="import" href="/profile_browser_proxy.html">
 <link rel="import" href="/shared_styles.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -87,29 +88,6 @@
         width: 300px;
       }
 
-      #icons {
-        display: flex;
-        flex-wrap: wrap;
-        margin: -12px;
-      }
-
-      #icons paper-button {
-        --paper-button: {
-          background: var(--paper-grey-300);
-        };
-        --paper-button-flat-keyboard-focus: {
-          background: var(--paper-grey-400);
-        };
-        border: var(--user-manager-separator-line);
-        margin: 12px;
-        min-width: 0;
-        padding: 6px 4px;
-      }
-
-      #icons paper-button[active] {
-        border-color: var(--google-blue-500);
-      }
-
       paper-checkbox {
         --paper-checkbox-checked-color: var(--google-blue-500);
         --paper-checkbox-label-spacing: 16px;
@@ -180,15 +158,9 @@
       <paper-input id="nameInput" value="{{profileName_}}" pattern=".*\S.*"
           no-label-float auto-validate>
       </paper-input>
-      <div id="icons">
-        <template is="dom-repeat" items="[[availableIcons_]]">
-          <paper-button toggles on-tap="onIconTap_"
-              data-icon-url$="[[item.url]]"
-              active="[[isActiveIcon_(item.url, profileIconUrl_)]]">
-            <img src="[[item.url]]" alt="[[item.label]]">
-          </paper-button>
-        </template>
-      </div>
+      <cr-profile-avatar-selector avatars="[[availableIcons_]]"
+          selected-avatar-url="{{profileIconUrl_}}">
+      </cr-profile-avatar-selector>
       <paper-checkbox checked="{{isSupervised_}}">
         $i18n{manageProfilesSupervisedSignedInLabel}
       </paper-checkbox>

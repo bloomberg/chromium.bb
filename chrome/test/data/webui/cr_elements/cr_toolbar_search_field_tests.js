@@ -18,12 +18,6 @@ cr.define('cr_toolbar_search_field', function() {
         field.onSearchTermSearch();
       }
 
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-            'chrome://resources/cr_elements/cr_toolbar/' +
-            'cr_toolbar_search_field.html');
-      });
-
       setup(function() {
         PolymerTest.clearBody();
         field = document.createElement('cr-toolbar-search-field');

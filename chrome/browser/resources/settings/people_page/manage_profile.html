@@ -1,7 +1,6 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="/people_page/manage_profile_browser_proxy.html">
@@ -10,37 +9,13 @@
 <dom-module id="settings-manage-profile">
   <template>
     <style include="settings-shared">
-      #availableIcons {
+      #selector {
+        --avatar-selector-avatar-hovered: {
+          @apply(--shadow-elevation-2dp);
+        };
         -webkit-margin-start: 16px;
         margin-top: 16px;
-        max-width: 600px;
-      }
-
-      #selector {
-        display: flex;
-        flex-wrap: wrap;
-      }
-
-      /* Special style for Manage Profile icon grid buttons only. */
-      paper-button {
-        align-items: center;
-        background-color: var(--paper-grey-300);
-        border: 1px solid var(--paper-grey-300);
-        border-radius: 4px;
-        display: flex;
-        height: 48px;
-        justify-content: center;
-        margin: 8px;
-        padding: 0;
-        width: 48px;
-      }
-
-      paper-button:hover {
-        @apply(--shadow-elevation-2dp);
-      }
-
-      paper-button.iron-selected {
-        border: 1px solid var(--google-blue-500);
+        max-width: 624px;
       }
     </style>
     <div class="settings-box first">
@@ -48,16 +23,10 @@
           auto-validate required on-change="onProfileNameChanged_">
       </paper-input>
     </div>
-    <div id="availableIcons">
-      <iron-selector id="selector" on-iron-activate="onIconActivate_"
-          selected="[[profileIconUrl]]" attr-for-selected="data-icon-url">
-        <template is="dom-repeat" items="[[availableIconUrls]]">
-          <paper-button data-icon-url$="[[item]]">
-            <img src="[[item]]">
-          </paper-button>
-        </template>
-      </iron-selector>
-    </div>
+    <cr-profile-avatar-selector id="selector" avatars="[[availableIcons]]"
+        selected-avatar-url="{{profileIconUrl}}"
+        on-iron-activate="onIconActivate_">
+    </cr-profile-avatar-selector>
   </template>
   <script src="manage_profile.js"></script>
 </dom-module>

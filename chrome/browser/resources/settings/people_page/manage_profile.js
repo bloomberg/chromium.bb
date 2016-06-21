@@ -27,7 +27,7 @@ Polymer({
      * The available icons for selection.
      * @type {!Array<string>}
      */
-    availableIconUrls: {
+    availableIcons: {
       type: Array,
       value: function() { return []; },
     },
@@ -45,8 +45,8 @@ Polymer({
 
   /** @override */
   attached: function() {
-    var setIcons = function(iconUrls) {
-      this.availableIconUrls = iconUrls;
+    var setIcons = function(icons) {
+      this.availableIcons = icons;
     }.bind(this);
 
     this.addWebUIListener('available-icons-changed', setIcons);
@@ -67,14 +67,12 @@ Polymer({
   },
 
   /**
-   * Handler for when the an image is activated.
+   * Handler for when an avatar is activated.
    * @param {!Event} event
    * @private
    */
   onIconActivate_: function(event) {
-    /** @type {{iconUrl: string}} */
-    var buttonData = event.detail.item.dataset;
-    this.browserProxy_.setProfileIconAndName(buttonData.iconUrl,
+    this.browserProxy_.setProfileIconAndName(event.detail.selected,
                                              this.profileName);
   },
 });

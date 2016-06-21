@@ -21,7 +21,8 @@ cr.define('settings_people_page_manage_profile', function() {
     /** @override */
     getAvailableIcons: function() {
       this.methodCalled('getAvailableIcons');
-      return Promise.resolve(['fake-icon-1.png', 'fake-icon-2.png']);
+      return Promise.resolve([{url: 'fake-icon-1.png', label: 'fake-icon-1'},
+                              {url: 'fake-icon-2.png', label: 'fake-icon-2'}]);
     },
 
     /** @override */
@@ -52,13 +53,13 @@ cr.define('settings_people_page_manage_profile', function() {
       //  - has the correct icon selected
       //  - can select a new icon
       test('ManageProfileChangeIcon', function() {
-        var selector = manageProfile.$.selector;
+        var selector = manageProfile.$.selector.$.selector;
         assertTrue(!!selector);
 
         return browserProxy.whenCalled('getAvailableIcons').then(function() {
           Polymer.dom.flush();
 
-          assertEquals('fake-icon-1.png', selector.selected);
+          assertEquals('fake-icon-1.png', manageProfile.profileIconUrl);
           assertEquals(2, selector.items.length);
           assertTrue(selector.items[0].classList.contains('iron-selected'));
           assertFalse(selector.items[1].classList.contains('iron-selected'));
@@ -74,7 +75,7 @@ cr.define('settings_people_page_manage_profile', function() {
 
       // Tests profile icon updates pushed from the browser.
       test('ManageProfileIconUpdated', function() {
-        var selector = manageProfile.$.selector;
+        var selector = manageProfile.$.selector.$.selector;
         assertTrue(!!selector);
 
         return browserProxy.whenCalled('getAvailableIcons').then(function() {
@@ -82,7 +83,7 @@ cr.define('settings_people_page_manage_profile', function() {
 
           Polymer.dom.flush();
 
-          assertEquals('fake-icon-2.png', selector.selected);
+          assertEquals('fake-icon-2.png', manageProfile.profileIconUrl);
           assertEquals(2, selector.items.length);
           assertFalse(selector.items[0].classList.contains('iron-selected'));
           assertTrue(selector.items[1].classList.contains('iron-selected'));

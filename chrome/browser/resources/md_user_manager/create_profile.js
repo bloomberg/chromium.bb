@@ -374,24 +374,6 @@ Polymer({
   },
 
   /**
-   * Handler for when the user clicks a new profile icon.
-   * @param {!Event} event
-   * @private
-   */
-  onIconTap_: function(event) {
-    var element = Polymer.dom(event).rootTarget;
-
-    if (element.nodeName == 'IMG')
-      this.profileIconUrl_ = element.src;
-    else if (element.dataset && element.dataset.iconUrl)
-      this.profileIconUrl_ = element.dataset.iconUrl;
-
-    // Button toggle state is controlled by the selected icon URL. Prevent
-    // tap events from changing the toggle state.
-    event.preventDefault();
-  },
-
-  /**
    * Handles profile create/import success message pushed by the browser.
    * @param {!ProfileInfo} profileInfo Details of the created/imported profile.
    * @private

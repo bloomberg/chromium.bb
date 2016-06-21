@@ -22,18 +22,12 @@ CrElementsBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    'cr_slider_tests.js',
-    'cr_toolbar_search_field_tests.js',
-  ]),
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
 
-  /**
-   * Hack: load a page underneath chrome://resources so script errors come
-   * from the same "domain" and can be viewed. HTML imports aren't deduped with
-   * the current page, but it should be safe to load assert.html twice.
-   * @override
-   */
-  browsePreload: 'chrome://resources/html/assert.html',
+  /** @override */
+  get browsePreload() {
+    throw 'this is abstract and should be overriden by subclasses';
+  },
 
   /** @override */
   setUp: function() {
@@ -43,12 +37,62 @@ CrElementsBrowserTest.prototype = {
   },
 };
 
-TEST_F('CrElementsBrowserTest', 'CrToolbarSearchFieldTest', function() {
+function CrElementsProfileAvatarSelectorTest() {}
+
+CrElementsProfileAvatarSelectorTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_profile_avatar_selector/' +
+      'cr_profile_avatar_selector.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_profile_avatar_selector_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsProfileAvatarSelectorTest', 'All', function() {
+  cr_profile_avatar_selector.registerTests();
+  mocha.run();
+});
+
+function CrElementsToolbarSearchFieldTest() {}
+
+CrElementsToolbarSearchFieldTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_toolbar_search_field_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsToolbarSearchFieldTest', 'All', function() {
   cr_toolbar_search_field.registerTests();
   mocha.run();
 });
 
-TEST_F('CrElementsBrowserTest', 'CrSliderTest', function() {
+function CrElementsSliderTest() {}
+
+CrElementsSliderTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_slider/cr_slider.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_slider_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsSliderTest', 'All', function() {
   cr_slider.registerTests();
   mocha.run();
 });

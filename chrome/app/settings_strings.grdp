@@ -1142,6 +1142,9 @@
   <message name="IDS_SETTINGS_PEOPLE_MANAGE_SUPERVISED_USERS" desc="Label for the button that opens the supervised users dashboard.">
     Manage supervised users
   </message>
+  <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
+    Google Profile photo
+  </message>
 
   <if expr="chromeos">
     <message name="IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK" desc="The text on the checkbox to enable screenlocker for current user.">
@@ -1185,9 +1188,6 @@
     </message>
     <message name="IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_TEXT" desc="Author label.">
       Photo by
-    </message>
-    <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
-      Google Profile photo
     </message>
     <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO" desc="The text on the loading stub for Google profile image.">
       Google Profile photo (loading)

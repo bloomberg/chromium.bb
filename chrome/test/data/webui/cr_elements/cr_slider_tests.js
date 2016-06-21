@@ -17,11 +17,6 @@ cr.define('cr_slider', function() {
 
       var tickValues = [2, 4, 8, 16, 32, 64, 128];
 
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-            'chrome://resources/cr_elements/cr_slider/cr_slider.html');
-      });
-
       setup(function() {
         PolymerTest.clearBody();
         slider = document.createElement('cr-slider');

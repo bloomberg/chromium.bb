@@ -28,6 +28,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/settings_strings.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -107,16 +108,30 @@ std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
           GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
     const gfx::Image* icon = entry->GetGAIAPicture();
     if (icon) {
+      std::unique_ptr<base::DictionaryValue> gaia_picture_info(
+          new base::DictionaryValue());
       gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
       gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
-      image_url_list->AppendString(gaia_picture_url_);
+      gaia_picture_info->SetString("url", gaia_picture_url_);
+      gaia_picture_info->SetString(
+          "label",
+          l10n_util::GetStringUTF16(IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO));
+      image_url_list->Append(std::move(gaia_picture_info));
     }
   }
 
   // Next add the default avatar icons and names.
-  for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount(); i++) {
-    std::string url = profiles::GetDefaultAvatarIconUrl(i);
-    image_url_list->AppendString(url);
+  size_t placeholder_avatar_index = profiles::GetPlaceholderAvatarIndex();
+  for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount() &&
+                     i != placeholder_avatar_index;
+       i++) {
+    std::unique_ptr<base::DictionaryValue> avatar_info(
+        new base::DictionaryValue());
+    avatar_info->SetString("url", profiles::GetDefaultAvatarIconUrl(i));
+    avatar_info->SetString(
+        "label", l10n_util::GetStringUTF16(
+                     profiles::GetDefaultAvatarLabelResourceIDAtIndex(i)));
+    image_url_list->Append(std::move(avatar_info));
   }
 
   return image_url_list;
