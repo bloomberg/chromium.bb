@@ -128,6 +128,7 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
     std::unique_ptr<net::CookieStore> system_cookie_store;
     std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator;
+    std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer;
   };
 
   // |net_log| must either outlive the IOSChromeIOThread or be NULL.

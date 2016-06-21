@@ -374,6 +374,10 @@ void ChromeBrowserStateIOData::Init(
 
   main_request_context_->set_cert_verifier(
       io_thread_globals->cert_verifier.get());
+  main_request_context_->set_ct_policy_enforcer(
+      io_thread_globals->ct_policy_enforcer.get());
+  main_request_context_->set_cert_transparency_verifier(
+      io_thread_globals->cert_transparency_verifier.get());
 
   InitializeInternal(std::move(network_delegate), profile_params_.get(),
                      protocol_handlers);

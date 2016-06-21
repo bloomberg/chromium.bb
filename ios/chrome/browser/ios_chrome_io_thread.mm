@@ -359,7 +359,7 @@ void IOSChromeIOThread::Init() {
   // Add built-in logs
   ct_verifier->AddLogs(ct_logs);
 
-  params_.ct_policy_enforcer = new net::CTPolicyEnforcer;
+  globals_->ct_policy_enforcer.reset(new net::CTPolicyEnforcer());
 
   globals_->ssl_config_service = GetSSLConfigService();
 
@@ -530,6 +530,7 @@ net::URLRequestContext* IOSChromeIOThread::ConstructSystemRequestContext(
   context->set_http_auth_handler_factory(
       globals->http_auth_handler_factory.get());
   context->set_proxy_service(globals->system_proxy_service.get());
+  context->set_ct_policy_enforcer(globals->ct_policy_enforcer.get());
 
   net::URLRequestJobFactoryImpl* system_job_factory =
       new net::URLRequestJobFactoryImpl();
