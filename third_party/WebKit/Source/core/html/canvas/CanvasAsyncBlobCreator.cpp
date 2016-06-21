@@ -264,7 +264,7 @@ void CanvasAsyncBlobCreator::createBlobAndInvokeCallback()
 {
     ASSERT(isMainThread());
     Blob* resultBlob = Blob::create(m_encodedImage->data(), m_encodedImage->size(), convertMimeTypeEnumToString(m_mimeType));
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, resultBlob));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, wrapPersistent(m_callback.get()), resultBlob));
     // Avoid unwanted retention, see dispose().
     dispose();
 }
@@ -272,7 +272,7 @@ void CanvasAsyncBlobCreator::createBlobAndInvokeCallback()
 void CanvasAsyncBlobCreator::createNullAndInvokeCallback()
 {
     ASSERT(isMainThread());
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, wrapPersistent(m_callback.get()), nullptr));
     // Avoid unwanted retention, see dispose().
     dispose();
 }
