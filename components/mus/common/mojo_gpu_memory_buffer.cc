@@ -11,6 +11,8 @@
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/system/buffer.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace mus {
@@ -30,11 +32,23 @@ std::unique_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::Create(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
   size_t bytes = gfx::BufferSizeForBufferFormat(size, format);
-  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
 
-  if (!shared_memory->CreateAnonymous(bytes))
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(bytes);
+  if (!handle.is_valid())
     return nullptr;
 
+  base::SharedMemoryHandle platform_handle;
+  size_t shared_memory_size;
+  bool readonly;
+  MojoResult result = mojo::UnwrapSharedMemoryHandle(
+      std::move(handle), &platform_handle, &shared_memory_size, &readonly);
+  if (result != MOJO_RESULT_OK)
+    return nullptr;
+  DCHECK_EQ(shared_memory_size, bytes);
+
+  auto shared_memory =
+      base::MakeUnique<base::SharedMemory>(platform_handle, readonly);
   return base::WrapUnique<gfx::GpuMemoryBuffer>(
       new MojoGpuMemoryBufferImpl(size, format, std::move(shared_memory)));
 }
