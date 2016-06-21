@@ -962,15 +962,8 @@ public:
     // See LayoutBlock.h for some extra explanations on containing blocks.
     LayoutBlock* containingBlock() const;
 
-    bool canContainAbsolutePositionObjects() const
-    {
-        return isPositioned() || canContainFixedPositionObjects();
-    }
-
-    bool canContainFixedPositionObjects() const
-    {
-        return isLayoutView() || ((hasTransformRelatedProperty() || style()->containsPaint()) && isLayoutBlock()) || isSVGForeignObject();
-    }
+    bool canContainAbsolutePositionObjects() const { return m_style->canContainAbsolutePositionObjects() || canContainFixedPositionObjects(); }
+    bool canContainFixedPositionObjects() const { return isLayoutView() || isSVGForeignObject() || (isLayoutBlock() && m_style->canContainFixedPositionObjects()); }
 
     // Convert the given local point to absolute coordinates
     // FIXME: Temporary. If UseTransforms is true, take transforms into account. Eventually localToAbsolute() will always be transform-aware.

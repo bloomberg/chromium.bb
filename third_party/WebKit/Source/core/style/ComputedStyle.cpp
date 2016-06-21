@@ -700,7 +700,8 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
             || rareNonInheritedData->m_alignSelf != other.rareNonInheritedData->m_alignSelf
             || rareNonInheritedData->m_justifyContent != other.rareNonInheritedData->m_justifyContent
             || rareNonInheritedData->m_justifyItems != other.rareNonInheritedData->m_justifyItems
-            || rareNonInheritedData->m_justifySelf != other.rareNonInheritedData->m_justifySelf)
+            || rareNonInheritedData->m_justifySelf != other.rareNonInheritedData->m_justifySelf
+            || rareNonInheritedData->m_contain != other.rareNonInheritedData->m_contain)
             return true;
 
         if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))

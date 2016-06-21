@@ -145,21 +145,24 @@ void LayoutBlock::styleWillChange(StyleDifference diff, const ComputedStyle& new
     setIsAtomicInlineLevel(newStyle.isDisplayInlineType());
 
     if (oldStyle && parent()) {
-        bool oldHasTransformRelatedProperty = oldStyle->hasTransformRelatedProperty();
-        bool newHasTransformRelatedProperty = newStyle.hasTransformRelatedProperty();
-        bool oldStyleIsContainer = oldStyle->position() != StaticPosition || oldHasTransformRelatedProperty;
+        bool oldStyleContainsFixedPosition = oldStyle->canContainFixedPositionObjects();
+        bool oldStyleContainsAbsolutePosition = oldStyleContainsFixedPosition || oldStyle->canContainAbsolutePositionObjects();
+        bool newStyleContainsFixedPosition = newStyle.canContainFixedPositionObjects();
+        bool newStyleContainsAbsolutePosition = newStyleContainsFixedPosition || newStyle.canContainAbsolutePositionObjects();
 
-        if (oldStyleIsContainer && (newStyle.position() == StaticPosition || (oldHasTransformRelatedProperty && !newHasTransformRelatedProperty))) {
+        if ((oldStyleContainsFixedPosition && !newStyleContainsFixedPosition)
+            || (oldStyleContainsAbsolutePosition && !newStyleContainsAbsolutePosition)) {
             // Clear our positioned objects list. Our absolute and fixed positioned descendants will be
             // inserted into our containing block's positioned objects list during layout.
             removePositionedObjects(nullptr, NewContainingBlock);
-        } else if (!oldStyleIsContainer && (newStyle.position() != StaticPosition || newHasTransformRelatedProperty)) {
+        }
+        if (!oldStyleContainsAbsolutePosition && newStyleContainsAbsolutePosition) {
             // Remove our absolutely positioned descendants from their current containing block.
             // They will be inserted into our positioned objects list during layout.
             if (LayoutBlock* cb = containingBlockForAbsolutePosition())
                 cb->removePositionedObjects(this, NewContainingBlock);
         }
-        if (!oldHasTransformRelatedProperty && newHasTransformRelatedProperty) {
+        if (!oldStyleContainsFixedPosition && newStyleContainsFixedPosition) {
             // Remove our fixed positioned descendants from their current containing block.
             // They will be inserted into our positioned objects list during layout.
             if (LayoutBlock* cb = containerForFixedPosition())
@@ -194,9 +197,11 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
 
     if (oldStyle && parent()) {
         if (oldStyle->position() != newStyle.position() && newStyle.position() != StaticPosition) {
-            // Remove our absolute and fixed positioned descendants from their new containing block,
-            // in case containingBlock() changes by the change to the position property.
-            // See styleWillChange() for other cases.
+            // In LayoutObject::styleWillChange() we already removed ourself from our old containing
+            // block's positioned descendant list, and we will be inserted to the new containing
+            // block's list during layout. However the positioned descendant layout logic assumes
+            // layout objects to obey parent-child order in the list. Remove our descendants here
+            // so they will be re-inserted after us.
             if (LayoutBlock* cb = containingBlock())
                 cb->removePositionedObjects(this, NewContainingBlock);
         }

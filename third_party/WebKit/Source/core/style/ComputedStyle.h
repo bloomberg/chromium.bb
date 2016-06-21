@@ -468,6 +468,9 @@ public:
     bool hasUniquePseudoStyle() const;
     bool hasPseudoElementStyle() const;
 
+    bool canContainAbsolutePositionObjects() const { return position() != StaticPosition; }
+    bool canContainFixedPositionObjects() const { return hasTransformRelatedProperty() || containsPaint();}
+
     // attribute getter methods
 
     EDisplay display() const { return static_cast<EDisplay>(noninherited_flags.effectiveDisplay); }
