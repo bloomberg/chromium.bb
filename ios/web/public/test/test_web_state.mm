@@ -12,6 +12,7 @@ namespace web {
 
 TestWebState::TestWebState()
     : web_usage_enabled_(false),
+      is_loading_(false),
       trust_level_(kAbsolute),
       content_is_html_(true) {}
 
@@ -104,7 +105,7 @@ const base::string16& TestWebState::GetTitle() const {
 }
 
 bool TestWebState::IsLoading() const {
-  return false;
+  return is_loading_;
 }
 
 double TestWebState::GetLoadingProgress() const {
@@ -113,6 +114,10 @@ double TestWebState::GetLoadingProgress() const {
 
 bool TestWebState::IsBeingDestroyed() const {
   return false;
+}
+
+void TestWebState::SetLoading(bool is_loading) {
+  is_loading_ = is_loading;
 }
 
 void TestWebState::SetCurrentURL(const GURL& url) {

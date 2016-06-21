@@ -69,11 +69,13 @@ class TestWebState : public WebState {
 
   // Setters for test data.
   void SetContentIsHTML(bool content_is_html);
+  void SetLoading(bool is_loading);
   void SetCurrentURL(const GURL& url);
   void SetTrustLevel(URLVerificationTrustLevel trust_level);
 
  private:
   bool web_usage_enabled_;
+  bool is_loading_;
   GURL url_;
   base::string16 title_;
   URLVerificationTrustLevel trust_level_;
