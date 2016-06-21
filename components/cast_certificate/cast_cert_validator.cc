@@ -56,17 +56,18 @@ class CastTrustStore {
   friend struct base::DefaultSingletonTraits<CastTrustStore>;
 
   CastTrustStore() {
-    // Initialize the trust store with two root certificates.
+    AddAnchor(kCastRootCaDer);
+    AddAnchor(kEurekaRootCaDer);
+  }
+
+  // Adds a trust anchor given a DER-encoded certificate from static
+  // storage.
+  template <size_t N>
+  void AddAnchor(const uint8_t (&data)[N]) {
     scoped_refptr<net::ParsedCertificate> root =
         net::ParsedCertificate::CreateFromCertificateData(
-            kCastRootCaDer, sizeof(kCastRootCaDer),
-            net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE);
-    CHECK(root);
-    store_.AddTrustedCertificate(std::move(root));
-
-    root = net::ParsedCertificate::CreateFromCertificateData(
-        kEurekaRootCaDer, sizeof(kEurekaRootCaDer),
-        net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE);
+            data, N, net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE,
+            {});
     CHECK(root);
     store_.AddTrustedCertificate(std::move(root));
   }
@@ -258,6 +259,22 @@ class ScopedCheckUnreferencedCerts {
   std::vector<scoped_refptr<net::ParsedCertificate>>* certs_;
 };
 
+// Returns the parsing options used for Cast certificates.
+net::ParseCertificateOptions GetCertParsingOptions() {
+  net::ParseCertificateOptions options;
+
+  // Some cast intermediate certificates contain serial numbers that are
+  // 21 octets long, and might also not use valid DER encoding for an
+  // INTEGER (non-minimal encoding).
+  //
+  // Allow these sorts of serial numbers.
+  //
+  // TODO(eroman): At some point in the future this workaround will no longer be
+  // necessary. Should revisit this for removal in 2017 if not earlier.
+  options.allow_invalid_serial_numbers = true;
+  return options;
+}
+
 }  // namespace
 
 bool VerifyDeviceCert(const std::vector<std::string>& certs,
@@ -277,7 +294,7 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
     if (!net::ParsedCertificate::CreateAndAddToVector(
             reinterpret_cast<const uint8_t*>(cert_der.data()), cert_der.size(),
             net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE,
-            &input_chain)) {
+            GetCertParsingOptions(), &input_chain)) {
       return false;
     }
   }
@@ -309,8 +326,8 @@ std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
 bool AddTrustAnchorForTest(const uint8_t* data, size_t length) {
   scoped_refptr<net::ParsedCertificate> anchor(
       net::ParsedCertificate::CreateFromCertificateData(
-          data, length,
-          net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE));
+          data, length, net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE,
+          GetCertParsingOptions()));
   if (!anchor)
     return false;
   CastTrustStore::Get().AddTrustedCertificate(std::move(anchor));

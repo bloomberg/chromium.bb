@@ -39,10 +39,9 @@ void ParseCertificateForFuzzer(const der::Input& in) {
       SignatureAlgorithm::CreateFromDer(signature_algorithm_tlv));
 
   ParsedTbsCertificate tbs;
-  if (!ParseTbsCertificate(tbs_certificate_tlv, &tbs))
+  if (!ParseTbsCertificate(tbs_certificate_tlv, {}, &tbs))
     return;
 
-  ignore_result(VerifySerialNumber(tbs.serial_number));
   RDNSequence subject;
   ignore_result(ParseName(tbs.subject_tlv, &subject));
 

@@ -219,7 +219,9 @@ bool ParseCertificate(const der::Input& certificate_tlv,
 //        extensions      [3]  EXPLICIT Extensions OPTIONAL
 //                             -- If present, version MUST be v3
 //        }
-bool ParseTbsCertificate(const der::Input& tbs_tlv, ParsedTbsCertificate* out) {
+bool ParseTbsCertificate(const der::Input& tbs_tlv,
+                         const ParseCertificateOptions& options,
+                         ParsedTbsCertificate* out) {
   der::Parser parser(tbs_tlv);
 
   //   Certificate  ::=  SEQUENCE  {
@@ -249,8 +251,10 @@ bool ParseTbsCertificate(const der::Input& tbs_tlv, ParsedTbsCertificate* out) {
   //        serialNumber         CertificateSerialNumber,
   if (!tbs_parser.ReadTag(der::kInteger, &out->serial_number))
     return false;
-  if (!VerifySerialNumber(out->serial_number))
+  if (!options.allow_invalid_serial_numbers &&
+      !VerifySerialNumber(out->serial_number)) {
     return false;
+  }
 
   //        signature            AlgorithmIdentifier,
   if (!ReadSequenceTLV(&tbs_parser, &out->signature_algorithm_tlv))

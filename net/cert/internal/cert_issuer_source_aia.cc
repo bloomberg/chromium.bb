@@ -89,7 +89,7 @@ void AiaRequest::OnFetchCompleted(Error error,
     // bytes.
     if (!ParsedCertificate::CreateAndAddToVector(
             fetched_bytes.data(), fetched_bytes.size(),
-            ParsedCertificate::DataSource::INTERNAL_COPY, &results_)) {
+            ParsedCertificate::DataSource::INTERNAL_COPY, {}, &results_)) {
       // TODO(mattm): propagate error info.
       LOG(ERROR) << "Error parsing AIA data";
     }

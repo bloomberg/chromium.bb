@@ -50,7 +50,8 @@ class NET_EXPORT ParsedCertificate
   static scoped_refptr<ParsedCertificate> CreateFromCertificateData(
       const uint8_t* data,
       size_t length,
-      DataSource source);
+      DataSource source,
+      const ParseCertificateOptions& options);
 
   // Creates a ParsedCertificate and appends it to |chain|. Returns true if the
   // certificate was successfully parsed and added. If false is return, |chain|
@@ -59,11 +60,13 @@ class NET_EXPORT ParsedCertificate
       const uint8_t* data,
       size_t length,
       DataSource source,
+      const ParseCertificateOptions& options,
       std::vector<scoped_refptr<net::ParsedCertificate>>* chain);
 
   // Creates a ParsedCertificate, copying the data from |data|.
   static scoped_refptr<ParsedCertificate> CreateFromCertificateCopy(
-      const base::StringPiece& data);
+      const base::StringPiece& data,
+      const ParseCertificateOptions& options);
 
   // Returns the DER-encoded certificate data for this cert.
   const der::Input& der_cert() const { return cert_; }

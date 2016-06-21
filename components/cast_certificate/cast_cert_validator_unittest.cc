@@ -279,6 +279,27 @@ TEST(VerifyCastDeviceCertTest, AudioRefDevTestChain3) {
           "signeddata/AudioReferenceDevTest.pem");
 }
 
+// Tests verifying a valid certificate chain of length 3. Note that the first
+// intermediate has a serial number that is 21 octets long, which violates RFC
+// 5280. However cast verification accepts this certificate for compatibility
+// reasons.
+//
+//  0: 8C579B806FFC8A9DFFFF F8:8F:CA:6B:E6:DA
+//  1: Sony so16vic CA
+//  2: Cast Audio Sony CA
+//
+// Chains to trust anchor:
+//   Cast Root CA     (not included)
+//
+// This device certificate has a policy that means it is valid only for audio
+// devices.
+TEST(VerifyCastDeviceCertTest, IntermediateSerialNumberTooLong) {
+  RunTest(RESULT_SUCCESS, "8C579B806FFC8A9DFFFF F8:8F:CA:6B:E6:DA",
+          CastDeviceCertPolicy::AUDIO_ONLY,
+          "certificates/intermediate_serialnumber_toolong.pem",
+          AprilFirst2016(), "");
+}
+
 // ------------------------------------------------------
 // Valid signature using 1024-bit RSA key
 // ------------------------------------------------------

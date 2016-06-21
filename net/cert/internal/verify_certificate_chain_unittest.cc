@@ -77,7 +77,7 @@ void ReadTestFromFile(const std::string& file_name,
       chain->push_back(block_data);
     } else if (block_type == kTrustedCertificateHeader) {
       scoped_refptr<ParsedCertificate> cert(
-          ParsedCertificate::CreateFromCertificateCopy(block_data));
+          ParsedCertificate::CreateFromCertificateCopy(block_data, {}));
       ASSERT_TRUE(cert);
       trust_store->AddTrustedCertificate(std::move(cert));
     } else if (block_type == kTimeHeader) {
@@ -109,7 +109,8 @@ void RunTest(const char* file_name) {
   for (const auto& cert_der : chain) {
     ASSERT_TRUE(net::ParsedCertificate::CreateAndAddToVector(
         reinterpret_cast<const uint8_t*>(cert_der.data()), cert_der.size(),
-        net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE, &input_chain));
+        net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE, {},
+        &input_chain));
   }
 
   SimpleSignaturePolicy signature_policy(1024);

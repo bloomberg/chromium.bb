@@ -38,7 +38,7 @@ using ::testing::StrictMock;
                   "CERTIFICATE", &der);
   if (!r)
     return r;
-  *result = ParsedCertificate::CreateFromCertificateCopy(der);
+  *result = ParsedCertificate::CreateFromCertificateCopy(der, {});
   if (!*result)
     return ::testing::AssertionFailure() << "CreateFromCertificateCopy failed";
   return ::testing::AssertionSuccess();
