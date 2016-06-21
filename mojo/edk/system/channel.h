@@ -45,7 +45,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
       // Message size in bytes, including the header.
       uint32_t num_bytes;
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(MOJO_EDK_LEGACY_PROTOCOL)
       // Old message wire format for ChromeOS and Android.
       // Number of attached handles.
       uint16_t num_handles;
@@ -64,7 +64,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
       MessageType message_type;
 
       char padding[6];
-#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // defined(MOJO_EDK_LEGACY_PROTOCOL)
     };
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -116,7 +116,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     const void* data() const { return data_; }
     size_t data_num_bytes() const { return size_; }
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(MOJO_EDK_LEGACY_PROTOCOL)
     void* mutable_payload() { return static_cast<void*>(header_ + 1); }
     const void* payload() const {
       return static_cast<const void*>(header_ + 1);
@@ -132,7 +132,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     void* mutable_payload() { return data_ + header_->num_header_bytes; }
     const void* payload() const { return data_ + header_->num_header_bytes; }
     size_t payload_size() const;
-#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // defined(MOJO_EDK_LEGACY_PROTOCOL)
 
     size_t num_handles() const { return header_->num_handles; }
     bool has_handles() const { return header_->num_handles > 0; }

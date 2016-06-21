@@ -55,6 +55,11 @@
             '../third_party/ashmem/ashmem.gyp:ashmem',
           ],
         }],
+        ['OS=="android" or chromeos==1', {
+          'defines': [
+            'MOJO_EDK_LEGACY_PROTOCOL',
+          ],
+        }],
         ['OS=="win"', {
            # Structure was padded due to __declspec(align()), which is
            # uninteresting.

@@ -115,6 +115,12 @@ component("system") {
     ]
   }
 
+  # Use target_os == "chromeos" instead of is_chromeos because we need to
+  # build NaCl targets (i.e. IRT) for ChromeOS the same as the rest of ChromeOS.
+  if (is_android || target_os == "chromeos") {
+    defines += [ "MOJO_EDK_LEGACY_PROTOCOL" ]
+  }
+
   allow_circular_includes_from = [ "//mojo/edk/embedder" ]
 }
 

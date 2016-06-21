@@ -66,6 +66,13 @@
         '<@(mojo_edk_system_impl_sources)',
         '<@(mojo_edk_system_impl_nacl_nonsfi_sources)',
       ],
+      'conditions': [
+        ['OS=="android" or chromeos==1', {
+          'defines': [
+            'MOJO_EDK_LEGACY_PROTOCOL',
+          ],
+        }],
+      ],
     },
   ],
 }
