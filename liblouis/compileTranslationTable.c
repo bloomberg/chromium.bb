@@ -994,7 +994,7 @@ charactersDefined (FileInfo * nested)
       }
   if (!(newRule->opcode == CTO_Correct || newRule->opcode == CTO_SwapCc || newRule->opcode == CTO_SwapCd)
 	//TODO:  these just need to know there is a way to get from dots to a char
-	&& !(newRule->opcode >= CTO_CapsLetterRule && newRule->opcode <= CTO_LastWordTrans5AfterRule))
+	&& !(newRule->opcode >= CTO_CapsLetterRule && newRule->opcode <= CTO_EndEmph5PhraseAfterRule))
     {
       for (k = newRule->charslen; k < newRule->charslen + newRule->dotslen;
 	   k++)
@@ -4049,17 +4049,17 @@ doOpcode:
 		i++; // in table->emphRules the first index is used for caps
 		if (opcode == CTO_EmphLetter) {
 			ok = compileBrailleIndicator (nested, "single letter",
-				CTO_SingleLetterItalRule + letterOffset + (8 * i),
+				CTO_Emph1LetterRule + letterOffset + (8 * i),
 				&table->emphRules[i][letterOffset]);
 		}
 		else if (opcode == CTO_BegEmphWord) {
 			ok = compileBrailleIndicator (nested, "word",
-				CTO_SingleLetterItalRule + begWordOffset + (8 * i),
+				CTO_Emph1LetterRule + begWordOffset + (8 * i),
 				&table->emphRules[i][begWordOffset]);
 		}
 		else if (opcode == CTO_EndEmphWord) {
 			ok = compileBrailleIndicator(nested, "word stop",
-				CTO_SingleLetterItalRule + endWordOffset + (8 * i),
+				CTO_Emph1LetterRule + endWordOffset + (8 * i),
 				&table->emphRules[i][endWordOffset]);
 		}
 		else if (opcode == CTO_BegEmph) {
@@ -4070,7 +4070,7 @@ doOpcode:
 		    break;
 		  }
 			ok = compileBrailleIndicator (nested, "first letter",
-				CTO_SingleLetterItalRule + begOffset + (8 * i),
+				CTO_Emph1LetterRule + begOffset + (8 * i),
 				&table->emphRules[i][begOffset]);
 		}
 		else if (opcode == CTO_EndEmph) {
@@ -4080,12 +4080,12 @@ doOpcode:
 		    break;
 		  }
 			ok = compileBrailleIndicator (nested, "last letter",
-				CTO_SingleLetterItalRule + endOffset + (8 * i),
+				CTO_Emph1LetterRule + endOffset + (8 * i),
 				&table->emphRules[i][endOffset]);
 		}
 		else if (opcode == CTO_BegEmphPhrase) {
 			ok = compileBrailleIndicator (nested, "first word",
-				CTO_SingleLetterItalRule + begPhraseOffset + (8 * i),
+				CTO_Emph1LetterRule + begPhraseOffset + (8 * i),
 				&table->emphRules[i][begPhraseOffset]);
 		}
 		else if (opcode == CTO_EndEmphPhrase)
@@ -4097,7 +4097,7 @@ doOpcode:
 						break;
 					}
 					ok = compileBrailleIndicator (nested, "last word before",
-						CTO_SingleLetterItalRule + endPhraseBeforeOffset + (8 * i),
+						CTO_Emph1LetterRule + endPhraseBeforeOffset + (8 * i),
 						&table->emphRules[i][endPhraseBeforeOffset]);
 					break;
 				case 2: // after
@@ -4107,7 +4107,7 @@ doOpcode:
 						break;
 					}
 					ok = compileBrailleIndicator (nested, "last word after",
-						CTO_SingleLetterItalRule + endPhraseAfterOffset + (8 * i),
+						CTO_Emph1LetterRule + endPhraseAfterOffset + (8 * i),
 						&table->emphRules[i][endPhraseAfterOffset]);
 					break;
 				default: // error
