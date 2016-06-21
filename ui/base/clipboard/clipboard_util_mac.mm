@@ -9,10 +9,8 @@
 
 namespace {
 NSString* const kWebURLsWithTitlesPboardType = @"WebURLsWithTitlesPboardType";
-NSString* const kCorePasteboardFlavorType_url =
-    @"CorePasteboardFlavorType 0x75726C20";  // 'url '  url
-NSString* const kCorePasteboardFlavorType_urln =
-    @"CorePasteboardFlavorType 0x75726C6E";  // 'urln'  title
+NSString* const kPublicUrl = @"public.url";
+NSString* const kPublicUrlName = @"public.url-name";
 
 // It's much more convenient to return an NSString than a
 // base::ScopedCFTypeRef<CFStringRef>, since the methods on NSPasteboardItem
@@ -68,12 +66,8 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
   }
 
   [item setString:urlString forType:NSPasteboardTypeString];
-
-  [item setData:[urlString dataUsingEncoding:NSUTF8StringEncoding]
-        forType:UTIFromPboardType(kCorePasteboardFlavorType_url)];
-
-  [item setData:[title dataUsingEncoding:NSUTF8StringEncoding]
-        forType:UTIFromPboardType(kCorePasteboardFlavorType_urln)];
+  [item setString:urlString forType:kPublicUrl];
+  [item setString:title forType:kPublicUrlName];
   return item;
 }
 
@@ -101,14 +95,12 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromString(
 
 //static
 NSString* ClipboardUtil::GetTitleFromPasteboardURL(NSPasteboard* pboard) {
-  return
-      [pboard stringForType:UTIFromPboardType(kCorePasteboardFlavorType_urln)];
+  return [pboard stringForType:kPublicUrlName];
 }
 
 //static
 NSString* ClipboardUtil::GetURLFromPasteboardURL(NSPasteboard* pboard) {
-  return
-      [pboard stringForType:UTIFromPboardType(kCorePasteboardFlavorType_url)];
+  return [pboard stringForType:kPublicUrl];
 }
 
 // static
