@@ -72,10 +72,18 @@ void SetUploadsEnabled(bool enabled);
 // available in the browser process.
 bool GetUploadsEnabled();
 
-struct UploadedReport {
+enum class ReportUploadState {
+  NotUploaded,
+  Pending,
+  Uploaded,
+};
+
+struct Report {
   std::string local_id;
+  time_t capture_time;
   std::string remote_id;
-  time_t creation_time;
+  time_t upload_time;
+  ReportUploadState state;
 };
 
 // Obtains a list of reports uploaded to the collection server. This function
@@ -83,13 +91,7 @@ struct UploadedReport {
 // database that have been successfully uploaded will be included in this list.
 // The list will be sorted in descending order by report creation time (newest
 // reports first).
-//
-// TODO(mark): The about:crashes UI expects to show only uploaded reports. If it
-// is ever enhanced to work well with un-uploaded reports, those should be
-// returned as well. Un-uploaded reports may have a pending upload, may have
-// experienced upload failure, or may have been collected while uploads were
-// disabled.
-void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports);
+void GetReports(std::vector<Report>* reports);
 
 #if BUILDFLAG(ENABLE_KASKO)
 // Returns a copy of the current crash keys for Kasko.

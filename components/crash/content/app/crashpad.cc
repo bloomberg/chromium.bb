@@ -316,8 +316,8 @@ bool GetUploadsEnabled() {
   return false;
 }
 
-void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports) {
-  uploaded_reports->clear();
+void GetReports(std::vector<Report>* reports) {
+  reports->clear();
 
   if (!g_database) {
     return;
@@ -330,21 +330,41 @@ void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports) {
     return;
   }
 
-  for (const crashpad::CrashReportDatabase::Report& completed_report :
-       completed_reports) {
-    if (completed_report.uploaded) {
-      UploadedReport uploaded_report;
-      uploaded_report.local_id = completed_report.uuid.ToString();
-      uploaded_report.remote_id = completed_report.id;
-      uploaded_report.creation_time = completed_report.creation_time;
-
-      uploaded_reports->push_back(uploaded_report);
-    }
+  std::vector<crashpad::CrashReportDatabase::Report> pending_reports;
+  status = g_database->GetPendingReports(&pending_reports);
+  if (status != crashpad::CrashReportDatabase::kNoError) {
+    return;
   }
 
-  std::sort(uploaded_reports->begin(), uploaded_reports->end(),
-            [](const UploadedReport& a, const UploadedReport& b) {
-              return a.creation_time > b.creation_time;
+  for (const crashpad::CrashReportDatabase::Report& completed_report :
+       completed_reports) {
+    Report report;
+    report.local_id = completed_report.uuid.ToString();
+    report.capture_time = completed_report.creation_time;
+    report.remote_id = completed_report.id;
+    if (completed_report.uploaded) {
+      report.upload_time = completed_report.last_upload_attempt_time;
+      report.state = ReportUploadState::Uploaded;
+    } else {
+      report.upload_time = 0;
+      report.state = ReportUploadState::NotUploaded;
+    }
+    reports->push_back(report);
+  }
+
+  for (const crashpad::CrashReportDatabase::Report& pending_report :
+       pending_reports) {
+    Report report;
+    report.local_id = pending_report.uuid.ToString();
+    report.capture_time = pending_report.creation_time;
+    report.upload_time = 0;
+    report.state = ReportUploadState::Pending;
+    reports->push_back(report);
+  }
+
+  std::sort(reports->begin(), reports->end(),
+            [](const Report& a, const Report& b) {
+              return a.capture_time > b.capture_time;
             });
 }
 

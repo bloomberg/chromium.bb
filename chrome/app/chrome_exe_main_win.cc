@@ -45,8 +45,8 @@ namespace {
 base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<std::vector<crash_reporter::UploadedReport>>::Leaky
-    g_uploaded_reports = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::vector<crash_reporter::Report>>::Leaky g_crash_reports =
+    LAZY_INSTANCE_INITIALIZER;
 
 // List of switches that it's safe to rendezvous early with. Fast start should
 // not be done if a command line contains a switch not in this set.
@@ -200,12 +200,12 @@ bool RemoveAppCompatFlagsEntry() {
 // CrashUploadListCrashpad. Note that we do not pass an std::vector here,
 // because we do not want to allocate/free in different modules. The returned
 // pointer is read-only.
-extern "C" __declspec(dllexport) void GetUploadedReportsImpl(
-    const crash_reporter::UploadedReport** reports,
+extern "C" __declspec(dllexport) void GetCrashReportsImpl(
+    const crash_reporter::Report** reports,
     size_t* report_count) {
-  crash_reporter::GetUploadedReports(g_uploaded_reports.Pointer());
-  *reports = g_uploaded_reports.Pointer()->data();
-  *report_count = g_uploaded_reports.Pointer()->size();
+  crash_reporter::GetReports(g_crash_reports.Pointer());
+  *reports = g_crash_reports.Pointer()->data();
+  *report_count = g_crash_reports.Pointer()->size();
 }
 
 #if !defined(WIN_CONSOLE_APP)

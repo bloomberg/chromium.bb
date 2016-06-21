@@ -22,7 +22,10 @@ const CrashesUILocalizedString kCrashesUILocalizedStrings[] = {
     {"bugLinkText", IDS_CRASH_BUG_LINK_LABEL},
     {"crashCountFormat", IDS_CRASH_CRASH_COUNT_BANNER_FORMAT},
     {"crashHeaderFormat", IDS_CRASH_CRASH_HEADER_FORMAT},
+    {"crashHeaderFormatLocalOnly", IDS_CRASH_CRASH_HEADER_FORMAT_LOCAL_ONLY},
     {"crashTimeFormat", IDS_CRASH_CRASH_TIME_FORMAT},
+    {"crashNotUploaded", IDS_CRASH_CRASH_NOT_UPLOADED},
+    {"crashPending", IDS_CRASH_CRASH_PENDING},
     {"crashesTitle", IDS_CRASH_TITLE},
     {"disabledHeader", IDS_CRASH_DISABLED_HEADER},
     {"disabledMessage", IDS_CRASH_DISABLED_MESSAGE},
@@ -39,6 +42,20 @@ const char kCrashesUIRequestCrashUpload[] = "requestCrashUpload";
 const char kCrashesUIShortProductName[] = "shortProductName";
 const char kCrashesUIUpdateCrashList[] = "updateCrashList";
 
+std::string UploadInfoStateAsString(UploadList::UploadInfo::State state) {
+  switch (state) {
+    case UploadList::UploadInfo::State::NotUploaded:
+      return "not_uploaded";
+    case UploadList::UploadInfo::State::Pending:
+      return "pending";
+    case UploadList::UploadInfo::State::Uploaded:
+      return "uploaded";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 void UploadListToValue(UploadList* upload_list, base::ListValue* out_value) {
   std::vector<UploadList::UploadInfo> crashes;
   upload_list->GetUploads(50, &crashes);
@@ -46,9 +63,15 @@ void UploadListToValue(UploadList* upload_list, base::ListValue* out_value) {
   for (const auto& info : crashes) {
     std::unique_ptr<base::DictionaryValue> crash(new base::DictionaryValue());
     crash->SetString("id", info.upload_id);
-    crash->SetString("time",
-                     base::TimeFormatFriendlyDateAndTime(info.upload_time));
+    if (info.state == UploadList::UploadInfo::State::Uploaded) {
+      crash->SetString("time",
+                       base::TimeFormatFriendlyDateAndTime(info.upload_time));
+    } else {
+      crash->SetString("time",
+                       base::TimeFormatFriendlyDateAndTime(info.capture_time));
+    }
     crash->SetString("local_id", info.local_id);
+    crash->SetString("state", UploadInfoStateAsString(info.state));
     out_value->Append(std::move(crash));
   }
 }

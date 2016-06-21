@@ -248,6 +248,44 @@ TEST_F(UploadListTest, ParseMultipleEntries) {
   }
 }
 
+TEST_F(UploadListTest, ParseWithState) {
+  std::string test_entry;
+  for (int i = 1; i <= 4; ++i) {
+    test_entry.append(kTestUploadTime);
+    test_entry += ",";
+    test_entry.append(kTestUploadId);
+    test_entry += ",";
+    test_entry.append(kTestLocalID);
+    test_entry += ",";
+    test_entry.append(kTestCaptureTime);
+    test_entry += ",";
+    test_entry.append(base::IntToString(
+        static_cast<int>(UploadList::UploadInfo::State::Uploaded)));
+    test_entry += "\n";
+  }
+  WriteUploadLog(test_entry);
+
+  scoped_refptr<UploadList> upload_list =
+      new UploadList(this, log_path(), worker_pool());
+
+  upload_list->LoadUploadListAsynchronously();
+  WaitForUploadList();
+
+  std::vector<UploadList::UploadInfo> uploads;
+  upload_list->GetUploads(999, &uploads);
+
+  EXPECT_EQ(4u, uploads.size());
+  for (size_t i = 0; i < uploads.size(); ++i) {
+    double time_double = uploads[i].upload_time.ToDoubleT();
+    EXPECT_STREQ(kTestUploadTime, base::DoubleToString(time_double).c_str());
+    EXPECT_STREQ(kTestUploadId, uploads[i].upload_id.c_str());
+    EXPECT_STREQ(kTestLocalID, uploads[i].local_id.c_str());
+    time_double = uploads[i].capture_time.ToDoubleT();
+    EXPECT_STREQ(kTestCaptureTime, base::DoubleToString(time_double).c_str());
+    EXPECT_EQ(UploadList::UploadInfo::State::Uploaded, uploads[i].state);
+  }
+}
+
 // https://crbug.com/597384
 TEST_F(UploadListTest, SimultaneousAccess) {
   std::string test_entry = kTestUploadTime;

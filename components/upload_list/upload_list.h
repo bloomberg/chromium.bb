@@ -22,23 +22,32 @@ class SequencedWorkerPool;
 }
 
 // Loads and parses an upload list text file of the format
-// upload_time,upload_id[,local_id[,capture_time]]
-// upload_time,upload_id[,local_id[,capture_time]]
+// upload_time,upload_id[,local_id[,capture_time[,state]]]
+// upload_time,upload_id[,local_id[,capture_time[,state]]]
 // etc.
-// where each line represents an upload. |upload_time| and |capture_time| are
-// in Unix time. Must be used from the UI thread. The loading and parsing is
-// done on a blocking pool task runner. A line may or may not contain
-// |local_id| and |capture_time|.
+// where each line represents an upload. |upload_time| and |capture_time| are in
+// Unix time. |state| is an int in the range of UploadInfo::State. Must be used
+// from the UI thread. The loading and parsing is done on a blocking pool task
+// runner. A line may or may not contain |local_id|, |capture_time|, and
+// |state|.
 class UploadList : public base::RefCountedThreadSafe<UploadList> {
  public:
   struct UploadInfo {
+    enum class State {
+      NotUploaded = 0,
+      Pending = 1,
+      Uploaded = 2,
+    };
+
     UploadInfo(const std::string& upload_id,
                const base::Time& upload_time,
                const std::string& local_id,
-               const base::Time& capture_time);
+               const base::Time& capture_time,
+               State state);
     UploadInfo(const std::string& upload_id, const base::Time& upload_time);
     ~UploadInfo();
 
+    // These fields are only valid when |state| == UploadInfo::State::Uploaded.
     std::string upload_id;
     base::Time upload_time;
 
@@ -48,6 +57,8 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
     // The time the data was captured. This is useful if the data is stored
     // locally when captured and uploaded at a later time.
     base::Time capture_time;
+
+    State state;
   };
 
   class Delegate {

@@ -20,13 +20,17 @@
 UploadList::UploadInfo::UploadInfo(const std::string& upload_id,
                                    const base::Time& upload_time,
                                    const std::string& local_id,
-                                   const base::Time& capture_time)
-    : upload_id(upload_id), upload_time(upload_time),
-      local_id(local_id), capture_time(capture_time) {}
+                                   const base::Time& capture_time,
+                                   State state)
+    : upload_id(upload_id),
+      upload_time(upload_time),
+      local_id(local_id),
+      capture_time(capture_time),
+      state(state) {}
 
 UploadList::UploadInfo::UploadInfo(const std::string& upload_id,
                                    const base::Time& upload_time)
-    : upload_id(upload_id), upload_time(upload_time) {}
+    : upload_id(upload_id), upload_time(upload_time), state(State::Uploaded) {}
 
 UploadList::UploadInfo::~UploadInfo() {}
 
@@ -82,7 +86,7 @@ void UploadList::ParseLogEntries(
     std::vector<std::string> components = base::SplitString(
         *i, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     // Skip any blank (or corrupted) lines.
-    if (components.size() < 2 || components.size() > 4)
+    if (components.size() < 2 || components.size() > 5)
       continue;
     base::Time upload_time;
     double seconds_since_epoch;
@@ -102,6 +106,13 @@ void UploadList::ParseLogEntries(
         !components[3].empty() &&
         base::StringToDouble(components[3], &seconds_since_epoch)) {
       info.capture_time = base::Time::FromDoubleT(seconds_since_epoch);
+    }
+
+    int state;
+    if (components.size() > 4 &&
+        !components[4].empty() &&
+        base::StringToInt(components[4], &state)) {
+      info.state = static_cast<UploadInfo::State>(state);
     }
 
     uploads->push_back(info);

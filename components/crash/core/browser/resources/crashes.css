@@ -50,3 +50,7 @@ html[dir=rtl] h1 {
   color: rgb(141, 51, 42);
   font-size: 125%;
 }
+
+.notUploaded {
+  color: #a0a0a0;
+}
