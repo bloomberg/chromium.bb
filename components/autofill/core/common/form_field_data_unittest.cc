@@ -39,6 +39,10 @@ void FillVersion3Fields(FormFieldData* data) {
   data->placeholder = base::ASCIIToUTF16("placeholder");
 }
 
+void FillVersion5Fields(FormFieldData* data) {
+  data->css_classes = base::ASCIIToUTF16("class1 class2");
+}
+
 void WriteSection1(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteString16(data.label);
   pickle->WriteString16(data.name);
@@ -81,6 +85,10 @@ void WriteVersion3Specific(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteString16(data.placeholder);
 }
 
+void WriteVersion5Specific(const FormFieldData& data, base::Pickle* pickle) {
+  pickle->WriteString16(data.css_classes);
+}
+
 void SerializeInVersion1Format(const FormFieldData& data,
                                base::Pickle* pickle) {
   WriteSection1(data, pickle);
@@ -118,6 +126,17 @@ void SerializeInVersion4Format(const FormFieldData& data,
   WriteVersion3Specific(data, pickle);
 }
 
+void SerializeInVersion5Format(const FormFieldData& data,
+                               base::Pickle* pickle) {
+  WriteSection1(data, pickle);
+  WriteSection4(data, pickle);
+  WriteSection5(data, pickle);
+  WriteVersion2Specific(data, pickle);
+  WriteSection2(data, pickle);
+  WriteVersion3Specific(data, pickle);
+  WriteVersion5Specific(data, pickle);
+}
+
 }  // namespace
 
 TEST(FormFieldDataTest, SerializeAndDeserialize) {
@@ -125,6 +144,7 @@ TEST(FormFieldDataTest, SerializeAndDeserialize) {
   FillCommonFields(&data);
   FillVersion2Fields(&data);
   FillVersion3Fields(&data);
+  FillVersion5Fields(&data);
 
   base::Pickle pickle;
   SerializeFormFieldData(data, &pickle);
@@ -193,6 +213,24 @@ TEST(FormFieldDataTest, DeserializeVersion4) {
   base::Pickle pickle;
   pickle.WriteInt(4);
   SerializeInVersion4Format(data, &pickle);
+
+  base::PickleIterator iter(pickle);
+  FormFieldData actual;
+  EXPECT_TRUE(DeserializeFormFieldData(&iter, &actual));
+
+  EXPECT_TRUE(actual.SameFieldAs(data));
+}
+
+TEST(FormFieldDataTest, DeserializeVersion5) {
+  FormFieldData data;
+  FillCommonFields(&data);
+  FillVersion2Fields(&data);
+  FillVersion3Fields(&data);
+  FillVersion5Fields(&data);
+
+  base::Pickle pickle;
+  pickle.WriteInt(5);
+  SerializeInVersion5Format(data, &pickle);
 
   base::PickleIterator iter(pickle);
   FormFieldData actual;

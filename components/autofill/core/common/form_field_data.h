@@ -53,6 +53,7 @@ struct FormFieldData {
   std::string form_control_type;
   std::string autocomplete_attribute;
   base::string16 placeholder;
+  base::string16 css_classes;
   // Note: we use uint64_t instead of size_t because this struct is sent over
   // IPC which could span 32 & 64 bit processes. We chose uint64_t instead of
   // uint32_t to maintain compatibility with old code which used size_t
@@ -98,6 +99,7 @@ void SetCheckStatus(FormFieldData* form_field_data,
     EXPECT_EQ(expected.autocomplete_attribute, actual.autocomplete_attribute); \
     EXPECT_EQ(expected.placeholder, actual.placeholder);                       \
     EXPECT_EQ(expected.max_length, actual.max_length);                         \
+    EXPECT_EQ(expected.css_classes, actual.css_classes);                       \
     EXPECT_EQ(expected.is_autofilled, actual.is_autofilled);                   \
     EXPECT_EQ(expected.check_status, actual.check_status);                     \
   } while (0)

@@ -14,7 +14,7 @@ namespace {
 
 // Increment this anytime pickle format is modified as well as provide
 // deserialization routine from previous kPickleVersion format.
-const int kPickleVersion = 4;
+const int kPickleVersion = 5;
 
 void AddVectorToPickle(std::vector<base::string16> strings,
                        base::Pickle* pickle) {
@@ -103,6 +103,11 @@ bool DeserializeSection4(base::PickleIterator* iter,
   return iter->ReadString16(&field_data->placeholder);
 }
 
+bool DeserializeSection8(base::PickleIterator* iter,
+                         FormFieldData* field_data) {
+  return iter->ReadString16(&field_data->css_classes);
+}
+
 }  // namespace
 
 FormFieldData::FormFieldData()
@@ -126,6 +131,7 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
          form_control_type == field.form_control_type &&
          autocomplete_attribute == field.autocomplete_attribute &&
          placeholder == field.placeholder && max_length == field.max_length &&
+         css_classes == field.css_classes &&
          // is_checked and is_autofilled counts as "value" since these change
          // when we fill things in.
          IsCheckable(check_status) == IsCheckable(field.check_status) &&
@@ -160,6 +166,8 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (placeholder > field.placeholder) return false;
   if (max_length < field.max_length) return true;
   if (max_length > field.max_length) return false;
+  if (css_classes < field.css_classes) return true;
+  if (css_classes > field.css_classes) return false;
   // Skip |is_checked| and |is_autofilled| as in SameFieldAs.
   if (IsCheckable(check_status) < IsCheckable(field.check_status)) return true;
   if (IsCheckable(check_status) > IsCheckable(field.check_status)) return false;
@@ -193,6 +201,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   AddVectorToPickle(field_data.option_values, pickle);
   AddVectorToPickle(field_data.option_contents, pickle);
   pickle->WriteString16(field_data.placeholder);
+  pickle->WriteString16(field_data.css_classes);
 }
 
 bool DeserializeFormFieldData(base::PickleIterator* iter,
@@ -250,6 +259,19 @@ bool DeserializeFormFieldData(base::PickleIterator* iter,
       }
       break;
     }
+    case 5: {
+      if (!DeserializeSection1(iter, &temp_form_field_data) ||
+          !DeserializeSection6(iter, &temp_form_field_data) ||
+          !DeserializeSection7(iter, &temp_form_field_data) ||
+          !DeserializeSection2(iter, &temp_form_field_data) ||
+          !DeserializeSection3(iter, &temp_form_field_data) ||
+          !DeserializeSection4(iter, &temp_form_field_data) ||
+          !DeserializeSection8(iter, &temp_form_field_data)) {
+        LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
+        return false;
+      }
+      break;
+    }
     default: {
       LOG(ERROR) << "Unknown FormFieldData pickle version " << version;
       return false;
@@ -287,7 +309,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
             << base::UTF16ToUTF8(field.name) << " "
             << base::UTF16ToUTF8(field.value) << " " << field.form_control_type
             << " " << field.autocomplete_attribute << " " << field.placeholder
-            << " " << field.max_length << " "
+            << " " << field.max_length << " " << field.css_classes << " "
             << (field.is_autofilled ? "true" : "false") << " "
             << check_status_str << (field.is_focusable ? "true" : "false")
             << " " << (field.should_autocomplete ? "true" : "false") << " "

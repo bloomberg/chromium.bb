@@ -2329,6 +2329,33 @@ TEST_F(FormAutofillTest, WebFormElementToFormData_AutocompleteOff_OnField) {
   EXPECT_TRUE(form.fields[2].should_autocomplete);
 }
 
+// Tests CSS classes are set.
+TEST_F(FormAutofillTest, WebFormElementToFormData_CssClasses) {
+  LoadHTML(
+      "<FORM name='TestForm' id='form' action='http://cnn.com' method='post' "
+      "autocomplete='off'>"
+      "    <INPUT type='text' id='firstname' class='firstname_field' />"
+      "    <INPUT type='text' id='lastname' class='lastname_field' />"
+      "    <INPUT type='text' id='addressline1'  />"
+      "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormElement web_form =
+      frame->document().getElementById("form").to<WebFormElement>();
+  ASSERT_FALSE(web_form.isNull());
+
+  FormData form;
+  EXPECT_TRUE(WebFormElementToFormData(web_form, WebFormControlElement(),
+                                       EXTRACT_NONE, &form, nullptr));
+
+  EXPECT_EQ(3U, form.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("firstname_field"), form.fields[0].css_classes);
+  EXPECT_EQ(ASCIIToUTF16("lastname_field"), form.fields[1].css_classes);
+  EXPECT_EQ(base::string16(), form.fields[2].css_classes);
+}
+
 TEST_F(FormAutofillTest, ExtractForms) {
   ExpectJohnSmithLabels(
       "<FORM name='TestForm' action='http://cnn.com' method='post'>"

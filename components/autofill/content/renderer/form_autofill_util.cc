@@ -1366,6 +1366,7 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   CR_DEFINE_STATIC_LOCAL(WebString, kAutocomplete, ("autocomplete"));
   CR_DEFINE_STATIC_LOCAL(WebString, kRole, ("role"));
   CR_DEFINE_STATIC_LOCAL(WebString, kPlaceholder, ("placeholder"));
+  CR_DEFINE_STATIC_LOCAL(WebString, kClass, ("class"));
 
   // The label is not officially part of a WebFormControlElement; however, the
   // labels for all form control elements are scraped from the DOM and set in
@@ -1384,6 +1385,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     field->role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
 
   field->placeholder = element.getAttribute(kPlaceholder);
+  if (element.hasAttribute(kClass))
+    field->css_classes = element.getAttribute(kClass);
 
   if (!IsAutofillableElement(element))
     return;
