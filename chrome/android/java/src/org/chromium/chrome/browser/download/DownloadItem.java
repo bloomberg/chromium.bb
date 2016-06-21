@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import org.chromium.content.browser.DownloadInfo;
-
 /**
  * A generic class representing a download item. The item can be either downloaded through the
  * Android DownloadManager, or through Chrome's network stack

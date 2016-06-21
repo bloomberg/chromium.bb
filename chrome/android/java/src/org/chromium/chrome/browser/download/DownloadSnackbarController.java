@@ -12,7 +12,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.content.browser.DownloadInfo;
 
 /**
  * Class for displaying a snackbar when a download completes.

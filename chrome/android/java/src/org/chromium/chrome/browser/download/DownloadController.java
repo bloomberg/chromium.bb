@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.chrome.browser.download;
 
 import android.Manifest.permission;
-import android.content.pm.PackageManager;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.ui.base.WindowAndroid.PermissionCallback;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Java counterpart of android DownloadController.
  *
  * Its a singleton class instantiated by the C++ DownloadController.
  */
-@JNINamespace("content")
 public class DownloadController {
     private static final String LOGTAG = "DownloadController";
     private static final DownloadController sInstance = new DownloadController();
@@ -62,57 +59,8 @@ public class DownloadController {
         nativeInit();
     }
 
-    private static ContentViewDownloadDelegate downloadDelegateFromView(ContentViewCore view) {
-        return view.getDownloadDelegate();
-    }
-
     public static void setDownloadNotificationService(DownloadNotificationService service) {
         sDownloadNotificationService = service;
-    }
-
-    /**
-     * Notifies the download delegate of a new GET download and passes all the information
-     * needed to download the file.
-     *
-     * The download delegate is expected to handle the download.
-     */
-    @CalledByNative
-    private void newHttpGetDownload(ContentViewCore view, String url,
-            String userAgent, String contentDisposition, String mimeType,
-            String cookie, String referer, boolean hasUserGesture,
-            String filename, long contentLength, boolean mustDownload) {
-        ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
-
-        if (downloadDelegate == null) return;
-        DownloadInfo downloadInfo = new DownloadInfo.Builder()
-                .setUrl(url)
-                .setUserAgent(userAgent)
-                .setContentDisposition(contentDisposition)
-                .setMimeType(mimeType)
-                .setCookie(cookie)
-                .setReferer(referer)
-                .setHasUserGesture(hasUserGesture)
-                .setFileName(filename)
-                .setContentLength(contentLength)
-                .setIsGETRequest(true)
-                .build();
-        downloadDelegate.requestHttpGetDownload(downloadInfo, mustDownload);
-    }
-
-    /**
-     * Notifies the download delegate that a new download has started. This can
-     * be either a POST download or a GET download with authentication.
-     * @param view ContentViewCore associated with the download item.
-     * @param filename File name of the downloaded file.
-     * @param mimeType Mime of the downloaded item.
-     */
-    @CalledByNative
-    private void onDownloadStarted(ContentViewCore view, String filename, String mimeType) {
-        ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
-
-        if (downloadDelegate != null) {
-            downloadDelegate.onDownloadStarted(filename, mimeType);
-        }
     }
 
     /**
@@ -203,51 +151,16 @@ public class DownloadController {
         sDownloadNotificationService.onDownloadUpdated(downloadInfo);
     }
 
-    /**
-     * Notifies the download delegate that a dangerous download started.
-     */
-    @CalledByNative
-    private void onDangerousDownload(ContentViewCore view, String filename, String downloadGuid) {
-        ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
-        if (downloadDelegate != null) {
-            downloadDelegate.onDangerousDownload(filename, downloadGuid);
-        }
-    }
 
     /**
      * Returns whether file access is allowed.
      *
-     * @param view The ContentViewCore to access file system.
+     * @param windowAndroid WindowAndroid to access file system.
      * @return true if allowed, or false otherwise.
      */
     @CalledByNative
-    private boolean hasFileAccess(ContentViewCore view) {
-        return view.getWindowAndroid().hasPermission(permission.WRITE_EXTERNAL_STORAGE);
-    }
-
-    /**
-     * Called to prompt user with the file access permission.
-     *
-     * @param view The ContentViewCore to access file system.
-     * @param callbackId The native callback function pointer.
-     */
-    @CalledByNative
-    private void requestFileAccess(final ContentViewCore view, final long callbackId) {
-        ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
-        if (downloadDelegate != null) {
-            downloadDelegate.requestFileAccess(callbackId);
-        } else {
-            PermissionCallback permissionCallback = new PermissionCallback() {
-                @Override
-                public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-                    onRequestFileAccessResult(callbackId, grantResults.length > 0
-                            && grantResults[0] == PackageManager.PERMISSION_GRANTED);
-                }
-            };
-            view.getWindowAndroid().requestPermissions(
-                    new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    permissionCallback);
-        }
+    private boolean hasFileAccess(WindowAndroid windowAndroid) {
+        return windowAndroid.hasPermission(permission.WRITE_EXTERNAL_STORAGE);
     }
 
     /**

@@ -8,7 +8,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.content.browser.DownloadInfo;
 
 import java.util.UUID;
 

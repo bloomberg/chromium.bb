@@ -21,7 +21,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 #if defined(OS_ANDROID)
-#include "content/public/browser/android/download_controller_android.h"
+#include "chrome/browser/android/download/download_controller_base.h"
 #else
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -59,7 +59,7 @@ void AndroidUIControllerDelegate::OnNewDownloadReady(
   // GET downloads without authentication are delegated to the Android
   // DownloadManager. Chrome is responsible for the rest.  See
   // InterceptDownloadResourceThrottle::ProcessDownloadRequest().
-  content::DownloadControllerAndroid::Get()->OnDownloadStarted(item);
+  DownloadControllerBase::Get()->OnDownloadStarted(item);
 }
 
 #else  // OS_ANDROID

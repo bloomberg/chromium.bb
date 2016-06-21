@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_DOWNLOAD_MOCK_DOWNLOAD_CONTROLLER_ANDROID_H_
-#define CHROME_BROWSER_ANDROID_DOWNLOAD_MOCK_DOWNLOAD_CONTROLLER_ANDROID_H_
+#ifndef CHROME_BROWSER_ANDROID_DOWNLOAD_MOCK_DOWNLOAD_CONTROLLER_H_
+#define CHROME_BROWSER_ANDROID_DOWNLOAD_MOCK_DOWNLOAD_CONTROLLER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "content/public/browser/android/download_controller_android.h"
+#include "chrome/browser/android/download/download_controller_base.h"
 
 namespace content {
 class DownloadItem;
@@ -18,16 +18,16 @@ class WebContents;
 namespace chrome {
 namespace android {
 
-// Mock implementation of the DownloadControllerAndroid.
-class MockDownloadControllerAndroid
-    : public content::DownloadControllerAndroid {
+// Mock implementation of the DownloadController.
+class MockDownloadController : public DownloadControllerBase {
  public:
-  MockDownloadControllerAndroid();
-  ~MockDownloadControllerAndroid() override;
+  MockDownloadController();
+  ~MockDownloadController() override;
 
-  // DownloadControllerAndroid implementation.
+  // DownloadControllerBase implementation.
   void CreateGETDownload(int render_process_id, int render_view_id,
-                         int request_id, bool mustDownload) override;
+                         bool mustDownload,
+                         const DownloadInfo& info) override;
   void OnDownloadStarted(content::DownloadItem* download_item) override;
   void StartContextMenuDownload(
       const content::ContextMenuParams& params,
@@ -43,11 +43,11 @@ class MockDownloadControllerAndroid
 
  private:
   bool approve_file_access_request_;
-  DISALLOW_COPY_AND_ASSIGN(MockDownloadControllerAndroid);
+  DISALLOW_COPY_AND_ASSIGN(MockDownloadController);
 };
 
 }  // namespace android
 }  // namespace chrome
 
 
-#endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_MOCK_DOWNLOAD_CONTROLLER_ANDROID_H_
+#endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_MOCK_DOWNLOAD_CONTROLLER_H_

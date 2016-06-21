@@ -9,11 +9,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "jni/DownloadManagerService_jni.h"
@@ -22,7 +22,6 @@
 using base::android::JavaParamRef;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
-using content::DownloadControllerAndroid;
 
 // static
 bool DownloadManagerService::RegisterDownloadManagerService(JNIEnv* env) {
@@ -46,7 +45,7 @@ DownloadManagerService::DownloadManagerService(
     jobject obj)
     : java_ref_(env, obj),
       is_history_query_complete_(false) {
-  DownloadControllerAndroid::Get()->SetDefaultDownloadFileName(
+  DownloadControllerBase::Get()->SetDefaultDownloadFileName(
       l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
 }
 
@@ -82,10 +81,10 @@ void DownloadManagerService::CancelDownload(
     bool is_notification_dismissed) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
 
-  DownloadControllerAndroid::RecordDownloadCancelReason(
+  DownloadController::RecordDownloadCancelReason(
       is_notification_dismissed ?
-          DownloadControllerAndroid::CANCEL_REASON_NOTIFICATION_DISMISSED :
-          DownloadControllerAndroid::CANCEL_REASON_ACTION_BUTTON);
+          DownloadController::CANCEL_REASON_NOTIFICATION_DISMISSED :
+          DownloadController::CANCEL_REASON_ACTION_BUTTON);
   // Incognito download can only be cancelled in the same browser session, no
   // need to wait for download history.
   if (is_off_the_record) {
@@ -139,7 +138,7 @@ void DownloadManagerService::ResumeDownloadInternal(
     OnResumptionFailed(download_guid);
     return;
   }
-  item->AddObserver(content::DownloadControllerAndroid::Get());
+  item->AddObserver(DownloadControllerBase::Get());
   item->Resume();
   if (!resume_callback_for_testing_.is_null())
     resume_callback_for_testing_.Run(true);
@@ -153,7 +152,7 @@ void DownloadManagerService::CancelDownloadInternal(
   content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
   if (item) {
     item->Cancel(true);
-    item->RemoveObserver(content::DownloadControllerAndroid::Get());
+    item->RemoveObserver(DownloadControllerBase::Get());
   }
 }
 
@@ -165,7 +164,7 @@ void DownloadManagerService::PauseDownloadInternal(
   content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
   if (item) {
     item->Pause();
-    item->RemoveObserver(content::DownloadControllerAndroid::Get());
+    item->RemoveObserver(DownloadControllerBase::Get());
   }
 }
 
@@ -200,8 +199,8 @@ void DownloadManagerService::OnResumptionFailed(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&DownloadManagerService::OnResumptionFailedInternal,
                             base::Unretained(this), download_guid));
-  DownloadControllerAndroid::RecordDownloadCancelReason(
-      DownloadControllerAndroid::CANCEL_REASON_NOT_CANCELED);
+  DownloadController::RecordDownloadCancelReason(
+      DownloadController::CANCEL_REASON_NOT_CANCELED);
 }
 
 void DownloadManagerService::OnResumptionFailedInternal(

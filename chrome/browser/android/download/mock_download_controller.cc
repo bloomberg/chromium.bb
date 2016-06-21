@@ -2,51 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/download/mock_download_controller_android.h"
+#include "chrome/browser/android/download/mock_download_controller.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-using content::DownloadControllerAndroid;
-
 namespace chrome {
 namespace android {
 
-MockDownloadControllerAndroid::MockDownloadControllerAndroid()
+MockDownloadController::MockDownloadController()
     : approve_file_access_request_(true) {
 }
 
-MockDownloadControllerAndroid::~MockDownloadControllerAndroid() {}
+MockDownloadController::~MockDownloadController() {}
 
-void MockDownloadControllerAndroid::CreateGETDownload(
-    int render_process_id, int render_view_id, int request_id,
-    bool must_download) {
+void MockDownloadController::CreateGETDownload(
+    int render_process_id, int render_view_id,
+    bool must_download, const DownloadInfo& info) {
 }
 
-void MockDownloadControllerAndroid::OnDownloadStarted(
+void MockDownloadController::OnDownloadStarted(
     content::DownloadItem* download_item) {
 }
 
-void MockDownloadControllerAndroid::StartContextMenuDownload(
+void MockDownloadController::StartContextMenuDownload(
     const content::ContextMenuParams& params,
     content::WebContents* web_contents,
     bool is_link, const std::string& extra_headers) {
 }
 
-void MockDownloadControllerAndroid::DangerousDownloadValidated(
+void MockDownloadController::DangerousDownloadValidated(
     content::WebContents* web_contents,
     const std::string& download_guid,
     bool accept) {}
 
-void MockDownloadControllerAndroid::AcquireFileAccessPermission(
+void MockDownloadController::AcquireFileAccessPermission(
     content::WebContents* web_contents,
-    const DownloadControllerAndroid::AcquireFileAccessPermissionCallback& cb) {
+    const DownloadControllerBase::AcquireFileAccessPermissionCallback& cb) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(cb, approve_file_access_request_));
 }
 
-void MockDownloadControllerAndroid::SetApproveFileAccessRequestForTesting(
+void MockDownloadController::SetApproveFileAccessRequestForTesting(
     bool approve) {
   approve_file_access_request_ = approve;
 }

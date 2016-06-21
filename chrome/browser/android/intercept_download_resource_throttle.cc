@@ -8,11 +8,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "content/public/browser/android/download_controller_android.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
+
+using content::BrowserThread;
 
 namespace {
 
@@ -52,27 +55,26 @@ InterceptDownloadResourceThrottle::InterceptDownloadResourceThrottle(
     net::URLRequest* request,
     int render_process_id,
     int render_view_id,
-    int request_id,
     bool must_download)
     : request_(request),
       render_process_id_(render_process_id),
       render_view_id_(render_view_id),
-      request_id_(request_id),
-      must_download_(must_download) {
+      must_download_(must_download),
+      weak_factory_(this) {
 }
 
 InterceptDownloadResourceThrottle::~InterceptDownloadResourceThrottle() {
 }
 
 void InterceptDownloadResourceThrottle::WillProcessResponse(bool* defer) {
-  ProcessDownloadRequest();
+  ProcessDownloadRequest(defer);
 }
 
 const char* InterceptDownloadResourceThrottle::GetNameForLogging() const {
   return "InterceptDownloadResourceThrottle";
 }
 
-void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
+void InterceptDownloadResourceThrottle::ProcessDownloadRequest(bool* defer) {
   if (!IsDownloadInterceptionEnabled())
     return;
 
@@ -120,8 +122,41 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
     return;
   }
 
-  content::DownloadControllerAndroid::Get()->CreateGETDownload(
-      render_process_id_, render_view_id_, request_id_, must_download_);
+  net::CookieStore* cookie_store = request_->context()->cookie_store();
+  if (cookie_store) {
+    // Cookie is obtained via asynchonous call. Setting |*defer| to true
+    // keeps the throttle alive in the meantime.
+    *defer = true;
+    net::CookieOptions options;
+    options.set_include_httponly();
+    cookie_store->GetCookieListWithOptionsAsync(
+        request_->url(),
+        options,
+        base::Bind(&InterceptDownloadResourceThrottle::CheckCookiePolicy,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    // Can't get any cookies, start android download.
+    StartDownload(DownloadInfo(request_));
+  }
+}
+
+void InterceptDownloadResourceThrottle::CheckCookiePolicy(
+    const net::CookieList& cookie_list) {
+  DownloadInfo info(request_);
+  if (request_->context()->network_delegate()->CanGetCookies(*request_,
+                                                             cookie_list)) {
+    std::string cookie = net::CookieStore::BuildCookieLine(cookie_list);
+    if (!cookie.empty()) {
+      info.cookie = cookie;
+    }
+  }
+  StartDownload(info);
+}
+
+void InterceptDownloadResourceThrottle::StartDownload(
+    const DownloadInfo& info) {
+  DownloadControllerBase::Get()->CreateGETDownload(
+      render_process_id_, render_view_id_, must_download_, info);
   controller()->Cancel();
   RecordInterceptFailureReasons(NO_FAILURE);
 }

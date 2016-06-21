@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.chrome.browser.download;
 
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.DownloadInfo.Builder;
+import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -9,10 +9,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/android/content_view_core.h"
-#include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/context_menu_params.h"
@@ -116,7 +116,7 @@ void ContextMenuHelper::OnStartDownload(
   if (jis_data_reduction_proxy_enabled)
     headers = kDataReductionProxyPassthroughHeader;
 
-  content::DownloadControllerAndroid::Get()->StartContextMenuDownload(
+  DownloadControllerBase::Get()->StartContextMenuDownload(
       context_menu_params_,
       web_contents_,
       jis_link,

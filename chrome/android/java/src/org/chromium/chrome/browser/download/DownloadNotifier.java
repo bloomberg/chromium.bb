@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.download;
 
 import android.content.Intent;
 
-import org.chromium.content.browser.DownloadInfo;
-
 /**
  * Class for reporting the status of a download.
  */

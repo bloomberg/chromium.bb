@@ -810,8 +810,8 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     ScopedVector<ResourceThrottle> throttles;
     delegate_->DownloadStarting(
         request, request_info->GetContext(), request_info->GetChildID(),
-        request_info->GetRouteID(), request_info->GetRequestID(),
-        is_content_initiated, must_download, &throttles);
+        request_info->GetRouteID(), is_content_initiated, must_download,
+        &throttles);
     if (!throttles.empty()) {
       handler.reset(new ThrottlingResourceHandler(std::move(handler), request,
                                                   std::move(throttles)));

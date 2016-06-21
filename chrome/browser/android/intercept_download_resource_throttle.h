@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_INTERCEPT_DOWNLOAD_RESOURCE_THROTTLE_H_
 #define CHROME_BROWSER_ANDROID_INTERCEPT_DOWNLOAD_RESOURCE_THROTTLE_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/android/download/download_controller_base.h"
 #include "content/public/browser/resource_throttle.h"
+#include "net/cookies/cookie_store.h"
 
 namespace net {
 class URLRequest;
@@ -24,7 +25,6 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
   InterceptDownloadResourceThrottle(net::URLRequest* request,
                                     int render_process_id,
                                     int render_view_id,
-                                    int request_id,
                                     bool must_download);
 
   // content::ResourceThrottle implementation:
@@ -34,14 +34,17 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
  private:
   ~InterceptDownloadResourceThrottle() override;
 
-  void ProcessDownloadRequest();
+  void ProcessDownloadRequest(bool* defer);
+  void CheckCookiePolicy(const net::CookieList& cookie_list);
+  void StartDownload(const DownloadInfo& info);
+
   // Set to true when if we want chrome to handle the download.
   const net::URLRequest* request_;
   int render_process_id_;
   int render_view_id_;
-  int request_id_;
   bool must_download_;
 
+  base::WeakPtrFactory<InterceptDownloadResourceThrottle> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(InterceptDownloadResourceThrottle);
 };
 

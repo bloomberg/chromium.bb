@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.chrome.browser.download;
 
 /**
  * Class representing the state of a single download.
  */
-public final class DownloadInfo {
+final class DownloadInfo {
     private final String mUrl;
     private final String mUserAgent;
     private final String mMimeType;

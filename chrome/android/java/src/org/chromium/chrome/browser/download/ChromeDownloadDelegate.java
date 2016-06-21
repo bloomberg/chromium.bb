@@ -32,9 +32,6 @@ import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.content.browser.ContentViewDownloadDelegate;
-import org.chromium.content.browser.DownloadController;
-import org.chromium.content.browser.DownloadInfo;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
@@ -51,7 +48,7 @@ import java.io.File;
  *
  * Prompts the user when a dangerous file is downloaded. Auto-opens PDFs after downloading.
  */
-public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
+public class ChromeDownloadDelegate {
     private static final String TAG = "Download";
 
     private class DangerousDownloadListener implements SimpleConfirmInfoBarBuilder.Listener {
@@ -152,16 +149,19 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
 
         mPendingRequest = null;
         mDangerousDownloadListener = new DangerousDownloadListener();
+        nativeInit(tab.getWebContents());
     }
 
-    @Override
-    public void requestHttpGetDownload(DownloadInfo downloadInfo, boolean mustDownload) {
+    @CalledByNative
+    private void requestHttpGetDownload(String url, String userAgent, String contentDisposition,
+            String mimeType, String cookie, String referer, boolean hasUserGesture,
+            String filename, long contentLength, boolean mustDownload) {
         // If we're dealing with A/V content that's not explicitly marked for download, check if it
         // is streamable.
         if (!mustDownload) {
             // Query the package manager to see if there's a registered handler that matches.
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.parse(downloadInfo.getUrl()), downloadInfo.getMimeType());
+            intent.setDataAndType(Uri.parse(url), mimeType);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             // If the intent is resolved to ourselves, we don't want to attempt to load the url
             // only to try and download it again.
@@ -169,6 +169,18 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
                 return;
             }
         }
+        DownloadInfo downloadInfo = new DownloadInfo.Builder()
+                .setUrl(url)
+                .setUserAgent(userAgent)
+                .setContentDisposition(contentDisposition)
+                .setMimeType(mimeType)
+                .setCookie(cookie)
+                .setReferer(referer)
+                .setHasUserGesture(hasUserGesture)
+                .setFileName(filename)
+                .setContentLength(contentLength)
+                .setIsGETRequest(true)
+                .build();
         onDownloadStartNoStream(downloadInfo);
     }
 
@@ -272,8 +284,8 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
      * @param filename File name of the download item.
      * @param downloadGuid GUID of the download.
      */
-    @Override
-    public void onDangerousDownload(String filename, String downloadGuid) {
+    @CalledByNative
+    private void onDangerousDownload(String filename, String downloadGuid) {
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                 .setFileName(filename)
                 .setDescription(filename)
@@ -281,8 +293,8 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
         confirmDangerousDownload(downloadInfo);
     }
 
-    @Override
-    public void requestFileAccess(final long callbackId) {
+    @CalledByNative
+    private void requestFileAccess(final long callbackId) {
         if (mTab == null) {
             // TODO(tedchoc): Show toast (only when activity is alive).
             DownloadController.getInstance().onRequestFileAccessResult(callbackId, false);
@@ -468,8 +480,8 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
      * @param filename Name of the file.
      * @param mimeType MIME type of the content.
      */
-    @Override
-    public void onDownloadStarted(String filename, String mimeType) {
+    @CalledByNative
+    private void onDownloadStarted(String filename, String mimeType) {
         if (!isDangerousFile(filename, mimeType)) {
             showDownloadStartNotification();
             closeBlankTab();
@@ -631,6 +643,7 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
         return mContext;
     }
 
+    private native void nativeInit(WebContents webContents);
     private static native String nativeGetDownloadWarningText(String filename);
     private static native boolean nativeIsDownloadDangerous(String filename);
     private static native void nativeDangerousDownloadValidated(

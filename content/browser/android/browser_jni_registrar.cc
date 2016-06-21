@@ -18,7 +18,6 @@
 #include "content/browser/android/content_view_render_view.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/browser/android/date_time_chooser_android.h"
-#include "content/browser/android/download_controller_android_impl.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/popup_touch_handle_drawable.h"
@@ -61,8 +60,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ContentViewRenderView",
      content::ContentViewRenderView::RegisterContentViewRenderView},
     {"DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
-    {"DownloadControllerAndroidImpl",
-     content::DownloadControllerAndroidImpl::RegisterDownloadController},
     {"GamepadList", content::GamepadPlatformDataFetcherAndroid::
                         RegisterGamepadPlatformDataFetcherAndroid},
     {"HandleViewResources",

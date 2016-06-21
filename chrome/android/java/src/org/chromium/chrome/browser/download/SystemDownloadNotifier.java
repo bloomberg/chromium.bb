@@ -13,7 +13,6 @@ import android.os.IBinder;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.content.browser.DownloadInfo;
 
 import java.util.ArrayList;
 import java.util.HashSet;

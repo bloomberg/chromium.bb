@@ -529,9 +529,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private WebActionModeCallback.ActionHandler mActionHandler;
     private final Rect mSelectionRect = new Rect();
 
-    // Delegate that will handle GET downloads, and be notified of completion of POST downloads.
-    private ContentViewDownloadDelegate mDownloadDelegate;
-
     // Whether native accessibility, i.e. without any script injection, is allowed.
     private boolean mNativeAccessibilityAllowed;
 
@@ -1973,21 +1970,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         if (mNativeContentViewCore == 0) return;
 
         nativeSendOrientationChangeEvent(mNativeContentViewCore, orientation);
-    }
-
-    /**
-     * Register the delegate to be used when content can not be handled by
-     * the rendering engine, and should be downloaded instead. This will replace
-     * the current delegate, if any.
-     * @param delegate An implementation of ContentViewDownloadDelegate.
-     */
-    public void setDownloadDelegate(ContentViewDownloadDelegate delegate) {
-        mDownloadDelegate = delegate;
-    }
-
-    // Called by DownloadController.
-    ContentViewDownloadDelegate getDownloadDelegate() {
-        return mDownloadDelegate;
     }
 
     @VisibleForTesting

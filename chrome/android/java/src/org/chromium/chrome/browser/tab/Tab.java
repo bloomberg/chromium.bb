@@ -1846,6 +1846,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 mContentViewCore.setContentViewClient(mContentViewClient);
             }
 
+            mDownloadDelegate = new ChromeDownloadDelegate(mThemedApplicationContext, this);
+
             assert mNativeTabAndroid != 0;
             nativeInitWebContents(
                     mNativeTabAndroid, mIncognito, mContentViewCore, mWebContentsDelegate,
@@ -1874,10 +1876,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // when it loads. This is not the default behavior for embedded
             // web views.
             mContentViewCore.setShouldSetAccessibilityFocusOnPageLoad(true);
-
-            mDownloadDelegate = new ChromeDownloadDelegate(
-                    mThemedApplicationContext, this);
-            cvc.setDownloadDelegate(mDownloadDelegate);
 
             setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(
                     this));

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download;
 
 import org.chromium.base.Log;
-import org.chromium.content.browser.DownloadInfo;
 
 /**
  * SharedPreferences entries for for helping report UMA stats. A download may require several
