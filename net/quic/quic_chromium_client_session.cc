@@ -938,6 +938,11 @@ void QuicChromiumClientSession::OnPathDegrading() {
   }
 }
 
+bool QuicChromiumClientSession::HasOpenDynamicStreams() const {
+  return QuicSession::HasOpenDynamicStreams() ||
+         GetNumDrainingOutgoingStreams() > 0;
+}
+
 void QuicChromiumClientSession::OnProofValid(
     const QuicCryptoClientConfig::CachedState& cached) {
   DCHECK(cached.proof_valid());
