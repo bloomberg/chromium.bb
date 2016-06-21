@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/mock_platform_window_delegate.h"
@@ -29,7 +30,7 @@ class WaylandWindowTest : public WaylandTest {
       : test_mouse_event(ET_MOUSE_PRESSED,
                          gfx::Point(10, 15),
                          gfx::Point(10, 15),
-                         base::TimeDelta::FromSeconds(123456),
+                         ui::EventTimeStampFromSeconds(123456),
                          EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
                          EF_LEFT_MOUSE_BUTTON) {}
 
