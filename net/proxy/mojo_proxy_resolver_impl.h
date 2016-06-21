@@ -30,7 +30,7 @@ class MojoProxyResolverImpl : public interfaces::ProxyResolver {
 
   // interfaces::ProxyResolver overrides.
   void GetProxyForUrl(
-      const mojo::String& url,
+      const GURL& url,
       interfaces::ProxyResolverRequestClientPtr client) override;
 
   void DeleteJob(Job* job);

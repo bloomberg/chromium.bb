@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/decryptor.mojom";
+import "url/mojo/url.mojom";
 
 // Transport layer of media::MediaKeys::Exception (see media/base/media_keys.h).
 // This is used for ContentDecryptionModule (CDM) promise rejections.
@@ -131,7 +132,7 @@ interface ContentDecryptionModule {
 // Session callbacks. See media/base/media_keys.h for details.
 interface ContentDecryptionModuleClient {
   OnSessionMessage(string session_id, CdmMessageType message_type,
-                   array<uint8> message, string legacy_destination_url);
+                   array<uint8> message, url.mojom.Url legacy_destination_url);
 
   OnSessionClosed(string session_id);
 

@@ -267,6 +267,7 @@
               'password_manager/content/public/interfaces/credential_manager.mojom',
             ],
             'mojom_typemaps': [
+              '<(DEPTH)/url/mojo/gurl.typemap',
               '<(DEPTH)/url/mojo/origin.typemap',
             ],
           },
@@ -284,7 +285,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../mojo/mojo_base.gyp:mojo_common_lib',
-            '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../url/url.gyp:url_mojom',
@@ -309,7 +309,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../content/content.gyp:content_common',
-            '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../third_party/WebKit/public/blink.gyp:blink',
             'password_manager_content_mojo_bindings',
             'password_manager_core_common',
@@ -331,7 +330,6 @@
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
-            '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../net/net.gyp:net',
             'autofill_content_browser',
             'autofill_content_common',

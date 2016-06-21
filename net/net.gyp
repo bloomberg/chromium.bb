@@ -915,6 +915,14 @@
             'interfaces/host_resolver_service.mojom',
             'interfaces/proxy_resolver_service.mojom',
           ],
+          'dependencies': [
+            '../url/url.gyp:url_mojom',
+          ],
+          'variables': {
+            'mojom_typemaps': [
+              '../url/mojo/gurl.typemap',
+            ],
+          },
           'includes': [
             '../mojo/mojom_bindings_generator.gypi',
           ],
@@ -939,7 +947,6 @@
             'net',
             'net_interfaces',
             '../mojo/mojo_base.gyp:mojo_common_lib',
-            '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
 
             # NOTE(amistry): As long as we support in-process Mojo v8 PAC, we
@@ -967,7 +974,6 @@
             'mojo_type_converters',
             'net_interfaces',
             'net_with_v8',
-            '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
           ],
         },

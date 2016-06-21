@@ -27,7 +27,6 @@
     '../gpu/gpu.gyp:gpu_ipc_client',
     '../gpu/gpu.gyp:gpu_ipc_common',
     '../media/mojo/interfaces/mojo_bindings.gyp:image_capture_mojo_bindings',
-    '../mojo/mojo_base.gyp:mojo_url_type_converters',
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
     '../mojo/mojo_public.gyp:mojo_js_bindings',
     '../net/net.gyp:http_server',

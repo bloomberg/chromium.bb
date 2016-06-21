@@ -178,6 +178,7 @@
       'dependencies': [
         'chrome_internal_resources_gen',
         'chrome_web_ui_mojo_bindings.gyp:web_ui_mojo_bindings',
+        '../url/url.gyp:url_interfaces_mojom',
       ],
       'actions': [
         {

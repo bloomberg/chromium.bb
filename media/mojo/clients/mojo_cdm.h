@@ -95,7 +95,7 @@ class MojoCdm : public MediaKeys,
   void OnSessionMessage(const mojo::String& session_id,
                         mojom::CdmMessageType message_type,
                         mojo::Array<uint8_t> message,
-                        const mojo::String& legacy_destination_url) final;
+                        const GURL& legacy_destination_url) final;
   void OnSessionClosed(const mojo::String& session_id) final;
   void OnLegacySessionError(const mojo::String& session_id,
                             mojom::CdmException exception,

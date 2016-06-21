@@ -56,9 +56,9 @@ class FakeCredentialManager : public mojom::CredentialManager {
 
   void Get(bool zero_click_only,
            bool include_passwords,
-           mojo::Array<mojo::String> federations,
+           mojo::Array<GURL> federations,
            const GetCallback& callback) override {
-    mojo::String& url = federations[0];
+    const std::string& url = federations[0].spec();
 
     if (url == kTestCredentialPassword) {
       mojom::CredentialInfoPtr info = mojom::CredentialInfo::New();

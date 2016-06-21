@@ -70,7 +70,6 @@ source_set("browser") {
     "//media/midi",
     "//media/mojo/interfaces:image_capture",
     "//mojo/common",
-    "//mojo/common:url_type_converters",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//mojo/public/js",

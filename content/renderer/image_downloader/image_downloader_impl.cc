@@ -15,7 +15,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
-#include "mojo/common/url_type_converters.h"
 #include "net/base/data_url.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -145,13 +144,11 @@ void ImageDownloaderImpl::OnRenderProcessShutdown() {
 }
 
 // ImageDownloader methods:
-void ImageDownloaderImpl::DownloadImage(const mojo::String& url,
+void ImageDownloaderImpl::DownloadImage(const GURL& image_url,
                                         bool is_favicon,
                                         uint32_t max_bitmap_size,
                                         bool bypass_cache,
                                         const DownloadImageCallback& callback) {
-  const GURL image_url = url.To<GURL>();
-
   std::vector<SkBitmap> result_images;
   std::vector<gfx::Size> result_original_image_sizes;
 

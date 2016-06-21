@@ -15,7 +15,6 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
-#include "mojo/common/url_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace {
@@ -45,7 +44,7 @@ class SiteEngagementUIHandlerImpl : public mojom::SiteEngagementUIHandler {
     for (const std::pair<GURL, double>& info : service->GetScoreMap()) {
       mojom::SiteEngagementInfoPtr origin_info(
           mojom::SiteEngagementInfo::New());
-      origin_info->origin = mojo::String::From(info.first);
+      origin_info->origin = info.first;
       origin_info->score = info.second;
       engagement_info.push_back(std::move(origin_info));
     }
@@ -53,16 +52,15 @@ class SiteEngagementUIHandlerImpl : public mojom::SiteEngagementUIHandler {
     callback.Run(std::move(engagement_info));
   }
 
-  void SetSiteEngagementScoreForOrigin(const mojo::String& origin,
+  void SetSiteEngagementScoreForOrigin(const GURL& origin,
                                        double score) override {
-    GURL origin_gurl(origin.get());
-    if (!origin_gurl.is_valid() || score < 0 ||
+    if (!origin.is_valid() || score < 0 ||
         score > SiteEngagementService::GetMaxPoints() || std::isnan(score)) {
       return;
     }
 
     SiteEngagementService* service = SiteEngagementService::Get(profile_);
-    service->ResetScoreForURL(origin_gurl, score);
+    service->ResetScoreForURL(origin, score);
   }
 
  private:
@@ -90,6 +88,7 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
   source->AddResourcePath(
       "chrome/browser/ui/webui/engagement/site_engagement.mojom",
       IDR_SITE_ENGAGEMENT_MOJO_JS);
+  source->AddResourcePath("url/mojo/url.mojom", IDR_URL_MOJO_JS);
   source->SetDefaultResource(IDR_SITE_ENGAGEMENT_HTML);
     content::WebUIDataSource::Add(profile, source.release());
 }

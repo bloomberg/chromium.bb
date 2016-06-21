@@ -15,7 +15,6 @@ static_library("renderer") {
     "//components/strings",
     "//content/public/common",
     "//content/public/renderer",
-    "//mojo/common:url_type_converters",
     "//third_party/WebKit/public:blink",
     "//url",
   ]

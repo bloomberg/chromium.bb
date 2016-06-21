@@ -192,7 +192,7 @@ class MockMojoProxyResolver : public interfaces::ProxyResolver {
  private:
   // Overridden from interfaces::ProxyResolver:
   void GetProxyForUrl(
-      const mojo::String& url,
+      const GURL& url,
       interfaces::ProxyResolverRequestClientPtr client) override;
 
   void WakeWaiter();
@@ -244,15 +244,15 @@ void MockMojoProxyResolver::AddConnection(
 }
 
 void MockMojoProxyResolver::GetProxyForUrl(
-    const mojo::String& url,
+    const GURL& url,
     interfaces::ProxyResolverRequestClientPtr client) {
   ASSERT_FALSE(get_proxy_actions_.empty());
   GetProxyForUrlAction action = get_proxy_actions_.front();
   get_proxy_actions_.pop();
 
-  EXPECT_EQ(action.expected_url.spec(), url.To<std::string>());
-  client->Alert(url);
-  client->OnError(12345, url);
+  EXPECT_EQ(action.expected_url, url);
+  client->Alert(url.spec());
+  client->OnError(12345, url.spec());
   switch (action.action) {
     case GetProxyForUrlAction::COMPLETE: {
       client->ReportResult(action.error, std::move(action.proxy_servers));
@@ -273,7 +273,7 @@ void MockMojoProxyResolver::GetProxyForUrl(
     case GetProxyForUrlAction::MAKE_DNS_REQUEST: {
       interfaces::HostResolverRequestInfoPtr request(
           interfaces::HostResolverRequestInfo::New());
-      request->host = url;
+      request->host = url.spec();
       request->port = 12345;
       interfaces::HostResolverRequestClientPtr dns_client;
       mojo::GetProxy(&dns_client);

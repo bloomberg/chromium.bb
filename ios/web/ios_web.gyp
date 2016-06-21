@@ -545,7 +545,6 @@
       'type': 'static_library',
       'dependencies': [
         '../../mojo/mojo_base.gyp:mojo_common_lib',
-        '../../mojo/mojo_base.gyp:mojo_url_type_converters',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         'test_mojo_bindings_mojom',
       ],

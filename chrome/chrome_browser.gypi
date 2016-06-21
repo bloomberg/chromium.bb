@@ -3401,7 +3401,6 @@
             '../media/midi/midi.gyp:midi',
             '../media/mojo/interfaces/mojo_bindings.gyp:platform_verification_api',
             '../mojo/mojo_base.gyp:mojo_common_lib',
-            '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../mojo/mojo_edk.gyp:mojo_system_impl',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../mojo/mojo_public.gyp:mojo_js_bindings',

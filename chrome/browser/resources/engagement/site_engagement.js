@@ -51,7 +51,7 @@ define('main', [
      */
     function createRow(info) {
       var originCell = createElementWithClassName('td', 'origin-cell');
-      originCell.textContent = info.origin;
+      originCell.textContent = info.origin.url;
 
       var scoreInput = createElementWithClassName('input', 'score-input');
       scoreInput.addEventListener(

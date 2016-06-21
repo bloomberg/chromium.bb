@@ -23,7 +23,6 @@
     '../media/gpu/ipc/media_ipc.gyp:media_gpu_ipc_common',
     '../media/media.gyp:media',
     '../media/media.gyp:media_gpu',
-    '../mojo/mojo_base.gyp:mojo_url_type_converters',
     '../mojo/mojo_edk.gyp:mojo_js_lib',
     '../net/net.gyp:net',
     '../services/shell/shell_public.gyp:shell_public',

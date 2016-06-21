@@ -1044,6 +1044,7 @@ grit("resources") {
     "//chrome/browser/ui/webui/engagement:mojo_bindings__generator",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings__generator",
     "//chrome/browser/ui/webui/plugins:mojo_bindings__generator",
+    "//url/mojo:url_mojom_gurl__generator",
   ]
 }
 

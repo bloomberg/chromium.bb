@@ -16,7 +16,6 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "mojo/common/url_type_converters.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "third_party/WebKit/public/platform/WebFederatedCredential.h"
@@ -201,8 +200,7 @@ void CredentialManagerClient::dispatchGet(
     federation_vector.push_back(federations[i]);
 
   mojo_cm_service_->Get(
-      zero_click_only, include_passwords,
-      mojo::Array<mojo::String>::From(federation_vector),
+      zero_click_only, include_passwords, std::move(federation_vector),
       base::Bind(&RespondToRequestCallback,
                  base::Owned(new RequestCallbacksWrapper(callbacks))));
 }

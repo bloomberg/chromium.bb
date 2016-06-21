@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/common/url_type_converters.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebFederatedCredential.h"
 #include "third_party/WebKit/public/platform/WebPasswordCredential.h"
@@ -55,7 +54,7 @@ TypeConverter<mojom::CredentialInfoPtr, CredentialInfo>::Convert(
   output->type = CMCredentialTypeToMojo(input.type);
   output->id = mojo::String::From(input.id);
   output->name = mojo::String::From(input.name);
-  output->icon = mojo::String::From(input.icon);
+  output->icon = input.icon;
   output->password = mojo::String::From(input.password);
   output->federation = input.federation;
 
@@ -68,7 +67,7 @@ CredentialInfo TypeConverter<CredentialInfo, mojom::CredentialInfoPtr>::Convert(
   output.type = MojoCredentialTypeToCM(input->type);
   output.id = input->id.To<base::string16>();
   output.name = input->name.To<base::string16>();
-  output.icon = input->icon.To<GURL>();
+  output.icon = input->icon;
   output.password = input->password.To<base::string16>();
   output.federation = input->federation;
 
@@ -94,7 +93,7 @@ TypeConverter<mojom::CredentialInfoPtr, blink::WebCredential>::Convert(
   }
   output->id = mojo::String::From(base::string16(input.id()));
   output->name = mojo::String::From(base::string16(input.name()));
-  output->icon = mojo::String::From(GURL(input.iconURL()));
+  output->icon = input.iconURL();
 
   return output;
 }
@@ -108,12 +107,12 @@ std::unique_ptr<blink::WebCredential> TypeConverter<
     case mojom::CredentialType::PASSWORD:
       output.reset(new blink::WebPasswordCredential(
           input->id.To<base::string16>(), input->password.To<base::string16>(),
-          input->name.To<base::string16>(), input->icon.To<GURL>()));
+          input->name.To<base::string16>(), input->icon));
       break;
     case mojom::CredentialType::FEDERATED:
       output.reset(new blink::WebFederatedCredential(
           input->id.To<base::string16>(), input->federation,
-          input->name.To<base::string16>(), input->icon.To<GURL>()));
+          input->name.To<base::string16>(), input->icon));
       break;
     case mojom::CredentialType::EMPTY:
       // Intentionally empty, return nullptr.

@@ -17,6 +17,11 @@
         # GN version: //chrome/browser/ui/webui/plugins:mojo_bindings
         'browser/ui/webui/plugins/plugins.mojom',
       ],
+      'variables': {
+        'mojom_typemaps': [
+          '<(DEPTH)/url/mojo/gurl.typemap',
+        ],
+      },
       'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
     },
   ],

@@ -115,7 +115,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "mojo/common/url_type_converters.h"
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
@@ -3029,7 +3028,7 @@ int WebContentsImpl::DownloadImage(
   }
 
   mojo_image_downloader->DownloadImage(
-      mojo::String::From(url), is_favicon, max_bitmap_size, bypass_cache,
+      url, is_favicon, max_bitmap_size, bypass_cache,
       base::Bind(&WebContentsImpl::OnDidDownloadImage,
                  weak_factory_.GetWeakPtr(), callback, download_id, url));
   return download_id;

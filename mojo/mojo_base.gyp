@@ -72,20 +72,6 @@
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
     {
-      # GN version: //mojo/common:url_type_converters
-      'target_name': 'mojo_url_type_converters',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../url/url.gyp:url_lib',
-        '../mojo/mojo_public.gyp:mojo_public_system',
-      ],
-      'sources': [
-        'common/url_type_converters.cc',
-        'common/url_type_converters.h',
-      ],
-    },
-    {
       # GN version: //mojo/common:test_common_custom_types
       'target_name': 'mojo_test_common_custom_types',
       'type': 'static_library',
@@ -120,7 +106,6 @@
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_public.gyp:mojo_cpp_bindings',
         'mojo_public.gyp:mojo_public_test_utils',
-        'mojo_url_type_converters',
       ],
       'sources': [
         'common/common_custom_types_unittest.cc',

@@ -9,4 +9,8 @@ mojom("mojo_bindings") {
   sources = [
     "site_engagement.mojom",
   ]
+
+  public_deps = [
+    "//url/mojo:url_mojom_gurl",
+  ]
 }

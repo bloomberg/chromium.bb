@@ -15,7 +15,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/common/url_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
@@ -200,7 +199,7 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
       callback_(callback),
       binding_(this) {
   resolver_->mojo_proxy_resolver_ptr_->GetProxyForUrl(
-      mojo::String::From(url_), binding_.CreateInterfacePtrAndBind());
+      url_, binding_.CreateInterfacePtrAndBind());
   binding_.set_connection_error_handler(base::Bind(
       &ProxyResolverMojo::Job::OnConnectionError, base::Unretained(this)));
 }

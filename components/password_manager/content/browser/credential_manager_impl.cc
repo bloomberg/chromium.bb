@@ -19,7 +19,6 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/common/url_type_converters.h"
 
 namespace password_manager {
 
@@ -150,7 +149,7 @@ void CredentialManagerImpl::ScheduleRequireMediationTask(
 
 void CredentialManagerImpl::Get(bool zero_click_only,
                                 bool include_passwords,
-                                mojo::Array<mojo::String> federations,
+                                mojo::Array<GURL> federations,
                                 const GetCallback& callback) {
   PasswordStore* store = GetPasswordStore();
   if (pending_request_ || !store) {
@@ -177,12 +176,11 @@ void CredentialManagerImpl::Get(bool zero_click_only,
         GetSynthesizedFormForOrigin(),
         base::Bind(&CredentialManagerImpl::ScheduleRequestTask,
                    weak_factory_.GetWeakPtr(), callback, zero_click_only,
-                   include_passwords, federations.To<std::vector<GURL>>()));
+                   include_passwords, federations.PassStorage()));
   } else {
     std::vector<std::string> no_affiliated_realms;
     ScheduleRequestTask(callback, zero_click_only, include_passwords,
-                        federations.To<std::vector<GURL>>(),
-                        no_affiliated_realms);
+                        federations.PassStorage(), no_affiliated_realms);
   }
 }
 

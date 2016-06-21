@@ -34,7 +34,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
-#include "mojo/common/url_type_converters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -356,8 +355,7 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
                bool include_passwords,
                const std::vector<GURL>& federations,
                const CredentialManagerImpl::GetCallback& callback) {
-    cm_service_impl_->Get(zero_click_only, include_passwords,
-                          mojo::Array<mojo::String>::From(federations),
+    cm_service_impl_->Get(zero_click_only, include_passwords, federations,
                           callback);
   }
 

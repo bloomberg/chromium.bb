@@ -20,7 +20,6 @@
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/common/url_type_converters.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -226,10 +225,9 @@ void MojoCdmService::OnSessionMessage(const std::string& session_id,
                                       const std::vector<uint8_t>& message,
                                       const GURL& legacy_destination_url) {
   DVLOG(2) << __FUNCTION__ << "(" << message_type << ")";
-  client_->OnSessionMessage(session_id,
-                            static_cast<mojom::CdmMessageType>(message_type),
-                            mojo::Array<uint8_t>::From(message),
-                            mojo::String::From(legacy_destination_url));
+  client_->OnSessionMessage(
+      session_id, static_cast<mojom::CdmMessageType>(message_type),
+      mojo::Array<uint8_t>::From(message), legacy_destination_url);
 }
 
 void MojoCdmService::OnSessionKeysChange(const std::string& session_id,

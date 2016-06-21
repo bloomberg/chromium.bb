@@ -4,12 +4,14 @@
 
 module mojom;
 
+import "url/mojo/url.mojom";
+
 struct SiteEngagementInfo {
-  string origin;
+  url.mojom.Url origin;
   double score;
 };
 
 interface SiteEngagementUIHandler {
   GetSiteEngagementInfo() => (array<SiteEngagementInfo> info);
-  SetSiteEngagementScoreForOrigin(string origin, double score);
+  SetSiteEngagementScoreForOrigin(url.mojom.Url origin, double score);
 };

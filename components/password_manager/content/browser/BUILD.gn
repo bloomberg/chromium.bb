@@ -30,7 +30,6 @@ source_set("browser") {
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
-    "//mojo/common:url_type_converters",
     "//net",
   ]
 }

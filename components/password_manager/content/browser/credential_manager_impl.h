@@ -56,7 +56,7 @@ class CredentialManagerImpl
       const RequireUserMediationCallback& callback) override;
   void Get(bool zero_click_only,
            bool include_passwords,
-           mojo::Array<mojo::String> federations,
+           mojo::Array<GURL> federations,
            const GetCallback& callback) override;
 
   // CredentialManagerPendingRequestTaskDelegate:
