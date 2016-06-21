@@ -491,7 +491,7 @@ handleMultind ()
   switch (multindRule->charsdots[multindRule->charslen - doingMultind])
     {
     case CTO_SingleLetterCapsRule: // FIXME: make sure this works
-      found = findBrailleIndicatorRule (table->emphRules[capsRule][singleLetterOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][letterOffset]);
       break;
     // NOTE:  following fixme is based on the names at the time of
     //        commit f22f91eb510cb4eef33dfb4950a297235dd2f9f1.
@@ -502,10 +502,10 @@ handleMultind ()
     //        These are actually compiled with firstlettercaps/lastlettercaps.
     //        Which to use here?
     case CTO_CapsWordRule:
-      found = findBrailleIndicatorRule (table->emphRules[capsRule][wordOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][begWordOffset]);
       break;
     case CTO_CapsWordStopRule:
-      found = findBrailleIndicatorRule (table->emphRules[capsRule][wordStopOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][endWordOffset]);
       break;
     case CTO_LetterSign:
       found = findBrailleIndicatorRule (table->letterSign);
@@ -514,31 +514,31 @@ handleMultind ()
       found = findBrailleIndicatorRule (table->numberSign);
       break;
     case CTO_LastWordItalBeforeRule:
-      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][lastWordBeforeOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][endPhraseBeforeOffset]);
       break;
     case CTO_FirstLetterItalRule:
-      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][firstLetterOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][begOffset]);
       break;
     case CTO_LastLetterItalRule:
-      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][lastLetterOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][endOffset]);
       break;
     case CTO_LastWordUnderBeforeRule:
-      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][lastWordBeforeOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][endPhraseBeforeOffset]);
       break;
     case CTO_FirstLetterUnderRule:
-      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][firstLetterOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][begOffset]);
       break;
     case CTO_LastLetterUnderRule:
-      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][lastLetterOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][endOffset]);
       break;
     case CTO_LastWordBoldBeforeRule:
-      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][lastWordBeforeOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][endPhraseBeforeOffset]);
       break;
     case CTO_FirstLetterBoldRule:
-      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][firstLetterOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][begOffset]);
       break;
     case CTO_LastLetterBoldRule:
-      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][lastLetterOffset]);
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][endOffset]);
       break;
     case CTO_BegComp:
       found = findBrailleIndicatorRule (table->begComp);

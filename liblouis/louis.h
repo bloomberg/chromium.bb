@@ -551,14 +551,14 @@ typedef enum
 
 typedef enum
 {
-	firstWordOffset = 0,
-	lastWordBeforeOffset = 1,
-	lastWordAfterOffset = 2,
-	firstLetterOffset = 3,
-	lastLetterOffset = 4,
-	singleLetterOffset = 5,
-	wordOffset = 6,
-	wordStopOffset = 7,
+	begPhraseOffset = 0,
+	endPhraseBeforeOffset = 1,
+	endPhraseAfterOffset = 2,
+	begOffset = 3,
+	endOffset = 4,
+	letterOffset = 5,
+	begWordOffset = 6,
+	endWordOffset = 7,
 	lenPhraseOffset = 8
 } EmphCodeOffset;
 

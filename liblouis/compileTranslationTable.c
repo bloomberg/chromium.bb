@@ -3750,7 +3750,7 @@ compileBeforeAfter(FileInfo * nested)
 /* 1=before, 2=after, 0=error */
 	CharsString token;
 	CharsString tmp;
-	if (getToken(nested, &token, "lastword before or after"))
+	if (getToken(nested, &token, "last word before or after"))
 		if (parseChars(nested, &tmp, &token)) {
 		  if (eqasc2uni((unsigned char *)"before", tmp.chars, 6)) return 1;
 		  if (eqasc2uni((unsigned char *)"after", tmp.chars, 5)) return 2;
@@ -3871,29 +3871,29 @@ doOpcode:
     case CTO_FirstWordCaps:
       ok =
 	compileBrailleIndicator (nested, "first word capital sign",
-				 CTO_FirstWordCapsRule, &table->emphRules[capsRule][firstWordOffset]);
+				 CTO_FirstWordCapsRule, &table->emphRules[capsRule][begPhraseOffset]);
       break;
     case CTO_LastWordCaps:
 		switch (compileBeforeAfter(nested)) {
 			case 1: // before
-				if (table->emphRules[capsRule][lastWordAfterOffset]) {
+				if (table->emphRules[capsRule][endPhraseAfterOffset]) {
 					compileError (nested, "Capital sign after last word already defined.");
 					ok = 0;
 					break;
 				}
 				ok =
 					compileBrailleIndicator (nested, "capital sign before last word",
-						CTO_LastWordCapsBeforeRule, &table->emphRules[capsRule][lastWordBeforeOffset]);
+						CTO_LastWordCapsBeforeRule, &table->emphRules[capsRule][endPhraseBeforeOffset]);
 				break;
 			case 2: // after
-				if (table->emphRules[capsRule][lastWordBeforeOffset]) {
+				if (table->emphRules[capsRule][endPhraseBeforeOffset]) {
 					compileError (nested, "Capital sign before last word already defined.");
 					ok = 0;
 					break;
 				}
 				ok =
 					compileBrailleIndicator (nested, "capital sign after last word",
-						CTO_LastWordCapsAfterRule, &table->emphRules[capsRule][lastWordAfterOffset]);
+						CTO_LastWordCapsAfterRule, &table->emphRules[capsRule][endPhraseAfterOffset]);
 				break;
 			default: // error
 				compileError (nested, "Invalid lastword indicator location.");
@@ -3904,26 +3904,26 @@ doOpcode:
 	  case CTO_FirstLetterCaps:
       ok =
 	compileBrailleIndicator (nested, "first letter capital sign",
-				 CTO_FirstLetterCapsRule, &table->emphRules[capsRule][firstLetterOffset]);
+				 CTO_FirstLetterCapsRule, &table->emphRules[capsRule][begOffset]);
 		break;
 	  case CTO_LastLetterCaps:
       ok =
 	compileBrailleIndicator (nested, "last letter capital sign",
-				 CTO_LastLetterCapsRule, &table->emphRules[capsRule][lastLetterOffset]);
+				 CTO_LastLetterCapsRule, &table->emphRules[capsRule][endOffset]);
       break;
 	  case CTO_SingleLetterCaps:
       ok =
 	compileBrailleIndicator (nested, "single letter capital sign",
-				 CTO_SingleLetterCapsRule, &table->emphRules[capsRule][singleLetterOffset]);
+				 CTO_SingleLetterCapsRule, &table->emphRules[capsRule][letterOffset]);
       break;
     case CTO_CapsWord:
       ok =
 	compileBrailleIndicator (nested, "capital word", CTO_CapsWordRule,
-				 &table->emphRules[capsRule][wordOffset]);
+				 &table->emphRules[capsRule][begWordOffset]);
       break;
 	case CTO_CapsWordStop:
 		ok = compileBrailleIndicator(nested, "capital word stop",
-				 CTO_CapsWordStopRule, &table->emphRules[capsRule][wordStopOffset]);
+				 CTO_CapsWordStopRule, &table->emphRules[capsRule][endWordOffset]);
       break;
     case CTO_LenCapsPhrase:
       ok = table->emphRules[capsRule][lenPhraseOffset] = compileNumber (nested);
@@ -4049,66 +4049,66 @@ doOpcode:
 		i++; // in table->emphRules the first index is used for caps
 		if (opcode == CTO_EmphLetter) {
 			ok = compileBrailleIndicator (nested, "single letter",
-				CTO_SingleLetterItalRule + singleLetterOffset + (8 * i),
-				&table->emphRules[i][singleLetterOffset]);
+				CTO_SingleLetterItalRule + letterOffset + (8 * i),
+				&table->emphRules[i][letterOffset]);
 		}
 		else if (opcode == CTO_BegEmphWord) {
 			ok = compileBrailleIndicator (nested, "word",
-				CTO_SingleLetterItalRule + wordOffset + (8 * i),
-				&table->emphRules[i][wordOffset]);
+				CTO_SingleLetterItalRule + begWordOffset + (8 * i),
+				&table->emphRules[i][begWordOffset]);
 		}
 		else if (opcode == CTO_EndEmphWord) {
 			ok = compileBrailleIndicator(nested, "word stop",
-				CTO_SingleLetterItalRule + wordStopOffset + (8 * i),
-				&table->emphRules[i][wordStopOffset]);
+				CTO_SingleLetterItalRule + endWordOffset + (8 * i),
+				&table->emphRules[i][endWordOffset]);
 		}
 		else if (opcode == CTO_BegEmph) {
 		  /* fail if both begemph and any of begemphphrase or begemphword are defined */
-		  if (table->emphRules[i][wordOffset] || table->emphRules[i][firstWordOffset]) {
+		  if (table->emphRules[i][begWordOffset] || table->emphRules[i][begPhraseOffset]) {
 		    compileError (nested, "Cannot define emphasis for both no context and word or phrase context, i.e. cannot have both begemph and begemphword or begemphphrase.");
 		    ok = 0;
 		    break;
 		  }
 			ok = compileBrailleIndicator (nested, "first letter",
-				CTO_SingleLetterItalRule + firstLetterOffset + (8 * i),
-				&table->emphRules[i][firstLetterOffset]);
+				CTO_SingleLetterItalRule + begOffset + (8 * i),
+				&table->emphRules[i][begOffset]);
 		}
 		else if (opcode == CTO_EndEmph) {
-		  if (table->emphRules[i][wordStopOffset] || table->emphRules[i][lastWordBeforeOffset] || table->emphRules[i][lastWordAfterOffset]) {
+		  if (table->emphRules[i][endWordOffset] || table->emphRules[i][endPhraseBeforeOffset] || table->emphRules[i][endPhraseAfterOffset]) {
 		    compileError (nested, "Cannot define emphasis for both no context and word or phrase context, i.e. cannot have both endemph and endemphword or endemphphrase.");
 		    ok = 0;
 		    break;
 		  }
 			ok = compileBrailleIndicator (nested, "last letter",
-				CTO_SingleLetterItalRule + lastLetterOffset + (8 * i),
-				&table->emphRules[i][lastLetterOffset]);
+				CTO_SingleLetterItalRule + endOffset + (8 * i),
+				&table->emphRules[i][endOffset]);
 		}
 		else if (opcode == CTO_BegEmphPhrase) {
 			ok = compileBrailleIndicator (nested, "first word",
-				CTO_SingleLetterItalRule + firstWordOffset + (8 * i),
-				&table->emphRules[i][firstWordOffset]);
+				CTO_SingleLetterItalRule + begPhraseOffset + (8 * i),
+				&table->emphRules[i][begPhraseOffset]);
 		}
 		else if (opcode == CTO_EndEmphPhrase)
 			switch (compileBeforeAfter(nested)) {
 				case 1: // before
-					if (table->emphRules[i][lastWordAfterOffset]) {
+					if (table->emphRules[i][endPhraseAfterOffset]) {
 						compileError (nested, "last word after already defined.");
 						ok = 0;
 						break;
 					}
 					ok = compileBrailleIndicator (nested, "last word before",
-						CTO_SingleLetterItalRule + lastWordBeforeOffset + (8 * i),
-						&table->emphRules[i][lastWordBeforeOffset]);
+						CTO_SingleLetterItalRule + endPhraseBeforeOffset + (8 * i),
+						&table->emphRules[i][endPhraseBeforeOffset]);
 					break;
 				case 2: // after
-					if (table->emphRules[i][lastWordBeforeOffset]) {
+					if (table->emphRules[i][endPhraseBeforeOffset]) {
 						compileError (nested, "last word before already defined.");
 						ok = 0;
 						break;
 					}
 					ok = compileBrailleIndicator (nested, "last word after",
-						CTO_SingleLetterItalRule + lastWordAfterOffset + (8 * i),
-						&table->emphRules[i][lastWordAfterOffset]);
+						CTO_SingleLetterItalRule + endPhraseAfterOffset + (8 * i),
+						&table->emphRules[i][endPhraseAfterOffset]);
 					break;
 				default: // error
 					compileError (nested, "Invalid lastword indicator location.");
