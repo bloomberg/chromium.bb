@@ -110,7 +110,9 @@ public:
     AffineTransform& skewX(double angle);
     AffineTransform& skewY(double angle);
 
+    double xScaleSquared() const;
     double xScale() const;
+    double yScaleSquared() const;
     double yScale() const;
 
     double det() const;

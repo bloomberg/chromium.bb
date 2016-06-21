@@ -37,10 +37,10 @@ public:
     const AffineTransform& localToSVGParentTransform() const override { return m_localTransform; }
     const FloatSize& additionalTranslation() const { return m_additionalTranslation; }
 
-    void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
+    void setNeedsTransformUpdate() override;
 
 private:
-    bool calculateLocalTransform() override;
+    TransformChange calculateLocalTransform() override;
     AffineTransform localSVGTransform() const override { return m_localTransform; }
 
     bool m_needsTransformUpdate : 1;

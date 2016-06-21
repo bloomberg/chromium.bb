@@ -37,7 +37,7 @@ public:
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
 
     void determineIfLayoutSizeChanged() override;
-    void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
+    void setNeedsTransformUpdate() override;
 
     void paint(const PaintInfo&, const LayoutPoint&) const override;
 
@@ -50,7 +50,7 @@ private:
     const AffineTransform& localToSVGParentTransform() const override { return m_localToParentTransform; }
 
     void calcViewport() override;
-    bool calculateLocalTransform() override;
+    TransformChange calculateLocalTransform() override;
 
     bool pointIsInsideViewportClip(const FloatPoint& pointInParent) override;
 

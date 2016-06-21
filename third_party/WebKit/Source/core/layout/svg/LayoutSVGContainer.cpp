@@ -55,8 +55,9 @@ void LayoutSVGContainer::layout()
     calcViewport();
 
     // Allow LayoutSVGTransformableContainer to update its transform.
-    bool updatedTransform = calculateLocalTransform();
-    m_didScreenScaleFactorChange = updatedTransform || SVGLayoutSupport::screenScaleFactorChanged(parent());
+    TransformChange transformChange = calculateLocalTransform();
+    m_didScreenScaleFactorChange =
+        transformChange == TransformChange::Full || SVGLayoutSupport::screenScaleFactorChanged(parent());
 
     // LayoutSVGViewportContainer needs to set the 'layout size changed' flag.
     determineIfLayoutSizeChanged();
@@ -72,7 +73,7 @@ void LayoutSVGContainer::layout()
     if (everHadLayout() && needsLayout())
         SVGResourcesCache::clientLayoutChanged(this);
 
-    if (m_needsBoundariesUpdate || updatedTransform) {
+    if (m_needsBoundariesUpdate || transformChange != TransformChange::None) {
         updateCachedBoundaries();
         m_needsBoundariesUpdate = false;
 

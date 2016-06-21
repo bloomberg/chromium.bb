@@ -68,14 +68,24 @@ bool AffineTransform::isIdentity() const
          && m_transform[4] == 0 && m_transform[5] == 0);
 }
 
+double AffineTransform::xScaleSquared() const
+{
+    return m_transform[0] * m_transform[0] + m_transform[1] * m_transform[1];
+}
+
 double AffineTransform::xScale() const
 {
-    return sqrt(m_transform[0] * m_transform[0] + m_transform[1] * m_transform[1]);
+    return sqrt(xScaleSquared());
+}
+
+double AffineTransform::yScaleSquared() const
+{
+    return m_transform[2] * m_transform[2] + m_transform[3] * m_transform[3];
 }
 
 double AffineTransform::yScale() const
 {
-    return sqrt(m_transform[2] * m_transform[2] + m_transform[3] * m_transform[3]);
+    return sqrt(yScaleSquared());
 }
 
 double AffineTransform::det() const
