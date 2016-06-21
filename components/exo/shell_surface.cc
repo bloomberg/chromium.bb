@@ -28,6 +28,9 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -211,6 +214,7 @@ ShellSurface::ShellSurface(Surface* surface,
                            ShellSurface* parent,
                            const gfx::Rect& initial_bounds,
                            bool activatable,
+                           bool shadow_enabled,
                            int container)
     : widget_(nullptr),
       surface_(surface),
@@ -224,7 +228,8 @@ ShellSurface::ShellSurface(Surface* surface,
       scoped_configure_(nullptr),
       ignore_window_bounds_changes_(false),
       resize_component_(HTCAPTION),
-      pending_resize_component_(HTCAPTION) {
+      pending_resize_component_(HTCAPTION),
+      shadow_enabled_(shadow_enabled) {
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
@@ -239,11 +244,13 @@ ShellSurface::ShellSurface(Surface* surface)
                    nullptr,
                    gfx::Rect(),
                    true,
+                   false,
                    ash::kShellWindowId_DefaultContainer) {}
 
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  shadow_parent_.reset();
   if (surface_) {
     if (scale_ != 1.0)
       surface_->window()->SetTransform(gfx::Transform());
@@ -487,6 +494,7 @@ void ShellSurface::OnSurfaceCommit() {
     geometry_ = pending_geometry_;
 
     UpdateWidgetBounds();
+    UpdateShadow();
 
     gfx::Point surface_origin = GetSurfaceOrigin();
     gfx::Rect hit_test_bounds =
@@ -681,6 +689,12 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
 
     surface_->window()->SetBounds(
         gfx::Rect(GetSurfaceOrigin(), surface_->window()->layer()->size()));
+
+    // The shadow size may be updated to match the widget. Change it back
+    // to the opaque content size.
+    // TODO(oshima): When the arc window reiszing is enabled, we may want to
+    // implement shadow management here instead of using shadow controller.
+    UpdateShadow();
 
     Configure();
   }
@@ -1079,6 +1093,36 @@ void ShellSurface::UpdateWidgetBounds() {
   // A change to the widget size requires surface bounds to be re-adjusted.
   surface_->window()->SetBounds(
       gfx::Rect(GetSurfaceOrigin(), surface_->window()->layer()->size()));
+}
+
+void ShellSurface::UpdateShadow() {
+  if (!widget_ || !shadow_enabled_)
+    return;
+
+  aura::Window* window = widget_->GetNativeWindow();
+  wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+  if (shadow) {
+    SkRegion opaque_region = surface_->ComputeOpaqueRegionForHierarchy();
+    if (opaque_region.isEmpty() || !opaque_region.isRect()) {
+      wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
+    } else {
+      ui::Layer* shadow_layer = shadow->layer();
+      if (!shadow_parent_) {
+        shadow_parent_ = base::WrapUnique(new aura::Window(nullptr));
+        shadow_parent_->set_ignore_events(true);
+        shadow_parent_->Init(ui::LAYER_NOT_DRAWN);
+        shadow_parent_->layer()->Add(shadow_layer);
+        window->AddChild(shadow_parent_.get());
+        shadow_parent_->Show();
+      }
+      gfx::Rect opaque_bounds(gfx::SkIRectToRect(opaque_region.getBounds()));
+      aura::Window::ConvertRectToTarget(window->parent(), window,
+                                        &opaque_bounds);
+      shadow_parent_->SetBounds(opaque_bounds);
+      shadow->SetContentBounds(gfx::Rect(opaque_bounds.size()));
+      wm::SetShadowType(window, wm::SHADOW_TYPE_RECTANGULAR);
+    }
+  }
 }
 
 }  // namespace exo

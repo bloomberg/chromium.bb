@@ -230,6 +230,10 @@ class Surface : public ui::LayerOwnerDelegate {
   template <typename T>
   void ClearProperty(const SurfaceProperty<T>* property);
 
+  // Returns the union of all opaque regions in surface hierarchy relative
+  // to the surface's origin.
+  SkRegion ComputeOpaqueRegionForHierarchy() const;
+
  private:
   struct State {
     State();

@@ -713,6 +713,25 @@ void Surface::CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces() {
     SetSurfaceHierarchyNeedsCommitToNewSurfaces();
 }
 
+SkRegion Surface::ComputeOpaqueRegionForHierarchy() const {
+  SkRegion opaque_region;
+
+  if (state_.blend_mode == SkXfermode::kSrc_Mode)
+    opaque_region.setRect(gfx::RectToSkIRect(gfx::Rect(content_size_)));
+
+  for (const auto& sub_surface_entry : pending_sub_surfaces_) {
+    SkRegion opaque_sub_surface_region =
+        sub_surface_entry.first->ComputeOpaqueRegionForHierarchy();
+    if (!opaque_sub_surface_region.isEmpty()) {
+      gfx::Point origin = sub_surface_entry.first->window()->bounds().origin();
+      opaque_sub_surface_region.translate(origin.x(), origin.y());
+      opaque_region.op(opaque_sub_surface_region, SkRegion::kUnion_Op);
+    }
+  }
+
+  return opaque_region;
+}
+
 Surface::State::State() : input_region(SkIRect::MakeLargest()) {}
 
 Surface::State::~State() = default;
