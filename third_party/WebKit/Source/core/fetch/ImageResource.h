@@ -161,6 +161,8 @@ private:
     void checkNotify() override;
     void markClientsAndObserversFinished() override;
 
+    void doResetAnimation();
+
     float m_devicePixelRatioHeaderValue;
 
     Member<MultipartImageResourceParser> m_multipartParser;

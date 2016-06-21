@@ -204,10 +204,23 @@ void ImageResource::destroyDecodedDataIfPossible()
     }
 }
 
+void ImageResource::doResetAnimation()
+{
+    if (m_image)
+        m_image->resetAnimation();
+}
+
 void ImageResource::allClientsAndObserversRemoved()
 {
-    if (m_image && !errorOccurred())
-        m_image->resetAnimation();
+    if (m_image && !errorOccurred()) {
+        // If possible, delay the resetting until back at the event loop.
+        // Doing so after a conservative GC prevents resetAnimation() from
+        // upsetting ongoing animation updates (crbug.com/613709)
+        if (!ThreadHeap::willObjectBeLazilySwept(this))
+            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&ImageResource::doResetAnimation, WeakPersistentThisPointer<ImageResource>(this)));
+        else
+            m_image->resetAnimation();
+    }
     if (m_multipartParser)
         m_multipartParser->cancel();
     Resource::allClientsAndObserversRemoved();
