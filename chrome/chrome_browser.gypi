@@ -2235,6 +2235,10 @@
     ],
     # Used on non-Android platforms when notifications are enabled.
     'chrome_browser_notifications_non_android_sources': [
+      'browser/notifications/application_notifier_source.cc',
+      'browser/notifications/application_notifier_source.h',
+      'browser/notifications/arc_application_notifier_source_chromeos.cc',
+      'browser/notifications/arc_application_notifier_source_chromeos.h',
       'browser/notifications/extension_welcome_notification.cc',
       'browser/notifications/extension_welcome_notification.h',
       'browser/notifications/extension_welcome_notification_factory.cc',
@@ -2254,10 +2258,15 @@
       'browser/notifications/notification_system_observer.cc',
       'browser/notifications/notification_system_observer.h',
       'browser/notifications/notification_ui_manager_desktop.cc',
+      'browser/notifications/notifier_source.h',
       'browser/notifications/profile_notification.cc',
       'browser/notifications/profile_notification.h',
       'browser/notifications/screen_lock_notification_blocker.cc',
       'browser/notifications/screen_lock_notification_blocker.h',
+      'browser/notifications/system_component_notifier_source_chromeos.cc',
+      'browser/notifications/system_component_notifier_source_chromeos.h',
+      'browser/notifications/web_page_notifier_source.cc',
+      'browser/notifications/web_page_notifier_source.h',
     ],
     'chrome_browser_nss_sources': [
       'browser/certificate_manager_model.cc',

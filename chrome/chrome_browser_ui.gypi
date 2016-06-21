@@ -743,8 +743,6 @@
     ],
     # ARC-only sources.
     'chrome_browser_ui_chromeos_arc_sources': [
-      'browser/notifications/arc_notifier_manager.cc',
-      'browser/notifications/arc_notifier_manager.h',
       'browser/ui/app_list/arc/arc_app_context_menu.cc',
       'browser/ui/app_list/arc/arc_app_context_menu.h',
       'browser/ui/app_list/arc/arc_app_icon.cc',

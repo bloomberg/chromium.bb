@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/notifications/notifier_source.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -30,12 +31,7 @@
 #endif
 
 class Profile;
-
-#if defined(OS_CHROMEOS)
-namespace arc {
-class ArcNotifierManager;
-}
-#endif
+class NotifierSource;
 
 namespace base {
 class CancelableTaskTracker;
@@ -58,7 +54,7 @@ class MessageCenterSettingsController
 #if defined(OS_CHROMEOS)
       public user_manager::UserManager::UserSessionStateObserver,
 #endif
-      public AppIconLoaderDelegate {
+      public NotifierSource::Observer {
  public:
   explicit MessageCenterSettingsController(
       ProfileAttributesStorage& profile_attributes_storage);
@@ -90,17 +86,13 @@ class MessageCenterSettingsController
   void ActiveUserChanged(const user_manager::User* active_user) override;
 #endif
 
-  // Overridden from AppIconLoaderDelegate.
-  void OnAppImageUpdated(const std::string& id,
-                         const gfx::ImageSkia& image) override;
-
  private:
   // Overridden from content::NotificationObserver.
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // ProfileAttributesStorage::Observer:
+  // Overridden from ProfileAttributesStorage::Observer.
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
       const base::string16& profile_name) override;
@@ -108,8 +100,13 @@ class MessageCenterSettingsController
       const base::string16& old_profile_name) override;
   void OnProfileAuthInfoChanged(const base::FilePath& profile_path) override;
 
-  void OnFaviconLoaded(const GURL& url,
-                       const favicon_base::FaviconImageResult& favicon_result);
+  // Overridden from NotifierSource::Observer.
+  void OnIconImageUpdated(const message_center::NotifierId&,
+                          const gfx::Image&) override;
+  void OnNotifierEnabledChanged(const message_center::NotifierId&,
+                                bool) override;
+
+  void DispatchNotifierGroupChanged();
 
 #if defined(OS_CHROMEOS)
   // Sets up the notifier group for the guest session. This needs to be
@@ -126,22 +123,16 @@ class MessageCenterSettingsController
   // The views displaying notifier settings.
   base::ObserverList<message_center::NotifierSettingsObserver> observers_;
 
-  // The task tracker for loading favicons.
-  std::unique_ptr<base::CancelableTaskTracker> favicon_tracker_;
-
-  std::unique_ptr<AppIconLoader> app_icon_loader_;
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<arc::ArcNotifierManager> arc_notifier_manager_;
-#endif
-
-  std::map<base::string16, ContentSettingsPattern> patterns_;
-
   // The list of all configurable notifier groups. This is each profile that is
   // loaded (and in the ProfileAttributesStorage - so no incognito profiles go
   // here).
   std::vector<std::unique_ptr<message_center::ProfileNotifierGroup>>
       notifier_groups_;
+
+  // Notifier source for each notifier type.
+  std::map<message_center::NotifierId::NotifierType,
+           std::unique_ptr<NotifierSource>>
+      sources_;
 
   size_t current_notifier_group_;
 
