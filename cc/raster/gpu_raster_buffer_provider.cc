@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/playback/raster_source.h"
+#include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -23,121 +24,89 @@
 namespace cc {
 namespace {
 
-static sk_sp<SkPicture> PlaybackToPicture(
-    const RasterSource* raster_source,
-    bool resource_has_previous_content,
-    const gfx::Size& resource_size,
-    const gfx::Rect& raster_full_rect,
-    const gfx::Rect& raster_dirty_rect,
-    float scale,
-    const RasterSource::PlaybackSettings& playback_settings) {
-  // GPU raster doesn't do low res tiles, so should always include images.
-  DCHECK(!playback_settings.skip_images);
-
-  gfx::Rect playback_rect = raster_full_rect;
-  if (resource_has_previous_content) {
-    playback_rect.Intersect(raster_dirty_rect);
+class RasterBufferImpl : public RasterBuffer {
+ public:
+  RasterBufferImpl(GpuRasterizer* rasterizer,
+                   const Resource* resource,
+                   uint64_t resource_content_id,
+                   uint64_t previous_content_id)
+      : rasterizer_(rasterizer),
+        lock_(rasterizer->resource_provider(), resource->id()),
+        resource_has_previous_content_(
+            resource_content_id && resource_content_id == previous_content_id) {
   }
-  DCHECK(!playback_rect.IsEmpty())
-      << "Why are we rastering a tile that's not dirty?";
 
-  // Play back raster_source into temp SkPicture.
-  SkPictureRecorder recorder;
-  const int flags = SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag;
-  sk_sp<SkCanvas> canvas = sk_ref_sp(recorder.beginRecording(
-      resource_size.width(), resource_size.height(), NULL, flags));
-  canvas->save();
-  raster_source->PlaybackToCanvas(canvas.get(), raster_full_rect, playback_rect,
-                                  scale, playback_settings);
-  canvas->restore();
-  return recorder.finishRecordingAsPicture();
-}
+  // Overridden from RasterBuffer:
+  void Playback(
+      const RasterSource* raster_source,
+      const gfx::Rect& raster_full_rect,
+      const gfx::Rect& raster_dirty_rect,
+      uint64_t new_content_id,
+      float scale,
+      const RasterSource::PlaybackSettings& playback_settings) override {
+    TRACE_EVENT0("cc", "GpuRasterBuffer::Playback");
+    // GPU raster doesn't do low res tiles, so should always include images.
+    DCHECK(!playback_settings.skip_images);
 
-static void RasterizePicture(SkPicture* picture,
-                             ContextProvider* context_provider,
-                             ResourceProvider::ScopedWriteLockGL* resource_lock,
-                             bool async_worker_context_enabled,
-                             bool use_distance_field_text,
-                             bool can_use_lcd_text,
-                             int msaa_sample_count) {
-  ScopedGpuRaster gpu_raster(context_provider);
+    ContextProvider::ScopedContextLock scoped_context(
+        rasterizer_->worker_context_provider());
 
-  ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
-      context_provider, resource_lock, async_worker_context_enabled,
-      use_distance_field_text, can_use_lcd_text, msaa_sample_count);
-  SkSurface* sk_surface = scoped_surface.sk_surface();
-  // Allocating an SkSurface will fail after a lost context.  Pretend we
-  // rasterized, as the contents of the resource don't matter anymore.
-  if (!sk_surface)
-    return;
+    gfx::Rect playback_rect = raster_full_rect;
+    if (resource_has_previous_content_) {
+      playback_rect.Intersect(raster_dirty_rect);
+    }
+    DCHECK(!playback_rect.IsEmpty())
+        << "Why are we rastering a tile that's not dirty?";
 
-  SkMultiPictureDraw multi_picture_draw;
-  multi_picture_draw.add(sk_surface->getCanvas(), picture);
-  multi_picture_draw.draw(false);
-}
+    // TODO(danakj): Implement partial raster with raster_dirty_rect.
+    // Rasterize source into resource.
+    rasterizer_->RasterizeSource(&lock_, raster_source, raster_full_rect,
+                                 playback_rect, scale, playback_settings);
+
+    gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
+    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+
+    // Barrier to sync worker context output to cc context.
+    gl->OrderingBarrierCHROMIUM();
+
+    // Generate sync token after the barrier for cross context synchronization.
+    gpu::SyncToken sync_token;
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+    lock_.UpdateResourceSyncToken(sync_token);
+  }
+
+ private:
+  GpuRasterizer* rasterizer_;
+  ResourceProvider::ScopedWriteLockGr lock_;
+  bool resource_has_previous_content_;
+
+  DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
+};
 
 }  // namespace
-
-GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
-    GpuRasterBufferProvider* client,
-    ResourceProvider* resource_provider,
-    ResourceId resource_id,
-    bool async_worker_context_enabled,
-    bool resource_has_previous_content)
-    : client_(client),
-      lock_(resource_provider, resource_id, async_worker_context_enabled),
-      resource_has_previous_content_(resource_has_previous_content) {
-  client_->pending_raster_buffers_.insert(this);
-}
-
-GpuRasterBufferProvider::RasterBufferImpl::~RasterBufferImpl() {
-  client_->pending_raster_buffers_.erase(this);
-}
-
-void GpuRasterBufferProvider::RasterBufferImpl::Playback(
-    const RasterSource* raster_source,
-    const gfx::Rect& raster_full_rect,
-    const gfx::Rect& raster_dirty_rect,
-    uint64_t new_content_id,
-    float scale,
-    const RasterSource::PlaybackSettings& playback_settings) {
-  TRACE_EVENT0("cc", "GpuRasterBuffer::Playback");
-  client_->PlaybackOnWorkerThread(&lock_, sync_token_,
-                                  resource_has_previous_content_, raster_source,
-                                  raster_full_rect, raster_dirty_rect,
-                                  new_content_id, scale, playback_settings);
-}
 
 GpuRasterBufferProvider::GpuRasterBufferProvider(
     ContextProvider* compositor_context_provider,
     ContextProvider* worker_context_provider,
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
-    int gpu_rasterization_msaa_sample_count,
-    bool async_worker_context_enabled)
+    int gpu_rasterization_msaa_sample_count)
     : compositor_context_provider_(compositor_context_provider),
-      worker_context_provider_(worker_context_provider),
-      resource_provider_(resource_provider),
-      use_distance_field_text_(use_distance_field_text),
-      msaa_sample_count_(gpu_rasterization_msaa_sample_count),
-      async_worker_context_enabled_(async_worker_context_enabled) {
-  DCHECK(compositor_context_provider);
-  DCHECK(worker_context_provider);
+      rasterizer_(new GpuRasterizer(worker_context_provider,
+                                    resource_provider,
+                                    use_distance_field_text,
+                                    gpu_rasterization_msaa_sample_count)) {
+  DCHECK(compositor_context_provider_);
 }
 
-GpuRasterBufferProvider::~GpuRasterBufferProvider() {
-  DCHECK(pending_raster_buffers_.empty());
-}
+GpuRasterBufferProvider::~GpuRasterBufferProvider() {}
 
 std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     const Resource* resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
-  bool resource_has_previous_content =
-      resource_content_id && resource_content_id == previous_content_id;
-  return base::WrapUnique(new RasterBufferImpl(
-      this, resource_provider_, resource->id(), async_worker_context_enabled_,
-      resource_has_previous_content));
+  return std::unique_ptr<RasterBuffer>(new RasterBufferImpl(
+      rasterizer_.get(), resource, resource_content_id, previous_content_id));
 }
 
 void GpuRasterBufferProvider::ReleaseBufferForRaster(
@@ -145,29 +114,14 @@ void GpuRasterBufferProvider::ReleaseBufferForRaster(
   // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
-bool GpuRasterBufferProvider::OrderingBarrier() {
+void GpuRasterBufferProvider::OrderingBarrier() {
   TRACE_EVENT0("cc", "GpuRasterBufferProvider::OrderingBarrier");
-
-  gpu::gles2::GLES2Interface* gl = compositor_context_provider_->ContextGL();
-  GLuint64 fence = gl->InsertFenceSyncCHROMIUM();
-  gl->OrderingBarrierCHROMIUM();
-
-  gpu::SyncToken sync_token;
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence, sync_token.GetData());
-
-  for (RasterBufferImpl* buffer : pending_raster_buffers_)
-    buffer->set_sync_token(sync_token);
-  pending_raster_buffers_.clear();
-
-  DCHECK(sync_token.HasData() ||
-         gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
-  // Do not proceed with ScheduleTasks if sync token was invalid.
-  return sync_token.HasData();
+  compositor_context_provider_->ContextGL()->OrderingBarrierCHROMIUM();
 }
 
 ResourceFormat GpuRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
-  return resource_provider_->best_render_buffer_format();
+  return rasterizer_->resource_provider()->best_render_buffer_format();
 }
 
 bool GpuRasterBufferProvider::GetResourceRequiresSwizzle(
@@ -176,50 +130,6 @@ bool GpuRasterBufferProvider::GetResourceRequiresSwizzle(
   return false;
 }
 
-void GpuRasterBufferProvider::Shutdown() {
-  pending_raster_buffers_.clear();
-}
-
-void GpuRasterBufferProvider::PlaybackOnWorkerThread(
-    ResourceProvider::ScopedWriteLockGL* resource_lock,
-    const gpu::SyncToken& sync_token,
-    bool resource_has_previous_content,
-    const RasterSource* raster_source,
-    const gfx::Rect& raster_full_rect,
-    const gfx::Rect& raster_dirty_rect,
-    uint64_t new_content_id,
-    float scale,
-    const RasterSource::PlaybackSettings& playback_settings) {
-  ContextProvider::ScopedContextLock scoped_context(worker_context_provider_);
-  gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
-
-  // Synchronize with compositor.
-  DCHECK(sync_token.HasData());
-  gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-
-  sk_sp<SkPicture> picture = PlaybackToPicture(
-      raster_source, resource_has_previous_content, resource_lock->size(),
-      raster_full_rect, raster_dirty_rect, scale, playback_settings);
-
-  // Turn on distance fields for layers that have ever animated.
-  bool use_distance_field_text =
-      use_distance_field_text_ ||
-      raster_source->ShouldAttemptToUseDistanceFieldText();
-
-  RasterizePicture(picture.get(), worker_context_provider_, resource_lock,
-                   async_worker_context_enabled_, use_distance_field_text,
-                   raster_source->CanUseLCDText(), msaa_sample_count_);
-
-  const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-
-  // Barrier to sync worker context output to cc context.
-  gl->OrderingBarrierCHROMIUM();
-
-  // Generate sync token after the barrier for cross context synchronization.
-  gpu::SyncToken resource_sync_token;
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, resource_sync_token.GetData());
-  resource_lock->set_sync_token(resource_sync_token);
-  resource_lock->set_synchronized(!async_worker_context_enabled_);
-}
+void GpuRasterBufferProvider::Shutdown() {}
 
 }  // namespace cc

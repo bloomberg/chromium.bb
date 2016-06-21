@@ -96,9 +96,8 @@ void ZeroCopyRasterBufferProvider::ReleaseBufferForRaster(
   // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
-bool ZeroCopyRasterBufferProvider::OrderingBarrier() {
+void ZeroCopyRasterBufferProvider::OrderingBarrier() {
   // No need to sync resources as this provider does not use GL context.
-  return true;
 }
 
 ResourceFormat ZeroCopyRasterBufferProvider::GetResourceFormat(

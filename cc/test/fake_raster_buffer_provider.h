@@ -21,7 +21,7 @@ class FakeRasterBufferProviderImpl : public RasterBufferProvider {
       uint64_t resource_content_id,
       uint64_t previous_content_id) override;
   void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override;
-  bool OrderingBarrier() override;
+  void OrderingBarrier() override;
   ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool GetResourceRequiresSwizzle(bool must_support_alpha) const override;
   void Shutdown() override;

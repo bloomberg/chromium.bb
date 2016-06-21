@@ -53,9 +53,8 @@ class CC_EXPORT RasterBufferProvider {
   // Release raster buffer.
   virtual void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) = 0;
 
-  // Used for syncing resources to the worker context. Returns false if barrier
-  // could not be established.
-  virtual bool OrderingBarrier() = 0;
+  // Barrier to sync resources to the worker context.
+  virtual void OrderingBarrier() = 0;
 
   // Returns the format to use for the tiles.
   virtual ResourceFormat GetResourceFormat(bool must_support_alpha) const = 0;

@@ -415,6 +415,8 @@
         'raster/bitmap_raster_buffer_provider.h',
         'raster/gpu_raster_buffer_provider.cc',
         'raster/gpu_raster_buffer_provider.h',
+        'raster/gpu_rasterizer.cc',
+        'raster/gpu_rasterizer.h',
         'raster/one_copy_raster_buffer_provider.cc',
         'raster/one_copy_raster_buffer_provider.h',
         'raster/raster_buffer.cc',

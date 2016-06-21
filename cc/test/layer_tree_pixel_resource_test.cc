@@ -7,6 +7,7 @@
 #include "cc/layers/layer.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
+#include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
@@ -141,7 +142,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
 
       *raster_buffer_provider = base::MakeUnique<GpuRasterBufferProvider>(
           compositor_context_provider, worker_context_provider,
-          resource_provider, false, 0, false);
+          resource_provider, false, 0);
       break;
     case RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY:
       EXPECT_TRUE(compositor_context_provider);
@@ -160,8 +161,8 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
       *raster_buffer_provider = base::MakeUnique<OneCopyRasterBufferProvider>(
           task_runner, compositor_context_provider, worker_context_provider,
           resource_provider, max_bytes_per_copy_operation, false,
-          max_staging_buffer_usage_in_bytes, PlatformColor::BestTextureFormat(),
-          false);
+          max_staging_buffer_usage_in_bytes,
+          PlatformColor::BestTextureFormat());
       break;
   }
 }

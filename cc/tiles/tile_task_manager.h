@@ -32,6 +32,9 @@ class CC_EXPORT TileTaskManager {
 
   // Shutdown after canceling all previously scheduled tasks.
   virtual void Shutdown() = 0;
+
+  // Get RasterBufferProvider.
+  virtual RasterBufferProvider* GetRasterBufferProvider() const = 0;
 };
 
 class CC_EXPORT TileTaskManagerImpl : public TileTaskManager {
@@ -39,16 +42,21 @@ class CC_EXPORT TileTaskManagerImpl : public TileTaskManager {
   ~TileTaskManagerImpl() override;
 
   static std::unique_ptr<TileTaskManagerImpl> Create(
+      std::unique_ptr<RasterBufferProvider> raster_buffer_provider,
       TaskGraphRunner* task_graph_runner);
 
   // Overridden from TileTaskManager:
   void ScheduleTasks(TaskGraph* graph) override;
   void CheckForCompletedTasks() override;
   void Shutdown() override;
+  RasterBufferProvider* GetRasterBufferProvider() const override;
 
  protected:
-  explicit TileTaskManagerImpl(TaskGraphRunner* task_graph_runner);
+  TileTaskManagerImpl(
+      std::unique_ptr<RasterBufferProvider> raster_buffer_provider,
+      TaskGraphRunner* task_graph_runner);
 
+  std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
 
