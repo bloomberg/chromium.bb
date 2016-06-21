@@ -43,6 +43,14 @@
             android:icon="@drawable/bookmark_delete_white"
             android:title="@null"
             chrome:showAsAction="ifRoom"/>
+        <item
+            android:id="@+id/selection_open_in_new_tab_id"
+            android:title="@string/contextmenu_open_in_new_tab"
+            chrome:showAsAction="never"/>
+        <item
+            android:id="@+id/selection_open_in_incognito_tab_id"
+            android:title="@string/contextmenu_open_in_incognito_tab"
+            chrome:showAsAction="never"/>
     </group>
 
 </menu>
