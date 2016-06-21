@@ -31,20 +31,22 @@
 #include "ui/gl/scoped_binders.h"
 
 #define LOGF(level) LOG(level) << __FUNCTION__ << "(): "
+#define DLOGF(level) DLOG(level) << __FUNCTION__ << "(): "
 #define DVLOGF(level) DVLOG(level) << __FUNCTION__ << "(): "
+#define PLOGF(level) PLOG(level) << __FUNCTION__ << "(): "
 
-#define NOTIFY_ERROR(x)                        \
-  do {                                         \
-    LOG(ERROR) << "Setting error state:" << x; \
-    SetErrorState(x);                          \
+#define NOTIFY_ERROR(x)                         \
+  do {                                          \
+    LOGF(ERROR) << "Setting error state:" << x; \
+    SetErrorState(x);                           \
   } while (0)
 
-#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str)          \
-  do {                                                                   \
-    if (device_->Ioctl(type, arg) != 0) {                                \
-      PLOG(ERROR) << __FUNCTION__ << "(): ioctl() failed: " << type_str; \
-      return value;                                                      \
-    }                                                                    \
+#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str) \
+  do {                                                          \
+    if (device_->Ioctl(type, arg) != 0) {                       \
+      PLOGF(ERROR) << "ioctl() failed: " << type_str;           \
+      return value;                                             \
+    }                                                           \
   } while (0)
 
 #define IOCTL_OR_ERROR_RETURN(type, arg) \
@@ -53,10 +55,10 @@
 #define IOCTL_OR_ERROR_RETURN_FALSE(type, arg) \
   IOCTL_OR_ERROR_RETURN_VALUE(type, arg, false, #type)
 
-#define IOCTL_OR_LOG_ERROR(type, arg)                                 \
-  do {                                                                \
-    if (device_->Ioctl(type, arg) != 0)                               \
-      PLOG(ERROR) << __FUNCTION__ << "(): ioctl() failed: " << #type; \
+#define IOCTL_OR_LOG_ERROR(type, arg)              \
+  do {                                             \
+    if (device_->Ioctl(type, arg) != 0)            \
+      PLOGF(ERROR) << "ioctl() failed: " << #type; \
   } while (0)
 
 namespace media {
@@ -487,23 +489,23 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   output_planes_count_ = 1;
 
   if (egl_display_ == EGL_NO_DISPLAY) {
-    LOG(ERROR) << "Initialize(): could not get EGLDisplay";
+    LOGF(ERROR) << "could not get EGLDisplay";
     return false;
   }
 
   // We need the context to be initialized to query extensions.
   if (!make_context_current_cb_.is_null()) {
     if (!make_context_current_cb_.Run()) {
-      LOG(ERROR) << "Initialize(): could not make context current";
+      LOGF(ERROR) << "could not make context current";
       return false;
     }
 
     if (!gl::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
-      LOG(ERROR) << "Initialize(): context does not have EGL_KHR_fence_sync";
+      LOGF(ERROR) << "context does not have EGL_KHR_fence_sync";
       return false;
     }
   } else {
-    DVLOG(1) << "No GL callbacks provided, initializing without GL support";
+    DVLOGF(1) << "No GL callbacks provided, initializing without GL support";
   }
 
   // Capabilities check.
@@ -511,8 +513,8 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP"
-               << ", caps check failed: 0x" << std::hex << caps.capabilities;
+    LOGF(ERROR) << "ioctl() failed: VIDIOC_QUERYCAP"
+                << ", caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
 
@@ -520,7 +522,7 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
 
   if (!decoder_thread_.Start()) {
-    DLOG(ERROR) << "Initialize(): device thread failed to start";
+    DLOGF(ERROR) << "device thread failed to start";
     return false;
   }
   decoder_thread_task_runner_ = decoder_thread_.task_runner();
@@ -622,8 +624,8 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   }
 
   if (!is_format_supported) {
-    DVLOG(1) << "Input fourcc " << input_format_fourcc
-             << " not supported by device.";
+    DVLOGF(1) << "Input fourcc " << input_format_fourcc
+              << " not supported by device.";
     return false;
   }
 
@@ -650,7 +652,7 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   }
 
   if (output_format_fourcc_ == 0) {
-    LOG(ERROR) << "Could not find a usable output format";
+    LOGF(ERROR) << "Could not find a usable output format";
     return false;
   }
 
@@ -678,7 +680,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
   reqbufs.memory = V4L2_MEMORY_MMAP;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
   if (reqbufs.count < kNumInputBuffers) {
-    PLOG(ERROR) << "Could not allocate enough output buffers";
+    PLOGF(ERROR) << "Could not allocate enough output buffers";
     return false;
   }
   input_buffer_map_.resize(reqbufs.count);
@@ -702,7 +704,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
                                   MAP_SHARED,
                                   buffer.m.planes[0].m.mem_offset);
     if (address == MAP_FAILED) {
-      PLOG(ERROR) << "CreateInputBuffers(): mmap() failed";
+      PLOGF(ERROR) << "mmap() failed";
       return false;
     }
     input_buffer_map_[i].address = address;
@@ -735,7 +737,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   format.fmt.pix_mp.num_planes = input_planes_count_;
 
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
-    PLOG(ERROR) << "Failed setting format to: " << output_format_fourcc_;
+    PLOGF(ERROR) << "Failed setting format to: " << output_format_fourcc_;
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -746,7 +748,8 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   DCHECK_EQ(coded_size_.height() % 16, 0);
 
   if (!gfx::Rect(coded_size_).Contains(gfx::Rect(visible_size_))) {
-    LOG(ERROR) << "Got invalid adjusted coded size: " << coded_size_.ToString();
+    LOGF(ERROR) << "Got invalid adjusted coded size: "
+                << coded_size_.ToString();
     return false;
   }
 
@@ -925,7 +928,7 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      PLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
+      PLOGF(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -953,7 +956,7 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      PLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
+      PLOGF(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -967,7 +970,7 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
     V4L2DecodeSurfaceByOutputId::iterator it =
         surfaces_at_device_.find(dqbuf.index);
     if (it == surfaces_at_device_.end()) {
-      DLOG(ERROR) << "Got invalid surface from device.";
+      DLOGF(ERROR) << "Got invalid surface from device.";
       NOTIFY_ERROR(PLATFORM_FAILURE);
     }
 
@@ -1149,7 +1152,7 @@ bool V4L2SliceVideoDecodeAccelerator::StartDevicePoll() {
 
   // Start up the device poll thread and schedule its first DevicePollTask().
   if (!device_poll_thread_.Start()) {
-    DLOG(ERROR) << "StartDevicePoll(): Device thread failed to start";
+    DLOGF(ERROR) << "Device thread failed to start";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -1179,7 +1182,7 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   if (!device_->SetDevicePollInterrupt()) {
-    PLOG(ERROR) << "SetDevicePollInterrupt(): failed";
+    PLOGF(ERROR) << "SetDevicePollInterrupt(): failed";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -1246,7 +1249,7 @@ void V4L2SliceVideoDecodeAccelerator::Decode(
   DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   if (bitstream_buffer.id() < 0) {
-    LOG(ERROR) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
+    LOGF(ERROR) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
     if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
       base::SharedMemory::CloseHandle(bitstream_buffer.handle());
     NOTIFY_ERROR(INVALID_ARGUMENT);
@@ -1407,7 +1410,7 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
   }
 
   surface_set_change_pending_ = false;
-  DVLOG(3) << "Surface set change finished";
+  DVLOGF(3) << "Surface set change finished";
   return true;
 }
 
@@ -1531,7 +1534,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   IOCTL_OR_ERROR_RETURN(VIDIOC_REQBUFS, &reqbufs);
 
   if (reqbufs.count != buffers.size()) {
-    DLOG(ERROR) << "Could not allocate enough output buffers";
+    DLOGF(ERROR) << "Could not allocate enough output buffers";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -1597,14 +1600,14 @@ void V4L2SliceVideoDecodeAccelerator::CreateEGLImageFor(
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (get_gl_context_cb_.is_null() || make_context_current_cb_.is_null()) {
-    DLOG(ERROR) << "GL callbacks required for binding to EGLImages";
+    DLOGF(ERROR) << "GL callbacks required for binding to EGLImages";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
 
   gl::GLContext* gl_context = get_gl_context_cb_.Run();
   if (!gl_context || !make_context_current_cb_.Run()) {
-    DLOG(ERROR) << "No GL context";
+    DLOGF(ERROR) << "No GL context";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -2030,7 +2033,7 @@ void V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::H264DPBToV4L2DPB(
   size_t i = 0;
   for (const auto& pic : dpb) {
     if (i >= arraysize(v4l2_decode_param_.dpb)) {
-      DVLOG(1) << "Invalid DPB size";
+      DVLOGF(1) << "Invalid DPB size";
       break;
     }
 
