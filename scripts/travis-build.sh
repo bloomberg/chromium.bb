@@ -32,7 +32,7 @@ coverity_scan() {
 
   export COVERITY_SCAN_PROJECT_NAME="${TRAVIS_REPO_SLUG}"
   export COVERITY_SCAN_NOTIFICATION_EMAIL="google-breakpad-dev@googlegroups.com"
-  export COVERITY_SCAN_BUILD_COMMAND="build"
+  export COVERITY_SCAN_BUILD_COMMAND="./configure && make -j${JOBS}"
   export COVERITY_SCAN_BUILD_COMMAND_PREPEND="git clean -q -x -d -f; git checkout -f"
   export COVERITY_SCAN_BRANCH_PATTERN="master"
 
