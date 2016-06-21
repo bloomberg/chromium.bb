@@ -6,14 +6,15 @@
 
 namespace page_load_metrics {
 
-PageLoadExtraInfo::PageLoadExtraInfo(base::TimeDelta first_background_time,
-                                     base::TimeDelta first_foreground_time,
-                                     bool started_in_foreground,
-                                     const GURL& committed_url,
-                                     base::TimeDelta time_to_commit,
-                                     UserAbortType abort_type,
-                                     base::TimeDelta time_to_abort,
-                                     const PageLoadMetadata& metadata)
+PageLoadExtraInfo::PageLoadExtraInfo(
+    const base::Optional<base::TimeDelta>& first_background_time,
+    const base::Optional<base::TimeDelta>& first_foreground_time,
+    bool started_in_foreground,
+    const GURL& committed_url,
+    const base::Optional<base::TimeDelta>& time_to_commit,
+    UserAbortType abort_type,
+    const base::Optional<base::TimeDelta>& time_to_abort,
+    const PageLoadMetadata& metadata)
     : first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
       started_in_foreground(started_in_foreground),
@@ -25,4 +26,5 @@ PageLoadExtraInfo::PageLoadExtraInfo(base::TimeDelta first_background_time,
 
 PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;
 
+PageLoadExtraInfo::~PageLoadExtraInfo() {}
 }  // namespace page_load_metrics

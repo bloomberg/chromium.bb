@@ -179,27 +179,29 @@ void LogProvisionalAborts(UserAbortType abort_type,
   }
 }
 
-bool WasAbortedInForeground(UserAbortType abort_type,
-                            base::TimeDelta time_to_abort,
-                            const page_load_metrics::PageLoadExtraInfo& info) {
+bool WasAbortedInForeground(
+    UserAbortType abort_type,
+    const base::Optional<base::TimeDelta>& time_to_abort,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (!time_to_abort)
+    return false;
   if (abort_type == UserAbortType::ABORT_NONE)
     return false;
-  // This is a modified version of WasStartedInForegroundEventInForeground,
-  // which does not check time_to_abort is non-zero
-  // TODO(mushan): change back with WasStartedInForegroundEventInForeground
-  // once crbug.com/616901 is addressed
-  if (info.started_in_foreground &&
-      (info.first_background_time.is_zero() ||
-       time_to_abort < info.first_background_time))
+  if (WasStartedInForegroundOptionalEventInForeground(time_to_abort, info))
     return true;
   if (!info.started_in_foreground)
     return false;
-  DCHECK_GT(time_to_abort, info.first_background_time);
-  base::TimeDelta bg_abort_delta = time_to_abort - info.first_background_time;
+
+  const base::TimeDelta time_to_abort_val = time_to_abort.value();
+  const base::TimeDelta time_to_first_background =
+      info.first_background_time.value();
+  DCHECK_GT(time_to_abort_val, time_to_first_background);
+  base::TimeDelta background_abort_delta =
+      time_to_abort_val - time_to_first_background;
   // Consider this a foregrounded abort if it occurred within 100ms of a
   // background. This is needed for closing some tabs, where the signal for
   // background is often slightly ahead of the signal for close.
-  if (bg_abort_delta.InMilliseconds() < 100)
+  if (background_abort_delta.InMilliseconds() < 100)
     return true;
   return false;
 }
@@ -222,7 +224,7 @@ bool WasAbortedBeforeInteraction(UserAbortType abort_type,
     return time_to_interaction + base::TimeDelta::FromMilliseconds(1000) >
            time_to_abort;
   } else {
-    return time_to_interaction >= time_to_abort;
+    return time_to_interaction > time_to_abort;
   }
 }
 
@@ -479,10 +481,10 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
   // consistency with core PageLoad metrics, we ignore non-render-tracked
   // loads when tracking aborts after commit.
   UserAbortType abort_type = extra_info.abort_type;
-  base::TimeDelta time_to_abort = extra_info.time_to_abort;
-  if (!WasAbortedInForeground(abort_type, time_to_abort, extra_info))
+  if (!WasAbortedInForeground(abort_type, extra_info.time_to_abort, extra_info))
     return;
 
+  base::TimeDelta time_to_abort = extra_info.time_to_abort.value();
   if (extra_info.committed_url.is_empty()) {
     LogProvisionalAborts(abort_type, time_to_abort);
     return;

@@ -28,6 +28,12 @@ struct PageLoadTiming {
 
   // All TimeDeltas are relative to navigation_start
 
+  // TODO(shivanisha): Issue 596367 shows that it is possible for a valid
+  // TimeDelta value to be 0 (2 TimeTicks can have the same value even if they
+  // were assigned in separate instructions if the clock speed is less
+  // granular). The solution there was to use base::Optional for those values.
+  // Consider changing the below values to Optional as well.
+
   // Time that the first byte of the response is received.
   base::TimeDelta response_start;
 

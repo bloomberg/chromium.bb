@@ -178,14 +178,16 @@ void AbortsPageLoadMetricsObserver::OnComplete(
   if (abort_type == UserAbortType::ABORT_NONE)
     return;
 
-  base::TimeDelta time_to_abort = extra_info.time_to_abort;
-  DCHECK(!time_to_abort.is_zero());
+  DCHECK(extra_info.time_to_abort);
 
   // Don't log abort times if the page was backgrounded before the abort event.
-  if (!WasStartedInForegroundEventInForeground(time_to_abort, extra_info))
+  if (!WasStartedInForegroundOptionalEventInForeground(extra_info.time_to_abort,
+                                                       extra_info))
     return;
 
-  if (extra_info.time_to_commit.is_zero()) {
+  const base::TimeDelta& time_to_abort = extra_info.time_to_abort.value();
+
+  if (!extra_info.time_to_commit) {
     RecordAbortBeforeCommit(abort_type, time_to_abort);
     return;
   }

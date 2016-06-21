@@ -172,7 +172,7 @@ void DocumentWritePageLoadMetricsObserver::OnLoadingBehaviorObserved(
 void DocumentWritePageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.time_to_commit.is_zero() || timing.IsEmpty())
+  if (!info.time_to_commit || timing.IsEmpty())
     return;
   if (info.metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteEvaluator) {

@@ -92,6 +92,11 @@ enum InternalErrorLoadEvent {
   // Receives user input before navigation start
   ERR_USER_INPUT_WITH_NO_RELEVANT_LOAD,
 
+  // A TimeTicks value in the browser process has value less than
+  // navigation_start_. This could happen if navigation_start_ was computed in
+  // renderer process and the system clock has inter process time tick skew.
+  ERR_INTER_PROCESS_TIME_TICK_SKEW,
+
   // Add values before this final count.
   ERR_LAST_ENTRY,
 };
@@ -150,8 +155,16 @@ class PageLoadTracker {
   // If the user performs some abort-like action while we are tracking this page
   // load, notify the tracker. Note that we may not classify this as an abort if
   // we've already performed a first paint.
-  void NotifyAbort(UserAbortType abort_type, base::TimeTicks timestamp);
-  void UpdateAbort(UserAbortType abort_type, base::TimeTicks timestamp);
+  // is_certainly_browser_timestamp signifies if the timestamp passed is taken
+  // in the
+  // browser process or not. We need this to possibly clamp browser timestamp on
+  // a machine with inter process time tick skew.
+  void NotifyAbort(UserAbortType abort_type,
+                   base::TimeTicks timestamp,
+                   bool is_certainly_browser_timestamp);
+  void UpdateAbort(UserAbortType abort_type,
+                   base::TimeTicks timestamp,
+                   bool is_certainly_browser_timestamp);
 
   // This method returns true if this page load has been aborted with type of
   // ABORT_OTHER, and the |abort_cause_time| is within a sufficiently close
@@ -168,11 +181,20 @@ class PageLoadTracker {
     return url_;
   }
 
+  PageLoadExtraInfo ComputePageLoadExtraInfo();
+
  private:
-  PageLoadExtraInfo GetPageLoadMetricsInfo();
+  // This function converts a TimeTicks value taken in the browser process
+  // to navigation_start_ if:
+  // - base::TimeTicks is not comparable across processes because the clock
+  // is not system wide monotonic.
+  // - *event_time < navigation_start_
+  void ClampBrowserTimestampIfInterProcessTimeTickSkew(
+      base::TimeTicks* event_time);
 
   void UpdateAbortInternal(UserAbortType abort_type,
-                           base::TimeTicks timestamp);
+                           base::TimeTicks timestamp,
+                           bool is_certainly_browser_timestamp);
 
   // If |final_navigation| is null, then this is an "unparented" abort chain,
   // and represents a sequence of provisional aborts that never ends with a
@@ -262,6 +284,9 @@ class MetricsWebContentsObserver
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
 
+  // This getter function is required for testing.
+  const PageLoadExtraInfo GetPageLoadExtraInfoForCommittedLoad();
+
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 
@@ -269,7 +294,8 @@ class MetricsWebContentsObserver
   // that might abort them.
   void NotifyAbortAllLoads(UserAbortType abort_type);
   void NotifyAbortAllLoadsWithTimestamp(UserAbortType abort_type,
-                                        base::TimeTicks timestamp);
+                                        base::TimeTicks timestamp,
+                                        bool is_certainly_browser_timestamp);
 
   // Register / Unregister input event callback to given RenderViewHost
   void RegisterInputEventObserver(content::RenderViewHost* host);

@@ -85,10 +85,11 @@ class CorePageLoadMetricsObserver
   // Information related to failed provisional loads.
   // Populated in OnFailedProvisionalLoad and accessed in OnComplete.
   struct FailedProvisionalLoadInfo {
-    base::TimeDelta interval;
+    base::Optional<base::TimeDelta> interval;
     net::Error error;
 
-    FailedProvisionalLoadInfo() : error(net::OK) {}
+    FailedProvisionalLoadInfo();
+    ~FailedProvisionalLoadInfo();
   };
 
   void RecordTimingHistograms(const page_load_metrics::PageLoadTiming& timing,

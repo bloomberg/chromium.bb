@@ -78739,6 +78739,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Multiple aborted provisional loads at navigation start"/>
   <int value="7"
       label="User input received while not tracking a relevant committed load"/>
+  <int value="8" label="Inter process TimeTicks skew"/>
 </enum>
 
 <enum name="InterruptReason" type="int">

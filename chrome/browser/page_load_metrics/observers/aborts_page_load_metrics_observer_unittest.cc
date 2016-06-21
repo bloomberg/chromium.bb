@@ -152,7 +152,18 @@ TEST_F(AbortsPageLoadMetricsObserverTest, NoAbortNewNavigationAfterPaint) {
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingUpdate(timing);
+
+  // The test cannot assume that abort time will be > first_paint
+  // (1 micro-sec). If the system clock is low resolution, PageLoadTracker's
+  // abort time may be <= first_paint. In that case the histogram will be
+  // logged. Thus both 0 and 1 counts of histograms are considered good.
+
   NavigateAndCommit(GURL("https://www.example.com"));
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramAbortNewNavigationBeforePaint, 0);
+
+  base::HistogramTester::CountsMap counts_map =
+      histogram_tester().GetTotalCountsForPrefix(
+          internal::kHistogramAbortNewNavigationBeforePaint);
+
+  EXPECT_TRUE(counts_map.empty() ||
+              (counts_map.size() == 1 && counts_map.begin()->second == 1));
 }

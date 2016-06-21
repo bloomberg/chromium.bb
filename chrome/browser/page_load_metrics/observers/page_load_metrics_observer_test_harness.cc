@@ -130,4 +130,9 @@ PageLoadMetricsObserverTestHarness::histogram_tester() const {
   return histogram_tester_;
 }
 
+const PageLoadExtraInfo
+PageLoadMetricsObserverTestHarness::GetPageLoadExtraInfoForCommittedLoad() {
+  return observer_->GetPageLoadExtraInfoForCommittedLoad();
+}
+
 }  // namespace page_load_metrics

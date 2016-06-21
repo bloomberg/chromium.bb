@@ -321,6 +321,13 @@ void CorePageLoadMetricsObserver::OnComplete(
   RecordRappor(timing, info);
 }
 
+CorePageLoadMetricsObserver::FailedProvisionalLoadInfo::
+    FailedProvisionalLoadInfo()
+    : error(net::OK) {}
+
+CorePageLoadMetricsObserver::FailedProvisionalLoadInfo::
+    ~FailedProvisionalLoadInfo() {}
+
 void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
     content::NavigationHandle* navigation_handle) {
   // Only handle actual failures; provisional loads that failed due to another
@@ -344,44 +351,50 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     const page_load_metrics::PageLoadExtraInfo& info) {
   // Record metrics for pages which start in the foreground and are
   // backgrounded.
-  if (info.started_in_foreground && !info.first_background_time.is_zero()) {
-    if (info.time_to_commit.is_zero()) {
+  if (info.started_in_foreground && info.first_background_time) {
+    const base::TimeDelta first_background_time =
+        info.first_background_time.value();
+
+    if (!info.time_to_commit) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforeCommit,
-                          info.first_background_time);
+                          first_background_time);
     } else if (timing.first_paint.is_zero() ||
-               timing.first_paint > info.first_background_time) {
+               timing.first_paint > first_background_time) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforePaint,
-                          info.first_background_time);
+                          first_background_time);
     }
     if (!timing.parse_start.is_zero() &&
-        info.first_background_time >= timing.parse_start &&
+        first_background_time >= timing.parse_start &&
         (timing.parse_stop.is_zero() ||
-         timing.parse_stop > info.first_background_time)) {
+         timing.parse_stop > first_background_time)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundDuringParse,
-                          info.first_background_time);
+                          first_background_time);
     }
   }
 
   if (failed_provisional_load_info_.error != net::OK) {
+    DCHECK(failed_provisional_load_info_.interval);
+
     // Ignores a background failed provisional load.
-    if (WasStartedInForegroundEventInForeground(
+    if (WasStartedInForegroundOptionalEventInForeground(
             failed_provisional_load_info_.interval, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFailedProvisionalLoad,
-                          failed_provisional_load_info_.interval);
+                          failed_provisional_load_info_.interval.value());
     }
   }
 
   // The rest of the histograms require the load to have committed and be
   // relevant. If |timing.IsEmpty()|, then this load was not tracked by the
   // renderer.
-  if (info.time_to_commit.is_zero() || timing.IsEmpty())
+  if (!info.time_to_commit || timing.IsEmpty())
     return;
 
-  if (WasStartedInForegroundEventInForeground(info.time_to_commit, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramCommit, info.time_to_commit);
+  const base::TimeDelta time_to_commit = info.time_to_commit.value();
+  if (WasStartedInForegroundOptionalEventInForeground(info.time_to_commit,
+                                                      info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramCommit, time_to_commit);
   } else {
-    PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramCommit,
-                        info.time_to_commit);
+    PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramCommit, time_to_commit);
   }
   if (!timing.dom_content_loaded_event_start.is_zero()) {
     if (WasStartedInForegroundEventInForeground(
@@ -425,13 +438,13 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     // - Opened in the background.
     // - Moved to the foreground prior to the first paint.
     // - Not moved back to the background prior to the first paint.
-    if (!info.started_in_foreground && !info.first_foreground_time.is_zero() &&
-        timing.first_paint > info.first_foreground_time &&
-        (info.first_background_time.is_zero() ||
-         timing.first_paint < info.first_background_time)) {
+    if (!info.started_in_foreground && info.first_foreground_time &&
+        timing.first_paint > info.first_foreground_time.value() &&
+        (!info.first_background_time ||
+         timing.first_paint < info.first_background_time.value())) {
       PAGE_LOAD_HISTOGRAM(
           internal::kHistogramForegroundToFirstPaint,
-          timing.first_paint - info.first_foreground_time);
+          timing.first_paint - info.first_foreground_time.value());
     }
   }
   if (!timing.first_text_paint.is_zero()) {
@@ -521,13 +534,13 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
   // Log time to first foreground / time to first background. Log counts that we
   // started a relevant page load in the foreground / background.
   if (info.started_in_foreground) {
-    if (!info.first_background_time.is_zero())
+    if (info.first_background_time)
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstBackground,
-                          info.first_background_time);
+                          info.first_background_time.value());
   } else {
-    if (!info.first_foreground_time.is_zero())
+    if (info.first_foreground_time)
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
-                          info.first_foreground_time);
+                          info.first_foreground_time.value());
   }
 }
 
@@ -543,7 +556,7 @@ void CorePageLoadMetricsObserver::RecordRappor(
   rappor::RapporService* rappor_service = g_browser_process->rappor_service();
   if (!rappor_service)
     return;
-  if (info.time_to_commit.is_zero())
+  if (!info.time_to_commit)
     return;
   DCHECK(!info.committed_url.is_empty());
   // Log the eTLD+1 of sites that show poor loading performance.

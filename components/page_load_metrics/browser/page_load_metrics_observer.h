@@ -6,6 +6,7 @@
 #define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/navigation_handle.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -50,23 +51,25 @@ enum UserAbortType {
 };
 
 struct PageLoadExtraInfo {
-  PageLoadExtraInfo(base::TimeDelta first_background_time,
-                    base::TimeDelta first_foreground_time,
-                    bool started_in_foreground,
-                    const GURL& committed_url,
-                    base::TimeDelta time_to_commit,
-                    UserAbortType abort_type,
-                    base::TimeDelta time_to_abort,
-                    const PageLoadMetadata& metadata);
+  PageLoadExtraInfo(
+      const base::Optional<base::TimeDelta>& first_background_time,
+      const base::Optional<base::TimeDelta>& first_foreground_time,
+      bool started_in_foreground,
+      const GURL& committed_url,
+      const base::Optional<base::TimeDelta>& time_to_commit,
+      UserAbortType abort_type,
+      const base::Optional<base::TimeDelta>& time_to_abort,
+      const PageLoadMetadata& metadata);
+
   PageLoadExtraInfo(const PageLoadExtraInfo& other);
 
+  ~PageLoadExtraInfo();
+
   // The first time that the page was backgrounded since the navigation started.
-  // If the page has not been backgrounded this will be base::TimeDelta().
-  const base::TimeDelta first_background_time;
+  const base::Optional<base::TimeDelta> first_background_time;
 
   // The first time that the page was foregrounded since the navigation started.
-  // If the page has not been foregrounded this will be base::TimeDelta().
-  const base::TimeDelta first_foreground_time;
+  const base::Optional<base::TimeDelta> first_foreground_time;
 
   // True if the page load started in the foreground.
   const bool started_in_foreground;
@@ -75,15 +78,13 @@ struct PageLoadExtraInfo {
   // empty.
   const GURL committed_url;
 
-  // Time from navigation start until commit. If the page load did not commit,
-  // |time_to_commit| will be zero.
-  const base::TimeDelta time_to_commit;
+  // Time from navigation start until commit.
+  const base::Optional<base::TimeDelta> time_to_commit;
 
   // The abort time and time to abort for this page load. If the page was not
-  // aborted, |abort_type| will be |ABORT_NONE| and |time_to_abort| will be
-  // |base::TimeDelta()|.
+  // aborted, |abort_type| will be |ABORT_NONE|.
   const UserAbortType abort_type;
-  const base::TimeDelta time_to_abort;
+  const base::Optional<base::TimeDelta> time_to_abort;
 
   // Extra information supplied to the page load metrics system from the
   // renderer.

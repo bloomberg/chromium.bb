@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/rappor/test_rappor_service.h"
 
@@ -238,10 +239,51 @@ TEST_F(CorePageLoadMetricsObserverTest, BackgroundDifferentHistogram) {
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
 }
 
+TEST_F(CorePageLoadMetricsObserverTest,
+       BackgroundCommitHistogramClockResolutionNonDeterministic) {
+  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
+
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_layout = first_layout;
+  PopulateRequiredTimingFields(&timing);
+
+  // Start a provisional load.
+  GURL url(kDefaultTestUrl2);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationStart(url);
+
+  // Background and then commit.
+  web_contents()->WasHidden();
+  rfh_tester->SimulateNavigationCommit(url);
+  SimulateTimingUpdate(timing);
+  rfh_tester->SimulateNavigationStop();
+
+  page_load_metrics::PageLoadExtraInfo info =
+      GetPageLoadExtraInfoForCommittedLoad();
+
+  // Navigate again to force histograms to be logged.
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  // If the system clock is low resolution PageLoadTracker's commit_time_ may
+  // be = first_background_time_.
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          info.time_to_commit, info)) {
+    histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramCommit,
+                                        0);
+    histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 1);
+  } else {
+    histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramCommit,
+                                        1);
+    histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 0);
+  }
+}
+
 TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  // Set these events at 1 microsecond so they are definitely occur before we
+  // Set these events at 1 microsecond so they definitely occur before we
   // background the tab later in the test.
   timing.response_start = base::TimeDelta::FromMicroseconds(1);
   timing.dom_loading = base::TimeDelta::FromMicroseconds(1);
@@ -250,7 +292,7 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
 
-  // Background the tab, then forground it.
+  // Background the tab, then foreground it.
   web_contents()->WasHidden();
   web_contents()->WasShown();
   timing.first_layout = base::TimeDelta::FromSeconds(3);
@@ -258,12 +300,33 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
 
+  // If the system clock is low resolution, PageLoadTracker's
+  // first_background_time_ may be same as other times such as
+  // dom_content_loaded_event_start.
+  page_load_metrics::PageLoadExtraInfo info =
+      GetPageLoadExtraInfoForCommittedLoad();
+
   // Navigate again to force histogram recording.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
   histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramCommit, 0);
-  histogram_tester().ExpectTotalCount(
-      internal::kBackgroundHistogramDomContentLoaded, 0);
+
+  if (page_load_metrics::WasStartedInForegroundEventInForeground(
+          timing.dom_content_loaded_event_start, info)) {
+    histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded,
+                                        1);
+    histogram_tester().ExpectBucketCount(
+        internal::kHistogramDomContentLoaded,
+        timing.dom_content_loaded_event_start.InMilliseconds(), 1);
+    histogram_tester().ExpectTotalCount(
+        internal::kBackgroundHistogramDomContentLoaded, 0);
+  } else {
+    histogram_tester().ExpectTotalCount(
+        internal::kBackgroundHistogramDomContentLoaded, 1);
+    histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded,
+                                        0);
+  }
+
   histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramFirstLayout,
                                       1);
@@ -277,10 +340,6 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
       timing.first_text_paint.InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 1);
-  histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
-  histogram_tester().ExpectBucketCount(
-      internal::kHistogramDomContentLoaded,
-      timing.dom_content_loaded_event_start.InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
@@ -345,10 +404,10 @@ TEST_F(CorePageLoadMetricsObserverTest, FailedBackgroundProvisionalLoad) {
   // Test that failed provisional event does not get logged in the
   // histogram if it happened in the background
   GURL url(kDefaultTestUrl);
+  web_contents()->WasHidden();
   content::RenderFrameHostTester* rfh_tester =
       content::RenderFrameHostTester::For(main_rfh());
   rfh_tester->SimulateNavigationStart(url);
-  web_contents()->WasHidden();
   rfh_tester->SimulateNavigationError(url, net::ERR_TIMED_OUT);
   rfh_tester->SimulateNavigationStop();
 
