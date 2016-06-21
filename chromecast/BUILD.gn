@@ -145,7 +145,7 @@ cast_test_group_list("cast_test_lists") {
 
   run_list_path = "$root_out_dir/tests/run_test_list.txt"
 
-  additional_options = [ "--ozone-platform=headless" ]
+  additional_options = [ "--ozone-platform=headless --test-launcher-bot-mode" ]
 
   build_tests = true
 
