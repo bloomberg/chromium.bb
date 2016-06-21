@@ -1,24 +1,24 @@
-<video controls></video>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test media element readystate value on load.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
 <script>
-    function testReadyState(expected, endit, op)
-    {
-        testExpected("video.readyState", expected, op);
-        if (endit)
-            endTest();
-    }
+async_test(function(t) {
+    var video = document.querySelector("video");
+    assert_equals(video.readyState, HTMLMediaElement.HAVE_NOTHING);
+    video.onloadstart = t.step_func(function() {});
+    video.onloadedmetadata = t.step_func(function() {});
+    video.onloadeddata = t.step_func(function() {});
+    video.oncanplay = t.step_func(function() {});
+    video.onplay = t.unreached_func();
+    video.onplaying = t.unreached_func();
 
-    testExpected("video.readyState", HTMLMediaElement.HAVE_NOTHING);
-    waitForEvent("loadstart");
-    waitForEvent("loadedmetadata");
-    waitForEvent("loadeddata");
-    waitForEvent("canplay");
-    waitForEventAndFail("play");
-    waitForEventAndFail("playing");
-    waitForEvent("canplaythrough", function () { testReadyState(HTMLMediaElement.HAVE_ENOUGH_DATA, true ); } );
+    video.oncanplaythrough = t.step_func_done(function () {
+        assert_equals(video.readyState, HTMLMediaElement.HAVE_ENOUGH_DATA);
+    });
 
     video.src = findMediaFile("video", "content/test");
+});
 </script>

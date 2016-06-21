@@ -1,48 +1,23 @@
 <!DOCTYPE HTML>
+<title>Tests that duration is known after playback ended.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-<html>
-    <head>
-        <title>local video</title>
+    video.onended = t.step_func_done(function() {
+        assert_greater_than(video.duration, 0);
+    });
 
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+    video.onplaying = t.step_func(function() {
+        video.onplaying = null;
+        video.currentTime = video.duration - 0.2;
+    });
 
-        <script>
-            function ended()
-            {
-                testExpected("video.duration", 0, '>');
-                endTest();
-            }
-
-            function playing()
-            {
-                video.removeEventListener("playing", playing);
-                run("video.currentTime = video.duration - 0.2");
-            }
-
-            function loadedmetadata()
-            {
-                video.addEventListener("ended", ended);
-                video.addEventListener("playing", playing);
-
-                run("video.play()");
-            }
-
-            function start()
-            {
-                findMediaElement();
-
-                video.addEventListener("loadedmetadata", loadedmetadata);
-                video.src = findMediaFile("video", "content/test");
-                consoleWrite("");
-            }
-
-        </script>
-    </head>
-    <body onload="start()">
-        <video controls autobuffer></video>
-        <p>Tests that duration is known after playback ended.</p>
-    </body>
-</html>
+    video.src = findMediaFile("video", "content/test");
+    video.play();
+});
+</script>

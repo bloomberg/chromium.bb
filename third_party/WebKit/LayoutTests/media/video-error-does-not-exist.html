@@ -1,29 +1,28 @@
-<p>Test that the media element is in correct state after load fails.</p>
-<video controls></video>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE HTML>
+<title>Test that the media element is in correct state after load fails.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video></video>
 <script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    assert_equals(video.error, null);
 
-    consoleWrite("");
-    testExpected("video.error", null);
+    video.oncanplaythrough = t.unreached_func();
 
-    waitForEventAndTest("canplaythrough", "false");
+    video.onerror = t.step_func_done(function () {
+        assert_not_equals(video.error, null);
+        assert_equals(video.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
 
-    waitForEvent("error", function () {
-        testExpected("video.error", null, "!=");
-        testExpected("video.error.code", MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+        assert_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
 
-        testExpected("video.networkState", HTMLMediaElement.NETWORK_NO_SOURCE);
-
-        testExpected("isNaN(video.duration)", true);
-        testExpected("video.currentTime", 0);
-        testExpected("video.buffered.length", 0);
-        testExpected("video.seekable.length", 0);
-        testExpected("video.buffered.length", 0);
-        endTest();
+        assert_true(isNaN(video.duration));
+        assert_equals(video.currentTime, 0);
+        assert_equals(video.buffered.length, 0);
+        assert_equals(video.seekable.length, 0);
+        assert_equals(video.buffered.length, 0);
     });
 
     video.src = "content/does-not-exist.mpeg";
-    consoleWrite("");
+});
 </script>
