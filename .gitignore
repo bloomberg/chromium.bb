@@ -308,6 +308,7 @@ vs-chromium-project.txt
 /third_party/cacheinvalidation/cacheinvalidation_unittests_run.xml
 /third_party/cardboard-java/src
 /third_party/catapult
+/third_party/ced/src
 /third_party/chromeos_login_manager
 /third_party/chromeos_text_input
 /third_party/chromite
