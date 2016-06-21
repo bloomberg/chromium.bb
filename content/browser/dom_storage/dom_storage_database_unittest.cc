@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_paths.h"
 #include "sql/statement.h"
-#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/scoped_error_expecter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -347,15 +347,15 @@ TEST(DOMStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
   base::WriteFile(file_name, kData, strlen(kData));
 
   {
-    sql::ScopedErrorIgnorer ignore_errors;
+    sql::test::ScopedErrorExpecter expecter;
 
     // Earlier versions of Chromium compiled against SQLite 3.6.7.3, which
     // returned SQLITE_IOERR_SHORT_READ in this case.  Some platforms may still
     // compile against an earlier SQLite via USE_SYSTEM_SQLITE.
-    if (ignore_errors.SQLiteLibVersionNumber() < 3008005) {
-      ignore_errors.IgnoreError(SQLITE_IOERR_SHORT_READ);
+    if (expecter.SQLiteLibVersionNumber() < 3008005) {
+      expecter.ExpectError(SQLITE_IOERR_SHORT_READ);
     } else {
-      ignore_errors.IgnoreError(SQLITE_NOTADB);
+      expecter.ExpectError(SQLITE_NOTADB);
     }
 
     // Try and open the file. As it's not a database, we should end up deleting
@@ -370,12 +370,12 @@ TEST(DOMStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
 
     CheckValuesMatch(&db, values);
 
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CANTOPEN);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CANTOPEN);
 
     // Try to open a directory, we should fail gracefully and not attempt
     // to delete it.
@@ -394,7 +394,7 @@ TEST(DOMStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
 
     EXPECT_TRUE(base::PathExists(temp_dir.path()));
 
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 }
 

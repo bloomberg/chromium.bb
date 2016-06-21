@@ -16,7 +16,7 @@
 #include "components/history/core/test/database_test_utils.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"
-#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -800,8 +800,8 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
 
   // Open the database and access the corrupt index.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ThumbnailDatabase db(NULL);
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
 
@@ -811,7 +811,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     // fails.
     EXPECT_FALSE(db.GetIconMappingsForPageURL(kPageUrl2, NULL));
 
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Check that the database is recovered at the SQLite level.
@@ -847,18 +847,18 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
 
   // Database is unusable at the SQLite level.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Database should be recovered during open.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ThumbnailDatabase db(NULL);
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
 
@@ -871,7 +871,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
                                  sizeof(kBlob1),
                                  kBlob1));
 
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 }
 
@@ -912,8 +912,8 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
   // Open the database and access the corrupt index. Note that this upgrades
   // the database.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ThumbnailDatabase db(NULL);
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
 
@@ -923,7 +923,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
     // fails.
     EXPECT_FALSE(db.GetIconMappingsForPageURL(kPageUrl2, NULL));
 
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Check that the database is recovered at the SQLite level.
@@ -959,18 +959,18 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
 
   // Database is unusable at the SQLite level.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Database should be recovered during open.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ThumbnailDatabase db(NULL);
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
 
@@ -983,7 +983,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
                                  sizeof(kBlob1),
                                  kBlob1));
 
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 }
 
@@ -1003,21 +1003,21 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
 
   // Database is unusable at the SQLite level.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Database open should succeed.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ThumbnailDatabase db(NULL);
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // The database should be usable at the SQLite level, with a current schema
@@ -1051,21 +1051,21 @@ TEST_F(ThumbnailDatabaseTest, Recovery5) {
 
   // Database is unusable at the SQLite level.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Database open should succeed.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ThumbnailDatabase db(NULL);
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // The database should be usable at the SQLite level, with a current schema

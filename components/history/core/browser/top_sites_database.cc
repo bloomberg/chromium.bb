@@ -345,7 +345,7 @@ void DatabaseErrorCallback(sql::Connection* db,
   // are seen.
 
   // The default handling is to assert on debug and to ignore on release.
-  if (!sql::Connection::ShouldIgnoreSqliteError(extended_error))
+  if (!sql::Connection::IsExpectedSqliteError(extended_error))
     DLOG(FATAL) << db->GetErrorMessage();
 }
 

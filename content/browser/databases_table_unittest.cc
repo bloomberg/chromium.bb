@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
-#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/scoped_error_expecter.h"
 #include "storage/browser/database/databases_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -38,13 +38,13 @@ TEST(DatabasesTableTest, TestIt) {
   // Initialize the 'Databases' table.
   sql::Connection db;
 
-  sql::ScopedErrorIgnorer ignore_errors;
+  sql::test::ScopedErrorExpecter expecter;
   // TODO(shess): Suppressing SQLITE_CONSTRAINT because the code
   // expects that and handles the resulting error.  Consider revising
   // the code to use INSERT OR IGNORE (which would not throw
   // SQLITE_CONSTRAINT) and then check ChangeCount() to see if any
   // changes were made.
-  ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+  expecter.ExpectError(SQLITE_CONSTRAINT);
 
   // Initialize the temp dir and the 'Databases' table.
   EXPECT_TRUE(db.OpenInMemory());
@@ -148,7 +148,7 @@ TEST(DatabasesTableTest, TestIt) {
   EXPECT_FALSE(databases_table.DeleteDatabaseDetails(
       "unknown_origin", ASCIIToUTF16("unknown_database")));
 
-  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  ASSERT_TRUE(expecter.SawExpectedErrors());
 }
 
 }  // namespace content

@@ -39,6 +39,7 @@ class Statement;
 // To allow some test classes to be friended.
 namespace test {
 class ScopedCommitHook;
+class ScopedErrorExpecter;
 class ScopedScalarFunction;
 class ScopedMockTimeSource;
 }
@@ -474,11 +475,12 @@ class SQL_EXPORT Connection {
   //   SELECT type, name, tbl_name, sql FROM sqlite_master ORDER BY 1, 2, 3, 4;
   std::string GetSchema() const;
 
-  // Clients which provide an error_callback don't see the
-  // error-handling at the end of OnSqliteError().  Expose to allow
-  // those clients to work appropriately with ScopedErrorIgnorer in
-  // tests.
-  static bool ShouldIgnoreSqliteError(int error);
+  // Returns |true| if there is an error expecter (see SetErrorExpecter), and
+  // that expecter returns |true| when passed |error|.  Clients which provide an
+  // |error_callback| should use IsExpectedSqliteError() to check for unexpected
+  // errors; if one is detected, DLOG(FATAL) is generally appropriate (see
+  // OnSqliteError implementation).
+  static bool IsExpectedSqliteError(int error);
 
   // Collect various diagnostic information and post a crash dump to aid
   // debugging.  Dump rate per database is limited to prevent overwhelming the
@@ -489,8 +491,8 @@ class SQL_EXPORT Connection {
   // For recovery module.
   friend class Recovery;
 
-  // Allow test-support code to set/reset error ignorer.
-  friend class ScopedErrorIgnorer;
+  // Allow test-support code to set/reset error expecter.
+  friend class test::ScopedErrorExpecter;
 
   // Statement accesses StatementRef which we don't want to expose to everybody
   // (they should go through Statement).
@@ -532,12 +534,12 @@ class SQL_EXPORT Connection {
   // Internal helper for DoesTableExist and DoesIndexExist.
   bool DoesTableOrIndexExist(const char* name, const char* type) const;
 
-  // Accessors for global error-ignorer, for injecting behavior during tests.
-  // See test/scoped_error_ignorer.h.
-  typedef base::Callback<bool(int)> ErrorIgnorerCallback;
-  static ErrorIgnorerCallback* current_ignorer_cb_;
-  static void SetErrorIgnorer(ErrorIgnorerCallback* ignorer);
-  static void ResetErrorIgnorer();
+  // Accessors for global error-expecter, for injecting behavior during tests.
+  // See test/scoped_error_expecter.h.
+  typedef base::Callback<bool(int)> ErrorExpecterCallback;
+  static ErrorExpecterCallback* current_expecter_cb_;
+  static void SetErrorExpecter(ErrorExpecterCallback* expecter);
+  static void ResetErrorExpecter();
 
   // A StatementRef is a refcounted wrapper around a sqlite statement pointer.
   // Refcounting allows us to give these statements out to sql::Statement

@@ -11,7 +11,7 @@
 #include "sql/correct_sql_test_base.h"
 #include "sql/statement.h"
 #include "sql/test/error_callback_support.h"
-#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/scoped_error_expecter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -78,18 +78,20 @@ TEST_F(SQLStatementTest, ErrorCallback) {
   EXPECT_EQ(SQLITE_MISMATCH, error);
 }
 
-// Error ignorer works for error running a statement.
+// Error expecter works for error running a statement.
 TEST_F(SQLStatementTest, ScopedIgnoreError) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a INTEGER PRIMARY KEY, b)"));
 
   sql::Statement s(db().GetUniqueStatement("INSERT INTO foo (a) VALUES (?)"));
   EXPECT_TRUE(s.is_valid());
 
-  sql::ScopedErrorIgnorer ignore_errors;
-  ignore_errors.IgnoreError(SQLITE_MISMATCH);
-  s.BindCString(0, "bad bad");
-  ASSERT_FALSE(s.Run());
-  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_MISMATCH);
+    s.BindCString(0, "bad bad");
+    ASSERT_FALSE(s.Run());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
+  }
 }
 
 TEST_F(SQLStatementTest, Reset) {

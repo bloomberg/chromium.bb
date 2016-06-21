@@ -15,7 +15,7 @@
 #include "components/history/core/test/thumbnail-inl.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"
-#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -155,25 +155,25 @@ TEST_F(TopSitesDatabaseTest, Recovery1) {
 
   // Database is unusable at the SQLite level.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Corruption should be detected and recovered during Init().
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
 
     TopSitesDatabase db;
     ASSERT_TRUE(db.Init(file_name_));
     VerifyTablesAndColumns(db.db_.get());
     VerifyDatabaseEmpty(db.db_.get());
 
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 }
 
@@ -190,19 +190,19 @@ TEST_F(TopSitesDatabaseTest, Recovery2) {
 
   // Database is unusable at the SQLite level.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Corruption should be detected and recovered during Init().  After recovery,
   // the Version2 checks should work.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
 
     TopSitesDatabase db;
     ASSERT_TRUE(db.Init(file_name_));
@@ -222,7 +222,7 @@ TEST_F(TopSitesDatabaseTest, Recovery2) {
     EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
                         kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
 
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 }
 
@@ -239,18 +239,18 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
 
   // Database is unusable at the SQLite level.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Corruption should be detected and recovered during Init().
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
 
     TopSitesDatabase db;
     ASSERT_TRUE(db.Init(file_name_));
@@ -267,7 +267,7 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
     EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
                         kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
 
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Double-check database integrity.
@@ -302,8 +302,8 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
     ASSERT_TRUE(db.Init(file_name_));
 
     {
-      sql::ScopedErrorIgnorer ignore_errors;
-      ignore_errors.IgnoreError(SQLITE_CORRUPT);
+      sql::test::ScopedErrorExpecter expecter;
+      expecter.ExpectError(SQLITE_CORRUPT);
 
       // Data for kUrl1 was deleted, but the index entry remains, this will
       // throw SQLITE_CORRUPT.  The corruption handler will recover the database
@@ -311,7 +311,7 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
       EXPECT_EQ(TopSitesDatabase::kRankOfNonExistingURL,
                 db.GetURLRank(MostVisitedURL(kUrl1, base::string16())));
 
-      ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+      ASSERT_TRUE(expecter.SawExpectedErrors());
     }
   }
 

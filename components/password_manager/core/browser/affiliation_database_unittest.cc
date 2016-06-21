@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,22 +112,22 @@ TEST_F(AffiliationDatabaseTest, Store) {
 
   // Verify that duplicate equivalence classes are not allowed to be stored.
   {
-    sql::ScopedErrorIgnorer error_ignorer;
-    error_ignorer.IgnoreError(SQLITE_CONSTRAINT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CONSTRAINT);
     AffiliatedFacetsWithUpdateTime duplicate = TestEquivalenceClass1();
     EXPECT_FALSE(db().Store(duplicate));
-    EXPECT_TRUE(error_ignorer.CheckIgnoredErrors());
+    EXPECT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Verify that intersecting equivalence classes are not allowed to be stored.
   {
-    sql::ScopedErrorIgnorer error_ignorer;
-    error_ignorer.IgnoreError(SQLITE_CONSTRAINT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CONSTRAINT);
     AffiliatedFacetsWithUpdateTime intersecting;
     intersecting.facets.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI3));
     intersecting.facets.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI4));
     EXPECT_FALSE(db().Store(intersecting));
-    EXPECT_TRUE(error_ignorer.CheckIgnoredErrors());
+    EXPECT_TRUE(expecter.SawExpectedErrors());
   }
 }
 

@@ -20,7 +20,7 @@
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/test/paths.h"
-#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/scoped_error_expecter.h"
 #include "sql/test/sql_test_base.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -422,12 +422,12 @@ TEST_F(SQLRecoveryTest, Meta) {
   // Test meta table missing.
   EXPECT_TRUE(db().Execute("DROP TABLE meta"));
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);  // From virtual table.
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);  // From virtual table.
     std::unique_ptr<sql::Recovery> recovery =
         sql::Recovery::Begin(&db(), db_path());
     EXPECT_FALSE(recovery->SetupMeta());
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 }
 

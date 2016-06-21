@@ -1321,7 +1321,7 @@ bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
 
 void AppCacheDatabase::OnDatabaseError(int err, sql::Statement* stmt) {
   was_corruption_detected_ |= sql::IsErrorCatastrophic(err);
-  if (!db_->ShouldIgnoreSqliteError(err))
+  if (!db_->IsExpectedSqliteError(err))
     DLOG(ERROR) << db_->GetErrorMessage();
   // TODO: Maybe use non-catostrophic errors to trigger a full integrity check?
 }

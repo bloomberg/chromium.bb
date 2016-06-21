@@ -16,7 +16,7 @@
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
-#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -110,13 +110,13 @@ TEST(AppCacheDatabaseTest, QuickIntegrityCheck) {
 
   // Reopening will notice the corruption and delete/recreate the directory.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     AppCacheDatabase db(kDbFile);
     EXPECT_TRUE(db.LazyOpen(true));
     EXPECT_FALSE(base::PathExists(kOtherFile));
     EXPECT_TRUE(base::PathExists(kDbFile));
-    EXPECT_TRUE(ignore_errors.CheckIgnoredErrors());
+    EXPECT_TRUE(expecter.SawExpectedErrors());
   }
 }
 #endif  // NDEBUG
@@ -138,13 +138,13 @@ TEST(AppCacheDatabaseTest, WasCorrutionDetected) {
 
   // See the the corruption is detected and reported.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     std::map<GURL, int64_t> usage_map;
     EXPECT_FALSE(db.GetAllOriginUsage(&usage_map));
     EXPECT_TRUE(db.was_corruption_detected());
     EXPECT_TRUE(base::PathExists(kDbFile));
-    EXPECT_TRUE(ignore_errors.CheckIgnoredErrors());
+    EXPECT_TRUE(expecter.SawExpectedErrors());
   }
 }
 
@@ -187,13 +187,13 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  sql::ScopedErrorIgnorer ignore_errors;
+  sql::test::ScopedErrorExpecter expecter;
   // TODO(shess): Suppressing SQLITE_CONSTRAINT because the code
   // expects that and handles the resulting error.  Consider revising
   // the code to use INSERT OR IGNORE (which would not throw
   // SQLITE_CONSTRAINT) and then check ChangeCount() to see if any
   // changes were made.
-  ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+  expecter.ExpectError(SQLITE_CONSTRAINT);
 
   AppCacheDatabase::EntryRecord entry;
 
@@ -260,7 +260,7 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   EXPECT_FALSE(db.AddEntryFlags(GURL("http://blah/1"), 1,
                                 AppCacheEntry::FOREIGN));
 
-  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  ASSERT_TRUE(expecter.SawExpectedErrors());
 }
 
 TEST(AppCacheDatabaseTest, CacheRecords) {
@@ -268,9 +268,9 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  sql::ScopedErrorIgnorer ignore_errors;
+  sql::test::ScopedErrorExpecter expecter;
   // TODO(shess): See EntryRecords test.
-  ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+  expecter.ExpectError(SQLITE_CONSTRAINT);
 
   const AppCacheDatabase::CacheRecord kZeroRecord;
   AppCacheDatabase::CacheRecord record;
@@ -306,7 +306,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
 
   EXPECT_TRUE(db.DeleteCache(1));
 
-  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  ASSERT_TRUE(expecter.SawExpectedErrors());
 }
 
 TEST(AppCacheDatabaseTest, GroupRecords) {
@@ -314,9 +314,9 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  sql::ScopedErrorIgnorer ignore_errors;
+  sql::test::ScopedErrorExpecter expecter;
   // TODO(shess): See EntryRecords test.
-  ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+  expecter.ExpectError(SQLITE_CONSTRAINT);
 
   const GURL kManifestUrl("http://blah/manifest");
   const GURL kOrigin(kManifestUrl.GetOrigin());
@@ -437,7 +437,7 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   EXPECT_EQ(kManifest2, record.manifest_url);
   EXPECT_EQ(kOrigin2, record.origin);
 
-  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  ASSERT_TRUE(expecter.SawExpectedErrors());
 }
 
 TEST(AppCacheDatabaseTest, GroupAccessAndEvictionTimes) {
@@ -518,9 +518,9 @@ TEST(AppCacheDatabaseTest, NamespaceRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  sql::ScopedErrorIgnorer ignore_errors;
+  sql::test::ScopedErrorExpecter expecter;
   // TODO(shess): See EntryRecords test.
-  ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+  expecter.ExpectError(SQLITE_CONSTRAINT);
 
   const GURL kFooNameSpace1("http://foo/namespace1");
   const GURL kFooNameSpace2("http://foo/namespace2");
@@ -626,7 +626,7 @@ TEST(AppCacheDatabaseTest, NamespaceRecords) {
   EXPECT_TRUE(fallbacks[0].namespace_.is_pattern);
   EXPECT_TRUE(fallbacks[1].namespace_.is_pattern);
 
-  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  ASSERT_TRUE(expecter.SawExpectedErrors());
 }
 
 TEST(AppCacheDatabaseTest, OnlineWhiteListRecords) {
@@ -681,9 +681,9 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  sql::ScopedErrorIgnorer ignore_errors;
+  sql::test::ScopedErrorExpecter expecter;
   // TODO(shess): See EntryRecords test.
-  ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+  expecter.ExpectError(SQLITE_CONSTRAINT);
 
   std::vector<int64_t> ids;
 
@@ -752,7 +752,7 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   for (int i = 0; i < static_cast<int>(ids.size()); ++i)
     EXPECT_EQ(i + 5, ids[i]);
 
-  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  ASSERT_TRUE(expecter.SawExpectedErrors());
 }
 
 TEST(AppCacheDatabaseTest, OriginUsage) {

@@ -65,8 +65,8 @@
       'sources': [
         'test/error_callback_support.cc',
         'test/error_callback_support.h',
-        'test/scoped_error_ignorer.cc',
-        'test/scoped_error_ignorer.h',
+        'test/scoped_error_expecter.cc',
+        'test/scoped_error_expecter.h',
         'test/test_helpers.cc',
         'test/test_helpers.h',
       ],

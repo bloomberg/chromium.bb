@@ -230,13 +230,13 @@ std::string AsUTF8ForSQL(const base::FilePath& path) {
 namespace sql {
 
 // static
-Connection::ErrorIgnorerCallback* Connection::current_ignorer_cb_ = NULL;
+Connection::ErrorExpecterCallback* Connection::current_expecter_cb_ = NULL;
 
 // static
-bool Connection::ShouldIgnoreSqliteError(int error) {
-  if (!current_ignorer_cb_)
+bool Connection::IsExpectedSqliteError(int error) {
+  if (!current_expecter_cb_)
     return false;
-  return current_ignorer_cb_->Run(error);
+  return current_expecter_cb_->Run(error);
 }
 
 void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
@@ -268,15 +268,15 @@ void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
 }
 
 // static
-void Connection::SetErrorIgnorer(Connection::ErrorIgnorerCallback* cb) {
-  CHECK(current_ignorer_cb_ == NULL);
-  current_ignorer_cb_ = cb;
+void Connection::SetErrorExpecter(Connection::ErrorExpecterCallback* cb) {
+  CHECK(current_expecter_cb_ == NULL);
+  current_expecter_cb_ = cb;
 }
 
 // static
-void Connection::ResetErrorIgnorer() {
-  CHECK(current_ignorer_cb_);
-  current_ignorer_cb_ = NULL;
+void Connection::ResetErrorExpecter() {
+  CHECK(current_expecter_cb_);
+  current_expecter_cb_ = NULL;
 }
 
 bool StatementID::operator<(const StatementID& other) const {
@@ -1529,8 +1529,8 @@ bool Connection::DoesTableOrIndexExist(
       "SELECT name FROM sqlite_master WHERE type=? AND name=? COLLATE NOCASE";
   Statement statement(GetUntrackedStatement(kSql));
 
-  // This can happen if the database is corrupt and the error is being ignored
-  // for testing purposes.
+  // This can happen if the database is corrupt and the error is a test
+  // expectation.
   if (!statement.is_valid())
     return false;
 
@@ -1548,8 +1548,8 @@ bool Connection::DoesColumnExist(const char* table_name,
 
   Statement statement(GetUntrackedStatement(sql.c_str()));
 
-  // This can happen if the database is corrupt and the error is being ignored
-  // for testing purposes.
+  // This can happen if the database is corrupt and the error is a test
+  // expectation.
   if (!statement.is_valid())
     return false;
 
@@ -1902,7 +1902,7 @@ int Connection::OnSqliteError(
   }
 
   // The default handling is to assert on debug and to ignore on release.
-  if (!ShouldIgnoreSqliteError(err))
+  if (!IsExpectedSqliteError(err))
     DLOG(FATAL) << GetErrorMessage();
   return err;
 }

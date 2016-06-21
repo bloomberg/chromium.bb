@@ -259,7 +259,7 @@ void AffiliationDatabase::SQLErrorCallback(int error,
   }
 
   // The default handling is to assert on debug and to ignore on release.
-  if (!sql::Connection::ShouldIgnoreSqliteError(error))
+  if (!sql::Connection::IsExpectedSqliteError(error))
     DLOG(FATAL) << sql_connection_->GetErrorMessage();
 }
 

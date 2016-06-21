@@ -20,7 +20,7 @@
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/test/error_callback_support.h"
-#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -358,23 +358,23 @@ TEST_F(SQLConnectionTest, Rollback) {
   EXPECT_TRUE(db().BeginTransaction());
 }
 
-// Test the scoped error ignorer by attempting to insert a duplicate
+// Test the scoped error expecter by attempting to insert a duplicate
 // value into an index.
-TEST_F(SQLConnectionTest, ScopedIgnoreError) {
+TEST_F(SQLConnectionTest, ScopedErrorExpecter) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
 
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CONSTRAINT);
     ASSERT_FALSE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 }
 
 // Test that clients of GetUntrackedStatement() can test corruption-handling
-// with ScopedErrorIgnorer.
+// with ScopedErrorExpecter.
 TEST_F(SQLConnectionTest, ScopedIgnoreUntracked) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
   ASSERT_TRUE(db().Execute(kCreateSql));
@@ -387,13 +387,13 @@ TEST_F(SQLConnectionTest, ScopedIgnoreUntracked) {
   ASSERT_TRUE(CorruptSizeInHeaderOfDB());
 
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ASSERT_TRUE(db().Open(db_path()));
     ASSERT_FALSE(db().DoesTableExist("bar"));
     ASSERT_FALSE(db().DoesTableExist("foo"));
     ASSERT_FALSE(db().DoesColumnExist("foo", "id"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 }
 
@@ -416,10 +416,10 @@ TEST_F(SQLConnectionTest, ErrorCallback) {
   // Callback is no longer in force due to reset.
   {
     error = SQLITE_OK;
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CONSTRAINT);
     ASSERT_FALSE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
     EXPECT_EQ(SQLITE_OK, error);
   }
 
@@ -616,19 +616,19 @@ TEST_F(SQLConnectionTest, RazeNOTADB) {
   // SQLite will successfully open the handle, but fail when running PRAGMA
   // statements that access the database.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
+    sql::test::ScopedErrorExpecter expecter;
 
     // Earlier versions of Chromium compiled against SQLite 3.6.7.3, which
     // returned SQLITE_IOERR_SHORT_READ in this case.  Some platforms may still
     // compile against an earlier SQLite via USE_SYSTEM_SQLITE.
-    if (ignore_errors.SQLiteLibVersionNumber() < 3008005) {
-      ignore_errors.IgnoreError(SQLITE_IOERR_SHORT_READ);
+    if (expecter.SQLiteLibVersionNumber() < 3008005) {
+      expecter.ExpectError(SQLITE_IOERR_SHORT_READ);
     } else {
-      ignore_errors.IgnoreError(SQLITE_NOTADB);
+      expecter.ExpectError(SQLITE_NOTADB);
     }
 
     EXPECT_TRUE(db().Open(db_path()));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
   EXPECT_TRUE(db().Raze());
   db().Close();
@@ -651,10 +651,10 @@ TEST_F(SQLConnectionTest, RazeNOTADB2) {
   // SQLITE_NOTADB on pragma statemenets which attempt to read the
   // corrupted header.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_NOTADB);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_NOTADB);
     EXPECT_TRUE(db().Open(db_path()));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
   EXPECT_TRUE(db().Raze());
   db().Close();
@@ -680,12 +680,12 @@ TEST_F(SQLConnectionTest, RazeCallbackReopen) {
   // Open() will succeed, even though the PRAGMA calls within will
   // fail with SQLITE_CORRUPT, as will this PRAGMA.
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ASSERT_TRUE(db().Open(db_path()));
     ASSERT_FALSE(db().Execute("PRAGMA auto_vacuum"));
     db().Close();
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   db().set_error_callback(base::Bind(&SQLConnectionTest::RazeErrorCallback,
@@ -966,10 +966,10 @@ TEST_F(SQLConnectionTest, Attach) {
   // Attach fails in a transaction.
   EXPECT_TRUE(db().BeginTransaction());
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_ERROR);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_ERROR);
     EXPECT_FALSE(db().AttachDatabase(attach_path, kAttachmentPoint));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Attach succeeds when the transaction is closed.
@@ -988,11 +988,11 @@ TEST_F(SQLConnectionTest, Attach) {
   // Detach also fails in a transaction.
   EXPECT_TRUE(db().BeginTransaction());
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_ERROR);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_ERROR);
     EXPECT_FALSE(db().DetachDatabase(kAttachmentPoint));
     EXPECT_TRUE(db().IsSQLValid("SELECT count(*) from other.bar"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Detach succeeds outside of a transaction.
@@ -1011,11 +1011,11 @@ TEST_F(SQLConnectionTest, Basic_QuickIntegrityCheck) {
   ASSERT_TRUE(CorruptSizeInHeaderOfDB());
 
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ASSERT_TRUE(db().Open(db_path()));
     EXPECT_FALSE(db().QuickIntegrityCheck());
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 }
 
@@ -1033,13 +1033,13 @@ TEST_F(SQLConnectionTest, Basic_FullIntegrityCheck) {
   ASSERT_TRUE(CorruptSizeInHeaderOfDB());
 
   {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
     ASSERT_TRUE(db().Open(db_path()));
     EXPECT_TRUE(db().FullIntegrityCheck(&messages));
     EXPECT_LT(1u, messages.size());
     EXPECT_NE(kOk, messages[0]);
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // TODO(shess): CorruptTableOrIndex could be used to produce a
