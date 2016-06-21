@@ -186,7 +186,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final Dialog mDialog;
     private final ViewGroup mFullContainer;
     private final ViewGroup mRequestView;
-    private final PaymentResultUIManager mResultView;
+    private final PaymentRequestUiErrorView mErrorView;
 
     private ScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
@@ -194,6 +194,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private Button mEditButton;
     private Button mPayButton;
     private View mCloseButton;
+    private View mSpinnyLayout;
 
     private LineItemBreakdownSection mOrderSummarySection;
     private ExtraTextSection mShippingSummarySection;
@@ -205,6 +206,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private ViewGroup mSelectedSection;
     private boolean mIsShowingEditDialog;
+    private boolean mIsProcessingPayClicked;
     private boolean mIsClientClosing;
     private boolean mIsClientCheckingSelection;
 
@@ -245,7 +247,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mAnimatorTranslation = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
 
-        mResultView = new PaymentResultUIManager(mContext, title, origin);
+        mErrorView = (PaymentRequestUiErrorView) LayoutInflater.from(mContext).inflate(
+                R.layout.payment_request_error, null);
+        mErrorView.initialize(title, origin);
+
         mRequestView =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
         prepareRequestView(activity, title, origin);
@@ -317,7 +322,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 // Hide the loading indicators and show the real sections.
                 mPaymentContainer.setVisibility(View.VISIBLE);
                 mButtonBar.setVisibility(View.VISIBLE);
-                mRequestView.removeView(mRequestView.findViewById(R.id.payment_request_spinny));
+                mRequestView.removeView(mSpinnyLayout);
                 mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(false));
             }
         });
@@ -334,9 +339,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param origin   Host of the page.
      */
     private void prepareRequestView(Activity activity, String title, String origin) {
-        // Remove views specific to the result dialog.
-        View okButton = mRequestView.findViewById(R.id.ok_button);
-        ((ViewGroup) okButton.getParent()).removeView(okButton);
+        mSpinnyLayout = mRequestView.findViewById(R.id.payment_request_spinny);
 
         // Indicate that we're preparing the dialog for display.
         TextView messageView = (TextView) mRequestView.findViewById(R.id.message);
@@ -424,13 +427,28 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void close(boolean shouldCloseImmediately, final Runnable callback) {
         mIsClientClosing = true;
-        mResultView.update(shouldCloseImmediately, new Runnable() {
+
+        Runnable dismissRunnable = new Runnable() {
             @Override
             public void run() {
                 dismissDialog(false);
                 if (callback != null) callback.run();
             }
-        });
+        };
+
+        if (shouldCloseImmediately || !mIsProcessingPayClicked) {
+            // The shouldCloseImmediately boolean is true when the merchant calls
+            // instrumentResponse.complete("success") or instrumentResponse.complete("")
+            // in JavaScript.
+            dismissRunnable.run();
+        } else {
+            // Animate the bottom sheet going away.
+            new DisappearingAnimator(false);
+
+            // Show the error dialog.
+            mErrorView.show(mFullContainer, dismissRunnable);
+        }
+
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestResultReady(this);
     }
 
@@ -443,7 +461,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void setTitleBitmap(Bitmap bitmap) {
         ((ImageView) mRequestView.findViewById(R.id.icon_view)).setImageBitmap(bitmap);
-        mResultView.setBitmap(bitmap);
+        mErrorView.setBitmap(bitmap);
     }
 
     /**
@@ -571,14 +589,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         } else if (v == mPaymentMethodSection) {
             expand(mPaymentMethodSection);
         } else if (v == mPayButton) {
-            showResultDialog();
-
-            mClient.onPayClicked(
-                    mShippingAddressSectionInformation == null
-                            ? null : mShippingAddressSectionInformation.getSelectedItem(),
-                    mShippingOptionsSectionInformation == null
-                            ? null : mShippingOptionsSectionInformation.getSelectedItem(),
-                    mPaymentMethodSectionInformation.getSelectedItem());
+            processPayButton();
         } else if (v == mEditButton) {
             if (mIsShowingEditDialog) {
                 dismissDialog(true);
@@ -605,16 +616,27 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
     }
 
-    private void showResultDialog() {
-        // Animate the bottom sheet going away, but keep the scrim visible.
-        new DisappearingAnimator(false);
+    private void processPayButton() {
+        mIsProcessingPayClicked = true;
 
-        int floatingDialogWidth = PaymentResultUIManager.computeMaxWidth(
-                mContext, mFullContainer.getMeasuredWidth(), mFullContainer.getMeasuredHeight());
-        FrameLayout.LayoutParams overlayParams =
-                new FrameLayout.LayoutParams(floatingDialogWidth, LayoutParams.WRAP_CONTENT);
-        overlayParams.gravity = Gravity.CENTER;
-        mFullContainer.addView(mResultView.getView(), overlayParams);
+        mRequestView.removeView(mPaymentContainer);
+        mRequestView.removeView(mButtonBar);
+        mRequestView.addView(mSpinnyLayout);
+
+        // Turn the bottom sheet back into a collapsed bottom sheet showing only the spinner.
+        // TODO(dfalcantara): Animate this: https://crbug.com/621955
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mRequestView.getLayoutParams();
+        params.width = LayoutParams.MATCH_PARENT;
+        params.height = LayoutParams.WRAP_CONTENT;
+        params.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+        mRequestView.requestLayout();
+
+        mClient.onPayClicked(
+                mShippingAddressSectionInformation == null
+                        ? null : mShippingAddressSectionInformation.getSelectedItem(),
+                mShippingOptionsSectionInformation == null
+                        ? null : mShippingOptionsSectionInformation.getSelectedItem(),
+                mPaymentMethodSectionInformation.getSelectedItem());
     }
 
     private void updatePayButtonEnabled() {

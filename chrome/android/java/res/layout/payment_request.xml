@@ -4,12 +4,7 @@
      found in the LICENSE file. -->
 
 <!-- PaymentRequestUI dialog
-     This file smushes together two different dialogs that are similar in a lot of ways,
-     but have key differences.  The Java code inflating this layout manages the hiding
-     and adjustment of elements in the layout.
-     
-     Request dialog: Sits at the bottom of the screen like a Bottom Sheet.
-     Result dialog:  Floats in the middle of the screen with a drop shadow.
+     Sits at the bottom of the screen like a Bottom Sheet.
 -->
 <org.chromium.chrome.browser.widget.BoundedLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -19,72 +14,9 @@
     chrome:maxWidth="@dimen/payments_ui_max_dialog_width"
     android:background="@android:color/white" >
 
-    <!-- Header containing information about the site.
-         Request dialog: Displays an X in the top right corner, allowing the user to close it.
-         Result dialog:  Displays no X.  Title goes all the way to the end.
-    -->
-    <FrameLayout
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:minHeight="64dp" >
-
-        <ImageView
-            android:id="@+id/icon_view"
-            android:layout_height="24dp"
-            android:layout_width="24dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_gravity="start|center_vertical"
-            android:importantForAccessibility="no"
-            android:scaleType="centerInside" />
-
-        <LinearLayout
-            android:id="@+id/page_info"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_marginStart="56dp"
-            android:layout_marginEnd="56dp"
-            android:layout_marginBottom="@dimen/payments_section_vertical_spacing"
-            android:layout_marginTop="@dimen/payments_section_vertical_spacing"
-            android:layout_gravity="center_vertical"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/page_title"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:textColor="@color/default_text_color"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/hostname"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:ellipsize="start"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:textColor="@color/descriptive_text_color"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/close_button"
-            android:layout_gravity="end|center_vertical"
-            android:layout_height="56dp"
-            android:layout_width="56dp"
-            android:src="@drawable/btn_close"
-            android:contentDescription="@string/close"
-            android:background="?attr/selectableItemBackground"
-            android:scaleType="center" />
-    </FrameLayout>
-
+    <include layout="@layout/payment_request_header" />
     <include layout="@layout/payment_request_spinny" />
 
-    <!-- Request dialog: Payment information. -->
     <org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView
         android:id="@+id/option_container"
         android:layout_height="0dp"
@@ -100,7 +32,6 @@
 
     </org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
 
-    <!-- Request dialog: Edit/Cancel and Pay buttons. -->
     <org.chromium.chrome.browser.widget.DualControlLayout
         android:id="@+id/button_bar"
         android:layout_height="wrap_content"
@@ -109,16 +40,4 @@
         android:background="@android:color/white"
         android:visibility="gone" />
 
-    <!-- Result dialog: Dismisses the dialog. -->
-    <Button
-        android:id="@+id/ok_button"
-        android:background="?android:attr/selectableItemBackground"
-        android:text="@string/ok"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginEnd="@dimen/payments_section_small_spacing"
-        android:layout_marginBottom="@dimen/payments_section_small_spacing"
-        android:textColor="@color/light_active_color"
-        android:visibility="gone" />
 </org.chromium.chrome.browser.widget.BoundedLinearLayout>
