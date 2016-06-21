@@ -2004,6 +2004,7 @@
       'canvas/HTMLCanvasElementModuleTest.cpp',
       'canvas2d/CanvasRenderingContext2DAPITest.cpp',
       'canvas2d/CanvasRenderingContext2DTest.cpp',
+      'canvas2d/CanvasRenderingContext2DUsageTrackingTest.cpp',
       'compositorworker/CompositorWorkerThreadTest.cpp',
       'credentialmanager/PasswordCredentialTest.cpp',
       'csspaint/PaintRenderingContext2DTest.cpp',

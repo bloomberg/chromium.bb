@@ -628,26 +628,31 @@ static SkPath::FillType parseWinding(const String& windingRuleString)
 
 void BaseRenderingContext2D::fill(const String& windingRuleString)
 {
+    trackDrawCall(FillPath);
     drawPathInternal(m_path, CanvasRenderingContext2DState::FillPaintType, parseWinding(windingRuleString));
 }
 
 void BaseRenderingContext2D::fill(Path2D* domPath, const String& windingRuleString)
 {
+    trackDrawCall(FillPath, domPath);
     drawPathInternal(domPath->path(), CanvasRenderingContext2DState::FillPaintType, parseWinding(windingRuleString));
 }
 
 void BaseRenderingContext2D::stroke()
 {
+    trackDrawCall(StrokePath);
     drawPathInternal(m_path, CanvasRenderingContext2DState::StrokePaintType);
 }
 
 void BaseRenderingContext2D::stroke(Path2D* domPath)
 {
+    trackDrawCall(StrokePath, domPath);
     drawPathInternal(domPath->path(), CanvasRenderingContext2DState::StrokePaintType);
 }
 
 void BaseRenderingContext2D::fillRect(double x, double y, double width, double height)
 {
+    trackDrawCall(FillRect);
     if (!validateRectForCanvas(x, y, width, height))
         return;
 
@@ -683,6 +688,7 @@ static void strokeRectOnCanvas(const FloatRect& rect, SkCanvas* canvas, const Sk
 
 void BaseRenderingContext2D::strokeRect(double x, double y, double width, double height)
 {
+    trackDrawCall(StrokeRect);
     if (!validateRectForCanvas(x, y, width, height))
         return;
 
@@ -796,6 +802,8 @@ bool BaseRenderingContext2D::isPointInStrokeInternal(const Path& path, const dou
 
 void BaseRenderingContext2D::clearRect(double x, double y, double width, double height)
 {
+    m_usageCounters.numClearRectCalls++;
+
     if (!validateRectForCanvas(x, y, width, height))
         return;
 
@@ -935,6 +943,8 @@ bool BaseRenderingContext2D::shouldDrawImageAntialiased(const FloatRect& destRec
 
 void BaseRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource* imageSource, Image* image, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint* paint)
 {
+    trackDrawCall(DrawImage);
+
     int initialSaveCount = c->getSaveCount();
     SkPaint imagePaint = *paint;
 
@@ -1163,22 +1173,34 @@ CanvasGradient* BaseRenderingContext2D::createRadialGradient(double x0, double y
 
 CanvasPattern* BaseRenderingContext2D::createPattern(ExecutionContext* executionContext, const CanvasImageSourceUnion& imageSource, const String& repetitionType, ExceptionState& exceptionState)
 {
+    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource, exceptionState);
+    if (!imageSourceInternal) {
+        return nullptr;
+    }
+
+    return createPattern(executionContext, imageSourceInternal, repetitionType, exceptionState);
+}
+
+CanvasPattern* BaseRenderingContext2D::createPattern(ExecutionContext* executionContext, CanvasImageSource* imageSource, const String& repetitionType, ExceptionState& exceptionState)
+{
+    if (!imageSource) {
+        return nullptr;
+    }
+
     Pattern::RepeatMode repeatMode = CanvasPattern::parseRepetitionType(repetitionType, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
     SourceImageStatus status;
-    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource, exceptionState);
-    if (!imageSourceInternal)
-        return nullptr;
+
     FloatSize defaultObjectSize(width(), height());
-    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(&status, PreferNoAcceleration, SnapshotReasonCreatePattern, defaultObjectSize);
+    RefPtr<Image> imageForRendering = imageSource->getSourceImageForCanvas(&status, PreferNoAcceleration, SnapshotReasonCreatePattern, defaultObjectSize);
 
     switch (status) {
     case NormalSourceImageStatus:
         break;
     case ZeroSizeCanvasSourceImageStatus:
-        exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", imageSourceInternal->elementSize(defaultObjectSize).width() ? "height" : "width"));
+        exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", imageSource->elementSize(defaultObjectSize).width() ? "height" : "width"));
         return nullptr;
     case UndecodableSourceImageStatus:
         exceptionState.throwDOMException(InvalidStateError, "Source image is in the 'broken' state.");
@@ -1194,7 +1216,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(ExecutionContext* execution
     }
     ASSERT(imageForRendering);
 
-    bool originClean = !wouldTaintOrigin(imageSourceInternal, executionContext);
+    bool originClean = !wouldTaintOrigin(imageSource, executionContext);
 
     return CanvasPattern::create(imageForRendering.release(), repeatMode, originClean);
 }
@@ -1262,6 +1284,7 @@ ImageData* BaseRenderingContext2D::createImageData(double sw, double sh, Excepti
 
 ImageData* BaseRenderingContext2D::getImageData(double sx, double sy, double sw, double sh, ExceptionState& exceptionState) const
 {
+    m_usageCounters.numGetImageDataCalls++;
     if (!originClean())
         exceptionState.throwSecurityError("The canvas has been tainted by cross-origin data.");
     else if (!sw || !sh)
@@ -1327,6 +1350,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data, double dx, double dy,
 
 void BaseRenderingContext2D::putImageData(ImageData* data, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight, ExceptionState& exceptionState)
 {
+    m_usageCounters.numPutImageDataCalls++;
     if (data->data()->bufferBase()->isNeutered()) {
         exceptionState.throwDOMException(InvalidStateError, "The source data has been neutered.");
         return;
@@ -1484,9 +1508,79 @@ void BaseRenderingContext2D::checkOverdraw(const SkRect& rect, const SkPaint* pa
     imageBuffer()->willOverwriteCanvas();
 }
 
+void BaseRenderingContext2D::trackDrawCall(DrawCallType callType, Path2D* path2d)
+{
+    m_usageCounters.numDrawCalls[callType]++;
+
+    if (callType == FillPath) {
+        SkPath skPath;
+        if (path2d) {
+            skPath = path2d->path().getSkPath();
+        } else {
+            skPath = m_path.getSkPath();
+        }
+        if (!(skPath.getConvexity() == SkPath::kConvex_Convexity)) {
+            m_usageCounters.numNonConvexFillPathCalls++;
+        }
+    }
+
+    if (callType == FillText
+        || callType == FillPath
+        || callType == StrokeText
+        || callType == StrokePath
+        || callType == FillRect
+        || callType == StrokeRect) {
+
+        CanvasStyle* canvasStyle;
+        if (callType == FillText || callType == FillPath || callType == FillRect) {
+            canvasStyle = state().fillStyle();
+        } else {
+            canvasStyle = state().strokeStyle();
+        }
+
+        if (canvasStyle->getCanvasGradient()) {
+            m_usageCounters.numGradients++;
+        }
+
+        if (canvasStyle->getCanvasPattern()) {
+            m_usageCounters.numPatterns++;
+        }
+    }
+
+    if (state().shadowBlur() > 0.0 && SkColorGetA(state().shadowColor()) > 0) {
+        m_usageCounters.numBlurredShadows++;
+    }
+
+    if (state().hasComplexClip()) {
+        m_usageCounters.numDrawWithComplexClips++;
+    }
+
+    if (stateHasFilter()) {
+        m_usageCounters.numFilters++;
+    }
+}
+
+const BaseRenderingContext2D::UsageCounters& BaseRenderingContext2D::getUsage()
+{
+    return m_usageCounters;
+}
+
 DEFINE_TRACE(BaseRenderingContext2D)
 {
     visitor->trace(m_stateStack);
 }
+
+BaseRenderingContext2D::UsageCounters::UsageCounters() :
+    numDrawCalls {0, 0, 0, 0, 0, 0},
+    numNonConvexFillPathCalls(0),
+    numGradients(0),
+    numPatterns(0),
+    numDrawWithComplexClips(0),
+    numBlurredShadows(0),
+    numFilters(0),
+    numGetImageDataCalls(0),
+    numPutImageDataCalls(0),
+    numClearRectCalls(0),
+    numDrawFocusCalls(0) {}
 
 } // namespace blink

@@ -115,6 +115,7 @@ public:
     CanvasGradient* createLinearGradient(double x0, double y0, double x1, double y1);
     CanvasGradient* createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1, ExceptionState&);
     CanvasPattern* createPattern(ExecutionContext*, const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
+    CanvasPattern* createPattern(ExecutionContext*, CanvasImageSource*, const String& repetitionType, ExceptionState&);
 
     ImageData* createImageData(ImageData*, ExceptionState&) const;
     ImageData* createImageData(double width, double height, ExceptionState&) const;
@@ -161,6 +162,34 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    struct UsageCounters {
+        int numDrawCalls[7]; // use DrawCallType enum as index
+        int numNonConvexFillPathCalls;
+        int numGradients;
+        int numPatterns;
+        int numDrawWithComplexClips;
+        int numBlurredShadows;
+        int numFilters;
+        int numGetImageDataCalls;
+        int numPutImageDataCalls;
+        int numClearRectCalls;
+        int numDrawFocusCalls;
+
+        UsageCounters();
+    };
+
+    enum DrawCallType {
+        StrokePath = 0,
+        FillPath,
+        DrawImage,
+        FillText,
+        StrokeText,
+        FillRect,
+        StrokeRect
+    };
+
+    const UsageCounters& getUsage();
+
 protected:
     BaseRenderingContext2D();
 
@@ -184,6 +213,10 @@ protected:
 
     HeapVector<Member<CanvasRenderingContext2DState>> m_stateStack;
     AntiAliasingMode m_clipAntialiasing;
+
+    void trackDrawCall(DrawCallType, Path2D* path2d = nullptr);
+
+    mutable UsageCounters m_usageCounters;
 
 private:
     void realizeSaves();

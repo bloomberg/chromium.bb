@@ -694,21 +694,25 @@ void CanvasRenderingContext2D::setDirection(const String& directionString)
 
 void CanvasRenderingContext2D::fillText(const String& text, double x, double y)
 {
+    trackDrawCall(FillText);
     drawTextInternal(text, x, y, CanvasRenderingContext2DState::FillPaintType);
 }
 
 void CanvasRenderingContext2D::fillText(const String& text, double x, double y, double maxWidth)
 {
+    trackDrawCall(FillText);
     drawTextInternal(text, x, y, CanvasRenderingContext2DState::FillPaintType, &maxWidth);
 }
 
 void CanvasRenderingContext2D::strokeText(const String& text, double x, double y)
 {
+    trackDrawCall(StrokeText);
     drawTextInternal(text, x, y, CanvasRenderingContext2DState::StrokePaintType);
 }
 
 void CanvasRenderingContext2D::strokeText(const String& text, double x, double y, double maxWidth)
 {
+    trackDrawCall(StrokeText);
     drawTextInternal(text, x, y, CanvasRenderingContext2DState::StrokePaintType, &maxWidth);
 }
 
@@ -951,6 +955,7 @@ bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path, Element* e
 
 void CanvasRenderingContext2D::drawFocusRing(const Path& path)
 {
+    m_usageCounters.numDrawFocusCalls++;
     if (!drawingCanvas())
         return;
 
