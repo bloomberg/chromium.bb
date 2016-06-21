@@ -124,14 +124,30 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
   }
 
   void Capture(const gfx::Rect& bounds) {
-    aura::Window* window = ash::Shell::GetPrimaryRootWindow();
-    ui::GrabWindowSnapshotAndScaleAsync(
-        window, bounds, bounds.size(),
-        content::BrowserThread::GetBlockingPool(),
-        base::Bind(&AccessibilityHighlightManagerTest::GotSnapshot, this));
-    base::RunLoop run_loop;
-    run_loop_quitter_ = run_loop.QuitClosure();
-    run_loop.Run();
+    // Occasionally we don't get any pixels the first try.
+    // Keep trying until we get the correct size bitmap and
+    // the first pixel is not transparent.
+    while (true) {
+      aura::Window* window = ash::Shell::GetPrimaryRootWindow();
+      ui::GrabWindowSnapshotAndScaleAsync(
+          window, bounds, bounds.size(),
+          content::BrowserThread::GetBlockingPool(),
+          base::Bind(&AccessibilityHighlightManagerTest::GotSnapshot, this));
+      base::RunLoop run_loop;
+      run_loop_quitter_ = run_loop.QuitClosure();
+      run_loop.Run();
+      SkBitmap bitmap = image_.AsBitmap();
+      SkAutoLockPixels lock(bitmap);
+      if (bitmap.width() != bounds.width() ||
+          bitmap.height() != bounds.height()) {
+        LOG(INFO) << "Bitmap not correct size, trying to capture again";
+        continue;
+      }
+      if (255 == SkColorGetA(bitmap.getColor(0, 0))) {
+        LOG(INFO) << "Bitmap is transparent, trying to capture again";
+        break;
+      }
+    }
   }
 
   base::Closure run_loop_quitter_;
@@ -144,9 +160,8 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityHighlightManagerTest);
 };
 
-// Flaky. http://crbug.com/621306
 IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
-                       DISABLED_TestCaretRingDrawsBluePixels) {
+                       TestCaretRingDrawsBluePixels) {
   gfx::Rect capture_bounds(200, 300, 100, 100);
   gfx::Rect caret_bounds(230, 330, 1, 25);
 
@@ -170,9 +185,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
   EXPECT_NEAR(255, SkColorGetB(average_diff_color()), 5);
 }
 
-// Flaky. http://crbug.com/621306
 IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
-                       DISABLED_TestCursorRingDrawsRedPixels) {
+                       TestCursorRingDrawsRedPixels) {
   gfx::Rect capture_bounds(200, 300, 100, 100);
   gfx::Point cursor_point(250, 350);
 
@@ -195,9 +209,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
   EXPECT_NEAR(176, SkColorGetB(average_diff_color()), 5);
 }
 
-// Flaky. http://crbug.com/621306
 IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
-                       DISABLED_TestFocusRingDrawsOrangePixels) {
+                       TestFocusRingDrawsOrangePixels) {
   gfx::Rect capture_bounds(200, 300, 100, 100);
   gfx::Rect focus_bounds(230, 330, 40, 40);
 
