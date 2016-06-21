@@ -17,13 +17,13 @@ typeform(const char* class, const char* fromString)
 			case 0: kind = italic; break;
 			case 1: kind = underline; break;
 			case 2: kind = bold; break;
-			case 3: kind = script; break;
-			case 4: kind = trans_note; break;
-			case 5: kind = trans_note_1; break;
-			case 6: kind = trans_note_2; break;
-			case 7: kind = trans_note_3; break;
-			case 8: kind = trans_note_4; break;
-			case 9: kind = trans_note_5; break;
+			case 3: kind = emph_4; break;
+			case 4: kind = emph_5; break;
+			case 5: kind = emph_6; break;
+			case 6: kind = emph_7; break;
+			case 7: kind = emph_8; break;
+			case 8: kind = emph_9; break;
+			case 9: kind = emph_10; break;
 			default:
 				fprintf(stderr, "CODING ERROR\n");
 				exit(1);
