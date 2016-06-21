@@ -415,26 +415,29 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
 
   def testConfig(self):
     self.repo.git('config', '--add', 'happy.derpies', 'food')
-    self.assertEquals(self.repo.run(self.gc.config_list, 'happy.derpies'),
+    self.assertEquals(self.repo.run(self.gc.get_config_list, 'happy.derpies'),
                       ['food'])
-    self.assertEquals(self.repo.run(self.gc.config_list, 'sad.derpies'), [])
+    self.assertEquals(self.repo.run(self.gc.get_config_list, 'sad.derpies'), [])
 
     self.repo.git('config', '--add', 'happy.derpies', 'cat')
-    self.assertEquals(self.repo.run(self.gc.config_list, 'happy.derpies'),
+    self.assertEquals(self.repo.run(self.gc.get_config_list, 'happy.derpies'),
                       ['food', 'cat'])
 
-    self.assertEquals('cat', self.repo.run(self.gc.config, 'dude.bob', 'cat'))
+    self.assertEquals('cat', self.repo.run(self.gc.get_config, 'dude.bob',
+                                           'cat'))
 
     self.repo.run(self.gc.set_config, 'dude.bob', 'dog')
 
-    self.assertEquals('dog', self.repo.run(self.gc.config, 'dude.bob', 'cat'))
+    self.assertEquals('dog', self.repo.run(self.gc.get_config, 'dude.bob',
+                                           'cat'))
 
     self.repo.run(self.gc.del_config, 'dude.bob')
 
     # This should work without raising an exception
     self.repo.run(self.gc.del_config, 'dude.bob')
 
-    self.assertEquals('cat', self.repo.run(self.gc.config, 'dude.bob', 'cat'))
+    self.assertEquals('cat', self.repo.run(self.gc.get_config, 'dude.bob',
+                                           'cat'))
 
     self.assertEquals('origin/master', self.repo.run(self.gc.root))
 
@@ -559,10 +562,11 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     )
 
     self.assertEqual(
-      self.repo['B'], self.repo.run(self.gc.config, 'branch.branch_K.base')
+      self.repo['B'], self.repo.run(self.gc.get_config, 'branch.branch_K.base')
     )
     self.assertEqual(
-      'branch_G', self.repo.run(self.gc.config, 'branch.branch_K.base-upstream')
+      'branch_G', self.repo.run(self.gc.get_config,
+                                'branch.branch_K.base-upstream')
     )
 
     # deadbeef is a bad hash, so this will result in repo['B']
@@ -588,8 +592,8 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.run(self.gc.remove_merge_base, 'branch_K')
     self.repo.run(self.gc.remove_merge_base, 'branch_L')
 
-    self.assertEqual(None,
-                     self.repo.run(self.gc.config, 'branch.branch_K.base'))
+    self.assertEqual(None, self.repo.run(self.gc.get_config,
+                                         'branch.branch_K.base'))
 
     self.assertEqual({}, self.repo.run(self.gc.branch_config_map, 'base'))
 

@@ -11,7 +11,7 @@ import subprocess2
 import git_common as git
 
 def main(args):
-  default_args = git.config_list('depot-tools.upstream-diff.default-args')
+  default_args = git.get_config_list('depot-tools.upstream-diff.default-args')
   args = default_args + args
 
   parser = argparse.ArgumentParser()

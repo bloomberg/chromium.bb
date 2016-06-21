@@ -281,6 +281,10 @@ def once(function):
 
 ## Git functions
 
+def die(message, *args):
+  print >> sys.stderr, textwrap.dedent(message % args)
+  sys.exit(1)
+
 
 def blame(filename, revision=None, porcelain=False, *_args):
   command = ['blame']
@@ -293,23 +297,14 @@ def blame(filename, revision=None, porcelain=False, *_args):
 
 
 def branch_config(branch, option, default=None):
-  return config('branch.%s.%s' % (branch, option), default=default)
-
-
-def config_regexp(pattern):
-  if IS_WIN: # pragma: no cover
-    # this madness is because we call git.bat which calls git.exe which calls
-    # bash.exe (or something to that effect). Each layer divides the number of
-    # ^'s by 2.
-    pattern = pattern.replace('^', '^' * 8)
-  return run('config', '--get-regexp', pattern).splitlines()
+  return get_config('branch.%s.%s' % (branch, option), default=default)
 
 
 def branch_config_map(option):
   """Return {branch: <|option| value>} for all branches."""
   try:
     reg = re.compile(r'^branch\.(.*)\.%s$' % option)
-    lines = config_regexp(reg.pattern)
+    lines = get_config_regexp(reg.pattern)
     return {reg.match(k).group(1): v for k, v in (l.split() for l in lines)}
   except subprocess2.CalledProcessError:
     return {}
@@ -319,23 +314,22 @@ def branches(*args):
   NO_BRANCH = ('* (no branch', '* (detached', '* (HEAD detached')
 
   key = 'depot-tools.branch-limit'
-  limit = 20
-  try:
-    limit = int(config(key, limit))
-  except ValueError:
-    pass
+  limit = get_config_int(key, 20)
 
   raw_branches = run('branch', *args).splitlines()
 
   num = len(raw_branches)
-  if num > limit:
-    print >> sys.stderr, textwrap.dedent("""\
-    Your git repo has too many branches (%d/%d) for this tool to work well.
 
-    You may adjust this limit by running:
+  if num > limit:
+    die("""\
+      Your git repo has too many branches (%d/%d) for this tool to work well.
+
+      You may adjust this limit by running:
       git config %s <new_limit>
-    """ % (num, limit, key))
-    sys.exit(1)
+
+      You may also try cleaning up your old branches by running:
+      git cl archive
+      """, num, limit, key)
 
   for line in raw_branches:
     if line.startswith(NO_BRANCH):
@@ -343,18 +337,35 @@ def branches(*args):
     yield line.split()[-1]
 
 
-def config(option, default=None):
+def get_config(option, default=None):
   try:
     return run('config', '--get', option) or default
   except subprocess2.CalledProcessError:
     return default
 
 
-def config_list(option):
+def get_config_int(option, default=0):
+  assert isinstance(default, int)
+  try:
+    return int(get_config(option, default))
+  except ValueError:
+    return default
+
+
+def get_config_list(option):
   try:
     return run('config', '--get-all', option).split()
   except subprocess2.CalledProcessError:
     return []
+
+
+def get_config_regexp(pattern):
+  if IS_WIN: # pragma: no cover
+    # this madness is because we call git.bat which calls git.exe which calls
+    # bash.exe (or something to that effect). Each layer divides the number of
+    # ^'s by 2.
+    pattern = pattern.replace('^', '^' * 8)
+  return run('config', '--get-regexp', pattern).splitlines()
 
 
 def current_branch():
@@ -567,7 +578,7 @@ def repo_root():
 
 
 def root():
-  return config('depot-tools.upstream', 'origin/master')
+  return get_config('depot-tools.upstream', 'origin/master')
 
 
 @contextlib.contextmanager

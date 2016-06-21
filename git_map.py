@@ -18,7 +18,7 @@ import sys
 
 import subprocess2
 
-from git_common import current_branch, branches, tags, config_list, GIT_EXE
+from git_common import current_branch, branches, tags, get_config_list, GIT_EXE
 from git_common import get_or_create_merge_base, root
 
 from third_party import colorama
@@ -38,7 +38,7 @@ RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL
 BRIGHT_RED = '\x1b[1;31m'
 
 def main(argv):
-  map_extra = config_list('depot_tools.map_extra')
+  map_extra = get_config_list('depot_tools.map_extra')
   fmt = '%C(red bold)%h%x09%Creset%C(green)%d%Creset %C(yellow)%ad%Creset ~ %s'
   log_proc = subprocess2.Popen(
     [GIT_EXE, 'log', '--graph', '--branches', '--tags', root(),

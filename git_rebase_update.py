@@ -31,8 +31,8 @@ def find_return_branch_workdir():
   These values may persist across multiple invocations of rebase-update, if
   rebase-update runs into a conflict mid-way.
   """
-  return_branch = git.config(STARTING_BRANCH_KEY)
-  workdir = git.config(STARTING_WORKDIR_KEY)
+  return_branch = git.get_config(STARTING_BRANCH_KEY)
+  workdir = git.get_config(STARTING_WORKDIR_KEY)
   if not return_branch:
     workdir = os.getcwd()
     git.set_config(STARTING_WORKDIR_KEY, workdir)
@@ -49,7 +49,7 @@ def fetch_remotes(branch_tree):
   remotes = set()
   tag_set = git.tags()
   fetchspec_map = {}
-  all_fetchspec_configs = git.config_regexp(r'^remote\..*\.fetch')
+  all_fetchspec_configs = git.get_config_regexp(r'^remote\..*\.fetch')
   for fetchspec_config in all_fetchspec_configs:
     key, _, fetchspec = fetchspec_config.partition(' ')
     dest_spec = fetchspec.partition(':')[2]
