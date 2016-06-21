@@ -536,10 +536,15 @@ void LayoutTable::layout()
 
         distributeExtraLogicalHeight(floorToInt(computedLogicalHeight - totalSectionLogicalHeight));
 
-        for (LayoutTableSection* section = topSection(); section; section = sectionBelow(section))
+        LayoutTableSection* topSection = this->topSection();
+        LayoutUnit logicalOffset = topSection ? topSection->logicalTop() : LayoutUnit();
+        for (LayoutTableSection* section = topSection; section; section = sectionBelow(section)) {
+            section->setLogicalTop(logicalOffset);
             section->layoutRows();
+            logicalOffset += section->logicalHeight();
+        }
 
-        if (!topSection() && computedLogicalHeight > totalSectionLogicalHeight && !document().inQuirksMode()) {
+        if (!topSection && computedLogicalHeight > totalSectionLogicalHeight && !document().inQuirksMode()) {
             // Completely empty tables (with no sections or anything) should at least honor specified height
             // in strict mode.
             setLogicalHeight(logicalHeight() + computedLogicalHeight);
@@ -550,7 +555,7 @@ void LayoutTable::layout()
             sectionLogicalLeft += style()->isLeftToRightDirection() ? paddingStart() : paddingEnd();
 
         // position the table sections
-        LayoutTableSection* section = topSection();
+        LayoutTableSection* section = topSection;
         while (section) {
             if (!sectionMoved && section->logicalTop() != logicalHeight())
                 sectionMoved = true;
