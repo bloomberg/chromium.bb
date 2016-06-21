@@ -13,12 +13,10 @@
 #include "crypto/ec_private_key.h"
 #include "jni/AwTokenBindingManager_jni.h"
 #include "net/base/net_errors.h"
-#include "net/ssl/channel_id_service.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
-using net::ChannelIDService;
 
 namespace android_webview {
 
@@ -39,8 +37,7 @@ void OnKeyReady(const ScopedJavaGlobalRef<jobject>& callback,
   }
 
   std::vector<uint8_t> private_key;
-  key->ExportEncryptedPrivateKey(ChannelIDService::kEPKIPassword, 1,
-                                 &private_key);
+  key->ExportPrivateKey(&private_key);
   ScopedJavaLocalRef<jbyteArray> jprivate_key = base::android::ToJavaByteArray(
       env, private_key.data(), private_key.size());
 

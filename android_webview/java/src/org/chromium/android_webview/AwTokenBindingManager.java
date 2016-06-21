@@ -11,23 +11,14 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-
-import javax.crypto.Cipher;
-import javax.crypto.EncryptedPrivateKeyInfo;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 /**
  * AwTokenBindingManager manages the token binding protocol.
@@ -42,8 +33,6 @@ import javax.crypto.spec.PBEKeySpec;
 @JNINamespace("android_webview")
 public final class AwTokenBindingManager {
     private static final String TAG = "TokenBindingManager";
-    private static final String PASSWORD = "";
-    private static final String ALGORITHM = "PBEWITHSHAAND3-KEYTRIPLEDES-CBC";
     private static final String ELLIPTIC_CURVE = "EC";
 
     public void enableTokenBinding() {
@@ -79,19 +68,12 @@ public final class AwTokenBindingManager {
         }
         KeyPair keyPair = null;
         try {
-            EncryptedPrivateKeyInfo epkInfo = new EncryptedPrivateKeyInfo(privateKeyBytes);
-            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(ALGORITHM);
-            Key key = secretKeyFactory.generateSecret(new PBEKeySpec(PASSWORD.toCharArray()));
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, key, epkInfo.getAlgParameters());
             KeyFactory factory = KeyFactory.getInstance(ELLIPTIC_CURVE);
-            PrivateKey privateKey = factory.generatePrivate(epkInfo.getKeySpec(cipher));
-            PublicKey publicKey =
-                    factory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+            PrivateKey privateKey =
+                    factory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+            PublicKey publicKey = factory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
             keyPair = new KeyPair(publicKey, privateKey);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException
-                | NoSuchPaddingException | InvalidKeyException
-                | InvalidAlgorithmParameterException ex) {
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
             Log.e(TAG, "Failed converting key ", ex);
         }
         callback.onReceiveValue(keyPair);
