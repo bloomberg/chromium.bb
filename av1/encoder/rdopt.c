@@ -1466,17 +1466,19 @@ static int super_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, int *rate,
   *sse = 0;
   *skippable = 1;
 
-  for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
-    txfm_rd_in_plane(x, &pnrate, &pndist, &pnskip, &pnsse, ref_best_rd, plane,
-                     bsize, uv_tx_size, cpi->sf.use_fast_coef_costing);
-    if (pnrate == INT_MAX) {
-      is_cost_valid = 0;
-      break;
+  if (is_cost_valid) {
+    for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
+      txfm_rd_in_plane(x, &pnrate, &pndist, &pnskip, &pnsse, ref_best_rd, plane,
+                       bsize, uv_tx_size, cpi->sf.use_fast_coef_costing);
+      if (pnrate == INT_MAX) {
+        is_cost_valid = 0;
+        break;
+      }
+      *rate += pnrate;
+      *distortion += pndist;
+      *sse += pnsse;
+      *skippable &= pnskip;
     }
-    *rate += pnrate;
-    *distortion += pndist;
-    *sse += pnsse;
-    *skippable &= pnskip;
   }
 
   if (!is_cost_valid) {
