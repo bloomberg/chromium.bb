@@ -183,6 +183,11 @@ to the link line of the final binary.
     and static libraries depending on the build configuration to avoid this
     problem.
 
+  * Source sets can have no sources, while static libraries will give strange
+    platform-specific errors if they have no sources. If a target has only
+    headers (for include checking purposes) or conditionally has no sources on
+    sone platforms, use a source set.
+
   * In cases where a lot of the symbols are not needed for a particular link
     (this especially happens when linking test binaries), putting that code in
     a static library can dramatically increase linking performance. This is
