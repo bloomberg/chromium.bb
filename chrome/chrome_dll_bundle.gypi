@@ -129,6 +129,7 @@
         ['branding == "Chrome"', {
           'files': [
             '<(PRODUCT_DIR)/PepperFlash/PepperFlashPlayer.plugin',
+            '<(PRODUCT_DIR)/PepperFlash/manifest.json',
           ],
         }],
       ],

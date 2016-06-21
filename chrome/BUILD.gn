@@ -782,6 +782,7 @@ if (is_win) {
     bundle_data("flash_player_plugin") {
       sources = [
         "$root_out_dir/PepperFlash/PepperFlashPlayer.plugin",
+        "$root_out_dir/PepperFlash/manifest.json",
       ]
       outputs = [
         "{{bundle_root_dir}}/Internet Plug-Ins/PepperFlash/{{source_file_part}}",
