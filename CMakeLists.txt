@@ -75,6 +75,7 @@ set(GTEST_LIB_DIR "${CMAKE_SOURCE_DIR}/gtest/googlemock/gtest")
 set(CED_UNITTEST_SOURCES
     compact_enc_det/compact_enc_det_unittest.cc
     compact_enc_det/compact_enc_det_fuzz_test.cc
+    compact_enc_det/detail_head_string.inc
     )
 
 add_executable(ced_unittest ${CED_UNITTEST_SOURCES})
