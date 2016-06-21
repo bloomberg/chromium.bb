@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/crash_upload_list.h"
+#include "chrome/browser/crash_upload_list/crash_upload_list.h"
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -12,7 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
-#include "chrome/browser/crash_upload_list_crashpad.h"
+#include "chrome/browser/crash_upload_list/crash_upload_list_crashpad.h"
 #endif
 
 scoped_refptr<CrashUploadList> CreateCrashUploadList(
