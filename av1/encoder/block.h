@@ -152,10 +152,6 @@ struct macroblock {
 
   // Used to store sub partition's choices.
   MV pred_mv[MAX_REF_FRAMES];
-
-  // Strong color activity detection. Used in RTC coding mode to enhance
-  // the visual quality at the boundary of moving color objects.
-  uint8_t color_sensitivity[2];
 };
 
 #ifdef __cplusplus
