@@ -15,7 +15,7 @@ template <typename Strategy>
 EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end)
     : m_startPosition(start)
     , m_endPosition(end)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     , m_domTreeVersion(start.isNull() ? 0 : start.document()->domTreeVersion())
 #endif
 {
@@ -50,7 +50,7 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const Range* range)
     DCHECK(range->inShadowIncludingDocument());
     m_startPosition = fromPositionInDOMTree<Strategy>(range->startPosition());
     m_endPosition = fromPositionInDOMTree<Strategy>(range->endPosition());
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_domTreeVersion = range->ownerDocument().domTreeVersion();
 #endif
 }
@@ -71,7 +71,7 @@ EphemeralRangeTemplate<Strategy>& EphemeralRangeTemplate<Strategy>::operator=(co
     DCHECK(other.isValid());
     m_startPosition = other.m_startPosition;
     m_endPosition = other.m_endPosition;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_domTreeVersion = other.m_domTreeVersion;
 #endif
     return *this;
@@ -123,7 +123,7 @@ EphemeralRangeTemplate<Strategy> EphemeralRangeTemplate<Strategy>::rangeOfConten
     return EphemeralRangeTemplate<Strategy>(PositionTemplate<Strategy>::firstPositionInNode(&const_cast<Node&>(node)), PositionTemplate<Strategy>::lastPositionInNode(&const_cast<Node&>(node)));
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 template <typename Strategy>
 bool EphemeralRangeTemplate<Strategy>::isValid() const
 {

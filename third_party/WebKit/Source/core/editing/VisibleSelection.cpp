@@ -622,7 +622,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
             const VisiblePositionTemplate<Strategy> first = firstEditableVisiblePositionAfterPositionInRoot(m_start, *baseRoot);
             m_start = first.deepEquivalent();
             if (m_start.isNull()) {
-                ASSERT_NOT_REACHED();
+                NOTREACHED();
                 m_start = m_end;
             }
         }
@@ -661,7 +661,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
             if (previous.isNull()) {
                 // The selection crosses an Editing boundary.  This is a
                 // programmer error in the editing code.  Happy debugging!
-                ASSERT_NOT_REACHED();
+                NOTREACHED();
                 m_base = PositionTemplate<Strategy>();
                 m_extent = PositionTemplate<Strategy>();
                 validate();
@@ -690,7 +690,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
             if (next.isNull()) {
                 // The selection crosses an Editing boundary.  This is a
                 // programmer error in the editing code.  Happy debugging!
-                ASSERT_NOT_REACHED();
+                NOTREACHED();
                 m_base = PositionTemplate<Strategy>();
                 m_extent = PositionTemplate<Strategy>();
                 validate();

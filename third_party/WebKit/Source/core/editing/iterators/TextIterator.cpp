@@ -374,7 +374,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
                     // 4. Reached the top of a shadow root. If it's created by author, then try to visit the next
                     // sibling shadow root, if any.
                     if (!m_node->isShadowRoot()) {
-                        ASSERT_NOT_REACHED();
+                        NOTREACHED();
                         m_shouldStop = true;
                         return;
                     }

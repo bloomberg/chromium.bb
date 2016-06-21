@@ -191,7 +191,7 @@ static bool applyCommandToFrame(LocalFrame& frame, EditorCommandSource source, E
         frame.editor().applyStyle(style);
         return true;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -266,7 +266,7 @@ static bool executeApplyParagraphStyle(LocalFrame& frame, EditorCommandSource so
         frame.editor().applyParagraphStyle(style);
         return true;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -439,7 +439,7 @@ static bool executeDelete(LocalFrame& frame, Event*, EditorCommandSource source,
         TypingCommand::deleteKeyPressed(*frame.document(), frame.selection().granularity() == WordGranularity ? TypingCommand::SmartDelete : 0);
         return true;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -578,7 +578,7 @@ static bool executeForwardDelete(LocalFrame& frame, Event*, EditorCommandSource 
             return false;
         return true;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -635,7 +635,7 @@ static bool executeInsertLineBreak(LocalFrame& frame, Event* event, EditorComman
         DCHECK(frame.document());
         return TypingCommand::insertLineBreak(*frame.document());
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -1358,7 +1358,7 @@ static bool enabledDelete(LocalFrame& frame, Event* event, EditorCommandSource s
         // otherwise removes a character
         return enabledInEditableText(frame, event, source);
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -1517,7 +1517,7 @@ static String valueDefaultParagraphSeparator(LocalFrame& frame, Event*)
         return pTag.localName();
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -1826,7 +1826,7 @@ bool Editor::Command::isSupported() const
     case CommandFromDOM:
         return m_command->isSupportedFromDOM(m_frame.get());
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 

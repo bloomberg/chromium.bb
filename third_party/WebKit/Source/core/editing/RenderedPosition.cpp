@@ -159,7 +159,7 @@ RenderedPosition RenderedPosition::leftBoundaryOfBidiRun(unsigned char bidiLevel
         box = prev;
     } while (box);
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return RenderedPosition();
 }
 
@@ -176,7 +176,7 @@ RenderedPosition RenderedPosition::rightBoundaryOfBidiRun(unsigned char bidiLeve
         box = next;
     } while (box);
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return RenderedPosition();
 }
 

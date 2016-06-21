@@ -61,7 +61,7 @@ private:
         } \
     } while (false)
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 // This class is inspired by |NoExceptionStateAssertionChecker|.
 class NoEditingAbortChecker final {
     STACK_ALLOCATED();
@@ -81,7 +81,7 @@ private:
 // If a function with EditingState* argument should not be aborted,
 // ASSERT_NO_EDITING_ABORT should be specified.
 //    fooFunc(...., ASSERT_NO_EDITING_ABORT);
-// It causes an assertion failure If ENABLE(ASSERT) and the function was aborted
+// It causes an assertion failure If DCHECK_IS_ON() and the function was aborted
 // unexpectedly.
 #define ASSERT_NO_EDITING_ABORT (NoEditingAbortChecker(__FILE__, __LINE__).editingState())
 #else

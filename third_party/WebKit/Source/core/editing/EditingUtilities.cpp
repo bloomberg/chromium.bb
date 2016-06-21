@@ -175,7 +175,7 @@ static int comparePositions(Node* containerA, int offsetA, Node* containerB, int
     }
 
     // Should never reach this point.
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
 }
 
@@ -1320,7 +1320,7 @@ HTMLElement* createDefaultParagraphElement(Document& document)
         return HTMLParagraphElement::create(document);
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 

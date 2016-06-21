@@ -288,7 +288,7 @@ void TypingCommand::doApply(EditingState* editingState)
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 EditAction TypingCommand::editingAction() const
@@ -557,7 +557,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
         break;
     }
     case NoSelection:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
 
@@ -650,7 +650,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         break;
     }
     case NoSelection:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
 
@@ -696,7 +696,7 @@ void TypingCommand::updatePreservesTypingStyle(ETypingCommand commandType)
         m_preservesTypingStyle = false;
         return;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     m_preservesTypingStyle = false;
 }
 

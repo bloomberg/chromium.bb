@@ -124,7 +124,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::init(Node* startNode, N
     m_endNode = endNode;
     m_endOffset = endOffset;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // Need this just because of the assert.
     m_positionNode = endNode;
 #endif

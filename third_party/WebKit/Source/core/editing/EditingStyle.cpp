@@ -1076,7 +1076,7 @@ static MutableStylePropertySet* extractEditingProperties(const StylePropertySet*
         return copyEditingProperties(style, OnlyInheritableEditingProperties);
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
@@ -1638,7 +1638,7 @@ static bool fontWeightIsBold(const CSSValue* fontWeight)
         break;
     }
 
-    ASSERT_NOT_REACHED(); // For CSSValueBolder and CSSValueLighter
+    NOTREACHED(); // For CSSValueBolder and CSSValueLighter
     return false;
 }
 

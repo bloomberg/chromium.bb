@@ -29,7 +29,7 @@ IgnorableEditingAbortState::~IgnorableEditingAbortState()
 {
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 // ---
 
 NoEditingAbortChecker::NoEditingAbortChecker(const char* file, int line)

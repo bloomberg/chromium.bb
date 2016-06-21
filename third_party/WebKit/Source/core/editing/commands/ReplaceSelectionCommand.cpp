@@ -892,7 +892,7 @@ void ReplaceSelectionCommand::mergeEndIfNeeded(EditingState* editingState)
 
     // Bail to avoid infinite recursion.
     if (m_movingParagraph) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
 
@@ -1641,7 +1641,7 @@ Node* ReplaceSelectionCommand::insertAsListItems(HTMLElement* listElement, Eleme
             insertedNodes.respondToNodeInsertion(*listItem);
             lastNode = listItem;
         } else {
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
     if (isStart || isMiddle) {

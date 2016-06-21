@@ -1239,7 +1239,7 @@ static Range* findStringBetweenPositions(const String& target, const EphemeralRa
         }
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 

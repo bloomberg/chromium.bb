@@ -40,7 +40,7 @@ namespace blink {
 
 static const size_t minimumSearchBufferSize = 8192;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool searcherInUse;
 #endif
 
@@ -64,7 +64,7 @@ static UStringSearch* searcher()
 
 static inline void lockSearcher()
 {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     DCHECK(!searcherInUse);
     searcherInUse = true;
 #endif
@@ -72,7 +72,7 @@ static inline void lockSearcher()
 
 static inline void unlockSearcher()
 {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     DCHECK(searcherInUse);
     searcherInUse = false;
 #endif

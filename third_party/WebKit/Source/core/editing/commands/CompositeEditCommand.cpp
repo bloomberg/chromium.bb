@@ -189,7 +189,7 @@ bool CompositeEditCommand::apply()
         case EditActionUnspecified:
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return false;
         }
     }
@@ -581,7 +581,7 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
     switch (pos.anchorType()) {
     case PositionAnchorType::BeforeChildren:
     case PositionAnchorType::AfterChildren:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return pos;
     case PositionAnchorType::OffsetInAnchor:
         break;

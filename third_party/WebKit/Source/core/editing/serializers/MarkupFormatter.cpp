@@ -133,7 +133,7 @@ void MarkupFormatter::appendStartMarkup(StringBuilder& result, const Node& node,
 {
     switch (node.getNodeType()) {
     case Node::TEXT_NODE:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     case Node::COMMENT_NODE:
         appendComment(result, toComment(node).data());
@@ -150,13 +150,13 @@ void MarkupFormatter::appendStartMarkup(StringBuilder& result, const Node& node,
         appendProcessingInstruction(result, toProcessingInstruction(node).target(), toProcessingInstruction(node).data());
         break;
     case Node::ELEMENT_NODE:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     case Node::CDATA_SECTION_NODE:
         appendCDATASection(result, toCDATASection(node).data());
         break;
     case Node::ATTRIBUTE_NODE:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
 }

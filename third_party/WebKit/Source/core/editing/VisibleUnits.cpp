@@ -3180,7 +3180,7 @@ static VisiblePositionTemplate<Strategy> nextPositionOfAlgorithm(const VisiblePo
     case CanSkipOverEditingBoundary:
         return skipToEndOfEditingBoundary(next, visiblePosition.deepEquivalent());
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return honorEditingBoundaryAtOrAfter(next, visiblePosition.deepEquivalent());
 }
 
@@ -3243,7 +3243,7 @@ static VisiblePositionTemplate<Strategy> previousPositionOfAlgorithm(const Visib
         return skipToStartOfEditingBoundary(prev, visiblePosition.deepEquivalent());
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return honorEditingBoundaryAtOrBefore(prev, visiblePosition.deepEquivalent());
 }
 
