@@ -78,9 +78,9 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    # TODO(crbug.com/586148): Benchmark should not depend on DeskClock app.
-    return not possible_browser.platform.CanLaunchApplication(
-        'com.google.android.deskclock')
+    # Note: benchmark cannot be disabled with a decorator since, otherwise,
+    # subclasses would also get disabled.
+    return True
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075.
@@ -101,6 +101,12 @@ class TBMv2MemoryBenchmarkTop10Mobile(MemoryBenchmarkTop10Mobile):
   @classmethod
   def Name(cls):
     return 'memory.top_10_mobile_tbmv2'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    # TODO(crbug.com/586148): Benchmark should not depend on DeskClock app.
+    return not possible_browser.platform.CanLaunchApplication(
+        'com.google.android.deskclock')
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
