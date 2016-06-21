@@ -163,9 +163,8 @@ class SimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
         'build', self._current_board, 'var', 'db', 'pkg')
     if self._run.options.chrome_root:
       self.chrome_src = os.path.join(self._run.options.chrome_root, 'src')
-      board_dir = 'out_%s' % self._current_board
       self.out_board_dir = os.path.join(
-          self.chrome_src, board_dir, 'Release')
+          self.chrome_src, 'out_%s' % self._current_board)
 
   def _BuildAndArchiveChromeSysroot(self):
     """Generate and upload sysroot for building Chrome."""
@@ -211,33 +210,18 @@ class SimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
   def _VerifySDKEnvironment(self):
     """Make sure the SDK environment is set up properly."""
     # If the environment wasn't set up, then the output directory wouldn't be
-    # created after 'gn gen'.
+    # created after 'gclient runhooks'.
     # TODO: Make this check actually look at the environment.
     if not os.path.exists(self.out_board_dir):
       raise AssertionError('%s not created!' % self.out_board_dir)
-    # Log args.gn for debugging.
-    logging.info('ARGS.GN=\n%s',
-                 osutils.ReadFile(os.path.join(self.out_board_dir, 'args.gn')))
 
   def _BuildChrome(self, sdk_cmd):
     """Use the generated SDK to build Chrome."""
     # Validate fetching of the SDK and setting everything up.
     sdk_cmd.Run(['true'])
-    # Wipe the output directory if switching from GYP to GN.
-    args_path = os.path.join(self.out_board_dir, 'args.gn')
-    if not os.path.exists(args_path):
-      sdk_cmd.Run(['rm', '-rf', self.out_board_dir])
-    # Set GYP_CHROMIUM_NO_ACTION=1 and run hooks.
-    # TODO(stevenjb): Remove GYP_CHROMIUM_NO_ACTION=1 once no longer necessary.
-    sdk_cmd.Run(['bash', '-c',
-                 'GYP_CHROMIUM_NO_ACTION=1 gclient runhooks'])
-    # Generate args.gn and ninja files.
-    sdk_cmd.Run(['bash', '-c',
-                 'gn gen "%s" --args="$GN_ARGS"' % self.out_board_dir])
-
+    # Actually build chromium.
+    sdk_cmd.Run(['gclient', 'runhooks'])
     self._VerifySDKEnvironment()
-
-    # Build chromium.
     sdk_cmd.Ninja()
 
   def _TestDeploy(self, sdk_cmd):
@@ -246,7 +230,8 @@ class SimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
       # Use the TOT deploy_chrome.
       script_path = os.path.join(
           self._build_root, constants.CHROMITE_BIN_SUBDIR, 'deploy_chrome')
-      sdk_cmd.Run([script_path, '--build-dir', self.out_board_dir,
+      sdk_cmd.Run([script_path, '--build-dir',
+                   os.path.join(self.out_board_dir, 'Release'),
                    '--staging-only', '--staging-dir', tempdir])
       self._VerifyChromeDeployed(tempdir)
 
