@@ -33,8 +33,6 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.privacy.PhysicalWebPreferenceFragment;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 
@@ -138,13 +136,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
                 .setIcon(tintedRefresh)
                 .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-        Drawable tintedSettings = ContextCompat.getDrawable(this, R.drawable.settings_cog);
-        tintedSettings.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
-        menu.add(0, R.id.menu_id_settings, 2, R.string.menu_preferences)
-                .setIcon(tintedSettings)
-                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-
-        menu.add(0, R.id.menu_id_close, 3, R.string.close)
+        menu.add(0, R.id.menu_id_close, 2, R.string.close)
                 .setIcon(R.drawable.btn_close)
                 .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
@@ -159,11 +151,6 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
             return true;
         } else if (id == R.id.menu_id_refresh) {
             startRefresh(true, false);
-            return true;
-        } else if (id == R.id.menu_id_settings) {
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                    this, PhysicalWebPreferenceFragment.class.getName());
-            startActivity(intent);
             return true;
         }
 
