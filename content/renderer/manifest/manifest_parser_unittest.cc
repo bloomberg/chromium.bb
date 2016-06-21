@@ -29,9 +29,9 @@ class ManifestParserTest : public testing::Test  {
   ~ManifestParserTest() override {}
 
   Manifest ParseManifestWithURLs(const base::StringPiece& data,
-                                 const GURL& document_url,
-                                 const GURL& manifest_url) {
-    ManifestParser parser(data, document_url, manifest_url);
+                                 const GURL& manifest_url,
+                                 const GURL& document_url) {
+    ManifestParser parser(data, manifest_url, document_url);
     parser.Parse();
     std::vector<ManifestDebugInfo::Error> errors;
     parser.TakeErrors(&errors);
@@ -44,7 +44,7 @@ class ManifestParserTest : public testing::Test  {
 
   Manifest ParseManifest(const base::StringPiece& data) {
     return ParseManifestWithURLs(
-        data, default_document_url, default_manifest_url);
+        data, default_manifest_url, default_document_url);
   }
 
   const std::vector<std::string>& errors() const {
@@ -512,7 +512,7 @@ TEST_F(ManifestParserTest, IconsParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"icons\": [ { \"src\": \"\" } ] }");
     EXPECT_EQ(manifest.icons.size(), 1u);
-    EXPECT_EQ(manifest.icons[0].src.spec(), "http://foo.com/index.html");
+    EXPECT_EQ(manifest.icons[0].src.spec(), "http://foo.com/manifest.json");
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
