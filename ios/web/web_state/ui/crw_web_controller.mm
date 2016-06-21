@@ -1707,10 +1707,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Transfer time is registered so that further transitions within the time
   // envelope are not also registered as links.
   _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
-  // Before changing phases, the delegate should be informed that any existing
-  // request is being cancelled before completion.
-  [self loadCancelled];
-  DCHECK(_loadPhase == web::PAGE_LOADED);
+  if (!(transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK)) {
+    // Before changing phases, the delegate should be informed that any existing
+    // request is being cancelled before completion.
+    [self loadCancelled];
+    DCHECK(_loadPhase == web::PAGE_LOADED);
+  }
 
   _loadPhase = web::LOAD_REQUESTED;
   _lastRegisteredRequestURL = requestURL;
