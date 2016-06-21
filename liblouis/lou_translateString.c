@@ -3326,7 +3326,7 @@ markEmphases()
 			italic_start = -1;
 		}
 
-		if(typebuf[i] & script)
+		if(typebuf[i] & emph_4)
 		{
 			if(script_start < 0)
 				script_start = i;
@@ -3338,7 +3338,7 @@ markEmphases()
 			script_start = -1;
 		}
 
-		if(typebuf[i] & trans_note)
+		if(typebuf[i] & emph_5)
 		{
 			if(tnote_start < 0)
 				tnote_start = i;
@@ -3350,7 +3350,7 @@ markEmphases()
 			tnote_start = -1;
 		}
 		
-		trans_bit = trans_note_1;
+		trans_bit = emph_6;
 		for(j = 0; j < 5; j++)
 		{		
 			if(typebuf[i] & trans_bit)
@@ -3405,7 +3405,7 @@ markEmphases()
 			emphasisBuffer[tnote_start] |= TNOTE_BEGIN;
 			emphasisBuffer[srcmax] |= TNOTE_END;
 		}
-		trans_bit = trans_note_1;
+		trans_bit = emph_6;
 		for(i = 0; i < 5; i++)
 		{
 			if(trans_start[i] >= 0)

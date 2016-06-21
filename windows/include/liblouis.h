@@ -55,13 +55,13 @@ char * EXPORT_CALL lou_getProgramPath (void);
 	computer_braille = 0x0008,
 	no_translate = 0x0010,
 	word_reset = 0x0020,
-	script = 0x0040,       // emph_4
-	trans_note = 0x0080,   // emph_5
-	trans_note_1 = 0x0100, // emph_6
-	trans_note_2 = 0x0200, // emph_7
-	trans_note_3 = 0x0400, // emph_8
-	trans_note_4 = 0x0800, // emph_9
-	trans_note_5 = 0x1000, // emph_10
+	emph_4 = 0x0040,
+	emph_5 = 0x0080,
+	emph_6 = 0x0100,
+	emph_7 = 0x0200,
+	emph_8 = 0x0400,
+	emph_9 = 0x0800,
+	emph_10 = 0x1000,
 	no_contract = 0x2000,
 	//  used by syllable   0x4000,
 	//  used by syllable   0x8000,
