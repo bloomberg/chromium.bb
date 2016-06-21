@@ -274,7 +274,6 @@ struct CacheStorageCache::PutContext {
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   CacheStorageCache::ErrorCallback callback;
   disk_cache::ScopedEntryPtr cache_entry;
-  int64_t available_bytes = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PutContext);
@@ -358,23 +357,70 @@ void CacheStorageCache::WriteSideData(const ErrorCallback& callback,
                                       scoped_refptr<net::IOBuffer> buffer,
                                       int buf_len) {
   if (!LazyInitialize()) {
-    callback.Run(CACHE_STORAGE_ERROR_STORAGE);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, CACHE_STORAGE_ERROR_STORAGE));
     return;
   }
-  ErrorCallback pending_callback =
-      base::Bind(&CacheStorageCache::PendingErrorCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
 
-  scheduler_->ScheduleOperation(base::Bind(
-      &CacheStorageCache::WriteSideDataImpl, weak_ptr_factory_.GetWeakPtr(),
-      pending_callback, url, expected_response_time, buffer, buf_len));
+  // GetUsageAndQuota is called before entering a scheduled operation since it
+  // can call Size, another scheduled operation.
+  quota_manager_proxy_->GetUsageAndQuota(
+      base::ThreadTaskRunnerHandle::Get().get(), origin_,
+      storage::kStorageTypeTemporary,
+      base::Bind(&CacheStorageCache::WriteSideDataDidGetQuota,
+                 weak_ptr_factory_.GetWeakPtr(), callback, url,
+                 expected_response_time, buffer, buf_len));
 }
 
 void CacheStorageCache::BatchOperation(
     const std::vector<CacheStorageBatchOperation>& operations,
     const ErrorCallback& callback) {
   if (!LazyInitialize()) {
-    callback.Run(CACHE_STORAGE_ERROR_STORAGE);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, CACHE_STORAGE_ERROR_STORAGE));
+    return;
+  }
+
+  // Estimate the required size of the put operations. The size of the deletes
+  // is unknown and not considered.
+  int64_t space_required = 0;
+  for (const auto& operation : operations) {
+    if (operation.operation_type == CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT) {
+      space_required +=
+          operation.request.blob_size + operation.response.blob_size;
+    }
+  }
+  if (space_required > 0) {
+    // GetUsageAndQuota is called before entering a scheduled operation since it
+    // can call Size, another scheduled operation. This is racy. The decision
+    // to commit is made before the scheduled Put operation runs. By the time
+    // Put runs, the cache might already be full and the origin will be larger
+    // than it's supposed to be.
+    quota_manager_proxy_->GetUsageAndQuota(
+        base::ThreadTaskRunnerHandle::Get().get(), origin_,
+        storage::kStorageTypeTemporary,
+        base::Bind(&CacheStorageCache::BatchDidGetUsageAndQuota,
+                   weak_ptr_factory_.GetWeakPtr(), operations, callback,
+                   space_required));
+    return;
+  }
+
+  BatchDidGetUsageAndQuota(operations, callback, 0 /* space_required */,
+                           storage::kQuotaStatusOk, 0 /* usage */,
+                           0 /* quota */);
+}
+
+void CacheStorageCache::BatchDidGetUsageAndQuota(
+    const std::vector<CacheStorageBatchOperation>& operations,
+    const ErrorCallback& callback,
+    int64_t space_required,
+    storage::QuotaStatusCode status_code,
+    int64_t usage,
+    int64_t quota) {
+  if (status_code != storage::kQuotaStatusOk ||
+      space_required > quota - usage) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, CACHE_STORAGE_ERROR_QUOTA_EXCEEDED));
     return;
   }
 
@@ -463,16 +509,13 @@ void CacheStorageCache::Size(const SizeCallback& callback) {
     return;
   }
 
-  if (initializing_) {
-    // Note that Size doesn't use the scheduler, see header comments for why.
-    pending_size_callbacks_.push_back(callback);
-    return;
-  }
+  SizeCallback pending_callback =
+      base::Bind(&CacheStorageCache::PendingSizeCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
 
-  // Run immediately so that we don't deadlock on
-  // CacheStorageCache::PutDidDelete's call to
-  // quota_manager_proxy_->GetUsageAndQuota.
-  SizeImpl(callback);
+  scheduler_->ScheduleOperation(base::Bind(&CacheStorageCache::SizeImpl,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           pending_callback));
 }
 
 void CacheStorageCache::GetSizeThenClose(const SizeCallback& callback) {
@@ -776,6 +819,30 @@ void CacheStorageCache::MatchAllDidReadMetadata(
   MatchAllProcessNextEntry(std::move(context), iter + 1);
 }
 
+void CacheStorageCache::WriteSideDataDidGetQuota(
+    const ErrorCallback& callback,
+    const GURL& url,
+    base::Time expected_response_time,
+    scoped_refptr<net::IOBuffer> buffer,
+    int buf_len,
+    storage::QuotaStatusCode status_code,
+    int64_t usage,
+    int64_t quota) {
+  if (status_code != storage::kQuotaStatusOk || (buf_len > quota - usage)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, CACHE_STORAGE_ERROR_QUOTA_EXCEEDED));
+    return;
+  }
+
+  ErrorCallback pending_callback =
+      base::Bind(&CacheStorageCache::PendingErrorCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+
+  scheduler_->ScheduleOperation(base::Bind(
+      &CacheStorageCache::WriteSideDataImpl, weak_ptr_factory_.GetWeakPtr(),
+      pending_callback, url, expected_response_time, buffer, buf_len));
+}
+
 void CacheStorageCache::WriteSideDataImpl(const ErrorCallback& callback,
                                           const GURL& url,
                                           base::Time expected_response_time,
@@ -787,27 +854,6 @@ void CacheStorageCache::WriteSideDataImpl(const ErrorCallback& callback,
     return;
   }
 
-  quota_manager_proxy_->GetUsageAndQuota(
-      base::ThreadTaskRunnerHandle::Get().get(), origin_,
-      storage::kStorageTypeTemporary,
-      base::Bind(&CacheStorageCache::WriteSideDataDidGetUsageAndQuota,
-                 weak_ptr_factory_.GetWeakPtr(), callback, url,
-                 expected_response_time, buffer, buf_len));
-}
-
-void CacheStorageCache::WriteSideDataDidGetUsageAndQuota(
-    const ErrorCallback& callback,
-    const GURL& url,
-    base::Time expected_response_time,
-    scoped_refptr<net::IOBuffer> buffer,
-    int buf_len,
-    storage::QuotaStatusCode status_code,
-    int64_t usage,
-    int64_t quota) {
-  if (status_code != storage::kQuotaStatusOk || quota - usage < buf_len) {
-    callback.Run(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED);
-    return;
-  }
   std::unique_ptr<disk_cache::Entry*> scoped_entry_ptr(
       new disk_cache::Entry*());
   disk_cache::Entry** entry_ptr = scoped_entry_ptr.get();
@@ -962,31 +1008,6 @@ void CacheStorageCache::PutDidDelete(std::unique_ptr<PutContext> put_context,
     return;
   }
 
-  quota_manager_proxy_->GetUsageAndQuota(
-      base::ThreadTaskRunnerHandle::Get().get(), origin_,
-      storage::kStorageTypeTemporary,
-      base::Bind(&CacheStorageCache::PutDidGetUsageAndQuota,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(put_context))));
-}
-
-void CacheStorageCache::PutDidGetUsageAndQuota(
-    std::unique_ptr<PutContext> put_context,
-    storage::QuotaStatusCode status_code,
-    int64_t usage,
-    int64_t quota) {
-  if (backend_state_ != BACKEND_OPEN) {
-    put_context->callback.Run(CACHE_STORAGE_ERROR_STORAGE);
-    return;
-  }
-
-  if (status_code != storage::kQuotaStatusOk) {
-    put_context->callback.Run(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED);
-    return;
-  }
-
-  put_context->available_bytes = quota - usage;
-
   std::unique_ptr<disk_cache::Entry*> scoped_entry_ptr(
       new disk_cache::Entry*());
   disk_cache::Entry** entry_ptr = scoped_entry_ptr.get();
@@ -1057,12 +1078,6 @@ void CacheStorageCache::PutDidCreateEntry(
 
   scoped_refptr<net::StringIOBuffer> buffer(
       new net::StringIOBuffer(std::move(serialized)));
-
-  int64_t bytes_to_write = buffer->size() + put_context->response->blob_size;
-  if (put_context->available_bytes < bytes_to_write) {
-    put_context->callback.Run(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED);
-    return;
-  }
 
   // Get a temporary copy of the entry pointer before passing it in base::Bind.
   disk_cache::Entry* temp_entry_ptr = put_context->cache_entry.get();
@@ -1438,10 +1453,6 @@ void CacheStorageCache::InitGotCacheSize(CacheStorageError cache_create_error,
                     backend_state_ == BACKEND_UNINITIALIZED)
                        ? BACKEND_OPEN
                        : BACKEND_CLOSED;
-
-  for (const SizeCallback& callback : pending_size_callbacks_)
-    SizeImpl(callback);
-  pending_size_callbacks_.clear();
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.InitBackendResult",
                             cache_create_error, CACHE_STORAGE_ERROR_LAST + 1);
