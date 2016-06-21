@@ -8,44 +8,48 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
-template<typename T> struct IdentifierGenerator;
+// TODO(sof): WeakIdentifierMap<> belongs (out) in wtf/, but
+// cannot until GarbageCollected<> can be used from WTF.
 
-template<> struct IdentifierGenerator<int> {
-    STATIC_ONLY(IdentifierGenerator);
-    using IdentifierType = int;
-    static IdentifierType next()
-    {
-        static int s_lastId = 0;
-        return ++s_lastId;
-    }
+template<typename T, typename IdentifierType, bool isGarbageCollected>
+class WeakIdentifierMapBase {
+    USING_FAST_MALLOC(WeakIdentifierMapBase);
+protected:
+    using ObjectToIdentifier = HashMap<T*, IdentifierType>;
+    using IdentifierToObject = HashMap<IdentifierType, T*>;
+
+    ObjectToIdentifier m_objectToIdentifier;
+    IdentifierToObject m_identifierToObject;
 };
 
-template<typename T> struct WeakIdentifierMapTraits {
-    STATIC_ONLY(WeakIdentifierMapTraits);
-    static void removedFromIdentifierMap(T*) { }
-    static void addedToIdentifierMap(T*) { }
-};
-
-template<typename T,
-    typename Generator = IdentifierGenerator<int>,
-    typename Traits = WeakIdentifierMapTraits<T>,
-    bool isGarbageCollected = IsGarbageCollectedType<T>::value> class WeakIdentifierMap;
-
-template<typename T, typename Generator, typename Traits> class WeakIdentifierMap<T, Generator, Traits, false> {
-    USING_FAST_MALLOC(WeakIdentifierMap);
+template<typename T, typename IdentifierType>
+class WeakIdentifierMapBase<T, IdentifierType, true> : public GarbageCollected<WeakIdentifierMapBase<T, IdentifierType, true>> {
 public:
-    using IdentifierType = typename Generator::IdentifierType;
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_objectToIdentifier);
+        visitor->trace(m_identifierToObject);
+    }
+protected:
+    using ObjectToIdentifier = HeapHashMap<WeakMember<T>, IdentifierType>;
+    using IdentifierToObject = HeapHashMap<IdentifierType, WeakMember<T>>;
 
+    ObjectToIdentifier m_objectToIdentifier;
+    IdentifierToObject m_identifierToObject;
+};
+
+template<typename T, typename IdentifierType = int>
+class WeakIdentifierMap final : public WeakIdentifierMapBase<T, IdentifierType, IsGarbageCollectedType<T>::value>  {
+public:
     static IdentifierType identifier(T* object)
     {
         IdentifierType result = instance().m_objectToIdentifier.get(object);
 
         if (WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(result)) {
-            result = Generator::next();
+            result = next();
             instance().put(object, result);
         }
         return result;
@@ -62,82 +66,29 @@ public:
     }
 
 private:
-    static WeakIdentifierMap<T, Generator, Traits>& instance();
+    static WeakIdentifierMap<T, IdentifierType>& instance();
+
     WeakIdentifierMap() { }
-    ~WeakIdentifierMap();
+
+    static IdentifierType next()
+    {
+        static IdentifierType s_lastId = 0;
+        return ++s_lastId;
+    }
 
     void put(T* object, IdentifierType identifier)
     {
-        DCHECK(object && !m_objectToIdentifier.contains(object));
-        m_objectToIdentifier.set(object, identifier);
-        m_identifierToObject.set(identifier, object);
-        Traits::addedToIdentifierMap(object);
+        DCHECK(object && !this->m_objectToIdentifier.contains(object));
+        this->m_objectToIdentifier.set(object, identifier);
+        this->m_identifierToObject.set(identifier, object);
     }
 
     void objectDestroyed(T* object)
     {
-        IdentifierType identifier = m_objectToIdentifier.take(object);
+        IdentifierType identifier = this->m_objectToIdentifier.take(object);
         if (!WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(identifier))
-            m_identifierToObject.remove(identifier);
+            this->m_identifierToObject.remove(identifier);
     }
-
-    using ObjectToIdentifier = HashMap<T*, IdentifierType>;
-    using IdentifierToObject = HashMap<IdentifierType, T*>;
-
-    ObjectToIdentifier m_objectToIdentifier;
-    IdentifierToObject m_identifierToObject;
-};
-
-template<typename T, typename Generator, typename Traits> class WeakIdentifierMap<T, Generator, Traits, true>
-    : public GarbageCollected<WeakIdentifierMap<T, Generator, Traits, true>> {
-public:
-    using IdentifierType = typename Generator::IdentifierType;
-
-    static IdentifierType identifier(T* object)
-    {
-        IdentifierType result = instance().m_objectToIdentifier->get(object);
-
-        if (WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(result)) {
-            result = Generator::next();
-            instance().put(object, result);
-        }
-        return result;
-    }
-
-    static T* lookup(IdentifierType identifier)
-    {
-        return instance().m_identifierToObject->get(identifier);
-    }
-
-    static void notifyObjectDestroyed(T* object) { }
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_objectToIdentifier);
-        visitor->trace(m_identifierToObject);
-    }
-
-private:
-    static WeakIdentifierMap<T, Generator, Traits>& instance();
-
-    WeakIdentifierMap()
-        : m_objectToIdentifier(new ObjectToIdentifier())
-        , m_identifierToObject(new IdentifierToObject())
-    {
-    }
-
-    void put(T* object, IdentifierType identifier)
-    {
-        DCHECK(object && !m_objectToIdentifier->contains(object));
-        m_objectToIdentifier->set(object, identifier);
-        m_identifierToObject->set(identifier, object);
-    }
-
-    using ObjectToIdentifier = HeapHashMap<WeakMember<T>, IdentifierType>;
-    using IdentifierToObject = HeapHashMap<IdentifierType, WeakMember<T>>;
-
-    Member<ObjectToIdentifier> m_objectToIdentifier;
-    Member<IdentifierToObject> m_identifierToObject;
 };
 
 #define DECLARE_WEAK_IDENTIFIER_MAP(T, ...) \
