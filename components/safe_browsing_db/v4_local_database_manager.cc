@@ -187,15 +187,15 @@ void V4LocalDatabaseManager::SetupDatabase() {
         pool->GetSequenceToken(), base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   }
 
-  // TODO(vakh): list_info_map should probably be a hard-coded map.
-  ListInfoMap list_info_map;
+  // TODO(vakh): store_file_name_map should probably be a hard-coded map.
+  StoreFileNameMap store_file_name_map;
 
   // Do not create the database on the IO thread since this may be an expensive
   // operation. Instead, do that on the task_runner and when the new database
   // has been created, swap it out on the IO thread.
   NewDatabaseReadyCallback db_ready_callback = base::Bind(
       &V4LocalDatabaseManager::DatabaseReady, base::Unretained(this));
-  V4Database::Create(task_runner_, base_path_, list_info_map,
+  V4Database::Create(task_runner_, base_path_, store_file_name_map,
                      db_ready_callback);
 }
 

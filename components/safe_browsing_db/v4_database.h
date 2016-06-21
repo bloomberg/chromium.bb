@@ -27,7 +27,7 @@ typedef base::Callback<void(std::unique_ptr<V4Database>)>
 // For instance, the UpdateListIdentifier could be for URL expressions for UwS
 // on Windows platform, and the corresponding file on disk could be named:
 // "uws_win_url.store"
-typedef base::hash_map<UpdateListIdentifier, std::string> ListInfoMap;
+typedef base::hash_map<UpdateListIdentifier, std::string> StoreFileNameMap;
 
 // This hash_map maps the UpdateListIdentifiers to their corresponding in-memory
 // stores, which contain the hash prefixes for that UpdateListIdentifier as well
@@ -42,7 +42,7 @@ class V4DatabaseFactory {
   virtual V4Database* CreateV4Database(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_dir_path,
-      const ListInfoMap& list_info_map) = 0;
+      const StoreFileNameMap& store_file_name_map) = 0;
 };
 
 // The on-disk databases are shared among all profiles, as it doesn't contain
@@ -60,7 +60,7 @@ class V4Database {
   static void Create(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_path,
-      const ListInfoMap& list_info_map,
+      const StoreFileNameMap& store_file_name_map,
       NewDatabaseReadyCallback callback);
 
   // Destroys the provided v4_database on its task_runner since this may be a
@@ -94,7 +94,7 @@ class V4Database {
   static void CreateOnTaskRunner(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_path,
-      const ListInfoMap& list_info_map,
+      const StoreFileNameMap& store_file_name_map,
       const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
       NewDatabaseReadyCallback callback);
 

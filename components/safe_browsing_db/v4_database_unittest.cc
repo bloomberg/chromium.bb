@@ -73,7 +73,7 @@ class SafeBrowsingV4DatabaseTest : public PlatformTest {
     update_list_identifier.platform_type = WINDOWS_PLATFORM;
     update_list_identifier.threat_entry_type = URL;
     update_list_identifier.threat_type = MALWARE_THREAT;
-    list_info_map_[update_list_identifier] = "win_url_malware";
+    store_file_name_map_[update_list_identifier] = "win_url_malware";
     expected_identifiers_.push_back(update_list_identifier);
     expected_store_paths_.push_back(
         database_dirname_.AppendASCII("win_url_malware.fake"));
@@ -81,7 +81,7 @@ class SafeBrowsingV4DatabaseTest : public PlatformTest {
     update_list_identifier.platform_type = LINUX_PLATFORM;
     update_list_identifier.threat_entry_type = URL;
     update_list_identifier.threat_type = MALWARE_THREAT;
-    list_info_map_[update_list_identifier] = "linux_url_malware";
+    store_file_name_map_[update_list_identifier] = "linux_url_malware";
     expected_identifiers_.push_back(update_list_identifier);
     expected_store_paths_.push_back(
         database_dirname_.AppendASCII("linux_url_malware.fake"));
@@ -121,7 +121,7 @@ class SafeBrowsingV4DatabaseTest : public PlatformTest {
   content::TestBrowserThreadBundle thread_bundle_;
   bool created_but_not_called_back_;
   bool created_and_called_back_;
-  ListInfoMap list_info_map_;
+  StoreFileNameMap store_file_name_map_;
   std::vector<UpdateListIdentifier> expected_identifiers_;
   std::vector<base::FilePath> expected_store_paths_;
 };
@@ -132,7 +132,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithNoStores) {
       &SafeBrowsingV4DatabaseTest::NewDatabaseReadyWithExpectedStorePathsAndIds,
       base::Unretained(this), expected_store_paths_, expected_identifiers_,
       true);
-  V4Database::Create(task_runner_, database_dirname_, list_info_map_,
+  V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
                      callback_db_ready);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -153,7 +153,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStores) {
   FakeV4StoreFactory* factory = new FakeV4StoreFactory(false);
   ANNOTATE_LEAKING_OBJECT_PTR(factory);
   V4Database::RegisterStoreFactoryForTest(factory);
-  V4Database::Create(task_runner_, database_dirname_, list_info_map_,
+  V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
                      callback_db_ready);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -174,7 +174,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStoresFailsReset) {
   FakeV4StoreFactory* factory = new FakeV4StoreFactory(true);
   ANNOTATE_LEAKING_OBJECT_PTR(factory);
   V4Database::RegisterStoreFactoryForTest(factory);
-  V4Database::Create(task_runner_, database_dirname_, list_info_map_,
+  V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
                      callback_db_ready);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();

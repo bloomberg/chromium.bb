@@ -22,7 +22,7 @@ V4StoreFactory* V4Database::factory_ = NULL;
 void V4Database::Create(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::FilePath& base_path,
-    const ListInfoMap& list_info_map,
+    const StoreFileNameMap& store_file_name_map,
     NewDatabaseReadyCallback callback) {
   // Create the database, which may be a lengthy operation, on the
   // db_task_runner, but once that is done, call the caller back on this
@@ -32,14 +32,14 @@ void V4Database::Create(
   db_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&V4Database::CreateOnTaskRunner, db_task_runner, base_path,
-                 list_info_map, callback_task_runner, callback));
+                 store_file_name_map, callback_task_runner, callback));
 }
 
 // static
 void V4Database::CreateOnTaskRunner(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::FilePath& base_path,
-    const ListInfoMap& list_info_map,
+    const StoreFileNameMap& store_file_name_map,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
     NewDatabaseReadyCallback callback) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());
@@ -50,9 +50,9 @@ void V4Database::CreateOnTaskRunner(
     ANNOTATE_LEAKING_OBJECT_PTR(factory_);
   }
   auto store_map = base::MakeUnique<StoreMap>();
-  for (const auto& list_info : list_info_map) {
-    const UpdateListIdentifier& update_list_identifier = list_info.first;
-    const base::FilePath store_path = base_path.AppendASCII(list_info.second);
+  for (const auto& store_info : store_file_name_map) {
+    const UpdateListIdentifier& update_list_identifier = store_info.first;
+    const base::FilePath store_path = base_path.AppendASCII(store_info.second);
     (*store_map)[update_list_identifier].reset(
         factory_->CreateV4Store(db_task_runner, store_path));
   }
