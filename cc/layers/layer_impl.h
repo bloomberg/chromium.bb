@@ -602,8 +602,9 @@ class CC_EXPORT LayerImpl {
   base::trace_event::ConvertableToTraceFormat* debug_info_;
   std::unique_ptr<RenderSurfaceImpl> render_surface_;
 
-  bool scrolls_drawn_descendant_;
-  bool has_will_change_transform_hint_;
+  bool scrolls_drawn_descendant_ : 1;
+  bool has_will_change_transform_hint_ : 1;
+  bool needs_push_properties_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

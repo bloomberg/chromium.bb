@@ -77,7 +77,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
       scrolls_drawn_descendant_(false),
-      has_will_change_transform_hint_(false) {
+      has_will_change_transform_hint_(false),
+      needs_push_properties_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);
@@ -394,6 +395,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   // Reset any state that should be cleared for the next update.
   layer_property_changed_ = false;
+  needs_push_properties_ = false;
   update_rect_ = gfx::Rect();
   layer_tree_impl()->RemoveLayerShouldPushProperties(this);
 }
@@ -501,6 +503,7 @@ const char* LayerImpl::LayerTypeAsString() const {
 
 void LayerImpl::ResetChangeTracking() {
   layer_property_changed_ = false;
+  needs_push_properties_ = false;
 
   update_rect_.SetRect(0, 0, 0, 0);
   damage_rect_.SetRect(0, 0, 0, 0);
@@ -1033,8 +1036,10 @@ gfx::Vector2dF LayerImpl::ClampScrollToMaxScrollOffset() {
 }
 
 void LayerImpl::SetNeedsPushProperties() {
-  if (layer_tree_impl_)
+  if (layer_tree_impl_ && !needs_push_properties_) {
+    needs_push_properties_ = true;
     layer_tree_impl()->AddLayerShouldPushProperties(this);
+  }
 }
 
 void LayerImpl::GetAllPrioritizedTilesForTracing(
