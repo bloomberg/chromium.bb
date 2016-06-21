@@ -51,7 +51,7 @@ public:
     BLINK_EXPORT static void enableTestOnlyFeatures(bool);
 
     // Enables a feature by its string identifier from
-    // RuntimeEnabledFeatures.in.
+    // Source/platform/RuntimeEnabledFeatures.in.
     // Note: We use std::string instead of WebString because this API can
     // be called before blink::initalize(). We can't create WebString objects
     // before blink::initialize().

@@ -29,10 +29,6 @@
 import copy
 import os
 
-# NOTE: This has only been used to parse
-# core/page/RuntimeEnabledFeatures.in and may not be capable
-# of parsing other .in files correctly.
-
 # .in file format is:
 # // comment
 # name1 arg=value, arg2=value2, arg2=value3
