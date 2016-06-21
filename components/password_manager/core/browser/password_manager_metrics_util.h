@@ -137,6 +137,14 @@ enum SyncSignInUserAction {
   CHROME_SIGNIN_ACTION_COUNT
 };
 
+enum AccountChooserUsabilityMetric {
+  ACCOUNT_CHOOSER_LOOKS_OK,
+  ACCOUNT_CHOOSER_EMPTY_USERNAME,
+  ACCOUNT_CHOOSER_DUPLICATES,
+  ACCOUNT_CHOOSER_EMPTY_USERNAME_AND_DUPLICATES,
+  ACCOUNT_CHOOSER_USABILITY_COUNT,
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);
@@ -180,6 +188,9 @@ void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
 
 // Log a user action on showing the Chrome sign in promo.
 void LogAutoSigninPromoUserAction(SyncSignInUserAction action);
+
+// Log if the account chooser has empty username or duplicate usernames.
+void LogAccountChooserUsability(AccountChooserUsabilityMetric usability);
 
 }  // namespace metrics_util
 

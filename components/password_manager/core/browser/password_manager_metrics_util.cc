@@ -110,6 +110,11 @@ void LogAutoSigninPromoUserAction(SyncSignInUserAction action) {
                             CHROME_SIGNIN_ACTION_COUNT);
 }
 
+void LogAccountChooserUsability(AccountChooserUsabilityMetric usability) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialogUsability",
+                            usability, ACCOUNT_CHOOSER_USABILITY_COUNT);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

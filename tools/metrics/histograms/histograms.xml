@@ -37297,6 +37297,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.AccountChooserDialogUsability"
+    enum="AccountChooserUsabilityState">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Whether the account chooser includes an empty username or any duplicates
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.AccountsPerSite">
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -64307,6 +64315,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Canceled"/>
   <int value="1" label="Credential chosen"/>
   <int value="2" label="Sign in clicked"/>
+</enum>
+
+<enum name="AccountChooserUsabilityState" type="int">
+  <int value="0" label="Looks OK"/>
+  <int value="1" label="Empty username"/>
+  <int value="2" label="Duplicate usernames"/>
+  <int value="3" label="Empty and duplicate usernames"/>
 </enum>
 
 <enum name="AccountRelation" type="int">
