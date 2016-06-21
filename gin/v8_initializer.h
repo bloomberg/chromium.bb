@@ -67,14 +67,11 @@ class GIN_EXPORT V8Initializer {
       base::MemoryMappedFile::Region* region_out);
 
 #if defined(OS_ANDROID)
-  static base::PlatformFile GetOpenNativesFileForChildProcesses(
-      base::MemoryMappedFile::Region* region_out,
-      bool abi_32_bit);
   static base::PlatformFile GetOpenSnapshotFileForChildProcesses(
       base::MemoryMappedFile::Region* region_out,
       bool abi_32_bit);
 
-  static base::FilePath GetNativesFilePath(bool abi_32_bit);
+  static base::FilePath GetNativesFilePath();
   static base::FilePath GetSnapshotFilePath(bool abi_32_bit);
 #endif
 

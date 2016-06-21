@@ -178,10 +178,8 @@ base::LazyInstance<ContentUtilityClient>
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
 #if defined __LP64__
-#define kV8NativesDataDescriptor kV8NativesDataDescriptor64
 #define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor64
 #else
-#define kV8NativesDataDescriptor kV8NativesDataDescriptor32
 #define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor32
 #endif
 #endif

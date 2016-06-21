@@ -63,22 +63,19 @@ OpenedFileMap::mapped_type& GetOpenedFile(const char* file) {
   return opened_files[file];
 }
 
+const char kNativesFileName[] = "natives_blob.bin";
+
 #if defined(OS_ANDROID)
-const char kNativesFileName64[] = "natives_blob_64.bin";
 const char kSnapshotFileName64[] = "snapshot_blob_64.bin";
-const char kNativesFileName32[] = "natives_blob_32.bin";
 const char kSnapshotFileName32[] = "snapshot_blob_32.bin";
 
 #if defined(__LP64__)
-#define kNativesFileName kNativesFileName64
 #define kSnapshotFileName kSnapshotFileName64
 #else
-#define kNativesFileName kNativesFileName32
 #define kSnapshotFileName kSnapshotFileName32
 #endif
 
 #else  // defined(OS_ANDROID)
-const char kNativesFileName[] = "natives_blob.bin";
 const char kSnapshotFileName[] = "snapshot_blob.bin";
 #endif  // defined(OS_ANDROID)
 
@@ -388,17 +385,6 @@ base::PlatformFile V8Initializer::GetOpenSnapshotFileForChildProcesses(
 
 #if defined(OS_ANDROID)
 // static
-base::PlatformFile V8Initializer::GetOpenNativesFileForChildProcesses(
-    base::MemoryMappedFile::Region* region_out,
-    bool abi_32_bit) {
-  const char* natives_file =
-      abi_32_bit ? kNativesFileName32 : kNativesFileName64;
-  const OpenedFileMap::mapped_type& opened = OpenFileIfNecessary(natives_file);
-  *region_out = opened.second;
-  return opened.first;
-}
-
-// static
 base::PlatformFile V8Initializer::GetOpenSnapshotFileForChildProcesses(
     base::MemoryMappedFile::Region* region_out,
     bool abi_32_bit) {
@@ -410,9 +396,9 @@ base::PlatformFile V8Initializer::GetOpenSnapshotFileForChildProcesses(
 }
 
 // static
-base::FilePath V8Initializer::GetNativesFilePath(bool abi_32_bit) {
+base::FilePath V8Initializer::GetNativesFilePath() {
   base::FilePath path;
-  GetV8FilePath(abi_32_bit ? kNativesFileName32 : kNativesFileName64, &path);
+  GetV8FilePath(kNativesFileName, &path);
   return path;
 }
 

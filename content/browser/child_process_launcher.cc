@@ -198,11 +198,8 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
     }
   };
   maybe_register(
-      kV8NativesDataDescriptor32,
-      gin::V8Initializer::GetOpenNativesFileForChildProcesses(&region, true));
-  maybe_register(
-      kV8NativesDataDescriptor64,
-      gin::V8Initializer::GetOpenNativesFileForChildProcesses(&region, false));
+      kV8NativesDataDescriptor,
+      gin::V8Initializer::GetOpenNativesFileForChildProcesses(&region));
   maybe_register(
       kV8SnapshotDataDescriptor32,
       gin::V8Initializer::GetOpenSnapshotFileForChildProcesses(&region, true));

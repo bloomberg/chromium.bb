@@ -32,12 +32,12 @@ if (is_android) {
   ]
   if (current_cpu == "arm" || current_cpu == "x86" || current_cpu == "mipsel") {
     v8_external_startup_data_renaming_destinations = [
-      "natives_blob_32.bin",
+      "natives_blob.bin",
       "snapshot_blob_32.bin",
     ]
   } else {
     v8_external_startup_data_renaming_destinations = [
-      "natives_blob_64.bin",
+      "natives_blob.bin",
       "snapshot_blob_64.bin",
     ]
   }
