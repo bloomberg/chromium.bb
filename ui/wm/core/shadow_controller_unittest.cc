@@ -69,7 +69,8 @@ TEST_F(ShadowControllerTest, Shadow) {
 
   // We should create the shadow before the window is visible (the shadow's
   // layer won't get drawn yet since it's a child of the window's layer).
-  const Shadow* shadow = ShadowController::GetShadowForWindow(window.get());
+  ShadowController::TestApi api(shadow_controller());
+  const Shadow* shadow = api.GetShadowForWindow(window.get());
   ASSERT_TRUE(shadow != NULL);
   EXPECT_TRUE(shadow->layer()->visible());
 
@@ -92,7 +93,7 @@ TEST_F(ShadowControllerTest, Shadow) {
   window->parent()->RemoveChild(window.get());
   aura::Window* window_ptr = window.get();
   window.reset();
-  EXPECT_TRUE(ShadowController::GetShadowForWindow(window_ptr) == NULL);
+  EXPECT_TRUE(api.GetShadowForWindow(window_ptr) == NULL);
 }
 
 // Tests that the window's shadow's bounds are updated correctly.
@@ -109,7 +110,8 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
   // When the shadow is first created, it should use the window's size (but
   // remain at the origin, since it's a child of the window's layer).
   SetShadowType(window.get(), SHADOW_TYPE_RECTANGULAR);
-  const Shadow* shadow = ShadowController::GetShadowForWindow(window.get());
+  ShadowController::TestApi api(shadow_controller());
+  const Shadow* shadow = api.GetShadowForWindow(window.get());
   ASSERT_TRUE(shadow != NULL);
   EXPECT_EQ(gfx::Rect(kOldBounds.size()).ToString(),
             shadow->content_bounds().ToString());
@@ -123,6 +125,8 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
 
 // Tests that activating a window changes the shadow style.
 TEST_F(ShadowControllerTest, ShadowStyle) {
+  ShadowController::TestApi api(shadow_controller());
+
   std::unique_ptr<aura::Window> window1(new aura::Window(NULL));
   window1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window1->Init(ui::LAYER_TEXTURED);
@@ -132,7 +136,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   ActivateWindow(window1.get());
 
   // window1 is active, so style should have active appearance.
-  Shadow* shadow1 = ShadowController::GetShadowForWindow(window1.get());
+  Shadow* shadow1 = api.GetShadowForWindow(window1.get());
   ASSERT_TRUE(shadow1 != NULL);
   EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow1->style());
 
@@ -146,7 +150,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   ActivateWindow(window2.get());
 
   // window1 is now inactive, so shadow should go inactive.
-  Shadow* shadow2 = ShadowController::GetShadowForWindow(window2.get());
+  Shadow* shadow2 = api.GetShadowForWindow(window2.get());
   ASSERT_TRUE(shadow2 != NULL);
   EXPECT_EQ(Shadow::STYLE_INACTIVE, shadow1->style());
   EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow2->style());
@@ -154,13 +158,15 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
 
 // Tests that shadow gets updated when the window show state changes.
 TEST_F(ShadowControllerTest, ShowState) {
+  ShadowController::TestApi api(shadow_controller());
+
   std::unique_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindow(window.get());
   window->Show();
 
-  Shadow* shadow = ShadowController::GetShadowForWindow(window.get());
+  Shadow* shadow = api.GetShadowForWindow(window.get());
   ASSERT_TRUE(shadow != NULL);
   EXPECT_EQ(Shadow::STYLE_INACTIVE, shadow->style());
 
@@ -176,6 +182,8 @@ TEST_F(ShadowControllerTest, ShowState) {
 
 // Tests that we use smaller shadows for tooltips and menus.
 TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
+  ShadowController::TestApi api(shadow_controller());
+
   std::unique_ptr<aura::Window> tooltip_window(new aura::Window(NULL));
   tooltip_window->SetType(ui::wm::WINDOW_TYPE_TOOLTIP);
   tooltip_window->Init(ui::LAYER_TEXTURED);
@@ -183,8 +191,7 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
   tooltip_window->SetBounds(gfx::Rect(10, 20, 300, 400));
   tooltip_window->Show();
 
-  Shadow* tooltip_shadow =
-      ShadowController::GetShadowForWindow(tooltip_window.get());
+  Shadow* tooltip_shadow = api.GetShadowForWindow(tooltip_window.get());
   ASSERT_TRUE(tooltip_shadow != NULL);
   EXPECT_EQ(Shadow::STYLE_SMALL, tooltip_shadow->style());
 
@@ -195,8 +202,7 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
   menu_window->SetBounds(gfx::Rect(10, 20, 300, 400));
   menu_window->Show();
 
-  Shadow* menu_shadow =
-      ShadowController::GetShadowForWindow(tooltip_window.get());
+  Shadow* menu_shadow = api.GetShadowForWindow(tooltip_window.get());
   ASSERT_TRUE(menu_shadow != NULL);
   EXPECT_EQ(Shadow::STYLE_SMALL, menu_shadow->style());
 }
@@ -204,6 +210,8 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
 // http://crbug.com/120210 - transient parents of certain types of transients
 // should not lose their shadow when they lose activation to the transient.
 TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
+  ShadowController::TestApi api(shadow_controller());
+
   std::unique_ptr<aura::Window> window1(new aura::Window(NULL));
   window1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window1->Init(ui::LAYER_TEXTURED);
@@ -213,7 +221,7 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   ActivateWindow(window1.get());
 
   // window1 is active, so style should have active appearance.
-  Shadow* shadow1 = ShadowController::GetShadowForWindow(window1.get());
+  Shadow* shadow1 = api.GetShadowForWindow(window1.get());
   ASSERT_TRUE(shadow1 != NULL);
   EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow1->style());
 
