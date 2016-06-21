@@ -39,11 +39,26 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
   StartTest();
 }
 
+// Test fixture class for tests that rely on deprecated event dispatch that send
+// tests.
+class FileManagerBrowserTestWithLegacyEventDispatch
+    : public FileManagerBrowserTest {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    FileManagerBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("disable-blink-features",
+                                    "TrustedEventsDefaultAction");
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
+  StartTest();
+}
+
 // Test fixture class for details panel.
 // TODO(ryoh): remove after we release details panel feature.
 class FileManagerDetailsPanelBrowserTest : public FileManagerBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    FileManagerBrowserTestBase::SetUpCommandLine(command_line);
+    FileManagerBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch("--enable-files-details-panel");
   }
 };
@@ -425,7 +440,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_TabIndex,
-    FileManagerBrowserTest,
+    FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
@@ -435,7 +450,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_TabindexFocus,
-    FileManagerBrowserTest,
+    FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "tabindexFocus")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
@@ -445,7 +460,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_TabindexFocusDownloads,
-    FileManagerBrowserTest,
+    FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDownloads"),
                       TestParameter(IN_GUEST_MODE, "tabindexFocusDownloads")));
@@ -458,7 +473,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_TabindexFocusDirectorySelected,
-    FileManagerBrowserTest,
+    FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDirectorySelected")));
 
