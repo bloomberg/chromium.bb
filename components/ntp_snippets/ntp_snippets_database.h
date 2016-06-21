@@ -41,6 +41,13 @@ class NTPSnippetsDatabase {
   // initialization finishes), but no updates are allowed.
   bool IsInitialized() const;
 
+  // Returns whether the database is in an (unrecoverable) error state. If this
+  // is true, the database must not be used anymore
+  bool IsErrorState() const;
+
+  // Set a callback to be called when the database enters an error state.
+  void SetErrorCallback(const base::Closure& error_callback);
+
   // Loads all snippets from storage and passes them to |callback|.
   void LoadSnippets(const SnippetsCallback& callback);
 
@@ -88,6 +95,8 @@ class NTPSnippetsDatabase {
                              std::unique_ptr<SnippetImageProto> entry);
   void OnImageDatabaseSaved(bool success);
 
+  void OnDatabaseError();
+
   void ProcessPendingLoads();
 
   void LoadSnippetsImpl(const SnippetsCallback& callback);
@@ -100,8 +109,6 @@ class NTPSnippetsDatabase {
   void DeleteImagesImpl(
       std::unique_ptr<std::vector<std::string>> keys_to_remove);
 
-  void ResetDatabases();
-
   std::unique_ptr<leveldb_proto::ProtoDatabase<SnippetProto>> database_;
   bool database_initialized_;
   std::vector<SnippetsCallback> pending_snippets_callbacks_;
@@ -111,6 +118,8 @@ class NTPSnippetsDatabase {
   bool image_database_initialized_;
   std::vector<std::pair<std::string, SnippetImageCallback>>
       pending_image_callbacks_;
+
+  base::Closure error_callback_;
 
   base::WeakPtrFactory<NTPSnippetsDatabase> weak_ptr_factory_;
 

@@ -50,8 +50,17 @@ NTPSnippetsDatabase::NTPSnippetsDatabase(
 NTPSnippetsDatabase::~NTPSnippetsDatabase() {}
 
 bool NTPSnippetsDatabase::IsInitialized() const {
-  return database_ && database_initialized_ && image_database_ &&
+  return !IsErrorState() && database_initialized_ &&
       image_database_initialized_;
+}
+
+bool NTPSnippetsDatabase::IsErrorState() const {
+  return !database_ || !image_database_;
+}
+
+void NTPSnippetsDatabase::SetErrorCallback(
+    const base::Closure& error_callback) {
+  error_callback_ = error_callback;
 }
 
 void NTPSnippetsDatabase::LoadSnippets(const SnippetsCallback& callback) {
@@ -98,9 +107,7 @@ void NTPSnippetsDatabase::LoadImage(const std::string& snippet_id,
 
 void NTPSnippetsDatabase::SaveImage(const std::string& snippet_id,
                                     const std::string& image_data) {
-  // TODO(treib): After we pass errors to the client, DCHECK(IsInitialized()).
-  if (!IsInitialized())
-    return;
+  DCHECK(IsInitialized());
 
   SnippetImageProto image_proto;
   image_proto.set_data(image_data);
@@ -125,7 +132,7 @@ void NTPSnippetsDatabase::OnDatabaseInited(bool success) {
   DCHECK(!database_initialized_);
   if (!success) {
     DVLOG(1) << "NTPSnippetsDatabase init failed.";
-    ResetDatabases();
+    OnDatabaseError();
     return;
   }
   database_initialized_ = true;
@@ -139,7 +146,7 @@ void NTPSnippetsDatabase::OnDatabaseLoaded(
     std::unique_ptr<std::vector<SnippetProto>> entries) {
   if (!success) {
     DVLOG(1) << "NTPSnippetsDatabase load failed.";
-    ResetDatabases();
+    OnDatabaseError();
     return;
   }
 
@@ -168,7 +175,7 @@ void NTPSnippetsDatabase::OnDatabaseLoaded(
 void NTPSnippetsDatabase::OnDatabaseSaved(bool success) {
   if (!success) {
     DVLOG(1) << "NTPSnippetsDatabase save failed.";
-    ResetDatabases();
+    OnDatabaseError();
   }
 }
 
@@ -176,7 +183,7 @@ void NTPSnippetsDatabase::OnImageDatabaseInited(bool success) {
   DCHECK(!image_database_initialized_);
   if (!success) {
     DVLOG(1) << "NTPSnippetsDatabase init failed.";
-    ResetDatabases();
+    OnDatabaseError();
     return;
   }
   image_database_initialized_ = true;
@@ -190,7 +197,7 @@ void NTPSnippetsDatabase::OnImageDatabaseLoaded(
     std::unique_ptr<SnippetImageProto> entry) {
   if (!success) {
     DVLOG(1) << "NTPSnippetsDatabase load failed.";
-    ResetDatabases();
+    OnDatabaseError();
     return;
   }
 
@@ -206,8 +213,15 @@ void NTPSnippetsDatabase::OnImageDatabaseLoaded(
 void NTPSnippetsDatabase::OnImageDatabaseSaved(bool success) {
   if (!success) {
     DVLOG(1) << "NTPSnippetsDatabase save failed.";
-    ResetDatabases();
+    OnDatabaseError();
   }
+}
+
+void NTPSnippetsDatabase::OnDatabaseError() {
+  database_.reset();
+  image_database_.reset();
+  if (!error_callback_.is_null())
+    error_callback_.Run();
 }
 
 void NTPSnippetsDatabase::ProcessPendingLoads() {
@@ -231,9 +245,7 @@ void NTPSnippetsDatabase::LoadSnippetsImpl(const SnippetsCallback& callback) {
 
 void NTPSnippetsDatabase::SaveSnippetsImpl(
     std::unique_ptr<KeyEntryVector> entries_to_save) {
-  // TODO(treib): After we pass errors to the client, DCHECK(IsInitialized()).
-  if (!IsInitialized())
-    return;
+  DCHECK(IsInitialized());
 
   std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
@@ -245,9 +257,7 @@ void NTPSnippetsDatabase::SaveSnippetsImpl(
 
 void NTPSnippetsDatabase::DeleteSnippetsImpl(
     std::unique_ptr<std::vector<std::string>> keys_to_remove) {
-  // TODO(treib): After we pass errors to the client, DCHECK(IsInitialized()).
-  if (!IsInitialized())
-    return;
+  DCHECK(IsInitialized());
 
   DeleteImagesImpl(
       base::WrapUnique(new std::vector<std::string>(*keys_to_remove)));
@@ -270,20 +280,13 @@ void NTPSnippetsDatabase::LoadImageImpl(const std::string& snippet_id,
 
 void NTPSnippetsDatabase::DeleteImagesImpl(
     std::unique_ptr<std::vector<std::string>> keys_to_remove) {
-  // TODO(treib): After we pass errors to the client, DCHECK(IsInitialized()).
-  if (!IsInitialized())
-    return;
+  DCHECK(IsInitialized());
 
   image_database_->UpdateEntries(
       base::WrapUnique(new ImageKeyEntryVector()),
       std::move(keys_to_remove),
       base::Bind(&NTPSnippetsDatabase::OnImageDatabaseSaved,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void NTPSnippetsDatabase::ResetDatabases() {
-  database_.reset();
-  image_database_.reset();
 }
 
 }  // namespace ntp_snippets

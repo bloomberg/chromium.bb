@@ -203,13 +203,21 @@ NTPSnippetsService::NTPSnippetsService(
       image_decoder_(std::move(image_decoder)),
       database_(std::move(database)),
       fetch_after_load_(false) {
-  // TODO(dgn) should be removed after branch point (https:://crbug.com/617585).
+  // TODO(dgn) should be removed after branch point (https://crbug.com/617585).
   ClearDeprecatedPrefs();
 
   if (explicitly_disabled_) {
     EnterState(State::DISABLED);
     return;
   }
+
+  if (database_->IsErrorState()) {
+    EnterState(State::SHUT_DOWN);
+    return;
+  }
+
+  database_->SetErrorCallback(base::Bind(&NTPSnippetsService::OnDatabaseError,
+                                         base::Unretained(this)));
 
   // We transition to other states while finalizing the initialization, when the
   // database is done loading.
@@ -325,6 +333,9 @@ void NTPSnippetsService::ClearDiscardedSnippets() {
   if (!initialized())
     return;
 
+  if (discarded_snippets_.empty())
+    return;
+
   database_->DeleteSnippets(discarded_snippets_);
   discarded_snippets_.clear();
 }
@@ -420,6 +431,10 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
 
   ClearExpiredSnippets();
   FinishInitialization();
+}
+
+void NTPSnippetsService::OnDatabaseError() {
+  EnterState(State::SHUT_DOWN);
 }
 
 void NTPSnippetsService::OnSuggestionsChanged(

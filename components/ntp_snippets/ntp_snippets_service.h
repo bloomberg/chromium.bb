@@ -206,8 +206,9 @@ class NTPSnippetsService : public KeyedService,
   void OnImageDataFetched(const std::string& snippet_id,
                           const std::string& image_data) override;
 
-  // Callback for the NTPSnippetsDatabase.
+  // Callbacks for the NTPSnippetsDatabase.
   void OnDatabaseLoaded(NTPSnippet::PtrVector snippets);
+  void OnDatabaseError();
 
   // Callback for the SuggestionsService.
   void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
