@@ -325,6 +325,10 @@ ScriptPromise PaymentRequest::complete(ScriptState* scriptState, PaymentComplete
     if (m_completeResolver)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Already called complete() once"));
 
+    // User has cancelled the transaction while the website was processing it.
+    if (!m_paymentProvider)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Request cancelled"));
+
     // The payment provider should respond in PaymentRequest::OnComplete().
     m_paymentProvider->Complete(mojom::blink::PaymentComplete(result));
 

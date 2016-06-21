@@ -265,6 +265,22 @@ TEST(PaymentRequestTest, RejectCompletePromiseOnError)
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnError();
 }
 
+// If user cancels the transaction during processing, the complete() promise
+// should be rejected.
+TEST(PaymentRequestTest, RejectCompletePromiseAfterError)
+{
+    V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    request->show(scope.getScriptState());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnError();
+
+    request->complete(scope.getScriptState(), Success).then(funcs.expectNoCall(), funcs.expectCall());
+}
+
 TEST(PaymentRequestTest, ResolvePromiseOnComplete)
 {
     V8TestingScope scope;
