@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
+#include "components/exo/display.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
@@ -15,6 +18,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -350,6 +356,108 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   shell_surface->Resize(HTBOTTOMRIGHT);
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_TRUE(is_resizing);
+}
+
+TEST_F(ShellSurfaceTest, Shadow) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(
+      new ShellSurface(surface.get(), nullptr, gfx::Rect(), true, true,
+                       ash::kShellWindowId_DefaultContainer));
+
+  surface->Commit();
+
+  views::Widget* widget = shell_surface->GetWidget();
+  aura::Window* window = widget->GetNativeWindow();
+
+  // 1) Initial state, no shadow.
+  wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+  ASSERT_TRUE(shadow);
+  EXPECT_FALSE(shadow->layer()->visible());
+
+  std::unique_ptr<Display> display(new Display);
+
+  // 2) Create a new layout with default blending mode SrcOver.
+  // Theshadow shouldn't be visible.
+  std::unique_ptr<Surface> child = display->CreateSurface();
+  gfx::Size buffer_size(128, 128);
+  std::unique_ptr<Buffer> child_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  child->Attach(child_buffer.get());
+  std::unique_ptr<SubSurface> sub_surface(
+      display->CreateSubSurface(child.get(), surface.get()));
+  surface->Commit();
+
+  EXPECT_FALSE(shadow->layer()->visible());
+
+  // 3) Making the surface the opaque should will make the shadow visible.
+  child->SetBlendMode(SkXfermode::kSrc_Mode);
+  child->Commit();
+  surface->Commit();
+  EXPECT_TRUE(shadow->layer()->visible());
+
+  gfx::Rect before = shadow->layer()->bounds();
+  gfx::Insets shadow_insets =
+      child.get()->window()->layer()->bounds().InsetsFrom(before);
+
+  // 4) Shadow size should be adjusted to the content size.
+  gfx::Size new_buffer_size(256, 256);
+  std::unique_ptr<Buffer> new_child_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(new_buffer_size)));
+  child->Attach(new_child_buffer.get());
+  child->Commit();
+  surface->Commit();
+
+  gfx::Rect after(new_buffer_size);
+  after.Inset(shadow_insets);
+  EXPECT_NE(before, after);
+  EXPECT_EQ(after, shadow->layer()->bounds());
+
+  // 4) Updating the widget's window bounds should not change the shadow bounds.
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(after, shadow->layer()->bounds());
+
+  // 5) Create a opaque sub sub surface with offset so that the opaque region is
+  // non rectangular. Shadow will be disabled.
+  std::unique_ptr<Surface> sub_child = display->CreateSurface();
+  std::unique_ptr<Buffer> new_sub_child_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(new_buffer_size)));
+  sub_child->Attach(new_sub_child_buffer.get());
+  sub_child->SetBlendMode(SkXfermode::kSrc_Mode);
+  sub_child->Commit();
+  std::unique_ptr<SubSurface> sub_sub_surface(
+      display->CreateSubSurface(sub_child.get(), child.get()));
+  child->SetSubSurfacePosition(sub_child.get(), gfx::Point(10, 10));
+  child->Commit();
+  surface->Commit();
+
+  EXPECT_EQ(wm::SHADOW_TYPE_NONE, wm::GetShadowType(window));
+  EXPECT_FALSE(shadow->layer()->visible());
+
+  // 6) Making the sub sub surface non opaque makes opaque region rectangular
+  // again,
+  // and should enable the shadow again.
+  sub_child->SetBlendMode(SkXfermode::kSrcOver_Mode);
+  sub_child->Commit();
+  child->Commit();
+  surface->Commit();
+
+  EXPECT_EQ(wm::SHADOW_TYPE_RECTANGULAR, wm::GetShadowType(window));
+  EXPECT_TRUE(shadow->layer()->visible());
+
+  // 7) Delete the sub surface and it should disable the shadow.
+  sub_surface.reset();
+  surface->Commit();
+
+  EXPECT_EQ(wm::SHADOW_TYPE_NONE, wm::GetShadowType(window));
+  EXPECT_FALSE(shadow->layer()->visible());
+
+  // 8) Create subsurface again, and it should enable the shadow.
+  sub_surface = display->CreateSubSurface(child.get(), surface.get());
+  surface->Commit();
+
+  EXPECT_TRUE(shadow->layer()->visible());
+  EXPECT_EQ(wm::SHADOW_TYPE_RECTANGULAR, wm::GetShadowType(window));
+  EXPECT_TRUE(shadow->layer()->visible());
 }
 
 }  // namespace

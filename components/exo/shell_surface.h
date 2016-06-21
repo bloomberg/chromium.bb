@@ -49,6 +49,7 @@ class ShellSurface : public SurfaceDelegate,
                ShellSurface* parent,
                const gfx::Rect& initial_bounds,
                bool activatable,
+               bool shadow_enabled,
                int container);
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
@@ -240,6 +241,10 @@ class ShellSurface : public SurfaceDelegate,
   // Updates the bounds of widget to match the current surface bounds.
   void UpdateWidgetBounds();
 
+  // Creates, deletes and update the shadow bounds to match the
+  // current surface output bounds.
+  void UpdateShadow();
+
   views::Widget* widget_;
   Surface* surface_;
   aura::Window* parent_;
@@ -265,6 +270,8 @@ class ShellSurface : public SurfaceDelegate,
   gfx::Vector2d pending_origin_config_offset_;
   int resize_component_;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_;
+  bool shadow_enabled_;
+  std::unique_ptr<aura::Window> shadow_parent_;
   std::deque<Config> pending_configs_;
   std::unique_ptr<ash::WindowResizer> resizer_;
   std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;

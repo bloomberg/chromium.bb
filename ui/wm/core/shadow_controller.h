@@ -34,18 +34,8 @@ class Shadow;
 class WM_EXPORT ShadowController :
     public aura::client::ActivationChangeObserver {
  public:
-  class WM_EXPORT TestApi {
-   public:
-    explicit TestApi(ShadowController* controller) : controller_(controller) {}
-    ~TestApi() {}
-
-    Shadow* GetShadowForWindow(aura::Window* window);
-
-   private:
-    ShadowController* controller_;  // not owned
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
+  // Returns the shadow for the |window|, or NULL if no shadow exists.
+  static Shadow* GetShadowForWindow(aura::Window* window);
 
   explicit ShadowController(aura::client::ActivationClient* activation_client);
   ~ShadowController() override;
