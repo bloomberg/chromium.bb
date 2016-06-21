@@ -489,21 +489,30 @@ void ShellSurface::OnSurfaceCommit() {
     UpdateWidgetBounds();
 
     gfx::Point surface_origin = GetSurfaceOrigin();
-    gfx::Rect hit_test_bounds =
-        surface_->GetHitTestBounds() + surface_origin.OffsetFromOrigin();
 
-    // Prevent window from being activated when hit test bounds are empty.
-    bool activatable = activatable_ && !hit_test_bounds.IsEmpty();
-    if (activatable != CanActivate()) {
-      set_can_activate(activatable);
+    // System modal container is used by clients to implement client side
+    // managed system modal dialogs using a single ShellSurface instance.
+    // Hit-test region will be non-empty when at least one dialog exists on
+    // the client side. Here we detect the transition between no client side
+    // dialog and at least one dialog so activatable state is properly
+    // updated.
+    if (container_ == ash::kShellWindowId_SystemModalContainer) {
+      gfx::Rect hit_test_bounds =
+          surface_->GetHitTestBounds() + surface_origin.OffsetFromOrigin();
 
-      // Activate or deactivate window if activation state changed.
-      aura::client::ActivationClient* activation_client =
-          ash::Shell::GetInstance()->activation_client();
-      if (activatable)
-        activation_client->ActivateWindow(widget_->GetNativeWindow());
-      else if (widget_->IsActive())
-        activation_client->DeactivateWindow(widget_->GetNativeWindow());
+      // Prevent window from being activated when hit test bounds are empty.
+      bool activatable = activatable_ && !hit_test_bounds.IsEmpty();
+      if (activatable != CanActivate()) {
+        set_can_activate(activatable);
+
+        // Activate or deactivate window if activation state changed.
+        aura::client::ActivationClient* activation_client =
+            ash::Shell::GetInstance()->activation_client();
+        if (activatable)
+          activation_client->ActivateWindow(widget_->GetNativeWindow());
+        else if (widget_->IsActive())
+          activation_client->DeactivateWindow(widget_->GetNativeWindow());
+      }
     }
 
     // Update surface bounds.
@@ -809,7 +818,11 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   params.parent =
       ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container_);
   params.bounds = initial_bounds_;
-  bool activatable = activatable_ && !surface_->GetHitTestBounds().IsEmpty();
+  bool activatable = activatable_;
+  // ShellSurfaces in system modal container are only activatable if input
+  // region is non-empty. See OnCommitSurface() for more details.
+  if (container_ == ash::kShellWindowId_SystemModalContainer)
+    activatable &= !surface_->GetHitTestBounds().IsEmpty();
   params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_YES
                                    : views::Widget::InitParams::ACTIVATABLE_NO;
 
