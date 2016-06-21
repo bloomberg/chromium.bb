@@ -86,10 +86,6 @@ class NET_EXPORT TransportSecurityState
     // ShouldUpgradeToSSL returns true iff HTTP requests should be internally
     // redirected to HTTPS (also if WS should be upgraded to WSS).
     bool ShouldUpgradeToSSL() const;
-
-    // ShouldSSLErrorsBeFatal returns true iff HTTPS errors should cause
-    // hard-fail behavior (e.g. if HSTS is set for the domain).
-    bool ShouldSSLErrorsBeFatal() const;
   };
 
   class NET_EXPORT STSStateIterator {
@@ -163,10 +159,6 @@ class NET_EXPORT TransportSecurityState
     // |bad_static_spki_hashes|, or |dynamic_spki_hashes| contains any
     // items.
     bool HasPublicKeyPins() const;
-
-    // ShouldSSLErrorsBeFatal returns true iff HTTPS errors should cause
-    // hard-fail behavior (e.g. if HSTS is set for the domain).
-    bool ShouldSSLErrorsBeFatal() const;
   };
 
   class NET_EXPORT PKPStateIterator {

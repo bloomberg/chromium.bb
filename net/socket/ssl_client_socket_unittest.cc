@@ -3346,6 +3346,7 @@ TEST_F(SSLClientSocketTest, PKPEnforced) {
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
 
   EXPECT_EQ(ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, rv);
+  EXPECT_TRUE(ssl_info.cert_status & CERT_STATUS_PINNED_KEY_MISSING);
   EXPECT_TRUE(sock_->IsConnected());
 
   EXPECT_FALSE(ssl_info.pkp_bypassed);

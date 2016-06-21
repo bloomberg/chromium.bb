@@ -1325,10 +1325,6 @@ bool TransportSecurityState::STSState::ShouldUpgradeToSSL() const {
   return upgrade_mode == MODE_FORCE_HTTPS;
 }
 
-bool TransportSecurityState::STSState::ShouldSSLErrorsBeFatal() const {
-  return true;
-}
-
 TransportSecurityState::STSStateIterator::STSStateIterator(
     const TransportSecurityState& state)
     : iterator_(state.enabled_sts_hosts_.begin()),
@@ -1392,10 +1388,6 @@ bool TransportSecurityState::PKPState::CheckPublicKeyPins(
 
 bool TransportSecurityState::PKPState::HasPublicKeyPins() const {
   return spki_hashes.size() > 0 || bad_spki_hashes.size() > 0;
-}
-
-bool TransportSecurityState::PKPState::ShouldSSLErrorsBeFatal() const {
-  return true;
 }
 
 TransportSecurityState::PKPStateIterator::PKPStateIterator(

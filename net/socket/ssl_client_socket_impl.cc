@@ -1335,10 +1335,12 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
           server_cert_verify_result_.public_key_hashes, server_cert_.get(),
           server_cert_verify_result_.verified_cert.get(),
           TransportSecurityState::ENABLE_PIN_REPORTS, &pinning_failure_log_)) {
-    if (server_cert_verify_result_.is_issued_by_known_root)
+    if (server_cert_verify_result_.is_issued_by_known_root) {
+      server_cert_verify_result_.cert_status |= CERT_STATUS_PINNED_KEY_MISSING;
       result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
-    else
+    } else {
       pkp_bypassed_ = true;
+    }
   }
 
   if (result == OK) {

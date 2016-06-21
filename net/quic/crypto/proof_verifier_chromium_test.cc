@@ -430,7 +430,8 @@ TEST_F(ProofVerifierChromiumTest, PKPEnforced) {
   ASSERT_TRUE(details_.get());
   ProofVerifyDetailsChromium* verify_details =
       static_cast<ProofVerifyDetailsChromium*>(details_.get());
-  EXPECT_EQ(0u, verify_details->cert_verify_result.cert_status);
+  EXPECT_TRUE(verify_details->cert_verify_result.cert_status &
+              CERT_STATUS_PINNED_KEY_MISSING);
   EXPECT_FALSE(verify_details->pkp_bypassed);
   EXPECT_NE("", verify_details->pinning_failure_log);
 }

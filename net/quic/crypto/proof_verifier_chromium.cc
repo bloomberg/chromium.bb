@@ -348,10 +348,13 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
           cert_verify_result.verified_cert.get(),
           TransportSecurityState::ENABLE_PIN_REPORTS,
           &verify_details_->pinning_failure_log)) {
-    if (cert_verify_result.is_issued_by_known_root)
+    if (cert_verify_result.is_issued_by_known_root) {
+      verify_details_->cert_verify_result.cert_status |=
+          CERT_STATUS_PINNED_KEY_MISSING;
       result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
-    else
+    } else {
       verify_details_->pkp_bypassed = true;
+    }
   }
 
   if (result != OK) {

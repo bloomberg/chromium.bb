@@ -131,12 +131,6 @@ ErrorInfo ErrorInfo::CreateError(ErrorType error_type,
       short_description =
           l10n_util::GetStringUTF16(IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
       break;
-    case CERT_WEAK_KEY_DH:
-      details = l10n_util::GetStringFUTF16(IDS_CERT_ERROR_WEAK_KEY_DETAILS,
-                                           UTF8ToUTF16(request_url.host()));
-      short_description =
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
-      break;
     case CERT_NAME_CONSTRAINT_VIOLATION:
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DETAILS,
@@ -203,8 +197,6 @@ ErrorInfo::ErrorType ErrorInfo::NetErrorToErrorType(int net_error) {
       return CERT_NAME_CONSTRAINT_VIOLATION;
     case net::ERR_CERT_VALIDITY_TOO_LONG:
       return CERT_VALIDITY_TOO_LONG;
-    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
-      return CERT_WEAK_KEY_DH;
     case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
       return CERT_PINNED_KEY_MISSING;
     default:
