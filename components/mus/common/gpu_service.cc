@@ -88,17 +88,16 @@ GpuService::GetIOThreadTaskRunner() {
 
 std::unique_ptr<base::SharedMemory> GpuService::AllocateSharedMemory(
     size_t size) {
-  mojo::ScopedSharedBufferHandle handle;
-  MojoResult result = mojo::CreateSharedBuffer(nullptr, size, &handle);
-  if (result != MOJO_RESULT_OK)
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(size);
+  if (!handle.is_valid())
     return nullptr;
-  DCHECK(handle->is_valid());
 
   base::SharedMemoryHandle platform_handle;
   size_t shared_memory_size;
   bool readonly;
-  result = mojo::UnwrapSharedMemoryHandle(std::move(handle), &platform_handle,
-                                          &shared_memory_size, &readonly);
+  MojoResult result = mojo::UnwrapSharedMemoryHandle(
+      std::move(handle), &platform_handle, &shared_memory_size, &readonly);
   if (result != MOJO_RESULT_OK)
     return nullptr;
   DCHECK_EQ(shared_memory_size, size);

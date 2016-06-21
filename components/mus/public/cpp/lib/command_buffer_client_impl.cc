@@ -26,25 +26,16 @@ namespace mus {
 
 namespace {
 
-bool CreateMapAndDupSharedBuffer(size_t size,
-                                 void** memory,
-                                 mojo::ScopedSharedBufferHandle* handle,
-                                 mojo::ScopedSharedBufferHandle* duped) {
-  MojoResult result = mojo::CreateSharedBuffer(NULL, size, handle);
-  if (result != MOJO_RESULT_OK)
+bool CreateAndMapSharedBuffer(size_t size,
+                              mojo::ScopedSharedBufferMapping* mapping,
+                              mojo::ScopedSharedBufferHandle* handle) {
+  *handle = mojo::SharedBufferHandle::Create(size);
+  if (!handle->is_valid())
     return false;
-  DCHECK(handle->is_valid());
 
-  result = mojo::DuplicateBuffer(handle->get(), NULL, duped);
-  if (result != MOJO_RESULT_OK)
+  *mapping = (*handle)->Map(size);
+  if (!*mapping)
     return false;
-  DCHECK(duped->is_valid());
-
-  result = mojo::MapBuffer(handle->get(), 0, size, memory,
-                           MOJO_MAP_BUFFER_FLAG_NONE);
-  if (result != MOJO_RESULT_OK)
-    return false;
-  DCHECK(*memory);
 
   return true;
 }
@@ -70,7 +61,6 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       client_binding_(this),
       command_buffer_(std::move(command_buffer_ptr)),
       command_buffer_id_(),
-      shared_state_(NULL),
       last_put_offset_(-1),
       next_transfer_buffer_id_(0),
       next_image_id_(0),
@@ -85,14 +75,11 @@ CommandBufferClientImpl::~CommandBufferClientImpl() {}
 
 bool CommandBufferClientImpl::Initialize() {
   const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
-  void* memory = NULL;
-  mojo::ScopedSharedBufferHandle duped;
-  bool result = CreateMapAndDupSharedBuffer(kSharedStateSize, &memory,
-                                            &shared_state_handle_, &duped);
+  mojo::ScopedSharedBufferHandle handle;
+  bool result =
+      CreateAndMapSharedBuffer(kSharedStateSize, &shared_state_, &handle);
   if (!result)
     return false;
-
-  shared_state_ = static_cast<gpu::CommandBufferSharedState*>(memory);
 
   shared_state()->Initialize();
 
@@ -101,7 +88,7 @@ bool CommandBufferClientImpl::Initialize() {
 
   mus::mojom::CommandBufferInitializeResultPtr initialize_result;
   command_buffer_->Initialize(
-      std::move(client_ptr), std::move(duped),
+      std::move(client_ptr), std::move(handle),
       mojo::Array<int32_t>::From(attribs_),
       base::Bind(&InitializeCallback, &initialize_result));
 
@@ -175,10 +162,9 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
   if (size >= std::numeric_limits<uint32_t>::max())
     return NULL;
 
-  void* memory = NULL;
+  mojo::ScopedSharedBufferMapping mapping;
   mojo::ScopedSharedBufferHandle handle;
-  mojo::ScopedSharedBufferHandle duped;
-  if (!CreateMapAndDupSharedBuffer(size, &memory, &handle, &duped)) {
+  if (!CreateAndMapSharedBuffer(size, &mapping, &handle)) {
     if (last_state_.error == gpu::error::kNoError)
       last_state_.error = gpu::error::kLostContext;
     return NULL;
@@ -186,11 +172,11 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
 
   *id = ++next_transfer_buffer_id_;
 
-  command_buffer_->RegisterTransferBuffer(*id, std::move(duped),
+  command_buffer_->RegisterTransferBuffer(*id, std::move(handle),
                                           static_cast<uint32_t>(size));
 
   std::unique_ptr<gpu::BufferBacking> backing(
-      new mus::MojoBufferBacking(std::move(handle), memory, size));
+      new mus::MojoBufferBacking(std::move(mapping), size));
   scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(std::move(backing)));
   return buffer;
 }

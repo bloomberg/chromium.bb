@@ -126,10 +126,9 @@ scoped_refptr<VideoFrame> CreateMojoSharedBufferColorFrame() {
   // |color_frame|'s data.
   const size_t allocation_size = VideoFrame::AllocationSize(
       color_frame->format(), color_frame->coded_size());
-  mojo::ScopedSharedBufferHandle handle;
-  const MojoResult mojo_result =
-      mojo::CreateSharedBuffer(nullptr, allocation_size, &handle);
-  EXPECT_EQ(mojo_result, MOJO_RESULT_OK);
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(allocation_size);
+  EXPECT_TRUE(handle.is_valid());
 
   // Create a MojoSharedBufferVideoFrame whose dimensions match |color_frame|.
   const size_t y_plane_size = color_frame->rows(VideoFrame::kYPlane) *

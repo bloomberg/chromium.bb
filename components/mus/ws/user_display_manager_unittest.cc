@@ -227,12 +227,11 @@ TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
   base::subtle::Atomic32* cursor_location_memory = nullptr;
   mojo::ScopedSharedBufferHandle handle =
       user_display_manager1->GetCursorLocationMemory();
-  MojoResult result = mojo::MapBuffer(
-      handle.get(), 0,
-      sizeof(base::subtle::Atomic32),
-      reinterpret_cast<void**>(&cursor_location_memory),
-      MOJO_MAP_BUFFER_FLAG_NONE);
-  ASSERT_EQ(MOJO_RESULT_OK, result);
+  mojo::ScopedSharedBufferMapping cursor_location_mapping =
+      handle->Map(sizeof(base::subtle::Atomic32));
+  ASSERT_TRUE(cursor_location_mapping);
+  cursor_location_memory =
+      reinterpret_cast<base::subtle::Atomic32*>(cursor_location_mapping.get());
 
   base::subtle::Atomic32 location =
       base::subtle::NoBarrier_Load(cursor_location_memory);

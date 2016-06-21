@@ -32,10 +32,9 @@ MojoSharedBufferVideoFrame::CreateDefaultI420(const gfx::Size& dimensions,
 
   // Allocate a shared memory buffer big enough to hold the desired frame.
   const size_t allocation_size = VideoFrame::AllocationSize(format, coded_size);
-  mojo::ScopedSharedBufferHandle handle;
-  const MojoResult result =
-      mojo::CreateSharedBuffer(nullptr, allocation_size, &handle);
-  if (result != MOJO_RESULT_OK)
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(allocation_size);
+  if (!handle.is_valid())
     return nullptr;
 
   // Create and initialize the frame. As this is I420 format, the U and V
@@ -99,8 +98,7 @@ MojoSharedBufferVideoFrame::MojoSharedBufferVideoFrame(
                  natural_size,
                  timestamp),
       shared_buffer_handle_(std::move(handle)),
-      shared_buffer_size_(mapped_size),
-      shared_buffer_data_(nullptr) {
+      shared_buffer_size_(mapped_size) {
   DCHECK(shared_buffer_handle_.is_valid());
 }
 
@@ -110,14 +108,10 @@ bool MojoSharedBufferVideoFrame::Init(int32_t y_stride,
                                       size_t y_offset,
                                       size_t u_offset,
                                       size_t v_offset) {
-  DCHECK(!shared_buffer_data_);
-  void* memory = nullptr;
-  const MojoResult result =
-      mojo::MapBuffer(shared_buffer_handle_.get(), 0 /* offset */,
-                      shared_buffer_size_, &memory, MOJO_MAP_BUFFER_FLAG_NONE);
-  if (result != MOJO_RESULT_OK || !memory)
+  DCHECK(!shared_buffer_mapping_);
+  shared_buffer_mapping_ = shared_buffer_handle_->Map(shared_buffer_size_);
+  if (!shared_buffer_mapping_)
     return false;
-  shared_buffer_data_ = static_cast<uint8_t*>(memory);
 
   set_stride(kYPlane, y_stride);
   set_stride(kUPlane, u_stride);
@@ -125,20 +119,13 @@ bool MojoSharedBufferVideoFrame::Init(int32_t y_stride,
   offsets_[kYPlane] = y_offset;
   offsets_[kUPlane] = u_offset;
   offsets_[kVPlane] = v_offset;
-  set_data(kYPlane, shared_buffer_data_ + y_offset);
-  set_data(kUPlane, shared_buffer_data_ + u_offset);
-  set_data(kVPlane, shared_buffer_data_ + v_offset);
+  set_data(kYPlane, shared_buffer_data() + y_offset);
+  set_data(kUPlane, shared_buffer_data() + u_offset);
+  set_data(kVPlane, shared_buffer_data() + v_offset);
   return true;
 }
 
 MojoSharedBufferVideoFrame::~MojoSharedBufferVideoFrame() {
-  // If MapBuffer() was called, we need to have a matching call to unmap it.
-  if (shared_buffer_data_) {
-    const MojoResult result = mojo::UnmapBuffer(shared_buffer_data_);
-    ALLOW_UNUSED_LOCAL(result);
-    DCHECK_EQ(result, MOJO_RESULT_OK);
-  }
-
   // Call |mojo_shared_buffer_done_cb_| to take ownership of
   // |shared_buffer_handle_|.
   if (!mojo_shared_buffer_done_cb_.is_null())

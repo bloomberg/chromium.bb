@@ -340,6 +340,13 @@ class WindowTreeClient : public mojom::WindowTreeClient,
       const gfx::Vector2d& offset,
       const gfx::Insets& hit_area) override;
 
+  // The one int in |cursor_location_mapping_|. When we read from this
+  // location, we must always read from it atomically.
+  base::subtle::Atomic32* cursor_location_memory() {
+    return reinterpret_cast<base::subtle::Atomic32*>(
+        cursor_location_mapping_.get());
+  }
+
   // This is set once and only once when we get OnEmbed(). It gives the unique
   // id for this client.
   ClientSpecificId client_id_;
@@ -374,13 +381,9 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
   bool in_destructor_;
 
-  // A handle to shared memory that is one 32 bit integer long. The window
+  // A mapping to shared memory that is one 32 bit integer long. The window
   // server uses this to let us synchronously read the cursor location.
-  mojo::ScopedSharedBufferHandle cursor_location_handle_;
-
-  // The one int in |cursor_location_handle_|. When we read from this
-  // location, we must always read from it atomically.
-  base::subtle::Atomic32* cursor_location_memory_;
+  mojo::ScopedSharedBufferMapping cursor_location_mapping_;
 
   base::ObserverList<WindowTreeClientObserver> observers_;
 

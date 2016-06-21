@@ -100,7 +100,6 @@ WindowTreeClient::WindowTreeClient(
       tree_(nullptr),
       delete_on_no_roots_(!window_manager_delegate),
       in_destructor_(false),
-      cursor_location_memory_(nullptr),
       weak_factory_(this) {
   // Allow for a null request in tests.
   if (request.is_pending())
@@ -577,17 +576,8 @@ void WindowTreeClient::WmNewDisplayAddedImpl(const display::Display& display,
 
 void WindowTreeClient::OnReceivedCursorLocationMemory(
     mojo::ScopedSharedBufferHandle handle) {
-  cursor_location_handle_ = std::move(handle);
-  MojoResult result = mojo::MapBuffer(
-      cursor_location_handle_.get(), 0,
-      sizeof(base::subtle::Atomic32),
-      reinterpret_cast<void**>(&cursor_location_memory_),
-      MOJO_MAP_BUFFER_FLAG_NONE);
-  if (result != MOJO_RESULT_OK) {
-    NOTREACHED();
-    return;
-  }
-  DCHECK(cursor_location_memory_);
+  cursor_location_mapping_ = handle->Map(sizeof(base::subtle::Atomic32));
+  DCHECK(cursor_location_mapping_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -614,11 +604,11 @@ void WindowTreeClient::ClearFocus() {
 
 gfx::Point WindowTreeClient::GetCursorScreenPoint() {
   // We raced initialization. Return (0, 0).
-  if (!cursor_location_memory_)
+  if (!cursor_location_memory())
     return gfx::Point();
 
   base::subtle::Atomic32 location =
-      base::subtle::NoBarrier_Load(cursor_location_memory_);
+      base::subtle::NoBarrier_Load(cursor_location_memory());
   return gfx::Point(static_cast<int16_t>(location >> 16),
                     static_cast<int16_t>(location & 0xFFFF));
 }

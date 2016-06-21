@@ -38,25 +38,16 @@ namespace {
 
 uint64_t g_next_command_buffer_id = 0;
 
-bool CreateMapAndDupSharedBuffer(size_t size,
-                                 void** memory,
-                                 mojo::ScopedSharedBufferHandle* handle,
-                                 mojo::ScopedSharedBufferHandle* duped) {
-  MojoResult result = mojo::CreateSharedBuffer(NULL, size, handle);
-  if (result != MOJO_RESULT_OK)
+bool CreateAndMapSharedBuffer(size_t size,
+                              mojo::ScopedSharedBufferMapping* mapping,
+                              mojo::ScopedSharedBufferHandle* handle) {
+  *handle = mojo::SharedBufferHandle::Create(size);
+  if (!handle->is_valid())
     return false;
-  DCHECK(handle->is_valid());
 
-  result = mojo::DuplicateBuffer(handle->get(), NULL, duped);
-  if (result != MOJO_RESULT_OK)
+  *mapping = (*handle)->Map(size);
+  if (!*mapping)
     return false;
-  DCHECK(duped->is_valid());
-
-  result = mojo::MapBuffer(handle->get(), 0, size, memory,
-                           MOJO_MAP_BUFFER_FLAG_NONE);
-  if (result != MOJO_RESULT_OK)
-    return false;
-  DCHECK(*memory);
 
   return true;
 }
@@ -190,10 +181,9 @@ scoped_refptr<gpu::Buffer> CommandBufferLocal::CreateTransferBuffer(
   if (size >= std::numeric_limits<uint32_t>::max())
     return nullptr;
 
-  void* memory = nullptr;
+  mojo::ScopedSharedBufferMapping mapping;
   mojo::ScopedSharedBufferHandle handle;
-  mojo::ScopedSharedBufferHandle duped;
-  if (!CreateMapAndDupSharedBuffer(size, &memory, &handle, &duped)) {
+  if (!CreateAndMapSharedBuffer(size, &mapping, &handle)) {
     if (last_state_.error == gpu::error::kNoError)
       last_state_.error = gpu::error::kLostContext;
     return nullptr;
@@ -204,10 +194,10 @@ scoped_refptr<gpu::Buffer> CommandBufferLocal::CreateTransferBuffer(
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(),
       base::Bind(&CommandBufferLocal::RegisterTransferBufferOnGpuThread,
-                 base::Unretained(this), *id, base::Passed(&duped),
+                 base::Unretained(this), *id, base::Passed(&handle),
                  static_cast<uint32_t>(size)));
   std::unique_ptr<gpu::BufferBacking> backing(
-      new mus::MojoBufferBacking(std::move(handle), memory, size));
+      new mus::MojoBufferBacking(std::move(mapping), size));
   scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(std::move(backing)));
   return buffer;
 }
@@ -455,20 +445,19 @@ void CommandBufferLocal::InitializeOnGpuThread(base::WaitableEvent* event,
       widget_, gpu_state_));
   driver_->set_client(this);
   const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
-  void* memory = nullptr;
-  mojo::ScopedSharedBufferHandle duped;
-  *result = CreateMapAndDupSharedBuffer(kSharedStateSize, &memory,
-                                        &shared_state_handle_, &duped);
+  mojo::ScopedSharedBufferMapping mapping;
+  mojo::ScopedSharedBufferHandle handle;
+  *result = CreateAndMapSharedBuffer(kSharedStateSize, &shared_state_, &handle);
 
   if (!*result) {
     event->Signal();
     return;
   }
 
-  shared_state_ = static_cast<gpu::CommandBufferSharedState*>(memory);
   shared_state()->Initialize();
 
-  *result = driver_->Initialize(std::move(duped), mojo::Array<int32_t>::New(0));
+  *result =
+      driver_->Initialize(std::move(handle), mojo::Array<int32_t>::New(0));
   if (*result)
     capabilities_ = driver_->GetCapabilities();
   event->Signal();

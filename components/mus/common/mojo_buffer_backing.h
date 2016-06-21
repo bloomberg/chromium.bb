@@ -18,9 +18,7 @@ namespace mus {
 
 class MUS_COMMON_EXPORT MojoBufferBacking : public gpu::BufferBacking {
  public:
-  MojoBufferBacking(mojo::ScopedSharedBufferHandle handle,
-                    void* memory,
-                    size_t size);
+  MojoBufferBacking(mojo::ScopedSharedBufferMapping mapping, size_t size);
   ~MojoBufferBacking() override;
 
   static std::unique_ptr<gpu::BufferBacking> Create(
@@ -31,8 +29,7 @@ class MUS_COMMON_EXPORT MojoBufferBacking : public gpu::BufferBacking {
   size_t GetSize() const override;
 
  private:
-  mojo::ScopedSharedBufferHandle handle_;
-  void* memory_;
+  mojo::ScopedSharedBufferMapping mapping_;
   size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoBufferBacking);

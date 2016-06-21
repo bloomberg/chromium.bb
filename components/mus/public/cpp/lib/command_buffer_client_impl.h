@@ -87,7 +87,10 @@ class CommandBufferClientImpl : public mus::mojom::CommandBufferClient,
   void TryUpdateState();
   void MakeProgressAndUpdateState();
 
-  gpu::CommandBufferSharedState* shared_state() const { return shared_state_; }
+  gpu::CommandBufferSharedState* shared_state() const {
+    return reinterpret_cast<gpu::CommandBufferSharedState*>(
+        shared_state_.get());
+  }
 
   gpu::GpuControlClient* gpu_control_client_;
   bool destroyed_;
@@ -98,8 +101,7 @@ class CommandBufferClientImpl : public mus::mojom::CommandBufferClient,
   gpu::CommandBufferId command_buffer_id_;
   gpu::Capabilities capabilities_;
   State last_state_;
-  mojo::ScopedSharedBufferHandle shared_state_handle_;
-  gpu::CommandBufferSharedState* shared_state_;
+  mojo::ScopedSharedBufferMapping shared_state_;
   int32_t last_put_offset_;
   int32_t next_transfer_buffer_id_;
 

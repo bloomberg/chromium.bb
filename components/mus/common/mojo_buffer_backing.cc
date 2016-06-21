@@ -5,33 +5,27 @@
 #include "components/mus/common/mojo_buffer_backing.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace mus {
 
-MojoBufferBacking::MojoBufferBacking(mojo::ScopedSharedBufferHandle handle,
-                                     void* memory,
+MojoBufferBacking::MojoBufferBacking(mojo::ScopedSharedBufferMapping mapping,
                                      size_t size)
-    : handle_(std::move(handle)), memory_(memory), size_(size) {}
+    : mapping_(std::move(mapping)), size_(size) {}
 
-MojoBufferBacking::~MojoBufferBacking() {
-  mojo::UnmapBuffer(memory_);
-}
+MojoBufferBacking::~MojoBufferBacking() = default;
 
 // static
 std::unique_ptr<gpu::BufferBacking> MojoBufferBacking::Create(
     mojo::ScopedSharedBufferHandle handle,
     size_t size) {
-  void* memory = NULL;
-  MojoResult result = mojo::MapBuffer(handle.get(), 0, size, &memory,
-                                      MOJO_MAP_BUFFER_FLAG_NONE);
-  if (result != MOJO_RESULT_OK)
-    return std::unique_ptr<BufferBacking>();
-  DCHECK(memory);
-  return std::unique_ptr<BufferBacking>(
-      new MojoBufferBacking(std::move(handle), memory, size));
+  mojo::ScopedSharedBufferMapping mapping = handle->Map(size);
+  if (!mapping)
+    return nullptr;
+  return base::MakeUnique<MojoBufferBacking>(std::move(mapping), size);
 }
 void* MojoBufferBacking::GetMemory() const {
-  return memory_;
+  return mapping_.get();
 }
 size_t MojoBufferBacking::GetSize() const {
   return size_;

@@ -59,10 +59,7 @@ class MojoCdmBuffer : public cdm::Buffer {
   // cdm::Buffer implementation.
   void Destroy() final {
     // Unmap the memory before returning the handle to |allocator_|.
-    MojoResult result = mojo::UnmapBuffer(memory_);
-    ALLOW_UNUSED_LOCAL(result);
-    DCHECK(result == MOJO_RESULT_OK);
-    memory_ = nullptr;
+    mapping_.reset();
 
     // If nobody has claimed the handle, then return it.
     if (buffer_.is_valid())
@@ -74,7 +71,7 @@ class MojoCdmBuffer : public cdm::Buffer {
 
   uint32_t Capacity() const final { return capacity_; }
 
-  uint8_t* Data() final { return static_cast<uint8_t*>(memory_); }
+  uint8_t* Data() final { return static_cast<uint8_t*>(mapping_.get()); }
 
   void SetSize(uint32_t size) final {
     DCHECK_LE(size, Capacity());
@@ -93,14 +90,10 @@ class MojoCdmBuffer : public cdm::Buffer {
                 const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb)
       : buffer_(std::move(buffer)),
         mojo_shared_buffer_done_cb_(mojo_shared_buffer_done_cb),
-        memory_(nullptr),
         capacity_(capacity),
         size_(0) {
-    MojoResult result = mojo::MapBuffer(buffer_.get(), 0, capacity_, &memory_,
-                                        MOJO_MAP_BUFFER_FLAG_NONE);
-    ALLOW_UNUSED_LOCAL(result);
-    DCHECK(result == MOJO_RESULT_OK);
-    DCHECK(memory_);
+    mapping_ = buffer_->Map(capacity_);
+    DCHECK(mapping_);
   }
 
   ~MojoCdmBuffer() final {
@@ -111,7 +104,7 @@ class MojoCdmBuffer : public cdm::Buffer {
   mojo::ScopedSharedBufferHandle buffer_;
   MojoSharedBufferDoneCB mojo_shared_buffer_done_cb_;
 
-  void* memory_;
+  mojo::ScopedSharedBufferMapping mapping_;
   uint32_t capacity_;
   uint32_t size_;
 
@@ -230,14 +223,12 @@ mojo::ScopedSharedBufferHandle MojoCdmAllocator::AllocateNewBuffer(
 
   // Creation of shared memory may be expensive if it involves synchronous IPC
   // calls. That's why we try to avoid AllocateNewBuffer() as much as we can.
-  mojo::ScopedSharedBufferHandle handle;
   base::CheckedNumeric<size_t> requested_capacity(*capacity);
   requested_capacity += kBufferPadding;
-  MojoResult result = mojo::CreateSharedBuffer(
-      nullptr, requested_capacity.ValueOrDie(), &handle);
-  if (result != MOJO_RESULT_OK)
-    return mojo::ScopedSharedBufferHandle();
-  DCHECK(handle.is_valid());
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(requested_capacity.ValueOrDie());
+  if (!handle.is_valid())
+    return handle;
   *capacity = requested_capacity.ValueOrDie();
   return handle;
 }

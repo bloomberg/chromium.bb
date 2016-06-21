@@ -689,10 +689,8 @@ TypeConverter<media::mojom::VideoFramePtr, scoped_refptr<media::VideoFrame>>::
            input->storage_type());
   media::MojoSharedBufferVideoFrame* input_frame =
       static_cast<media::MojoSharedBufferVideoFrame*>(input.get());
-  mojo::ScopedSharedBufferHandle duplicated_handle;
-  const MojoResult result =
-      DuplicateBuffer(input_frame->Handle(), nullptr, &duplicated_handle);
-  CHECK_EQ(MOJO_RESULT_OK, result);
+  mojo::ScopedSharedBufferHandle duplicated_handle =
+      input_frame->Handle().Clone();
   CHECK(duplicated_handle.is_valid());
 
   frame->format = static_cast<media::mojom::VideoFormat>(input->format());
