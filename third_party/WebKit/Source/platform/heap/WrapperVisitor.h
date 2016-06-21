@@ -11,6 +11,7 @@
 namespace v8 {
 class Value;
 class Object;
+template <class T> class PersistentBase;
 }
 
 namespace blink {
@@ -32,6 +33,7 @@ template<typename T> class ScopedPersistent;
     V(NodeMutationObserverData);                                     \
     V(NodeRareData);                                                 \
     V(StyleEngine);                                                  \
+    V(V8AbstractEventListener);                                      \
 
 #define FORWARD_DECLARE_SPECIAL_CLASSES(className)                   \
     class className;
@@ -97,8 +99,9 @@ public:
         if (!traceable)
             return;
 
-        if (TraceTrait<T>::heapObjectHeader(traceable)->isWrapperHeaderMarked())
+        if (TraceTrait<T>::heapObjectHeader(traceable)->isWrapperHeaderMarked()) {
             return;
+        }
 
         pushToMarkingDeque(
             TraceTrait<T>::markWrapper,
@@ -112,7 +115,9 @@ public:
         traceWrappers(t.get());
     }
 
-    virtual void traceWrappers(const ScopedPersistent<v8::Value>*) const = 0;
+    virtual void traceWrappers(const ScopedPersistent<v8::Value>* persistent) const = 0;
+    virtual void traceWrappers(const ScopedPersistent<v8::Object>* persistent) const = 0;
+    virtual void markWrapper(const v8::PersistentBase<v8::Object>* persistent) const = 0;
 
     virtual void dispatchTraceWrappers(const ScriptWrappable*) const = 0;
 #define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                   \

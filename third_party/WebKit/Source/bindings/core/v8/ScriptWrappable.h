@@ -149,7 +149,7 @@ public:
      *  wrapper in the main world. To mark wrappers in all worlds call
      *  ScriptWrappableVisitor::markWrapper(ScriptWrappable*, v8::Isolate*)
      */
-    void markWrapper(v8::Isolate*) const;
+    void markWrapper(const WrapperVisitor*) const;
 
     DECLARE_VIRTUAL_TRACE_WRAPPERS() {};
 

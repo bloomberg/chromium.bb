@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/ElementRareData.h"
@@ -109,13 +110,27 @@ bool ScriptWrappableVisitor::markWrapperHeader(HeapObjectHeader* header) const
 
 void ScriptWrappableVisitor::markWrappersInAllWorlds(const ScriptWrappable* scriptWrappable) const
 {
-    DOMWrapperWorld::markWrappersInAllWorlds(const_cast<ScriptWrappable*>(scriptWrappable), m_isolate);
+    DOMWrapperWorld::markWrappersInAllWorlds(const_cast<ScriptWrappable*>(scriptWrappable), this);
 }
 
 void ScriptWrappableVisitor::traceWrappers(const ScopedPersistent<v8::Value>* scopedPersistent) const
 {
-    markWrapper(
-        &(const_cast<ScopedPersistent<v8::Value>*>(scopedPersistent)->get()));
+    markWrapper(&(const_cast<ScopedPersistent<v8::Value>*>(scopedPersistent)->get()));
+}
+
+void ScriptWrappableVisitor::traceWrappers(const ScopedPersistent<v8::Object>* scopedPersistent) const
+{
+    markWrapper(&(const_cast<ScopedPersistent<v8::Object>*>(scopedPersistent)->get()));
+}
+
+void ScriptWrappableVisitor::markWrapper(const v8::PersistentBase<v8::Value>* handle) const
+{
+    handle->RegisterExternalReference(m_isolate);
+}
+
+void ScriptWrappableVisitor::markWrapper(const v8::PersistentBase<v8::Object>* handle) const
+{
+    handle->RegisterExternalReference(m_isolate);
 }
 
 void ScriptWrappableVisitor::dispatchTraceWrappers(const ScriptWrappable* wrappable) const

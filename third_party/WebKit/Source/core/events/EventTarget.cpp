@@ -141,9 +141,7 @@ DEFINE_TRACE_WRAPPERS(EventTarget)
         if (!v8listener->hasExistingListenerObject())
             continue;
 
-        ScriptWrappableVisitor::markWrapper(
-            &(v8listener->existingListenerObjectPersistentHandle()),
-            v8listener->isolate());
+        visitor->traceWrappers(v8listener);
     }
 }
 

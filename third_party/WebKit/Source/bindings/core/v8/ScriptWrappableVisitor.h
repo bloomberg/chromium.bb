@@ -83,14 +83,6 @@ public:
      * gc.
      */
     static void invalidateDeadObjectsInMarkingDeque(v8::Isolate*);
-    /**
-     * Mark given wrapper as alive in V8.
-     */
-    template <typename T>
-    static void markWrapper(const v8::Persistent<T>* handle, v8::Isolate* isolate)
-    {
-        handle->RegisterExternalReference(isolate);
-    }
 
     void TracePrologue() override;
     void RegisterV8References(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers) override;
@@ -99,12 +91,6 @@ public:
     void TraceEpilogue() override;
     void AbortTracing() override;
     void EnterFinalPause() override;
-
-    template <typename T>
-    void markWrapper(const v8::Persistent<T>* handle) const
-    {
-        markWrapper(handle, m_isolate);
-    }
 
     void dispatchTraceWrappers(const ScriptWrappable*) const override;
 #define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                   \
@@ -116,6 +102,9 @@ public:
     void dispatchTraceWrappers(const void*) const override {}
 
     void traceWrappers(const ScopedPersistent<v8::Value>*) const override;
+    void traceWrappers(const ScopedPersistent<v8::Object>*) const override;
+    void markWrapper(const v8::PersistentBase<v8::Value>* handle) const;
+    void markWrapper(const v8::PersistentBase<v8::Object>* handle) const override;
 
     void invalidateDeadObjectsInMarkingDeque();
 

@@ -138,7 +138,7 @@ void DOMWrapperWorld::allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld>>& wor
         worlds.append(it->value);
 }
 
-void DOMWrapperWorld::markWrappersInAllWorlds(ScriptWrappable* scriptWrappable, v8::Isolate* isolate)
+void DOMWrapperWorld::markWrappersInAllWorlds(ScriptWrappable* scriptWrappable, const WrapperVisitor* visitor)
 {
     // TODO(hlopko): Currently wrapper in one world will keep wrappers in all
     // worlds alive (possibly holding on entire documents). This is neither
@@ -146,7 +146,7 @@ void DOMWrapperWorld::markWrappersInAllWorlds(ScriptWrappable* scriptWrappable, 
     // (big performance and memory overhead).
 
     // Marking for the main world
-    scriptWrappable->markWrapper(isolate);
+    scriptWrappable->markWrapper(visitor);
     if (!isMainThread())
         return;
     WorldMap& isolatedWorlds = isolatedWorldMap();

@@ -36,10 +36,10 @@ v8::Local<v8::Object> ScriptWrappable::associateWithWrapper(v8::Isolate* isolate
     return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
 
-void ScriptWrappable::markWrapper(v8::Isolate* isolate) const
+void ScriptWrappable::markWrapper(const WrapperVisitor* visitor) const
 {
     if (containsWrapper())
-        ScriptWrappableVisitor::markWrapper(&m_mainWorldWrapper, isolate);
+        visitor->markWrapper(&m_mainWorldWrapper);
 }
 
 } // namespace blink

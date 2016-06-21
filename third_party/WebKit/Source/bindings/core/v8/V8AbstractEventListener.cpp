@@ -206,4 +206,9 @@ DEFINE_TRACE(V8AbstractEventListener)
     EventListener::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(V8AbstractEventListener)
+{
+    visitor->traceWrappers(&m_listener);
+}
+
 } // namespace blink
