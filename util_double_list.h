@@ -98,6 +98,12 @@ static inline void list_delinit(struct list_head *item)
 #define LIST_ENTRY(__type, __item, __field)   \
     ((__type *)(((char *)(__item)) - offsetof(__type, __field)))
 
+#define LIST_FIRST_ENTRY(__ptr, __type, __field)   \
+    LIST_ENTRY(__type, (__ptr)->next, __field)
+
+#define LIST_LAST_ENTRY(__ptr, __type, __field)   \
+    LIST_ENTRY(__type, (__ptr)->prev, __field)
+
 #define LIST_IS_EMPTY(__list)                   \
     ((__list)->next == (__list))
 
