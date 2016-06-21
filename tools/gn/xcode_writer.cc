@@ -325,9 +325,6 @@ void XcodeWriter::CreateSourcesProject(
     TargetOsType target_os) {
   std::vector<SourceFile> sources;
   for (const Target* target : targets) {
-    if (!target->settings()->is_default())
-      continue;
-
     for (const SourceFile& source : target->sources()) {
       if (source.is_system_absolute())
         continue;
