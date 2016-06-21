@@ -7,9 +7,13 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
+#include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
@@ -25,61 +29,104 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::Referrer;
 
+namespace {
+struct AboutURLTestCase {
+  GURL test_url;
+  GURL expected_url;
+};
+}
+
 class BrowserAboutHandlerTest : public testing::Test {
+ protected:
+  void TestWillHandleBrowserAboutURL(
+      const std::vector<AboutURLTestCase>& test_cases) {
+    TestingProfile profile;
+
+    for (const auto& test_case : test_cases) {
+      GURL url(test_case.test_url);
+      WillHandleBrowserAboutURL(&url, &profile);
+      EXPECT_EQ(test_case.expected_url, url);
+    }
+  }
+
+ private:
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
   std::string chrome_prefix(content::kChromeUIScheme);
   chrome_prefix.append(url::kStandardSchemeSeparator);
-  struct AboutURLTestData {
-    GURL test_url;
-    GURL result_url;
-  } test_data[] = {
-      {
-        GURL("http://google.com"),
-        GURL("http://google.com")
-      },
-      {
-        GURL(url::kAboutBlankURL),
-        GURL(url::kAboutBlankURL)
-      },
-      {
-        GURL(chrome_prefix + chrome::kChromeUIDefaultHost),
-        GURL(chrome_prefix + chrome::kChromeUIVersionHost)
-      },
-      {
-        GURL(chrome_prefix + chrome::kChromeUIAboutHost),
-        GURL(chrome_prefix + chrome::kChromeUIChromeURLsHost)
-      },
-      {
-        GURL(chrome_prefix + chrome::kChromeUICacheHost),
-        GURL(chrome_prefix + content::kChromeUINetworkViewCacheHost)
-      },
-      {
-        GURL(chrome_prefix + chrome::kChromeUISignInInternalsHost),
-        GURL(chrome_prefix + chrome::kChromeUISignInInternalsHost)
-      },
-      {
-        GURL(chrome_prefix + chrome::kChromeUISyncHost),
-        GURL(chrome_prefix + chrome::kChromeUISyncInternalsHost)
-      },
-      {
-        GURL(chrome_prefix + chrome::kChromeUIInvalidationsHost),
-        GURL(chrome_prefix + chrome::kChromeUIInvalidationsHost)
-      },
-      {
-        GURL(chrome_prefix + "host/path?query#ref"),
-        GURL(chrome_prefix + "host/path?query#ref"),
-      }
-  };
-  TestingProfile profile;
+  std::vector<AboutURLTestCase> test_cases(
+      {{GURL("http://google.com"), GURL("http://google.com")},
+       {GURL(url::kAboutBlankURL), GURL(url::kAboutBlankURL)},
+       {GURL(chrome_prefix + chrome::kChromeUIDefaultHost),
+        GURL(chrome_prefix + chrome::kChromeUIVersionHost)},
+       {GURL(chrome_prefix + chrome::kChromeUIAboutHost),
+        GURL(chrome_prefix + chrome::kChromeUIChromeURLsHost)},
+       {GURL(chrome_prefix + chrome::kChromeUICacheHost),
+        GURL(chrome_prefix + content::kChromeUINetworkViewCacheHost)},
+       {GURL(chrome_prefix + chrome::kChromeUISignInInternalsHost),
+        GURL(chrome_prefix + chrome::kChromeUISignInInternalsHost)},
+       {GURL(chrome_prefix + chrome::kChromeUISyncHost),
+        GURL(chrome_prefix + chrome::kChromeUISyncInternalsHost)},
+       {GURL(chrome_prefix + chrome::kChromeUIInvalidationsHost),
+        GURL(chrome_prefix + chrome::kChromeUIInvalidationsHost)},
+       {
+           GURL(chrome_prefix + "host/path?query#ref"),
+           GURL(chrome_prefix + "host/path?query#ref"),
+       }});
+  TestWillHandleBrowserAboutURL(test_cases);
+}
 
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
-    GURL url(test_data[i].test_url);
-    WillHandleBrowserAboutURL(&url, &profile);
-    EXPECT_EQ(test_data[i].result_url, url);
-  }
+#if defined(OS_CHROMEOS)
+// Chrome OS defaults to showing Options in a window and including About in
+// Options.
+TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForOptionsChromeOS) {
+  std::string chrome_prefix(content::kChromeUIScheme);
+  chrome_prefix.append(url::kStandardSchemeSeparator);
+  std::vector<AboutURLTestCase> test_cases(
+      {{GURL(chrome_prefix + chrome::kChromeUISettingsHost),
+        GURL(chrome_prefix + chrome::kChromeUISettingsFrameHost)},
+       {GURL(chrome_prefix + chrome::kChromeUIHelpHost),
+        GURL(chrome_prefix + chrome::kChromeUISettingsFrameHost + "/" +
+             chrome::kChromeUIHelpHost)}});
+  TestWillHandleBrowserAboutURL(test_cases);
+}
+
+#else
+TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForOptions) {
+  std::string chrome_prefix(content::kChromeUIScheme);
+  chrome_prefix.append(url::kStandardSchemeSeparator);
+  std::vector<AboutURLTestCase> test_cases(
+      {{
+           GURL(chrome_prefix + chrome::kChromeUISettingsHost),
+           GURL(chrome_prefix + chrome::kChromeUIUberHost + "/" +
+                chrome::kChromeUISettingsHost + "/"),
+       },
+       {
+           GURL(chrome_prefix + chrome::kChromeUIHelpHost),
+           GURL(chrome_prefix + chrome::kChromeUIUberHost + "/" +
+                chrome::kChromeUIHelpHost + "/"),
+       }});
+  TestWillHandleBrowserAboutURL(test_cases);
+}
+#endif
+
+TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForMDSettings) {
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      features::kMaterialDesignSettingsFeature.name, "");
+  base::FeatureList::ClearInstanceForTesting();
+  base::FeatureList::SetInstance(std::move(feature_list));
+
+  std::string chrome_prefix(content::kChromeUIScheme);
+  chrome_prefix.append(url::kStandardSchemeSeparator);
+  std::vector<AboutURLTestCase> test_cases(
+      {{GURL(chrome_prefix + chrome::kChromeUISettingsHost),
+        GURL(chrome_prefix + chrome::kChromeUISettingsHost)},
+       {GURL(chrome_prefix + chrome::kChromeUIHelpHost),
+        GURL(chrome_prefix + chrome::kChromeUIHelpHost)}});
+  TestWillHandleBrowserAboutURL(test_cases);
 }
 
 // Ensure that minor BrowserAboutHandler fixup to a URL does not cause us to
