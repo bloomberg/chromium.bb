@@ -49,9 +49,10 @@ build() {
 # Do an out-of-tree build and make sure we can create a release tarball.
 build_out_of_tree() {
   mkdir -p build/native
-  cd build/native
+  pushd build/native >/dev/null
   ../../configure
   make -j${JOBS} distcheck VERBOSE=1
+  popd >/dev/null
 }
 
 main() {
