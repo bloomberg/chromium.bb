@@ -649,6 +649,19 @@ TEST_F(RenderTextTest, RevealObscuredText) {
   EXPECT_EQ(valid_expect_5_and_6, render_text->GetDisplayText());
 }
 
+TEST_F(RenderTextTest, ObscuredEmoji) {
+  // Ensures text itemization doesn't crash on obscured multi-char glyphs.
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetObscured(true);
+  gfx::Canvas canvas;
+  // Test the "Grinning face with smiling eyes" character followed by 'y'.
+  render_text->SetText(UTF8ToUTF16("\xF0\x9F\x98\x81y"));
+  render_text->Draw(&canvas);
+  // Test two "Camera" characters in a row.
+  render_text->SetText(UTF8ToUTF16("\xF0\x9F\x93\xB7\xF0\x9F\x93\xB7"));
+  render_text->Draw(&canvas);
+}
+
 // TODO(PORT): Fails for RenderTextMac.
 #if !defined(OS_MACOSX)
 

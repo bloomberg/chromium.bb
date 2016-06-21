@@ -1271,7 +1271,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   // Build the run list from the script items and ranged styles and baselines.
   // Use an empty color BreakList to avoid breaking runs at color boundaries.
   BreakList<SkColor> empty_colors;
-  empty_colors.SetMax(text.length());
+  empty_colors.SetMax(colors().max());
   DCHECK_LE(text.size(), baselines().max());
   for (const BreakList<bool>& style : styles())
     DCHECK_LE(text.size(), style.max());
