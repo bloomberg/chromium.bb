@@ -3046,6 +3046,8 @@
           'tags': ['website-sharing'],
           'desc': '''Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
 
+          If this policy is set to 'BlockGeolocation', location sharing is disallowed for ARC apps.
+
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.''',
         },
         {
@@ -5627,6 +5629,7 @@
 
       When this policy is disabled, the user will never be prompted and audio
       capture only be available to URLs configured in AudioCaptureAllowedUrls.
+      For ARC apps, the microphone is permanently muted.
 
       This policy affects all types of audio inputs and not only the built-in microphone.''',
     },
@@ -5670,12 +5673,12 @@
       If enabled or not configured (default), the user will be prompted for
       video capture access except for URLs configured in the
       VideoCaptureAllowedUrls list which will be granted access without prompting.
-      ARC-apps will be able to access the camera if they have been given
+      ARC apps will be able to access the camera if they have been given
       permission.
 
       When this policy is disabled, the user will never be prompted and video
       capture only be available to URLs configured in VideoCaptureAllowedUrls.
-      ARC-apps will not be able to access the camera.
+      ARC apps will not be able to access the camera.
 
       Outside of ARC-apps, this policy affects all types of video inputs and
       not only the built-in camera.''',
@@ -5718,6 +5721,7 @@
       'desc': '''Disables taking screenshots.
 
       If enabled screenshots cannot be taken using keyboard shortcuts or extension APIs.
+      Additionally, screen capture is disabled for ARC apps.
 
       If disabled or not specified, taking screenshots is allowed.'''
     },
