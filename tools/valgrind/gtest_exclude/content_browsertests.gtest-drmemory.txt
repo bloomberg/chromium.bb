@@ -87,3 +87,7 @@ DumpAccessibilityEventsTest.AccessibilityEventsMenuListFocus
 
 # https://crbug.com/617727
 VibrationTest.CancelVibrationFromMainFrameWhenMainFrameIsReloaded
+
+# https://crbug.com/622085
+WebRtcGetUserMediaBrowserTest.AudioInIFrameAndCloseInSuccessCb
+WebRtcGetUserMediaBrowserTest.GetUserMediaWithMandatorySourceID
