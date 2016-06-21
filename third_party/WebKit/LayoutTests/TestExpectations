@@ -932,8 +932,8 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
-# Flaky on Win10
-crbug.com/619539 [ Win10 ] http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
+# Flaky on Win10 and Win7
+crbug.com/619539 [ Win ] http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
 
 crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 
