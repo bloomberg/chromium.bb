@@ -347,8 +347,8 @@
     },
 
     'chromium.mac': {
-      'Mac Builder': 'swarming_gpu_tests_gyp_release_bot',
-      'Mac Builder (dbg)': 'swarming_gyp_debug_bot',
+      'Mac Builder': 'swarming_gpu_tests_gn_release_bot',
+      'Mac Builder (dbg)': 'swarming_gn_debug_bot',
       'Mac GN (dbg)': 'gn_debug_bot',
       'Mac GN': 'gn_release_bot',
       'Mac10.10 Tests': 'none',
@@ -1680,6 +1680,10 @@
       'swarming', 'gpu_tests', 'gn', 'release_trybot', 'x86',
     ],
 
+    'swarming_gpu_tests_gn_release_bot': [
+      'swarming', 'gpu_tests', 'gn', 'release_bot',
+    ],
+
     'swarming_gpu_tests_gyp_release_bot': [
       'swarming', 'gpu_tests', 'gyp', 'release_bot',
     ],
@@ -1828,10 +1832,6 @@
     'swarming_gyp_clang_tot_official_minimal_symbols_static_release_x86': [
       'swarming', 'gyp', 'clang_tot', 'official', 'minimal_symbols', 'static',
       'release', 'x86',
-    ],
-
-    'swarming_gyp_debug_bot': [
-      'swarming', 'gyp', 'debug_bot',
     ],
 
     'swarming_gn_release_trybot_arm': [
