@@ -121,10 +121,6 @@ CONSOLE MESSAGE: line 137:     method setInt8
 CONSOLE MESSAGE: line 137:     method setUint16
 CONSOLE MESSAGE: line 137:     method setUint32
 CONSOLE MESSAGE: line 137:     method setUint8
-CONSOLE MESSAGE: line 137: interface Geometry
-CONSOLE MESSAGE: line 137:     getter height
-CONSOLE MESSAGE: line 137:     getter width
-CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface PaintRenderingContext2D
 CONSOLE MESSAGE: line 137:     getter currentTransform
 CONSOLE MESSAGE: line 137:     getter fillStyle
@@ -191,6 +187,10 @@ CONSOLE MESSAGE: line 137:     setter shadowColor
 CONSOLE MESSAGE: line 137:     setter shadowOffsetX
 CONSOLE MESSAGE: line 137:     setter shadowOffsetY
 CONSOLE MESSAGE: line 137:     setter strokeStyle
+CONSOLE MESSAGE: line 137: interface PaintSize
+CONSOLE MESSAGE: line 137:     getter height
+CONSOLE MESSAGE: line 137:     getter width
+CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface PaintWorkletGlobalScope : WorkletGlobalScope
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface Path2D

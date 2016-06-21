@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Geometry_h
-#define Geometry_h
+#ifndef PaintSize_h
+#define PaintSize_h
 
 namespace blink {
 
-class Geometry : public GarbageCollectedFinalized<Geometry>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(Geometry);
+class PaintSize : public GarbageCollectedFinalized<PaintSize>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(PaintSize);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static Geometry* create(IntSize size)
+    static PaintSize* create(IntSize size)
     {
-        return new Geometry(size);
+        return new PaintSize(size);
     }
-    virtual ~Geometry() {}
+    virtual ~PaintSize() {}
 
     int width() const { return m_size.width(); }
     int height() const { return m_size.height(); }
 
     DEFINE_INLINE_TRACE() { }
 private:
-    explicit Geometry(IntSize size) : m_size(size) { }
+    explicit PaintSize(IntSize size) : m_size(size) { }
 
     IntSize m_size;
 };
 
 } // namespace blink
 
-#endif // Geometry_h
+#endif // PaintSize_h

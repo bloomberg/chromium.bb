@@ -12,8 +12,8 @@
 #include "core/css/cssom/FilteredComputedStylePropertyMap.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/layout/LayoutObject.h"
-#include "modules/csspaint/Geometry.h"
 #include "modules/csspaint/PaintRenderingContext2D.h"
+#include "modules/csspaint/PaintSize.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/PaintGeneratedImage.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
@@ -57,14 +57,14 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject, co
 
     PaintRenderingContext2D* renderingContext = PaintRenderingContext2D::create(
         ImageBuffer::create(wrapUnique(new RecordingImageBufferSurface(size))));
-    Geometry* geometry = Geometry::create(size);
+    PaintSize* paintSize = PaintSize::create(size);
     StylePropertyMap* styleMap = FilteredComputedStylePropertyMap::create(
         CSSComputedStyleDeclaration::create(layoutObject.node()),
         m_nativeInvalidationProperties, m_customInvalidationProperties);
 
     v8::Local<v8::Value> argv[] = {
         toV8(renderingContext, m_scriptState->context()->Global(), isolate),
-        toV8(geometry, m_scriptState->context()->Global(), isolate),
+        toV8(paintSize, m_scriptState->context()->Global(), isolate),
         toV8(styleMap, m_scriptState->context()->Global(), isolate)
     };
 
