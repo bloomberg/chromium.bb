@@ -9,8 +9,9 @@
 
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ui/accessibility/ax_node_data.h"
-#import "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
 namespace {
@@ -190,6 +191,11 @@ RoleMap BuildSubroleMap() {
 
 }  // namespace
 
+@interface AXPlatformNodeCocoa ()
+// Helper function for string attributes that don't require extra processing.
+- (NSString*)getStringAttribute:(ui::AXStringAttribute)attribute;
+@end
+
 @implementation AXPlatformNodeCocoa
 
 // A mapping of AX roles to native roles.
@@ -223,6 +229,89 @@ RoleMap BuildSubroleMap() {
   return gfx::ScreenRectToNSRect(node_->GetBoundsInScreen());
 }
 
+- (NSString*)getStringAttribute:(ui::AXStringAttribute)attribute {
+  std::string attributeValue;
+  if (node_->GetStringAttribute(attribute, &attributeValue))
+    return base::SysUTF8ToNSString(attributeValue);
+  return nil;
+}
+
+// NSAccessibility informal protocol implementation.
+
+- (BOOL)accessibilityIsIgnored {
+  return [[self AXRole] isEqualToString:NSAccessibilityUnknownRole];
+}
+
+- (id)accessibilityHitTest:(NSPoint)point {
+  for (AXPlatformNodeCocoa* child in [self AXChildren]) {
+    if (NSPointInRect(point, child.boundsInScreen))
+      return [child accessibilityHitTest:point];
+  }
+  return NSAccessibilityUnignoredAncestor(self);
+}
+
+- (NSArray*)accessibilityActionNames {
+  return nil;
+}
+
+- (NSArray*)accessibilityAttributeNames {
+  // These attributes are required on all accessibility objects.
+  NSArray* const kAllRoleAttributes = @[
+    NSAccessibilityChildrenAttribute,
+    NSAccessibilityParentAttribute,
+    NSAccessibilityPositionAttribute,
+    NSAccessibilityRoleAttribute,
+    NSAccessibilitySizeAttribute,
+    NSAccessibilitySubroleAttribute,
+
+    // Title is required for most elements. Cocoa asks for the value even if it
+    // is omitted here, but won't present it to accessibility APIs without this.
+    NSAccessibilityTitleAttribute,
+
+    // Attributes which are not required, but are general to all roles.
+    NSAccessibilityRoleDescriptionAttribute,
+  ];
+
+  // Attributes required for user-editable controls.
+  NSArray* const kValueAttributes = @[ NSAccessibilityValueAttribute ];
+
+  base::scoped_nsobject<NSMutableArray> axAttributes(
+      [[NSMutableArray alloc] init]);
+
+  [axAttributes addObjectsFromArray:kAllRoleAttributes];
+  switch (node_->GetData().role) {
+    case ui::AX_ROLE_CHECK_BOX:
+    case ui::AX_ROLE_COMBO_BOX:
+    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
+    case ui::AX_ROLE_MENU_ITEM_RADIO:
+    case ui::AX_ROLE_RADIO_BUTTON:
+    case ui::AX_ROLE_SEARCH_BOX:
+    case ui::AX_ROLE_SLIDER:
+    case ui::AX_ROLE_SLIDER_THUMB:
+    case ui::AX_ROLE_TOGGLE_BUTTON:
+    case ui::AX_ROLE_TEXT_FIELD:
+      [axAttributes addObjectsFromArray:kValueAttributes];
+      break;
+    // TODO(tapted): Add additional attributes based on role.
+    default:
+      break;
+  }
+  return axAttributes.autorelease();
+}
+
+- (BOOL)accessibilityIsAttributeSettable:(NSString*)attribute {
+  return NO;
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  SEL selector = NSSelectorFromString(attribute);
+  if ([self respondsToSelector:selector])
+    return [self performSelector:selector];
+  return nil;
+}
+
+// NSAccessibility attributes.
+
 - (NSArray*)AXChildren {
   if (!node_)
     return nil;
@@ -249,60 +338,37 @@ RoleMap BuildSubroleMap() {
   return [[self class] nativeRoleFromAXRole:node_->GetData().role];
 }
 
+- (NSString*)AXSubrole {
+  ui::AXRole role = node_->GetData().role;
+  switch (role) {
+    case ui::AX_ROLE_TEXT_FIELD:
+      if (ui::AXViewState::IsFlagSet(node_->GetData().state,
+                                     ui::AX_STATE_PROTECTED))
+        return NSAccessibilitySecureTextFieldSubrole;
+      break;
+    default:
+      break;
+  }
+  return [AXPlatformNodeCocoa nativeSubroleFromAXRole:role];
+}
+
+- (NSString*)AXRoleDescription {
+  NSString* description = [self getStringAttribute:ui::AX_ATTR_DESCRIPTION];
+  if (!description)
+    return NSAccessibilityRoleDescription([self AXRole], [self AXSubrole]);
+  return description;
+}
+
 - (NSValue*)AXSize {
   return [NSValue valueWithSize:self.boundsInScreen.size];
 }
 
 - (NSString*)AXTitle {
-  std::string value;
-  if (node_->GetStringAttribute(ui::AX_ATTR_NAME, &value))
-    return base::SysUTF8ToNSString(value);
-  return nil;
+  return [self getStringAttribute:ui::AX_ATTR_NAME];
 }
 
-// NSAccessibility informal protocol implementation.
-
-- (BOOL)accessibilityIsIgnored {
-  return [[self AXRole] isEqualToString:NSAccessibilityUnknownRole];
-}
-
-- (id)accessibilityHitTest:(NSPoint)point {
-  for (AXPlatformNodeCocoa* child in [self AXChildren]) {
-    if (NSPointInRect(point, child.boundsInScreen))
-      return [child accessibilityHitTest:point];
-  }
-  return NSAccessibilityUnignoredAncestor(self);
-}
-
-- (NSArray*)accessibilityActionNames {
-  return nil;
-}
-
-- (NSArray*)accessibilityAttributeNames {
-  // These attributes are required on all accessibility objects.
-  return @[
-    NSAccessibilityChildrenAttribute,
-    NSAccessibilityParentAttribute,
-    NSAccessibilityPositionAttribute,
-    NSAccessibilityRoleAttribute,
-    NSAccessibilitySizeAttribute,
-
-    // Title is required for most elements. Cocoa asks for the value even if it
-    // is omitted here, but won't present it to accessibility APIs without this.
-    NSAccessibilityTitleAttribute,
-  ];
-  // TODO(tapted): Add additional attributes based on role.
-}
-
-- (BOOL)accessibilityIsAttributeSettable:(NSString*)attribute {
-  return NO;
-}
-
-- (id)accessibilityAttributeValue:(NSString*)attribute {
-  SEL selector = NSSelectorFromString(attribute);
-  if ([self respondsToSelector:selector])
-    return [self performSelector:selector];
-  return nil;
+- (NSString*)AXValue {
+  return [self getStringAttribute:ui::AX_ATTR_VALUE];
 }
 
 @end

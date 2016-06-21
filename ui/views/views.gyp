@@ -634,6 +634,7 @@
       'view_model_utils_unittest.cc',
       'view_targeter_unittest.cc',
       'view_unittest.cc',
+      'widget/native_widget_mac_accessibility_unittest.mm',
       'widget/native_widget_mac_unittest.mm',
       'widget/native_widget_unittest.cc',
       'widget/root_view_unittest.cc',

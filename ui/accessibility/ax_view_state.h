@@ -27,9 +27,12 @@ struct AX_EXPORT AXViewState {
   AXViewState();
   ~AXViewState();
 
+  // Helper to check whether |state_flag| is set in the given |state|.
+  static bool IsFlagSet(uint32_t state, ui::AXState state_flag);
+
   // Set or check bits in |state_|.
-  void AddStateFlag(ui::AXState state);
-  bool HasStateFlag(ui::AXState state) const;
+  void AddStateFlag(ui::AXState state_flag);
+  bool HasStateFlag(ui::AXState state_flag) const;
 
   // The view's state, a bitmask containing fields such as checked
   // (for a checkbox) and protected (for a password text box). This "state"

@@ -16,12 +16,17 @@ AXViewState::AXViewState()
 
 AXViewState::~AXViewState() { }
 
+// static
+bool AXViewState::IsFlagSet(uint32_t state, ui::AXState state_flag) {
+  return 0 != (state & (1 << state_flag));
+}
+
 void AXViewState::AddStateFlag(ui::AXState state_flag) {
   state_ |= (1 << state_flag);
 }
 
 bool AXViewState::HasStateFlag(ui::AXState state_flag) const {
-  return 0 != (state_ & (1 << state_flag));
+  return IsFlagSet(state_, state_flag);
 }
 
 }  // namespace ui

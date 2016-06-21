@@ -1636,14 +1636,14 @@ bool InitializeAccessibilityTreeSearch(
   ui::AXRole browserAccessibilityRole = [self internalRole];
   if (browserAccessibilityRole == ui::AX_ROLE_TEXT_FIELD &&
       GetState(browserAccessibility_, ui::AX_STATE_PROTECTED)) {
-    return @"AXSecureTextField";
+    return NSAccessibilitySecureTextFieldSubrole;
   }
 
   if (browserAccessibilityRole == ui::AX_ROLE_DESCRIPTION_LIST)
-    return @"AXDefinitionList";
+    return NSAccessibilityDefinitionListSubrole;
 
   if (browserAccessibilityRole == ui::AX_ROLE_LIST)
-    return @"AXContentList";
+    return NSAccessibilityContentListSubrole;
 
   return [AXPlatformNodeCocoa nativeSubroleFromAXRole:browserAccessibilityRole];
 }
