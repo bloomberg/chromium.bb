@@ -9,7 +9,7 @@ setlocal
 
 :: Windows freaks out if a file is overwritten while it's being executed.  Copy
 :: this script off to a temporary location and reinvoke from there before
-:: running any svn or git commands.
+:: running any git commands.
 IF "%~nx0"=="update_depot_tools.bat" (
   COPY /Y "%~dp0update_depot_tools.bat" "%TEMP%\update_depot_tools_tmp.bat" >nul
   if errorlevel 1 goto :EOF
@@ -41,27 +41,19 @@ goto :EOF
 echo ========================
 echo WARNING: You have an SVN checkout of depot_tools!
 echo.
-echo depot_tools is migrating to Git on June 6, 2016. If you still have an
-echo SVN checkout then, you will STOP RECEIVING UPDATES to depot_tools.
+echo depot_tools has migrated to Git. You are
+echo NO LONGER RECEIVING UPDATES to depot_tools.
 echo.
-echo Before that date, please follow the instructions here[1] to get a Git
-echo copy of depot_tools.
+echo You must follow these instructions[1] to get a Git copy of depot_tools.
 echo.
 echo [1]: https://www.chromium.org/developers/how-tos/install-depot-tools
 echo ========================
-FOR %%A IN (%*) DO (
-  IF "%%A" == "--force" (
-    call svn -q revert -R "%DEPOT_TOOLS_DIR%."
-  )
-)
-call svn -q up "%DEPOT_TOOLS_DIR%."
 goto :EOF
 
 
 :GIT_UPDATE
 cd /d "%DEPOT_TOOLS_DIR%."
 call git config remote.origin.fetch > NUL
-if errorlevel 1 goto :GIT_SVN_UPDATE
 for /F %%x in ('git config --get remote.origin.url') DO (
   IF not "%%x" == "%GIT_URL%" (
     echo Your depot_tools checkout is configured to fetch from an obsolete URL
@@ -74,10 +66,4 @@ for /F %%x in ('git config --get remote.origin.url') DO (
 call git fetch -q origin > NUL
 call git rebase -q origin/master > NUL
 if errorlevel 1 echo Failed to update depot_tools.
-goto :EOF
-
-
-:GIT_SVN_UPDATE
-cd /d "%DEPOT_TOOLS_DIR%."
-call git svn rebase -q -q
 goto :EOF

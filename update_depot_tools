@@ -26,7 +26,7 @@ if [ $MSYS = 0 ]; then
 fi
 
 # Test if this script is running under a MinGW install.  If it is, we will
-# hardcode the paths to SVN and Git where possible.
+# hardcode the paths to Git where possible.
 OUTPUT="$(uname | grep 'MINGW')"
 MINGW=$?
 
@@ -56,11 +56,6 @@ fi
 
 CANONICAL_GIT_URL="https://chromium.googlesource.com/chromium/tools/depot_tools.git"
 
-SVN="svn"
-if [ -d "$base_dir/svn_bin" -a $MINGW = 0 ]; then
-  SVN="$base_dir/svn_bin/svn.exe"
-fi
-
 GIT="git"
 if [ -e "$base_dir/git.bat" -a $MINGW = 0 ]; then
   GIT="cmd.exe //c \"$base_dir\\git.bat\""
@@ -76,31 +71,10 @@ function test_git {
 
   GITV="${GITV##* }"          # Only examine last word (i.e. version number)
   local GITD=( ${GITV//./ } ) # Split version number into decimals
-  if ((GITD[0] < 1 || (GITD[0] == 1 && GITD[1] < 6) )); then
-    echo "git version is ${GITV}, please update to a version later than 1.6"
+  if ((GITD[0] < 1 || (GITD[0] == 2 && GITD[1] < 8) )); then
+    echo "git version is ${GITV}, please update to a version later than 2.8"
     exit 1
   fi
-}
-
-# Test git svn and git svn --version.
-function test_git_svn {
-  local GITV
-  GITV="$(eval "$GIT" svn --version)" || {
-    echo "git-svn isn't installed, please install it"
-    exit 1
-  }
-
-  GITV="${GITV#* version }"   # git svn --version has extra output to remove.
-  GITV="${GITV% (svn*}"
-  local GITD=( ${GITV//./ } ) # Split version number into decimals
-  if ((GITD[0] < 1 || (GITD[0] == 1 && GITD[1] < 6) )); then
-    echo "git version is ${GITV}, please update to a version later than 1.6"
-    exit 1
-  fi
-}
-
-function is_git_clone_repo {
-  eval "$GIT" config remote.origin.fetch > /dev/null
 }
 
 function update_git_repo {
@@ -121,32 +95,16 @@ function update_git_repo {
     fi
   fi
 
-  if is_git_clone_repo; then
-    git fetch -q origin &> /dev/null
-    local REBASE_TXT STATUS
-    REBASE_TXT=$(git rebase -q origin/master 2>&1)
-    STATUS=$?
-    if [[ $STATUS -ne 0 ]]; then
-      echo "depot_tools update failed. Conflict in $base_dir" >&2
-      echo "$REBASE_TXT" >&2
-      git rebase --abort 2> /dev/null
-    fi
-    return $STATUS
+  git fetch -q origin &> /dev/null
+  local REBASE_TXT STATUS
+  REBASE_TXT=$(git rebase -q origin/master 2>&1)
+  STATUS=$?
+  if [[ $STATUS -ne 0 ]]; then
+    echo "depot_tools update failed. Conflict in $base_dir" >&2
+    echo "$REBASE_TXT" >&2
+    git rebase --abort 2> /dev/null
   fi
-
-  test_git_svn
-  # work around a git-svn --quiet bug
-  OUTPUT=`eval "$GIT" svn rebase -q -q`
-  if [[ ! "$OUTPUT" == *Current.branch* ]]; then
-    echo $OUTPUT 1>&2
-  fi
-  return 0
-}
-
-# Get the current SVN revision.
-get_svn_revision() {
-  LANGUAGE=C "$SVN" info "$base_dir" | \
-      awk -F': ' '{ if ($1 == "Last Changed Rev") { print $2 }}'
+  return $STATUS
 }
 
 # Update git checkouts.
@@ -163,26 +121,14 @@ then
   echo "========================"
   echo "WARNING: You have an SVN checkout of depot_tools!"
   echo
-  echo "depot_tools is migrating to Git on June 6, 2016. If you still have an"
-  echo "SVN checkout then, you will STOP RECEIVING UPDATES to depot_tools."
+  echo "depot_tools has migrated to Git. You are"
+  echo "NO LONGER RECEIVING UPDATES to depot_tools."
   echo
-  echo "Before that date, please follow the instructions here[1] to get a Git"
-  echo "copy of depot_tools."
+  echo "You must follow these instructions[1] to get a Git copy of depot_tools."
   echo
   echo "[1]: https://www.chromium.org/developers/how-tos/install-depot-tools"
   echo "========================"
-  # Update the root directory to stay up-to-date with the latest depot_tools.
-  BEFORE_REVISION=$(get_svn_revision)
-  if echo $* | grep -e --force > /dev/null; then
-    "$SVN" -q revert -R "$base_dir"
-  fi
-  "$SVN" -q up "$base_dir"
-  AFTER_REVISION=$(get_svn_revision)
-  if [[ "$BEFORE_REVISION" != "$AFTER_REVISION" ]]; then
-    if [ -z "$DEPOT_TOOLS_HIDE_UPDATED_MESSAGE" ]; then
-      echo "Depot Tools has been updated to revision $AFTER_REVISION." 1>&2
-    fi
-  fi
+  return 1
 fi
 
 find "$base_dir" -iname "*.pyc" -exec rm -f {} \;
