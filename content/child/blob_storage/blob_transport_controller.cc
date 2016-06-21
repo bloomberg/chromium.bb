@@ -211,6 +211,22 @@ void BlobTransportController::OnMemoryRequest(
   // requests, we keep them in a vector and lazily create them.
   ScopedVector<SharedMemory> opened_memory;
   opened_memory.resize(memory_handles->size());
+
+  // We need to calculate how much memory we expect to be writing to the memory
+  // segments so we can correctly map it the first time.
+  std::vector<size_t> shared_memory_sizes(memory_handles->size());
+  for (const BlobItemBytesRequest& request : requests) {
+    if (request.transport_strategy !=
+        IPCBlobItemRequestStrategy::SHARED_MEMORY) {
+      continue;
+    }
+    DCHECK_LT(request.handle_index, memory_handles->size())
+        << "Invalid handle index.";
+    shared_memory_sizes[request.handle_index] =
+        std::max<size_t>(shared_memory_sizes[request.handle_index],
+                         request.size + request.handle_offset);
+  }
+
   for (const BlobItemBytesRequest& request : requests) {
     DCHECK_LT(request.renderer_item_index, consolidated_items.size())
         << "Invalid item index";
@@ -235,16 +251,15 @@ void BlobTransportController::OnMemoryRequest(
       }
       case IPCBlobItemRequestStrategy::SHARED_MEMORY: {
         responses.push_back(BlobItemBytesResponse(request.request_number));
-        DCHECK_LT(request.handle_index, memory_handles->size())
-            << "Invalid handle index.";
         SharedMemory* memory = opened_memory[request.handle_index];
         if (!memory) {
           SharedMemoryHandle& handle = (*memory_handles)[request.handle_index];
+          size_t size = shared_memory_sizes[request.handle_index];
           DCHECK(SharedMemory::IsHandleValid(handle));
           std::unique_ptr<SharedMemory> shared_memory(
               new SharedMemory(handle, false));
 
-          if (!shared_memory->Map(request.size)) {
+          if (!shared_memory->Map(size)) {
             // This would happen if the renderer process doesn't have enough
             // memory to map the shared memory, which is possible if we don't
             // have much memory. If this scenario happens often, we could delay

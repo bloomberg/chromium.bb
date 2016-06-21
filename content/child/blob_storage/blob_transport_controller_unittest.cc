@@ -302,7 +302,7 @@ TEST_F(BlobTransportControllerTest, SharedMemory) {
   requests.push_back(
       BlobItemBytesRequest::CreateSharedMemoryRequest(1, 3, 0, 6, 0, 11));
   base::SharedMemory memory;
-  memory.CreateAndMapAnonymous(11 + 6);
+  memory.CreateAnonymous(11 + 6);
   base::SharedMemoryHandle handle =
       base::SharedMemory::DuplicateHandle(memory.handle());
   CHECK(base::SharedMemory::NULLHandle() != handle);
@@ -314,6 +314,7 @@ TEST_F(BlobTransportControllerTest, SharedMemory) {
   expected.push_back(BlobItemBytesResponse(1));
   ExpectMemoryResponses(kBlobUUID, expected);
   std::string expected_memory = "HelloHello2Hello3";
+  memory.Map(11 + 6);
   const char* mem_location = static_cast<const char*>(memory.memory());
   std::vector<char> value(mem_location, mem_location + memory.requested_size());
   EXPECT_THAT(value, testing::ElementsAreArray(expected_memory.c_str(),
