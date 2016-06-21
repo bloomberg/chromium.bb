@@ -25,9 +25,6 @@ OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
       binding_(this, std::move(request)) {}
 
 OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
-  if (surface_factory_) {
-    surface_factory_->DestroyAll();
-  }
 }
 
 void OffscreenCanvasSurfaceImpl::GetSurfaceId(
