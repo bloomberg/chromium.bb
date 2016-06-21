@@ -94951,6 +94951,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="LevelDB.Open"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="LocalStorageCachePurgeReason" separator=".">
+  <suffix name="AggressivePurgeTriggered"
+      label="Aggressive purge was triggered on memory pressure."/>
+  <suffix name="AreaCountLimitExceeded"
+      label="Storage areas count exceeded limit."/>
+  <suffix name="InactiveOnLowEndDevice"
+      label="Inactive areas found in low end device."/>
+  <suffix name="ModeratePurgeTriggered"
+      label="Moderate purge was triggered on memory pressure."/>
+  <suffix name="SizeLimitExceeded" label="Cache size exceeded limit."/>
+  <affected-histogram name="LocalStorage.BrowserLocalStorageCachePurgedInKB"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="LocalStorageSizes" separator="">
   <suffix name="Under100KB" label="DB size under 100KB"/>
   <suffix name="100KBTo1MB" label="DB size between 100KB and 1MB"/>
