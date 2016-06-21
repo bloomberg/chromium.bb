@@ -8,9 +8,8 @@
 ##
 ## Top level settings
 ##
-
 version_id: 3
-sampled_ping_probability: 0.0
+sampled_ping_probability: 0.01
 default_file_type {
   uma_value: 18
   ping_setting: SAMPLED_PING

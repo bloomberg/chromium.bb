@@ -761,14 +761,16 @@
       'browser/notifications/notification_permission_context_unittest.cc',
       'browser/notifications/platform_notification_service_unittest.cc',
     ],
-     # Used by Full Safe Browsing (safe_browsing==1) and Mobile Safe
-     # Browsing (==2) modes.
+     # Used by Full Safe Browsing (safe_browsing==1)
+     # and by Mobile Safe Browsing (==2) modes.
     'chrome_unit_tests_shared_safe_browsing_sources': [
       'browser/safe_browsing/ping_manager_unittest.cc',
       'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
       'browser/safe_browsing/threat_details_unittest.cc',
       'browser/safe_browsing/ui_manager_unittest.cc',
       'common/safe_browsing/file_type_policies_unittest.cc',
+      'common/safe_browsing/file_type_policies_test_util.cc',
+      'common/safe_browsing/file_type_policies_test_util.h',
      ],
     'chrome_unit_tests_full_safe_browsing_sources': [
       'browser/safe_browsing/browser_feature_extractor_unittest.cc',

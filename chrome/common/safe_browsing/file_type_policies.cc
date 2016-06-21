@@ -127,7 +127,21 @@ FileTypePolicies::UpdateResult FileTypePolicies::PopulateFromBinaryPb(
   }
 
   // Looks good. Update our internal list.
-  config_.reset(new_config.release());
+  SwapConfigLocked(new_config);
+
+  return UpdateResult::SUCCESS;
+}
+
+void FileTypePolicies::SwapConfig(
+    std::unique_ptr<DownloadFileTypeConfig>& new_config) {
+  AutoLock lock(lock_);
+  SwapConfigLocked(new_config);
+}
+
+void FileTypePolicies::SwapConfigLocked(
+    std::unique_ptr<DownloadFileTypeConfig>& new_config) {
+  lock_.AssertAcquired();
+  config_.swap(new_config);
 
   // Build an index for faster lookup.
   file_type_by_ext_.clear();
@@ -135,13 +149,6 @@ FileTypePolicies::UpdateResult FileTypePolicies::PopulateFromBinaryPb(
     // If there are dups, first one wins.
     file_type_by_ext_.insert(std::make_pair(file_type.extension(), &file_type));
   }
-
-  return UpdateResult::SUCCESS;
-}
-
-float FileTypePolicies::SampledPingProbability() const {
-  AutoLock lock(lock_);
-  return config_ ? config_->sampled_ping_probability() : 0.0;
 }
 
 // static
@@ -164,6 +171,15 @@ std::string FileTypePolicies::CanonicalizedExtension(
   if (ascii_ext[0] == '.')
     ascii_ext.erase(0, 1);
   return ascii_ext;
+}
+
+//
+// Accessors
+//
+
+float FileTypePolicies::SampledPingProbability() const {
+  AutoLock lock(lock_);
+  return config_ ? config_->sampled_ping_probability() : 0.0;
 }
 
 const DownloadFileType& FileTypePolicies::PolicyForExtension(
@@ -208,11 +224,7 @@ bool FileTypePolicies::IsArchiveFile(const base::FilePath& file) const {
   return PolicyForExtension(ext).is_archive();
 }
 
-bool FileTypePolicies::IsCheckedBinaryFile(const base::FilePath& file) const {
-  const std::string ext = CanonicalizedExtension(file);
-  AutoLock lock(lock_);
-  return PolicyForExtension(ext).ping_setting() == DownloadFileType::FULL_PING;
-}
+// TODO(nparker): Add unit tests for these accessors.
 
 bool FileTypePolicies::IsAllowedToOpenAutomatically(
     const base::FilePath& file) const {
@@ -222,6 +234,17 @@ bool FileTypePolicies::IsAllowedToOpenAutomatically(
   AutoLock lock(lock_);
   return PolicyForExtension(ext).platform_settings(0).auto_open_hint() ==
          DownloadFileType::ALLOW_AUTO_OPEN;
+}
+
+DownloadFileType::PingSetting FileTypePolicies::PingSettingForFile(
+    const base::FilePath& file) const {
+  const std::string ext = CanonicalizedExtension(file);
+  AutoLock lock(lock_);
+  return PolicyForExtension(ext).ping_setting();
+}
+
+bool FileTypePolicies::IsCheckedBinaryFile(const base::FilePath& file) const {
+  return PingSettingForFile(file) == DownloadFileType::FULL_PING;
 }
 
 DownloadFileType::DangerLevel FileTypePolicies::GetFileDangerLevel(

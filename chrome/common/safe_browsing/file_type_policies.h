@@ -16,6 +16,7 @@
 namespace safe_browsing {
 
 struct FileTypePoliciesSingletonTrait;
+class FileTypePoliciesTestOverlay;
 
 // This holds a list of file types (aka file extensions) that we know about,
 // with policies related to how Safe Browsing and the download UI should treat
@@ -67,6 +68,10 @@ class FileTypePolicies {
   DownloadFileType::DangerLevel GetFileDangerLevel(
       const base::FilePath& file) const;
 
+  // Return the type of ping we should send for this file
+  DownloadFileType::PingSetting PingSettingForFile(
+      const base::FilePath& file) const;
+
   float SampledPingProbability() const;
 
   DownloadFileType PolicyForFile(const base::FilePath& file) const;
@@ -108,6 +113,10 @@ class FileTypePolicies {
       const std::string& ext) const;
 
  private:
+  // Swap in a different config. This will rebuild file_type_by_ext_ index.
+  void SwapConfig(std::unique_ptr<DownloadFileTypeConfig>& new_config);
+  void SwapConfigLocked(std::unique_ptr<DownloadFileTypeConfig>& new_config);
+
   // Read data from the main ResourceBundle. This updates the internal list
   // only if the data passes integrity checks. This is normally called once
   // after construction.
@@ -132,6 +141,7 @@ class FileTypePolicies {
   FRIEND_TEST_ALL_PREFIXES(FileTypePoliciesTest, BadUpdateFromExisting);
 
   friend struct FileTypePoliciesSingletonTrait;
+  friend class FileTypePoliciesTestOverlay;
 };
 
 }  // namespace safe_browsing

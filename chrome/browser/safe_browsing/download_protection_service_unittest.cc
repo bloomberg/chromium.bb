@@ -38,6 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/file_type_policies_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
@@ -277,6 +278,9 @@ class DownloadProtectionServiceTest : public testing::Test {
 
     // Setup a directory to place test files in.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    // Turn off binary sampling by default.
+    SetBinarySamplingProbability(0.0);
   }
 
   void TearDown() override {
@@ -290,6 +294,13 @@ class DownloadProtectionServiceTest : public testing::Test {
 
   void SetWhitelistedDownloadSampleRate(double target_rate) {
     download_service_->whitelist_sample_rate_ = target_rate;
+  }
+
+  void SetBinarySamplingProbability(double target_rate) {
+    std::unique_ptr<DownloadFileTypeConfig> config =
+        policies_.DuplicateConfig();
+    config->set_sampled_ping_probability(target_rate);
+    policies_.SwapConfig(config);
   }
 
   bool RequestContainsResource(const ClientDownloadRequest& request,
@@ -508,6 +519,9 @@ class DownloadProtectionServiceTest : public testing::Test {
 
 
  protected:
+  // This will effectivly mask the global Singleton while this is in scope.
+  FileTypePoliciesTestOverlay policies_;
+
   scoped_refptr<FakeSafeBrowsingService> sb_service_;
   scoped_refptr<MockBinaryFeatureExtractor> binary_feature_extractor_;
   DownloadProtectionService* download_service_;
@@ -808,6 +822,97 @@ TEST_F(DownloadProtectionServiceTest,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_FALSE(HasClientDownloadRequest());
+}
+
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
+  // Server response will be discarded.
+  net::FakeURLFetcherFactory factory(NULL);
+  PrepareResponse(
+      &factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
+
+  content::MockDownloadItem item;
+  PrepareBasicDownloadItem(
+    &item,
+    std::vector<std::string>(),   // empty url_chain
+    "http://www.google.com/",     // referrer
+    FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+    FILE_PATH_LITERAL("a.foobar_unknown_ype"));  // final_path
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+      .Times(1);
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+      .Times(1);
+  url_chain_.push_back(GURL("http://www.whitelist.com/a.foobar_unknown_type"));
+
+  // Set ping sample rate to 1.00 so download_service_ will always send a
+  // "light" ping for unknown types if allowed.
+  SetBinarySamplingProbability(1.0);
+
+  // Case (1): is_extended_reporting && is_incognito.
+  //           ClientDownloadRequest should NOT be sent.
+  SetExtendedReportingPreference(true);
+  EXPECT_CALL(item, GetBrowserContext())
+          .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+  EXPECT_FALSE(HasClientDownloadRequest());
+
+  // Case (2): is_extended_reporting && !is_incognito.
+  //           A "light" ClientDownloadRequest should be sent.
+  EXPECT_CALL(item, GetBrowserContext())
+          .WillRepeatedly(Return(profile_.get()));
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+  EXPECT_TRUE(HasClientDownloadRequest());
+  // Verify it's a "light" ping, check that URLs don't have paths, and
+  // and verify filename is just an extension.
+  auto* req = GetClientDownloadRequest();
+  EXPECT_EQ(ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
+            req->download_type());
+  EXPECT_EQ(GURL(req->url()).GetOrigin().spec(), req->url());
+  for (auto resource : req->resources()) {
+    EXPECT_EQ(GURL(resource.url()).GetOrigin().spec(), resource.url());
+    EXPECT_EQ(GURL(resource.referrer()).GetOrigin().spec(),
+              resource.referrer());
+  }
+  EXPECT_EQ('.', req->file_basename()[0]);
+
+  ClearClientDownloadRequest();
+
+  // Case (3): !is_extended_reporting && is_incognito.
+  //           ClientDownloadRequest should NOT be sent.
+  SetExtendedReportingPreference(false);
+  EXPECT_CALL(item, GetBrowserContext())
+          .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+  EXPECT_FALSE(HasClientDownloadRequest());
+
+  // Case (4): !is_extended_reporting && !is_incognito.
+  //           ClientDownloadRequest should NOT be sent.
+  EXPECT_CALL(item, GetBrowserContext())
+          .WillRepeatedly(Return(profile_.get()));
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
 }
 

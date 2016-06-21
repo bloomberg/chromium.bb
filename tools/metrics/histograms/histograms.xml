@@ -87346,7 +87346,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="DOWNLOAD_DANGEROUS"/>
   <int value="10" label="DOWNLOAD_SAFE"/>
   <int value="11" label="EMPTY_URL_CHAIN"/>
-  <int value="12" label="HTTPS_URL"/>
+  <int value="12" label="HTTPS_URL (deprecated)"/>
   <int value="13" label="PING_DISABLED"/>
   <int value="14" label="TRUSTED_EXECUTABLE"/>
   <int value="15" label="OS_NOT_SUPPORTED"/>
@@ -87357,9 +87357,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="20" label="DOWNLOAD_DANGEROUS_HOST"/>
   <int value="21" label="DOWNLOAD_POTENTIALLY_UNWANTED"/>
   <int value="22" label="UNSUPPORTED_URL_SCHEME"/>
-  <int value="23" label="REASON_MANUAL_BLACKLIST"/>
-  <int value="24" label="REASON_LOCAL_FILE"/>
-  <int value="25" label="REASON_REMOTE_FILE"/>
+  <int value="23" label="MANUAL_BLACKLIST"/>
+  <int value="24" label="LOCAL_FILE"/>
+  <int value="25" label="REMOTE_FILE"/>
+  <int value="26" label="SAMPLED_UNSUPPORTED_FILE"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult" type="int">

@@ -115,21 +115,6 @@ enum SBStatsType {
   DOWNLOAD_CHECKS_MAX
 };
 
-// Prepares URLs to be put into a ping message. Currently this just shortens
-// data: URIs, other URLs are included verbatim.
-std::string SanitizeUrl(const GURL& url) {
-  std::string spec = url.spec();
-  if (url.SchemeIs(url::kDataScheme)) {
-    size_t comma_pos = spec.find(',');
-    if (comma_pos != std::string::npos && comma_pos != spec.size() - 1) {
-      std::string hash_value = crypto::SHA256HashString(spec);
-      spec.erase(comma_pos + 1);
-      spec += base::HexEncode(hash_value.data(), hash_value.size());
-    }
-  }
-  return spec;
-}
-
 }  // namespace
 
 // Parent SafeBrowsing::Client class used to lookup the bad binary
@@ -311,6 +296,18 @@ class DownloadProtectionService::CheckClientDownloadRequest
     item_->AddObserver(this);
   }
 
+  bool ShouldSampleUnsupportedFile(const base::FilePath& filename) {
+    // If this extension is specifically marked as SAMPLED_PING (as are
+    // all "unknown" extensions), we may want to sample it. Sampling it means
+    // we'll send a "light ping" with private info removed, and we won't
+    // use the verdict.
+    const FileTypePolicies* policies = FileTypePolicies::GetInstance();
+    return service_ && is_extended_reporting_ && !is_incognito_ &&
+           base::RandDouble() < policies->SampledPingProbability() &&
+           policies->PingSettingForFile(filename) ==
+               DownloadFileType::SAMPLED_PING;
+  }
+
   void Start() {
     DVLOG(2) << "Starting SafeBrowsing download check for: "
              << item_->DebugString(true);
@@ -323,9 +320,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
                  prefs::kSafeBrowsingExtendedReportingEnabled);
       is_incognito_ = item_->GetBrowserContext()->IsOffTheRecord();
     }
-    // TODO(noelutz): implement some cache to make sure we don't issue the same
-    // request over and over again if a user downloads the same binary multiple
-    // times.
+
     DownloadCheckResultReason reason = REASON_MAX;
     if (!IsSupportedDownload(
         *item_, item_->GetTargetFilePath(), &reason, &type_)) {
@@ -339,6 +334,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
           return;
 
         case REASON_NOT_BINARY_FILE:
+          if (ShouldSampleUnsupportedFile(item_->GetTargetFilePath())) {
+            // Send a "light ping" and don't use the verdict.
+            type_ = ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE;
+            break;
+          }
           RecordFileExtensionType(item_->GetTargetFilePath());
           PostFinishTask(UNKNOWN, reason);
           return;
@@ -467,16 +467,16 @@ class DownloadProtectionService::CheckClientDownloadRequest
       if (!response.ParseFromString(data)) {
         reason = REASON_INVALID_RESPONSE_PROTO;
         result = UNKNOWN;
+      } else if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE) {
+        // Ignore the verdict because we were just reporting a sampled file.
+        reason = REASON_SAMPLED_UNSUPPORTED_FILE;
+        result = UNKNOWN;
       } else if (response.verdict() == ClientDownloadResponse::SAFE) {
         reason = REASON_DOWNLOAD_SAFE;
         result = SAFE;
       } else if (service_ && !service_->IsSupportedDownload(
           *item_, item_->GetTargetFilePath())) {
-        // The client of the download protection service assumes that we don't
-        // support this download so we cannot return any other verdict than
-        // UNKNOWN even if the server says it's dangerous to download this file.
-        // Note: if service_ is NULL we already cancelled the request and
-        // returned UNKNOWN.
+        // TODO(nparker): Remove this check since it should be impossible.
         reason = REASON_DOWNLOAD_NOT_SUPPORTED;
         result = UNKNOWN;
       } else if (response.verdict() == ClientDownloadResponse::DANGEROUS) {
@@ -531,10 +531,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
       *reason = REASON_INVALID_URL;
       return false;
     }
-    if (!FileTypePolicies::GetInstance()->IsCheckedBinaryFile(target_path)) {
-      *reason = REASON_NOT_BINARY_FILE;
-      return false;
-    }
     if (!final_url.IsStandard() && !final_url.SchemeIsBlob() &&
         !final_url.SchemeIs(url::kDataScheme)) {
       *reason = REASON_UNSUPPORTED_URL_SCHEME;
@@ -542,6 +538,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
     if (final_url.SchemeIsFile()) {
       *reason = final_url.has_host() ? REASON_REMOTE_FILE : REASON_LOCAL_FILE;
+      return false;
+    }
+    // This check should be last, so we know the earlier checks passed.
+    if (!FileTypePolicies::GetInstance()->IsCheckedBinaryFile(target_path)) {
+      *reason = REASON_NOT_BINARY_FILE;
       return false;
     }
     *type = download_protection_util::GetDownloadType(target_path);
@@ -885,6 +886,25 @@ class DownloadProtectionService::CheckClientDownloadRequest
     return false;
   }
 
+  // Prepares URLs to be put into a ping message. Currently this just shortens
+  // data: URIs, other URLs are included verbatim. If this is a sampled binary,
+  // we'll send a lite-ping which strips all PII.
+  std::string SanitizeUrl(const GURL& url) const {
+    if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE)
+      return url.GetOrigin().spec();
+
+    std::string spec = url.spec();
+    if (url.SchemeIs(url::kDataScheme)) {
+      size_t comma_pos = spec.find(',');
+      if (comma_pos != std::string::npos && comma_pos != spec.size() - 1) {
+        std::string hash_value = crypto::SHA256HashString(spec);
+        spec.erase(comma_pos + 1);
+        spec += base::HexEncode(hash_value.data(), hash_value.size());
+      }
+    }
+    return spec;
+  }
+
   void SendRequest() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -901,6 +921,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       request.mutable_population()->set_user_population(
           ChromeUserPopulation::SAFE_BROWSING);
     }
+
     request.set_url(SanitizeUrl(item_->GetUrlChain().back()));
     request.mutable_digests()->set_sha256(item_->GetHash());
     request.set_length(item_->GetReceivedBytes());
@@ -944,8 +965,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
 
     request.set_user_initiated(item_->HasUserGesture());
-    request.set_file_basename(
+    if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE) {
+      request.set_file_basename(
+          base::FilePath(item_->GetTargetFilePath().Extension())
+              .AsUTF8Unsafe());
+    } else {
+      request.set_file_basename(
         item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
+    }
     request.set_download_type(type_);
     if (archive_is_valid_ != ArchiveValid::UNSET)
       request.set_archive_valid(archive_is_valid_ == ArchiveValid::VALID);
@@ -1026,8 +1053,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       DVLOG(2) << "SafeBrowsing download verdict for: "
                << item_->DebugString(true) << " verdict:" << reason
                << " result:" << result;
-      UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats",
-                                reason,
+      UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                                 REASON_MAX);
       callback_.Run(result);
       item_->RemoveObserver(this);
@@ -1374,8 +1400,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
 
   // Given a |default_file_path| and a list of |alternate_extensions|,
   // constructs a FilePath with each possible extension and returns one that
-  // satisfies download_protection_util::IsSupportedBinaryFile(). If none are
-  // supported, returns an empty FilePath.
+  // satisfies IsCheckedBinaryFile(). If none are supported, returns an
+  // empty FilePath.
   static base::FilePath GetSupportedFilePath(
       const base::FilePath& default_file_path,
       const std::vector<base::FilePath::StringType>& alternate_extensions) {
@@ -1418,7 +1444,7 @@ class DownloadProtectionService::PPAPIDownloadRequest
 
   // A download path that is supported by SafeBrowsing. This is determined by
   // invoking GetSupportedFilePath(). If non-empty,
-  // safe_browsing::IsSupportedBinaryFile(supported_path_) is always true. This
+  // IsCheckedBinaryFile(supported_path_) is always true. This
   // path is therefore used as the download target when sending the SafeBrowsing
   // ping.
   const base::FilePath supported_path_;
@@ -1517,6 +1543,8 @@ bool DownloadProtectionService::IsSupportedDownload(
   DownloadCheckResultReason reason = REASON_MAX;
   ClientDownloadRequest::DownloadType type =
       ClientDownloadRequest::WIN_EXECUTABLE;
+  // TODO(nparker): Remove the CRX check here once can support
+  // UNKNOWN types properly.  http://crbug.com/581044
   return (CheckClientDownloadRequest::IsSupportedDownload(
               item, target_path, &reason, &type) &&
           (ClientDownloadRequest::CHROME_EXTENSION != type));

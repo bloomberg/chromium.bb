@@ -286,9 +286,12 @@ message ClientDownloadRequest {
     // A .dmg, .pkg, etc, that Chrome failed to unpack to the point of finding
     // Mach O's.
     INVALID_MAC_ARCHIVE = 8;
-    PPAPI_SAVE_REQUEST =
-        9;  // A download request initiated via PPAPI. Typically
-            // the requestor is a Flash applet.
+    // A download request initiated via PPAPI. Typically the requestor is
+    // a Flash applet.
+    PPAPI_SAVE_REQUEST = 9;
+    // A file we don't support, but we've decided to sample and send
+    // a light-ping.
+    SAMPLED_UNSUPPORTED_FILE = 10;
   }
   optional DownloadType download_type = 10 [default = WIN_EXECUTABLE];
 

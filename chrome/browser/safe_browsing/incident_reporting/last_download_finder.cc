@@ -59,7 +59,7 @@ bool IsBinaryDownloadForCurrentOS(
   // should also be updated so that the IsBinaryDownloadForCurrentOS() will
   // return true for that DownloadType as appropriate.
   static_assert(ClientDownloadRequest::DownloadType_MAX ==
-                    ClientDownloadRequest::PPAPI_SAVE_REQUEST,
+                    ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
                 "Update logic below");
 
 // Platform-specific types are relevant only for their own platforms.

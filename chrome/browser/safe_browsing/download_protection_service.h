@@ -107,8 +107,9 @@ class DownloadProtectionService {
 
   // Returns true iff the download specified by |info| should be scanned by
   // CheckClientDownload() for malicious content.
-  virtual bool IsSupportedDownload(const content::DownloadItem& item,
-                                   const base::FilePath& target_path) const;
+  virtual bool IsSupportedDownload(
+      const content::DownloadItem& item,
+      const base::FilePath& target_path) const;
 
   virtual void CheckPPAPIDownloadRequest(
       const GURL& requestor_url,
@@ -157,34 +158,35 @@ class DownloadProtectionService {
 
  protected:
   // Enum to keep track why a particular download verdict was chosen.
-  // This is used to keep some stats around.
+  // Used for UMA metrics. Do not reorder.
   enum DownloadCheckResultReason {
-    REASON_INVALID_URL,
-    REASON_SB_DISABLED,
-    REASON_WHITELISTED_URL,
-    REASON_WHITELISTED_REFERRER,
-    REASON_INVALID_REQUEST_PROTO,
-    REASON_SERVER_PING_FAILED,
-    REASON_INVALID_RESPONSE_PROTO,
-    REASON_NOT_BINARY_FILE,
-    REASON_REQUEST_CANCELED,
-    REASON_DOWNLOAD_DANGEROUS,
-    REASON_DOWNLOAD_SAFE,
-    REASON_EMPTY_URL_CHAIN,
-    DEPRECATED_REASON_HTTPS_URL,
-    REASON_PING_DISABLED,
-    REASON_TRUSTED_EXECUTABLE,
-    REASON_OS_NOT_SUPPORTED,
-    REASON_DOWNLOAD_UNCOMMON,
-    REASON_DOWNLOAD_NOT_SUPPORTED,
-    REASON_INVALID_RESPONSE_VERDICT,
-    REASON_ARCHIVE_WITHOUT_BINARIES,
-    REASON_DOWNLOAD_DANGEROUS_HOST,
-    REASON_DOWNLOAD_POTENTIALLY_UNWANTED,
-    REASON_UNSUPPORTED_URL_SCHEME,
-    REASON_MANUAL_BLACKLIST,
-    REASON_LOCAL_FILE,
-    REASON_REMOTE_FILE,
+    REASON_INVALID_URL = 0,
+    REASON_SB_DISABLED = 1,
+    REASON_WHITELISTED_URL = 2,
+    REASON_WHITELISTED_REFERRER = 3,
+    REASON_INVALID_REQUEST_PROTO = 4,
+    REASON_SERVER_PING_FAILED = 5,
+    REASON_INVALID_RESPONSE_PROTO = 6,
+    REASON_NOT_BINARY_FILE = 7,
+    REASON_REQUEST_CANCELED = 8,
+    REASON_DOWNLOAD_DANGEROUS = 9,
+    REASON_DOWNLOAD_SAFE = 10,
+    REASON_EMPTY_URL_CHAIN = 11,
+    DEPRECATED_REASON_HTTPS_URL = 12,
+    REASON_PING_DISABLED = 13,
+    REASON_TRUSTED_EXECUTABLE = 14,
+    REASON_OS_NOT_SUPPORTED = 15,
+    REASON_DOWNLOAD_UNCOMMON = 16,
+    REASON_DOWNLOAD_NOT_SUPPORTED = 17,
+    REASON_INVALID_RESPONSE_VERDICT = 18,
+    REASON_ARCHIVE_WITHOUT_BINARIES = 19,
+    REASON_DOWNLOAD_DANGEROUS_HOST = 20,
+    REASON_DOWNLOAD_POTENTIALLY_UNWANTED = 21,
+    REASON_UNSUPPORTED_URL_SCHEME = 22,
+    REASON_MANUAL_BLACKLIST = 23,
+    REASON_LOCAL_FILE = 24,
+    REASON_REMOTE_FILE = 25,
+    REASON_SAMPLED_UNSUPPORTED_FILE = 26,
     REASON_MAX  // Always add new values before this one.
   };
 
