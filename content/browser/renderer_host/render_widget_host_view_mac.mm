@@ -597,6 +597,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
         ->GetInputEventRouter()
         ->AddSurfaceIdNamespaceOwner(GetSurfaceIdNamespace(), this);
   }
+
+  if (!render_widget_host_->is_hidden())
+    EnsureBrowserCompositorView();
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -887,14 +890,15 @@ RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
 void RenderWidgetHostViewMac::Show() {
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:NO];
-  if (!render_widget_host_->is_hidden())
-    return;
 
   // Re-create the browser compositor. If the DelegatedFrameHost has a cached
   // frame from the last time it was visible, then it will immediately be
   // drawn. If not, then the compositor will remain locked until a new delegated
   // frame is swapped.
   EnsureBrowserCompositorView();
+
+  if (!render_widget_host_->is_hidden())
+    return;
 
   WasUnOccluded();
 
