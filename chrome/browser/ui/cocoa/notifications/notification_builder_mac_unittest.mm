@@ -8,6 +8,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
+#include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(NotificationBuilderMacTest, TestNotificationNoButtons) {
@@ -115,15 +116,15 @@ TEST(NotificationBuilderMacTest, TestUserInfo) {
 
   EXPECT_EQ("https://www.miguel.com",
             base::SysNSStringToUTF8([userInfo
-                objectForKey:notification_builder::kNotificationOrigin]));
+                objectForKey:notification_constants::kNotificationOrigin]));
   EXPECT_EQ("Notification1",
-            base::SysNSStringToUTF8(
-                [userInfo objectForKey:notification_builder::kNotificationId]));
+            base::SysNSStringToUTF8([userInfo
+                objectForKey:notification_constants::kNotificationId]));
   EXPECT_EQ("Profile1",
             base::SysNSStringToUTF8([userInfo
-                objectForKey:notification_builder::kNotificationProfileId]));
+                objectForKey:notification_constants::kNotificationProfileId]));
   EXPECT_TRUE([[userInfo
-      objectForKey:notification_builder::kNotificationIncognito] boolValue]);
+      objectForKey:notification_constants::kNotificationIncognito] boolValue]);
 }
 
 TEST(NotificationBuilderMacTest, TestBuildDictionary) {

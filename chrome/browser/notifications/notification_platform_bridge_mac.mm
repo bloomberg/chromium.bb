@@ -18,6 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
+#include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
+#import "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
@@ -146,10 +148,10 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
     NSString* toast_id =
-        [toast.userInfo objectForKey:notification_builder::kNotificationId];
+        [toast.userInfo objectForKey:notification_constants::kNotificationId];
 
     NSString* persistent_profile_id = [toast.userInfo
-        objectForKey:notification_builder::kNotificationProfileId];
+        objectForKey:notification_constants::kNotificationProfileId];
 
     if (toast_id == candidate_id &&
         persistent_profile_id == current_profile_id) {
@@ -168,10 +170,10 @@ bool NotificationPlatformBridgeMac::GetDisplayed(
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
     NSString* toast_profile_id = [toast.userInfo
-        objectForKey:notification_builder::kNotificationProfileId];
+        objectForKey:notification_constants::kNotificationProfileId];
     if (toast_profile_id == current_profile_id) {
-      notifications->insert(base::SysNSStringToUTF8(
-          [toast.userInfo objectForKey:notification_builder::kNotificationId]));
+      notifications->insert(base::SysNSStringToUTF8([toast.userInfo
+          objectForKey:notification_constants::kNotificationId]));
     }
   }
   return true;
@@ -186,11 +188,18 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
 @implementation NotificationCenterDelegate
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
        didActivateNotification:(NSUserNotification*)notification {
-  std::string notificationOrigin =
-      base::SysNSStringToUTF8([notification.userInfo
-          objectForKey:notification_builder::kNotificationOrigin]);
+  NSDictionary* response =
+      [NotificationResponseBuilder buildDictionary:notification];
+
+  NSNumber* buttonIndex =
+      [response objectForKey:notification_constants::kNotificationButtonIndex];
+  NSNumber* operation =
+      [response objectForKey:notification_constants::kNotificationOperation];
+
+  std::string notificationOrigin = base::SysNSStringToUTF8(
+      [response objectForKey:notification_constants::kNotificationOrigin]);
   NSString* notificationId = [notification.userInfo
-      objectForKey:notification_builder::kNotificationId];
+      objectForKey:notification_constants::kNotificationId];
   std::string persistentNotificationId =
       base::SysNSStringToUTF8(notificationId);
   int64_t persistentId;
@@ -199,58 +208,19 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
                << persistentNotificationId << " to integer.";
     return;
   }
-
-  NSString* profileId = [notification.userInfo
-      objectForKey:notification_builder::kNotificationProfileId];
-  NSNumber* isIncognito = [notification.userInfo
-      objectForKey:notification_builder::kNotificationIncognito];
+  std::string profileId = base::SysNSStringToUTF8(
+      [response objectForKey:notification_constants::kNotificationProfileId]);
+  NSNumber* isIncognito =
+      [response objectForKey:notification_constants::kNotificationIncognito];
 
   GURL origin(notificationOrigin);
 
-  // Initialize operation and button index for the case where the
-  // notification itself was clicked.
-  PlatformNotificationServiceImpl::NotificationOperation operation =
-      PlatformNotificationServiceImpl::NOTIFICATION_CLICK;
-  int buttonIndex = -1;
-
-  // Determine whether the user clicked on a button, and if they did, whether it
-  // was a developer-provided button or the mandatory Settings button.
-  if (notification.activationType ==
-      NSUserNotificationActivationTypeActionButtonClicked) {
-    NSArray* alternateButtons = @[];
-    if ([notification
-            respondsToSelector:@selector(_alternateActionButtonTitles)]) {
-      alternateButtons =
-          [notification valueForKey:@"_alternateActionButtonTitles"];
-    }
-
-    bool multipleButtons = (alternateButtons.count > 0);
-
-    // No developer actions, just the settings button.
-    if (!multipleButtons) {
-      operation = PlatformNotificationServiceImpl::NOTIFICATION_SETTINGS;
-      buttonIndex = -1;
-    } else {
-      // 0 based array containing.
-      // Button 1
-      // Button 2 (optional)
-      // Settings
-      NSNumber* actionIndex =
-          [notification valueForKey:@"_alternateActionIndex"];
-      operation = (actionIndex.unsignedLongValue == alternateButtons.count - 1)
-                      ? PlatformNotificationServiceImpl::NOTIFICATION_SETTINGS
-                      : PlatformNotificationServiceImpl::NOTIFICATION_CLICK;
-      buttonIndex =
-          (actionIndex.unsignedLongValue == alternateButtons.count - 1)
-              ? -1
-              : actionIndex.intValue;
-    }
-  }
-
   PlatformNotificationServiceImpl::GetInstance()
       ->ProcessPersistentNotificationOperation(
-          operation, base::SysNSStringToUTF8(profileId),
-          [isIncognito boolValue], origin, persistentId, buttonIndex);
+          static_cast<PlatformNotificationServiceImpl::NotificationOperation>(
+              operation.intValue),
+          profileId, [isIncognito boolValue], origin, persistentId,
+          buttonIndex.intValue);
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter*)center

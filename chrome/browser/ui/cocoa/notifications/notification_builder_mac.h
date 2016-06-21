@@ -11,15 +11,6 @@
 
 @class NSUserNotification;
 
-namespace notification_builder {
-
-extern NSString* const kNotificationOrigin;
-extern NSString* const kNotificationId;
-extern NSString* const kNotificationProfileId;
-extern NSString* const kNotificationIncognito;
-
-}  // notification_builder
-
 // Provides a marshallable way for storing the information required to construct
 // a NSUSerNotification that is to be displayed on the system.
 //

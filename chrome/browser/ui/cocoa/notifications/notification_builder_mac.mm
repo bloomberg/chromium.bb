@@ -8,6 +8,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -27,16 +28,6 @@ NSString* const kNotificationCloseButtonTag = @"closeButton";
 NSString* const kNotificationOptionsButtonTag = @"optionsButton";
 NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 }  // namespace
-
-namespace notification_builder {
-
-// Exposed constants to include user related data in the notification.
-NSString* const kNotificationOrigin = @"notificationOrigin";
-NSString* const kNotificationId = @"notificationId";
-NSString* const kNotificationProfileId = @"notificationProfileId";
-NSString* const kNotificationIncognito = @"notificationIncognito";
-
-}  // namespace notification_builder
 
 @implementation NotificationBuilder {
   base::scoped_nsobject<NSMutableDictionary> notificationData_;
@@ -103,24 +94,24 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
 - (void)setOrigin:(NSString*)origin {
   if (origin.length)
     [notificationData_ setObject:origin
-                          forKey:notification_builder::kNotificationOrigin];
+                          forKey:notification_constants::kNotificationOrigin];
 }
 
 - (void)setNotificationId:(NSString*)notificationId {
   DCHECK(notificationId.length);
   [notificationData_ setObject:notificationId
-                        forKey:notification_builder::kNotificationId];
+                        forKey:notification_constants::kNotificationId];
 }
 
 - (void)setProfileId:(NSString*)profileId {
   DCHECK(profileId.length);
   [notificationData_ setObject:profileId
-                        forKey:notification_builder::kNotificationProfileId];
+                        forKey:notification_constants::kNotificationProfileId];
 }
 
 - (void)setIncognito:(BOOL)incognito {
   [notificationData_ setObject:[NSNumber numberWithBool:incognito]
-                        forKey:notification_builder::kNotificationIncognito];
+                        forKey:notification_constants::kNotificationIncognito];
 }
 
 - (NSUserNotification*)buildUserNotification {
@@ -195,30 +186,31 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
   }
 
   NSString* origin =
-      [notificationData_ objectForKey:notification_builder::kNotificationOrigin]
+      [notificationData_
+          objectForKey:notification_constants::kNotificationOrigin]
           ? [notificationData_
-                objectForKey:notification_builder::kNotificationOrigin]
+                objectForKey:notification_constants::kNotificationOrigin]
           : @"";
   DCHECK(
-      [notificationData_ objectForKey:notification_builder::kNotificationId]);
+      [notificationData_ objectForKey:notification_constants::kNotificationId]);
   NSString* notificationId =
-      [notificationData_ objectForKey:notification_builder::kNotificationId];
+      [notificationData_ objectForKey:notification_constants::kNotificationId];
 
   DCHECK([notificationData_
-      objectForKey:notification_builder::kNotificationProfileId]);
+      objectForKey:notification_constants::kNotificationProfileId]);
   NSString* profileId = [notificationData_
-      objectForKey:notification_builder::kNotificationProfileId];
+      objectForKey:notification_constants::kNotificationProfileId];
 
   DCHECK([notificationData_
-      objectForKey:notification_builder::kNotificationIncognito]);
+      objectForKey:notification_constants::kNotificationIncognito]);
   NSNumber* incognito = [notificationData_
-      objectForKey:notification_builder::kNotificationIncognito];
+      objectForKey:notification_constants::kNotificationIncognito];
 
   toast.get().userInfo = @{
-    notification_builder::kNotificationOrigin : origin,
-    notification_builder::kNotificationId : notificationId,
-    notification_builder::kNotificationProfileId : profileId,
-    notification_builder::kNotificationIncognito : incognito,
+    notification_constants::kNotificationOrigin : origin,
+    notification_constants::kNotificationId : notificationId,
+    notification_constants::kNotificationProfileId : profileId,
+    notification_constants::kNotificationIncognito : incognito,
   };
 
   return toast.autorelease();

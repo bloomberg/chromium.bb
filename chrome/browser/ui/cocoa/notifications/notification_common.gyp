@@ -14,6 +14,10 @@
     'sources': [
       'notification_builder_mac.h',
       'notification_builder_mac.mm',
+      'notification_constants_mac.h',
+      'notification_constants_mac.mm',
+      'notification_response_builder_mac.h',
+      'notification_response_builder_mac.mm',
     ],
     'dependencies': [
       '<(DEPTH)/base/base.gyp:base',
