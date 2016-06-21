@@ -5,7 +5,7 @@
 #include "media/mojo/clients/mojo_renderer_factory.h"
 
 #include "base/single_thread_task_runner.h"
-#include "media/mojo/clients/mojo_renderer_impl.h"
+#include "media/mojo/clients/mojo_renderer.h"
 #include "media/renderers/video_overlay_factory.h"
 #include "services/shell/public/cpp/connect.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
@@ -36,8 +36,8 @@ std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
   shell::GetInterface<mojom::Renderer>(interface_provider_, &renderer_ptr);
 
   return std::unique_ptr<Renderer>(
-      new MojoRendererImpl(media_task_runner, std::move(overlay_factory),
-                           video_renderer_sink, std::move(renderer_ptr)));
+      new MojoRenderer(media_task_runner, std::move(overlay_factory),
+                       video_renderer_sink, std::move(renderer_ptr)));
 }
 
 }  // namespace media

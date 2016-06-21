@@ -38,7 +38,7 @@
 #include "url/gurl.h"
 
 #if defined(MOJO_RENDERER)
-#include "media/mojo/clients/mojo_renderer_impl.h"
+#include "media/mojo/clients/mojo_renderer.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "services/shell/public/cpp/connect.h"
@@ -712,8 +712,8 @@ class PipelineIntegrationTestHost : public shell::test::ShellTest,
     mojom::RendererPtr mojo_renderer;
     media_service_factory_->CreateRenderer(mojo::GetProxy(&mojo_renderer));
 
-    return base::WrapUnique(new MojoRendererImpl(message_loop_.task_runner(),
-                                                 std::move(mojo_renderer)));
+    return base::WrapUnique(new MojoRenderer(message_loop_.task_runner(),
+                                             std::move(mojo_renderer)));
   }
 
  private:

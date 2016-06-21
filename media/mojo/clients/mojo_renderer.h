@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_CLIENTS_MOJO_RENDERER_IMPL_H_
-#define MEDIA_MOJO_CLIENTS_MOJO_RENDERER_IMPL_H_
+#ifndef MEDIA_MOJO_CLIENTS_MOJO_RENDERER_H_
+#define MEDIA_MOJO_CLIENTS_MOJO_RENDERER_H_
 
 #include <stdint.h>
 
@@ -25,7 +25,7 @@ class VideoOverlayFactory;
 class VideoRendererSink;
 
 // A media::Renderer that proxies to a mojom::Renderer. That
-// mojom::Renderer proxies back to the MojoRendererImpl via the
+// mojom::Renderer proxies back to the MojoRenderer via the
 // mojom::RendererClient interface.
 //
 // This class can be created on any thread, where the |remote_renderer| is
@@ -34,14 +34,13 @@ class VideoRendererSink;
 // |task_runner|*. That means all Renderer and RendererClient methods will be
 // called/dispached on the |task_runner|. The only exception is GetMediaTime(),
 // which can be called on any thread.
-class MojoRendererImpl : public Renderer, public mojom::RendererClient {
+class MojoRenderer : public Renderer, public mojom::RendererClient {
  public:
-  MojoRendererImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      std::unique_ptr<VideoOverlayFactory> video_overlay_factory,
-      VideoRendererSink* video_renderer_sink,
-      mojom::RendererPtr remote_renderer);
-  ~MojoRendererImpl() override;
+  MojoRenderer(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+               std::unique_ptr<VideoOverlayFactory> video_overlay_factory,
+               VideoRendererSink* video_renderer_sink,
+               mojom::RendererPtr remote_renderer);
+  ~MojoRenderer() override;
 
   // Renderer implementation.
   void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
@@ -105,7 +104,7 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
   media::RendererClient* client_ = nullptr;
 
   // Mojo demuxer streams.
-  // Owned by MojoRendererImpl instead of remote mojom::Renderer
+  // Owned by MojoRenderer instead of remote mojom::Renderer
   // becuase these demuxer streams need to be destroyed as soon as |this| is
   // destroyed. The local demuxer streams returned by DemuxerStreamProvider
   // cannot be used after |this| is destroyed.
@@ -134,9 +133,9 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
   mutable base::Lock lock_;
   base::TimeDelta time_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoRendererImpl);
+  DISALLOW_COPY_AND_ASSIGN(MojoRenderer);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_CLIENTS_MOJO_RENDERER_IMPL_H_
+#endif  // MEDIA_MOJO_CLIENTS_MOJO_RENDERER_H_

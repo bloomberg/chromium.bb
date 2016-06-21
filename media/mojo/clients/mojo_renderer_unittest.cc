@@ -15,7 +15,7 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/cdm/default_cdm_factory.h"
-#include "media/mojo/clients/mojo_renderer_impl.h"
+#include "media/mojo/clients/mojo_renderer.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
@@ -55,9 +55,9 @@ class MojoRendererTest : public ::testing::Test {
         mojo::GetProxy(&remote_renderer));
 
     mojo_renderer_.reset(
-        new MojoRendererImpl(message_loop_.task_runner(),
-                             std::unique_ptr<VideoOverlayFactory>(nullptr),
-                             nullptr, std::move(remote_renderer)));
+        new MojoRenderer(message_loop_.task_runner(),
+                         std::unique_ptr<VideoOverlayFactory>(nullptr), nullptr,
+                         std::move(remote_renderer)));
 
     // CreateAudioStream() and CreateVideoStream() overrides expectations for
     // expected non-NULL streams.
@@ -178,8 +178,8 @@ class MojoRendererTest : public ::testing::Test {
   // Fixture members.
   base::MessageLoop message_loop_;
 
-  // The MojoRendererImpl that we are testing.
-  std::unique_ptr<MojoRendererImpl> mojo_renderer_;
+  // The MojoRenderer that we are testing.
+  std::unique_ptr<MojoRenderer> mojo_renderer_;
 
   // Client side mocks and helpers.
   StrictMock<MockRendererClient> renderer_client_;

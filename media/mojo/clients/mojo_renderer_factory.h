@@ -21,7 +21,7 @@ namespace media {
 
 class GpuVideoAcceleratorFactories;
 
-// The default factory class for creating MojoRendererImpl.
+// The default factory class for creating MojoRenderer.
 class MojoRendererFactory : public RendererFactory {
  public:
   using GetGpuFactoriesCB = base::Callback<GpuVideoAcceleratorFactories*()>;
