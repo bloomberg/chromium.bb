@@ -1694,6 +1694,30 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_OPEN_DOWNLOADED_LABEL" desc="A text label on the snackbar widget to open the downloaded file.">
         Open
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED" desc="String indicating that some amount (not part of this string) of the available space on the device has already been used.">
+        Used of <ph name="TOTAL_SPACE">%1$s<ex>12.55 GB</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_ALL_DOWNLOADS" desc="Indicates that clicking on this button shows all of your downloads.">
+        All downloads
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_PAGES" desc="Indicates that clicking on this button shows only offline pages.">
+        Pages
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_VIDEO" desc="Indicates that clicking on this button shows only downloaded videos.">
+        Video
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_AUDIO" desc="Indicates that clicking on this button shows only downloaded audio files.">
+        Audio
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_IMAGES" desc="Indicates that clicking on this button shows only downloaded images.">
+        Images
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_DOCUMENTS" desc="Indicates that clicking on this button shows only documents.">
+        Documents
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_OTHER" desc="Indicates that clicking on this button shows any downloads that don't fit in the other categories.">
+        Other
+      </message>
 
       <!-- Document mode messages -->
       <message name="IDS_CLOSE_ALL_INCOGNITO_NOTIFICATION" desc="Message on the notification that closes all incognito tabs in document mode">

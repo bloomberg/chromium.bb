@@ -46,6 +46,15 @@
         android:orientation="vertical"
         android:background="#ffffff" >
 
+        <include layout="@layout/download_manager_ui_space_widget"/>
+
+        <ListView
+            android:id="@+id/section_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="@null"
+            android:dividerHeight="0dp" />
     </LinearLayout>
 
 </org.chromium.chrome.browser.download.ui.DownloadManagerUi>

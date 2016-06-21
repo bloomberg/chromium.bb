@@ -24,6 +24,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.PowerManager;
 import android.os.Process;
+import android.os.StatFs;
 import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -496,6 +497,30 @@ public class ApiCompatibilityUtils {
             view.setTextAppearance(id);
         } else {
             view.setTextAppearance(view.getContext(), id);
+        }
+    }
+
+    /**
+     * See {@link android.os.StatFs#getBlockCount()}.
+     */
+    @SuppressWarnings("deprecation")
+    public static long getBlockCount(StatFs statFs) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            return statFs.getBlockCountLong();
+        } else {
+            return statFs.getBlockCount();
+        }
+    }
+
+    /**
+     * See {@link android.os.StatFs#getBlockSize()}.
+     */
+    @SuppressWarnings("deprecation")
+    public static long getBlockSize(StatFs statFs) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            return statFs.getBlockSizeLong();
+        } else {
+            return statFs.getBlockSize();
         }
     }
 }
