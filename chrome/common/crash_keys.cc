@@ -118,6 +118,7 @@ size_t RegisterChromeCrashKeys() {
 #endif
 
     // content/:
+    { "bad_message_reason", kSmallSize },
     { "discardable-memory-allocated", kSmallSize },
     { "discardable-memory-free", kSmallSize },
     { kFontKeyName, kSmallSize},

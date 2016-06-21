@@ -25,6 +25,7 @@ size_t RegisterEngineCrashKeys() {
       { crash_keys::kVariations, crash_keys::kLargeSize },
 
       // //content crash keys
+      { "bad_message_reason", crash_keys::kSmallSize },
       { "channel_error_bt", crash_keys::kMediumSize },
       { "discardable-memory-allocated", crash_keys::kSmallSize },
       { "discardable-memory-free", crash_keys::kSmallSize },
