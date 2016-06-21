@@ -6,6 +6,7 @@
 # See http://www.chromium.org/developers/testing/libfuzzer
 #
 # To enable libfuzzer, 'use_libfuzzer' GN option should be set to true.
+# Or to enable afl, 'use_afl' GN option should be set to true.
 
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -15,6 +16,8 @@ source_set("libfuzzer_main") {
   sources = []
   if (use_libfuzzer) {
     deps += [ "//third_party/libFuzzer:libfuzzer" ]
+  } else if (use_afl) {
+    deps += [ "//third_party/libFuzzer:afl_driver" ]
   } else if (use_drfuzz) {
     sources += [ "drfuzz_main.cc" ]
   } else {

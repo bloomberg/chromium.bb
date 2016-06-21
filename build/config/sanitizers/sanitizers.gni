@@ -57,6 +57,9 @@ declare_args() {
   # See http://www.chromium.org/developers/testing/libfuzzer
   use_libfuzzer = false
 
+  # Compile for fuzzing with AFL.
+  use_afl = false
+
   # Enables core ubsan security features. Will later be removed once it matches
   # is_ubsan.
   is_ubsan_security = false
@@ -71,8 +74,11 @@ declare_args() {
 
   # Value for -fsanitize-coverage flag. Setting this causes
   # use_sanitizer_coverage to be enabled.
+  # Default value when unset and use_afl=true:
+  # trace-pc
   # Default value when unset and use_sanitizer_coverage=true:
   #     edge,indirect-calls,8bit-counters
+
   sanitizer_coverage_flags = ""
 }
 
@@ -83,14 +89,18 @@ declare_args() {
   # Use libc++ (buildtools/third_party/libc++ and
   # buildtools/third_party/libc++abi) instead of stdlibc++ as standard library.
   # This is intended to be used for instrumented builds.
-  use_custom_libcxx = (is_asan && is_linux && !is_chromeos) || is_tsan ||
-                      is_msan || is_ubsan || is_ubsan_security || use_libfuzzer
+  use_custom_libcxx =
+      (is_asan && is_linux && !is_chromeos) || is_tsan || is_msan || is_ubsan ||
+      is_ubsan_security || use_libfuzzer || use_afl
 
   # Enable -fsanitize-coverage.
-  use_sanitizer_coverage = use_libfuzzer || sanitizer_coverage_flags != ""
+  use_sanitizer_coverage =
+      use_libfuzzer || use_afl || sanitizer_coverage_flags != ""
 }
 
-if (use_sanitizer_coverage && sanitizer_coverage_flags == "") {
+if (use_afl && sanitizer_coverage_flags == "") {
+  sanitizer_coverage_flags = "trace-pc"
+} else if (use_sanitizer_coverage && sanitizer_coverage_flags == "") {
   sanitizer_coverage_flags = "edge,indirect-calls,8bit-counters"
 }
 

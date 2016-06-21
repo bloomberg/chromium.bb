@@ -19,15 +19,16 @@ import("//testing/test.gni")
 # - seed_corpus - a directory with seed corpus.
 #
 # If use_libfuzzer gn flag is defined, then proper fuzzer would be build.
-# Without use_libfuzzer a unit-test style binary would be built on linux
-# and the whole target is a no-op otherwise.
+# Without use_libfuzzer or use_afl a unit-test style binary would be built on
+# linux and the whole target is a no-op otherwise.
 #
 # The template wraps test() target with appropriate dependencies.
 # If any test run-time options are present (dict or libfuzzer_options), then a
 # config (.options file) file would be generated or modified in root output
 # dir (next to test).
 template("fuzzer_test") {
-  if (!disable_libfuzzer && (use_libfuzzer || use_drfuzz || is_linux)) {
+  if (!disable_libfuzzer &&
+      (use_libfuzzer || use_afl || use_drfuzz || is_linux)) {
     assert(defined(invoker.sources), "Need sources in $target_name.")
 
     test_deps = [ "//testing/libfuzzer:libfuzzer_main" ]

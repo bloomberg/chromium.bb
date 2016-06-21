@@ -27,6 +27,9 @@ group("deps") {
       ":options_sources",
     ]
   }
+  if (use_afl) {
+    deps += [ "//third_party/afl:afl_runtime" ]
+  }
 }
 
 group("deps_no_options") {

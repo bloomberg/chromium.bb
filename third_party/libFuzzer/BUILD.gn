@@ -22,3 +22,14 @@ source_set("libfuzzer") {
     "src/FuzzerUtil.cpp",
   ]
 }
+
+source_set("afl_driver") {
+  # AFL should be compiled without coverage (infinite loop in trace_cmp).
+  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+  configs +=
+      [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
+
+  sources = [
+    "src/afl/afl_driver.cpp",
+  ]
+}
