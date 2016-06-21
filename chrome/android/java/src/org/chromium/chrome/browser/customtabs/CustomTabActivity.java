@@ -580,18 +580,9 @@ public class CustomTabActivity extends ChromeActivity {
                 new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        String creatorPackage =
-                                ApiCompatibilityUtils.getCreatorPackage(params.getPendingIntent());
-                        if (mIntentDataProvider.isOpenedByChrome()
-                                && TextUtils.equals(getPackageName(), creatorPackage)) {
-                            RecordUserAction.record(
-                                    "TaskManagement.OpenInChromeActionButtonClicked");
-                            if (openCurrentUrlInBrowser(false, true)) finishAndClose();
-                        } else {
-                            mIntentDataProvider.sendButtonPendingIntentWithUrl(
-                                    getApplicationContext(), getActivityTab().getUrl());
-                            RecordUserAction.record("CustomTabsCustomActionButtonClick");
-                        }
+                        mIntentDataProvider.sendButtonPendingIntentWithUrl(
+                                getApplicationContext(), getActivityTab().getUrl());
+                        RecordUserAction.record("CustomTabsCustomActionButtonClick");
                     }
                 });
     }

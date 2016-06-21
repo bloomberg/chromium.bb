@@ -7,12 +7,9 @@ package org.chromium.chrome.browser.document;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +20,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -363,27 +359,6 @@ public class ChromeLauncherActivity extends Activity
                     .query(url).build());
         }
 
-        Bundle herbActionButtonBundle = new Bundle();
-
-        Bitmap herbIcon =
-                BitmapFactory.decodeResource(context.getResources(), R.drawable.btn_open_in_chrome);
-        herbActionButtonBundle.putParcelable(CustomTabsIntent.KEY_ICON, herbIcon);
-
-        // Fallback in case the Custom Tab fails to trigger opening in Chrome.
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
-
-        PendingIntent pendingIntent =
-                PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-        herbActionButtonBundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pendingIntent);
-
-        String openString = context.getString(
-                R.string.menu_open_in_product, BuildInfo.getPackageLabel(context));
-        herbActionButtonBundle.putString(CustomTabsIntent.KEY_DESCRIPTION, openString);
-
-        newIntent.putExtra(CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE, herbActionButtonBundle);
-        newIntent.putExtra(CustomTabsIntent.EXTRA_TINT_ACTION_BUTTON, true);
         newIntent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
         newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
         newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_SHOW_STAR_ICON, true);

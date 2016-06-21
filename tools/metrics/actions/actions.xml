@@ -14083,6 +14083,7 @@ should be able to be added at any place in this file.
   <description>
     User hit the &quot;Open in Chrome&quot; action button.
   </description>
+  <obsolete>The button option was removed and code deleted.</obsolete>
 </action>
 
 <action name="TaskManagement.ReturnButtonClicked">
