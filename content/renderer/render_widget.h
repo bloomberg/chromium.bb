@@ -722,8 +722,6 @@ class CONTENT_EXPORT RenderWidget
   std::queue<SyntheticGestureCompletionCallback>
       pending_synthetic_gesture_callbacks_;
 
-  uint32_t next_output_surface_id_;
-
 #if defined(OS_ANDROID)
   // Indicates value in the focused text field is in dirty state, i.e. modified
   // by script etc., not by user input.

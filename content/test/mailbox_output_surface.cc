@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/mailbox_output_surface.h"
+#include "content/test/mailbox_output_surface.h"
 
 #include "base/logging.h"
 #include "cc/output/compositor_frame.h"
@@ -152,11 +152,8 @@ void MailboxOutputSurface::BindFramebuffer() {
   if (!fbo_)
     gl->GenFramebuffers(1, &fbo_);
   gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-  gl->FramebufferTexture2D(GL_FRAMEBUFFER,
-                           GL_COLOR_ATTACHMENT0,
-                           GL_TEXTURE_2D,
-                           current_backing_.texture_id,
-                           0);
+  gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                           current_backing_.texture_id, 0);
 }
 
 void MailboxOutputSurface::OnSwapAck(uint32_t output_surface_id,
@@ -173,8 +170,7 @@ void MailboxOutputSurface::OnSwapAck(uint32_t output_surface_id,
     std::deque<TransferableFrame>::iterator it;
     for (it = pending_textures_.begin(); it != pending_textures_.end(); it++) {
       DCHECK(!it->mailbox.IsZero());
-      if (!memcmp(it->mailbox.name,
-                  ack.gl_frame_data->mailbox.name,
+      if (!memcmp(it->mailbox.name, ack.gl_frame_data->mailbox.name,
                   sizeof(it->mailbox.name))) {
         DCHECK(it->size == ack.gl_frame_data->size);
         break;

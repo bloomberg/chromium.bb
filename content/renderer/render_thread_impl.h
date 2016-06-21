@@ -30,6 +30,7 @@
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
+#include "content/renderer/layout_test_dependencies.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
@@ -60,6 +61,7 @@ class Thread;
 namespace cc {
 class ContextProvider;
 class ImageSerializationProcessor;
+class OutputSurface;
 class TaskGraphRunner;
 }
 
@@ -101,6 +103,7 @@ class DBMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
 class EmbeddedWorkerDispatcher;
+class FrameSwapMessageQueue;
 class IndexedDBDispatcher;
 class InputHandlerManager;
 class MediaStreamCenter;
@@ -224,14 +227,19 @@ class CONTENT_EXPORT RenderThreadImpl
   // time this routine returns.
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync(CauseForGpuLaunch);
 
+  std::unique_ptr<cc::OutputSurface> CreateCompositorOutputSurface(
+      bool use_software,
+      int routing_id,
+      scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
+      const GURL& url);
+
   // True if we are running layout tests. This currently disables forwarding
   // various status messages to the console, skips network error pages, and
   // short circuits size update and focus events.
-  bool layout_test_mode() const {
-    return layout_test_mode_;
-  }
-  void set_layout_test_mode(bool layout_test_mode) {
-    layout_test_mode_ = layout_test_mode;
+  bool layout_test_mode() const { return !!layout_test_deps_; }
+  void set_layout_test_dependencies(
+      std::unique_ptr<LayoutTestDependencies> deps) {
+    layout_test_deps_ = std::move(deps);
   }
 
   RendererBlinkPlatformImpl* blink_platform_impl() const {
@@ -575,8 +583,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   bool webkit_shared_timer_suspended_;
 
-  // The following flag is used to control layout test specific behavior.
-  bool layout_test_mode_;
+  // Used to control layout test specific behavior.
+  std::unique_ptr<LayoutTestDependencies> layout_test_deps_;
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer idle_timer_;

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_MAILBOX_OUTPUT_SURFACE_H_
-#define CONTENT_RENDERER_GPU_MAILBOX_OUTPUT_SURFACE_H_
+#ifndef CONTENT_TEST_MAILBOX_OUTPUT_SURFACE_H_
+#define CONTENT_TEST_MAILBOX_OUTPUT_SURFACE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -80,4 +80,4 @@ class MailboxOutputSurface : public cc::OutputSurface {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_MAILBOX_OUTPUT_SURFACE_H_
+#endif  // CONTENT_TEST_MAILBOX_OUTPUT_SURFACE_H_

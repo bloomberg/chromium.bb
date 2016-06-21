@@ -119,6 +119,8 @@
       'test/fake_plugin_service.h',
       'test/fake_renderer_scheduler.cc',
       'test/fake_renderer_scheduler.h',
+      'test/mailbox_output_surface.cc',
+      'test/mailbox_output_surface.h',
       'test/mock_background_sync_controller.cc',
       'test/mock_background_sync_controller.h',
       'test/mock_google_streaming_server.cc',

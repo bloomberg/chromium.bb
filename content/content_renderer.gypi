@@ -218,8 +218,6 @@
       'renderer/gpu/frame_swap_message_queue.h',
       'renderer/gpu/gpu_benchmarking_extension.cc',
       'renderer/gpu/gpu_benchmarking_extension.h',
-      'renderer/gpu/mailbox_output_surface.cc',
-      'renderer/gpu/mailbox_output_surface.h',
       'renderer/gpu/queue_message_swap_promise.cc',
       'renderer/gpu/queue_message_swap_promise.h',
       'renderer/gpu/render_widget_compositor.cc',

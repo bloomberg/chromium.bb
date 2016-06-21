@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/scheduler/test/renderer_scheduler_test_support.h"
@@ -24,11 +25,13 @@
 #include "content/renderer/fetchers/manifest_fetcher.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
+#include "content/renderer/layout_test_dependencies.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/test/mailbox_output_surface.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
@@ -171,8 +174,21 @@ void SetMockDeviceOrientationData(const WebDeviceOrientationData& data) {
   RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(data);
 }
 
+class LayoutTestDependenciesImpl : public LayoutTestDependencies {
+ public:
+  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+      uint32_t output_surface_id,
+      scoped_refptr<cc::ContextProvider> context_provider,
+      scoped_refptr<cc::ContextProvider> worker_context_provider) override {
+    return base::MakeUnique<MailboxOutputSurface>(
+        output_surface_id, std::move(context_provider),
+        std::move(worker_context_provider));
+  }
+};
+
 void EnableRendererLayoutTestMode() {
-  RenderThreadImpl::current()->set_layout_test_mode(true);
+  RenderThreadImpl::current()->set_layout_test_dependencies(
+      base::MakeUnique<LayoutTestDependenciesImpl>());
 
 #if defined(OS_WIN)
   RegisterSideloadedTypefaces(SkFontMgr_New_DirectWrite());

@@ -843,7 +843,7 @@ void BlinkTestRunner::CaptureDump() {
   if (!interfaces->TestRunner()->IsRecursiveLayoutDumpRequested()) {
     std::string layout_dump = interfaces->TestRunner()->DumpLayout(
         render_view()->GetMainRenderFrame()->GetWebFrame());
-    OnLayoutDumpCompleted(layout_dump);
+    OnLayoutDumpCompleted(std::move(layout_dump));
     return;
   }
 
@@ -859,7 +859,8 @@ void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
       completed_layout_dump.append(DumpHistoryForWindow(web_view));
   }
 
-  Send(new ShellViewHostMsg_TextDump(routing_id(), completed_layout_dump));
+  Send(new ShellViewHostMsg_TextDump(routing_id(),
+                                     std::move(completed_layout_dump)));
 
   CaptureDumpContinued();
 }
