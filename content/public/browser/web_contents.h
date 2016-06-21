@@ -203,16 +203,20 @@ class WebContents : public PageNavigator,
   // |GetLastCommittedURL| as appropriate.
   virtual const GURL& GetURL() const = 0;
 
-  // Gets the URL currently being displayed in the URL bar, if there is one.
-  // This URL might be a pending navigation that hasn't committed yet, so it is
-  // not guaranteed to match the current page in this WebContents. A typical
-  // example of this is interstitials, which show the URL of the new/loading
-  // page (active) but the security context is of the old page (last committed).
+  // Gets the virtual URL currently being displayed in the URL bar, if there is
+  // one. This URL might be a pending navigation that hasn't committed yet, so
+  // it is not guaranteed to match the current page in this WebContents. A
+  // typical example of this is interstitials, which show the URL of the
+  // new/loading page (active) but the security context is of the old page (last
+  // committed).
   virtual const GURL& GetVisibleURL() const = 0;
 
-  // Gets the last committed URL. It represents the current page that is
-  // displayed in this WebContents. It represents the current security
-  // context.
+  // Gets the virtual URL of the last committed page in this WebContents.
+  // Virtual URLs are meant to be displayed to the user (e.g., they include the
+  // "view-source:" prefix for view source URLs, unlike NavigationEntry::GetURL
+  // and NavigationHandle::GetURL). The last committed page is the current
+  // security context and the content that is actually displayed within the tab.
+  // See also GetVisibleURL above, which may differ from this URL.
   virtual const GURL& GetLastCommittedURL() const = 0;
 
   // Return the currently active RenderProcessHost and RenderViewHost. Each of

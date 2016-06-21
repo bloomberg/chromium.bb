@@ -38,6 +38,10 @@ class CONTENT_EXPORT NavigationHandle {
 
   // The URL the frame is navigating to. This may change during the navigation
   // when encountering a server redirect.
+  // This URL may not be the same as the virtual URL returned from
+  // WebContents::GetVisibleURL and WebContents::GetLastCommittedURL. For
+  // example, viewing a page's source navigates to the URL of the page, but the
+  // virtual URL is prefixed with "view-source:".
   virtual const GURL& GetURL() = 0;
 
   // Whether the navigation is taking place in the main frame or in a subframe.
