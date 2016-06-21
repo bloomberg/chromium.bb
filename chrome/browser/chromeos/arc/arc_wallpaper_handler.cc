@@ -92,8 +92,8 @@ void ArcWallpaperHandler::SetWallpaper(const std::vector<uint8_t>& jpeg_data) {
   std::unique_ptr<ImageRequestImpl> request =
       base::MakeUnique<ImageRequestImpl>(this);
   // TODO(nya): Improve ImageDecoder to minimize copy.
-  std::string jpeg_data_as_string(reinterpret_cast<const char*>(jpeg_data[0]),
-                                  jpeg_data.size());
+  std::string jpeg_data_as_string(
+      reinterpret_cast<const char*>(jpeg_data.data()), jpeg_data.size());
   ImageDecoder::StartWithOptions(request.get(), jpeg_data_as_string,
                                  ImageDecoder::ROBUST_JPEG_CODEC, true);
   inflight_requests_.insert(request.release());
