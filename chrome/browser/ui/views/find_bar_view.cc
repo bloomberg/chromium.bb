@@ -426,11 +426,6 @@ void FindBarView::ButtonPressed(
             sender->id() == VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON,
             false);  // Not case sensitive.
       }
-
-      if (event.IsMouseEvent()) {
-        // Move focus to the find textfield.
-        find_text_->RequestFocus();
-      }
       break;
     case VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON:
       find_bar_host()->GetFindBarController()->EndFindSession(

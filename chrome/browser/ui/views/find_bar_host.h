@@ -16,6 +16,7 @@
 
 class BrowserView;
 class FindBarController;
+class FindInPageTest;
 class FindNotificationDetails;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +119,8 @@ class FindBarHost : public DropdownBarHost,
   void OnVisibilityChanged() override;
 
  private:
+  friend class FindInPageTest;
+
   // Allows implementation to tweak widget position.
   void GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect);
 
