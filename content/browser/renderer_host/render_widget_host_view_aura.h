@@ -241,8 +241,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       base::i18n::TextDirection direction) override;
   void ExtendSelectionAndDelete(size_t before, size_t after) override;
   void EnsureCaretInRect(const gfx::Rect& rect) override;
-  bool IsEditCommandEnabled(int command_id) const override;
-  void SetEditCommandForNextKeyEvent(int command_id) override;
+  bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
+  void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
 
   // Overridden from display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;

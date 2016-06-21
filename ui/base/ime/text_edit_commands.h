@@ -1,0 +1,44 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef UI_BASE_IME_TEXT_EDIT_COMMANDS_H_
+#define UI_BASE_IME_TEXT_EDIT_COMMANDS_H_
+
+namespace ui {
+
+// Text editing commands for use by ui::TextInputClient.
+enum class TextEditCommand {
+  INVALID_COMMAND,
+  UNDO,
+  REDO,
+  CUT,
+  COPY,
+  PASTE,
+  DELETE_SELECTION,
+  SELECT_ALL,
+  DELETE_FORWARD,
+  DELETE_BACKWARD,
+  DELETE_TO_BEGINNING_OF_LINE,
+  DELETE_TO_END_OF_LINE,
+  DELETE_WORD_BACKWARD,
+  DELETE_WORD_FORWARD,
+  MOVE_LEFT,
+  MOVE_LEFT_AND_MODIFY_SELECTION,
+  MOVE_RIGHT,
+  MOVE_RIGHT_AND_MODIFY_SELECTION,
+  MOVE_WORD_LEFT,
+  MOVE_WORD_LEFT_AND_MODIFY_SELECTION,
+  MOVE_WORD_RIGHT,
+  MOVE_WORD_RIGHT_AND_MODIFY_SELECTION,
+  MOVE_TO_BEGINNING_OF_LINE,
+  MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION,
+  MOVE_TO_END_OF_LINE,
+  MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION,
+  MOVE_UP,
+  MOVE_DOWN,
+};
+
+}  // namespace ui
+
+#endif  // UI_BASE_IME_TEXT_EDIT_COMMANDS_H_

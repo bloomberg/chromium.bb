@@ -1687,12 +1687,13 @@ void RenderWidgetHostViewAura::EnsureCaretInRect(const gfx::Rect& rect) {
       ConvertRectFromScreen(intersected_rect));
 }
 
-bool RenderWidgetHostViewAura::IsEditCommandEnabled(int command_id) const {
+bool RenderWidgetHostViewAura::IsTextEditCommandEnabled(
+    ui::TextEditCommand command) const {
   return false;
 }
 
-void RenderWidgetHostViewAura::SetEditCommandForNextKeyEvent(int command_id) {
-}
+void RenderWidgetHostViewAura::SetTextEditCommandForNextKeyEvent(
+    ui::TextEditCommand command) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, display::DisplayObserver implementation:

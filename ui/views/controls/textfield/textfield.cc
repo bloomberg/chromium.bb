@@ -16,6 +16,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/canvas_painter.h"
@@ -62,8 +63,6 @@ namespace {
 // Default placeholder text color.
 const SkColor kDefaultPlaceholderTextColor = SK_ColorLTGRAY;
 
-const int kNoCommand = 0;
-
 void ConvertRectToScreen(const View* src, gfx::Rect* r) {
   DCHECK(src);
 
@@ -85,9 +84,9 @@ int GetDragSelectionDelay() {
 }
 
 // Get the default command for a given key |event|.
-int GetCommandForKeyEvent(const ui::KeyEvent& event) {
+ui::TextEditCommand GetCommandForKeyEvent(const ui::KeyEvent& event) {
   if (event.type() != ui::ET_KEY_PRESSED || event.IsUnicodeKeyCode())
-    return kNoCommand;
+    return ui::TextEditCommand::INVALID_COMMAND;
 
   const bool shift = event.IsShiftDown();
   const bool control = event.IsControlDown();
@@ -95,151 +94,178 @@ int GetCommandForKeyEvent(const ui::KeyEvent& event) {
   switch (event.key_code()) {
     case ui::VKEY_Z:
       if (control && !shift && !alt)
-        return IDS_APP_UNDO;
-      return (control && shift && !alt) ? IDS_APP_REDO : kNoCommand;
+        return ui::TextEditCommand::UNDO;
+      return (control && shift && !alt) ? ui::TextEditCommand::REDO
+                                        : ui::TextEditCommand::INVALID_COMMAND;
     case ui::VKEY_Y:
-      return (control && !alt) ? IDS_APP_REDO : kNoCommand;
+      return (control && !alt) ? ui::TextEditCommand::REDO
+                               : ui::TextEditCommand::INVALID_COMMAND;
     case ui::VKEY_A:
-      return (control && !alt) ? IDS_APP_SELECT_ALL : kNoCommand;
+      return (control && !alt) ? ui::TextEditCommand::SELECT_ALL
+                               : ui::TextEditCommand::INVALID_COMMAND;
     case ui::VKEY_X:
-      return (control && !alt) ? IDS_APP_CUT : kNoCommand;
+      return (control && !alt) ? ui::TextEditCommand::CUT
+                               : ui::TextEditCommand::INVALID_COMMAND;
     case ui::VKEY_C:
-      return (control && !alt) ? IDS_APP_COPY : kNoCommand;
+      return (control && !alt) ? ui::TextEditCommand::COPY
+                               : ui::TextEditCommand::INVALID_COMMAND;
     case ui::VKEY_V:
-      return (control && !alt) ? IDS_APP_PASTE : kNoCommand;
+      return (control && !alt) ? ui::TextEditCommand::PASTE
+                               : ui::TextEditCommand::INVALID_COMMAND;
     case ui::VKEY_RIGHT:
       // Ignore alt+right, which may be a browser navigation shortcut.
       if (alt)
-        return kNoCommand;
-      if (!shift)
-        return control ? IDS_MOVE_WORD_RIGHT : IDS_MOVE_RIGHT;
-      return control ? IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION :
-                        IDS_MOVE_RIGHT_AND_MODIFY_SELECTION;
+        return ui::TextEditCommand::INVALID_COMMAND;
+      if (!shift) {
+        return control ? ui::TextEditCommand::MOVE_WORD_RIGHT
+                       : ui::TextEditCommand::MOVE_RIGHT;
+      }
+      return control ? ui::TextEditCommand::MOVE_WORD_RIGHT_AND_MODIFY_SELECTION
+                     : ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION;
     case ui::VKEY_LEFT:
       // Ignore alt+left, which may be a browser navigation shortcut.
       if (alt)
-        return kNoCommand;
-      if (!shift)
-        return control ? IDS_MOVE_WORD_LEFT : IDS_MOVE_LEFT;
-      return control ? IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION :
-                        IDS_MOVE_LEFT_AND_MODIFY_SELECTION;
+        return ui::TextEditCommand::INVALID_COMMAND;
+      if (!shift) {
+        return control ? ui::TextEditCommand::MOVE_WORD_LEFT
+                       : ui::TextEditCommand::MOVE_LEFT;
+      }
+      return control ? ui::TextEditCommand::MOVE_WORD_LEFT_AND_MODIFY_SELECTION
+                     : ui::TextEditCommand::MOVE_LEFT_AND_MODIFY_SELECTION;
     case ui::VKEY_HOME:
-      return shift ? IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION :
-                      IDS_MOVE_TO_BEGINNING_OF_LINE;
+      return shift ? ui::TextEditCommand::
+                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+                   : ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE;
     case ui::VKEY_END:
-      return shift ? IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION :
-                      IDS_MOVE_TO_END_OF_LINE;
+      return shift
+                 ? ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+                 : ui::TextEditCommand::MOVE_TO_END_OF_LINE;
     case ui::VKEY_BACK:
       if (!control)
-        return IDS_DELETE_BACKWARD;
+        return ui::TextEditCommand::DELETE_BACKWARD;
 #if defined(OS_LINUX)
       // Only erase by line break on Linux and ChromeOS.
       if (shift)
-        return IDS_DELETE_TO_BEGINNING_OF_LINE;
+        return ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE;
 #endif
-      return IDS_DELETE_WORD_BACKWARD;
+      return ui::TextEditCommand::DELETE_WORD_BACKWARD;
     case ui::VKEY_DELETE:
 #if defined(OS_LINUX)
       // Only erase by line break on Linux and ChromeOS.
       if (shift && control)
-        return IDS_DELETE_TO_END_OF_LINE;
+        return ui::TextEditCommand::DELETE_TO_END_OF_LINE;
 #endif
       if (control)
-        return IDS_DELETE_WORD_FORWARD;
-      return shift ? IDS_APP_CUT : IDS_DELETE_FORWARD;
+        return ui::TextEditCommand::DELETE_WORD_FORWARD;
+      return shift ? ui::TextEditCommand::CUT
+                   : ui::TextEditCommand::DELETE_FORWARD;
     case ui::VKEY_INSERT:
       if (control && !shift)
-        return IDS_APP_COPY;
-      return (shift && !control) ? IDS_APP_PASTE : kNoCommand;
+        return ui::TextEditCommand::COPY;
+      return (shift && !control) ? ui::TextEditCommand::PASTE
+                                 : ui::TextEditCommand::INVALID_COMMAND;
     default:
-      return kNoCommand;
+      return ui::TextEditCommand::INVALID_COMMAND;
   }
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Convert a custom text edit |command| to the equivalent views command ID.
-int GetViewsCommand(const ui::TextEditCommandAuraLinux& command, bool rtl) {
+ui::TextEditCommand GetViewsCommand(const ui::TextEditCommandAuraLinux& command,
+                                    bool rtl) {
   const bool select = command.extend_selection();
   switch (command.command_id()) {
     case ui::TextEditCommandAuraLinux::COPY:
-      return IDS_APP_COPY;
+      return ui::TextEditCommand::COPY;
     case ui::TextEditCommandAuraLinux::CUT:
-      return IDS_APP_CUT;
+      return ui::TextEditCommand::CUT;
     case ui::TextEditCommandAuraLinux::DELETE_BACKWARD:
-      return IDS_DELETE_BACKWARD;
+      return ui::TextEditCommand::DELETE_BACKWARD;
     case ui::TextEditCommandAuraLinux::DELETE_FORWARD:
-      return IDS_DELETE_FORWARD;
+      return ui::TextEditCommand::DELETE_FORWARD;
     case ui::TextEditCommandAuraLinux::DELETE_TO_BEGINING_OF_LINE:
     case ui::TextEditCommandAuraLinux::DELETE_TO_BEGINING_OF_PARAGRAPH:
-      return IDS_DELETE_TO_BEGINNING_OF_LINE;
+      return ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE;
     case ui::TextEditCommandAuraLinux::DELETE_TO_END_OF_LINE:
     case ui::TextEditCommandAuraLinux::DELETE_TO_END_OF_PARAGRAPH:
-      return IDS_DELETE_TO_END_OF_LINE;
+      return ui::TextEditCommand::DELETE_TO_END_OF_LINE;
     case ui::TextEditCommandAuraLinux::DELETE_WORD_BACKWARD:
-      return IDS_DELETE_WORD_BACKWARD;
+      return ui::TextEditCommand::DELETE_WORD_BACKWARD;
     case ui::TextEditCommandAuraLinux::DELETE_WORD_FORWARD:
-      return IDS_DELETE_WORD_FORWARD;
+      return ui::TextEditCommand::DELETE_WORD_FORWARD;
     case ui::TextEditCommandAuraLinux::INSERT_TEXT:
-      return kNoCommand;
+      return ui::TextEditCommand::INVALID_COMMAND;
     case ui::TextEditCommandAuraLinux::MOVE_BACKWARD:
-      if (rtl)
-        return select ? IDS_MOVE_RIGHT_AND_MODIFY_SELECTION : IDS_MOVE_RIGHT;
-      return select ? IDS_MOVE_LEFT_AND_MODIFY_SELECTION : IDS_MOVE_LEFT;
+      if (rtl) {
+        return select ? ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION
+                      : ui::TextEditCommand::MOVE_RIGHT;
+      }
+      return select ? ui::TextEditCommand::MOVE_LEFT_AND_MODIFY_SELECTION
+                    : ui::TextEditCommand::MOVE_LEFT;
     case ui::TextEditCommandAuraLinux::MOVE_DOWN:
-      return IDS_MOVE_DOWN;
+      return ui::TextEditCommand::MOVE_DOWN;
     case ui::TextEditCommandAuraLinux::MOVE_FORWARD:
-      if (rtl)
-        return select ? IDS_MOVE_LEFT_AND_MODIFY_SELECTION : IDS_MOVE_LEFT;
-      return select ? IDS_MOVE_RIGHT_AND_MODIFY_SELECTION : IDS_MOVE_RIGHT;
+      if (rtl) {
+        return select ? ui::TextEditCommand::MOVE_LEFT_AND_MODIFY_SELECTION
+                      : ui::TextEditCommand::MOVE_LEFT;
+      }
+      return select ? ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION
+                    : ui::TextEditCommand::MOVE_RIGHT;
     case ui::TextEditCommandAuraLinux::MOVE_LEFT:
-      return select ? IDS_MOVE_LEFT_AND_MODIFY_SELECTION : IDS_MOVE_LEFT;
+      return select ? ui::TextEditCommand::MOVE_LEFT_AND_MODIFY_SELECTION
+                    : ui::TextEditCommand::MOVE_LEFT;
     case ui::TextEditCommandAuraLinux::MOVE_PAGE_DOWN:
     case ui::TextEditCommandAuraLinux::MOVE_PAGE_UP:
-      return kNoCommand;
+      return ui::TextEditCommand::INVALID_COMMAND;
     case ui::TextEditCommandAuraLinux::MOVE_RIGHT:
-      return select ? IDS_MOVE_RIGHT_AND_MODIFY_SELECTION : IDS_MOVE_RIGHT;
+      return select ? ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION
+                    : ui::TextEditCommand::MOVE_RIGHT;
     case ui::TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_DOCUMENT:
     case ui::TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_LINE:
     case ui::TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_PARAGRAPH:
-      return select ? IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION :
-                      IDS_MOVE_TO_BEGINNING_OF_LINE;
+      return select ? ui::TextEditCommand::
+                          MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+                    : ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE;
     case ui::TextEditCommandAuraLinux::MOVE_TO_END_OF_DOCUMENT:
     case ui::TextEditCommandAuraLinux::MOVE_TO_END_OF_LINE:
     case ui::TextEditCommandAuraLinux::MOVE_TO_END_OF_PARAGRAPH:
-      return select ? IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION :
-                      IDS_MOVE_TO_END_OF_LINE;
+      return select
+                 ? ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+                 : ui::TextEditCommand::MOVE_TO_END_OF_LINE;
     case ui::TextEditCommandAuraLinux::MOVE_UP:
-      return IDS_MOVE_UP;
+      return ui::TextEditCommand::MOVE_UP;
     case ui::TextEditCommandAuraLinux::MOVE_WORD_BACKWARD:
       if (rtl) {
-        return select ? IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION :
-                        IDS_MOVE_WORD_RIGHT;
+        return select
+                   ? ui::TextEditCommand::MOVE_WORD_RIGHT_AND_MODIFY_SELECTION
+                   : ui::TextEditCommand::MOVE_WORD_RIGHT;
       }
-      return select ? IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION :
-                      IDS_MOVE_WORD_LEFT;
+      return select ? ui::TextEditCommand::MOVE_WORD_LEFT_AND_MODIFY_SELECTION
+                    : ui::TextEditCommand::MOVE_WORD_LEFT;
     case ui::TextEditCommandAuraLinux::MOVE_WORD_FORWARD:
       if (rtl) {
-        return select ? IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION :
-                        IDS_MOVE_WORD_LEFT;
+        return select ? ui::TextEditCommand::MOVE_WORD_LEFT_AND_MODIFY_SELECTION
+                      : ui::TextEditCommand::MOVE_WORD_LEFT;
       }
-      return select ? IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION :
-                      IDS_MOVE_WORD_RIGHT;
+      return select ? ui::TextEditCommand::MOVE_WORD_RIGHT_AND_MODIFY_SELECTION
+                    : ui::TextEditCommand::MOVE_WORD_RIGHT;
     case ui::TextEditCommandAuraLinux::MOVE_WORD_LEFT:
-      return select ? IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION :
-                      IDS_MOVE_WORD_LEFT;
+      return select ? ui::TextEditCommand::MOVE_WORD_LEFT_AND_MODIFY_SELECTION
+                    : ui::TextEditCommand::MOVE_WORD_LEFT;
     case ui::TextEditCommandAuraLinux::MOVE_WORD_RIGHT:
-      return select ? IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION :
-                      IDS_MOVE_WORD_RIGHT;
+      return select ? ui::TextEditCommand::MOVE_WORD_RIGHT_AND_MODIFY_SELECTION
+                    : ui::TextEditCommand::MOVE_WORD_RIGHT;
     case ui::TextEditCommandAuraLinux::PASTE:
-      return IDS_APP_PASTE;
+      return ui::TextEditCommand::PASTE;
     case ui::TextEditCommandAuraLinux::SELECT_ALL:
-      return IDS_APP_SELECT_ALL;
+      return ui::TextEditCommand::SELECT_ALL;
     case ui::TextEditCommandAuraLinux::SET_MARK:
     case ui::TextEditCommandAuraLinux::UNSELECT:
     case ui::TextEditCommandAuraLinux::INVALID_COMMAND:
-      return kNoCommand;
+      return ui::TextEditCommand::INVALID_COMMAND;
   }
-  return kNoCommand;
+  NOTREACHED();
+  return ui::TextEditCommand::INVALID_COMMAND;
 }
 #endif
 
@@ -248,19 +274,25 @@ const gfx::FontList& GetDefaultFontList() {
   return rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
 }
 
-// Returns true if |command_id| is a menu action installed by this textfield.
-// Keep in sync with UpdateContextMenu.
-bool IsMenuCommand(int command_id) {
+// Returns the ui::TextEditCommand corresponding to the |command_id| menu
+// action. Keep in sync with UpdateContextMenu.
+ui::TextEditCommand GetTextEditCommandFromMenuCommand(int command_id) {
   switch (command_id) {
     case IDS_APP_UNDO:
+      return ui::TextEditCommand::UNDO;
     case IDS_APP_CUT:
+      return ui::TextEditCommand::CUT;
     case IDS_APP_COPY:
+      return ui::TextEditCommand::COPY;
     case IDS_APP_PASTE:
+      return ui::TextEditCommand::PASTE;
     case IDS_APP_DELETE:
+      return ui::TextEditCommand::DELETE_SELECTION;
     case IDS_APP_SELECT_ALL:
-      return true;
+      return ui::TextEditCommand::SELECT_ALL;
+    default:
+      return ui::TextEditCommand::INVALID_COMMAND;
   }
-  return false;
 }
 
 }  // namespace
@@ -283,7 +315,7 @@ size_t Textfield::GetCaretBlinkMs() {
 Textfield::Textfield()
     : model_(new TextfieldModel(this)),
       controller_(NULL),
-      scheduled_edit_command_(kNoCommand),
+      scheduled_text_edit_command_(ui::TextEditCommand::INVALID_COMMAND),
       read_only_(false),
       default_width_in_chars_(0),
       use_default_text_color_(true),
@@ -704,8 +736,8 @@ void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
-  int edit_command = scheduled_edit_command_;
-  scheduled_edit_command_ = kNoCommand;
+  ui::TextEditCommand edit_command = scheduled_text_edit_command_;
+  scheduled_text_edit_command_ = ui::TextEditCommand::INVALID_COMMAND;
 
   // Since HandleKeyEvent() might destroy |this|, get a weak pointer and verify
   // it isn't null before proceeding.
@@ -723,9 +755,9 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
   if (!handled && delegate && delegate->MatchEvent(event, &commands)) {
     const bool rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
     for (size_t i = 0; i < commands.size(); ++i) {
-      const int command = GetViewsCommand(commands[i], rtl);
-      if (IsEditCommandEnabled(command)) {
-        ExecuteEditCommand(command);
+      const ui::TextEditCommand command = GetViewsCommand(commands[i], rtl);
+      if (IsTextEditCommandEnabled(command)) {
+        ExecuteTextEditCommand(command);
         handled = true;
       }
     }
@@ -733,11 +765,11 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
   }
 #endif
 
-  if (edit_command == kNoCommand)
+  if (edit_command == ui::TextEditCommand::INVALID_COMMAND)
     edit_command = GetCommandForKeyEvent(event);
 
-  if (!handled && IsEditCommandEnabled(edit_command)) {
-    ExecuteEditCommand(edit_command);
+  if (!handled && IsTextEditCommandEnabled(edit_command)) {
+    ExecuteTextEditCommand(edit_command);
     handled = true;
   }
   return handled;
@@ -845,7 +877,7 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
 bool Textfield::AcceleratorPressed(const ui::Accelerator& accelerator) {
   ui::KeyEvent event(accelerator.type(), accelerator.key_code(),
                      accelerator.modifiers());
-  ExecuteEditCommand(GetCommandForKeyEvent(event));
+  ExecuteTextEditCommand(GetCommandForKeyEvent(event));
   return true;
 }
 
@@ -866,7 +898,7 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   if (delegate && delegate->MatchEvent(event, &commands)) {
     const bool rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
     for (size_t i = 0; i < commands.size(); ++i)
-      if (IsEditCommandEnabled(GetViewsCommand(commands[i], rtl)))
+      if (IsTextEditCommandEnabled(GetViewsCommand(commands[i], rtl)))
         return true;
   }
 #endif
@@ -1239,8 +1271,8 @@ bool Textfield::IsCommandIdChecked(int command_id) const {
 }
 
 bool Textfield::IsCommandIdEnabled(int command_id) const {
-  return IsMenuCommand(command_id) &&
-         Textfield::IsEditCommandEnabled(command_id);
+  return Textfield::IsTextEditCommandEnabled(
+      GetTextEditCommandFromMenuCommand(command_id));
 }
 
 bool Textfield::GetAcceleratorForCommandId(int command_id,
@@ -1272,9 +1304,8 @@ bool Textfield::GetAcceleratorForCommandId(int command_id,
 }
 
 void Textfield::ExecuteCommand(int command_id, int event_flags) {
-  DestroyTouchSelection();
-  if (Textfield::IsCommandIdEnabled(command_id))
-    Textfield::ExecuteEditCommand(command_id);
+  Textfield::ExecuteTextEditCommand(
+      GetTextEditCommandFromMenuCommand(command_id));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1500,55 +1531,60 @@ void Textfield::ExtendSelectionAndDelete(size_t before, size_t after) {
 
 void Textfield::EnsureCaretInRect(const gfx::Rect& rect) {}
 
-bool Textfield::IsEditCommandEnabled(int command_id) const {
+bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
   base::string16 result;
   bool editable = !read_only();
   bool readable = text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD;
-  switch (command_id) {
-    case IDS_APP_UNDO:
+  switch (command) {
+    case ui::TextEditCommand::INVALID_COMMAND:
+      return false;
+    case ui::TextEditCommand::UNDO:
       return editable && model_->CanUndo();
-    case IDS_APP_REDO:
+    case ui::TextEditCommand::REDO:
       return editable && model_->CanRedo();
-    case IDS_APP_CUT:
+    case ui::TextEditCommand::CUT:
       return editable && readable && model_->HasSelection();
-    case IDS_APP_COPY:
+    case ui::TextEditCommand::COPY:
       return readable && model_->HasSelection();
-    case IDS_APP_PASTE:
+    case ui::TextEditCommand::PASTE:
       ui::Clipboard::GetForCurrentThread()->ReadText(
           ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
       return editable && !result.empty();
-    case IDS_APP_DELETE:
+    case ui::TextEditCommand::DELETE_SELECTION:
       return editable && model_->HasSelection();
-    case IDS_APP_SELECT_ALL:
+    case ui::TextEditCommand::SELECT_ALL:
       return !text().empty();
-    case IDS_DELETE_FORWARD:
-    case IDS_DELETE_BACKWARD:
-    case IDS_DELETE_TO_BEGINNING_OF_LINE:
-    case IDS_DELETE_TO_END_OF_LINE:
-    case IDS_DELETE_WORD_BACKWARD:
-    case IDS_DELETE_WORD_FORWARD:
+    case ui::TextEditCommand::DELETE_FORWARD:
+    case ui::TextEditCommand::DELETE_BACKWARD:
+    case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
+    case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
+    case ui::TextEditCommand::DELETE_WORD_BACKWARD:
+    case ui::TextEditCommand::DELETE_WORD_FORWARD:
       return editable;
-    case IDS_MOVE_LEFT:
-    case IDS_MOVE_LEFT_AND_MODIFY_SELECTION:
-    case IDS_MOVE_RIGHT:
-    case IDS_MOVE_RIGHT_AND_MODIFY_SELECTION:
-    case IDS_MOVE_WORD_LEFT:
-    case IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION:
-    case IDS_MOVE_WORD_RIGHT:
-    case IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION:
-    case IDS_MOVE_TO_BEGINNING_OF_LINE:
-    case IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION:
-    case IDS_MOVE_TO_END_OF_LINE:
-    case IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_LEFT:
+    case ui::TextEditCommand::MOVE_LEFT_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_RIGHT:
+    case ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_WORD_LEFT:
+    case ui::TextEditCommand::MOVE_WORD_LEFT_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_WORD_RIGHT:
+    case ui::TextEditCommand::MOVE_WORD_RIGHT_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE:
+    case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_TO_END_OF_LINE:
+    case ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION:
       return true;
-    default:
+    case ui::TextEditCommand::MOVE_UP:
+    case ui::TextEditCommand::MOVE_DOWN:
       return false;
   }
+  NOTREACHED();
+  return false;
 }
 
-void Textfield::SetEditCommandForNextKeyEvent(int command_id) {
-  DCHECK_EQ(kNoCommand, scheduled_edit_command_);
-  scheduled_edit_command_ = command_id;
+void Textfield::SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) {
+  DCHECK_EQ(ui::TextEditCommand::INVALID_COMMAND, scheduled_text_edit_command_);
+  scheduled_text_edit_command_ = command;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1578,27 +1614,29 @@ base::string16 Textfield::GetSelectionClipboardText() const {
   return selection_clipboard_text;
 }
 
-void Textfield::ExecuteEditCommand(int command_id) {
+void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   DestroyTouchSelection();
 
   // Some codepaths may bypass GetCommandForKeyEvent, so any selection-dependent
   // modifications of the command should happen here.
   if (HasSelection()) {
-    switch (command_id) {
-      case IDS_DELETE_WORD_BACKWARD:
-      case IDS_DELETE_TO_BEGINNING_OF_LINE:
-        command_id = IDS_DELETE_BACKWARD;
+    switch (command) {
+      case ui::TextEditCommand::DELETE_WORD_BACKWARD:
+      case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
+        command = ui::TextEditCommand::DELETE_BACKWARD;
         break;
-      case IDS_DELETE_WORD_FORWARD:
-      case IDS_DELETE_TO_END_OF_LINE:
-        command_id = IDS_DELETE_FORWARD;
+      case ui::TextEditCommand::DELETE_WORD_FORWARD:
+      case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
+        command = ui::TextEditCommand::DELETE_FORWARD;
+        break;
+      default:
         break;
     }
   }
 
-  // We only execute the commands enabled in Textfield::IsEditCommandEnabled
-  // below. Hence don't do a virtual IsEditCommandEnabled call.
-  if (!Textfield::IsEditCommandEnabled(command_id))
+  // We only execute the commands enabled in Textfield::IsTextEditCommandEnabled
+  // below. Hence don't do a virtual IsTextEditCommandEnabled call.
+  if (!Textfield::IsTextEditCommandEnabled(command))
     return;
 
   bool text_changed = false;
@@ -1609,87 +1647,89 @@ void Textfield::ExecuteEditCommand(int command_id) {
   gfx::SelectionModel selection_model = GetSelectionModel();
 
   OnBeforeUserAction();
-  switch (command_id) {
-    case IDS_APP_UNDO:
+  switch (command) {
+    case ui::TextEditCommand::UNDO:
       text_changed = cursor_changed = model_->Undo();
       break;
-    case IDS_APP_REDO:
+    case ui::TextEditCommand::REDO:
       text_changed = cursor_changed = model_->Redo();
       break;
-    case IDS_APP_CUT:
+    case ui::TextEditCommand::CUT:
       text_changed = cursor_changed = Cut();
       break;
-    case IDS_APP_COPY:
+    case ui::TextEditCommand::COPY:
       Copy();
       break;
-    case IDS_APP_PASTE:
+    case ui::TextEditCommand::PASTE:
       text_changed = cursor_changed = Paste();
       break;
-    case IDS_APP_DELETE:
+    case ui::TextEditCommand::DELETE_SELECTION:
       text_changed = cursor_changed = model_->Delete();
       break;
-    case IDS_APP_SELECT_ALL:
+    case ui::TextEditCommand::SELECT_ALL:
       SelectAll(false);
       break;
-    case IDS_DELETE_BACKWARD:
+    case ui::TextEditCommand::DELETE_BACKWARD:
       text_changed = cursor_changed = model_->Backspace();
       break;
-    case IDS_DELETE_FORWARD:
+    case ui::TextEditCommand::DELETE_FORWARD:
       text_changed = cursor_changed = model_->Delete();
       break;
-    case IDS_DELETE_TO_END_OF_LINE:
+    case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
       model_->MoveCursor(gfx::LINE_BREAK, end, true);
       text_changed = cursor_changed = model_->Delete();
       break;
-    case IDS_DELETE_TO_BEGINNING_OF_LINE:
+    case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
       model_->MoveCursor(gfx::LINE_BREAK, begin, true);
       text_changed = cursor_changed = model_->Backspace();
       break;
-    case IDS_DELETE_WORD_BACKWARD:
+    case ui::TextEditCommand::DELETE_WORD_BACKWARD:
       model_->MoveCursor(gfx::WORD_BREAK, begin, true);
       text_changed = cursor_changed = model_->Backspace();
       break;
-    case IDS_DELETE_WORD_FORWARD:
+    case ui::TextEditCommand::DELETE_WORD_FORWARD:
       model_->MoveCursor(gfx::WORD_BREAK, end, true);
       text_changed = cursor_changed = model_->Delete();
       break;
-    case IDS_MOVE_LEFT:
+    case ui::TextEditCommand::MOVE_LEFT:
       model_->MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, false);
       break;
-    case IDS_MOVE_LEFT_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_LEFT_AND_MODIFY_SELECTION:
       model_->MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
       break;
-    case IDS_MOVE_RIGHT:
+    case ui::TextEditCommand::MOVE_RIGHT:
       model_->MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
       break;
-    case IDS_MOVE_RIGHT_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION:
       model_->MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
       break;
-    case IDS_MOVE_WORD_LEFT:
+    case ui::TextEditCommand::MOVE_WORD_LEFT:
       model_->MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, false);
       break;
-    case IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_WORD_LEFT_AND_MODIFY_SELECTION:
       model_->MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, true);
       break;
-    case IDS_MOVE_WORD_RIGHT:
+    case ui::TextEditCommand::MOVE_WORD_RIGHT:
       model_->MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_RIGHT, false);
       break;
-    case IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_WORD_RIGHT_AND_MODIFY_SELECTION:
       model_->MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_RIGHT, true);
       break;
-    case IDS_MOVE_TO_BEGINNING_OF_LINE:
+    case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE:
       model_->MoveCursor(gfx::LINE_BREAK, begin, false);
       break;
-    case IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION:
       model_->MoveCursor(gfx::LINE_BREAK, begin, true);
       break;
-    case IDS_MOVE_TO_END_OF_LINE:
+    case ui::TextEditCommand::MOVE_TO_END_OF_LINE:
       model_->MoveCursor(gfx::LINE_BREAK, end, false);
       break;
-    case IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION:
+    case ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION:
       model_->MoveCursor(gfx::LINE_BREAK, end, true);
       break;
-    default:
+    case ui::TextEditCommand::MOVE_UP:
+    case ui::TextEditCommand::MOVE_DOWN:
+    case ui::TextEditCommand::INVALID_COMMAND:
       NOTREACHED();
       break;
   }

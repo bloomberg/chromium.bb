@@ -116,6 +116,7 @@
         'linux/linux_input_method_context_factory.h',
         'mock_input_method.cc',
         'mock_input_method.h',
+        'text_edit_commands.h',
         'text_input_client.cc',
         'text_input_client.h',
         'ui_base_ime_export.h',

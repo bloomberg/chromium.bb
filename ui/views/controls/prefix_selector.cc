@@ -139,12 +139,13 @@ void PrefixSelector::ExtendSelectionAndDelete(size_t before, size_t after) {
 void PrefixSelector::EnsureCaretInRect(const gfx::Rect& rect) {
 }
 
-bool PrefixSelector::IsEditCommandEnabled(int command_id) const {
+bool PrefixSelector::IsTextEditCommandEnabled(
+    ui::TextEditCommand command) const {
   return false;
 }
 
-void PrefixSelector::SetEditCommandForNextKeyEvent(int command_id) {
-}
+void PrefixSelector::SetTextEditCommandForNextKeyEvent(
+    ui::TextEditCommand command) {}
 
 void PrefixSelector::OnTextInput(const base::string16& text) {
   // Small hack to filter out 'tab' and 'enter' input, as the expectation is

@@ -109,11 +109,12 @@ void DummyTextInputClient::ExtendSelectionAndDelete(size_t before,
 void DummyTextInputClient::EnsureCaretInRect(const gfx::Rect& rect)  {
 }
 
-bool DummyTextInputClient::IsEditCommandEnabled(int command_id) const {
+bool DummyTextInputClient::IsTextEditCommandEnabled(
+    TextEditCommand command) const {
   return false;
 }
 
-void DummyTextInputClient::SetEditCommandForNextKeyEvent(int command_id) {
-}
+void DummyTextInputClient::SetTextEditCommandForNextKeyEvent(
+    TextEditCommand command) {}
 
 }  // namespace ui

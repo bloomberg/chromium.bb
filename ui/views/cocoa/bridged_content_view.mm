@@ -13,6 +13,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_mac.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/canvas_painter.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
@@ -24,7 +25,6 @@
 #include "ui/gfx/path.h"
 #import "ui/gfx/path_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/strings/grit/ui_strings.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -229,7 +229,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 // which lives in /System/Library/Frameworks/AppKit.framework/Resources. Do
 // `plutil -convert xml1 -o StandardKeyBinding.xml StandardKeyBinding.dict` to
 // get something readable.
-- (void)handleAction:(int)commandId
+- (void)handleAction:(ui::TextEditCommand)command
              keyCode:(ui::KeyboardCode)keyCode
              domCode:(ui::DomCode)domCode
           eventFlags:(int)eventFlags;
@@ -385,7 +385,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event);
 }
 
-- (void)handleAction:(int)commandId
+- (void)handleAction:(ui::TextEditCommand)command
              keyCode:(ui::KeyboardCode)keyCode
              domCode:(ui::DomCode)domCode
           eventFlags:(int)eventFlags {
@@ -400,9 +400,8 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 
   // If there's an active TextInputClient, schedule the editing command to be
   // performed.
-  if (commandId && textInputClient_ &&
-      textInputClient_->IsEditCommandEnabled(commandId))
-    textInputClient_->SetEditCommandForNextKeyEvent(commandId);
+  if (textInputClient_ && textInputClient_->IsTextEditCommandEnabled(command))
+    textInputClient_->SetTextEditCommandForNextKeyEvent(command);
 
   hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(&event);
 }
@@ -425,48 +424,50 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   // validateUserInterfaceItem: before enabling UI that allows these messages to
   // be sent. Checking it here would be too late to provide correct UI feedback
   // (e.g. there will be no "beep").
-  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_UNDO));
-  [self handleAction:IDS_APP_UNDO
+  DCHECK(textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::UNDO));
+  [self handleAction:ui::TextEditCommand::UNDO
              keyCode:ui::VKEY_Z
              domCode:ui::DomCode::US_Z
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)redo:(id)sender {
-  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_REDO));
-  [self handleAction:IDS_APP_REDO
+  DCHECK(textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::REDO));
+  [self handleAction:ui::TextEditCommand::REDO
              keyCode:ui::VKEY_Z
              domCode:ui::DomCode::US_Z
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)cut:(id)sender {
-  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_CUT));
-  [self handleAction:IDS_APP_CUT
+  DCHECK(textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::CUT));
+  [self handleAction:ui::TextEditCommand::CUT
              keyCode:ui::VKEY_X
              domCode:ui::DomCode::US_X
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)copy:(id)sender {
-  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_COPY));
-  [self handleAction:IDS_APP_COPY
+  DCHECK(textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::COPY));
+  [self handleAction:ui::TextEditCommand::COPY
              keyCode:ui::VKEY_C
              domCode:ui::DomCode::US_C
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)paste:(id)sender {
-  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_PASTE));
-  [self handleAction:IDS_APP_PASTE
+  DCHECK(
+      textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::PASTE));
+  [self handleAction:ui::TextEditCommand::PASTE
              keyCode:ui::VKEY_V
              domCode:ui::DomCode::US_V
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)selectAll:(id)sender {
-  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_SELECT_ALL));
-  [self handleAction:IDS_APP_SELECT_ALL
+  DCHECK(textInputClient_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::SELECT_ALL));
+  [self handleAction:ui::TextEditCommand::SELECT_ALL
              keyCode:ui::VKEY_A
              domCode:ui::DomCode::US_A
           eventFlags:ui::EF_CONTROL_DOWN];
@@ -712,7 +713,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveRight:(id)sender {
-  [self handleAction:IDS_MOVE_RIGHT
+  [self handleAction:ui::TextEditCommand::MOVE_RIGHT
              keyCode:ui::VKEY_RIGHT
              domCode:ui::DomCode::ARROW_RIGHT
           eventFlags:0];
@@ -724,21 +725,21 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveLeft:(id)sender {
-  [self handleAction:IDS_MOVE_LEFT
+  [self handleAction:ui::TextEditCommand::MOVE_LEFT
              keyCode:ui::VKEY_LEFT
              domCode:ui::DomCode::ARROW_LEFT
           eventFlags:0];
 }
 
 - (void)moveUp:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE
              keyCode:ui::VKEY_UP
              domCode:ui::DomCode::ARROW_UP
           eventFlags:0];
 }
 
 - (void)moveDown:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE
              keyCode:ui::VKEY_DOWN
              domCode:ui::DomCode::ARROW_DOWN
           eventFlags:0];
@@ -755,14 +756,14 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveToBeginningOfLine:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE
              keyCode:ui::VKEY_HOME
              domCode:ui::DomCode::HOME
           eventFlags:0];
 }
 
 - (void)moveToEndOfLine:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE
              keyCode:ui::VKEY_END
              domCode:ui::DomCode::END
           eventFlags:0];
@@ -777,28 +778,28 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveToEndOfDocument:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE
              keyCode:ui::VKEY_END
              domCode:ui::DomCode::END
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)moveToBeginningOfDocument:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE
              keyCode:ui::VKEY_HOME
              domCode:ui::DomCode::HOME
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)pageDown:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE
              keyCode:ui::VKEY_NEXT
              domCode:ui::DomCode::PAGE_DOWN
           eventFlags:0];
 }
 
 - (void)pageUp:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE
              keyCode:ui::VKEY_PRIOR
              domCode:ui::DomCode::PAGE_UP
           eventFlags:0];
@@ -825,31 +826,35 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveUpAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::
+                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_UP
              domCode:ui::DomCode::ARROW_UP
           eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveDownAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-             keyCode:ui::VKEY_DOWN
-             domCode:ui::DomCode::ARROW_DOWN
-          eventFlags:ui::EF_SHIFT_DOWN];
+  [self
+      handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+           keyCode:ui::VKEY_DOWN
+           domCode:ui::DomCode::ARROW_DOWN
+        eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveToBeginningOfLineAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::
+                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_HOME
              domCode:ui::DomCode::HOME
           eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveToEndOfLineAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-             keyCode:ui::VKEY_END
-             domCode:ui::DomCode::END
-          eventFlags:ui::EF_SHIFT_DOWN];
+  [self
+      handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+           keyCode:ui::VKEY_END
+           domCode:ui::DomCode::END
+        eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveToBeginningOfParagraphAndModifySelection:(id)sender {
@@ -861,84 +866,90 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveToEndOfDocumentAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-             keyCode:ui::VKEY_END
-             domCode:ui::DomCode::END
-          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+  [self
+      handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+           keyCode:ui::VKEY_END
+           domCode:ui::DomCode::END
+        eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveToBeginningOfDocumentAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::
+                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_HOME
              domCode:ui::DomCode::HOME
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)pageDownAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-             keyCode:ui::VKEY_NEXT
-             domCode:ui::DomCode::PAGE_DOWN
-          eventFlags:ui::EF_SHIFT_DOWN];
+  [self
+      handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+           keyCode:ui::VKEY_NEXT
+           domCode:ui::DomCode::PAGE_DOWN
+        eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)pageUpAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::
+                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_PRIOR
              domCode:ui::DomCode::PAGE_UP
           eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveParagraphForwardAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-             keyCode:ui::VKEY_DOWN
-             domCode:ui::DomCode::ARROW_DOWN
-          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+  [self
+      handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+           keyCode:ui::VKEY_DOWN
+           domCode:ui::DomCode::ARROW_DOWN
+        eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveParagraphBackwardAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::
+                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_UP
              domCode:ui::DomCode::ARROW_UP
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveWordRight:(id)sender {
-  [self handleAction:IDS_MOVE_WORD_RIGHT
+  [self handleAction:ui::TextEditCommand::MOVE_WORD_RIGHT
              keyCode:ui::VKEY_RIGHT
              domCode:ui::DomCode::ARROW_RIGHT
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)moveWordLeft:(id)sender {
-  [self handleAction:IDS_MOVE_WORD_LEFT
+  [self handleAction:ui::TextEditCommand::MOVE_WORD_LEFT
              keyCode:ui::VKEY_LEFT
              domCode:ui::DomCode::ARROW_LEFT
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)moveRightAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_RIGHT_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_RIGHT
              domCode:ui::DomCode::ARROW_RIGHT
           eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveLeftAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_LEFT_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::MOVE_LEFT_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_LEFT
              domCode:ui::DomCode::ARROW_LEFT
           eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveWordRightAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::MOVE_WORD_RIGHT_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_RIGHT
              domCode:ui::DomCode::ARROW_RIGHT
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveWordLeftAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::MOVE_WORD_LEFT_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_LEFT
              domCode:ui::DomCode::ARROW_LEFT
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
@@ -969,42 +980,42 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 // Deletions.
 
 - (void)deleteForward:(id)sender {
-  [self handleAction:IDS_DELETE_FORWARD
+  [self handleAction:ui::TextEditCommand::DELETE_FORWARD
              keyCode:ui::VKEY_DELETE
              domCode:ui::DomCode::DEL
           eventFlags:0];
 }
 
 - (void)deleteBackward:(id)sender {
-  [self handleAction:IDS_DELETE_BACKWARD
+  [self handleAction:ui::TextEditCommand::DELETE_BACKWARD
              keyCode:ui::VKEY_BACK
              domCode:ui::DomCode::BACKSPACE
           eventFlags:0];
 }
 
 - (void)deleteWordForward:(id)sender {
-  [self handleAction:IDS_DELETE_WORD_FORWARD
+  [self handleAction:ui::TextEditCommand::DELETE_WORD_FORWARD
              keyCode:ui::VKEY_DELETE
              domCode:ui::DomCode::DEL
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)deleteWordBackward:(id)sender {
-  [self handleAction:IDS_DELETE_WORD_BACKWARD
+  [self handleAction:ui::TextEditCommand::DELETE_WORD_BACKWARD
              keyCode:ui::VKEY_BACK
              domCode:ui::DomCode::BACKSPACE
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)deleteToBeginningOfLine:(id)sender {
-  [self handleAction:IDS_DELETE_TO_BEGINNING_OF_LINE
+  [self handleAction:ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE
              keyCode:ui::VKEY_BACK
              domCode:ui::DomCode::BACKSPACE
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)deleteToEndOfLine:(id)sender {
-  [self handleAction:IDS_DELETE_TO_END_OF_LINE
+  [self handleAction:ui::TextEditCommand::DELETE_TO_END_OF_LINE
              keyCode:ui::VKEY_DELETE
              domCode:ui::DomCode::DEL
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
@@ -1021,7 +1032,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 // Cancellation.
 
 - (void)cancelOperation:(id)sender {
-  [self handleAction:0
+  [self handleAction:ui::TextEditCommand::INVALID_COMMAND
              keyCode:ui::VKEY_ESCAPE
              domCode:ui::DomCode::ESCAPE
           eventFlags:0];
@@ -1192,17 +1203,22 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   SEL action = [item action];
 
   if (action == @selector(undo:))
-    return textInputClient_->IsEditCommandEnabled(IDS_APP_UNDO);
+    return textInputClient_->IsTextEditCommandEnabled(
+        ui::TextEditCommand::UNDO);
   if (action == @selector(redo:))
-    return textInputClient_->IsEditCommandEnabled(IDS_APP_REDO);
+    return textInputClient_->IsTextEditCommandEnabled(
+        ui::TextEditCommand::REDO);
   if (action == @selector(cut:))
-    return textInputClient_->IsEditCommandEnabled(IDS_APP_CUT);
+    return textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::CUT);
   if (action == @selector(copy:))
-    return textInputClient_->IsEditCommandEnabled(IDS_APP_COPY);
+    return textInputClient_->IsTextEditCommandEnabled(
+        ui::TextEditCommand::COPY);
   if (action == @selector(paste:))
-    return textInputClient_->IsEditCommandEnabled(IDS_APP_PASTE);
+    return textInputClient_->IsTextEditCommandEnabled(
+        ui::TextEditCommand::PASTE);
   if (action == @selector(selectAll:))
-    return textInputClient_->IsEditCommandEnabled(IDS_APP_SELECT_ALL);
+    return textInputClient_->IsTextEditCommandEnabled(
+        ui::TextEditCommand::SELECT_ALL);
 
   return NO;
 }

@@ -24,6 +24,7 @@ class Rect;
 namespace ui {
 
 class KeyEvent;
+enum class TextEditCommand;
 
 // An interface implemented by a View that needs text input support.
 class UI_BASE_IME_EXPORT TextInputClient {
@@ -169,15 +170,15 @@ class UI_BASE_IME_EXPORT TextInputClient {
   // http://crbug.com/360334
   virtual void EnsureCaretInRect(const gfx::Rect& rect) = 0;
 
-  // Returns true if |command_id| is currently allowed to be executed.
-  virtual bool IsEditCommandEnabled(int command_id) const = 0;
+  // Returns true if |command| is currently allowed to be executed.
+  virtual bool IsTextEditCommandEnabled(TextEditCommand command) const = 0;
 
-  // Execute the command specified by |command_id| on the next key event.
-  // This allows a TextInputClient to be informed of a platform-independent edit
-  // command that has been derived from the key event currently being dispatched
-  // (but not yet sent to the TextInputClient). The edit command will take into
-  // account any OS-specific, or user-specified, keybindings that may be set up.
-  virtual void SetEditCommandForNextKeyEvent(int command_id) = 0;
+  // Execute |command| on the next key event. This allows a TextInputClient to
+  // be informed of a platform-independent edit command that has been derived
+  // from the key event currently being dispatched (but not yet sent to the
+  // TextInputClient). The edit command will take into account any OS-specific,
+  // or user-specified, keybindings that may be set up.
+  virtual void SetTextEditCommandForNextKeyEvent(TextEditCommand command) = 0;
 };
 
 }  // namespace ui

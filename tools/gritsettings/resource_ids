@@ -103,217 +103,217 @@
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "chrome/app/chromium_strings.grd": {
-    "messages": [11500],
+    "messages": [11200],
   },
   "chrome/app/google_chrome_strings.grd": {
-    "messages": [11500],
+    "messages": [11200],
   },
   # Leave lots of space for generated_resources since it has most of our
   # strings.
   "chrome/app/generated_resources.grd": {
-    "structures": [12000],
-    "messages": [12500],
+    "structures": [11700],
+    "messages": [12200],
   },
   "content/app/strings/content_strings.grd": {
-    "messages": [18900],
+    "messages": [18600],
   },
   # Settings Chromium strings and Settings Google Chrome strings must start
   # at the same id.  We only use one file depending on whether we're building
   # Chromium or Google Chrome.
   "chrome/app/settings_chromium_strings.grd": {
-    "messages": [19700],
+    "messages": [19400],
   },
   "chrome/app/settings_google_chrome_strings.grd": {
-    "messages": [19700],
+    "messages": [19400],
   },
   "chrome/app/settings_strings.grd": {
-    "messages": [20000],
+    "messages": [19700],
   },
   "components/policy/resources/policy_templates.grd": {
-    "structures": [20400],
-    "messages": [20410],
+    "structures": [20100],
+    "messages": [20110],
   },
   "chrome/browser/resources/invalidations_resources.grd": {
-    "includes": [21400],
+    "includes": [21100],
   },
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
-    "includes": [21450],
+    "includes": [21150],
   },
   "devtools_resources.grd": {
-    "includes": [21450],
+    "includes": [21150],
   },
   "chrome/browser/resources/options_resources.grd": {
-    "includes": [22450],
-    "structures": [22650],
+    "includes": [22150],
+    "structures": [22350],
   },
   "chrome/browser/resources/options_test_resources.grd": {
-    "includes": [22850],
-    "structures": [22890],
+    "includes": [22550],
+    "structures": [22590],
   },
   "chrome/test/data/webui_test_resources.grd": {
-    "includes": [22930],
-    "structures": [22940],
+    "includes": [22630],
+    "structures": [22640],
   },
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
-    "messages": [22950],
-    "includes": [23000],
+    "messages": [22650],
+    "includes": [22700],
   },
   "cloud_print/service/win/service_resources.grd": {
-    "messages": [23050],
-    "includes": [23150],
-    "structures": [23200],
+    "messages": [22750],
+    "includes": [22850],
+    "structures": [22900],
   },
   "cloud_print/gcp20/prototype/gcp20_device.grd": {
-    "messages": [23250],
-    "includes": [23280],
-    "structures": [23290],
+    "messages": [22950],
+    "includes": [22980],
+    "structures": [22990],
   },
   "chrome/browser/resources/quota_internals_resources.grd": {
-    "includes": [23250],
+    "includes": [22950],
   },
   "content/content_resources.grd": {
-    "includes": [23950],
+    "includes": [23650],
   },
   # ios_web strings and content strings must start at the same id.
   # App only use one file depending on whether it is iOS or other platform.
   "ios/web/ios_web_resources.grd": {
-    "includes": [23950],
+    "includes": [23650],
   },
   # ios/web test strings and content/shell strings must start at the same id.
   # App only use one file depending on whether it is iOS or other platform.
   "ios/web/test/test_resources.grd": {
-    "includes": [24450],
+    "includes": [24150],
   },
   "content/shell/shell_resources.grd": {
-    "includes": [24450],
+    "includes": [24150],
   },
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
-    "includes": [24600],
+    "includes": [24300],
   },
   # iOS resources overlap with android_webview, ash, chromeos and extensions_api,
   # as these are not used on iOS.
   "ios/chrome/app/strings/ios_strings.grd": {
-    "messages": [24850],
+    "messages": [24550],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "ios/chrome/app/strings/ios_chromium_strings.grd": {
-    "messages": [25755],
+    "messages": [25455],
   },
   "ios/chrome/app/strings/ios_google_chrome_strings.grd": {
-    "messages": [25755],
+    "messages": [25455],
   },
   "ios/chrome/app/resources/ios_resources.grd": {
-    "structures": [25950],
-    "includes": [26060],
+    "structures": [25650],
+    "includes": [25760],
   },
   "ios/chrome/app/theme/ios_theme_resources.grd": {
-    "structures": [25870],
+    "structures": [25570],
   },
   "ios/chrome/share_extension/strings/ios_share_extension_strings.grd": {
-    "messages": [26325],
+    "messages": [26025],
   },
   "ios/chrome/today_extension/strings/ios_today_extension_strings.grd": {
-    "messages": [26335],
+    "messages": [26035],
   },
   "ash/ash_strings.grd": {
-    "messages": [24850],
+    "messages": [24550],
   },
   "android_webview/ui/aw_resources.grd": {
-    "includes": [24850],
+    "includes": [24550],
   },
   "android_webview/ui/aw_strings.grd": {
-    "messages": [24950],
+    "messages": [24650],
   },
   "ui/chromeos/resources/ui_chromeos_resources.grd": {
-    "structures": [25150],
+    "structures": [24850],
   },
   "ui/chromeos/ui_chromeos_strings.grd": {
-    "messages": [25250],
+    "messages": [24950],
   },
   "chrome/common/extensions_api_resources.grd": {
-    "includes": [25350],
+    "includes": [25050],
   },
   "extensions/extensions_resources.grd": {
-    "includes": [25550],
+    "includes": [25250],
   },
   "extensions/browser/resources/extensions_browser_resources.grd": {
-    "structures": [25750],
+    "structures": [25450],
   },
   "extensions/renderer/resources/extensions_renderer_resources.grd": {
-    "includes": [25800],
-    "structures": [25900],
+    "includes": [25500],
+    "structures": [25600],
   },
   "extensions/extensions_strings.grd": {
-    "messages": [25950],
+    "messages": [25650],
   },
   "extensions/shell/app_shell_resources.grd": {
-    "includes": [26350],
+    "includes": [26050],
   },
   "chrome/browser/resources/password_manager_internals_resources.grd": {
-    "includes": [26650],
+    "includes": [26350],
   },
   "device/bluetooth/bluetooth_strings.grd": {
-    "messages": [26950],
+    "messages": [26650],
   },
   "ui/file_manager/file_manager_resources.grd": {
-    "includes": [27060],
+    "includes": [26760],
   },
   "components/chrome_apps/chrome_apps_resources.grd": {
-    "includes": [27240],
+    "includes": [26940],
   },
   "ui/login/login_resources.grd": {
-    "includes": [27260],
+    "includes": [26960],
   },
   "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [27270],
+    "includes": [26970],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [27280],
+    "includes": [26980],
   },
   "chrome/app/address_input_strings.grd": {
-    "messages": [27380],
+    "messages": [27080],
   },
   "remoting/resources/remoting_strings.grd": {
-    "messages": [27830],
+    "messages": [27530],
   },
   "components/components_locale_settings.grd": {
-    "includes": [28280],
-    "messages": [28285],
+    "includes": [27980],
+    "messages": [27985],
   },
   "components/components_strings.grd": {
-    "messages": [28290],
+    "messages": [27990],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "components/components_chromium_strings.grd": {
-    "messages": [29550],
+    "messages": [29250],
   },
   "components/components_google_chrome_strings.grd": {
-    "messages": [29550],
+    "messages": [29250],
   },
   "components/resources/components_resources.grd": {
-    "includes": [29600],
+    "includes": [29300],
   },
   "components/resources/components_scaled_resources.grd": {
-    "structures": [30150],
+    "structures": [29850],
   },
   "third_party/WebKit/public/blink_resources.grd": {
-    "includes": [30370],
-    "structures": [30670],
+    "includes": [30070],
+    "structures": [30370],
   },
   "chrome/browser/resources/md_policy/policy_resources.grd": {
-    "structures": [30900],
+    "structures": [30600],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [30920],
+    "structures": [30620],
   },
   "headless/lib/resources/headless_lib_resources.grd": {
-    "includes": [30940],
+    "includes": [30640],
   },
 
   # Resource ids starting at 31000 are reserved for projects built on Chromium.

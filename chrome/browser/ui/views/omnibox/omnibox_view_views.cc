@@ -42,6 +42,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -368,7 +369,7 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
 
     // These commands do invoke the popup.
     case IDS_APP_PASTE:
-      ExecuteEditCommand(IDS_APP_PASTE);
+      ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
       return;
     default:
       if (Textfield::IsCommandIdEnabled(command_id)) {
@@ -743,14 +744,14 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
         model()->popup_model()->TryDeletingCurrentItem();
       break;
     case ui::VKEY_UP:
-      if (IsEditCommandEnabled(IDS_MOVE_UP)) {
-        ExecuteEditCommand(IDS_MOVE_UP);
+      if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_UP)) {
+        ExecuteTextEditCommand(ui::TextEditCommand::MOVE_UP);
         return true;
       }
       break;
     case ui::VKEY_DOWN:
-      if (IsEditCommandEnabled(IDS_MOVE_DOWN)) {
-        ExecuteEditCommand(IDS_MOVE_DOWN);
+      if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_DOWN)) {
+        ExecuteTextEditCommand(ui::TextEditCommand::MOVE_DOWN);
         return true;
       }
       break;
@@ -765,14 +766,16 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
       model()->OnUpOrDownKeyPressed(model()->result().size());
       return true;
     case ui::VKEY_V:
-      if (control && !alt && IsEditCommandEnabled(IDS_APP_PASTE)) {
-        ExecuteEditCommand(IDS_APP_PASTE);
+      if (control && !alt &&
+          IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {
+        ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
         return true;
       }
       break;
     case ui::VKEY_INSERT:
-      if (shift && !control && IsEditCommandEnabled(IDS_APP_PASTE)) {
-        ExecuteEditCommand(IDS_APP_PASTE);
+      if (shift && !control &&
+          IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {
+        ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
         return true;
       }
       break;
@@ -909,39 +912,40 @@ void OmniboxViewViews::DoInsertChar(base::char16 ch) {
   Textfield::DoInsertChar(ch);
 }
 
-bool OmniboxViewViews::IsEditCommandEnabled(int command_id) const {
-  switch (command_id) {
-    case IDS_MOVE_UP:
-    case IDS_MOVE_DOWN:
+bool OmniboxViewViews::IsTextEditCommandEnabled(
+    ui::TextEditCommand command) const {
+  switch (command) {
+    case ui::TextEditCommand::MOVE_UP:
+    case ui::TextEditCommand::MOVE_DOWN:
       return !read_only();
-    case IDS_APP_PASTE:
+    case ui::TextEditCommand::PASTE:
       return !read_only() && !GetClipboardText().empty();
     default:
-      return Textfield::IsEditCommandEnabled(command_id);
+      return Textfield::IsTextEditCommandEnabled(command);
   }
 }
 
-void OmniboxViewViews::ExecuteEditCommand(int command_id) {
+void OmniboxViewViews::ExecuteTextEditCommand(ui::TextEditCommand command) {
   // In the base class, touch text selection is deactivated when a command is
   // executed. Since we are not always calling the base class implementation
   // here, we need to deactivate touch text selection here, too.
   DestroyTouchSelection();
 
-  if (!IsEditCommandEnabled(command_id))
+  if (!IsTextEditCommandEnabled(command))
     return;
 
-  switch (command_id) {
-    case IDS_MOVE_UP:
+  switch (command) {
+    case ui::TextEditCommand::MOVE_UP:
       model()->OnUpOrDownKeyPressed(-1);
       break;
-    case IDS_MOVE_DOWN:
+    case ui::TextEditCommand::MOVE_DOWN:
       model()->OnUpOrDownKeyPressed(1);
       break;
-    case IDS_APP_PASTE:
+    case ui::TextEditCommand::PASTE:
       OnPaste();
       break;
     default:
-      Textfield::ExecuteEditCommand(command_id);
+      Textfield::ExecuteTextEditCommand(command);
       break;
   }
 }

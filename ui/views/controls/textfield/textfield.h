@@ -302,8 +302,8 @@ class VIEWS_EXPORT Textfield : public View,
       base::i18n::TextDirection direction) override;
   void ExtendSelectionAndDelete(size_t before, size_t after) override;
   void EnsureCaretInRect(const gfx::Rect& rect) override;
-  bool IsEditCommandEnabled(int command_id) const override;
-  void SetEditCommandForNextKeyEvent(int command_id) override;
+  bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
+  void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
 
  protected:
   // Inserts or appends a character in response to an IME operation.
@@ -317,8 +317,8 @@ class VIEWS_EXPORT Textfield : public View,
   // Get the text from the selection clipboard.
   virtual base::string16 GetSelectionClipboardText() const;
 
-  // Executes the given text editing command.
-  virtual void ExecuteEditCommand(int command_id);
+  // Executes the given |command|.
+  virtual void ExecuteTextEditCommand(ui::TextEditCommand command);
 
  private:
   friend class TextfieldTestApi;
@@ -394,11 +394,12 @@ class VIEWS_EXPORT Textfield : public View,
   // This is the current listener for events from this Textfield.
   TextfieldController* controller_;
 
-  // If non-zero, an edit command to execute on the next key event. When set,
-  // the key event is still passed to |controller_|, but otherwise ignored in
-  // favor of the edit command. Set via SetEditCommandForNextKeyEvent() during
-  // dispatch of that key event (see comment in TextInputClient).
-  int scheduled_edit_command_;
+  // An edit command to execute on the next key event. When set to a valid
+  // value, the key event is still passed to |controller_|, but otherwise
+  // ignored in favor of the edit command. Set via
+  // SetTextEditCommandForNextKeyEvent() during dispatch of that key event (see
+  // comment in TextInputClient).
+  ui::TextEditCommand scheduled_text_edit_command_;
 
   // True if this Textfield cannot accept input and is read-only.
   bool read_only_;
