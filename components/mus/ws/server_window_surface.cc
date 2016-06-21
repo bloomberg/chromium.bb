@@ -50,7 +50,7 @@ ServerWindowSurface::~ServerWindowSurface() {
 }
 
 void ServerWindowSurface::SubmitCompositorFrame(
-    mojom::CompositorFramePtr frame,
+    cc::mojom::CompositorFramePtr frame,
     const SubmitCompositorFrameCallback& callback) {
   gfx::Size frame_size = frame->passes[0]->output_rect.size();
   if (!surface_id_.is_null()) {

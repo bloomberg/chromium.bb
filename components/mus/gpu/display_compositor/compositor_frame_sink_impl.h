@@ -36,7 +36,7 @@ class CompositorFrameSinkImpl : public cc::SurfaceFactoryClient,
   // mojom::CompositorFrameSink implementation.
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(
-      mus::mojom::CompositorFramePtr frame,
+      cc::mojom::CompositorFramePtr frame,
       const SubmitCompositorFrameCallback& callback) override;
 
  private:

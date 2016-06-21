@@ -8,10 +8,10 @@
 #include <map>
 
 #include "base/macros.h"
+#include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

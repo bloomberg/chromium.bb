@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_UTILS_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_UTILS_H_
 
-#include "cc/ipc/quads.mojom.h"
+#include "cc/ipc/render_pass.mojom.h"
 #include "components/mus/public/cpp/surfaces/mojo_surfaces_export.h"
 
 namespace cc {

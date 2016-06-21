@@ -21,6 +21,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 
+using cc::mojom::CompositorFrame;
+using cc::mojom::CompositorFramePtr;
 using cc::mojom::DebugBorderQuadState;
 using cc::mojom::DebugBorderQuadStatePtr;
 using cc::mojom::DrawQuad;
@@ -40,8 +42,6 @@ using cc::mojom::TileQuadStatePtr;
 using cc::mojom::YUVColorSpace;
 using cc::mojom::YUVVideoQuadState;
 using cc::mojom::YUVVideoQuadStatePtr;
-using mus::mojom::CompositorFrame;
-using mus::mojom::CompositorFramePtr;
 
 namespace mojo {
 namespace {

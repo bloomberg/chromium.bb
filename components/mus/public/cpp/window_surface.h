@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "components/mus/public/interfaces/compositor_frame.mojom.h"
+#include "components/mus/public/interfaces/surface.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 
@@ -35,7 +35,7 @@ class WindowSurface : public mojom::SurfaceClient {
   // object.
   void BindToThread();
 
-  void SubmitCompositorFrame(mojom::CompositorFramePtr frame,
+  void SubmitCompositorFrame(cc::mojom::CompositorFramePtr frame,
                              const base::Closure& callback);
 
   void set_client(WindowSurfaceClient* client) { client_ = client; }

@@ -34,7 +34,7 @@ void WindowSurface::BindToThread() {
       this, std::move(client_request_)));
 }
 
-void WindowSurface::SubmitCompositorFrame(mojom::CompositorFramePtr frame,
+void WindowSurface::SubmitCompositorFrame(cc::mojom::CompositorFramePtr frame,
                                           const base::Closure& callback) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());

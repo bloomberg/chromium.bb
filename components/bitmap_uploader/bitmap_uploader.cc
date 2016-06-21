@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "cc/ipc/compositor_frame.mojom.h"
 #include "components/mus/public/cpp/gles2_context.h"
 #include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/cpp/surfaces/surfaces_utils.h"
@@ -72,7 +73,7 @@ void BitmapUploader::SetBitmap(int width,
 void BitmapUploader::Upload() {
   const gfx::Rect bounds(window_->bounds());
   cc::mojom::RenderPassPtr pass = mojo::CreateDefaultPass(1, bounds);
-  mus::mojom::CompositorFramePtr frame = mus::mojom::CompositorFrame::New();
+  cc::mojom::CompositorFramePtr frame = cc::mojom::CompositorFrame::New();
 
   // TODO(rjkroege): Support device scale factor in PDF viewer
   frame->metadata.device_scale_factor = 1.0f;

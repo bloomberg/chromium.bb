@@ -15,7 +15,7 @@
 #include "components/bitmap_uploader/bitmap_uploader_export.h"
 #include "components/mus/public/cpp/window_surface.h"
 #include "components/mus/public/cpp/window_surface_client.h"
-#include "components/mus/public/interfaces/compositor_frame.mojom.h"
+#include "components/mus/public/interfaces/surface.mojom.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
 

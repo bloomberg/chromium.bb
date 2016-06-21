@@ -6,10 +6,8 @@ module cc.mojom;
 
 import "cc/ipc/filter_operations.mojom";
 import "cc/ipc/render_pass_id.mojom";
-import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "ui/gfx/mojo/transform.mojom";
 
 struct DebugBorderQuadState {
   // Debug border color.
@@ -144,12 +142,3 @@ struct QuadList {
   array<DrawQuad> quads;
 };
 
-struct RenderPass {
-  cc.mojom.RenderPassId id;
-  gfx.mojom.Rect output_rect;
-  gfx.mojom.Rect damage_rect;
-  gfx.mojom.Transform transform_to_root_target;
-  bool has_transparent_background;
-  array<DrawQuad> quads;
-  cc.mojom.SharedQuadStateList shared_quad_states;
-};

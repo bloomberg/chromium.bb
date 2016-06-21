@@ -7,13 +7,13 @@
 
 #include <memory>
 
+#include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/ipc/quads.mojom.h"
 #include "cc/ipc/surface_id.mojom.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
 #include "components/mus/public/cpp/surfaces/mojo_surfaces_export.h"
-#include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -54,20 +54,20 @@ struct MOJO_SURFACES_EXPORT
 
 // Types from compositor_frame.mojom
 MOJO_SURFACES_EXPORT std::unique_ptr<cc::CompositorFrame>
-ConvertToCompositorFrame(const mus::mojom::CompositorFramePtr& input);
+ConvertToCompositorFrame(const cc::mojom::CompositorFramePtr& input);
 
 template <>
 struct MOJO_SURFACES_EXPORT
-    TypeConverter<mus::mojom::CompositorFramePtr, cc::CompositorFrame> {
-  static mus::mojom::CompositorFramePtr Convert(
+    TypeConverter<cc::mojom::CompositorFramePtr, cc::CompositorFrame> {
+  static cc::mojom::CompositorFramePtr Convert(
       const cc::CompositorFrame& input);
 };
 
 template <>
 struct MOJO_SURFACES_EXPORT TypeConverter<std::unique_ptr<cc::CompositorFrame>,
-                                          mus::mojom::CompositorFramePtr> {
+                                          cc::mojom::CompositorFramePtr> {
   static std::unique_ptr<cc::CompositorFrame> Convert(
-      const mus::mojom::CompositorFramePtr& input);
+      const cc::mojom::CompositorFramePtr& input);
 };
 
 }  // namespace mojo

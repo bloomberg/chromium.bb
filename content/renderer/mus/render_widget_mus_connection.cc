@@ -12,7 +12,7 @@
 #include "components/mus/public/cpp/output_surface.h"
 #include "components/mus/public/cpp/surfaces/surfaces_utils.h"
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
-#include "components/mus/public/interfaces/compositor_frame.mojom.h"
+#include "components/mus/public/interfaces/surface.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/compositor_mus_connection.h"

@@ -38,10 +38,12 @@ component("ipc") {
 mojom("interfaces") {
   sources = [
     "begin_frame_args.mojom",
+    "compositor_frame.mojom",
     "compositor_frame_metadata.mojom",
     "filter_operation.mojom",
     "filter_operations.mojom",
     "quads.mojom",
+    "render_pass.mojom",
     "render_pass_id.mojom",
     "returned_resource.mojom",
     "selection.mojom",

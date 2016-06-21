@@ -41,7 +41,7 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   // destroyed then SubmitCompositorFrame's callback will never get called.
   // Thus, base::Unretained is safe here.
   surface_->SubmitCompositorFrame(
-      mojom::CompositorFrame::From(*frame),
+      cc::mojom::CompositorFrame::From(*frame),
       base::Bind(&OutputSurface::SwapBuffersComplete, base::Unretained(this)));
 }
 

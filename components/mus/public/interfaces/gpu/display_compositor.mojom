@@ -4,8 +4,8 @@
 
 module mus.gpu.mojom;
 
+import "cc/ipc/compositor_frame.mojom";
 import "cc/ipc/returned_resource.mojom";
-import "components/mus/public/interfaces/compositor_frame.mojom";
 
 
 // Indicates whether the submitted CompositorFrame has been drawn to the display
@@ -46,7 +46,7 @@ interface CompositorFrameSink {
   // submitted frame. Clients should use this acknowledgement to ratelimit frame
   // submissions.
   // TODO(fsamuel): We should support identifying the CF in the callback.
-  SubmitCompositorFrame(mus.mojom.CompositorFrame frame) =>
+  SubmitCompositorFrame(cc.mojom.CompositorFrame frame) =>
       (CompositorFrameDrawStatus status);
 
   // Lets the display compositor know that the client wishes to receive the next

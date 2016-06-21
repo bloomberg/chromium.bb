@@ -4,10 +4,10 @@
 
 #include "components/mus/gpu/display_compositor/compositor_frame_sink_impl.h"
 
+#include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/surfaces/surface_factory.h"
 #include "components/mus/gpu/display_compositor/compositor_frame_sink_delegate.h"
 #include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
-#include "components/mus/public/interfaces/compositor_frame.mojom.h"
 
 namespace mus {
 namespace gpu {
@@ -56,7 +56,7 @@ void CompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 void CompositorFrameSinkImpl::SubmitCompositorFrame(
-    mus::mojom::CompositorFramePtr frame,
+    cc::mojom::CompositorFramePtr frame,
     const SubmitCompositorFrameCallback& callback) {
   // TODO(fsamuel): Validate that SurfaceDrawQuad refer to allowable surface
   // IDs.

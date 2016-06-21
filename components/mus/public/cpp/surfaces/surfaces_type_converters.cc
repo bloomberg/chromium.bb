@@ -25,6 +25,8 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
 
+using cc::mojom::CompositorFrame;
+using cc::mojom::CompositorFramePtr;
 using cc::mojom::DebugBorderQuadState;
 using cc::mojom::DebugBorderQuadStatePtr;
 using cc::mojom::DrawQuad;
@@ -44,8 +46,6 @@ using cc::mojom::TileQuadStatePtr;
 using cc::mojom::YUVColorSpace;
 using cc::mojom::YUVVideoQuadState;
 using cc::mojom::YUVVideoQuadStatePtr;
-using mus::mojom::CompositorFrame;
-using mus::mojom::CompositorFramePtr;
 
 namespace mojo {
 
