@@ -28411,6 +28411,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="Net.Predictor.Startup.DBSize" units="bytes">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The approximate size in bytes of the predictor's database on startup.
+  </summary>
+</histogram>
+
 <histogram name="Net.Prefetch.HitBytes" units="bytes">
   <owner>jkarlin@chromium.org</owner>
   <summary>

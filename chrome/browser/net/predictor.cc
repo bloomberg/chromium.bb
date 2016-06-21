@@ -665,6 +665,8 @@ void Predictor::FinalizeInitializationOnIOThread(
   DnsPrefetchMotivatedList(startup_urls, UrlInfo::STARTUP_LIST_MOTIVATED);
 
   DeserializeReferrersThenDelete(referral_list);
+
+  LogStartupMetrics();
 }
 
 //-----------------------------------------------------------------------------
@@ -1159,6 +1161,21 @@ GURL Predictor::GetHSTSRedirectOnIOThread(const GURL& url) {
   replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
   return url.ReplaceComponents(replacements);
 }
+
+void Predictor::LogStartupMetrics() {
+  size_t total_bytes = 0;
+  for (const auto& referrer : referrers_) {
+    total_bytes += referrer.first.spec().size();
+    total_bytes += sizeof(Referrer);
+    for (const auto& subresource : referrer.second) {
+      total_bytes += subresource.first.spec().size();
+      total_bytes += sizeof(ReferrerValue);
+    }
+  }
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.Predictor.Startup.DBSize", total_bytes, 1,
+                              10 * 1000 * 1000, 50);
+}
+
 
 // ---------------------- End IO methods. -------------------------------------
 
