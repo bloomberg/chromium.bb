@@ -170,6 +170,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // testing.
   virtual EffectiveConnectionType GetEffectiveConnectionType() const;
 
+  // Returns the effective type of the current connection based on only the
+  // samples observed after |start_time|. Virtualized for testing.
+  virtual EffectiveConnectionType GetRecentEffectiveConnectionType(
+      const base::TimeTicks& start_time) const;
+
   // Adds |observer| to the list of effective connection type observers. Must be
   // called on the IO thread.
   void AddEffectiveConnectionTypeObserver(
@@ -415,11 +420,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Adds the default median RTT and downstream throughput estimate for the
   // current connection type to the observation buffer.
   void AddDefaultEstimates();
-
-  // Returns the effective type of the current connection based on only the
-  // samples observed after |start_time|.
-  EffectiveConnectionType GetRecentEffectiveConnectionType(
-      const base::TimeTicks& start_time) const;
 
   // Returns an estimate of network quality at the specified |percentile|.
   // |disallowed_observation_sources| is the list of observation sources that

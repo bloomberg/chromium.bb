@@ -22,6 +22,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/log/net_log.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
 
@@ -34,7 +35,6 @@ class SingleThreadTaskRunner;
 namespace net {
 class HostPortPair;
 class NetLog;
-class NetworkQualityEstimator;
 class URLFetcher;
 class URLRequest;
 class URLRequestContextGetter;
@@ -234,6 +234,7 @@ class DataReductionProxyConfig
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            AreProxiesBypassedRetryDelay);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, AutoLoFiParams);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, AutoLoFiMissingParams);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            AutoLoFiParamsSlowConnectionsFlag);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, LoFiAccuracy);
@@ -292,11 +293,9 @@ class DataReductionProxyConfig
   bool ShouldEnableLoFiModeInternal(
       const net::NetworkQualityEstimator* network_quality_estimator);
 
-  // Returns true if expected throughput is lower than the one specified in the
-  // Auto Lo-Fi field trial parameters OR if the expected round trip time is
-  // higher than the one specified in the Auto Lo-Fi field trial parameters.
-  // |network_quality_estimator| may be NULL.
-  // Virtualized for unit testing.
+  // Returns true if the network quality is at least as poor as the one
+  // specified in the Auto Lo-Fi field trial parameters.
+  // |network_quality_estimator| may be NULL. Virtualized for unit testing.
   virtual bool IsNetworkQualityProhibitivelySlow(
       const net::NetworkQualityEstimator* network_quality_estimator);
 
@@ -307,6 +306,12 @@ class DataReductionProxyConfig
   void RecordAutoLoFiAccuracyRate(
       const net::NetworkQualityEstimator* network_quality_estimator,
       const base::TimeDelta& measuring_duration) const;
+
+  // Returns true if |effective_connection_type| is at least as poor as
+  // |lofi_effective_connection_type_threshold_|.
+  bool IsEffectiveConnectionTypeSlowerThanThreshold(
+      net::NetworkQualityEstimator::EffectiveConnectionType
+          effective_connection_type) const;
 
   std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;
 
@@ -339,13 +344,10 @@ class DataReductionProxyConfig
   base::ThreadChecker thread_checker_;
 
   // Thresholds from the field trial at which auto Lo-Fi is turned on.
-  // If the expected round trip time is higher than |auto_lofi_minimum_rtt_|,
-  // auto Lo-Fi would be turned on.
-  base::TimeDelta auto_lofi_minimum_rtt_;
-
-  // If the expected throughput in Kbps is lower than
-  // |auto_lofi_maximum_kbps_|, auto Lo-Fi would be turned on.
-  int32_t auto_lofi_maximum_kbps_;
+  // If the effective connection type is at least as slow as
+  // |lofi_effective_connection_type_threshold_|, Lo-Fi would be turned on.
+  net::NetworkQualityEstimator::EffectiveConnectionType
+      lofi_effective_connection_type_threshold_;
 
   // State of auto Lo-Fi is not changed more than once in any period of
   // duration shorter than |auto_lofi_hysteresis_|.

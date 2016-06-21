@@ -865,49 +865,40 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
       : NetworkQualityEstimator(
             std::unique_ptr<net::ExternalEstimateProvider>(),
             variation_params),
-        rtt_estimate_(base::TimeDelta()),
-        downstream_throughput_kbps_estimate_(INT32_MAX),
-        rtt_since_(base::TimeDelta()) {}
+        effective_connection_type_(
+            net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+        recent_effective_connection_type_(
+            net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
 
   ~TestNetworkQualityEstimator() override {}
 
-  bool GetHttpRTTEstimate(base::TimeDelta* rtt) const override {
-    DCHECK(rtt);
-    *rtt = rtt_estimate_;
-    return true;
+  EffectiveConnectionType GetEffectiveConnectionType() const override {
+    return effective_connection_type_;
   }
 
-  bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const override {
-    DCHECK(kbps);
-    *kbps = downstream_throughput_kbps_estimate_;
-    return true;
+  EffectiveConnectionType GetRecentEffectiveConnectionType(
+      const base::TimeTicks& start_time) const override {
+    return recent_effective_connection_type_;
   }
 
-  void SetRTT(base::TimeDelta rtt) { rtt_estimate_ = rtt; }
-
-  bool GetRecentHttpRTTMedian(const base::TimeTicks& begin_timestamp,
-                              base::TimeDelta* rtt) const override {
-    DCHECK(rtt);
-    *rtt = rtt_since_;
-    return true;
+  void SetEffectiveConnectionType(
+      net::NetworkQualityEstimator::EffectiveConnectionType
+          effective_connection_type) {
+    effective_connection_type_ = effective_connection_type;
   }
 
-  bool GetRecentMedianDownlinkThroughputKbps(
-      const base::TimeTicks& begin_timestamp,
-      int32_t* kbps) const override {
-    DCHECK(kbps);
-    *kbps = INT32_MAX;
-    return true;
-  }
-
-  void SetMedianRTTSince(const base::TimeDelta& rtt_since) {
-    rtt_since_ = rtt_since;
+  void SetRecentEffectiveConnectionType(
+      net::NetworkQualityEstimator::EffectiveConnectionType
+          recent_effective_connection_type) {
+    recent_effective_connection_type_ = recent_effective_connection_type;
   }
 
  private:
   // Estimate of the quality of the network.
-  base::TimeDelta rtt_estimate_;
-  int32_t downstream_throughput_kbps_estimate_;
+  net::NetworkQualityEstimator::EffectiveConnectionType
+      effective_connection_type_;
+  net::NetworkQualityEstimator::EffectiveConnectionType
+      recent_effective_connection_type_;
 
   base::TimeDelta rtt_since_;
 };
@@ -919,11 +910,8 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   std::map<std::string, std::string> variation_params;
   std::map<std::string, std::string> variation_params_flag;
 
-  variation_params["rtt_msec"] = "120";
-  variation_params_flag["rtt_msec"] = "121";
-
-  variation_params["kbps"] = "240";
-  variation_params_flag["kbps"] = "241";
+  variation_params["effective_connection_type"] = "Slow2G";
+  variation_params_flag["effective_connection_type"] = "2G";
 
   variation_params["hysteresis_period_seconds"] = "360";
   variation_params_flag["hysteresis_period_seconds"] = "361";
@@ -956,8 +944,9 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    int expected_rtt_msec = 120;
-    int expected_kbps = 240;
+    net::NetworkQualityEstimator::EffectiveConnectionType
+        expected_effective_connection_type =
+            net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
     int expected_hysteresis_sec = 360;
 
     if (tests[i].lofi_flag_group) {
@@ -965,16 +954,15 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kDataReductionProxyLoFi,
           switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
-      expected_rtt_msec = 121;
-      expected_kbps = 241;
+      expected_effective_connection_type =
+          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G;
       expected_hysteresis_sec = 361;
     }
 
   config.PopulateAutoLoFiParams();
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(expected_rtt_msec),
-            config.auto_lofi_minimum_rtt_);
-  EXPECT_EQ(expected_kbps, config.auto_lofi_maximum_kbps_);
+  EXPECT_EQ(expected_effective_connection_type,
+            config.lofi_effective_connection_type_threshold_);
   EXPECT_EQ(base::TimeDelta::FromSeconds(expected_hysteresis_sec),
             config.auto_lofi_hysteresis_);
 
@@ -982,16 +970,16 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   TestNetworkQualityEstimator test_network_quality_estimator(
       network_quality_estimator_params);
 
-  // RTT is higher than threshold. Network is slow.
-  test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1));
+  // Network is slow.
+  test_network_quality_estimator.SetEffectiveConnectionType(
+      expected_effective_connection_type);
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
-  // Network quality improved. RTT is lower than the threshold. However,
-  // network should still be marked as slow because of hysteresis.
-  test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1));
+  // Network quality improved. However, network should still be marked as slow
+  // because of hysteresis.
+  test_network_quality_estimator.SetEffectiveConnectionType(
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_BROADBAND);
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
@@ -1004,9 +992,9 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
-  // Changing the RTT has no effect because of hysteresis.
-  test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1));
+  // Changing the network quality has no effect because of hysteresis.
+  test_network_quality_estimator.SetEffectiveConnectionType(
+      expected_effective_connection_type);
   EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
@@ -1015,6 +1003,29 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
   }
+}
+
+// Tests that default parameters for Lo-Fi are used when the parameters from
+// field trial are missing.
+TEST_F(DataReductionProxyConfigTest, AutoLoFiMissingParams) {
+  DataReductionProxyConfig config(task_runner(), nullptr, nullptr,
+                                  configurator(), event_creator());
+  variations::testing::ClearAllVariationParams();
+  std::map<std::string, std::string> variation_params;
+  variation_params["spurious_field"] = "480";
+
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      params::GetLoFiFieldTrialName(), "Enabled", variation_params));
+
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                         "Enabled");
+
+  config.PopulateAutoLoFiParams();
+
+  EXPECT_EQ(net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+            config.lofi_effective_connection_type_threshold_);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(60), config.auto_lofi_hysteresis_);
 }
 
 TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {
@@ -1028,11 +1039,12 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {
 
   config.PopulateAutoLoFiParams();
 
-  int rtt_msec = 2000;
+  net::NetworkQualityEstimator::EffectiveConnectionType
+      expected_effective_connection_type =
+          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
   int hysteresis_sec = 60;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(rtt_msec),
-            config.auto_lofi_minimum_rtt_);
-  EXPECT_EQ(0, config.auto_lofi_maximum_kbps_);
+  EXPECT_EQ(expected_effective_connection_type,
+            config.lofi_effective_connection_type_threshold_);
   EXPECT_EQ(base::TimeDelta::FromSeconds(hysteresis_sec),
             config.auto_lofi_hysteresis_);
 
@@ -1040,16 +1052,16 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {
   TestNetworkQualityEstimator test_network_quality_estimator(
       network_quality_estimator_params);
 
-  // RTT is higher than threshold. Network is slow.
-  test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(rtt_msec + 1));
+  // Network is slow.
+  test_network_quality_estimator.SetEffectiveConnectionType(
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
-  // Network quality improved. RTT is lower than the threshold. However,
-  // network should still be marked as slow because of hysteresis.
-  test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(rtt_msec - 1));
+  // Network quality improved. However, network should still be marked as slow
+  // because of hysteresis.
+  test_network_quality_estimator.SetEffectiveConnectionType(
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G);
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
@@ -1061,9 +1073,9 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {
   EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
-  // Changing the RTT has no effect because of hysteresis.
-  test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(rtt_msec + 1));
+  // Changing the network quality has no effect because of hysteresis.
+  test_network_quality_estimator.SetEffectiveConnectionType(
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
@@ -1092,41 +1104,46 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracy) {
   variations::testing::ClearAllVariationParams();
   std::map<std::string, std::string> variation_params;
 
-  int expected_rtt_msec = 120;
   int expected_hysteresis_sec = 360;
 
-  variation_params["rtt_msec"] = base::IntToString(expected_rtt_msec);
+  variation_params["effective_connection_type"] = "Slow2G";
   variation_params["hysteresis_period_seconds"] =
       base::IntToString(expected_hysteresis_sec);
 
   const struct {
     std::string description;
     std::string field_trial_group;
-    base::TimeDelta rtt;
-    base::TimeDelta recent_rtt;
+    net::NetworkQualityEstimator::EffectiveConnectionType
+        effective_connection_type;
+    net::NetworkQualityEstimator::EffectiveConnectionType
+        recent_effective_connection_type;
     bool expect_network_quality_slow;
     uint32_t bucket_to_check;
     uint32_t expected_bucket_count;
   } tests[] = {
       {"Predicted slow, actually slow, Enabled group", "Enabled",
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1),
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1), true, 0, 1},
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, true, 0,
+       1},
       {"Predicted slow, actually slow, Enabled_NoControl group",
        "Enabled_NoControl",
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1),
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1), true, 0, 1},
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, true, 0,
+       1},
       {"Predicted slow, actually slow, Control group", "Control",
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1),
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1), true, 0, 1},
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, true, 0,
+       1},
       {"Predicted slow, actually not slow", "Enabled",
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1),
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1), true, 1, 1},
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G, true, 1, 1},
       {"Predicted not slow, actually slow", "Enabled",
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1),
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1), false, 2, 1},
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G,
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, false,
+       2, 1},
       {"Predicted not slow, actually not slow", "Enabled",
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1),
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1), false, 3, 1},
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G,
+       net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G, false, 3, 1},
   };
 
   for (const auto& test : tests) {
@@ -1149,10 +1166,10 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracy) {
         network_quality_estimator_params);
 
     base::HistogramTester histogram_tester;
-    // RTT is higher than threshold. Network is slow.
-    // Network was predicted to be slow and actually was slow.
-    test_network_quality_estimator.SetRTT(test.rtt);
-    test_network_quality_estimator.SetMedianRTTSince(test.recent_rtt);
+    test_network_quality_estimator.SetEffectiveConnectionType(
+        test.effective_connection_type);
+    test_network_quality_estimator.SetRecentEffectiveConnectionType(
+        test.recent_effective_connection_type);
     ASSERT_EQ(test.expect_network_quality_slow,
               config.IsNetworkQualityProhibitivelySlow(
                   &test_network_quality_estimator))
@@ -1186,12 +1203,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracyNonZeroDelay) {
   variations::testing::ClearAllVariationParams();
   std::map<std::string, std::string> variation_params;
 
-  int expected_rtt_msec = 120;
-  int expected_hysteresis_sec = 360;
-
-  variation_params["rtt_msec"] = base::IntToString(expected_rtt_msec);
-  variation_params["hysteresis_period_seconds"] =
-      base::IntToString(expected_hysteresis_sec);
+  variation_params["effective_connection_type"] = "Slow2G";
 
   ASSERT_TRUE(variations::AssociateVariationParams(
       params::GetLoFiFieldTrialName(), "Enabled", variation_params));
@@ -1206,12 +1218,11 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracyNonZeroDelay) {
       network_quality_estimator_params);
 
   base::HistogramTester histogram_tester;
-  // RTT is higher than threshold. Network is slow.
   // Network was predicted to be slow and actually was slow.
-  test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1));
-  test_network_quality_estimator.SetMedianRTTSince(
-      base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1));
+  test_network_quality_estimator.SetEffectiveConnectionType(
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  test_network_quality_estimator.SetRecentEffectiveConnectionType(
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   ASSERT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
   tick_clock->Advance(base::TimeDelta::FromSeconds(1));

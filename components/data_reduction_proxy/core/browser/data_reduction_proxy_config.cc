@@ -32,7 +32,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -280,8 +279,8 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       net_log_(net_log),
       configurator_(configurator),
       event_creator_(event_creator),
-      auto_lofi_minimum_rtt_(base::TimeDelta::Max()),
-      auto_lofi_maximum_kbps_(0),
+      lofi_effective_connection_type_threshold_(
+          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       auto_lofi_hysteresis_(base::TimeDelta::Max()),
       network_prohibitively_slow_(false),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
@@ -457,24 +456,21 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
     network_type_changed = true;
   }
 
-  // Initialize to fastest RTT and fastest bandwidth.
-  base::TimeDelta rtt = base::TimeDelta();
-  int32_t kbps = INT32_MAX;
+  const net::NetworkQualityEstimator::EffectiveConnectionType
+      effective_connection_type =
+          network_quality_estimator->GetEffectiveConnectionType();
 
-  bool is_network_quality_available =
-      network_quality_estimator->GetHttpRTTEstimate(&rtt) &&
-      network_quality_estimator->GetDownlinkThroughputKbpsEstimate(&kbps);
+  const bool is_network_quality_available =
+      effective_connection_type !=
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   // True only if the network is currently estimated to be slower than the
   // defined thresholds.
-  bool is_network_currently_slow = false;
+  const bool is_network_currently_slow =
+      is_network_quality_available &&
+      IsEffectiveConnectionTypeSlowerThanThreshold(effective_connection_type);
 
   if (is_network_quality_available) {
-    // Network is slow if either the downlink bandwidth is too low or the RTT is
-    // too high.
-    is_network_currently_slow =
-        kbps < auto_lofi_maximum_kbps_ || rtt > auto_lofi_minimum_rtt_;
-
     network_quality_at_last_query_ =
         is_network_currently_slow ? NETWORK_QUALITY_AT_LAST_QUERY_SLOW
                                   : NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW;
@@ -515,11 +511,17 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
 void DataReductionProxyConfig::PopulateAutoLoFiParams() {
   std::string field_trial = params::GetLoFiFieldTrialName();
 
-  if (params::IsLoFiSlowConnectionsOnlyViaFlags()) {
     // Default parameters to use.
-    auto_lofi_minimum_rtt_ = base::TimeDelta::FromMilliseconds(2000);
-    auto_lofi_maximum_kbps_ = 0;
-    auto_lofi_hysteresis_ = base::TimeDelta::FromSeconds(60);
+  const net::NetworkQualityEstimator::EffectiveConnectionType
+      default_effective_connection_type_threshold =
+          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+  const base::TimeDelta default_hysterisis = base::TimeDelta::FromSeconds(60);
+
+  if (params::IsLoFiSlowConnectionsOnlyViaFlags()) {
+    // Use the default parameters.
+    lofi_effective_connection_type_threshold_ =
+        default_effective_connection_type_threshold;
+    auto_lofi_hysteresis_ = default_hysterisis;
     field_trial = params::GetLoFiFlagFieldTrialName();
   }
 
@@ -529,23 +531,17 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
     return;
   }
 
-  uint64_t auto_lofi_minimum_rtt_msec;
-  std::string variation_value =
-      variations::GetVariationParamValue(field_trial, "rtt_msec");
-  if (!variation_value.empty() &&
-      base::StringToUint64(variation_value, &auto_lofi_minimum_rtt_msec)) {
-    auto_lofi_minimum_rtt_ =
-        base::TimeDelta::FromMilliseconds(auto_lofi_minimum_rtt_msec);
+  std::string variation_value = variations::GetVariationParamValue(
+      field_trial, "effective_connection_type");
+  if (!variation_value.empty()) {
+    lofi_effective_connection_type_threshold_ =
+        net::NetworkQualityEstimator::GetEffectiveConnectionTypeForName(
+            variation_value);
+  } else {
+    // Use the default parameters.
+    lofi_effective_connection_type_threshold_ =
+        default_effective_connection_type_threshold;
   }
-  DCHECK_GE(auto_lofi_minimum_rtt_, base::TimeDelta());
-
-  int32_t auto_lofi_maximum_kbps;
-  variation_value = variations::GetVariationParamValue(field_trial, "kbps");
-  if (!variation_value.empty() &&
-      base::StringToInt(variation_value, &auto_lofi_maximum_kbps)) {
-    auto_lofi_maximum_kbps_ = auto_lofi_maximum_kbps;
-  }
-  DCHECK_GE(auto_lofi_maximum_kbps_, 0);
 
   uint32_t auto_lofi_hysteresis_period_seconds;
   variation_value = variations::GetVariationParamValue(
@@ -555,6 +551,9 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
                          &auto_lofi_hysteresis_period_seconds)) {
     auto_lofi_hysteresis_ =
         base::TimeDelta::FromSeconds(auto_lofi_hysteresis_period_seconds);
+  } else {
+    // Use the default parameters.
+    auto_lofi_hysteresis_ = default_hysterisis;
   }
   DCHECK_GE(auto_lofi_hysteresis_, base::TimeDelta());
 }
@@ -795,14 +794,12 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
   if (now - last_query_ > 2 * measuring_duration)
     return;
 
-  base::TimeDelta rtt_since_last_page_load;
-  if (!network_quality_estimator->GetRecentHttpRTTMedian(
-          last_query_, &rtt_since_last_page_load)) {
-    return;
-  }
-  int32_t downstream_throughput_kbps;
-  if (!network_quality_estimator->GetRecentMedianDownlinkThroughputKbps(
-          last_query_, &downstream_throughput_kbps)) {
+  const net::NetworkQualityEstimator::EffectiveConnectionType
+      recent_effective_connection_type =
+          network_quality_estimator->GetRecentEffectiveConnectionType(
+              last_query_);
+  if (recent_effective_connection_type ==
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     return;
   }
 
@@ -817,9 +814,9 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
     AUTO_LOFI_ACCURACY_INDEX_BOUNDARY
   };
 
-  bool should_have_used_lofi =
-      rtt_since_last_page_load > auto_lofi_minimum_rtt_ ||
-      downstream_throughput_kbps < auto_lofi_maximum_kbps_;
+  const bool should_have_used_lofi =
+      IsEffectiveConnectionTypeSlowerThanThreshold(
+          recent_effective_connection_type);
 
   AutoLoFiAccuracy accuracy = AUTO_LOFI_ACCURACY_INDEX_BOUNDARY;
 
@@ -849,6 +846,14 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
       connection_type_, AUTO_LOFI_ACCURACY_INDEX_BOUNDARY - 1);
 
   accuracy_histogram->Add(accuracy);
+}
+
+bool DataReductionProxyConfig::IsEffectiveConnectionTypeSlowerThanThreshold(
+    net::NetworkQualityEstimator::EffectiveConnectionType
+        effective_connection_type) const {
+  return effective_connection_type >=
+             net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
+         effective_connection_type <= lofi_effective_connection_type_threshold_;
 }
 
 bool DataReductionProxyConfig::ShouldEnableLoFiMode(
