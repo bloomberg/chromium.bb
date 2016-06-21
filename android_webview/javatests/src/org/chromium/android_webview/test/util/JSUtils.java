@@ -48,8 +48,7 @@ public class JSUtils {
             @Override
             public void run() {
                 awContents.getWebContents().evaluateJavaScriptForTests(
-                        "var evObj = document.createEvent('Events'); "
-                                + "evObj.initEvent('click', true, false); "
+                        "var evObj = new MouseEvent('click', {bubbles: true});"
                                 + "document.getElementById('" + linkId + "').dispatchEvent(evObj);"
                                 + "console.log('element with id [" + linkId + "] clicked');",
                         null);
