@@ -1,5 +1,5 @@
-per-file *_message*.h=set noparent
-per-file *_message*.h=file://ipc/SECURITY_OWNERS
+per-file *_messages*.h=set noparent
+per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 
-per-file *param_traits*.*=set noparent
-per-file *param_traits*.*=file://ipc/SECURITY_OWNERS
+per-file *_param_traits*.*=set noparent
+per-file *_param_traits*.*=file://ipc/SECURITY_OWNERS

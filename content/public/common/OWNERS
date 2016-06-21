@@ -1,5 +1,5 @@
-per-file *param_traits*.*=set noparent
-per-file *param_traits*.*=file://ipc/SECURITY_OWNERS
+per-file *_param_traits*.*=set noparent
+per-file *_param_traits*.*=file://ipc/SECURITY_OWNERS
 
 # DirectWrite
 per-file dwrite_font_platform_win.h=scottmg@chromium.org
