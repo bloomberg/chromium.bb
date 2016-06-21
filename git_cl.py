@@ -62,7 +62,7 @@ import subcommand
 import subprocess2
 import watchlists
 
-__version__ = '1.0'
+__version__ = '2.0'
 
 DEFAULT_SERVER = 'https://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
