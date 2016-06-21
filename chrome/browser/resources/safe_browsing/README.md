@@ -65,16 +65,36 @@ See `download_file_types.proto` for all fields.
 
        3. The `default_file_type`'s settings will be filled in.
 
-  * `platform_settings.danger_level`: (required)
+  * `platform_settings.danger_level`: (required) Controls how files should be
+    handled by the UI in the absence of a better signal from the Safe Browsing
+    ping. This applies to all file types where `ping_setting` is either
+    `SAMPLED_PING` or `NO_PING`, and downloads where the Safe Browsing ping
+    either fails, is disabled, or returns an `UNKNOWN` verdict. Exceptions are
+    noted below.
+
+    The warning controlled here is a generic "This file may harm your computer."
+    If the Safe Browsing verdict is `UNCOMMON`, `POTENTIALLY_UNWANTED`,
+    `DANGEROUS_HOST`, or `DANGEROUS`, Chrome will show that more severe warning
+    regardless of this setting.
+
     * `NOT_DANGEROUS`: Safe to download and open, even if the download
-       was accidental.
+       was accidental. No additional warnings are necessary.
     * `DANGEROUS`: Always warn the user that this file may harm their
       computer. We let them continue or discard the file. If Safe
-      Browsing returns a SAFE verdict, we still warn the user.
-    * `ALLOW_ON_USER_GESTURE`: Warn the user normally but skip the warning
-      if there was a user gesture or the user visited this site before
-      midnight last night (i.e. is a repeat visit). If Safe Browsing
-      returns a SAFE verdict for this file, it won't show a warning.
+      Browsing returns a `SAFE` verdict, we still warn the user.
+    * `ALLOW_ON_USER_GESTURE`: Potentially dangerous, but is likely harmless if
+      the user is familiar with host and if the download was intentional. Chrome
+      doesn't warn the user if both of the following conditions are true:
+
+        * There is a user gesture associated with the network request that
+          initiated the download.
+        * There is a recorded visit to the referring origin that's older than
+          the most recent midnight. This is taken to imply that the user has a
+          history of visiting the site.
+
+      In addition, Chrome skips the warning if the download was explicit (i.e.
+      the user selected "Save link as ..." from the context menu), or if the
+      navigation that resulted in the download was initiated using the Omnibox.
 
   * `platform_settings.auto_open_hint`: (required).
     * `ALLOW_AUTO_OPEN`: File type can be opened automatically if the user
