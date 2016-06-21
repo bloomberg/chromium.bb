@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -350,6 +351,52 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   shell_surface->Resize(HTBOTTOMRIGHT);
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_TRUE(is_resizing);
+}
+
+TEST_F(ShellSurfaceTest, ModalWindow) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(
+      new ShellSurface(surface.get(), nullptr, gfx::Rect(), true, true,
+                       ash::kShellWindowId_SystemModalContainer));
+  gfx::Size desktop_size(640, 480);
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(desktop_size)));
+  surface->Attach(desktop_buffer.get());
+  surface->SetInputRegion(SkRegion());
+  surface->Commit();
+
+  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+
+  // Creating a surface without input region should not make it modal.
+  std::unique_ptr<Display> display(new Display);
+  std::unique_ptr<Surface> child = display->CreateSurface();
+  gfx::Size buffer_size(128, 128);
+  std::unique_ptr<Buffer> child_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  child->Attach(child_buffer.get());
+  std::unique_ptr<SubSurface> sub_surface(
+      display->CreateSubSurface(child.get(), surface.get()));
+  surface->SetSubSurfacePosition(child.get(), gfx::Point(10, 10));
+  child->Commit();
+  surface->Commit();
+  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+
+  // Makeing the surface opaque shouldn't make it modal either.
+  child->SetBlendMode(SkXfermode::kSrc_Mode);
+  child->Commit();
+  surface->Commit();
+  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+
+  // Only surface with input regions should be modal.
+  surface->SetInputRegion(
+      SkRegion(gfx::RectToSkIRect(gfx::Rect(10, 10, 100, 100))));
+  surface->Commit();
+  EXPECT_TRUE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+
+  // Removing input resion should make it non system modal.
+  surface->SetInputRegion(SkRegion());
+  surface->Commit();
+  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
 }
 
 }  // namespace
