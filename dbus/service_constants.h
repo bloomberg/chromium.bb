@@ -196,6 +196,8 @@ const char kStartDiscovery[] = "StartDiscovery";
 const char kSetDiscoveryFilter[] = "SetDiscoveryFilter";
 const char kStopDiscovery[] = "StopDiscovery";
 const char kRemoveDevice[] = "RemoveDevice";
+const char kCreateServiceRecord[] = "CreateServiceRecord";
+const char kRemoveServiceRecord[] = "RemoveServiceRecord";
 
 // Bluetooth Adapter properties.
 const char kAddressProperty[] = "Address";
@@ -216,6 +218,8 @@ const char kErrorNotReady[] = "org.bluez.Error.NotReady";
 const char kErrorFailed[] = "org.bluez.Error.Failed";
 const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
 const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 
 // Bluetooth Adapter parameters supplied to SetDiscoveryFilter request.
 const char kDiscoveryFilterParameterUUIDs[] = "UUIDs";
@@ -281,6 +285,7 @@ const char kConnectProfile[] = "ConnectProfile";
 const char kDisconnectProfile[] = "DisconnectProfile";
 const char kPair[] = "Pair";
 const char kCancelPairing[] = "CancelPairing";
+const char kGetServiceRecords[] = "GetServiceRecords";
 
 // Bluetooth Device properties.
 const char kAddressProperty[] = "Address";
