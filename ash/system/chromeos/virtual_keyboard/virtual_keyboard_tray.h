@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_CHROMEOS_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 #define ASH_SYSTEM_CHROMEOS_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 
-#include "ash/keyboard/keyboard_ui_observer.h"
+#include "ash/common/keyboard/keyboard_ui_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/user/login_status.h"
 #include "base/macros.h"

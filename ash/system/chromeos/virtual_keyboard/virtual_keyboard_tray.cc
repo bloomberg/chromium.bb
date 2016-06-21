@@ -4,12 +4,12 @@
 
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 
+#include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
-#include "ash/keyboard/keyboard_ui.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"

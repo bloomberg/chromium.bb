@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/keyboard_ui.h"
+#include "ash/common/keyboard/keyboard_ui.h"
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/keyboard/keyboard_ui_observer.h"
 #include "ash/common/system/accessibility_observer.h"
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
-#include "ash/keyboard/keyboard_ui_observer.h"
-#include "ash/system/tray_accessibility.h"
 #include "base/memory/ptr_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 

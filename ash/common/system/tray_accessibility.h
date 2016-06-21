@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
-#define ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
+#ifndef ASH_COMMON_SYSTEM_TRAY_ACCESSIBILITY_H_
+#define ASH_COMMON_SYSTEM_TRAY_ACCESSIBILITY_H_
 
 #include <stdint.h>
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/accessibility_observer.h"
+#include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_image_item.h"
 #include "ash/common/system/tray/tray_notification_view.h"
 #include "ash/common/system/tray/view_click_listener.h"
-#include "ash/system/tray/tray_details_view.h"
 #include "base/macros.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
@@ -140,4 +140,4 @@ class TrayAccessibility : public TrayImageItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
+#endif  // ASH_COMMON_SYSTEM_TRAY_ACCESSIBILITY_H_

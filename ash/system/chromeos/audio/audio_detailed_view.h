@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_CHROMEOS_AUDIO_AUDIO_DETAILED_VIEW_H_
 #define ASH_SYSTEM_CHROMEOS_AUDIO_AUDIO_DETAILED_VIEW_H_
 
+#include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/view_click_listener.h"
-#include "ash/system/tray/tray_details_view.h"
 #include "base/macros.h"
 #include "chromeos/audio/audio_device.h"
 #include "ui/gfx/font.h"

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/common/accessibility_types.h"
+#include "ash/common/system/tray_accessibility.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray_accessibility.h"
 #include "ash/system/user/login_status.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_session_state_delegate.h"
