@@ -214,8 +214,6 @@ crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-pic
 crbug.com/593567 [ Debug ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Debug ] virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 
-crbug.com/620142 http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
-crbug.com/620142 fast/repaint/control-clip.html [ NeedsRebaseline ]
 crbug.com/484632 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-empty.html [ Failure ]
 crbug.com/484632 [ Win7 ] transforms/2d/zoom-menulist.html [ Failure ]
 crbug.com/484632 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-rtl-default.html [ Failure ]

@@ -9,6 +9,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutMenuList SELECT id='popup'",
+          "rect": [8, 76, 200, 30],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [9, 84, 198, 14],
           "reason": "invalidate paint rectangle"
@@ -47,6 +52,10 @@
     {
       "object": "RootInlineBox",
       "reason": "full"
+    },
+    {
+      "object": "LayoutMenuList SELECT id='popup'",
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
