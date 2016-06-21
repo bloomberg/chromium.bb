@@ -94,6 +94,14 @@
       "reason": "full"
     },
     {
+      "object": "LayoutSVGHiddenContainer defs",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGPath polygon id='triangle'",
+      "reason": "none"
+    },
+    {
       "object": "LayoutSVGRect rect",
       "reason": "full"
     },

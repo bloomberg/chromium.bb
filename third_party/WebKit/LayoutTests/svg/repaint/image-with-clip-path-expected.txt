@@ -86,6 +86,14 @@
       "reason": "full"
     },
     {
+      "object": "LayoutSVGHiddenContainer defs",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGResourceClipper clipPath id='p'",
+      "reason": "none"
+    },
+    {
       "object": "LayoutSVGRect rect id='r'",
       "reason": "full"
     },
@@ -100,6 +108,14 @@
     {
       "object": "LayoutSVGContainer g id='g'",
       "reason": "full"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer defs",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGResourceClipper clipPath id='p'",
+      "reason": "none"
     },
     {
       "object": "LayoutSVGRect rect id='r'",

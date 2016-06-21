@@ -125,11 +125,6 @@ crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass Timeout 
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Failure Pass ]
 
-crbug.com/603956 svg/custom/resource-client-removal.svg [ NeedsRebaseline ]
-crbug.com/603956 svg/repaint/image-with-clip-path.svg [ NeedsRebaseline ]
-crbug.com/603956 svg/repaint/inner-svg-change-viewPort-relative.svg [ NeedsRebaseline ]
-crbug.com/603956 svg/text/text-rescale.html [ NeedsRebaseline ]
-
 # TODO(fs): Update after baselines for crbug.com/617799 and crbug.com/619630.
 # crbug.com/603956 svg/text/text-viewbox-rescale.html [ NeedsManualRebaseline ]
 

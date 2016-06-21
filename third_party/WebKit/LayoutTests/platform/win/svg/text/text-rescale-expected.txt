@@ -59,11 +59,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [0, 64, 194, 45],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 14, 194, 45],
           "reason": "bounds change"
@@ -122,11 +117,6 @@
           "object": "LayoutSVGViewportContainer svg",
           "rect": [310, 114, 92, 45],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [310, 64, 92, 45],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
@@ -286,30 +276,6 @@
       "reason": "full"
     },
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS '",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutSVGRoot (positioned) svg",
       "reason": "bounds change"
     },
@@ -399,19 +365,67 @@
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "forced by layout"
+      "reason": "none"
     },
     {
-      "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "object": "LayoutSVGInlineText #text",
+      "reason": "none"
+    },
+    {
+      "object": "InlineTextBox 'PASS '",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "none"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "none"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGForeignObject foreignObject",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "none"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutSVGViewportContainer svg",
+      "reason": "none"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "forced by layout"
+      "reason": "none"
     },
     {
-      "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "object": "LayoutSVGInlineText #text",
+      "reason": "none"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "none"
     },
     {
       "object": "LayoutSVGContainer g id='text3g'",
