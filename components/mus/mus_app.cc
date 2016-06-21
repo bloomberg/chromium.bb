@@ -158,10 +158,13 @@ void MusApp::Initialize(shell::Connector* connector,
 #if defined(USE_OZONE)
   // The ozone platform can provide its own event source. So initialize the
   // platform before creating the default event source.
-  // TODO(rjkroege): Add tracing here.
   // Because GL libraries need to be initialized before entering the sandbox,
   // in MUS, |InitializeForUI| will load the GL libraries.
-  ui::OzonePlatform::InitializeForUI();
+  ui::OzonePlatform::InitParams params;
+  params.connector = connector;
+  params.single_process = false;
+
+  ui::OzonePlatform::InitializeForUI(params);
 
   // TODO(kylechar): We might not always want a US keyboard layout.
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
@@ -219,6 +222,10 @@ bool MusApp::AcceptConnection(Connection* connection) {
   // purpose in adding the Mojo interface to connect to.
   if (input_device_server_.IsRegisteredAsObserver())
     input_device_server_.AddInterface(connection);
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::GetInstance()->AddInterfaces(connection);
+#endif
 
   return true;
 }
