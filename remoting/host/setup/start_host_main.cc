@@ -10,6 +10,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -86,7 +87,7 @@ std::string ReadString(bool no_echo) {
 
 // Called when the HostStarter has finished.
 void OnDone(HostStarter::Result result) {
-  if (base::MessageLoop::current() != g_message_loop) {
+  if (!g_message_loop->task_runner()->BelongsToCurrentThread()) {
     g_message_loop->PostTask(FROM_HERE, base::Bind(&OnDone, result));
     return;
   }
