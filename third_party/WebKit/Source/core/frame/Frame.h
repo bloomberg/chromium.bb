@@ -136,15 +136,6 @@ public:
 
     virtual void didChangeVisibilityState();
 
-    // Use Document::isSecureContext() instead of this function to
-    // check whether this frame's document is a secure context.
-    //
-    // Returns whether it's possible for a document whose frame is a descendant
-    // of this frame to be a secure context, not considering scheme exceptions
-    // (since any document can be a secure context if it has a scheme
-    // exception). See Document::isSecureContextImpl for more details.
-    bool canHaveSecureChild() const;
-
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
 

@@ -11,6 +11,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
@@ -24,6 +25,19 @@ const char kUserDataKey[] = "SWProviderKey";
 int GetNextProviderId() {
   static base::StaticAtomicSequenceNumber sequence;
   return sequence.GetNext();  // We start at zero.
+}
+
+// Returns whether it's possible for a document whose frame is a descendant of
+// |frame| to be a secure context, not considering scheme exceptions (since any
+// document can be a secure context if it has a scheme exception). See
+// Document::isSecureContextImpl for more details.
+bool IsFrameSecure(blink::WebFrame* frame) {
+  while (frame) {
+    if (!frame->getSecurityOrigin().isPotentiallyTrustworthy())
+      return false;
+    frame = frame->parent();
+  }
+  return true;
 }
 
 }  // namespace
@@ -78,8 +92,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     // is_parent_frame_secure to the browser process, so it can determine the
     // context security when deciding whether to allow a service worker to
     // control the document.
-    bool is_parent_frame_secure =
-        !frame->parent() || frame->parent()->canHaveSecureChild();
+    const bool is_parent_frame_secure = IsFrameSecure(frame->parent());
 
     if (service_worker_provider_id == kInvalidServiceWorkerProviderId) {
       network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
