@@ -53,9 +53,9 @@ class ExtensionMessageBubbleViewBrowserTest
 
  private:
   // ExtensionMessageBubbleBrowserTest:
-  void CheckBubble(Browser* browser, AnchorPosition anchor) override;
-  void CloseBubble(Browser* browser) override;
-  void CheckBubbleIsNotPresent(Browser* browser) override;
+  void CheckBubbleNative(Browser* browser, AnchorPosition anchor) override;
+  void CloseBubbleNative(Browser* browser) override;
+  void CheckBubbleIsNotPresentNative(Browser* browser) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleViewBrowserTest);
 };
@@ -69,8 +69,9 @@ class ExtensionMessageBubbleViewBrowserTestRedesign
   }
 };
 
-void ExtensionMessageBubbleViewBrowserTest::CheckBubble(Browser* browser,
-                                                        AnchorPosition anchor) {
+void ExtensionMessageBubbleViewBrowserTest::CheckBubbleNative(
+    Browser* browser,
+    AnchorPosition anchor) {
   ToolbarView* toolbar_view = GetToolbarViewForBrowser(browser);
   BrowserActionsContainer* container = toolbar_view->browser_actions();
   views::BubbleDialogDelegateView* bubble = container->active_bubble();
@@ -87,7 +88,8 @@ void ExtensionMessageBubbleViewBrowserTest::CheckBubble(Browser* browser,
   CheckBubbleAndReferenceView(bubble, anchor_view);
 }
 
-void ExtensionMessageBubbleViewBrowserTest::CloseBubble(Browser* browser) {
+void ExtensionMessageBubbleViewBrowserTest::CloseBubbleNative(
+    Browser* browser) {
   BrowserActionsContainer* container =
       GetToolbarViewForBrowser(browser)->browser_actions();
   views::BubbleDialogDelegateView* bubble = container->active_bubble();
@@ -96,7 +98,7 @@ void ExtensionMessageBubbleViewBrowserTest::CloseBubble(Browser* browser) {
   EXPECT_EQ(nullptr, container->active_bubble());
 }
 
-void ExtensionMessageBubbleViewBrowserTest::CheckBubbleIsNotPresent(
+void ExtensionMessageBubbleViewBrowserTest::CheckBubbleIsNotPresentNative(
     Browser* browser) {
   EXPECT_EQ(
       nullptr,
@@ -156,3 +158,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestRedesign,
   TestControlledSearchBubbleShown();
 }
 #endif  // defined(OS_WIN)
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       TestBubbleWithMultipleWindows) {
+  TestBubbleWithMultipleWindows();
+}

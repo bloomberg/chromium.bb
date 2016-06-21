@@ -16,12 +16,14 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -52,9 +54,10 @@ ToolbarActionsModel::ToolbarActionsModel(
       component_migration_helper_(
           new extensions::ComponentMigrationHelper(profile_, this)),
       actions_initialized_(false),
-      use_redesign_(extensions::FeatureSwitch::extension_action_redesign()
-                        ->IsEnabled()),
+      use_redesign_(
+          extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
       highlight_type_(HIGHLIGHT_NONE),
+      has_active_bubble_(false),
       extension_action_observer_(this),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
@@ -430,6 +433,17 @@ void ToolbarActionsModel::RemoveItem(const ToolbarItem& item) {
   }
 
   UpdatePrefs();
+}
+
+std::unique_ptr<extensions::ExtensionMessageBubbleController>
+ToolbarActionsModel::GetExtensionMessageBubbleController(Browser* browser) {
+  std::unique_ptr<extensions::ExtensionMessageBubbleController> controller;
+  if (has_active_bubble())
+    return controller;
+  controller = ExtensionMessageBubbleFactory(browser).GetController();
+  if (controller)
+    controller->SetIsActiveBubble();
+  return controller;
 }
 
 void ToolbarActionsModel::RemoveExtension(

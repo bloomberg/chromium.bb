@@ -249,6 +249,7 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
     return popped_out_action_;
   }
   bool in_overflow_mode() const { return main_bar_ != nullptr; }
+  bool is_showing_bubble() const { return is_showing_bubble_; }
 
   ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
 
@@ -293,8 +294,7 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   void ReorderActions();
 
   // Shows an extension message bubble, if any should be shown.
-  void MaybeShowExtensionBubble(
-      std::unique_ptr<extensions::ExtensionMessageBubbleController> controller);
+  void MaybeShowExtensionBubble();
 
   // The delegate for this object (in a real build, this is the view).
   ToolbarActionsBarDelegate* delegate_;

@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_bridge.h"
-#include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -387,14 +386,9 @@ void ToolbarActionsBar::CreateActions() {
     should_check_extension_bubble_ = false;
     // CreateActions() can be called as part of the browser window set up, which
     // we need to let finish before showing the actions.
-    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller =
-        ExtensionMessageBubbleFactory(browser_).GetController();
-    if (controller) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&ToolbarActionsBar::MaybeShowExtensionBubble,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(std::move(controller))));
-    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ToolbarActionsBar::MaybeShowExtensionBubble,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -603,11 +597,13 @@ void ToolbarActionsBar::ShowToolbarActionBubbleAsync(
                             base::Passed(std::move(bubble))));
 }
 
-void ToolbarActionsBar::MaybeShowExtensionBubble(
-    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller) {
-  if (!controller->ShouldShow())
+void ToolbarActionsBar::MaybeShowExtensionBubble() {
+  std::unique_ptr<extensions::ExtensionMessageBubbleController> controller =
+      model_->GetExtensionMessageBubbleController(browser_);
+  if (!controller)
     return;
 
+  DCHECK(controller->ShouldShow());
   controller->HighlightExtensionsIfNecessary();  // Safe to call multiple times.
 
   // Not showing the bubble right away (during startup) has a few benefits:

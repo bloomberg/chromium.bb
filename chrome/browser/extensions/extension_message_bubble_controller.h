@@ -18,6 +18,7 @@
 class Browser;
 class BrowserList;
 class ExtensionService;
+class ToolbarActionsModel;
 class Profile;
 
 namespace extensions {
@@ -160,6 +161,9 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
   virtual void OnBubbleDismiss(bool dismissed_by_deactivation);
   virtual void OnLinkClicked();
 
+  // Sets this bubble as the active bubble being shown.
+  void SetIsActiveBubble();
+
   void ClearProfileListForTesting();
 
   static void set_should_ignore_learn_more_for_testing(
@@ -183,6 +187,9 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
   // A weak pointer to the Browser we are associated with. Not owned by us.
   Browser* browser_;
 
+  // The associated ToolbarActionsModel. Not owned.
+  ToolbarActionsModel* model_;
+
   // The list of extensions found.
   ExtensionIdList extension_list_;
 
@@ -196,7 +203,10 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
   bool initialized_;
 
   // Whether or not the bubble is highlighting extensions.
-  bool did_highlight_;
+  bool is_highlighting_;
+
+  // Whether or not this bubble is the active bubble being shown.
+  bool is_active_bubble_;
 
   ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
 

@@ -30,14 +30,27 @@ class ExtensionMessageBubbleBrowserTest
   void TearDownOnMainThread() override;
 
   // Checks the position of the bubble present in the given |browser|, when the
-  // bubble should be anchored at the given |anchor|.
-  virtual void CheckBubble(Browser* browser, AnchorPosition anchor) = 0;
+  // bubble should be anchored at the given |anchor| and that the toolbar model
+  // is correctly highlighting.
+  void CheckBubble(Browser* browser,
+                   AnchorPosition anchor,
+                   bool should_be_highlighting);
+  // Performs the platform-specific checks.
+  virtual void CheckBubbleNative(Browser* browser, AnchorPosition anchor) = 0;
 
   // Closes the bubble present in the given |browser|.
-  virtual void CloseBubble(Browser* browser) = 0;
+  void CloseBubble(Browser* browser);
+  // Performs the platform-specific close.
+  virtual void CloseBubbleNative(Browser* browser) = 0;
 
   // Checks that there is no active bubble for the given |browser|.
-  virtual void CheckBubbleIsNotPresent(Browser* browser) = 0;
+  // We specify whether or not the toolbar model should be highlighting or there
+  // is a bubble active since another browser window may have an active bubble.
+  void CheckBubbleIsNotPresent(Browser* browser,
+                               bool should_profile_have_bubble,
+                               bool should_be_highlighting);
+  // Performs the platform-specific checks.
+  virtual void CheckBubbleIsNotPresentNative(Browser* browser) = 0;
 
   // Adds a new extension that uses the chrome_settings_overrides api to
   // override a setting specified in |settings_override_value|.
@@ -87,6 +100,10 @@ class ExtensionMessageBubbleBrowserTest
   // Tests that the bubble indicating an extension is controlling a user's
   // search engine is shown.
   void TestControlledSearchBubbleShown();
+
+  // Tests that having multiple windows, all of which could be vying to show a
+  // warning bubble, behaves properly.
+  void TestBubbleWithMultipleWindows();
 
  private:
   std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>

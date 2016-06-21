@@ -27,12 +27,17 @@ namespace {
 
 void ShowSettingsApiBubble(SettingsApiOverrideType type,
                            Browser* browser) {
+  ToolbarActionsModel* model = ToolbarActionsModel::Get(browser->profile());
+  if (model->has_active_bubble())
+    return;
+
   std::unique_ptr<ExtensionMessageBubbleController> settings_api_bubble(
       new ExtensionMessageBubbleController(
           new SettingsApiBubbleDelegate(browser->profile(), type), browser));
   if (!settings_api_bubble->ShouldShow())
     return;
 
+  settings_api_bubble->SetIsActiveBubble();
   ToolbarActionsBar* toolbar_actions_bar =
       browser->window()->GetToolbarActionsBar();
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> bridge(
@@ -89,12 +94,17 @@ void MaybeShowExtensionControlledNewTabPage(
   if (ntp_url != active_url)
     return;  // Not being overridden by an extension.
 
+  ToolbarActionsModel* model = ToolbarActionsModel::Get(browser->profile());
+  if (model->has_active_bubble())
+    return;
+
   std::unique_ptr<ExtensionMessageBubbleController> ntp_overridden_bubble(
       new ExtensionMessageBubbleController(
           new NtpOverriddenBubbleDelegate(browser->profile()), browser));
   if (!ntp_overridden_bubble->ShouldShow())
     return;
 
+  ntp_overridden_bubble->SetIsActiveBubble();
   ToolbarActionsBar* toolbar_actions_bar =
       browser->window()->GetToolbarActionsBar();
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> bridge(

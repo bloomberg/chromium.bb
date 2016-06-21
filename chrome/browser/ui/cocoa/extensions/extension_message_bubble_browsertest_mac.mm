@@ -74,9 +74,9 @@ class ExtensionMessageBubbleBrowserTestMac
 
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  void CheckBubble(Browser* browser, AnchorPosition anchor) override;
-  void CloseBubble(Browser* browser) override;
-  void CheckBubbleIsNotPresent(Browser* browser) override;
+  void CheckBubbleNative(Browser* browser, AnchorPosition anchor) override;
+  void CloseBubbleNative(Browser* browser) override;
+  void CheckBubbleIsNotPresentNative(Browser* browser) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBrowserTestMac);
 };
@@ -87,7 +87,7 @@ void ExtensionMessageBubbleBrowserTestMac::SetUpCommandLine(
   [ToolbarActionsBarBubbleMac setAnimationEnabledForTesting:NO];
 }
 
-void ExtensionMessageBubbleBrowserTestMac::CheckBubble(
+void ExtensionMessageBubbleBrowserTestMac::CheckBubbleNative(
     Browser* browser,
     AnchorPosition anchor) {
   ToolbarController* toolbarController = ToolbarControllerForBrowser(browser);
@@ -106,7 +106,7 @@ void ExtensionMessageBubbleBrowserTestMac::CheckBubble(
   CheckBubbleAndReferenceView(bubble, anchorView);
 }
 
-void ExtensionMessageBubbleBrowserTestMac::CloseBubble(Browser* browser) {
+void ExtensionMessageBubbleBrowserTestMac::CloseBubbleNative(Browser* browser) {
   BrowserActionsController* controller =
       [ToolbarControllerForBrowser(browser) browserActionsController];
   ToolbarActionsBarBubbleMac* bubble = [controller activeBubble];
@@ -115,7 +115,7 @@ void ExtensionMessageBubbleBrowserTestMac::CloseBubble(Browser* browser) {
   EXPECT_EQ(nil, [controller activeBubble]);
 }
 
-void ExtensionMessageBubbleBrowserTestMac::CheckBubbleIsNotPresent(
+void ExtensionMessageBubbleBrowserTestMac::CheckBubbleIsNotPresentNative(
     Browser* browser) {
   EXPECT_EQ(
       nil,
@@ -156,4 +156,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        TestDevModeBubbleIsntShownTwice) {
   TestDevModeBubbleIsntShownTwice();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       TestBubbleWithMultipleWindows) {
+  TestBubbleWithMultipleWindows();
 }

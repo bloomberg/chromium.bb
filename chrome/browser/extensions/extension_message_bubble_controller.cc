@@ -100,17 +100,21 @@ ExtensionMessageBubbleController::ExtensionMessageBubbleController(
     Delegate* delegate,
     Browser* browser)
     : browser_(browser),
+      model_(ToolbarActionsModel::Get(browser_->profile())),
       user_action_(ACTION_BOUNDARY),
       delegate_(delegate),
       initialized_(false),
-      did_highlight_(false),
+      is_highlighting_(false),
+      is_active_bubble_(false),
       browser_list_observer_(this) {
   browser_list_observer_.Add(BrowserList::GetInstance());
 }
 
 ExtensionMessageBubbleController::~ExtensionMessageBubbleController() {
-  if (did_highlight_)
-    ToolbarActionsModel::Get(profile())->StopHighlighting();
+  if (is_active_bubble_)
+    model_->set_has_active_bubble(false);
+  if (is_highlighting_)
+    model_->StopHighlighting();
 }
 
 Profile* ExtensionMessageBubbleController::profile() {
@@ -120,6 +124,7 @@ Profile* ExtensionMessageBubbleController::profile() {
 bool ExtensionMessageBubbleController::ShouldShow() {
   std::set<Profile*>* profiles = GetProfileSet();
   return !profiles->count(profile()->GetOriginalProfile()) &&
+         (!model_->has_active_bubble() || is_active_bubble_) &&
          !GetExtensionList().empty();
 }
 
@@ -170,16 +175,18 @@ bool ExtensionMessageBubbleController::CloseOnDeactivate() {
 }
 
 void ExtensionMessageBubbleController::HighlightExtensionsIfNecessary() {
-  if (delegate_->ShouldHighlightExtensions() && !did_highlight_) {
-    did_highlight_ = true;
+  DCHECK(is_active_bubble_);
+  if (delegate_->ShouldHighlightExtensions() && !is_highlighting_) {
+    is_highlighting_ = true;
     const ExtensionIdList& extension_ids = GetExtensionIdList();
     DCHECK(!extension_ids.empty());
-    ToolbarActionsModel::Get(profile())->HighlightActions(
-        extension_ids, ToolbarActionsModel::HIGHLIGHT_WARNING);
+    model_->HighlightActions(extension_ids,
+                             ToolbarActionsModel::HIGHLIGHT_WARNING);
   }
 }
 
 void ExtensionMessageBubbleController::OnShown() {
+  DCHECK(is_active_bubble_);
   GetProfileSet()->insert(profile()->GetOriginalProfile());
 }
 
@@ -228,6 +235,13 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
   OnClose();
 }
 
+void ExtensionMessageBubbleController::SetIsActiveBubble() {
+  DCHECK(!is_active_bubble_);
+  DCHECK(!model_->has_active_bubble());
+  is_active_bubble_ = true;
+  model_->set_has_active_bubble(true);
+}
+
 void ExtensionMessageBubbleController::ClearProfileListForTesting() {
   GetProfileSet()->clear();
 }
@@ -239,9 +253,15 @@ void ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
 }
 
 void ExtensionMessageBubbleController::OnBrowserRemoved(Browser* browser) {
-  if (browser == browser_ && did_highlight_) {
-    ToolbarActionsModel::Get(profile())->StopHighlighting();
-    did_highlight_ = false;
+  if (browser == browser_) {
+    if (is_highlighting_) {
+      model_->StopHighlighting();
+      is_highlighting_ = false;
+    }
+    if (is_active_bubble_) {
+      model_->set_has_active_bubble(false);
+      is_active_bubble_ = false;
+    }
   }
 }
 

@@ -117,6 +117,10 @@ CGFloat kMinWidth = 320.0;
         ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION);
     acknowledged_ = YES;
   }
+  // Deallocation happens asynchronously in Cocoa, but that makes testing
+  // difficult. Explicitly destroy |delegate_| here so it can perform any
+  // necessary cleanup.
+  delegate_.reset();
   [super windowWillClose:notification];
 }
 
