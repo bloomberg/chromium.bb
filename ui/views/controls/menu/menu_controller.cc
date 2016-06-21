@@ -1023,24 +1023,51 @@ void MenuController::OnDragComplete(bool should_close) {
 }
 
 ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
-    base::char16 character,
-    ui::KeyboardCode key_code) {
-  if (exit_type() == MenuController::EXIT_ALL ||
-      exit_type() == MenuController::EXIT_DESTROYED) {
+    ui::KeyEvent* event) {
+  if (exit_type() == EXIT_ALL || exit_type() == EXIT_DESTROYED) {
+    // If the event has arrived after the menu's exit type had changed but
+    // before its message loop terminated, the event will continue its normal
+    // propagation for the following reason:
+    // If the user accepts a menu item in a nested menu, the menu item action is
+    // run after the base::RunLoop for the innermost menu has quit but before
+    // the base::RunLoop for the outermost menu has quit. If the menu item
+    // action starts a base::RunLoop, the outermost menu's base::RunLoop will
+    // not quit till the action's base::RunLoop ends. IDC_BOOKMARK_BAR_OPEN_ALL
+    // sometimes opens a modal dialog. The modal dialog starts a base::RunLoop
+    // and keeps the base::RunLoop running for the duration of its lifetime.
     TerminateNestedMessageLoopIfNecessary();
     return ui::POST_DISPATCH_PERFORM_DEFAULT;
   }
 
-  if (character)
-    SelectByChar(character);
-  else
-    OnKeyDown(key_code);
+  event->StopPropagation();
 
-  // MenuController may have been deleted, so check for an active instance
-  // before accessing member variables.
-  if (GetActiveInstance())
-    TerminateNestedMessageLoopIfNecessary();
+  if (event->type() == ui::ET_KEY_PRESSED) {
+    OnKeyDown(event->key_code());
+    // Menu controller might have been deleted.
+    if (!GetActiveInstance())
+      return ui::POST_DISPATCH_NONE;
 
+    // Do not check mnemonics if the Alt or Ctrl modifiers are pressed. For
+    // example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
+    const int kKeyFlagsMask = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN;
+    const int flags = event->flags();
+    if (exit_type() == EXIT_NONE && (flags & kKeyFlagsMask) == 0) {
+      base::char16 c = event->GetCharacter();
+      SelectByChar(c);
+      // Menu controller might have been deleted.
+      if (!GetActiveInstance())
+        return ui::POST_DISPATCH_NONE;
+    }
+  }
+
+  if (!TerminateNestedMessageLoopIfNecessary()) {
+    ui::Accelerator accelerator(*event);
+    ViewsDelegate::ProcessMenuAcceleratorResult result =
+        ViewsDelegate::GetInstance()->ProcessAcceleratorWhileMenuShowing(
+            accelerator);
+    if (result == ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU)
+      CancelAll();
+  }
   return ui::POST_DISPATCH_NONE;
 }
 

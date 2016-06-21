@@ -131,6 +131,8 @@ class CustomButtonTest : public ViewsTestBase {
     widget_->dragged_view_ = dragged_view;
   }
 
+  void SimulateKeyEvent(ui::KeyEvent* event) { widget()->OnKeyEvent(event); }
+
  private:
   std::unique_ptr<Widget> widget_;
   TestCustomButton* button_;
@@ -520,6 +522,26 @@ TEST_F(CustomButtonTest, InkDropStaysHiddenWhileDragging) {
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
 
   SetDraggedView(nullptr);
+}
+
+// Todo(karandeepb): On Mac, a button should get clicked on a Space key press
+// (and not release). Modify this test after fixing crbug.com/607429.
+// Test that Space Key behaves correctly on a focused button.
+TEST_F(CustomButtonTest, ClickOnSpace) {
+  // Give focus to the button.
+  button()->SetFocusForPlatform();
+  button()->RequestFocus();
+  EXPECT_EQ(button(), widget()->GetFocusManager()->GetFocusedView());
+
+  ui::KeyEvent space_press(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE);
+  SimulateKeyEvent(&space_press);
+  EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
+  EXPECT_FALSE(button()->pressed());
+
+  ui::KeyEvent space_release(ui::ET_KEY_RELEASED, ui::VKEY_SPACE, ui::EF_NONE);
+  SimulateKeyEvent(&space_release);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+  EXPECT_TRUE(button()->pressed());
 }
 
 }  // namespace views

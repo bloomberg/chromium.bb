@@ -36,8 +36,8 @@ class View;
   // A tracking area installed to enable mouseMoved events.
   ui::ScopedCrTrackingArea cursorTrackingArea_;
 
-  // Whether the view is reacting to a keyDown event on the view.
-  BOOL inKeyDown_;
+  // The keyDown event currently being handled, nil otherwise.
+  NSEvent* keyDownEvent_;
 
   // The last tooltip text, used to limit updates.
   base::string16 lastTooltipText_;
