@@ -4,6 +4,9 @@
 
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer.h"
 
+#include <string>
+
+#include "base/time/time.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/renderer_host/chrome_navigation_data.h"
@@ -22,14 +25,56 @@
 
 namespace data_reduction_proxy {
 
+namespace {
+
+bool ShouldRecordHistogram(const DataReductionProxyData* data,
+                           const base::TimeDelta& event,
+                           const page_load_metrics::PageLoadExtraInfo& info) {
+  return data && data->used_data_reduction_proxy() &&
+         WasStartedInForegroundEventInForeground(event, info);
+}
+
+// A macro is needed because PAGE_LOAD_HISTOGRAM creates a static instance of
+// the histogram. A distinct histogram is needed for each place that calls
+// RECORD_HISTOGRAMS_FOR_SUFFIX.
+#define RECORD_HISTOGRAMS_FOR_SUFFIX(data, event, info, histogram_suffix)   \
+  do {                                                                      \
+    if (ShouldRecordHistogram(data.get(), event, info)) {                   \
+      PAGE_LOAD_HISTOGRAM(                                                  \
+          std::string(internal::kHistogramDataReductionProxyPrefix)         \
+              .append(histogram_suffix),                                    \
+          event);                                                           \
+      if (data->lofi_requested()) {                                         \
+        PAGE_LOAD_HISTOGRAM(                                                \
+            std::string(internal::kHistogramDataReductionProxyLoFiOnPrefix) \
+                .append(histogram_suffix),                                  \
+            event);                                                         \
+      }                                                                     \
+    }                                                                       \
+  } while (false)
+
+}  // namespace
+
 namespace internal {
 
-const char kHistogramFirstContentfulPaintDataReductionProxy[] =
-    "PageLoad.Clients.DataReductionProxy.PaintTiming."
-    "NavigationToFirstContentfulPaint";
-const char kHistogramFirstContentfulPaintDataReductionProxyLoFiOn[] =
-    "PageLoad.Clients.DataReductionProxy.LoFiOn.PaintTiming."
-    "NavigationToFirstContentfulPaint";
+const char kHistogramDataReductionProxyPrefix[] =
+    "PageLoad.Clients.DataReductionProxy.";
+const char kHistogramDataReductionProxyLoFiOnPrefix[] =
+    "PageLoad.Clients.DataReductionProxy.LoFiOn.";
+const char kHistogramDOMContentLoadedEventFiredSuffix[] =
+    "DocumentTiming.NavigationToDOMContentLoadedEventFired";
+const char kHistogramFirstLayoutSuffix[] =
+    "DocumentTiming.NavigationToFirstLayout";
+const char kHistogramLoadEventFiredSuffix[] =
+    "DocumentTiming.NavigationToLoadEventFired";
+const char kHistogramFirstContentfulPaintSuffix[] =
+    "PaintTiming.NavigationToFirstContentfulPaint";
+const char kHistogramFirstImagePaintSuffix[] =
+    "PaintTiming.NavigationToFirstImagePaint";
+const char kHistogramFirstPaintSuffix[] = "PaintTiming.NavigationToFirstPaint";
+const char kHistogramFirstTextPaintSuffix[] =
+    "PaintTiming.NavigationToFirstTextPaint";
+const char kHistogramParseStartSuffix[] = "ParseTiming.NavigationToParseStart";
 
 }  // namespace internal
 
@@ -101,22 +146,61 @@ void DataReductionProxyMetricsObserver::OnComplete(
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 
+void DataReductionProxyMetricsObserver::OnDomContentLoadedEventStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RECORD_HISTOGRAMS_FOR_SUFFIX(
+      data_, timing.dom_content_loaded_event_start, info,
+      internal::kHistogramDOMContentLoadedEventFiredSuffix);
+}
+
+void DataReductionProxyMetricsObserver::OnLoadEventStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.load_event_start, info,
+                               internal::kHistogramLoadEventFiredSuffix);
+}
+
+void DataReductionProxyMetricsObserver::OnFirstLayout(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_layout, info,
+                               internal::kHistogramFirstLayoutSuffix);
+}
+
+void DataReductionProxyMetricsObserver::OnFirstPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_paint, info,
+                               internal::kHistogramFirstPaintSuffix);
+}
+
+void DataReductionProxyMetricsObserver::OnFirstTextPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_text_paint, info,
+                               internal::kHistogramFirstTextPaintSuffix);
+}
+
+void DataReductionProxyMetricsObserver::OnFirstImagePaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_image_paint, info,
+                               internal::kHistogramFirstImagePaintSuffix);
+}
+
 void DataReductionProxyMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!data_ || !data_->used_data_reduction_proxy() ||
-      !WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
-                                               info)) {
-    return;
-  }
-  PAGE_LOAD_HISTOGRAM(
-      internal::kHistogramFirstContentfulPaintDataReductionProxy,
-      timing.first_contentful_paint);
-  if (!data_->lofi_requested())
-    return;
-  PAGE_LOAD_HISTOGRAM(
-      internal::kHistogramFirstContentfulPaintDataReductionProxyLoFiOn,
-      timing.first_contentful_paint);
+  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_contentful_paint, info,
+                               internal::kHistogramFirstContentfulPaintSuffix);
+}
+
+void DataReductionProxyMetricsObserver::OnParseStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.parse_start, info,
+                               internal::kHistogramParseStartSuffix);
 }
 
 DataReductionProxyPingbackClient*

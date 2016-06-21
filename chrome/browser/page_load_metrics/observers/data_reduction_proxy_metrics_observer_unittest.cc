@@ -5,6 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer.h"
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -131,9 +132,11 @@ class DataReductionProxyMetricsObserverTest
     // Reset to the default testing state. Does not reset histogram state.
     timing_.navigation_start = base::Time::FromDoubleT(1);
     timing_.response_start = base::TimeDelta::FromSeconds(2);
-    timing_.first_contentful_paint = base::TimeDelta::FromSeconds(3);
-    timing_.first_image_paint = base::TimeDelta::FromSeconds(4);
-    timing_.load_event_start = base::TimeDelta::FromSeconds(5);
+    timing_.parse_start = base::TimeDelta::FromSeconds(3);
+    timing_.first_contentful_paint = base::TimeDelta::FromSeconds(4);
+    timing_.first_image_paint = base::TimeDelta::FromSeconds(5);
+    timing_.first_text_paint = base::TimeDelta::FromSeconds(6);
+    timing_.load_event_start = base::TimeDelta::FromSeconds(7);
     PopulateRequiredTimingFields(&timing_);
   }
 
@@ -163,6 +166,50 @@ class DataReductionProxyMetricsObserverTest
               pingback_client_->timing()->first_image_paint);
   }
 
+  void ValidateHistograms() {
+    ValidateHistogramsForSuffix(
+        internal::kHistogramDOMContentLoadedEventFiredSuffix,
+        timing_.dom_content_loaded_event_start);
+    ValidateHistogramsForSuffix(internal::kHistogramFirstLayoutSuffix,
+                                timing_.first_layout);
+    ValidateHistogramsForSuffix(internal::kHistogramLoadEventFiredSuffix,
+                                timing_.load_event_start);
+    ValidateHistogramsForSuffix(internal::kHistogramFirstContentfulPaintSuffix,
+                                timing_.first_contentful_paint);
+    ValidateHistogramsForSuffix(internal::kHistogramFirstImagePaintSuffix,
+                                timing_.first_image_paint);
+    ValidateHistogramsForSuffix(internal::kHistogramFirstPaintSuffix,
+                                timing_.first_paint);
+    ValidateHistogramsForSuffix(internal::kHistogramFirstTextPaintSuffix,
+                                timing_.first_text_paint);
+    ValidateHistogramsForSuffix(internal::kHistogramParseStartSuffix,
+                                timing_.parse_start);
+  }
+
+  void ValidateHistogramsForSuffix(const std::string& histogram_suffix,
+                                   const base::TimeDelta& event) {
+    histogram_tester().ExpectTotalCount(
+        std::string(internal::kHistogramDataReductionProxyPrefix)
+            .append(histogram_suffix),
+        data_reduction_proxy_used_ ? 1 : 0);
+    histogram_tester().ExpectTotalCount(
+        std::string(internal::kHistogramDataReductionProxyLoFiOnPrefix)
+            .append(histogram_suffix),
+        is_using_lofi_ ? 1 : 0);
+    if (!data_reduction_proxy_used_)
+      return;
+    histogram_tester().ExpectUniqueSample(
+        std::string(internal::kHistogramDataReductionProxyPrefix)
+            .append(histogram_suffix),
+        static_cast<base::HistogramBase::Sample>(event.InMilliseconds()), 1);
+    if (!is_using_lofi_)
+      return;
+    histogram_tester().ExpectUniqueSample(
+        std::string(internal::kHistogramDataReductionProxyLoFiOnPrefix)
+            .append(histogram_suffix),
+        event.InMilliseconds(), is_using_lofi_ ? 1 : 0);
+  }
+
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
@@ -185,10 +232,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOff) {
   ResetTest();
   // Verify that when the data reduction proxy was not used, no UMA is reported.
   RunTest(false, false);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramFirstContentfulPaintDataReductionProxy, 0);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramFirstContentfulPaintDataReductionProxyLoFiOn, 0);
+  ValidateHistograms();
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOn) {
@@ -196,10 +240,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOn) {
   // Verify that when the data reduction proxy was used, but lofi was not used,
   // the correpsonding UMA is reported.
   RunTest(true, false);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramFirstContentfulPaintDataReductionProxy, 1);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramFirstContentfulPaintDataReductionProxyLoFiOn, 0);
+  ValidateHistograms();
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, LofiEnabled) {
@@ -207,10 +248,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, LofiEnabled) {
   // Verify that when the data reduction proxy was used and lofi was used, both
   // histograms are reported.
   RunTest(true, true);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramFirstContentfulPaintDataReductionProxy, 1);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramFirstContentfulPaintDataReductionProxyLoFiOn, 1);
+  ValidateHistograms();
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
