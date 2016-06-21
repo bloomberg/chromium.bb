@@ -10,18 +10,23 @@ import android.os.SystemClock;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.io.File;
 
+/**
+ * Test suite for TracingControllerAndroid.
+ */
 public class TracingControllerAndroidTest extends ContentShellTestBase {
 
     private static final long TIMEOUT_MILLIS = scaleTimeout(30 * 1000);
 
     @MediumTest
     @Feature({"GPU"})
+    @DisabledTest(message = "crbug.com/621956")
     public void testTraceFileCreation() throws Exception {
         ContentShellActivity activity = launchContentShellWithUrl("about:blank");
         waitForActiveShellToBeDoneLoading();
