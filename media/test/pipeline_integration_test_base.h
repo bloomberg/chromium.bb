@@ -66,7 +66,12 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   // Test types for advanced testing and benchmarking (e.g., underflow is
   // disabled to ensure consistent hashes). May be combined using the bitwise
   // or operator (and as such must have values that are powers of two).
-  enum TestTypeFlags { kNormal = 0, kHashed = 1, kClockless = 2 };
+  enum TestTypeFlags {
+    kNormal = 0,
+    kHashed = 1,
+    kClockless = 2,
+    kExpectDemuxerFailure = 4
+  };
 
   // Starts the pipeline with a file specified by |filename|, optionally with a
   // CdmContext or a |test_type|, returning the final status code after it has

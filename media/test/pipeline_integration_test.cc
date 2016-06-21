@@ -106,6 +106,8 @@ const char kADTS[] = "audio/aac";
 const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
 const char kMP4VideoAVC3[] = "video/mp4; codecs=\"avc3.64001f\"";
 const char kMP4VideoVP9[] = "video/mp4; codecs=\"vp09.00.00.08.01.01.00.00\"";
+const char kMP4VideoHEVC1[] = "video/mp4; codecs=\"hvc1.1.6.L93.B0\"";
+const char kMP4VideoHEVC2[] = "video/mp4; codecs=\"hev1.1.6.L93.B0\"";
 const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
 const char kMP4Audio[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 const char kMP3[] = "audio/mpeg";
@@ -521,6 +523,10 @@ class MockMediaSource {
     encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   }
 
+  void set_demuxer_failure_cb(const PipelineStatusCB& demuxer_failure_cb) {
+    demuxer_failure_cb_ = demuxer_failure_cb;
+  }
+
   void Seek(base::TimeDelta seek_time,
             size_t new_position,
             size_t seek_append_size) {
@@ -603,7 +609,12 @@ class MockMediaSource {
   }
 
   void DemuxerOpenedTask() {
-    CHECK_EQ(ChunkDemuxer::kOk, AddId());
+    ChunkDemuxer::Status status = AddId();
+    if (status != ChunkDemuxer::kOk) {
+      CHECK(!demuxer_failure_cb_.is_null());
+      demuxer_failure_cb_.Run(DEMUXER_ERROR_COULD_NOT_OPEN);
+      return;
+    }
     chunk_demuxer_->SetTracksWatcher(
         kSourceId, base::Bind(&MockMediaSource::InitSegmentReceived,
                               base::Unretained(this)));
@@ -672,6 +683,7 @@ class MockMediaSource {
   std::string mimetype_;
   ChunkDemuxer* chunk_demuxer_;
   std::unique_ptr<Demuxer> owned_chunk_demuxer_;
+  PipelineStatusCB demuxer_failure_cb_;
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   base::TimeDelta last_timestamp_offset_;
 };
@@ -731,7 +743,9 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     hashing_enabled_ = test_type & kHashed;
     clockless_playback_ = test_type & kClockless;
 
-    EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));
+    if (!(test_type & kExpectDemuxerFailure))
+      EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));
+
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));
@@ -743,6 +757,8 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
     EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
 
+    source->set_demuxer_failure_cb(base::Bind(
+        &PipelineIntegrationTest::OnStatusCallback, base::Unretained(this)));
     demuxer_ = source->GetDemuxer();
 
     if (encrypted_media) {
@@ -1958,6 +1974,42 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VideoOnly_MP4_VP9) {
   ASSERT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
   Stop();
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VideoOnly_MP4_HEVC1) {
+  // HEVC demuxing might be enabled even on platforms that don't support HEVC
+  // decoding. For those cases we'll get DECODER_ERROR_NOT_SUPPORTED, which
+  // indicates indicates that we did pass media mime type checks and attempted
+  // to actually demux and decode the stream. On platforms that support both
+  // demuxing and decoding we'll get PIPELINE_OK.
+  MockMediaSource source("bear-320x240-v_frag-hevc.mp4", kMP4VideoHEVC1,
+                         kAppendWholeFile);
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  PipelineStatus status = StartPipelineWithMediaSource(&source);
+  EXPECT_TRUE(status == PIPELINE_OK || status == DECODER_ERROR_NOT_SUPPORTED);
+#else
+  EXPECT_EQ(
+      DEMUXER_ERROR_COULD_NOT_OPEN,
+      StartPipelineWithMediaSource(&source, kExpectDemuxerFailure, nullptr));
+#endif
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VideoOnly_MP4_HEVC2) {
+  // HEVC demuxing might be enabled even on platforms that don't support HEVC
+  // decoding. For those cases we'll get DECODER_ERROR_NOT_SUPPORTED, which
+  // indicates indicates that we did pass media mime type checks and attempted
+  // to actually demux and decode the stream. On platforms that support both
+  // demuxing and decoding we'll get PIPELINE_OK.
+  MockMediaSource source("bear-320x240-v_frag-hevc.mp4", kMP4VideoHEVC2,
+                         kAppendWholeFile);
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  PipelineStatus status = StartPipelineWithMediaSource(&source);
+  EXPECT_TRUE(status == PIPELINE_OK || status == DECODER_ERROR_NOT_SUPPORTED);
+#else
+  EXPECT_EQ(
+      DEMUXER_ERROR_COULD_NOT_OPEN,
+      StartPipelineWithMediaSource(&source, kExpectDemuxerFailure, nullptr));
+#endif
 }
 
 #endif  // defined(USE_PROPRIETARY_CODECS)
