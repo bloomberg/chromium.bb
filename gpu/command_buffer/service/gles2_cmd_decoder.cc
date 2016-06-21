@@ -5597,18 +5597,22 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
         GL_INVALID_OPERATION, "glGenerateMipmap", "Can not generate mips");
     return;
   }
+  Texture* tex = texture_ref->texture();
+  GLint base_level = tex->base_level();
 
   if (target == GL_TEXTURE_CUBE_MAP) {
     for (int i = 0; i < 6; ++i) {
       GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
-      if (!texture_manager()->ClearTextureLevel(this, texture_ref, face, 0)) {
+      if (!texture_manager()->ClearTextureLevel(this, texture_ref, face,
+                                                base_level)) {
         LOCAL_SET_GL_ERROR(
             GL_OUT_OF_MEMORY, "glGenerateMipmap", "dimensions too big");
         return;
       }
     }
   } else {
-    if (!texture_manager()->ClearTextureLevel(this, texture_ref, target, 0)) {
+    if (!texture_manager()->ClearTextureLevel(this, texture_ref, target,
+                                              base_level)) {
       LOCAL_SET_GL_ERROR(
           GL_OUT_OF_MEMORY, "glGenerateMipmap", "dimensions too big");
       return;
@@ -5636,8 +5640,7 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   GLenum format = 0;
   if (workarounds().set_zero_level_before_generating_mipmap &&
       target == GL_TEXTURE_2D) {
-    Texture* tex = texture_ref->texture();
-    if (tex && tex->base_level() != 0 &&
+    if (base_level != 0 &&
         !tex->GetLevelType(target, 0, &type, &internal_format) &&
         tex->GetLevelType(target, tex->base_level(), &type, &internal_format)) {
       format = TextureManager::ExtractFormatFromStorageFormat(internal_format);
