@@ -1522,3 +1522,4 @@ crbug.com/484632 css3/flexbox/stretch-input-in-column.html [ Failure ]
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
 crbug.com/621840 [ Win7 ] svg/hixie/perf/005.xml [ Pass Timeout ]
+crbug.com/621892 [ Win7 Linux ] css3/filters/effect-hue-rotate-hw.html [ Failure ]
