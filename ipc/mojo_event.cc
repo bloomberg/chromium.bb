@@ -22,7 +22,7 @@ void MojoEvent::Signal() {
   MojoResult rv = mojo::WriteMessageRaw(
       signal_handle_.get(), nullptr, 0, nullptr, 0,
       MOJO_WRITE_MESSAGE_FLAG_NONE);
-  DCHECK_EQ(rv, MOJO_RESULT_OK);
+  CHECK_EQ(rv, MOJO_RESULT_OK);
 }
 
 void MojoEvent::Reset() {
@@ -33,7 +33,7 @@ void MojoEvent::Reset() {
   MojoResult rv = mojo::ReadMessageRaw(
       wait_handle_.get(), nullptr, nullptr, nullptr, nullptr,
       MOJO_READ_MESSAGE_FLAG_NONE);
-  DCHECK_EQ(rv, MOJO_RESULT_OK);
+  CHECK_EQ(rv, MOJO_RESULT_OK);
 }
 
 }  // namespace IPC
