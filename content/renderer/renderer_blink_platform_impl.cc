@@ -651,11 +651,8 @@ long long RendererBlinkPlatformImpl::databaseGetFileSize(
 
 long long RendererBlinkPlatformImpl::databaseGetSpaceAvailableForOrigin(
     const blink::WebSecurityOrigin& origin) {
-  // TODO(jsbell): Pass url::Origin over IPC instead of database
-  // identifier/GURL. https://crbug.com/591482
-  return DatabaseUtil::DatabaseGetSpaceAvailable(WebString::fromUTF8(
-      storage::GetIdentifierFromOrigin(WebSecurityOriginToGURL(origin))),
-      sync_message_filter_.get());
+  return DatabaseUtil::DatabaseGetSpaceAvailable(origin,
+                                                 sync_message_filter_.get());
 }
 
 bool RendererBlinkPlatformImpl::databaseSetFileSize(

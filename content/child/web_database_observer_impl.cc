@@ -81,27 +81,26 @@ void WebDatabaseObserverImpl::databaseOpened(
     const WebString& database_name,
     const WebString& database_display_name,
     unsigned long estimated_size) {
-  const std::string origin_identifier = GetIdentifierFromOrigin(origin);
-  open_connections_->AddOpenConnection(origin_identifier, database_name);
+  open_connections_->AddOpenConnection(GetIdentifierFromOrigin(origin),
+                                       database_name);
   sender_->Send(new DatabaseHostMsg_Opened(
-      origin_identifier, database_name, database_display_name, estimated_size));
+      origin, database_name, database_display_name, estimated_size));
 }
 
 void WebDatabaseObserverImpl::databaseModified(const WebSecurityOrigin& origin,
                                                const WebString& database_name) {
-  sender_->Send(new DatabaseHostMsg_Modified(GetIdentifierFromOrigin(origin),
-                                             database_name));
+  sender_->Send(new DatabaseHostMsg_Modified(origin, database_name));
 }
 
 void WebDatabaseObserverImpl::databaseClosed(const WebSecurityOrigin& origin,
                                              const WebString& database_name) {
   DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
-  const std::string origin_identifier = GetIdentifierFromOrigin(origin);
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&IPC::SyncMessageFilter::Send), sender_,
-                 new DatabaseHostMsg_Closed(origin_identifier, database_name)));
-  open_connections_->RemoveOpenConnection(origin_identifier, database_name);
+                 new DatabaseHostMsg_Closed(origin, database_name)));
+  open_connections_->RemoveOpenConnection(GetIdentifierFromOrigin(origin),
+                                          database_name);
 }
 
 void WebDatabaseObserverImpl::reportOpenDatabaseResult(
@@ -191,8 +190,8 @@ void WebDatabaseObserverImpl::HandleSqliteError(const WebSecurityOrigin& origin,
   // a unnecessary ipc traffic, this method can get called at a fairly
   // high frequency (per-sqlstatement).
   if (error == SQLITE_CORRUPT || error == SQLITE_NOTADB) {
-    sender_->Send(new DatabaseHostMsg_HandleSqliteError(
-        GetIdentifierFromOrigin(origin), database_name, error));
+    sender_->Send(
+        new DatabaseHostMsg_HandleSqliteError(origin, database_name, error));
   }
 }
 

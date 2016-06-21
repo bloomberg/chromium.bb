@@ -145,6 +145,9 @@ enum BadMessageReason {
   RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR = 121,
   NI_IN_PAGE_NAVIGATION = 122,
   RPH_MOJO_PROCESS_ERROR = 123,
+  DBMF_INVALID_ORIGIN_ON_GET_SPACE = 124,
+  DBMF_INVALID_ORIGIN_ON_MODIFIED = 125,
+  DBMF_INVALID_ORIGIN_ON_CLOSED = 126,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

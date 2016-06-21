@@ -65710,6 +65710,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="121" label="RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR"/>
   <int value="122" label="NI_IN_PAGE_NAVIGATION"/>
   <int value="123" label="RPH_MOJO_PROCESS_ERROR"/>
+  <int value="124" label="DBMF_INVALID_ORIGIN_ON_GET_SPACE"/>
+  <int value="125" label="DBMF_INVALID_ORIGIN_ON_MODIFIED"/>
+  <int value="126" label="DBMF_INVALID_ORIGIN_ON_CLOSED"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

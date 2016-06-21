@@ -9,6 +9,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_platform_file.h"
+#include "url/origin.h"
 
 #define IPC_MESSAGE_START DatabaseMsgStart
 
@@ -16,22 +17,22 @@
 
 // Notifies the child process of the new database size
 IPC_MESSAGE_CONTROL3(DatabaseMsg_UpdateSize,
-                     std::string /* the origin */,
+                     url::Origin /* the origin */,
                      base::string16 /* the database name */,
                      int64_t /* the new database size */)
 
 // Notifies the child process of the new space available
 IPC_MESSAGE_CONTROL2(DatabaseMsg_UpdateSpaceAvailable,
-                     std::string /* the origin */,
+                     url::Origin /* the origin */,
                      int64_t /* space available to origin */)
 
 // Notifies the child process to reset it's cached value for the origin.
 IPC_MESSAGE_CONTROL1(DatabaseMsg_ResetSpaceAvailable,
-                     std::string /* the origin */)
+                     url::Origin /* the origin */)
 
 // Asks the child process to close a database immediately
 IPC_MESSAGE_CONTROL2(DatabaseMsg_CloseImmediately,
-                     std::string /* the origin */,
+                     url::Origin /* the origin */,
                      base::string16 /* the database name */)
 
 // Database messages sent from the renderer to the browser.
@@ -60,7 +61,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(DatabaseHostMsg_GetFileSize,
 
 // Asks the browser process for the amount of space available to an origin
 IPC_SYNC_MESSAGE_CONTROL1_1(DatabaseHostMsg_GetSpaceAvailable,
-                            std::string /* origin identifier */,
+                            url::Origin /* origin */,
                             int64_t /* remaining space available */)
 
 // Asks the browser set the size of a DB file
@@ -71,23 +72,23 @@ IPC_SYNC_MESSAGE_CONTROL2_1(DatabaseHostMsg_SetFileSize,
 
 // Notifies the browser process that a new database has been opened
 IPC_MESSAGE_CONTROL4(DatabaseHostMsg_Opened,
-                     std::string /* origin identifier */,
+                     url::Origin /* origin */,
                      base::string16 /* database name */,
                      base::string16 /* database description */,
                      int64_t /* estimated size */)
 
 // Notifies the browser process that a database might have been modified
 IPC_MESSAGE_CONTROL2(DatabaseHostMsg_Modified,
-                     std::string /* origin identifier */,
+                     url::Origin /* origin */,
                      base::string16 /* database name */)
 
 // Notifies the browser process that a database is about to close
 IPC_MESSAGE_CONTROL2(DatabaseHostMsg_Closed,
-                     std::string /* origin identifier */,
+                     url::Origin /* origin */,
                      base::string16 /* database name */)
 
 // Sent when a sqlite error indicates the database is corrupt.
 IPC_MESSAGE_CONTROL3(DatabaseHostMsg_HandleSqliteError,
-                     std::string /* origin identifier */,
+                     url::Origin /* origin */,
                      base::string16 /* database name */,
-                     int  /* error */)
+                     int /* error */)

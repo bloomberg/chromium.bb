@@ -71,7 +71,6 @@
 #include "content/child/worker_thread_registry.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/database_messages.h"
 #include "content/common/dom_storage/dom_storage_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"

@@ -34,7 +34,7 @@ class DatabaseUtil {
       const blink::WebString& vfs_file_name,
       IPC::SyncMessageFilter* sync_message_filter);
   static long long DatabaseGetSpaceAvailable(
-      const blink::WebString& origin_identifier,
+      const blink::WebSecurityOrigin& origin,
       IPC::SyncMessageFilter* sync_message_filter);
   static bool DatabaseSetFileSize(const blink::WebString& vfs_file_name,
                                   int64_t size,

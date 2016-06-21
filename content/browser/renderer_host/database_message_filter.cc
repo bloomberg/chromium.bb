@@ -25,6 +25,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "url/origin.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -41,6 +42,10 @@ namespace {
 
 const int kNumDeleteRetries = 2;
 const int kDelayDeleteRetryMs = 100;
+
+bool IsOriginValid(const url::Origin& origin) {
+  return !origin.unique();
+}
 
 }  // namespace
 
@@ -249,9 +254,16 @@ void DatabaseMessageFilter::OnDatabaseGetFileSize(
 }
 
 void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
-    const std::string& origin_identifier, IPC::Message* reply_msg) {
+    const url::Origin& origin,
+    IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(db_tracker_->quota_manager_proxy());
+
+  if (!IsOriginValid(origin)) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::DBMF_INVALID_ORIGIN_ON_GET_SPACE);
+    return;
+  }
 
   QuotaManager* quota_manager =
       db_tracker_->quota_manager_proxy()->quota_manager();
@@ -267,10 +279,9 @@ void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
   TRACE_EVENT0("io", "DatabaseMessageFilter::OnDatabaseGetSpaceAvailable");
 
   quota_manager->GetUsageAndQuota(
-      storage::GetOriginFromIdentifier(origin_identifier),
-      storage::kStorageTypeTemporary,
-      base::Bind(
-          &DatabaseMessageFilter::OnDatabaseGetUsageAndQuota, this, reply_msg));
+      GURL(origin.Serialize()), storage::kStorageTypeTemporary,
+      base::Bind(&DatabaseMessageFilter::OnDatabaseGetUsageAndQuota, this,
+                 reply_msg));
 }
 
 void DatabaseMessageFilter::OnDatabaseGetUsageAndQuota(
@@ -298,36 +309,45 @@ void DatabaseMessageFilter::OnDatabaseSetFileSize(
 }
 
 void DatabaseMessageFilter::OnDatabaseOpened(
-    const std::string& origin_identifier,
+    const url::Origin& origin,
     const base::string16& database_name,
     const base::string16& description,
     int64_t estimated_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  if (!storage::IsValidOriginIdentifier(origin_identifier)) {
+  if (!IsOriginValid(origin)) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::DBMF_INVALID_ORIGIN_ON_OPEN);
     return;
   }
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "websql.OpenDatabase",
-      IsOriginSecure(storage::GetOriginFromIdentifier(origin_identifier)));
+  GURL origin_url(origin.Serialize());
+  UMA_HISTOGRAM_BOOLEAN("websql.OpenDatabase", IsOriginSecure(origin_url));
 
   int64_t database_size = 0;
+  std::string origin_identifier(storage::GetIdentifierFromOrigin(origin_url));
   db_tracker_->DatabaseOpened(origin_identifier, database_name, description,
                               estimated_size, &database_size);
+
   database_connections_.AddConnection(origin_identifier, database_name);
-  Send(new DatabaseMsg_UpdateSize(origin_identifier, database_name,
-                                  database_size));
+  Send(new DatabaseMsg_UpdateSize(origin, database_name, database_size));
 }
 
 void DatabaseMessageFilter::OnDatabaseModified(
-    const std::string& origin_identifier,
+    const url::Origin& origin,
     const base::string16& database_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  if (!database_connections_.IsDatabaseOpened(
-          origin_identifier, database_name)) {
+
+  if (!IsOriginValid(origin)) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::DBMF_INVALID_ORIGIN_ON_MODIFIED);
+    return;
+  }
+
+  std::string origin_identifier(
+      storage::GetIdentifierFromOrigin(GURL(origin.Serialize())));
+  if (!database_connections_.IsDatabaseOpened(origin_identifier,
+                                              database_name)) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::DBMF_DB_NOT_OPEN_ON_MODIFY);
     return;
@@ -337,9 +357,18 @@ void DatabaseMessageFilter::OnDatabaseModified(
 }
 
 void DatabaseMessageFilter::OnDatabaseClosed(
-    const std::string& origin_identifier,
+    const url::Origin& origin,
     const base::string16& database_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  if (!IsOriginValid(origin)) {
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::DBMF_INVALID_ORIGIN_ON_CLOSED);
+    return;
+  }
+
+  std::string origin_identifier(
+      storage::GetIdentifierFromOrigin(GURL(origin.Serialize())));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
     bad_message::ReceivedBadMessage(this,
@@ -352,17 +381,18 @@ void DatabaseMessageFilter::OnDatabaseClosed(
 }
 
 void DatabaseMessageFilter::OnHandleSqliteError(
-    const std::string& origin_identifier,
+    const url::Origin& origin,
     const base::string16& database_name,
     int error) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  if (!storage::IsValidOriginIdentifier(origin_identifier)) {
+  if (!IsOriginValid(origin)) {
     bad_message::ReceivedBadMessage(
         this, bad_message::DBMF_INVALID_ORIGIN_ON_SQLITE_ERROR);
     return;
   }
-
-  db_tracker_->HandleSqliteError(origin_identifier, database_name, error);
+  db_tracker_->HandleSqliteError(
+      storage::GetIdentifierFromOrigin(GURL(origin.Serialize())), database_name,
+      error);
 }
 
 void DatabaseMessageFilter::OnDatabaseSizeChanged(
@@ -371,8 +401,9 @@ void DatabaseMessageFilter::OnDatabaseSizeChanged(
     int64_t database_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (database_connections_.IsOriginUsed(origin_identifier)) {
-    Send(new DatabaseMsg_UpdateSize(origin_identifier, database_name,
-                                    database_size));
+    Send(new DatabaseMsg_UpdateSize(
+        url::Origin(storage::GetOriginFromIdentifier(origin_identifier)),
+        database_name, database_size));
   }
 }
 
@@ -380,7 +411,9 @@ void DatabaseMessageFilter::OnDatabaseScheduledForDeletion(
     const std::string& origin_identifier,
     const base::string16& database_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  Send(new DatabaseMsg_CloseImmediately(origin_identifier, database_name));
+  Send(new DatabaseMsg_CloseImmediately(
+      url::Origin(storage::GetOriginFromIdentifier(origin_identifier)),
+      database_name));
 }
 
 }  // namespace content

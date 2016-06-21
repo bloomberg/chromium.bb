@@ -10,6 +10,10 @@
 #include "base/strings/string16.h"
 #include "ipc/message_filter.h"
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 // Receives database messages from the browser process and processes them on the
@@ -25,13 +29,13 @@ class DBMessageFilter : public IPC::MessageFilter {
   ~DBMessageFilter() override {}
 
  private:
-  void OnDatabaseUpdateSize(const std::string& origin_identifier,
+  void OnDatabaseUpdateSize(const url::Origin& origin,
                             const base::string16& database_name,
                             int64_t database_size);
-  void OnDatabaseUpdateSpaceAvailable(const std::string& origin_identifier,
+  void OnDatabaseUpdateSpaceAvailable(const url::Origin& origin,
                                       int64_t space_available);
-  void OnDatabaseResetSpaceAvailable(const std::string& origin_identifier);
-  void OnDatabaseCloseImmediately(const std::string& origin_identifier,
+  void OnDatabaseResetSpaceAvailable(const url::Origin& origin);
+  void OnDatabaseCloseImmediately(const url::Origin& origin,
                                   const base::string16& database_name);
 };
 

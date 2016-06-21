@@ -10,22 +10,12 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
+#include "url/origin.h"
 
 using blink::WebSecurityOrigin;
 using blink::WebString;
 
 namespace content {
-
-namespace {
-
-// TODO(jsbell): Pass url::Origin over IPC instead of database identifier/GURL.
-// https://crbug.com/591482
-WebSecurityOrigin OriginFromIdentifier(const std::string& identifier) {
-  return WebSecurityOrigin::create(
-      storage::GetOriginFromIdentifier(identifier));
-}
-
-}  // namespace
 
 DBMessageFilter::DBMessageFilter() {
 }
@@ -45,31 +35,29 @@ bool DBMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DBMessageFilter::OnDatabaseUpdateSize(const std::string& origin_identifier,
+void DBMessageFilter::OnDatabaseUpdateSize(const url::Origin& origin,
                                            const base::string16& database_name,
                                            int64_t database_size) {
-  blink::WebDatabase::updateDatabaseSize(
-      OriginFromIdentifier(origin_identifier), database_name, database_size);
+  DCHECK(!origin.unique());
+  blink::WebDatabase::updateDatabaseSize(origin, database_name, database_size);
 }
 
-void DBMessageFilter::OnDatabaseUpdateSpaceAvailable(
-    const std::string& origin_identifier,
-    int64_t space_available) {
-  blink::WebDatabase::updateSpaceAvailable(
-      OriginFromIdentifier(origin_identifier), space_available);
+void DBMessageFilter::OnDatabaseUpdateSpaceAvailable(const url::Origin& origin,
+                                                     int64_t space_available) {
+  DCHECK(!origin.unique());
+  blink::WebDatabase::updateSpaceAvailable(origin, space_available);
 }
 
-void DBMessageFilter::OnDatabaseResetSpaceAvailable(
-    const std::string& origin_identifier) {
-  blink::WebDatabase::resetSpaceAvailable(
-      OriginFromIdentifier(origin_identifier));
+void DBMessageFilter::OnDatabaseResetSpaceAvailable(const url::Origin& origin) {
+  DCHECK(!origin.unique());
+  blink::WebDatabase::resetSpaceAvailable(origin);
 }
 
 void DBMessageFilter::OnDatabaseCloseImmediately(
-    const std::string& origin_identifier,
+    const url::Origin& origin,
     const base::string16& database_name) {
-  blink::WebDatabase::closeDatabaseImmediately(
-      OriginFromIdentifier(origin_identifier), database_name);
+  DCHECK(!origin.unique());
+  blink::WebDatabase::closeDatabaseImmediately(origin, database_name);
 }
 
 }  // namespace content

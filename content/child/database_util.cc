@@ -6,10 +6,12 @@
 
 #include "content/common/database_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using blink::Platform;
+using blink::WebSecurityOrigin;
 using blink::WebString;
 
 namespace content {
@@ -56,11 +58,10 @@ long long DatabaseUtil::DatabaseGetFileSize(
 }
 
 long long DatabaseUtil::DatabaseGetSpaceAvailable(
-    const WebString& origin_identifier,
+    const WebSecurityOrigin& origin,
     IPC::SyncMessageFilter* sync_message_filter) {
   int64_t rv = 0LL;
-  sync_message_filter->Send(
-      new DatabaseHostMsg_GetSpaceAvailable(origin_identifier.utf8(), &rv));
+  sync_message_filter->Send(new DatabaseHostMsg_GetSpaceAvailable(origin, &rv));
   return rv;
 }
 

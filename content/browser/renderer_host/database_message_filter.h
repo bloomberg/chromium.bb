@@ -15,6 +15,10 @@
 #include "storage/common/database/database_connections.h"
 #include "storage/common/quota/quota_types.h"
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 class DatabaseMessageFilter : public BrowserMessageFilter,
@@ -56,7 +60,7 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
                              bool* success);
 
   // Quota message handler (io thread)
-  void OnDatabaseGetSpaceAvailable(const std::string& origin_identifier,
+  void OnDatabaseGetSpaceAvailable(const url::Origin& origin,
                                    IPC::Message* reply_msg);
   void OnDatabaseGetUsageAndQuota(IPC::Message* reply_msg,
                                   storage::QuotaStatusCode status,
@@ -64,15 +68,15 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
                                   int64_t quota);
 
   // Database tracker message handlers (file thread)
-  void OnDatabaseOpened(const std::string& origin_identifier,
+  void OnDatabaseOpened(const url::Origin& origin,
                         const base::string16& database_name,
                         const base::string16& description,
                         int64_t estimated_size);
-  void OnDatabaseModified(const std::string& origin_identifier,
+  void OnDatabaseModified(const url::Origin& origin,
                           const base::string16& database_name);
-  void OnDatabaseClosed(const std::string& origin_identifier,
+  void OnDatabaseClosed(const url::Origin& origin,
                         const base::string16& database_name);
-  void OnHandleSqliteError(const std::string& origin_identifier,
+  void OnHandleSqliteError(const url::Origin& origin,
                            const base::string16& database_name,
                            int error);
 
