@@ -602,7 +602,7 @@ TEST_F(DiskCacheEntryTest, ExternalAsyncIO) {
   ExternalAsyncIO();
 }
 
-// TODO(ios): This test is flaky. http://crbug.com/497101
+// TODO(http://crbug.com/497101): This test is flaky.
 #if defined(OS_IOS)
 #define MAYBE_ExternalAsyncIONoBuffer DISABLED_ExternalAsyncIONoBuffer
 #else
