@@ -106,6 +106,8 @@ source_set("app_metrics") {
   sources = [
     "app/blimp_metrics_service_client.cc",
     "app/blimp_metrics_service_client.h",
+    "app/blimp_stability_metrics_provider.cc",
+    "app/blimp_stability_metrics_provider.h",
   ]
 
   public_deps = [
@@ -380,6 +382,7 @@ source_set("app_unit_tests") {
   sources = [
     "app/blimp_engine_config_unittest.cc",
     "app/blimp_metrics_service_client_unittest.cc",
+    "app/blimp_stability_metrics_provider_unittest.cc",
     "app/blimp_system_url_request_context_getter_unittest.cc",
     "app/settings_manager_unittest.cc",
     "app/ui/blimp_screen_unittest.cc",
@@ -400,6 +403,7 @@ source_set("app_unit_tests") {
     "//components/metrics:metrics",
     "//components/pref_registry:pref_registry",
     "//components/prefs:prefs",
+    "//components/prefs:test_support",
     "//content/test:test_support",
     "//net:test_support",
     "//testing/gmock",

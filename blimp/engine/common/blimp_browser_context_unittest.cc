@@ -7,6 +7,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/metrics_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/log/net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +21,11 @@ class BlimpBrowserContextTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    // Set up NotificationService for StabilityMetricsHelper to use.
+    notification_service_.reset(content::NotificationService::Create());
+
     base::SetRecordActionTaskRunner(base::ThreadTaskRunnerHandle::Get());
+
     // Create BlimpBrowserContext.
     browser_context_.reset(new BlimpBrowserContext(false /* off_the_record */,
                                                    &net_log_));
@@ -35,6 +40,7 @@ class BlimpBrowserContextTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<content::NotificationService> notification_service_;
   net::NetLog net_log_;
   std::unique_ptr<BlimpBrowserContext> browser_context_;
 

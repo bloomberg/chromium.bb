@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "blimp/engine/app/blimp_stability_metrics_provider.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_service.h"
@@ -57,6 +58,9 @@ BlimpMetricsServiceClient::BlimpMetricsServiceClient(
 
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_manager_.get(), this, pref_service));
+  metrics_service_->RegisterMetricsProvider(
+      base::WrapUnique<metrics::MetricsProvider>(
+          new BlimpStabilityMetricsProvider(pref_service)));
   metrics_service_->RegisterMetricsProvider(
       base::WrapUnique<metrics::MetricsProvider>(
           new metrics::NetworkMetricsProvider(

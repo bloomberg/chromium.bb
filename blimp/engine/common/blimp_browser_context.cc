@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "blimp/engine/app/blimp_permission_manager.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics/stability_metrics_helper.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_service.h"
@@ -101,6 +102,8 @@ void BlimpBrowserContext::InitPrefService() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry(
       new user_prefs::PrefRegistrySyncable());
   metrics::MetricsService::RegisterPrefs(pref_registry.get());
+  metrics::StabilityMetricsHelper::RegisterPrefs(pref_registry.get());
+
   PrefServiceFactory pref_service_factory;
 
   // Create an in memory preferences store to hold metrics logs.
