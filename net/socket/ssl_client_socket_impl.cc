@@ -1328,18 +1328,27 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
   }
 
   const CertStatus cert_status = server_cert_verify_result_.cert_status;
-  if ((result == OK ||
-       (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
-      !transport_security_state_->CheckPublicKeyPins(
-          host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
-          server_cert_verify_result_.public_key_hashes, server_cert_.get(),
-          server_cert_verify_result_.verified_cert.get(),
-          TransportSecurityState::ENABLE_PIN_REPORTS, &pinning_failure_log_)) {
-    if (server_cert_verify_result_.is_issued_by_known_root) {
-      server_cert_verify_result_.cert_status |= CERT_STATUS_PINNED_KEY_MISSING;
-      result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
-    } else {
-      pkp_bypassed_ = true;
+  if (transport_security_state_ &&
+      (result == OK ||
+       (IsCertificateError(result) && IsCertStatusMinorError(cert_status)))) {
+    TransportSecurityState::PKPStatus pin_validity =
+        transport_security_state_->CheckPublicKeyPins(
+            host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
+            server_cert_verify_result_.public_key_hashes, server_cert_.get(),
+            server_cert_verify_result_.verified_cert.get(),
+            TransportSecurityState::ENABLE_PIN_REPORTS, &pinning_failure_log_);
+    switch (pin_validity) {
+      case TransportSecurityState::PKPStatus::VIOLATED:
+        server_cert_verify_result_.cert_status |=
+            CERT_STATUS_PINNED_KEY_MISSING;
+        result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
+        break;
+      case TransportSecurityState::PKPStatus::BYPASSED:
+        pkp_bypassed_ = true;
+      // Fall through.
+      case TransportSecurityState::PKPStatus::OK:
+        // Do nothing.
+        break;
     }
   }
 

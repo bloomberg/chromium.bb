@@ -99,6 +99,20 @@ class NET_EXPORT TransportSecurityState
     std::map<std::string, STSState>::const_iterator end_;
   };
 
+  // PKPStatus describes the result of a pinning check.
+  enum class PKPStatus {
+    // Pinning was enabled and the necessary pins were not present.
+    VIOLATED,
+
+    // Pinning was not enabled, or pinning was enabled and the certificate
+    // satisfied the pins.
+    OK,
+
+    // Pinning was enabled and the certificate did not satisfy the pins, but the
+    // violation was ignored due to local policy, such as a local trust anchor.
+    BYPASSED,
+  };
+
   // A PKPState describes the public key pinning state.
   class NET_EXPORT PKPState {
    public:
@@ -247,13 +261,14 @@ class NET_EXPORT TransportSecurityState
   // when is_issued_by_known_root is false.
   bool ShouldSSLErrorsBeFatal(const std::string& host);
   bool ShouldUpgradeToSSL(const std::string& host);
-  bool CheckPublicKeyPins(const HostPortPair& host_port_pair,
-                          bool is_issued_by_known_root,
-                          const HashValueVector& hashes,
-                          const X509Certificate* served_certificate_chain,
-                          const X509Certificate* validated_certificate_chain,
-                          const PublicKeyPinReportStatus report_status,
-                          std::string* failure_log);
+  PKPStatus CheckPublicKeyPins(
+      const HostPortPair& host_port_pair,
+      bool is_issued_by_known_root,
+      const HashValueVector& hashes,
+      const X509Certificate* served_certificate_chain,
+      const X509Certificate* validated_certificate_chain,
+      const PublicKeyPinReportStatus report_status,
+      std::string* failure_log);
   bool HasPublicKeyPins(const std::string& host);
 
   // Assign a |Delegate| for persisting the transport security state. If
@@ -399,7 +414,7 @@ class NET_EXPORT TransportSecurityState
   static bool IsBuildTimely();
 
   // Helper method for actually checking pins.
-  bool CheckPublicKeyPinsImpl(
+  PKPStatus CheckPublicKeyPinsImpl(
       const HostPortPair& host_port_pair,
       bool is_issued_by_known_root,
       const HashValueVector& hashes,
@@ -440,7 +455,7 @@ class NET_EXPORT TransportSecurityState
   // |report_status| says to), this method sends an HPKP violation
   // report containing |served_certificate_chain| and
   // |validated_certificate_chain|.
-  bool CheckPinsAndMaybeSendReport(
+  PKPStatus CheckPinsAndMaybeSendReport(
       const HostPortPair& host_port_pair,
       bool is_issued_by_known_root,
       const TransportSecurityState::PKPState& pkp_state,

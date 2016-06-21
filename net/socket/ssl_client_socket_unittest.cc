@@ -3316,6 +3316,7 @@ TEST_F(SSLClientSocketTest, PKPBypassedSet) {
   EXPECT_TRUE(sock_->IsConnected());
 
   EXPECT_TRUE(ssl_info.pkp_bypassed);
+  EXPECT_FALSE(ssl_info.cert_status & CERT_STATUS_PINNED_KEY_MISSING);
 }
 
 TEST_F(SSLClientSocketTest, PKPEnforced) {

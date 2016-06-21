@@ -1270,44 +1270,49 @@ TEST_F(TransportSecurityStateTest, HPKPReporting) {
   EXPECT_EQ(std::string(), mock_report_sender.latest_report());
 
   std::string failure_log;
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::DISABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::DISABLE_PIN_REPORTS, &failure_log));
 
   // No report should have been sent because of the DISABLE_PIN_REPORTS
   // argument.
   EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
   EXPECT_EQ(std::string(), mock_report_sender.latest_report());
 
-  EXPECT_TRUE(state.CheckPublicKeyPins(
-      host_port_pair, true, good_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::OK,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, good_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
   // No report should have been sent because there was no violation.
   EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
   EXPECT_EQ(std::string(), mock_report_sender.latest_report());
 
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, false, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::BYPASSED,
+            state.CheckPublicKeyPins(
+                host_port_pair, false, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
   // No report should have been sent because the certificate chained to a
   // non-public root.
   EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
   EXPECT_EQ(std::string(), mock_report_sender.latest_report());
 
-  EXPECT_TRUE(state.CheckPublicKeyPins(
-      host_port_pair, false, good_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::OK,
+            state.CheckPublicKeyPins(
+                host_port_pair, false, good_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
   // No report should have been sent because there was no violation, even though
   // the certificate chained to a local trust anchor.
   EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
   EXPECT_EQ(std::string(), mock_report_sender.latest_report());
 
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
   // Now a report should have been sent. Check that it contains the
   // right information.
@@ -1318,9 +1323,11 @@ TEST_F(TransportSecurityStateTest, HPKPReporting) {
                                           cert1.get(), cert2.get(),
                                           good_hashes));
   mock_report_sender.Clear();
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      subdomain_host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(subdomain_host_port_pair, true, bad_hashes,
+                                     cert1.get(), cert2.get(),
+                                     TransportSecurityState::ENABLE_PIN_REPORTS,
+                                     &failure_log));
 
   // Now a report should have been sent for the subdomain. Check that it
   // contains the right information.
@@ -1367,9 +1374,10 @@ TEST_F(TransportSecurityStateTest, UMAOnHPKPReportingFailure) {
   state.AddHPKP(kHost, expiry, true, good_hashes, report_uri);
 
   std::string failure_log;
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
   // Check that the UMA histogram was updated when the report failed to
   // send.
@@ -1553,9 +1561,10 @@ TEST_F(TransportSecurityStateTest, PreloadedPKPReportUri) {
 
   // Trigger a violation and check that it sends a report.
   std::string failure_log;
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
   EXPECT_EQ(report_uri, mock_report_sender.latest_report_uri());
 
@@ -1601,17 +1610,19 @@ TEST_F(TransportSecurityStateTest, HPKPReportUriToSameHost) {
   // Trigger a violation and check that it does not send a report
   // because the report-uri is HTTPS and same-host as the pins.
   std::string failure_log;
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
   EXPECT_TRUE(mock_report_sender.latest_report_uri().is_empty());
 
   // An HTTP report uri to the same host should be okay.
   state.AddHPKP("example.test", expiry, true, good_hashes, http_report_uri);
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
   EXPECT_EQ(http_report_uri, mock_report_sender.latest_report_uri());
 }
@@ -1649,9 +1660,10 @@ TEST_F(TransportSecurityStateTest, HPKPReportRateLimiting) {
   EXPECT_EQ(std::string(), mock_report_sender.latest_report());
 
   std::string failure_log;
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
   // A report should have been sent. Check that it contains the
   // right information.
@@ -1665,9 +1677,10 @@ TEST_F(TransportSecurityStateTest, HPKPReportRateLimiting) {
 
   // Now trigger the same violation; a duplicative report should not be
   // sent.
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
   EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
   EXPECT_EQ(std::string(), mock_report_sender.latest_report());
 
@@ -1675,9 +1688,10 @@ TEST_F(TransportSecurityStateTest, HPKPReportRateLimiting) {
   // should be sent.
   GURL report_uri2("http://report-example2.test/test");
   state.AddHPKP(kHost, expiry, true, good_hashes, report_uri2);
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
+            state.CheckPublicKeyPins(
+                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+                TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
   EXPECT_EQ(report_uri2, mock_report_sender.latest_report_uri());
   report = mock_report_sender.latest_report();
   ASSERT_FALSE(report.empty());
