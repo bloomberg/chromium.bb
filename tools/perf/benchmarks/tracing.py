@@ -42,7 +42,7 @@ class TracingWithBackgroundMemoryInfra(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options(overhead_level=trace_memory)
     memory_dump_config = tracing_config.MemoryDumpConfig()
     memory_dump_config.AddTrigger('background', 200)
-    options.config.SetMemoryDumpConfig(memory_dump_config)
+    options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
     options.SetTimelineBasedMetric('tracingMetric')
     return options
 
