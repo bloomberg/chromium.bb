@@ -13,13 +13,14 @@ cr.define('settings_rtl_tests', function() {
     suite('settings drawer panel RTL tests', function() {
       test('test i18n processing flips drawer panel', function() {
         var ui = document.createElement('settings-ui');
-        assertFalse(ui.$.panel.rightDrawer);
+        var appDrawer = ui.$$('app-drawer');
+        assertEquals('left', appDrawer.align);
 
         ui.directionDelegate = new TestDirectionDelegate(true /* isRtl */);
-        assertTrue(ui.$.panel.rightDrawer);
+        assertEquals('right', appDrawer.align);
 
         ui.directionDelegate = new TestDirectionDelegate(false /* isRtl */);
-        assertFalse(ui.$.panel.rightDrawer);
+        assertEquals('left', appDrawer.align);
       });
     });
   }

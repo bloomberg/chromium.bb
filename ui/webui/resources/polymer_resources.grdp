@@ -4,7 +4,7 @@
   Please use 'src/tools/polymer/polymer_grdp_to_txt.py' and
   'src/tools/polymer/txt_to_polymer_grdp.py' to modify it, if possible.
 
-  'polymer_grdp_to_txt.py' converts 'polymer_resources.grdp' to a plane list of
+  'polymer_grdp_to_txt.py' converts 'polymer_resources.grdp' to a plain list of
   used Polymer components:
     ...
     iron-iron-iconset/iron-iconset-extracted.js
@@ -20,6 +20,12 @@
 -->
 <grit-part>
   <!-- Polymer 1.0 -->
+  <structure name="IDR_POLYMER_1_0_APP_LAYOUT_APP_DRAWER_APP_DRAWER_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/app-layout/app-drawer/app-drawer-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_APP_LAYOUT_APP_DRAWER_APP_DRAWER_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/app-layout/app-drawer/app-drawer.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_FONT_ROBOTO_ROBOTO_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/font-roboto/roboto.html"
              type="chrome_html" />

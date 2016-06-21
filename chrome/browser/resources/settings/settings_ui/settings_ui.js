@@ -33,11 +33,17 @@ Polymer({
 
   /** @private */
   onIronActivate_: function() {
-    this.$.panel.closeDrawer();
+    this.$$('app-drawer').close();
+  },
+
+  /** @private */
+  onMenuButtonTap_: function() {
+    this.$$('app-drawer').toggle();
   },
 
   /** @private */
   directionDelegateChanged_: function() {
-    this.$.panel.rightDrawer = this.directionDelegate.isRtl();
+    this.$$('app-drawer').align = this.directionDelegate.isRtl() ?
+        'right' : 'left';
   },
 });
