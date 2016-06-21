@@ -114,6 +114,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       switches::kEnableGpuMemoryBufferCompositorResources) &&
       !command_line.HasSwitch(switches::kDisable2dCanvasImageChromium) &&
       !command_line.HasSwitch(switches::kDisableGpu);
+
+  if (enable_canvas_2d_image_chromium) {
+    enable_canvas_2d_image_chromium =
+        base::FeatureList::IsEnabled(features::kCanvas2DImageChromium);
+  }
 #else
   bool enable_canvas_2d_image_chromium = false;
 #endif
@@ -125,6 +130,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       switches::kEnableGpuMemoryBufferCompositorResources) &&
       !command_line.HasSwitch(switches::kDisableWebGLImageChromium) &&
       !command_line.HasSwitch(switches::kDisableGpu);
+
+  if (enable_web_gl_image_chromium) {
+    enable_web_gl_image_chromium =
+        base::FeatureList::IsEnabled(features::kWebGLImageChromium);
+  }
 #else
   bool enable_web_gl_image_chromium =
       command_line.HasSwitch(switches::kEnableWebGLImageChromium);

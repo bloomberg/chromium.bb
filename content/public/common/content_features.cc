@@ -14,6 +14,11 @@ namespace features {
 const base::Feature kBrotliEncoding{"brotli-encoding",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If Canvas2D Image Chromium is allowed, this feature controls whether it is
+// enabled.
+const base::Feature kCanvas2DImageChromium{"Canvas2DImageChromium",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the credential management API:
 // https://w3c.github.io/webappsec-credential-management/
 const base::Feature kCredentialManagementAPI{"CredentialManagementAPI",
@@ -109,6 +114,11 @@ const base::Feature kTokenBinding{"token-binding",
 // Weak MemoryCache (https://crbug.com/603462).
 const base::Feature kWeakMemoryCache{"WeakMemoryCache",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If WebGL Image Chromium is allowed, this feature controls whether it is
+// enabled.
+const base::Feature kWebGLImageChromium{"WebGLImageChromium",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
 // specified in JS).
