@@ -4145,7 +4145,8 @@ void FrameView::notifyRenderThrottlingObservers()
         if (scrollingCoordinator)
             scrollingCoordinator->notifyGeometryChanged();
         // Start ticking animation frames again if necessary.
-        page()->animator().scheduleVisualUpdate(m_frame.get());
+        if (page())
+            page()->animator().scheduleVisualUpdate(m_frame.get());
         // Force a full repaint of this frame to ensure we are not left with a
         // partially painted version of this frame's contents if we skipped
         // painting them while the frame was throttled.
