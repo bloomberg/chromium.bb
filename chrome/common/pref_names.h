@@ -18,6 +18,7 @@ namespace prefs {
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
 extern const char kArcApps[];
 extern const char kArcEnabled[];
+extern const char kArcPackages[];
 extern const char kArcSignedIn[];
 #endif
 extern const char kChildAccountStatusKnown[];

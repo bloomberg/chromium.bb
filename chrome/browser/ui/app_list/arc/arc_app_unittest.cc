@@ -38,6 +38,8 @@
 
 namespace {
 
+constexpr char kTestPackageName[] = "fakepackagename2";
+
 class FakeAppIconLoaderDelegate : public AppIconLoaderDelegate {
  public:
   FakeAppIconLoaderDelegate() {}
@@ -148,7 +150,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     ASSERT_EQ(apps.size(), ids.size());
     ASSERT_EQ(apps.size(), GetArcItemCount());
     // In principle, order of items is not defined.
-    for (auto& app : apps) {
+    for (const auto& app : apps) {
       const std::string id = ArcAppTest::GetAppId(app);
       EXPECT_NE(std::find(ids.begin(), ids.end(), id), ids.end());
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
@@ -160,6 +162,26 @@ class ArcAppModelBuilderTest : public AppListTestBase {
       const ArcAppItem* app_item = FindArcItem(id);
       ASSERT_NE(nullptr, app_item);
       EXPECT_EQ(app.name, app_item->GetDisplayName());
+    }
+  }
+
+  // Validate that prefs have right packages.
+  void ValidateHavePackages(
+      const std::vector<arc::mojom::ArcPackageInfo> packages) {
+    ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+    ASSERT_NE(nullptr, prefs);
+    const std::vector<std::string> pref_packages =
+        prefs->GetPackagesFromPrefs();
+    ASSERT_EQ(packages.size(), pref_packages.size());
+    for (const auto& package : packages) {
+      const std::string package_name = package.package_name;
+      std::unique_ptr<ArcAppListPrefs::PackageInfo> package_info =
+          prefs->GetPackage(package_name);
+      ASSERT_NE(nullptr, package_info.get());
+      EXPECT_EQ(package.last_backup_android_id,
+                package_info->last_backup_android_id);
+      EXPECT_EQ(package.last_backup_time, package_info->last_backup_time);
+      EXPECT_EQ(package.sync, package_info->should_sync);
     }
   }
 
@@ -214,12 +236,24 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     }
   }
 
+  void AddPackage(const arc::mojom::ArcPackageInfo& package) {
+    arc_test_.AddPackage(package);
+  }
+
+  void RemovePackage(const arc::mojom::ArcPackageInfo& package) {
+    arc_test_.RemovePackage(package);
+  }
+
   AppListControllerDelegate* controller() { return controller_.get(); }
 
   Profile* profile() { return profile_.get(); }
 
   const std::vector<arc::mojom::AppInfo>& fake_apps() const {
     return arc_test_.fake_apps();
+  }
+
+  const std::vector<arc::mojom::ArcPackageInfo>& fake_packages() const {
+    return arc_test_.fake_packages();
   }
 
   arc::FakeArcBridgeService* bridge_service() {
@@ -238,6 +272,28 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderTest);
 };
+
+TEST_F(ArcAppModelBuilderTest, ArcPackagePref) {
+  ValidateHavePackages(std::vector<arc::mojom::ArcPackageInfo>());
+  bridge_service()->SetReady();
+  app_instance()->SendRefreshPackageList(fake_packages());
+  ValidateHavePackages(fake_packages());
+
+  arc::mojom::ArcPackageInfo package;
+  package.package_name = kTestPackageName;
+  package.package_version = 2;
+  package.last_backup_android_id = 2;
+  package.last_backup_time = 2;
+  package.sync = true;
+
+  RemovePackage(package);
+  app_instance()->SendPackageUninstalled(package.package_name);
+  ValidateHavePackages(fake_packages());
+
+  AddPackage(package);
+  app_instance()->SendPackageAdded(package);
+  ValidateHavePackages(fake_packages());
+}
 
 TEST_F(ArcAppModelBuilderTest, RefreshAllOnReady) {
   // There should already have been one call, when the interface was

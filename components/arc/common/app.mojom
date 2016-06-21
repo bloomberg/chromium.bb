@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
@@ -18,7 +18,16 @@ struct AppInfo {
   [MinVersion=7] bool notifications_enabled;
 };
 
-// Next method ID: 8
+// Describes ARC package.
+struct ArcPackageInfo {
+  string package_name;
+  int32 package_version;
+  int64 last_backup_android_id;
+  int64 last_backup_time;
+  bool sync;  // true if package installation should be synced
+};
+
+// Next method ID: 11
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
   // package added notification. Multiple apps may be added in the one package.
@@ -35,6 +44,16 @@ interface AppHost {
   // Receives a list of available ARC apps to Chrome. Members of AppInfo must
   // contain non-empty string.
   OnAppListRefreshed@0(array<AppInfo> apps);
+
+  // Notifies that a package has been added.
+  [MinVersion=8] OnPackageAdded@8(ArcPackageInfo arcPackageInfo);
+
+  // Receives a list of available ARC packages to Chrome. Members of
+  // PackageInfo must contain non-empty string.
+  [MinVersion=8] OnPackageListRefreshed@9(array<ArcPackageInfo> packages);
+
+  // Notifies that a package has been modified.
+  [MinVersion=8] OnPackageModified@10(ArcPackageInfo arcPackageInfo);
 
   // Sends removed ARC package to Chrome. |package_name| must contain non-empty
   // string. This message is sent when ARC receives package removed
@@ -58,7 +77,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 11
+// Next method ID: 12
 interface AppInstance {
   Init@0(AppHost host_ptr);
 
@@ -74,6 +93,9 @@ interface AppInstance {
   // Requests information about task.
   [MinVersion=3] GetTaskInfo@6(int32 task_id) => (string package_name,
                                                   string activity);
+
+  // Sends a request to ARC to install package.
+  [MinVersion=8] InstallPackage@11(ArcPackageInfo arcPackageInfo);
 
   // Sends a request to ARC to launch an ARC app defined by |package_name| and
   // |activity|, which cannot be empty. |dimension_on_screen| can be null to
@@ -96,7 +118,7 @@ interface AppInstance {
   // Activates the given task and move it to foreground.
   [MinVersion=4] SetTaskActive@7(int32 task_id);
 
-  // Send a request to ARC to show package info for given package.
+  // Sends a request to ARC to show package info for given package.
   [MinVersion=5] ShowPackageInfo@9(string package_name,
                                    ScreenRect dimension_on_screen);
 

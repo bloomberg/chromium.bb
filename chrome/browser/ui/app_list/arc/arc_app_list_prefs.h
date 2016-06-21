@@ -68,6 +68,20 @@ class ArcAppListPrefs : public KeyedService,
     bool showInLauncher;
   };
 
+  struct PackageInfo {
+    PackageInfo(const std::string& package_name,
+                int32_t package_version,
+                int64_t last_backup_android_id,
+                int64_t last_backup_time,
+                bool should_sync);
+
+    std::string package_name;
+    int32_t package_version;
+    int64_t last_backup_android_id;
+    int64_t last_backup_time;
+    bool should_sync;
+  };
+
   class Observer {
    public:
     // Notifies an observer that new app is registered.
@@ -124,6 +138,14 @@ class ArcAppListPrefs : public KeyedService,
   // not found.
   std::unique_ptr<AppInfo> GetApp(const std::string& app_id) const;
 
+  // Get current installed package names.
+  std::vector<std::string> GetPackagesFromPrefs() const;
+
+  // Extracts attributes of a package based on its package name. Returns
+  // nullptr if the package is not found.
+  std::unique_ptr<PackageInfo> GetPackage(
+      const std::string& package_name) const;
+
   // Constructs path to app local data.
   base::FilePath GetAppPath(const std::string& app_id) const;
 
@@ -175,6 +197,10 @@ class ArcAppListPrefs : public KeyedService,
   void OnTaskSetActive(int32_t task_id) override;
   void OnNotificationsEnabledChanged(const mojo::String& package_name,
                                      bool enabled) override;
+  void OnPackageAdded(arc::mojom::ArcPackageInfoPtr package_info) override;
+  void OnPackageModified(arc::mojom::ArcPackageInfoPtr package_info) override;
+  void OnPackageListRefreshed(
+      mojo::Array<arc::mojom::ArcPackageInfoPtr> packages) override;
 
   void AddApp(const arc::mojom::AppInfo& app);
   void RemoveApp(const std::string& app_id);

@@ -17,6 +17,13 @@
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+constexpr char kPackageName1[] = "fakepackagename1";
+constexpr char kPackageName2[] = "fakepackagename2";
+constexpr char kPackageName3[] = "fakepackagename3";
+}
+
 // static
 std::string ArcAppTest::GetAppId(const arc::mojom::AppInfo& app_info) {
   return ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
@@ -52,6 +59,30 @@ void ArcAppTest::SetUp(Profile* profile) {
     fake_apps_.push_back(app);
   }
   fake_apps_[0].sticky = true;
+
+  arc::mojom::ArcPackageInfo package1;
+  package1.package_name = kPackageName1;
+  package1.package_version = 1;
+  package1.last_backup_android_id = 1;
+  package1.last_backup_time = 1;
+  package1.sync = false;
+  fake_packages_.push_back(package1);
+
+  arc::mojom::ArcPackageInfo package2;
+  package2.package_name = kPackageName2;
+  package2.package_version = 2;
+  package2.last_backup_android_id = 2;
+  package2.last_backup_time = 2;
+  package2.sync = true;
+  fake_packages_.push_back(package2);
+
+  arc::mojom::ArcPackageInfo package3;
+  package3.package_name = kPackageName3;
+  package3.package_version = 3;
+  package3.last_backup_android_id = 3;
+  package3.last_backup_time = 3;
+  package3.sync = false;
+  fake_packages_.push_back(package3);
 
   bridge_service_.reset(new arc::FakeArcBridgeService());
 
@@ -92,3 +123,25 @@ void ArcAppTest::CreateUserAndLogin() {
   GetUserManager()->LoginUser(account_id);
 }
 
+void ArcAppTest::AddPackage(const arc::mojom::ArcPackageInfo& package) {
+  if (!FindPackage(package))
+    fake_packages_.push_back(package);
+}
+
+void ArcAppTest::RemovePackage(const arc::mojom::ArcPackageInfo& package) {
+  std::vector<arc::mojom::ArcPackageInfo>::iterator iter;
+  for (iter = fake_packages_.begin(); iter != fake_packages_.end(); iter++) {
+    if ((*iter).package_name == package.package_name) {
+      fake_packages_.erase(iter);
+      break;
+    }
+  }
+}
+
+bool ArcAppTest::FindPackage(const arc::mojom::ArcPackageInfo& package) {
+  for (auto fake_package : fake_packages_) {
+    if (package.package_name == fake_package.package_name)
+      return true;
+  }
+  return false;
+}

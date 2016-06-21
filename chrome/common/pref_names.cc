@@ -18,6 +18,8 @@ namespace prefs {
 const char kArcApps[] = "arc.apps";
 // A preference to keep Android apps enabled state.
 const char kArcEnabled[] = "arc.enabled";
+// A preference to keep list of Android packages and their infomation.
+const char kArcPackages[] = "arc.packages";
 // A preference that indicates status of Android sign-in.
 const char kArcSignedIn[] = "arc.signedin";
 #endif

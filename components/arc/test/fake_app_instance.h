@@ -88,6 +88,7 @@ class FakeAppInstance : public mojom::AppInstance {
                        const gfx::Rect& dimension_on_screen) override;
   void SetNotificationsEnabled(const mojo::String& package_name,
                                bool enabled) override;
+  void InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);
@@ -99,6 +100,10 @@ class FakeAppInstance : public mojom::AppInstance {
   void SetTaskInfo(int32_t task_id,
                    const std::string& package_name,
                    const std::string& activity);
+  void SendRefreshPackageList(
+      const std::vector<mojom::ArcPackageInfo>& packages);
+  void SendPackageAdded(const mojom::ArcPackageInfo& package);
+  void SendPackageUninstalled(const mojo::String& pacakge_name);
 
   int refresh_app_list_count() const { return refresh_app_list_count_; }
 

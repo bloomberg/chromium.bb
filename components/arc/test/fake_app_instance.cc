@@ -24,6 +24,15 @@ struct TypeConverter<arc::mojom::AppInfoPtr, arc::mojom::AppInfo> {
   }
 };
 
+template <>
+struct TypeConverter<arc::mojom::ArcPackageInfoPtr,
+                     arc::mojom::ArcPackageInfo> {
+  static arc::mojom::ArcPackageInfoPtr Convert(
+      const arc::mojom::ArcPackageInfo& package_info) {
+    return package_info.Clone();
+  }
+};
+
 }  // namespace mojo
 
 namespace arc {
@@ -123,6 +132,20 @@ void FakeAppInstance::SetTaskInfo(int32_t task_id,
   task_id_to_info_[task_id].reset(new Request(package_name, activity));
 }
 
+void FakeAppInstance::SendRefreshPackageList(
+    const std::vector<mojom::ArcPackageInfo>& packages) {
+  app_host_->OnPackageListRefreshed(
+      mojo::Array<mojom::ArcPackageInfoPtr>::From(packages));
+}
+
+void FakeAppInstance::SendPackageAdded(const mojom::ArcPackageInfo& package) {
+  app_host_->OnPackageAdded(mojom::ArcPackageInfoPtr(package.Clone()));
+}
+
+void FakeAppInstance::SendPackageUninstalled(const mojo::String& package_name) {
+  app_host_->OnPackageRemoved(package_name);
+}
+
 void FakeAppInstance::WaitForIncomingMethodCall() {
   binding_.WaitForIncomingMethodCall();
 }
@@ -175,5 +198,7 @@ void FakeAppInstance::ShowPackageInfo(const mojo::String& package_name,
 void FakeAppInstance::SetNotificationsEnabled(const mojo::String& package_name,
                                               bool enabled) {
 }
+
+void FakeAppInstance::InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) {}
 
 }  // namespace arc

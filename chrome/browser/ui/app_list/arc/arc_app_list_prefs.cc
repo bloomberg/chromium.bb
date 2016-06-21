@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <unordered_map>
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -25,35 +26,40 @@ namespace {
 
 const char kName[] = "name";
 const char kPackageName[] = "package_name";
+const char kPackageVersion[] = "package_version";
 const char kActivity[] = "activity";
 const char kSticky[] = "sticky";
 const char kNotificationsEnabled[] = "notifications_enabled";
+const char kLastBackupAndroidId[] = "last_backup_android_id";
+const char kLastBackupTime[] = "last_backup_time";
 const char kLastLaunchTime[] = "lastlaunchtime";
+const char kShouldSync[] = "should_sync";
 
-// Provider of write access to a dictionary storing ARC app prefs.
-class ScopedArcAppListPrefUpdate : public DictionaryPrefUpdate {
+// Provider of write access to a dictionary storing ARC prefs.
+class ScopedArcPrefUpdate : public DictionaryPrefUpdate {
  public:
-  ScopedArcAppListPrefUpdate(PrefService* service, const std::string& id)
-      : DictionaryPrefUpdate(service, prefs::kArcApps),
-        id_(id) {}
+  ScopedArcPrefUpdate(PrefService* service,
+                      const std::string& id,
+                      const std::string& path)
+      : DictionaryPrefUpdate(service, path), id_(id) {}
 
-  ~ScopedArcAppListPrefUpdate() override {}
+  ~ScopedArcPrefUpdate() override {}
 
   // DictionaryPrefUpdate overrides:
   base::DictionaryValue* Get() override {
     base::DictionaryValue* dict = DictionaryPrefUpdate::Get();
-    base::DictionaryValue* app = nullptr;
-    if (!dict->GetDictionary(id_, &app)) {
-      app = new base::DictionaryValue();
-      dict->SetWithoutPathExpansion(id_, app);
+    base::DictionaryValue* dict_item = nullptr;
+    if (!dict->GetDictionary(id_, &dict_item)) {
+      dict_item = new base::DictionaryValue();
+      dict->SetWithoutPathExpansion(id_, dict_item);
     }
-    return app;
+    return dict_item;
   }
 
  private:
   const std::string id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedArcAppListPrefUpdate);
+  DISALLOW_COPY_AND_ASSIGN(ScopedArcPrefUpdate);
 };
 
 bool InstallIconFromFileThread(const std::string& app_id,
@@ -95,6 +101,57 @@ bool IsArcEnabled() {
          auth_service->IsArcEnabled();
 }
 
+bool GetInt64FromPref(const base::DictionaryValue* dict,
+                      const std::string& key,
+                      int64_t* value) {
+  DCHECK(dict);
+  std::string value_str;
+  if (!dict->GetStringWithoutPathExpansion(key, &value_str)) {
+    VLOG(2) << "Can't find key in local pref dictionary. Invalid key: " << key
+            << ".";
+    return false;
+  }
+
+  if (!base::StringToInt64(value_str, value)) {
+    VLOG(2) << "Can't change string to int64_t. Invalid string value: "
+            << value_str << ".";
+    return false;
+  }
+
+  return true;
+}
+
+// Add or update local pref for given package.
+void AddOrUpdatePackagePrefs(PrefService* prefs,
+                             const arc::mojom::ArcPackageInfo& package) {
+  DCHECK(IsArcEnabled());
+  const std::string& package_name = package.package_name;
+  if (package_name.empty()) {
+    VLOG(2) << "Package name cannot be empty.";
+    return;
+  }
+  ScopedArcPrefUpdate update(prefs, package_name, prefs::kArcPackages);
+  base::DictionaryValue* package_dict = update.Get();
+  const std::string id_str =
+      base::Int64ToString(package.last_backup_android_id);
+  const std::string time_str = base::Int64ToString(package.last_backup_time);
+
+  package_dict->SetBoolean(kShouldSync, package.sync);
+  package_dict->SetInteger(kPackageVersion, package.package_version);
+  package_dict->SetString(kLastBackupAndroidId, id_str);
+  package_dict->SetString(kLastBackupTime, time_str);
+}
+
+// Remove given package from local pref.
+void RemovePackageFromPrefs(PrefService* prefs,
+                            const std::string& package_name) {
+  DCHECK(IsArcEnabled());
+  DictionaryPrefUpdate update(prefs, prefs::kArcPackages);
+  base::DictionaryValue* packages = update.Get();
+  const bool removed = packages->Remove(package_name, nullptr);
+  DCHECK(removed);
+}
+
 }  // namespace
 
 // static
@@ -107,6 +164,7 @@ ArcAppListPrefs* ArcAppListPrefs::Create(const base::FilePath& base_path,
 void ArcAppListPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kArcApps);
+  registry->RegisterDictionaryPref(prefs::kArcPackages);
 }
 
 // static
@@ -234,6 +292,33 @@ bool ArcAppListPrefs::HasObserver(Observer* observer) {
   return observer_list_.HasObserver(observer);
 }
 
+std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
+    const std::string& package_name) const {
+  if (!IsArcEnabled())
+    return nullptr;
+
+  const base::DictionaryValue* package = nullptr;
+  const base::DictionaryValue* packages =
+      prefs_->GetDictionary(prefs::kArcPackages);
+  if (!packages ||
+      !packages->GetDictionaryWithoutPathExpansion(package_name, &package))
+    return std::unique_ptr<PackageInfo>();
+
+  int32_t package_version = 0;
+  int64_t last_backup_android_id = 0;
+  int64_t last_backup_time = 0;
+  bool should_sync = false;
+
+  GetInt64FromPref(package, kLastBackupAndroidId, &last_backup_android_id);
+  GetInt64FromPref(package, kLastBackupTime, &last_backup_time);
+  package->GetInteger(kPackageVersion, &package_version);
+  package->GetBoolean(kShouldSync, &should_sync);
+
+  return base::MakeUnique<PackageInfo>(package_name, package_version,
+                                       last_backup_android_id, last_backup_time,
+                                       should_sync);
+}
+
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
   if (!IsArcEnabled())
     return std::vector<std::string>();
@@ -277,15 +362,10 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   app->GetBoolean(kSticky, &sticky);
   app->GetBoolean(kNotificationsEnabled, &notifications_enabled);
 
+  int64_t last_launch_time_internal = 0;
   base::Time last_launch_time;
-  std::string last_launch_time_str;
-  if (app->GetString(kLastLaunchTime, &last_launch_time_str)) {
-    int64_t last_launch_time_i64 = 0;
-    if (base::StringToInt64(last_launch_time_str, &last_launch_time_i64)) {
-      last_launch_time = base::Time::FromInternalValue(last_launch_time_i64);
-    } else {
-      NOTREACHED();
-    }
+  if (GetInt64FromPref(app, kLastLaunchTime, &last_launch_time_internal)) {
+    last_launch_time = base::Time::FromInternalValue(last_launch_time_internal);
   }
 
   std::unique_ptr<AppInfo> app_info(
@@ -318,7 +398,7 @@ void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id,
   if (!arc::ShouldShowInLauncher(app_id))
     return;
 
-  ScopedArcAppListPrefUpdate update(prefs_, app_id);
+  ScopedArcPrefUpdate update(prefs_, app_id, prefs::kArcApps);
   base::DictionaryValue* app_dict = update.Get();
   const std::string string_value = base::Int64ToString(time.ToInternalValue());
   app_dict->SetString(kLastLaunchTime, string_value);
@@ -405,7 +485,7 @@ void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app) {
     }
   }
 
-  ScopedArcAppListPrefUpdate update(prefs_, app_id);
+  ScopedArcPrefUpdate update(prefs_, app_id, prefs::kArcApps);
   base::DictionaryValue* app_dict = update.Get();
   app_dict->SetString(kName, app.name);
   app_dict->SetString(kPackageName, app.package_name);
@@ -519,6 +599,8 @@ void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
 
   for (auto& app_id : apps_to_remove)
     RemoveApp(app_id);
+
+  RemovePackageFromPrefs(prefs_, package_name);
 }
 
 void ArcAppListPrefs::OnAppIcon(const mojo::String& package_name,
@@ -569,12 +651,57 @@ void ArcAppListPrefs::OnNotificationsEnabledChanged(
     if (app_package_name != package_name) {
       continue;
     }
-    ScopedArcAppListPrefUpdate update(prefs_, app.key());
+    ScopedArcPrefUpdate update(prefs_, app.key(), prefs::kArcApps);
     base::DictionaryValue* updateing_app_dict = update.Get();
     updateing_app_dict->SetBoolean(kNotificationsEnabled, enabled);
   }
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnNotificationsEnabledChanged(package_name, enabled));
+}
+
+void ArcAppListPrefs::OnPackageAdded(
+    arc::mojom::ArcPackageInfoPtr package_info) {
+  DCHECK(IsArcEnabled());
+  AddOrUpdatePackagePrefs(prefs_, *package_info);
+}
+
+void ArcAppListPrefs::OnPackageModified(
+    arc::mojom::ArcPackageInfoPtr package_info) {
+  DCHECK(IsArcEnabled());
+  AddOrUpdatePackagePrefs(prefs_, *package_info);
+}
+
+void ArcAppListPrefs::OnPackageListRefreshed(
+    mojo::Array<arc::mojom::ArcPackageInfoPtr> packages) {
+  DCHECK(IsArcEnabled());
+
+  const std::vector<std::string> old_packages(GetPackagesFromPrefs());
+  std::unordered_set<std::string> current_packages;
+
+  for (const auto& package : packages) {
+    AddOrUpdatePackagePrefs(prefs_, *package);
+    current_packages.insert((*package).package_name);
+  }
+
+  for (const auto& package_name : old_packages) {
+    if (!current_packages.count(package_name))
+      RemovePackageFromPrefs(prefs_, package_name);
+  }
+}
+
+std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs() const {
+  std::vector<std::string> packages;
+  if (!IsArcEnabled())
+    return packages;
+
+  const base::DictionaryValue* package_prefs =
+      prefs_->GetDictionary(prefs::kArcPackages);
+  for (base::DictionaryValue::Iterator package(*package_prefs);
+       !package.IsAtEnd(); package.Advance()) {
+    packages.push_back(package.key());
+  }
+
+  return packages;
 }
 
 void ArcAppListPrefs::InstallIcon(const std::string& app_id,
@@ -622,3 +749,14 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
       notifications_enabled(notifications_enabled),
       ready(ready),
       showInLauncher(showInLauncher) {}
+
+ArcAppListPrefs::PackageInfo::PackageInfo(const std::string& package_name,
+                                          int32_t package_version,
+                                          int64_t last_backup_android_id,
+                                          int64_t last_backup_time,
+                                          bool should_sync)
+    : package_name(package_name),
+      package_version(package_version),
+      last_backup_android_id(last_backup_android_id),
+      last_backup_time(last_backup_time),
+      should_sync(should_sync) {}
