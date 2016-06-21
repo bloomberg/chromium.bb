@@ -12,6 +12,7 @@ import android.os.ParcelUuid;
 import android.os.Parcelable;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -135,6 +136,9 @@ import java.util.UUID;
 
     @Override
     public void destroy() {
+        if (!ThreadUtils.runningOnUiThread()) {
+            throw new IllegalStateException("Attempting to destroy WebContents on non-UI thread");
+        }
         if (mNativeWebContentsAndroid != 0) nativeDestroyWebContents(mNativeWebContentsAndroid);
     }
 
