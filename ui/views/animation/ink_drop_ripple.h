@@ -44,9 +44,6 @@ class VIEWS_EXPORT InkDropRipple {
   // The opacity of the ink drop when it is not visible.
   static const float kHiddenOpacity;
 
-  // The opacity of the ink drop when it is visible.
-  static const float kVisibleOpacity;
-
   InkDropRipple();
   virtual ~InkDropRipple();
 

@@ -495,7 +495,8 @@ std::unique_ptr<views::InkDropRipple> DownloadItemViewMd::CreateInkDropRipple()
     const {
   return base::WrapUnique(new views::FloodFillInkDropRipple(
       GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
-      color_utils::DeriveDefaultIconColor(GetTextColor())));
+      color_utils::DeriveDefaultIconColor(GetTextColor()),
+      ink_drop_visible_opacity()));
 }
 
 std::unique_ptr<views::InkDropHighlight>

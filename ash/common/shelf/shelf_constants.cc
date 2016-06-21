@@ -19,6 +19,7 @@ const int kShelfItemInset = 3;
 const SkColor kShelfBaseColor = SK_ColorBLACK;
 const SkColor kShelfButtonActivatedHighlightColor =
     SkColorSetA(SK_ColorWHITE, 100);
+const float kShelfInkDropVisibleOpacity = 0.2f;
 const SkColor kShelfIconColor = SK_ColorWHITE;
 
 int GetShelfConstant(ShelfConstant shelf_constant) {

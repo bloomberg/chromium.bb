@@ -21,6 +21,8 @@
 namespace views {
 namespace test {
 
+const float kVisibleOpacity = 0.175f;
+
 // Represents all the derivatives of the InkDropRipple class. To be used with
 // the InkDropRippleTest fixture to test all derviatives.
 enum InkDropRippleTestTypes {
@@ -58,7 +60,7 @@ InkDropRippleTest::InkDropRippleTest() {
     case SQUARE_INK_DROP_RIPPLE: {
       SquareInkDropRipple* square_ink_drop_ripple =
           new SquareInkDropRipple(gfx::Size(10, 10), 2, gfx::Size(8, 8), 1,
-                                  gfx::Point(), SK_ColorBLACK);
+                                  gfx::Point(), SK_ColorBLACK, kVisibleOpacity);
       ink_drop_ripple_.reset(square_ink_drop_ripple);
       test_api_.reset(new SquareInkDropRippleTestApi(square_ink_drop_ripple));
       break;
@@ -66,7 +68,7 @@ InkDropRippleTest::InkDropRippleTest() {
     case FLOOD_FILL_INK_DROP_RIPPLE: {
       FloodFillInkDropRipple* flood_fill_ink_drop_ripple =
           new FloodFillInkDropRipple(gfx::Rect(0, 0, 10, 10), gfx::Point(),
-                                     SK_ColorBLACK);
+                                     SK_ColorBLACK, kVisibleOpacity);
       ink_drop_ripple_.reset(flood_fill_ink_drop_ripple);
       test_api_.reset(
           new FloodFillInkDropRippleTestApi(flood_fill_ink_drop_ripple));
@@ -123,7 +125,7 @@ TEST_P(InkDropRippleTest, ActionPendingOpacity) {
   ink_drop_ripple_->AnimateToState(views::InkDropState::ACTION_PENDING);
   test_api_->CompleteAnimations();
 
-  EXPECT_EQ(InkDropRipple::kVisibleOpacity, test_api_->GetCurrentOpacity());
+  EXPECT_EQ(kVisibleOpacity, test_api_->GetCurrentOpacity());
 }
 
 TEST_P(InkDropRippleTest, QuickActionOpacity) {
@@ -140,7 +142,7 @@ TEST_P(InkDropRippleTest, SlowActionPendingOpacity) {
       views::InkDropState::ALTERNATE_ACTION_PENDING);
   test_api_->CompleteAnimations();
 
-  EXPECT_EQ(InkDropRipple::kVisibleOpacity, test_api_->GetCurrentOpacity());
+  EXPECT_EQ(kVisibleOpacity, test_api_->GetCurrentOpacity());
 }
 
 TEST_P(InkDropRippleTest, SlowActionOpacity) {
@@ -158,7 +160,7 @@ TEST_P(InkDropRippleTest, ActivatedOpacity) {
   ink_drop_ripple_->AnimateToState(views::InkDropState::ACTIVATED);
   test_api_->CompleteAnimations();
 
-  EXPECT_EQ(InkDropRipple::kVisibleOpacity, test_api_->GetCurrentOpacity());
+  EXPECT_EQ(kVisibleOpacity, test_api_->GetCurrentOpacity());
 }
 
 TEST_P(InkDropRippleTest, DeactivatedOpacity) {
@@ -287,7 +289,7 @@ TEST_P(InkDropRippleTest, SnapToActivatedWithoutActiveAnimations) {
   EXPECT_EQ(3, observer_.last_animation_started_ordinal());
   EXPECT_EQ(4, observer_.last_animation_ended_ordinal());
 
-  EXPECT_EQ(InkDropRipple::kVisibleOpacity, test_api_->GetCurrentOpacity());
+  EXPECT_EQ(kVisibleOpacity, test_api_->GetCurrentOpacity());
   EXPECT_TRUE(ink_drop_ripple_->IsVisible());
 }
 
@@ -310,7 +312,7 @@ TEST_P(InkDropRippleTest, SnapToActivatedWithActiveAnimations) {
   EXPECT_EQ(InkDropAnimationEndedReason::SUCCESS,
             observer_.last_animation_ended_reason());
 
-  EXPECT_EQ(InkDropRipple::kVisibleOpacity, test_api_->GetCurrentOpacity());
+  EXPECT_EQ(kVisibleOpacity, test_api_->GetCurrentOpacity());
   EXPECT_TRUE(ink_drop_ripple_->IsVisible());
 }
 

@@ -262,6 +262,7 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
   if (ash::MaterialDesignController::IsShelfMaterial()) {
     SetHasInkDrop(true);
     set_ink_drop_base_color(kInkDropBaseColor);
+    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   }
 
   const gfx::ShadowValue kShadows[] = {
@@ -504,7 +505,7 @@ std::unique_ptr<views::InkDropRipple> ShelfButton::CreateInkDropRipple() const {
       kInkDropLargeCornerRadius,
       gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
       kInkDropSmallCornerRadius, GetLocalBounds().CenterPoint(),
-      GetInkDropBaseColor()));
+      GetInkDropBaseColor(), ink_drop_visible_opacity()));
 }
 
 bool ShelfButton::ShouldEnterPushedState(const ui::Event& event) {

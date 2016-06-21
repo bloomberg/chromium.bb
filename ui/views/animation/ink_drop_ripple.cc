@@ -24,7 +24,6 @@ bool InkDropRipple::UseFastAnimations() {
 }
 
 const float InkDropRipple::kHiddenOpacity = 0.f;
-const float InkDropRipple::kVisibleOpacity = 0.175f;
 
 InkDropRipple::InkDropRipple()
     : target_ink_drop_state_(InkDropState::HIDDEN), observer_(nullptr) {}

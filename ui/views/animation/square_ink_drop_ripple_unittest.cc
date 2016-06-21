@@ -108,7 +108,8 @@ SquareInkDropRippleCalculateTransformsTest::
                        gfx::Size(kHalfDrawnSize, kHalfDrawnSize),
                        1,
                        gfx::Point(),
-                       SK_ColorBLACK),
+                       SK_ColorBLACK,
+                       0.175f),
       test_api_(&ink_drop_ripple_) {}
 
 SquareInkDropRippleCalculateTransformsTest::

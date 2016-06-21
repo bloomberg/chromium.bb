@@ -57,6 +57,9 @@ ASH_EXPORT extern const SkColor kShelfBaseColor;
 // using the material design ripple animation.
 ASH_EXPORT extern const SkColor kShelfButtonActivatedHighlightColor;
 
+// Opacity of the ink drop ripple for shelf items when the ripple is visible.
+extern const float kShelfInkDropVisibleOpacity;
+
 // The foreground color of the icons used in the shelf (launcher,
 // notifications, etc).
 ASH_EXPORT extern const SkColor kShelfIconColor;

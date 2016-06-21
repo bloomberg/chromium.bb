@@ -40,6 +40,11 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
  protected:
   static const int kInkDropSmallCornerRadius;
 
+  void set_ink_drop_visible_opacity(float visible_opacity) {
+    ink_drop_visible_opacity_ = visible_opacity;
+  }
+  float ink_drop_visible_opacity() const { return ink_drop_visible_opacity_; }
+
   // Returns the default InkDropRipple centered on |center_point|.
   std::unique_ptr<InkDropRipple> CreateDefaultInkDropRipple(
       const gfx::Point& center_point) const;
@@ -96,6 +101,8 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   std::unique_ptr<InkDropGestureHandler> gesture_handler_;
 
   gfx::Size ink_drop_size_;
+
+  float ink_drop_visible_opacity_;
 
   // Determines whether the view was already painting to layer before adding ink
   // drop layer.

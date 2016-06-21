@@ -446,7 +446,7 @@ std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
              : std::unique_ptr<views::InkDropRipple>(
                    new views::FloodFillInkDropRipple(
                        GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
-                       GetInkDropBaseColor()));
+                       GetInkDropBaseColor(), ink_drop_visible_opacity()));
 }
 
 std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()

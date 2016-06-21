@@ -58,7 +58,8 @@ class VIEWS_EXPORT SquareInkDropRipple : public InkDropRipple {
                       const gfx::Size& small_size,
                       int small_corner_radius,
                       const gfx::Point& center_point,
-                      SkColor color);
+                      SkColor color,
+                      float visible_opacity);
   ~SquareInkDropRipple() override;
 
   void set_activated_shape(ActivatedShape shape) { activated_shape_ = shape; }
@@ -157,6 +158,9 @@ class VIEWS_EXPORT SquareInkDropRipple : public InkDropRipple {
 
   // The shape used for the ACTIVATED/DEACTIVATED states.
   ActivatedShape activated_shape_;
+
+  // Ink drop opacity when it is visible.
+  float visible_opacity_;
 
   // Maximum size that an ink drop will be drawn to for any InkDropState whose
   // final frame should be large.

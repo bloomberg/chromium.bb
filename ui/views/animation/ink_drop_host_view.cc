@@ -15,6 +15,7 @@
 #include "ui/views/animation/square_ink_drop_ripple.h"
 
 namespace views {
+namespace {
 
 // Default sizes for ink drop effects.
 const int kInkDropSize = 24;
@@ -23,7 +24,8 @@ const int kInkDropLargeCornerRadius = 4;
 // The scale factor to compute the large ink drop size.
 const float kLargeInkDropScale = 1.333f;
 
-namespace {
+// Default opacity of the ink drop when it is visible.
+const float kInkDropVisibleOpacity = 0.175f;
 
 gfx::Size CalculateLargeInkDropSize(const gfx::Size small_size) {
   return gfx::ScaleToCeiledSize(gfx::Size(small_size), kLargeInkDropScale);
@@ -106,6 +108,7 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
 InkDropHostView::InkDropHostView()
     : ink_drop_(new InkDropStub()),
       ink_drop_size_(kInkDropSize, kInkDropSize),
+      ink_drop_visible_opacity_(kInkDropVisibleOpacity),
       old_paint_to_layer_(false),
       destroying_(false) {}
 
@@ -147,7 +150,7 @@ std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
   std::unique_ptr<InkDropRipple> ripple(new SquareInkDropRipple(
       CalculateLargeInkDropSize(ink_drop_size_), kInkDropLargeCornerRadius,
       ink_drop_size_, kInkDropSmallCornerRadius, center_point,
-      GetInkDropBaseColor()));
+      GetInkDropBaseColor(), ink_drop_visible_opacity()));
   return ripple;
 }
 

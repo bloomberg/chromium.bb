@@ -240,7 +240,7 @@ class BookmarkButtonBase : public views::LabelButton {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return base::WrapUnique(new views::FloodFillInkDropRipple(
         CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
-        GetInkDropBaseColor()));
+        GetInkDropBaseColor(), ink_drop_visible_opacity()));
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -337,7 +337,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return base::WrapUnique(new views::FloodFillInkDropRipple(
         CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
-        GetInkDropBaseColor()));
+        GetInkDropBaseColor(), ink_drop_visible_opacity()));
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()

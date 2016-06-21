@@ -22,7 +22,7 @@ TEST(FloodFillInkDropRippleTest, TransformedCenterPointForIrregularClipBounds) {
       requested_center_point.y() - clip_bounds.y());
 
   FloodFillInkDropRipple ripple(clip_bounds, requested_center_point,
-                                SK_ColorWHITE);
+                                SK_ColorWHITE, 0.175f);
   FloodFillInkDropRippleTestApi test_api(&ripple);
 
   gfx::Point actual_center = test_api.GetDrawnCenterPoint();
@@ -37,7 +37,8 @@ TEST(FloodFillInkDropRippleTest, MaxDistanceToCorners) {
   // (10, 30), (60, 30), (10, 100), (60, 100)
   const gfx::Rect clip_bounds(10, 30, 50, 70);
 
-  FloodFillInkDropRipple ripple(clip_bounds, gfx::Point(), SK_ColorWHITE);
+  FloodFillInkDropRipple ripple(clip_bounds, gfx::Point(), SK_ColorWHITE,
+                                0.175f);
   FloodFillInkDropRippleTestApi test_api(&ripple);
 
   // Interior points

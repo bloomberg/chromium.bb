@@ -108,8 +108,10 @@ namespace views {
 
 FloodFillInkDropRipple::FloodFillInkDropRipple(const gfx::Rect& clip_bounds,
                                                const gfx::Point& center_point,
-                                               SkColor color)
+                                               SkColor color,
+                                               float visible_opacity)
     : center_point_(center_point),
+      visible_opacity_(visible_opacity),
       root_layer_(ui::LAYER_NOT_DRAWN),
       circle_layer_delegate_(
           color,
@@ -143,7 +145,7 @@ FloodFillInkDropRipple::~FloodFillInkDropRipple() {
 
 void FloodFillInkDropRipple::SnapToActivated() {
   InkDropRipple::SnapToActivated();
-  SetOpacity(kVisibleOpacity);
+  SetOpacity(visible_opacity_);
   painted_layer_.SetTransform(GetMaxSizeTargetTransform());
 }
 
@@ -176,11 +178,11 @@ void FloodFillInkDropRipple::AnimateStateChange(
     case InkDropState::ACTION_PENDING: {
       DCHECK(old_ink_drop_state == InkDropState::HIDDEN);
 
-      AnimateToOpacity(kVisibleOpacity,
+      AnimateToOpacity(visible_opacity_,
                        GetAnimationDuration(ACTION_PENDING_FADE_IN),
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN, animation_observer);
-      AnimateToOpacity(kVisibleOpacity,
+      AnimateToOpacity(visible_opacity_,
                        GetAnimationDuration(ACTION_PENDING_TRANSFORM) -
                            GetAnimationDuration(ACTION_PENDING_FADE_IN),
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
@@ -207,7 +209,7 @@ void FloodFillInkDropRipple::AnimateStateChange(
     }
     case InkDropState::ALTERNATE_ACTION_PENDING: {
       DCHECK(old_ink_drop_state == InkDropState::ACTION_PENDING);
-      AnimateToOpacity(kVisibleOpacity,
+      AnimateToOpacity(visible_opacity_,
                        GetAnimationDuration(ALTERNATE_ACTION_PENDING),
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN, animation_observer);
@@ -225,7 +227,8 @@ void FloodFillInkDropRipple::AnimateStateChange(
                        gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
     case InkDropState::ACTIVATED: {
-      AnimateToOpacity(kVisibleOpacity, GetAnimationDuration(ACTIVATED_FADE_IN),
+      AnimateToOpacity(visible_opacity_,
+                       GetAnimationDuration(ACTIVATED_FADE_IN),
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN, animation_observer);
       AnimateToTransform(GetMaxSizeTargetTransform(),
