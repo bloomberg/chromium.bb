@@ -38,7 +38,7 @@ AshTouchExplorationManager::~AshTouchExplorationManager() {
 }
 
 void AshTouchExplorationManager::OnAccessibilityModeChanged(
-    ui::AccessibilityNotificationVisibility notify) {
+    AccessibilityNotificationVisibility notify) {
   UpdateTouchExplorationState();
 }
 

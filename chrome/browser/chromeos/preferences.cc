@@ -168,8 +168,7 @@ void Preferences::RegisterProfilePrefs(
       prefs::kAccessibilityScreenMagnifierEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
-      prefs::kAccessibilityScreenMagnifierType,
-      ui::kDefaultMagnifierType,
+      prefs::kAccessibilityScreenMagnifierType, ash::kDefaultMagnifierType,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDoublePref(prefs::kAccessibilityScreenMagnifierScale,
                                std::numeric_limits<double>::min());

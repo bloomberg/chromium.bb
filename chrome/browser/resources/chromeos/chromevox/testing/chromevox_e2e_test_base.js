@@ -50,7 +50,7 @@ ChromeVoxE2ETest.prototype = {
       base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
           base::Unretained(chromeos::AccessibilityManager::Get()),
           true,
-          ui::A11Y_NOTIFICATION_NONE);
+          ash::A11Y_NOTIFICATION_NONE);
   WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
     */});
   },

@@ -250,13 +250,13 @@ void HandleMagnifyScreen(int delta_index) {
     float scale =
         ash::Shell::GetInstance()->magnification_controller()->GetScale();
     // Calculate rounded logarithm (base kMagnificationScaleFactor) of scale.
-    int scale_index = std::floor(
-        std::log(scale) / std::log(ui::kMagnificationScaleFactor) + 0.5);
+    int scale_index =
+        std::floor(std::log(scale) / std::log(kMagnificationScaleFactor) + 0.5);
 
     int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
 
     ash::Shell::GetInstance()->magnification_controller()->SetScale(
-        std::pow(ui::kMagnificationScaleFactor, new_scale_index), true);
+        std::pow(kMagnificationScaleFactor, new_scale_index), true);
   } else if (ash::Shell::GetInstance()->
              partial_magnification_controller()->is_enabled()) {
     float scale = delta_index > 0 ? kDefaultPartialMagnifiedScale : 1;
@@ -697,8 +697,8 @@ void HandleToggleMirrorMode() {
 void HandleToggleSpokenFeedback() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Spoken_Feedback"));
 
-  Shell::GetInstance()->accessibility_delegate()->
-      ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_SHOW);
+  Shell::GetInstance()->accessibility_delegate()->ToggleSpokenFeedback(
+      A11Y_NOTIFICATION_SHOW);
 }
 
 bool CanHandleToggleTouchViewTesting() {
@@ -1454,7 +1454,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
   if (shell->mru_window_tracker()->BuildMruWindowList().empty() &&
       actions_needing_window_.find(action) != actions_needing_window_.end()) {
     Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
-        ui::A11Y_ALERT_WINDOW_NEEDED);
+        A11Y_ALERT_WINDOW_NEEDED);
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
   return RESTRICTION_NONE;

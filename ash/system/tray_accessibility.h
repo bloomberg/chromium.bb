@@ -115,7 +115,7 @@ class TrayAccessibility : public TrayImageItem,
 
   // Overridden from AccessibilityObserver.
   void OnAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify) override;
+      AccessibilityNotificationVisibility notify) override;
 
   views::View* default_;
   tray::AccessibilityPopupView* detailed_popup_;

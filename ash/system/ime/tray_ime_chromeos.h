@@ -42,7 +42,7 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
 
   // Overridden from AccessibilityObserver:
   void OnAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify) override;
+      AccessibilityNotificationVisibility notify) override;
 
  private:
   friend class TrayIMETest;

@@ -94,6 +94,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/accessibility_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 #endif
@@ -2069,7 +2070,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DISABLED_ChromeVoxInjection) {
 
   chromeos::SpeechMonitor monitor;
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ui::A11Y_NOTIFICATION_NONE);
+      true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
 
   ASSERT_TRUE(StartEmbeddedTestServer());

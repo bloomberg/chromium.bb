@@ -339,8 +339,9 @@ void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
 
 ScreenMagnifierPolicyHandler::ScreenMagnifierPolicyHandler()
     : IntRangePolicyHandlerBase(key::kScreenMagnifierType,
-                                0, ui::MAGNIFIER_FULL, false) {
-}
+                                0,
+                                ash::MAGNIFIER_FULL,
+                                false) {}
 
 ScreenMagnifierPolicyHandler::~ScreenMagnifierPolicyHandler() {
 }

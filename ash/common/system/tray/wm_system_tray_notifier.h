@@ -37,7 +37,7 @@ class ASH_EXPORT WmSystemTrayNotifier {
   void RemoveUpdateObserver(UpdateObserver* observer);
 
   void NotifyAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify);
+      AccessibilityNotificationVisibility notify);
 
   void NotifyRefreshClock();
   void NotifyDateFormatChanged();

@@ -5,6 +5,7 @@
 #include "ash/system/tray_accessibility.h"
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -248,7 +249,7 @@ void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
         delegate->IsSpokenFeedbackEnabled() ?
             ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK :
             ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK);
-    delegate->ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_NONE);
+    delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
   } else if (sender == high_contrast_view_) {
     WmShell::Get()->RecordUserMetricsAction(
         delegate->IsHighContrastEnabled() ?
@@ -387,7 +388,7 @@ void TrayAccessibility::UpdateAfterLoginStatusChange(LoginStatus status) {
 }
 
 void TrayAccessibility::OnAccessibilityModeChanged(
-    ui::AccessibilityNotificationVisibility notify) {
+    AccessibilityNotificationVisibility notify) {
   SetTrayIconVisible(GetInitialVisibility());
 
   uint32_t accessibility_state = GetAccessibilityState();
@@ -403,7 +404,7 @@ void TrayAccessibility::OnAccessibilityModeChanged(
   uint32_t being_enabled =
       (accessibility_state & ~previous_accessibility_state_) &
       (A11Y_SPOKEN_FEEDBACK | A11Y_BRAILLE_DISPLAY_CONNECTED);
-  if ((notify == ui::A11Y_NOTIFICATION_SHOW) && being_enabled != A11Y_NONE) {
+  if ((notify == A11Y_NOTIFICATION_SHOW) && being_enabled != A11Y_NONE) {
     // Shows popup if |notify| is true and the spoken feedback is being enabled.
     request_popup_view_state_ = being_enabled;
     PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);

@@ -315,21 +315,21 @@ class ChromeVoxPanelWidgetObserver : public views::WidgetObserver {
 AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
     AccessibilityNotificationType notification_type,
     bool enabled,
-    ui::AccessibilityNotificationVisibility notify)
-  : notification_type(notification_type),
-    enabled(enabled),
-    magnifier_type(ui::kDefaultMagnifierType),
-    notify(notify) {}
+    ash::AccessibilityNotificationVisibility notify)
+    : notification_type(notification_type),
+      enabled(enabled),
+      magnifier_type(ash::kDefaultMagnifierType),
+      notify(notify) {}
 
 AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
     AccessibilityNotificationType notification_type,
     bool enabled,
-    ui::MagnifierType magnifier_type,
-    ui::AccessibilityNotificationVisibility notify)
-  : notification_type(notification_type),
-    enabled(enabled),
-    magnifier_type(magnifier_type),
-    notify(notify) {}
+    ash::MagnifierType magnifier_type,
+    ash::AccessibilityNotificationVisibility notify)
+    : notification_type(notification_type),
+      enabled(enabled),
+      magnifier_type(magnifier_type),
+      notify(notify) {}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -403,8 +403,7 @@ AccessibilityManager::AccessibilityManager()
       autoclick_delay_pref_handler_(prefs::kAccessibilityAutoclickDelayMs),
       virtual_keyboard_pref_handler_(
           prefs::kAccessibilityVirtualKeyboardEnabled),
-      mono_audio_pref_handler_(
-          prefs::kAccessibilityMonoAudioEnabled),
+      mono_audio_pref_handler_(prefs::kAccessibilityMonoAudioEnabled),
       caret_highlight_pref_handler_(prefs::kAccessibilityCaretHighlightEnabled),
       cursor_highlight_pref_handler_(
           prefs::kAccessibilityCursorHighlightEnabled),
@@ -424,7 +423,7 @@ AccessibilityManager::AccessibilityManager()
       focus_highlight_enabled_(false),
       select_to_speak_enabled_(false),
       switch_access_enabled_(false),
-      spoken_feedback_notification_(ui::A11Y_NOTIFICATION_NONE),
+      spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
       should_speak_chrome_vox_announcements_on_user_screen_(true),
       system_sounds_enabled_(false),
       braille_display_connected_(false),
@@ -468,10 +467,8 @@ AccessibilityManager::AccessibilityManager()
 
 AccessibilityManager::~AccessibilityManager() {
   CHECK(this == g_accessibility_manager);
-  AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_MANAGER_SHUTDOWN,
-      false,
-      ui::A11Y_NOTIFICATION_NONE);
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_MANAGER_SHUTDOWN, false,
+                                          ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
 
@@ -538,10 +535,8 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 
   large_cursor_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
-      enabled,
-      ui::A11Y_NOTIFICATION_NONE);
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
+                                          enabled, ash::A11Y_NOTIFICATION_NONE);
 
   NotifyAccessibilityStatusChanged(details);
 
@@ -590,7 +585,7 @@ void AccessibilityManager::UpdateStickyKeysFromPref() {
 
 void AccessibilityManager::EnableSpokenFeedback(
     bool enabled,
-    ui::AccessibilityNotificationVisibility notify) {
+    ash::AccessibilityNotificationVisibility notify) {
   if (!profile_)
     return;
   ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
@@ -603,7 +598,7 @@ void AccessibilityManager::EnableSpokenFeedback(
   pref_service->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled, enabled);
   pref_service->CommitPendingWrite();
 
-  spoken_feedback_notification_ = ui::A11Y_NOTIFICATION_NONE;
+  spoken_feedback_notification_ = ash::A11Y_NOTIFICATION_NONE;
 }
 
 void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
@@ -728,7 +723,7 @@ bool AccessibilityManager::IsSpokenFeedbackEnabled() {
 }
 
 void AccessibilityManager::ToggleSpokenFeedback(
-    ui::AccessibilityNotificationVisibility notify) {
+    ash::AccessibilityNotificationVisibility notify) {
   EnableSpokenFeedback(!IsSpokenFeedbackEnabled(), notify);
 }
 
@@ -754,9 +749,8 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
   high_contrast_enabled_ = enabled;
 
   AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
-      enabled,
-      ui::A11Y_NOTIFICATION_NONE);
+      ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE, enabled,
+      ash::A11Y_NOTIFICATION_NONE);
 
   NotifyAccessibilityStatusChanged(details);
 
@@ -775,8 +769,8 @@ void AccessibilityManager::OnLocaleChanged() {
   // If the system locale changes and spoken feedback is enabled,
   // reload ChromeVox so that it switches its internal translations
   // to the new language.
-  EnableSpokenFeedback(false, ui::A11Y_NOTIFICATION_NONE);
-  EnableSpokenFeedback(true, ui::A11Y_NOTIFICATION_NONE);
+  EnableSpokenFeedback(false, ash::A11Y_NOTIFICATION_NONE);
+  EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_NONE);
 }
 
 void AccessibilityManager::PlayEarcon(int sound_key) {
@@ -904,10 +898,8 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
   else
     ash::Shell::GetInstance()->DeactivateKeyboard();
 
-  AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-      enabled,
-      ui::A11Y_NOTIFICATION_NONE);
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
+                                          enabled, ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -936,10 +928,8 @@ void AccessibilityManager::UpdateMonoAudioFromPref() {
     return;
   mono_audio_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_TOGGLE_MONO_AUDIO,
-      enabled,
-      ui::A11Y_NOTIFICATION_NONE);
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_MONO_AUDIO,
+                                          enabled, ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
 
   ash::Shell::GetInstance()->audio_a11y_controller()->SetOutputMono(enabled);
@@ -1347,9 +1337,8 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
                         ? MagnificationManager::Get()->GetMagnifierType()
                         : 0;
     // '0' means magnifier is disabled.
-    UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosScreenMagnifier",
-                              type,
-                              ui::kMaxMagnifierType + 1);
+    UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosScreenMagnifier", type,
+                              ash::kMaxMagnifierType + 1);
   }
   if (profile_) {
     const PrefService* const prefs = profile_->GetPrefs();
@@ -1438,14 +1427,13 @@ void AccessibilityManager::OnBrailleDisplayStateChanged(
     const DisplayState& display_state) {
   braille_display_connected_ = display_state.available;
   if (braille_display_connected_) {
-    EnableSpokenFeedback(true, ui::A11Y_NOTIFICATION_SHOW);
+    EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_SHOW);
   }
   UpdateBrailleImeState();
 
   AccessibilityStatusEventDetails details(
       ACCESSIBILITY_BRAILLE_DISPLAY_CONNECTION_STATE_CHANGED,
-      braille_display_connected_,
-      ui::A11Y_NOTIFICATION_SHOW);
+      braille_display_connected_, ash::A11Y_NOTIFICATION_SHOW);
   NotifyAccessibilityStatusChanged(details);
 }
 

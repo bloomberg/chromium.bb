@@ -41,7 +41,7 @@ void WmSystemTrayNotifier::RemoveUpdateObserver(UpdateObserver* observer) {
 }
 
 void WmSystemTrayNotifier::NotifyAccessibilityModeChanged(
-    ui::AccessibilityNotificationVisibility notify) {
+    AccessibilityNotificationVisibility notify) {
   FOR_EACH_OBSERVER(AccessibilityObserver, accessibility_observers_,
                     OnAccessibilityModeChanged(notify));
 }

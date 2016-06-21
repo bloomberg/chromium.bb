@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/ash_init.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -84,12 +85,12 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   DCHECK(chromeos::MagnificationManager::Get());
   bool magnifier_enabled =
       chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
-  ui::MagnifierType magnifier_type =
+  ash::MagnifierType magnifier_type =
       chromeos::MagnificationManager::Get()->GetMagnifierType();
-  shell->magnification_controller()->
-      SetEnabled(magnifier_enabled && magnifier_type == ui::MAGNIFIER_FULL);
-  shell->partial_magnification_controller()->
-      SetEnabled(magnifier_enabled && magnifier_type == ui::MAGNIFIER_PARTIAL);
+  shell->magnification_controller()->SetEnabled(
+      magnifier_enabled && magnifier_type == ash::MAGNIFIER_FULL);
+  shell->partial_magnification_controller()->SetEnabled(
+      magnifier_enabled && magnifier_type == ash::MAGNIFIER_PARTIAL);
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableZeroBrowsersOpenForTests)) {

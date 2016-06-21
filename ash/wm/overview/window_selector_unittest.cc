@@ -7,6 +7,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
@@ -399,10 +400,10 @@ TEST_P(WindowSelectorTest, A11yAlertOnOverviewMode) {
       ash::Shell::GetInstance()->accessibility_delegate();
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   EXPECT_NE(delegate->GetLastAccessibilityAlert(),
-            ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+            A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
   ToggleOverview();
   EXPECT_EQ(delegate->GetLastAccessibilityAlert(),
-            ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+            A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 }
 
 // Tests that there are no crashes when there is not enough screen space

@@ -929,18 +929,15 @@ void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
   user_pref_registrar_->Add(
       prefs::kAccessibilityLargeCursorEnabled,
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
-                 base::Unretained(this),
-                 ui::A11Y_NOTIFICATION_NONE));
+                 base::Unretained(this), ash::A11Y_NOTIFICATION_NONE));
   user_pref_registrar_->Add(
       prefs::kAccessibilityAutoclickEnabled,
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
-                 base::Unretained(this),
-                 ui::A11Y_NOTIFICATION_NONE));
+                 base::Unretained(this), ash::A11Y_NOTIFICATION_NONE));
   user_pref_registrar_->Add(
       prefs::kShouldAlwaysShowAccessibilityMenu,
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
-                 base::Unretained(this),
-                 ui::A11Y_NOTIFICATION_NONE));
+                 base::Unretained(this), ash::A11Y_NOTIFICATION_NONE));
   user_pref_registrar_->Add(
       prefs::kPerformanceTracingEnabled,
       base::Bind(&SystemTrayDelegateChromeOS::UpdatePerformanceTracing,
@@ -1131,7 +1128,7 @@ void SystemTrayDelegateChromeOS::OnLanguageRemapSearchKeyToChanged() {
 }
 
 void SystemTrayDelegateChromeOS::OnAccessibilityModeChanged(
-    ui::AccessibilityNotificationVisibility notify) {
+    ash::AccessibilityNotificationVisibility notify) {
   GetWmSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
 }
 

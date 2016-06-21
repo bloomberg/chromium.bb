@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/common/accessibility_types.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -37,7 +38,7 @@ void SetMagnifierEnabled(bool enabled) {
   MagnificationManager::Get()->SetMagnifierEnabled(enabled);
 }
 
-void SetMagnifierType(ui::MagnifierType type) {
+void SetMagnifierType(ash::MagnifierType type) {
   MagnificationManager::Get()->SetMagnifierType(type);
 }
 
@@ -58,7 +59,7 @@ double GetSavedFullScreenMagnifierScale() {
   return MagnificationManager::Get()->GetSavedScreenMagnifierScale();
 }
 
-ui::MagnifierType GetMagnifierType() {
+ash::MagnifierType GetMagnifierType() {
   return MagnificationManager::Get()->GetMagnifierType();
 }
 
@@ -80,7 +81,7 @@ void SetScreenMagnifierEnabledPref(bool enabled) {
   prefs()->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled, enabled);
 }
 
-void SetScreenMagnifierTypePref(ui::MagnifierType type) {
+void SetScreenMagnifierTypePref(ash::MagnifierType type) {
   prefs()->SetInteger(prefs::kAccessibilityScreenMagnifierType, type);
 }
 
@@ -202,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginOffToOff) {
   SetMagnifierEnabled(true);
   // Confirms that magnifier is enabled.
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
   EXPECT_TRUE(GetScreenMagnifierEnabledFromPref());
 }
 
@@ -220,10 +221,10 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToOff) {
 
   // Enables magnifier on login screen.
   SetMagnifierEnabled(true);
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   SetFullScreenMagnifierScale(2.5);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
   EXPECT_EQ(2.5, GetFullScreenMagnifierScale());
 
   // Logs in (but the session is not started yet).
@@ -232,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToOff) {
 
   // Confirms that magnifier is keeping enabled.
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   user_manager::UserManager::Get()->SessionStarted();
 
@@ -247,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, PRE_LoginOffToFull) {
 
   // Sets prefs to explicitly enable the magnifier.
   SetScreenMagnifierEnabledPref(true);
-  SetScreenMagnifierTypePref(ui::MAGNIFIER_FULL);
+  SetScreenMagnifierTypePref(ash::MAGNIFIER_FULL);
   SetFullScreenMagnifierScalePref(2.5);
 }
 
@@ -268,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginOffToFull) {
   // Confirms that the magnifier is enabled and configured according to the
   // explicitly set prefs just after session start.
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
   EXPECT_EQ(2.5, GetFullScreenMagnifierScale());
   EXPECT_TRUE(GetScreenMagnifierEnabledFromPref());
 }
@@ -279,17 +280,17 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, PRE_LoginFullToFull) {
 
   // Sets prefs to explicitly enable the magnifier.
   SetScreenMagnifierEnabledPref(true);
-  SetScreenMagnifierTypePref(ui::MAGNIFIER_FULL);
+  SetScreenMagnifierTypePref(ash::MAGNIFIER_FULL);
   SetFullScreenMagnifierScalePref(2.5);
 }
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToFull) {
   // Enables magnifier on login screen.
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   SetMagnifierEnabled(true);
   SetFullScreenMagnifierScale(3.0);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
   EXPECT_EQ(3.0, GetFullScreenMagnifierScale());
 
   // Logs in (but the session is not started yet).
@@ -298,14 +299,14 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToFull) {
 
   // Confirms that magnifier is keeping enabled.
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   user_manager::UserManager::Get()->SessionStarted();
 
   // Confirms that the magnifier is enabled and configured according to the
   // explicitly set prefs just after session start.
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
   EXPECT_EQ(2.5, GetFullScreenMagnifierScale());
   EXPECT_TRUE(GetScreenMagnifierEnabledFromPref());
 }
@@ -317,10 +318,10 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, PRE_LoginFullToUnset) {
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToUnset) {
   // Enables full screen magnifier.
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   SetMagnifierEnabled(true);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   // Logs in (but the session is not started yet).
   user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
@@ -328,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToUnset) {
 
   // Confirms that magnifier is keeping enabled.
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   user_manager::UserManager::Get()->SessionStarted();
 
@@ -360,11 +361,11 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginAsNewUserOff) {
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginAsNewUserFull) {
   // Enables magnifier on login screen.
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   SetMagnifierEnabled(true);
   SetFullScreenMagnifierScale(2.5);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
   EXPECT_EQ(2.5, GetFullScreenMagnifierScale());
 
   // Logs in (but the session is not started yet).
@@ -373,13 +374,13 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginAsNewUserFull) {
 
   // Confirms that magnifier is keeping enabled.
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   user_manager::UserManager::Get()->SessionStarted();
 
   // Confirms that magnifier keeps enabled.
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
   EXPECT_EQ(2.5, GetFullScreenMagnifierScale());
   EXPECT_TRUE(GetScreenMagnifierEnabledFromPref());
 }
@@ -405,58 +406,58 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginAsNewUserUnset) {
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ChangeMagnifierType) {
   // Enables/disables full screen magnifier.
   SetMagnifierEnabled(false);
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   SetMagnifierEnabled(true);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   SetMagnifierEnabled(false);
   EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   // Enables/disables partial screen magnifier.
-  SetMagnifierType(ui::MAGNIFIER_PARTIAL);
+  SetMagnifierType(ash::MAGNIFIER_PARTIAL);
   EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   SetMagnifierEnabled(true);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   SetMagnifierEnabled(false);
   EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   // Changes the magnifier type when the magnifier is enabled.
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   SetMagnifierEnabled(true);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
-  SetMagnifierType(ui::MAGNIFIER_PARTIAL);
+  SetMagnifierType(ash::MAGNIFIER_PARTIAL);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   // Changes the magnifier type when the magnifier is disabled.
   SetMagnifierEnabled(false);
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
-  SetMagnifierType(ui::MAGNIFIER_PARTIAL);
+  SetMagnifierType(ash::MAGNIFIER_PARTIAL);
   EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 }
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, TypePref) {
@@ -469,11 +470,11 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, TypePref) {
   EXPECT_FALSE(IsMagnifierEnabled());
 
   // Sets the pref as true to enable magnifier.
-  SetScreenMagnifierTypePref(ui::MAGNIFIER_FULL);
+  SetScreenMagnifierTypePref(ash::MAGNIFIER_FULL);
   SetScreenMagnifierEnabledPref(true);
   // Confirms that magnifier is enabled.
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 }
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ScalePref) {
@@ -484,10 +485,10 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ScalePref) {
   SetSavedFullScreenMagnifierScale(2.5);
 
   // Enables full screen magnifier.
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   SetMagnifierEnabled(true);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   // Confirms that 2.5x is restored.
   EXPECT_EQ(2.5, GetFullScreenMagnifierScale());
@@ -506,10 +507,10 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, InvalidScalePref) {
   SetSavedFullScreenMagnifierScale(0.5);
 
   // Enables full screen magnifier.
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   SetMagnifierEnabled(true);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   // Confirms that the actual scale is set to the minimum scale.
   EXPECT_EQ(1.0, GetFullScreenMagnifierScale());
@@ -524,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, InvalidScalePref) {
   // Enables full screen magnifier.
   SetMagnifierEnabled(true);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(ui::MAGNIFIER_FULL, GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
   // Confirms that the actual scale is set to the maximum scale.
   EXPECT_EQ(4.0, GetFullScreenMagnifierScale());
@@ -538,17 +539,17 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest,
 
   // Set full screen magnifier, and confirm the observer is called.
   SetMagnifierEnabled(true);
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.magnifier_type(), ui::MAGNIFIER_FULL);
-  EXPECT_EQ(GetMagnifierType(), ui::MAGNIFIER_FULL);
+  EXPECT_EQ(observer.magnifier_type(), ash::MAGNIFIER_FULL);
+  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
   observer.reset();
 
   // Set full screen magnifier again, and confirm the observer is not called.
-  SetMagnifierType(ui::MAGNIFIER_FULL);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
   EXPECT_FALSE(observer.observed());
-  EXPECT_EQ(GetMagnifierType(), ui::MAGNIFIER_FULL);
+  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
   observer.reset();
 }
 

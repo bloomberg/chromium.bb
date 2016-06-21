@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
@@ -121,7 +122,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
     ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
     AccessibilityManager::Get()->EnableSpokenFeedback(
-        true, ui::A11Y_NOTIFICATION_NONE);
+        true, ash::A11Y_NOTIFICATION_NONE);
     EXPECT_TRUE(speech_monitor_.SkipChromeVoxEnabledMessage());
     DisableEarcons();
   }
@@ -145,7 +146,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
              "</script>"));
     EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
     AccessibilityManager::Get()->EnableSpokenFeedback(
-        true, ui::A11Y_NOTIFICATION_NONE);
+        true, ash::A11Y_NOTIFICATION_NONE);
 
     // Block until we get "ready".
     while (speech_monitor_.GetNextUtterance() != "ready") {
@@ -710,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   // so make sure that's the case.
   js_checker().ExecuteAsync("$('language-select').focus()");
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ui::A11Y_NOTIFICATION_NONE);
+      true, ash::A11Y_NOTIFICATION_NONE);
   ASSERT_TRUE(speech_monitor_.SkipChromeVoxEnabledMessage());
   // There's no guarantee that ChromeVox speaks anything when injected after
   // the page loads, which is by design.  Tab forward and then backward

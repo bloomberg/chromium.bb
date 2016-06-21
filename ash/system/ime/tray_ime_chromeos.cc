@@ -258,7 +258,7 @@ void TrayIME::OnKeyboardSuppressionChanged(bool suppressed) {
 }
 
 void TrayIME::OnAccessibilityModeChanged(
-    ui::AccessibilityNotificationVisibility notify) {
+    AccessibilityNotificationVisibility notify) {
   Update();
 }
 

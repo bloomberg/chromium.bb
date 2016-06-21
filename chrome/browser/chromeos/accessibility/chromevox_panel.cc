@@ -139,7 +139,7 @@ void ChromeVoxPanel::ExitFullscreen() {
 
 void ChromeVoxPanel::DisableSpokenFeedback() {
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ui::A11Y_NOTIFICATION_NONE);
+      false, ash::A11Y_NOTIFICATION_NONE);
 }
 
 void ChromeVoxPanel::Focus() {

@@ -51,18 +51,18 @@ struct AccessibilityStatusEventDetails {
   AccessibilityStatusEventDetails(
       AccessibilityNotificationType notification_type,
       bool enabled,
-      ui::AccessibilityNotificationVisibility notify);
+      ash::AccessibilityNotificationVisibility notify);
 
   AccessibilityStatusEventDetails(
       AccessibilityNotificationType notification_type,
       bool enabled,
-      ui::MagnifierType magnifier_type,
-      ui::AccessibilityNotificationVisibility notify);
+      ash::MagnifierType magnifier_type,
+      ash::AccessibilityNotificationVisibility notify);
 
   AccessibilityNotificationType notification_type;
   bool enabled;
-  ui::MagnifierType magnifier_type;
-  ui::AccessibilityNotificationVisibility notify;
+  ash::MagnifierType magnifier_type;
+  ash::AccessibilityNotificationVisibility notify;
 };
 
 typedef base::Callback<void(const AccessibilityStatusEventDetails&)>
@@ -137,13 +137,13 @@ class AccessibilityManager
   // Enables or disables spoken feedback. Enabling spoken feedback installs the
   // ChromeVox component extension.
   void EnableSpokenFeedback(bool enabled,
-                            ui::AccessibilityNotificationVisibility notify);
+                            ash::AccessibilityNotificationVisibility notify);
 
   // Returns true if spoken feedback is enabled, or false if not.
   bool IsSpokenFeedbackEnabled();
 
   // Toggles whether Chrome OS spoken feedback is on or off.
-  void ToggleSpokenFeedback(ui::AccessibilityNotificationVisibility notify);
+  void ToggleSpokenFeedback(ash::AccessibilityNotificationVisibility notify);
 
   // Enables or disables the high contrast mode for Chrome.
   void EnableHighContrast(bool enabled);
@@ -377,7 +377,7 @@ class AccessibilityManager
   bool select_to_speak_enabled_;
   bool switch_access_enabled_;
 
-  ui::AccessibilityNotificationVisibility spoken_feedback_notification_;
+  ash::AccessibilityNotificationVisibility spoken_feedback_notification_;
 
   bool should_speak_chrome_vox_announcements_on_user_screen_;
 

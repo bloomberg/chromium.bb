@@ -8,6 +8,7 @@
 
 #include "ash/accelerators/key_hold_detector.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/shell.h"
 #include "ui/events/event.h"
 
@@ -52,8 +53,8 @@ bool SpokenFeedbackToggler::ShouldStopEventPropagation() const {
 void SpokenFeedbackToggler::OnKeyHold(const ui::KeyEvent* event) {
   if (!toggled_) {
     toggled_ = true;
-    Shell::GetInstance()->accessibility_delegate()->
-        ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_SHOW);
+    Shell::GetInstance()->accessibility_delegate()->ToggleSpokenFeedback(
+        A11Y_NOTIFICATION_SHOW);
   }
 }
 

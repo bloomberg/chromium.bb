@@ -2946,8 +2946,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SpokenFeedbackEnabled) {
       chromeos::AccessibilityManager::Get();
 
   // Manually enable spoken feedback.
-  accessibility_manager->EnableSpokenFeedback(
-      true, ui::A11Y_NOTIFICATION_NONE);
+  accessibility_manager->EnableSpokenFeedback(true,
+                                              ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(accessibility_manager->IsSpokenFeedbackEnabled());
 
   // Verify that policy overrides the manual setting.
@@ -2959,8 +2959,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SpokenFeedbackEnabled) {
   EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
 
   // Verify that spoken feedback cannot be enabled manually anymore.
-  accessibility_manager->EnableSpokenFeedback(
-      true, ui::A11Y_NOTIFICATION_NONE);
+  accessibility_manager->EnableSpokenFeedback(true,
+                                              ash::A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
 }
 
@@ -2993,9 +2993,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeNone) {
       chromeos::MagnificationManager::Get();
 
   // Manually enable the full-screen magnifier.
-  magnification_manager->SetMagnifierType(ui::MAGNIFIER_FULL);
+  magnification_manager->SetMagnifierType(ash::MAGNIFIER_FULL);
   magnification_manager->SetMagnifierEnabled(true);
-  EXPECT_EQ(ui::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
 
   // Verify that policy overrides the manual setting.
@@ -3021,12 +3021,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeFull) {
 
   // Verify that policy can enable the full-screen magnifier.
   PolicyMap policies;
-  policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(ui::MAGNIFIER_FULL)),
-               nullptr);
+  policies.Set(
+      key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+      POLICY_SOURCE_CLOUD,
+      base::WrapUnique(new base::FundamentalValue(ash::MAGNIFIER_FULL)),
+      nullptr);
   UpdateProviderPolicy(policies);
-  EXPECT_EQ(ui::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
+  EXPECT_EQ(ash::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
 
   // Verify that the screen magnifier cannot be disabled manually anymore.

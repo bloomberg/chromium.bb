@@ -10,6 +10,7 @@
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
@@ -122,7 +123,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
   }
 
   void ToggleSpokenFeedback(
-      ui::AccessibilityNotificationVisibility notify) override {
+      ash::AccessibilityNotificationVisibility notify) override {
     DCHECK(chromeos::AccessibilityManager::Get());
     chromeos::AccessibilityManager::Get()->ToggleSpokenFeedback(notify);
   }
@@ -137,7 +138,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->SetMagnifierEnabled(enabled);
   }
 
-  void SetMagnifierType(ui::MagnifierType type) override {
+  void SetMagnifierType(ash::MagnifierType type) override {
     DCHECK(chromeos::MagnificationManager::Get());
     return chromeos::MagnificationManager::Get()->SetMagnifierType(type);
   }
@@ -147,7 +148,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
   }
 
-  ui::MagnifierType GetMagnifierType() const override {
+  ash::MagnifierType GetMagnifierType() const override {
     DCHECK(chromeos::MagnificationManager::Get());
     return chromeos::MagnificationManager::Get()->GetMagnifierType();
   }
@@ -270,29 +271,29 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return std::numeric_limits<double>::min();
   }
 
-  void TriggerAccessibilityAlert(ui::AccessibilityAlert alert) override {
+  void TriggerAccessibilityAlert(ash::AccessibilityAlert alert) override {
     Profile* profile = ProfileManager::GetActiveUserProfile();
     if (profile) {
       switch (alert) {
-        case ui::A11Y_ALERT_WINDOW_NEEDED: {
+        case ash::A11Y_ALERT_WINDOW_NEEDED: {
           AutomationManagerAura::GetInstance()->HandleAlert(
               profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
           break;
         }
-        case ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED: {
+        case ash::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED: {
           AutomationManagerAura::GetInstance()->HandleAlert(
               profile, l10n_util::GetStringUTF8(
                            IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED));
           break;
         }
-        case ui::A11Y_ALERT_NONE:
+        case ash::A11Y_ALERT_NONE:
           break;
       }
     }
   }
 
-  ui::AccessibilityAlert GetLastAccessibilityAlert() override {
-    return ui::A11Y_ALERT_NONE;
+  ash::AccessibilityAlert GetLastAccessibilityAlert() override {
+    return ash::A11Y_ALERT_NONE;
   }
 
   void PlayEarcon(int sound_key) override {

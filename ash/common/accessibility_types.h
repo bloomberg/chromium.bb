@@ -5,8 +5,7 @@
 #ifndef ASH_COMMON_ACCESSIBILITY_TYPES_H_
 #define ASH_COMMON_ACCESSIBILITY_TYPES_H_
 
-// TODO(jamescook): Move this to namespace ash. http://crbug.com/621574
-namespace ui {
+namespace ash {
 
 enum AccessibilityNotificationVisibility {
   A11Y_NOTIFICATION_NONE,
@@ -34,6 +33,6 @@ const MagnifierType kDefaultMagnifierType = MAGNIFIER_FULL;
 // Note: this value is 2.0 ^ (1 / 4).
 const float kMagnificationScaleFactor = 1.18920712f;
 
-}  // namespace ui
+}  // namespace ash
 
 #endif  // ASH_COMMON_ACCESSIBILITY_TYPES_H_

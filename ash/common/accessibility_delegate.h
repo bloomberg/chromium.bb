@@ -19,7 +19,7 @@ class ASH_EXPORT AccessibilityDelegate {
 
   // Invoked to toggle spoken feedback for accessibility
   virtual void ToggleSpokenFeedback(
-      ui::AccessibilityNotificationVisibility notify) = 0;
+      AccessibilityNotificationVisibility notify) = 0;
 
   // Returns true if spoken feedback is enabled.
   virtual bool IsSpokenFeedbackEnabled() const = 0;
@@ -34,13 +34,13 @@ class ASH_EXPORT AccessibilityDelegate {
   virtual void SetMagnifierEnabled(bool enabled) = 0;
 
   // Invoked to change the type of the screen magnifier.
-  virtual void SetMagnifierType(ui::MagnifierType type) = 0;
+  virtual void SetMagnifierType(MagnifierType type) = 0;
 
   // Returns true if the screen magnifier is enabled.
   virtual bool IsMagnifierEnabled() const = 0;
 
   // Returns the current screen magnifier mode.
-  virtual ui::MagnifierType GetMagnifierType() const = 0;
+  virtual MagnifierType GetMagnifierType() const = 0;
 
   // Invoked to enable Large Cursor.
   virtual void SetLargeCursorEnabled(bool enabled) = 0;
@@ -113,10 +113,10 @@ class ASH_EXPORT AccessibilityDelegate {
   virtual double GetSavedScreenMagnifierScale() = 0;
 
   // Triggers an accessibility alert to give the user feedback.
-  virtual void TriggerAccessibilityAlert(ui::AccessibilityAlert alert) = 0;
+  virtual void TriggerAccessibilityAlert(AccessibilityAlert alert) = 0;
 
   // Gets the last accessibility alert that was triggered.
-  virtual ui::AccessibilityAlert GetLastAccessibilityAlert() = 0;
+  virtual AccessibilityAlert GetLastAccessibilityAlert() = 0;
 
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // when their mapped event has occurred. The sound key enums can be found in

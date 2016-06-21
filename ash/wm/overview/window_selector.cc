@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
@@ -371,7 +372,7 @@ void WindowSelector::Init(const WindowList& windows) {
   shell->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   // Send an a11y alert.
   WmShell::Get()->GetAccessibilityDelegate()->TriggerAccessibilityAlert(
-      ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+      A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 
   UpdateShelfVisibility();
 }

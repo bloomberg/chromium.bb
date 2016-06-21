@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
+#include "ash/common/accessibility_types.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -118,7 +119,7 @@ bool IsHighContrastEnabled() {
 
 void SetSpokenFeedbackEnabled(bool enabled) {
   return AccessibilityManager::Get()->EnableSpokenFeedback(
-      enabled, ui::A11Y_NOTIFICATION_NONE);
+      enabled, ash::A11Y_NOTIFICATION_NONE);
 }
 
 bool IsSpokenFeedbackEnabled() {

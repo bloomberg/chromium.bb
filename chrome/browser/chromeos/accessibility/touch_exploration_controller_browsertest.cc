@@ -5,6 +5,7 @@
 #include "ui/chromeos/touch_exploration_controller.h"
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -60,7 +61,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
     ash::AccessibilityDelegate* ad =
         ash::Shell::GetInstance()->accessibility_delegate();
     if (on != ad->IsSpokenFeedbackEnabled())
-      ad->ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_NONE);
+      ad->ToggleSpokenFeedback(ash::A11Y_NOTIFICATION_NONE);
   }
 
   base::TimeTicks Now() { return simulated_clock_->NowTicks(); }

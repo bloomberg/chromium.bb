@@ -5,6 +5,7 @@
 #include "ash/system/ime/tray_ime_chromeos.h"
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/system/status_area_widget.h"
@@ -70,9 +71,8 @@ void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
   WmShell::Get()->GetAccessibilityDelegate()->SetVirtualKeyboardEnabled(
       enabled);
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
-  ui::AccessibilityNotificationVisibility notification =
-      enabled ? ui::AccessibilityNotificationVisibility::A11Y_NOTIFICATION_SHOW
-              : ui::AccessibilityNotificationVisibility::A11Y_NOTIFICATION_NONE;
+  AccessibilityNotificationVisibility notification =
+      enabled ? A11Y_NOTIFICATION_SHOW : A11Y_NOTIFICATION_NONE;
   WmShell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
       notification);
 }

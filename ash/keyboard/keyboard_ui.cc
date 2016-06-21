@@ -42,7 +42,7 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
 
   // AccessibilityObserver:
   void OnAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify) override {
+      AccessibilityNotificationVisibility notify) override {
     FOR_EACH_OBSERVER(KeyboardUIObserver, *observers(),
                       OnKeyboardEnabledStateChanged(IsEnabled()));
   }

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/common/accessibility_types.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/system/chromeos/supervised/custodian_info_tray_observer.h"
@@ -209,7 +210,7 @@ class SystemTrayDelegateChromeOS
   void OnLanguageRemapSearchKeyToChanged();
 
   void OnAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify);
+      ash::AccessibilityNotificationVisibility notify);
 
   void UpdatePerformanceTracing();
 

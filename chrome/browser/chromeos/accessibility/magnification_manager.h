@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_MAGNIFICATION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_MAGNIFICATION_MANAGER_H_
 
+#include "ash/common/accessibility_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
 class Profile;
@@ -37,13 +38,13 @@ class MagnificationManager {
   virtual bool IsMagnifierEnabled() const = 0;
 
   // Returns the current type of the screen magnifier.
-  virtual ui::MagnifierType GetMagnifierType() const = 0;
+  virtual ash::MagnifierType GetMagnifierType() const = 0;
 
   // Enables the screen magnifier.
   virtual void SetMagnifierEnabled(bool enabled) = 0;
 
   // Changes the type of the screen magnifier.
-  virtual void SetMagnifierType(ui::MagnifierType type) = 0;
+  virtual void SetMagnifierType(ash::MagnifierType type) = 0;
 
   // Saves the magnifier scale to the pref.
   virtual void SaveScreenMagnifierScale(double scale) = 0;

@@ -16,7 +16,7 @@ class ASH_EXPORT AccessibilityObserver {
 
   // Notifies when accessibility mode changes.
   virtual void OnAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify) = 0;
+      AccessibilityNotificationVisibility notify) = 0;
 };
 
 }  // namespace ash

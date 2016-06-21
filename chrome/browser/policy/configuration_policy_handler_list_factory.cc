@@ -830,7 +830,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kUptimeLimit, prefs::kUptimeLimit, 3600, INT_MAX, true)));
   handlers->AddHandler(base::WrapUnique(new IntRangePolicyHandler(
       key::kDeviceLoginScreenDefaultScreenMagnifierType, NULL, 0,
-      ui::MAGNIFIER_FULL, false)));
+      ash::MAGNIFIER_FULL, false)));
   // TODO(binjin): Remove LegacyPoliciesDeprecatingPolicyHandler for these two
   // policies once deprecation of legacy power management policies is done.
   // http://crbug.com/346229

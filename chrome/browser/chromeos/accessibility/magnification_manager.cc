@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 
+#include "ash/common/accessibility_types.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -49,7 +50,7 @@ class MagnificationManagerImpl : public MagnificationManager,
         magnifier_type_pref_handler_(prefs::kAccessibilityScreenMagnifierType),
         magnifier_scale_pref_handler_(
             prefs::kAccessibilityScreenMagnifierScale),
-        type_(ui::kDefaultMagnifierType),
+        type_(ash::kDefaultMagnifierType),
         enabled_(false),
         keep_focus_centered_(false),
         observing_focus_change_in_page_(false) {
@@ -71,7 +72,7 @@ class MagnificationManagerImpl : public MagnificationManager,
   // MagnificationManager implimentation:
   bool IsMagnifierEnabled() const override { return enabled_; }
 
-  ui::MagnifierType GetMagnifierType() const override { return type_; }
+  ash::MagnifierType GetMagnifierType() const override { return type_; }
 
   void SetMagnifierEnabled(bool enabled) override {
     if (!profile_)
@@ -82,7 +83,7 @@ class MagnificationManagerImpl : public MagnificationManager,
     prefs->CommitPendingWrite();
   }
 
-  void SetMagnifierType(ui::MagnifierType type) override {
+  void SetMagnifierType(ash::MagnifierType type) override {
     if (!profile_)
       return;
 
@@ -155,7 +156,7 @@ class MagnificationManagerImpl : public MagnificationManager,
 
     enabled_ = enabled;
 
-    if (type_ == ui::MAGNIFIER_FULL) {
+    if (type_ == ash::MAGNIFIER_FULL) {
       ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
           enabled_);
       MonitorFocusInPageChange();
@@ -165,11 +166,11 @@ class MagnificationManagerImpl : public MagnificationManager,
     }
   }
 
-  virtual void SetMagnifierTypeInternal(ui::MagnifierType type) {
+  virtual void SetMagnifierTypeInternal(ash::MagnifierType type) {
     if (type_ == type)
       return;
 
-    type_ = ui::MAGNIFIER_FULL;  // (leave out for full magnifier)
+    type_ = ash::MAGNIFIER_FULL;  // (leave out for full magnifier)
   }
 
   virtual void SetMagniferKeepFocusCenteredInternal(bool keep_focus_centered) {
@@ -178,7 +179,7 @@ class MagnificationManagerImpl : public MagnificationManager,
 
     keep_focus_centered_ = keep_focus_centered;
 
-    if (type_ == ui::MAGNIFIER_FULL) {
+    if (type_ == ash::MAGNIFIER_FULL) {
       ash::Shell::GetInstance()
           ->magnification_controller()
           ->SetKeepFocusCentered(keep_focus_centered_);
@@ -196,9 +197,9 @@ class MagnificationManagerImpl : public MagnificationManager,
     const bool keep_focus_centered = profile_->GetPrefs()->GetBoolean(
         prefs::kAccessibilityScreenMagnifierCenterFocus);
 
-    ui::MagnifierType type = ui::kDefaultMagnifierType;
-    if (type_integer > 0 && type_integer <= ui::kMaxMagnifierType) {
-      type = static_cast<ui::MagnifierType>(type_integer);
+    ash::MagnifierType type = ash::kDefaultMagnifierType;
+    if (type_integer > 0 && type_integer <= ash::kMaxMagnifierType) {
+      type = static_cast<ash::MagnifierType>(type_integer);
     } else if (type_integer == 0) {
       // Type 0 is used to disable the screen magnifier through policy. As the
       // magnifier type is irrelevant in this case, it is OK to just fall back
@@ -218,10 +219,8 @@ class MagnificationManagerImpl : public MagnificationManager,
     }
 
     AccessibilityStatusEventDetails details(
-        ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-        enabled_,
-        type_,
-        ui::A11Y_NOTIFICATION_NONE);
+        ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER, enabled_, type_,
+        ash::A11Y_NOTIFICATION_NONE);
 
     if (AccessibilityManager::Get()) {
       AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(details);
@@ -290,7 +289,7 @@ class MagnificationManagerImpl : public MagnificationManager,
   AccessibilityManager::PrefHandler magnifier_type_pref_handler_;
   AccessibilityManager::PrefHandler magnifier_scale_pref_handler_;
 
-  ui::MagnifierType type_;
+  ash::MagnifierType type_;
   bool enabled_;
   bool keep_focus_centered_;
   bool observing_focus_change_in_page_;
