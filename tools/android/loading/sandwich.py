@@ -47,6 +47,7 @@ OPTIONS = options.OPTIONS
 
 _SPEED_INDEX_MEASUREMENT = 'speed-index'
 _MEMORY_MEASUREMENT = 'memory'
+_TTFMP_MEASUREMENT = 'ttfmp'
 _CORPUS_DIR = 'sandwich_corpuses'
 
 
@@ -114,7 +115,9 @@ def _ArgumentParser():
   run_parser.add_argument('-c', '--corpus', required=True,
       help='Path to a JSON file with a corpus such as in %s/.' % _CORPUS_DIR)
   run_parser.add_argument('-m', '--measure', default=[], nargs='+',
-      choices=[_SPEED_INDEX_MEASUREMENT, _MEMORY_MEASUREMENT],
+      choices=[_SPEED_INDEX_MEASUREMENT,
+               _MEMORY_MEASUREMENT,
+               _TTFMP_MEASUREMENT],
       dest='optional_measures', help='Enable optional measurements.')
   run_parser.add_argument('--wpr-archive', default=None, type=str,
                           dest='wpr_archive_path',
@@ -177,6 +180,8 @@ def _GenerateBenchmarkTasks(args, android_device, url, output_subdirectory):
   def MainTransformer(runner):
     runner.record_video = _SPEED_INDEX_MEASUREMENT in args.optional_measures
     runner.record_memory_dumps = _MEMORY_MEASUREMENT in args.optional_measures
+    runner.record_first_meaningful_paint = (
+        _TTFMP_MEASUREMENT in args.optional_measures)
     runner.repeat = args.url_repeat
 
   if not args.swr_benchmark:

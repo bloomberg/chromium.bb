@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -26,6 +27,7 @@ from telemetry.internal.image_processing import video
 from telemetry.util import image_util
 from telemetry.util import rgba_color
 
+import common_util
 import loading_trace as loading_trace_module
 import sandwich_runner
 import tracing
@@ -36,6 +38,7 @@ COMMON_CSV_COLUMN_NAMES = [
     'platform',
     'first_layout',
     'first_contentful_paint',
+    'first_meaningful_paint',
     'total_load',
     'js_onload_event',
     'browser_malloc_avg',
@@ -181,6 +184,36 @@ def _ExtractDefaultMetrics(loading_trace):
   return metrics
 
 
+def _ExtractTimeToFirstMeaningfulPaint(loading_trace):
+  """Extracts the time to first meaningful paint from a given trace.
+
+  Args:
+    loading_trace: loading_trace_module.LoadingTrace.
+
+  Returns:
+    Time to first meaningful paint in milliseconds.
+  """
+  required_categories = set(sandwich_runner.TTFMP_ADDITIONAL_CATEGORIES)
+  if not required_categories.issubset(loading_trace.tracing_track.Categories()):
+    return _UNAVAILABLE_CSV_VALUE
+  logging.info('  Extracting first_meaningful_paint')
+  events = [e.ToJsonDict() for e in loading_trace.tracing_track.GetEvents()]
+  with common_util.TemporaryDirectory(prefix='sandwich_tmp_') as tmp_dir:
+    chrome_trace_path = os.path.join(tmp_dir, 'chrome_trace.json')
+    with open(chrome_trace_path, 'w') as output_file:
+      json.dump({'traceEvents': events, 'metadata': {}}, output_file)
+    catapult_run_metric_bin_path = os.path.join(
+        _SRC_DIR, 'third_party', 'catapult', 'tracing', 'bin', 'run_metric')
+    output = subprocess.check_output(
+        [catapult_run_metric_bin_path, 'firstPaintMetric', chrome_trace_path])
+  json_output = json.loads(output)
+  for metric in json_output[chrome_trace_path]['pairs']['values']:
+    if metric['name'] == 'firstMeaningfulPaint_avg':
+      return metric['numeric']['value']
+  logging.info('  Extracting first_meaningful_paint: failed')
+  return _FAILED_CSV_VALUE
+
+
 def _ExtractMemoryMetrics(loading_trace):
   """Extracts all the memory metrics from a given trace.
 
@@ -292,6 +325,8 @@ def ExtractCommonMetricsFromRepeatDirectory(repeat_dir, trace):
   }
   run_metrics.update(_ExtractDefaultMetrics(trace))
   run_metrics.update(_ExtractMemoryMetrics(trace))
+  run_metrics['first_meaningful_paint'] = _ExtractTimeToFirstMeaningfulPaint(
+      trace)
   video_path = os.path.join(repeat_dir, sandwich_runner.VIDEO_FILENAME)
   if os.path.isfile(video_path):
     logging.info('processing speed-index video \'%s\'' % video_path)

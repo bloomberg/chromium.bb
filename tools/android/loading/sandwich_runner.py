@@ -51,6 +51,11 @@ _TRACING_CATEGORIES = [
   '-cc',  # A lot of unnecessary events are enabled by default in "cc".
 ]
 
+TTFMP_ADDITIONAL_CATEGORIES = [
+  'loading',
+  'disabled-by-default-blink.debug.layout',
+]
+
 def _CleanArtefactsFromPastRuns(output_directories_path):
   """Cleans artifacts generated from past run in the output directory.
 
@@ -120,6 +125,9 @@ class SandwichRunner(object):
     # Configures whether to record memory dumps.
     self.record_memory_dumps = False
 
+    # Configures whether to record tracing categories needed for TTFMP.
+    self.record_first_meaningful_paint = False
+
     # Path to the WPR archive to load or save. Is str or None.
     self.wpr_archive_path = None
 
@@ -167,6 +175,8 @@ class SandwichRunner(object):
     categories = _TRACING_CATEGORIES
     if self.record_memory_dumps:
       categories += [MEMORY_DUMP_CATEGORY]
+    if self.record_first_meaningful_paint:
+      categories += TTFMP_ADDITIONAL_CATEGORIES
     stop_delay_multiplier = 0
     if self.wpr_record or self.cache_operation == CacheOperation.SAVE:
       stop_delay_multiplier = self._STOP_DELAY_MULTIPLIER
