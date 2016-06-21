@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/time/time.h"
@@ -34,9 +35,9 @@ class GlobalStorageInfo {
 
   void set_quota(int64_t quota) { quota_ = quota; }
 
-  // Create new Value for passing to WebUI page.  Caller is responsible for
-  // deleting the returned pointer.
-  base::Value* NewValue() const;
+  // Create new Value for passing to WebUI page.
+  std::unique_ptr<base::Value> NewValue() const;
+
  private:
   storage::StorageType type_;
 
@@ -55,9 +56,9 @@ class PerHostStorageInfo {
 
   void set_quota(int64_t quota) { quota_ = quota; }
 
-  // Create new Value for passing to WebUI page.  Caller is responsible for
-  // deleting the returned pointer.
-  base::Value* NewValue() const;
+  // Create new Value for passing to WebUI page.
+  std::unique_ptr<base::Value> NewValue() const;
+
  private:
   std::string host_;
   storage::StorageType type_;
@@ -89,9 +90,9 @@ class PerOriginStorageInfo {
     last_modified_time_ = last_modified_time;
   }
 
-  // Create new Value for passing to WebUI page.  Caller is responsible for
-  // deleting the returned pointer.
-  base::Value* NewValue() const;
+  // Create new Value for passing to WebUI page.
+  std::unique_ptr<base::Value> NewValue() const;
+
  private:
   GURL origin_;
   storage::StorageType type_;

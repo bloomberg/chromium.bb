@@ -127,7 +127,7 @@ class TraceNetLogObserverTest : public testing::Test {
       }
       if (category != kNetLogTracingCategory)
         continue;
-      filtered_trace_events->Append(dict->DeepCopy());
+      filtered_trace_events->Append(dict->CreateDeepCopy());
     }
     return filtered_trace_events;
   }

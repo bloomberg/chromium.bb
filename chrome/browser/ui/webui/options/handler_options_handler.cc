@@ -91,11 +91,11 @@ static void GetHandlersAsListValue(
     base::ListValue* handler_list) {
   ProtocolHandlerRegistry::ProtocolHandlerList::const_iterator handler;
   for (handler = handlers.begin(); handler != handlers.end(); ++handler) {
-    std::unique_ptr<base::ListValue> handlerValue(new base::ListValue());
-    handlerValue->AppendString(handler->protocol());
-    handlerValue->AppendString(handler->url().spec());
-    handlerValue->AppendString(handler->url().host());
-    handler_list->Append(std::move(handlerValue));
+    std::unique_ptr<base::ListValue> handler_value(new base::ListValue());
+    handler_value->AppendString(handler->protocol());
+    handler_value->AppendString(handler->url().spec());
+    handler_value->AppendString(handler->url().host());
+    handler_list->Append(std::move(handler_value));
   }
 }
 
@@ -135,9 +135,10 @@ void HandlerOptionsHandler::UpdateHandlerList() {
   base::ListValue handlers;
   for (std::vector<std::string>::iterator protocol = protocols.begin();
        protocol != protocols.end(); protocol++) {
-    base::DictionaryValue* handler_value = new base::DictionaryValue();
-    GetHandlersForProtocol(*protocol, handler_value);
-    handlers.Append(handler_value);
+    std::unique_ptr<base::DictionaryValue> handler_value(
+        new base::DictionaryValue());
+    GetHandlersForProtocol(*protocol, handler_value.get());
+    handlers.Append(std::move(handler_value));
   }
 
   std::unique_ptr<base::ListValue> ignored_handlers(new base::ListValue());

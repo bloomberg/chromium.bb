@@ -379,8 +379,7 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
     const Extension* extension = extension_service_->GetInstalledExtension(*it);
     if (extension && extensions::ui_util::ShouldDisplayInNewTabPage(
             extension, profile)) {
-      base::DictionaryValue* app_info = GetAppInfo(extension);
-      list->Append(app_info);
+      list->Append(GetAppInfo(extension));
     }
   }
 
@@ -401,14 +400,12 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
   }
 }
 
-base::DictionaryValue* AppLauncherHandler::GetAppInfo(
+std::unique_ptr<base::DictionaryValue> AppLauncherHandler::GetAppInfo(
     const Extension* extension) {
-  base::DictionaryValue* app_info = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> app_info(new base::DictionaryValue());
   // CreateAppInfo can change the extension prefs.
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
-  CreateAppInfo(extension,
-                extension_service_,
-                app_info);
+  CreateAppInfo(extension, extension_service_, app_info.get());
   return app_info;
 }
 

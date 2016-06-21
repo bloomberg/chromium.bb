@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>

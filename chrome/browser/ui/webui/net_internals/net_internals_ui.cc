@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -327,7 +328,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Adds |entry| to the queue of pending log entries to be sent to the page via
   // Javascript.  Must be called on the IO Thread.  Also creates a delayed task
   // that will call PostPendingEntries, if there isn't one already.
-  void AddEntryToQueue(base::Value* entry);
+  void AddEntryToQueue(std::unique_ptr<base::Value> entry);
 
   // Sends all pending entries to the page via Javascript, and clears the list
   // of pending entries.  Sending multiple entries at once results in a
@@ -587,10 +588,12 @@ void NetInternalsMessageHandler::OnGetExtensionInfo(
               ->GenerateInstalledExtensionsSet());
       for (extensions::ExtensionSet::const_iterator it = extensions->begin();
            it != extensions->end(); ++it) {
-        base::DictionaryValue* extension_info = new base::DictionaryValue();
+        std::unique_ptr<base::DictionaryValue> extension_info(
+            new base::DictionaryValue());
         bool enabled = extension_service->IsExtensionEnabled((*it)->id());
-        extensions::GetExtensionBasicInfo(it->get(), enabled, extension_info);
-        extension_list->Append(extension_info);
+        extensions::GetExtensionBasicInfo(it->get(), enabled,
+                                          extension_info.get());
+        extension_list->Append(std::move(extension_info));
       }
     }
   }
@@ -1101,9 +1104,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnSetCaptureMode(
 // can be called from ANY THREAD.
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     const net::NetLog::Entry& entry) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadImpl::AddEntryToQueue, this, entry.ToValue()));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&IOThreadImpl::AddEntryToQueue, this,
+                                     base::Passed(entry.ToValue())));
 }
 
 // Note that this can be called from ANY THREAD.
@@ -1130,7 +1133,7 @@ void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(
-    base::Value* entry) {
+    std::unique_ptr<base::Value> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!pending_entries_.get()) {
     pending_entries_.reset(new base::ListValue());
@@ -1139,7 +1142,7 @@ void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(
         base::Bind(&IOThreadImpl::PostPendingEntries, this),
         base::TimeDelta::FromMilliseconds(kNetLogEventDelayMilliseconds));
   }
-  pending_entries_->Append(entry);
+  pending_entries_->Append(std::move(entry));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::PostPendingEntries() {

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -15,6 +16,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -115,7 +117,7 @@ void GetAddressComponents(const std::string& country_code,
         components[i - 1].length_hint == AddressUiComponent::HINT_LONG ||
         components[i].length_hint == AddressUiComponent::HINT_LONG) {
       line = new base::ListValue;
-      address_components->Append(line);
+      address_components->Append(base::WrapUnique(line));
     }
 
     std::unique_ptr<base::DictionaryValue> component(new base::DictionaryValue);

@@ -83,7 +83,9 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
   void HandleDisableExtension(const base::ListValue* args);
 
   // Returns a dictionary to pass to WebUI representing the given search engine.
-  base::DictionaryValue* CreateDictionaryForEngine(int index, bool is_default);
+  std::unique_ptr<base::DictionaryValue> CreateDictionaryForEngine(
+      int index,
+      bool is_default);
 
   // Returns a dictionary to pass to WebUI representing the extension.
   base::DictionaryValue* CreateDictionaryForExtension(

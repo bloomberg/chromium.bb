@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/copresence_ui_handler.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>

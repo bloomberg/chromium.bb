@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/identity_internals_ui.h"
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -78,9 +79,8 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
 
   // Converts a pair of |token_cache_key| and |token_cache_value| to a
   // DictionaryValue object with corresponding information in a localized and
-  // readable form and returns a pointer to created object. Caller gets the
-  // ownership of the returned object.
-  base::DictionaryValue* GetInfoForToken(
+  // readable form and returns a pointer to created object.
+  std::unique_ptr<base::DictionaryValue> GetInfoForToken(
       const extensions::ExtensionTokenKey& token_cache_key,
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
@@ -209,10 +209,12 @@ const std::string IdentityInternalsUIMessageHandler::GetExpirationTime(
       token_cache_value.expiration_time()));
 }
 
-base::DictionaryValue* IdentityInternalsUIMessageHandler::GetInfoForToken(
+std::unique_ptr<base::DictionaryValue>
+IdentityInternalsUIMessageHandler::GetInfoForToken(
     const extensions::ExtensionTokenKey& token_cache_key,
     const extensions::IdentityTokenCacheValue& token_cache_value) {
-  base::DictionaryValue* token_data = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> token_data(
+      new base::DictionaryValue());
   token_data->SetString(kExtensionId, token_cache_key.extension_id);
   token_data->SetString(kExtensionName, GetExtensionName(token_cache_key));
   token_data->Set(kScopes, GetScopes(token_cache_key));

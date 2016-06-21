@@ -155,9 +155,8 @@ void SearchEnginesHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-base::DictionaryValue* SearchEnginesHandler::CreateDictionaryForEngine(
-    int index,
-    bool is_default) {
+std::unique_ptr<base::DictionaryValue>
+SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
   TemplateURLTableModel* table_model = list_controller_.table_model();
   const TemplateURL* template_url = list_controller_.GetTemplateURL(index);
 
@@ -165,7 +164,7 @@ base::DictionaryValue* SearchEnginesHandler::CreateDictionaryForEngine(
   // chrome/browser/resources/settings/search_engines_page/
   // in @typedef for SearchEngine. Please update it whenever you add or remove
   // any keys here.
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("name", template_url->short_name());
   dict->SetString("displayName",
                   table_model->GetText(

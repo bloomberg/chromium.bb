@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"

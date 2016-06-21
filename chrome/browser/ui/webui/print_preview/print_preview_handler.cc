@@ -418,9 +418,8 @@ void EnumeratePrintersOnBlockingPoolThread(base::ListValue* printers) {
   print_backend->EnumeratePrinters(&printer_list);
 
   for (const printing::PrinterBasicInfo& printer : printer_list) {
-    base::DictionaryValue* printer_info = new base::DictionaryValue;
-    printers->Append(printer_info);
-
+    std::unique_ptr<base::DictionaryValue> printer_info(
+        new base::DictionaryValue);
     const auto printer_name_description = GetPrinterNameAndDescription(printer);
     const std::string& printer_name = printer_name_description.first;
     const std::string& printer_description = printer_name_description.second;
@@ -433,6 +432,8 @@ void EnumeratePrintersOnBlockingPoolThread(base::ListValue* printers) {
     printer_info->Set(printing::kSettingPrinterOptions, options);
     for (const auto opt_it : printer.options)
       options->SetString(opt_it.first, opt_it.second);
+
+    printers->Append(std::move(printer_info));
 
     VLOG(1) << "Found printer " << printer_name << " with device name "
             << printer.printer_name;

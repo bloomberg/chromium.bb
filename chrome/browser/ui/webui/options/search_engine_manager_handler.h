@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_SEARCH_ENGINE_MANAGER_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_SEARCH_ENGINE_MANAGER_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -72,7 +74,9 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   void EditCompleted(const base::ListValue* args);
 
   // Returns a dictionary to pass to WebUI representing the given search engine.
-  base::DictionaryValue* CreateDictionaryForEngine(int index, bool is_default);
+  std::unique_ptr<base::DictionaryValue> CreateDictionaryForEngine(
+      int index,
+      bool is_default);
 
   // Returns a dictionary to pass to WebUI representing the extension.
   base::DictionaryValue* CreateDictionaryForExtension(

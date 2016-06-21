@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_PROXY_H_
 #define CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_PROXY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -68,7 +70,7 @@ class MediaInternalsProxy
   void UpdateUIOnUIThread(const base::string16& update);
 
   // Put |entry| on a list of events to be sent to the page.
-  void AddNetEventOnUIThread(base::Value* entry);
+  void AddNetEventOnUIThread(std::unique_ptr<base::Value> entry);
 
   // Send all pending events to the page.
   void SendNetEventsOnUIThread();

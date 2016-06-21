@@ -134,7 +134,7 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
 
   void OnAddEntry(const NetLog::Entry& entry) override {
     std::unique_ptr<base::DictionaryValue> dict =
-        base::DictionaryValue::From(base::WrapUnique(entry.ToValue()));
+        base::DictionaryValue::From(entry.ToValue());
     ASSERT_TRUE(dict);
     values_.push_back(std::move(dict));
   }
