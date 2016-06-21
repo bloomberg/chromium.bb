@@ -1078,7 +1078,7 @@ public:
         ImageDocument = 1274,
         ScriptPassesCSPDynamic = 1275,
         ScriptPassesCSPNonce = 1276,
-        CSPWithUnsafeDynamic = 1277,
+        CSPWithStrictDynamic = 1277,
         ScrollAnchored = 1278,
         AddEventListenerFourArguments = 1279,
         RemoveEventListenerFourArguments = 1280,

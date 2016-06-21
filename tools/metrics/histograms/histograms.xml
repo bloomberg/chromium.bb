@@ -75243,7 +75243,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1274" label="ImageDocument"/>
   <int value="1275" label="ScriptPassesCSPDynamic"/>
   <int value="1276" label="ScriptPassesCSPNonce"/>
-  <int value="1277" label="CSPWithUnsafeDynamic"/>
+  <int value="1277" label="CSPWithStrictDynamic"/>
   <int value="1278" label="ScrollAnchored"/>
   <int value="1279" label="AddEventListenerFourArguments"/>
   <int value="1280" label="RemoveEventListenerFourArguments"/>
