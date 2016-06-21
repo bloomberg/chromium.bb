@@ -300,14 +300,6 @@
             "group_name": "TokenBinding"
         }
     ],
-    "UsePredictorDNSQueue": [
-        {
-            "disable_features": [
-                "UsePredictorDNSQueue"
-            ],
-            "group_name": "Disabled"
-        }
-    ],
     "V8CacheStrategiesForCacheStorage": [
         {
             "group_name": "none"

@@ -511,7 +511,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, kBlinkPreconnectFeature);
     command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    "PreconnectMore,UsePredictorDNSQueue");
+                                    "PreconnectMore");
   }
 
   void SetUpOnMainThread() override {
