@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
@@ -23,6 +24,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -491,6 +493,25 @@ bool GetImageURLWithThumbnailSize(
   // We can't set the image size, just use the default size.
   *new_url = old_url;
   return true;
+}
+
+std::unique_ptr<base::ListValue> GetDefaultProfileAvatarIconsAndLabels() {
+  std::unique_ptr<base::ListValue> avatars(new base::ListValue());
+
+  const size_t placeholder_avatar_index = profiles::GetPlaceholderAvatarIndex();
+  for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount() &&
+                     i != placeholder_avatar_index;
+       ++i) {
+    std::unique_ptr<base::DictionaryValue> avatar_info(
+        new base::DictionaryValue());
+    avatar_info->SetString("url", profiles::GetDefaultAvatarIconUrl(i));
+    avatar_info->SetString(
+        "label", l10n_util::GetStringUTF16(
+                     profiles::GetDefaultAvatarLabelResourceIDAtIndex(i)));
+
+    avatars->Append(std::move(avatar_info));
+  }
+  return avatars;
 }
 
 }  // namespace profiles

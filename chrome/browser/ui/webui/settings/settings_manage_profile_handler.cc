@@ -100,38 +100,24 @@ void ManageProfileHandler::HandleGetAvailableIcons(
 }
 
 std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
-  std::unique_ptr<base::ListValue> image_url_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> image_url_list(
+      profiles::GetDefaultProfileAvatarIconsAndLabels());
 
-  // First add the GAIA picture if it is available.
+  // Add the GAIA picture to the beginning of the list if it is available.
   ProfileAttributesEntry* entry;
   if (g_browser_process->profile_manager()->GetProfileAttributesStorage().
           GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
     const gfx::Image* icon = entry->GetGAIAPicture();
     if (icon) {
-      std::unique_ptr<base::DictionaryValue> gaia_picture_info(
-          new base::DictionaryValue());
+      base::DictionaryValue* gaia_picture_info = new base::DictionaryValue();
       gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
       gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
       gaia_picture_info->SetString("url", gaia_picture_url_);
       gaia_picture_info->SetString(
           "label",
           l10n_util::GetStringUTF16(IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO));
-      image_url_list->Append(std::move(gaia_picture_info));
+      image_url_list->Insert(0, gaia_picture_info);
     }
-  }
-
-  // Next add the default avatar icons and names.
-  size_t placeholder_avatar_index = profiles::GetPlaceholderAvatarIndex();
-  for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount() &&
-                     i != placeholder_avatar_index;
-       i++) {
-    std::unique_ptr<base::DictionaryValue> avatar_info(
-        new base::DictionaryValue());
-    avatar_info->SetString("url", profiles::GetDefaultAvatarIconUrl(i));
-    avatar_info->SetString(
-        "label", l10n_util::GetStringUTF16(
-                     profiles::GetDefaultAvatarLabelResourceIDAtIndex(i)));
-    image_url_list->Append(std::move(avatar_info));
   }
 
   return image_url_list;

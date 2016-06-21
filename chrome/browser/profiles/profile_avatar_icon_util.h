@@ -7,12 +7,14 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
 class FilePath;
+class ListValue;
 }
 
 namespace gfx {
@@ -106,6 +108,11 @@ bool IsDefaultAvatarIconUrl(const std::string& icon_url, size_t *icon_index);
 //   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s256-c/photo.jpg
 bool GetImageURLWithThumbnailSize(
     const GURL& old_url, int thumbnail_size, GURL* new_url);
+
+// Returns a list of dictionaries containing the default profile avatar icons as
+// well as avatar labels used for accessibility purposes. The list is ordered
+// according to the avatars' default order.
+std::unique_ptr<base::ListValue> GetDefaultProfileAvatarIconsAndLabels();
 
 }  // namespace profiles
 

@@ -173,27 +173,9 @@ void SigninCreateProfileHandler::RegisterMessages() {
 
 void SigninCreateProfileHandler::RequestDefaultProfileIcons(
     const base::ListValue* args) {
-  base::ListValue image_url_list;
-
-  // Add the default avatar icons.
-  size_t placeholder_avatar_index = profiles::GetPlaceholderAvatarIndex();
-  for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount() &&
-                     i != placeholder_avatar_index;
-       i++) {
-    std::unique_ptr<base::DictionaryValue> avatar_info(
-        new base::DictionaryValue());
-    avatar_info->SetString("url", profiles::GetDefaultAvatarIconUrl(i));
-    avatar_info->SetString(
-        "label",
-        l10n_util::GetStringUTF16(
-            profiles::GetDefaultAvatarLabelResourceIDAtIndex(i)));
-
-    image_url_list.Append(std::move(avatar_info));
-  }
-
   web_ui()->CallJavascriptFunctionUnsafe(
       "cr.webUIListenerCallback", base::StringValue("profile-icons-received"),
-      image_url_list);
+      *profiles::GetDefaultProfileAvatarIconsAndLabels());
 
   SendNewProfileDefaults();
 }
