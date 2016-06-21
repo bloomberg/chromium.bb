@@ -40,6 +40,7 @@
 #include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/V8Location.h"
 #include "bindings/core/v8/V8PerContextData.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
@@ -196,9 +197,9 @@ static void promiseRejectHandler(v8::PromiseRejectMessage data, RejectedPromises
     if (V8DOMWrapper::isWrapper(isolate, exception)) {
         // Try to get the stack & location from a wrapped exception object (e.g. DOMException).
         ASSERT(exception->IsObject());
-        v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(exception);
-        v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(scriptState, obj, V8HiddenValue::error(isolate));
-        if (!error.IsEmpty())
+        auto privateError = V8PrivateProperty::getDOMExceptionError(isolate);
+        v8::Local<v8::Value> error = privateError.getOrUndefined(scriptState->context(), exception.As<v8::Object>());
+        if (!error->IsUndefined())
             exception = error;
     }
 

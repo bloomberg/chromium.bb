@@ -21,14 +21,16 @@ class ScriptState;
 class ScriptWrappable;
 
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
-#define V8_PRIVATE_PROPERTY_FOR_EACH(X)   \
-    X(CustomEvent, Detail)                \
-    X(MessageEvent, CachedData)           \
-    X(PrivateScriptRunner, IsInitialized) \
-    X(IntersectionObserver, Callback)     \
+#define V8_PRIVATE_PROPERTY_FOR_EACH(X) \
+    X(CustomEvent, Detail) \
+    X(DOMException, Error) \
+    X(ErrorEvent, Error) \
     X(IDBObserver, Callback)              \
+    X(IntersectionObserver, Callback)     \
+    X(MessageEvent, CachedData) \
     X(MutationObserver, Callback)         \
     X(PerformanceObserver, Callback)      \
+    X(PrivateScriptRunner, IsInitialized) \
     X(V8NodeFilterCondition, Filter)
 
 // The getter's name for a private property.
