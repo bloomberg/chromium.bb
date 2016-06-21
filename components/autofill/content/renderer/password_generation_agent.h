@@ -107,7 +107,12 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // generation popup at this field.
   void OnUserTriggeredGeneratePassword();
 
+  // Enables the form classifier.
+  void OnAllowToRunFormClassifier();
+
   // Runs HTML parsing based classifier and saves its outcome to proto.
+  // TODO(crbug.com/621442): Remove client-side form classifier when server-side
+  // classifier is ready.
   void RunFormClassifierAndSaveVote(const blink::WebFormElement& web_form,
                                     const PasswordForm& form);
 
@@ -164,6 +169,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
 
   // If this feature is enabled. Controlled by Finch.
   bool enabled_;
+
+  // If the form classifier should run.
+  bool form_classifier_enabled_;
 
   // Unowned pointer. Used to notify PassowrdAutofillAgent when values
   // in password fields are updated.

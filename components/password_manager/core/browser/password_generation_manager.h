@@ -46,6 +46,12 @@ class PasswordGenerationManager {
   // Determines current state of password generation
   bool IsGenerationEnabled() const;
 
+  // Determine if the form classifier should run. If yes, sends a message to the
+  // renderer.
+  // TODO(crbug.com/621442): Remove client-side form classifier when server-side
+  // classifier is ready.
+  void CheckIfFormClassifierShouldRun();
+
  private:
   friend class PasswordGenerationManagerTest;
 

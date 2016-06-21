@@ -71,4 +71,9 @@ bool PasswordGenerationManager::IsGenerationEnabled() const {
   return true;
 }
 
+void PasswordGenerationManager::CheckIfFormClassifierShouldRun() {
+  if (autofill::FormStructure::IsAutofillFieldMetadataEnabled())
+    driver_->AllowToRunFormClassifier();
+}
+
 }  // namespace password_manager

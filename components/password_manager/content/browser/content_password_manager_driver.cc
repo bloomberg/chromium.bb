@@ -136,6 +136,11 @@ void ContentPasswordManagerDriver::SendLoggingAvailability() {
       client_->GetLogManager()->IsLoggingActive()));
 }
 
+void ContentPasswordManagerDriver::AllowToRunFormClassifier() {
+  render_frame_host_->Send(new AutofillMsg_AllowToRunFormClassifier(
+      render_frame_host_->GetRoutingID()));
+}
+
 PasswordGenerationManager*
 ContentPasswordManagerDriver::GetPasswordGenerationManager() {
   return &password_generation_manager_;
@@ -194,6 +199,7 @@ void ContentPasswordManagerDriver::OnPasswordFormsParsed(
 void ContentPasswordManagerDriver::OnPasswordFormsParsedNoRenderCheck(
     const std::vector<autofill::PasswordForm>& forms) {
   GetPasswordManager()->OnPasswordFormsParsed(this, forms);
+  GetPasswordGenerationManager()->CheckIfFormClassifierShouldRun();
 }
 
 void ContentPasswordManagerDriver::OnPasswordFormsRendered(

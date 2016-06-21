@@ -71,6 +71,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   void ForceSavePassword() override;
   void GeneratePassword() override;
   void SendLoggingAvailability() override;
+  void AllowToRunFormClassifier() override;
 
   PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;

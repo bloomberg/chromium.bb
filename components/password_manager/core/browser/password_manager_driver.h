@@ -96,6 +96,9 @@ class PasswordManagerDriver
   // chrome://password-manager-internals is available.
   virtual void SendLoggingAvailability() {}
 
+  // Allows the form classifier to find generation fields.
+  virtual void AllowToRunFormClassifier() {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);
 };

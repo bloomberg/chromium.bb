@@ -60,13 +60,6 @@ const int kMinCommonNamePrefixLength = 16;
 // Maximum number of characters in the field label to be encoded in a proto.
 const int kMaxFieldLabelNumChars = 200;
 
-// Returns whether sending autofill field metadata to the server is enabled.
-bool IsAutofillFieldMetadataEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("AutofillFieldMetadata");
-  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
-}
-
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
 // |available_field_types| and returns the hex representation as a string.
 std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
@@ -570,6 +563,13 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
     forms.push_back(form);
   }
   return forms;
+}
+
+// static
+bool FormStructure::IsAutofillFieldMetadataEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("AutofillFieldMetadata");
+  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 std::string FormStructure::FormSignature() const {

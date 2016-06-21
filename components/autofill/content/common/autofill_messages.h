@@ -168,6 +168,9 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptDataListSuggestion,
 IPC_MESSAGE_ROUTED1(AutofillMsg_GeneratedPasswordAccepted,
                     base::string16 /* generated_password */)
 
+// Tells the renderer to enable the form classifier.
+IPC_MESSAGE_ROUTED0(AutofillMsg_AllowToRunFormClassifier)
+
 // Tells the renderer to fill the username and password with with given
 // values.
 IPC_MESSAGE_ROUTED2(AutofillMsg_FillPasswordSuggestion,
