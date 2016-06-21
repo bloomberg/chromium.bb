@@ -75,6 +75,7 @@ crbug.com/24182 fast/frames/sandboxed-iframe-navigation-targetlink.html [ Slow ]
 crbug.com/24182 fast/html/marquee-destroyed-without-removed-from-crash.html [ Slow ]
 crbug.com/24182 fast/js/regress/string-cons-tower.html [ Slow ]
 crbug.com/24182 virtual/pointerevent/fast/events/tabindex-focus-blur-all.html [ Slow ]
+crbug.com/24182 [ Debug ] svg/hixie/perf/005.xml [ Slow ]
 crbug.com/451577 [ Debug ] fast/dom/gc-treescope.html  [ Slow ]
 crbug.com/451577 [ Debug ] fast/frames/calculate-round.html [ Slow ]
 crbug.com/451577 imported/wpt/IndexedDB/idbindex-multientry-big.htm [ Slow ]
@@ -270,7 +271,7 @@ crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolatio
 crbug.com/521857 [ Win Debug ] imported/wpt/IndexedDB/idbdatabase_createObjectStore10-1000ends.htm [ Slow ]
 
 crbug.com/528419 [ Linux ] inspector/elements/shadow/shadow-host-display-modes.html [ Slow ]
-crbug.com/528419 [ Linux ] inspector/elements/styles-2/pseudo-elements.html [ Slow ]
+crbug.com/528419 inspector/elements/styles-2/pseudo-elements.html [ Slow ]
 
 crbug.com/529345 [ Win10 ] paint/masks/fieldset-mask.html [ Slow ]
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Slow ]
@@ -290,3 +291,5 @@ crbug.com/601726 http/tests/incremental/frame-focus-before-load.html [ Slow ]
 crbug.com/611442 imported/wpt/quirks-mode/hashless-hex-color.html [ Slow ]
 
 crbug.com/614910 virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Slow ]
+
+crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]

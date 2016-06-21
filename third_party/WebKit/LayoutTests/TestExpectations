@@ -1422,7 +1422,6 @@ crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
 
 crbug.com/610464 [ Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
-crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 
 # TODO(jlebel): Remove when methods are implemented.
 crbug.com/609065 [ Mac ] bluetooth/characteristicProperties.html [ Skip ]
@@ -1510,14 +1509,10 @@ crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ F
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
 
-crbug.com/614509 [ Win ] inspector/elements/styles-2/pseudo-elements.html [ Pass Timeout ]
-
 crbug.com/484632 css3/flexbox/stretch-input-in-column.html [ Failure ]
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
-
-crbug.com/621840 [ Win7 ] svg/hixie/perf/005.xml [ Pass Timeout ]
 
 crbug.com/621892 css3/filters/effect-brightness-clamping-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-brightness-hw.html [ Pass Failure ]
