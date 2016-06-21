@@ -4,9 +4,9 @@ use_relative_paths = True
 vars = {
   "git_url": "https://chromium.googlesource.com",
 
-  "clang_format_rev": "a72164df8be7d1c68ae1ad6c3541e7819200327e", # r258123
-  "libcxx_revision": "aad34a13af010898f54c1bb2069194cb083cea4b",
-  "libcxxabi_revision": "9a39e428d018b723d7d187181fd08908b1cb6bd0",
+  "clang_format_rev": "a72164df8be7d1c68ae1ad6c3541e7819200327e",   # r258328
+  "libcxx_revision": "b1ece9c037d879843b0b0f5a2802e1e9d443b75a",    # r256621
+  "libcxxabi_revision": "0edb61e2e581758fc4cd4cd09fc588b3fc91a653", # r256323
 }
 
 deps = {
