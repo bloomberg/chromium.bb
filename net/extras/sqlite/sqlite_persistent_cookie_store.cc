@@ -819,9 +819,7 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
     } else {
       value = smt.ColumnString(3);
     }
-    std::unique_ptr<CanonicalCookie> cc(new CanonicalCookie(
-        // The "source" URL is not used with persisted cookies.
-        GURL(),                                        // Source
+    std::unique_ptr<CanonicalCookie> cc(CanonicalCookie::Create(
         smt.ColumnString(2),                           // name
         value,                                         // value
         smt.ColumnString(1),                           // domain
@@ -830,7 +828,7 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
         Time::FromInternalValue(smt.ColumnInt64(6)),   // expires_utc
         Time::FromInternalValue(smt.ColumnInt64(10)),  // last_access_utc
         smt.ColumnInt(7) != 0,                         // secure
-        smt.ColumnInt(8) != 0,                         // httponly
+        smt.ColumnInt(8) != 0,                         // http_only
         DBCookieSameSiteToCookieSameSite(
             static_cast<DBCookieSameSite>(smt.ColumnInt(9))),  // samesite
         DBCookiePriorityToCookiePriority(
