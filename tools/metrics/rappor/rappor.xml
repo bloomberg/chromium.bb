@@ -183,6 +183,40 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Autofill.CardUploadNotOfferedConflictingNames"
+    type="ETLD_PLUS_ONE">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL for which there was an attempted upload of a credit card
+    but for which we found conflicting names between the address and the card.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Autofill.CardUploadNotOfferedNoAddress"
+    type="ETLD_PLUS_ONE">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL for which there was an attempted upload of a credit card
+    but for which we couldn't find a recently used address to associate with it.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Autofill.CardUploadNotOfferedNoCvc" type="ETLD_PLUS_ONE">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL for which there was an attempted upload of a credit card
+    but the form data didn't contain the card CVC.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Autofill.CardUploadNotOfferedNoName" type="ETLD_PLUS_ONE">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL for which there was an attempted upload of a credit card
+    but for which we found no name associated with the address or the card.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Autofill.HighNumberOfHeuristicMismatches"
     type="ETLD_PLUS_ONE">
   <owner>mathp@chromium.org</owner>

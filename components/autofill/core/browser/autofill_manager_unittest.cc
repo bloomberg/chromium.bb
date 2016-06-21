@@ -43,6 +43,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
+#include "components/rappor/test_rappor_service.h"
 #include "grit/components_strings.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -4354,6 +4355,16 @@ TEST_F(AutofillManagerTest, UploadCreditCard_CvcUnavailable) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
+
+  rappor::TestRapporService* rappor_service =
+      autofill_client_.test_rappor_service();
+  EXPECT_EQ(1, rappor_service->GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
+      "Autofill.CardUploadNotOfferedNoCvc", &sample, &type));
+  EXPECT_EQ("myform.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_MultipleCvcFields) {
@@ -4444,6 +4455,16 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoProfileAvailable) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS, 1);
+
+  rappor::TestRapporService* rappor_service =
+      autofill_client_.test_rappor_service();
+  EXPECT_EQ(1, rappor_service->GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
+      "Autofill.CardUploadNotOfferedNoAddress", &sample, &type));
+  EXPECT_EQ("myform.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoNameAvailable) {
@@ -4481,6 +4502,16 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoNameAvailable) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME, 1);
+
+  rappor::TestRapporService* rappor_service =
+      autofill_client_.test_rappor_service();
+  EXPECT_EQ(1, rappor_service->GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
+      "Autofill.CardUploadNotOfferedNoName", &sample, &type));
+  EXPECT_EQ("myform.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesConflict) {
@@ -4708,6 +4739,16 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NamesHaveToMatch) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES, 1);
+
+  rappor::TestRapporService* rappor_service =
+      autofill_client_.test_rappor_service();
+  EXPECT_EQ(1, rappor_service->GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
+      "Autofill.CardUploadNotOfferedConflictingNames", &sample, &type));
+  EXPECT_EQ("myform.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_UploadDetailsFails) {
