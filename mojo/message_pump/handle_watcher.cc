@@ -277,7 +277,7 @@ void WatcherThreadManager::AddRequest(const RequestData& data) {
 }
 
 void WatcherThreadManager::ProcessRequestsOnBackendThread() {
-  DCHECK_EQ(thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(thread_.task_runner()->BelongsToCurrentThread());
 
   Requests requests;
   {
