@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -202,8 +203,8 @@ Bus::Bus(const Options& options)
   dbus_threads_init_default();
   // The origin message loop is unnecessary if the client uses synchronous
   // functions only.
-  if (base::MessageLoop::current())
-    origin_task_runner_ = base::MessageLoop::current()->task_runner();
+  if (base::ThreadTaskRunnerHandle::IsSet())
+    origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 Bus::~Bus() {
