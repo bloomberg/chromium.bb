@@ -373,8 +373,7 @@ bool WebThread::CurrentlyOn(ID identifier) {
   base::AutoLock lock(globals.lock);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   return globals.threads[identifier] &&
-         globals.threads[identifier]->message_loop() ==
-             base::MessageLoop::current();
+         globals.threads[identifier]->task_runner()->BelongsToCurrentThread();
 }
 
 // static

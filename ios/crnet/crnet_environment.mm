@@ -23,6 +23,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/worker_pool.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
@@ -178,8 +179,7 @@ void CrNetEnvironment::StartNetLog(base::FilePath::StringType file_name,
 
 void CrNetEnvironment::StartNetLogInternal(
     base::FilePath::StringType file_name, bool log_bytes) {
-  DCHECK(base::MessageLoop::current() ==
-         file_user_blocking_thread_->message_loop());
+  DCHECK(file_user_blocking_thread_->task_runner()->BelongsToCurrentThread());
   DCHECK(file_name.length());
   DCHECK(net_log_);
 
@@ -212,8 +212,7 @@ void CrNetEnvironment::StopNetLog() {
 }
 
 void CrNetEnvironment::StopNetLogInternal() {
-  DCHECK(base::MessageLoop::current() ==
-         file_user_blocking_thread_->message_loop());
+  DCHECK(file_user_blocking_thread_->task_runner()->BelongsToCurrentThread());
   if (net_log_observer_) {
     net_log_observer_->StopObserving(nullptr);
     net_log_observer_.reset();
@@ -243,8 +242,7 @@ net::HttpNetworkSession* CrNetEnvironment::GetHttpNetworkSession(
 }
 
 void CrNetEnvironment::CloseAllSpdySessionsInternal() {
-  DCHECK(base::MessageLoop::current() ==
-         network_io_thread_->message_loop());
+  DCHECK(network_io_thread_->task_runner()->BelongsToCurrentThread());
 
   net::HttpNetworkSession* http_network_session =
       GetHttpNetworkSession(GetMainContextGetter()->GetURLRequestContext());
@@ -328,7 +326,7 @@ void CrNetEnvironment::SetHTTPProtocolHandlerRegistered(bool registered) {
 }
 
 void CrNetEnvironment::ConfigureSdchOnNetworkThread() {
-  DCHECK(base::MessageLoop::current() == network_io_thread_->message_loop());
+  DCHECK(network_io_thread_->task_runner()->BelongsToCurrentThread());
   net::URLRequestContext* context =
       main_context_getter_->GetURLRequestContext();
 
@@ -353,7 +351,7 @@ void CrNetEnvironment::ConfigureSdchOnNetworkThread() {
 }
 
 void CrNetEnvironment::InitializeOnNetworkThread() {
-  DCHECK(base::MessageLoop::current() == network_io_thread_->message_loop());
+  DCHECK(network_io_thread_->task_runner()->BelongsToCurrentThread());
 
   ConfigureSdchOnNetworkThread();
 
