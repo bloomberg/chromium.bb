@@ -19,6 +19,7 @@
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/shutdown_policy_observer.h"
 #include "ash/common/system/date/clock_observer.h"
+#include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
@@ -31,7 +32,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
-#include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/user/login_status.h"
@@ -1145,13 +1145,13 @@ void SystemTrayDelegateChromeOS::InputMethodChanged(
     input_method::InputMethodManager* manager,
     Profile* /* profile */,
     bool show_message) {
-  GetSystemTrayNotifier()->NotifyRefreshIME();
+  GetWmSystemTrayNotifier()->NotifyRefreshIME();
 }
 
 // Overridden from InputMethodMenuManager::Observer.
 void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
     ui::ime::InputMethodMenuManager* manager) {
-  GetSystemTrayNotifier()->NotifyRefreshIME();
+  GetWmSystemTrayNotifier()->NotifyRefreshIME();
 }
 
 // Overridden from CrasAudioHandler::AudioObserver.
@@ -1295,7 +1295,7 @@ void SystemTrayDelegateChromeOS::OnShutdownPolicyChanged(
 }
 
 void SystemTrayDelegateChromeOS::ImeMenuActivationChanged(bool is_active) {
-  GetSystemTrayNotifier()->NotifyRefreshIMEMenu(is_active);
+  GetWmSystemTrayNotifier()->NotifyRefreshIMEMenu(is_active);
 }
 
 void SystemTrayDelegateChromeOS::ImeMenuListChanged() {}

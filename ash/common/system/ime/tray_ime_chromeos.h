@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_IME_TRAY_IME_CHROMEOS_H_
-#define ASH_SYSTEM_IME_TRAY_IME_CHROMEOS_H_
+#ifndef ASH_COMMON_SYSTEM_IME_TRAY_IME_CHROMEOS_H_
+#define ASH_COMMON_SYSTEM_IME_TRAY_IME_CHROMEOS_H_
 
 #include <stddef.h>
 
 #include "ash/common/system/accessibility_observer.h"
+#include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
+#include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
-#include "ash/system/ime/ime_observer.h"
 #include "base/macros.h"
 
 namespace views {
@@ -91,4 +91,4 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_IME_TRAY_IME_CHROMEOS_H_
+#endif  // ASH_COMMON_SYSTEM_IME_TRAY_IME_CHROMEOS_H_

@@ -75,6 +75,9 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddShellObserver(ShellObserver* observer) override;
   void RemoveShellObserver(ShellObserver* observer) override;
+#if defined(OS_CHROMEOS)
+  void ToggleIgnoreExternalKeyboard() override;
+#endif
 
  private:
   // Returns true if |window| is a window that can have active children.

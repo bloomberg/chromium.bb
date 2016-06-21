@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/ime/tray_ime_chromeos.h"
+#include "ash/common/system/ime/tray_ime_chromeos.h"
 
 #include <vector>
 
@@ -17,12 +17,7 @@
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
-#include "ash/virtual_keyboard_controller.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -124,11 +119,8 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
       AppendKeyboardStatus();
     }
 
-    bool userAddingRunning = ash::Shell::GetInstance()
-                                 ->session_state_delegate()
-                                 ->IsInSecondaryLoginScreen();
     if (login_ != LoginStatus::NOT_LOGGED_IN && login_ != LoginStatus::LOCKED &&
-        !userAddingRunning)
+        !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen())
       AppendSettings();
     AppendHeaderEntry();
 
@@ -193,18 +185,17 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
     if (sender == footer()->content()) {
       TransitionToDefaultView();
     } else if (sender == settings_) {
-      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-          ash::UMA_STATUS_AREA_IME_SHOW_DETAILED);
+      WmShell::Get()->RecordUserMetricsAction(
+          UMA_STATUS_AREA_IME_SHOW_DETAILED);
       delegate->ShowIMESettings();
     } else if (sender == keyboard_status_) {
-      Shell::GetInstance()->virtual_keyboard_controller()
-          ->ToggleIgnoreExternalKeyboard();
+      WmShell::Get()->ToggleIgnoreExternalKeyboard();
     } else {
       std::map<views::View*, std::string>::const_iterator ime_find;
       ime_find = ime_map_.find(sender);
       if (ime_find != ime_map_.end()) {
-        Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-            ash::UMA_STATUS_AREA_IME_SWITCH_MODE);
+        WmShell::Get()->RecordUserMetricsAction(
+            UMA_STATUS_AREA_IME_SWITCH_MODE);
         std::string ime_id = ime_find->second;
         delegate->SwitchIME(ime_id);
         GetWidget()->Close();
@@ -239,17 +230,17 @@ TrayIME::TrayIME(SystemTray* system_tray)
       detailed_(NULL),
       keyboard_suppressed_(false),
       is_visible_(true) {
-  Shell::GetInstance()->system_tray_notifier()->AddIMEObserver(this);
-  Shell::GetInstance()->system_tray_notifier()->AddVirtualKeyboardObserver(
-      this);
-  WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
+  WmSystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  tray_notifier->AddVirtualKeyboardObserver(this);
+  tray_notifier->AddAccessibilityObserver(this);
+  tray_notifier->AddIMEObserver(this);
 }
 
 TrayIME::~TrayIME() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveIMEObserver(this);
-  WmShell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
-  Shell::GetInstance()->system_tray_notifier()->RemoveVirtualKeyboardObserver(
-      this);
+  WmSystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  tray_notifier->RemoveIMEObserver(this);
+  tray_notifier->RemoveAccessibilityObserver(this);
+  tray_notifier->RemoveVirtualKeyboardObserver(this);
 }
 
 void TrayIME::OnKeyboardSuppressionChanged(bool suppressed) {
@@ -292,8 +283,8 @@ void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
 
 bool TrayIME::ShouldShowKeyboardToggle() {
   return keyboard_suppressed_ &&
-         !Shell::GetInstance()
-              ->accessibility_delegate()
+         !WmShell::Get()
+              ->GetAccessibilityDelegate()
               ->IsVirtualKeyboardEnabled();
 }
 

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -114,7 +115,7 @@ void VirtualKeyboardController::UpdateKeyboardEnabled() {
       has_internal_keyboard_ && !ignore_internal_keyboard;
   SetKeyboardEnabled(!is_internal_keyboard_active && has_touchscreen_ &&
                      (!has_external_keyboard_ || ignore_external_keyboard_));
-  ash::Shell::GetInstance()
+  WmShell::Get()
       ->system_tray_notifier()
       ->NotifyVirtualKeyboardSuppressionChanged(!is_internal_keyboard_active &&
                                                 has_touchscreen_ &&

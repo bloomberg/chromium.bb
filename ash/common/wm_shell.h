@@ -145,6 +145,11 @@ class ASH_EXPORT WmShell {
   virtual void AddShellObserver(ShellObserver* observer) = 0;
   virtual void RemoveShellObserver(ShellObserver* observer) = 0;
 
+#if defined(OS_CHROMEOS)
+  // TODO(jamescook): Remove this when VirtualKeyboardController has been moved.
+  virtual void ToggleIgnoreExternalKeyboard() = 0;
+#endif
+
  protected:
   WmShell();
   virtual ~WmShell();

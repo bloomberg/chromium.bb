@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/ime/tray_ime_chromeos.h"
+#include "ash/common/system/ime/tray_ime_chromeos.h"
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/virtual_keyboard_test_helper.h"
 #include "base/command_line.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -29,17 +27,9 @@ class TrayIMETest : public test::AshTestBase {
 
   views::View* detailed_view() { return detailed_view_.get(); }
 
-  // Sets up a TrayIME and its default view.
-  void SetUpForStatusAreaWidget(StatusAreaWidget* status_area_widget);
-
   // Mocks enabling the a11y virtual keyboard since the actual a11y manager
   // is not created in ash tests.
   void SetAccessibilityKeyboardEnabled(bool enabled);
-
-  // Resets |tray_| and |default_view_| so that all components of
-  // TrayIME have been cleared. Tests may then call
-  // SetUpForStatusAreaWidget in order to initialize the components.
-  void TearDownViews();
 
   // Sets the current number of active IMEs.
   void SetIMELength(int length);
@@ -58,15 +48,6 @@ class TrayIMETest : public test::AshTestBase {
   std::unique_ptr<views::View> detailed_view_;
 };
 
-void TrayIMETest::SetUpForStatusAreaWidget(
-    StatusAreaWidget* status_area_widget) {
-  tray_.reset(new TrayIME(status_area_widget->system_tray()));
-  default_view_.reset(tray_->CreateDefaultView(
-      StatusAreaWidgetTestHelper::GetUserLoginStatus()));
-  detailed_view_.reset(tray_->CreateDetailedView(
-      StatusAreaWidgetTestHelper::GetUserLoginStatus()));
-}
-
 void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
   WmShell::Get()->GetAccessibilityDelegate()->SetVirtualKeyboardEnabled(
       enabled);
@@ -75,12 +56,6 @@ void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
       enabled ? A11Y_NOTIFICATION_SHOW : A11Y_NOTIFICATION_NONE;
   WmShell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
       notification);
-}
-
-void TrayIMETest::TearDownViews() {
-  tray_.reset();
-  default_view_.reset();
-  detailed_view_.reset();
 }
 
 void TrayIMETest::SetIMELength(int length) {
@@ -102,12 +77,16 @@ views::View* TrayIMETest::GetScrollChildView(int index) {
 
 void TrayIMETest::SetUp() {
   test::AshTestBase::SetUp();
-  SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
+  tray_.reset(new TrayIME(GetPrimarySystemTray()));
+  default_view_.reset(tray_->CreateDefaultView(LoginStatus::USER));
+  detailed_view_.reset(tray_->CreateDetailedView(LoginStatus::USER));
 }
 
 void TrayIMETest::TearDown() {
   SetAccessibilityKeyboardEnabled(false);
-  TearDownViews();
+  tray_.reset();
+  default_view_.reset();
+  detailed_view_.reset();
   test::AshTestBase::TearDown();
 }
 

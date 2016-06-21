@@ -22,6 +22,10 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/wm/public/activation_client.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/virtual_keyboard_controller.h"
+#endif
+
 namespace ash {
 
 WmShellAura::WmShellAura(WmShellCommon* wm_shell_common)
@@ -210,5 +214,13 @@ void WmShellAura::OnDisplayConfigurationChanged() {
   FOR_EACH_OBSERVER(WmDisplayObserver, display_observers_,
                     OnDisplayConfigurationChanged());
 }
+
+#if defined(OS_CHROMEOS)
+void WmShellAura::ToggleIgnoreExternalKeyboard() {
+  Shell::GetInstance()
+      ->virtual_keyboard_controller()
+      ->ToggleIgnoreExternalKeyboard();
+}
+#endif
 
 }  // namespace ash

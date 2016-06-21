@@ -6,7 +6,12 @@
 
 #include "ash/common/system/accessibility_observer.h"
 #include "ash/common/system/date/clock_observer.h"
+#include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/update/update_observer.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
+#endif
 
 namespace ash {
 
@@ -24,26 +29,18 @@ void WmSystemTrayNotifier::RemoveAccessibilityObserver(
   accessibility_observers_.RemoveObserver(observer);
 }
 
+void WmSystemTrayNotifier::NotifyAccessibilityModeChanged(
+    AccessibilityNotificationVisibility notify) {
+  FOR_EACH_OBSERVER(AccessibilityObserver, accessibility_observers_,
+                    OnAccessibilityModeChanged(notify));
+}
+
 void WmSystemTrayNotifier::AddClockObserver(ClockObserver* observer) {
   clock_observers_.AddObserver(observer);
 }
 
 void WmSystemTrayNotifier::RemoveClockObserver(ClockObserver* observer) {
   clock_observers_.RemoveObserver(observer);
-}
-
-void WmSystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
-  update_observers_.AddObserver(observer);
-}
-
-void WmSystemTrayNotifier::RemoveUpdateObserver(UpdateObserver* observer) {
-  update_observers_.RemoveObserver(observer);
-}
-
-void WmSystemTrayNotifier::NotifyAccessibilityModeChanged(
-    AccessibilityNotificationVisibility notify) {
-  FOR_EACH_OBSERVER(AccessibilityObserver, accessibility_observers_,
-                    OnAccessibilityModeChanged(notify));
 }
 
 void WmSystemTrayNotifier::NotifyRefreshClock() {
@@ -65,9 +62,54 @@ void WmSystemTrayNotifier::NotifySystemClockCanSetTimeChanged(
                     OnSystemClockCanSetTimeChanged(can_set_time));
 }
 
+void WmSystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {
+  ime_observers_.AddObserver(observer);
+}
+
+void WmSystemTrayNotifier::RemoveIMEObserver(IMEObserver* observer) {
+  ime_observers_.RemoveObserver(observer);
+}
+
+void WmSystemTrayNotifier::NotifyRefreshIME() {
+  FOR_EACH_OBSERVER(IMEObserver, ime_observers_, OnIMERefresh());
+}
+
+void WmSystemTrayNotifier::NotifyRefreshIMEMenu(bool is_active) {
+  FOR_EACH_OBSERVER(IMEObserver, ime_observers_,
+                    OnIMEMenuActivationChanged(is_active));
+}
+
+void WmSystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
+  update_observers_.AddObserver(observer);
+}
+
+void WmSystemTrayNotifier::RemoveUpdateObserver(UpdateObserver* observer) {
+  update_observers_.RemoveObserver(observer);
+}
+
 void WmSystemTrayNotifier::NotifyUpdateRecommended(const UpdateInfo& info) {
   FOR_EACH_OBSERVER(UpdateObserver, update_observers_,
                     OnUpdateRecommended(info));
 }
+
+#if defined(OS_CHROMEOS)
+
+void WmSystemTrayNotifier::AddVirtualKeyboardObserver(
+    VirtualKeyboardObserver* observer) {
+  virtual_keyboard_observers_.AddObserver(observer);
+}
+
+void WmSystemTrayNotifier::RemoveVirtualKeyboardObserver(
+    VirtualKeyboardObserver* observer) {
+  virtual_keyboard_observers_.RemoveObserver(observer);
+}
+
+void WmSystemTrayNotifier::NotifyVirtualKeyboardSuppressionChanged(
+    bool suppressed) {
+  FOR_EACH_OBSERVER(VirtualKeyboardObserver, virtual_keyboard_observers_,
+                    OnKeyboardSuppressionChanged(suppressed));
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

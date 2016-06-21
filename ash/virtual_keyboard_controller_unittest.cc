@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
@@ -118,13 +120,11 @@ class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
     // with the test.
     UpdateKeyboardDevices(std::vector<ui::InputDevice>());
     UpdateTouchscreenDevices(std::vector<ui::TouchscreenDevice>());
-    Shell::GetInstance()->system_tray_notifier()->AddVirtualKeyboardObserver(
-        this);
+    WmShell::Get()->system_tray_notifier()->AddVirtualKeyboardObserver(this);
   }
 
   void TearDown() override {
-    Shell::GetInstance()->system_tray_notifier()->RemoveVirtualKeyboardObserver(
-        this);
+    WmShell::Get()->system_tray_notifier()->RemoveVirtualKeyboardObserver(this);
     AshTestBase::TearDown();
   }
 

@@ -305,5 +305,11 @@ void WmShellMus::OnWillDestroyClient(::mus::WindowTreeClient* client) {
   RemoveClientObserver();
 }
 
+#if defined(OS_CHROMEOS)
+void WmShellMus::ToggleIgnoreExternalKeyboard() {
+  NOTIMPLEMENTED();
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace mus
 }  // namespace ash

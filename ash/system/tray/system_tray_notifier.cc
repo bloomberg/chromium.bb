@@ -20,14 +20,6 @@ void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
   audio_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {
-  ime_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveIMEObserver(IMEObserver* observer) {
-  ime_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddLocaleObserver(LocaleObserver* observer) {
   locale_observers_.AddObserver(observer);
 }
@@ -150,16 +142,7 @@ void SystemTrayNotifier::RemoveLastWindowClosedObserver(
   last_window_closed_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddVirtualKeyboardObserver(
-    VirtualKeyboardObserver* observer) {
-  virtual_keyboard_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveVirtualKeyboardObserver(
-    VirtualKeyboardObserver* observer) {
-  virtual_keyboard_observers_.RemoveObserver(observer);
-}
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 void SystemTrayNotifier::NotifyAudioOutputVolumeChanged(uint64_t node_id,
                                                         double volume) {
@@ -199,18 +182,6 @@ void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
       TracingObserver,
       tracing_observers_,
       OnTracingModeChanged(value));
-}
-
-void SystemTrayNotifier::NotifyRefreshIME() {
-  FOR_EACH_OBSERVER(IMEObserver,
-                    ime_observers_,
-                    OnIMERefresh());
-}
-
-void SystemTrayNotifier::NotifyRefreshIMEMenu(bool is_active) {
-  FOR_EACH_OBSERVER(IMEObserver,
-                    ime_observers_,
-                    OnIMEMenuActivationChanged(is_active));
 }
 
 void SystemTrayNotifier::NotifyLocaleChanged(
@@ -324,13 +295,6 @@ void SystemTrayNotifier::NotifyLastWindowClosed() {
   FOR_EACH_OBSERVER(LastWindowClosedObserver,
                     last_window_closed_observers_,
                     OnLastWindowClosed());
-}
-
-void SystemTrayNotifier::NotifyVirtualKeyboardSuppressionChanged(
-    bool suppressed) {
-  FOR_EACH_OBSERVER(VirtualKeyboardObserver,
-                    virtual_keyboard_observers_,
-                    OnKeyboardSuppressionChanged(suppressed));
 }
 
 #endif  // OS_CHROMEOS

@@ -14,8 +14,13 @@ namespace ash {
 
 class AccessibilityObserver;
 class ClockObserver;
+class IMEObserver;
 struct UpdateInfo;
 class UpdateObserver;
+
+#if defined(OS_CHROMEOS)
+class VirtualKeyboardObserver;
+#endif
 
 // Observer and notification manager for the ash system tray. This version
 // contains the observers that have been ported to //ash/common. See also
@@ -27,29 +32,47 @@ class ASH_EXPORT WmSystemTrayNotifier {
   WmSystemTrayNotifier();
   ~WmSystemTrayNotifier();
 
+  // Accessibility.
   void AddAccessibilityObserver(AccessibilityObserver* observer);
   void RemoveAccessibilityObserver(AccessibilityObserver* observer);
-
-  void AddClockObserver(ClockObserver* observer);
-  void RemoveClockObserver(ClockObserver* observer);
-
-  void AddUpdateObserver(UpdateObserver* observer);
-  void RemoveUpdateObserver(UpdateObserver* observer);
-
   void NotifyAccessibilityModeChanged(
       AccessibilityNotificationVisibility notify);
 
+  // Date and time.
+  void AddClockObserver(ClockObserver* observer);
+  void RemoveClockObserver(ClockObserver* observer);
   void NotifyRefreshClock();
   void NotifyDateFormatChanged();
   void NotifySystemClockTimeUpdated();
   void NotifySystemClockCanSetTimeChanged(bool can_set_time);
 
+  // Input methods.
+  void AddIMEObserver(IMEObserver* observer);
+  void RemoveIMEObserver(IMEObserver* observer);
+  void NotifyRefreshIME();
+  void NotifyRefreshIMEMenu(bool is_active);
+
+  // OS updates.
+  void AddUpdateObserver(UpdateObserver* observer);
+  void RemoveUpdateObserver(UpdateObserver* observer);
   void NotifyUpdateRecommended(const UpdateInfo& info);
+
+#if defined(OS_CHROMEOS)
+  // Virtual keyboard.
+  void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
+  void RemoveVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
+  void NotifyVirtualKeyboardSuppressionChanged(bool suppressed);
+#endif
 
  private:
   base::ObserverList<AccessibilityObserver> accessibility_observers_;
+  base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<UpdateObserver> update_observers_;
+
+#if defined(OS_CHROMEOS)
+  base::ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WmSystemTrayNotifier);
 };
