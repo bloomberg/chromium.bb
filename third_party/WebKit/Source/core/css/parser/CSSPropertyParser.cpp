@@ -1581,9 +1581,8 @@ static CSSValue* consumeTextEmphasisStyle(CSSParserTokenRange& range)
 
 static CSSValue* consumeOutlineColor(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
-    // Outline color has "invert" as additional keyword.
-    // Also, we want to allow the special focus color even in HTML Standard parsing mode.
-    if (range.peek().id() == CSSValueInvert || range.peek().id() == CSSValueWebkitFocusRingColor)
+    // Allow the special focus color even in HTML Standard parsing mode.
+    if (range.peek().id() == CSSValueWebkitFocusRingColor)
         return consumeIdent(range);
     return consumeColor(range, cssParserMode);
 }

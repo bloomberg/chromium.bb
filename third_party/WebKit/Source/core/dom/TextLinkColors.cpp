@@ -65,7 +65,8 @@ Color TextLinkColors::colorFromCSSValue(const CSSValue& value, Color currentColo
 
     CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
     switch (valueID) {
-    case 0:
+    case CSSValueInvalid:
+        NOTREACHED();
         return Color();
     case CSSValueInternalQuirkInherit:
         return textColor();
@@ -75,7 +76,6 @@ Color TextLinkColors::colorFromCSSValue(const CSSValue& value, Color currentColo
         return activeLinkColor();
     case CSSValueWebkitFocusRingColor:
         return LayoutTheme::theme().focusRingColor();
-    case CSSValueInvert: // We don't support outline-color: invert
     case CSSValueCurrentcolor:
         return currentColor;
     default:
