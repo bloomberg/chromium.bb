@@ -62,7 +62,7 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
     private static final String DEFAULT_NATIVE_TEST_ACTIVITY =
             "org.chromium.native_test.NativeUnitTestActivity";
     private static final Pattern RE_TEST_OUTPUT =
-            Pattern.compile("\\[ *([^ ]*) *\\] ?([^ ]+)( .*)?$");
+            Pattern.compile("\\[ *([^ ]*) *\\] ?([^ \\.]+)\\.([^ \\.]+)( .*)?$");
 
     private ResultsBundleGenerator mBundleGenerator = new RobotiumBundleGenerator();
     private Handler mHandler = new Handler();
@@ -70,8 +70,7 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
     private SparseArray<ShardMonitor> mMonitors = new SparseArray<ShardMonitor>();
     private String mNativeTestActivity;
     private TestStatusReceiver mReceiver;
-    private Map<String, ResultsBundleGenerator.TestResult> mResults =
-            new HashMap<String, ResultsBundleGenerator.TestResult>();
+    private TestResults mResults = new TestResults();
     private Queue<ArrayList<String>> mShards = new ArrayDeque<ArrayList<String>>();
     private long mShardNanoTimeout = DEFAULT_SHARD_NANO_TIMEOUT;
     private int mShardSizeLimit = DEFAULT_SHARD_SIZE_LIMIT;
@@ -181,6 +180,26 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
         mHandler.post(new ShardStarter());
     }
 
+    /** Holds the results of a test run. */
+    private static class TestResults {
+        Map<String, ResultsBundleGenerator.TestResult> mResults =
+                new HashMap<String, ResultsBundleGenerator.TestResult>();
+        int mTestsPassed = 0;
+        int mTestsFailed = 0;
+        int mTestsErrored = 0;
+
+        public void merge(TestResults other) {
+            mResults.putAll(other.mResults);
+            mTestsPassed += other.mTestsPassed;
+            mTestsFailed += other.mTestsFailed;
+            mTestsErrored += other.mTestsErrored;
+        }
+
+        public int total() {
+            return mTestsPassed + mTestsFailed + mTestsErrored;
+        }
+    }
+
     /** Monitors a test shard's execution. */
     private class ShardMonitor implements Runnable {
         private static final int MONITOR_FREQUENCY_MS = 1000;
@@ -271,13 +290,77 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
                     Log.e(TAG, "%d may still be alive.", mPid, e);
                 }
             }
-            mResults.putAll(parseResults());
+            mResults.merge(parseResults());
 
             if (mShards != null && !mShards.isEmpty()) {
                 mHandler.post(new ShardStarter());
             } else {
-                finish(Activity.RESULT_OK, mBundleGenerator.generate(mResults));
+                sendResultsAndFinish(mResults);
             }
+        }
+    }
+
+    private void sendResultsAndFinish(TestResults results) {
+        for (ResultsBundleGenerator.TestCaseResult result :
+                mBundleGenerator.generateIntermediateTestResults(results.mResults)) {
+            sendStatus(result.mStatusCode, result.mBundle);
+        }
+        Bundle bundle = mBundleGenerator.generate(
+                results.mTestsPassed, results.mTestsFailed, results.mTestsErrored, results.total());
+        finish(Activity.RESULT_OK, bundle);
+    }
+
+    private static class NativeTestResult implements ResultsBundleGenerator.TestResult {
+        private String mTestClass;
+        private String mTestName;
+        private int mTestIndex;
+        private StringBuilder mLogBuilder = new StringBuilder();
+        private ResultsBundleGenerator.TestStatus mStatus =
+                ResultsBundleGenerator.TestStatus.UNKNOWN;
+
+        private NativeTestResult(String testClass, String testName, int index) {
+            mTestClass = testClass;
+            mTestName = testName;
+            mTestIndex = index;
+        }
+
+        @Override
+        public String getTestClass() {
+            return mTestClass;
+        }
+
+        @Override
+        public String getTestName() {
+            return mTestName;
+        }
+
+        @Override
+        public int getTestIndex() {
+            return mTestIndex;
+        }
+
+        @Override
+        public String getMessage() {
+            return mStatus.toString();
+        }
+
+        @Override
+        public String getLog() {
+            return mLogBuilder.toString();
+        }
+
+        public void appendToLog(String logLine) {
+            mLogBuilder.append(logLine);
+            mLogBuilder.append("\n");
+        }
+
+        @Override
+        public ResultsBundleGenerator.TestStatus getStatus() {
+            return mStatus;
+        }
+
+        public void setStatus(ResultsBundleGenerator.TestStatus status) {
+            mStatus = status;
         }
     }
 
@@ -285,9 +368,8 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
      *  Generates a map between test names and test results from the instrumented Activity's
      *  output.
      */
-    private Map<String, ResultsBundleGenerator.TestResult> parseResults() {
-        Map<String, ResultsBundleGenerator.TestResult> results =
-                new HashMap<String, ResultsBundleGenerator.TestResult>();
+    private TestResults parseResults() {
+        TestResults results = new TestResults();
 
         BufferedReader r = null;
 
@@ -300,17 +382,39 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
             r = new BufferedReader(new InputStreamReader(
                     new BufferedInputStream(new FileInputStream(mStdoutFile))));
 
+            NativeTestResult testResult = null;
+            int testNum = 0;
             for (String l = r.readLine(); l != null && !l.equals("<<ScopedMainEntryLogger");
                     l = r.readLine()) {
                 Matcher m = RE_TEST_OUTPUT.matcher(l);
                 if (m.matches()) {
+                    String testClass = m.group(2);
+                    String testName = m.group(3);
                     if (m.group(1).equals("RUN")) {
-                        results.put(m.group(2), ResultsBundleGenerator.TestResult.UNKNOWN);
+                        testResult = new NativeTestResult(testClass, testName, ++testNum);
+                        results.mResults.put(
+                                String.format("%s.%s", testClass, testName), testResult);
                     } else if (m.group(1).equals("FAILED")) {
-                        results.put(m.group(2), ResultsBundleGenerator.TestResult.FAILED);
+                        if (testResult == null) {
+                            Log.e(TAG, "Test %s.%s failed without running.", testClass, testName);
+                            continue;
+                        }
+                        results.mTestsFailed++;
+                        testResult.setStatus(ResultsBundleGenerator.TestStatus.FAILED);
+                        testResult = null;
                     } else if (m.group(1).equals("OK")) {
-                        results.put(m.group(2), ResultsBundleGenerator.TestResult.PASSED);
+                        if (testResult == null) {
+                            Log.e(TAG, "Test %s.%s succeeded without running.", testClass,
+                                    testName);
+                            continue;
+                        }
+                        results.mTestsPassed++;
+                        testResult.setStatus(ResultsBundleGenerator.TestStatus.PASSED);
+                        testResult = null;
                     }
+                } else if (testResult != null) {
+                    // We are inside a test. Let's collect log data in case there is a failure.
+                    testResult.appendToLog(l);
                 }
                 mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, l + "\n");
                 sendStatus(0, mLogBundle);

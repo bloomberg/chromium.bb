@@ -189,12 +189,23 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
             sendTestStatus(status, testClass, testMethod, null);
         }
 
+        /** Holds a summary of all test results. */
+        private class TestResultSummary {
+            public int totalTests;
+            public int testsPassed;
+            public int testsFailed;
+
+            public int testsErrored() {
+                return totalTests - testsPassed - testsFailed;
+            }
+        }
+
         /** Run the tests. */
         @Override
         public void run() {
-            final HashMap<String, ResultsBundleGenerator.TestResult> finished =
-                    new HashMap<String, ResultsBundleGenerator.TestResult>();
-            final Object statusLock = new Object();
+            final HashMap<String, ResultsBundleGenerator.TestStatus> finished =
+                    new HashMap<String, ResultsBundleGenerator.TestStatus>();
+            final TestResultSummary testResults = new TestResultSummary();
 
             try {
                 TestStatusReceiver r = new TestStatusReceiver();
@@ -203,8 +214,9 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
                     public void testStarted(String testClass, String testMethod) {
                         sendTestStatus(InstrumentationTestRunner.REPORT_VALUE_RESULT_START,
                                 testClass, testMethod);
-                        synchronized (statusLock) {
-                            statusLock.notify();
+                        synchronized (testResults) {
+                            testResults.totalTests++;
+                            testResults.notify();
                         }
                     }
                 });
@@ -213,10 +225,11 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
                     public void testPassed(String testClass, String testMethod) {
                         sendTestStatus(InstrumentationTestRunner.REPORT_VALUE_RESULT_OK, testClass,
                                 testMethod);
-                        synchronized (statusLock) {
+                        synchronized (testResults) {
                             finished.put(testClass + "#" + testMethod,
-                                    ResultsBundleGenerator.TestResult.PASSED);
-                            statusLock.notify();
+                                    ResultsBundleGenerator.TestStatus.PASSED);
+                            testResults.testsPassed++;
+                            testResults.notify();
                         }
                     }
                 });
@@ -225,10 +238,11 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
                     public void testFailed(String testClass, String testMethod, String stackTrace) {
                         sendTestStatus(InstrumentationTestRunner.REPORT_VALUE_RESULT_ERROR,
                                 testClass, testMethod, stackTrace);
-                        synchronized (statusLock) {
+                        synchronized (testResults) {
                             finished.put(testClass + "#" + testMethod,
-                                    ResultsBundleGenerator.TestResult.FAILED);
-                            statusLock.notify();
+                                    ResultsBundleGenerator.TestStatus.FAILED);
+                            testResults.testsFailed++;
+                            testResults.notify();
                         }
                     }
                 });
@@ -236,8 +250,8 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
                     @Override
                     public void heartbeat() {
                         Log.i(TAG, "Heartbeat received.");
-                        synchronized (statusLock) {
-                            statusLock.notify();
+                        synchronized (testResults) {
+                            testResults.notify();
                         }
                     }
                 });
@@ -260,13 +274,13 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
 
                     getContext().startActivity(slaveIntent);
 
-                    synchronized (statusLock) {
+                    synchronized (testResults) {
                         while (!finished.containsKey(t)) {
                             long waitStart = System.currentTimeMillis();
-                            statusLock.wait(TEST_WAIT_TIMEOUT);
+                            testResults.wait(TEST_WAIT_TIMEOUT);
                             if (System.currentTimeMillis() - waitStart > TEST_WAIT_TIMEOUT) {
                                 Log.e(TAG, t + " has gone missing and is assumed to be dead.");
-                                finished.put(t, ResultsBundleGenerator.TestResult.FAILED);
+                                finished.put(t, ResultsBundleGenerator.TestStatus.FAILED);
                                 break;
                             }
                         }
@@ -278,7 +292,8 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
                 fail("Interrupted while running tests.", e);
                 return;
             }
-            pass(new RobotiumBundleGenerator().generate(finished));
+            pass(new RobotiumBundleGenerator().generate(testResults.testsPassed,
+                    testResults.testsFailed, testResults.testsErrored(), testResults.totalTests));
         }
 
     }
