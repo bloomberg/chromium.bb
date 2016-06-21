@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'settings-dialog' is a component for showing a modal dialog.
+ * @fileoverview 'cr-dialog' is a component for showing a modal dialog.
  */
 Polymer({
-  is: 'settings-dialog',
+  is: 'cr-dialog',
 
   properties: {
     /** @override */

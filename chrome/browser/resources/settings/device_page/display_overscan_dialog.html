@@ -1,9 +1,9 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="/icons.html">
-<link rel="import" href="/settings_dialog.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-display-overscan-dialog">
@@ -32,7 +32,7 @@
        padding: 4px 8px 0;
      }
     </style>
-    <settings-dialog id="dialog" class="layout vertical"
+    <cr-dialog id="dialog" class="layout vertical"
         on-iron-overlay-canceled="close" on-iron-overlay-closed="close">
       <div class="title">$i18n{displayOverscanPageTitle}</div>
       <div class="body">
@@ -69,7 +69,7 @@
           $i18n{displayOverscanSave}
         </paper-button>
       </div>
-    </settings-dialog>
+    </cr-dialog>
   </template>
   <script src="display_overscan_dialog.js"></script>
 </dom-module>

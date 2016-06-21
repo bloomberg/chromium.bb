@@ -61,7 +61,7 @@ Polymer({
    * @private
    */
   onIronOverlayClosed_: function(event) {
-    if (Polymer.dom(event).rootTarget.tagName == 'SETTINGS-DIALOG')
+    if (Polymer.dom(event).rootTarget.tagName == 'CR-DIALOG')
       this.showClearBrowsingDataDialog_ = false;
   },
 });

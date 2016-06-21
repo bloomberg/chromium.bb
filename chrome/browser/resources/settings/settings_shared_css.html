@@ -1,9 +1,10 @@
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="/settings_root_css.html">
 
 <!-- Common styles for Material Design settings. -->
 <dom-module id="settings-shared">
   <template>
-    <style>
+    <style include="cr-shared-style">
       h2 {
         align-items: center;
         display: flex;
@@ -125,29 +126,6 @@
 
       .button-strip {
         text-align: end;
-      }
-
-      .action-button {
-        background: var(--google-blue-500);
-        color: white;
-        --paper-button-flat-keyboard-focus: {
-          background-color: rgb(58, 117, 215);  /* 88% of --google-blue-500) */
-        };
-      }
-
-      .action-button[disabled] {
-        opacity: .25;  /* TODO(dbeam): check this value with bettes. */
-      }
-
-      .cancel-button {
-        --paper-button-flat-keyboard-focus: {
-          background-color: rgba(0, 0, 0, .12);
-        };
-      }
-
-      .action-button,
-      .cancel-button {
-        font-weight: 500;
       }
 
       /*

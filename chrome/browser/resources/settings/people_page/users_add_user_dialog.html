@@ -1,15 +1,15 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="/settings_dialog.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-users-add-user-dialog">
   <template>
     <style include="settings-shared">
     </style>
-    <settings-dialog id="dialog">
+    <cr-dialog id="dialog">
       <div class="title">$i18n{addUsers}</div>
       <div class="body">
         <paper-input id="addUserInput" label="$i18n{addUsersEmail}" autofocus
@@ -23,7 +23,7 @@
           $i18n{add}
         </paper-button>
       </div>
-    </settings-dialog>
+    </cr-dialog>
   </template>
   <script src="users_add_user_dialog.js"></script>
 </dom-module>

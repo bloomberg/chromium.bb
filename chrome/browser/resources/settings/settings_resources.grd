@@ -188,12 +188,6 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_SUBPAGE_JS"
                  file="settings_page/settings_subpage.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_DIALOG_HTML"
-                 file="settings_dialog.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_DIALOG_JS"
-                 file="settings_dialog.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS_HTML"
                  file="settings_page_css.html"
                  type="chrome_html" />

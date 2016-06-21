@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -5,7 +6,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
-<link rel="import" href="/settings_dialog.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-credit-card-edit-dialog">
@@ -35,7 +35,7 @@
     }
   </style>
   <template>
-    <settings-dialog id="dialog">
+    <cr-dialog id="dialog">
       <div class="title">[[title_]]</div>
       <div class="body">
         <paper-input id="nameInput" label="$i18n{creditCardName}"
@@ -77,7 +77,7 @@
         <paper-button id="saveButton" class="action-button"
             on-tap="onSaveButtonTap_">$i18n{save}</paper-button>
       </div>
-    </settings-dialog>
+    </cr-dialog>
   </template>
   <script src="/passwords_and_forms_page/credit_card_edit_dialog.js"></script>
 </dom-module>
