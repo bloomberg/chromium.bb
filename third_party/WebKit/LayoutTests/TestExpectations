@@ -1511,3 +1511,5 @@ crbug.com/484632 css3/flexbox/stretch-input-in-column.html [ Failure ]
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
+
+crbug.com/621840 [ Win7 ] svg/hixie/perf/005.xml [ Pass Timeout ]
