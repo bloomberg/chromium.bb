@@ -284,6 +284,6 @@ public class SnippetArticleViewHolder extends CardViewHolder {
 
     @Override
     public boolean isDismissable() {
-        return true;
+        return !isPeeking();
     }
 }
