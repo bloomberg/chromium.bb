@@ -1589,6 +1589,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   cm->last_frame_type = cm->frame_type;
   cm->last_intra_only = cm->intra_only;
 
+#if CONFIG_EXT_REFS
+  // NOTE: By default all coded frames to be used as a reference
+  cm->is_reference_frame = 1;
+#endif  // CONFIG_EXT_REFS
+
   if (aom_rb_read_literal(rb, 2) != AOM_FRAME_MARKER)
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Invalid frame marker");
@@ -1618,14 +1623,65 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
     ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
     unlock_buffer_pool(pool);
-    pbi->refresh_frame_flags = 0;
     cm->lf.filter_level = 0;
     cm->show_frame = 1;
 
+#if CONFIG_EXT_REFS
+    // NOTE: The existing frame to show is adopted as a reference frame.
+    pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
+
+    for (i = 0; i < REFS_PER_FRAME; ++i) {
+      const int ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
+      const int idx = cm->ref_frame_map[ref];
+      RefBuffer *const ref_frame = &cm->frame_refs[i];
+      ref_frame->idx = idx;
+      ref_frame->buf = &frame_bufs[idx].buf;
+      cm->ref_frame_sign_bias[LAST_FRAME + i] = aom_rb_read_bit(rb);
+    }
+
+    for (i = 0; i < REFS_PER_FRAME; ++i) {
+      RefBuffer *const ref_buf = &cm->frame_refs[i];
+#if CONFIG_VP9_HIGHBITDEPTH
+      av1_setup_scale_factors_for_frame(
+          &ref_buf->sf, ref_buf->buf->y_crop_width, ref_buf->buf->y_crop_height,
+          cm->width, cm->height, cm->use_highbitdepth);
+#else   // CONFIG_VP9_HIGHBITDEPTH
+      av1_setup_scale_factors_for_frame(
+          &ref_buf->sf, ref_buf->buf->y_crop_width, ref_buf->buf->y_crop_height,
+          cm->width, cm->height);
+#endif  // CONFIG_VP9_HIGHBITDEPTH
+    }
+
+    // Generate next_ref_frame_map.
+    lock_buffer_pool(pool);
+    for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
+      if (mask & 1) {
+        cm->next_ref_frame_map[ref_index] = cm->new_fb_idx;
+        ++frame_bufs[cm->new_fb_idx].ref_count;
+      } else {
+        cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
+      }
+      // Current thread holds the reference frame.
+      if (cm->ref_frame_map[ref_index] >= 0)
+        ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
+      ++ref_index;
+    }
+
+    for (; ref_index < REF_FRAMES; ++ref_index) {
+      cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
+      // Current thread holds the reference frame.
+      if (cm->ref_frame_map[ref_index] >= 0)
+        ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
+    }
+    unlock_buffer_pool(pool);
+    pbi->hold_ref_buf = 1;
+#else
+    pbi->refresh_frame_flags = 0;
     if (cm->frame_parallel_decode) {
       for (i = 0; i < REF_FRAMES; ++i)
         cm->next_ref_frame_map[i] = cm->ref_frame_map[i];
     }
+#endif  // CONFIG_EXT_REFS
     return 0;
   }
 
@@ -1714,6 +1770,15 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       }
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
+
+#if CONFIG_EXT_REFS
+      if (!pbi->refresh_frame_flags) {
+        // NOTE: "pbi->refresh_frame_flags == 0" indicates that the coded frame
+        //       will not be used as a reference
+        cm->is_reference_frame = 0;
+      }
+#endif  // CONFIG_EXT_REFS
+
       for (i = 0; i < REFS_PER_FRAME; ++i) {
         const int ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
         const int idx = cm->ref_frame_map[ref];
@@ -2076,8 +2141,13 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   xd->cur_buf = new_fb;
 
   if (!first_partition_size) {
-    // showing a frame directly
-    *p_data_end = data + (cm->profile <= PROFILE_2 ? 1 : 2);
+// showing a frame directly
+#if CONFIG_EXT_REFS
+    if (cm->show_existing_frame)
+      *p_data_end = data + aom_rb_bytes_read(&rb);
+    else
+#endif  // CONFIG_EXT_REFS
+      *p_data_end = data + (cm->profile <= PROFILE_2 ? 1 : 2);
     return;
   }
 
@@ -2090,6 +2160,23 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
       !cm->error_resilient_mode && cm->width == cm->last_width &&
       cm->height == cm->last_height && !cm->last_intra_only &&
       cm->last_show_frame && (cm->last_frame_type != KEY_FRAME);
+#if CONFIG_EXT_REFS
+  // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
+  //               show_exisiting_frame=1, nor can it take a frame not used as
+  //               a reference, it is probable that by the time it is being
+  //               referred to, the frame buffer it originally points to may
+  //               already get expired and have been reassigned to the current
+  //               newly coded frame. Hence, we need to check whether this is
+  //               the case, and if yes, we have 2 choices:
+  //               (1) Simply disable the use of previous frame mvs; or
+  //               (2) Have cm->prev_frame point to one reference frame buffer,
+  //                   e.g. LAST_FRAME.
+  if (cm->use_prev_frame_mvs && !dec_is_ref_frame_buf(pbi, cm->prev_frame)) {
+    // Reassign the LAST_FRAME buffer to cm->prev_frame.
+    RefBuffer *last_fb_ref_buf = &cm->frame_refs[LAST_FRAME - LAST_FRAME];
+    cm->prev_frame = &cm->buffer_pool->frame_bufs[last_fb_ref_buf->idx];
+  }
+#endif  // CONFIG_EXT_REFS
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
 

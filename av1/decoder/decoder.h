@@ -131,6 +131,20 @@ static INLINE void decrease_ref_count(int idx, RefCntBuffer *const frame_bufs,
   }
 }
 
+#if CONFIG_EXT_REFS
+static INLINE int dec_is_ref_frame_buf(AV1Decoder *const pbi,
+                                       RefCntBuffer *frame_buf) {
+  AV1_COMMON *const cm = &pbi->common;
+  int i;
+  for (i = 0; i < REFS_PER_FRAME; ++i) {
+    RefBuffer *const ref_frame = &cm->frame_refs[i];
+    if (ref_frame->idx == INVALID_IDX) continue;
+    if (frame_buf == &cm->buffer_pool->frame_bufs[ref_frame->idx]) break;
+  }
+  return (i < REFS_PER_FRAME);
+}
+#endif  // CONFIG_EXT_REFS
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
