@@ -125,6 +125,7 @@
         'display_compositor.gypi',
         'domain_reliability.gypi',
         'drive.gypi',
+        'memory_coordinator.gypi',
         'navigation_interception.gypi',
         'network_hints.gypi',
         'packed_ct_ev_whitelist.gypi',

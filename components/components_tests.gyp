@@ -360,6 +360,9 @@
     'login_unittest_sources': [
       'login/screens/screen_context_unittest.cc',
     ],
+    'memory_coordinator_unittest_sources': [
+      'memory_coordinator/child/child_memory_coordinator_impl_unittest.cc',
+    ],
     'memory_pressure_unittest_sources': [
       'memory_pressure/direct_memory_pressure_calculator_linux_unittest.cc',
       'memory_pressure/direct_memory_pressure_calculator_win_unittest.cc',
@@ -1284,6 +1287,7 @@
             '<@(domain_reliability_unittest_sources)',
             '<@(error_page_unittest_sources)',
             '<@(guest_view_unittest_sources)',
+            '<@(memory_coordinator_unittest_sources)',
             '<@(navigation_interception_unittest_sources)',
             '<@(network_hints_unittest_sources)',
             '<@(ntp_tiles_unittest_sources)',
@@ -1326,6 +1330,7 @@
             'components.gyp:guest_view_test_support',
             'components.gyp:history_content_browser',
             'components.gyp:keyed_service_content',
+            'components.gyp:memory_coordinator_child',
             'components.gyp:metrics_gpu',
             'components.gyp:navigation_interception',
             'components.gyp:network_hints_renderer',
