@@ -25,7 +25,8 @@
   EXPAND_SESSION: 7,
   OPEN_ALL: 8,
   HAS_FOREIGN_DATA: 9,
-  LIMIT: 10  // Should always be the last one.
+  HIDE_FOR_NOW: 10,
+  LIMIT: 11  // Should always be the last one.
 };
 
 /**

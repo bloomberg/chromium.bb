@@ -21,6 +21,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -51,6 +52,19 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         CONTENT, VISIBLE_SEPARATOR, INVISIBLE_SEPARATOR
     }
 
+    // Values from the OtherSessionsActions enum in histograms.xml; do not change these values or
+    // histograms will be broken.
+    private static class OtherSessionsActions {
+        static final int MENU_INITIALIZED = 0;
+        static final int LINK_CLICKED = 2;
+        static final int COLLAPSE_SESSION = 6;
+        static final int EXPAND_SESSION = 7;
+        static final int OPEN_ALL = 8;
+        static final int HAS_FOREIGN_DATA = 9;
+        static final int HIDE_FOR_NOW = 10;
+        static final int LIMIT = 11;
+    }
+
     private final Activity mActivity;
     private final ArrayList<Group> mGroups;
     private final Drawable mDefaultFavicon;
@@ -60,6 +74,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     private final SeparatorGroup mInvisibleSeparatorGroup = new SeparatorGroup(false);
     private final FaviconCache mFaviconCache;
     private final int mFaviconSize;
+    private boolean mHasForeignDataRecorded;
 
     /**
      * A generic group of objects to be shown in the RecentTabsRowAdapter, such as the list of
@@ -343,6 +358,13 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
         @Override
         public void setCollapsed(boolean isCollapsed) {
+            if (isCollapsed) {
+                RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
+                        OtherSessionsActions.COLLAPSE_SESSION, OtherSessionsActions.LIMIT);
+            } else {
+                RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
+                        OtherSessionsActions.EXPAND_SESSION, OtherSessionsActions.LIMIT);
+            }
             mRecentTabsManager.setForeignSessionCollapsed(mForeignSession, isCollapsed);
         }
 
@@ -353,6 +375,8 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
         @Override
         public boolean onChildClick(int childPosition) {
+            RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
+                    OtherSessionsActions.LINK_CLICKED, OtherSessionsActions.LIMIT);
             ForeignSessionTab foreignSessionTab = getChild(childPosition);
             mRecentTabsManager.openForeignSessionTab(mForeignSession, foreignSessionTab,
                     WindowOpenDisposition.CURRENT_TAB);
@@ -361,15 +385,28 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
         @Override
         public void onCreateContextMenuForGroup(ContextMenu menu, Activity activity) {
-            OnMenuItemClickListener listener = new OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    mRecentTabsManager.deleteForeignSession(mForeignSession);
-                    return true;
-                }
-            };
-            menu.add(R.string.ntp_recent_tabs_remove_menu_option)
-                    .setOnMenuItemClickListener(listener);
+            menu.add(R.string.recent_tabs_open_all_menu_option)
+                    .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            RecordHistogram.recordEnumeratedHistogram(
+                                    "HistoryPage.OtherDevicesMenu", OtherSessionsActions.OPEN_ALL,
+                                    OtherSessionsActions.LIMIT);
+                            openAllTabs();
+                            return true;
+                        }
+                    });
+            menu.add(R.string.recent_tabs_remove_menu_option)
+                    .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            RecordHistogram.recordEnumeratedHistogram(
+                                    "HistoryPage.OtherDevicesMenu",
+                                    OtherSessionsActions.HIDE_FOR_NOW, OtherSessionsActions.LIMIT);
+                            mRecentTabsManager.deleteForeignSession(mForeignSession);
+                            return true;
+                        }
+                    });
         }
 
         @Override
@@ -385,6 +422,26 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 }
             };
             menu.add(R.string.contextmenu_open_in_new_tab).setOnMenuItemClickListener(listener);
+        }
+
+        private void openAllTabs() {
+            ForeignSessionTab firstTab = null;
+            for (ForeignSessionWindow window : mForeignSession.windows) {
+                for (ForeignSessionTab tab : window.tabs) {
+                    if (firstTab == null) {
+                        firstTab = tab;
+                    } else {
+                        mRecentTabsManager.openForeignSessionTab(
+                                mForeignSession, tab, WindowOpenDisposition.NEW_BACKGROUND_TAB);
+                    }
+                }
+            }
+            // Open the first tab last because calls to openForeignSessionTab after one for
+            // CURRENT_TAB are ignored.
+            if (firstTab != null) {
+                mRecentTabsManager.openForeignSessionTab(
+                        mForeignSession, firstTab, WindowOpenDisposition.CURRENT_TAB);
+            }
         }
     }
 
@@ -679,6 +736,9 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         Resources resources = activity.getResources();
         mDefaultFavicon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.default_favicon);
         mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
+
+        RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
+                OtherSessionsActions.MENU_INITIALIZED, OtherSessionsActions.LIMIT);
     }
 
     private static FaviconCache buildFaviconCache(int size) {
@@ -827,6 +887,11 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         }
         addGroup(mRecentlyClosedTabsGroup);
         for (ForeignSession session : mRecentTabsManager.getForeignSessions()) {
+            if (!mHasForeignDataRecorded) {
+                RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
+                        OtherSessionsActions.HAS_FOREIGN_DATA, OtherSessionsActions.LIMIT);
+                mHasForeignDataRecorded = true;
+            }
             addGroup(new ForeignSessionGroup(session));
         }
         if (mRecentTabsManager.shouldDisplaySyncPromo()) {

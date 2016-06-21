@@ -1906,7 +1906,10 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_NTP_RECENT_TABS_ACCESSIBILITY_EXPANDED_GROUP" desc="Content description for expanded state indicator for the group view." >
         Expanded - Click to collapse
       </message>
-      <message name="IDS_NTP_RECENT_TABS_REMOVE_MENU_OPTION" desc="Context menu option to remove a foreign session ">
+      <message name="IDS_RECENT_TABS_OPEN_ALL_MENU_OPTION" desc="Context menu option to open all tabs from a foreign session.">
+        Open all
+      </message>
+      <message name="IDS_RECENT_TABS_REMOVE_MENU_OPTION" desc="Context menu option to remove a foreign session.">
         Remove from list
       </message>
       <message name="IDS_RECENT_TABS_THIS_DEVICE" desc="Header shown above the list of tabs currently open on this device.">
