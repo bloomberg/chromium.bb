@@ -112,24 +112,34 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
   scoped_refptr<DecoderBuffer> media_buffer(
       buffer.To<scoped_refptr<DecoderBuffer>>());
 
-  if (!media_buffer->end_of_stream()) {
-    DCHECK_GT(media_buffer->data_size(), 0u);
+  if (media_buffer->end_of_stream()) {
+    base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kOk, media_buffer);
+    return;
+  }
 
-    // Wait for the data to become available in the DataPipe.
-    MojoHandleSignalsState state;
-    CHECK_EQ(MOJO_RESULT_OK,
-             MojoWait(stream_pipe_.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_DEADLINE_INDEFINITE, &state));
-    CHECK_EQ(MOJO_HANDLE_SIGNAL_READABLE, state.satisfied_signals);
+  DCHECK_GT(media_buffer->data_size(), 0u);
 
-    // Read the inner data for the DecoderBuffer from our DataPipe.
-    uint32_t bytes_to_read =
-        base::checked_cast<uint32_t>(media_buffer->data_size());
-    uint32_t bytes_read = bytes_to_read;
-    CHECK_EQ(ReadDataRaw(stream_pipe_.get(), media_buffer->writable_data(),
-                         &bytes_read, MOJO_READ_DATA_FLAG_ALL_OR_NONE),
-             MOJO_RESULT_OK);
-    CHECK_EQ(bytes_to_read, bytes_read);
+  // Wait for the data to become available in the DataPipe.
+  MojoHandleSignalsState state;
+  MojoResult result =
+      MojoWait(stream_pipe_.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+               MOJO_DEADLINE_INDEFINITE, &state);
+  if (result != MOJO_RESULT_OK) {
+    DVLOG(1) << __FUNCTION__ << ": Peer closed the data pipe";
+    base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kAborted, nullptr);
+    return;
+  }
+
+  // Read the inner data for the DecoderBuffer from our DataPipe.
+  uint32_t bytes_to_read =
+      base::checked_cast<uint32_t>(media_buffer->data_size());
+  uint32_t bytes_read = bytes_to_read;
+  result = ReadDataRaw(stream_pipe_.get(), media_buffer->writable_data(),
+                       &bytes_read, MOJO_READ_DATA_FLAG_ALL_OR_NONE);
+  if (result != MOJO_RESULT_OK || bytes_read != bytes_to_read) {
+    DVLOG(1) << __FUNCTION__ << ": reading from pipe failed";
+    base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kAborted, nullptr);
+    return;
   }
 
   base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kOk, media_buffer);
