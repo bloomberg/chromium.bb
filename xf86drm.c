@@ -54,8 +54,11 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <stdarg.h>
-#ifdef HAVE_SYS_MKDEV_H
-# include <sys/mkdev.h> /* defines major(), minor(), and makedev() on Solaris */
+#ifdef MAJOR_IN_MKDEV
+#include <sys/mkdev.h>
+#endif
+#ifdef MAJOR_IN_SYSMACROS
+#include <sys/sysmacros.h>
 #endif
 #include <math.h>
 
