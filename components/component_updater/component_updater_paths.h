@@ -17,6 +17,12 @@ enum {
                                             // implementations installed by the
                                             // Chrome installer or package
                                             // manager.
+  DIR_COMPONENT_PREINSTALLED_ALT,           // A second preinstalled directory,
+                                            // necessary because some components
+                                            // live in a distinct directory on
+                                            // OS X. On other platforms, this
+                                            // ultimately is equivalent to
+                                            // DIR_COMPONENT_PREINSTALLED.
   DIR_COMPONENT_USER,                       // Directory that contains user-wide
                                             // (component-updater-installer)
                                             // component implementations.
@@ -35,6 +41,7 @@ enum {
 // |components_user_root_key| is the path provider key defining where the
 // component updater should install new versions of components.
 void RegisterPathProvider(int components_system_root_key,
+                          int components_system_root_key_alt,
                           int components_user_root_key);
 
 }  // namespace component_updater

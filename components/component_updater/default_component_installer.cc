@@ -152,14 +152,9 @@ bool DefaultComponentInstaller::Uninstall() {
   return true;
 }
 
-bool DefaultComponentInstaller::FindPreinstallation() {
-  base::FilePath path;
-  if (!PathService::Get(DIR_COMPONENT_PREINSTALLED, &path)) {
-    DVLOG(1) << "DIR_COMPONENT_PREINSTALLED does not exist.";
-    return false;
-  }
-
-  path = path.Append(installer_traits_->GetRelativeInstallDir());
+bool DefaultComponentInstaller::FindPreinstallation(
+    const base::FilePath& root) {
+  base::FilePath path = root.Append(installer_traits_->GetRelativeInstallDir());
   if (!base::PathExists(path)) {
     DVLOG(1) << "Relative install dir does not exist: " << path.MaybeAsASCII();
     return false;
@@ -207,8 +202,19 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
   base::Version latest_version(kNullVersion);
 
   // First check for an installation set up alongside Chrome itself.
-  if (FindPreinstallation())
+  base::FilePath root;
+  if (PathService::Get(DIR_COMPONENT_PREINSTALLED, &root) &&
+      FindPreinstallation(root)) {
     latest_version = current_version_;
+  }
+
+  // If there is a distinct alternate root, check there as well, and override
+  // anything found in the basic root.
+  base::FilePath root_alternate;
+  if (PathService::Get(DIR_COMPONENT_PREINSTALLED_ALT, &root_alternate) &&
+      root != root_alternate && FindPreinstallation(root_alternate)) {
+    latest_version = current_version_;
+  }
 
   // Then check for a higher-versioned user-wide installation.
   base::FilePath latest_path;

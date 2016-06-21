@@ -122,7 +122,7 @@ class DefaultComponentInstaller : public update_client::CrxInstaller {
   // files (as opposed to in the user data directory), sets current_* to the
   // values associated with that installation and returns true; otherwise,
   // returns false.
-  bool FindPreinstallation();
+  bool FindPreinstallation(const base::FilePath& root);
   bool InstallHelper(const base::DictionaryValue& manifest,
                      const base::FilePath& unpack_path,
                      const base::FilePath& install_path);
