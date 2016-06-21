@@ -6,6 +6,7 @@
 #define CHROME_SERVICE_SERVICE_UTILITY_PROCESS_HOST_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -147,6 +148,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   scoped_refptr<Client> client_;
   scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
   bool waiting_for_reply_;
+  const std::string mojo_child_token_;
 
   // Start time of operation.
   base::Time start_time_;

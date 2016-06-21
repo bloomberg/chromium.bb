@@ -57,6 +57,7 @@ static_library("service") {
     "//components/cloud_devices/common",
     "//google_apis",
     "//jingle:notifier",
+    "//mojo/edk/system",
     "//net",
     "//printing",
     "//skia",

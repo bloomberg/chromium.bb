@@ -24,6 +24,12 @@ class SequencedWorkerPool;
 class WaitableEvent;
 }
 
+namespace mojo {
+namespace edk {
+class ScopedIPCSupport;
+}
+}
+
 namespace net {
 class NetworkChangeNotifier;
 }
@@ -115,6 +121,7 @@ class ServiceProcess : public ServiceIPCServer::Client,
   std::unique_ptr<ServiceProcessPrefs> service_prefs_;
   std::unique_ptr<ServiceIPCServer> ipc_server_;
   std::unique_ptr<ServiceProcessState> service_process_state_;
+  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
 
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;

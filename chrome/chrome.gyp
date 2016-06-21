@@ -657,6 +657,7 @@
             '../components/components.gyp:cloud_devices_common',
             '../google_apis/google_apis.gyp:google_apis',
             '../jingle/jingle.gyp:notifier',
+            '../mojo/mojo_edk.gyp:mojo_system_impl',
             '../net/net.gyp:net',
             '../printing/printing.gyp:printing',
             '../skia/skia.gyp:skia',
