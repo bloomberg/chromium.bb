@@ -275,8 +275,10 @@ const gfx::FontList& GetDefaultFontList() {
 }
 
 // Returns the ui::TextEditCommand corresponding to the |command_id| menu
-// action. Keep in sync with UpdateContextMenu.
-ui::TextEditCommand GetTextEditCommandFromMenuCommand(int command_id) {
+// action. |has_selection| is true if the textfield has an active selection.
+// Keep in sync with UpdateContextMenu.
+ui::TextEditCommand GetTextEditCommandFromMenuCommand(int command_id,
+                                                      bool has_selection) {
   switch (command_id) {
     case IDS_APP_UNDO:
       return ui::TextEditCommand::UNDO;
@@ -287,12 +289,14 @@ ui::TextEditCommand GetTextEditCommandFromMenuCommand(int command_id) {
     case IDS_APP_PASTE:
       return ui::TextEditCommand::PASTE;
     case IDS_APP_DELETE:
-      return ui::TextEditCommand::DELETE_SELECTION;
+      // The DELETE menu action only works in case of an active selection.
+      if (has_selection)
+        return ui::TextEditCommand::DELETE_FORWARD;
+      break;
     case IDS_APP_SELECT_ALL:
       return ui::TextEditCommand::SELECT_ALL;
-    default:
-      return ui::TextEditCommand::INVALID_COMMAND;
   }
+  return ui::TextEditCommand::INVALID_COMMAND;
 }
 
 }  // namespace
@@ -1272,7 +1276,7 @@ bool Textfield::IsCommandIdChecked(int command_id) const {
 
 bool Textfield::IsCommandIdEnabled(int command_id) const {
   return Textfield::IsTextEditCommandEnabled(
-      GetTextEditCommandFromMenuCommand(command_id));
+      GetTextEditCommandFromMenuCommand(command_id, HasSelection()));
 }
 
 bool Textfield::GetAcceleratorForCommandId(int command_id,
@@ -1305,7 +1309,7 @@ bool Textfield::GetAcceleratorForCommandId(int command_id,
 
 void Textfield::ExecuteCommand(int command_id, int event_flags) {
   Textfield::ExecuteTextEditCommand(
-      GetTextEditCommandFromMenuCommand(command_id));
+      GetTextEditCommandFromMenuCommand(command_id, HasSelection()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1550,8 +1554,6 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
       ui::Clipboard::GetForCurrentThread()->ReadText(
           ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
       return editable && !result.empty();
-    case ui::TextEditCommand::DELETE_SELECTION:
-      return editable && model_->HasSelection();
     case ui::TextEditCommand::SELECT_ALL:
       return !text().empty();
     case ui::TextEditCommand::DELETE_FORWARD:
@@ -1662,9 +1664,6 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
       break;
     case ui::TextEditCommand::PASTE:
       text_changed = cursor_changed = Paste();
-      break;
-    case ui::TextEditCommand::DELETE_SELECTION:
-      text_changed = cursor_changed = model_->Delete();
       break;
     case ui::TextEditCommand::SELECT_ALL:
       SelectAll(false);

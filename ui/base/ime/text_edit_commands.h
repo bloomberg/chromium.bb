@@ -15,7 +15,6 @@ enum class TextEditCommand {
   CUT,
   COPY,
   PASTE,
-  DELETE_SELECTION,
   SELECT_ALL,
   DELETE_FORWARD,
   DELETE_BACKWARD,
