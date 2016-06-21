@@ -11,12 +11,13 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 
 namespace gl {
 
 // For saving the properties of a GLImage overlay plane and scheduling it later.
-class GLSurfaceOverlay {
+class GL_EXPORT GLSurfaceOverlay {
  public:
   GLSurfaceOverlay(int z_order,
                    gfx::OverlayTransform transform,

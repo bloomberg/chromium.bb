@@ -96,14 +96,12 @@ component("gl") {
     "gl_state_restorer.h",
     "gl_surface.cc",
     "gl_surface.h",
-    "gl_surface_android.cc",
     "gl_surface_osmesa.cc",
     "gl_surface_osmesa.h",
     "gl_surface_overlay.cc",
     "gl_surface_overlay.h",
     "gl_surface_stub.cc",
     "gl_surface_stub.h",
-    "gl_surface_win.cc",
     "gl_switches.cc",
     "gl_switches.h",
     "gl_version_info.cc",
@@ -164,6 +162,8 @@ component("gl") {
       "gl_image_egl.h",
       "gl_surface_egl.cc",
       "gl_surface_egl.h",
+      "gl_surface_egl_android.cc",
+      "gl_surface_egl_win.cc",
     ]
   }
   if (is_android || is_linux) {
@@ -179,7 +179,6 @@ component("gl") {
       "gl_surface_egl_x11.h",
       "gl_surface_osmesa_x11.cc",
       "gl_surface_osmesa_x11.h",
-      "gl_surface_x11.cc",
     ]
 
     data_deps = [
@@ -192,8 +191,7 @@ component("gl") {
       "gl_image_ozone_native_pixmap.cc",
       "gl_image_ozone_native_pixmap.h",
       "gl_implementation_ozone.cc",
-      "gl_surface_ozone.cc",
-      "gl_surface_ozone.h",
+      "gl_surface_egl_ozone.cc",
     ]
 
     deps += [ "//ui/ozone" ]

@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/gl_surface_ozone.h"
+#include "ui/gl/init/gl_surface_ozone.h"
 
 #include <stddef.h>
 
@@ -688,12 +688,6 @@ scoped_refptr<GLSurface> CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(
     return nullptr;
   return InitializeGLSurface(new GLSurfaceOzoneSurfacelessSurfaceImpl(
       std::move(surface_ozone), window));
-}
-
-EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
-  return ui::OzonePlatform::GetInstance()
-      ->GetSurfaceFactoryOzone()
-      ->GetNativeDisplay();
 }
 
 }  // namespace gl
