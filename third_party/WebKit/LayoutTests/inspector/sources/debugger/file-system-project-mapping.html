@@ -378,6 +378,40 @@ function test()
                 fs.reportRemoved();
                 next();
             }
+        },
+
+        function testNodeJSWrapper(next)
+        {
+            createWorkspaceWithTarget();
+            InspectorTest.addResult("Adding file system.");
+            var fs = new InspectorTest.TestFileSystem("file:///var/www");
+            var content = "var a = 1;"
+            var folder = fs.root.mkdir("html");
+            folder.addFile("foo.js", "#!/usr/bin/env node;\n" + content);
+            folder.addFile("bar.js", content);
+            fs.root.addFile(".devtools", JSON.stringify({ mappings: [ { folder: "/html/", url: "http://localhost/h1/" } ]}));
+            fs.reportCreated(fileSystemCreated);
+
+            function fileSystemCreated()
+            {
+                debugger;
+                var uiSourceCodeFoo = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
+                var uiSourceCodeBar = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/bar.js");
+
+                var nodePrefix = "(function (exports, require, module, __filename, __dirname) { \n";
+                var nodeSuffix = "\n});";
+
+                var scriptFoo = InspectorTest.createScriptMock("http://localhost/h1/foo.js", 0, 0, false, nodePrefix + content + nodeSuffix, InspectorTest.testTargetManager.targets()[0]);
+                defaultScriptMapping.addScript(scriptFoo);
+                resourceScriptMapping.addScript(scriptFoo);
+                InspectorTest.addResult("Is diverged: " + resourceScriptMapping.scriptFile(uiSourceCodeFoo)._isDiverged());
+
+                var scriptBar = InspectorTest.createScriptMock("http://localhost/h1/bar.js", 0, 0, false, nodePrefix + content + nodeSuffix, InspectorTest.testTargetManager.targets()[0]);
+                defaultScriptMapping.addScript(scriptBar);
+                resourceScriptMapping.addScript(scriptBar);
+                InspectorTest.addResult("Is diverged: " + resourceScriptMapping.scriptFile(uiSourceCodeBar)._isDiverged());
+                next();
+            }
         }
     ]);
 };

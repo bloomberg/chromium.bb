@@ -119,3 +119,12 @@ UISourceCode uri to url mappings:
 (suspend state changed: true)
 (suspend state changed: false)
 
+Running: testNodeJSWrapper
+Adding file system.
+Workspace event: UISourceCodeAdded: file:///var/www/html/foo.js.
+Workspace event: UISourceCodeAdded: file:///var/www/html/bar.js.
+Workspace event: UISourceCodeAdded: debugger:///VM5 foo.js.
+Is diverged: false
+Workspace event: UISourceCodeAdded: debugger:///VM6 bar.js.
+Is diverged: false
+
