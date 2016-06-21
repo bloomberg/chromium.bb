@@ -27,7 +27,6 @@
 #include "core/editing/commands/UndoStack.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
-#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/FrameConsole.h"
@@ -90,12 +89,6 @@ void Page::networkStateChanged(bool online)
     }
 }
 
-void Page::onMemoryPressure()
-{
-    for (Page* page : ordinaryPages())
-        page->memoryPurgeController().purgeMemory();
-}
-
 float deviceScaleFactor(LocalFrame* frame)
 {
     if (!frame)
@@ -110,7 +103,6 @@ Page* Page::createOrdinary(PageClients& pageClients)
 {
     Page* page = create(pageClients);
     ordinaryPages().add(page);
-    page->memoryPurgeController().registerClient(page);
     return page;
 }
 
@@ -163,14 +155,6 @@ ScrollingCoordinator* Page::scrollingCoordinator()
         m_scrollingCoordinator = ScrollingCoordinator::create(this);
 
     return m_scrollingCoordinator.get();
-}
-
-MemoryPurgeController& Page::memoryPurgeController()
-{
-    if (!m_memoryPurgeController)
-        m_memoryPurgeController = MemoryPurgeController::create();
-
-    return *m_memoryPurgeController;
 }
 
 String Page::mainThreadScrollingReasonsAsText()
@@ -480,12 +464,6 @@ void Page::acceptLanguagesChanged()
         frames[i]->localDOMWindow()->acceptLanguagesChanged();
 }
 
-void Page::purgeMemory(DeviceKind deviceKind)
-{
-    if (deviceKind == DeviceKind::LowEnd)
-        memoryCache()->pruneAll();
-}
-
 DEFINE_TRACE(Page)
 {
     visitor->trace(m_animator);
@@ -501,10 +479,8 @@ DEFINE_TRACE(Page)
     visitor->trace(m_mainFrame);
     visitor->trace(m_validationMessageClient);
     visitor->trace(m_frameHost);
-    visitor->trace(m_memoryPurgeController);
     Supplementable<Page>::trace(visitor);
     PageLifecycleNotifier::trace(visitor);
-    MemoryPurgeClient::trace(visitor);
 }
 
 void Page::layerTreeViewInitialized(WebLayerTreeView& layerTreeView)

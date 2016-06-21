@@ -72,8 +72,6 @@
       'MIMETypeRegistry.h',
       'MemoryCacheDumpProvider.cpp',
       'MemoryCacheDumpProvider.h',
-      'MemoryPurgeController.cpp',
-      'MemoryPurgeController.h',
       'PartitionAllocMemoryDumpProvider.cpp',
       'PartitionAllocMemoryDumpProvider.h',
       'PODArena.h',

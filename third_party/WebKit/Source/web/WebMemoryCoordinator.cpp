@@ -4,15 +4,14 @@
 
 #include "public/web/WebMemoryCoordinator.h"
 
+#include "core/dom/MemoryCoordinator.h"
 #include "core/page/Page.h"
-#include "platform/MemoryPurgeController.h"
 
 namespace blink {
 
 void WebMemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel pressureLevel)
 {
-    Page::onMemoryPressure();
-    MemoryPurgeController::onMemoryPressure(pressureLevel);
+    MemoryCoordinator::instance().onMemoryPressure(pressureLevel);
 }
 
 } // namespace blink

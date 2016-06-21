@@ -33,7 +33,6 @@
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "core/page/PageVisibilityState.h"
-#include "platform/MemoryPurgeController.h"
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
 #include "platform/geometry/LayoutRect.h"
@@ -71,7 +70,7 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(LocalFrame*);
 
-class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>, public Supplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate, public MemoryPurgeClient {
+class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>, public Supplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate {
     USING_GARBAGE_COLLECTED_MIXIN(Page);
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
@@ -112,7 +111,6 @@ public:
     static PageSet& ordinaryPages();
 
     static void platformColorsChanged();
-    static void onMemoryPressure();
 
     FrameHost& frameHost() const { return *m_frameHost; }
 
@@ -202,10 +200,6 @@ public:
 
     static void networkStateChanged(bool online);
 
-    MemoryPurgeController& memoryPurgeController();
-
-    void purgeMemory(DeviceKind) override;
-
     DECLARE_TRACE();
 
     void layerTreeViewInitialized(WebLayerTreeView&);
@@ -276,8 +270,6 @@ private:
     // A pointer to all the interfaces provided to in-process Frames for this Page.
     // FIXME: Most of the members of Page should move onto FrameHost.
     Member<FrameHost> m_frameHost;
-
-    Member<MemoryPurgeController> m_memoryPurgeController;
 
     Timer<Page> m_timerForCompressStrings;
 };
