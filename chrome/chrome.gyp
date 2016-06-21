@@ -709,7 +709,7 @@
             '..',
           ],
           'conditions': [
-            ['use_cups==1', {
+            ['use_cups==1 and OS!="chromeos"', {
               'dependencies': [
                 '../printing/printing.gyp:cups',
               ],

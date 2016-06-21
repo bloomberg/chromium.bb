@@ -64,7 +64,7 @@ static_library("service") {
     "//third_party/libjingle",
   ]
 
-  if (use_cups) {
+  if (use_cups && !is_chromeos) {
     sources += [ "cloud_print/print_system_cups.cc" ]
     configs += [ "//printing:cups" ]
   } else if (is_win) {
