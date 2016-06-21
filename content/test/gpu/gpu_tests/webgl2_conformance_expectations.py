@@ -425,6 +425,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/clipping.html',
         ['linux', 'amd', 'intel'], bug=483282)
 
+    self.Flaky('deqp/functional/gles3/texturespecification/' +
+        'random_teximage2d_2d.html',
+        ['linux'], bug=618447)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_cube.html',
         ['linux'], bug=483282)
