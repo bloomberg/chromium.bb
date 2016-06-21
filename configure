@@ -255,6 +255,7 @@ EXPERIMENT_LIST="
     ref_mv
     ext_intra
     ext_interp
+    ext_tx
     motion_var
     ext_refs
     ext_compound
