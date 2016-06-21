@@ -25,6 +25,10 @@
 
 namespace app_list {
 
+namespace {
+bool use_in_testing = false;
+}
+
 // static
 AppListSyncableService* AppListSyncableServiceFactory::GetForProfile(
     Profile* profile) {
@@ -49,6 +53,11 @@ std::unique_ptr<KeyedService> AppListSyncableServiceFactory::BuildInstanceFor(
           << " (" << profile << ")";
   return base::WrapUnique(new AppListSyncableService(
       profile, extensions::ExtensionSystem::Get(profile)));
+}
+
+// static
+void AppListSyncableServiceFactory::SetUseInTesting() {
+  use_in_testing = true;
 }
 
 AppListSyncableServiceFactory::AppListSyncableServiceFactory()
@@ -97,7 +106,7 @@ bool AppListSyncableServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 }
 
 bool AppListSyncableServiceFactory::ServiceIsNULLWhileTesting() const {
-  return true;
+  return !use_in_testing;
 }
 
 }  // namespace app_list

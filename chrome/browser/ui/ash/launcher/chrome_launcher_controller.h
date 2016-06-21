@@ -154,11 +154,6 @@ class ChromeLauncherController {
   virtual void SetLaunchType(ash::ShelfID id,
                              extensions::LaunchType launch_type) = 0;
 
-  // Updates the pinned pref state. The pinned state consists of a list pref.
-  // Each item of the list is a dictionary. The key |kAppIDPath| gives the
-  // id of the app.
-  virtual void PersistPinnedState() = 0;
-
   // Accessor to the currently loaded profile. Note that in multi profile use
   // cases this might change over time.
   virtual Profile* GetProfile() = 0;

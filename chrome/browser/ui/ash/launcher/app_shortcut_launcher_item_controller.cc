@@ -223,7 +223,7 @@ ash::ShelfMenuModel* AppShortcutLauncherItemController::CreateApplicationMenu(
 }
 
 bool AppShortcutLauncherItemController::IsDraggable() {
-  return CanPin();
+  return true;
 }
 
 bool AppShortcutLauncherItemController::CanPin() const {

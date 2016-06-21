@@ -78,10 +78,11 @@ void ChromeMashShelfController::Init() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   shelf_controller_->SetAlignment(static_cast<mash::shelf::mojom::Alignment>(
-      ash::GetShelfAlignmentPref(profile->GetPrefs(), display_id)));
+      ash::launcher::GetShelfAlignmentPref(profile->GetPrefs(), display_id)));
   shelf_controller_->SetAutoHideBehavior(
       static_cast<mash::shelf::mojom::AutoHideBehavior>(
-          ash::GetShelfAutoHideBehaviorPref(profile->GetPrefs(), display_id)));
+          ash::launcher::GetShelfAutoHideBehaviorPref(profile->GetPrefs(),
+                                                      display_id)));
 
   // TODO(skuhne): The AppIconLoaderImpl has the same problem. Each loaded
   // image is associated with a profile (its loader requires the profile).
@@ -110,10 +111,10 @@ void ChromeMashShelfController::Init() {
 void ChromeMashShelfController::PinAppsFromPrefs() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::vector<std::string> pinned_apps =
-      ash::GetPinnedAppsFromPrefs(profile->GetPrefs(), &helper_);
+      ash::launcher::GetPinnedAppsFromPrefs(profile->GetPrefs(), &helper_);
 
   for (const auto& app : pinned_apps) {
-    if (app == ash::kPinnedAppsPlaceholder)
+    if (app == ash::launcher::kPinnedAppsPlaceholder)
       continue;
 
     mash::shelf::mojom::ShelfItemPtr item(mash::shelf::mojom::ShelfItem::New());
@@ -149,7 +150,7 @@ AppIconLoader* ChromeMashShelfController::GetAppIconLoaderForApp(
 
 void ChromeMashShelfController::OnAlignmentChanged(
     mash::shelf::mojom::Alignment alignment) {
-  ash::SetShelfAlignmentPref(
+  ash::launcher::SetShelfAlignmentPref(
       ProfileManager::GetActiveUserProfile()->GetPrefs(),
       display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       static_cast<ash::ShelfAlignment>(alignment));
@@ -157,7 +158,7 @@ void ChromeMashShelfController::OnAlignmentChanged(
 
 void ChromeMashShelfController::OnAutoHideBehaviorChanged(
     mash::shelf::mojom::AutoHideBehavior auto_hide) {
-  ash::SetShelfAutoHideBehaviorPref(
+  ash::launcher::SetShelfAutoHideBehaviorPref(
       ProfileManager::GetActiveUserProfile()->GetPrefs(),
       display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       static_cast<ash::ShelfAutoHideBehavior>(auto_hide));

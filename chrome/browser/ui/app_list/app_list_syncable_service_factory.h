@@ -29,6 +29,9 @@ class AppListSyncableServiceFactory : public BrowserContextKeyedServiceFactory {
   static std::unique_ptr<KeyedService> BuildInstanceFor(
       content::BrowserContext* browser_context);
 
+  // Marks AppListSyncableService to be used in tests.
+  static void SetUseInTesting();
+
  private:
   friend struct base::DefaultSingletonTraits<AppListSyncableServiceFactory>;
 

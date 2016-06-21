@@ -144,7 +144,7 @@ base::string16 AppWindowLauncherItemController::GetTitle() {
 
 bool AppWindowLauncherItemController::IsDraggable() {
   DCHECK_EQ(TYPE_APP, type());
-  return CanPin();
+  return true;
 }
 
 bool AppWindowLauncherItemController::CanPin() const {

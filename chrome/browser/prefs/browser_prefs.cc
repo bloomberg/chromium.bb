@@ -572,7 +572,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(USE_ASH)
-  ash::RegisterChromeLauncherUserPrefs(registry);
+  ash::launcher::RegisterChromeLauncherUserPrefs(registry);
 #endif
 
 #if !defined(OS_ANDROID)

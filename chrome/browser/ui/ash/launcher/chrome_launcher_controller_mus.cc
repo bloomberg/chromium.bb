@@ -129,10 +129,6 @@ void ChromeLauncherControllerMus::SetLaunchType(
   NOTIMPLEMENTED();
 }
 
-void ChromeLauncherControllerMus::PersistPinnedState() {
-  NOTIMPLEMENTED();
-}
-
 Profile* ChromeLauncherControllerMus::GetProfile() {
   return ProfileManager::GetActiveUserProfile();
 }

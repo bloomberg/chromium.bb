@@ -52,7 +52,6 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   bool IsWindowedAppInLauncher(const std::string& app_id) override;
   void SetLaunchType(ash::ShelfID id,
                      extensions::LaunchType launch_type) override;
-  void PersistPinnedState() override;
   Profile* GetProfile() override;
   void UpdateAppState(content::WebContents* contents,
                       AppState app_state) override;

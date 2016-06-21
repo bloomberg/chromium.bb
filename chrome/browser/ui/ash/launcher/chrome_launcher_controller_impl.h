@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/app_icon_loader.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
@@ -31,9 +32,11 @@ class AppWindowLauncherController;
 class TabContents;
 
 namespace ash {
-class ChromeLauncherPrefsObserver;
 class ShelfItemDelegateManager;
 class ShelfModel;
+namespace launcher {
+class ChromeLauncherPrefsObserver;
+}
 }
 
 namespace aura {
@@ -62,7 +65,8 @@ class ChromeLauncherControllerImpl
       private ash::WindowTreeHostManager::Observer,
       private AppIconLoaderDelegate,
       private AppSyncUIStateObserver,
-      private ash::ShelfItemDelegateManagerObserver {
+      private ash::ShelfItemDelegateManagerObserver,
+      private app_list::AppListSyncableService::Observer {
  public:
   ChromeLauncherControllerImpl(Profile* profile, ash::ShelfModel* model);
   ~ChromeLauncherControllerImpl() override;
@@ -104,7 +108,6 @@ class ChromeLauncherControllerImpl
   bool IsWindowedAppInLauncher(const std::string& app_id) override;
   void SetLaunchType(ash::ShelfID id,
                      extensions::LaunchType launch_type) override;
-  void PersistPinnedState() override;
   Profile* GetProfile() override;
   void UpdateAppState(content::WebContents* contents,
                       AppState app_state) override;
@@ -232,7 +235,10 @@ class ChromeLauncherControllerImpl
   // app.
   void UnpinRunningAppInternal(int index);
 
-  // Re-syncs shelf model with prefs::kPinnedLauncherApps.
+  // Updates pin position for the item specified by |id| in sync model.
+  void SyncPinPosition(ash::ShelfID id);
+
+  // Re-syncs shelf model.
   void UpdateAppLaunchersFromPref();
 
   // Sets the shelf auto-hide behavior from prefs.
@@ -271,26 +277,8 @@ class ChromeLauncherControllerImpl
   // Check if the given |web_contents| is in incognito mode.
   bool IsIncognito(const content::WebContents* web_contents) const;
 
-  // Update browser shortcut's index.
-  void PersistChromeItemIndex(int index);
-
-  // Depending on the provided flags, move either the chrome icon, the app icon
-  // or none to the given |target_index|. The provided |chrome_index| and
-  // |app_list_index| locations will get adjusted within this call to finalize
-  // the action and to make sure that the other item can still be moved
-  // afterwards (index adjustments).
-  void MoveChromeOrApplistToFinalPosition(bool is_chrome,
-                                          bool is_app_list,
-                                          int target_index,
-                                          int* chrome_index,
-                                          int* app_list_index);
-
   // Finds the index of where to insert the next item.
-  int FindInsertionPoint(bool is_app_list);
-
-  // Get the browser shortcut's index in the shelf using the current's systems
-  // configuration of pinned and known (but not running) apps.
-  int GetChromeIconIndexForCreation();
+  int FindInsertionPoint();
 
   // Close all windowed V1 applications of a certain extension which was already
   // deleted.
@@ -330,9 +318,12 @@ class ChromeLauncherControllerImpl
   void OnAppImageUpdated(const std::string& app_id,
                          const gfx::ImageSkia& image) override;
 
+  // app_list::AppListSyncableService::Observer:
+  void OnSyncModelUpdated() override;
+
   ash::ShelfModel* model_;
 
-  ash::ShelfItemDelegateManager* item_delegate_manager_;
+  ash::ShelfItemDelegateManager* item_delegate_manager_ = nullptr;
 
   // Profile used for prefs and loading extensions. This is NOT necessarily the
   // profile new windows are created with.
@@ -359,7 +350,7 @@ class ChromeLauncherControllerImpl
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  AppSyncUIState* app_sync_ui_state_;
+  AppSyncUIState* app_sync_ui_state_ = nullptr;
 
   // The owned browser status monitor.
   std::unique_ptr<BrowserStatusMonitor> browser_status_monitor_;
@@ -368,12 +359,12 @@ class ChromeLauncherControllerImpl
   std::unique_ptr<ChromeLauncherControllerUserSwitchObserver>
       user_switch_observer_;
 
-  std::unique_ptr<ash::ChromeLauncherPrefsObserver> prefs_observer_;
+  std::unique_ptr<ash::launcher::ChromeLauncherPrefsObserver> prefs_observer_;
 
   std::unique_ptr<ArcAppDeferredLauncherController> arc_deferred_launcher_;
 
   // If true, incoming pinned state changes should be ignored.
-  bool ignore_persist_pinned_state_change_;
+  bool ignore_persist_pinned_state_change_ = false;
 
   // The list of running & un-pinned applications for different users on hidden
   // desktops.

@@ -30,6 +30,7 @@ class PrefRegistrySyncable;
 }
 
 namespace ash {
+namespace launcher {
 
 // Path within the dictionary entries in the prefs::kPinnedLauncherApps list
 // specifying the extension ID of the app to be pinned by that entry.
@@ -71,7 +72,19 @@ void SetShelfAlignmentPref(PrefService* prefs,
 // Get the list of pinned apps from preferences.
 std::vector<std::string> GetPinnedAppsFromPrefs(
     const PrefService* prefs,
-    const LauncherControllerHelper* helper);
+    LauncherControllerHelper* helper);
+
+// Removes information about pin position from sync model for the app.
+void RemovePinPosition(Profile* profile, const std::string& app_id);
+
+// Updates information about pin position in sync model for the app |app_id|.
+// |app_id_before| optionally specifies an app that exists right before the
+// target app. |app_id_after| optionally specifies an app that exists right
+// after the target app.
+void SetPinPosition(Profile* profile,
+                    const std::string& app_id,
+                    const std::string& app_id_before,
+                    const std::string& app_id_after);
 
 // Used to propagate remote preferences to local during the first run.
 class ChromeLauncherPrefsObserver
@@ -98,6 +111,7 @@ class ChromeLauncherPrefsObserver
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherPrefsObserver);
 };
 
+}  // namespace launcher
 }  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_ASH_CHROME_LAUNCHER_PREFS_H_

@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
 #include "ash/common/shelf/shelf_item_types.h"
-#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -36,8 +36,9 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   void SetUp() override {
     arc_test_.SetUp(profile_.get());
     ash::test::AshTestBase::SetUp();
-    controller_.reset(
-        new ChromeLauncherControllerImpl(profile(), &shelf_model_));
+    controller_.reset(new ChromeLauncherControllerImpl(
+        profile(), ash::Shell::GetInstance()->shelf_model()));
+    controller_->Init();
   }
 
   void TearDown() override {
@@ -73,7 +74,6 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
 
  private:
   std::unique_ptr<TestingProfile> profile_;
-  ash::ShelfModel shelf_model_;
   std::unique_ptr<ChromeLauncherControllerImpl> controller_;
   ArcAppTest arc_test_;
 

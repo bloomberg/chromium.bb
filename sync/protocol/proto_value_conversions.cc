@@ -267,6 +267,7 @@ std::unique_ptr<base::DictionaryValue> AppListSpecificsToValue(
   SET_STR(item_name);
   SET_STR(parent_id);
   SET_STR(item_ordinal);
+  SET_STR(item_pin_ordinal);
 
   return value;
 }

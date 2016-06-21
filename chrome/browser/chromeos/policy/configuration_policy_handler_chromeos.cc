@@ -329,7 +329,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
       std::string id;
       if ((*entry)->GetAsString(&id)) {
         base::DictionaryValue* app_dict = new base::DictionaryValue();
-        app_dict->SetString(ash::kPinnedAppsPrefAppIDPath, id);
+        app_dict->SetString(ash::launcher::kPinnedAppsPrefAppIDPath, id);
         pinned_apps_list->Append(app_dict);
       }
     }

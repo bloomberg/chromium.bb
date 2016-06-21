@@ -50,6 +50,7 @@ class LauncherControllerHelper : public ExtensionEnableFlowDelegate {
 
   virtual ArcAppListPrefs* GetArcAppListPrefs() const;
 
+  Profile* profile() { return profile_; }
   const Profile* profile() const { return profile_; }
 
  private:

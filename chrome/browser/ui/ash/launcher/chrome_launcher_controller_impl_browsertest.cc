@@ -315,7 +315,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     ash::ShelfID shortcut_id = controller_->CreateAppShortcutLauncherItem(
         app_id,
         item_count);
-    controller_->PersistPinnedState();
+    controller_->SyncPinPosition(shortcut_id);
     EXPECT_EQ(++item_count, model_->item_count());
     const ash::ShelfItem& item = *model_->ItemByID(shortcut_id);
     EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);

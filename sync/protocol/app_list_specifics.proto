@@ -47,4 +47,7 @@ message AppListSpecifics {
 
   // Where on a page this item will appear.
   optional string item_ordinal = 6;
+
+  // Where on a shelf this item will appear.
+  optional string item_pin_ordinal = 7;
 }
