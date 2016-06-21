@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/environment.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/nix/xdg_util.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/strings/string_split.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::Environment;
@@ -22,7 +24,44 @@ namespace {
 // KDE printer config command ("system-config-printer-kde") causes the
 // OptionWidget to crash (https://bugs.kde.org/show_bug.cgi?id=271957).
 // Therefore, use GNOME printer config command for KDE.
-const char kGNOMEPrinterConfigCommand[] = "system-config-printer";
+const char* const kSystemConfigPrinterCommand[] = {"system-config-printer",
+                                                   nullptr};
+
+const char* const kGnomeControlCenterPrintersCommand[] = {
+    "gnome-control-center", "printers", nullptr};
+
+bool CommandExists(const char* command) {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string path;
+  if (!env->GetVar("PATH", &path)) {
+    LOG(ERROR) << "No $PATH variable. Assuming no " << command << ".";
+    return false;
+  }
+
+  for (const base::StringPiece& cur_path :
+       base::SplitStringPiece(path, ":", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    base::FilePath file(cur_path);
+    if (base::PathExists(file.Append(command)))
+      return true;
+  }
+  return false;
+}
+
+// Returns true if the dialog was opened successfully.
+bool OpenPrinterConfigDialog(const char* const* command) {
+  DCHECK(command);
+  if (!CommandExists(*command))
+    return false;
+  std::vector<std::string> argv;
+  while (*command)
+    argv.push_back(*command++);
+  base::Process process = base::LaunchProcess(argv, base::LaunchOptions());
+  if (!process.IsValid())
+    return false;
+  base::EnsureProcessGetsReaped(process.Pid());
+  return true;
+}
 
 // Detect the command based on the deskop environment and open the printer
 // manager dialog.
@@ -30,33 +69,25 @@ void DetectAndOpenPrinterConfigDialog() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::unique_ptr<Environment> env(Environment::Create());
 
-  const char* command = NULL;
+  bool opened = false;
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
+      opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand) ||
+               OpenPrinterConfigDialog(kGnomeControlCenterPrintersCommand);
+      break;
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
     case base::nix::DESKTOP_ENVIRONMENT_KDE5:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
-      command = kGNOMEPrinterConfigCommand;
+      opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand);
       break;
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
-      break;
+      LOG(ERROR)
+          << "Failed to detect the command to open printer config dialog";
+      return;
   }
-
-  if (!command) {
-    LOG(ERROR) << "Failed to detect the command to open printer config dialog";
-    return;
-  }
-
-  std::vector<std::string> argv;
-  argv.push_back(command);
-  base::Process process = base::LaunchProcess(argv, base::LaunchOptions());
-  if (!process.IsValid()) {
-    LOG(ERROR) << "Failed to open printer manager dialog ";
-    return;
-  }
-  base::EnsureProcessGetsReaped(process.Pid());
+  LOG_IF(ERROR, !opened) << "Failed to open printer manager dialog ";
 }
 
 }  // anonymous namespace
