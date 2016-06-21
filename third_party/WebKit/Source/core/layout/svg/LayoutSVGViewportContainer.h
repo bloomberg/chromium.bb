@@ -50,7 +50,7 @@ private:
     const AffineTransform& localToSVGParentTransform() const override { return m_localToParentTransform; }
 
     void calcViewport() override;
-    TransformChange calculateLocalTransform() override;
+    SVGTransformChange calculateLocalTransform() override;
 
     bool pointIsInsideViewportClip(const FloatPoint& pointInParent) override;
 

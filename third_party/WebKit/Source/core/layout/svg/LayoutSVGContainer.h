@@ -28,6 +28,7 @@
 namespace blink {
 
 class SVGElement;
+enum class SVGTransformChange;
 
 class LayoutSVGContainer : public LayoutSVGModelObject {
 public:
@@ -70,17 +71,8 @@ protected:
 
     bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
-    // The following enumeration is used to optimize cases where the scale is
-    // known to be invariant (see: LayoutSVGContainer::layout). The value
-    // 'Full' can be used in the general case when the scale change is unknown,
-    // or known to change.
-    enum class TransformChange {
-        None,
-        ScaleInvariant,
-        Full,
-    };
     // Allow LayoutSVGTransformableContainer to hook in at the right time in layout().
-    virtual TransformChange calculateLocalTransform() { return TransformChange::None; }
+    virtual SVGTransformChange calculateLocalTransform();
 
     // Allow LayoutSVGViewportContainer to hook in at the right times in layout() and nodeAtFloatPoint().
     virtual void calcViewport() { }

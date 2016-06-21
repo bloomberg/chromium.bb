@@ -40,7 +40,7 @@ public:
     void setNeedsTransformUpdate() override;
 
 private:
-    TransformChange calculateLocalTransform() override;
+    SVGTransformChange calculateLocalTransform() override;
     AffineTransform localSVGTransform() const override { return m_localTransform; }
 
     bool m_needsTransformUpdate : 1;

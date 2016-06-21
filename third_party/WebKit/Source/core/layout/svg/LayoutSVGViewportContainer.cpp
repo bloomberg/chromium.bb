@@ -70,21 +70,15 @@ void LayoutSVGViewportContainer::setNeedsTransformUpdate()
     m_needsTransformUpdate = true;
 }
 
-static std::pair<double, double> scaleReference(const AffineTransform& transform)
-{
-    return std::make_pair(transform.xScaleSquared(), transform.yScaleSquared());
-}
-
-LayoutSVGContainer::TransformChange LayoutSVGViewportContainer::calculateLocalTransform()
+SVGTransformChange LayoutSVGViewportContainer::calculateLocalTransform()
 {
     if (!m_needsTransformUpdate)
-        return TransformChange::None;
+        return SVGTransformChange::None;
 
-    std::pair<double, double> oldScale = scaleReference(m_localToParentTransform);
+    SVGTransformChangeDetector changeDetector(m_localToParentTransform);
     m_localToParentTransform = AffineTransform::translation(m_viewport.x(), m_viewport.y()) * viewportTransform();
     m_needsTransformUpdate = false;
-    return scaleReference(m_localToParentTransform) != oldScale
-        ? TransformChange::Full : TransformChange::ScaleInvariant;
+    return changeDetector.computeChange(m_localToParentTransform);
 }
 
 AffineTransform LayoutSVGViewportContainer::viewportTransform() const

@@ -58,7 +58,7 @@ public:
 private:
     void layout() override;
     void calcViewport() override;
-    TransformChange calculateLocalTransform() override;
+    SVGTransformChange calculateLocalTransform() override;
 
     AffineTransform viewportTransform() const;
 

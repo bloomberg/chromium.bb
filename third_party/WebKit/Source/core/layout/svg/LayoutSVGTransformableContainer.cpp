@@ -72,12 +72,7 @@ void LayoutSVGTransformableContainer::setNeedsTransformUpdate()
     m_needsTransformUpdate = true;
 }
 
-static std::pair<double, double> scaleReference(const AffineTransform& transform)
-{
-    return std::make_pair(transform.xScaleSquared(), transform.yScaleSquared());
-}
-
-LayoutSVGContainer::TransformChange LayoutSVGTransformableContainer::calculateLocalTransform()
+SVGTransformChange LayoutSVGTransformableContainer::calculateLocalTransform()
 {
     SVGGraphicsElement* element = toSVGGraphicsElement(this->element());
     ASSERT(element);
@@ -108,14 +103,13 @@ LayoutSVGContainer::TransformChange LayoutSVGTransformableContainer::calculateLo
     }
 
     if (!m_needsTransformUpdate)
-        return TransformChange::None;
+        return SVGTransformChange::None;
 
-    std::pair<double, double> oldScale = scaleReference(m_localTransform);
+    SVGTransformChangeDetector changeDetector(m_localTransform);
     m_localTransform = element->calculateAnimatedLocalTransform();
     m_localTransform.translate(m_additionalTranslation.width(), m_additionalTranslation.height());
     m_needsTransformUpdate = false;
-    return scaleReference(m_localTransform) != oldScale
-        ? TransformChange::Full : TransformChange::ScaleInvariant;
+    return changeDetector.computeChange(m_localTransform);
 }
 
 } // namespace blink
