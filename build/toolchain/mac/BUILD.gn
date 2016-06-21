@@ -27,6 +27,13 @@ if (use_goma) {
   compiler_prefix = ""
 }
 
+if (use_xcode_clang) {
+  _clang_prefix = ""
+} else {
+  _clang_prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin/",
+                              root_build_dir)
+}
+
 if (current_toolchain == default_toolchain) {
   # Reduce the number of tasks using the copy_bundle_data and compile_xcassets
   # tools as they can cause lots of I/O contention when invoking ninja with a
@@ -354,52 +361,8 @@ template("mac_toolchain") {
 mac_toolchain("clang_arm") {
   toolchain_cpu = "arm"
   toolchain_os = "mac"
-  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                       root_build_dir)
-  cc = "${compiler_prefix}$prefix/clang"
-  cxx = "${compiler_prefix}$prefix/clang++"
-  ld = cxx
-  is_clang = true
-}
-
-mac_toolchain("ios_clang_arm") {
-  toolchain_cpu = "arm"
-  toolchain_os = "mac"
-
-  # TODO(GYP): We need to support being able to use the version of clang
-  # shipped w/ XCode instead of the one pulled from upstream.
-  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                       root_build_dir)
-  cc = "${compiler_prefix}$prefix/clang"
-  cxx = "${compiler_prefix}$prefix/clang++"
-  ld = cxx
-  is_clang = true
-}
-
-mac_toolchain("ios_clang_armv7") {
-  toolchain_cpu = "armv7"
-  toolchain_os = "mac"
-
-  # TODO(GYP): We need to support being able to use the version of clang
-  # shipped w/ XCode instead of the one pulled from upstream.
-  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                       root_build_dir)
-  cc = "${compiler_prefix}$prefix/clang"
-  cxx = "${compiler_prefix}$prefix/clang++"
-  ld = cxx
-  is_clang = true
-}
-
-mac_toolchain("ios_clang_arm64") {
-  toolchain_cpu = "arm64"
-  toolchain_os = "mac"
-
-  # TODO(GYP): We need to support being able to use the version of clang
-  # shipped w/ XCode instead of the one pulled from upstream.
-  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                       root_build_dir)
-  cc = "${compiler_prefix}$prefix/clang"
-  cxx = "${compiler_prefix}$prefix/clang++"
+  cc = "${compiler_prefix}${_clang_prefix}clang"
+  cxx = "${compiler_prefix}${_clang_prefix}clang++"
   ld = cxx
   is_clang = true
 }
@@ -407,8 +370,8 @@ mac_toolchain("ios_clang_arm64") {
 mac_toolchain("arm") {
   toolchain_cpu = "arm"
   toolchain_os = "mac"
-  cc = "${compiler_prefix}/gcc"
-  cxx = "${compiler_prefix}/g++"
+  cc = "${compiler_prefix}gcc"
+  cxx = "${compiler_prefix}g++"
   ld = cxx
   is_clang = false
 }
@@ -416,10 +379,8 @@ mac_toolchain("arm") {
 mac_toolchain("clang_x64") {
   toolchain_cpu = "x64"
   toolchain_os = "mac"
-  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                       root_build_dir)
-  cc = "${compiler_prefix}$prefix/clang"
-  cxx = "${compiler_prefix}$prefix/clang++"
+  cc = "${compiler_prefix}${_clang_prefix}clang"
+  cxx = "${compiler_prefix}${_clang_prefix}clang++"
   ld = cxx
   is_clang = true
 }
@@ -427,8 +388,44 @@ mac_toolchain("clang_x64") {
 mac_toolchain("x64") {
   toolchain_cpu = "x64"
   toolchain_os = "mac"
-  cc = "${compiler_prefix}/gcc"
-  cxx = "${compiler_prefix}/g++"
+  cc = "${compiler_prefix}gcc"
+  cxx = "${compiler_prefix}g++"
   ld = cxx
   is_clang = false
+}
+
+mac_toolchain("ios_clang_arm") {
+  toolchain_cpu = "arm"
+  toolchain_os = "mac"
+  cc = "${compiler_prefix}${_clang_prefix}clang"
+  cxx = "${compiler_prefix}${_clang_prefix}clang++"
+  ld = cxx
+  is_clang = true
+}
+
+mac_toolchain("ios_clang_arm64") {
+  toolchain_cpu = "arm64"
+  toolchain_os = "mac"
+  cc = "${compiler_prefix}${_clang_prefix}clang"
+  cxx = "${compiler_prefix}${_clang_prefix}clang++"
+  ld = cxx
+  is_clang = true
+}
+
+mac_toolchain("ios_clang_x86") {
+  toolchain_cpu = "x86"
+  toolchain_os = "mac"
+  cc = "${compiler_prefix}${_clang_prefix}clang"
+  cxx = "${compiler_prefix}${_clang_prefix}clang++"
+  ld = cxx
+  is_clang = true
+}
+
+mac_toolchain("ios_clang_x64") {
+  toolchain_cpu = "x64"
+  toolchain_os = "mac"
+  cc = "${compiler_prefix}${_clang_prefix}clang"
+  cxx = "${compiler_prefix}${_clang_prefix}clang++"
+  ld = cxx
+  is_clang = true
 }

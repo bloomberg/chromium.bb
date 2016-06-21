@@ -73,7 +73,7 @@ group("deps_no_options") {
   }
 }
 
-if (is_mac) {
+if (is_mac && using_sanitizer) {
   copy("copy_asan_runtime") {
     sources = [
       "//third_party/llvm-build/Release+Asserts/lib/clang/$clang_version/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",

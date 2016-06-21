@@ -1007,17 +1007,14 @@ config("default_warnings") {
       "-Wno-inconsistent-missing-override",
     ]
 
-    # NaCl's Clang compiler and Chrome's hermetic Clang compiler will almost
-    # always have different versions. Certain flags may not be recognized by
-    # one version or the other.
+    # Chrome's hermetic Clang compiler, NaCl's Clang compiler and Xcode's Clang
+    # compiler will almost always have different versions. Certain flags may not
+    # be recognized by one version or the other.
     if (!is_nacl) {
       # Flags NaCl (Clang 3.7) does not recognize.
       cflags += [
         # TODO(thakis): Enable this, crbug.com/507717
         "-Wno-shift-negative-value",
-
-        # TODO(thakis): https://crbug.com/604888
-        "-Wno-undefined-var-template",
       ]
 
       if (llvm_force_head_revision) {
@@ -1026,6 +1023,14 @@ config("default_warnings") {
           "-Wno-nonportable-include-path",
         ]
       }
+    }
+    if (!is_nacl && !use_xcode_clang) {
+      # Flags NaCl (Clang 3.7) and Xcode 7.3 (Clang clang-703.0.31) do not
+      # recognize.
+      cflags += [
+        # TODO(thakis): https://crbug.com/604888
+        "-Wno-undefined-var-template",
+      ]
     }
   }
 }
