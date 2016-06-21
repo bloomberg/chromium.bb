@@ -865,23 +865,21 @@ void Shell::Init(const ShellInitParams& init_params) {
       display_manager_.get(), window_tree_host_manager_.get()));
 
 #if defined(OS_CHROMEOS)
-  // When running as part of mash, OzonePlatform is not initialized in the
-  // ash_sysui process. DisplayConfigurator will try to use OzonePlatform and
-  // crash. Instead, mash can manually set default display size using
-  // --ash-host-window-bounds flag.
-  if (in_mus_)
+  // When running as part of mash display configuration is handled by the mus
+  // process, so we won't try to configure displays here.
+  if (in_mus_) {
     display_configurator_->set_configure_display(false);
-
+  } else {
 #if defined(USE_OZONE)
-  display_configurator_->Init(
-      in_mus_ ? nullptr
-              : ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
-      !gpu_support_->IsPanelFittingDisabled());
+    display_configurator_->Init(
+        ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
+        !gpu_support_->IsPanelFittingDisabled());
 #elif defined(USE_X11)
-  display_configurator_->Init(
-      base::WrapUnique(new ui::NativeDisplayDelegateX11()),
-      !gpu_support_->IsPanelFittingDisabled());
+    display_configurator_->Init(
+        base::WrapUnique(new ui::NativeDisplayDelegateX11()),
+        !gpu_support_->IsPanelFittingDisabled());
 #endif
+  }
 
   // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
   chromeos::DBusThreadManager* dbus_thread_manager =
@@ -891,7 +889,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_configurator_->AddObserver(projecting_observer_.get());
   wm_shell_common_->AddShellObserver(projecting_observer_.get());
 
-  if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
+  if (!in_mus_ && !display_initialized &&
+      base::SysInfo::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new DisplayChangeObserver);
     // Register |display_change_observer_| first so that the rest of
     // observer gets invoked after the root windows are configured.
