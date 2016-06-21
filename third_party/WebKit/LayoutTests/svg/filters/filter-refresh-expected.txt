@@ -460,7 +460,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGRect rect id='filtered'",
-      "reason": "style change"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGRect rect id='separate2'",
