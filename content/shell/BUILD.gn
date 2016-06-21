@@ -455,6 +455,13 @@ if (is_android) {
       # the bundle structure.
       "//components/test_runner:resources",
     ]
+    ldflags = [
+      # The main app is at Content Shell.app/Contents/MacOS/Content Shell
+      # so set the rpath up to Contents/ so that the loader can find
+      # Framworks/.
+      "-rpath",
+      "@executable_path/../",
+    ]
     info_plist_target = ":content_shell_plist"
   }
 } else {
@@ -621,7 +628,26 @@ if (is_mac) {
       deps += [ ":content_shell_framework_plugins" ]
     }
 
-    ldflags = [ "-Wl,-install_name,@executable_path/../Frameworks/$output_name.framework/$output_name" ]
+    # Both the main :content_shell and :content_shell_helper_app executables
+    # need to link the framework. Because they are at different directory
+    # depths, using @executable_path as the install_name would require using
+    # install_name_tool on one of the executables. However install_name_tool
+    # only operates in-place, which is problematic to express in GN. Instead,
+    # use rpath-based loading.
+    # TODO(rsesek): After GYP is gone, re-write content_shell_main to be like
+    # chrome_main and use dlopen() instead of a linked framework.
+    ldflags = [ "-Wl,-install_name,@rpath/Frameworks/$output_name.framework/$output_name" ]
+
+    if (is_component_build) {
+      # Set up the rpath for the framework so that it can find dylibs in the
+      # root output directory. The framework is at
+      # Content Shell.app/Contents/Frameworks/Content Shell Framework.framework/Content Shell Framework
+      # so use loader_path to go back to the root output directory.
+      ldflags += [
+        "-rpath",
+        "@loader_path/../../../..",
+      ]
+    }
 
     info_plist_target = ":content_shell_framework_plist"
   }
@@ -649,51 +675,11 @@ if (is_mac) {
     ]
     ldflags = [
       # The helper is in Content Shell.app/Contents/Frameworks/Content Shell Helper.app/Contents/MacOS/
-      # so set rpath up to the base.
+      # so set rpath up to Contents/ so that the loader can find Frameworks/.
       "-rpath",
-      "@loader_path/../../../../../..",
+      "@executable_path/../../../..",
     ]
     info_plist_target = ":content_shell_helper_plist"
-  }
-
-  # The install_name_tool can only operate in-place, rather than producing a
-  # unique output. Use the xcrun wrapper script to write a fake stamp output
-  # file. After :content_shell_helper_app has been built and bundled, this
-  # will run, modifying the executable in the bundle and writing out the
-  # --stamp specified. This will change the mtime on the executable, but
-  # because the stamp will also be updated, the
-  # :content_shell_framework_bundle_data will re-copy the output. This only
-  # works because nothing else depends on the output of
-  # :content_shell_helper_app.
-  # TODO(rsesek): After GYP is gone, re-write content_shell_main to be like
-  # chrome_main and use dlopen() instead of a linked framework.
-  action("fix_helper_link_framework") {
-    testonly = true
-    script = "//build/config/mac/xcrun.py"
-    inputs = [
-      "$root_out_dir/$content_shell_helper_name.app/Contents/MacOS/$content_shell_helper_name",
-    ]
-
-    stamp_file = "$target_out_dir/xcrun_$target_name.stamp"
-    outputs = [
-      stamp_file,
-    ]
-
-    # TODO(rsesek): Figure out something like GYP's postbuilds to allow
-    # install_name_tool to operate in-place <https://crbug.com/607292>.
-    args = [
-             "--stamp",
-             rebase_path(stamp_file, root_build_dir),
-
-             # xcrun arguments:
-             "install_name_tool",
-             "-change",
-             "@executable_path/../Frameworks/$content_shell_framework_name.framework/$content_shell_framework_name",
-             "@executable_path/../../../$content_shell_framework_name.framework/$content_shell_framework_name",
-           ] + rebase_path(inputs, root_build_dir)
-    public_deps = [
-      ":content_shell_helper_app",
-    ]
   }
 
   bundle_data("content_shell_framework_bundle_data") {
@@ -707,7 +693,7 @@ if (is_mac) {
     ]
     public_deps = [
       ":content_shell_framework+link",
-      ":fix_helper_link_framework",
+      ":content_shell_helper_app",
     ]
   }
 
