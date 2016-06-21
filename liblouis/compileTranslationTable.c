@@ -994,7 +994,7 @@ charactersDefined (FileInfo * nested)
       }
   if (!(newRule->opcode == CTO_Correct || newRule->opcode == CTO_SwapCc || newRule->opcode == CTO_SwapCd)
 	//TODO:  these just need to know there is a way to get from dots to a char
-	&& !(newRule->opcode >= CTO_SingleLetterCapsRule && newRule->opcode <= CTO_LastWordTrans5AfterRule))
+	&& !(newRule->opcode >= CTO_CapsLetterRule && newRule->opcode <= CTO_LastWordTrans5AfterRule))
     {
       for (k = newRule->charslen; k < newRule->charslen + newRule->dotslen;
 	   k++)
@@ -3868,12 +3868,12 @@ doOpcode:
 			break;
 		}
 
-    case CTO_FirstWordCaps:
+    case CTO_BegCapsPhrase:
       ok =
 	compileBrailleIndicator (nested, "first word capital sign",
-				 CTO_FirstWordCapsRule, &table->emphRules[capsRule][begPhraseOffset]);
+				 CTO_BegCapsPhraseRule, &table->emphRules[capsRule][begPhraseOffset]);
       break;
-    case CTO_LastWordCaps:
+    case CTO_EndCapsPhrase:
 		switch (compileBeforeAfter(nested)) {
 			case 1: // before
 				if (table->emphRules[capsRule][endPhraseAfterOffset]) {
@@ -3883,7 +3883,7 @@ doOpcode:
 				}
 				ok =
 					compileBrailleIndicator (nested, "capital sign before last word",
-						CTO_LastWordCapsBeforeRule, &table->emphRules[capsRule][endPhraseBeforeOffset]);
+						CTO_EndCapsPhraseBeforeRule, &table->emphRules[capsRule][endPhraseBeforeOffset]);
 				break;
 			case 2: // after
 				if (table->emphRules[capsRule][endPhraseBeforeOffset]) {
@@ -3893,7 +3893,7 @@ doOpcode:
 				}
 				ok =
 					compileBrailleIndicator (nested, "capital sign after last word",
-						CTO_LastWordCapsAfterRule, &table->emphRules[capsRule][endPhraseAfterOffset]);
+						CTO_EndCapsPhraseAfterRule, &table->emphRules[capsRule][endPhraseAfterOffset]);
 				break;
 			default: // error
 				compileError (nested, "Invalid lastword indicator location.");
@@ -3901,29 +3901,29 @@ doOpcode:
 				break;
 		}
       break;
-	  case CTO_FirstLetterCaps:
+	  case CTO_BegCaps:
       ok =
 	compileBrailleIndicator (nested, "first letter capital sign",
-				 CTO_FirstLetterCapsRule, &table->emphRules[capsRule][begOffset]);
+				 CTO_BegCapsRule, &table->emphRules[capsRule][begOffset]);
 		break;
-	  case CTO_LastLetterCaps:
+	  case CTO_EndCaps:
       ok =
 	compileBrailleIndicator (nested, "last letter capital sign",
-				 CTO_LastLetterCapsRule, &table->emphRules[capsRule][endOffset]);
+				 CTO_EndCapsRule, &table->emphRules[capsRule][endOffset]);
       break;
-	  case CTO_SingleLetterCaps:
+	  case CTO_CapsLetter:
       ok =
 	compileBrailleIndicator (nested, "single letter capital sign",
-				 CTO_SingleLetterCapsRule, &table->emphRules[capsRule][letterOffset]);
+				 CTO_CapsLetterRule, &table->emphRules[capsRule][letterOffset]);
       break;
-    case CTO_CapsWord:
+    case CTO_BegCapsWord:
       ok =
-	compileBrailleIndicator (nested, "capital word", CTO_CapsWordRule,
+	compileBrailleIndicator (nested, "capital word", CTO_BegCapsWordRule,
 				 &table->emphRules[capsRule][begWordOffset]);
       break;
-	case CTO_CapsWordStop:
+	case CTO_EndCapsWord:
 		ok = compileBrailleIndicator(nested, "capital word stop",
-				 CTO_CapsWordStopRule, &table->emphRules[capsRule][endWordOffset]);
+				 CTO_EndCapsWordRule, &table->emphRules[capsRule][endWordOffset]);
       break;
     case CTO_LenCapsPhrase:
       ok = table->emphRules[capsRule][lenPhraseOffset] = compileNumber (nested);
@@ -4550,7 +4550,7 @@ doOpcode:
 	    while ((lastToken = getToken (nested, &token, "multind opcodes")))
 	      {
 		opcode = getOpcode (nested, &token);
-		if (opcode >= CTO_SingleLetterCaps && opcode < CTO_MultInd)
+		if (opcode >= CTO_CapsLetter && opcode < CTO_MultInd)
 		  ruleChars.chars[ruleChars.length++] = (widechar) opcode;
 		else
 		  {

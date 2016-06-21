@@ -490,7 +490,7 @@ handleMultind ()
     return 0;
   switch (multindRule->charsdots[multindRule->charslen - doingMultind])
     {
-    case CTO_SingleLetterCapsRule: // FIXME: make sure this works
+    case CTO_CapsLetterRule: // FIXME: make sure this works
       found = findBrailleIndicatorRule (table->emphRules[capsRule][letterOffset]);
       break;
     // NOTE:  following fixme is based on the names at the time of
@@ -501,10 +501,10 @@ handleMultind ()
     //        table->beginCapitalSign and table->endCapitalSign.
     //        These are actually compiled with firstlettercaps/lastlettercaps.
     //        Which to use here?
-    case CTO_CapsWordRule:
+    case CTO_BegCapsWordRule:
       found = findBrailleIndicatorRule (table->emphRules[capsRule][begWordOffset]);
       break;
-    case CTO_CapsWordStopRule:
+    case CTO_EndCapsWordRule:
       found = findBrailleIndicatorRule (table->emphRules[capsRule][endWordOffset]);
       break;
     case CTO_LetterSign:
@@ -666,11 +666,11 @@ back_selectRule ()
 		      if (itsANumber)
 			return;
 		      break;
-		    case CTO_SingleLetterCapsRule:
-		    case CTO_FirstLetterCapsRule:
-		    case CTO_LastLetterCapsRule:
-		    case CTO_CapsWordRule:
-		    case CTO_CapsWordStopRule:
+		    case CTO_CapsLetterRule:
+		    case CTO_BegCapsRule:
+		    case CTO_EndCapsRule:
+		    case CTO_BegCapsWordRule:
+		    case CTO_EndCapsWordRule:
 		    case CTO_FirstLetterItalRule:
 		    case CTO_LastLetterItalRule:
 		    case CTO_FirstLetterBoldRule:
@@ -1080,27 +1080,27 @@ backTranslateString ()
 	    if (!insertSpace ())
 	      goto failure;
 	  break;
-	case CTO_SingleLetterCapsRule:
+	case CTO_CapsLetterRule:
 	  nextUpper = 1;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_CapsWordRule:
+	case CTO_BegCapsWordRule:
 	  allUpper = 1;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_FirstLetterCapsRule:
+	case CTO_BegCapsRule:
 	  allUpperPhrase = 1;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_CapsWordStopRule:
+	case CTO_EndCapsWordRule:
 	  allUpper = 0;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_LastLetterCapsRule:
+	case CTO_EndCapsRule:
 	  allUpperPhrase = 0;
 	  src += currentDotslen;
 	  continue;
