@@ -16,6 +16,8 @@
 
 namespace net {
 class CertVerifier;
+class CTPolicyEnforcer;
+class CTVerifier;
 class DrainableIOBuffer;
 class GrowableIOBuffer;
 class SSLServerContext;
@@ -93,6 +95,8 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   std::string remote_cert_;
   std::unique_ptr<net::TransportSecurityState> transport_security_state_;
   std::unique_ptr<net::CertVerifier> cert_verifier_;
+  std::unique_ptr<net::CTVerifier> ct_verifier_;
+  std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer_;
 
   std::unique_ptr<net::SSLSocket> socket_;
   DoneCallback done_callback_;

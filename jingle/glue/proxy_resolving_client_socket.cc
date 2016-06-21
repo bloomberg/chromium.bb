@@ -62,6 +62,9 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   session_params.cert_verifier = request_context->cert_verifier();
   session_params.transport_security_state =
       request_context->transport_security_state();
+  session_params.cert_transparency_verifier =
+      request_context->cert_transparency_verifier();
+  session_params.ct_policy_enforcer = request_context->ct_policy_enforcer();
   // TODO(rkn): This is NULL because ChannelIDService is not thread safe.
   session_params.channel_id_service = NULL;
   session_params.proxy_service = request_context->proxy_service();

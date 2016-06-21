@@ -517,12 +517,11 @@ void SocketsTcpSecureFunction::AsyncWorkStart() {
   }
 
   TLSSocket::UpgradeSocketToTLS(
-      socket,
-      url_request_context->ssl_config_service(),
+      socket, url_request_context->ssl_config_service(),
       url_request_context->cert_verifier(),
       url_request_context->transport_security_state(),
-      extension_id(),
-      &legacy_params,
+      url_request_context->cert_transparency_verifier(),
+      url_request_context->ct_policy_enforcer(), extension_id(), &legacy_params,
       base::Bind(&SocketsTcpSecureFunction::TlsConnectDone, this));
 }
 

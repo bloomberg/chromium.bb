@@ -21,6 +21,8 @@
 #include "net/base/network_delegate_impl.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -223,6 +225,7 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
   params->cert_verifier = context->cert_verifier();
   params->transport_security_state = context->transport_security_state();
   params->cert_transparency_verifier = context->cert_transparency_verifier();
+  params->ct_policy_enforcer = context->ct_policy_enforcer();
   params->proxy_service = context->proxy_service();
   params->ssl_config_service = context->ssl_config_service();
   params->http_auth_handler_factory = context->http_auth_handler_factory();
@@ -385,6 +388,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   } else {
     storage->set_cert_verifier(CertVerifier::CreateDefault());
   }
+
+  storage->set_cert_transparency_verifier(
+      base::MakeUnique<MultiLogCTVerifier>());
+  storage->set_ct_policy_enforcer(base::MakeUnique<CTPolicyEnforcer>());
 
   if (throttling_enabled_) {
     storage->set_throttler_manager(

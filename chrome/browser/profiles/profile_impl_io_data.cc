@@ -461,6 +461,8 @@ void ProfileImplIOData::InitializeInternal(
     http_server_properties_manager_->InitializeOnNetworkThread();
 
   main_context->set_transport_security_state(transport_security_state());
+  main_context->set_ct_policy_enforcer(
+      io_thread_globals->ct_policy_enforcer.get());
 
   main_context->set_net_log(io_thread->net_log());
 
@@ -576,6 +578,8 @@ void ProfileImplIOData::
   ApplyProfileParamsToContext(extensions_context);
 
   extensions_context->set_transport_security_state(transport_security_state());
+  extensions_context->set_ct_policy_enforcer(
+      io_thread_globals->ct_policy_enforcer.get());
 
   extensions_context->set_net_log(io_thread->net_log());
 

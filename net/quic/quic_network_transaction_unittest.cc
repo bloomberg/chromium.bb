@@ -16,6 +16,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
@@ -511,6 +512,7 @@ class QuicNetworkTransactionTest
     params_.cert_verifier = &cert_verifier_;
     params_.transport_security_state = &transport_security_state_;
     params_.cert_transparency_verifier = cert_transparency_verifier_.get();
+    params_.ct_policy_enforcer = &ct_policy_enforcer_;
     params_.socket_performance_watcher_factory =
         &test_socket_performance_watcher_factory_;
     params_.proxy_service = proxy_service_.get();
@@ -654,6 +656,7 @@ class QuicNetworkTransactionTest
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
+  CTPolicyEnforcer ct_policy_enforcer_;
   TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   std::unique_ptr<ProxyService> proxy_service_;
@@ -2186,6 +2189,7 @@ class QuicNetworkTransactionWithDestinationTest
     params.cert_verifier = &cert_verifier_;
     params.transport_security_state = &transport_security_state_;
     params.cert_transparency_verifier = cert_transparency_verifier_.get();
+    params.ct_policy_enforcer = &ct_policy_enforcer_;
     params.socket_performance_watcher_factory =
         &test_socket_performance_watcher_factory_;
     params.ssl_config_service = ssl_config_service_.get();
@@ -2359,6 +2363,7 @@ class QuicNetworkTransactionWithDestinationTest
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
+  CTPolicyEnforcer ct_policy_enforcer_;
   TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   std::unique_ptr<ProxyService> proxy_service_;

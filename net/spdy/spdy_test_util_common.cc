@@ -16,7 +16,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "net/base/host_port_pair.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
@@ -331,11 +333,18 @@ crypto::ECSignatureCreator* MockECSignatureCreatorFactory::Create(
 }
 
 SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
+    : SpdySessionDependencies(protocol, ProxyService::CreateDirect()) {}
+
+SpdySessionDependencies::SpdySessionDependencies(
+    NextProto protocol,
+    std::unique_ptr<ProxyService> proxy_service)
     : host_resolver(new MockCachingHostResolver),
       cert_verifier(new MockCertVerifier),
       channel_id_service(nullptr),
       transport_security_state(new TransportSecurityState),
-      proxy_service(ProxyService::CreateDirect()),
+      cert_transparency_verifier(new MultiLogCTVerifier),
+      ct_policy_enforcer(new CTPolicyEnforcer),
+      proxy_service(std::move(proxy_service)),
       ssl_config_service(new SSLConfigServiceDefaults),
       socket_factory(new MockClientSocketFactory),
       http_auth_handler_factory(
@@ -368,38 +377,6 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
   host_resolver->set_synchronous_mode(true);
 }
 
-SpdySessionDependencies::SpdySessionDependencies(
-    NextProto protocol,
-    std::unique_ptr<ProxyService> proxy_service)
-    : host_resolver(new MockHostResolver),
-      cert_verifier(new MockCertVerifier),
-      channel_id_service(nullptr),
-      transport_security_state(new TransportSecurityState),
-      proxy_service(std::move(proxy_service)),
-      ssl_config_service(new SSLConfigServiceDefaults),
-      socket_factory(new MockClientSocketFactory),
-      http_auth_handler_factory(
-          HttpAuthHandlerFactory::CreateDefault(host_resolver.get())),
-      http_server_properties(new HttpServerPropertiesImpl),
-      enable_ip_pooling(true),
-      enable_ping(false),
-      enable_user_alternate_protocol_ports(false),
-      enable_npn(false),
-      enable_priority_dependencies(true),
-      enable_spdy31(true),
-      enable_quic(false),
-      enable_alternative_service_for_insecure_origins(true),
-      protocol(protocol),
-      session_max_recv_window_size(
-          SpdySession::GetDefaultInitialWindowSize(protocol)),
-      stream_max_recv_window_size(
-          SpdySession::GetDefaultInitialWindowSize(protocol)),
-      time_func(&base::TimeTicks::Now),
-      enable_alternative_service_with_different_host(true),
-      net_log(NULL) {
-  DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
-}
-
 SpdySessionDependencies::~SpdySessionDependencies() {}
 
 // static
@@ -426,6 +403,9 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.channel_id_service = session_deps->channel_id_service.get();
   params.transport_security_state =
       session_deps->transport_security_state.get();
+  params.cert_transparency_verifier =
+      session_deps->cert_transparency_verifier.get();
+  params.ct_policy_enforcer = session_deps->ct_policy_enforcer.get();
   params.proxy_service = session_deps->proxy_service.get();
   params.ssl_config_service = session_deps->ssl_config_service.get();
   params.http_auth_handler_factory =

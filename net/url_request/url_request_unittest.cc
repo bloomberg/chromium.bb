@@ -58,6 +58,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/base/url_util.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/ct_verify_result.h"
@@ -6491,7 +6492,7 @@ TEST_F(URLRequestTestHTTP, ExpectCTHeader) {
   context.set_network_delegate(&network_delegate);
   context.set_cert_verifier(&cert_verifier);
   context.set_cert_transparency_verifier(&ct_verifier);
-  context.set_ct_policy_enforcer(&ct_policy_enforcer);
+  context.set_ct_policy_enforcer(std::move(&ct_policy_enforcer));
   context.Init();
 
   // Now send a request to trigger the violation.
@@ -8837,6 +8838,9 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   params.host_resolver = default_context_.host_resolver();
   params.cert_verifier = default_context_.cert_verifier();
   params.transport_security_state = default_context_.transport_security_state();
+  params.cert_transparency_verifier =
+      default_context_.cert_transparency_verifier();
+  params.ct_policy_enforcer = default_context_.ct_policy_enforcer();
   params.proxy_service = default_context_.proxy_service();
   params.ssl_config_service = default_context_.ssl_config_service();
   params.http_auth_handler_factory =
@@ -9226,7 +9230,9 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   }
 
   void SetUp() override {
-    SetupContext(&context_);
+    context_.SetCTPolicyEnforcer(
+        base::MakeUnique<AllowAnyCertCTPolicyEnforcer>());
+    SetupContext();
     context_.Init();
 
     scoped_refptr<X509Certificate> root_cert =
@@ -9269,11 +9275,31 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   }
 
  protected:
+  class AllowAnyCertCTPolicyEnforcer : public CTPolicyEnforcer {
+   public:
+    AllowAnyCertCTPolicyEnforcer() = default;
+    ~AllowAnyCertCTPolicyEnforcer() override = default;
+
+    ct::CertPolicyCompliance DoesConformToCertPolicy(
+        X509Certificate* cert,
+        const SCTList& verified_scts,
+        const BoundNetLog& net_log) override {
+      return ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+    }
+
+    ct::EVPolicyCompliance DoesConformToCTEVPolicy(
+        X509Certificate* cert,
+        const ct::EVCertsWhitelist* ev_whitelist,
+        const SCTList& verified_scts,
+        const BoundNetLog& net_log) override {
+      return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS;
+    }
+  };
   // SetupContext configures the URLRequestContext that will be used for making
   // connetions to testserver. This can be overridden in test subclasses for
   // different behaviour.
-  virtual void SetupContext(URLRequestContext* context) {
-    context->set_ssl_config_service(new TestSSLConfigService(
+  virtual void SetupContext() {
+    context_.set_ssl_config_service(new TestSSLConfigService(
         true /* check for EV */, true /* online revocation checking */,
         false /* require rev. checking for local
                                           anchors */,
@@ -9460,8 +9486,8 @@ TEST_F(HTTPSOCSPTest, MAYBE_RevokedStapled) {
 
 class HTTPSHardFailTest : public HTTPSOCSPTest {
  protected:
-  void SetupContext(URLRequestContext* context) override {
-    context->set_ssl_config_service(new TestSSLConfigService(
+  void SetupContext() override {
+    context_.set_ssl_config_service(new TestSSLConfigService(
         false /* check for EV */, false /* online revocation checking */,
         true /* require rev. checking for local
                                          anchors */,
@@ -9497,8 +9523,8 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
 
 class HTTPSEVCRLSetTest : public HTTPSOCSPTest {
  protected:
-  void SetupContext(URLRequestContext* context) override {
-    context->set_ssl_config_service(new TestSSLConfigService(
+  void SetupContext() override {
+    context_.set_ssl_config_service(new TestSSLConfigService(
         true /* check for EV */, false /* online revocation checking */,
         false /* require rev. checking for local
                                           anchors */,
@@ -9682,8 +9708,8 @@ TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSetAndRevokedNonEVCert) {
 
 class HTTPSCRLSetTest : public HTTPSOCSPTest {
  protected:
-  void SetupContext(URLRequestContext* context) override {
-    context->set_ssl_config_service(new TestSSLConfigService(
+  void SetupContext() override {
+    context_.set_ssl_config_service(new TestSSLConfigService(
         false /* check for EV */, false /* online revocation checking */,
         false /* require rev. checking for local
                                           anchors */,

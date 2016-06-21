@@ -85,13 +85,13 @@ class TestURLRequestContext : public URLRequestContext {
     context_storage_.set_sdch_manager(std::move(sdch_manager));
   }
 
-  CTPolicyEnforcer* ct_policy_enforcer() { return ct_policy_enforcer_; }
-  void set_ct_policy_enforcer(CTPolicyEnforcer* ct_policy_enforcer) {
-    ct_policy_enforcer_ = ct_policy_enforcer;
+  void SetCTPolicyEnforcer(
+      std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer) {
+    context_storage_.set_ct_policy_enforcer(std::move(ct_policy_enforcer));
   }
 
  private:
-  bool initialized_;
+  bool initialized_ = false;
 
   // Optional parameters to override default values.  Note that values that
   // point to other objects the TestURLRequestContext creates will be
@@ -99,11 +99,9 @@ class TestURLRequestContext : public URLRequestContext {
   std::unique_ptr<HttpNetworkSession::Params> http_network_session_params_;
 
   // Not owned:
-  ClientSocketFactory* client_socket_factory_;
+  ClientSocketFactory* client_socket_factory_ = nullptr;
 
-  ProxyDelegate* proxy_delegate_;
-
-  CTPolicyEnforcer* ct_policy_enforcer_;
+  ProxyDelegate* proxy_delegate_ = nullptr;
 
  protected:
   URLRequestContextStorage context_storage_;

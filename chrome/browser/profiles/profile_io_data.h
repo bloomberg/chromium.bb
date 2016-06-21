@@ -74,6 +74,7 @@ namespace net {
 class CertVerifier;
 class ChannelIDService;
 class CookieStore;
+class CTVerifier;
 class FtpTransactionFactory;
 class HttpServerProperties;
 class HttpTransactionFactory;

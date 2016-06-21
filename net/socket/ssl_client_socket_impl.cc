@@ -519,6 +519,8 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       net_log_(transport_->socket()->NetLog()),
       weak_factory_(this) {
   DCHECK(cert_verifier_);
+  DCHECK(transport_security_state_);
+  DCHECK(policy_enforcer_);
 }
 
 SSLClientSocketImpl::~SSLClientSocketImpl() {
@@ -616,10 +618,6 @@ int SSLClientSocketImpl::ExportKeyingMaterial(const base::StringPiece& label,
 }
 
 int SSLClientSocketImpl::Connect(const CompletionCallback& callback) {
-  // It is an error to create an SSLClientSocket whose context has no
-  // TransportSecurityState.
-  DCHECK(transport_security_state_);
-
   // Although StreamSocket does allow calling Connect() after Disconnect(),
   // this has never worked for layered sockets. CHECK to detect any consumers
   // reconnecting an SSL socket.
@@ -1330,8 +1328,7 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
   }
 
   const CertStatus cert_status = server_cert_verify_result_.cert_status;
-  if (transport_security_state_ &&
-      (result == OK ||
+  if ((result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
       !transport_security_state_->CheckPublicKeyPins(
           host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
@@ -1379,9 +1376,6 @@ void SSLClientSocketImpl::UpdateServerCert() {
 }
 
 void SSLClientSocketImpl::VerifyCT() {
-  if (!cert_transparency_verifier_)
-    return;
-
   const uint8_t* ocsp_response_raw;
   size_t ocsp_response_len;
   SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
@@ -1405,34 +1399,32 @@ void SSLClientSocketImpl::VerifyCT() {
       server_cert_verify_result_.verified_cert.get(), ocsp_response, sct_list,
       &ct_verify_result_, net_log_);
 
-  ct_verify_result_.ct_policies_applied = (policy_enforcer_ != nullptr);
+  ct_verify_result_.ct_policies_applied = true;
   ct_verify_result_.ev_policy_compliance =
       ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
-  if (policy_enforcer_) {
-    if ((server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV)) {
-      scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
-          SSLConfigService::GetEVCertsWhitelist();
-      ct::EVPolicyCompliance ev_policy_compliance =
-          policy_enforcer_->DoesConformToCTEVPolicy(
-              server_cert_verify_result_.verified_cert.get(),
-              ev_whitelist.get(), ct_verify_result_.verified_scts, net_log_);
-      ct_verify_result_.ev_policy_compliance = ev_policy_compliance;
-      if (ev_policy_compliance !=
-              ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
-          ev_policy_compliance !=
-              ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
-          ev_policy_compliance !=
-              ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
-        server_cert_verify_result_.cert_status |=
-            CERT_STATUS_CT_COMPLIANCE_FAILED;
-        server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
-      }
-    }
-    ct_verify_result_.cert_policy_compliance =
-        policy_enforcer_->DoesConformToCertPolicy(
-            server_cert_verify_result_.verified_cert.get(),
+  if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
+    scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
+        SSLConfigService::GetEVCertsWhitelist();
+    ct::EVPolicyCompliance ev_policy_compliance =
+        policy_enforcer_->DoesConformToCTEVPolicy(
+            server_cert_verify_result_.verified_cert.get(), ev_whitelist.get(),
             ct_verify_result_.verified_scts, net_log_);
+    ct_verify_result_.ev_policy_compliance = ev_policy_compliance;
+    if (ev_policy_compliance !=
+            ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
+        ev_policy_compliance !=
+            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
+        ev_policy_compliance !=
+            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
+      server_cert_verify_result_.cert_status |=
+          CERT_STATUS_CT_COMPLIANCE_FAILED;
+      server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
+    }
   }
+  ct_verify_result_.cert_policy_compliance =
+      policy_enforcer_->DoesConformToCertPolicy(
+          server_cert_verify_result_.verified_cert.get(),
+          ct_verify_result_.verified_scts, net_log_);
 }
 
 void SSLClientSocketImpl::OnHandshakeIOComplete(int result) {

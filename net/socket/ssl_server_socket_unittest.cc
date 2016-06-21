@@ -48,6 +48,9 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_policy_status.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/mock_client_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
@@ -78,6 +81,42 @@ const char kClientPrivateKeyFileName[] = "client_1.pk8";
 const char kWrongClientCertFileName[] = "client_2.pem";
 const char kWrongClientPrivateKeyFileName[] = "client_2.pk8";
 const char kClientCertCAFileName[] = "client_1_ca.pem";
+
+class MockCTVerifier : public CTVerifier {
+ public:
+  MockCTVerifier() = default;
+  ~MockCTVerifier() override = default;
+
+  int Verify(X509Certificate* cert,
+             const std::string& stapled_ocsp_response,
+             const std::string& sct_list_from_tls_extension,
+             ct::CTVerifyResult* result,
+             const BoundNetLog& net_log) override {
+    return net::OK;
+  }
+
+  void SetObserver(Observer* observer) override {}
+};
+
+class MockCTPolicyEnforcer : public CTPolicyEnforcer {
+ public:
+  MockCTPolicyEnforcer() = default;
+  ~MockCTPolicyEnforcer() override = default;
+  ct::CertPolicyCompliance DoesConformToCertPolicy(
+      X509Certificate* cert,
+      const SCTList& verified_scts,
+      const BoundNetLog& net_log) override {
+    return ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  }
+
+  ct::EVPolicyCompliance DoesConformToCTEVPolicy(
+      X509Certificate* cert,
+      const ct::EVCertsWhitelist* ev_whitelist,
+      const SCTList& verified_scts,
+      const BoundNetLog& net_log) override {
+    return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS;
+  }
+};
 
 class FakeDataChannel {
  public:
@@ -330,7 +369,9 @@ class SSLServerSocketTest : public PlatformTest {
       : socket_factory_(ClientSocketFactory::GetDefaultFactory()),
         cert_verifier_(new MockCertVerifier()),
         client_cert_verifier_(new MockClientCertVerifier()),
-        transport_security_state_(new TransportSecurityState) {}
+        transport_security_state_(new TransportSecurityState),
+        ct_verifier_(new MockCTVerifier),
+        ct_policy_enforcer_(new MockCTPolicyEnforcer) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -384,6 +425,8 @@ class SSLServerSocketTest : public PlatformTest {
     SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
+    context.cert_transparency_verifier = ct_verifier_.get();
+    context.ct_policy_enforcer = ct_policy_enforcer_.get();
 
     client_socket_ = socket_factory_->CreateSSLClientSocket(
         std::move(client_connection), host_and_pair, client_ssl_config_,
@@ -466,6 +509,8 @@ class SSLServerSocketTest : public PlatformTest {
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<MockClientCertVerifier> client_cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
+  std::unique_ptr<MockCTVerifier> ct_verifier_;
+  std::unique_ptr<MockCTPolicyEnforcer> ct_policy_enforcer_;
   std::unique_ptr<SSLServerContext> server_context_;
   std::unique_ptr<crypto::RSAPrivateKey> server_private_key_;
   scoped_refptr<X509Certificate> server_cert_;

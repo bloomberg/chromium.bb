@@ -9,6 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/request_priority.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/mock_cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_network_session.h"
@@ -86,7 +89,10 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
     session_params_.client_socket_factory = &mock_socket_factory_;
     session_params_.host_resolver = &mock_resolver_;
     session_params_.http_server_properties = &http_server_properties_;
+    session_params_.cert_verifier = &cert_verifier_;
     session_params_.transport_security_state = &transport_security_state_;
+    session_params_.cert_transparency_verifier = &ct_verifier_;
+    session_params_.ct_policy_enforcer = &ct_policy_enforcer_;
   }
 
   HttpRequestInfo* GetRequestInfo(const std::string& url) {
@@ -108,7 +114,10 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
   MockClientSocketFactory mock_socket_factory_;
   MockHostResolver mock_resolver_;
   HttpServerPropertiesImpl http_server_properties_;
+  MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
+  MultiLogCTVerifier ct_verifier_;
+  CTPolicyEnforcer ct_policy_enforcer_;
   HttpNetworkSession::Params session_params_;
   std::vector<std::unique_ptr<HttpRequestInfo>> request_info_vector_;
 };

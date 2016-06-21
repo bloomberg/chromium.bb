@@ -181,6 +181,8 @@ void TLSSocket::UpgradeSocketToTLS(
     scoped_refptr<net::SSLConfigService> ssl_config_service,
     net::CertVerifier* cert_verifier,
     net::TransportSecurityState* transport_security_state,
+    net::CTVerifier* ct_verifier,
+    net::CTPolicyEnforcer* ct_policy_enforcer,
     const std::string& extension_id,
     api::socket::SecureOptions* options,
     const TLSSocket::SecureCallback& callback) {
@@ -241,6 +243,8 @@ void TLSSocket::UpgradeSocketToTLS(
   net::SSLClientSocketContext context;
   context.cert_verifier = cert_verifier;
   context.transport_security_state = transport_security_state;
+  context.cert_transparency_verifier = ct_verifier;
+  context.ct_policy_enforcer = ct_policy_enforcer;
 
   // Fill in the SSL socket params.
   net::SSLConfig ssl_config;

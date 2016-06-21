@@ -41,6 +41,8 @@
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
@@ -250,6 +252,8 @@ class MCSProbe {
   std::unique_ptr<net::CertVerifier> cert_verifier_;
   std::unique_ptr<net::ChannelIDService> system_channel_id_service_;
   std::unique_ptr<net::TransportSecurityState> transport_security_state_;
+  std::unique_ptr<net::CTVerifier> cert_transparency_verifier_;
+  std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer_;
   MCSProbeAuthPreferences http_auth_preferences_;
   std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
@@ -399,6 +403,8 @@ void MCSProbe::InitializeNetworkState() {
           base::WorkerPool::GetTaskRunner(true)));
 
   transport_security_state_.reset(new net::TransportSecurityState());
+  cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
+  ct_policy_enforcer_.reset(new net::CTPolicyEnforcer());
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, host_resolver_.get());
   http_server_properties_.reset(new net::HttpServerPropertiesImpl());
@@ -412,6 +418,8 @@ void MCSProbe::BuildNetworkSession() {
   session_params.cert_verifier = cert_verifier_.get();
   session_params.channel_id_service = system_channel_id_service_.get();
   session_params.transport_security_state = transport_security_state_.get();
+  session_params.cert_transparency_verifier = cert_transparency_verifier_.get();
+  session_params.ct_policy_enforcer = ct_policy_enforcer_.get();
   session_params.ssl_config_service = new net::SSLConfigServiceDefaults();
   session_params.http_auth_handler_factory = http_auth_handler_factory_.get();
   session_params.http_server_properties = http_server_properties_.get();

@@ -713,10 +713,23 @@ class SSLClientSocketTest : public PlatformTest {
   SSLClientSocketTest()
       : socket_factory_(ClientSocketFactory::GetDefaultFactory()),
         cert_verifier_(new MockCertVerifier),
-        transport_security_state_(new TransportSecurityState) {
+        transport_security_state_(new TransportSecurityState),
+        ct_verifier_(new MockCTVerifier),
+        ct_policy_enforcer_(new MockCTPolicyEnforcer) {
     cert_verifier_->set_default_result(OK);
     context_.cert_verifier = cert_verifier_.get();
     context_.transport_security_state = transport_security_state_.get();
+    context_.cert_transparency_verifier = ct_verifier_.get();
+    context_.ct_policy_enforcer = ct_policy_enforcer_.get();
+
+    EXPECT_CALL(*ct_verifier_, Verify(_, _, _, _, _))
+        .WillRepeatedly(Return(OK));
+    EXPECT_CALL(*ct_policy_enforcer_, DoesConformToCertPolicy(_, _, _))
+        .WillRepeatedly(
+            Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+    EXPECT_CALL(*ct_policy_enforcer_, DoesConformToCTEVPolicy(_, _, _, _))
+        .WillRepeatedly(
+            Return(ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS));
   }
 
  protected:
@@ -808,6 +821,8 @@ class SSLClientSocketTest : public PlatformTest {
   ClientSocketFactory* socket_factory_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
+  std::unique_ptr<MockCTVerifier> ct_verifier_;
+  std::unique_ptr<MockCTPolicyEnforcer> ct_policy_enforcer_;
   SSLClientSocketContext context_;
   std::unique_ptr<SSLClientSocket> sock_;
   TestNetLog log_;

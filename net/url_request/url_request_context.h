@@ -31,6 +31,7 @@ namespace net {
 class CertVerifier;
 class ChannelIDService;
 class CookieStore;
+class CTPolicyEnforcer;
 class CTVerifier;
 class HostResolver;
 class HttpAuthHandlerFactory;
@@ -164,6 +165,11 @@ class NET_EXPORT URLRequestContext
     cert_transparency_verifier_ = verifier;
   }
 
+  CTPolicyEnforcer* ct_policy_enforcer() const { return ct_policy_enforcer_; }
+  void set_ct_policy_enforcer(CTPolicyEnforcer* enforcer) {
+    ct_policy_enforcer_ = enforcer;
+  }
+
   const URLRequestJobFactory* job_factory() const { return job_factory_; }
   void set_job_factory(const URLRequestJobFactory* job_factory) {
     job_factory_ = job_factory;
@@ -260,6 +266,7 @@ class NET_EXPORT URLRequestContext
   CookieStore* cookie_store_;
   TransportSecurityState* transport_security_state_;
   CTVerifier* cert_transparency_verifier_;
+  CTPolicyEnforcer* ct_policy_enforcer_;
   HttpTransactionFactory* http_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
   URLRequestThrottlerManager* throttler_manager_;

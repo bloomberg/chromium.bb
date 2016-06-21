@@ -205,6 +205,10 @@ void OffTheRecordProfileIOData::InitializeInternal(
   ApplyProfileParamsToContext(main_context);
 
   main_context->set_transport_security_state(transport_security_state());
+  main_context->set_cert_transparency_verifier(
+      io_thread_globals->cert_transparency_verifier.get());
+  main_context->set_ct_policy_enforcer(
+      io_thread_globals->ct_policy_enforcer.get());
 
   main_context->set_net_log(io_thread->net_log());
 
@@ -218,8 +222,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
       io_thread_globals->http_auth_handler_factory.get());
   main_context->set_proxy_service(proxy_service());
 
-  main_context->set_cert_transparency_verifier(
-      io_thread_globals->cert_transparency_verifier.get());
   main_context->set_backoff_manager(
       io_thread_globals->url_request_backoff_manager.get());
 

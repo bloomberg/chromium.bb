@@ -978,6 +978,7 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
       globals->transport_security_state.get());
   context->set_cert_transparency_verifier(
       globals->cert_transparency_verifier.get());
+  context->set_ct_policy_enforcer(globals->ct_policy_enforcer.get());
   context->set_ssl_config_service(globals->ssl_config_service.get());
   context->set_http_auth_handler_factory(
       globals->http_auth_handler_factory.get());
@@ -1033,6 +1034,7 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
       globals->transport_security_state.get());
   context->set_cert_transparency_verifier(
       globals->cert_transparency_verifier.get());
+  context->set_ct_policy_enforcer(globals->ct_policy_enforcer.get());
   context->set_ssl_config_service(globals->ssl_config_service.get());
   context->set_http_auth_handler_factory(
       globals->http_auth_handler_factory.get());

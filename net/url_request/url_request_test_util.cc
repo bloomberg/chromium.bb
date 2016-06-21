@@ -17,7 +17,8 @@
 #include "base/threading/worker_pool.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
@@ -56,11 +57,7 @@ const int kStageDestruction = 1 << 10;
 TestURLRequestContext::TestURLRequestContext() : TestURLRequestContext(false) {}
 
 TestURLRequestContext::TestURLRequestContext(bool delay_initialization)
-    : initialized_(false),
-      client_socket_factory_(nullptr),
-      proxy_delegate_(nullptr),
-      ct_policy_enforcer_(nullptr),
-      context_storage_(this) {
+    : context_storage_(this) {
   if (!delay_initialization)
     Init();
 }
@@ -81,9 +78,18 @@ void TestURLRequestContext::Init() {
     context_storage_.set_proxy_service(ProxyService::CreateDirect());
   if (!cert_verifier())
     context_storage_.set_cert_verifier(CertVerifier::CreateDefault());
-  if (!transport_security_state())
+  if (!transport_security_state()) {
     context_storage_.set_transport_security_state(
         base::WrapUnique(new TransportSecurityState()));
+  }
+  if (!cert_transparency_verifier()) {
+    context_storage_.set_cert_transparency_verifier(
+        base::WrapUnique(new MultiLogCTVerifier()));
+  }
+  if (!ct_policy_enforcer()) {
+    context_storage_.set_ct_policy_enforcer(
+        base::WrapUnique(new CTPolicyEnforcer));
+  }
   if (!ssl_config_service())
     context_storage_.set_ssl_config_service(new SSLConfigServiceDefaults());
   if (!http_auth_handler_factory()) {
@@ -119,8 +125,7 @@ void TestURLRequestContext::Init() {
     params.host_resolver = host_resolver();
     params.cert_verifier = cert_verifier();
     params.cert_transparency_verifier = cert_transparency_verifier();
-    if (ct_policy_enforcer())
-      params.ct_policy_enforcer = ct_policy_enforcer();
+    params.ct_policy_enforcer = ct_policy_enforcer();
     params.transport_security_state = transport_security_state();
     params.proxy_service = proxy_service();
     params.ssl_config_service = ssl_config_service();

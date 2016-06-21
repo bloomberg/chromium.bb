@@ -14,7 +14,9 @@
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
-#include "net/cert/cert_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/mock_cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
@@ -78,7 +80,8 @@ class SSLClientSocketPoolTest
       public ::testing::WithParamInterface<NextProto> {
  protected:
   SSLClientSocketPoolTest()
-      : transport_security_state_(new TransportSecurityState),
+      : cert_verifier_(new MockCertVerifier),
+        transport_security_state_(new TransportSecurityState),
         proxy_service_(ProxyService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(
@@ -127,9 +130,9 @@ class SSLClientSocketPoolTest
 
   void CreatePool(bool transport_pool, bool http_proxy_pool, bool socks_pool) {
     pool_.reset(new SSLClientSocketPool(
-        kMaxSockets, kMaxSocketsPerGroup, NULL /* cert_verifier */,
-        NULL /* channel_id_service */, NULL /* transport_security_state */,
-        NULL /* cert_transparency_verifier */, NULL /* ct_policy_enforcer */,
+        kMaxSockets, kMaxSocketsPerGroup, cert_verifier_.get(),
+        NULL /* channel_id_service */, transport_security_state_.get(),
+        &ct_verifier_, &ct_policy_enforcer_,
         std::string() /* ssl_session_cache_shard */, &socket_factory_,
         transport_pool ? &transport_socket_pool_ : NULL,
         socks_pool ? &socks_socket_pool_ : NULL,
@@ -163,6 +166,8 @@ class SSLClientSocketPoolTest
     params.host_resolver = &host_resolver_;
     params.cert_verifier = cert_verifier_.get();
     params.transport_security_state = transport_security_state_.get();
+    params.cert_transparency_verifier = &ct_verifier_;
+    params.ct_policy_enforcer = &ct_policy_enforcer_;
     params.proxy_service = proxy_service_.get();
     params.client_socket_factory = &socket_factory_;
     params.ssl_config_service = ssl_config_service_.get();
@@ -178,6 +183,8 @@ class SSLClientSocketPoolTest
   MockCachingHostResolver host_resolver_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
+  MultiLogCTVerifier ct_verifier_;
+  CTPolicyEnforcer ct_policy_enforcer_;
   const std::unique_ptr<ProxyService> proxy_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;

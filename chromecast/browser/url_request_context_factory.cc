@@ -21,6 +21,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert_net/nss_ocsp.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
@@ -201,12 +203,12 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
     return;
 
   host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
-
   cert_verifier_ = net::CertVerifier::CreateDefault();
-
   ssl_config_service_ = new net::SSLConfigServiceDefaults;
-
   transport_security_state_.reset(new net::TransportSecurityState());
+  cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
+  ct_policy_enforcer_.reset(new net::CTPolicyEnforcer());
+
   http_auth_handler_factory_ =
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver_.get());
 
@@ -289,6 +291,8 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
   params->channel_id_service = channel_id_service_.get();
   params->ssl_config_service = ssl_config_service_.get();
   params->transport_security_state = transport_security_state_.get();
+  params->cert_transparency_verifier = cert_transparency_verifier_.get();
+  params->ct_policy_enforcer = ct_policy_enforcer_.get();
   params->http_auth_handler_factory = http_auth_handler_factory_.get();
   params->http_server_properties = http_server_properties_.get();
   params->ignore_certificate_errors = ignore_certificate_errors;

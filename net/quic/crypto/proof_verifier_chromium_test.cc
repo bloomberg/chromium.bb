@@ -103,7 +103,8 @@ const char kLogDescription[] = "somelog";
 class ProofVerifierChromiumTest : public ::testing::Test {
  public:
   ProofVerifierChromiumTest()
-      : verify_context_(new ProofVerifyContextChromium(0 /*cert_verify_flags*/,
+      : ct_policy_enforcer_(false /*is_ev*/),
+        verify_context_(new ProofVerifyContextChromium(0 /*cert_verify_flags*/,
                                                        BoundNetLog())) {}
 
   void SetUp() override {
@@ -198,6 +199,9 @@ class ProofVerifierChromiumTest : public ::testing::Test {
   }
 
  protected:
+  TransportSecurityState transport_security_state_;
+  MockCTPolicyEnforcer ct_policy_enforcer_;
+
   std::unique_ptr<MultiLogCTVerifier> ct_verifier_;
   std::vector<scoped_refptr<const CTLogVerifier>> log_verifiers_;
   std::unique_ptr<ProofVerifyContext> verify_context_;
@@ -210,7 +214,8 @@ class ProofVerifierChromiumTest : public ::testing::Test {
 // verification fails.
 TEST_F(ProofVerifierChromiumTest, FailsIfCertFails) {
   MockCertVerifier dummy_verifier;
-  ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr, nullptr,
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
                                        ct_verifier_.get());
 
   std::unique_ptr<DummyProofVerifierCallback> callback(
@@ -228,7 +233,8 @@ TEST_F(ProofVerifierChromiumTest, ValidSCTList) {
   ASSERT_NO_FATAL_FAILURE(GetSCTTestCertificates(&certs_));
 
   MockCertVerifier cert_verifier;
-  ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr,
+  ProofVerifierChromium proof_verifier(&cert_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
                                        ct_verifier_.get());
 
   std::unique_ptr<DummyProofVerifierCallback> callback(
@@ -247,7 +253,8 @@ TEST_F(ProofVerifierChromiumTest, InvalidSCTList) {
   ASSERT_NO_FATAL_FAILURE(GetSCTTestCertificates(&certs_));
 
   MockCertVerifier cert_verifier;
-  ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr,
+  ProofVerifierChromium proof_verifier(&cert_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
                                        ct_verifier_.get());
 
   std::unique_ptr<DummyProofVerifierCallback> callback(
@@ -264,7 +271,8 @@ TEST_F(ProofVerifierChromiumTest, InvalidSCTList) {
 // signature fails.
 TEST_F(ProofVerifierChromiumTest, FailsIfSignatureFails) {
   FailsTestCertVerifier cert_verifier;
-  ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr,
+  ProofVerifierChromium proof_verifier(&cert_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
                                        ct_verifier_.get());
 
   std::unique_ptr<DummyProofVerifierCallback> callback(
@@ -274,37 +282,6 @@ TEST_F(ProofVerifierChromiumTest, FailsIfSignatureFails) {
       kTestConfig, verify_context_.get(), &error_details_, &details_,
       callback.get());
   ASSERT_EQ(QUIC_FAILURE, status);
-}
-
-// Tests that EV certificates are left as EV if there is no certificate
-// policy enforcement.
-TEST_F(ProofVerifierChromiumTest, PreservesEVIfNoPolicy) {
-  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
-  ASSERT_TRUE(test_cert);
-
-  CertVerifyResult dummy_result;
-  dummy_result.verified_cert = test_cert;
-  dummy_result.cert_status = CERT_STATUS_IS_EV;
-
-  MockCertVerifier dummy_verifier;
-  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
-
-  ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr, nullptr,
-                                       ct_verifier_.get());
-
-  std::unique_ptr<DummyProofVerifierCallback> callback(
-      new DummyProofVerifierCallback);
-  QuicAsyncStatus status = proof_verifier.VerifyProof(
-      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_25, "", certs_, "",
-      GetTestSignature(), verify_context_.get(), &error_details_, &details_,
-      callback.get());
-  ASSERT_EQ(QUIC_SUCCESS, status);
-
-  ASSERT_TRUE(details_.get());
-  ProofVerifyDetailsChromium* verify_details =
-      static_cast<ProofVerifyDetailsChromium*>(details_.get());
-  EXPECT_EQ(dummy_result.cert_status,
-            verify_details->cert_verify_result.cert_status);
 }
 
 // Tests that the certificate policy enforcer is consulted for EV
@@ -323,7 +300,8 @@ TEST_F(ProofVerifierChromiumTest, PreservesEVIfAllowed) {
   MockCTPolicyEnforcer policy_enforcer(true /*is_ev*/);
 
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
-                                       nullptr, ct_verifier_.get());
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
 
   std::unique_ptr<DummyProofVerifierCallback> callback(
       new DummyProofVerifierCallback);
@@ -356,7 +334,8 @@ TEST_F(ProofVerifierChromiumTest, StripsEVIfNotAllowed) {
   MockCTPolicyEnforcer policy_enforcer(false /*is_ev*/);
 
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
-                                       nullptr, ct_verifier_.get());
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
 
   std::unique_ptr<DummyProofVerifierCallback> callback(
       new DummyProofVerifierCallback);
@@ -390,7 +369,8 @@ TEST_F(ProofVerifierChromiumTest, IgnoresPolicyEnforcerIfNotEV) {
   FailsTestCTPolicyEnforcer policy_enforcer;
 
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
-                                       nullptr, ct_verifier_.get());
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
 
   std::unique_ptr<DummyProofVerifierCallback> callback(
       new DummyProofVerifierCallback);
@@ -434,8 +414,10 @@ TEST_F(ProofVerifierChromiumTest, PKPEnforced) {
       kTestHostname, base::Time::Now() + base::TimeDelta::FromSeconds(10000),
       true, pin_hashes, GURL());
 
-  ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr,
-                                       &transport_security_state, nullptr);
+  MockCTPolicyEnforcer policy_enforcer(true /*is_ev*/);
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
+                                       &transport_security_state,
+                                       ct_verifier_.get());
 
   std::unique_ptr<DummyProofVerifierCallback> callback(
       new DummyProofVerifierCallback);
@@ -474,8 +456,10 @@ TEST_F(ProofVerifierChromiumTest, PKPBypassFlagSet) {
       kTestHostname, base::Time::Now() + base::TimeDelta::FromSeconds(10000),
       true, expected_hashes, GURL());
 
-  ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr,
-                                       &transport_security_state_fail, nullptr);
+  MockCTPolicyEnforcer policy_enforcer(true /*is_ev*/);
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
+                                       &transport_security_state_fail,
+                                       ct_verifier_.get());
 
   std::unique_ptr<DummyProofVerifierCallback> callback(
       new DummyProofVerifierCallback);

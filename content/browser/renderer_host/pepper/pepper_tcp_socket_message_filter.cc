@@ -334,6 +334,9 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
   ssl_context.cert_verifier = ssl_context_helper_->GetCertVerifier();
   ssl_context.transport_security_state =
       ssl_context_helper_->GetTransportSecurityState();
+  ssl_context.cert_transparency_verifier =
+      ssl_context_helper_->GetCertTransparencyVerifier();
+  ssl_context.ct_policy_enforcer = ssl_context_helper_->GetCTPolicyEnforcer();
   ssl_socket_ = factory->CreateSSLClientSocket(
       std::move(handle), host_port_pair, ssl_context_helper_->ssl_config(),
       ssl_context);

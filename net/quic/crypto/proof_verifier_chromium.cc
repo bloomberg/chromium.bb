@@ -150,7 +150,13 @@ ProofVerifierChromium::Job::Job(
       cert_verify_flags_(cert_verify_flags),
       next_state_(STATE_NONE),
       start_time_(base::TimeTicks::Now()),
-      net_log_(net_log) {}
+      net_log_(net_log) {
+  DCHECK(proof_verifier_);
+  DCHECK(verifier_);
+  DCHECK(policy_enforcer_);
+  DCHECK(transport_security_state_);
+  DCHECK(cert_transparency_verifier_);
+}
 
 ProofVerifierChromium::Job::~Job() {
   base::TimeTicks end_time = base::TimeTicks::Now();
@@ -211,7 +217,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     return QUIC_FAILURE;
   }
 
-  if (cert_transparency_verifier_ && !cert_sct.empty()) {
+  if (!cert_sct.empty()) {
     // Note that this is a completely synchronous operation: The CT Log Verifier
     // gets all the data it needs for SCT verification and does not do any
     // external communication.
@@ -303,11 +309,10 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   const CertVerifyResult& cert_verify_result =
       verify_details_->cert_verify_result;
   const CertStatus cert_status = cert_verify_result.cert_status;
-  verify_details_->ct_verify_result.ct_policies_applied =
-      (result == OK && policy_enforcer_ != nullptr);
+  verify_details_->ct_verify_result.ct_policies_applied = result == OK;
   verify_details_->ct_verify_result.ev_policy_compliance =
       ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
-  if (result == OK && policy_enforcer_) {
+  if (result == OK) {
     if ((cert_verify_result.cert_status & CERT_STATUS_IS_EV)) {
       ct::EVPolicyCompliance ev_policy_compliance =
           policy_enforcer_->DoesConformToCTEVPolicy(
@@ -334,8 +339,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
             verify_details_->ct_verify_result.verified_scts, net_log_);
   }
 
-  if (transport_security_state_ &&
-      (result == OK ||
+  if ((result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
       !transport_security_state_->CheckPublicKeyPins(
           HostPortPair(hostname_, port_),
@@ -440,7 +444,12 @@ ProofVerifierChromium::ProofVerifierChromium(
     : cert_verifier_(cert_verifier),
       ct_policy_enforcer_(ct_policy_enforcer),
       transport_security_state_(transport_security_state),
-      cert_transparency_verifier_(cert_transparency_verifier) {}
+      cert_transparency_verifier_(cert_transparency_verifier) {
+  DCHECK(cert_verifier_);
+  DCHECK(ct_policy_enforcer_);
+  DCHECK(transport_security_state_);
+  DCHECK(cert_transparency_verifier_);
+}
 
 ProofVerifierChromium::~ProofVerifierChromium() {
   STLDeleteElements(&active_jobs_);

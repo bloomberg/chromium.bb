@@ -13,6 +13,8 @@
 
 namespace net {
 class CertVerifier;
+class CTPolicyEnforcer;
+class CTVerifier;
 class TransportSecurityState;
 }
 
@@ -24,6 +26,8 @@ class SSLContextHelper : public base::RefCounted<SSLContextHelper> {
 
   net::CertVerifier* GetCertVerifier();
   net::TransportSecurityState* GetTransportSecurityState();
+  net::CTVerifier* GetCertTransparencyVerifier();
+  net::CTPolicyEnforcer* GetCTPolicyEnforcer();
   const net::SSLConfig& ssl_config() { return ssl_config_; }
 
  private:
@@ -36,6 +40,12 @@ class SSLContextHelper : public base::RefCounted<SSLContextHelper> {
   // This is lazily created. Users should use GetTransportSecurityState to
   // retrieve it.
   std::unique_ptr<net::TransportSecurityState> transport_security_state_;
+  // This is lazily created. Users should use GetCertTransparencyVerifier to
+  // retrieve it.
+  std::unique_ptr<net::CTVerifier> cert_transparency_verifier_;
+  // This is lazily created. Users should use GetCTPolicyEnforcer to
+  // retrieve it.
+  std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer_;
 
   // The default SSL configuration settings are used, as opposed to Chrome's SSL
   // settings.

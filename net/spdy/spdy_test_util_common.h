@@ -42,6 +42,8 @@ class GURL;
 namespace net {
 
 class BoundNetLog;
+class CTVerifier;
+class CTPolicyEnforcer;
 class HostPortPair;
 class SpdySession;
 class SpdySessionKey;
@@ -190,6 +192,8 @@ struct SpdySessionDependencies {
   std::unique_ptr<CertVerifier> cert_verifier;
   std::unique_ptr<ChannelIDService> channel_id_service;
   std::unique_ptr<TransportSecurityState> transport_security_state;
+  std::unique_ptr<CTVerifier> cert_transparency_verifier;
+  std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer;
   std::unique_ptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
   std::unique_ptr<MockClientSocketFactory> socket_factory;

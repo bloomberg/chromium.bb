@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
@@ -42,6 +44,8 @@ class HttpNetworkLayerTest : public PlatformTest {
     session_params.host_resolver = &host_resolver_;
     session_params.cert_verifier = cert_verifier_.get();
     session_params.transport_security_state = transport_security_state_.get();
+    session_params.cert_transparency_verifier = &ct_verifier_;
+    session_params.ct_policy_enforcer = &ct_policy_enforcer_;
     session_params.proxy_service = proxy_service_.get();
     session_params.ssl_config_service = ssl_config_service_.get();
     session_params.http_server_properties = &http_server_properties_;
@@ -257,6 +261,8 @@ class HttpNetworkLayerTest : public PlatformTest {
   MockHostResolver host_resolver_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
+  MultiLogCTVerifier ct_verifier_;
+  CTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<ProxyService> proxy_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpNetworkSession> network_session_;

@@ -102,6 +102,8 @@ class URLRequestContextFactory {
   std::unique_ptr<net::CertVerifier> cert_verifier_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
   std::unique_ptr<net::TransportSecurityState> transport_security_state_;
+  std::unique_ptr<net::CTVerifier> cert_transparency_verifier_;
+  std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::ProxyService> proxy_service_;
   std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;

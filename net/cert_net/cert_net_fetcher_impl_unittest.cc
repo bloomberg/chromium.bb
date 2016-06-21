@@ -10,7 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -40,6 +42,9 @@ class RequestContext : public URLRequestContext {
     storage_.set_cert_verifier(base::WrapUnique(new MockCertVerifier));
     storage_.set_transport_security_state(
         base::WrapUnique(new TransportSecurityState));
+    storage_.set_cert_transparency_verifier(
+        base::WrapUnique(new MultiLogCTVerifier));
+    storage_.set_ct_policy_enforcer(base::WrapUnique(new CTPolicyEnforcer));
     storage_.set_proxy_service(ProxyService::CreateFixed(no_proxy));
     storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
     storage_.set_http_server_properties(
@@ -49,6 +54,8 @@ class RequestContext : public URLRequestContext {
     params.host_resolver = host_resolver();
     params.cert_verifier = cert_verifier();
     params.transport_security_state = transport_security_state();
+    params.cert_transparency_verifier = cert_transparency_verifier();
+    params.ct_policy_enforcer = ct_policy_enforcer();
     params.proxy_service = proxy_service();
     params.ssl_config_service = ssl_config_service();
     params.http_server_properties = http_server_properties();

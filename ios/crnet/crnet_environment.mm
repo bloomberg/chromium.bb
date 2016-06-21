@@ -37,6 +37,8 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
@@ -385,6 +387,8 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   main_context_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
   main_context_->set_transport_security_state(
       new net::TransportSecurityState());
+  main_context_->set_cert_transparency_verifier(new net::MultiLogCTVerifier());
+  main_context_->set_ct_policy_enforcer(new net::CTPolicyEnforcer());
   http_server_properties_.reset(new net::HttpServerPropertiesImpl());
   main_context_->set_http_server_properties(http_server_properties_.get());
   // TODO(rdsmith): Note that the ".release()" calls below are leaking

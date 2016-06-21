@@ -41,13 +41,7 @@ class X509Certificate;
 // This struct groups together several fields which are used by various
 // classes related to SSLClientSocket.
 struct SSLClientSocketContext {
-  SSLClientSocketContext()
-      : cert_verifier(NULL),
-        channel_id_service(NULL),
-        transport_security_state(NULL),
-        cert_transparency_verifier(NULL),
-        ct_policy_enforcer(NULL) {}
-
+  SSLClientSocketContext() = default;
   SSLClientSocketContext(CertVerifier* cert_verifier_arg,
                          ChannelIDService* channel_id_service_arg,
                          TransportSecurityState* transport_security_state_arg,
@@ -61,11 +55,11 @@ struct SSLClientSocketContext {
         ct_policy_enforcer(ct_policy_enforcer_arg),
         ssl_session_cache_shard(ssl_session_cache_shard_arg) {}
 
-  CertVerifier* cert_verifier;
-  ChannelIDService* channel_id_service;
-  TransportSecurityState* transport_security_state;
-  CTVerifier* cert_transparency_verifier;
-  CTPolicyEnforcer* ct_policy_enforcer;
+  CertVerifier* cert_verifier = nullptr;
+  ChannelIDService* channel_id_service = nullptr;
+  TransportSecurityState* transport_security_state = nullptr;
+  CTVerifier* cert_transparency_verifier = nullptr;
+  CTPolicyEnforcer* ct_policy_enforcer = nullptr;
   // ssl_session_cache_shard is an opaque string that identifies a shard of the
   // SSL session cache. SSL sockets with the same ssl_session_cache_shard may
   // resume each other's SSL sessions but we'll never sessions between shards.

@@ -1073,11 +1073,11 @@ void SocketSecureFunction::AsyncWorkStart() {
       url_request_getter_->GetURLRequestContext();
 
   TLSSocket::UpgradeSocketToTLS(
-      socket,
-      url_request_context->ssl_config_service(),
+      socket, url_request_context->ssl_config_service(),
       url_request_context->cert_verifier(),
       url_request_context->transport_security_state(),
-      extension_id(),
+      url_request_context->cert_transparency_verifier(),
+      url_request_context->ct_policy_enforcer(), extension_id(),
       params_->options.get(),
       base::Bind(&SocketSecureFunction::TlsConnectDone, this));
 }

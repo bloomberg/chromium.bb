@@ -19,6 +19,9 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/mock_cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
@@ -230,26 +233,31 @@ class HttpResponseBodyDrainerTest : public testing::Test {
       : proxy_service_(ProxyService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_server_properties_(new HttpServerPropertiesImpl()),
-        transport_security_state_(new TransportSecurityState()),
         session_(CreateNetworkSession()),
         mock_stream_(new MockHttpStream(&result_waiter_)),
         drainer_(new HttpResponseBodyDrainer(mock_stream_)) {}
 
   ~HttpResponseBodyDrainerTest() override {}
 
-  HttpNetworkSession* CreateNetworkSession() const {
+  HttpNetworkSession* CreateNetworkSession() {
     HttpNetworkSession::Params params;
     params.proxy_service = proxy_service_.get();
     params.ssl_config_service = ssl_config_service_.get();
     params.http_server_properties = http_server_properties_.get();
-    params.transport_security_state = transport_security_state_.get();
+    params.cert_verifier = &cert_verifier_;
+    params.transport_security_state = &transport_security_state_;
+    params.cert_transparency_verifier = &ct_verifier_;
+    params.ct_policy_enforcer = &ct_policy_enforcer_;
     return new HttpNetworkSession(params);
   }
 
   std::unique_ptr<ProxyService> proxy_service_;
   scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpServerPropertiesImpl> http_server_properties_;
-  std::unique_ptr<TransportSecurityState> transport_security_state_;
+  MockCertVerifier cert_verifier_;
+  TransportSecurityState transport_security_state_;
+  MultiLogCTVerifier ct_verifier_;
+  CTPolicyEnforcer ct_policy_enforcer_;
   const std::unique_ptr<HttpNetworkSession> session_;
   CloseResultWaiter result_waiter_;
   MockHttpStream* const mock_stream_;  // Owned by |drainer_|.
