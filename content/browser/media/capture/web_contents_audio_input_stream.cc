@@ -349,7 +349,8 @@ WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
     const std::string& device_id,
     const media::AudioParameters& params,
     const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
-    AudioMirroringManager* audio_mirroring_manager) {
+    AudioMirroringManager* audio_mirroring_manager,
+    bool is_duplication) {
   int render_process_id;
   int main_render_frame_id;
   if (!WebContentsMediaCaptureId::ExtractTabCaptureTarget(
@@ -357,14 +358,13 @@ WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
     return NULL;
   }
 
-  // TODO(qiangchen): Plug in true for the case of Tab Typed Desktop Share.
   return new WebContentsAudioInputStream(
       render_process_id, main_render_frame_id, audio_mirroring_manager,
       new WebContentsTracker(false),
       new media::VirtualAudioInputStream(
           params, worker_task_runner,
           media::VirtualAudioInputStream::AfterCloseCallback()),
-      false);
+      is_duplication);
 }
 
 WebContentsAudioInputStream::WebContentsAudioInputStream(

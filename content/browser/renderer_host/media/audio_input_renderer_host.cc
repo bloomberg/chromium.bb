@@ -436,16 +436,18 @@ void AudioInputRendererHost::DoCreateStream(
   // entry and construct an AudioInputController.
   entry->writer.reset(writer.release());
   if (WebContentsMediaCaptureId::IsWebContentsDeviceId(device_id)) {
+    // For MEDIA_DESKTOP_AUDIO_CAPTURE, the source is selected from picker
+    // window, we do not mute the source audio.
+    // For MEDIA_TAB_AUDIO_CAPTURE, the probable use case is Cast, we mute
+    // the source audio.
+    // TODO(qiangchen): Analyze audio constraints to make a duplicating or
+    // diverting decision. It would give web developer more flexibility.
     entry->controller = media::AudioInputController::CreateForStream(
-        audio_manager_->GetTaskRunner(),
-        this,
+        audio_manager_->GetTaskRunner(), this,
         WebContentsAudioInputStream::Create(
-            device_id,
-            audio_params,
-            audio_manager_->GetWorkerTaskRunner(),
-            audio_mirroring_manager_),
-        entry->writer.get(),
-        user_input_monitor_);
+            device_id, audio_params, audio_manager_->GetWorkerTaskRunner(),
+            audio_mirroring_manager_, type == MEDIA_DESKTOP_AUDIO_CAPTURE),
+        entry->writer.get(), user_input_monitor_);
     // Only count for captures from desktop media picker dialog.
     if (entry->controller.get() && type == MEDIA_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(TAB_AUDIO_CAPTURER_CREATED);
