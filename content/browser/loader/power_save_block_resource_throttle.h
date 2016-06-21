@@ -10,6 +10,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/resource_throttle.h"
 
@@ -22,7 +25,10 @@ namespace content {
 // This ResourceThrottle blocks power save until large upload request finishes.
 class PowerSaveBlockResourceThrottle : public ResourceThrottle {
  public:
-  explicit PowerSaveBlockResourceThrottle(const std::string& host);
+  PowerSaveBlockResourceThrottle(
+      const std::string& host,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner);
   ~PowerSaveBlockResourceThrottle() override;
 
   // ResourceThrottle overrides:
@@ -36,6 +42,8 @@ class PowerSaveBlockResourceThrottle : public ResourceThrottle {
   const std::string host_;
   base::OneShotTimer timer_;
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerSaveBlockResourceThrottle);
 };

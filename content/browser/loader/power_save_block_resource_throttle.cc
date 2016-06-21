@@ -4,7 +4,6 @@
 
 #include "content/browser/loader/power_save_block_resource_throttle.h"
 
-#include "content/public/browser/browser_thread.h"
 #include "device/power_save_blocker/power_save_blocker.h"
 
 namespace content {
@@ -16,8 +15,12 @@ const int kPowerSaveBlockDelaySeconds = 30;
 }  // namespace
 
 PowerSaveBlockResourceThrottle::PowerSaveBlockResourceThrottle(
-    const std::string& host)
-    : host_(host) {}
+    const std::string& host,
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
+    : host_(host),
+      ui_task_runner_(ui_task_runner),
+      blocking_task_runner_(blocking_task_runner) {}
 
 PowerSaveBlockResourceThrottle::~PowerSaveBlockResourceThrottle() {
 }
@@ -44,8 +47,7 @@ void PowerSaveBlockResourceThrottle::ActivatePowerSaveBlocker() {
   power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       device::PowerSaveBlocker::kReasonOther, "Uploading data to " + host_,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+      ui_task_runner_, blocking_task_runner_));
 }
 
 }  // namespace content

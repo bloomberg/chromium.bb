@@ -1708,8 +1708,10 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 
   if (request->has_upload()) {
     // Block power save while uploading data.
-    throttles.push_back(
-        new PowerSaveBlockResourceThrottle(request->url().host()));
+    throttles.push_back(new PowerSaveBlockResourceThrottle(
+        request->url().host(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   }
 
   // TODO(ricea): Stop looking this up so much.
