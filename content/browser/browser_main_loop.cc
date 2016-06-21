@@ -1155,6 +1155,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   TRACE_EVENT0("startup", "BrowserMainLoop::BrowserThreadsStarted");
 
   // Bring up Mojo IPC and shell as early as possible.
+
+  // Disallow mojo sync call in the browser process.
+  bool sync_call_allowed = false;
+  MojoResult result = mojo::edk::SetProperty(
+      MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED, &sync_call_allowed);
+  DCHECK_EQ(MOJO_RESULT_OK, result);
+
   mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
           ->task_runner()));

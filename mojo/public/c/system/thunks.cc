@@ -282,6 +282,11 @@ MojoResult MojoNotifyBadMessage(MojoMessageHandle message,
   return g_thunks.NotifyBadMessage(message, error, error_num_bytes);
 }
 
+MojoResult MojoGetProperty(MojoPropertyType type, void* value) {
+  assert(g_thunks.GetProperty);
+  return g_thunks.GetProperty(type, value);
+}
+
 }  // extern "C"
 
 size_t MojoEmbedderSetSystemThunks(const MojoSystemThunks* system_thunks) {

@@ -6,11 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
-#include "base/threading/thread_restrictions.h"
 #include "components/mus/common/gpu_type_converters.h"
 #include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/common/switches.h"
 #include "components/mus/public/interfaces/gpu_service.mojom.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/shell/public/cpp/connector.h"
 
@@ -59,9 +59,9 @@ scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannel(
   mojom::ChannelHandlePtr channel_handle;
   mojom::GpuInfoPtr gpu_info;
   {
-    // TODO(penghuang): Remove the ScopedAllowWait when HW rendering is enabled
-    // in mus chrome.
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    // TODO(penghuang): Remove the ScopedAllowSyncCall when HW rendering is
+    // enabled in mus chrome.
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
     if (!gpu_service->EstablishGpuChannel(&client_id, &channel_handle,
                                           &gpu_info)) {
       DLOG(WARNING)

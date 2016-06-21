@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 
 namespace mojo {
 namespace internal {
@@ -228,6 +229,8 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
     async_responders_[request_id] = base::WrapUnique(responder);
     return true;
   }
+
+  SyncCallRestrictions::AssertSyncCallAllowed();
 
   bool response_received = false;
   std::unique_ptr<MessageReceiver> sync_responder(responder);

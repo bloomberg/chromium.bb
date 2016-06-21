@@ -124,6 +124,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                        MojoHandleSignals signals,
                        const base::Callback<void(MojoResult)>& callback);
 
+  MojoResult SetProperty(MojoPropertyType type, const void* value);
+
   // ---------------------------------------------------------------------------
 
   // The following methods are essentially implementations of the Mojo Core
@@ -158,6 +160,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                           MojoMessageHandle* message);
   MojoResult FreeMessage(MojoMessageHandle message);
   MojoResult GetMessageBuffer(MojoMessageHandle message, void** buffer);
+  MojoResult GetProperty(MojoPropertyType type, void* value);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/wait_set.h":
@@ -300,6 +303,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   base::Lock mapping_table_lock_;  // Protects |mapping_table_|.
   MappingTable mapping_table_;
+
+  base::Lock property_lock_;
+  // Properties that can be read using the MojoGetProperty() API.
+  bool property_sync_call_allowed_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };

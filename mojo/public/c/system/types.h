@@ -202,4 +202,18 @@ const MojoWatchNotificationFlags MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM =
     ((MojoWatchNotificationFlags)1 << 0);
 #endif
 
+// |MojoPropertyType|: Property types that can be passed to |MojoGetProperty()|
+// to retrieve system properties. May take the following values:
+//   |MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED| - Whether making synchronous calls
+//       (i.e., blocking to wait for a response to an outbound message) is
+//       allowed. The property value is of boolean type. If the value is true,
+//       users should refrain from making sync calls.
+typedef uint32_t MojoPropertyType;
+
+#ifdef __cplusplus
+const MojoPropertyType MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED = 0;
+#else
+#define MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED ((MojoPropertyType)0)
+#endif
+
 #endif  // MOJO_PUBLIC_C_SYSTEM_TYPES_H_

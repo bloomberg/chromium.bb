@@ -81,6 +81,7 @@ source_set("bindings") {
     "lib/serialization_util.h",
     "lib/string_serialization.h",
     "lib/string_traits_string16.cc",
+    "lib/sync_call_restrictions.cc",
     "lib/sync_handle_registry.cc",
     "lib/sync_handle_watcher.cc",
     "lib/sync_handle_watcher.h",
@@ -112,6 +113,7 @@ source_set("bindings") {
     "string_traits_string_piece.h",
     "strong_binding.h",
     "struct_ptr.h",
+    "sync_call_restrictions.h",
     "sync_handle_registry.h",
     "type_converter.h",
   ]

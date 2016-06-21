@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 
 namespace mojo {
 namespace internal {
@@ -164,6 +165,8 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
     async_responders_[request_id] = base::WrapUnique(responder);
     return true;
   }
+
+  SyncCallRestrictions::AssertSyncCallAllowed();
 
   bool response_received = false;
   std::unique_ptr<MessageReceiver> sync_responder(responder);

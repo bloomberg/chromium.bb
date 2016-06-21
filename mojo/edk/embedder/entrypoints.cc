@@ -254,6 +254,10 @@ MojoResult MojoNotifyBadMessageImpl(MojoMessageHandle message,
   return g_core->NotifyBadMessage(message, error, error_num_bytes);
 }
 
+MojoResult MojoGetPropertyImpl(MojoPropertyType type, void* value) {
+  return g_core->GetProperty(type, value);
+}
+
 }  // extern "C"
 
 namespace mojo {
@@ -295,7 +299,8 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoUnwrapPlatformHandleImpl,
                                     MojoWrapPlatformSharedBufferHandleImpl,
                                     MojoUnwrapPlatformSharedBufferHandleImpl,
-                                    MojoNotifyBadMessageImpl};
+                                    MojoNotifyBadMessageImpl,
+                                    MojoGetPropertyImpl};
   return system_thunks;
 }
 

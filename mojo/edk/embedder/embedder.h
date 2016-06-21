@@ -189,6 +189,15 @@ CreateChildMessagePipe(const std::string& token);
 // as to not have to worry about collisions with other generated tokens.
 MOJO_SYSTEM_IMPL_EXPORT std::string GenerateRandomToken();
 
+// Sets system properties that can be read by the MojoGetProperty() API. See the
+// documentation for MojoPropertyType for supported property types and their
+// corresponding value type.
+//
+// Default property values:
+//   |MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED| - true
+MOJO_SYSTEM_IMPL_EXPORT MojoResult SetProperty(MojoPropertyType type,
+                                               const void* value);
+
 }  // namespace edk
 }  // namespace mojo
 

@@ -172,5 +172,10 @@ std::string GenerateRandomToken() {
   return base::HexEncode(random_bytes, 16);
 }
 
+MojoResult SetProperty(MojoPropertyType type, const void* value) {
+  CHECK(internal::g_core);
+  return internal::g_core->SetProperty(type, value);
+}
+
 }  // namespace edk
 }  // namespace mojo
