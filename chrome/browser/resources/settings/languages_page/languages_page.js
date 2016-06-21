@@ -151,18 +151,6 @@ Polymer({
   },
 
   /**
-   * Returns the enabled languages which support spell check.
-   * @return {!Array<!LanguageState>}
-   * @private
-   */
-  spellCheckLanguages_: function() {
-    assert(!cr.isMac);
-    return this.languages.enabled.filter(function(languageState) {
-      return languageState.language.supportsSpellcheck;
-    });
-  },
-
-  /**
    * Returns the secondary text for the spell check subsection based on the
    * enabled spell check languages, listing at most 2 languages.
    * @return {string}

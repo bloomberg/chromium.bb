@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="/icons.html">
@@ -124,19 +125,22 @@
         </div>
         <iron-collapse id="spellCheckCollapse" opened="[[spellCheckOpened_]]">
           <div class="list-frame vertical-list">
-            <template is="dom-repeat"
-                items="[[spellCheckLanguages_(languages.enabled.*)]]">
+            <template is="dom-repeat" items="[[languages.enabled]]">
               <div class="list-item">
-                <div class="start">
-                  <paper-checkbox
-                      checked="[[item.spellCheckEnabled]]"
-                      on-change="onSpellCheckChange_">
+                <label class="start"
+                    id="supportsSpellCheckLabel-[[item.language.code]]">
+                  <span disabled$="[[!item.language.supportsSpellcheck]]">
                     [[item.language.displayName]]
-                  </paper-checkbox>
-                </div>
-                <paper-icon-button icon="cr:settings"
-                    on-tap="onShowLanguageDetailTap_"></paper-icon-button>
-              </div>
+                  </span>
+                </label>
+                <paper-toggle-button
+                    checked="[[item.spellCheckEnabled]]"
+                    on-change="onSpellCheckChange_"
+                    disabled$="[[!item.language.supportsSpellcheck]]"
+                    aria-labelledby=
+                        "supportsSpellCheckLabel-[[item.language.code]]">
+                </paper-toggle-button>
+              </label>
             </template>
             <div class="list-item list-button" on-tap="onEditDictionaryTap_">
               $i18n{manageSpellCheck}
