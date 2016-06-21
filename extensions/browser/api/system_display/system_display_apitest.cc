@@ -153,11 +153,12 @@ class SystemDisplayApiTest : public ShellApiTest {
   DISALLOW_COPY_AND_ASSIGN(SystemDisplayApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, GetDisplay) {
-  ASSERT_TRUE(RunAppTest("system/display")) << message_;
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, GetDisplayInfo) {
+  ASSERT_TRUE(RunAppTest("system/display/info")) << message_;
 }
 
 #if !defined(OS_CHROMEOS)
+
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
   scoped_refptr<SystemDisplaySetDisplayPropertiesFunction> set_info_function(
       new SystemDisplaySetDisplayPropertiesFunction());
@@ -173,9 +174,12 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
       provider_->GetSetInfoValue();
   EXPECT_FALSE(set_info);
 }
-#endif  // !defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
+#else  // !defined(OS_CHROMEOS)
+
+// TODO(stevenjb): Add API tests for {GS}etDisplayLayout. That code currently
+// lives in src/chrome but should be getting moved soon.
+
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayNotKioskEnabled) {
   std::unique_ptr<base::DictionaryValue> test_extension_value(
       api_test_utils::ParseDictionary("{\n"
@@ -299,6 +303,6 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, EnableUnifiedDesktop) {
   }
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace extensions

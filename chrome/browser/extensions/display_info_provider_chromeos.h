@@ -26,11 +26,13 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
   bool SetInfo(const std::string& display_id,
                const api::system_display::DisplayProperties& info,
                std::string* error) override;
+  bool SetDisplayLayout(const DisplayLayoutList& layouts) override;
   void UpdateDisplayUnitInfoForPlatform(
       const display::Display& display,
       api::system_display::DisplayUnitInfo* unit) override;
   void EnableUnifiedDesktop(bool enable) override;
   DisplayUnitInfoList GetAllDisplaysInfo() override;
+  DisplayLayoutList GetDisplayLayout() override;
   bool OverscanCalibrationStart(const std::string& id) override;
   bool OverscanCalibrationAdjust(
       const std::string& id,

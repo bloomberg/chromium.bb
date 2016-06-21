@@ -30,6 +30,16 @@ class SystemDisplayGetInfoFunction : public SystemDisplayFunction {
   bool RunSync() override;
 };
 
+class SystemDisplayGetDisplayLayoutFunction : public SystemDisplayFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("system.display.getDisplayLayout",
+                             SYSTEM_DISPLAY_GETDISPLAYLAYOUT);
+
+ protected:
+  ~SystemDisplayGetDisplayLayoutFunction() override {}
+  bool RunSync() override;
+};
+
 class SystemDisplaySetDisplayPropertiesFunction : public SystemDisplayFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.setDisplayProperties",
@@ -37,6 +47,16 @@ class SystemDisplaySetDisplayPropertiesFunction : public SystemDisplayFunction {
 
  protected:
   ~SystemDisplaySetDisplayPropertiesFunction() override {}
+  bool RunSync() override;
+};
+
+class SystemDisplaySetDisplayLayoutFunction : public SystemDisplayFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("system.display.setDisplayLayout",
+                             SYSTEM_DISPLAY_SETDISPLAYLAYOUT);
+
+ protected:
+  ~SystemDisplaySetDisplayLayoutFunction() override {}
   bool RunSync() override;
 };
 

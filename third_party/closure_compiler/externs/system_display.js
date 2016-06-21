@@ -59,6 +59,28 @@ chrome.system.display.Insets;
 chrome.system.display.DisplayMode;
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/system.display#type-LayoutPosition
+ */
+chrome.system.display.LayoutPosition = {
+  TOP: 'top',
+  RIGHT: 'right',
+  BOTTOM: 'bottom',
+  LEFT: 'left',
+};
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   parentId: string,
+ *   position: !chrome.system.display.LayoutPosition,
+ *   offset: number
+ * }}
+ * @see https://developer.chrome.com/extensions/system.display#type-DisplayLayout
+ */
+chrome.system.display.DisplayLayout;
+
+/**
  * @typedef {{
  *   id: string,
  *   name: string,
@@ -101,6 +123,14 @@ chrome.system.display.DisplayProperties;
 chrome.system.display.getInfo = function(callback) {};
 
 /**
+ * Get the layout info for all displays. NOTE: This is only available to Chrome
+ * OS Kiosk apps and Web UI.
+ * @param {function(!Array<!chrome.system.display.DisplayLayout>):void} callback
+ * @see https://developer.chrome.com/extensions/system.display#method-getDisplayLayout
+ */
+chrome.system.display.getDisplayLayout = function(callback) {};
+
+/**
  * Updates the properties for the display specified by |id|, according to the
  * information provided in |info|. On failure, $(ref:runtime.lastError) will be
  * set. NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
@@ -116,6 +146,16 @@ chrome.system.display.getInfo = function(callback) {};
 chrome.system.display.setDisplayProperties = function(id, info, callback) {};
 
 /**
+ * Set the layout for all displays. Any display not included will use the
+ * default layout. If a layout would overlap or be otherwise invalid it will be
+ * adjusted to a valid layout. After layout is resolved, an onDisplayChanged
+ * event will be triggered.
+ * @param {!Array<!chrome.system.display.DisplayLayout>} layouts
+ * @see https://developer.chrome.com/extensions/system.display#method-setDisplayLayout
+ */
+chrome.system.display.setDisplayLayout = function(layouts) {};
+
+/**
  * Enables/disables the unified desktop feature. Note that this simply enables
  * the feature, but will not change the actual desktop mode. (That is, if the
  * desktop is in mirror mode, it will stay in mirror mode) NOTE: This is only
@@ -127,7 +167,8 @@ chrome.system.display.enableUnifiedDesktop = function(enabled) {};
 
 /**
  * Starts overscan calibration for a display. This will show an overlay on the
- * screen indicating the current overscan insets.
+ * screen indicating the current overscan insets. If overscan calibration for
+ * display |id| is in progress this will reset calibration.
  * @param {string} id The display's unique identifier.
  * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationStart
  */

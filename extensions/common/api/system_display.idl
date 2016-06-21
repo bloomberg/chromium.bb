@@ -59,6 +59,25 @@ namespace system.display {
     boolean isSelected;
   };
 
+  // Layout position, i.e. edge of parent that the display is attached to.
+  enum LayoutPosition { top, right, bottom, left };
+
+  dictionary DisplayLayout {
+    // The unique identifier of the display.
+    DOMString id;
+
+    // The unique identifier of the parent display. Empty if this is the root.
+    DOMString parentId;
+
+    // The layout position of this display relative to the parent. This will
+    // be ignored for the root.
+    LayoutPosition position;
+
+    // The offset of the display along the connected edge. 0 indicates that
+    // the topmost or leftmost corners are aligned.
+    long offset;
+  };
+
   dictionary DisplayUnitInfo {
     // The unique identifier of the display.
     DOMString id;
@@ -152,11 +171,17 @@ namespace system.display {
   };
 
   callback DisplayInfoCallback = void (DisplayUnitInfo[] displayInfo);
+  callback DisplayLayoutCallback = void (DisplayLayout[] layouts);
   callback SetDisplayUnitInfoCallback = void();
+  callback SetDisplayLayoutCallback = void();
 
   interface Functions {
     // Get the information of all attached display devices.
     static void getInfo(DisplayInfoCallback callback);
+
+    // Get the layout info for all displays.
+    // NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
+    static void getDisplayLayout(DisplayLayoutCallback callback);
 
     // Updates the properties for the display specified by |id|, according to
     // the information provided in |info|. On failure, $(ref:runtime.lastError)
@@ -173,6 +198,19 @@ namespace system.display {
         DOMString id,
         DisplayProperties info,
         optional SetDisplayUnitInfoCallback callback);
+
+    // Set the layout for all displays. Any display not included will use the
+    // default layout. If a layout would overlap or be otherwise invalid it
+    // will be adjusted to a valid layout. After layout is resolved, an
+    // onDisplayChanged event will be triggered.
+    // NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
+    // |layouts|: The layout information, required for all displays except
+    //     the primary display.
+    // |callback|: Empty function called when the function finishes. To find out
+    //     whether the function succeeded, $(ref:runtime.lastError) should be
+    //     queried.
+    static void setDisplayLayout(DisplayLayout[] layouts,
+                                 optional SetDisplayLayoutCallback callback);
 
     // Enables/disables the unified desktop feature. Note that this simply
     // enables the feature, but will not change the actual desktop mode.

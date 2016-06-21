@@ -26,6 +26,9 @@
 namespace extensions {
 namespace {
 
+using DisplayUnitInfoList = DisplayInfoProvider::DisplayUnitInfoList;
+using DisplayLayoutList = DisplayInfoProvider::DisplayLayoutList;
+
 class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
  public:
   DisplayInfoProviderChromeosTest() {}
@@ -432,6 +435,60 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0].bounds));
   EXPECT_EQ("80,600 400x520",
             SystemInfoDisplayBoundsToString(result[1].bounds));
+}
+
+TEST_F(DisplayInfoProviderChromeosTest, Layout) {
+  UpdateDisplay("500x400,500x400,500x400");
+
+  DisplayUnitInfoList displays =
+      DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+  std::string primary_id = displays[0].id;
+  ASSERT_EQ(3u, displays.size());
+
+  DisplayLayoutList layout = DisplayInfoProvider::Get()->GetDisplayLayout();
+
+  ASSERT_EQ(2u, layout.size());
+
+  // Confirm layout.
+  EXPECT_EQ(displays[1].id, layout[0].id);
+  EXPECT_EQ(primary_id, layout[0].parent_id);
+  EXPECT_EQ(api::system_display::LAYOUT_POSITION_RIGHT, layout[0].position);
+  EXPECT_EQ(0, layout[0].offset);
+
+  EXPECT_EQ(displays[2].id, layout[1].id);
+  EXPECT_EQ(layout[0].id, layout[1].parent_id);
+  EXPECT_EQ(api::system_display::LAYOUT_POSITION_RIGHT, layout[1].position);
+  EXPECT_EQ(0, layout[1].offset);
+
+  // Modify layout.
+  layout[0].offset = 100;
+  layout[1].parent_id = primary_id;
+  layout[1].position = api::system_display::LAYOUT_POSITION_BOTTOM;
+  layout[1].offset = -100;
+
+  // Update with modified layout.
+  ASSERT_TRUE(DisplayInfoProvider::Get()->SetDisplayLayout(layout));
+
+  // Get updated layout.
+  layout = DisplayInfoProvider::Get()->GetDisplayLayout();
+
+  // Confirm modified layout.
+  EXPECT_EQ(displays[1].id, layout[0].id);
+  EXPECT_EQ(primary_id, layout[0].parent_id);
+  EXPECT_EQ(api::system_display::LAYOUT_POSITION_RIGHT, layout[0].position);
+  EXPECT_EQ(100, layout[0].offset);
+
+  EXPECT_EQ(displays[2].id, layout[1].id);
+  EXPECT_EQ(primary_id, layout[1].parent_id);
+  EXPECT_EQ(api::system_display::LAYOUT_POSITION_BOTTOM, layout[1].position);
+  EXPECT_EQ(-100, layout[1].offset);
+
+  // TODO(stevenjb/oshima): Implement and test illegal layout prevention.
+
+  // Test setting invalid layout fails.
+  layout[0].parent_id = displays[2].id;
+  layout[1].parent_id = displays[1].id;
+  EXPECT_FALSE(DisplayInfoProvider::Get()->SetDisplayLayout(layout));
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginLeftExact) {

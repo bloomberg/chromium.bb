@@ -24,8 +24,8 @@ namespace {
 
 BOOL CALLBACK
 EnumMonitorCallback(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
-  DisplayUnitInfoList* all_displays =
-      reinterpret_cast<DisplayUnitInfoList*>(data);
+  DisplayInfoProvider::DisplayUnitInfoList* all_displays =
+      reinterpret_cast<DisplayInfoProvider::DisplayUnitInfoList*>(data);
   DCHECK(all_displays);
 
   DisplayUnitInfo unit;

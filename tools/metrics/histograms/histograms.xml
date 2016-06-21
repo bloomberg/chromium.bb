@@ -73308,6 +73308,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1135" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONCOMPLETE"/>
   <int value="1136" label="AUTOFILLPRIVATE_GETCOUNTRYLIST"/>
   <int value="1137" label="RUNTIME_RESTARTAFTERDELAY"/>
+  <int value="1138" label="SYSTEM_DISPLAY_SETDISPLAYLAYOUT"/>
+  <int value="1139" label="SYSTEM_DISPLAY_GETDISPLAYLAYOUT"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

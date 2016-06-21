@@ -39,6 +39,16 @@ SystemDisplay.prototype = {
   setDisplayProperties: assertNotReached,
 
   /**
+   * Set the layout for all displays. Any display not included will use the
+   * default layout. If a layout would overlap or be otherwise invalid it will
+   * be adjusted to a valid layout. After layout is resolved, an
+   * onDisplayChanged event will be triggered.
+   * @param {!Array<!chrome.system.display.DisplayLayout>} layouts
+   * @see https://developer.chrome.com/extensions/system.display#method-setDisplayLayout
+   */
+  setDisplayLayout: assertNotReached,
+
+  /**
    * Enables/disables the unified desktop feature. Note that this simply enables
    * the feature, but will not change the actual desktop mode. (That is, if the
    * desktop is in mirror mode, it will stay in mirror mode) NOTE: This is only
@@ -50,7 +60,8 @@ SystemDisplay.prototype = {
 
   /**
    * Starts overscan calibration for a display. This will show an overlay on the
-   * screen indicating the current overscan insets.
+   * screen indicating the current overscan insets. If overscan calibration for
+   * display |id| is in progress this will reset calibration.
    * @param {string} id The display's unique identifier.
    * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationStart
    */

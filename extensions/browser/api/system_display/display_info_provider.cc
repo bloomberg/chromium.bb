@@ -73,9 +73,15 @@ api::system_display::DisplayUnitInfo DisplayInfoProvider::CreateDisplayUnitInfo(
   return unit;
 }
 
+bool DisplayInfoProvider::SetDisplayLayout(const DisplayLayoutList& layout) {
+  NOTREACHED();  // Implemented on Chrome OS only in override.
+  return false;
+}
+
 void DisplayInfoProvider::EnableUnifiedDesktop(bool enable) {}
 
-DisplayUnitInfoList DisplayInfoProvider::GetAllDisplaysInfo() {
+DisplayInfoProvider::DisplayUnitInfoList
+DisplayInfoProvider::GetAllDisplaysInfo() {
   display::Screen* screen = display::Screen::GetScreen();
   int64_t primary_id = screen->GetPrimaryDisplay().id();
   std::vector<display::Display> displays = screen->GetAllDisplays();
@@ -87,6 +93,11 @@ DisplayUnitInfoList DisplayInfoProvider::GetAllDisplaysInfo() {
     all_displays.push_back(std::move(unit));
   }
   return all_displays;
+}
+
+DisplayInfoProvider::DisplayLayoutList DisplayInfoProvider::GetDisplayLayout() {
+  NOTREACHED();  // Implemented on Chrome OS only in override.
+  return DisplayLayoutList();
 }
 
 bool DisplayInfoProvider::OverscanCalibrationStart(const std::string& id) {
