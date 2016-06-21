@@ -35,8 +35,6 @@
       'edk/embedder/platform_channel_pair.h',
       'edk/embedder/platform_channel_pair_posix.cc',
       'edk/embedder/platform_channel_pair_win.cc',
-      'edk/embedder/platform_channel_utils_posix.cc',
-      'edk/embedder/platform_channel_utils_posix.h',
       'edk/embedder/platform_handle.cc',
       'edk/embedder/platform_handle.h',
       'edk/embedder/platform_handle_utils.h',
@@ -108,10 +106,18 @@
       'edk/embedder/test_embedder.h',
     ],
     'mojo_edk_system_impl_non_nacl_sources': [
+      'edk/embedder/platform_channel_utils_posix.cc',
+      'edk/embedder/platform_channel_utils_posix.h',
       'edk/system/broker_host_posix.cc',
       'edk/system/broker_posix.cc',
       'edk/system/channel_posix.cc',
       'edk/system/remote_message_pipe_bootstrap.cc',
+    ],
+    'mojo_edk_system_impl_nacl_nonsfi_sources': [
+      'edk/embedder/platform_channel_utils_posix.cc',
+      'edk/embedder/platform_channel_utils_posix.h',
+      'edk/system/broker_posix.cc',
+      'edk/system/channel_posix.cc',
     ],
   },
 }

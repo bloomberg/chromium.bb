@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/platform_handle.h"
 
-#if !defined(OS_NACL) || defined(OS_NACL_NONSFI)
+#if !defined(OS_NACL_SFI)
 #include <sys/socket.h>
 #else
 #include "native_client/src/public/imc_syscalls.h"
@@ -52,7 +52,7 @@ PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
   int fds[2];
   // TODO(vtl): Maybe fail gracefully if |socketpair()| fails.
 
-#if defined(OS_NACL) && !defined(OS_NACL_NONSFI)
+#if defined(OS_NACL_SFI)
   PCHECK(imc_socketpair(fds) == 0);
 #else
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
@@ -72,7 +72,7 @@ PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
   PCHECK(setsockopt(fds[1], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
                     sizeof(no_sigpipe)) == 0);
 #endif  // defined(OS_MACOSX)
-#endif  // defined(OS_NACL) && !defined(OS_NACL_NONSFI)
+#endif  // defined(OS_NACL_SFI)
 
   server_handle_.reset(PlatformHandle(fds[0]));
   DCHECK(server_handle_.is_valid());

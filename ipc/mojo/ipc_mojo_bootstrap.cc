@@ -155,7 +155,11 @@ base::ProcessId MojoBootstrap::GetSelfPID() const {
   if (int global_pid = Channel::GetGlobalPid())
     return global_pid;
 #endif  // OS_LINUX
+#if defined(OS_NACL)
+  return -1;
+#else
   return base::GetCurrentProcId();
+#endif  // defined(OS_NACL)
 }
 
 void MojoBootstrap::Fail() {

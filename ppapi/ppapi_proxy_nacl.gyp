@@ -42,6 +42,7 @@
             '../ipc/ipc_nacl.gyp:ipc_nacl',
             '../ipc/ipc_nacl.gyp:ipc_nacl_nonsfi',
             '../mojo/mojo_edk_nacl.gyp:mojo_system_impl_nacl',
+            '../mojo/mojo_edk_nacl.gyp:mojo_system_impl_nacl_nonsfi',
             '../ppapi/ppapi_ipc_nacl.gyp:ppapi_ipc_nacl',
             '../ppapi/ppapi_shared_nacl.gyp:ppapi_shared_nacl',
             '../third_party/WebKit/public/blink_headers.gyp:blink_headers',

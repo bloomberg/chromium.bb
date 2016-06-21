@@ -156,8 +156,8 @@ scoped_refptr<NodeChannel> NodeChannel::Create(
     ScopedPlatformHandle platform_handle,
     scoped_refptr<base::TaskRunner> io_task_runner,
     const ProcessErrorCallback& process_error_callback) {
-#if defined(OS_NACL)
-  LOG(FATAL) << "Multi-process not yet supported on NaCl";
+#if defined(OS_NACL_SFI)
+  LOG(FATAL) << "Multi-process not yet supported on NaCl-SFI";
   return nullptr;
 #else
   return new NodeChannel(delegate, std::move(platform_handle), io_task_runner,
@@ -426,7 +426,7 @@ NodeChannel::NodeChannel(Delegate* delegate,
     : delegate_(delegate),
       io_task_runner_(io_task_runner),
       process_error_callback_(process_error_callback)
-#if !defined(OS_NACL)
+#if !defined(OS_NACL_SFI)
       , channel_(
           Channel::Create(this, std::move(platform_handle), io_task_runner_))
 #endif

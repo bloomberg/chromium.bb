@@ -59,7 +59,8 @@ ssize_t PlatformChannelWrite(PlatformHandle h,
   DCHECK(bytes);
   DCHECK_GT(num_bytes, 0u);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_NACL_NONSFI)
+  // send() is not available under NaCl-nonsfi.
   return HANDLE_EINTR(write(h.handle, bytes, num_bytes));
 #else
   return send(h.handle, bytes, num_bytes, kSendFlags);
