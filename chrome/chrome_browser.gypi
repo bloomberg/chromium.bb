@@ -2201,8 +2201,6 @@
       'browser/notifications/native_notification_display_service.h',
       'browser/notifications/notification.cc',
       'browser/notifications/notification.h',
-      'browser/notifications/notification_builder_mac.mm',
-      'browser/notifications/notification_builder_mac.h',
       'browser/notifications/notification_delegate.h',
       'browser/notifications/notification_display_service.h',
       'browser/notifications/notification_display_service_factory.cc',
@@ -3746,6 +3744,11 @@
             }, {
               'sources': [
                 '<@(chrome_browser_notifications_android_java_ui_sources)',
+              ],
+            }],
+            ['OS=="mac"', {
+              'dependencies' : [
+                'browser/ui/cocoa/notifications/notification_common.gyp:notification_common',
               ],
             }],
           ],

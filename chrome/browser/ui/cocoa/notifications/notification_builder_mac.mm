@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/notification_builder_mac.h"
+#import "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 
 #import <AppKit/AppKit.h>
 
@@ -23,7 +23,9 @@ NSString* const kNotificationImage = @"icon";
 NSString* const kNotificationButtonOne = @"buttonOne";
 NSString* const kNotificationButtonTwo = @"buttonTwo";
 NSString* const kNotificationTag = @"tag";
-
+NSString* const kNotificationCloseButtonTag = @"closeButton";
+NSString* const kNotificationOptionsButtonTag = @"optionsButton";
+NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 }  // namespace
 
 namespace notification_builder {
@@ -43,6 +45,15 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
 - (instancetype)init {
   if ((self = [super init])) {
     notificationData_.reset([[NSMutableDictionary alloc] init]);
+    [notificationData_
+        setObject:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_CLOSE)
+           forKey:kNotificationCloseButtonTag];
+    [notificationData_
+        setObject:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_OPTIONS)
+           forKey:kNotificationOptionsButtonTag];
+    [notificationData_
+        setObject:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_SETTINGS)
+           forKey:kNotificationSettingsButtonTag];
   }
   return self;
 }
@@ -131,12 +142,16 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
 
   // Buttons
   if ([toast respondsToSelector:@selector(_showsButtons)]) {
+    DCHECK([notificationData_ objectForKey:kNotificationCloseButtonTag]);
+    DCHECK([notificationData_ objectForKey:kNotificationSettingsButtonTag]);
+    DCHECK([notificationData_ objectForKey:kNotificationOptionsButtonTag]);
+
     [toast setValue:@YES forKey:@"_showsButtons"];
     // A default close button label is provided by the platform but we
     // explicitly override it in case the user decides to not
     // use the OS language in Chrome.
-    [toast setOtherButtonTitle:l10n_util::GetNSString(
-                                   IDS_NOTIFICATION_BUTTON_CLOSE)];
+    [toast setOtherButtonTitle:[notificationData_
+                                   objectForKey:kNotificationCloseButtonTag]];
 
     // Display the Settings button as the action button if there are either no
     // developer-provided action buttons, or the alternate action menu is not
@@ -144,8 +159,9 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
     // TODO(miguelg): Extensions should not have a settings button.
     if (![notificationData_ objectForKey:kNotificationButtonOne] ||
         ![toast respondsToSelector:@selector(_alwaysShowAlternateActionMenu)]) {
-      [toast setActionButtonTitle:l10n_util::GetNSString(
-                                      IDS_NOTIFICATION_BUTTON_SETTINGS)];
+      [toast
+          setActionButtonTitle:
+              [notificationData_ objectForKey:kNotificationSettingsButtonTag]];
     } else {
       // Otherwise show the alternate menu, then show the developer actions and
       // finally the settings one.
@@ -153,8 +169,9 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
           [toast respondsToSelector:@selector(_alwaysShowAlternateActionMenu)]);
       DCHECK(
           [toast respondsToSelector:@selector(_alternateActionButtonTitles)]);
-      [toast setActionButtonTitle:l10n_util::GetNSString(
-                                      IDS_NOTIFICATION_BUTTON_OPTIONS)];
+      [toast
+          setActionButtonTitle:[notificationData_
+                                   objectForKey:kNotificationOptionsButtonTag]];
       [toast setValue:@YES forKey:@"_alwaysShowAlternateActionMenu"];
 
       NSMutableArray* buttons = [NSMutableArray arrayWithCapacity:3];
@@ -164,8 +181,8 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
         [buttons
             addObject:[notificationData_ objectForKey:kNotificationButtonTwo]];
       }
-      [buttons
-          addObject:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_SETTINGS)];
+      [buttons addObject:[notificationData_
+                             objectForKey:kNotificationSettingsButtonTag]];
       [toast setValue:buttons forKey:@"_alternateActionButtonTitles"];
     }
   }

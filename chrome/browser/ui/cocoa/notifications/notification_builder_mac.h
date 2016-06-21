@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_BUILDER_MAC_H_
-#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_BUILDER_MAC_H_
+#ifndef CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_NOTIFICATION_BUILDER_MAC_H_
+#define CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_NOTIFICATION_BUILDER_MAC_H_
 
 #import <Foundation/Foundation.h>
 
@@ -12,10 +12,12 @@
 @class NSUserNotification;
 
 namespace notification_builder {
+
 extern NSString* const kNotificationOrigin;
 extern NSString* const kNotificationId;
 extern NSString* const kNotificationProfileId;
 extern NSString* const kNotificationIncognito;
+
 }  // notification_builder
 
 // Provides a marshallable way for storing the information required to construct
@@ -47,6 +49,9 @@ extern NSString* const kNotificationIncognito;
 - (instancetype)initWithDictionary:(NSDictionary*)data;
 
 // Setters
+// Note for XPC users. Always use the setters from Chrome's main app. Do not
+// attempt to use them from XPC since some of the default strings and other
+// defaults are not available from the xpc service.
 - (void)setTitle:(NSString*)title;
 - (void)setSubTitle:(NSString*)subTitle;
 - (void)setContextMessage:(NSString*)contextMessage;
@@ -70,4 +75,4 @@ extern NSString* const kNotificationIncognito;
 
 @end
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_BUILDER_MAC_H_
+#endif  // CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_NOTIFICATION_BUILDER_MAC_H_

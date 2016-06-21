@@ -686,6 +686,9 @@ target(chrome_browser_target_type, "browser") {
               ".",
               "//chrome")
     }
+    if (is_mac) {
+      deps += [ "//chrome/browser/ui/cocoa/notifications:common" ]
+    }
   }
   if (enable_themes) {
     sources +=

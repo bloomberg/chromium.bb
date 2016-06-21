@@ -12,12 +12,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_builder_mac.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
@@ -135,7 +135,6 @@ void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
   [builder setIncognito:incognito];
 
   NSUserNotification* toast = [builder buildUserNotification];
-
   [notification_center_ deliverNotification:toast];
 }
 
