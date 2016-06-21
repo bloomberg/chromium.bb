@@ -75382,6 +75382,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1408" label="OpenSearchSecureOriginSecureTarget"/>
   <int value="1409" label="RegisterProtocolHandlerSecureOrigin"/>
   <int value="1410" label="RegisterProtocolHandlerInsecureOrigin"/>
+  <int value="1411" label="CrossOriginWindowAlert"/>
+  <int value="1412" label="CrossOriginWindowConfirm"/>
+  <int value="1413" label="CrossOriginWindowPrompt"/>
+  <int value="1414" label="CrossOriginWindowPrint"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

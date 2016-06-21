@@ -764,6 +764,10 @@ void LocalDOMWindow::print(ScriptState* scriptState)
         m_shouldPrintWhenFinishedLoading = true;
         return;
     }
+
+    if (frame()->isCrossOrigin())
+        UseCounter::count(frame()->document(), UseCounter::CrossOriginWindowPrint);
+
     m_shouldPrintWhenFinishedLoading = false;
     host->chromeClient().print(frame());
 }
@@ -802,6 +806,9 @@ void LocalDOMWindow::alert(ScriptState* scriptState, const String& message)
     if (!host)
         return;
 
+    if (frame()->isCrossOrigin())
+        UseCounter::count(frame()->document(), UseCounter::CrossOriginWindowAlert);
+
     host->chromeClient().openJavaScriptAlert(frame(), message);
 }
 
@@ -831,6 +838,9 @@ bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message)
     FrameHost* host = frame()->host();
     if (!host)
         return false;
+
+    if (frame()->isCrossOrigin())
+        UseCounter::count(frame()->document(), UseCounter::CrossOriginWindowConfirm);
 
     return host->chromeClient().openJavaScriptConfirm(frame(), message);
 }
@@ -865,6 +875,9 @@ String LocalDOMWindow::prompt(ScriptState* scriptState, const String& message, c
     String returnValue;
     if (host->chromeClient().openJavaScriptPrompt(frame(), message, defaultValue, returnValue))
         return returnValue;
+
+    if (frame()->isCrossOrigin())
+        UseCounter::count(frame()->document(), UseCounter::CrossOriginWindowPrompt);
 
     return String();
 }
