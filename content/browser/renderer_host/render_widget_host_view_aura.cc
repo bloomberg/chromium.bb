@@ -109,8 +109,8 @@
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "content/common/input_messages.h"
-#include "ui/events/linux/text_edit_command_auralinux.h"
-#include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
+#include "ui/base/ime/linux/text_edit_command_auralinux.h"
+#include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
 
 using gfx::RectToSkIRect;

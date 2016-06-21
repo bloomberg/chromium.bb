@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
+#include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 
 namespace ui {
 
@@ -12,7 +12,7 @@ TextEditKeyBindingsDelegateAuraLinux* text_edit_keybinding_delegate_ = 0;
 }
 
 void SetTextEditKeyBindingsDelegate(
-     TextEditKeyBindingsDelegateAuraLinux* delegate) {
+    TextEditKeyBindingsDelegateAuraLinux* delegate) {
   text_edit_keybinding_delegate_ = delegate;
 }
 

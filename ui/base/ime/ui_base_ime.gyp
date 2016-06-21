@@ -114,6 +114,10 @@
         'linux/linux_input_method_context.h',
         'linux/linux_input_method_context_factory.cc',
         'linux/linux_input_method_context_factory.h',
+        'linux/text_edit_command_auralinux.cc',
+        'linux/text_edit_command_auralinux.h',
+        'linux/text_edit_key_bindings_delegate_auralinux.cc',
+        'linux/text_edit_key_bindings_delegate_auralinux.h',
         'mock_input_method.cc',
         'mock_input_method.h',
         'text_edit_commands.h',
@@ -165,6 +169,12 @@
         ['chromeos==1', {
           'dependencies': [
             '../../../chromeos/chromeos.gyp:chromeos',
+          ],
+          'sources!': [
+            'linux/text_edit_command_auralinux.cc',
+            'linux/text_edit_command_auralinux.h',
+            'linux/text_edit_key_bindings_delegate_auralinux.cc',
+            'linux/text_edit_key_bindings_delegate_auralinux.h',
           ],
         }],
         ['use_aura==0 or (desktop_linux==0 and use_ozone==0)', {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/linux/text_edit_command_auralinux.h"
+#include "ui/base/ime/linux/text_edit_command_auralinux.h"
 
 #include "base/logging.h"
 

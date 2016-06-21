@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/event_types.h"
-#include "ui/events/linux/text_edit_command_auralinux.h"
+#include "ui/base/ime/linux/text_edit_command_auralinux.h"
 
 namespace content {
 struct NativeWebKeyboardEvent;

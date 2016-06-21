@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_X_TEXT_EDIT_KEY_BINDINGS_DELEGATE_X11_H_
-#define UI_EVENTS_X_TEXT_EDIT_KEY_BINDINGS_DELEGATE_X11_H_
+#ifndef UI_BASE_IME_LINUX_TEXT_EDIT_KEY_BINDINGS_DELEGATE_AURALINUX_H_
+#define UI_BASE_IME_LINUX_TEXT_EDIT_KEY_BINDINGS_DELEGATE_AURALINUX_H_
 
 #include <vector>
 
-#include "ui/events/events_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 class Event;
@@ -18,7 +18,7 @@ class TextEditCommandAuraLinux;
 //
 // On desktop Linux, we've traditionally supported the user's custom
 // keybindings. We need to support this in both content/ and in views/.
-class EVENTS_EXPORT TextEditKeyBindingsDelegateAuraLinux {
+class UI_BASE_IME_EXPORT TextEditKeyBindingsDelegateAuraLinux {
  public:
   // Matches a key event against the users' platform specific key bindings,
   // false will be returned if the key event doesn't correspond to a predefined
@@ -33,11 +33,11 @@ class EVENTS_EXPORT TextEditKeyBindingsDelegateAuraLinux {
 
 // Sets/Gets the global TextEditKeyBindingsDelegateAuraLinux. No ownership
 // changes. Can be NULL.
-EVENTS_EXPORT void SetTextEditKeyBindingsDelegate(
+UI_BASE_IME_EXPORT void SetTextEditKeyBindingsDelegate(
     TextEditKeyBindingsDelegateAuraLinux* delegate);
-EVENTS_EXPORT TextEditKeyBindingsDelegateAuraLinux*
-    GetTextEditKeyBindingsDelegate();
+UI_BASE_IME_EXPORT TextEditKeyBindingsDelegateAuraLinux*
+GetTextEditKeyBindingsDelegate();
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_X_TEXT_EDIT_KEY_BINDINGS_DELEGATE_X11_H_
+#endif  // UI_BASE_IME_LINUX_TEXT_EDIT_KEY_BINDINGS_DELEGATE_AURALINUX_H_

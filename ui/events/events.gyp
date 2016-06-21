@@ -129,10 +129,6 @@
         'gestures/motion_event_aura.h',
         'keycodes/platform_key_map_win.cc',
         'keycodes/platform_key_map_win.h',
-        'linux/text_edit_command_auralinux.cc',
-        'linux/text_edit_command_auralinux.h',
-        'linux/text_edit_key_bindings_delegate_auralinux.cc',
-        'linux/text_edit_key_bindings_delegate_auralinux.h',
         'null_event_targeter.cc',
         'null_event_targeter.h',
         'scoped_target_handler.cc',
@@ -176,14 +172,6 @@
         ['OS=="win" or OS=="mac" or use_x11==1 or use_ozone==1 or (OS=="android" and use_aura==1)', {
           'sources!': [
             'events_stub.cc',
-          ],
-        }],
-        ['chromeos==1', {
-          'sources!': [
-            'linux/text_edit_command_auralinux.cc',
-            'linux/text_edit_command_auralinux.h',
-            'linux/text_edit_key_bindings_delegate_auralinux.cc',
-            'linux/text_edit_key_bindings_delegate_auralinux.h',
           ],
         }],
         ['use_ozone==1', {

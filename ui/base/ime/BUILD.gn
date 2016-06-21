@@ -137,6 +137,15 @@ component("ime") {
     ]
   }
 
+  if (!is_chromeos && is_linux) {
+    sources += [
+      "linux/text_edit_command_auralinux.cc",
+      "linux/text_edit_command_auralinux.h",
+      "linux/text_edit_key_bindings_delegate_auralinux.cc",
+      "linux/text_edit_key_bindings_delegate_auralinux.h",
+    ]
+  }
+
   if (!toolkit_views && !use_aura) {
     sources -= [
       "input_method_factory.cc",

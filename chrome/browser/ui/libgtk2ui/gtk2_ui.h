@@ -14,7 +14,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
-#include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
+#include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/frame_buttons.h"

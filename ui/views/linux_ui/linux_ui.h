@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
-#include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
+#include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/linux_font_delegate.h"
 #include "ui/shell_dialogs/shell_dialog_linux.h"
 #include "ui/views/controls/button/button.h"

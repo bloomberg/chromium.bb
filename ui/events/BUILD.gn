@@ -157,15 +157,6 @@ component("events") {
     ]
   }
 
-  if (!is_chromeos && is_linux) {
-    sources += [
-      "linux/text_edit_command_auralinux.cc",
-      "linux/text_edit_command_auralinux.h",
-      "linux/text_edit_key_bindings_delegate_auralinux.cc",
-      "linux/text_edit_key_bindings_delegate_auralinux.h",
-    ]
-  }
-
   if (use_ozone || (is_android && use_aura)) {
     sources += [ "events_default.cc" ]
   }

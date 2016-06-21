@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_X_TEXT_EDIT_COMMAND_X11_H_
-#define UI_EVENTS_X_TEXT_EDIT_COMMAND_X11_H_
+#ifndef UI_BASE_IME_LINUX_TEXT_EDIT_COMMAND_AURALINUX_H_
+#define UI_BASE_IME_LINUX_TEXT_EDIT_COMMAND_AURALINUX_H_
 
 #include <string>
 
-#include "ui/events/events_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 
 // Represents a command that performs a specific operation on text.
 // Copy and assignment are explicitly allowed; these objects live in vectors.
-class EVENTS_EXPORT TextEditCommandAuraLinux {
+class UI_BASE_IME_EXPORT TextEditCommandAuraLinux {
  public:
   enum CommandId {
     COPY,
@@ -53,8 +53,8 @@ class EVENTS_EXPORT TextEditCommandAuraLinux {
   };
 
   TextEditCommandAuraLinux(CommandId command_id,
-                     const std::string& argument,
-                     bool extend_selection)
+                           const std::string& argument,
+                           bool extend_selection)
       : command_id_(command_id),
         argument_(argument),
         extend_selection_(extend_selection) {}
@@ -79,4 +79,4 @@ class EVENTS_EXPORT TextEditCommandAuraLinux {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_X_TEXT_EDIT_COMMAND_X11_H_
+#endif  // UI_BASE_IME_LINUX_TEXT_EDIT_COMMAND_AURALINUX_H_
