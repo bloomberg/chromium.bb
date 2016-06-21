@@ -67,7 +67,6 @@ class FakeTabController : public TabController {
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
   }
-  bool IsIncognito() const override { return false; }
   bool IsImmersiveStyle() const override { return immersive_style_; }
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   int GetBackgroundResourceId(bool* custom_image) const override {

@@ -1402,10 +1402,6 @@ bool TabStrip::CanPaintThrobberToLayer() const {
          !widget->IsFullscreen();
 }
 
-bool TabStrip::IsIncognito() const {
-  return controller_->IsIncognito();
-}
-
 bool TabStrip::IsImmersiveStyle() const {
   return immersive_style_;
 }

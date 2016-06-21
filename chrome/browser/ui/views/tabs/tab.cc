@@ -95,7 +95,8 @@ const int kPinnedTitleChangeInitialXOffset = 6;
 
 // Max number of images to cache. This has to be at least two since rounding
 // errors may lead to tabs in the same tabstrip having different sizes.
-const size_t kMaxImageCacheSize = 4;
+// 8 = normal/incognito, active/inactive, 2 sizes within tabstrip.
+const size_t kMaxImageCacheSize = 8;
 
 // Height of the miniature tab strip in immersive mode.
 const int kImmersiveTabHeight = 3;
@@ -410,43 +411,53 @@ void Tab::ThrobberView::OnPaint(gfx::Canvas* canvas) {
 // Tab::ImageCacheEntryMetadata
 
 struct Tab::ImageCacheEntryMetadata {
-  ImageCacheEntryMetadata(bool incognito,
-                          int resource_id,
+  ImageCacheEntryMetadata(int resource_id,
+                          SkColor fill_color,
+                          SkColor stroke_color,
                           ui::ScaleFactor scale_factor,
                           const gfx::Size& size);
+
   ~ImageCacheEntryMetadata();
 
   // Making this a non-member would require a friend declaration in Tab.  Bleh.
   bool operator==(const ImageCacheEntryMetadata& rhs) const;
 
-  // Whether the resource is drawn in an incognito window.  This is only set to
-  // true when Material Design is enabled, since before MD tabs in normal and
-  // incognito windows look the same.
-  bool incognito;
-
-  int resource_id;
+  int resource_id;     // Only needed by pre-MD
+  SkColor fill_color;  // Both colors only needed by MD
+  SkColor stroke_color;
   ui::ScaleFactor scale_factor;
   gfx::Size size;
 };
 
 Tab::ImageCacheEntryMetadata::ImageCacheEntryMetadata(
-    bool incognito,
     int resource_id,
+    SkColor fill_color,
+    SkColor stroke_color,
     ui::ScaleFactor scale_factor,
     const gfx::Size& size)
-    : incognito(incognito),
-      resource_id(resource_id),
+    : resource_id(resource_id),
+      fill_color(fill_color),
+      stroke_color(stroke_color),
       scale_factor(scale_factor),
       size(size) {
   DCHECK_NE(ui::SCALE_FACTOR_NONE, scale_factor);
+
+  // Some fields are only relevant for pre-MD vs. MD.  Erase the irrelevant ones
+  // so they don't cause incorrect cache misses.
+  // TODO(pkasting): Remove |resource_id| field when non-MD code is deleted.
+  if (ui::MaterialDesignController::IsModeMaterial())
+    resource_id = 0;
+  else
+    fill_color = stroke_color = SK_ColorTRANSPARENT;
 }
 
 Tab::ImageCacheEntryMetadata::~ImageCacheEntryMetadata() {}
 
 bool Tab::ImageCacheEntryMetadata::operator==(
     const ImageCacheEntryMetadata& rhs) const {
-  return incognito == rhs.incognito && resource_id == rhs.resource_id &&
-      scale_factor == rhs.scale_factor && size == rhs.size;
+  return resource_id == rhs.resource_id && fill_color == rhs.fill_color &&
+      stroke_color == rhs.stroke_color && scale_factor == rhs.scale_factor &&
+      size == rhs.size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1318,7 +1329,8 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // image is a composited foreground + frame image.  Note that if the theme is
   // only providing a custom frame image, |has_custom_image| will be true, but
   // we should use the |background_offset_| here.
-  const int y_offset = GetThemeProvider()->HasCustomImage(fill_id) ?
+  const ui::ThemeProvider* tp = GetThemeProvider();
+  const int y_offset = tp->HasCustomImage(fill_id) ?
       -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) : background_offset_.y();
 
   // We only cache the image when it's the default image and we're not hovered,
@@ -1330,9 +1342,9 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   }
 
   const ImageCacheEntryMetadata metadata(
-      ui::MaterialDesignController::IsModeMaterial() &&
-          controller_->IsIncognito(),
-      fill_id, ui::GetSupportedScaleFactor(canvas->image_scale()), size());
+      fill_id, tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB),
+      controller_->GetToolbarTopSeparatorColor(),
+      ui::GetSupportedScaleFactor(canvas->image_scale()), size());
   auto it = std::find_if(
       image_cache_->begin(), image_cache_->end(),
       [&metadata](const ImageCacheEntry& e) { return e.metadata == metadata; });
