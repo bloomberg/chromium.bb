@@ -257,24 +257,23 @@ void Gtk2KeyBindingsHandler::DeleteFromCursor(
       }
       break;
     case GTK_DELETE_DISPLAY_LINES:
-      commands[0] = TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_LINE;
+      commands[0] = TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_LINE;
       commands[1] = TextEditCommandAuraLinux::DELETE_TO_END_OF_LINE;
       break;
     case GTK_DELETE_DISPLAY_LINE_ENDS:
-      commands[0] = (count > 0 ?
-          TextEditCommandAuraLinux::DELETE_TO_END_OF_LINE :
-          TextEditCommandAuraLinux::DELETE_TO_BEGINING_OF_LINE);
+      commands[0] =
+          (count > 0 ? TextEditCommandAuraLinux::DELETE_TO_END_OF_LINE
+                     : TextEditCommandAuraLinux::DELETE_TO_BEGINNING_OF_LINE);
       break;
     case GTK_DELETE_PARAGRAPH_ENDS:
-      commands[0] = (count > 0 ?
-          TextEditCommandAuraLinux::DELETE_TO_END_OF_PARAGRAPH :
-          TextEditCommandAuraLinux::DELETE_TO_BEGINING_OF_PARAGRAPH);
+      commands[0] =
+          (count > 0
+               ? TextEditCommandAuraLinux::DELETE_TO_END_OF_PARAGRAPH
+               : TextEditCommandAuraLinux::DELETE_TO_BEGINNING_OF_PARAGRAPH);
       break;
     case GTK_DELETE_PARAGRAPHS:
-      commands[0] =
-          TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_PARAGRAPH;
-      commands[1] =
-          TextEditCommandAuraLinux::DELETE_TO_END_OF_PARAGRAPH;
+      commands[0] = TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_PARAGRAPH;
+      commands[1] = TextEditCommandAuraLinux::DELETE_TO_END_OF_PARAGRAPH;
       break;
     default:
       // GTK_DELETE_WHITESPACE has no corresponding editor command.
@@ -327,22 +326,24 @@ void Gtk2KeyBindingsHandler::MoveCursor(
                  TextEditCommandAuraLinux::MOVE_UP);
       break;
     case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
-      command = (count > 0 ?
-                 TextEditCommandAuraLinux::MOVE_TO_END_OF_LINE :
-                 TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_LINE);
+      command =
+          (count > 0 ? TextEditCommandAuraLinux::MOVE_TO_END_OF_LINE
+                     : TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_LINE);
       break;
     case GTK_MOVEMENT_PARAGRAPH_ENDS:
-      command = (count > 0 ?
-                 TextEditCommandAuraLinux::MOVE_TO_END_OF_PARAGRAPH :
-                 TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_PARAGRAPH);
+      command =
+          (count > 0
+               ? TextEditCommandAuraLinux::MOVE_TO_END_OF_PARAGRAPH
+               : TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_PARAGRAPH);
       break;
     case GTK_MOVEMENT_PAGES:
       command = (count > 0 ? TextEditCommandAuraLinux::MOVE_PAGE_DOWN :
                  TextEditCommandAuraLinux::MOVE_PAGE_UP);
       break;
     case GTK_MOVEMENT_BUFFER_ENDS:
-      command = (count > 0 ? TextEditCommandAuraLinux::MOVE_TO_END_OF_DOCUMENT :
-                 TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_DOCUMENT);
+      command =
+          (count > 0 ? TextEditCommandAuraLinux::MOVE_TO_END_OF_DOCUMENT
+                     : TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_DOCUMENT);
       break;
     default:
       // GTK_MOVEMENT_PARAGRAPHS and GTK_MOVEMENT_HORIZONTAL_PAGES have

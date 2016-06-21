@@ -183,8 +183,8 @@ ui::TextEditCommand GetViewsCommand(const ui::TextEditCommandAuraLinux& command,
       return ui::TextEditCommand::DELETE_BACKWARD;
     case ui::TextEditCommandAuraLinux::DELETE_FORWARD:
       return ui::TextEditCommand::DELETE_FORWARD;
-    case ui::TextEditCommandAuraLinux::DELETE_TO_BEGINING_OF_LINE:
-    case ui::TextEditCommandAuraLinux::DELETE_TO_BEGINING_OF_PARAGRAPH:
+    case ui::TextEditCommandAuraLinux::DELETE_TO_BEGINNING_OF_LINE:
+    case ui::TextEditCommandAuraLinux::DELETE_TO_BEGINNING_OF_PARAGRAPH:
       return ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE;
     case ui::TextEditCommandAuraLinux::DELETE_TO_END_OF_LINE:
     case ui::TextEditCommandAuraLinux::DELETE_TO_END_OF_PARAGRAPH:
@@ -220,9 +220,9 @@ ui::TextEditCommand GetViewsCommand(const ui::TextEditCommandAuraLinux& command,
     case ui::TextEditCommandAuraLinux::MOVE_RIGHT:
       return select ? ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION
                     : ui::TextEditCommand::MOVE_RIGHT;
-    case ui::TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_DOCUMENT:
-    case ui::TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_LINE:
-    case ui::TextEditCommandAuraLinux::MOVE_TO_BEGINING_OF_PARAGRAPH:
+    case ui::TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_DOCUMENT:
+    case ui::TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_LINE:
+    case ui::TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_PARAGRAPH:
       return select ? ui::TextEditCommand::
                           MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
                     : ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE;

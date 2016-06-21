@@ -23,10 +23,10 @@ std::string TextEditCommandAuraLinux::GetCommandString() const {
     case DELETE_FORWARD:
       base_name = "DeleteForward";
       break;
-    case DELETE_TO_BEGINING_OF_LINE:
+    case DELETE_TO_BEGINNING_OF_LINE:
       base_name = "DeleteToBeginningOfLine";
       break;
-    case DELETE_TO_BEGINING_OF_PARAGRAPH:
+    case DELETE_TO_BEGINNING_OF_PARAGRAPH:
       base_name = "DeleteToBeginningOfParagraph";
       break;
     case DELETE_TO_END_OF_LINE:
@@ -65,13 +65,13 @@ std::string TextEditCommandAuraLinux::GetCommandString() const {
     case MOVE_RIGHT:
       base_name = "MoveRight";
       break;
-    case MOVE_TO_BEGINING_OF_DOCUMENT:
+    case MOVE_TO_BEGINNING_OF_DOCUMENT:
       base_name = "MoveToBeginningOfDocument";
       break;
-    case MOVE_TO_BEGINING_OF_LINE:
+    case MOVE_TO_BEGINNING_OF_LINE:
       base_name = "MoveToBeginningOfLine";
       break;
-    case MOVE_TO_BEGINING_OF_PARAGRAPH:
+    case MOVE_TO_BEGINNING_OF_PARAGRAPH:
       base_name = "MoveToBeginningOfParagraph";
       break;
     case MOVE_TO_END_OF_DOCUMENT:
