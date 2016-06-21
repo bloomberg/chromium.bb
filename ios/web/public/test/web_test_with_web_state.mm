@@ -25,6 +25,15 @@
 }
 @end
 
+namespace {
+// Returns CRWWebController for the given |web_state|.
+CRWWebController* GetWebController(web::WebState* web_state) {
+  web::WebStateImpl* web_state_impl =
+      static_cast<web::WebStateImpl*>(web_state);
+  return web_state_impl->GetWebController();
+}
+}  // namespace
+
 namespace web {
 
 WebTestWithWebState::WebTestWithWebState() {}
@@ -38,11 +47,10 @@ void WebTestWithWebState::SetUp() {
   std::unique_ptr<WebStateImpl> web_state(new WebStateImpl(GetBrowserState()));
   web_state->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
   web_state->SetWebUsageEnabled(true);
-  webController_.reset(web_state->GetWebController());
   web_state_.reset(web_state.release());
 
   // Force generation of child views; necessary for some tests.
-  [webController_ triggerPendingLoad];
+  [GetWebController(web_state_.get()) triggerPendingLoad];
   s_html_load_count = 0;
 }
 
@@ -81,28 +89,28 @@ void WebTestWithWebState::LoadHtml(const std::string& html) {
 void WebTestWithWebState::LoadURL(const GURL& url) {
   // First step is to ensure that the web controller has finished any previous
   // page loads so the new load is not confused.
-  while ([webController_ loadPhase] != PAGE_LOADED)
+  while ([GetWebController(web_state()) loadPhase] != PAGE_LOADED)
     WaitForBackgroundTasks();
   id originalMockDelegate =
       [OCMockObject niceMockForProtocol:@protocol(CRWWebDelegate)];
   id mockDelegate =
       [[WebDelegateMock alloc] initWithRepresentedObject:originalMockDelegate];
-  id existingDelegate = webController_.get().delegate;
-  webController_.get().delegate = mockDelegate;
+  id existingDelegate = GetWebController(web_state()).delegate;
+  GetWebController(web_state()).delegate = mockDelegate;
 
   web::NavigationManagerImpl& navManager =
-      [webController_ webStateImpl]->GetNavigationManagerImpl();
+      [GetWebController(web_state()) webStateImpl]->GetNavigationManagerImpl();
   navManager.InitializeSession(@"name", nil, NO, 0);
   [navManager.GetSessionController() addPendingEntry:url
                                             referrer:web::Referrer()
                                           transition:ui::PAGE_TRANSITION_TYPED
                                    rendererInitiated:NO];
 
-  [webController_ loadCurrentURL];
-  while ([webController_ loadPhase] != PAGE_LOADED)
+  [GetWebController(web_state()) loadCurrentURL];
+  while ([GetWebController(web_state()) loadPhase] != PAGE_LOADED)
     WaitForBackgroundTasks();
-  webController_.get().delegate = existingDelegate;
-  [[webController_ view] layoutIfNeeded];
+  GetWebController(web_state()).delegate = existingDelegate;
+  [web_state()->GetView() layoutIfNeeded];
 }
 
 void WebTestWithWebState::WaitForBackgroundTasks() {
@@ -139,11 +147,12 @@ void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
 
 NSString* WebTestWithWebState::EvaluateJavaScriptAsString(NSString* script) {
   __block base::scoped_nsobject<NSString> evaluationResult;
-  [webController_ evaluateJavaScript:script
-                 stringResultHandler:^(NSString* result, NSError*) {
-                   DCHECK([result isKindOfClass:[NSString class]]);
-                   evaluationResult.reset([result copy]);
-                 }];
+  [GetWebController(web_state())
+       evaluateJavaScript:script
+      stringResultHandler:^(NSString* result, NSError*) {
+        DCHECK([result isKindOfClass:[NSString class]]);
+        evaluationResult.reset([result copy]);
+      }];
   base::test::ios::WaitUntilCondition(^bool() {
     return evaluationResult;
   });
@@ -153,11 +162,11 @@ NSString* WebTestWithWebState::EvaluateJavaScriptAsString(NSString* script) {
 id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
   __block base::scoped_nsprotocol<id> executionResult;
   __block bool executionCompleted = false;
-  [webController_ executeJavaScript:script
-                  completionHandler:^(id result, NSError*) {
-                    executionResult.reset([result copy]);
-                    executionCompleted = true;
-                  }];
+  [GetWebController(web_state()) executeJavaScript:script
+                                 completionHandler:^(id result, NSError*) {
+                                   executionResult.reset([result copy]);
+                                   executionCompleted = true;
+                                 }];
   base::test::ios::WaitUntilCondition(^{
     return executionCompleted;
   });
@@ -178,7 +187,7 @@ bool WebTestWithWebState::ResetPageIfNavigationStalled(NSString* load_check) {
   if ([inner_html rangeOfString:load_check].location == NSNotFound) {
     web_state_->SetWebUsageEnabled(false);
     web_state_->SetWebUsageEnabled(true);
-    [webController_ triggerPendingLoad];
+    [GetWebController(web_state()) triggerPendingLoad];
     return true;
   }
   return false;

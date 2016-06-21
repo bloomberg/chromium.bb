@@ -11,8 +11,6 @@
 #include "ios/web/public/test/web_test.h"
 #include "url/gurl.h"
 
-@class CRWWebController;
-
 namespace web {
 
 class WebState;
@@ -71,9 +69,6 @@ class WebTestWithWebState : public WebTest,
   NSString* CreateLoadCheck();
   // The web state for testing.
   std::unique_ptr<WebState> web_state_;
-  // The web controller for testing.
-  // TODO(crbug.com/619076): Remove this ivar.
-  base::WeakNSObject<CRWWebController> webController_;
 };
 
 }  // namespace web
