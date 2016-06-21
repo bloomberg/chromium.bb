@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 
 namespace syncer {
@@ -76,8 +77,7 @@ ModelSafeWorker::ModelSafeWorker(WorkerLoopDestructionObserver* observer)
     : stopped_(false),
       work_done_or_stopped_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED),
-      observer_(observer),
-      working_loop_(NULL) {}
+      observer_(observer) {}
 
 ModelSafeWorker::~ModelSafeWorker() {}
 
@@ -125,8 +125,8 @@ void ModelSafeWorker::WillDestroyCurrentMessageLoop() {
   }
 
   {
-    base::AutoLock l(working_loop_lock_);
-    working_loop_ = NULL;
+    base::AutoLock l(working_task_runner_lock_);
+    working_task_runner_ = NULL;
   }
 
   if (observer_)
@@ -137,13 +137,13 @@ void ModelSafeWorker::SetWorkingLoopToCurrent() {
   base::Callback<void(ModelSafeGroup)> unregister_done_callback;
 
   {
-    base::AutoLock l(working_loop_lock_);
-    DCHECK(!working_loop_);
+    base::AutoLock l(working_task_runner_lock_);
+    DCHECK(!working_task_runner_);
 
     if (unregister_done_callback_.is_null()) {
       // Expected case - UnregisterForLoopDestruction hasn't been called yet.
       base::MessageLoop::current()->AddDestructionObserver(this);
-      working_loop_ = base::MessageLoop::current();
+      working_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     } else {
       // Rare case which is possible when the model type thread remains
       // blocked for the entire session and UnregisterForLoopDestruction ends
@@ -165,16 +165,15 @@ void ModelSafeWorker::SetWorkingLoopToCurrent() {
 
 void ModelSafeWorker::UnregisterForLoopDestruction(
     base::Callback<void(ModelSafeGroup)> unregister_done_callback) {
-  base::AutoLock l(working_loop_lock_);
-  if (working_loop_ != NULL) {
+  base::AutoLock l(working_task_runner_lock_);
+  if (working_task_runner_) {
     // Normal case - observer registration has been already done.
     // Delegate to the sync thread to do the actual unregistration in
     // UnregisterForLoopDestructionAsync.
-    DCHECK_NE(base::MessageLoop::current(), working_loop_);
-    working_loop_->PostTask(
+    DCHECK(!working_task_runner_->BelongsToCurrentThread());
+    working_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ModelSafeWorker::UnregisterForLoopDestructionAsync,
-                   this,
+        base::Bind(&ModelSafeWorker::UnregisterForLoopDestructionAsync, this,
                    unregister_done_callback));
   } else {
     // The working loop is still unknown, probably because the model type
@@ -187,10 +186,10 @@ void ModelSafeWorker::UnregisterForLoopDestruction(
 void ModelSafeWorker::UnregisterForLoopDestructionAsync(
     base::Callback<void(ModelSafeGroup)> unregister_done_callback) {
   {
-    base::AutoLock l(working_loop_lock_);
-    if (!working_loop_)
+    base::AutoLock l(working_task_runner_lock_);
+    if (!working_task_runner_)
       return;
-    DCHECK_EQ(base::MessageLoop::current(), working_loop_);
+    DCHECK(working_task_runner_->BelongsToCurrentThread());
   }
 
   DCHECK(stopped_);

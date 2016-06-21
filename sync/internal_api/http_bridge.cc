@@ -11,7 +11,6 @@
 
 #include "base/bit_cast.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -131,8 +130,7 @@ HttpBridge::HttpBridge(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     const NetworkTimeUpdateCallback& network_time_update_callback,
     const BindToTrackerCallback& bind_to_tracker_callback)
-    : created_on_loop_(base::MessageLoop::current()),
-      user_agent_(user_agent),
+    : user_agent_(user_agent),
       http_post_completed_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED),
       request_context_getter_(context_getter),
@@ -151,7 +149,7 @@ void HttpBridge::SetExtraRequestHeaders(const char * headers) {
 
 void HttpBridge::SetURL(const char* url, int port) {
 #if DCHECK_IS_ON()
-  DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(fetch_state_lock_);
     DCHECK(!fetch_state_.request_completed);
@@ -170,7 +168,7 @@ void HttpBridge::SetPostPayload(const char* content_type,
                                 int content_length,
                                 const char* content) {
 #if DCHECK_IS_ON()
-  DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(fetch_state_lock_);
     DCHECK(!fetch_state_.request_completed);
@@ -191,7 +189,7 @@ void HttpBridge::SetPostPayload(const char* content_type,
 
 bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
 #if DCHECK_IS_ON()
-  DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(fetch_state_lock_);
     DCHECK(!fetch_state_.request_completed);
@@ -260,14 +258,14 @@ void HttpBridge::MakeAsynchronousPost() {
 }
 
 int HttpBridge::GetResponseContentLength() const {
-  DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock lock(fetch_state_lock_);
   DCHECK(fetch_state_.request_completed);
   return fetch_state_.response_content.size();
 }
 
 const char* HttpBridge::GetResponseContent() const {
-  DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock lock(fetch_state_lock_);
   DCHECK(fetch_state_.request_completed);
   return fetch_state_.response_content.data();
@@ -275,8 +273,7 @@ const char* HttpBridge::GetResponseContent() const {
 
 const std::string HttpBridge::GetResponseHeaderValue(
     const std::string& name) const {
-
-  DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock lock(fetch_state_lock_);
   DCHECK(fetch_state_.request_completed);
 

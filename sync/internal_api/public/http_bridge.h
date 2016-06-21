@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -27,10 +28,6 @@
 #include "url/gurl.h"
 
 class HttpBridgeTest;
-
-namespace base {
-class MessageLoop;
-}
 
 namespace net {
 class HttpResponseHeaders;
@@ -115,12 +112,12 @@ class SYNC_EXPORT HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // Helper method to abort the request if we timed out.
   void OnURLFetchTimedOut();
 
-  // The message loop of the thread we were created on. This is the thread that
-  // will block on MakeSynchronousPost while the IO thread fetches data from
-  // the network.
+  // Used to check whether a method runs on the thread that we were created on.
+  // This is the thread that will block on MakeSynchronousPost while the IO
+  // thread fetches data from the network.
   // This should be the main syncer thread (SyncerThread) which is what blocks
   // on network IO through curl_easy_perform.
-  base::MessageLoop* const created_on_loop_;
+  base::ThreadChecker thread_checker_;
 
   // The user agent for all requests.
   const std::string user_agent_;

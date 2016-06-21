@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "sync/base/sync_export.h"
@@ -135,11 +136,11 @@ class SYNC_EXPORT ModelSafeWorker
 
   // Remember working loop for posting task to unregister destruction
   // observation from sync thread when shutting down sync.
-  base::Lock working_loop_lock_;
-  base::MessageLoop* working_loop_;
+  base::Lock working_task_runner_lock_;
+  scoped_refptr<base::SingleThreadTaskRunner> working_task_runner_;
 
   // Callback passed with UnregisterForLoopDestruction. Normally this
-  // remains unset/unused and is stored only if |working_loop_| isn't
+  // remains unset/unused and is stored only if |working_task_runner_| isn't
   // initialized by the time UnregisterForLoopDestruction is called.
   // It is safe to copy and thread safe.
   // See comments in model_safe_worker.cc for more details.

@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/bit_cast.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -142,7 +143,8 @@ class ShuntedHttpBridge : public HttpBridge {
 
  protected:
   void MakeAsynchronousPost() override {
-    ASSERT_TRUE(base::MessageLoop::current() == test_->GetIOThreadLoop());
+    ASSERT_TRUE(
+        test_->GetIOThreadLoop()->task_runner()->BelongsToCurrentThread());
     if (never_finishes_)
       return;
 
@@ -156,7 +158,8 @@ class ShuntedHttpBridge : public HttpBridge {
   ~ShuntedHttpBridge() override {}
 
   void CallOnURLFetchComplete() {
-    ASSERT_TRUE(base::MessageLoop::current() == test_->GetIOThreadLoop());
+    ASSERT_TRUE(
+        test_->GetIOThreadLoop()->task_runner()->BelongsToCurrentThread());
     // We return a dummy content response.
     std::string response_content = "success!";
     net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), NULL);
