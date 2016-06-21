@@ -277,6 +277,9 @@
             'sources': [
               '<@(net_websockets_test_sources)',
             ],
+            'defines': [
+              'ENABLE_WEBSOCKETS',
+            ],
             'dependencies': [
               'http_server',
             ],

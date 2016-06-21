@@ -212,6 +212,7 @@
         ],
     }],
     [ 'enable_websockets == 1', {
+        'defines': ['ENABLE_WEBSOCKETS'],
         'sources': ['<@(net_websockets_sources)']
     }],
     [ 'enable_mdns != 1', {

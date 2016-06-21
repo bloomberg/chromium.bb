@@ -68,6 +68,9 @@ config("net_config") {
   if (disable_ftp_support) {
     defines += [ "DISABLE_FTP_SUPPORT=1" ]
   }
+  if (enable_websockets) {
+    defines += [ "ENABLE_WEBSOCKETS" ]
+  }
 }
 
 config("net_internal_config") {

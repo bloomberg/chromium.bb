@@ -648,14 +648,12 @@ TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectTest) {
     {"http://upgrade.test:123/", true, "https://upgrade.test:123/"},
     {"http://no-upgrade.test/", false, "http://no-upgrade.test/"},
     {"http://no-upgrade.test:123/", false, "http://no-upgrade.test:123/"},
-// iOS doesn't support websockets; see the comments above
-// URLRequestHttpJobWebSocketTest for detail.
-#if !defined(OS_IOS)
+#if defined(ENABLE_WEBSOCKETS)
     {"ws://upgrade.test/", true, "wss://upgrade.test/"},
     {"ws://upgrade.test:123/", true, "wss://upgrade.test:123/"},
     {"ws://no-upgrade.test/", false, "ws://no-upgrade.test/"},
     {"ws://no-upgrade.test:123/", false, "ws://no-upgrade.test:123/"},
-#endif  // !defined(OS_IOS)
+#endif  // defined(ENABLE_WEBSOCKETS)
   };
 
   for (const auto& test : cases) {
@@ -896,11 +894,7 @@ class MockCreateHelper : public WebSocketHandshakeStreamBase::CreateHelper {
                                              bool));
 };
 
-// iOS doesn't support WebSockets, so these tests fail with ERR_UNKOWN_SCHEME on
-// iOS.
-// TODO(mmenke):  Hard coding features based on OS is regression prone and ugly.
-// Seems like this should use a build flag instead.
-#if !defined(OS_IOS)
+#if defined(ENABLE_WEBSOCKETS)
 
 class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
  public:
@@ -1009,7 +1003,7 @@ TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {
   EXPECT_TRUE(fake_handshake_stream->initialize_stream_was_called());
 }
 
-#endif  // !defined(OS_IOS)
+#endif  // defined(ENABLE_WEBSOCKETS)
 
 }  // namespace
 
