@@ -111,8 +111,8 @@ public:
     {
         if (m_draggedNode && m_draggedNode->layoutObject())
             m_draggedNode->layoutObject()->updateDragState(true);
-        float deviceScaleFactor = m_localFrame->host()->chromeClient().screenInfo().deviceScaleFactor;
-
+        // TODO(oshima): Remove this when all platforms are migrated to use-zoom-for-dsf.
+        float deviceScaleFactor = m_localFrame->host()->deviceScaleFactorDeprecated();
         m_bounds.setWidth(m_bounds.width() * deviceScaleFactor);
         m_bounds.setHeight(m_bounds.height() * deviceScaleFactor);
         m_pictureBuilder = wrapUnique(new SkPictureBuilder(SkRect::MakeIWH(m_bounds.width(), m_bounds.height())));
