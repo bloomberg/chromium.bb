@@ -105,12 +105,13 @@ class CC_EXPORT TaskGraphWorkQueue {
 
   static bool HasReadyToRunTasksInNamespace(
       const TaskNamespace* task_namespace) {
-    return std::find_if(task_namespace->ready_to_run_tasks.begin(),
-                        task_namespace->ready_to_run_tasks.end(),
-                        [](const std::pair<uint16_t, PrioritizedTask::Vector>&
-                               ready_to_run_tasks) {
-                          return !ready_to_run_tasks.second.empty();
-                        }) != task_namespace->ready_to_run_tasks.end();
+    return std::find_if(
+               task_namespace->ready_to_run_tasks.begin(),
+               task_namespace->ready_to_run_tasks.end(),
+               [](const std::pair<const uint16_t, PrioritizedTask::Vector>&
+                      ready_to_run_tasks) {
+                 return !ready_to_run_tasks.second.empty();
+               }) != task_namespace->ready_to_run_tasks.end();
   }
 
   static bool HasFinishedRunningTasksInNamespace(
@@ -120,12 +121,12 @@ class CC_EXPORT TaskGraphWorkQueue {
   }
 
   bool HasReadyToRunTasks() const {
-    return std::find_if(ready_to_run_namespaces_.begin(),
-                        ready_to_run_namespaces_.end(),
-                        [](const std::pair<uint16_t, TaskNamespace::Vector>&
-                               ready_to_run_namespaces) {
-                          return !ready_to_run_namespaces.second.empty();
-                        }) != ready_to_run_namespaces_.end();
+    return std::find_if(
+               ready_to_run_namespaces_.begin(), ready_to_run_namespaces_.end(),
+               [](const std::pair<const uint16_t, TaskNamespace::Vector>&
+                      ready_to_run_namespaces) {
+                 return !ready_to_run_namespaces.second.empty();
+               }) != ready_to_run_namespaces_.end();
   }
 
   bool HasReadyToRunTasksForCategory(uint16_t category) const {

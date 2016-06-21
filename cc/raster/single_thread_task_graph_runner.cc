@@ -137,8 +137,10 @@ bool SingleThreadTaskGraphRunner::RunTaskWithLockAcquired() {
   const auto& ready_to_run_namespaces = work_queue_.ready_to_run_namespaces();
   auto found = std::find_if(
       ready_to_run_namespaces.cbegin(), ready_to_run_namespaces.cend(),
-      [](const std::pair<uint16_t, TaskGraphWorkQueue::TaskNamespace::Vector>&
-             pair) { return !pair.second.empty(); });
+      [](const std::pair<const uint16_t,
+                         TaskGraphWorkQueue::TaskNamespace::Vector>& pair) {
+        return !pair.second.empty();
+      });
 
   if (found == ready_to_run_namespaces.cend()) {
     return false;
