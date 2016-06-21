@@ -253,6 +253,7 @@ EXPERIMENT_LIST="
     clpf
     dering
     ref_mv
+    sub8x8_mc
     ext_intra
     ext_interp
     ext_tx
