@@ -782,6 +782,10 @@ LineIterator BDictReader::GetOtherLineIterator() const {
 }
 
 ReplacementIterator BDictReader::GetReplacementIterator() const {
+  if (!bdict_data_ ||
+      aff_header_->rep_offset == 0 ||
+      aff_header_->rep_offset >= bdict_length_)
+    return ReplacementIterator(bdict_data_, 0, 0);  // Item is empty or invalid.
   return ReplacementIterator(bdict_data_, bdict_length_,
                              aff_header_->rep_offset);
 }
