@@ -9,8 +9,6 @@
 
 #include <map>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -18,17 +16,15 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "net/base/expiring_cache.h"
+#include "net/base/hash_value.h"
 #include "net/base/net_export.h"
-#include "net/cert/x509_cert_types.h"
-#include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
-
-class GURL;
 
 namespace net {
 
 class HostPortPair;
 class SSLInfo;
+class X509Certificate;
 
 // Tracks which hosts have enabled strict transport security and/or public
 // key pins.

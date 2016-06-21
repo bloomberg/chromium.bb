@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/build_time.h"
@@ -29,7 +30,6 @@
 #include "net/dns/dns_util.h"
 #include "net/http/http_security_headers.h"
 #include "net/ssl/ssl_info.h"
-#include "url/gurl.h"
 
 namespace net {
 
