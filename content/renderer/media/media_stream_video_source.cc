@@ -18,28 +18,6 @@
 
 namespace content {
 
-// Constraint keys. Specified by draft-alvestrand-constraints-resolution-00b
-const char MediaStreamVideoSource::kMinAspectRatio[] = "minAspectRatio";
-const char MediaStreamVideoSource::kMaxAspectRatio[] = "maxAspectRatio";
-const char MediaStreamVideoSource::kMaxWidth[] = "maxWidth";
-const char MediaStreamVideoSource::kMinWidth[] = "minWidth";
-const char MediaStreamVideoSource::kMaxHeight[] = "maxHeight";
-const char MediaStreamVideoSource::kMinHeight[] = "minHeight";
-const char MediaStreamVideoSource::kMaxFrameRate[] = "maxFrameRate";
-const char MediaStreamVideoSource::kMinFrameRate[] = "minFrameRate";
-
-// TODO(mcasas): Find a way to guarantee all constraints are added to the array.
-const char* const kSupportedConstraints[] = {
-  MediaStreamVideoSource::kMaxAspectRatio,
-  MediaStreamVideoSource::kMinAspectRatio,
-  MediaStreamVideoSource::kMaxWidth,
-  MediaStreamVideoSource::kMinWidth,
-  MediaStreamVideoSource::kMaxHeight,
-  MediaStreamVideoSource::kMinHeight,
-  MediaStreamVideoSource::kMaxFrameRate,
-  MediaStreamVideoSource::kMinFrameRate,
-};
-
 namespace {
 
 const char* const kLegalVideoConstraints[] = {
@@ -303,14 +281,6 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
     return nullptr;
   }
   return static_cast<MediaStreamVideoSource*>(source.getExtraData());
-}
-
-// static, deprecated
-bool MediaStreamVideoSource::IsConstraintSupported(const std::string& name) {
-  return std::find(kSupportedConstraints,
-                   kSupportedConstraints + arraysize(kSupportedConstraints),
-                   name) !=
-         kSupportedConstraints + arraysize(kSupportedConstraints);
 }
 
 MediaStreamVideoSource::MediaStreamVideoSource()

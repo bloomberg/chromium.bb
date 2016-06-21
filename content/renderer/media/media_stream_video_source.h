@@ -47,17 +47,6 @@ class CONTENT_EXPORT MediaStreamVideoSource
     : public MediaStreamSource,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  // Constraint keys used by a video source.
-  // Specified by draft-alvestrand-constraints-resolution-00b
-  static const char kMinAspectRatio[];  // minAspectRatio
-  static const char kMaxAspectRatio[];  // maxAspectRatio
-  static const char kMaxWidth[];  // maxWidth
-  static const char kMinWidth[];  // minWidth
-  static const char kMaxHeight[];  // maxHeight
-  static const char kMinHeight[];  // minHeight
-  static const char kMaxFrameRate[];  // maxFrameRate
-  static const char kMinFrameRate[];  // minFrameRate
-
   enum {
     // Default resolution. If no constraints are specified and the delegate
     // support it, this is the resolution that will be used.
@@ -83,9 +72,6 @@ class CONTENT_EXPORT MediaStreamVideoSource
   void RemoveTrack(MediaStreamVideoTrack* track);
 
   void UpdateCapturingLinkSecure(MediaStreamVideoTrack* track, bool is_secure);
-
-  // Return true if |name| is a constraint supported by MediaStreamVideoSource.
-  static bool IsConstraintSupported(const std::string& name);
 
   // Request underlying source to capture a new frame.
   virtual void RequestRefreshFrame() {}

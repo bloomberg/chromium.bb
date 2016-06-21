@@ -48,6 +48,9 @@ const char MediaAudioConstraints::kGoogAudioMirroring[] = "googAudioMirroring";
 
 namespace {
 
+// Controls whether the hotword audio stream is used on supported platforms.
+const char kMediaStreamAudioHotword[] = "googHotword";
+
 // Constant constraint keys which enables default audio constraints on
 // mediastreams with audio.
 struct {

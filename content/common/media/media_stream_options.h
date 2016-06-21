@@ -13,24 +13,13 @@
 
 namespace content {
 
-// MediaStreamConstraint keys for constraints that are passed to getUserMedia.
-CONTENT_EXPORT extern const char kMediaStreamSource[];
-CONTENT_EXPORT extern const char kMediaStreamSourceId[];
-CONTENT_EXPORT extern const char kMediaStreamSourceInfoId[];
+// Names for media stream source capture types.
+// These are values of the "TrackControls.stream_source" field, and are
+// set via the "chromeMediaSource" constraint.
 CONTENT_EXPORT extern const char kMediaStreamSourceTab[];
 CONTENT_EXPORT extern const char kMediaStreamSourceScreen[];
 CONTENT_EXPORT extern const char kMediaStreamSourceDesktop[];
 CONTENT_EXPORT extern const char kMediaStreamSourceSystem[];
-
-// Experimental constraint to do device matching.  When this optional constraint
-// is set, WebRTC audio renderer will render audio from media streams to an
-// output device that belongs to the same hardware as the requested source
-// device belongs to.
-CONTENT_EXPORT extern const char kMediaStreamRenderToAssociatedSink[];
-
-// Controls whether the hotword audio stream is used on platforms that support
-// it.
-CONTENT_EXPORT extern const char kMediaStreamAudioHotword[];
 
 struct CONTENT_EXPORT TrackControls {
  public:

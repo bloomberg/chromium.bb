@@ -681,28 +681,6 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
   sink.DisconnectFromTrack();
 }
 
-TEST_F(MediaStreamVideoSourceTest, IsConstraintSupported) {
-  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
-          MediaStreamVideoSource::kMaxFrameRate));
-  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
-        MediaStreamVideoSource::kMinFrameRate));
-  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
-      MediaStreamVideoSource::kMaxWidth));
-  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
-        MediaStreamVideoSource::kMinWidth));
-  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
-        MediaStreamVideoSource::kMaxHeight));
-  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
-      MediaStreamVideoSource::kMinHeight));
-  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
-        MediaStreamVideoSource::kMaxAspectRatio));
-  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
-      MediaStreamVideoSource::kMinAspectRatio));
-
-  EXPECT_FALSE(MediaStreamVideoSource::IsConstraintSupported(
-      "something unsupported"));
-}
-
 // Test that the constraint negotiation can handle 0.0 fps as frame rate.
 TEST_F(MediaStreamVideoSourceTest, Use0FpsSupportedFormat) {
   media::VideoCaptureFormats formats;

@@ -8,18 +8,10 @@
 
 namespace content {
 
-const char kMediaStreamSource[] = "chromeMediaSource";
-const char kMediaStreamSourceId[] = "chromeMediaSourceId";
-const char kMediaStreamSourceInfoId[] = "sourceId";
 const char kMediaStreamSourceTab[] = "tab";
 const char kMediaStreamSourceScreen[] = "screen";
 const char kMediaStreamSourceDesktop[] = "desktop";
 const char kMediaStreamSourceSystem[] = "system";
-const char kMediaStreamRenderToAssociatedSink[] =
-    "chromeRenderToAssociatedSink";
-// The prefix of this constant is 'goog' to match with other getUserMedia
-// constraints for audio.
-const char kMediaStreamAudioHotword[] = "googHotword";
 
 TrackControls::TrackControls()
     : requested(false) {}
