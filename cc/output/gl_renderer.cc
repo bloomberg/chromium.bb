@@ -2119,71 +2119,30 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   int y_texture_location = -1;
   int u_texture_location = -1;
   int v_texture_location = -1;
+  int uv_texture_location = -1;
   int a_texture_location = -1;
   int yuv_matrix_location = -1;
   int yuv_adj_location = -1;
   int alpha_location = -1;
-  if (use_alpha_plane) {
-    const VideoYUVAProgram* program =
-        GetVideoYUVAProgram(tex_coord_precision, sampler);
-    DCHECK(program && (program->initialized() || IsContextLost()));
-    SetUseProgram(program->program());
-    matrix_location = program->vertex_shader().matrix_location();
-    ya_tex_scale_location = program->vertex_shader().ya_tex_scale_location();
-    ya_tex_offset_location = program->vertex_shader().ya_tex_offset_location();
-    uv_tex_scale_location = program->vertex_shader().uv_tex_scale_location();
-    uv_tex_offset_location = program->vertex_shader().uv_tex_offset_location();
-    y_texture_location = program->fragment_shader().y_texture_location();
-    u_texture_location = program->fragment_shader().u_texture_location();
-    v_texture_location = program->fragment_shader().v_texture_location();
-    a_texture_location = program->fragment_shader().a_texture_location();
-    yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
-    yuv_adj_location = program->fragment_shader().yuv_adj_location();
-    ya_clamp_rect_location =
-        program->fragment_shader().ya_clamp_rect_location();
-    uv_clamp_rect_location =
-        program->fragment_shader().uv_clamp_rect_location();
-    alpha_location = program->fragment_shader().alpha_location();
-  } else if (!use_nv12) {
-    const VideoYUVProgram* program =
-        GetVideoYUVProgram(tex_coord_precision, sampler);
-    DCHECK(program && (program->initialized() || IsContextLost()));
-    SetUseProgram(program->program());
-    matrix_location = program->vertex_shader().matrix_location();
-    ya_tex_scale_location = program->vertex_shader().ya_tex_scale_location();
-    ya_tex_offset_location = program->vertex_shader().ya_tex_offset_location();
-    uv_tex_scale_location = program->vertex_shader().uv_tex_scale_location();
-    uv_tex_offset_location = program->vertex_shader().uv_tex_offset_location();
-    y_texture_location = program->fragment_shader().y_texture_location();
-    u_texture_location = program->fragment_shader().u_texture_location();
-    v_texture_location = program->fragment_shader().v_texture_location();
-    yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
-    yuv_adj_location = program->fragment_shader().yuv_adj_location();
-    ya_clamp_rect_location =
-        program->fragment_shader().ya_clamp_rect_location();
-    uv_clamp_rect_location =
-        program->fragment_shader().uv_clamp_rect_location();
-    alpha_location = program->fragment_shader().alpha_location();
-  } else {
-    const VideoNV12Program* program =
-        GetVideoNV12Program(tex_coord_precision, sampler);
-    DCHECK(program && (program->initialized() || IsContextLost()));
-    SetUseProgram(program->program());
-    matrix_location = program->vertex_shader().matrix_location();
-    ya_tex_scale_location = program->vertex_shader().ya_tex_scale_location();
-    ya_tex_offset_location = program->vertex_shader().ya_tex_offset_location();
-    uv_tex_scale_location = program->vertex_shader().uv_tex_scale_location();
-    uv_tex_offset_location = program->vertex_shader().uv_tex_offset_location();
-    y_texture_location = program->fragment_shader().y_texture_location();
-    u_texture_location = program->fragment_shader().uv_texture_location();
-    yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
-    yuv_adj_location = program->fragment_shader().yuv_adj_location();
-    ya_clamp_rect_location =
-        program->fragment_shader().ya_clamp_rect_location();
-    uv_clamp_rect_location =
-        program->fragment_shader().uv_clamp_rect_location();
-    alpha_location = program->fragment_shader().alpha_location();
-  }
+  const VideoYUVProgram* program = GetVideoYUVProgram(
+      tex_coord_precision, sampler, use_alpha_plane, use_nv12);
+  DCHECK(program && (program->initialized() || IsContextLost()));
+  SetUseProgram(program->program());
+  matrix_location = program->vertex_shader().matrix_location();
+  ya_tex_scale_location = program->vertex_shader().ya_tex_scale_location();
+  ya_tex_offset_location = program->vertex_shader().ya_tex_offset_location();
+  uv_tex_scale_location = program->vertex_shader().uv_tex_scale_location();
+  uv_tex_offset_location = program->vertex_shader().uv_tex_offset_location();
+  y_texture_location = program->fragment_shader().y_texture_location();
+  u_texture_location = program->fragment_shader().u_texture_location();
+  v_texture_location = program->fragment_shader().v_texture_location();
+  uv_texture_location = program->fragment_shader().uv_texture_location();
+  a_texture_location = program->fragment_shader().a_texture_location();
+  yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
+  yuv_adj_location = program->fragment_shader().yuv_adj_location();
+  ya_clamp_rect_location = program->fragment_shader().ya_clamp_rect_location();
+  uv_clamp_rect_location = program->fragment_shader().uv_clamp_rect_location();
+  alpha_location = program->fragment_shader().alpha_location();
 
   gfx::SizeF ya_tex_scale(1.0f, 1.0f);
   gfx::SizeF uv_tex_scale(1.0f, 1.0f);
@@ -2237,9 +2196,12 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
                  uv_clamp_rect.right(), uv_clamp_rect.bottom());
 
   gl_->Uniform1i(y_texture_location, 1);
-  gl_->Uniform1i(u_texture_location, 2);
-  if (!use_nv12)
+  if (use_nv12) {
+    gl_->Uniform1i(uv_texture_location, 2);
+  } else {
+    gl_->Uniform1i(u_texture_location, 2);
     gl_->Uniform1i(v_texture_location, 3);
+  }
   if (use_alpha_plane)
     gl_->Uniform1i(a_texture_location, 4);
 
@@ -3509,46 +3471,18 @@ GLRenderer::GetNonPremultipliedTextureBackgroundProgram(
 
 const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
     TexCoordPrecision precision,
-    SamplerType sampler) {
+    SamplerType sampler,
+    bool use_alpha_plane,
+    bool use_nv12) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
   DCHECK_GE(sampler, 0);
   DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  VideoYUVProgram* program = &video_yuv_program_[precision][sampler];
+  VideoYUVProgram* program =
+      &video_yuv_program_[precision][sampler][use_alpha_plane][use_nv12];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::videoYUVProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision,
-                        sampler);
-  }
-  return program;
-}
-
-const GLRenderer::VideoNV12Program* GLRenderer::GetVideoNV12Program(
-    TexCoordPrecision precision,
-    SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  VideoNV12Program* program = &video_nv12_program_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::videoNV12Program::initialize");
-    program->Initialize(output_surface_->context_provider(), precision,
-                        sampler);
-  }
-  return program;
-}
-
-const GLRenderer::VideoYUVAProgram* GLRenderer::GetVideoYUVAProgram(
-    TexCoordPrecision precision,
-    SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  VideoYUVAProgram* program = &video_yuva_program_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::videoYUVAProgram::initialize");
+    program->mutable_fragment_shader()->SetFeatures(use_alpha_plane, use_nv12);
     program->Initialize(output_surface_->context_provider(), precision,
                         sampler);
   }
@@ -3590,9 +3524,11 @@ void GLRenderer::CleanupSharedObjects() {
         }
       }
 
-      video_yuv_program_[i][j].Cleanup(gl_);
-      video_yuva_program_[i][j].Cleanup(gl_);
-      video_nv12_program_[i][j].Cleanup(gl_);
+      for (int k = 0; k < 2; k++) {
+        for (int l = 0; l < 2; l++) {
+          video_yuv_program_[i][j][k][l].Cleanup(gl_);
+        }
+      }
     }
     for (int j = 0; j <= LAST_BLEND_MODE; j++) {
       render_pass_program_[i][j].Cleanup(gl_);

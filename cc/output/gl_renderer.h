@@ -345,12 +345,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       VideoStreamTextureProgram;
   typedef ProgramBinding<VertexShaderPosTexYUVStretchOffset,
                          FragmentShaderYUVVideo> VideoYUVProgram;
-  typedef ProgramBinding<VertexShaderPosTexYUVStretchOffset,
-                         FragmentShaderNV12Video>
-      VideoNV12Program;
-  typedef ProgramBinding<VertexShaderPosTexYUVStretchOffset,
-                         FragmentShaderYUVAVideo>
-      VideoYUVAProgram;
 
   // Special purpose / effects shaders.
   typedef ProgramBinding<VertexShaderPos, FragmentShaderColor>
@@ -417,11 +411,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                               SamplerType sampler);
 
   const VideoYUVProgram* GetVideoYUVProgram(TexCoordPrecision precision,
-                                            SamplerType sampler);
-  const VideoNV12Program* GetVideoNV12Program(TexCoordPrecision precision,
-                                              SamplerType sampler);
-  const VideoYUVAProgram* GetVideoYUVAProgram(TexCoordPrecision precision,
-                                              SamplerType sampler);
+                                            SamplerType sampler,
+                                            bool use_alpha_texture,
+                                            bool use_nv12);
   const VideoStreamTextureProgram* GetVideoStreamTextureProgram(
       TexCoordPrecision precision);
 
@@ -486,12 +478,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                                [LAST_BLEND_MODE + 1]
                                                [LAST_MASK_VALUE + 1];
 
-  VideoYUVProgram
-      video_yuv_program_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
-  VideoNV12Program video_nv12_program_[LAST_TEX_COORD_PRECISION + 1]
-                                      [LAST_SAMPLER_TYPE + 1];
-  VideoYUVAProgram
-      video_yuva_program_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
+  VideoYUVProgram video_yuv_program_[LAST_TEX_COORD_PRECISION + 1]
+                                    [LAST_SAMPLER_TYPE + 1][2][2];
   VideoStreamTextureProgram
       video_stream_texture_program_[LAST_TEX_COORD_PRECISION + 1];
 

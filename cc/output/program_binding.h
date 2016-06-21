@@ -113,6 +113,7 @@ class ProgramBinding : public ProgramBindingBase {
 
   const VertexShader& vertex_shader() const { return vertex_shader_; }
   const FragmentShader& fragment_shader() const { return fragment_shader_; }
+  FragmentShader* mutable_fragment_shader() { return &fragment_shader_; }
 
  private:
   VertexShader vertex_shader_;

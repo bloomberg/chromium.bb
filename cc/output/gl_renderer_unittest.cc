@@ -172,9 +172,12 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
         renderer()->GetTileProgramSwizzleOpaque(precision, sampler));
     EXPECT_PROGRAM_VALID(
         renderer()->GetTileProgramSwizzleAA(precision, sampler));
-    EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVProgram(precision, sampler));
-    EXPECT_PROGRAM_VALID(renderer()->GetVideoNV12Program(precision, sampler));
-    EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVAProgram(precision, sampler));
+    for (int j = 0; j < 2; j++) {
+      for (int k = 0; k < 2; k++) {
+        EXPECT_PROGRAM_VALID(
+            renderer()->GetVideoYUVProgram(precision, sampler, j, k));
+      }
+    }
   }
 
   void TestShadersWithMasks(TexCoordPrecision precision,

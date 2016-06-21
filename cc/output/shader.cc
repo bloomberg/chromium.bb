@@ -2018,164 +2018,26 @@ FragmentShaderYUVVideo::FragmentShaderYUVVideo()
     : y_texture_location_(-1),
       u_texture_location_(-1),
       v_texture_location_(-1),
-      alpha_location_(-1),
-      yuv_matrix_location_(-1),
-      yuv_adj_location_(-1),
-      ya_clamp_rect_location_(-1),
-      uv_clamp_rect_location_(-1) {
-}
-
-void FragmentShaderYUVVideo::Init(GLES2Interface* context,
-                                  unsigned program,
-                                  int* base_uniform_index) {
-  static const char* uniforms[] = {"y_texture",
-                                   "u_texture",
-                                   "v_texture",
-                                   "alpha",
-                                   "yuv_matrix",
-                                   "yuv_adj",
-                                   "ya_clamp_rect",
-                                   "uv_clamp_rect"};
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  y_texture_location_ = locations[0];
-  u_texture_location_ = locations[1];
-  v_texture_location_ = locations[2];
-  alpha_location_ = locations[3];
-  yuv_matrix_location_ = locations[4];
-  yuv_adj_location_ = locations[5];
-  ya_clamp_rect_location_ = locations[6];
-  uv_clamp_rect_location_ = locations[7];
-}
-
-std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
-                                                    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderYUVVideo::GetShaderHead() {
-  return SHADER0([]() {
-    precision mediump float;
-    precision mediump int;
-    varying TexCoordPrecision vec2 v_yaTexCoord;
-    varying TexCoordPrecision vec2 v_uvTexCoord;
-    uniform SamplerType y_texture;
-    uniform SamplerType u_texture;
-    uniform SamplerType v_texture;
-    uniform float alpha;
-    uniform vec3 yuv_adj;
-    uniform mat3 yuv_matrix;
-    uniform vec4 ya_clamp_rect;
-    uniform vec4 uv_clamp_rect;
-  });
-}
-
-std::string FragmentShaderYUVVideo::GetShaderBody() {
-  return SHADER0([]() {
-    void main() {
-      vec2 ya_clamped =
-          max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));
-      float y_raw = TextureLookup(y_texture, ya_clamped).x;
-      vec2 uv_clamped =
-          max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));
-      float u_unsigned = TextureLookup(u_texture, uv_clamped).x;
-      float v_unsigned = TextureLookup(v_texture, uv_clamped).x;
-      vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
-      vec3 rgb = yuv_matrix * yuv;
-      gl_FragColor = vec4(rgb, 1.0) * alpha;
-    }
-  });
-}
-
-FragmentShaderNV12Video::FragmentShaderNV12Video()
-    : y_texture_location_(-1),
       uv_texture_location_(-1),
+      a_texture_location_(-1),
       alpha_location_(-1),
       yuv_matrix_location_(-1),
       yuv_adj_location_(-1),
       ya_clamp_rect_location_(-1),
       uv_clamp_rect_location_(-1) {}
 
-void FragmentShaderNV12Video::Init(GLES2Interface* context,
-                                   unsigned program,
-                                   int* base_uniform_index) {
+void FragmentShaderYUVVideo::SetFeatures(bool use_alpha_texture,
+                                         bool use_nv12) {
+  use_alpha_texture_ = use_alpha_texture;
+  use_nv12_ = use_nv12;
+}
+
+void FragmentShaderYUVVideo::Init(GLES2Interface* context,
+                                  unsigned program,
+                                  int* base_uniform_index) {
   static const char* uniforms[] = {
-      "y_texture", "uv_texture",    "alpha",        "yuv_matrix",
-      "yuv_adj",   "ya_clamp_rect", "uv_clamp_rect"};
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context, program, arraysize(uniforms), uniforms,
-                             locations, base_uniform_index);
-  y_texture_location_ = locations[0];
-  uv_texture_location_ = locations[1];
-  alpha_location_ = locations[2];
-  yuv_matrix_location_ = locations[3];
-  yuv_adj_location_ = locations[4];
-  ya_clamp_rect_location_ = locations[5];
-  uv_clamp_rect_location_ = locations[6];
-}
-
-std::string FragmentShaderNV12Video::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderNV12Video::GetShaderHead() {
-  return SHADER0([]() {
-    precision mediump float;
-    precision mediump int;
-    varying TexCoordPrecision vec2 v_yaTexCoord;
-    varying TexCoordPrecision vec2 v_uvTexCoord;
-    uniform SamplerType y_texture;
-    uniform SamplerType uv_texture;
-    uniform float alpha;
-    uniform vec3 yuv_adj;
-    uniform mat3 yuv_matrix;
-    uniform vec4 ya_clamp_rect;
-    uniform vec4 uv_clamp_rect;
-  });
-}
-
-std::string FragmentShaderNV12Video::GetShaderBody() {
-  return SHADER0([]() {
-    void main() {
-      vec2 ya_clamped =
-          max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));
-      float y_raw = TextureLookup(y_texture, ya_clamped).x;
-      vec2 uv_clamped =
-          max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));
-      vec2 uv_unsigned = TextureLookup(uv_texture, uv_clamped).xy;
-      vec3 yuv = vec3(y_raw, uv_unsigned) + yuv_adj;
-      vec3 rgb = yuv_matrix * yuv;
-      gl_FragColor = vec4(rgb, 1.0) * alpha;
-    }
-  });
-}
-
-FragmentShaderYUVAVideo::FragmentShaderYUVAVideo()
-    : y_texture_location_(-1),
-      u_texture_location_(-1),
-      v_texture_location_(-1),
-      a_texture_location_(-1),
-      alpha_location_(-1),
-      yuv_matrix_location_(-1),
-      yuv_adj_location_(-1) {
-}
-
-void FragmentShaderYUVAVideo::Init(GLES2Interface* context,
-                                   unsigned program,
-                                   int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "y_texture",  "u_texture", "v_texture",     "a_texture",     "alpha",
-      "yuv_matrix", "yuv_adj",   "ya_clamp_rect", "uv_clamp_rect",
-  };
+      "y_texture", "u_texture",  "v_texture", "uv_texture",    "a_texture",
+      "alpha",     "yuv_matrix", "yuv_adj",   "ya_clamp_rect", "uv_clamp_rect"};
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
@@ -2187,54 +2049,83 @@ void FragmentShaderYUVAVideo::Init(GLES2Interface* context,
   y_texture_location_ = locations[0];
   u_texture_location_ = locations[1];
   v_texture_location_ = locations[2];
-  a_texture_location_ = locations[3];
-  alpha_location_ = locations[4];
-  yuv_matrix_location_ = locations[5];
-  yuv_adj_location_ = locations[6];
-  ya_clamp_rect_location_ = locations[7];
-  uv_clamp_rect_location_ = locations[8];
+  uv_texture_location_ = locations[3];
+  a_texture_location_ = locations[4];
+  alpha_location_ = locations[5];
+  yuv_matrix_location_ = locations[6];
+  yuv_adj_location_ = locations[7];
+  ya_clamp_rect_location_ = locations[8];
+  uv_clamp_rect_location_ = locations[9];
 }
 
-std::string FragmentShaderYUVAVideo::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderYUVAVideo::GetShaderHead() {
-  return SHADER0([]() {
+std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
+                                                    SamplerType sampler) const {
+  std::string head = SHADER0([]() {
     precision mediump float;
     precision mediump int;
     varying TexCoordPrecision vec2 v_yaTexCoord;
     varying TexCoordPrecision vec2 v_uvTexCoord;
     uniform SamplerType y_texture;
-    uniform SamplerType u_texture;
-    uniform SamplerType v_texture;
-    uniform SamplerType a_texture;
     uniform float alpha;
     uniform vec3 yuv_adj;
     uniform mat3 yuv_matrix;
     uniform vec4 ya_clamp_rect;
     uniform vec4 uv_clamp_rect;
   });
-}
+  if (use_nv12_) {
+    head += "  uniform SamplerType uv_texture;\n";
+  } else {
+    head += "  uniform SamplerType u_texture;\n";
+    head += "  uniform SamplerType v_texture;\n";
+  }
+  if (use_alpha_texture_) {
+    head += "  uniform SamplerType a_texture;\n";
+  }
 
-std::string FragmentShaderYUVAVideo::GetShaderBody() {
-  return SHADER0([]() {
+  std::string main = SHADER0([]() {
     void main() {
       vec2 ya_clamped =
           max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));
       float y_raw = TextureLookup(y_texture, ya_clamped).x;
       vec2 uv_clamped =
           max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));
-      float u_unsigned = TextureLookup(u_texture, uv_clamped).x;
-      float v_unsigned = TextureLookup(v_texture, uv_clamped).x;
-      float a_raw = TextureLookup(a_texture, ya_clamped).x;
-      vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
+      vec2 uv_unsigned = GetUV(uv_clamped);
+      vec3 yuv = vec3(y_raw, uv_unsigned) + yuv_adj;
       vec3 rgb = yuv_matrix * yuv;
-      gl_FragColor = vec4(rgb, 1.0) * (alpha * a_raw);
+      gl_FragColor = vec4(rgb, 1.0) * GetAlpha(ya_clamped);
     }
   });
+
+  std::string get_uv;
+  if (use_nv12_) {
+    get_uv = SHADER0([]() {
+      vec2 GetUV(vec2 uv_clamped) {
+        return TextureLookup(uv_texture, uv_clamped).xy;
+      }
+    });
+  } else {
+    get_uv = SHADER0([]() {
+      vec2 GetUV(vec2 uv_clamped) {
+        return vec2(TextureLookup(u_texture, uv_clamped).x,
+                    TextureLookup(v_texture, uv_clamped).x);
+      }
+    });
+  }
+
+  std::string get_alpha;
+  if (use_alpha_texture_) {
+    get_alpha = SHADER0([]() {
+      float GetAlpha(vec2 ya_clamped) {
+        return alpha * TextureLookup(a_texture, ya_clamped).x;
+      }
+    });
+  } else {
+    get_alpha = SHADER0([]() {
+      float GetAlpha(vec2 ya_clamped) { return alpha; }
+    });
+  }
+
+  return FRAGMENT_SHADER(head, get_uv + get_alpha + main);
 }
 
 FragmentShaderColor::FragmentShaderColor() : color_location_(-1) {
