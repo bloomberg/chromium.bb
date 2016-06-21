@@ -139,10 +139,12 @@ class MockFileSystemTest(unittest.TestCase, filesystem_unittest.GenericFileSyste
         # FIXME: Remove this.
         pass
 
-    def test_executable(self):
-        host = MockHost()
-        mock_files = {'foo': '', 'bar': ''}
-        host.filesystem = MockFileSystem(files=mock_files)
-        host.filesystem.make_executable('foo')
-        self.assertEquals(host.filesystem.is_executable('foo'), True)
-        self.assertEquals(host.filesystem.is_executable('bar'), False)
+    def test_file_permissions(self):
+        mock_files = {'foo': '', 'bar': '', 'a': ''}
+        filesystem = MockFileSystem(files=mock_files)
+        filesystem.executable_files.add('foo')
+        filesystem.copymode('foo', 'bar')
+        self.assertEquals(filesystem.executable_files, set(['foo', 'bar']))
+        filesystem.copymode('a', 'bar')
+        filesystem.copymode('a', 'foo')
+        self.assertEquals(filesystem.executable_files, set())

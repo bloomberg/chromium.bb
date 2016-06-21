@@ -276,8 +276,5 @@ class FileSystem(object):
         """Return (dirname + os.sep + basename, '.' + ext)"""
         return os.path.splitext(path)
 
-    def make_executable(self, file_path):
-        os.chmod(file_path, stat.S_IXUSR | stat.S_IXGRP)
-
-    def is_executable(self, file_path):
-        return os.access(file_path, os.X_OK)
+    def copymode(self, orig_path, new_path):
+        shutil.copymode(orig_path, new_path)

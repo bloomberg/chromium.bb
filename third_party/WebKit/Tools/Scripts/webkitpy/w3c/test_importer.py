@@ -384,8 +384,7 @@ class TestImporter(object):
                 else:
                     if not self.import_in_place and not self.options.dry_run:
                         self.filesystem.copyfile(orig_filepath, new_filepath)
-                        if self.filesystem.is_executable(orig_filepath):
-                            self.filesystem.make_executable(new_filepath)
+                        self.filesystem.copymode(orig_filepath, new_filepath)
 
                 copied_files.append(new_filepath.replace(self._webkit_root, ''))
 

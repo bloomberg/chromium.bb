@@ -75,11 +75,11 @@ class MockFileSystem(object):
             return path.rsplit(self.sep, 1)
         return ('', path)
 
-    def is_executable(self, file_path):
-        return file_path in self.executable_files
-
-    def make_executable(self, file_path):
-        self.executable_files.add(file_path)
+    def copymode(self, orig_path, new_path):
+        if orig_path in self.executable_files:
+            self.executable_files.add(new_path)
+        else:
+            self.executable_files.discard(new_path)
 
     def abspath(self, path):
         if os.path.isabs(path):
