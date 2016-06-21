@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/mac/mac_sdk.gni")
-import("//build/symlink.gni")
 import("//third_party/class-dump/class-dump.gni")
 
 if (current_toolchain == host_toolchain) {
@@ -57,9 +56,15 @@ if (current_toolchain == host_toolchain) {
     class_dump_filter = "iPhoneSimulator"
   }
 } else if (current_toolchain == default_toolchain) {
-  binary_symlink("iossim") {
-    # This creates an 'iossim' target in root_build_dir for compatibility
-    # with GYP and the test scripts.
-    binary_label = ":iossim($host_toolchain)"
+  copy("iossim") {
+    deps = [
+      ":iossim($host_toolchain)",
+    ]
+    outputs = [
+      "$root_out_dir/iossim",
+    ]
+    sources = [
+      get_label_info(":iossim($host_toolchain)", "root_out_dir") + "/iossim",
+    ]
   }
 }
