@@ -60,11 +60,42 @@ public class AndroidProtocolHandler {
         return null;
     }
 
+    // Assumes input string is in the format "foo.bar.baz" and strips out the last component.
+    // Returns null on failure.
+    private static String removeOneSuffix(String input) {
+        if (input == null) return null;
+        int lastDotIndex = input.lastIndexOf('.');
+        if (lastDotIndex == -1) return null;
+        return input.substring(0, lastDotIndex);
+    }
+
+    private static Class<?> getClazz(Context context, String packageName, String assetType)
+            throws ClassNotFoundException {
+        return context.getClassLoader().loadClass(packageName + ".R$" + assetType);
+    }
+
     private static int getFieldId(Context context, String assetType, String assetName)
         throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        Class<?> d = context.getClassLoader()
-                .loadClass(context.getPackageName() + ".R$" + assetType);
-        java.lang.reflect.Field field = d.getField(assetName);
+        Class<?> clazz = null;
+        try {
+            clazz = getClazz(context, context.getPackageName(), assetType);
+        } catch (ClassNotFoundException e) {
+            // Strip out components from the end so gradle generated application suffix such as
+            // com.example.my.pkg.pro works. This is by no means bulletproof.
+            String packageName = context.getPackageName();
+            while (clazz == null) {
+                packageName = removeOneSuffix(packageName);
+                // Throw original exception which contains the entire package id.
+                if (packageName == null) throw e;
+                try {
+                    clazz = getClazz(context, packageName, assetType);
+                } catch (ClassNotFoundException ignored) {
+                    // Strip and try again.
+                }
+            }
+        }
+
+        java.lang.reflect.Field field = clazz.getField(assetName);
         int id = field.getInt(null);
         return id;
     }
