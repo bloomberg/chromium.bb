@@ -189,13 +189,10 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   for (size_t i = 0; i < passes_to_delete.size(); ++i)
     render_pass_textures_.erase(passes_to_delete[i]);
 
-  for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
-    if (render_pass_textures_.count(render_passes_in_draw_order[i]->id) == 0) {
-      std::unique_ptr<ScopedResource> texture =
-          ScopedResource::Create(resource_provider_);
-      render_pass_textures_[render_passes_in_draw_order[i]->id] =
-          std::move(texture);
-    }
+  for (auto& pass : render_passes_in_draw_order) {
+    auto& resource = render_pass_textures_[pass->id];
+    if (!resource)
+      resource = ScopedResource::Create(resource_provider_);
   }
 }
 
