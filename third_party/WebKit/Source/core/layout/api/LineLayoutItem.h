@@ -420,9 +420,9 @@ public:
         return m_layoutObject->documentBeingDestroyed();
     }
 
-    void invalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason reason)
+    void slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason reason)
     {
-        return m_layoutObject->invalidateDisplayItemClient(displayItemClient, reason);
+        return m_layoutObject->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(displayItemClient, reason);
     }
 
     LayoutRect visualRect() const

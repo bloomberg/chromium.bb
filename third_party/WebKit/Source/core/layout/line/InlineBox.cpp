@@ -65,8 +65,9 @@ void InlineBox::destroy()
 {
     // We do not need to issue invalidations if the page is being destroyed
     // since these objects will never be repainted.
+    // TODO(crbug.com/619630): Make this fast.
     if (!m_lineLayoutItem.documentBeingDestroyed())
-        m_lineLayoutItem.invalidateDisplayItemClient(*this, PaintInvalidationFull);
+        m_lineLayoutItem.slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*this, PaintInvalidationFull);
     delete this;
 }
 
@@ -384,7 +385,8 @@ LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point) const
 
 void InlineBox::invalidateDisplayItemClientsRecursively()
 {
-    getLineLayoutItem().invalidateDisplayItemClient(*this, PaintInvalidationFull);
+    // TODO(crbug.com/619630): Make this fast.
+    getLineLayoutItem().slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*this, PaintInvalidationFull);
     if (!isInlineFlowBox())
         return;
     for (InlineBox* child = toInlineFlowBox(this)->firstChild(); child; child = child->nextOnLine())

@@ -1236,6 +1236,8 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClient& client, 
     // It's caller's responsibility to ensure enclosingSelfPaintingLayer's needsRepaint is set.
     // Don't set the flag here because getting enclosingSelfPaintLayer has cost and the caller can use
     // various ways (e.g. PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
+    DCHECK(!paintingLayer() || paintingLayer()->needsRepaint());
+
     client.setDisplayItemsUncached();
 
     if (FrameView* frameView = this->frameView())
