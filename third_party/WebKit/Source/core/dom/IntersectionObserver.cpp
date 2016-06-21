@@ -20,7 +20,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/Timer.h"
@@ -168,7 +169,7 @@ LayoutObject* IntersectionObserver::rootLayoutObject() const
 {
     Node* node = rootNode();
     if (node->isDocumentNode())
-        return toDocument(node)->layoutView();
+        return LayoutAPIShim::layoutObjectFrom(toDocument(node)->layoutViewItem());
     return toElement(node)->layoutObject();
 }
 
