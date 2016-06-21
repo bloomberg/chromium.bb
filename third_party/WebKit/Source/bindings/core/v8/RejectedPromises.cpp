@@ -212,7 +212,7 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
         std::unique_ptr<Message>& message = m_reportedAsErrors.at(i);
         if (!message->isCollected() && message->hasPromise(data.GetPromise())) {
             message->makePromiseStrong();
-            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&RejectedPromises::revokeNow, this, passed(std::move(message))));
+            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&RejectedPromises::revokeNow, RefPtr<RejectedPromises>(this), passed(std::move(message))));
             m_reportedAsErrors.remove(i);
             return;
         }
