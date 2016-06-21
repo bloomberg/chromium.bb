@@ -21,10 +21,14 @@ Polymer({
       value: false,
     },
 
+    /**
+     * @type {!Element}
+     * @override
+     */
     sizingTarget: {
       type: Element,
       value: function() {
-        return this.$$('.body-container');
+        return assert(this.$$('.body-container'));
       },
     },
 
