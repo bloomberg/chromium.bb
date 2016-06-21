@@ -854,7 +854,7 @@ void ResourceFetcher::preloadStarted(Resource* resource)
 {
     if (m_preloads && m_preloads->contains(resource))
         return;
-    TRACE_EVENT_ASYNC_STEP_INTO0("blink.net", "Resource", resource, "Preload");
+    TRACE_EVENT_ASYNC_STEP_INTO0("blink.net", "Resource", resource->identifier(), "Preload");
     resource->increasePreloadCount();
 
     if (!m_preloads)
@@ -900,7 +900,7 @@ ArchiveResource* ResourceFetcher::createArchive(Resource* resource)
 
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength, DidFinishLoadingReason finishReason)
 {
-    TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
+    TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource->identifier());
     DCHECK(resource);
 
     // When loading a multipart resource, make the loader non-block when
@@ -929,7 +929,7 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
 
 void ResourceFetcher::didFailLoading(Resource* resource, const ResourceError& error)
 {
-    TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
+    TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource->identifier());
     removeResourceLoader(resource->loader());
     m_resourceTimingInfoMap.take(const_cast<Resource*>(resource));
     bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
@@ -1082,7 +1082,7 @@ void ResourceFetcher::updateAllImageResourcePriorities()
             continue;
 
         resource->didChangePriority(resourceLoadPriority, resourcePriority.intraPriorityValue);
-        TRACE_EVENT_ASYNC_STEP_INTO1("blink.net", "Resource", resource, "ChangePriority", "priority", resourceLoadPriority);
+        TRACE_EVENT_ASYNC_STEP_INTO1("blink.net", "Resource", resource->identifier(), "ChangePriority", "priority", resourceLoadPriority);
         context().dispatchDidChangeResourcePriority(resource->identifier(), resourceLoadPriority, resourcePriority.intraPriorityValue);
     }
 }
