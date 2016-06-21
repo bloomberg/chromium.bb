@@ -19,6 +19,12 @@
     public *;
 }
 
+# This is the main entry point for APIs. It is kept to make developing with
+# unreleased Android easier.
+-keep class com.android.webview.chromium.WebViewChromium {
+  public *;
+}
+
 # Keep JNI interfaces.
 -keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
   @**.AccessedByNative <fields>;
@@ -74,25 +80,9 @@
 }
 -dontnote com.android.webview.chromium.PlatformServiceBridgeGoogle
 
-# Keep framework support for SmartClip.
--keep class com.android.webview.chromium.WebViewChromium {
-  public void extractSmartClipData(int,int,int,int);
-  public void setSmartClipResultHandler(android.os.Handler);
-}
-
 # AwDebug is accessed by reflection.
 -keep class org.chromium.android_webview.AwDebug {
   public static boolean dumpWithoutCrashing(...);
-}
-
-#TODO(hush): remove after N release. crbug.com/543272, crbug.com/584789.
-#TODO(hush): Also remove getHandler and findFocus when removing others here
-#            and add @Override to these methods.
--keep class com.android.webview.chromium.WebViewChromium {
-  public void onActivityResult(int,int,android.content.Intent);
-  public boolean onDragEvent(android.view.DragEvent);
-  public android.os.Handler getHandler(android.os.Handler);
-  public android.view.View findFocus(android.view.View);
 }
 
 #TODO(hush): remove after N release. crbug.com/546762
