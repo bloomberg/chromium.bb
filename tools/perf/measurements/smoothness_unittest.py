@@ -99,9 +99,9 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
         'DELAY(cc.DrawAndSwap;0.012000;alternating)',
         'DELAY(gpu.PresentingFrame;0.012000;static)',
     ])
-    tracing_controller = tab.browser.platform.tracing_controller
+    config = tab.browser.platform.tracing_controller.config
     actual_synthetic_delay = (
-        tracing_controller.config.tracing_category_filter.synthetic_delays)
+        config.chrome_trace_config.tracing_category_filter.synthetic_delays)
 
     if expected_synthetic_delay != actual_synthetic_delay:
       sys.stderr.write('Expected category filter: %s\n' %
