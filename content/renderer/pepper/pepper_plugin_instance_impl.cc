@@ -1677,6 +1677,9 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
     bound_graphics_2d_platform_->set_viewport_to_dip_scale(
         viewport_to_dip_scale_);
 
+  module_->renderer_ppapi_host()->set_viewport_to_dip_scale(
+      viewport_to_dip_scale_);
+
   // During the first view update, initialize the throttler.
   if (!sent_initial_did_change_view_) {
     if (is_flash_plugin_ && RenderThread::Get()) {

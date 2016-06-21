@@ -104,6 +104,11 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
       const override;
   GURL GetDocumentURL(PP_Instance pp_instance) const override;
 
+  void set_viewport_to_dip_scale(float viewport_to_dip_scale) {
+    DCHECK_LT(0, viewport_to_dip_scale_);
+    viewport_to_dip_scale_ = viewport_to_dip_scale;
+  }
+
  private:
   RendererPpapiHostImpl(PluginModule* module,
                         ppapi::proxy::HostDispatcher* dispatcher,
@@ -135,6 +140,9 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
 
   // Whether this is a host for external plugins.
   bool is_external_plugin_host_;
+
+  // The scale between the viewport and dip.
+  float viewport_to_dip_scale_ = 1.0f;
 
   DISALLOW_COPY_AND_ASSIGN(RendererPpapiHostImpl);
 };
