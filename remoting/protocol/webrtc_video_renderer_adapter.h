@@ -18,11 +18,8 @@ class SingleThreadTaskRunner;
 
 namespace webrtc {
 class DesktopFrame;
+class VideoFrameBuffer;
 }  // namespace webrtc
-
-namespace cricket {
-class VideoFrame;
-}  // namespace cricket
 
 namespace remoting {
 namespace protocol {
@@ -43,7 +40,7 @@ class WebrtcVideoRendererAdapter
   void OnFrame(const cricket::VideoFrame& frame) override;
 
  private:
-  void HandleFrameOnMainThread(std::unique_ptr<cricket::VideoFrame> frame);
+  void HandleFrameOnMainThread(scoped_refptr<webrtc::VideoFrameBuffer> frame);
   void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame);
 
   scoped_refptr<webrtc::MediaStreamInterface> media_stream_;

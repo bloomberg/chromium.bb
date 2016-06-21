@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "remoting/protocol/frame_consumer.h"
+#include "third_party/libyuv/include/libyuv/convert_argb.h"
 #include "third_party/libyuv/include/libyuv/video_common.h"
 #include "third_party/webrtc/media/base/videoframe.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -26,13 +27,17 @@ namespace protocol {
 namespace {
 
 std::unique_ptr<webrtc::DesktopFrame> ConvertYuvToRgb(
-    std::unique_ptr<cricket::VideoFrame> yuv_frame,
+    scoped_refptr<webrtc::VideoFrameBuffer> yuv_frame,
     std::unique_ptr<webrtc::DesktopFrame> rgb_frame,
     uint32_t format) {
-  yuv_frame->ConvertToRgbBuffer(
-      format, rgb_frame->data(),
-      std::abs(rgb_frame->stride()) * rgb_frame->size().height(),
-      rgb_frame->stride());
+  DCHECK(rgb_frame->size().equals(
+      webrtc::DesktopSize(yuv_frame->width(), yuv_frame->height())));
+  libyuv::I420ToARGB(yuv_frame->DataY(), yuv_frame->StrideY(),
+                     yuv_frame->DataU(), yuv_frame->StrideU(),
+                     yuv_frame->DataV(), yuv_frame->StrideV(),
+                     rgb_frame->data(), rgb_frame->stride(), yuv_frame->width(),
+                     yuv_frame->height());
+
   rgb_frame->mutable_updated_region()->AddRect(
       webrtc::DesktopRect::MakeSize(rgb_frame->size()));
   return rgb_frame;
@@ -73,26 +78,27 @@ WebrtcVideoRendererAdapter::~WebrtcVideoRendererAdapter() {
 }
 
 void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
+  if (static_cast<uint64_t>(frame.timestamp_us()) >= rtc::TimeMicros()) {
+    // The host sets playout delay to 0, so all incoming frames are expected to
+    // be rendered as so as they are received.
+    LOG(WARNING) << "Received frame with playout delay greater than 0.";
+  }
+
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&WebrtcVideoRendererAdapter::HandleFrameOnMainThread,
                  weak_factory_.GetWeakPtr(),
-                 base::Passed(base::WrapUnique(frame.Copy()))));
+                 scoped_refptr<webrtc::VideoFrameBuffer>(
+                     frame.video_frame_buffer().get())));
 }
 
 void WebrtcVideoRendererAdapter::HandleFrameOnMainThread(
-    std::unique_ptr<cricket::VideoFrame> frame) {
+    scoped_refptr<webrtc::VideoFrameBuffer> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<webrtc::DesktopFrame> rgb_frame =
       frame_consumer_->AllocateFrame(
           webrtc::DesktopSize(frame->width(), frame->height()));
-
-  if (static_cast<uint64_t>(frame->timestamp_us()) >= rtc::TimeMicros()) {
-    // The host sets playout delay to 0, so all incoming frames are expected to
-    // be rendered as so as they are received.
-    LOG(WARNING) << "Received frame with playout delay greater than 0.";
-  }
 
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(false).get(), FROM_HERE,
