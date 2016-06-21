@@ -549,6 +549,11 @@ void MessagePumpForGpu::ScheduleDelayedWork(
   delayed_work_time_ = delayed_work_time;
 }
 
+bool MessagePumpForGpu::WasSignaled() {
+  // If |event_| was set this would reset it back to unset state.
+  return WaitForSingleObject(event_, 0) == WAIT_OBJECT_0;
+}
+
 //-----------------------------------------------------------------------------
 // MessagePumpForGpu private:
 
