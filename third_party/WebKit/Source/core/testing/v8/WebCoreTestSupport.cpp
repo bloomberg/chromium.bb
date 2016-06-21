@@ -59,10 +59,6 @@ v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context)
 
 void injectInternalsObject(v8::Local<v8::Context> context)
 {
-    if (!s_originalInstallOriginTrialsFunction) {
-        s_originalInstallOriginTrialsFunction = setInstallOriginTrialsFunction(installOriginTrialsForTests);
-    }
-
     ScriptState* scriptState = ScriptState::from(context);
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Object> global = scriptState->context()->Global();
@@ -71,6 +67,11 @@ void injectInternalsObject(v8::Local<v8::Context> context)
         return;
 
     v8CallOrCrash(global->Set(scriptState->context(), v8AtomicString(scriptState->isolate(), Internals::internalsId), internals));
+
+    // Set origin trials installation function to |installOriginTrialsForTests|
+    if (!s_originalInstallOriginTrialsFunction) {
+        s_originalInstallOriginTrialsFunction = setInstallOriginTrialsFunction(installOriginTrialsForTests);
+    }
 
     // If Origin Trials have been registered before the internals object was ready,
     // then inject them into the context now
