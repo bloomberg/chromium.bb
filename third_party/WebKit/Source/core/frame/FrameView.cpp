@@ -955,27 +955,34 @@ void FrameView::layout()
 
     Document* document = m_frame->document();
 
-    // If the layout view was marked as needing layout after we added items in the subtree roots we need
-    // to clear the roots and do the layout from the layoutView.
-    if (layoutViewItem().needsLayout())
-        clearLayoutSubtreeRootsAndMarkContainingBlocks();
-    layoutViewItem().clearHitTestCache();
-
-    bool inSubtreeLayout = isSubtreeLayout();
-
-    // FIXME: The notion of a single root for layout is no longer applicable. Remove or update this code. crbug.com/460596
-    LayoutItem rootForThisLayout(inSubtreeLayout ? m_layoutSubtreeRootList.randomRoot() : layoutView());
-    if (!rootForThisLayout) {
-        // FIXME: Do we need to set m_size here?
-        ASSERT_NOT_REACHED();
-        return;
-    }
+    // TODO(crbug.com/460956): The notion of a single root for layout is no longer applicable. Remove or update this code.
+    LayoutObject* rootForThisLayout = layoutView();
 
     FontCachePurgePreventer fontCachePurgePreventer;
     {
         TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
-
         m_nestedLayoutCount++;
+
+        updateCounters();
+
+        // If the layout view was marked as needing layout after we added items in the subtree roots we need
+        // to clear the roots and do the layout from the layoutView.
+        if (layoutViewItem().needsLayout())
+            clearLayoutSubtreeRootsAndMarkContainingBlocks();
+        layoutViewItem().clearHitTestCache();
+
+        bool inSubtreeLayout = isSubtreeLayout();
+
+        // TODO(crbug.com/460956): The notion of a single root for layout is no longer applicable. Remove or update this code.
+        if (inSubtreeLayout)
+            rootForThisLayout = m_layoutSubtreeRootList.randomRoot();
+
+        if (!rootForThisLayout) {
+            // FIXME: Do we need to set m_size here?
+            NOTREACHED();
+            return;
+        }
+
         if (!inSubtreeLayout) {
             clearLayoutSubtreeRootsAndMarkContainingBlocks();
             Node* body = document->body();
@@ -987,10 +994,7 @@ void FrameView::layout()
                         body->layoutObject()->setChildNeedsLayout();
                 }
             }
-        }
-        updateCounters();
 
-        if (!inSubtreeLayout) {
             ScrollbarMode hMode;
             ScrollbarMode vMode;
             calculateScrollbarModes(hMode, vMode);
@@ -1045,12 +1049,11 @@ void FrameView::layout()
 
         performLayout(inSubtreeLayout);
 
+        if (!inSubtreeLayout && !document->printing())
+            adjustViewSizeAndLayout();
+
         ASSERT(m_layoutSubtreeRootList.isEmpty());
     } // Reset m_layoutSchedulingEnabled to its previous value.
-    checkDoesNotNeedLayout();
-
-    if (!inSubtreeLayout && !document->printing())
-        adjustViewSizeAndLayout();
     checkDoesNotNeedLayout();
 
     m_frameTimingRequestsDirty = true;
