@@ -164,6 +164,7 @@ void PingLoader::dispose()
         m_loader->cancel();
         m_loader = nullptr;
     }
+    m_timeout.stop();
     m_keepAlive.clear();
 }
 
