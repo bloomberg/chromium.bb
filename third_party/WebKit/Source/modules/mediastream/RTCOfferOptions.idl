@@ -6,4 +6,9 @@
 
 dictionary RTCOfferOptions : RTCOfferAnswerOptions {
     boolean iceRestart = false;
+
+    // TODO(guidou): Deprecate the offerToReceive fields depending on the
+    // outcome of https://github.com/w3c/webrtc-pc/issues/709
+    long offerToReceiveVideo;
+    long offerToReceiveAudio;
 };

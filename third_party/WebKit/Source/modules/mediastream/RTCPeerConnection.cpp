@@ -91,6 +91,7 @@
 #include "public/platform/WebRTCVoidRequest.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
+#include <algorithm>
 #include <memory>
 
 namespace blink {
@@ -141,7 +142,8 @@ bool isIceCandidateMissingSdp(const RTCIceCandidateInitOrRTCIceCandidate& candid
 WebRTCOfferOptions convertToWebRTCOfferOptions(const RTCOfferOptions& options)
 {
     return WebRTCOfferOptions(RTCOfferOptionsPlatform::create(
-        -1, -1,
+        options.hasOfferToReceiveVideo() ? std::max(options.offerToReceiveVideo(), 0) : -1,
+        options.hasOfferToReceiveAudio() ? std::max(options.offerToReceiveAudio(), 0) : -1,
         options.hasVoiceActivityDetection() ? options.voiceActivityDetection() : true,
         options.hasIceRestart() ? options.iceRestart() : false));
 }
