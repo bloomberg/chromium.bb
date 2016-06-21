@@ -396,8 +396,7 @@ public class NewTabPageView extends FrameLayout
             });
             initializeSearchBoxRecyclerViewScrollHandling();
             mRecyclerView.addItemDecoration(new CardItemDecoration(getContext()));
-            CardsLayoutOperations.updateSnippetsHeaderDisplay(mRecyclerView,
-                    mNewTabPageLayout.getPaddingTop());
+            mRecyclerView.updateSnippetsHeaderDisplay(mNewTabPageLayout.getPaddingTop());
         } else {
             initializeSearchBoxScrollHandling();
         }
@@ -475,9 +474,8 @@ public class NewTabPageView extends FrameLayout
                     mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
                 }
                 updateSearchBoxOnScroll();
-                CardsLayoutOperations.updatePeekingCard(mRecyclerView, getHeight());
-                CardsLayoutOperations.updateSnippetsHeaderDisplay(mRecyclerView,
-                        mNewTabPageLayout.getPaddingTop());
+                mRecyclerView.updatePeekingCard();
+                mRecyclerView.updateSnippetsHeaderDisplay(mNewTabPageLayout.getPaddingTop());
             }
         });
 
@@ -815,7 +813,7 @@ public class NewTabPageView extends FrameLayout
         updateSearchBoxOnScroll();
 
         if (mUseCardsUi) {
-            CardsLayoutOperations.updatePeekingCard(mRecyclerView, getHeight());
+            mRecyclerView.updatePeekingCard();
         }
     }
 
@@ -1080,7 +1078,7 @@ public class NewTabPageView extends FrameLayout
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (mUseCardsUi) {
-            CardsLayoutOperations.updatePeekingCard(mRecyclerView, getHeight());
+            mRecyclerView.updatePeekingCard();
         }
     }
 

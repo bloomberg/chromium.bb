@@ -5,13 +5,11 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 
 import org.chromium.chrome.browser.ntp.MostVisitedLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
-import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderViewHolder;
 
 /**
  * This is a class to organise the various layout operations of the New Tab Page while using the
@@ -19,47 +17,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderViewHolder;
  * behaviour.
  */
 public class CardsLayoutOperations {
-    /**
-     * Refresh the peeking state of the first card.
-     * @param recyclerView The NewTabPageRecyclerView that contains the cards.
-     * @param viewportHeight The height of the containing view, to calculate when the transition
-     *          should start.
-     */
-    public static void updatePeekingCard(
-            final NewTabPageRecyclerView recyclerView, int viewportHeight) {
-        // Get the first snippet that could display to make the peeking card transition.
-        int firstCardIndex = 2; // 0 => above-the-fold, 1 => header, 2 => card
-        RecyclerView.ViewHolder viewHolder =
-                recyclerView.findViewHolderForAdapterPosition(firstCardIndex);
-
-        if (viewHolder == null || !(viewHolder instanceof CardViewHolder)
-                || !viewHolder.itemView.isShown()) {
-            return;
-        }
-
-        ((CardViewHolder) viewHolder).updatePeek(viewportHeight);
-    }
-
-    /**
-     * Show the snippets header when the user scrolls down and snippet articles starts reaching the
-     * top of the screen.
-     * @param recyclerView The NewTabPageRecyclerView that contains the header card.
-     * @param omniBoxHeight The height of the omnibox displayed over the NTP, we use this to offset
-     *          the start point of the transition.
-     */
-    public static void updateSnippetsHeaderDisplay(NewTabPageRecyclerView recyclerView,
-            int omniBoxHeight) {
-        // Get the snippet header view. It is always at position 1
-        ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(1);
-
-        // Start doing the calculations if the snippet header is currently shown on screen.
-        if (viewHolder == null || !(viewHolder instanceof SnippetHeaderViewHolder)) return;
-
-        ((SnippetHeaderViewHolder) viewHolder).onScrolled(omniBoxHeight);
-
-        // Update the space at the bottom, which needs to know about the height of the header.
-        recyclerView.refreshBottomSpacing();
-    }
 
     /**
      * Snaps the scroll point to the top of the screen, the top of most visited or to articles

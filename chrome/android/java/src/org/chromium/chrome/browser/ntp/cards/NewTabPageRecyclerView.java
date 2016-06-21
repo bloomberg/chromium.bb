@@ -17,6 +17,7 @@ import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderViewHolder;
 
 /**
  * Simple wrapper on top of a RecyclerView that will acquire focus when tapped.  Ensures the
@@ -177,6 +178,59 @@ public class NewTabPageRecyclerView extends RecyclerView {
         }
 
         return Math.max(MIN_BOTTOM_SPACING, bottomSpacing);
+    }
+
+    /**
+     * Refresh the peeking state of the first card.
+     */
+    public void updatePeekingCard() {
+        CardViewHolder firstCard = findFirstCard();
+        if (firstCard == null) return;
+
+        if (firstCard.itemView.isShown()) {
+            firstCard.updatePeek(getHeight());
+        }
+    }
+
+    /**
+     * Finds the first card in this RecyclerView.
+     * @return The viewholder for the first card or null if no card is available.
+     */
+    private CardViewHolder findFirstCard() {
+        int firstCardIndex = 2; // 0 => above-the-fold, 1 => header, 2 => card
+        ViewHolder viewHolder = findViewHolderForAdapterPosition(firstCardIndex);
+        if (!(viewHolder instanceof CardViewHolder)) return null;
+
+        return (CardViewHolder) viewHolder;
+    }
+
+    /**
+     * Show the snippets header when the user scrolls down and snippet articles starts reaching the
+     * top of the screen.
+     * @param omniBoxHeight The height of the omnibox displayed over the NTP, we use this to offset
+     *          the start point of the transition.
+     */
+    public void updateSnippetsHeaderDisplay(int omniBoxHeight) {
+        SnippetHeaderViewHolder header = findHeaderView();
+        if (header == null) return;
+
+        // Start doing the calculations if the snippet header is currently shown on screen.
+        header.onScrolled(omniBoxHeight);
+
+        // Update the space at the bottom, which needs to know about the height of the header.
+        refreshBottomSpacing();
+    }
+
+    /**
+     * Finds the header view.
+     * @return The viewholder of the header or null, if it is not present.
+     */
+    private SnippetHeaderViewHolder findHeaderView() {
+        // Get the snippet header view. It is always at position 1
+        ViewHolder viewHolder = findViewHolderForAdapterPosition(1);
+        if (!(viewHolder instanceof SnippetHeaderViewHolder)) return null;
+
+        return (SnippetHeaderViewHolder) viewHolder;
     }
 
     /** Called when an item is in the process of being removed from the view. */

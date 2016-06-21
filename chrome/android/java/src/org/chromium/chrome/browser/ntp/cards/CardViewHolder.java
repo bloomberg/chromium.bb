@@ -92,8 +92,8 @@ public class CardViewHolder extends NewTabPageViewHolder {
     /**
      * Change the width, padding and child opacity of the card to give a smooth transition as the
      * user scrolls.
-     * @param viewportHeight The height of the containing view, to calculate when the transition
-     *          should start.
+     * @param viewportHeight The height of the containing viewport, i.e. the area inside the
+     *          containing view that is available for drawing.
      */
     public void updatePeek(int viewportHeight) {
         // The peeking card's resting position is |mMaxPeekPadding| from the bottom of the screen
