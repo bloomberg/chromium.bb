@@ -1333,8 +1333,9 @@ crbug.com/571710 http/tests/inspector/search/source-frame-search.html [ Timeout 
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
-crbug.com/621915 [ Mac10.9 ] svg/custom/createImageElement2.xhtml [ Pass Failure ]
-crbug.com/621915 [ Mac10.9 ] svg/custom/pointer-events-image.svg [ Pass Failure ]
+crbug.com/621915 svg/custom/createImageElement2.xhtml [ Pass Failure ]
+crbug.com/621915 svg/custom/pointer-events-image.svg [ Pass Failure ]
+crbug.com/621915 svg/custom/pointer-events-image-css-transform.svg [ Pass Failure ]
 
 crbug.com/602193 inspector/extensions/extensions-resources.html [ Pass Failure ]
 
@@ -1495,7 +1496,7 @@ crbug.com/487344 media/video-no-audio.html [ Failure ]
 crbug.com/487344 media/video-paint-invalidation.html [ Failure ]
 
 # Failed expectation after auto-rebaseline.
-crbug.com/617033 [ Mac10.11 Retina ] tables/mozilla/bugs/bug30692.html [ Failure ]
+crbug.com/617033 [ Mac10.11 Retina ] tables/mozilla/bugs/bug30692.html [ NeedsRebaseline ]
 
 crbug.com/614197 [ Mac ] http/tests/media/pdf-served-as-pdf.html [ Pass Timeout ]
 
@@ -1517,4 +1518,9 @@ crbug.com/484632 css3/flexbox/stretch-input-in-column.html [ Failure ]
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
 crbug.com/621840 [ Win7 ] svg/hixie/perf/005.xml [ Pass Timeout ]
-crbug.com/621892 [ Win7 Linux ] css3/filters/effect-hue-rotate-hw.html [ Failure ]
+
+crbug.com/621892 css3/filters/effect-brightness-clamping-hw.html [ Pass Failure ]
+crbug.com/621892 css3/filters/effect-brightness-hw.html [ Pass Failure ]
+crbug.com/621892 css3/filters/effect-hue-rotate-hw.html [ Pass Failure ]
+crbug.com/621892 css3/filters/effect-saturate-hw.html [ Pass Failure ]
+crbug.com/621892 css3/filters/effect-sepia-hw.html [ Pass Failure ]
