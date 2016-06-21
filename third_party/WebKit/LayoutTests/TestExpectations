@@ -1511,9 +1511,6 @@ crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Fa
 
 crbug.com/614509 [ Win ] inspector/elements/styles-2/pseudo-elements.html [ Pass Timeout ]
 
-crbug.com/618399 fast/js/regress/to-int32-boolean.html [ Pass Timeout ]
-
-
 crbug.com/484632 css3/flexbox/stretch-input-in-column.html [ Failure ]
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
