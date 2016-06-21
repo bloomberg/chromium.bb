@@ -200,9 +200,6 @@ class VIEWS_EXPORT Textfield : public View,
   // Set the accessible name of the text field.
   void SetAccessibleName(const base::string16& name);
 
-  // Performs the action associated with the specified command id.
-  void ExecuteCommand(int command_id);
-
   // Returns whether there is a drag operation originating from the textfield.
   bool HasTextBeingDragged();
 
@@ -319,6 +316,9 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Get the text from the selection clipboard.
   virtual base::string16 GetSelectionClipboardText() const;
+
+  // Executes the given text editing command.
+  virtual void ExecuteEditCommand(int command_id);
 
  private:
   friend class TextfieldTestApi;

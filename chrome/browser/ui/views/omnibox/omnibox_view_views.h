@@ -179,6 +179,8 @@ class OmniboxViewViews
   bool IsCommandIdEnabled(int command_id) const override;
   base::string16 GetSelectionClipboardText() const override;
   void DoInsertChar(base::char16 ch) override;
+  bool IsEditCommandEnabled(int command_id) const override;
+  void ExecuteEditCommand(int command_id) override;
 
   // chromeos::input_method::InputMethodManager::CandidateWindowObserver:
 #if defined(OS_CHROMEOS)
