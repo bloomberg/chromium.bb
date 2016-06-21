@@ -13,14 +13,18 @@ import("//build/config/mac/symbols.gni")
 
 assert(host_os == "mac")
 
+import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/toolchain/concurrent_links.gni")
 
 if (use_goma) {
-  goma_prefix = "$goma_dir/gomacc "
+  assert(cc_wrapper == "", "Goma and cc_wrapper can't be used together.")
+  compiler_prefix = "$goma_dir/gomacc "
+} else if (cc_wrapper != "") {
+  compiler_prefix = cc_wrapper + " "
 } else {
-  goma_prefix = ""
+  compiler_prefix = ""
 }
 
 if (current_toolchain == default_toolchain) {
@@ -352,8 +356,8 @@ mac_toolchain("clang_arm") {
   toolchain_os = "mac"
   prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                        root_build_dir)
-  cc = "${goma_prefix}$prefix/clang"
-  cxx = "${goma_prefix}$prefix/clang++"
+  cc = "${compiler_prefix}$prefix/clang"
+  cxx = "${compiler_prefix}$prefix/clang++"
   ld = cxx
   is_clang = true
 }
@@ -366,8 +370,8 @@ mac_toolchain("ios_clang_arm") {
   # shipped w/ XCode instead of the one pulled from upstream.
   prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                        root_build_dir)
-  cc = "${goma_prefix}$prefix/clang"
-  cxx = "${goma_prefix}$prefix/clang++"
+  cc = "${compiler_prefix}$prefix/clang"
+  cxx = "${compiler_prefix}$prefix/clang++"
   ld = cxx
   is_clang = true
 }
@@ -380,8 +384,8 @@ mac_toolchain("ios_clang_armv7") {
   # shipped w/ XCode instead of the one pulled from upstream.
   prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                        root_build_dir)
-  cc = "${goma_prefix}$prefix/clang"
-  cxx = "${goma_prefix}$prefix/clang++"
+  cc = "${compiler_prefix}$prefix/clang"
+  cxx = "${compiler_prefix}$prefix/clang++"
   ld = cxx
   is_clang = true
 }
@@ -394,8 +398,8 @@ mac_toolchain("ios_clang_arm64") {
   # shipped w/ XCode instead of the one pulled from upstream.
   prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                        root_build_dir)
-  cc = "${goma_prefix}$prefix/clang"
-  cxx = "${goma_prefix}$prefix/clang++"
+  cc = "${compiler_prefix}$prefix/clang"
+  cxx = "${compiler_prefix}$prefix/clang++"
   ld = cxx
   is_clang = true
 }
@@ -403,8 +407,8 @@ mac_toolchain("ios_clang_arm64") {
 mac_toolchain("arm") {
   toolchain_cpu = "arm"
   toolchain_os = "mac"
-  cc = "${goma_prefix}/gcc"
-  cxx = "${goma_prefix}/g++"
+  cc = "${compiler_prefix}/gcc"
+  cxx = "${compiler_prefix}/g++"
   ld = cxx
   is_clang = false
 }
@@ -414,8 +418,8 @@ mac_toolchain("clang_x64") {
   toolchain_os = "mac"
   prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                        root_build_dir)
-  cc = "${goma_prefix}$prefix/clang"
-  cxx = "${goma_prefix}$prefix/clang++"
+  cc = "${compiler_prefix}$prefix/clang"
+  cxx = "${compiler_prefix}$prefix/clang++"
   ld = cxx
   is_clang = true
 }
@@ -423,8 +427,8 @@ mac_toolchain("clang_x64") {
 mac_toolchain("x64") {
   toolchain_cpu = "x64"
   toolchain_os = "mac"
-  cc = "${goma_prefix}/gcc"
-  cxx = "${goma_prefix}/g++"
+  cc = "${compiler_prefix}/gcc"
+  cxx = "${compiler_prefix}/g++"
   ld = cxx
   is_clang = false
 }
