@@ -4,6 +4,8 @@
 
 source_set("browser") {
   sources = [
+    "content_ruleset_distributor.cc",
+    "content_ruleset_distributor.h",
     "content_subresource_filter_driver.cc",
     "content_subresource_filter_driver.h",
     "content_subresource_filter_driver_factory.cc",
@@ -16,6 +18,23 @@ source_set("browser") {
     "//components/subresource_filter/core/common",
     "//content/public/browser",
     "//content/public/common",
+    "//ipc",
     "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "content_ruleset_distributor_unittest.cc",
+  ]
+  deps = [
+    ":browser",
+    "//base/test:test_support",
+    "//components/subresource_filter/content/common",
+    "//content/test:test_support",
+    "//ipc",
+    "//ipc:test_support",
+    "//testing/gtest",
   ]
 }

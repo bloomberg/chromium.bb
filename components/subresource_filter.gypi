@@ -61,6 +61,8 @@
         # Note: sources list duplicated in GN build.
         'subresource_filter/core/common/activation_state.cc',
         'subresource_filter/core/common/activation_state.h',
+        'subresource_filter/core/common/memory_mapped_ruleset.cc',
+        'subresource_filter/core/common/memory_mapped_ruleset.h',
       ],
     },
   ],
@@ -94,6 +96,7 @@
             '../base/base.gyp:base',
             '../content/content.gyp:content_common',
             '../content/content.gyp:content_renderer',
+            '../ipc/ipc.gyp:ipc',
             'subresource_filter_content_common',
             'subresource_filter_core_common',
           ],
@@ -102,6 +105,8 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
+            'subresource_filter/content/renderer/ruleset_dealer.cc',
+            'subresource_filter/content/renderer/ruleset_dealer.h',
             'subresource_filter/content/renderer/subresource_filter_agent.cc',
             'subresource_filter/content/renderer/subresource_filter_agent.h',
           ],
@@ -114,6 +119,7 @@
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
+            '../ipc/ipc.gyp:ipc',
             'subresource_filter_content_common',
             'subresource_filter_core_browser',
             'subresource_filter_core_common',
@@ -124,6 +130,8 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
+            'subresource_filter/content/browser/content_ruleset_distributor.cc',
+            'subresource_filter/content/browser/content_ruleset_distributor.h',
             'subresource_filter/content/browser/content_subresource_filter_driver.cc',
             'subresource_filter/content/browser/content_subresource_filter_driver.h',
             'subresource_filter/content/browser/content_subresource_filter_driver_factory.cc',

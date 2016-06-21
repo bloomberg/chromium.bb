@@ -4,6 +4,8 @@
 
 source_set("renderer") {
   sources = [
+    "ruleset_dealer.cc",
+    "ruleset_dealer.h",
     "subresource_filter_agent.cc",
     "subresource_filter_agent.h",
   ]
@@ -13,5 +15,6 @@ source_set("renderer") {
     "//components/subresource_filter/core/common",
     "//content/public/common",
     "//content/public/renderer",
+    "//ipc",
   ]
 }

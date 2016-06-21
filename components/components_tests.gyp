@@ -785,6 +785,9 @@
       'storage_monitor/storage_monitor_unittest.cc',
       'storage_monitor/storage_monitor_win_unittest.cc',
     ],
+    'subresource_filter_content_browser_unittest_sources': [
+      'subresource_filter/content/browser/content_ruleset_distributor_unittest.cc',
+    ],
     'subresource_filter_core_browser_unittest_sources': [
       'subresource_filter/core/browser/ruleset_service_unittest.cc',
       'subresource_filter/core/browser/subresource_filter_features_unittest.cc',
@@ -1291,6 +1294,7 @@
             '<@(safe_json_unittest_sources)',
             '<@(scheduler_unittest_sources)',
             '<@(storage_monitor_unittest_sources)',
+            '<@(subresource_filter_content_browser_unittest_sources)',
             '<@(tracing_unittest_sources)',
             '<@(visitedlink_unittest_sources)',
             '<@(wallpaper_unittest_sources)',
@@ -1338,6 +1342,8 @@
             'components.gyp:sessions_content',
             'components.gyp:storage_monitor',
             'components.gyp:storage_monitor_test_support',
+            'components.gyp:subresource_filter_content_browser',
+            'components.gyp:subresource_filter_content_common',
             'components.gyp:test_database_manager',
             'components.gyp:url_matcher',
             'components.gyp:visitedlink_browser',

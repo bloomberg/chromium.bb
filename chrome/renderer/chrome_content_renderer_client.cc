@@ -76,6 +76,7 @@
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
+#include "components/subresource_filter/content/renderer/ruleset_dealer.h"
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
@@ -357,6 +358,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
 #endif
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
+  subresource_filter_ruleset_dealer_.reset(
+      new subresource_filter::RulesetDealer());
 #if defined(ENABLE_WEBRTC)
   webrtc_logging_message_filter_ = new WebRtcLoggingMessageFilter(
       thread->GetIOMessageLoopProxy());
@@ -368,6 +371,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
   thread->AddObserver(visited_link_slave_.get());
   thread->AddObserver(prerender_dispatcher_.get());
+  thread->AddObserver(subresource_filter_ruleset_dealer_.get());
   thread->AddObserver(SearchBouncer::GetInstance());
 
 #if defined(ENABLE_WEBRTC)
@@ -509,7 +513,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new AutofillAgent(render_frame, password_autofill_agent,
                     password_generation_agent);
 
-  new subresource_filter::SubresourceFilterAgent(render_frame);
+  new subresource_filter::SubresourceFilterAgent(
+      render_frame, subresource_filter_ruleset_dealer_.get());
 }
 
 void ChromeContentRendererClient::RenderViewCreated(

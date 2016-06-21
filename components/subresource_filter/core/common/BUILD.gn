@@ -6,6 +6,8 @@ source_set("common") {
   sources = [
     "activation_state.cc",
     "activation_state.h",
+    "memory_mapped_ruleset.cc",
+    "memory_mapped_ruleset.h",
   ]
   deps = [
     "//base",

@@ -19,9 +19,8 @@ void ContentSubresourceFilterDriver::ActivateForProvisionalLoad(
     ActivationState activation_state) {
   // Must use legacy IPC to ensure the activation message arrives in-order, i.e.
   // before the load is committed on the renderer side.
-  render_frame_host_->Send(
-      new SubresourceFilterAgentMsg_ActivateForProvisionalLoad(
-          render_frame_host_->GetRoutingID(), activation_state));
+  render_frame_host_->Send(new SubresourceFilterMsg_ActivateForProvisionalLoad(
+      render_frame_host_->GetRoutingID(), activation_state));
 }
 
 }  // namespace subresource_filter

@@ -11,13 +11,16 @@
 
 namespace subresource_filter {
 
+class RulesetDealer;
+
 // The renderer-side agent of the ContentSubresourceFilterDriver. There is one
 // instance per RenderFrame, responsible for setting up the subresource filter
 // for the ongoing provisional document load in the frame when instructed to do
 // so by the driver.
 class SubresourceFilterAgent : public content::RenderFrameObserver {
  public:
-  explicit SubresourceFilterAgent(content::RenderFrame* render_frame);
+  explicit SubresourceFilterAgent(content::RenderFrame* render_frame,
+                                  RulesetDealer* ruleset_dealer);
   ~SubresourceFilterAgent() override;
 
  private:
@@ -31,6 +34,9 @@ class SubresourceFilterAgent : public content::RenderFrameObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnActivateForProvisionalLoad(ActivationState activation_state);
+
+  // Owned by the ChromeContentRendererClient and outlives us.
+  RulesetDealer* ruleset_dealer_;
 
   ActivationState activation_state_for_provisional_load_;
 
