@@ -186,7 +186,11 @@ void ProfileSyncServiceAndroid::SetSetupInProgress(
     const JavaParamRef<jobject>& obj,
     jboolean in_progress) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sync_service_->SetSetupInProgress(in_progress);
+  if (in_progress) {
+    sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+  } else {
+    sync_blocker_.reset();
+  }
 }
 
 jboolean ProfileSyncServiceAndroid::IsFirstSetupComplete(

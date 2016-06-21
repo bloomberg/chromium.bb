@@ -354,33 +354,33 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DISABLED_RestartOnSyncChange) {
   // We stop syncing history deletion in particular. This restarts the counter.
   syncer::ModelTypeSet everything_except_history = syncer::ModelTypeSet::All();
   everything_except_history.Remove(syncer::HISTORY_DELETE_DIRECTIVES);
-  sync_service->SetSetupInProgress(true);
+  auto sync_blocker = sync_service->GetSetupInProgressHandle();
   sync_service->ChangePreferredDataTypes(everything_except_history);
-  sync_service->SetSetupInProgress(false);
+  sync_blocker.reset();
   WaitForCountingOrConfirmFinished();
 
   // If the history deletion sync is not affected, the counter is not restarted.
   syncer::ModelTypeSet only_passwords(syncer::PASSWORDS);
   sync_service->ChangePreferredDataTypes(only_passwords);
-  sync_service->SetSetupInProgress(true);
+  sync_blocker = sync_service->GetSetupInProgressHandle();
   sync_service->ChangePreferredDataTypes(only_passwords);
-  sync_service->SetSetupInProgress(false);
+  sync_blocker.reset();
   EXPECT_FALSE(counter.HasTrackedTasks());
   EXPECT_FALSE(CountingFinishedSinceLastAsked());
 
   // Same in this case.
   syncer::ModelTypeSet autofill_and_passwords(
       syncer::AUTOFILL, syncer::PASSWORDS);
-  sync_service->SetSetupInProgress(true);
+  sync_blocker = sync_service->GetSetupInProgressHandle();
   sync_service->ChangePreferredDataTypes(autofill_and_passwords);
-  sync_service->SetSetupInProgress(false);
+  sync_blocker.reset();
   EXPECT_FALSE(counter.HasTrackedTasks());
   EXPECT_FALSE(CountingFinishedSinceLastAsked());
 
   // We start syncing history deletion again. This restarts the counter.
-  sync_service->SetSetupInProgress(true);
+  sync_blocker = sync_service->GetSetupInProgressHandle();
   sync_service->ChangePreferredDataTypes(syncer::ModelTypeSet::All());
-  sync_service->SetSetupInProgress(false);
+  sync_blocker.reset();
   WaitForCountingOrConfirmFinished();
 
   // Changing the syncing datatypes to another set that still includes history

@@ -682,7 +682,8 @@ void SupervisedUserService::SetupSync() {
 void SupervisedUserService::StartSetupSync() {
   // Tell the sync service that setup is in progress so we don't start syncing
   // until we've finished configuration.
-  ProfileSyncServiceFactory::GetForProfile(profile_)->SetSetupInProgress(true);
+  sync_blocker_ = ProfileSyncServiceFactory::GetForProfile(profile_)
+                      ->GetSetupInProgressHandle();
 }
 
 void SupervisedUserService::FinishSetupSyncWhenReady() {
@@ -712,7 +713,7 @@ void SupervisedUserService::FinishSetupSync() {
   service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
   // Notify ProfileSyncService that we are done with configuration.
-  service->SetSetupInProgress(false);
+  sync_blocker_.reset();
   service->SetFirstSetupComplete();
 }
 #endif
@@ -944,6 +945,7 @@ void SupervisedUserService::Shutdown() {
     content::RecordAction(UserMetricsAction("ManagedUsers_QuitBrowser"));
   }
   SetActive(false);
+  sync_blocker_.reset();
 
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);

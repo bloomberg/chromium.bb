@@ -153,16 +153,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
 
   // When client 1 hits a passphrase required state, we can infer that
   // client 0's passphrase has been committed. to the server.
-  GetClient(1)->SetupSync();
+  ASSERT_FALSE(GetClient(1)->SetupSync());
   ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService(1)));
 
   // Get client 1 out of the passphrase required state.
   ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
   ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(1)));
 
-  // For some reason, the tests won't pass unless these flags are set.
-  GetSyncService(1)->SetFirstSetupComplete();
-  GetSyncService(1)->SetSetupInProgress(false);
+  // We must mark the setup complete now, since we just entered the passphrase
+  // and the previous SetupSync() call failed.
+  GetClient(1)->FinishSyncSetup();
 
   // Move around some passwords to make sure it's all working.
   PasswordForm form0 = CreateTestPasswordForm(0);

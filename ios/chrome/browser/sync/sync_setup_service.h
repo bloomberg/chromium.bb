@@ -15,6 +15,7 @@
 
 namespace sync_driver {
 class SyncService;
+class SyncSetupInProgressHandle;
 }
 
 class PrefService;
@@ -104,6 +105,9 @@ class SyncSetupService : public KeyedService {
   sync_driver::SyncService* const sync_service_;
   PrefService* const prefs_;
   syncer::ModelTypeSet user_selectable_types_;
+
+  // Prevents Sync from running until configuration is complete.
+  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupService);
 };

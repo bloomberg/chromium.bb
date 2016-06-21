@@ -301,7 +301,7 @@ void SyncSetupHandler::ConfigureSyncDone() {
 
     // We're done configuring, so notify ProfileSyncService that it is OK to
     // start syncing.
-    service->SetSetupInProgress(false);
+    sync_blocker_.reset();
     service->SetFirstSetupComplete();
   }
 }
@@ -419,7 +419,7 @@ bool SyncSetupHandler::PrepareSyncSetup() {
 
   ProfileSyncService* service = GetSyncService();
   if (service)
-    service->SetSetupInProgress(true);
+    sync_blocker_ = service->GetSetupInProgressHandle();
 
   return true;
 }
@@ -726,8 +726,7 @@ void SyncSetupHandler::CloseSyncSetup() {
   // Alert the sync service anytime the sync setup dialog is closed. This can
   // happen due to the user clicking the OK or Cancel button, or due to the
   // dialog being closed by virtue of sync being disabled in the background.
-  if (sync_service)
-    sync_service->SetSetupInProgress(false);
+  sync_blocker_.reset();
 
   configuring_sync_ = false;
 }

@@ -76,7 +76,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(IsSyncRequested, bool());
   MOCK_CONST_METHOD0(waiting_for_auth, bool());
   MOCK_METHOD1(OnActionableError, void(const syncer::SyncProtocolError&));
-  MOCK_METHOD1(SetSetupInProgress, void(bool));
   MOCK_CONST_METHOD1(IsDataTypeControllerRunning, bool(syncer::ModelType));
 
   // DataTypeManagerObserver mocks.
@@ -96,6 +95,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string& passphrase));
   MOCK_METHOD2(SetEncryptionPassphrase, void(const std::string& passphrase,
                                              PassphraseType type));
+
+  MOCK_METHOD0(OnSetupInProgressHandleDestroyed, void());
 };
 
 #endif  // COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_MOCK_H_

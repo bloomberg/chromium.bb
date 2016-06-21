@@ -133,7 +133,7 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
   // syncing until the user has finished any configuration.
   ProfileSyncService* profile_sync_service = GetProfileSyncService();
   if (profile_sync_service)
-    profile_sync_service->SetSetupInProgress(true);
+    sync_blocker_ = profile_sync_service->GetSetupInProgressHandle();
 
   // Make sure the syncing is requested, otherwise the SigninManager
   // will not be able to complete successfully.
@@ -615,10 +615,7 @@ ProfileSyncService* OneClickSigninSyncStarter::GetProfileSyncService() {
 }
 
 void OneClickSigninSyncStarter::FinishProfileSyncServiceSetup() {
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (service)
-    service->SetSetupInProgress(false);
+  sync_blocker_.reset();
 }
 
 void OneClickSigninSyncStarter::ShowSettingsPageInWebContents(

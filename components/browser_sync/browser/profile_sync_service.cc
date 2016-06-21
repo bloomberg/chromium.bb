@@ -1494,15 +1494,19 @@ bool ProfileSyncService::IsFirstSetupInProgress() const {
   return !IsFirstSetupComplete() && startup_controller_->IsSetupInProgress();
 }
 
-void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
-  // This method is a no-op if |setup_in_progress_| remains unchanged.
-  if (startup_controller_->IsSetupInProgress() == setup_in_progress)
-    return;
+std::unique_ptr<sync_driver::SyncSetupInProgressHandle>
+ProfileSyncService::GetSetupInProgressHandle() {
+  if (++outstanding_setup_in_progress_handles_ == 1) {
+    DCHECK(!startup_controller_->IsSetupInProgress());
+    startup_controller_->SetSetupInProgress(true);
 
-  startup_controller_->SetSetupInProgress(setup_in_progress);
-  if (!setup_in_progress && IsBackendInitialized())
-    ReconfigureDatatypeManager();
-  NotifyObservers();
+    NotifyObservers();
+  }
+
+  return std::unique_ptr<sync_driver::SyncSetupInProgressHandle>(
+      new sync_driver::SyncSetupInProgressHandle(
+          base::Bind(&ProfileSyncService::OnSetupInProgressHandleDestroyed,
+                     weak_factory_.GetWeakPtr())));
 }
 
 bool ProfileSyncService::IsSyncAllowed() const {
@@ -2509,4 +2513,19 @@ std::string ProfileSyncService::unrecoverable_error_message() const {
 tracked_objects::Location ProfileSyncService::unrecoverable_error_location()
     const {
   return unrecoverable_error_location_;
+}
+
+void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
+  DCHECK_GT(outstanding_setup_in_progress_handles_, 0);
+
+  // Don't re-start Sync until all outstanding handles are destroyed.
+  if (--outstanding_setup_in_progress_handles_ != 0)
+    return;
+
+  DCHECK(startup_controller_->IsSetupInProgress());
+  startup_controller_->SetSetupInProgress(false);
+
+  if (IsBackendInitialized())
+    ReconfigureDatatypeManager();
+  NotifyObservers();
 }
