@@ -155,6 +155,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   void UpdateMemoryPolicy();
 
+  content::SynchronousCompositor* FindCompositor(
+      const CompositorID& compositor_id) const;
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state.
   std::string ToString() const;

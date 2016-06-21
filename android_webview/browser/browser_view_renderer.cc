@@ -177,6 +177,15 @@ void BrowserViewRenderer::UpdateMemoryPolicy() {
   compositor_->SetMemoryPolicy(bytes_limit);
 }
 
+content::SynchronousCompositor* BrowserViewRenderer::FindCompositor(
+    const CompositorID& compositor_id) const {
+  const auto& compositor_iterator = compositor_map_.find(compositor_id);
+  if (compositor_iterator == compositor_map_.end())
+    return nullptr;
+
+  return compositor_iterator->second;
+}
+
 void BrowserViewRenderer::PrepareToDraw(const gfx::Vector2d& scroll,
                                         const gfx::Rect& global_visible_rect) {
   last_on_draw_scroll_offset_ = scroll;
@@ -295,7 +304,7 @@ void BrowserViewRenderer::ReturnUnusedResource(
       child_frame->frame->delegated_frame_data->resource_list,
       &frame_ack.resources);
   content::SynchronousCompositor* compositor =
-      compositor_map_[child_frame->compositor_id];
+      FindCompositor(child_frame->compositor_id);
   if (compositor && !frame_ack.resources.empty())
     compositor->ReturnResources(child_frame->output_surface_id, frame_ack);
 }
@@ -306,7 +315,7 @@ void BrowserViewRenderer::ReturnResourceFromParent(
   compositor_frame_consumer->SwapReturnedResourcesOnUI(&returned_resource_map);
   for (auto& pair : returned_resource_map) {
     CompositorID compositor_id = pair.first;
-    content::SynchronousCompositor* compositor = compositor_map_[compositor_id];
+    content::SynchronousCompositor* compositor = FindCompositor(compositor_id);
     cc::CompositorFrameAck frame_ack;
     frame_ack.resources.swap(pair.second.resources);
 
