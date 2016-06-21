@@ -33,7 +33,7 @@ class Location;
 }  // namespace tracked_objects
 
 // Small class to bundle device name and connection type into a dictionary.
-CAPTURE_EXPORT
+MEDIA_EXPORT
 @interface DeviceNameAndTransportType : NSObject {
  @private
   base::scoped_nsobject<NSString> deviceName_;

@@ -179,14 +179,14 @@ bool Y4mFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
   }
 
   std::string header(kY4MHeaderMaxSize, '\0');
-  file_->Read(0, &header[0], static_cast<int>(header.size()));
+  file_->Read(0, &header[0], header.size());
   const size_t header_end = header.find(kY4MSimpleFrameDelimiter);
   CHECK_NE(header_end, header.npos);
 
   ParseY4MTags(header, capture_format);
   first_frame_byte_index_ = header_end + kY4MSimpleFrameDelimiterSize;
   current_byte_index_ = first_frame_byte_index_;
-  frame_size_ = static_cast<int>(capture_format->ImageAllocationSize());
+  frame_size_ = capture_format->ImageAllocationSize();
   return true;
 }
 
@@ -230,7 +230,7 @@ bool MjpegFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
   if (!ParseJpegStream(mapped_file_->data(), mapped_file_->length(), &result))
     return false;
 
-  frame_size_ = static_cast<int>(result.image_size);
+  frame_size_ = result.image_size;
   if (frame_size_ > static_cast<int>(mapped_file_->length())) {
     LOG(ERROR) << "File is incomplete";
     return false;
@@ -255,7 +255,7 @@ const uint8_t* MjpegFileParser::GetNextFrame(int* frame_size) {
                        &result)) {
     return nullptr;
   }
-  *frame_size = frame_size_ = static_cast<int>(result.image_size);
+  *frame_size = frame_size_ = result.image_size;
   current_byte_index_ += frame_size_;
   // Reset the pointer to play repeatedly.
   if (current_byte_index_ >= mapped_file_->length())

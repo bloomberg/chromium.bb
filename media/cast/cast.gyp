@@ -131,9 +131,6 @@
             '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
           ],
         }], # OS=="ios"
-        ['OS=="win"', {
-          'dependencies': [ '<(DEPTH)/media/media.gyp:mf_initializer' ],
-        }],
       ], # conditions
     },
     {
