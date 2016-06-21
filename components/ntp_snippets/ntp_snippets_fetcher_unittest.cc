@@ -325,56 +325,10 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
 }
 
-TEST_F(NTPSnippetsFetcherTest, ShouldReportEmptyHostsError) {
-  EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(/*hosts=*/std::set<std::string>(),
-                                            /*language_code=*/"en-US",
-                                            /*count=*/1);
-  FastForwardUntilNoTasksRemain();
-  EXPECT_THAT(snippets_fetcher().last_status(),
-              Eq("Cannot fetch for empty hosts list."));
-  EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
-      ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
-              IsEmpty());
-  // This particular error gets triggered prior to JSON parsing and hence tests
-  // observe no fetch latency.
-  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
-              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
-}
-
-TEST_F(NTPSnippetsFetcherTest, ShouldRestrictToHosts) {
-  net::TestURLFetcherFactory test_url_fetcher_factory;
-  snippets_fetcher().FetchSnippetsFromHosts(
-      {"www.somehost1.com", "www.somehost2.com"}, test_lang(), /*count=*/17);
-  net::TestURLFetcher* fetcher = test_url_fetcher_factory.GetFetcherByID(0);
-  ASSERT_THAT(fetcher, NotNull());
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(fetcher->upload_data());
-  ASSERT_TRUE(value) << " failed to parse JSON: "
-                     << PrintToString(fetcher->upload_data());
-  const base::DictionaryValue* dict = nullptr;
-  ASSERT_TRUE(value->GetAsDictionary(&dict));
-  const base::DictionaryValue* local_scoring_params = nullptr;
-  ASSERT_TRUE(dict->GetDictionary("advanced_options.local_scoring_params",
-                                  &local_scoring_params));
-  const base::ListValue* content_selectors = nullptr;
-  ASSERT_TRUE(
-      local_scoring_params->GetList("content_selectors", &content_selectors));
-  ASSERT_THAT(content_selectors->GetSize(), Eq(static_cast<size_t>(2)));
-  const base::DictionaryValue* content_selector = nullptr;
-  ASSERT_TRUE(content_selectors->GetDictionary(0, &content_selector));
-  std::string content_selector_value;
-  EXPECT_TRUE(content_selector->GetString("value", &content_selector_value));
-  EXPECT_THAT(content_selector_value, Eq("www.somehost1.com"));
-  ASSERT_TRUE(content_selectors->GetDictionary(1, &content_selector));
-  EXPECT_TRUE(content_selector->GetString("value", &content_selector_value));
-  EXPECT_THAT(content_selector_value, Eq("www.somehost2.com"));
-}
-
+// TODO(jkrcal) Return the tests ShouldReportEmptyHostsError and
+// ShouldRestrictToHosts once we have a way to change variation parameters from
+// unittests. The tests were tailored to previous default value of the parameter
+// fetching_host_restrict, which changed now.
 TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
   SetFakeResponse(/*data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);

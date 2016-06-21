@@ -121,12 +121,12 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
 
   std::string host_restriction = variations::GetVariationParamValue(
       ntp_snippets::kStudyName, kHostRestrictionName);
-  if (host_restriction == kHostRestrictionOffString) {
-    use_host_restriction_ = false;
-  } else {
+  if (host_restriction == kHostRestrictionOnString) {
     use_host_restriction_ = true;
+  } else {
+    use_host_restriction_ = false;
     LOG_IF(WARNING, !host_restriction.empty() &&
-                        host_restriction != kHostRestrictionOnString)
+                        host_restriction != kHostRestrictionOffString)
         << "Unknown value for " << kHostRestrictionName << ": "
         << host_restriction;
   }

@@ -44,6 +44,7 @@
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/switches.h"
+#include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_switches.h"
@@ -500,6 +501,38 @@ const FeatureEntry::Choice kNtpSwitchToExistingTabChoices[] = {
      switches::kNtpSwitchToExistingTab, "url"},
     {IDS_FLAGS_NTP_SWITCH_TO_EXISTING_TAB_MATCH_HOST,
      switches::kNtpSwitchToExistingTab, "host"},
+};
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationDefault[] = {};
+const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationOnlyPersonal[] = {
+    {"fetching_personalization", "personal"},
+    {"fetching_host_restrict", "off"},
+};
+const FeatureEntry::FeatureParam
+    kNTPSnippetsFeatureVariationOnlyNonPersonalHostRestricted[] = {
+        {"fetching_personalization", "non_personal"},
+        {"fetching_host_restrict", "on"},
+};
+const FeatureEntry::FeatureParam
+    kNTPSnippetsFeatureVariationOnlyPersonalHostRestricted[] = {
+        {"fetching_personalization", "personal"},
+        {"fetching_host_restrict", "on"},
+};
+
+// TODO(jkrcal) allow for nullptr instead of the empty array.
+const FeatureEntry::FeatureVariation kNTPSnippetsFeatureVariations[] = {
+    {"", kNTPSnippetsFeatureVariationDefault,
+     0},
+    {"only personalized", kNTPSnippetsFeatureVariationOnlyPersonal,
+     arraysize(kNTPSnippetsFeatureVariationOnlyPersonal)},
+    {"only from most visited sites",
+     kNTPSnippetsFeatureVariationOnlyNonPersonalHostRestricted,
+     arraysize(kNTPSnippetsFeatureVariationOnlyPersonal)},
+    {"only personalized from most visited sites",
+     kNTPSnippetsFeatureVariationOnlyPersonalHostRestricted,
+     arraysize(kNTPSnippetsFeatureVariationOnlyPersonalHostRestricted)},
 };
 #endif  // defined(OS_ANDROID)
 
@@ -1800,7 +1833,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"enable-ntp-snippets", IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME,
      IDS_FLAGS_ENABLE_NTP_SNIPPETS_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNTPSnippetsFeature)},
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(chrome::android::kNTPSnippetsFeature,
+                                        kNTPSnippetsFeatureVariations,
+                                        ntp_snippets::kStudyName)},
 #endif  // defined(OS_ANDROID)
 #if defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
     {"enable-webrtc-h264-with-openh264-ffmpeg",
