@@ -2722,24 +2722,24 @@ void ChromeContentBrowserClient::RegisterRenderProcessMojoServices(
       base::Bind(&startup_metric_utils::StartupMetricHostImpl::Create));
 }
 
-void ChromeContentBrowserClient::RegisterFrameMojoShellServices(
-    content::ServiceRegistry* registry,
+void ChromeContentBrowserClient::RegisterFrameMojoShellInterfaces(
+    shell::InterfaceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
 // TODO(xhwang): Only register this when ENABLE_MOJO_MEDIA.
 #if defined(OS_CHROMEOS)
-  registry->AddService(
+  registry->AddInterface(
       base::Bind(&chromeos::attestation::PlatformVerificationImpl::Create,
                  render_frame_host));
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_MOJO_MEDIA)
-  registry->AddService(
+  registry->AddInterface(
       base::Bind(&OutputProtectionImpl::Create, render_frame_host));
 #endif  // defined(ENABLE_MOJO_MEDIA)
 }
 
-void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
-    content::ServiceRegistry* registry,
+void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
+    shell::InterfaceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
   // WebUSB is an experimental web API. It will only work if the experiment
   // is enabled and WebUSB feature is enabled. It should also not be available
@@ -2753,25 +2753,25 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
           extensions::kExtensionScheme)
 #endif
           ) {
-    registry->AddService(
+    registry->AddInterface(
         base::Bind(&CreateUsbDeviceManager, render_frame_host));
-    registry->AddService(
+    registry->AddInterface(
         base::Bind(&CreateWebUsbChooserService, render_frame_host));
   }
 
   // Register mojo CredentialManager service only for main frame.
   if (!render_frame_host->GetParent()) {
-    registry->AddService(
+    registry->AddInterface(
         base::Bind(&ChromePasswordManagerClient::BindCredentialManager,
                    render_frame_host));
   }
 
-  registry->AddService(
+  registry->AddInterface(
       base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver,
                  render_frame_host));
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoServices(
+  ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoInterfaces(
       registry, render_frame_host);
 #endif
 }

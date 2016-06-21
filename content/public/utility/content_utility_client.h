@@ -15,12 +15,11 @@
 class GURL;
 
 namespace shell {
+class InterfaceRegistry;
 class ShellClient;
 }
 
 namespace content {
-
-class ServiceRegistry;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentUtilityClient {
@@ -35,8 +34,8 @@ class CONTENT_EXPORT ContentUtilityClient {
   // Allows the embedder to filter messages.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
-  // Registers Mojo services.
-  virtual void RegisterMojoServices(ServiceRegistry* registry) {}
+  // Registers Mojo interfaces.
+  virtual void RegisterMojoInterfaces(shell::InterfaceRegistry* registry) {}
 
   // Registers Mojo applications.
   virtual void RegisterMojoApplications(StaticMojoApplicationMap* apps) {}

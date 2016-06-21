@@ -15,9 +15,11 @@
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionClient.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 
-namespace content {
+namespace shell {
+class InterfaceProvider;
+}
 
-class ServiceRegistry;
+namespace content {
 
 // The PermissionDispatcher is a layer between Blink and the Mojo
 // PermissionService. It implements blink::WebPermissionClient. It is being used
@@ -31,9 +33,9 @@ class PermissionDispatcher : public blink::WebPermissionClient,
   // static values that never changes.
   static bool IsObservable(blink::WebPermissionType type);
 
-  // The caller must guarantee that |service_registry| will have a lifetime
+  // The caller must guarantee that |interface_registry| will have a lifetime
   // larger than this instance of PermissionDispatcher.
-  explicit PermissionDispatcher(ServiceRegistry* service_registry);
+  explicit PermissionDispatcher(shell::InterfaceProvider* remote_interfaces);
   ~PermissionDispatcher() override;
 
   // blink::WebPermissionClient implementation.
@@ -151,7 +153,7 @@ class PermissionDispatcher : public blink::WebPermissionClient,
   // Pending callbacks for request() multiple permissions.
   PermissionsCallbackMap permissions_callbacks_;
 
-  ServiceRegistry* service_registry_;
+  shell::InterfaceProvider* remote_interfaces_;
   blink::mojom::PermissionServicePtr permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionDispatcher);

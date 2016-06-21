@@ -4,8 +4,8 @@
 
 #include "blimp/engine/renderer/blob_channel_sender_proxy.h"
 
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_thread.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 namespace blimp {
 namespace engine {
@@ -13,9 +13,9 @@ namespace {
 
 mojom::BlobChannelPtr GetConnectedBlobChannel() {
   mojom::BlobChannelPtr blob_channel_ptr;
-  content::RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
-      mojo::GetProxy(&blob_channel_ptr));
-  CHECK(blob_channel_ptr) << "Could not connect to BlobChannel Mojo service.";
+  content::RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
+      &blob_channel_ptr);
+  CHECK(blob_channel_ptr) << "Could not connect to BlobChannel Mojo interface.";
   return blob_channel_ptr;
 }
 

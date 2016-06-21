@@ -67,13 +67,16 @@ class MediaLog;
 class RendererFactory;
 }
 
+namespace shell {
+class InterfaceRegistry;
+}
+
 namespace content {
 class BrowserPluginDelegate;
 class DocumentState;
 class MediaStreamRendererFactory;
 class RenderFrame;
 class RenderView;
-class ServiceRegistry;
 class SynchronousCompositor;
 struct WebPluginInfo;
 
@@ -352,9 +355,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void DidInitializeWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context) {}
 
-  // Adds service factories to the process-wide ServiceRegistry the host is
-  // connected to.
-  virtual void RegisterProcessMojoServices(ServiceRegistry* service_registry) {}
+  // Adds interface factories to the process-wide shell::InterfaceRegistry the
+  // browser is connected to.
+  virtual void RegisterProcessMojoInterfaces(
+      shell::InterfaceRegistry* interface_registry) {}
 };
 
 }  // namespace content

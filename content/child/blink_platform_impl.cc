@@ -387,7 +387,7 @@ void BlinkPlatformImpl::InternalInit() {
         ChildThreadImpl::current()->notification_dispatcher();
     push_dispatcher_ = ChildThreadImpl::current()->push_dispatcher();
     permission_client_.reset(new PermissionDispatcher(
-        ChildThreadImpl::current()->service_registry()));
+        ChildThreadImpl::current()->remote_interfaces()));
     main_thread_sync_provider_.reset(
         new BackgroundSyncProvider(main_thread_task_runner_.get()));
   }

@@ -12,14 +12,16 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 
+namespace shell {
+class InterfaceRegistry;
+}
+
 namespace content {
-
 class RenderFrameHost;
-class ServiceRegistryImpl;
 
-// This provides the |shell::mojom::Shell| service interface to each
-// frame's ServiceRegistry, giving frames the ability to connect to Mojo
-// applications.
+// This provides the |shell::mojom::Connector| interface interface to each
+// frame's shell::InterfaceRegistry, giving frames the ability to connect to
+// Mojo services.
 class FrameMojoShell : public shell::mojom::Connector {
  public:
   explicit FrameMojoShell(RenderFrameHost* frame_host);
@@ -37,14 +39,16 @@ class FrameMojoShell : public shell::mojom::Connector {
       const shell::mojom::Connector::ConnectCallback& callback) override;
   void Clone(shell::mojom::ConnectorRequest request) override;
 
-  ServiceRegistryImpl* GetServiceRegistry();
+  shell::InterfaceRegistry* GetInterfaceRegistry();
 
   RenderFrameHost* frame_host_;
   mojo::BindingSet<shell::mojom::Connector> connectors_;
 
-  // ServiceRegistry providing browser services to connected applications.
-  std::unique_ptr<ServiceRegistryImpl> service_registry_;
-  mojo::BindingSet<shell::mojom::InterfaceProvider> service_provider_bindings_;
+  // shell::InterfaceRegistry providing browser interfaces to connected
+  // applications.
+  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
+  mojo::BindingSet<shell::mojom::InterfaceProvider>
+      interface_provider_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameMojoShell);
 };

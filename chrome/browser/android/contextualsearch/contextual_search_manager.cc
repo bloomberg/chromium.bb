@@ -22,9 +22,10 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/service_registry.h"
 #include "jni/ContextualSearchManager_jni.h"
 #include "net/url_request/url_fetcher_impl.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 using content::ContentViewCore;
 
@@ -181,13 +182,13 @@ void ContextualSearchManager::EnableContextualSearchJsApiForOverlay(
           ->GetMainFrame();
   DCHECK(render_frame_host);
   contextual_search::mojom::OverlayPageNotifierServicePtr page_notifier_service;
-  render_frame_host->GetServiceRegistry()->ConnectToRemoteService(
-      mojo::GetProxy(&page_notifier_service));
+  render_frame_host->GetRemoteInterfaces()->GetInterface(
+      &page_notifier_service);
   DCHECK(page_notifier_service);
   page_notifier_service->NotifyIsContextualSearchOverlay();
 
   // Also set up the backchannel to call into this class from the JS API.
-  render_frame_host->GetServiceRegistry()->AddService(
+  render_frame_host->GetInterfaceRegistry()->AddInterface(
       base::Bind(&contextual_search::CreateContextualSearchJsApiService, this));
 }
 

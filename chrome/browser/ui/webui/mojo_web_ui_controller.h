@@ -16,6 +16,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/system/core.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 class MojoWebUIHandler;
 
@@ -47,8 +48,8 @@ class MojoWebUIController : public MojoWebUIControllerBase {
   ~MojoWebUIController() override {}
   void RenderViewCreated(content::RenderViewHost* render_view_host) override {
     MojoWebUIControllerBase::RenderViewCreated(render_view_host);
-    render_view_host->GetMainFrame()->GetServiceRegistry()->
-        AddService<Interface>(
+    render_view_host->GetMainFrame()->GetInterfaceRegistry()->
+        AddInterface<Interface>(
             base::Bind(&MojoWebUIController::BindUIHandler,
                        weak_factory_.GetWeakPtr()));
   }

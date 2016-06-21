@@ -726,7 +726,7 @@ bool RenderProcessHostImpl::Init() {
   GetContentClient()->browser()->RenderProcessWillLaunch(this);
 
   CreateMessageFilters();
-  RegisterMojoServices();
+  RegisterMojoInterfaces();
 
   if (run_renderer_in_process()) {
     DCHECK(g_renderer_main_thread_factory);
@@ -1023,7 +1023,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
 }
 
-void RenderProcessHostImpl::RegisterMojoServices() {
+void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #if !defined(OS_ANDROID)
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&device::BatteryMonitorImpl::Create));

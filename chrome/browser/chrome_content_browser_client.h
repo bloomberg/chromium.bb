@@ -275,11 +275,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterRenderProcessMojoServices(
       content::ServiceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
-  void RegisterFrameMojoShellServices(
-      content::ServiceRegistry* registry,
+  void RegisterFrameMojoShellInterfaces(
+      shell::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
-  void RegisterRenderFrameMojoServices(
-      content::ServiceRegistry* registry,
+  void RegisterRenderFrameMojoInterfaces(
+      shell::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
   void RegisterInProcessMojoApplications(
       StaticMojoApplicationMap* apps) override;

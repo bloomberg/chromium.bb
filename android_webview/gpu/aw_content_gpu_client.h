@@ -19,7 +19,7 @@ class AwContentGpuClient : public content::ContentGpuClient {
   ~AwContentGpuClient() override;
 
   // content::ContentGpuClient implementation.
-  void RegisterMojoServices(content::ServiceRegistry* registry) override;
+  void RegisterMojoInterfaces(shell::InterfaceRegistry* registry) override;
   gpu::SyncPointManager* GetSyncPointManager() override;
 
  private:

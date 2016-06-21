@@ -17,6 +17,7 @@
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -123,9 +124,9 @@ void ShellContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
   }
 }
 
-void ShellContentRendererClient::RegisterProcessMojoServices(
-    ServiceRegistry* service_registry) {
-  service_registry->AddService<mojom::TestMojoService>(
+void ShellContentRendererClient::RegisterProcessMojoInterfaces(
+    shell::InterfaceRegistry* interface_registry) {
+  interface_registry->AddInterface<mojom::TestMojoService>(
       base::Bind(&CreateTestMojoService));
 }
 

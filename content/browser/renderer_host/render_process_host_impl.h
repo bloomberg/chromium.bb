@@ -301,8 +301,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Creates and adds the IO thread message filters.
   void CreateMessageFilters();
 
-  // Registers Mojo services to be exposed to the renderer.
-  void RegisterMojoServices();
+  // Registers Mojo interfaces to be exposed to the renderer.
+  void RegisterMojoInterfaces();
 
   void CreateStoragePartitionService(
       mojo::InterfaceRequest<mojom::StoragePartitionService> request);

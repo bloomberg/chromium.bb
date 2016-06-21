@@ -61,6 +61,7 @@ class CdmFactory;
 }
 
 namespace shell {
+class InterfaceRegistry;
 class ShellClient;
 }
 
@@ -646,22 +647,22 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::string GetShellUserIdForBrowserContext(
       BrowserContext* browser_context);
 
-  // Allows to register browser Mojo services exposed through the
+  // Allows to register browser Mojo interfaces exposed through the
   // RenderProcessHost.
   virtual void RegisterRenderProcessMojoServices(
       ServiceRegistry* registry,
       RenderProcessHost* render_process_host) {}
 
-  // Allows to register browser Mojo services exposed through the
+  // Allows to register browser Mojo interfaces exposed through the
   // FrameMojoShell.
-  virtual void RegisterFrameMojoShellServices(
-      ServiceRegistry* registry,
+  virtual void RegisterFrameMojoShellInterfaces(
+      shell::InterfaceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
-  // Allows to register browser Mojo services exposed through the
+  // Allows to register browser Mojo interfaces exposed through the
   // RenderFrameHost.
-  virtual void RegisterRenderFrameMojoServices(
-      ServiceRegistry* registry,
+  virtual void RegisterRenderFrameMojoInterfaces(
+      shell::InterfaceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
   using StaticMojoApplicationMap = std::map<std::string, MojoApplicationInfo>;

@@ -54,7 +54,7 @@ class ConnectionImpl : public Connection {
   bool AllowsInterface(const std::string& interface_name) const override;
   mojom::InterfaceProvider* GetRemoteInterfaceProvider() override;
   InterfaceRegistry* GetInterfaceRegistry() override;
-  RemoteInterfaceRegistry* GetRemoteInterfaceRegistry() override;
+  InterfaceProvider* GetRemoteInterfaces() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
   void OnConnectionCompleted(shell::mojom::ConnectResult result,
@@ -70,7 +70,7 @@ class ConnectionImpl : public Connection {
   std::vector<base::Closure> connection_completed_callbacks_;
 
   InterfaceRegistry interfaces_;
-  RemoteInterfaceRegistry remote_interfaces_;
+  InterfaceProvider remote_interfaces_;
 
   const CapabilityRequest capability_request_;
   const bool allow_all_interfaces_;

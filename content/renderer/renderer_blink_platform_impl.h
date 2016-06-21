@@ -48,6 +48,10 @@ class RendererScheduler;
 class WebThreadImplForRendererScheduler;
 }
 
+namespace shell {
+class InterfaceProvider;
+}
+
 namespace content {
 class BlinkServiceRegistryImpl;
 class DeviceLightEventPump;
@@ -58,7 +62,6 @@ class PlatformEventObserverBase;
 class QuotaMessageFilter;
 class RendererClipboardDelegate;
 class RenderView;
-class ServiceRegistry;
 class ThreadSafeSender;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
@@ -66,8 +69,9 @@ class WebFileSystemImpl;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
-  RendererBlinkPlatformImpl(scheduler::RendererScheduler* renderer_scheduler,
-                            base::WeakPtr<ServiceRegistry> service_registry);
+  RendererBlinkPlatformImpl(
+      scheduler::RendererScheduler* renderer_scheduler,
+      base::WeakPtr<shell::InterfaceProvider> remote_interfaces);
   ~RendererBlinkPlatformImpl() override;
 
   // Shutdown must be called just prior to shutting down blink.

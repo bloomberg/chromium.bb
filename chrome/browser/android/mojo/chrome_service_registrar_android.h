@@ -9,14 +9,17 @@
 
 namespace content {
 class RenderFrameHost;
-class ServiceRegistry;
+}
+
+namespace shell {
+class InterfaceRegistry;
 }
 
 class ChromeServiceRegistrarAndroid {
  public:
   static bool Register(JNIEnv* env);
-  static void RegisterRenderFrameMojoServices(
-      content::ServiceRegistry* registry,
+  static void RegisterRenderFrameMojoInterfaces(
+      shell::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host);
 
  private:

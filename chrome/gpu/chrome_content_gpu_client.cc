@@ -5,7 +5,7 @@
 #include "chrome/gpu/chrome_content_gpu_client.h"
 
 #include "base/command_line.h"
-#include "content/public/common/service_registry.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/gpu/gpu_arc_video_service.h"
@@ -31,10 +31,10 @@ ChromeContentGpuClient::ChromeContentGpuClient() {}
 
 ChromeContentGpuClient::~ChromeContentGpuClient() {}
 
-void ChromeContentGpuClient::RegisterMojoServices(
-    content::ServiceRegistry* registry) {
+void ChromeContentGpuClient::RegisterMojoInterfaces(
+    shell::InterfaceRegistry* registry) {
 #if defined(OS_CHROMEOS)
-  registry->AddService(base::Bind(&CreateGpuArcVideoService));
+  registry->AddInterface(base::Bind(&CreateGpuArcVideoService));
 #endif
 }
 

@@ -12,10 +12,10 @@
 #include "base/optional.h"
 #include "content/child/mojo/type_converters.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/public/common/service_registry.h"
 #include "content/renderer/bluetooth/bluetooth_type_converters.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/array.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDeviceInit.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristic.h"
@@ -25,8 +25,8 @@
 
 namespace content {
 
-WebBluetoothImpl::WebBluetoothImpl(ServiceRegistry* service_registry)
-    : service_registry_(service_registry), binding_(this) {}
+WebBluetoothImpl::WebBluetoothImpl(shell::InterfaceProvider* remote_interfaces)
+    : remote_interfaces_(remote_interfaces), binding_(this) {}
 
 WebBluetoothImpl::~WebBluetoothImpl() {
 }
@@ -298,8 +298,7 @@ void WebBluetoothImpl::DispatchCharacteristicValueChanged(
 
 blink::mojom::WebBluetoothService& WebBluetoothImpl::GetWebBluetoothService() {
   if (!web_bluetooth_service_) {
-    service_registry_->ConnectToRemoteService(
-        mojo::GetProxy(&web_bluetooth_service_));
+    remote_interfaces_->GetInterface(mojo::GetProxy(&web_bluetooth_service_));
     // Create an associated interface ptr and pass it to the WebBluetoothService
     // so that it can send us events without us prompting.
     blink::mojom::WebBluetoothServiceClientAssociatedPtrInfo ptr_info;

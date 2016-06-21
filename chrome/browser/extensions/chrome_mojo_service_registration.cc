@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/service_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 #if defined(ENABLE_MEDIA_ROUTER)
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -31,7 +31,7 @@ void RegisterChromeServicesForFrame(content::RenderFrameHost* render_frame_host,
   if (media_router::MediaRouterEnabled(context)) {
     if (extension->permissions_data()->HasAPIPermission(
             APIPermission::kMediaRouterPrivate)) {
-      render_frame_host->GetServiceRegistry()->AddService(
+      render_frame_host->GetInterfaceRegistry()->AddInterface(
           base::Bind(media_router::MediaRouterMojoImpl::BindToRequest,
                      extension, context));
     }

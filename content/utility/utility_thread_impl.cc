@@ -18,6 +18,7 @@
 #include "content/utility/utility_blink_platform_impl.h"
 #include "content/utility/utility_process_control_impl.h"
 #include "ipc/ipc_sync_channel.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
 #if defined(OS_POSIX) && defined(ENABLE_PLUGINS)
@@ -95,10 +96,10 @@ void UtilityThreadImpl::Init() {
   GetContentClient()->utility()->UtilityThreadStarted();
 
   process_control_.reset(new UtilityProcessControlImpl);
-  service_registry()->AddService(base::Bind(
+  interface_registry()->AddInterface(base::Bind(
       &UtilityThreadImpl::BindProcessControlRequest, base::Unretained(this)));
 
-  GetContentClient()->utility()->RegisterMojoServices(service_registry());
+  GetContentClient()->utility()->RegisterMojoInterfaces(interface_registry());
 }
 
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

@@ -73,6 +73,7 @@
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
@@ -112,7 +113,7 @@
 #include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
-#include "content/renderer/mojo/service_registry_js_wrapper.h"
+#include "content/renderer/mojo/interface_provider_js_wrapper.h"
 #include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/notification_permission_dispatcher.h"
@@ -153,6 +154,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -1091,7 +1094,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       devtools_agent_(nullptr),
       push_messaging_dispatcher_(NULL),
       presentation_dispatcher_(NULL),
-      blink_service_registry_(service_registry_.GetWeakPtr()),
       screen_orientation_dispatcher_(NULL),
       manifest_manager_(NULL),
       accessibility_mode_(AccessibilityModeOff),
@@ -1109,6 +1111,17 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #endif
       frame_binding_(this),
       weak_factory_(this) {
+  // We don't have a shell::Connection at this point, so use nullptr.
+  // TODO(beng): We should fix this, so we can apply policy about which
+  //             interfaces get exposed.
+  interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
+  pending_remote_interface_provider_request_ = GetProxy(&remote_interfaces);
+  remote_interfaces_.reset(
+      new shell::InterfaceProvider(std::move(remote_interfaces)));
+  blink_service_registry_.reset(new BlinkServiceRegistryImpl(
+      remote_interfaces_->GetWeakPtr()));
+
   std::pair<RoutingIDFrameMap::iterator, bool> result =
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
@@ -1213,7 +1226,7 @@ void RenderFrameImpl::Initialize() {
     devtools_agent_ = new DevToolsAgent(this);
   }
 
-  RegisterMojoServices();
+  RegisterMojoInterfaces();
 
   // We delay calling this until we have the WebFrame so that any observer or
   // embedder can call GetWebFrame on any RenderFrame.
@@ -1602,7 +1615,8 @@ void RenderFrameImpl::Bind(mojom::FrameRequest request,
                            mojom::FrameHostPtr host) {
   frame_binding_.Bind(std::move(request));
   frame_host_ = std::move(host);
-  frame_host_->GetInterfaceProvider(service_registry_.TakeRemoteRequest());
+  frame_host_->GetInterfaceProvider(
+      std::move(pending_remote_interface_provider_request_));
 }
 
 ManifestManager* RenderFrameImpl::manifest_manager() {
@@ -2412,8 +2426,12 @@ void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
   OnJavaScriptExecuteRequest(javascript, 0, false);
 }
 
-ServiceRegistry* RenderFrameImpl::GetServiceRegistry() {
-  return &service_registry_;
+shell::InterfaceRegistry* RenderFrameImpl::GetInterfaceRegistry() {
+  return interface_registry_.get();
+}
+
+shell::InterfaceProvider* RenderFrameImpl::GetRemoteInterfaces() {
+  return remote_interfaces_.get();
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -2476,13 +2494,14 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
   registry->AddBuiltinModule(isolate, mojo::edk::js::Support::kModuleName,
                              mojo::edk::js::Support::GetModule(isolate));
   registry->AddBuiltinModule(
-      isolate, ServiceRegistryJsWrapper::kPerFrameModuleName,
-      ServiceRegistryJsWrapper::Create(isolate, context, &service_registry_)
+      isolate, InterfaceProviderJsWrapper::kPerFrameModuleName,
+      InterfaceProviderJsWrapper::Create(
+          isolate, context, remote_interfaces_.get())
           .ToV8());
   registry->AddBuiltinModule(
-      isolate, ServiceRegistryJsWrapper::kPerProcessModuleName,
-      ServiceRegistryJsWrapper::Create(
-          isolate, context, RenderThread::Get()->GetServiceRegistry())
+      isolate, InterfaceProviderJsWrapper::kPerProcessModuleName,
+      InterfaceProviderJsWrapper::Create(
+          isolate, context, RenderThread::Get()->GetRemoteInterfaces())
           .ToV8());
 }
 
@@ -2521,7 +2540,7 @@ bool RenderFrameImpl::IsPasting() const {
 
 void RenderFrameImpl::GetInterfaceProvider(
     shell::mojom::InterfaceProviderRequest request) {
-  service_registry_.Bind(std::move(request));
+  interface_registry_->Bind(std::move(request));
 }
 
 // blink::WebFrameClient implementation ----------------------------------------
@@ -4424,9 +4443,10 @@ bool RenderFrameImpl::exitFullscreen() {
 }
 
 blink::WebPermissionClient* RenderFrameImpl::permissionClient() {
-  if (!permission_client_)
-    permission_client_.reset(new PermissionDispatcher(GetServiceRegistry()));
-
+  if (!permission_client_) {
+    permission_client_.reset(
+        new PermissionDispatcher(GetRemoteInterfaces()));
+  }
   return permission_client_.get();
 }
 
@@ -4462,9 +4482,8 @@ void RenderFrameImpl::unregisterProtocolHandler(const WebString& scheme,
 }
 
 blink::WebBluetooth* RenderFrameImpl::bluetooth() {
-  if (!bluetooth_.get()) {
-    bluetooth_.reset(new WebBluetoothImpl(GetServiceRegistry()));
-  }
+  if (!bluetooth_.get())
+    bluetooth_.reset(new WebBluetoothImpl(GetRemoteInterfaces()));
   return bluetooth_.get();
 }
 
@@ -6134,23 +6153,23 @@ media::DecoderFactory* RenderFrameImpl::GetDecoderFactory() {
   return decoder_factory_.get();
 }
 
-void RenderFrameImpl::RegisterMojoServices() {
+void RenderFrameImpl::RegisterMojoInterfaces() {
   // Only main frame have ImageDownloader service.
   if (!frame_->parent()) {
-    GetServiceRegistry()->AddService(base::Bind(
+    GetInterfaceRegistry()->AddInterface(base::Bind(
         &ImageDownloaderImpl::CreateMojoService, base::Unretained(this)));
   }
 }
 
 template <typename Interface>
 void RenderFrameImpl::GetInterface(mojo::InterfaceRequest<Interface> request) {
-  GetServiceRegistry()->ConnectToRemoteService(std::move(request));
+  GetRemoteInterfaces()->GetInterface(std::move(request));
 }
 
 shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
     const GURL& url) {
   if (!connector_)
-    GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&connector_));
+    GetRemoteInterfaces()->GetInterface(&connector_);
   shell::mojom::InterfaceProviderPtr interface_provider;
   shell::mojom::IdentityPtr target(shell::mojom::Identity::New());
   target->name = url.spec();
@@ -6180,7 +6199,7 @@ void RenderFrameImpl::checkIfAudioSinkExistsAndIsAuthorized(
 }
 
 blink::ServiceRegistry* RenderFrameImpl::serviceRegistry() {
-  return &blink_service_registry_;
+  return blink_service_registry_.get();
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {

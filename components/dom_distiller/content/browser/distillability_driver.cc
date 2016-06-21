@@ -8,7 +8,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/service_registry.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     dom_distiller::DistillabilityDriver);
@@ -75,9 +75,9 @@ void DistillabilityDriver::SetupMojoService() {
   if (!web_contents()) return;
 
   content::RenderFrameHost* frame_host = web_contents()->GetMainFrame();
-  if (!frame_host || !frame_host->GetServiceRegistry()) return;
+  if (!frame_host || !frame_host->GetInterfaceRegistry()) return;
 
-  frame_host->GetServiceRegistry()->AddService(
+  frame_host->GetInterfaceRegistry()->AddInterface(
       base::Bind(&DistillabilityDriver::CreateDistillabilityService,
           weak_factory_.GetWeakPtr()));
 }

@@ -13,6 +13,7 @@ source_set("renderer") {
     "//components/web_cache/public/interfaces",
     "//content/public/common",
     "//content/public/renderer",
+    "//services/shell/public/cpp",
     "//third_party/WebKit/public:blink",
   ]
 }

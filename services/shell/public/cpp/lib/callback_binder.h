@@ -31,26 +31,54 @@ class CallbackBinder : public InterfaceBinder {
   // InterfaceBinder:
   void BindInterface(Connection* connection,
       const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle client_handle) override {
+      mojo::ScopedMessagePipeHandle handle) override {
+    mojo::InterfaceRequest<Interface> request =
+        mojo::MakeRequest<Interface>(std::move(handle));
     if (task_runner_) {
       task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&CallbackBinder::RunCallbackOnTaskRunner, callback_,
-                     base::Passed(&client_handle)));
+                     base::Passed(&request)));
       return;
     }
-    callback_.Run(std::move(client_handle));
+    callback_.Run(std::move(request));
   }
 
   static void RunCallbackOnTaskRunner(
       const BindCallback& callback,
-      mojo::ScopedMessagePipeHandle client_handle) {
-    callback.Run(std::move(client_handle));
+      mojo::InterfaceRequest<Interface> client) {
+    callback.Run(std::move(client));
   }
 
   const BindCallback callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   DISALLOW_COPY_AND_ASSIGN(CallbackBinder);
+};
+
+class GenericCallbackBinder : public InterfaceBinder {
+ public:
+  // Method that binds a request for Interface.
+  using BindCallback = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
+
+  explicit GenericCallbackBinder(
+      const BindCallback& callback,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  ~GenericCallbackBinder() override;
+
+ private:
+  // InterfaceBinder:
+  void BindInterface(
+      Connection* connection,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle handle) override;
+
+  static void RunCallbackOnTaskRunner(
+      const BindCallback& callback,
+      mojo::ScopedMessagePipeHandle client_handle);
+
+  const BindCallback callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  DISALLOW_COPY_AND_ASSIGN(GenericCallbackBinder);
 };
 
 }  // namespace internal

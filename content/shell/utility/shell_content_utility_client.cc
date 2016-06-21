@@ -71,9 +71,9 @@ void ShellContentUtilityClient::RegisterMojoApplications(
   apps->insert(std::make_pair(kTestMojoAppUrl, app_info));
 }
 
-void ShellContentUtilityClient::RegisterMojoServices(
-    ServiceRegistry* registry) {
-  registry->AddService(base::Bind(&TestMojoServiceImpl::Create));
+void ShellContentUtilityClient::RegisterMojoInterfaces(
+    shell::InterfaceRegistry* registry) {
+  registry->AddInterface(base::Bind(&TestMojoServiceImpl::Create));
 }
 
 }  // namespace content

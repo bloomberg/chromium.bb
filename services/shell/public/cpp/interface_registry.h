@@ -66,6 +66,8 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
 
   void Bind(mojom::InterfaceProviderRequest local_interfaces_request);
 
+  base::WeakPtr<InterfaceRegistry> GetWeakPtr();
+
   // Allows |Interface| to be exposed via this registry. Requests to bind will
   // be handled by |factory|. Returns true if the interface was exposed, false
   // if Connection policy prevented exposure.
@@ -90,6 +92,11 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
             new internal::CallbackBinder<Interface>(callback, task_runner)),
         Interface::Name_);
   }
+  bool AddInterface(
+      const std::string& name,
+      const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner =
+          nullptr);
 
   template <typename Interface>
   void RemoveInterface() {
@@ -114,6 +121,8 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   Connection* connection_;
 
   NameToInterfaceBinderMap name_to_binder_;
+
+  base::WeakPtrFactory<InterfaceRegistry> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceRegistry);
 };

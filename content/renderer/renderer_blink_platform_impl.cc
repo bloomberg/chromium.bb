@@ -244,7 +244,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     scheduler::RendererScheduler* renderer_scheduler,
-    base::WeakPtr<ServiceRegistry> service_registry)
+    base::WeakPtr<shell::InterfaceProvider> remote_interfaces)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
       main_thread_(renderer_scheduler->CreateMainThread()),
       clipboard_delegate_(new RendererClipboardDelegate),
@@ -256,7 +256,8 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       loading_task_runner_(renderer_scheduler->LoadingTaskRunner()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       renderer_scheduler_(renderer_scheduler),
-      blink_service_registry_(new BlinkServiceRegistryImpl(service_registry)) {
+      blink_service_registry_(
+          new BlinkServiceRegistryImpl(remote_interfaces)) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
@@ -517,10 +518,8 @@ WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(
     const WebString& file_extension) {
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
-  if (!mime_registry_) {
-    RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&mime_registry_));
-  }
+  if (!mime_registry_)
+    RenderThread::Get()->GetRemoteInterfaces()->GetInterface(&mime_registry_);
 
   mojo::String mime_type;
   if (!mime_registry_->GetMimeTypeFromExtension(

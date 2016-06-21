@@ -38,7 +38,6 @@
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/media_stream_utils.h"
@@ -58,6 +57,7 @@
 #include "media/base/video_capturer_source.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -929,7 +929,7 @@ void BlinkTestRunner::CaptureDumpComplete() {
 mojom::LayoutTestBluetoothFakeAdapterSetter&
 BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
   if (!bluetooth_fake_adapter_setter_) {
-    RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
+    RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
         mojo::GetProxy(&bluetooth_fake_adapter_setter_));
   }
   return *bluetooth_fake_adapter_setter_;

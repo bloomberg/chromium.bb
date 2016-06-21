@@ -33,6 +33,11 @@ class Range;
 class Size;
 }
 
+namespace shell {
+class InterfaceRegistry;
+class InterfaceProvider;
+}
+
 namespace url {
 class Origin;
 }
@@ -47,7 +52,6 @@ namespace content {
 class ContextMenuClient;
 class PluginInstanceThrottler;
 class RenderView;
-class ServiceRegistry;
 struct ContextMenuParams;
 struct WebPluginInfo;
 struct WebPreferences;
@@ -133,8 +137,13 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Return true if this frame is hidden.
   virtual bool IsHidden() = 0;
 
-  // Returns the ServiceRegistry for this frame.
-  virtual ServiceRegistry* GetServiceRegistry() = 0;
+  // Returns the InterfaceRegistry that this process uses to expose interfaces
+  // to the application running in this frame.
+  virtual shell::InterfaceRegistry* GetInterfaceRegistry() = 0;
+
+  // Returns the InterfaceProvider that this process can use to bind
+  // interfaces exposed to it by the application running in this frame.
+  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
 
 #if defined(ENABLE_PLUGINS)
   // Registers a plugin that has been marked peripheral. If the origin

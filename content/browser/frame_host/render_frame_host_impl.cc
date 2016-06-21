@@ -81,6 +81,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "device/vibration/vibration_manager_impl.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -471,8 +472,12 @@ RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
 }
 
-ServiceRegistry* RenderFrameHostImpl::GetServiceRegistry() {
-  return service_registry_.get();
+shell::InterfaceRegistry* RenderFrameHostImpl::GetInterfaceRegistry() {
+  return interface_registry_.get();
+}
+
+shell::InterfaceProvider* RenderFrameHostImpl::GetRemoteInterfaces() {
+  return remote_interfaces_.get();
 }
 
 blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
@@ -1992,7 +1997,7 @@ void RenderFrameHostImpl::OnHidePopup() {
 }
 #endif
 
-void RenderFrameHostImpl::RegisterMojoServices() {
+void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GeolocationServiceContext* geolocation_service_context =
       delegate_ ? delegate_->GetGeolocationServiceContext() : NULL;
   if (geolocation_service_context) {
@@ -2005,7 +2010,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
     // latter is triggered by receiving a message that the pipe was closed from
     // the renderer side. Hence, supply the reference to this object as a weak
     // pointer.
-    GetServiceRegistry()->AddService(
+    GetInterfaceRegistry()->AddInterface(
         base::Bind(&GeolocationServiceContext::CreateService,
                    base::Unretained(geolocation_service_context),
                    base::Bind(&RenderFrameHostImpl::DidUseGeolocationPermission,
@@ -2018,7 +2023,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
     // WakeLockServiceContext is owned by WebContentsImpl so it will outlive
     // this RenderFrameHostImpl, hence a raw pointer can be bound to service
     // factory callback.
-    GetServiceRegistry()->AddService<blink::mojom::WakeLockService>(
+    GetInterfaceRegistry()->AddInterface<blink::mojom::WakeLockService>(
         base::Bind(&WakeLockServiceContext::CreateService,
                    base::Unretained(wake_lock_service_context),
                    GetProcess()->GetID(), GetRoutingID()));
@@ -2027,15 +2032,15 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   if (!permission_service_context_)
     permission_service_context_.reset(new PermissionServiceContext(this));
 
-  GetServiceRegistry()->AddService(
+  GetInterfaceRegistry()->AddInterface(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
 
-  GetServiceRegistry()->AddService(base::Bind(
+  GetInterfaceRegistry()->AddInterface(base::Bind(
       &PresentationServiceImpl::CreateMojoService, base::Unretained(this)));
 
 #if !defined(OS_ANDROID)
-  GetServiceRegistry()->AddService(
+  GetInterfaceRegistry()->AddInterface(
       base::Bind(&device::VibrationManagerImpl::Create));
 #endif
 
@@ -2046,7 +2051,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
 #endif
 
   if (enable_web_bluetooth) {
-    GetServiceRegistry()->AddService(
+    GetInterfaceRegistry()->AddInterface(
         base::Bind(&RenderFrameHostImpl::CreateWebBluetoothService,
                    base::Unretained(this)));
   }
@@ -2054,7 +2059,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   if (!frame_mojo_shell_)
     frame_mojo_shell_.reset(new FrameMojoShell(this));
 
-  GetServiceRegistry()->AddService<shell::mojom::Connector>(base::Bind(
+  GetInterfaceRegistry()->AddInterface<shell::mojom::Connector>(base::Bind(
       &FrameMojoShell::BindRequest, base::Unretained(frame_mojo_shell_.get())));
 
 #if defined(ENABLE_WEBVR)
@@ -2062,13 +2067,13 @@ void RenderFrameHostImpl::RegisterMojoServices() {
       *base::CommandLine::ForCurrentProcess();
 
   if (browser_command_line.HasSwitch(switches::kEnableWebVR)) {
-    GetServiceRegistry()->AddService<device::VRService>(
+    GetInterfaceRegistry()->AddInterface<device::VRService>(
         base::Bind(&device::VRDeviceManager::BindRequest));
   }
 #endif
 
-  GetContentClient()->browser()->RegisterRenderFrameMojoServices(
-      GetServiceRegistry(), this);
+  GetContentClient()->browser()->RegisterRenderFrameMojoInterfaces(
+      GetInterfaceRegistry(), this);
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
@@ -2384,25 +2389,33 @@ void RenderFrameHostImpl::FailedNavigation(
 }
 
 void RenderFrameHostImpl::SetUpMojoIfNeeded() {
-  if (service_registry_.get())
+  if (interface_registry_.get())
     return;
 
-  service_registry_.reset(new ServiceRegistryImpl());
+  interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
   if (!GetProcess()->GetServiceRegistry())
     return;
 
-  RegisterMojoServices();
+  RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;
   GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
       mojo::GetProxy(&frame_factory));
 
   frame_factory->CreateFrame(routing_id_, GetProxy(&frame_),
                              frame_host_binding_.CreateInterfacePtrAndBind());
-  frame_->GetInterfaceProvider(service_registry_->TakeRemoteRequest());
+
+
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
+  shell::mojom::InterfaceProviderRequest remote_interfaces_request =
+      GetProxy(&remote_interfaces);
+  remote_interfaces_.reset(
+      new shell::InterfaceProvider(std::move(remote_interfaces)));
+  frame_->GetInterfaceProvider(std::move(remote_interfaces_request));
 
 #if defined(OS_ANDROID)
   service_registry_android_ =
-      ServiceRegistryAndroid::Create(service_registry_.get());
+      ServiceRegistryAndroid::Create(interface_registry_.get(),
+                                     remote_interfaces_.get());
   ServiceRegistrarAndroid::RegisterFrameHostServices(
       service_registry_android_.get());
 #endif
@@ -2415,7 +2428,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   service_registry_android_.reset();
 #endif
 
-  service_registry_.reset();
+  interface_registry_.reset();
   frame_.reset();
   frame_host_binding_.Close();
 
@@ -2523,10 +2536,8 @@ void RenderFrameHostImpl::ClearAllWebUI() {
 
 const content::mojom::ImageDownloaderPtr&
 RenderFrameHostImpl::GetMojoImageDownloader() {
-  if (!mojo_image_downloader_.get() && GetServiceRegistry()) {
-    GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&mojo_image_downloader_));
-  }
+  if (!mojo_image_downloader_.get() && GetRemoteInterfaces())
+    GetRemoteInterfaces()->GetInterface(&mojo_image_downloader_);
   return mojo_image_downloader_;
 }
 
@@ -2682,7 +2693,7 @@ void RenderFrameHostImpl::FilesSelectedInChooser(
 
 void RenderFrameHostImpl::GetInterfaceProvider(
     shell::mojom::InterfaceProviderRequest interfaces) {
-  service_registry_->Bind(std::move(interfaces));
+  interface_registry_->Bind(std::move(interfaces));
 }
 
 #if defined(USE_EXTERNAL_POPUP_MENU)

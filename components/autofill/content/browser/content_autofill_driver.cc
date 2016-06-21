@@ -23,8 +23,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_registry.h"
 #include "ipc/ipc_message_macros.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace autofill {
@@ -237,8 +237,8 @@ void ContentAutofillDriver::ConnectToMojoAutofillAgentIfNeeded() {
   if (mojo_autofill_agent_)
     return;
 
-  render_frame_host_->GetServiceRegistry()->ConnectToRemoteService(
-      mojo::GetProxy(&mojo_autofill_agent_));
+  render_frame_host_->GetRemoteInterfaces()->GetInterface(
+      &mojo_autofill_agent_);
 }
 
 }  // namespace autofill

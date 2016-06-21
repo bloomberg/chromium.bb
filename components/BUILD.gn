@@ -421,6 +421,7 @@ if (!is_ios) {
       "//device/bluetooth",
       "//ipc:test_support",
       "//net:test_support",
+      "//services/shell/public/cpp",
       "//testing/gmock",
       "//testing/gtest",
       "//ui/base",

@@ -18,7 +18,7 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
 
   // content::ContentGpuClient:
   void Initialize(base::FieldTrialList::Observer* observer) override;
-  void RegisterMojoServices(content::ServiceRegistry* registry) override;
+  void RegisterMojoInterfaces(shell::InterfaceRegistry* registry) override;
 
  private:
   std::unique_ptr<chrome_variations::ChildProcessFieldTrialSyncer>

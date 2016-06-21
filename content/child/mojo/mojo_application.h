@@ -8,7 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/common/mojo/service_registry_impl.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace content {
 
@@ -25,10 +26,16 @@ class MojoApplication {
   // |token|.
   void InitWithToken(const std::string& token);
 
-  ServiceRegistry* service_registry() { return &service_registry_; }
+  shell::InterfaceRegistry* interface_registry() {
+    return interface_registry_.get();
+  }
+  shell::InterfaceProvider* remote_interfaces() {
+    return remote_interfaces_.get();
+  }
 
  private:
-  ServiceRegistryImpl service_registry_;
+  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoApplication);
 };

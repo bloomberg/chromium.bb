@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "components/contextual_search/renderer/contextual_search_wrapper.h"
 #include "components/contextual_search/renderer/overlay_page_notifier_service_impl.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "v8/include/v8.h"
 
 namespace contextual_search {
@@ -24,11 +24,11 @@ OverlayJsRenderFrameObserver::OverlayJsRenderFrameObserver(
 OverlayJsRenderFrameObserver::~OverlayJsRenderFrameObserver() {}
 
 void OverlayJsRenderFrameObserver::DidStartProvisionalLoad() {
-  RegisterMojoService();
+  RegisterMojoInterface();
 }
 
-void OverlayJsRenderFrameObserver::RegisterMojoService() {
-  render_frame()->GetServiceRegistry()->AddService(base::Bind(
+void OverlayJsRenderFrameObserver::RegisterMojoInterface() {
+  render_frame()->GetInterfaceRegistry()->AddInterface(base::Bind(
       &OverlayJsRenderFrameObserver::CreateOverlayPageNotifierService,
       weak_factory_.GetWeakPtr()));
 }
@@ -54,8 +54,8 @@ void OverlayJsRenderFrameObserver::DidFinishLoad() {
   // point, there will not be one; remove the OverlayPageNotifierService
   // from the registry.
   render_frame()
-      ->GetServiceRegistry()
-      ->RemoveService<mojom::OverlayPageNotifierService>();
+      ->GetInterfaceRegistry()
+      ->RemoveInterface<mojom::OverlayPageNotifierService>();
 }
 
 void OverlayJsRenderFrameObserver::OnDestruct() {

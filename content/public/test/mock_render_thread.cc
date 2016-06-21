@@ -9,13 +9,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
-#include "content/common/mojo/service_registry_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebScriptController.h"
 
@@ -183,10 +184,21 @@ void MockRenderThread::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
-ServiceRegistry* MockRenderThread::GetServiceRegistry() {
-  if (!service_registry_)
-    service_registry_.reset(new ServiceRegistryImpl);
-  return service_registry_.get();
+shell::InterfaceRegistry* MockRenderThread::GetInterfaceRegistry() {
+  if (!interface_registry_)
+    interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+  return interface_registry_.get();
+}
+
+shell::InterfaceProvider* MockRenderThread::GetRemoteInterfaces() {
+  if (!remote_interfaces_) {
+    shell::mojom::InterfaceProviderPtr remote_interface_provider;
+    pending_remote_interface_provider_request_ =
+        GetProxy(&remote_interface_provider);
+    remote_interfaces_.reset(new shell::InterfaceProvider(
+        std::move(remote_interface_provider)));
+  }
+  return remote_interfaces_.get();
 }
 
 void MockRenderThread::SendCloseMessage() {

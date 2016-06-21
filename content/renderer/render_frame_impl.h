@@ -25,7 +25,6 @@
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
-#include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
@@ -38,6 +37,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
@@ -110,8 +110,9 @@ class UrlIndex;
 class WebEncryptedMediaClientImpl;
 }
 
-namespace mojo {
-class ServiceProvider;
+namespace shell {
+class InterfaceRegistry;
+class InterfaceProvider;
 }
 
 namespace url {
@@ -401,7 +402,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void ExecuteJavaScript(const base::string16& javascript) override;
   bool IsMainFrame() override;
   bool IsHidden() override;
-  ServiceRegistry* GetServiceRegistry() override;
+  shell::InterfaceRegistry* GetInterfaceRegistry() override;
+  shell::InterfaceProvider* GetRemoteInterfaces() override;
 #if defined(ENABLE_PLUGINS)
   void RegisterPeripheralPlugin(
       const url::Origin& content_origin,
@@ -1018,7 +1020,7 @@ class CONTENT_EXPORT RenderFrameImpl
   media::CdmFactory* GetCdmFactory();
   media::DecoderFactory* GetDecoderFactory();
 
-  void RegisterMojoServices();
+  void RegisterMojoInterfaces();
 
   // Connect to an interface provided by the service registry.
   template <typename Interface>
@@ -1210,8 +1212,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // initialized.
   PresentationDispatcher* presentation_dispatcher_;
 
-  ServiceRegistryImpl service_registry_;
-  BlinkServiceRegistryImpl blink_service_registry_;
+  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
+  std::unique_ptr<BlinkServiceRegistryImpl> blink_service_registry_;
+  shell::mojom::InterfaceProviderRequest
+      pending_remote_interface_provider_request_;
 
   // The shell proxy used to connect to Mojo applications.
   shell::mojom::ConnectorPtr connector_;

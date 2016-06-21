@@ -22,6 +22,8 @@ class ServiceRegistryAndroidImpl : public ServiceRegistryAndroid {
   friend class ServiceRegistryAndroid;
 
   // Use ServiceRegistryAndroid::Create() to create an instance.
+  ServiceRegistryAndroidImpl(shell::InterfaceRegistry* interface_registry,
+                             shell::InterfaceProvider* remote_interfaces);
   explicit ServiceRegistryAndroidImpl(ServiceRegistry* service_registry);
 
   // ServiceRegistryAndroid implementation:
@@ -42,7 +44,9 @@ class ServiceRegistryAndroidImpl : public ServiceRegistryAndroid {
       jint handle) override;
   const base::android::ScopedJavaGlobalRef<jobject>& GetObj() override;
 
-  ServiceRegistry* service_registry_;
+  ServiceRegistry* service_registry_ = nullptr;
+  shell::InterfaceRegistry* interface_registry_ = nullptr;
+  shell::InterfaceProvider* remote_interfaces_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> obj_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceRegistryAndroidImpl);

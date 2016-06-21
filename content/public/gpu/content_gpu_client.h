@@ -12,9 +12,11 @@ namespace gpu {
 class SyncPointManager;
 }
 
-namespace content {
+namespace shell {
+class InterfaceRegistry;
+}
 
-class ServiceRegistry;
+namespace content {
 
 // Embedder API for participating in gpu logic.
 class CONTENT_EXPORT ContentGpuClient {
@@ -26,10 +28,10 @@ class CONTENT_EXPORT ContentGpuClient {
   // which should be used to inform the browser process of this state.
   virtual void Initialize(base::FieldTrialList::Observer* observer) {}
 
-  // Allows client to register Mojo services in |registry| on the GPU process.
-  // The registered services will be exposed to the browser process through
+  // Allows client to register Mojo interfaces in |registry| on the GPU process.
+  // The registered interfaces will be exposed to the browser process through
   // GpuProcessHost.
-  virtual void RegisterMojoServices(ServiceRegistry* registry) {}
+  virtual void RegisterMojoInterfaces(shell::InterfaceRegistry* registry) {}
 
   // Allows client to supply a SyncPointManager instance instead of having
   // content internally create one.

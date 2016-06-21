@@ -5,6 +5,7 @@ include_rules = [
   "+third_party/WebKit/public/web",
   "+ipc",
   "+mojo/public",
+  "+services/shell/public/cpp",
 ]
 
 specific_include_rules = {

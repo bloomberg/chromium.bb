@@ -19,6 +19,7 @@ MojoApplication::~MojoApplication() {
 }
 
 void MojoApplication::InitWithToken(const std::string& token) {
+  DCHECK(!interface_registry_.get());
   mojo::ScopedMessagePipeHandle handle =
       mojo::edk::CreateChildMessagePipe(token);
   DCHECK(handle.is_valid());
@@ -27,12 +28,18 @@ void MojoApplication::InitWithToken(const std::string& token) {
   application_setup.Bind(
       mojo::InterfacePtrInfo<mojom::ApplicationSetup>(std::move(handle), 0u));
 
-  shell::mojom::InterfaceProviderPtr services;
-  shell::mojom::InterfaceProviderPtr exposed_services;
-  service_registry_.Bind(GetProxy(&exposed_services));
+  interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+  shell::mojom::InterfaceProviderPtr exposed_interfaces;
+  interface_registry_->Bind(GetProxy(&exposed_interfaces));
+
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
+  shell::mojom::InterfaceProviderRequest remote_interfaces_request =
+      GetProxy(&remote_interfaces);
+  remote_interfaces_.reset(
+      new shell::InterfaceProvider(std::move(remote_interfaces)));
   application_setup->ExchangeInterfaceProviders(
-      service_registry_.TakeRemoteRequest(),
-      std::move(exposed_services));
+      std::move(remote_interfaces_request),
+      std::move(exposed_interfaces));
 }
 
 }  // namespace content

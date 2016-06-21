@@ -823,11 +823,11 @@ void RenderThreadImpl::Init(
   base::DiscardableMemoryAllocator::SetInstance(
       ChildThreadImpl::discardable_shared_memory_manager());
 
-  GetContentClient()->renderer()->RegisterProcessMojoServices(
-      service_registry());
+  GetContentClient()->renderer()->RegisterProcessMojoInterfaces(
+      interface_registry());
 
-  service_registry()->AddService(base::Bind(CreateFrameFactory));
-  service_registry()->AddService(base::Bind(CreateEmbeddedWorkerSetup));
+  interface_registry()->AddInterface(base::Bind(CreateFrameFactory));
+  interface_registry()->AddInterface(base::Bind(CreateEmbeddedWorkerSetup));
 
 #if defined(MOJO_SHELL_CLIENT)
   // We may not have a MojoShellConnection object in tests that directly
@@ -838,7 +838,7 @@ void RenderThreadImpl::Init(
     CreateRenderWidgetWindowTreeClientFactory();
 #endif
 
-  service_registry()->ConnectToRemoteService(
+  remote_interfaces()->GetInterface(
       mojo::GetProxy(&storage_partition_service_));
 
   is_renderer_suspended_ = false;
@@ -1155,7 +1155,7 @@ void RenderThreadImpl::InitializeWebKit(
 
   blink_platform_impl_.reset(new RendererBlinkPlatformImpl(
       renderer_scheduler_.get(),
-      static_cast<ServiceRegistryImpl*>(service_registry())->GetWeakPtr()));
+      remote_interfaces()->GetWeakPtr()));
   blink::initialize(blink_platform_impl_.get());
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
@@ -1543,9 +1543,14 @@ void RenderThreadImpl::PreCacheFontCharacters(const LOGFONT& log_font,
 
 #endif  // OS_WIN
 
-ServiceRegistry* RenderThreadImpl::GetServiceRegistry() {
-  DCHECK(service_registry());
-  return service_registry();
+shell::InterfaceRegistry* RenderThreadImpl::GetInterfaceRegistry() {
+  DCHECK(interface_registry());
+  return interface_registry();
+}
+
+shell::InterfaceProvider* RenderThreadImpl::GetRemoteInterfaces() {
+  DCHECK(remote_interfaces());
+  return remote_interfaces();
 }
 
 bool RenderThreadImpl::IsGpuRasterizationForced() {

@@ -12,8 +12,8 @@ AwContentGpuClient::AwContentGpuClient(
 
 AwContentGpuClient::~AwContentGpuClient() {}
 
-void AwContentGpuClient::RegisterMojoServices(
-    content::ServiceRegistry* registry) {}
+void AwContentGpuClient::RegisterMojoInterfaces(
+    shell::InterfaceRegistry* registry) {}
 
 gpu::SyncPointManager* AwContentGpuClient::GetSyncPointManager() {
   return sync_point_manager_callback_.Run();

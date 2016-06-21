@@ -24,11 +24,15 @@ namespace base {
 class Value;
 }
 
+namespace shell {
+class InterfaceRegistry;
+class InterfaceProvider;
+}
+
 namespace content {
 class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHostView;
-class ServiceRegistry;
 class SiteInstance;
 struct FileChooserFileInfo;
 
@@ -179,8 +183,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderViewHost for this frame.
   virtual RenderViewHost* GetRenderViewHost() = 0;
 
-  // Returns the ServiceRegistry for this frame.
-  virtual ServiceRegistry* GetServiceRegistry() = 0;
+  // Returns the InterfaceRegistry that this process uses to expose interfaces
+  // to the application running in this frame.
+  virtual shell::InterfaceRegistry* GetInterfaceRegistry() = 0;
+
+  // Returns the InterfaceProvider that this process can use to bind
+  // interfaces exposed to it by the application running in this frame.
+  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
 
   // Returns the visibility state of the frame. The different visibility states
   // of a frame are defined in Blink.

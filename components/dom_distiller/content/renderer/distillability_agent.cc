@@ -11,9 +11,8 @@
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/page_features.h"
 #include "components/dom_distiller/core/url_utils.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
-
+#include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebDistillability.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -201,8 +200,8 @@ void DistillabilityAgent::DidMeaningfulLayout(
   bool is_last = IsLast(is_loaded);
   // Connect to Mojo service on browser to notify page distillability.
   mojom::DistillabilityServicePtr distillability_service;
-  render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-      mojo::GetProxy(&distillability_service));
+  render_frame()->GetRemoteInterfaces()->GetInterface(
+      &distillability_service);
   DCHECK(distillability_service);
   distillability_service->NotifyIsDistillable(
       IsDistillablePage(doc, is_last), is_last);

@@ -195,8 +195,12 @@ class CONTENT_EXPORT ChildThreadImpl
   static void ShutdownThread();
 #endif
 
-  ServiceRegistry* service_registry() const {
-    return mojo_application_->service_registry();
+  shell::InterfaceRegistry* interface_registry() {
+    return mojo_application_->interface_registry();
+  }
+
+  shell::InterfaceProvider* remote_interfaces() const {
+    return mojo_application_->remote_interfaces();
   }
 
  protected:

@@ -5,11 +5,11 @@
 #include "components/contextual_search/renderer/contextual_search_wrapper.h"
 
 #include "base/strings/string_util.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "gin/arguments.h"
 #include "gin/object_template_builder.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -72,8 +72,8 @@ gin::ObjectTemplateBuilder ContextualSearchWrapper::GetObjectTemplateBuilder(
 bool ContextualSearchWrapper::EnsureServiceConnected() {
   if (render_frame() && (!contextual_search_js_api_service_ ||
       !contextual_search_js_api_service_.is_bound())) {
-    render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&contextual_search_js_api_service_));
+    render_frame()->GetRemoteInterfaces()->GetInterface(
+        &contextual_search_js_api_service_);
     return true;
   } else {
     return false;

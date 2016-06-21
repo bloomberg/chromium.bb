@@ -14,15 +14,15 @@
 #include "base/memory/weak_ptr.h"
 #include "services/shell/public/cpp/connect.h"
 #include "services/shell/public/cpp/identity.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
-#include "services/shell/public/cpp/remote_interface_registry.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace shell {
 
 class InterfaceBinder;
-class RemoteInterfaceRegistry;
+class InterfaceProvider;
 
 // Represents a connection to another application. An instance of this class is
 // returned from Shell's ConnectToApplication(), and passed to ShellClient's
@@ -89,7 +89,7 @@ class Connection {
   // interface.
   template <typename Interface>
   void GetInterface(mojo::InterfacePtr<Interface>* ptr) {
-    GetRemoteInterfaceRegistry()->GetInterface(ptr);
+    GetRemoteInterfaces()->GetInterface(ptr);
   }
 
   // Returns true if the remote application has the specified capability class
@@ -150,7 +150,7 @@ class Connection {
   virtual InterfaceRegistry* GetInterfaceRegistry() = 0;
 
   // Returns an object encapsulating a remote InterfaceProvider.
-  virtual RemoteInterfaceRegistry* GetRemoteInterfaceRegistry() = 0;
+  virtual InterfaceProvider* GetRemoteInterfaces() = 0;
 
   virtual base::WeakPtr<Connection> GetWeakPtr() = 0;
 };

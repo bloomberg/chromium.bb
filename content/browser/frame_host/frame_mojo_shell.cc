@@ -8,12 +8,12 @@
 
 #include "build/build_config.h"
 #include "content/browser/mojo/mojo_shell_context.h"
-#include "content/common/mojo/service_registry_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 #if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
 #include "content/browser/media/android/provision_fetcher_impl.h"
@@ -23,10 +23,10 @@ namespace content {
 
 namespace {
 
-void RegisterFrameMojoShellServices(ServiceRegistry* registry,
-                                    RenderFrameHost* render_frame_host) {
+void RegisterFrameMojoShellInterfaces(shell::InterfaceRegistry* registry,
+                                      RenderFrameHost* render_frame_host) {
 #if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
-  registry->AddService(
+  registry->AddInterface(
       base::Bind(&ProvisionFetcherImpl::Create, render_frame_host));
 #endif
 }
@@ -44,41 +44,42 @@ void FrameMojoShell::BindRequest(shell::mojom::ConnectorRequest request) {
   connectors_.AddBinding(this, std::move(request));
 }
 
-// TODO(xhwang): Currently no callers are exposing |exposed_services|. So we
-// drop it and replace it with services we provide in the browser. In the
+// TODO(xhwang): Currently no callers are exposing |exposed_interfaces|. So we
+// drop it and replace it with interfaces we provide in the browser. In the
 // future we may need to support both.
 void FrameMojoShell::Connect(
     shell::mojom::IdentityPtr target,
-    shell::mojom::InterfaceProviderRequest services,
-    shell::mojom::InterfaceProviderPtr /* exposed_services */,
+    shell::mojom::InterfaceProviderRequest interfaces,
+    shell::mojom::InterfaceProviderPtr /* exposed_interfaces */,
     shell::mojom::ClientProcessConnectionPtr client_process_connection,
     const shell::mojom::Connector::ConnectCallback& callback) {
-  shell::mojom::InterfaceProviderPtr frame_services;
-  service_provider_bindings_.AddBinding(GetServiceRegistry(),
-                                        GetProxy(&frame_services));
+  shell::mojom::InterfaceProviderPtr frame_interfaces;
+  interface_provider_bindings_.AddBinding(GetInterfaceRegistry(),
+                                          GetProxy(&frame_interfaces));
   MojoShellContext::ConnectToApplication(
       shell::mojom::kRootUserID, target->name,
-      frame_host_->GetSiteInstance()->GetSiteURL().spec(), std::move(services),
-      std::move(frame_services), callback);
+      frame_host_->GetSiteInstance()->GetSiteURL().spec(),
+      std::move(interfaces),
+      std::move(frame_interfaces), callback);
 }
 
 void FrameMojoShell::Clone(shell::mojom::ConnectorRequest request) {
   connectors_.AddBinding(this, std::move(request));
 }
 
-ServiceRegistryImpl* FrameMojoShell::GetServiceRegistry() {
-  if (!service_registry_) {
-    service_registry_.reset(new ServiceRegistryImpl());
+shell::InterfaceRegistry* FrameMojoShell::GetInterfaceRegistry() {
+  if (!interface_registry_) {
+    interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
 
     // TODO(rockot/xhwang): Currently all applications connected share the same
-    // set of services registered in the |registry|. We may want to provide
-    // different services for different apps for better isolation.
-    RegisterFrameMojoShellServices(service_registry_.get(), frame_host_);
-    GetContentClient()->browser()->RegisterFrameMojoShellServices(
-        service_registry_.get(), frame_host_);
+    // set of interfaces registered in the |registry|. We may want to provide
+    // different interfaces for different apps for better isolation.
+    RegisterFrameMojoShellInterfaces(interface_registry_.get(), frame_host_);
+    GetContentClient()->browser()->RegisterFrameMojoShellInterfaces(
+        interface_registry_.get(), frame_host_);
   }
 
-  return service_registry_.get();
+  return interface_registry_.get();
 }
 
 }  // namespace content

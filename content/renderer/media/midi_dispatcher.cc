@@ -5,8 +5,8 @@
 #include "content/renderer/media/midi_dispatcher.h"
 
 #include "base/bind.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
@@ -31,10 +31,8 @@ void MidiDispatcher::OnDestruct() {
 
 void MidiDispatcher::requestPermission(const WebMIDIPermissionRequest& request,
                                        const WebMIDIOptions& options) {
-  if (!permission_service_.get()) {
-    render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&permission_service_));
-  }
+  if (!permission_service_.get())
+    render_frame()->GetRemoteInterfaces()->GetInterface(&permission_service_);
 
   int permission_request_id =
       requests_.Add(new WebMIDIPermissionRequest(request));

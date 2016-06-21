@@ -11,6 +11,11 @@
 #include "base/android/scoped_java_ref.h"
 #include "content/common/content_export.h"
 
+namespace shell {
+class InterfaceRegistry;
+class InterfaceProvider;
+}
+
 namespace content {
 
 class ServiceRegistry;
@@ -23,7 +28,11 @@ class CONTENT_EXPORT ServiceRegistryAndroid {
 
   // The |registry| parameter must outlive |ServiceRegistryAndroid|.
   static std::unique_ptr<ServiceRegistryAndroid> Create(
-      ServiceRegistry* registry);
+      shell::InterfaceRegistry* interface_registry,
+      shell::InterfaceProvider* remote_interfaces);
+
+  static std::unique_ptr<ServiceRegistryAndroid> Create(
+      ServiceRegistry* service_registry);
 
   // Called from Java.
   virtual void AddService(

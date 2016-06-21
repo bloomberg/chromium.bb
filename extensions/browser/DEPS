@@ -19,6 +19,7 @@ include_rules = [
   "+google_apis/gaia",
   "+grit/extensions_strings.h",
   "+net",
+  "+services/shell/public/cpp",
   "+skia/ext/image_operations.h",
   "+storage/browser/fileapi",
   "+sync",

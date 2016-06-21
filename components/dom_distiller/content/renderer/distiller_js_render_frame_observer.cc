@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "v8/include/v8.h"
 
 namespace dom_distiller {
@@ -26,7 +26,7 @@ DistillerJsRenderFrameObserver::DistillerJsRenderFrameObserver(
 DistillerJsRenderFrameObserver::~DistillerJsRenderFrameObserver() {}
 
 void DistillerJsRenderFrameObserver::DidStartProvisionalLoad() {
-  RegisterMojoService();
+  RegisterMojoInterface();
 }
 
 void DistillerJsRenderFrameObserver::DidFinishLoad() {
@@ -34,8 +34,8 @@ void DistillerJsRenderFrameObserver::DidFinishLoad() {
   // will not be one; remove the mojom::DistillerPageNotifierService from the
   // registry.
   render_frame()
-      ->GetServiceRegistry()
-      ->RemoveService<mojom::DistillerPageNotifierService>();
+      ->GetInterfaceRegistry()
+      ->RemoveInterface<mojom::DistillerPageNotifierService>();
 }
 
 void DistillerJsRenderFrameObserver::DidCreateScriptContext(
@@ -51,8 +51,8 @@ void DistillerJsRenderFrameObserver::DidCreateScriptContext(
   native_javascript_handle_->AddJavaScriptObjectToFrame(context);
 }
 
-void DistillerJsRenderFrameObserver::RegisterMojoService() {
-  render_frame()->GetServiceRegistry()->AddService(base::Bind(
+void DistillerJsRenderFrameObserver::RegisterMojoInterface() {
+  render_frame()->GetInterfaceRegistry()->AddInterface(base::Bind(
       &DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService,
       weak_factory_.GetWeakPtr()));
 }

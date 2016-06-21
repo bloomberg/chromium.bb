@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_GPU_SERVICE_REGISTRY_H_
-#define CONTENT_PUBLIC_BROWSER_GPU_SERVICE_REGISTRY_H_
+#ifndef CONTENT_PUBLIC_BROWSER_GPU_INTERFACE_REGISTRY_H_
+#define CONTENT_PUBLIC_BROWSER_GPU_INTERFACE_REGISTRY_H_
 
 #include "content/common/content_export.h"
 
 namespace content {
+
 class ServiceRegistry;
 
-// Get ServiceRegistry registered via ContentGpuClient::RegisterMojoServices().
+// Get ServiceRegistry registered via
+// ContentGpuClient::RegisterMojoInterfaces().
 // This must be called on IO thread.
 CONTENT_EXPORT ServiceRegistry* GetGpuServiceRegistry();
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_GPU_SERVICE_REGISTRY_H_
+#endif  // CONTENT_PUBLIC_BROWSER_GPU_INTERFACE_REGISTRY_H_

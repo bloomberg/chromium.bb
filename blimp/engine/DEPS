@@ -11,6 +11,7 @@ include_rules = [
   "+content/public",
   "+mojo/public",
   "+net",
+  "+services/shell/public/cpp",
   "+third_party/blimp_fonts",
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/WebKit/public/web/WebInputEvent.h",

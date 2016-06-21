@@ -15,7 +15,7 @@ class ShellContentUtilityClient : public ContentUtilityClient {
 
   // ContentUtilityClient:
   void RegisterMojoApplications(StaticMojoApplicationMap* apps) override;
-  void RegisterMojoServices(ServiceRegistry* registry) override;
+  void RegisterMojoInterfaces(shell::InterfaceRegistry* registry) override;
 };
 
 }  // namespace content

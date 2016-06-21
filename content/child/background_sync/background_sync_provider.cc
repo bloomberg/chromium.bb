@@ -34,9 +34,9 @@ int64_t GetServiceWorkerRegistrationId(
 }
 
 void ConnectToServiceOnMainThread(
-    mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request) {
+    blink::mojom::BackgroundSyncServiceRequest request) {
   DCHECK(ChildThreadImpl::current());
-  ChildThreadImpl::current()->service_registry()->ConnectToRemoteService(
+  ChildThreadImpl::current()->remote_interfaces()->GetInterface(
       std::move(request));
 }
 

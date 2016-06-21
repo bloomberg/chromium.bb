@@ -7,9 +7,10 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "content/public/child/worker_thread.h"
-#include "content/public/common/service_registry.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionObserver.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
@@ -88,8 +89,9 @@ bool PermissionDispatcher::IsObservable(blink::WebPermissionType type) {
          type == blink::WebPermissionTypeBackgroundSync;
 }
 
-PermissionDispatcher::PermissionDispatcher(ServiceRegistry* service_registry)
-    : service_registry_(service_registry) {
+PermissionDispatcher::PermissionDispatcher(
+    shell::InterfaceProvider* remote_interfaces)
+    : remote_interfaces_(remote_interfaces) {
 }
 
 PermissionDispatcher::~PermissionDispatcher() {
@@ -230,8 +232,7 @@ void PermissionDispatcher::RunPermissionsCallbackOnWorkerThread(
 blink::mojom::PermissionService*
 PermissionDispatcher::GetPermissionServicePtr() {
   if (!permission_service_.get()) {
-    service_registry_->ConnectToRemoteService(
-        mojo::GetProxy(&permission_service_));
+    remote_interfaces_->GetInterface(mojo::GetProxy(&permission_service_));
   }
   return permission_service_.get();
 }

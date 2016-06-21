@@ -8,16 +8,16 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_thread.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
 namespace web_cache {
 
 WebCacheImpl::WebCacheImpl() : clear_cache_state_(kInit) {
-  content::ServiceRegistry* service_registry =
-      content::RenderThread::Get()->GetServiceRegistry();
-  service_registry->AddService(
+  shell::InterfaceRegistry* registry =
+      content::RenderThread::Get()->GetInterfaceRegistry();
+  registry->AddInterface(
       base::Bind(&WebCacheImpl::BindRequest, base::Unretained(this)));
 }
 

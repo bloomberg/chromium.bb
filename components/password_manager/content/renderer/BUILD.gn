@@ -15,6 +15,7 @@ static_library("renderer") {
     "//components/strings",
     "//content/public/common",
     "//content/public/renderer",
+    "//services/shell/public/cpp",
     "//third_party/WebKit/public:blink",
     "//url",
   ]
@@ -30,6 +31,7 @@ source_set("browser_tests") {
     ":renderer",
     "//content/public/renderer",
     "//content/test:test_support",
+    "//services/shell/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",

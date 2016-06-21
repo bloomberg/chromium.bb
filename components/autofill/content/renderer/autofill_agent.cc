@@ -38,12 +38,13 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "net/cert/cert_status_flags.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -182,7 +183,7 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
   render_frame->GetWebFrame()->setAutofillClient(this);
 
   // AutofillAgent is guaranteed to outlive |render_frame|.
-  render_frame->GetServiceRegistry()->AddService(
+  render_frame->GetInterfaceRegistry()->AddInterface(
       base::Bind(&AutofillAgent::BindRequest, base::Unretained(this)));
 
   // This owns itself, and will delete itself when |render_frame| is destructed
@@ -803,8 +804,7 @@ void AutofillAgent::ConnectToMojoAutofillDriverIfNeeded() {
       !mojo_autofill_driver_.encountered_error())
     return;
 
-  render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-      mojo::GetProxy(&mojo_autofill_driver_));
+  render_frame()->GetRemoteInterfaces()->GetInterface(&mojo_autofill_driver_);
 }
 
 // LegacyAutofillAgent ---------------------------------------------------------

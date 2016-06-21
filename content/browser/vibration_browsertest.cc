@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -19,6 +18,7 @@
 #include "content/shell/browser/shell.h"
 #include "device/vibration/vibration_manager.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 // These tests run against a dummy implementation of the VibrationManager
 // service. That is, they verify that the service implementation is correctly
@@ -81,7 +81,7 @@ class VibrationTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     ResetGlobalValues();
-    GetMainFrame()->GetServiceRegistry()->AddService(
+    GetMainFrame()->GetInterfaceRegistry()->AddInterface(
         base::Bind(&FakeVibrationManager::Create));
   }
 
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(VibrationTest,
 
   ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(".", "page_with_iframe.html")));
   RenderFrameHost* iframe = ChildFrameAt(GetMainFrame(), 0);
-  iframe->GetServiceRegistry()->AddService(
+  iframe->GetInterfaceRegistry()->AddInterface(
       base::Bind(&FakeVibrationManager::Create));
   ASSERT_TRUE(Vibrate(1234, iframe));
   g_wait_vibrate_runner->Run();
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(VibrationTest,
 
   ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(".", "page_with_iframe.html")));
   RenderFrameHost* iframe = ChildFrameAt(GetMainFrame(), 0);
-  iframe->GetServiceRegistry()->AddService(
+  iframe->GetInterfaceRegistry()->AddInterface(
       base::Bind(&FakeVibrationManager::Create));
   ASSERT_TRUE(Vibrate(1234, iframe));
   g_wait_vibrate_runner->Run();
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(VibrationTest,
 
   ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(".", "page_with_iframe.html")));
   RenderFrameHost* iframe = ChildFrameAt(GetMainFrame(), 0);
-  iframe->GetServiceRegistry()->AddService(
+  iframe->GetInterfaceRegistry()->AddInterface(
       base::Bind(&FakeVibrationManager::Create));
   ASSERT_TRUE(Vibrate(1234, iframe));
   g_wait_vibrate_runner->Run();

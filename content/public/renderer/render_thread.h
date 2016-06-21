@@ -32,6 +32,11 @@ class SyncChannel;
 class SyncMessageFilter;
 }
 
+namespace shell {
+class InterfaceRegistry;
+class InterfaceProvider;
+}
+
 namespace v8 {
 class Extension;
 }
@@ -40,7 +45,6 @@ namespace content {
 
 class RenderThreadObserver;
 class ResourceDispatcherDelegate;
-class ServiceRegistry;
 
 class CONTENT_EXPORT RenderThread : virtual public ChildThread {
  public:
@@ -109,8 +113,13 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   // Gets the shutdown event for the process.
   virtual base::WaitableEvent* GetShutdownEvent() = 0;
 
-  // Returns the ServiceRegistry for this thread. Never returns nullptr.
-  virtual ServiceRegistry* GetServiceRegistry() = 0;
+  // Returns the InterfaceRegistry that this process uses to expose interfaces
+  // to the browser.
+  virtual shell::InterfaceRegistry* GetInterfaceRegistry() = 0;
+
+  // Returns the InterfaceProvider that this process can use to bind
+  // interfaces exposed to it by the browser.
+  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
 };
 
 }  // namespace content

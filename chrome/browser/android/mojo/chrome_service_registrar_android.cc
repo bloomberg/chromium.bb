@@ -9,6 +9,7 @@
 #include "content/public/browser/android/service_registry_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ChromeServiceRegistrar_jni.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 // static
 bool ChromeServiceRegistrarAndroid::Register(JNIEnv* env) {
@@ -16,8 +17,8 @@ bool ChromeServiceRegistrarAndroid::Register(JNIEnv* env) {
 }
 
 // static
-void ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoServices(
-    content::ServiceRegistry* registry,
+void ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoInterfaces(
+    shell::InterfaceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -28,6 +29,7 @@ void ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoServices(
 
   Java_ChromeServiceRegistrar_registerRenderFrameMojoServices(
       base::android::AttachCurrentThread(),
-      content::ServiceRegistryAndroid::Create(registry)->GetObj().obj(),
+      content::ServiceRegistryAndroid::Create(registry,
+                                              nullptr)->GetObj().obj(),
       web_contents->GetJavaWebContents().obj());
 }

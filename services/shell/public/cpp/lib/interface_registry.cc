@@ -9,13 +9,27 @@
 namespace shell {
 
 InterfaceRegistry::InterfaceRegistry(Connection* connection)
-    : binding_(this), connection_(connection) {}
+    : binding_(this), connection_(connection), weak_factory_(this) {}
 InterfaceRegistry::~InterfaceRegistry() {}
 
 void InterfaceRegistry::Bind(
     mojom::InterfaceProviderRequest local_interfaces_request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(local_interfaces_request));
+}
+
+base::WeakPtr<InterfaceRegistry> InterfaceRegistry::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+bool InterfaceRegistry::AddInterface(
+    const std::string& name,
+    const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  return SetInterfaceBinderForName(
+      base::WrapUnique(
+          new internal::GenericCallbackBinder(callback, task_runner)),
+      name);
 }
 
 void InterfaceRegistry::RemoveInterface(const std::string& name) {

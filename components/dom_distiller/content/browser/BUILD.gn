@@ -37,6 +37,7 @@ static_library("browser") {
     "//content/public/common",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//services/shell/public/cpp",
     "//skia",
     "//sync",
     "//third_party/WebKit/public:blink_headers",

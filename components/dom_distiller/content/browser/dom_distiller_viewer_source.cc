@@ -36,11 +36,12 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/service_registry.h"
 #include "grit/components_strings.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace dom_distiller {
@@ -244,15 +245,15 @@ void DomDistillerViewerSource::StartDataRequest(
 
   // Add mojo service for JavaScript functionality. This is the receiving end
   // of this particular service.
-  render_frame_host->GetServiceRegistry()->AddService(
+  render_frame_host->GetInterfaceRegistry()->AddInterface(
       base::Bind(&CreateDistillerJavaScriptService,
           render_frame_host,
           distiller_ui_handle_.get()));
 
   // Tell the renderer that this is currently a distilled page.
   mojom::DistillerPageNotifierServicePtr page_notifier_service;
-  render_frame_host->GetServiceRegistry()->ConnectToRemoteService(
-      mojo::GetProxy(&page_notifier_service));
+  render_frame_host->GetRemoteInterfaces()->GetInterface(
+      &page_notifier_service);
   DCHECK(page_notifier_service);
   page_notifier_service->NotifyIsDistillerPage();
 

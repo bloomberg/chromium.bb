@@ -98,14 +98,14 @@ bool ConnectionImpl::AllowsInterface(const std::string& interface_name) const {
 }
 
 mojom::InterfaceProvider* ConnectionImpl::GetRemoteInterfaceProvider() {
-  return remote_interfaces_.GetInterfaceProvider();
+  return remote_interfaces_.get();
 }
 
 InterfaceRegistry* ConnectionImpl::GetInterfaceRegistry() {
   return &interfaces_;
 }
 
-RemoteInterfaceRegistry* ConnectionImpl::GetRemoteInterfaceRegistry() {
+InterfaceProvider* ConnectionImpl::GetRemoteInterfaces() {
   return &remote_interfaces_;
 }
 

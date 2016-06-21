@@ -38,6 +38,7 @@ static_library("browser") {
     "//gpu/config",
     "//ipc",
     "//net",
+    "//services/shell/public/cpp",
     "//sql",
     "//third_party/icu",
     "//third_party/libphonenumber",
