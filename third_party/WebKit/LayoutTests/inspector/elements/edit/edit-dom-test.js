@@ -11,7 +11,7 @@ InspectorTest.doAddAttribute = function(testName, dataNodeId, attributeText, nex
     function testBody(node, done)
     {
         var editorElement = InspectorTest.editNodePart(node, "webkit-html-attribute");
-        editorElement.dispatchEvent(InspectorTest.createKeyEvent("Tab"));
+        eventSender.keyDown("Tab");
 
         InspectorTest.deprecatedRunAfterPendingDispatches(testContinuation);
 

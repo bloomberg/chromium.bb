@@ -19,7 +19,7 @@ function test()
         InspectorTest.addResult("textContent when editing 'href'");
         InspectorTest.addResult(treeElement.title.textContent);
 
-        textElement.dispatchEvent(InspectorTest.createKeyEvent("Tab"));
+        eventSender.keyDown("Tab");
         InspectorTest.addResult("textContent after moving to 'id'");
         InspectorTest.addResult(treeElement.title.textContent);
 

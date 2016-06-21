@@ -1565,6 +1565,10 @@ void EventSender::KeyDown(const std::string& code_str,
     code = ui::VKEY_ESCAPE;
     domKeyString.assign("Escape");
     domCodeString.assign("Escape");
+  } else if ("Tab" == code_str) {
+    code = ui::VKEY_TAB;
+    domKeyString.assign("Tab");
+    domCodeString.assign("Tab");
   } else {
     // Compare the input string with the function-key names defined by the
     // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
