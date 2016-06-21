@@ -103,7 +103,10 @@ DOMWindow* DOMWindow::opener() const
 
 DOMWindow* DOMWindow::parent() const
 {
-    if (!frame())
+    // TODO(yukishiino): The 'parent' attribute must return |this|
+    // (the WindowProxy object of the browsing context itself) when it's
+    // top-level or detached.
+    if (!isCurrentlyDisplayedInFrame())
         return nullptr;
 
     Frame* parent = frame()->tree().parent();
@@ -112,7 +115,10 @@ DOMWindow* DOMWindow::parent() const
 
 DOMWindow* DOMWindow::top() const
 {
-    if (!frame())
+    // TODO(yukishiino): The 'top' attribute must return |this|
+    // (the WindowProxy object of the browsing context itself) when it's
+    // top-level or detached.
+    if (!isCurrentlyDisplayedInFrame())
         return nullptr;
 
     return frame()->tree().top()->domWindow();
