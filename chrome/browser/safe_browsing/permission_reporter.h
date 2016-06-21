@@ -11,6 +11,7 @@
 #include "url/gurl.h"
 
 namespace net {
+class ReportSender;
 class URLRequestContext;
 }  // namespace net
 
@@ -37,6 +38,13 @@ class PermissionReporter {
                   content::PermissionType permission,
                   PermissionAction action);
 
+ private:
+  friend class PermissionReporterTest;
+
+  // Used by tests. This constructor allows tests to have access to the
+  // ReportSender.
+  explicit PermissionReporter(std::unique_ptr<net::ReportSender> report_sender);
+
   // Builds and serializes a permission report with |origin| as the origin of
   // the site requesting permission, |permission| as the type of permission
   // requested, and |action| as the action taken. The serialized report is
@@ -47,7 +55,8 @@ class PermissionReporter {
                           PermissionAction action,
                           std::string* output);
 
- private:
+  std::unique_ptr<net::ReportSender> permission_report_sender_;
+
   DISALLOW_COPY_AND_ASSIGN(PermissionReporter);
 };
 
