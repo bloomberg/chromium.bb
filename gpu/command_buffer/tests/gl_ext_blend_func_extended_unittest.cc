@@ -221,6 +221,15 @@ TEST_P(EXTBlendFuncExtendedDrawTest, ESSL1FragColor) {
 TEST_P(EXTBlendFuncExtendedDrawTest, ESSL1FragData) {
   if (!IsApplicable())
     return;
+
+  // Fails on the Intel Mesa driver, see
+  // https://bugs.freedesktop.org/show_bug.cgi?id=96617
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("linux intel")) {
+    return;
+  }
+
   // clang-format off
   static const char* kFragDataShader =
       BFE_SHADER(
