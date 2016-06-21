@@ -10,18 +10,10 @@
 // This file provides default implementations for the ExclusiveAccessContext
 // methods that only some platforms care about.
 
-bool ExclusiveAccessContext::SupportsFullscreenWithToolbar() const {
-  return false;
-}
-
 void ExclusiveAccessContext::UpdateFullscreenWithToolbar(bool with_toolbar) {
   NOTIMPLEMENTED();
 }
 
 void ExclusiveAccessContext::UpdateFullscreenToolbar() {
   NOTIMPLEMENTED();
-}
-
-bool ExclusiveAccessContext::IsFullscreenWithToolbar() const {
-  return false;
 }

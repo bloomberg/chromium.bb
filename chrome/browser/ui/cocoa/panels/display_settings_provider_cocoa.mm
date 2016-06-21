@@ -94,15 +94,10 @@ bool DisplaySettingsProviderCocoa::NeedsPeriodicFullScreenCheck() const {
   // So we don't need to do anything when any other application enters
   // fullscreen mode. We still need to handle the case when chrome enters
   // fullscreen mode and our topmost windows will not get hided by the system.
-  return !chrome::mac::SupportsSystemFullscreen();
+  return false;
 }
 
 bool DisplaySettingsProviderCocoa::IsFullScreen() {
-  // For Lion and later, we only need to check if chrome enters fullscreen mode
-  // (see detailed reason above in NeedsPeriodicFullScreenCheck).
-  if (!chrome::mac::SupportsSystemFullscreen())
-    return DisplaySettingsProvider::IsFullScreen();
-
   Browser* browser = chrome::GetLastActiveBrowser();
   if (!browser)
     return false;

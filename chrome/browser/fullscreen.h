@@ -9,13 +9,4 @@
 
 bool IsFullScreenMode();
 
-#if defined(OS_MACOSX)
-namespace chrome {
-namespace mac {
-// Returns true if this system supports Lion-style system fullscreen.
-bool SupportsSystemFullscreen();
-}  // namespace mac
-}  // namespace chrome
-#endif
-
 #endif  // CHROME_BROWSER_FULLSCREEN_H_

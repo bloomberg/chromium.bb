@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -308,17 +307,13 @@ IN_PROC_BROWSER_TEST_F(
   AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ExclusiveAccessContext* context =
-      browser()->window()->GetExclusiveAccessContext();
 
   {
     FullscreenNotificationObserver fullscreen_observer;
     EXPECT_FALSE(browser()->window()->IsFullscreen());
-    EXPECT_FALSE(context->IsFullscreenWithToolbar());
     browser()->EnterFullscreenModeForTab(tab, GURL());
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
-    EXPECT_FALSE(context->IsFullscreenWithToolbar());
   }
 
   {
@@ -326,17 +321,15 @@ IN_PROC_BROWSER_TEST_F(
     chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     EXPECT_FALSE(browser()->window()->IsFullscreen());
-    EXPECT_FALSE(context->IsFullscreenWithToolbar());
   }
 
-  if (chrome::mac::SupportsSystemFullscreen()) {
+  {
     // Test that tab fullscreen mode doesn't make presentation mode the default
     // on Lion.
     FullscreenNotificationObserver fullscreen_observer;
     chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
-    EXPECT_TRUE(context->IsFullscreenWithToolbar());
   }
 }
 #endif

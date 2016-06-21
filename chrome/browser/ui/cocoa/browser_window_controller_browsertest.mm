@@ -15,7 +15,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
-#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -691,10 +690,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FullscreenResizeFlags) {
 // Flakily times out. http://crbug.com/599119
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        DISABLED_FullscreenToolbarIsVisibleAccordingToPrefs) {
-  // This feature is only available on SystemFullscreen.
-  if (!chrome::mac::SupportsSystemFullscreen())
-    return;
-
   // Tests that the preference is set to true by default.
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_TRUE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));

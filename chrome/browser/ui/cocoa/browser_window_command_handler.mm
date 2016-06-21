@@ -8,7 +8,6 @@
 #import "base/mac/foundation_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -90,7 +89,6 @@ NSString* GetTitleForViewsFullscreenMenuItem(Browser* browser) {
 NSString* GetTitleForFullscreenMenuItem(Browser* browser) {
   NSWindow* ns_window = browser->window()->GetNativeWindow();
   if (BrowserWindowController* controller = [ns_window windowController]) {
-    DCHECK(chrome::mac::SupportsSystemFullscreen());
     return l10n_util::GetNSString([controller isInAppKitFullscreen]
                                       ? IDS_EXIT_FULLSCREEN_MAC
                                       : IDS_ENTER_FULLSCREEN_MAC);

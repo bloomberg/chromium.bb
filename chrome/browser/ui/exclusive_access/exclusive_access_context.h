@@ -29,10 +29,6 @@ class ExclusiveAccessContext {
   // fullscreen.
   virtual bool IsFullscreen() const = 0;
 
-  // Returns true if fullscreen with toolbar is supported.
-  // TODO (spqchan): Deprecate this method. crbug.com/579259
-  virtual bool SupportsFullscreenWithToolbar() const;
-
   // Shows or hides the tab strip, toolbar and bookmark bar with in browser
   // fullscreen.
   // Currently only supported on Mac.
@@ -42,11 +38,6 @@ class ExclusiveAccessContext {
   // Updates the toolbar state to be hidden or shown in fullscreen according to
   // the preference's state. Only supported on Mac.
   virtual void UpdateFullscreenToolbar();
-
-  // Returns true if the window is fullscreen with additional UI elements. See
-  // EnterFullscreen |with_toolbar|.
-   // TODO (spqchan): Deprecate this method. crbug.com/579259
-  virtual bool IsFullscreenWithToolbar() const;
 
   // Enters fullscreen and update exit bubble.
   virtual void EnterFullscreen(const GURL& url,

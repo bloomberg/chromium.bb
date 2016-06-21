@@ -140,7 +140,7 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
     return;
   }
 
-  if (exclusive_access_context->IsFullscreenWithToolbar()) {
+  if (exclusive_access_context->IsFullscreen()) {
     // Browser Fullscreen with Toolbar -> Tab Fullscreen (no toolbar).
     exclusive_access_context->UpdateFullscreenWithToolbar(false);
     state_prior_to_tab_fullscreen_ = STATE_BROWSER_FULLSCREEN_WITH_TOOLBAR;
@@ -337,15 +337,18 @@ void FullscreenController::ToggleFullscreenModeInternal(
       exclusive_access_manager()->context();
   bool enter_fullscreen = !exclusive_access_context->IsFullscreen();
 
+#if defined(OS_MACOSX)
   // When a Mac user requests a toggle they may be toggling between
   // FullscreenWithoutChrome and FullscreenWithToolbar.
+  // TODO(spqchan): Refactor toolbar related code since most of it should be
+  // deprecated.
   if (exclusive_access_context->IsFullscreen() &&
       !IsWindowFullscreenForTabOrPending() &&
-      exclusive_access_context->SupportsFullscreenWithToolbar() &&
       IsExtensionFullscreenOrPending()) {
     enter_fullscreen = enter_fullscreen ||
-        exclusive_access_context->IsFullscreenWithToolbar();
+        exclusive_access_context->IsFullscreen();
   }
+#endif
 
   // In kiosk mode, we always want to be fullscreen. When the browser first
   // starts we're not yet fullscreen, so let the initial toggle go through.

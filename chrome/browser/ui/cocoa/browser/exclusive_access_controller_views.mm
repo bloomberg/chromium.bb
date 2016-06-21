@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/browser/exclusive_access_controller_views.h"
 
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -94,10 +93,6 @@ bool ExclusiveAccessController::IsFullscreen() const {
   return [controller_ isInAnyFullscreenMode];
 }
 
-bool ExclusiveAccessController::SupportsFullscreenWithToolbar() const {
-  return chrome::mac::SupportsSystemFullscreen();
-}
-
 void ExclusiveAccessController::UpdateFullscreenWithToolbar(bool with_toolbar) {
   [controller_ updateFullscreenWithToolbar:with_toolbar];
 }
@@ -106,10 +101,6 @@ void ExclusiveAccessController::UpdateFullscreenToolbar() {
   PrefService* prefs = GetProfile()->GetPrefs();
   bool showToolbar = prefs->GetBoolean(prefs::kShowFullscreenToolbar);
   [controller_ setFullscreenToolbarVisible:showToolbar];
-}
-
-bool ExclusiveAccessController::IsFullscreenWithToolbar() const {
-  return IsFullscreen();
 }
 
 // See the Fullscreen terminology section and the (Fullscreen) interface

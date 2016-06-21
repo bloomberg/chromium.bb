@@ -276,7 +276,6 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type) override {}
   void OnExclusiveAccessUserInput() override {}
-  bool IsFullscreenWithToolbar() const override { return IsFullscreen(); }
 
  private:
   bool fullscreen_;

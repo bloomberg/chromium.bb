@@ -48,9 +48,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   // BrowserWindow Interface:
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
-  bool SupportsFullscreenWithToolbar() const override;
   void UpdateFullscreenWithToolbar(bool with_toolbar) override;
-  bool IsFullscreenWithToolbar() const override;
   static const char* GetWindowStateString(WindowState state);
   WindowState state() const { return state_; }
   void set_browser(Browser* browser) { browser_ = browser; }
@@ -115,21 +113,9 @@ bool FullscreenControllerTestWindow::IsFullscreen() const {
 #endif
 }
 
-bool FullscreenControllerTestWindow::SupportsFullscreenWithToolbar() const {
-#if defined(OS_MACOSX)
-  return true;
-#else
-  return false;
-#endif
-}
-
 void FullscreenControllerTestWindow::UpdateFullscreenWithToolbar(
     bool with_toolbar) {
   EnterFullscreen();
-}
-
-bool FullscreenControllerTestWindow::IsFullscreenWithToolbar() const {
-  return IsFullscreen();
 }
 
 // static

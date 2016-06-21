@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/browser_commands_mac.h"
 
-#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
