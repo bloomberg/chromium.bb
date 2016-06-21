@@ -458,7 +458,7 @@ public class LocationBarPhone extends LocationBarLayout {
         if (getToolbarDataProvider().isUsingBrandColor()) {
             int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
             useLightDrawables |=
-                    ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
+                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
         }
         return useLightDrawables;
     }

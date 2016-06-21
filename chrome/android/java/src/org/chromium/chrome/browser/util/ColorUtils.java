@@ -123,7 +123,7 @@ public class ColorUtils {
      * @param backgroundColor The background color value which is being queried.
      * @return Whether light colored elements should be used.
      */
-    public static boolean shoudUseLightForegroundOnBackground(int backgroundColor) {
+    public static boolean shouldUseLightForegroundOnBackground(int backgroundColor) {
         return getContrastForColor(backgroundColor) >= CONTRAST_LIGHT_ITEM_THRESHOLD;
     }
 

@@ -372,7 +372,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         }
 
         // All other theme colors are computed.
-        if (!ColorUtils.shoudUseLightForegroundOnBackground(color) && !isIncognito) {
+        if (!ColorUtils.shouldUseLightForegroundOnBackground(color) && !isIncognito) {
             // Light theme.
             setForegroundColor(ColorUtils.getColorWithOverlay(Color.BLACK, color,
                     THEMED_FOREGROUND_BLACK_FRACTION));

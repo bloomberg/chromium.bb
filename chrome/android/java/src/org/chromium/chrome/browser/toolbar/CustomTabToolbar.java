@@ -553,8 +553,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                 // Using the current background color instead of the final color in case this
                 // animation was cancelled.  This ensures the assets are updated to the visible
                 // color.
-                mUseDarkColors = !ColorUtils.shoudUseLightForegroundOnBackground(
-                        background.getColor());
+                mUseDarkColors =
+                        !ColorUtils.shouldUseLightForegroundOnBackground(background.getColor());
                 updateVisualsForState();
             }
         });

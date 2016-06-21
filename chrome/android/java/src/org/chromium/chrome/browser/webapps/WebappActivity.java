@@ -348,7 +348,7 @@ public class WebappActivity extends FullScreenActivity {
         appNameView.setText(mWebappInfo.name());
         if (splashIconView != null) splashIconView.setImageBitmap(displayIcon);
 
-        if (ColorUtils.shoudUseLightForegroundOnBackground(backgroundColor)) {
+        if (ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor)) {
             appNameView.setTextColor(ApiCompatibilityUtils.getColor(getResources(),
                     R.color.webapp_splash_title_light));
         }

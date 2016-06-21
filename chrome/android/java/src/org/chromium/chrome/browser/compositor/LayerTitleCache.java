@@ -111,10 +111,10 @@ public class LayerTitleCache implements TitleCache {
         // If theme colors are enabled in the tab switcher, the theme might require lighter text.
         if (FeatureUtilities.areTabSwitcherThemeColorsEnabled()
                 && !DeviceFormFactor.isTablet(mContext)) {
-            isDarkTheme |= ColorUtils.shoudUseLightForegroundOnBackground(tab.getThemeColor());
+            isDarkTheme |= ColorUtils.shouldUseLightForegroundOnBackground(tab.getThemeColor());
         }
 
-        ColorUtils.shoudUseLightForegroundOnBackground(tab.getThemeColor());
+        ColorUtils.shouldUseLightForegroundOnBackground(tab.getThemeColor());
         boolean isRtl = tab.isTitleDirectionRtl();
         TitleBitmapFactory titleBitmapFactory = isDarkTheme
                 ? mDarkTitleBitmapFactory : mStandardTitleBitmapFactory;

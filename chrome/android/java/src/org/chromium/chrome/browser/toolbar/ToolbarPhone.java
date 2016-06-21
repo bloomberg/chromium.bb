@@ -1989,7 +1989,7 @@ public class ToolbarPhone extends ToolbarLayout
         int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
         if (mVisualState == VisualState.BRAND_COLOR && !visualStateChanged) {
             boolean useLightToolbarDrawables =
-                    ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
+                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
             boolean unfocusedLocationBarUsesTransparentBg =
                     !ColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
             if (useLightToolbarDrawables != mUseLightToolbarDrawables
@@ -2031,7 +2031,7 @@ public class ToolbarPhone extends ToolbarLayout
             mUrlBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
         } else if (mVisualState == VisualState.BRAND_COLOR) {
             mUseLightToolbarDrawables =
-                    ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
+                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
             mUnfocusedLocationBarUsesTransparentBg =
                     !ColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
             mUrlBackgroundAlpha = mUnfocusedLocationBarUsesTransparentBg
@@ -2181,9 +2181,10 @@ public class ToolbarPhone extends ToolbarLayout
 
     private void setUseLightDrawablesForTextureCapture() {
         int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
-        mUseLightDrawablesForTextureCapture = isIncognito()
+        mUseLightDrawablesForTextureCapture =
+                isIncognito()
                 || (currentPrimaryColor != 0
-                && ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor));
+                           && ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor));
     }
 
     private void dismissTabSwitcherCallout() {

@@ -2298,7 +2298,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (getToolbarDataProvider().isUsingBrandColor() && !mUrlHasFocus) {
             int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
             brandColorNeedsLightText =
-                    ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
+                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
         }
 
         boolean useDarkColors = tab == null || !(tab.isIncognito() || brandColorNeedsLightText);

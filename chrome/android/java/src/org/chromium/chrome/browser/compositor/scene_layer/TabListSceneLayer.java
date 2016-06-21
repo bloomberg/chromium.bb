@@ -66,7 +66,7 @@ public class TabListSceneLayer extends SceneLayer {
             // text.
             boolean isDarkTheme = t.isIncognito();
             if (FeatureUtilities.areTabSwitcherThemeColorsEnabled()) {
-                isDarkTheme |= ColorUtils.shoudUseLightForegroundOnBackground(
+                isDarkTheme |= ColorUtils.shouldUseLightForegroundOnBackground(
                         t.getToolbarBackgroundColor());
             }
 
