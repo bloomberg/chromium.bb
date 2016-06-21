@@ -25,7 +25,7 @@ class PowerCasesPage(page_module.Page):
     self.archive_data_file = 'data/power_cases.json'
 
   def RunPageInteractions(self, action_runner):
-    action_runner.Wait(30)
+    action_runner.Wait(10)
 
 
 class PowerCasesPageSet(story.StorySet):
