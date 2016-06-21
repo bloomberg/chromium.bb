@@ -292,8 +292,7 @@ void MailboxManagerSync::UpdateDefinitionLocked(
   if (definition.Matches(texture))
     return;
 
-  DCHECK(!image || image_buffer.get());
-  if (image && !image_buffer->IsClient(image)) {
+  if (image && (!image_buffer || !image_buffer->IsClient(image))) {
     LOG(ERROR) << "MailboxSync: Incompatible attachment";
     return;
   }
