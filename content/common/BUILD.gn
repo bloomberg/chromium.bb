@@ -61,6 +61,7 @@ source_set("common") {
     "//media",
     "//media:shared_memory_support",
     "//media/base/ipc",
+    "//media/capture",
     "//media/gpu/ipc/client",
     "//media/gpu/ipc/common",
     "//media/midi",

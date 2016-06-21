@@ -7,12 +7,12 @@
 
 #include <jni.h>
 
-#include "media/base/media_export.h"
+#include "media/capture/capture_export.h"
 
 namespace media {
 
 // Register all JNI bindings necessary for capture.
-MEDIA_EXPORT bool RegisterCaptureJni(JNIEnv* env);
+CAPTURE_EXPORT bool RegisterCaptureJni(JNIEnv* env);
 
 }  // namespace media
 

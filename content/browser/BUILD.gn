@@ -66,6 +66,7 @@ source_set("browser") {
     "//gpu/command_buffer/client:gles2_interface",
     "//ipc/mojo",
     "//media",
+    "//media/capture",
     "//media/gpu/ipc/client",
     "//media/midi",
     "//media/mojo/interfaces:image_capture",
@@ -349,6 +350,7 @@ source_set("browser") {
     deps += [
       "//content/public/android:jni",
       "//media",
+      "//media/capture/video/android",
       "//media/mojo/interfaces",
       "//mojo/android:libsystem_java",
       "//ui/android",

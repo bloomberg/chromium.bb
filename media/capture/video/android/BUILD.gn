@@ -14,6 +14,12 @@ source_set("android") {
   sources = [
     "capture_jni_registrar.cc",
     "capture_jni_registrar.h",
+    "photo_capabilities.cc",
+    "photo_capabilities.h",
+    "video_capture_device_android.cc",
+    "video_capture_device_android.h",
+    "video_capture_device_factory_android.cc",
+    "video_capture_device_factory_android.h",
   ]
   configs += [
     "//media:media_config",
