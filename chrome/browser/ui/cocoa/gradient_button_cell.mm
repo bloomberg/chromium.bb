@@ -346,6 +346,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   [super setShowsBorderOnlyWhileMouseInside:showOnly];
   if (showOnly) {
     [self updateTrackingAreas];
+    if ([self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback)
+      [self setHighlighted:isMouseInside_];
   } else {
     if (trackingArea_) {
       [[self controlView] removeTrackingArea:trackingArea_];

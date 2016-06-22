@@ -2637,6 +2637,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // Update |hoverButton_| so that it corresponds to the open folder.
     hoverButton_.reset([sender retain]);
     [folderTarget_ openBookmarkFolderFromButton:sender];
+
+    const BookmarkButtonCell* cell = [sender cell];
+    if ([cell tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback)
+      [cell setHighlighted:YES];
   } else {
     // We're over a non-folder bookmark so close any old folders.
     [folderController_ close];
