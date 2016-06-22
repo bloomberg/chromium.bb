@@ -1668,7 +1668,9 @@ void Tab::ScheduleIconPaint() {
 
 void Tab::GetFillPath(float scale, SkPath* fill) const {
   const float right = width() * scale;
-  const float bottom = height() * scale;
+  // The bottom of the tab needs to be pixel-aligned or else when we call
+  // ClipPath with anti-aliasing enabled it can cause artifacts.
+  const float bottom = std::ceil(height() * scale);
   const float unscaled_endcap_width = GetUnscaledEndcapWidth();
 
   fill->moveTo(right - 1, bottom);

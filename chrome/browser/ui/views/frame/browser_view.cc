@@ -540,7 +540,7 @@ void BrowserView::Paint1pxHorizontalLine(gfx::Canvas* canvas,
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
   gfx::RectF rect(gfx::ScaleRect(gfx::RectF(bounds), scale));
-  const int inset = rect.height() - 1;
+  const float inset = rect.height() - 1;
   rect.Inset(0, at_bottom ? inset : 0, 0, at_bottom ? 0 : inset);
   SkPaint paint;
   paint.setColor(color);
