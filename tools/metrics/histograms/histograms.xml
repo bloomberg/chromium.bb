@@ -30087,6 +30087,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.Socket.IdleSocketReuseTime" units="seconds">
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    Seconds a socket was idle before it was reused. Emitted upon reuse. Does not
+    record the times sockets were idle before first use.
+  </summary>
+</histogram>
+
+<histogram name="Net.Socket.NumIdleSockets">
+  <owner>mmenke@chromium.org</owner>
+  <summary>Number of idle sockets when one of them was reused.</summary>
+</histogram>
+
 <histogram name="Net.SocketIdleTimeBeforeNextUse_ReusedSocket">
   <obsolete>
     Deprecated as of 03/2015.
