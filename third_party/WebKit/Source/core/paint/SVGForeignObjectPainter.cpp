@@ -11,7 +11,6 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
-#include "core/paint/TransformRecorder.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -42,7 +41,7 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     paintInfoBeforeFiltering.updateCullRect(m_layoutSVGForeignObject.localSVGTransform());
-    TransformRecorder transformRecorder(paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, m_layoutSVGForeignObject.localSVGTransform());
+    SVGTransformContext transformContext(paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, m_layoutSVGForeignObject.localSVGTransform());
 
     Optional<FloatClipRecorder> clipRecorder;
     if (SVGLayoutSupport::isOverflowHidden(&m_layoutSVGForeignObject))

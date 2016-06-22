@@ -102,10 +102,11 @@ void PaintPropertyTreeBuilder::updateTransform(const LayoutObject& object, Paint
         // any paint offset in the root's svgLocalToBorderBox transform.
         DCHECK(context.paintOffset == LayoutPoint());
 
-        // TODO(pdr): Check for the presence of a transform instead of the value. Checking for an
+        // FIXME(pdr): Check for the presence of a transform instead of the value. Checking for an
         // identity matrix will cause the property tree structure to change during animations if
         // the animation passes through the identity matrix.
-        const AffineTransform& transform = object.localToSVGParentTransform();
+        // FIXME(pdr): Refactor this so all non-root SVG objects use the same transform function.
+        const AffineTransform& transform = object.isSVGForeignObject() ? object.localSVGTransform() : object.localToSVGParentTransform();
         if (transform.isIdentity())
             return;
 

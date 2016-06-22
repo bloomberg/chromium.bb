@@ -14,7 +14,6 @@
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -41,19 +40,6 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
 
-    Optional<ScopedPaintChunkProperties> propertyScope;
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        const auto* objectProperties = m_layoutSVGRoot.objectPaintProperties();
-        // If a transform exists, we can rely on a paint layer existing to apply it.
-        DCHECK(!objectProperties || !objectProperties->transform() || m_layoutSVGRoot.hasLayer());
-        if (objectProperties && objectProperties->svgLocalToBorderBoxTransform()) {
-            auto& paintController = paintInfoBeforeFiltering.context.getPaintController();
-            PaintChunkProperties properties(paintController.currentPaintChunkProperties());
-            properties.transform = objectProperties->svgLocalToBorderBoxTransform();
-            propertyScope.emplace(paintController, properties);
-        }
-    }
-
     // Apply initial viewport clip.
     Optional<ClipRecorder> clipRecorder;
     if (m_layoutSVGRoot.shouldApplyViewportClip()) {
@@ -72,7 +58,7 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     paintOffsetToBorderBox.multiply(m_layoutSVGRoot.localToBorderBoxTransform());
 
     paintInfoBeforeFiltering.updateCullRect(paintOffsetToBorderBox);
-    TransformRecorder transformRecorder(paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintOffsetToBorderBox);
+    SVGTransformContext transformContext(paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintOffsetToBorderBox);
 
     SVGPaintContext paintContext(m_layoutSVGRoot, paintInfoBeforeFiltering);
     if (paintContext.paintInfo().phase == PaintPhaseForeground && !paintContext.applyClipMaskAndFilterIfNecessary())

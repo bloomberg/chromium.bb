@@ -7,7 +7,7 @@
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/PaintInfo.h"
-#include "core/paint/TransformRecorder.h"
+#include "core/paint/SVGPaintContext.h"
 
 namespace blink {
 
@@ -18,7 +18,7 @@ void SVGTextPainter::paint(const PaintInfo& paintInfo)
 
     PaintInfo blockInfo(paintInfo);
     blockInfo.updateCullRect(m_layoutSVGText.localToSVGParentTransform());
-    TransformRecorder transformRecorder(blockInfo.context, m_layoutSVGText, m_layoutSVGText.localToSVGParentTransform());
+    SVGTransformContext transformContext(blockInfo.context, m_layoutSVGText, m_layoutSVGText.localToSVGParentTransform());
 
     BlockPainter(m_layoutSVGText).paint(blockInfo, LayoutPoint());
 
