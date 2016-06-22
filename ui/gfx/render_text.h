@@ -239,9 +239,6 @@ class GFX_EXPORT RenderText {
   bool cursor_visible() const { return cursor_visible_; }
   void set_cursor_visible(bool visible) { cursor_visible_ = visible; }
 
-  bool insert_mode() const { return insert_mode_; }
-  void ToggleInsertMode();
-
   SkColor cursor_color() const { return cursor_color_; }
   void set_cursor_color(SkColor color) { cursor_color_ = color; }
 
@@ -738,9 +735,8 @@ class GFX_EXPORT RenderText {
   // for the cursor when positioning text.
   bool cursor_enabled_;
 
-  // The cursor visibility and insert mode.
+  // The cursor visibility.
   bool cursor_visible_;
-  bool insert_mode_;
 
   // The color used for the cursor.
   SkColor cursor_color_;

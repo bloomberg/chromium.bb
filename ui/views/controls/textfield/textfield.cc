@@ -1358,10 +1358,7 @@ void Textfield::InsertText(const base::string16& new_text) {
 
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
-  if (GetRenderText()->insert_mode())
-    model_->InsertText(new_text);
-  else
-    model_->ReplaceText(new_text);
+  model_->InsertText(new_text);
   skip_input_method_cancel_composition_ = false;
   UpdateAfterChange(true, true);
   OnAfterUserAction();
@@ -1595,10 +1592,7 @@ void Textfield::SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) {
 void Textfield::DoInsertChar(base::char16 ch) {
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
-  if (GetRenderText()->insert_mode())
-    model_->InsertChar(ch);
-  else
-    model_->ReplaceChar(ch);
+  model_->InsertChar(ch);
   skip_input_method_cancel_composition_ = false;
 
   UpdateAfterChange(true, true);

@@ -518,11 +518,6 @@ void RenderText::SetCursorEnabled(bool cursor_enabled) {
   cached_bounds_and_offset_valid_ = false;
 }
 
-void RenderText::ToggleInsertMode() {
-  insert_mode_ = !insert_mode_;
-  cached_bounds_and_offset_valid_ = false;
-}
-
 void RenderText::SetObscured(bool obscured) {
   if (obscured != obscured_) {
     obscured_ = obscured;
@@ -993,7 +988,7 @@ void RenderText::SetDisplayOffset(int horizontal_offset) {
 
   cached_bounds_and_offset_valid_ = true;
   display_offset_.set_x(horizontal_offset);
-  cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
+  cursor_bounds_ = GetCursorBounds(selection_model_, true);
 }
 
 Vector2d RenderText::GetLineOffset(size_t line_number) {
@@ -1013,7 +1008,6 @@ RenderText::RenderText()
       text_direction_(base::i18n::UNKNOWN_DIRECTION),
       cursor_enabled_(true),
       cursor_visible_(false),
-      insert_mode_(true),
       cursor_color_(kDefaultColor),
       selection_color_(kDefaultColor),
       selection_background_focused_color_(kDefaultSelectionBackgroundColor),
@@ -1576,7 +1570,7 @@ void RenderText::UpdateCachedBoundsAndOffset() {
     // |display_offset_|. Then calculate the change in offset needed to move the
     // cursor into the visible area.
     cached_bounds_and_offset_valid_ = true;
-    cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
+    cursor_bounds_ = GetCursorBounds(selection_model_, true);
 
     // TODO(bidi): Show RTL glyphs at the cursor position for ALIGN_LEFT, etc.
     if (cursor_bounds_.right() > display_rect_.right())
