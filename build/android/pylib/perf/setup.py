@@ -22,8 +22,6 @@ def _GetAllDevices(active_devices, devices_path):
   if not devices_path:
     logging.warning('Known devices file path not being passed. For device '
                     'affinity to work properly, it must be passed.')
-    devices_path = os.path.join(os.environ.get('CHROMIUM_OUT_DIR', 'out'),
-                                device_list.LAST_DEVICES_FILENAME)
   try:
     if devices_path:
       devices = [device_utils.DeviceUtils(s)

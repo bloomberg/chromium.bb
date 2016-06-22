@@ -328,10 +328,6 @@ def main():
                if args.blacklist_file
                else None)
 
-  last_devices_path = os.path.join(
-      args.out_dir, device_list.LAST_DEVICES_FILENAME)
-  args.known_devices_files.append(last_devices_path)
-
   expected_devices = set()
   try:
     for path in args.known_devices_files:
