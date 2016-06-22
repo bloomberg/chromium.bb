@@ -136,7 +136,7 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
 
 void CanvasAsyncBlobCreator::scheduleInitiateJpegEncoding(const double& quality)
 {
-    Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::initiateJpegEncoding, this, quality));
+    Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::initiateJpegEncoding, this, quality));
 }
 
 void CanvasAsyncBlobCreator::initiateJpegEncoding(const double& quality, double deadlineSeconds)
@@ -158,7 +158,7 @@ void CanvasAsyncBlobCreator::initiateJpegEncoding(const double& quality, double 
 
 void CanvasAsyncBlobCreator::scheduleInitiatePngEncoding()
 {
-    Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::initiatePngEncoding, this));
+    Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::initiatePngEncoding, this));
 }
 
 void CanvasAsyncBlobCreator::initiatePngEncoding(double deadlineSeconds)
@@ -189,7 +189,7 @@ void CanvasAsyncBlobCreator::idleEncodeRowsPng(double deadlineSeconds)
     for (int y = m_numRowsCompleted; y < m_size.height(); ++y) {
         if (isDeadlineNearOrPassed(deadlineSeconds)) {
             m_numRowsCompleted = y;
-            Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::idleEncodeRowsPng, this));
+            Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::idleEncodeRowsPng, this));
             return;
         }
         PNGImageEncoder::writeOneRowToPng(inputPixels, m_pngEncoderState.get());
@@ -226,7 +226,7 @@ void CanvasAsyncBlobCreator::idleEncodeRowsJpeg(double deadlineSeconds)
         m_idleTaskStatus = IdleTaskFailed;
         this->createNullAndInvokeCallback();
     } else {
-        Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::idleEncodeRowsJpeg, this));
+        Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::idleEncodeRowsJpeg, this));
     }
 }
 

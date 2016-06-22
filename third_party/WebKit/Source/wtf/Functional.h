@@ -26,6 +26,7 @@
 #ifndef WTF_Functional_h
 #define WTF_Functional_h
 
+#include "base/bind.h"
 #include "base/tuple.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
@@ -307,11 +308,11 @@ private:
 };
 #endif
 
-template <FunctionThreadAffinity threadAffinity, typename BoundParametersTuple, typename FunctionWrapper, typename... UnboundParameters>
+template <FunctionThreadAffinity threadAffinity, typename BoundParametersTuple, typename FunctionWrapper, typename UnboundRunType>
 class PartBoundFunctionImpl;
 
-template <FunctionThreadAffinity threadAffinity, typename... BoundParameters, typename FunctionWrapper, typename... UnboundParameters>
-class PartBoundFunctionImpl<threadAffinity, std::tuple<BoundParameters...>, FunctionWrapper, UnboundParameters...> final : public Function<typename FunctionWrapper::ResultType(UnboundParameters...), threadAffinity> {
+template <FunctionThreadAffinity threadAffinity, typename... BoundParameters, typename FunctionWrapper, typename ResultType, typename... UnboundParameters>
+class PartBoundFunctionImpl<threadAffinity, std::tuple<BoundParameters...>, FunctionWrapper, ResultType(UnboundParameters...)> final : public Function<ResultType(UnboundParameters...), threadAffinity> {
 public:
     // We would like to use StorageTraits<UnboundParameters>... with StorageTraits defined as below in order to obtain
     // storage traits of UnboundParameters, but unfortunately MSVC can't handle template using declarations correctly.
@@ -327,7 +328,7 @@ public:
     {
     }
 
-    typename FunctionWrapper::ResultType operator()(UnboundParameters... unbound) override
+    ResultType operator()(UnboundParameters... unbound) override
     {
         // What we really want to do is to call m_functionWrapper(m_bound..., unbound...), but to do that we need to
         // pass a list of indices to a worker function template.
@@ -336,7 +337,7 @@ public:
 
 private:
     template <std::size_t... boundIndices, typename... IncomingUnboundParameters>
-        typename FunctionWrapper::ResultType callInternal(const base::IndexSequence<boundIndices...>&, IncomingUnboundParameters&&... unbound)
+    ResultType callInternal(const base::IndexSequence<boundIndices...>&, IncomingUnboundParameters&&... unbound)
     {
         this->checkThread();
         // Get each element in m_bound, unwrap them, and call the function with the desired arguments.
@@ -347,21 +348,24 @@ private:
     std::tuple<typename ParamStorageTraits<typename std::decay<BoundParameters>::type>::StorageType...> m_bound;
 };
 
-template <FunctionThreadAffinity threadAffinity, typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
-std::unique_ptr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...), threadAffinity>> bindInternal(FunctionType function, BoundParameters&&... boundParameters)
+template <FunctionThreadAffinity threadAffinity, typename FunctionType, typename... BoundParameters>
+std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>, threadAffinity>> bindInternal(FunctionType function, BoundParameters&&... boundParameters)
 {
     // Bound parameters' types are wrapped with std::tuple so we can pass two template parameter packs (bound
     // parameters and unbound) to PartBoundFunctionImpl. Note that a tuple of this type isn't actually created;
     // std::tuple<> is just for carrying the bound parameters' types. Any other class template taking a type parameter
     // pack can be used instead of std::tuple. std::tuple is used just because it's most convenient for this purpose.
-    using BoundFunctionType = PartBoundFunctionImpl<threadAffinity, std::tuple<BoundParameters&&...>, FunctionWrapper<FunctionType>, UnboundParameters...>;
+    using UnboundRunType = base::MakeUnboundRunType<FunctionType, BoundParameters...>;
+    using BoundFunctionType = PartBoundFunctionImpl<threadAffinity, std::tuple<BoundParameters&&...>, FunctionWrapper<FunctionType>, UnboundRunType>;
     return wrapUnique(new BoundFunctionType(FunctionWrapper<FunctionType>(function), std::forward<BoundParameters>(boundParameters)...));
 }
 
-template <typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
-std::unique_ptr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...), SameThreadAffinity>> bind(FunctionType function, BoundParameters&&... boundParameters)
+
+
+template <typename FunctionType, typename... BoundParameters>
+std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>, SameThreadAffinity>> bind(FunctionType function, BoundParameters&&... boundParameters)
 {
-    return bindInternal<SameThreadAffinity, UnboundParameters...>(function, std::forward<BoundParameters>(boundParameters)...);
+    return bindInternal<SameThreadAffinity>(function, std::forward<BoundParameters>(boundParameters)...);
 }
 
 typedef Function<void(), SameThreadAffinity> SameThreadClosure;

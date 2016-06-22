@@ -264,7 +264,7 @@ private:
         if (m_loaderStarted)
             return;
         m_loaderStarted = true;
-        m_loaderContextHolder->postTask(threadSafeBind<LoaderContext*, ExecutionContext*>(&LoaderContext::start));
+        m_loaderContextHolder->postTask(threadSafeBind(&LoaderContext::start));
     }
 
     void clearBlobDataHandleForDrain()

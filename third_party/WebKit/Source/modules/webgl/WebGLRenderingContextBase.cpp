@@ -1045,7 +1045,7 @@ void WebGLRenderingContextBase::initializeNewContext()
             WebGLRenderingContextBase::RealLostContext,
             WebGLRenderingContextBase::Auto)));
     drawingBuffer()->contextProvider()->setErrorMessageCallback(
-        WebFunction<void(const char*, int32_t)>(bind<const char*, int32_t>(
+        WebFunction<void(const char*, int32_t)>(bind(
             &WebGLRenderingContextBase::onErrorMessage,
             createWeakThisPointer())));
 

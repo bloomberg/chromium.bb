@@ -107,7 +107,7 @@ ScriptedIdleTaskController::CallbackId ScriptedIdleTaskController::registerCallb
     long long timeoutMillis = options.timeout();
 
     RefPtr<internal::IdleRequestCallbackWrapper> callbackWrapper = internal::IdleRequestCallbackWrapper::create(id, this);
-    m_scheduler->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&internal::IdleRequestCallbackWrapper::idleTaskFired, callbackWrapper));
+    m_scheduler->postIdleTask(BLINK_FROM_HERE, WTF::bind(&internal::IdleRequestCallbackWrapper::idleTaskFired, callbackWrapper));
     if (timeoutMillis > 0)
         m_scheduler->timerTaskRunner()->postDelayedTask(BLINK_FROM_HERE, WTF::bind(&internal::IdleRequestCallbackWrapper::timeoutFired, callbackWrapper), timeoutMillis);
     TRACE_EVENT_INSTANT1("devtools.timeline", "RequestIdleCallback", TRACE_EVENT_SCOPE_THREAD, "data", InspectorIdleCallbackRequestEvent::data(getExecutionContext(), id, timeoutMillis));
@@ -186,7 +186,7 @@ void ScriptedIdleTaskController::resume()
     // Repost idle tasks for any remaining callbacks.
     for (auto& callback : m_callbacks) {
         RefPtr<internal::IdleRequestCallbackWrapper> callbackWrapper = internal::IdleRequestCallbackWrapper::create(callback.key, this);
-        m_scheduler->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&internal::IdleRequestCallbackWrapper::idleTaskFired, callbackWrapper));
+        m_scheduler->postIdleTask(BLINK_FROM_HERE, WTF::bind(&internal::IdleRequestCallbackWrapper::idleTaskFired, callbackWrapper));
     }
 }
 

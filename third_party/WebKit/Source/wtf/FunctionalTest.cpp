@@ -112,10 +112,10 @@ TEST(FunctionalTest, UnaryBind)
 
 TEST(FunctionalTest, UnaryPartBind)
 {
-    std::unique_ptr<Function<int(int)>> multiplyByTwoFunction = bind<int>(multiplyByTwo);
+    std::unique_ptr<Function<int(int)>> multiplyByTwoFunction = bind(multiplyByTwo);
     EXPECT_EQ(8, (*multiplyByTwoFunction)(4));
 
-    std::unique_ptr<Function<double(double)>> multiplyByOneAndAHalfFunction = bind<double>(multiplyByOneAndAHalf);
+    std::unique_ptr<Function<double(double)>> multiplyByOneAndAHalfFunction = bind(multiplyByOneAndAHalf);
     EXPECT_EQ(4.5, (*multiplyByOneAndAHalfFunction)(3));
 }
 
@@ -140,14 +140,14 @@ TEST(FunctionalTest, BinaryBind)
 
 TEST(FunctionalTest, BinaryPartBind)
 {
-    std::unique_ptr<Function<int(int)>> multiplyFourFunction = bind<int>(multiply, 4);
+    std::unique_ptr<Function<int(int)>> multiplyFourFunction = bind(multiply, 4);
     EXPECT_EQ(8, (*multiplyFourFunction)(2));
-    std::unique_ptr<Function<int(int, int)>> multiplyFunction = bind<int, int>(multiply);
+    std::unique_ptr<Function<int(int, int)>> multiplyFunction = bind(multiply);
     EXPECT_EQ(8, (*multiplyFunction)(4, 2));
 
-    std::unique_ptr<Function<int(int)>> subtractFromFourFunction = bind<int>(subtract, 4);
+    std::unique_ptr<Function<int(int)>> subtractFromFourFunction = bind(subtract, 4);
     EXPECT_EQ(2, (*subtractFromFourFunction)(2));
-    std::unique_ptr<Function<int(int, int)>> subtractFunction = bind<int, int>(subtract);
+    std::unique_ptr<Function<int(int, int)>> subtractFunction = bind(subtract);
     EXPECT_EQ(2, (*subtractFunction)(4, 2));
 }
 
@@ -172,32 +172,32 @@ TEST(FunctionalTest, MultiPartBind)
     char c = 'a';
 
     std::unique_ptr<Function<void(int, double, char, int*, double*, char*)>> unbound =
-        bind<int, double, char, int*, double*, char*>(sixArgFunc);
+        bind(sixArgFunc);
     (*unbound)(1, 1.5, 'b', &a, &b, &c);
     assertArgs(a, b, c, 1, 1.5, 'b');
 
     std::unique_ptr<Function<void(double, char, int*, double*, char*)>> oneBound =
-        bind<double, char, int*, double*, char*>(sixArgFunc, 2);
+        bind(sixArgFunc, 2);
     (*oneBound)(2.5, 'c', &a, &b, &c);
     assertArgs(a, b, c, 2, 2.5, 'c');
 
     std::unique_ptr<Function<void(char, int*, double*, char*)>> twoBound =
-        bind<char, int*, double*, char*>(sixArgFunc, 3, 3.5);
+        bind(sixArgFunc, 3, 3.5);
     (*twoBound)('d', &a, &b, &c);
     assertArgs(a, b, c, 3, 3.5, 'd');
 
     std::unique_ptr<Function<void(int*, double*, char*)>> threeBound =
-        bind<int*, double*, char*>(sixArgFunc, 4, 4.5, 'e');
+        bind(sixArgFunc, 4, 4.5, 'e');
     (*threeBound)(&a, &b, &c);
     assertArgs(a, b, c, 4, 4.5, 'e');
 
     std::unique_ptr<Function<void(double*, char*)>> fourBound =
-        bind<double*, char*>(sixArgFunc, 5, 5.5, 'f', &a);
+        bind(sixArgFunc, 5, 5.5, 'f', &a);
     (*fourBound)(&b, &c);
     assertArgs(a, b, c, 5, 5.5, 'f');
 
     std::unique_ptr<Function<void(char*)>> fiveBound =
-        bind<char*>(sixArgFunc, 6, 6.5, 'g', &a, &b);
+        bind(sixArgFunc, 6, 6.5, 'g', &a, &b);
     (*fiveBound)(&c);
     assertArgs(a, b, c, 6, 6.5, 'g');
 
@@ -283,14 +283,14 @@ TEST(FunctionalTest, MemberFunctionBindWithSubclassPointerWithCast)
 TEST(FunctionalTest, MemberFunctionPartBind)
 {
     A a(10);
-    std::unique_ptr<Function<int(class A*)>> function1 = bind<class A*>(&A::f);
+    std::unique_ptr<Function<int(class A*)>> function1 = bind(&A::f);
     EXPECT_EQ(10, (*function1)(&a));
 
     std::unique_ptr<Function<int(class A*, int)>> unboundFunction2 =
-        bind<class A*, int>(&A::addF);
+        bind(&A::addF);
     EXPECT_EQ(25, (*unboundFunction2)(&a, 15));
     std::unique_ptr<Function<int(int)>> objectBoundFunction2 =
-        bind<int>(&A::addF, &a);
+        bind(&A::addF, &a);
     EXPECT_EQ(25, (*objectBoundFunction2)(15));
 }
 
@@ -368,7 +368,7 @@ TEST(FunctionalTest, WrapUnwrap)
 
 TEST(FunctionalTest, WrapUnwrapInPartialBind)
 {
-    std::unique_ptr<Function<int(int)>> partiallyBoundFunction = bind<int>(processUnwrappedClass, ClassToBeWrapped(3));
+    std::unique_ptr<Function<int(int)>> partiallyBoundFunction = bind(processUnwrappedClass, ClassToBeWrapped(3));
     EXPECT_EQ(21, (*partiallyBoundFunction)(7));
 }
 
@@ -379,10 +379,10 @@ bool lotsOfArguments(int first, int second, int third, int fourth, int fifth, in
 
 TEST(FunctionalTest, LotsOfBoundVariables)
 {
-    std::unique_ptr<Function<bool(int, int)>> eightBound = bind<int, int>(lotsOfArguments, 1, 2, 3, 4, 5, 6, 7, 8);
+    std::unique_ptr<Function<bool(int, int)>> eightBound = bind(lotsOfArguments, 1, 2, 3, 4, 5, 6, 7, 8);
     EXPECT_TRUE((*eightBound)(9, 10));
 
-    std::unique_ptr<Function<bool(int)>> nineBound = bind<int>(lotsOfArguments, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    std::unique_ptr<Function<bool(int)>> nineBound = bind(lotsOfArguments, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     EXPECT_TRUE((*nineBound)(10));
 
     std::unique_ptr<Function<bool()>> allBound = bind(lotsOfArguments, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
@@ -501,29 +501,29 @@ TEST(FunctionalTest, CountCopiesOfBoundArguments)
 
 TEST(FunctionalTest, MoveUnboundArgumentsByRvalueReference)
 {
-    std::unique_ptr<Function<int(MoveOnly&&)>> boundSingle = bind<MoveOnly&&>(singleMoveOnlyByRvalueReference);
+    std::unique_ptr<Function<int(MoveOnly&&)>> boundSingle = bind(singleMoveOnlyByRvalueReference);
     EXPECT_EQ(1, (*boundSingle)(MoveOnly(1)));
     EXPECT_EQ(42, (*boundSingle)(MoveOnly(42)));
 
-    std::unique_ptr<Function<int(MoveOnly&&, MoveOnly&&, MoveOnly&&)>> boundTriple = bind<MoveOnly&&, MoveOnly&&, MoveOnly&&>(tripleMoveOnlysByRvalueReferences);
+    std::unique_ptr<Function<int(MoveOnly&&, MoveOnly&&, MoveOnly&&)>> boundTriple = bind(tripleMoveOnlysByRvalueReferences);
     EXPECT_EQ(6, (*boundTriple)(MoveOnly(1), MoveOnly(2), MoveOnly(3)));
     EXPECT_EQ(666, (*boundTriple)(MoveOnly(111), MoveOnly(222), MoveOnly(333)));
 
-    std::unique_ptr<Function<int(MoveOnly)>> boundSingleByValue = bind<MoveOnly>(singleMoveOnlyByValue);
+    std::unique_ptr<Function<int(MoveOnly)>> boundSingleByValue = bind(singleMoveOnlyByValue);
     EXPECT_EQ(1, (*boundSingleByValue)(MoveOnly(1)));
 
-    std::unique_ptr<Function<int(MoveOnly, MoveOnly, MoveOnly)>> boundTripleByValue = bind<MoveOnly, MoveOnly, MoveOnly>(tripleMoveOnlysByValues);
+    std::unique_ptr<Function<int(MoveOnly, MoveOnly, MoveOnly)>> boundTripleByValue = bind(tripleMoveOnlysByValues);
     EXPECT_EQ(6, (*boundTripleByValue)(MoveOnly(1), MoveOnly(2), MoveOnly(3)));
 }
 
 TEST(FunctionalTest, CountCopiesOfUnboundArguments)
 {
     CountCopy lvalue;
-    std::unique_ptr<Function<int(const CountCopy&)>> bound1 = bind<const CountCopy&>(takeCountCopyAsConstReference);
+    std::unique_ptr<Function<int(const CountCopy&)>> bound1 = bind(takeCountCopyAsConstReference);
     EXPECT_EQ(0, (*bound1)(lvalue)); // No copies!
     EXPECT_EQ(0, (*bound1)(CountCopy()));
 
-    std::unique_ptr<Function<int(CountCopy)>> bound2 = bind<CountCopy>(takeCountCopyAsValue);
+    std::unique_ptr<Function<int(CountCopy)>> bound2 = bind(takeCountCopyAsValue);
     EXPECT_EQ(2, (*bound2)(lvalue)); // At PartBoundFunctionImpl::operator() and at the destination function.
     EXPECT_LE((*bound2)(CountCopy()), 2); // Compiler is allowed to optimize one copy away if the argument is rvalue.
 }

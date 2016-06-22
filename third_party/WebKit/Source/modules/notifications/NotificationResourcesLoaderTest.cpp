@@ -37,7 +37,7 @@ const int kMaxActionIconSizePx = 128;
 class NotificationResourcesLoaderTest : public ::testing::Test {
 public:
     NotificationResourcesLoaderTest()
-        : m_page(DummyPageHolder::create()), m_loader(new NotificationResourcesLoader(bind<NotificationResourcesLoader*>(&NotificationResourcesLoaderTest::didFetchResources, this)))
+        : m_page(DummyPageHolder::create()), m_loader(new NotificationResourcesLoader(bind(&NotificationResourcesLoaderTest::didFetchResources, this)))
     {
     }
 

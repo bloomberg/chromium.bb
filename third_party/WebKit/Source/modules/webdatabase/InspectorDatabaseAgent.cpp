@@ -264,7 +264,7 @@ void InspectorDatabaseAgent::enable(ErrorString*)
     m_state->setBoolean(DatabaseAgentState::databaseAgentEnabled, m_enabled);
     if (DatabaseClient* client = DatabaseClient::fromPage(m_page))
         client->setInspectorAgent(this);
-    DatabaseTracker::tracker().forEachOpenDatabaseInPage(m_page, bind<blink::Database*>(&InspectorDatabaseAgent::registerDatabaseOnCreation, this));
+    DatabaseTracker::tracker().forEachOpenDatabaseInPage(m_page, bind(&InspectorDatabaseAgent::registerDatabaseOnCreation, this));
 }
 
 void InspectorDatabaseAgent::disable(ErrorString*)

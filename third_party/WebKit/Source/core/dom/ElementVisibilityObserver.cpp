@@ -23,7 +23,7 @@ void ElementVisibilityObserver::start()
     DCHECK(!m_intersectionObserver);
     m_intersectionObserver = IntersectionObserver::create(
         Vector<Length>(), Vector<float>({std::numeric_limits<float>::min()}), &m_element->document(),
-        WTF::bind<const HeapVector<Member<IntersectionObserverEntry>>&>(&ElementVisibilityObserver::onVisibilityChanged, WeakPersistentThisPointer<ElementVisibilityObserver>(this)));
+        WTF::bind(&ElementVisibilityObserver::onVisibilityChanged, WeakPersistentThisPointer<ElementVisibilityObserver>(this)));
     DCHECK(m_intersectionObserver);
     m_intersectionObserver->observe(m_element);
 }

@@ -88,7 +88,7 @@ template<typename FunctionType, typename... P,
     typename RETTYPE = std::unique_ptr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = WTF::FunctionWrapper<FunctionType>::numberOfArguments>
 typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(FunctionType function, P&&... parameters)
 {
-    return internal::createCallClosureTask(threadSafeBind<ExecutionContext*>(function, std::forward<P>(parameters)...));
+    return internal::createCallClosureTask(threadSafeBind(function, std::forward<P>(parameters)...));
 }
 
 template<typename FunctionType, typename... P,

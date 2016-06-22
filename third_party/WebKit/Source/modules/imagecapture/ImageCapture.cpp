@@ -92,7 +92,7 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* scriptState, Excep
     // m_streamTrack->component()->source()->id() is the renderer "name" of the camera;
     // TODO(mcasas) consider sending the security origin as well:
     // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-    m_service->GetCapabilities(m_streamTrack->component()->source()->id(), createBaseCallback(bind<media::mojom::blink::PhotoCapabilitiesPtr>(&ImageCapture::onCapabilities, this, resolver)));
+    m_service->GetCapabilities(m_streamTrack->component()->source()->id(), createBaseCallback(bind(&ImageCapture::onCapabilities, this, resolver)));
     return promise;
 }
 
@@ -119,7 +119,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
     if (settings->has_zoom)
         settings->zoom = photoSettings.zoom();
 
-    m_service->SetOptions(m_streamTrack->component()->source()->id(), std::move(settings), createBaseCallback(bind<bool>(&ImageCapture::onSetOptions, this, resolver)));
+    m_service->SetOptions(m_streamTrack->component()->source()->id(), std::move(settings), createBaseCallback(bind(&ImageCapture::onSetOptions, this, resolver)));
     return promise;
 }
 
@@ -144,7 +144,7 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState, ExceptionState& 
     // m_streamTrack->component()->source()->id() is the renderer "name" of the camera;
     // TODO(mcasas) consider sending the security origin as well:
     // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-    m_service->TakePhoto(m_streamTrack->component()->source()->id(), createBaseCallback(bind<const String&, mojo::WTFArray<uint8_t>>(&ImageCapture::onTakePhoto, this, resolver)));
+    m_service->TakePhoto(m_streamTrack->component()->source()->id(), createBaseCallback(bind(&ImageCapture::onTakePhoto, this, resolver)));
     return promise;
 }
 

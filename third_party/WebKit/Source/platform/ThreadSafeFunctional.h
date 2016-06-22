@@ -5,6 +5,7 @@
 #ifndef ThreadSafeFunctional_h
 #define ThreadSafeFunctional_h
 
+#include "base/bind.h"
 #include "platform/CrossThreadCopier.h"
 #include "wtf/Functional.h"
 #include <type_traits>
@@ -27,12 +28,12 @@ namespace blink {
 //     bind(func1, 42, str);
 //     bind(func1, 42, str.isolatedCopy());
 
-template<typename... FreeVariableTypes, typename FunctionType, typename... Ps>
-std::unique_ptr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...), WTF::CrossThreadAffinity>> threadSafeBind(
+template<typename FunctionType, typename... Ps>
+std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, Ps...>, WTF::CrossThreadAffinity>> threadSafeBind(
     FunctionType function,
     Ps&&... parameters)
 {
-    return WTF::bindInternal<WTF::CrossThreadAffinity, FreeVariableTypes...>(
+    return WTF::bindInternal<WTF::CrossThreadAffinity>(
         function,
         CrossThreadCopier<typename std::decay<Ps>::type>::copy(std::forward<Ps>(parameters))...);
 }

@@ -47,7 +47,7 @@ void VRController::getDisplays(std::unique_ptr<VRGetDevicesCallback> callback)
     }
 
     m_pendingGetDevicesCallbacks.append(std::move(callback));
-    m_service->GetDisplays(createBaseCallback(bind<mojo::WTFArray<device::blink::VRDisplayPtr>>(&VRController::onGetDisplays, this)));
+    m_service->GetDisplays(createBaseCallback(bind(&VRController::onGetDisplays, this)));
 }
 
 device::blink::VRPosePtr VRController::getPose(unsigned index)

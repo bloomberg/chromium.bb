@@ -24,7 +24,7 @@ BatteryDispatcher::BatteryDispatcher()
 
 void BatteryDispatcher::queryNextStatus()
 {
-    m_monitor->QueryNextStatus(createBaseCallback(bind<device::blink::BatteryStatusPtr>(&BatteryDispatcher::onDidChange, this)));
+    m_monitor->QueryNextStatus(createBaseCallback(bind(&BatteryDispatcher::onDidChange, this)));
 }
 
 void BatteryDispatcher::onDidChange(device::blink::BatteryStatusPtr batteryStatus)

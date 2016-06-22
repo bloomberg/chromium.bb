@@ -620,7 +620,7 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
             m_layer->clearTexture();
         m_logger->reportHibernationEvent(HibernationScheduled);
         m_hibernationScheduled = true;
-        Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&hibernateWrapper, m_weakPtrFactory.createWeakPtr()));
+        Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind(&hibernateWrapper, m_weakPtrFactory.createWeakPtr()));
     }
     if (!isHidden() && m_softwareRenderingWhileHidden) {
         flushRecordingOnly();

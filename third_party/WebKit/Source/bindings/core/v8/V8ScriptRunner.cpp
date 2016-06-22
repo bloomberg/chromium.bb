@@ -270,7 +270,7 @@ typedef Function<v8::MaybeLocal<v8::Script>(v8::Isolate*, v8::Local<v8::String>,
 template<typename... A>
 std::unique_ptr<CompileFn> bind(const A&... args)
 {
-    return WTF::bind<v8::Isolate*, v8::Local<v8::String>, v8::ScriptOrigin>(args...);
+    return WTF::bind(args...);
 }
 
 // Select a compile function from any of the above, mainly depending on
@@ -338,7 +338,7 @@ std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, Sc
     ASSERT(!resource->errorOccurred());
     ASSERT(streamer->isFinished());
     ASSERT(!streamer->streamingSuppressed());
-    return WTF::bind<v8::Isolate*, v8::Local<v8::String>, v8::ScriptOrigin>(postStreamCompile, cacheOptions, resource->cacheHandler(), streamer);
+    return WTF::bind(postStreamCompile, cacheOptions, resource->cacheHandler(), streamer);
 }
 } // namespace
 
