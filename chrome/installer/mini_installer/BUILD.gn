@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/v8.gni")
+import("//chrome/test/mini_installer/mini_installer_test.gni")
 import("//chrome/version.gni")
 import("//third_party/icu/config.gni")
 import("//ui/base/ui_features.gni")
@@ -38,9 +39,14 @@ source_set("lib") {
 
   configs += [ ":mini_installer_compiler_flags" ]
 
-  deps = [
-    #"test_installer_sentinel",  TODO(GYP) bug 521052.
-  ]
+  # This input dependency on the mini installer test Python files will force a
+  # recompilation when any of the Python files have changed. This will then
+  # invalidate the build and trigger running the test on the bots even when
+  # no other Chrome files have changed. These have to be inputs rather than a
+  # dependency because a dependency won't actually trigger recompiles in
+  # incremental build cases unless a source file actually references one of the
+  # dependency outputs.
+  inputs = mini_installer_test_files
 }
 
 process_version("version") {
