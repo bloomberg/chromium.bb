@@ -82,7 +82,8 @@ class DrmThread : public base::Thread {
                  const std::vector<SkBitmap>& bitmaps,
                  const gfx::Point& location,
                  int frame_delay_ms);
-  void MoveCursor(gfx::AcceleratedWidget widget, const gfx::Point& location);
+  void MoveCursor(const gfx::AcceleratedWidget& widget,
+                  const gfx::Point& location);
   void CheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
       const std::vector<OverlayCheck_Params>& overlays,

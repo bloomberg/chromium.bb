@@ -123,7 +123,7 @@ class MockTabletCursorEvdev : public CursorDelegateEvdev {
   gfx::Rect GetCursorConfinedBounds() override {
     return cursor_confined_bounds_;
   }
-
+  void InitializeOnEvdev() override {}
  private:
   gfx::PointF cursor_location_;
   gfx::Rect cursor_confined_bounds_;

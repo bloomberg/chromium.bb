@@ -73,7 +73,7 @@ class MockCursorEvdev : public CursorDelegateEvdev {
     return gfx::Rect();
   }
   gfx::PointF GetLocation() override { return cursor_location_; }
-
+  void InitializeOnEvdev() override {}
  private:
   // The location of the mock cursor.
   gfx::PointF cursor_location_;

@@ -20,6 +20,8 @@ MusThreadProxy::MusThreadProxy()
       drm_thread_(nullptr),
       weak_ptr_factory_(this) {}
 
+void MusThreadProxy::InitializeOnEvdev() {}
+
 MusThreadProxy::~MusThreadProxy() {
   DCHECK(on_window_server_thread_.CalledOnValidThread());
   FOR_EACH_OBSERVER(GpuThreadObserver, gpu_thread_observers_,

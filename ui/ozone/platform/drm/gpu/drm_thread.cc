@@ -175,7 +175,7 @@ void DrmThread::SetCursor(gfx::AcceleratedWidget widget,
       ->SetCursor(bitmaps, location, frame_delay_ms);
 }
 
-void DrmThread::MoveCursor(gfx::AcceleratedWidget widget,
+void DrmThread::MoveCursor(const gfx::AcceleratedWidget& widget,
                            const gfx::Point& location) {
   screen_manager_->GetWindow(widget)->MoveCursor(location);
 }

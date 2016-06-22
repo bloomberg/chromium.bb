@@ -95,6 +95,7 @@ class MusThreadProxy : public GpuThreadAdapter,
                  const gfx::Point& point,
                  int frame_delay_ms) override;
   void Move(gfx::AcceleratedWidget window, const gfx::Point& point) override;
+  void InitializeOnEvdev() override;
 
  private:
   void RunObservers();

@@ -27,6 +27,7 @@ class NullProxy : public DrmCursorProxy {
                  const gfx::Point& point,
                  int frame_delay_ms) override {}
   void Move(gfx::AcceleratedWidget window, const gfx::Point& point) override {}
+  void InitializeOnEvdev() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullProxy);
@@ -37,7 +38,9 @@ class NullProxy : public DrmCursorProxy {
 DrmCursor::DrmCursor(DrmWindowHostManager* window_manager)
     : window_(gfx::kNullAcceleratedWidget),
       window_manager_(window_manager),
-      proxy_(new NullProxy()) {}
+      proxy_(new NullProxy()) {
+  evdev_thread_checker_.DetachFromThread();
+}
 
 DrmCursor::~DrmCursor() {}
 
@@ -177,6 +180,7 @@ void DrmCursor::MoveCursorTo(const gfx::PointF& screen_location) {
 }
 
 void DrmCursor::MoveCursor(const gfx::Vector2dF& delta) {
+  DCHECK(evdev_thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("drmcursor", "DrmCursor::MoveCursor");
   base::AutoLock lock(lock_);
 
@@ -208,6 +212,11 @@ gfx::PointF DrmCursor::GetLocation() {
 gfx::Rect DrmCursor::GetCursorConfinedBounds() {
   base::AutoLock lock(lock_);
   return confined_bounds_ + display_bounds_in_screen_.OffsetFromOrigin();
+}
+
+void DrmCursor::InitializeOnEvdev() {
+  DCHECK(evdev_thread_checker_.CalledOnValidThread());
+  proxy_->InitializeOnEvdev();
 }
 
 void DrmCursor::SetCursorLocationLocked(const gfx::PointF& location) {

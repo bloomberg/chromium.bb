@@ -32,6 +32,9 @@ class DrmCursorProxy {
                          int frame_delay_ms) = 0;
   // Moves the cursor in |window| to |point|
   virtual void Move(gfx::AcceleratedWidget window, const gfx::Point& point) = 0;
+
+  // Initialize EvdevThread-specific state.
+  virtual void InitializeOnEvdev() = 0;
 };
 
 // DrmCursor manages all cursor state and semantics.
@@ -67,6 +70,7 @@ class DrmCursor : public CursorDelegateEvdev {
   bool IsCursorVisible() override;
   gfx::PointF GetLocation() override;
   gfx::Rect GetCursorConfinedBounds() override;
+  void InitializeOnEvdev() override;
 
  private:
   void SetCursorLocationLocked(const gfx::PointF& location);
@@ -86,6 +90,7 @@ class DrmCursor : public CursorDelegateEvdev {
 
   // Enforce our threading constraints.
   base::ThreadChecker thread_checker_;
+  base::ThreadChecker evdev_thread_checker_;
 
   // The location of the bitmap (the cursor location is the hotspot location).
   gfx::Point GetBitmapLocationLocked();

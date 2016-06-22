@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/input_device_factory_evdev.h"
 #include "ui/events/ozone/evdev/input_device_factory_evdev_proxy.h"
@@ -41,6 +42,8 @@ class EvdevThread : public base::Thread {
     std::unique_ptr<InputDeviceFactoryEvdevProxy> proxy(
         new InputDeviceFactoryEvdevProxy(base::ThreadTaskRunnerHandle::Get(),
                                          input_device_factory_->GetWeakPtr()));
+
+    cursor_->InitializeOnEvdev();
 
     init_runner_->PostTask(FROM_HERE,
                            base::Bind(init_callback_, base::Passed(&proxy)));
