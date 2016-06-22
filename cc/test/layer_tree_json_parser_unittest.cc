@@ -90,7 +90,8 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
   std::string json = host_impl.LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, NULL);
   ASSERT_TRUE(root.get());
-  EXPECT_TRUE(LayerTreesMatch(host_impl.RootLayer(), root.get()));
+  EXPECT_TRUE(
+      LayerTreesMatch(host_impl.active_tree()->root_layer(), root.get()));
 }
 
 TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
@@ -118,7 +119,8 @@ TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
   std::string json = host_impl.LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, NULL);
   ASSERT_TRUE(root.get());
-  EXPECT_TRUE(LayerTreesMatch(host_impl.RootLayer(), root.get()));
+  EXPECT_TRUE(
+      LayerTreesMatch(host_impl.active_tree()->root_layer(), root.get()));
 }
 
 }  // namespace cc

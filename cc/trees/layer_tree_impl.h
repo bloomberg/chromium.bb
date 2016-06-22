@@ -134,6 +134,8 @@ class CC_EXPORT LayerTreeImpl {
   // Other public methods
   // ---------------------------------------------------------------------------
   LayerImpl* root_layer() const { return root_layer_; }
+  RenderSurfaceImpl* RootRenderSurface() const;
+  bool LayerListIsEmpty() const;
   void SetRootLayer(std::unique_ptr<LayerImpl>);
   void SetRootLayerFromLayerList();
   bool IsRootLayer(const LayerImpl* layer) const;

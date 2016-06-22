@@ -2017,7 +2017,7 @@ void ScrollTree::UpdateScrollOffsetMapEntry(
 void ScrollTree::UpdateScrollOffsetMap(
     ScrollTree::ScrollOffsetMap* new_scroll_offset_map,
     LayerTreeImpl* layer_tree_impl) {
-  if (layer_tree_impl && layer_tree_impl->root_layer()) {
+  if (layer_tree_impl && !layer_tree_impl->LayerListIsEmpty()) {
     DCHECK(!property_trees()->is_main_thread);
     for (auto map_entry = layer_id_to_scroll_offset_map_.begin();
          map_entry != layer_id_to_scroll_offset_map_.end();) {

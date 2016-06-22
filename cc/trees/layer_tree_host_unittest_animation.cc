@@ -1339,7 +1339,7 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     EXPECT_EQ(2u, element_animations_copy.size());
     for (auto& it : element_animations_copy) {
       int id = it.first;
-      if (id == host_impl->RootLayer()->id()) {
+      if (id == host_impl->active_tree()->root_layer()->id()) {
         Animation* anim = it.second->GetAnimation(TargetProperty::TRANSFORM);
         EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
       } else if (id == layer_->id()) {

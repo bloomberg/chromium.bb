@@ -447,7 +447,6 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void ActivateSyncTree();
 
   // Shortcuts to layers on the active tree.
-  LayerImpl* RootLayer() const;
   LayerImpl* InnerViewportScrollLayer() const;
   LayerImpl* OuterViewportScrollLayer() const;
   LayerImpl* CurrentlyScrollingLayer() const;
@@ -698,7 +697,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool AnimateTopControls(base::TimeTicks monotonic_time);
 
   void TrackDamageForAllSurfaces(
-      LayerImpl* root_draw_layer,
       const LayerImplList& render_surface_layer_list);
 
   void UpdateTileManagerMemoryPolicy(const ManagedMemoryPolicy& policy);

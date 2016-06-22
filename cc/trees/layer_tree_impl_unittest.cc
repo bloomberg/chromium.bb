@@ -135,7 +135,8 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
   EXPECT_EQ(
       gfx::RectF(gfx::SizeF(bounds)),
       host_impl->active_tree()->property_trees()->clip_tree.ViewportClip());
-  EXPECT_EQ(gfx::Rect(bounds), host_impl->RootLayer()->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(bounds),
+            host_impl->active_tree()->root_layer()->visible_layer_rect());
 
   gfx::Size new_bounds(50, 50);
   host_impl->SetViewportSize(new_bounds);
@@ -145,7 +146,7 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
       gfx::RectF(gfx::SizeF(new_bounds)),
       host_impl->active_tree()->property_trees()->clip_tree.ViewportClip());
   EXPECT_EQ(gfx::Rect(new_bounds),
-            host_impl->RootLayer()->visible_layer_rect());
+            host_impl->active_tree()->root_layer()->visible_layer_rect());
 }
 
 TEST_F(LayerTreeImplTest, HitTestingForSingleLayerAndHud) {

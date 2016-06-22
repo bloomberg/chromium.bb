@@ -50,13 +50,13 @@ void TreeSynchronizer::SynchronizeTrees(Layer* layer_root,
   }
 }
 
-void TreeSynchronizer::SynchronizeTrees(LayerImpl* layer_root,
-                                        LayerTreeImpl* tree_impl) {
-  if (!layer_root) {
-    tree_impl->DetachLayers();
+void TreeSynchronizer::SynchronizeTrees(LayerTreeImpl* pending_tree,
+                                        LayerTreeImpl* active_tree) {
+  if (pending_tree->LayerListIsEmpty()) {
+    active_tree->DetachLayers();
   } else {
-    SynchronizeTreesInternal(layer_root->layer_tree_impl(), tree_impl,
-                             layer_root->layer_tree_impl()->property_trees());
+    SynchronizeTreesInternal(pending_tree, active_tree,
+                             pending_tree->property_trees());
   }
 }
 

@@ -69,7 +69,7 @@ class DebugRectHistory {
   // Note: Saving debug rects must happen before layers' change tracking is
   // reset.
   void SaveDebugRectsForCurrentFrame(
-      LayerImpl* root_layer,
+      LayerTreeImpl* tree_impl,
       LayerImpl* hud_layer,
       const LayerImplList& render_surface_layer_list,
       const LayerTreeDebugState& debug_state);
@@ -79,7 +79,7 @@ class DebugRectHistory {
  private:
   DebugRectHistory();
 
-  void SavePaintRects(LayerImpl* layer);
+  void SavePaintRects(LayerTreeImpl* tree_impl);
   void SavePropertyChangedRects(const LayerImplList& render_surface_layer_list,
                                 LayerImpl* hud_layer);
   void SaveSurfaceDamageRects(
@@ -88,7 +88,7 @@ class DebugRectHistory {
       const LayerImplList& render_surface_layer_list);
   void SaveTouchEventHandlerRects(LayerTreeImpl* layer);
   void SaveTouchEventHandlerRectsCallback(LayerImpl* layer);
-  void SaveWheelEventHandlerRects(LayerImpl* layer);
+  void SaveWheelEventHandlerRects(LayerTreeImpl* tree_impl);
   void SaveScrollEventHandlerRects(LayerTreeImpl* layer);
   void SaveScrollEventHandlerRectsCallback(LayerImpl* layer);
   void SaveNonFastScrollableRects(LayerTreeImpl* layer);

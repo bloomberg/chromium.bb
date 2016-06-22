@@ -31,7 +31,7 @@ DebugRectHistory::DebugRectHistory() {}
 DebugRectHistory::~DebugRectHistory() {}
 
 void DebugRectHistory::SaveDebugRectsForCurrentFrame(
-    LayerImpl* root_layer,
+    LayerTreeImpl* tree_impl,
     LayerImpl* hud_layer,
     const LayerImplList& render_surface_layer_list,
     const LayerTreeDebugState& debug_state) {
@@ -40,19 +40,19 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
   debug_rects_.clear();
 
   if (debug_state.show_touch_event_handler_rects)
-    SaveTouchEventHandlerRects(root_layer->layer_tree_impl());
+    SaveTouchEventHandlerRects(tree_impl);
 
   if (debug_state.show_wheel_event_handler_rects)
-    SaveWheelEventHandlerRects(root_layer);
+    SaveWheelEventHandlerRects(tree_impl);
 
   if (debug_state.show_scroll_event_handler_rects)
-    SaveScrollEventHandlerRects(root_layer->layer_tree_impl());
+    SaveScrollEventHandlerRects(tree_impl);
 
   if (debug_state.show_non_fast_scrollable_rects)
-    SaveNonFastScrollableRects(root_layer->layer_tree_impl());
+    SaveNonFastScrollableRects(tree_impl);
 
   if (debug_state.show_paint_rects)
-    SavePaintRects(root_layer);
+    SavePaintRects(tree_impl);
 
   if (debug_state.show_property_changed_rects)
     SavePropertyChangedRects(render_surface_layer_list, hud_layer);
@@ -67,12 +67,12 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
     SaveLayerAnimationBoundsRects(render_surface_layer_list);
 }
 
-void DebugRectHistory::SavePaintRects(LayerImpl* root_layer) {
+void DebugRectHistory::SavePaintRects(LayerTreeImpl* tree_impl) {
   // We would like to visualize where any layer's paint rect (update rect) has
   // changed, regardless of whether this layer is skipped for actual drawing or
   // not. Therefore we traverse over all layers, not just the render surface
   // list.
-  for (auto* layer : *root_layer->layer_tree_impl()) {
+  for (auto* layer : *tree_impl) {
     Region invalidation_region = layer->GetInvalidationRegionForDebugging();
     if (invalidation_region.IsEmpty() || !layer->DrawsContent())
       continue;
@@ -174,10 +174,9 @@ void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
   }
 }
 
-void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* root_layer) {
+void DebugRectHistory::SaveWheelEventHandlerRects(LayerTreeImpl* tree_impl) {
   EventListenerProperties event_properties =
-      root_layer->layer_tree_impl()->event_listener_properties(
-          EventListenerClass::kMouseWheel);
+      tree_impl->event_listener_properties(EventListenerClass::kMouseWheel);
   if (event_properties == EventListenerProperties::kNone ||
       event_properties == EventListenerProperties::kPassive) {
     return;
@@ -185,8 +184,7 @@ void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* root_layer) {
 
   // Since the wheel event handlers property is on the entire layer tree just
   // mark inner viewport if have listeners.
-  LayerImpl* inner_viewport =
-      root_layer->layer_tree_impl()->InnerViewportScrollLayer();
+  LayerImpl* inner_viewport = tree_impl->InnerViewportScrollLayer();
   if (!inner_viewport)
     return;
   debug_rects_.push_back(DebugRect(

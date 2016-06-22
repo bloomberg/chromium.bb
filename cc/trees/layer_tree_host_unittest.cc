@@ -3221,7 +3221,8 @@ class LayerTreeHostTestImplLayersPushProperties
 
         // Make sure the new root is pushed.
         EXPECT_EQ(1u, static_cast<PushPropertiesCountingLayerImpl*>(
-                host_impl->RootLayer())->push_properties_count());
+                          host_impl->active_tree()->root_layer())
+                          ->push_properties_count());
         return;
       case 4:
         // Root is swapped back all of the layers in the tree get pushed.
@@ -3326,7 +3327,7 @@ class LayerTreeHostTestImplLayersPushProperties
     // Pull the layers that we need from the tree assuming the same structure
     // as LayerTreeHostTestLayersPushProperties
     root_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
-        host_impl->RootLayer());
+        host_impl->active_tree()->root_layer());
 
     LayerTreeImpl* impl = root_impl_->layer_tree_impl();
     if (impl->LayerById(child_->id())) {

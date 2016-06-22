@@ -391,7 +391,7 @@ void OcclusionTracker::MarkOccludedBehindLayer(const LayerImpl* layer) {
 
 Region OcclusionTracker::ComputeVisibleRegionInScreen(
     const LayerTreeImpl* layer_tree) const {
-  DCHECK(layer_tree->root_layer()->render_surface() == stack_.back().target);
+  DCHECK(layer_tree->RootRenderSurface() == stack_.back().target);
   const SimpleEnclosedRegion& occluded =
       stack_.back().occlusion_from_inside_target;
   Region visible_region(screen_space_clip_rect_);
