@@ -13,11 +13,12 @@ import tempfile
 import time
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = unicode(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR)
 
 import isolated_format
 import test_utils
+from third_party.depot_tools import fix_encoding
 from utils import file_path
 
 # Ensure that the testing machine has access to this server.
@@ -123,6 +124,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   if len(sys.argv) > 1 and sys.argv[1].startswith('http'):
     ISOLATE_SERVER = sys.argv.pop(1).rstrip('/') + '/'
   logging.basicConfig(
