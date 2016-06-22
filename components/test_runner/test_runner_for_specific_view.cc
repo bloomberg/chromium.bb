@@ -368,7 +368,14 @@ void TestRunnerForSpecificView::SetBackingScaleFactor(
     double value,
     v8::Local<v8::Function> callback) {
   delegate()->SetDeviceScaleFactor(value);
-  PostV8Callback(callback);
+
+  // TODO(oshima): remove this callback argument when all platforms are migrated
+  // to use-zoom-for-dsf by default
+  v8::UniquePersistent<v8::Function> global_callback(blink::mainThreadIsolate(),
+                                                     callback);
+  v8::Local<v8::Value> arg = v8::Boolean::New(
+      blink::mainThreadIsolate(), delegate()->IsUseZoomForDSFEnabled());
+  PostV8CallbackWithArgs(std::move(global_callback), 1, &arg);
 }
 
 void TestRunnerForSpecificView::EnableUseZoomForDSF(

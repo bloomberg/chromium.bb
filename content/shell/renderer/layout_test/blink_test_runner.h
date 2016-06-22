@@ -105,6 +105,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorProfile(const std::string& name) override;
   void EnableUseZoomForDSF() override;
+  bool IsUseZoomForDSFEnabled() override;
   void SetBluetoothFakeAdapter(const std::string& adapter_name,
                                const base::Closure& callback) override;
   void SetBluetoothManualChooser(bool enable) override;

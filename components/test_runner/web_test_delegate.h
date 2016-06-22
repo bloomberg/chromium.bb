@@ -161,6 +161,9 @@ class WebTestDelegate {
   // Enable zoom-for-dsf option.
   virtual void EnableUseZoomForDSF() = 0;
 
+  // Returns whether or not the use-zoom-for-dsf flag is enabled.
+  virtual bool IsUseZoomForDSFEnabled() = 0;
+
   // Change the device color profile while running a layout test.
   virtual void SetDeviceColorProfile(const std::string& name) = 0;
 

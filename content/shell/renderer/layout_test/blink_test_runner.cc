@@ -37,6 +37,7 @@
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
+#include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -508,6 +509,10 @@ void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
 void BlinkTestRunner::EnableUseZoomForDSF() {
   base::CommandLine::ForCurrentProcess()->
       AppendSwitch(switches::kEnableUseZoomForDSF);
+}
+
+bool BlinkTestRunner::IsUseZoomForDSFEnabled() {
+  return content::IsUseZoomForDSFEnabled();
 }
 
 void BlinkTestRunner::SetDeviceColorProfile(const std::string& name) {
