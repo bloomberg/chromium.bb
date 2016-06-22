@@ -226,36 +226,10 @@ class WeakPtr : public internal::WeakPtrBase {
     ptr_ = nullptr;
   }
 
-  // Implement "Safe Bool Idiom"
-  // https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Safe_bool
-  //
-  // Allow WeakPtr<element_type> to be used in boolean expressions such as
-  //   if (weak_ptr_instance)
-  // But do not become convertible to a real bool (which is dangerous).
-  //   Implementation requires:
-  //     typedef Testable
-  //     operator Testable() const
-  //     operator==
-  //     operator!=
-  //
-  // == and != operators must be declared explicitly or dissallowed, as
-  // otherwise "ptr1 == ptr2" will compile but do the wrong thing (i.e., convert
-  // to Testable and then do the comparison).
-  //
-  // C++11 provides for "explicit operator bool()", however it is currently
-  // banned due to MSVS2013. https://chromium-cpp.appspot.com/#core-blacklist
- private:
-  typedef T* WeakPtr::*Testable;
-
- public:
-  operator Testable() const { return get() ? &WeakPtr::ptr_ : nullptr; }
+  // Allow conditionals to test validity, e.g. if (weak_ptr) {...};
+  explicit operator bool() const { return get() != nullptr; }
 
  private:
-  // Explicitly declare comparison operators as required by the "Safe Bool
-  // Idiom", but keep them private.
-  template <class U> bool operator==(WeakPtr<U> const&) const;
-  template <class U> bool operator!=(WeakPtr<U> const&) const;
-
   friend class internal::SupportsWeakPtrBase;
   template <typename U> friend class WeakPtr;
   friend class SupportsWeakPtr<T>;
@@ -270,6 +244,24 @@ class WeakPtr : public internal::WeakPtrBase {
   // value is undefined (as opposed to nullptr).
   T* ptr_;
 };
+
+// Allow callers to compare WeakPtrs against nullptr to test validity.
+template <class T>
+bool operator!=(const WeakPtr<T>& weak_ptr, std::nullptr_t) {
+  return !(weak_ptr == nullptr);
+}
+template <class T>
+bool operator!=(std::nullptr_t, const WeakPtr<T>& weak_ptr) {
+  return weak_ptr != nullptr;
+}
+template <class T>
+bool operator==(const WeakPtr<T>& weak_ptr, std::nullptr_t) {
+  return weak_ptr.get() == nullptr;
+}
+template <class T>
+bool operator==(std::nullptr_t, const WeakPtr<T>& weak_ptr) {
+  return weak_ptr == nullptr;
+}
 
 // A class may be composed of a WeakPtrFactory and thereby
 // control how it exposes weak pointers to itself.  This is helpful if you only

@@ -308,6 +308,19 @@ TEST(WeakPtrFactoryTest, BooleanTesting) {
   }
 }
 
+TEST(WeakPtrFactoryTest, ComparisonToNull) {
+  int data;
+  WeakPtrFactory<int> factory(&data);
+
+  WeakPtr<int> ptr_to_an_instance = factory.GetWeakPtr();
+  EXPECT_NE(nullptr, ptr_to_an_instance);
+  EXPECT_NE(ptr_to_an_instance, nullptr);
+
+  WeakPtr<int> null_ptr;
+  EXPECT_EQ(null_ptr, nullptr);
+  EXPECT_EQ(nullptr, null_ptr);
+}
+
 TEST(WeakPtrTest, InvalidateWeakPtrs) {
   int data;
   WeakPtrFactory<int> factory(&data);

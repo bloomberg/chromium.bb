@@ -105,7 +105,7 @@ void BluetoothAdapterFactory::SetAdapterForTesting(
 
 // static
 bool BluetoothAdapterFactory::HasSharedInstanceForTesting() {
-  return default_adapter.Get();
+  return default_adapter.Get() != nullptr;
 }
 
 }  // namespace device

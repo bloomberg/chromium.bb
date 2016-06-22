@@ -209,7 +209,7 @@ class PpFrameWriterProxy : public FrameWriterInterface {
  public:
   explicit PpFrameWriterProxy(const base::WeakPtr<PpFrameWriter>& writer)
       : writer_(writer) {
-    DCHECK(writer_ != NULL);
+    DCHECK(writer_);
   }
 
   ~PpFrameWriterProxy() override {}

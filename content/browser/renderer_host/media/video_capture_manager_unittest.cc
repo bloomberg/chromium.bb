@@ -105,7 +105,7 @@ class VideoCaptureManagerTest : public testing::Test {
       ASSERT_TRUE(0 == controllers_.count(id));
       controllers_[id] = controller.get();
     } else {
-      ASSERT_TRUE(NULL == controller);
+      ASSERT_FALSE(controller);
     }
     quit_closure.Run();
   }

@@ -644,7 +644,7 @@ bool ServiceWorkerProviderHost::IsReadyToSendMessages() const {
 }
 
 bool ServiceWorkerProviderHost::IsContextAlive() {
-  return context_ != NULL;
+  return context_ != nullptr;
 }
 
 void ServiceWorkerProviderHost::Send(IPC::Message* message) const {
