@@ -265,7 +265,7 @@ protected:
     void layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior = DefaultLayout);
     void markFixedPositionObjectForLayoutIfNeeded(LayoutObject* child, SubtreeLayoutScope&);
 
-    LayoutUnit marginIntrinsicLogicalWidthForChild(LayoutBox& child) const;
+    LayoutUnit marginIntrinsicLogicalWidthForChild(const LayoutBox& child) const;
 
     int beforeMarginInLineDirection(LineDirectionMode) const;
 

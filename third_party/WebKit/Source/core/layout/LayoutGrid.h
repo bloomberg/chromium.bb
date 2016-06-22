@@ -144,6 +144,8 @@ private:
     LayoutUnit computeTrackBasedLogicalHeight(const GridSizingData&) const;
     void computeTrackSizesForDirection(GridTrackSizingDirection, GridSizingData&, LayoutUnit freeSpace);
 
+    void repeatTracksSizingIfNeeded(GridSizingData&, LayoutUnit availableSpaceForColumns, LayoutUnit availableSpaceForRows);
+
     void layoutGridItems(GridSizingData&);
     void prepareChildForPositionedLayout(LayoutBox&);
     void layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior = DefaultLayout);
@@ -179,6 +181,7 @@ private:
 
     LayoutUnit gridAreaBreadthForChild(const LayoutBox& child, GridTrackSizingDirection, const GridSizingData&) const;
     LayoutUnit gridAreaBreadthForChildIncludingAlignmentOffsets(const LayoutBox&, GridTrackSizingDirection, const GridSizingData&) const;
+    LayoutUnit assumedRowsSizeForOrthogonalChild(const LayoutBox&, SizingOperation) const;
 
     void applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection, GridSizingData&);
 
@@ -226,6 +229,8 @@ private:
 
     size_t m_autoRepeatColumns { 0 };
     size_t m_autoRepeatRows { 0 };
+
+    bool m_hasAnyOrthogonalChild;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutGrid, isLayoutGrid());

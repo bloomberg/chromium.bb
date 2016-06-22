@@ -619,7 +619,7 @@ void LayoutBlock::markFixedPositionObjectForLayoutIfNeeded(LayoutObject* child, 
     }
 }
 
-LayoutUnit LayoutBlock::marginIntrinsicLogicalWidthForChild(LayoutBox& child) const
+LayoutUnit LayoutBlock::marginIntrinsicLogicalWidthForChild(const LayoutBox& child) const
 {
     // A margin has three types: fixed, percentage, and auto (variable).
     // Auto and percentage margins become 0 when computing min/max width.
