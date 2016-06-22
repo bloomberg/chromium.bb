@@ -1102,8 +1102,8 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput"})
     public void testSelectionClearedOnKeyEvent() throws Throwable {
-        commitText("hello", 1);
-        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
+        commitText("Sample Text", 1);
+        waitAndVerifyUpdateSelection(0, 11, 11, -1, -1);
 
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         assertWaitForSelectActionBarStatus(true);

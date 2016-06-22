@@ -1617,7 +1617,7 @@ TEST_F(WebViewTest, LongPressSelection)
 }
 
 #if !OS(MACOSX)
-TEST_F(WebViewTest, LongPressEmptyTextarea)
+TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("longpress_textarea.html"));
 
@@ -1629,8 +1629,31 @@ TEST_F(WebViewTest, LongPressEmptyTextarea)
     WebString blanklinestextbox = WebString::fromUTF8("blanklinestextbox");
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
 
+    // Long-press on carriage returns.
     EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, blanklinestextbox));
-    EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
+    EXPECT_TRUE(frame->selectionAsText().isEmpty());
+
+    // Double-tap on carriage returns.
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureTap;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
+    event.x = 100;
+    event.y = 25;
+    event.data.tap.tapCount = 2;
+
+    webView->handleInputEvent(event);
+    EXPECT_TRUE(frame->selectionAsText().isEmpty());
+
+    HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(webView->mainFrame()->document().getElementById(blanklinestextbox));
+    textAreaElement->setValue("hello");
+
+    // Long-press past last word of textbox.
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, blanklinestextbox));
+    EXPECT_TRUE(frame->selectionAsText().isEmpty());
+
+    // Double-tap past last word of textbox.
+    webView->handleInputEvent(event);
+    EXPECT_TRUE(frame->selectionAsText().isEmpty());
 }
 #endif
 

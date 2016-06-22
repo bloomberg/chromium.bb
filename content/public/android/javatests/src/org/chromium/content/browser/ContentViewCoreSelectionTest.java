@@ -35,7 +35,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
             + "<input id=\"empty_input_text\" type=\"text\" />"
             + "<br/><input id=\"input_text\" type=\"text\" value=\"SampleInputText\" />"
             + "<br/><textarea id=\"textarea\" rows=\"2\" cols=\"20\">SampleTextArea</textarea>"
-            + "<br/><input id=\"input_password\" type=\"password\" value=\"SamplePassword\" />"
+            + "<br/><input id=\"password\" type=\"password\" value=\"SamplePassword\" size=\"10\"/>"
             + "<br/><p><span id=\"plain_text_1\">SamplePlainTextOne</span></p>"
             + "<br/><p><span id=\"plain_text_2\">SamplePlainTextTwo</span></p>"
             + "<br/><input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />"
@@ -241,7 +241,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput"})
     public void testActionBarConfiguredCorrectlyForPassword() throws Throwable {
-        DOMUtils.longPressNode(this, mContentViewCore, "input_password");
+        DOMUtils.longPressNode(this, mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
         assertNotNull(mContentViewCore.getSelectActionHandler());
@@ -302,7 +302,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertNotNull(mContentViewCore.getSelectActionHandler());
         selectActionBarCopy();
         waitForClipboardContents(mContentViewCore.getContext(), "SamplePlainTextOne");
-        DOMUtils.longPressNode(this, mContentViewCore, "input_password");
+        DOMUtils.longPressNode(this, mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
         assertNotNull(mContentViewCore.getSelectActionHandler());
@@ -359,7 +359,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     @Feature({"TextInput"})
     public void testSelectActionBarPasswordCut() throws Exception {
         copyStringToClipboard("SampleTextToCopy");
-        DOMUtils.longPressNode(this, mContentViewCore, "input_password");
+        DOMUtils.longPressNode(this, mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
         assertNotNull(mContentViewCore.getSelectActionHandler());
@@ -414,7 +414,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput"})
     public void testSelectActionBarPasswordSelectAll() throws Exception {
-        DOMUtils.longPressNode(this, mContentViewCore, "input_password");
+        DOMUtils.longPressNode(this, mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
         assertNotNull(mContentViewCore.getSelectActionHandler());
@@ -522,7 +522,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         copyStringToClipboard("SamplePassword2");
 
         // Select the password field.
-        DOMUtils.longPressNode(this, mContentViewCore, "input_password");
+        DOMUtils.longPressNode(this, mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
         assertEquals(mContentViewCore.getSelectedText().length(), "SamplePassword".length());
@@ -537,7 +537,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         // Ensure the new text matches the pasted text. Note that we can't
         // actually compare strings as password field selections only provide
         // a placeholder with the correct length.
-        DOMUtils.longPressNode(this, mContentViewCore, "input_password");
+        DOMUtils.longPressNode(this, mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
         assertEquals(mContentViewCore.getSelectedText().length(), "SamplePassword2".length());

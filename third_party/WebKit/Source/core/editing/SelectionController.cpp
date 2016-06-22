@@ -303,9 +303,9 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
     // Special-case image local offset to always be zero, to avoid triggering
     // LayoutReplaced::positionFromPoint's advancement of the position at the
     // mid-point of the the image (which was intended for mouse-drag selection
-    // and isn't desirable for long-press).
+    // and isn't desirable for touch).
     HitTestResult adjustedHitTestResult = result;
-    if (selectInputEventType == SelectInputEventType::GestureLongPress && result.image())
+    if (selectInputEventType == SelectInputEventType::Touch && result.image())
         adjustedHitTestResult.setNodeAndPosition(result.innerNode(), LayoutPoint(0, 0));
 
     const VisiblePositionInFlatTree& pos = visiblePositionOfHitTestResult(adjustedHitTestResult);
@@ -314,12 +314,15 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
         newSelection.expandUsingGranularity(WordGranularity);
     }
 
-    if (selectInputEventType == SelectInputEventType::GestureLongPress) {
+    if (selectInputEventType == SelectInputEventType::Touch) {
         // If node doesn't have text except space, tab or line break, do not
         // select that 'empty' area.
         EphemeralRangeInFlatTree range(newSelection.start(), newSelection.end());
         const String& str = plainText(range, TextIteratorEmitsObjectReplacementCharacter);
         if (str.isEmpty() || str.simplifyWhiteSpace().containsOnlyWhitespace())
+            return;
+
+        if (newSelection.rootEditableElement() && pos.deepEquivalent() == VisiblePositionInFlatTree::lastPositionInNode(newSelection.rootEditableElement()).deepEquivalent())
             return;
     }
 
@@ -362,7 +365,7 @@ void SelectionController::selectClosestWordFromMouseEvent(const MouseEventWithHi
 
     AppendTrailingWhitespace appendTrailingWhitespace = (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend;
 
-    return selectClosestWordFromHitTestResult(result.hitTestResult(), appendTrailingWhitespace, SelectInputEventType::Mouse);
+    return selectClosestWordFromHitTestResult(result.hitTestResult(), appendTrailingWhitespace, result.event().fromTouch() ? SelectInputEventType::Touch : SelectInputEventType::Mouse);
 }
 
 void SelectionController::selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults& result)
@@ -579,7 +582,7 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
     if (!innerNodeIsSelectable)
         return false;
 
-    selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend, SelectInputEventType::GestureLongPress);
+    selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend, SelectInputEventType::Touch);
     if (!selection().isAvailable()) {
         // "editing/selection/longpress-selection-in-iframe-removed-crash.html"
         // reach here.
