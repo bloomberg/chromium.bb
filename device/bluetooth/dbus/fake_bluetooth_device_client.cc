@@ -396,7 +396,10 @@ void FakeBluetoothDeviceClient::Connect(const dbus::ObjectPath& object_path,
 
   // Expose GATT services if connected to LE device.
   if (object_path == dbus::ObjectPath(kLowEnergyPath)) {
-    properties->services_resolved.ReplaceValue(true);
+    FakeBluetoothGattServiceClient* gatt_service_client =
+        static_cast<FakeBluetoothGattServiceClient*>(
+            bluez::BluezDBusManager::Get()->GetBluetoothGattServiceClient());
+    gatt_service_client->ExposeHeartRateService(object_path);
   }
 
   AddInputDeviceIfNeeded(object_path, properties);
