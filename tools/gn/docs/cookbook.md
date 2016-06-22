@@ -222,6 +222,8 @@ places are noted in the table below.
 | `mac_sdk_min`                                   | `mac_sdk_min`                              | `//build/config/mac/mac_sdk.gni`               |
 | `mac_sdk_path`                                  | `mac_sdk_path`                             | `//build/config/mac/mac_sdk.gni`               |
 | `mac_sdk`                                       | `mac_sdk_version`                          | `//build/config/mac/mac_sdk.gni`               |
+| `mac_strip_release`                             | `enable_stripping`                         | `//build/config/mac/symbols.gni`               |
+| `mac_want_real_dsym`                            | `enable_dsyms`                             | `//build/config/mac/symbols.gni`               |
 | `msan` (0/1)                                    | `is_msan` (true/false)                     | `//build/config/sanitizers/sanitizers.gni`     |
 | `SDKROOT` (Mac)                                 | `sysroot`                                  | `//build/config/sysroot.gni`                   |
 | `sysroot`                                       | `sysroot`                                  | `//build/config/sysroot.gni`                   |
