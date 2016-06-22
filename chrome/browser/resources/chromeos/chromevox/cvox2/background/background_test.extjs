@@ -219,14 +219,14 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
 TEST_F('BackgroundTest', 'SelectSingleBasic', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.formsDoc, function() {
-    var sendDownToSelect =
-        this.sendKeyToElement.bind(this, undefined, 'ArrowDown', '#fruitSelect');
+    var incrementSelectedIndex =
+        this.incrementSelectedIndex.bind(this, undefined, '#fruitSelect');
     mockFeedback.expectSpeech('apple', 'has pop up', 'Collapsed')
         .expectBraille('apple btn +popup +')
-        .call(sendDownToSelect)
+        .call(incrementSelectedIndex)
         .expectSpeech('grape', /2 of 3/)
         .expectBraille('grape mnuitm 2/3')
-        .call(sendDownToSelect)
+        .call(incrementSelectedIndex)
         .expectSpeech('banana', /3 of 3/)
         .expectBraille('banana mnuitm 3/3');
     mockFeedback.replay();

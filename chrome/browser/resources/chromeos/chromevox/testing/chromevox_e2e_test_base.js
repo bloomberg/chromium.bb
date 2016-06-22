@@ -89,18 +89,16 @@ ChromeVoxE2ETest.prototype = {
   },
 
   /**
-   * Send a key to the page.
+   * Increment the selected index of a select control.
    * @param {number} tabId Of the page.
-   * @param {string} key Name of the key (e.g. ArrowDown).
    * @param {string} elementQueryString
    */
-  sendKeyToElement: function(tabId, key, elementQueryString) {
+  incrementSelectedIndex: function(tabId, elementQueryString) {
     var code = TestUtils.extractHtmlFromCommentEncodedString(function() {/*!
-      var target = document.body.querySelector('$1');
+      var target = document.body.querySelector('$0');
       target.focus();
-      var evt = new KeyboardEvent('keydown', {key: '$0'});
-      document.activeElement.dispatchEvent(evt);
-    */}, [key, elementQueryString]);
+      target.selectedIndex++;
+    */}, [elementQueryString]);
 
     chrome.tabs.executeScript(tabId, {code: code});
   },
