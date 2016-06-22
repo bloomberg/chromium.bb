@@ -72,6 +72,7 @@ static const struct wl_message zwp_remote_surface_v1_requests[] = {
 	{ "pin", "3", types + 0 },
 	{ "unpin", "3", types + 0 },
 	{ "unfullscreen", "3", types + 0 },
+	{ "set_rectangular_shadow", "iiii", types + 0 },
 };
 
 static const struct wl_message zwp_remote_surface_v1_events[] = {
@@ -91,4 +92,3 @@ WL_EXPORT const struct wl_interface zwp_remote_surface_v1_interface = {
 	11, zwp_remote_surface_v1_requests,
 	9, zwp_remote_surface_v1_events,
 };
-

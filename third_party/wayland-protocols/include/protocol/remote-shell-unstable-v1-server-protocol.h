@@ -375,6 +375,27 @@ struct zwp_remote_surface_v1_interface {
 	 */
 	void (*unfullscreen)(struct wl_client *client,
 			     struct wl_resource *resource);
+
+	/**
+         * set_rectangular_shadow
+         * Request that surface neesds a rectangular shadow.
+         *
+         * This is only a request that the surface should have a rectangular
+         * shadow. The compositor may choose to ignore this request.
+         *
+         * The arguments are given in the output coordinate space and specifies
+         * the inner bounds of the shadow.
+         *
+         * The arguments are given in the output coordinate space.
+         * Specifying zero width and height will disable the shadow.
+	 * @since 4
+	 */
+	void (*set_rectangular_shadow)(struct wl_client *client,
+                                       struct wl_resource *resource,
+                                       int32_t x,
+                                       int32_t y,
+                                       int32_t width,
+                                       int32_t height);
 };
 
 #define ZWP_REMOTE_SURFACE_V1_SET_FULLSCREEN	0

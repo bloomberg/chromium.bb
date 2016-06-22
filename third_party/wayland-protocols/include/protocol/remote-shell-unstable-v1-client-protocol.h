@@ -401,6 +401,7 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
 #define ZWP_REMOTE_SURFACE_V1_PIN	8
 #define ZWP_REMOTE_SURFACE_V1_UNPIN	9
 #define ZWP_REMOTE_SURFACE_V1_UNFULLSCREEN	10
+#define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW	11
 
 /**
  * @ingroup iface_zwp_remote_surface_v1
@@ -446,6 +447,10 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
  * @ingroup iface_zwp_remote_surface_v1
  */
 #define ZWP_REMOTE_SURFACE_V1_UNFULLSCREEN_SINCE_VERSION	3
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ */
+#define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_SINCE_VERSION	4
 
 /** @ingroup iface_zwp_remote_surface_v1 */
 static inline void
@@ -656,6 +661,27 @@ zwp_remote_surface_v1_unfullscreen(struct zwp_remote_surface_v1 *zwp_remote_surf
 {
 	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
 			 ZWP_REMOTE_SURFACE_V1_UNFULLSCREEN);
+}
+
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ *
+ * Request that surface neesds a rectangular shadow.
+ *
+ * This is only a request that the surface should have a rectangular
+ * shadow. The compositor may choose to ignore this request.
+ *
+ * The arguments are given in the output coordinate space and specifies
+ * the inner bounds of the shadow.
+ *
+ * The arguments are given in the output coordinate space.
+ * Specifying zero width and height will disable the shadow.
+ */
+static inline void
+zwp_remote_surface_v1_set_rectangular_shadow(struct zwp_remote_surface_v1 *zwp_remote_surface_v1, int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_GEOMETRY, x, y, width, height);
 }
 
 #ifdef  __cplusplus

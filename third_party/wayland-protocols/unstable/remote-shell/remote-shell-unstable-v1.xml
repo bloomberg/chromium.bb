@@ -350,6 +350,27 @@
 	The client may choose to ignore this event.
       </description>
     </event>
+
+    <!-- Version 4 additions -->
+
+    <request name="set_rectangular_shadow" since="4">
+      <description summary="set a rectangular shadow">
+        Request that surface needs a rectangular shadow.
+
+        This is only a request that the surface should have a rectangular
+	shadow. The compositor may choose to ignore this request.
+
+        The arguments are given in the output coordinate space and specifies
+        the inner bounds of the shadow.
+
+        The arguments are given in the output coordinate space.
+        Specifying zero width and height will disable the shadow.
+      </description>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+     </request>
   </interface>
 
 </protocol>
