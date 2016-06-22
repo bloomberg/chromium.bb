@@ -18,8 +18,8 @@
 namespace mus {
 namespace ws {
 
-class GlobalWindowManagerState;
 class UserIdTracker;
+class WindowManagerState;
 class WindowManagerWindowTreeFactory;
 class WindowManagerWindowTreeFactorySetObserver;
 class WindowServer;
@@ -47,10 +47,9 @@ class WindowManagerWindowTreeFactorySet : public UserIdTrackerObserver {
       const UserId& user_id,
       mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request);
 
-  // Returns the GlobalWindowManagerState for the specified user, or null if
+  // Returns the WindowManagerState for the specified user, or null if
   // not yet set.
-  GlobalWindowManagerState* GetGlobalWindowManagerStateForUser(
-      const UserId& user_id);
+  WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
 
   // Deletes the WindowManagerWindowTreeFactory associated with |tree|. Does
   // nothing if there is no WindowManagerWindowTreeFactory associated with
@@ -74,9 +73,6 @@ class WindowManagerWindowTreeFactorySet : public UserIdTrackerObserver {
       WindowManagerWindowTreeFactory* factory);
 
   // UserIdTrackerObserver:
-  void OnActiveUserIdChanged(const UserId& previously_active_id,
-                             const UserId& active_id) override;
-  void OnUserIdAdded(const UserId& id) override;
   void OnUserIdRemoved(const UserId& id) override;
 
   // Set to true the first time a valid factory has been found.

@@ -19,6 +19,7 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_utils.h"
+#include "components/mus/ws/window_manager_display_root.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_server_delegate.h"
@@ -61,16 +62,17 @@ class CursorTest : public testing::Test {
     DisplayManager* display_manager = window_server_->display_manager();
     //    ASSERT_EQ(1u, display_manager->displays().size());
     Display* display = *display_manager->displays().begin();
-    WindowManagerState* state = display->GetWindowManagerStateForUser(kTestId1);
-    return state->root();
+    return display->GetWindowManagerDisplayRootForUser(kTestId1)->root();
   }
 
   // Create a 30x30 window where the outer 10 pixels is non-client.
   ServerWindow* BuildServerWindow() {
     DisplayManager* display_manager = window_server_->display_manager();
     Display* display = *display_manager->displays().begin();
-    WindowManagerState* active_wms = display->GetActiveWindowManagerState();
-    WindowTree* tree = active_wms->tree();
+    WindowManagerDisplayRoot* active_display_root =
+        display->GetActiveWindowManagerDisplayRoot();
+    WindowTree* tree =
+        active_display_root->window_manager_state()->window_tree();
     ClientWindowId child_window_id;
     if (!NewWindowInTree(tree, &child_window_id))
       return nullptr;
@@ -90,11 +92,13 @@ class CursorTest : public testing::Test {
     DisplayManager* display_manager = window_server_->display_manager();
     ASSERT_EQ(1u, display_manager->displays().size());
     Display* display = *display_manager->displays().begin();
-    WindowManagerState* active_wms = display->GetActiveWindowManagerState();
-    ASSERT_TRUE(active_wms);
+    WindowManagerDisplayRoot* active_display_root =
+        display->GetActiveWindowManagerDisplayRoot();
+    ASSERT_TRUE(active_display_root);
     static_cast<PlatformDisplayDelegate*>(display)->OnEvent(ui::PointerEvent(
         ui::MouseEvent(ui::ET_MOUSE_MOVED, p, p, base::TimeTicks(), 0, 0)));
-    active_wms->OnEventAck(active_wms->tree(), mojom::EventResult::HANDLED);
+    WindowManagerState* wms = active_display_root->window_manager_state();
+    wms->OnEventAck(wms->window_tree(), mojom::EventResult::HANDLED);
   }
 
  protected:

@@ -33,7 +33,7 @@ class DisplayBinding;
 class DisplayManager;
 class FocusController;
 struct PlatformDisplayInitParams;
-class WindowManagerState;
+class WindowManagerDisplayRoot;
 class WindowServer;
 class WindowTree;
 
@@ -70,9 +70,10 @@ class Display : public PlatformDisplayDelegate,
   DisplayManager* display_manager();
   const DisplayManager* display_manager() const;
 
+  PlatformDisplay* platform_display() { return platform_display_.get(); }
+
   // Returns a mojom::Display for the specified display. WindowManager specific
-  // values are not set. In general you should use
-  // WindowManagerState::ToMojomDisplay().
+  // values are not set.
   mojom::DisplayPtr ToMojomDisplay() const;
 
   // Schedules a paint for the specified region in the coordinates of |window|.
@@ -96,23 +97,30 @@ class Display : public PlatformDisplayDelegate,
   ServerWindow* root_window() { return root_.get(); }
   const ServerWindow* root_window() const { return root_.get(); }
 
+  // Returns the ServerWindow whose id is |id|. This does not do a search over
+  // all windows, rather just the display and window manager root windows.
+  //
+  // In general you shouldn't use this, rather use WindowServer::GetWindow(),
+  // which calls this as necessary.
   ServerWindow* GetRootWithId(const WindowId& id);
 
-  WindowManagerState* GetWindowManagerStateWithRoot(const ServerWindow* window);
-  WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id) {
-    return const_cast<WindowManagerState*>(
-        const_cast<const Display*>(this)->GetWindowManagerStateForUser(
+  WindowManagerDisplayRoot* GetWindowManagerDisplayRootWithRoot(
+      const ServerWindow* window);
+  WindowManagerDisplayRoot* GetWindowManagerDisplayRootForUser(
+      const UserId& user_id) {
+    return const_cast<WindowManagerDisplayRoot*>(
+        const_cast<const Display*>(this)->GetWindowManagerDisplayRootForUser(
             user_id));
   }
-  const WindowManagerState* GetWindowManagerStateForUser(
+  const WindowManagerDisplayRoot* GetWindowManagerDisplayRootForUser(
       const UserId& user_id) const;
-  WindowManagerState* GetActiveWindowManagerState() {
-    return const_cast<WindowManagerState*>(
-        const_cast<const Display*>(this)->GetActiveWindowManagerState());
+  WindowManagerDisplayRoot* GetActiveWindowManagerDisplayRoot() {
+    return const_cast<WindowManagerDisplayRoot*>(
+        const_cast<const Display*>(this)->GetActiveWindowManagerDisplayRoot());
   }
-  const WindowManagerState* GetActiveWindowManagerState() const;
+  const WindowManagerDisplayRoot* GetActiveWindowManagerDisplayRoot() const;
   size_t num_window_manger_states() const {
-    return window_manager_state_map_.size();
+    return window_manager_display_root_map_.size();
   }
 
   // TODO(sky): this should only be called by WindowServer, move to interface
@@ -145,17 +153,17 @@ class Display : public PlatformDisplayDelegate,
  private:
   friend class test::DisplayTestApi;
 
-  using WindowManagerStateMap =
-      std::map<UserId, std::unique_ptr<WindowManagerState>>;
+  using WindowManagerDisplayRootMap =
+      std::map<UserId, std::unique_ptr<WindowManagerDisplayRoot>>;
 
   // Inits the necessary state once the display is ready.
-  void InitWindowManagersIfNecessary();
+  void InitWindowManagerDisplayRootsIfNecessary();
 
-  // Creates the set of WindowManagerStates from the
+  // Creates the set of WindowManagerDisplayRoots from the
   // WindowManagerWindowTreeFactorySet.
-  void CreateWindowManagerStatesFromFactories();
+  void CreateWindowManagerDisplayRootsFromFactories();
 
-  void CreateWindowManagerStateFromFactory(
+  void CreateWindowManagerDisplayRootFromFactory(
       WindowManagerWindowTreeFactory* factory);
 
   // PlatformDisplayDelegate:
@@ -181,9 +189,6 @@ class Display : public PlatformDisplayDelegate,
   void OnWindowDestroyed(ServerWindow* window) override;
 
   // UserIdTrackerObserver:
-  void OnActiveUserIdChanged(const UserId& previously_active_id,
-                             const UserId& active_id) override;
-  void OnUserIdAdded(const UserId& id) override;
   void OnUserIdRemoved(const UserId& id) override;
 
   // WindowManagerWindowTreeFactorySetObserver:
@@ -208,7 +213,7 @@ class Display : public PlatformDisplayDelegate,
   // draws.
   std::set<ServerWindow*> windows_needing_frame_destruction_;
 
-  WindowManagerStateMap window_manager_state_map_;
+  WindowManagerDisplayRootMap window_manager_display_root_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

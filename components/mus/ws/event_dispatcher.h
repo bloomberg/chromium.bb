@@ -41,8 +41,6 @@ class EventDispatcher : public ServerWindowObserver {
   explicit EventDispatcher(EventDispatcherDelegate* delegate);
   ~EventDispatcher() override;
 
-  void set_root(ServerWindow* root) { root_ = root; }
-
   // Cancels capture and stops tracking any pointer events. This does not send
   // any events to the delegate.
   void Reset();
@@ -163,7 +161,7 @@ class EventDispatcher : public ServerWindowObserver {
                               const ui::LocatedEvent& event);
 
   // Returns a PointerTarget from the supplied event.
-  PointerTarget PointerTargetForEvent(const ui::LocatedEvent& event) const;
+  PointerTarget PointerTargetForEvent(const ui::LocatedEvent& event);
 
   // Returns true if any pointers are in the pressed/down state.
   bool AreAnyPointersDown() const;
@@ -193,6 +191,8 @@ class EventDispatcher : public ServerWindowObserver {
   Accelerator* FindAccelerator(const ui::KeyEvent& event,
                                const ui::mojom::AcceleratorPhase phase);
 
+  ServerWindow* FindDeepestVisibleWindowForEvents(gfx::Point* location);
+
   // ServerWindowObserver:
   void OnWillChangeWindowHierarchy(ServerWindow* window,
                                    ServerWindow* new_parent,
@@ -201,7 +201,6 @@ class EventDispatcher : public ServerWindowObserver {
   void OnWindowDestroyed(ServerWindow* window) override;
 
   EventDispatcherDelegate* delegate_;
-  ServerWindow* root_;
 
   ServerWindow* capture_window_;
   ClientSpecificId capture_window_client_id_;
@@ -216,7 +215,6 @@ class EventDispatcher : public ServerWindowObserver {
   // bounds of |mouse_cursor_source_window_|, which can capture the cursor.
   gfx::Point mouse_pointer_last_location_;
 
-  using Entry = std::pair<uint32_t, std::unique_ptr<Accelerator>>;
   std::map<uint32_t, std::unique_ptr<Accelerator>> accelerators_;
 
   using PointerIdToTargetMap = std::map<int32_t, PointerTarget>;

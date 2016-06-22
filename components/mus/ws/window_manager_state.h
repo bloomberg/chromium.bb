@@ -20,39 +20,35 @@
 namespace mus {
 namespace ws {
 
-class Accelerator;
-class Display;
-class PlatformDisplay;
-class ServerWindow;
+class DisplayManager;
 class WindowTree;
 
 namespace test {
 class WindowManagerStateTestApi;
 }
 
-// Manages the state associated with a connection to a WindowManager for
-// a specific user.
+// Manages state specific to a WindowManager that is shared across displays.
+// WindowManagerState is owned by the WindowTree the window manager is
+// associated with.
 class WindowManagerState : public EventDispatcherDelegate {
  public:
-  // Creates a WindowManagerState that can host content from any user.
-  WindowManagerState(Display* display, PlatformDisplay* platform_display);
-  WindowManagerState(Display* display,
-                     PlatformDisplay* platform_display,
-                     const UserId& user_id);
+  explicit WindowManagerState(WindowTree* window_tree);
   ~WindowManagerState() override;
 
-  bool is_user_id_valid() const { return is_user_id_valid_; }
+  const UserId& user_id() const;
 
-  const UserId& user_id() const { return user_id_; }
+  WindowTree* window_tree() { return window_tree_; }
+  const WindowTree* window_tree() const { return window_tree_; }
 
-  ServerWindow* root() { return root_.get(); }
-  const ServerWindow* root() const { return root_.get(); }
+  void OnWillDestroyTree(WindowTree* tree);
 
-  WindowTree* tree() { return tree_; }
-  const WindowTree* tree() const { return tree_; }
-
-  Display* display() { return display_; }
-  const Display* display() const { return display_; }
+  void SetFrameDecorationValues(mojom::FrameDecorationValuesPtr values);
+  const mojom::FrameDecorationValues& frame_decoration_values() const {
+    return *frame_decoration_values_;
+  }
+  bool got_frame_decoration_values() const {
+    return got_frame_decoration_values_;
+  }
 
   bool SetCapture(ServerWindow* window, ClientSpecificId client_id);
   ServerWindow* capture_window() { return event_dispatcher_.capture_window(); }
@@ -65,12 +61,12 @@ class WindowManagerState : public EventDispatcherDelegate {
 
   void AddSystemModalWindow(ServerWindow* window);
 
-  // Returns true if this is the WindowManager of the active user.
-  bool IsActive() const;
-
   // TODO(sky): EventDispatcher is really an implementation detail and should
   // not be exposed.
   EventDispatcher* event_dispatcher() { return &event_dispatcher_; }
+
+  // Returns true if this is the WindowManager of the active user.
+  bool IsActive() const;
 
   void Activate(const gfx::Point& mouse_location_on_screen);
   void Deactivate();
@@ -82,8 +78,6 @@ class WindowManagerState : public EventDispatcherDelegate {
   // received.
   // TODO(sky): make this private and use a callback.
   void OnEventAck(mojom::WindowTree* tree, mojom::EventResult result);
-
-  void OnWillDestroyTree(WindowTree* tree);
 
  private:
   class ProcessedEventTarget;
@@ -106,12 +100,18 @@ class WindowManagerState : public EventDispatcherDelegate {
     std::unique_ptr<ProcessedEventTarget> processed_target;
   };
 
-  WindowManagerState(Display* display,
-                     PlatformDisplay* platform_display,
-                     bool is_user_id_valid,
-                     const UserId& user_id);
-
+  const WindowServer* window_server() const;
   WindowServer* window_server();
+
+  DisplayManager* display_manager();
+  const DisplayManager* display_manager() const;
+
+  // Sets the visibility of all window manager roots windows to |value|.
+  void SetAllRootWindowsVisible(bool value);
+
+  // Returns the ServerWindow that is the root of the WindowManager for
+  // |window|. |window| corresponds to the root of a Display.
+  ServerWindow* GetWindowManagerRoot(ServerWindow* window);
 
   void OnEventAckTimeout(ClientSpecificId client_id);
 
@@ -140,7 +140,7 @@ class WindowManagerState : public EventDispatcherDelegate {
   void OnAccelerator(uint32_t accelerator_id, const ui::Event& event) override;
   void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override;
   ServerWindow* GetFocusedWindowForEventDispatcher() override;
-  void SetNativeCapture() override;
+  void SetNativeCapture(ServerWindow* window) override;
   void ReleaseNativeCapture() override;
   void OnServerWindowCaptureLost(ServerWindow* window) override;
   void OnMouseCursorLocationChanged(const gfx::Point& point) override;
@@ -150,20 +150,16 @@ class WindowManagerState : public EventDispatcherDelegate {
                                   Accelerator* accelerator) override;
   ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                           bool in_nonclient_area) override;
-
+  ServerWindow* GetRootWindowContaining(const gfx::Point& location) override;
   void OnEventTargetNotFound(const ui::Event& event) override;
 
-  Display* display_;
-  PlatformDisplay* platform_display_;
-  // If this was created implicitly by a call
-  // WindowTreeHostFactory::CreateWindowTreeHost(), then |is_user_id_valid_|
-  // is false.
-  const bool is_user_id_valid_;
-  const UserId user_id_;
-  // Root ServerWindow of this WindowManagerState. |root_| has a parent, the
-  // root ServerWindow of the Display.
-  std::unique_ptr<ServerWindow> root_;
-  WindowTree* tree_ = nullptr;
+  // The single WindowTree this WindowManagerState is associated with.
+  // |window_tree_| owns this.
+  WindowTree* window_tree_;
+
+  // Set to true the first time SetFrameDecorationValues() is called.
+  bool got_frame_decoration_values_ = false;
+  mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
   mojom::WindowTree* tree_awaiting_input_ack_ = nullptr;
   std::unique_ptr<ui::Event> event_awaiting_input_ack_;
@@ -172,6 +168,9 @@ class WindowManagerState : public EventDispatcherDelegate {
   base::OneShotTimer event_ack_timer_;
 
   EventDispatcher event_dispatcher_;
+
+  // PlatformDisplay that currently has capture.
+  PlatformDisplay* platform_display_with_capture_ = nullptr;
 
   base::WeakPtrFactory<WindowManagerState> weak_factory_;
 

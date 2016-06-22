@@ -15,6 +15,7 @@
 #include "components/mus/ws/focus_controller.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_init_params.h"
+#include "components/mus/ws/window_manager_display_root.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_manager_window_tree_factory.h"
 #include "components/mus/ws/window_server.h"
@@ -54,21 +55,20 @@ Display::~Display() {
   for (ServerWindow* window : windows_needing_frame_destruction_)
     window->RemoveObserver(this);
 
-  // Destroy any trees, which triggers destroying the WindowManagerState. Copy
-  // off the WindowManagerStates as destruction mutates
-  // |window_manager_state_map_|.
-  std::set<WindowManagerState*> states;
-  for (auto& pair : window_manager_state_map_)
-    states.insert(pair.second.get());
-  for (WindowManagerState* state : states)
-    window_server_->DestroyTree(state->tree());
+  // If there is a |binding_| then the tree was created specifically for this
+  // display (which corresponds to a WindowTreeHost).
+  if (binding_ && !window_manager_display_root_map_.empty()) {
+    window_server_->DestroyTree(window_manager_display_root_map_.begin()
+                                    ->second->window_manager_state()
+                                    ->window_tree());
+  }
 }
 
 void Display::Init(std::unique_ptr<DisplayBinding> binding) {
   init_called_ = true;
   binding_ = std::move(binding);
   display_manager()->AddDisplay(this);
-  InitWindowManagersIfNecessary();
+  InitWindowManagerDisplayRootsIfNecessary();
 }
 
 DisplayManager* Display::display_manager() {
@@ -115,31 +115,6 @@ void Display::ScheduleSurfaceDestruction(ServerWindow* window) {
   window->AddObserver(this);
 }
 
-ServerWindow* Display::GetRootWithId(const WindowId& id) {
-  if (id == root_->id())
-    return root_.get();
-  for (auto& pair : window_manager_state_map_) {
-    if (pair.second->root()->id() == id)
-      return pair.second->root();
-  }
-  return nullptr;
-}
-
-WindowManagerState* Display::GetWindowManagerStateWithRoot(
-    const ServerWindow* window) {
-  for (auto& pair : window_manager_state_map_) {
-    if (pair.second->root() == window)
-      return pair.second.get();
-  }
-  return nullptr;
-}
-
-const WindowManagerState* Display::GetWindowManagerStateForUser(
-    const UserId& user_id) const {
-  auto iter = window_manager_state_map_.find(user_id);
-  return iter == window_manager_state_map_.end() ? nullptr : iter->second.get();
-}
-
 mojom::Rotation Display::GetRotation() const {
   return platform_display_->GetRotation();
 }
@@ -152,8 +127,35 @@ int64_t Display::GetPlatformDisplayId() const {
   return platform_display_->GetDisplayId();
 }
 
-const WindowManagerState* Display::GetActiveWindowManagerState() const {
-  return GetWindowManagerStateForUser(
+ServerWindow* Display::GetRootWithId(const WindowId& id) {
+  if (id == root_->id())
+    return root_.get();
+  for (auto& pair : window_manager_display_root_map_) {
+    if (pair.second->root()->id() == id)
+      return pair.second->root();
+  }
+  return nullptr;
+}
+
+WindowManagerDisplayRoot* Display::GetWindowManagerDisplayRootWithRoot(
+    const ServerWindow* window) {
+  for (auto& pair : window_manager_display_root_map_) {
+    if (pair.second->root() == window)
+      return pair.second.get();
+  }
+  return nullptr;
+}
+
+const WindowManagerDisplayRoot* Display::GetWindowManagerDisplayRootForUser(
+    const UserId& user_id) const {
+  auto iter = window_manager_display_root_map_.find(user_id);
+  return iter == window_manager_display_root_map_.end() ? nullptr
+                                                        : iter->second.get();
+}
+
+const WindowManagerDisplayRoot* Display::GetActiveWindowManagerDisplayRoot()
+    const {
+  return GetWindowManagerDisplayRootForUser(
       window_server_->user_id_tracker()->active_id());
 }
 
@@ -199,16 +201,13 @@ void Display::SetImeVisibility(ServerWindow* window, bool visible) {
 }
 
 void Display::OnWillDestroyTree(WindowTree* tree) {
-  for (auto it = window_manager_state_map_.begin();
-       it != window_manager_state_map_.end(); ++it) {
-    if (it->second->tree() == tree) {
-      window_manager_state_map_.erase(it);
+  for (auto it = window_manager_display_root_map_.begin();
+       it != window_manager_display_root_map_.end(); ++it) {
+    if (it->second->window_manager_state()->window_tree() == tree) {
+      window_manager_display_root_map_.erase(it);
       break;
     }
   }
-
-  for (const auto& pair : window_manager_state_map_)
-    pair.second->OnWillDestroyTree(tree);
 }
 
 void Display::UpdateNativeCursor(int32_t cursor_id) {
@@ -226,46 +225,49 @@ void Display::SetTitle(const mojo::String& title) {
   platform_display_->SetTitle(title.To<base::string16>());
 }
 
-void Display::InitWindowManagersIfNecessary() {
+void Display::InitWindowManagerDisplayRootsIfNecessary() {
   if (!init_called_ || !root_)
     return;
 
   display_manager()->OnDisplayAcceleratedWidgetAvailable(this);
   if (binding_) {
-    std::unique_ptr<WindowManagerState> wms_ptr(
-        new WindowManagerState(this, platform_display_.get()));
-    WindowManagerState* wms = wms_ptr.get();
-    // For this case we never create additional WindowManagerStates, so any
+    std::unique_ptr<WindowManagerDisplayRoot> display_root_ptr(
+        new WindowManagerDisplayRoot(this));
+    WindowManagerDisplayRoot* display_root = display_root_ptr.get();
+    // For this case we never create additional displays roots, so any
     // id works.
-    window_manager_state_map_[shell::mojom::kRootUserID] = std::move(wms_ptr);
-    wms->tree_ = binding_->CreateWindowTree(wms->root());
+    window_manager_display_root_map_[shell::mojom::kRootUserID] =
+        std::move(display_root_ptr);
+    WindowTree* window_tree = binding_->CreateWindowTree(display_root->root());
+    display_root->window_manager_state_ = window_tree->window_manager_state();
   } else {
-    CreateWindowManagerStatesFromFactories();
+    CreateWindowManagerDisplayRootsFromFactories();
   }
 }
 
-void Display::CreateWindowManagerStatesFromFactories() {
+void Display::CreateWindowManagerDisplayRootsFromFactories() {
   std::vector<WindowManagerWindowTreeFactory*> factories =
       window_server_->window_manager_window_tree_factory_set()->GetFactories();
   for (WindowManagerWindowTreeFactory* factory : factories) {
     if (factory->window_tree())
-      CreateWindowManagerStateFromFactory(factory);
+      CreateWindowManagerDisplayRootFromFactory(factory);
   }
 }
 
-void Display::CreateWindowManagerStateFromFactory(
+void Display::CreateWindowManagerDisplayRootFromFactory(
     WindowManagerWindowTreeFactory* factory) {
-  std::unique_ptr<WindowManagerState> wms_ptr(new WindowManagerState(
-      this, platform_display_.get(), factory->user_id()));
-  WindowManagerState* wms = wms_ptr.get();
-  window_manager_state_map_[factory->user_id()] = std::move(wms_ptr);
-  wms->tree_ = factory->window_tree();
-  if (!binding_) {
-    const bool is_active =
-        factory->user_id() == window_server_->user_id_tracker()->active_id();
-    wms->root()->SetVisible(is_active);
-    wms->tree_->AddRootForWindowManager(wms->root());
-  }
+  std::unique_ptr<WindowManagerDisplayRoot> display_root_ptr(
+      new WindowManagerDisplayRoot(this));
+  WindowManagerDisplayRoot* display_root = display_root_ptr.get();
+  window_manager_display_root_map_[factory->user_id()] =
+      std::move(display_root_ptr);
+  display_root->window_manager_state_ =
+      factory->window_tree()->window_manager_state();
+  const bool is_active =
+      factory->user_id() == window_server_->user_id_tracker()->active_id();
+  display_root->root()->SetVisible(is_active);
+  display_root->window_manager_state()->window_tree()->AddRootForWindowManager(
+      display_root->root());
 }
 
 ServerWindow* Display::GetRootWindow() {
@@ -273,15 +275,15 @@ ServerWindow* Display::GetRootWindow() {
 }
 
 void Display::OnEvent(const ui::Event& event) {
-  WindowManagerState* wms = GetActiveWindowManagerState();
-  if (wms)
-    wms->ProcessEvent(event);
+  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
+  if (display_root)
+    display_root->window_manager_state()->ProcessEvent(event);
 }
 
 void Display::OnNativeCaptureLost() {
-  WindowManagerState* state = GetActiveWindowManagerState();
-  if (state)
-    state->SetCapture(nullptr, false);
+  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
+  if (display_root)
+    display_root->window_manager_state()->SetCapture(nullptr, kInvalidClientId);
 }
 
 void Display::OnDisplayClosed() {
@@ -298,11 +300,11 @@ void Display::OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
     root_->SetVisible(true);
     focus_controller_.reset(new FocusController(this, root_.get()));
     focus_controller_->AddObserver(this);
-    InitWindowManagersIfNecessary();
+    InitWindowManagerDisplayRootsIfNecessary();
   } else {
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels));
     const gfx::Rect wm_bounds(root_->bounds().size());
-    for (auto& pair : window_manager_state_map_)
+    for (auto& pair : window_manager_display_root_map_)
       pair.second->root()->SetBounds(wm_bounds);
   }
   display_manager()->OnDisplayUpdate(this);
@@ -380,32 +382,12 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   }
 
   // WindowManagers are always notified of focus changes.
-  WindowTree* wms_tree_with_old_focused_window = nullptr;
-  if (old_focused_window) {
-    WindowManagerState* wms =
-        display_manager()
-            ->GetWindowManagerAndDisplay(old_focused_window)
-            .window_manager_state;
-    wms_tree_with_old_focused_window = wms ? wms->tree() : nullptr;
-    if (wms_tree_with_old_focused_window &&
-        wms_tree_with_old_focused_window != owning_tree_old &&
-        wms_tree_with_old_focused_window != embedded_tree_old &&
-        wms_tree_with_old_focused_window != owning_tree_new &&
-        wms_tree_with_old_focused_window != embedded_tree_new) {
-      wms_tree_with_old_focused_window->ProcessFocusChanged(old_focused_window,
-                                                            new_focused_window);
-    }
-  }
-  if (new_focused_window) {
-    WindowManagerState* wms =
-        display_manager()
-            ->GetWindowManagerAndDisplay(new_focused_window)
-            .window_manager_state;
-    WindowTree* wms_tree = wms ? wms->tree() : nullptr;
-    if (wms_tree && wms_tree != wms_tree_with_old_focused_window &&
-        wms_tree != owning_tree_old && wms_tree != embedded_tree_old &&
-        wms_tree != owning_tree_new && wms_tree != embedded_tree_new) {
-      wms_tree->ProcessFocusChanged(old_focused_window, new_focused_window);
+  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
+  if (display_root) {
+    WindowTree* wm_tree = display_root->window_manager_state()->window_tree();
+    if (wm_tree != owning_tree_old && wm_tree != embedded_tree_old &&
+        wm_tree != owning_tree_new && wm_tree != embedded_tree_new) {
+      wm_tree->ProcessFocusChanged(old_focused_window, new_focused_window);
     }
   }
 
@@ -418,45 +400,14 @@ void Display::OnWindowDestroyed(ServerWindow* window) {
   window->RemoveObserver(this);
 }
 
-void Display::OnActiveUserIdChanged(const UserId& previously_active_id,
-                                    const UserId& active_id) {
-  if (binding_)
-    return;
-
-  WindowManagerState* previous_wms =
-      GetWindowManagerStateForUser(previously_active_id);
-  const gfx::Point mouse_location_on_screen =
-      previous_wms
-          ? previous_wms->event_dispatcher()->mouse_pointer_last_location()
-          : gfx::Point();
-  if (previous_wms)
-    previous_wms->Deactivate();
-
-  WindowManagerState* active_wms = GetWindowManagerStateForUser(active_id);
-  if (active_wms)
-    active_wms->Activate(mouse_location_on_screen);
-}
-
-void Display::OnUserIdAdded(const UserId& id) {}
-
 void Display::OnUserIdRemoved(const UserId& id) {
-  if (binding_)
-    return;
-
-  WindowManagerState* state = GetWindowManagerStateForUser(id);
-  if (!state)
-    return;
-
-  // DestroyTree() calls back to OnWillDestroyTree() and the WindowManagerState
-  // is destroyed (and removed).
-  window_server_->DestroyTree(state->tree());
-  DCHECK_EQ(0u, window_manager_state_map_.count(id));
+  window_manager_display_root_map_.erase(id);
 }
 
 void Display::OnWindowManagerWindowTreeFactoryReady(
     WindowManagerWindowTreeFactory* factory) {
   if (!binding_)
-    CreateWindowManagerStateFromFactory(factory);
+    CreateWindowManagerDisplayRootFromFactory(factory);
 }
 
 }  // namespace ws

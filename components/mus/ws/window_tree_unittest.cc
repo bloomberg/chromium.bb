@@ -28,6 +28,7 @@
 #include "components/mus/ws/test_server_window_delegate.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_access_policy.h"
+#include "components/mus/ws/window_manager_display_root.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree_binding.h"
@@ -84,7 +85,9 @@ ui::PointerEvent CreateMouseUpEvent(int x, int y) {
 }
 
 ServerWindow* GetCaptureWindow(Display* display) {
-  return display->GetActiveWindowManagerState()->capture_window();
+  return display->GetActiveWindowManagerDisplayRoot()
+      ->window_manager_state()
+      ->capture_window();
 }
 
 mojom::EventMatcherPtr CreateEventMatcher(ui::mojom::EventType type) {
@@ -135,7 +138,7 @@ class WindowTreeTest : public testing::Test {
 
   void AckPreviousEvent() {
     WindowManagerStateTestApi test_api(
-        display()->GetActiveWindowManagerState());
+        display()->GetActiveWindowManagerDisplayRoot()->window_manager_state());
     while (test_api.tree_awaiting_input_ack()) {
       test_api.tree_awaiting_input_ack()->OnWindowInputEventAck(
           0, mojom::EventResult::HANDLED);
@@ -997,7 +1000,7 @@ TEST_F(WindowTreeTest, SetCaptureTargetsRightConnection) {
       owning_tree->SetCapture(ClientWindowIdForWindow(owning_tree, window)));
   DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
   WindowManagerStateTestApi wm_state_test_api(
-      display()->GetActiveWindowManagerState());
+      display()->GetActiveWindowManagerDisplayRoot()->window_manager_state());
   EXPECT_EQ(owning_tree, wm_state_test_api.tree_awaiting_input_ack());
   AckPreviousEvent();
 

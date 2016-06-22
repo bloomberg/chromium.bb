@@ -12,6 +12,7 @@ namespace mus {
 namespace ws {
 
 class Display;
+class WindowManagerState;
 
 class DisplayManagerDelegate {
  public:
@@ -23,6 +24,9 @@ class DisplayManagerDelegate {
   virtual bool GetFrameDecorationsForUser(
       const UserId& user_id,
       mojom::FrameDecorationValuesPtr* values) = 0;
+
+  virtual WindowManagerState* GetWindowManagerStateForUser(
+      const UserId& user_id) = 0;
 
  protected:
   virtual ~DisplayManagerDelegate() {}

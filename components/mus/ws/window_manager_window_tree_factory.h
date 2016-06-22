@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <memory>
-
 #include "components/mus/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "components/mus/ws/user_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -16,7 +14,6 @@
 namespace mus {
 namespace ws {
 
-class GlobalWindowManagerState;
 class ServerWindow;
 class WindowManagerWindowTreeFactorySet;
 class WindowServer;
@@ -40,15 +37,12 @@ class WindowManagerWindowTreeFactory
 
   WindowTree* window_tree() { return window_tree_; }
 
-  void BindPendingRequest();
-
   // mojom::WindowManagerWindowTreeFactory:
   void CreateWindowTree(mojom::WindowTreeRequest window_tree_request,
                         mojom::WindowTreeClientPtr window_tree_client) override;
 
  private:
   friend class test::WindowManagerWindowTreeFactorySetTestApi;
-  struct PendingRequest;
 
   // Used by tests.
   WindowManagerWindowTreeFactory(WindowManagerWindowTreeFactorySet* registry,
@@ -64,10 +58,6 @@ class WindowManagerWindowTreeFactory
 
   // Owned by WindowServer.
   WindowTree* window_tree_;
-
-  std::unique_ptr<PendingRequest> pending_request_;
-
-  std::unique_ptr<GlobalWindowManagerState> global_window_manager_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerWindowTreeFactory);
 };

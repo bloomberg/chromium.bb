@@ -4,8 +4,6 @@
 
 #include "components/mus/ws/window_manager_state.h"
 
-#include <queue>
-
 #include "base/memory/weak_ptr.h"
 #include "components/mus/common/event_matcher_util.h"
 #include "components/mus/ws/accelerator.h"
@@ -14,6 +12,7 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/user_id_tracker.h"
+#include "components/mus/ws/window_manager_display_root.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
@@ -94,30 +93,39 @@ class WindowManagerState::ProcessedEventTarget {
 WindowManagerState::QueuedEvent::QueuedEvent() {}
 WindowManagerState::QueuedEvent::~QueuedEvent() {}
 
-WindowManagerState::WindowManagerState(Display* display,
-                                       PlatformDisplay* platform_display)
-    : WindowManagerState(display,
-                         platform_display,
-                         false,
-                         shell::mojom::kRootUserID) {}
+WindowManagerState::WindowManagerState(WindowTree* window_tree)
+    : window_tree_(window_tree), event_dispatcher_(this), weak_factory_(this) {
+  frame_decoration_values_ = mojom::FrameDecorationValues::New();
+  frame_decoration_values_->max_title_bar_button_width = 0u;
 
-WindowManagerState::WindowManagerState(Display* display,
-                                       PlatformDisplay* platform_display,
-                                       const UserId& user_id)
-    : WindowManagerState(display, platform_display, true, user_id) {}
+  AddDebugAccelerators();
+}
 
 WindowManagerState::~WindowManagerState() {}
 
+void WindowManagerState::SetFrameDecorationValues(
+    mojom::FrameDecorationValuesPtr values) {
+  got_frame_decoration_values_ = true;
+  frame_decoration_values_ = values.Clone();
+  display_manager()
+      ->GetUserDisplayManager(user_id())
+      ->OnFrameDecorationValuesChanged();
+}
+
 bool WindowManagerState::SetCapture(ServerWindow* window,
                                     ClientSpecificId client_id) {
-  // TODO(sky): capture should be a singleton. Need to route to WindowServer
-  // so that all other EventDispatchers are updated.
   DCHECK(IsActive());
   if (capture_window() == window &&
       client_id == event_dispatcher_.capture_window_client_id()) {
     return true;
   }
-  DCHECK(!window || root_->Contains(window));
+#if !defined(NDEBUG)
+  if (window) {
+    WindowManagerDisplayRoot* display_root =
+        display_manager()->GetWindowManagerDisplayRoot(window);
+    DCHECK(display_root && display_root->window_manager_state() == this);
+  }
+#endif
   return event_dispatcher_.SetCaptureWindow(window, client_id);
 }
 
@@ -135,54 +143,34 @@ void WindowManagerState::AddSystemModalWindow(ServerWindow* window) {
   event_dispatcher_.AddSystemModalWindow(window);
 }
 
+const UserId& WindowManagerState::user_id() const {
+  return window_tree_->user_id();
+}
+
 void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
   if (tree_awaiting_input_ack_ != tree)
     return;
+
   // The WindowTree is dying. So it's not going to ack the event.
   // If the dying tree matches the root |tree_| marked as handled so we don't
   // notify it of accelerators.
-  OnEventAck(tree_awaiting_input_ack_, tree == tree_
+  OnEventAck(tree_awaiting_input_ack_, tree == window_tree_
                                            ? mojom::EventResult::HANDLED
                                            : mojom::EventResult::UNHANDLED);
 }
 
-WindowManagerState::WindowManagerState(Display* display,
-                                       PlatformDisplay* platform_display,
-                                       bool is_user_id_valid,
-                                       const UserId& user_id)
-    : display_(display),
-      platform_display_(platform_display),
-      is_user_id_valid_(is_user_id_valid),
-      user_id_(user_id),
-      event_dispatcher_(this),
-      weak_factory_(this) {
-  root_.reset(window_server()->CreateServerWindow(
-      window_server()->display_manager()->GetAndAdvanceNextRootId(),
-      ServerWindow::Properties()));
-  // Our root is always a child of the Display's root. Do this
-  // before the WindowTree has been created so that the client doesn't get
-  // notified of the add, bounds change and visibility change.
-  root_->SetBounds(gfx::Rect(display->root_window()->bounds().size()));
-  root_->SetVisible(true);
-  display->root_window()->Add(root_.get());
-
-  event_dispatcher_.set_root(root_.get());
-
-  AddDebugAccelerators();
-}
-
 bool WindowManagerState::IsActive() const {
-  return display()->GetActiveWindowManagerState() == this;
+  return window_server()->user_id_tracker()->active_id() == user_id();
 }
 
 void WindowManagerState::Activate(const gfx::Point& mouse_location_on_screen) {
-  root_->SetVisible(true);
+  SetAllRootWindowsVisible(true);
   event_dispatcher_.Reset();
   event_dispatcher_.SetMousePointerScreenLocation(mouse_location_on_screen);
 }
 
 void WindowManagerState::Deactivate() {
-  root_->SetVisible(false);
+  SetAllRootWindowsVisible(false);
   event_dispatcher_.Reset();
   // The tree is no longer active, so no point in dispatching any further
   // events.
@@ -222,14 +210,46 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
   ProcessNextEventFromQueue();
 }
 
+const WindowServer* WindowManagerState::window_server() const {
+  return window_tree_->window_server();
+}
+
 WindowServer* WindowManagerState::window_server() {
-  return display_->window_server();
+  return window_tree_->window_server();
+}
+
+DisplayManager* WindowManagerState::display_manager() {
+  return window_tree_->display_manager();
+}
+
+const DisplayManager* WindowManagerState::display_manager() const {
+  return window_tree_->display_manager();
+}
+
+void WindowManagerState::SetAllRootWindowsVisible(bool value) {
+  for (Display* display : display_manager()->displays()) {
+    WindowManagerDisplayRoot* display_root =
+        display->GetWindowManagerDisplayRootForUser(user_id());
+    if (display_root)
+      display_root->root()->SetVisible(value);
+  }
+}
+
+ServerWindow* WindowManagerState::GetWindowManagerRoot(ServerWindow* window) {
+  for (Display* display : display_manager()->displays()) {
+    WindowManagerDisplayRoot* display_root =
+        display->GetWindowManagerDisplayRootForUser(user_id());
+    if (display_root && display_root->root()->parent() == window)
+      return display_root->root();
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
   WindowTree* hung_tree = window_server()->GetTreeWithId(client_id);
   if (hung_tree && !hung_tree->janky())
-    tree_->ClientJankinessChanged(hung_tree);
+    window_tree_->ClientJankinessChanged(hung_tree);
   OnEventAck(tree_awaiting_input_ack_, mojom::EventResult::UNHANDLED);
 }
 
@@ -267,15 +287,18 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
     ClientSpecificId client_id,
     const ui::Event& event,
     base::WeakPtr<Accelerator> accelerator) {
-  if (target == root_->parent())
-    target = root_.get();
+  if (target && target->parent() == nullptr)
+    target = GetWindowManagerRoot(target);
 
   if (event.IsMousePointerEvent()) {
     DCHECK(event_dispatcher_.mouse_cursor_source_window());
 
     int32_t cursor_id = 0;
-    if (event_dispatcher_.GetCurrentMouseCursor(&cursor_id))
-      display_->UpdateNativeCursor(cursor_id);
+    if (event_dispatcher_.GetCurrentMouseCursor(&cursor_id)) {
+      WindowManagerDisplayRoot* display_root =
+          display_manager()->GetWindowManagerDisplayRoot(target);
+      display_root->display()->UpdateNativeCursor(cursor_id);
+    }
   }
 
   WindowTree* tree = window_server()->GetTreeWithId(client_id);
@@ -296,7 +319,7 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   }
 
   // Ignore |tree| because it will receive the event via normal dispatch.
-  window_server()->SendToEventObservers(event, user_id_, tree);
+  window_server()->SendToEventObservers(event, user_id(), tree);
 
   tree->DispatchInputEvent(target, event);
 }
@@ -316,8 +339,14 @@ bool WindowManagerState::HandleDebugAccelerator(uint32_t accelerator_id) {
 #if !defined(NDEBUG)
   if (accelerator_id == kPrintWindowsDebugAcceleratorId) {
     // Error so it will be collected in system logs.
-    LOG(ERROR) << "ServerWindow hierarchy:\n"
-               << root()->GetDebugWindowHierarchy();
+    for (Display* display : display_manager()->displays()) {
+      WindowManagerDisplayRoot* display_root =
+          display->GetWindowManagerDisplayRootForUser(user_id());
+      if (display_root) {
+        LOG(ERROR) << "ServerWindow hierarchy:\n"
+                   << display_root->root()->GetDebugWindowHierarchy();
+      }
+    }
     return true;
   }
 #endif
@@ -332,26 +361,36 @@ void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
   DCHECK(IsActive());
   if (HandleDebugAccelerator(accelerator_id))
     return;
-  tree_->OnAccelerator(accelerator_id, event);
+  window_tree_->OnAccelerator(accelerator_id, event);
 }
 
 void WindowManagerState::SetFocusedWindowFromEventDispatcher(
     ServerWindow* new_focused_window) {
   DCHECK(IsActive());
-  display_->SetFocusedWindow(new_focused_window);
+  window_server()->SetFocusedWindow(new_focused_window);
 }
 
 ServerWindow* WindowManagerState::GetFocusedWindowForEventDispatcher() {
-  return display()->GetFocusedWindow();
+  return window_server()->GetFocusedWindow();
 }
 
-void WindowManagerState::SetNativeCapture() {
+void WindowManagerState::SetNativeCapture(ServerWindow* window) {
   DCHECK(IsActive());
-  platform_display_->SetCapture();
+  WindowManagerDisplayRoot* display_root =
+      display_manager()->GetWindowManagerDisplayRoot(window);
+  DCHECK(display_root);
+  platform_display_with_capture_ = display_root->display()->platform_display();
+  platform_display_with_capture_->SetCapture();
 }
 
 void WindowManagerState::ReleaseNativeCapture() {
-  platform_display_->ReleaseCapture();
+  // Tests trigger calling this without a corresponding SetNativeCapture().
+  // TODO(sky): maybe abstract this away so that DCHECK can be added?
+  if (!platform_display_with_capture_)
+    return;
+
+  platform_display_with_capture_->ReleaseCapture();
+  platform_display_with_capture_ = nullptr;
 }
 
 void WindowManagerState::OnServerWindowCaptureLost(ServerWindow* window) {
@@ -360,8 +399,10 @@ void WindowManagerState::OnServerWindowCaptureLost(ServerWindow* window) {
 }
 
 void WindowManagerState::OnMouseCursorLocationChanged(const gfx::Point& point) {
-  window_server()->display_manager()->GetUserDisplayManager(user_id_)->
-      OnMouseCursorLocationChanged(point);
+  window_server()
+      ->display_manager()
+      ->GetUserDisplayManager(user_id())
+      ->OnMouseCursorLocationChanged(point);
 }
 
 void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
@@ -395,8 +436,7 @@ ClientSpecificId WindowManagerState::GetEventTargetClientId(
       // Being the root of the tree means we may get events outside the bounds
       // of the platform window. Because the root has a client id of 0,
       // no WindowTree is found for it and we have to special case it here.
-      DCHECK_EQ(window, root_.get());
-      tree = tree_;
+      tree = window_tree_;
     } else {
       tree = window_server()->GetTreeWithId(window->id().client_id);
     }
@@ -404,8 +444,21 @@ ClientSpecificId WindowManagerState::GetEventTargetClientId(
   return tree->id();
 }
 
+ServerWindow* WindowManagerState::GetRootWindowContaining(
+    const gfx::Point& location) {
+  if (display_manager()->displays().empty())
+    return nullptr;
+
+  // TODO(sky): this isn't right. To correctly implement need bounds of
+  // Display, which we aren't tracking yet. For now, use the first display.
+  Display* display = *(display_manager()->displays().begin());
+  WindowManagerDisplayRoot* display_root =
+      display->GetWindowManagerDisplayRootForUser(user_id());
+  return display_root ? display_root->root() : nullptr;
+}
+
 void WindowManagerState::OnEventTargetNotFound(const ui::Event& event) {
-  window_server()->SendToEventObservers(event, user_id_,
+  window_server()->SendToEventObservers(event, user_id(),
                                         nullptr /* ignore_tree */);
 }
 

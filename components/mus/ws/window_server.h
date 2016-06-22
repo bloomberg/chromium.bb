@@ -59,8 +59,6 @@ class WindowServer : public ServerWindowDelegate,
     return display_manager_.get();
   }
 
-  bool created_one_display() const { return created_one_display_; }
-
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before WindowServer.
   ServerWindow* CreateServerWindow(
@@ -284,6 +282,8 @@ class WindowServer : public ServerWindowDelegate,
   bool GetFrameDecorationsForUser(
       const UserId& user_id,
       mojom::FrameDecorationValuesPtr* values) override;
+  WindowManagerState* GetWindowManagerStateForUser(
+      const UserId& user_id) override;
 
   UserIdTracker user_id_tracker_;
 
@@ -316,10 +316,6 @@ class WindowServer : public ServerWindowDelegate,
   base::Callback<void(ServerWindow*)> window_paint_callback_;
 
   WindowManagerWindowTreeFactorySet window_manager_window_tree_factory_set_;
-
-  // TODO(sky): remove this, temporary until window manager state made global
-  // and not per display.
-  bool created_one_display_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServer);
 };

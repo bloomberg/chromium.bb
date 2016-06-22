@@ -9,6 +9,10 @@
 
 #include "components/mus/common/types.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace ui {
 class Event;
 }
@@ -27,14 +31,15 @@ class EventDispatcherDelegate {
   virtual void SetFocusedWindowFromEventDispatcher(ServerWindow* window) = 0;
   virtual ServerWindow* GetFocusedWindowForEventDispatcher() = 0;
 
-  // Called when capture should be set on the native display.
-  virtual void SetNativeCapture() = 0;
+  // Called when capture should be set on the native display. |window| is the
+  // window capture is being set on.
+  virtual void SetNativeCapture(ServerWindow* window) = 0;
   // Called when the native display is having capture released. There is no
   // longer a ServerWindow holding capture.
   virtual void ReleaseNativeCapture() = 0;
   // Called when |window| has lost capture. The native display may still be
   // holding capture. The delegate should not change native display capture.
-  // ReleaseNativeCapture is invoked if appropriate.
+  // ReleaseNativeCapture() is invoked if appropriate.
   virtual void OnServerWindowCaptureLost(ServerWindow* window) = 0;
 
   virtual void OnMouseCursorLocationChanged(const gfx::Point& point) = 0;
@@ -49,6 +54,10 @@ class EventDispatcherDelegate {
   // true if the event occurred in the non-client area of the window.
   virtual ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                                   bool in_nonclient_area) = 0;
+
+  // Returns the window to start searching from at the specified location, or
+  // null if there is a no window containing |location|.
+  virtual ServerWindow* GetRootWindowContaining(const gfx::Point& location) = 0;
 
   // Called when event dispatch could not find a target. OnAccelerator may still
   // be called.

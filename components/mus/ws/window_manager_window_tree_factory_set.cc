@@ -39,13 +39,15 @@ WindowManagerWindowTreeFactory* WindowManagerWindowTreeFactorySet::Add(
   return factory;
 }
 
-GlobalWindowManagerState*
-WindowManagerWindowTreeFactorySet::GetGlobalWindowManagerStateForUser(
+WindowManagerState*
+WindowManagerWindowTreeFactorySet::GetWindowManagerStateForUser(
     const UserId& user_id) {
   auto it = factories_.find(user_id);
-  return it == factories_.end()
-             ? nullptr
-             : it->second->window_tree()->global_window_manager_state();
+  if (it == factories_.end())
+    return nullptr;
+  return it->second->window_tree()
+             ? it->second->window_tree()->window_manager_state()
+             : nullptr;
 }
 
 void WindowManagerWindowTreeFactorySet::DeleteFactoryAssociatedWithTree(
@@ -88,12 +90,6 @@ void WindowManagerWindowTreeFactorySet::OnWindowManagerWindowTreeFactoryReady(
   if (is_first_valid_factory)
     window_server_->OnFirstWindowManagerWindowTreeFactoryReady();
 }
-
-void WindowManagerWindowTreeFactorySet::OnActiveUserIdChanged(
-    const UserId& previously_active_id,
-    const UserId& active_id) {}
-
-void WindowManagerWindowTreeFactorySet::OnUserIdAdded(const UserId& id) {}
 
 void WindowManagerWindowTreeFactorySet::OnUserIdRemoved(const UserId& id) {
   factories_.erase(id);

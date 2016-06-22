@@ -68,7 +68,8 @@ const char kResourceFile200[] = "mus_app_resources_200.pak";
 // TODO(sky): this is a pretty typical pattern, make it easier to do.
 struct MusApp::PendingRequest {
   shell::Connection* connection;
-  std::unique_ptr<mojo::InterfaceRequest<mojom::WindowTreeFactory>> wtf_request;
+  std::unique_ptr<mojom::WindowTreeFactoryRequest> wtf_request;
+  std::unique_ptr<mojom::DisplayManagerRequest> dm_request;
 };
 
 struct MusApp::UserState {
@@ -239,8 +240,12 @@ bool MusApp::AcceptConnection(Connection* connection) {
 void MusApp::OnFirstDisplayReady() {
   PendingRequests requests;
   requests.swap(pending_requests_);
-  for (auto& request : requests)
-    Create(request->connection, std::move(*request->wtf_request));
+  for (auto& request : requests) {
+    if (request->wtf_request)
+      Create(request->connection, std::move(*request->wtf_request));
+    else
+      Create(request->connection, std::move(*request->dm_request));
+  }
 }
 
 void MusApp::OnNoMoreDisplays() {
@@ -270,6 +275,15 @@ void MusApp::Create(shell::Connection* connection,
 
 void MusApp::Create(shell::Connection* connection,
                     mojom::DisplayManagerRequest request) {
+  // DisplayManagerObservers generally expect there to be at least one display.
+  if (!window_server_->display_manager()->has_displays()) {
+    std::unique_ptr<PendingRequest> pending_request(new PendingRequest);
+    pending_request->connection = connection;
+    pending_request->dm_request.reset(
+        new mojom::DisplayManagerRequest(std::move(request)));
+    pending_requests_.push_back(std::move(pending_request));
+    return;
+  }
   window_server_->display_manager()
       ->GetUserDisplayManager(connection->GetRemoteIdentity().user_id())
       ->AddDisplayManagerBinding(std::move(request));
@@ -308,8 +322,7 @@ void MusApp::Create(Connection* connection,
     std::unique_ptr<PendingRequest> pending_request(new PendingRequest);
     pending_request->connection = connection;
     pending_request->wtf_request.reset(
-        new mojo::InterfaceRequest<mojom::WindowTreeFactory>(
-            std::move(request)));
+        new mojom::WindowTreeFactoryRequest(std::move(request)));
     pending_requests_.push_back(std::move(pending_request));
     return;
   }

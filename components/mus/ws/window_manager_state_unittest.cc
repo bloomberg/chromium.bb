@@ -14,6 +14,7 @@
 #include "components/mus/common/event_matcher_util.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/accelerator.h"
+#include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_init_params.h"
@@ -22,6 +23,7 @@
 #include "components/mus/ws/test_server_window_delegate.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_access_policy.h"
+#include "components/mus/ws/window_manager_display_root.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree.h"
@@ -120,8 +122,9 @@ void WindowManagerStateTest::OnEventAckTimeout(
 
 void WindowManagerStateTest::SetUp() {
   window_event_targeting_helper_.SetTaskRunner(task_runner_);
-  window_manager_state_ =
-      window_event_targeting_helper_.display()->GetActiveWindowManagerState();
+  window_manager_state_ = window_event_targeting_helper_.display()
+                              ->GetActiveWindowManagerDisplayRoot()
+                              ->window_manager_state();
   window_ = window_event_targeting_helper_.CreatePrimaryTree(
       gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 50, 50));
   window_tree_ = window_event_targeting_helper_.last_binding()->tree();

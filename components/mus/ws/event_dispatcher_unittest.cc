@@ -70,6 +70,8 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     return return_value;
   }
 
+  void set_root(ServerWindow* root) { root_ = root; }
+
   // Returns the last dispatched event, or null if there are no more.
   std::unique_ptr<DispatchedEventDetails>
   GetAndAdvanceDispatchedEventDetails() {
@@ -105,7 +107,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   ServerWindow* GetFocusedWindowForEventDispatcher() override {
     return focused_window_;
   }
-  void SetNativeCapture() override {}
+  void SetNativeCapture(ServerWindow* window) override {}
   void ReleaseNativeCapture() override {
     if (delegate_)
       delegate_->ReleaseCapture();
@@ -125,12 +127,15 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     details->accelerator = accelerator;
     dispatched_event_queue_.push(std::move(details));
   }
-  void OnEventTargetNotFound(const ui::Event& event) override {
-    last_event_target_not_found_ = ui::Event::Clone(event);
-  }
   ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                           bool in_nonclient_area) override {
     return in_nonclient_area ? kNonclientAreaId : kClientAreaId;
+  }
+  ServerWindow* GetRootWindowContaining(const gfx::Point& location) override {
+    return root_;
+  }
+  void OnEventTargetNotFound(const ui::Event& event) override {
+    last_event_target_not_found_ = ui::Event::Clone(event);
   }
 
   Delegate* delegate_;
@@ -138,6 +143,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   ServerWindow* lost_capture_window_;
   uint32_t last_accelerator_;
   std::queue<std::unique_ptr<DispatchedEventDetails>> dispatched_event_queue_;
+  ServerWindow* root_ = nullptr;
   std::unique_ptr<ui::Event> last_event_target_not_found_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcherDelegate);
@@ -312,7 +318,7 @@ void EventDispatcherTest::SetUp() {
   test_event_dispatcher_delegate_.reset(new TestEventDispatcherDelegate(this));
   event_dispatcher_.reset(
       new EventDispatcher(test_event_dispatcher_delegate_.get()));
-  event_dispatcher_->set_root(root_window_.get());
+  test_event_dispatcher_delegate_->set_root(root_window_.get());
 }
 
 TEST_F(EventDispatcherTest, ProcessEvent) {

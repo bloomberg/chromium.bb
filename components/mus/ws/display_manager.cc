@@ -7,21 +7,29 @@
 #include "base/memory/ptr_util.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_manager_delegate.h"
+#include "components/mus/ws/event_dispatcher.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/user_display_manager.h"
+#include "components/mus/ws/user_id_tracker.h"
+#include "components/mus/ws/window_manager_state.h"
 
 namespace mus {
 namespace ws {
 
-DisplayManager::DisplayManager(DisplayManagerDelegate* delegate)
+DisplayManager::DisplayManager(DisplayManagerDelegate* delegate,
+                               UserIdTracker* user_id_tracker)
     // |next_root_id_| is used as the lower bits, so that starting at 0 is
     // fine. |next_display_id_| is used by itself, so we start at 1 to reserve
     // 0 as invalid.
     : delegate_(delegate),
+      user_id_tracker_(user_id_tracker),
       next_root_id_(0),
-      next_display_id_(1) {}
+      next_display_id_(1) {
+  user_id_tracker_->AddObserver(this);
+}
 
 DisplayManager::~DisplayManager() {
+  user_id_tracker_->RemoveObserver(this);
   DestroyAllDisplays();
 }
 
@@ -93,7 +101,7 @@ const Display* DisplayManager::GetDisplayContaining(
   return nullptr;
 }
 
-WindowManagerAndDisplayConst DisplayManager::GetWindowManagerAndDisplay(
+const WindowManagerDisplayRoot* DisplayManager::GetWindowManagerDisplayRoot(
     const ServerWindow* window) const {
   const ServerWindow* last = window;
   while (window && window->parent()) {
@@ -101,27 +109,17 @@ WindowManagerAndDisplayConst DisplayManager::GetWindowManagerAndDisplay(
     window = window->parent();
   }
   for (Display* display : displays_) {
-    if (window == display->root_window()) {
-      WindowManagerAndDisplayConst result;
-      result.display = display;
-      result.window_manager_state =
-          display->GetWindowManagerStateWithRoot(last);
-      return result;
-    }
+    if (window == display->root_window())
+      return display->GetWindowManagerDisplayRootWithRoot(last);
   }
-  return WindowManagerAndDisplayConst();
+  return nullptr;
 }
 
-WindowManagerAndDisplay DisplayManager::GetWindowManagerAndDisplay(
+WindowManagerDisplayRoot* DisplayManager::GetWindowManagerDisplayRoot(
     const ServerWindow* window) {
-  WindowManagerAndDisplayConst result_const =
-      const_cast<const DisplayManager*>(this)->GetWindowManagerAndDisplay(
-          window);
-  WindowManagerAndDisplay result;
-  result.display = const_cast<Display*>(result_const.display);
-  result.window_manager_state =
-      const_cast<WindowManagerState*>(result_const.window_manager_state);
-  return result;
+  return const_cast<WindowManagerDisplayRoot*>(
+      const_cast<const DisplayManager*>(this)->GetWindowManagerDisplayRoot(
+          window));
 }
 
 WindowId DisplayManager::GetAndAdvanceNextRootId() {
@@ -146,6 +144,23 @@ void DisplayManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {
   pending_displays_.erase(display);
   if (is_first_display)
     delegate_->OnFirstDisplayReady();
+}
+
+void DisplayManager::OnActiveUserIdChanged(const UserId& previously_active_id,
+                                           const UserId& active_id) {
+  WindowManagerState* previous_window_manager_state =
+      delegate_->GetWindowManagerStateForUser(previously_active_id);
+  gfx::Point mouse_location_on_screen;
+  if (previous_window_manager_state) {
+    mouse_location_on_screen = previous_window_manager_state->event_dispatcher()
+                                   ->mouse_pointer_last_location();
+    previous_window_manager_state->Deactivate();
+  }
+
+  WindowManagerState* current_window_manager_state =
+      delegate_->GetWindowManagerStateForUser(active_id);
+  if (current_window_manager_state)
+    current_window_manager_state->Activate(mouse_location_on_screen);
 }
 
 }  // namespace ws

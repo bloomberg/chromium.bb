@@ -14,11 +14,11 @@
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
-#include "components/mus/ws/global_window_manager_state.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_manager_access_policy.h"
+#include "components/mus/ws/window_manager_display_root.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_manager_window_tree_factory.h"
 #include "components/mus/ws/window_server_delegate.h"
@@ -36,7 +36,7 @@ WindowServer::WindowServer(
     : delegate_(delegate),
       surfaces_state_(surfaces_state),
       next_client_id_(1),
-      display_manager_(new DisplayManager(this)),
+      display_manager_(new DisplayManager(this, &user_id_tracker_)),
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
@@ -431,28 +431,33 @@ void WindowServer::FinishOperation() {
 }
 
 void WindowServer::UpdateNativeCursorFromMouseLocation(ServerWindow* window) {
-  WindowManagerAndDisplay wm_and_display =
-      display_manager_->GetWindowManagerAndDisplay(window);
-  WindowManagerState* wms = wm_and_display.window_manager_state;
-  if (wms && wm_and_display.display) {
-    wms->event_dispatcher()->UpdateCursorProviderByLastKnownLocation();
+  WindowManagerDisplayRoot* display_root =
+      display_manager_->GetWindowManagerDisplayRoot(window);
+  if (display_root) {
+    EventDispatcher* event_dispatcher =
+        display_root->window_manager_state()->event_dispatcher();
+    event_dispatcher->UpdateCursorProviderByLastKnownLocation();
     int32_t cursor_id = 0;
-    if (wms->event_dispatcher()->GetCurrentMouseCursor(&cursor_id))
-      wm_and_display.display->UpdateNativeCursor(cursor_id);
+    if (event_dispatcher->GetCurrentMouseCursor(&cursor_id))
+      display_root->display()->UpdateNativeCursor(cursor_id);
   }
 }
 
 void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
-  WindowManagerAndDisplay wm_and_display =
-      display_manager_->GetWindowManagerAndDisplay(window);
-  WindowManagerState* wms = wm_and_display.window_manager_state;
-  if (wms && wm_and_display.display &&
-      window == wms->event_dispatcher()->mouse_cursor_source_window()) {
-    wms->event_dispatcher()->UpdateNonClientAreaForCurrentWindow();
-    int32_t cursor_id = 0;
-    if (wms->event_dispatcher()->GetCurrentMouseCursor(&cursor_id))
-      wm_and_display.display->UpdateNativeCursor(cursor_id);
-  }
+  WindowManagerDisplayRoot* display_root =
+      display_manager_->GetWindowManagerDisplayRoot(window);
+  if (!display_root)
+    return;
+
+  EventDispatcher* event_dispatcher =
+      display_root->window_manager_state()->event_dispatcher();
+  if (window != event_dispatcher->mouse_cursor_source_window())
+    return;
+
+  event_dispatcher->UpdateNonClientAreaForCurrentWindow();
+  int32_t cursor_id = 0;
+  if (event_dispatcher->GetCurrentMouseCursor(&cursor_id))
+    display_root->display()->UpdateNativeCursor(cursor_id);
 }
 
 mus::SurfacesState* WindowServer::GetSurfacesState() {
@@ -499,10 +504,11 @@ void WindowServer::OnWindowHierarchyChanged(ServerWindow* window,
   if (in_destructor_)
     return;
 
-  WindowManagerState* wms =
-      display_manager_->GetWindowManagerAndDisplay(window).window_manager_state;
-  if (wms)
-    wms->ReleaseCaptureBlockedByAnyModalWindow();
+  WindowManagerDisplayRoot* display_root =
+      display_manager_->GetWindowManagerDisplayRoot(window);
+  if (display_root)
+    display_root->window_manager_state()
+        ->ReleaseCaptureBlockedByAnyModalWindow();
 
   ProcessWindowHierarchyChanged(window, new_parent, old_parent);
 
@@ -586,10 +592,11 @@ void WindowServer::OnWindowVisibilityChanged(ServerWindow* window) {
   if (in_destructor_)
     return;
 
-  WindowManagerState* wms =
-      display_manager_->GetWindowManagerAndDisplay(window).window_manager_state;
-  if (wms)
-    wms->ReleaseCaptureBlockedByModalWindow(window);
+  WindowManagerDisplayRoot* display_root =
+      display_manager_->GetWindowManagerDisplayRoot(window);
+  if (display_root)
+    display_root->window_manager_state()->ReleaseCaptureBlockedByModalWindow(
+        window);
 }
 
 void WindowServer::OnWindowPredefinedCursorChanged(ServerWindow* window,
@@ -647,15 +654,6 @@ void WindowServer::OnTransientWindowRemoved(ServerWindow* window,
 }
 
 void WindowServer::OnFirstDisplayReady() {
-  // TODO(sky): remove this, temporary until window manager state made
-  // global.
-  if (!created_one_display_) {
-    created_one_display_ = true;
-    std::vector<WindowManagerWindowTreeFactory*> factories =
-        window_manager_window_tree_factory_set_.GetFactories();
-    for (WindowManagerWindowTreeFactory* factory : factories)
-      factory->BindPendingRequest();
-  }
   delegate_->OnFirstDisplayReady();
 }
 
@@ -666,14 +664,20 @@ void WindowServer::OnNoMoreDisplays() {
 bool WindowServer::GetFrameDecorationsForUser(
     const UserId& user_id,
     mojom::FrameDecorationValuesPtr* values) {
-  GlobalWindowManagerState* global_window_manager_state =
-      window_manager_window_tree_factory_set_
-          .GetGlobalWindowManagerStateForUser(user_id);
-  if (!global_window_manager_state)
+  WindowManagerState* window_manager_state =
+      window_manager_window_tree_factory_set_.GetWindowManagerStateForUser(
+          user_id);
+  if (!window_manager_state)
     return false;
-  if (values && global_window_manager_state->got_frame_decoration_values())
-    *values = global_window_manager_state->frame_decoration_values().Clone();
-  return global_window_manager_state->got_frame_decoration_values();
+  if (values && window_manager_state->got_frame_decoration_values())
+    *values = window_manager_state->frame_decoration_values().Clone();
+  return window_manager_state->got_frame_decoration_values();
+}
+
+WindowManagerState* WindowServer::GetWindowManagerStateForUser(
+    const UserId& user_id) {
+  return window_manager_window_tree_factory_set_.GetWindowManagerStateForUser(
+      user_id);
 }
 
 }  // namespace ws

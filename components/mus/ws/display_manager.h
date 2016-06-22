@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/user_id.h"
+#include "components/mus/ws/user_id_tracker_observer.h"
 
 namespace mus {
 namespace ws {
@@ -20,26 +21,17 @@ class Display;
 class DisplayManagerDelegate;
 class ServerWindow;
 class UserDisplayManager;
-class WindowManagerState;
+class UserIdTracker;
+class WindowManagerDisplayRoot;
 
-struct WindowManagerAndDisplay {
-  WindowManagerAndDisplay() : window_manager_state(nullptr), display(nullptr) {}
-
-  WindowManagerState* window_manager_state;
-  Display* display;
-};
-
-struct WindowManagerAndDisplayConst {
-  WindowManagerAndDisplayConst()
-      : window_manager_state(nullptr), display(nullptr) {}
-  const WindowManagerState* window_manager_state;
-  const Display* display;
-};
-
-class DisplayManager {
+// DisplayManager manages the set of Displays. DisplayManager distinguishes
+// between displays that do yet have an accelerated widget (pending), vs
+// those that do.
+class DisplayManager : public UserIdTrackerObserver {
  public:
-  explicit DisplayManager(DisplayManagerDelegate* delegate);
-  ~DisplayManager();
+  DisplayManager(DisplayManagerDelegate* delegate,
+                 UserIdTracker* user_id_tracker);
+  ~DisplayManager() override;
 
   // Returns the UserDisplayManager for |user_id|. DisplayManager owns the
   // return value.
@@ -61,9 +53,10 @@ class DisplayManager {
   Display* GetDisplayContaining(ServerWindow* window);
   const Display* GetDisplayContaining(const ServerWindow* window) const;
 
-  WindowManagerAndDisplayConst GetWindowManagerAndDisplay(
+  const WindowManagerDisplayRoot* GetWindowManagerDisplayRoot(
       const ServerWindow* window) const;
-  WindowManagerAndDisplay GetWindowManagerAndDisplay(
+  // TODO(sky): constness here is wrong! fix!
+  WindowManagerDisplayRoot* GetWindowManagerDisplayRoot(
       const ServerWindow* window);
 
   bool has_displays() const { return !displays_.empty(); }
@@ -81,7 +74,12 @@ class DisplayManager {
   void OnDisplayAcceleratedWidgetAvailable(Display* display);
 
  private:
+  // UserIdTrackerObserver:
+  void OnActiveUserIdChanged(const UserId& previously_active_id,
+                             const UserId& active_id) override;
+
   DisplayManagerDelegate* delegate_;
+  UserIdTracker* user_id_tracker_;
 
   // Displays are initially added to |pending_displays_|. When the display is
   // initialized it is moved to |displays_|. WindowServer owns the Displays.
