@@ -9,7 +9,7 @@ cr.define('extensions', function() {
 
   // The Extension Commands list object that will be used to show the commands
   // on the page.
-  var ExtensionCommandList = options.ExtensionCommandList;
+  var ExtensionCommandList = extensions.ExtensionCommandList;
 
   /**
    * ExtensionCommandsOverlay class

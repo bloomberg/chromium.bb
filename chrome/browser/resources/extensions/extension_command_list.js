@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options', function() {
+cr.define('extensions', function() {
   'use strict';
 
   /** @const */ var keyComma = 188;
