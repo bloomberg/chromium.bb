@@ -19,6 +19,7 @@
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -448,8 +449,7 @@ TEST_F(RlzLibTest, SendFinancialPing) {
   ASSERT_TRUE(io_thread.StartWithOptions(options));
 
   scoped_refptr<net::TestURLRequestContextGetter> context =
-      new net::TestURLRequestContextGetter(
-          io_thread.message_loop()->task_runner());
+      new net::TestURLRequestContextGetter(io_thread.task_runner());
   rlz_lib::SetURLRequestContext(context.get());
 
   URLRequestRAII set_context(context.get());
@@ -501,8 +501,7 @@ TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
   ASSERT_TRUE(io_thread.StartWithOptions(options));
 
   scoped_refptr<net::TestURLRequestContextGetter> context =
-      new net::TestURLRequestContextGetter(
-          io_thread.message_loop()->task_runner());
+      new net::TestURLRequestContextGetter(io_thread.task_runner());
   rlz_lib::SetURLRequestContext(context.get());
 
   URLRequestRAII set_context(context.get());
@@ -514,7 +513,7 @@ TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
   EXPECT_FALSE(rlz_lib::test::WasSendFinancialPingInterrupted());
 
   base::MessageLoop loop;
-  loop.PostTask(FROM_HERE, base::Bind(&ResetContext));
+  loop.task_runner()->PostTask(FROM_HERE, base::Bind(&ResetContext));
   std::string request;
   EXPECT_FALSE(rlz_lib::SendFinancialPing(rlz_lib::TOOLBAR_NOTIFIER, points,
       "swg", "GGLA", "SwgProductId1234", "en-UK", false,
