@@ -845,8 +845,8 @@ void DownloadItemViewMd::ShowContextMenuImpl(const gfx::Rect& rect,
 
 void DownloadItemViewMd::HandlePressEvent(const ui::LocatedEvent& event,
                                           bool active_event) {
-  // The event should not activate us in dangerous mode.
-  if (mode_ == DANGEROUS_MODE)
+  // The event should not activate us in dangerous/malicious mode.
+  if (IsShowingWarningDialog())
     return;
 
   // Stop any completion animation.
@@ -862,10 +862,7 @@ void DownloadItemViewMd::HandlePressEvent(const ui::LocatedEvent& event,
 
 void DownloadItemViewMd::HandleClickEvent(const ui::LocatedEvent& event,
                                           bool active_event) {
-  // Mouse should not activate us in dangerous mode.
-  if (mode_ == DANGEROUS_MODE)
-    return;
-
+  // The event should not activate us in dangerous/malicious mode.
   if (!active_event || IsShowingWarningDialog())
     return;
 
@@ -913,7 +910,7 @@ void DownloadItemViewMd::ToggleWarningDialog() {
 void DownloadItemViewMd::ClearWarningDialog() {
   DCHECK(download()->GetDangerType() ==
          content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED);
-  DCHECK(mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE);
+  DCHECK(IsShowingWarningDialog());
 
   mode_ = NORMAL_MODE;
   dropdown_state_ = NORMAL;
