@@ -15,6 +15,7 @@
     <style include="shared-style">
       :host {
         color: #fff;
+        display: block;
         transition: background-color 150ms;
         width: 100%;
       }
@@ -33,7 +34,7 @@
       }
 
       #toolbar-container {
-        height: 56px;
+        height: var(--toolbar-height);
       }
 
       #overlay-buttons {
@@ -72,7 +73,7 @@
 
       paper-tabs {
         --paper-tabs-selection-bar-color: var(--google-blue-500);
-        height: 45px;
+        height: calc(var(--toolbar-grouped-height) - var(--toolbar-height));
         min-width: 300px;
       }
 
@@ -96,7 +97,7 @@
         transition: opacity 150ms;
       }
 
-      :host([grouped-range="0"]) #grouped-nav-container {
+      :host([grouped-range='0']) #grouped-nav-container {
         opacity: 0;
         pointer-events: none;
       }

@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://history/grouped_list.html">
 <link rel="import" href="chrome://history/history_list.html">
@@ -19,27 +18,29 @@
     </style>
     <style include="shared-style">
       :host {
-        display: flex;
-        flex-direction: column;
+        display: block;
+        height: 100%;
         min-width: 800px;
+        overflow: hidden;
       }
 
+      /* Sizing this with flex causes slow load performance, see
+         crbug.com/618153. */
       #main-container {
-        display: flex;
-        flex: 1 0 0;
-        overflow: hidden;
+        height: calc(100% - var(--toolbar-height));
       }
 
-      history-list,
-      history-synced-device-manager,
-      history-grouped-list {
-        flex: 1 0 0;
+      :host([grouped_]) #main-container {
+        height: calc(100% - var(--toolbar-grouped-height));
       }
 
-      #content {
-        display: flex;
-        flex: 1 0 0;
-        overflow: hidden;
+      #content,
+      #content > * {
+        height: 100%;
+      }
+
+      #history-side-bar {
+        float: left;
       }
     </style>
     <history-toolbar id="toolbar"

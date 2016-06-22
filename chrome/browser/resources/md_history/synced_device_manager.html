@@ -11,18 +11,24 @@
   <template>
     <style>
       :host {
+        display: block;
         overflow: auto;
+      }
+
+      #container {
         padding-top: var(--first-card-padding-top);
       }
     </style>
-    <template is="dom-repeat" items="[[syncedDevices_]]" as="syncedDevice">
-      <history-synced-device-card device="[[syncedDevice.device]]"
-          last-update-time="[[syncedDevice.lastUpdateTime]]"
-          tabs="[[syncedDevice.tabs]]"
-          separator-indexes="[[syncedDevice.separatorIndexes]]"
-          searched-term="[[searchedTerm]]">
-      </history-synced-device-card>
-    </template>
+    <div id="container">
+      <template is="dom-repeat" items="[[syncedDevices_]]" as="syncedDevice">
+        <history-synced-device-card device="[[syncedDevice.device]]"
+            last-update-time="[[syncedDevice.lastUpdateTime]]"
+            tabs="[[syncedDevice.tabs]]"
+            separator-indexes="[[syncedDevice.separatorIndexes]]"
+            searched-term="[[searchedTerm]]">
+        </history-synced-device-card>
+      </template>
+    </div>
   </template>
   <script src="chrome://history/synced_device_manager.js"></script>
 </dom-module>

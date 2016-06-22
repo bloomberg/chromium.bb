@@ -16,39 +16,42 @@
 
     body {
       background: var(--md-background-color);
-      display: flex;
-      flex-direction: column;
     }
 
     /* Minimal styling required to display app shim. */
-    .loading history-app,
-    .app-shim {
+    .loading history-app {
+      visibility: hidden;
+    }
+
+    #app-shim {
       display: none;
     }
 
-    history-app {
-      flex: 1;
-    }
-
-    .loading .app-shim {
+    .loading #app-shim {
+      bottom: 0;
       display: flex;
+      flex-direction: column;
       font-size: 123%;
+      height: 100%;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
     }
 
-    .loading #loading-toolbar {
+    #app-shim span {
+      display: flex;
+    }
+
+    #loading-toolbar {
       -webkit-padding-start: 24px;
       align-items: center;
+      background: var(--md-toolbar-color);
       color: #fff;
-      flex-direction: row;
-      font-weight: 400;
       height: 56px;
     }
 
-    .loading #loading-toolbar {
-      background: var(--md-toolbar-color);
-    }
-
-    .loading #loading-message {
+    #loading-message {
       align-items: center;
       color: #b4b4b4;
       flex: 1;
@@ -60,8 +63,11 @@
 
 <body class="loading">
   <history-app id="history-app"></history-app>
-  <span class="app-shim" id="loading-toolbar">$i18n{title}</span>
-  <span class="app-shim" id="loading-message">$i18n{loading}</span>
+
+  <div id="app-shim">
+    <span id="loading-toolbar">$i18n{title}</span>
+    <span id="loading-message">$i18n{loading}</span>
+  </div>
 
   <link rel="import" href="chrome://resources/html/cr.html">
   <link rel="import" href="chrome://resources/html/util.html">

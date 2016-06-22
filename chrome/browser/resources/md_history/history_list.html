@@ -12,14 +12,11 @@
   <template>
     <style include="shared-style">
       :host {
-        display: flex;
-        flex-direction: column;
-        position: relative;
+        display: block;
       }
 
       #infinite-list {
-        flex: 1;
-        padding-top: var(--first-card-padding-top);
+        height: 100%;
       }
 
       paper-item {
@@ -46,6 +43,7 @@
         <history-item item="[[item]]"
             starred="[[item.starred]]"
             selected="{{item.selected}}"
+            is-first-item="[[isFirstItem_(index)]]"
             is-card-start="[[isCardStart_(item, index, historyData_.length)]]"
             is-card-end="[[isCardEnd_(item, index, historyData_.length)]]"
             has-time-gap="[[needsTimeGap_(item, index, historyData_.length)]]"

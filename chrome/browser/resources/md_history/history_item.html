@@ -30,6 +30,10 @@
         width: 100%;
       }
 
+      :host([is-first-item]) #main-container {
+        margin-top: var(--first-card-padding-top);
+      }
+
       :host([is-card-start]) #main-container {
         border-top-width: 1px;
       }

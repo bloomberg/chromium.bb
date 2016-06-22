@@ -19,6 +19,8 @@ cr.define('md_history', function() {
 
       selected: {type: Boolean, notify: true},
 
+      isFirstItem: {type: Boolean, reflectToAttribute: true},
+
       isCardStart: {type: Boolean, reflectToAttribute: true},
 
       isCardEnd: {type: Boolean, reflectToAttribute: true},

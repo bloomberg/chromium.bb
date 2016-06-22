@@ -22,7 +22,10 @@ Polymer({
     selectedPage_: String,
 
     // Whether domain-grouped history is enabled.
-    grouped_: Boolean,
+    grouped_: {
+      type: Boolean,
+      reflectToAttribute: true
+    },
 
     // Whether the first set of results have returned.
     firstLoad_: { type: Boolean, value: true },

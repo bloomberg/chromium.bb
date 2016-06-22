@@ -244,4 +244,13 @@ Polymer({
         this.historyData_[i].dateRelativeDay !=
         this.historyData_[i + 1].dateRelativeDay;
   },
+
+  /**
+   * @param {number} index
+   * @return {boolean}
+   * @private
+   */
+  isFirstItem_: function(index) {
+    return index == 0;
+  }
 });
