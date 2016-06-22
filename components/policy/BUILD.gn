@@ -284,19 +284,15 @@ if (enable_configuration_policy) {
 
   if (is_android) {
     import("//build/config/android/rules.gni")
-    import("//build/config/zip.gni")
 
-    resources_name = "app_restrictions_resources"
-    resources_zip = "res.java/$resources_name.zip"
-    generated_resources_dir = "$root_gen_dir/chrome/app/policy/android"
+    _generated_resources_dir = "$root_gen_dir/chrome/app/policy/android"
 
-    consolidate_target_name = "${resources_name}__consolidate_resources"
-    copy(consolidate_target_name) {
+    copy("app_restrictions_resources_copy") {
       sources = [
         app_restrictions_path,
       ]
       outputs = [
-        "$generated_resources_dir/xml-v21/app_restrictions.xml",
+        "$_generated_resources_dir/xml-v21/app_restrictions.xml",
       ]
       deps = [
         ":cloud_policy_code_generate",
@@ -304,33 +300,18 @@ if (enable_configuration_policy) {
       ]
     }
 
-    # TODO(471115): The write_build_config template is in
-    # //build/config/android/internal_rules.gni and is not meant for external
-    # use. The public rules (in rules.gni) should be updated to support what
-    # we are doing here.
-    build_config_target_name = "${resources_name}__build_config"
-    write_build_config(build_config_target_name) {
-      build_config = "$target_gen_dir/$resources_name.build_config"
-      resources_zip = "$root_build_dir/$resources_zip"
-      type = "android_resources"
-    }
-
-    zip_target_name = "${resources_name}__create_zip"
-    zip(zip_target_name) {
-      inputs = get_target_outputs(":$consolidate_target_name") +
-               policy_templates_android_outputs
-      output = "$root_build_dir/$resources_zip"
-      base_dir = generated_resources_dir
-      deps = [
-        ":$consolidate_target_name",
-        ":policy_templates_grit",  # For policy_templates_android_outputs.
+    android_resources("app_restrictions_resources") {
+      resource_dirs = []
+      generated_resource_dirs = [
+        "$policy_templates_base_dir/android",
+        _generated_resources_dir,
       ]
-    }
-
-    group("app_restrictions_resources") {
+      generated_resource_files =
+          policy_templates_android_outputs +
+          [ "$_generated_resources_dir/xml-v21/app_restrictions.xml" ]
       deps = [
-        ":$build_config_target_name",
-        ":$zip_target_name",
+        ":app_restrictions_resources_copy",
+        ":policy_templates_grit",
       ]
     }
   } else if (is_mac) {
