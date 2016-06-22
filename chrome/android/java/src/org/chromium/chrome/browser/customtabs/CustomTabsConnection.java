@@ -689,10 +689,6 @@ public class CustomTabsConnection {
     private boolean prerenderUrl(
             CustomTabsSessionToken session, String url, Bundle extras, int uid) {
         ThreadUtils.assertOnUiThread();
-        // TODO(lizeb): Prerendering through ChromePrerenderService is
-        // incompatible with prerendering through this service. Remove this
-        // limitation, or remove ChromePrerenderService.
-        WarmupManager.getInstance().disallowPrerendering();
         // Ignores mayPrerender() for an empty URL, since it cancels an existing prerender.
         if (!mayPrerender(session) && !TextUtils.isEmpty(url)) return false;
         if (!mWarmupHasBeenCalled.get()) return false;

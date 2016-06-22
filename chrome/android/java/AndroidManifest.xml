@@ -339,10 +339,6 @@ by a child template that "extends" this file.
             android:hardwareAccelerated="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
         </activity>
-        <activity android:name="org.chromium.chrome.browser.prerender.PrerenderAPITestActivity"
-            android:theme="@style/MainTheme"
-            android:exported="true">
-        </activity>
         <activity android:name="org.chromium.chrome.browser.bookmarks.BookmarkActivity"
             android:theme="@style/DrawerDialog"
             android:windowSoftInputMode="stateAlwaysHidden"
