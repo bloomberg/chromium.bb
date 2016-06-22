@@ -601,6 +601,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/multi_nested_struct.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+        ['linux', 'amd'], bug=483282)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
