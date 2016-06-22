@@ -59,16 +59,19 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
     std::unique_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl->active_tree(), 1);
     LayerImpl* root_ptr = root.get();
-    root->AddChild(LayerImpl::Create(host_impl->active_tree(), 2));
-    root->test_properties()->children[0]->AddChild(
+    root->test_properties()->AddChild(
+        LayerImpl::Create(host_impl->active_tree(), 2));
+    root->test_properties()->children[0]->test_properties()->AddChild(
         LayerImpl::Create(host_impl->active_tree(), 3));
-    root->AddChild(LayerImpl::Create(host_impl->active_tree(), 4));
-    root->test_properties()->children[1]->AddChild(
+    root->test_properties()->AddChild(
+        LayerImpl::Create(host_impl->active_tree(), 4));
+    root->test_properties()->children[1]->test_properties()->AddChild(
         LayerImpl::Create(host_impl->active_tree(), 5));
     root->test_properties()
         ->children[1]
         ->test_properties()
         ->children[0]
+        ->test_properties()
         ->AddChild(LayerImpl::Create(host_impl->active_tree(), 6));
     root->test_properties()
         ->children[1]
@@ -76,6 +79,7 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
         ->children[0]
         ->test_properties()
         ->children[0]
+        ->test_properties()
         ->AddChild(LayerImpl::Create(host_impl->active_tree(), 7));
     host_impl->active_tree()->SetRootLayer(std::move(root));
     return root_ptr;

@@ -97,7 +97,7 @@ class DamageTrackerTest : public testing::Test {
     child->SetPosition(gfx::PointF(100.f, 100.f));
     child->SetBounds(gfx::Size(30, 30));
     child->SetDrawsContent(true);
-    root->AddChild(std::move(child));
+    root->test_properties()->AddChild(std::move(child));
     host_impl_.active_tree()->SetRootLayer(std::move(root));
 
     return host_impl_.active_tree()->root_layer();
@@ -145,10 +145,10 @@ class DamageTrackerTest : public testing::Test {
     grand_child2->SetBounds(gfx::Size(6, 8));
     grand_child2->SetDrawsContent(true);
 
-    child1->AddChild(std::move(grand_child1));
-    child1->AddChild(std::move(grand_child2));
-    root->AddChild(std::move(child1));
-    root->AddChild(std::move(child2));
+    child1->test_properties()->AddChild(std::move(grand_child1));
+    child1->test_properties()->AddChild(std::move(grand_child2));
+    root->test_properties()->AddChild(std::move(child1));
+    root->test_properties()->AddChild(std::move(child2));
     host_impl_.active_tree()->SetRootLayer(std::move(root));
 
     return host_impl_.active_tree()->root_layer();
@@ -827,7 +827,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
     child2->SetPosition(gfx::PointF(400.f, 380.f));
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
-    root->AddChild(std::move(child2));
+    root->test_properties()->AddChild(std::move(child2));
   }
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
@@ -854,7 +854,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 
   // Then, test removing child1.
-  root->RemoveChildForTesting(child1);
+  root->test_properties()->RemoveChild(child1);
   child1 = NULL;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
@@ -878,7 +878,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
     child2->SetPosition(gfx::PointF(400.f, 380.f));
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
-    root->AddChild(std::move(child2));
+    root->test_properties()->AddChild(std::move(child2));
     root->layer_tree_impl()->BuildLayerListForTesting();
     host_impl_.active_tree()->ResetAllChangeTracking();
     LayerImpl* child2_ptr = host_impl_.active_tree()->LayerById(3);
@@ -913,7 +913,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMultipleLayers) {
     child2->SetPosition(gfx::PointF(400.f, 380.f));
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
-    root->AddChild(std::move(child2));
+    root->test_properties()->AddChild(std::move(child2));
   }
   LayerImpl* child2 = root->test_properties()->children[1];
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -1183,7 +1183,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
     grand_child3->SetPosition(gfx::PointF(240.f, 240.f));
     grand_child3->SetBounds(gfx::Size(10, 10));
     grand_child3->SetDrawsContent(true);
-    child1->AddChild(std::move(grand_child3));
+    child1->test_properties()->AddChild(std::move(grand_child3));
   }
   child1->test_properties()->opacity = 0.5f;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -1304,7 +1304,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
     grand_child->SetPosition(gfx::PointF(2.f, 2.f));
     grand_child->SetBounds(gfx::Size(2, 2));
     grand_child->SetDrawsContent(true);
-    child->AddChild(std::move(grand_child));
+    child->test_properties()->AddChild(std::move(grand_child));
   }
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);

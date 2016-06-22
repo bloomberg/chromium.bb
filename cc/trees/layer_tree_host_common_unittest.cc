@@ -328,9 +328,9 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   scroll_layer->SetScrollClipLayer(clip_layer->id());
   SetScrollOffsetDelta(scroll_layer, kScrollDelta);
   gfx::Transform impl_transform;
-  scroll_layer->AddChild(std::move(sublayer_scoped_ptr));
+  scroll_layer->test_properties()->AddChild(std::move(sublayer_scoped_ptr));
   LayerImpl* scroll_layer_raw_ptr = scroll_layer_scoped_ptr.get();
-  clip_layer->AddChild(std::move(scroll_layer_scoped_ptr));
+  clip_layer->test_properties()->AddChild(std::move(scroll_layer_scoped_ptr));
   scroll_layer_raw_ptr->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer_raw_ptr->id(),
@@ -341,7 +341,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(3, 4), true, false,
                                false);
-  root->AddChild(std::move(clip_layer_scoped_ptr));
+  root->test_properties()->AddChild(std::move(clip_layer_scoped_ptr));
   root->SetHasRenderSurface(true);
   LayerImpl* root_layer = root.get();
   host_impl.active_tree()->SetRootLayer(std::move(root));
@@ -3705,9 +3705,9 @@ TEST_F(LayerTreeHostCommonTest,
 
   host_impl.SetViewportSize(root->bounds());
 
-  child->AddChild(std::move(grand_child));
-  root->AddChild(std::move(child));
-  root->AddChild(std::move(occluding_child));
+  child->test_properties()->AddChild(std::move(grand_child));
+  root->test_properties()->AddChild(std::move(child));
+  root->test_properties()->AddChild(std::move(occluding_child));
   host_impl.active_tree()->SetRootLayer(std::move(root));
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
@@ -5143,7 +5143,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   child->test_properties()->opacity = 0.0f;
 
   const int child_id = child->id();
-  root->AddChild(std::move(child));
+  root->test_properties()->AddChild(std::move(child));
   root->SetHasRenderSurface(true);
   LayerImpl* root_layer = root.get();
   host_impl.pending_tree()->SetRootLayer(std::move(root));
@@ -5262,8 +5262,8 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
     child_ = child_ptr.get();
     grand_child_ = grand_child_ptr.get();
 
-    child_->AddChild(std::move(grand_child_ptr));
-    root_->AddChild(std::move(child_ptr));
+    child_->test_properties()->AddChild(std::move(grand_child_ptr));
+    root_->test_properties()->AddChild(std::move(child_ptr));
     host_impl_.active_tree()->SetRootLayer(std::move(root_ptr));
 
     root_->SetContentsOpaque(true);
@@ -5475,8 +5475,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   grand_child->SetDrawsContent(true);
   grand_child->test_properties()->hide_layer_and_subtree = true;
 
-  child->AddChild(std::move(grand_child));
-  root->AddChild(std::move(child));
+  child->test_properties()->AddChild(std::move(grand_child));
+  root->test_properties()->AddChild(std::move(child));
   root->SetHasRenderSurface(true);
   host_impl.pending_tree()->SetRootLayer(std::move(root));
 
@@ -5526,8 +5526,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
                                true, false, false);
   grand_child->SetDrawsContent(true);
 
-  child->AddChild(std::move(grand_child));
-  root->AddChild(std::move(child));
+  child->test_properties()->AddChild(std::move(grand_child));
+  root->test_properties()->AddChild(std::move(child));
   host_impl.pending_tree()->SetRootLayer(std::move(root));
 
   LayerImplList render_surface_layer_list;
@@ -5620,13 +5620,14 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   LayerImpl* copy_grand_parent_sibling_after_layer =
       copy_grand_parent_sibling_after.get();
 
-  copy_child->AddChild(std::move(copy_grand_child));
-  copy_request->AddChild(std::move(copy_child));
-  copy_parent->AddChild(std::move(copy_request));
-  copy_grand_parent->AddChild(std::move(copy_parent));
-  root->AddChild(std::move(copy_grand_parent_sibling_before));
-  root->AddChild(std::move(copy_grand_parent));
-  root->AddChild(std::move(copy_grand_parent_sibling_after));
+  copy_child->test_properties()->AddChild(std::move(copy_grand_child));
+  copy_request->test_properties()->AddChild(std::move(copy_child));
+  copy_parent->test_properties()->AddChild(std::move(copy_request));
+  copy_grand_parent->test_properties()->AddChild(std::move(copy_parent));
+  root->test_properties()->AddChild(
+      std::move(copy_grand_parent_sibling_before));
+  root->test_properties()->AddChild(std::move(copy_grand_parent));
+  root->test_properties()->AddChild(std::move(copy_grand_parent_sibling_after));
   host_impl.pending_tree()->SetRootLayer(std::move(root));
 
   // Hide the copy_grand_parent and its subtree. But make a copy request in that
@@ -5746,9 +5747,9 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   copy_layer->test_properties()->copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
 
-  copy_layer->AddChild(std::move(copy_child));
-  copy_parent->AddChild(std::move(copy_layer));
-  root->AddChild(std::move(copy_parent));
+  copy_layer->test_properties()->AddChild(std::move(copy_child));
+  copy_parent->test_properties()->AddChild(std::move(copy_layer));
+  root->test_properties()->AddChild(std::move(copy_parent));
 
   LayerImplList render_surface_layer_list;
   LayerImpl* root_layer = root.get();
@@ -6329,9 +6330,9 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   child2->Set3dSortingContextId(1);
   child3->Set3dSortingContextId(1);
 
-  child2->AddChild(std::move(child3));
-  child1->AddChild(std::move(child2));
-  root->AddChild(std::move(child1));
+  child2->test_properties()->AddChild(std::move(child3));
+  child1->test_properties()->AddChild(std::move(child2));
+  root->test_properties()->AddChild(std::move(child1));
   LayerImpl* root_layer = root.get();
   root_layer->layer_tree_impl()->SetRootLayer(std::move(root));
 
@@ -7129,9 +7130,9 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   container->SetDrawsContent(true);
   scroller->SetDrawsContent(true);
   fixed->SetDrawsContent(true);
-  scroller->AddChild(std::move(fixed));
-  container->AddChild(std::move(scroller));
-  root->AddChild(std::move(container));
+  scroller->test_properties()->AddChild(std::move(fixed));
+  container->test_properties()->AddChild(std::move(scroller));
+  root->test_properties()->AddChild(std::move(container));
 
   // Rounded to integers already.
   {
@@ -7311,9 +7312,9 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   AnimationScaleFactorTrackingLayerImpl* grand_child_raw = grand_child.get();
   AnimationScaleFactorTrackingLayerImpl* grand_parent_raw = grand_parent.get();
 
-  child->AddChild(std::move(grand_child));
-  parent->AddChild(std::move(child));
-  grand_parent->AddChild(std::move(parent));
+  child->test_properties()->AddChild(std::move(grand_child));
+  parent->test_properties()->AddChild(std::move(child));
+  grand_parent->test_properties()->AddChild(std::move(parent));
 
   SetLayerPropertiesForTesting(grand_parent_raw, identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(1, 2),
@@ -7667,10 +7668,10 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   LayerImpl* grand_child1_raw = grand_child1.get();
   LayerImpl* grand_child2_raw = grand_child2.get();
 
-  child->AddChild(std::move(grand_child1));
-  child->AddChild(std::move(grand_child2));
-  parent->AddChild(std::move(child));
-  grand_parent->AddChild(std::move(parent));
+  child->test_properties()->AddChild(std::move(grand_child1));
+  child->test_properties()->AddChild(std::move(grand_child2));
+  parent->test_properties()->AddChild(std::move(child));
+  grand_parent->test_properties()->AddChild(std::move(parent));
   host_impl.active_tree()->SetRootLayer(std::move(grand_parent));
 
   SetLayerPropertiesForTesting(grand_parent_raw, identity_matrix,
@@ -7916,8 +7917,8 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
       LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* child2_layer = child2.get();
 
-  root->AddChild(std::move(child1));
-  root->AddChild(std::move(child2));
+  root->test_properties()->AddChild(std::move(child1));
+  root->test_properties()->AddChild(std::move(child2));
   root->test_properties()->force_render_surface = true;
   root->SetDrawsContent(true);
   host_impl.active_tree()->SetRootLayer(std::move(root));
@@ -8112,7 +8113,8 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
                                true);
   root->SetMasksToBounds(true);
 
-  root->AddChild(LayerImpl::Create(host_impl.active_tree(), 2));
+  root->test_properties()->AddChild(
+      LayerImpl::Create(host_impl.active_tree(), 2));
 
   LayerImpl* sublayer = root->test_properties()->children[0];
   SetLayerPropertiesForTesting(sublayer,
@@ -8829,8 +8831,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   LayerImpl* child_ptr = child.get();
   LayerImpl* grandchild_ptr = grandchild.get();
 
-  child->AddChild(std::move(grandchild));
-  root->AddChild(std::move(child));
+  child->test_properties()->AddChild(std::move(grandchild));
+  root->test_properties()->AddChild(std::move(child));
   host_impl.active_tree()->SetRootLayer(std::move(root));
 
   // Check the non-skipped case.
@@ -9034,8 +9036,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   LayerImpl* root_ptr = root.get();
   LayerImpl* grandchild_ptr = grandchild.get();
 
-  child->AddChild(std::move(grandchild));
-  root->AddChild(std::move(child));
+  child->test_properties()->AddChild(std::move(grandchild));
+  root->test_properties()->AddChild(std::move(child));
 
   host_impl.pending_tree()->SetRootLayer(std::move(root));
 

@@ -122,7 +122,7 @@ class OcclusionTrackerTest : public testing::Test {
     std::unique_ptr<LayerImpl> layer = LayerImpl::Create(tree, id);
     LayerImpl* layer_ptr = layer.get();
     SetProperties(layer_ptr, transform, position, bounds);
-    parent->AddChild(std::move(layer));
+    parent->test_properties()->AddChild(std::move(layer));
     return layer_ptr;
   }
 
@@ -157,7 +157,7 @@ class OcclusionTrackerTest : public testing::Test {
         layer_ptr->SetOpaqueContentsRect(gfx::Rect());
     }
 
-    parent->AddChild(std::move(layer));
+    parent->test_properties()->AddChild(std::move(layer));
     return layer_ptr;
   }
 

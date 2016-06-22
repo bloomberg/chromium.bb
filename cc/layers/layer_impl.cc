@@ -101,22 +101,6 @@ LayerImpl::~LayerImpl() {
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
 }
 
-void LayerImpl::AddChild(std::unique_ptr<LayerImpl> child) {
-  child->test_properties()->parent = this;
-  DCHECK_EQ(layer_tree_impl(), child->layer_tree_impl());
-  test_properties()->children.push_back(child.get());
-  layer_tree_impl_->AddLayer(std::move(child));
-}
-
-std::unique_ptr<LayerImpl> LayerImpl::RemoveChildForTesting(LayerImpl* child) {
-  auto it = std::find(test_properties()->children.begin(),
-                      test_properties()->children.end(), child);
-  if (it != test_properties()->children.end())
-    test_properties()->children.erase(it);
-  layer_tree_impl()->property_trees()->RemoveIdFromIdToIndexMaps(child->id());
-  return layer_tree_impl_->RemoveLayer(child->id());
-}
-
 void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {
   if (has_will_change_transform_hint_ == has_will_change)
     return;

@@ -127,15 +127,17 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   std::unique_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* root = root_ptr.get();
-  root_clip_ptr->AddChild(std::move(root_ptr));
+  root_clip_ptr->test_properties()->AddChild(std::move(root_ptr));
   host_impl.active_tree()->SetRootLayer(std::move(root_clip_ptr));
 
   root->test_properties()->force_render_surface = true;
   root->layer_tree_impl()->ResetAllChangeTracking();
 
-  root->AddChild(LayerImpl::Create(host_impl.active_tree(), 7));
+  root->test_properties()->AddChild(
+      LayerImpl::Create(host_impl.active_tree(), 7));
   LayerImpl* child = root->test_properties()->children[0];
-  child->AddChild(LayerImpl::Create(host_impl.active_tree(), 8));
+  child->test_properties()->AddChild(
+      LayerImpl::Create(host_impl.active_tree(), 8));
   LayerImpl* grand_child = child->test_properties()->children[0];
   root->SetScrollClipLayer(root_clip->id());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
@@ -239,12 +241,12 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   std::unique_ptr<LayerImpl> layer_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* layer = layer_ptr.get();
-  root->AddChild(std::move(layer_ptr));
+  root->test_properties()->AddChild(std::move(layer_ptr));
   layer->SetScrollClipLayer(root->id());
   std::unique_ptr<LayerImpl> layer2_ptr =
       LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* layer2 = layer2_ptr.get();
-  root->AddChild(std::move(layer2_ptr));
+  root->test_properties()->AddChild(std::move(layer2_ptr));
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   DCHECK(host_impl.CanDraw());
 
@@ -393,7 +395,7 @@ class LayerImplScrollTest : public testing::Test {
         root_id_(7) {
     host_impl_.active_tree()->SetRootLayer(
         LayerImpl::Create(host_impl_.active_tree(), root_id_));
-    host_impl_.active_tree()->root_layer()->AddChild(
+    host_impl_.active_tree()->root_layer()->test_properties()->AddChild(
         LayerImpl::Create(host_impl_.active_tree(), root_id_ + 1));
     layer()->SetScrollClipLayer(root_id_);
     // Set the max scroll offset by noting that the root layer has bounds (1,1),

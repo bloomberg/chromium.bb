@@ -107,7 +107,7 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   video_layer_impl->SetDrawsContent(true);
   video_layer_impl->SetContentsOpaque(true);
 
-  layer_impl->AddChild(std::move(video_layer_impl));
+  layer_impl->test_properties()->AddChild(std::move(video_layer_impl));
   active_tree->SetRootLayer(std::move(layer_impl));
 
   active_tree->BuildLayerListAndPropertyTreesForTesting();

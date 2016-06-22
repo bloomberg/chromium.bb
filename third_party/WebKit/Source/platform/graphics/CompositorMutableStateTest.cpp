@@ -113,7 +113,7 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     LayerImpl* layer = scopedLayer.get();
     layer->SetScrollClipLayer(root->id());
 
-    root->AddChild(std::move(scopedLayer));
+    root->test_properties()->AddChild(std::move(scopedLayer));
 
     SetLayerPropertiesForTesting(layer);
     layer->SetElementId(12);

@@ -3694,7 +3694,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   EXPECT_EQ(unoccluded_tile_count, 25);
 
   // Partial occlusion.
-  pending_layer()->AddChild(LayerImpl::Create(host_impl()->pending_tree(), 1));
+  pending_layer()->test_properties()->AddChild(
+      LayerImpl::Create(host_impl()->pending_tree(), 1));
   LayerImpl* layer1 = pending_layer()->test_properties()->children[0];
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
@@ -3789,7 +3790,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   }
 
   // Partial occlusion.
-  pending_layer()->AddChild(LayerImpl::Create(host_impl()->pending_tree(), 1));
+  pending_layer()->test_properties()->AddChild(
+      LayerImpl::Create(host_impl()->pending_tree(), 1));
   LayerImpl* layer1 = pending_layer()->test_properties()->children[0];
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
@@ -3886,7 +3888,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
   ASSERT_TRUE(pending_layer()->CanHaveTilings());
 
-  pending_layer()->AddChild(LayerImpl::Create(host_impl()->pending_tree(), 1));
+  pending_layer()->test_properties()->AddChild(
+      LayerImpl::Create(host_impl()->pending_tree(), 1));
   LayerImpl* layer1 = pending_layer()->test_properties()->children[0];
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
@@ -3961,7 +3964,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
   SetupPendingTree(active_raster_source);
 
   // Partially occlude the active layer.
-  pending_layer()->AddChild(LayerImpl::Create(host_impl()->pending_tree(), 2));
+  pending_layer()->test_properties()->AddChild(
+      LayerImpl::Create(host_impl()->pending_tree(), 2));
   LayerImpl* layer1 = pending_layer()->test_properties()->children[0];
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
@@ -4055,7 +4059,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   SetupPendingTreeWithFixedTileSize(active_raster_source, tile_size, Region());
 
   // Partially occlude the active layer.
-  pending_layer()->AddChild(LayerImpl::Create(host_impl()->pending_tree(), 2));
+  pending_layer()->test_properties()->AddChild(
+      LayerImpl::Create(host_impl()->pending_tree(), 2));
   LayerImpl* active_occluding_layer =
       pending_layer()->test_properties()->children[0];
   active_occluding_layer->SetBounds(layer_bounds);
@@ -4071,7 +4076,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
                                     invalidation_rect);
 
   // Partially occlude the pending layer in a different way.
-  pending_layer()->AddChild(LayerImpl::Create(host_impl()->pending_tree(), 3));
+  pending_layer()->test_properties()->AddChild(
+      LayerImpl::Create(host_impl()->pending_tree(), 3));
   LayerImpl* pending_occluding_layer =
       pending_layer()->test_properties()->children[0];
   pending_occluding_layer->SetBounds(layer_bounds);

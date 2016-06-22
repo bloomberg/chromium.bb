@@ -244,7 +244,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
       child_layer->SetBounds(layer_bounds);
       child_layer->SetDrawsContent(true);
       layers.push_back(child_layer.get());
-      pending_layer()->AddChild(std::move(child_layer));
+      pending_layer()->test_properties()->AddChild(std::move(child_layer));
       ++next_id;
     }
 

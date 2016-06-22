@@ -564,7 +564,7 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
           host_impl()->pending_tree(), layer_id() + 1, pending_raster_source);
   FakePictureLayerImpl* pending_child_raw = pending_child.get();
   pending_child_raw->SetDrawsContent(true);
-  pending_layer()->AddChild(std::move(pending_child));
+  pending_layer()->test_properties()->AddChild(std::move(pending_child));
 
   // Set a small viewport, so we have soon and eventually tiles.
   host_impl()->SetViewportSize(gfx::Size(200, 200));
@@ -785,7 +785,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       FakePictureLayerImpl::CreateWithRasterSource(host_impl()->pending_tree(),
                                                    2, pending_raster_source);
   int child_id = pending_child->id();
-  pending_layer()->AddChild(std::move(pending_child));
+  pending_layer()->test_properties()->AddChild(std::move(pending_child));
 
   FakePictureLayerImpl* pending_child_layer =
       static_cast<FakePictureLayerImpl*>(
@@ -900,7 +900,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       FakePictureLayerImpl::CreateWithRasterSource(host_impl()->pending_tree(),
                                                    2, pending_raster_source);
   FakePictureLayerImpl* pending_child_layer = pending_child.get();
-  pending_layer()->AddChild(std::move(pending_child));
+  pending_layer()->test_properties()->AddChild(std::move(pending_child));
 
   // Create a fully transparent child layer so that its tile priorities are not
   // considered to be valid.
@@ -1003,7 +1003,8 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
                                      layer_id() + i);
     pending_child_layer->SetDrawsContent(true);
     pending_child_layer->set_has_valid_tile_priorities(true);
-    pending_layer()->AddChild(std::move(pending_child_layer));
+    pending_layer()->test_properties()->AddChild(
+        std::move(pending_child_layer));
   }
 
   queue = host_impl()->BuildRasterQueue(SAME_PRIORITY_FOR_BOTH_TREES,
@@ -1052,7 +1053,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
                                      layer_id() + i);
     pending_child_layer->SetDrawsContent(true);
     pending_child_layer->set_has_valid_tile_priorities(true);
-    pending_layer()->AddChild(std::move(pending_child_layer));
+    pending_layer()->test_properties()->AddChild(
+        std::move(pending_child_layer));
   }
 
   std::unique_ptr<EvictionTilePriorityQueue> queue(

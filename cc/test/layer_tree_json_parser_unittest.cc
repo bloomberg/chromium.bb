@@ -83,8 +83,8 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
 
   parent->SetPosition(gfx::PointF(25.f, 25.f));
 
-  parent->AddChild(std::move(child));
-  root_impl->AddChild(std::move(parent));
+  parent->test_properties()->AddChild(std::move(child));
+  root_impl->test_properties()->AddChild(std::move(parent));
   tree->SetRootLayer(std::move(root_impl));
 
   std::string json = host_impl.LayerTreeAsJson();
@@ -112,7 +112,7 @@ TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
   touch_region.Union(gfx::Rect(40, 10, 20, 20));
   touch_layer->SetTouchEventHandlerRegion(touch_region);
 
-  root_impl->AddChild(std::move(touch_layer));
+  root_impl->test_properties()->AddChild(std::move(touch_layer));
   tree->SetRootLayer(std::move(root_impl));
 
   std::string json = host_impl.LayerTreeAsJson();

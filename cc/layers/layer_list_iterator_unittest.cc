@@ -230,14 +230,14 @@ TEST(LayerListIteratorTest, VerifyTraversalOrderImpl) {
   std::unique_ptr<LayerImpl> layer7 =
       LayerImpl::Create(host_impl.active_tree(), 7);
 
-  layer2->AddChild(std::move(layer3));
-  layer2->AddChild(std::move(layer4));
+  layer2->test_properties()->AddChild(std::move(layer3));
+  layer2->test_properties()->AddChild(std::move(layer4));
 
-  layer5->AddChild(std::move(layer6));
-  layer5->AddChild(std::move(layer7));
+  layer5->test_properties()->AddChild(std::move(layer6));
+  layer5->test_properties()->AddChild(std::move(layer7));
 
-  layer1->AddChild(std::move(layer2));
-  layer1->AddChild(std::move(layer5));
+  layer1->test_properties()->AddChild(std::move(layer2));
+  layer1->test_properties()->AddChild(std::move(layer5));
 
   host_impl.active_tree()->SetRootLayer(std::move(layer1));
   host_impl.active_tree()->BuildLayerListForTesting();
@@ -320,14 +320,14 @@ TEST(LayerListReverseIteratorTest, VerifyTraversalOrderImpl) {
   std::unique_ptr<LayerImpl> layer7 =
       LayerImpl::Create(host_impl.active_tree(), 7);
 
-  layer2->AddChild(std::move(layer3));
-  layer2->AddChild(std::move(layer4));
+  layer2->test_properties()->AddChild(std::move(layer3));
+  layer2->test_properties()->AddChild(std::move(layer4));
 
-  layer5->AddChild(std::move(layer6));
-  layer5->AddChild(std::move(layer7));
+  layer5->test_properties()->AddChild(std::move(layer6));
+  layer5->test_properties()->AddChild(std::move(layer7));
 
-  layer1->AddChild(std::move(layer2));
-  layer1->AddChild(std::move(layer5));
+  layer1->test_properties()->AddChild(std::move(layer2));
+  layer1->test_properties()->AddChild(std::move(layer5));
 
   host_impl.active_tree()->SetRootLayer(std::move(layer1));
   host_impl.active_tree()->BuildLayerListForTesting();

@@ -102,7 +102,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   owning_layer->SetBlendMode(blend_mode);
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
-  root_layer->AddChild(std::move(owning_layer));
+  root_layer->test_properties()->AddChild(std::move(owning_layer));
   host_impl.active_tree()->SetRootLayer(std::move(root_layer));
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
@@ -167,7 +167,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   ASSERT_TRUE(owning_layer->render_surface());
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
-  root_layer->AddChild(std::move(owning_layer));
+  root_layer->test_properties()->AddChild(std::move(owning_layer));
 
   gfx::Rect content_rect(0, 0, 50, 50);
   gfx::Transform origin;

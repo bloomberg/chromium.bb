@@ -62,8 +62,8 @@ class ScrollbarAnimationControllerLinearFadeTest
     clip_layer_ = clip.get();
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
-    scroll_layer->AddChild(std::move(scrollbar));
-    clip->AddChild(std::move(scroll_layer));
+    scroll_layer->test_properties()->AddChild(std::move(scrollbar));
+    clip->test_properties()->AddChild(std::move(scroll_layer));
     host_impl_.active_tree()->SetRootLayer(std::move(clip));
 
     scrollbar_layer_->SetScrollLayerId(scroll_layer_ptr->id());

@@ -91,8 +91,8 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   child->SetDrawsContent(true);
   child->SetBounds(layer_size);
 
-  surface->AddChild(std::move(child));
-  root->AddChild(std::move(surface));
+  surface->test_properties()->AddChild(std::move(child));
+  root->test_properties()->AddChild(std::move(surface));
   impl.host_impl()->active_tree()->SetRootLayer(std::move(root));
 
   impl.host_impl()->SetViewportSize(viewport_size);

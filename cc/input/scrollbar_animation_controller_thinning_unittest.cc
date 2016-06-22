@@ -61,8 +61,8 @@ class ScrollbarAnimationControllerThinningTest
             kTrackStart, kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
     scrollbar_layer_ = scrollbar.get();
 
-    scroll_layer->AddChild(std::move(scrollbar));
-    clip_layer_->AddChild(std::move(scroll_layer));
+    scroll_layer->test_properties()->AddChild(std::move(scrollbar));
+    clip_layer_->test_properties()->AddChild(std::move(scroll_layer));
     host_impl_.active_tree()->SetRootLayer(std::move(clip));
 
     scrollbar_layer_->SetScrollLayerId(scroll_layer_ptr->id());

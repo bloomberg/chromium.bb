@@ -101,10 +101,6 @@ class CC_EXPORT LayerImpl {
   void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
   bool IsActive() const;
 
-  // Tree structure.
-  void AddChild(std::unique_ptr<LayerImpl> child);
-  std::unique_ptr<LayerImpl> RemoveChildForTesting(LayerImpl* child);
-
   void DistributeScroll(ScrollState* scroll_state);
   void ApplyScroll(ScrollState* scroll_state);
 
