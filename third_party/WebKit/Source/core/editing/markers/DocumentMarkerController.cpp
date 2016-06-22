@@ -526,7 +526,7 @@ void DocumentMarkerController::invalidateRectsForMarkersInNode(const Node& node)
     MarkerLists* markers = m_markers.get(&node);
 
     for (auto& markerList : *markers) {
-        if (!markerList)
+        if (!markerList || markerList->isEmpty())
             continue;
 
         for (auto& marker : *markerList)
@@ -542,7 +542,7 @@ void DocumentMarkerController::invalidateRectsForAllMarkers()
     for (auto& nodeMarkers : m_markers) {
         const Node& node = *nodeMarkers.key;
         for (auto& markerList : *nodeMarkers.value) {
-            if (!markerList)
+            if (!markerList || markerList->isEmpty())
                 continue;
 
             for (auto& marker : *markerList)
