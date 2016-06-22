@@ -521,17 +521,6 @@
       'Win x64 Builder': 'gn_official_goma_minimal_symbols_x64',
     },
 
-    'client.skia': {
-      'Linux Builder': 'swarming_gn_release_bot',
-      'Linux Builder-Trybot': 'swarming_gn_release_bot',
-      'Linux Tests': 'swarming_gn_release_bot',
-      'Mac Builder': 'swarming_gpu_tests_gyp_release_bot',
-      'Mac Builder-Trybot': 'swarming_gpu_tests_gyp_release_bot',
-      'Win Builder':
-        'swarming_gpu_tests_gyp_release_bot_minimal_symbols_x86',
-      'Win Builder-Trybot': 'swarming_gpu_tests_gyp_release_bot_x86',
-    },
-
     'client.v8.fyi': {
       'Android Builder': 'gn_official_goma_minimal_symbols_android',
       'Chromium ASAN - debug': 'gn_asan_lsan_edge_debug_bot',
@@ -1678,18 +1667,6 @@
 
     'swarming_gpu_tests_gn_release_bot': [
       'swarming', 'gpu_tests', 'gn', 'release_bot',
-    ],
-
-    'swarming_gpu_tests_gyp_release_bot': [
-      'swarming', 'gpu_tests', 'gyp', 'release_bot',
-    ],
-
-    'swarming_gpu_tests_gyp_release_bot_minimal_symbols_x86': [
-      'swarming', 'gpu_tests', 'gyp', 'release_bot', 'minimal_symbols', 'x86',
-    ],
-
-    'swarming_gpu_tests_gyp_release_bot_x86': [
-      'swarming', 'gpu_tests', 'gyp', 'release_bot',
     ],
 
     ('swarming_gyp_asan_clang_edge_fuzzer'
