@@ -99,13 +99,12 @@ bool WebSourceBufferImpl::evictCodedFrames(double currentPlaybackTime,
       newDataSize);
 }
 
-void WebSourceBufferImpl::append(
-    const unsigned char* data,
-    unsigned length,
-    double* timestamp_offset) {
+bool WebSourceBufferImpl::append(const unsigned char* data,
+                                 unsigned length,
+                                 double* timestamp_offset) {
   base::TimeDelta old_offset = timestamp_offset_;
-  demuxer_->AppendData(id_, data, length, append_window_start_,
-                       append_window_end_, &timestamp_offset_);
+  bool success = demuxer_->AppendData(id_, data, length, append_window_start_,
+                                      append_window_end_, &timestamp_offset_);
 
   // Coded frame processing may update the timestamp offset. If the caller
   // provides a non-NULL |timestamp_offset| and frame processing changes the
@@ -114,6 +113,8 @@ void WebSourceBufferImpl::append(
   // more than microsecond precision.
   if (timestamp_offset && old_offset != timestamp_offset_)
     *timestamp_offset = timestamp_offset_.InSecondsF();
+
+  return success;
 }
 
 void WebSourceBufferImpl::resetParserState() {

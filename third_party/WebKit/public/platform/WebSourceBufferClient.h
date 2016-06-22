@@ -11,6 +11,8 @@
 
 namespace blink {
 
+// Interface that the media engine uses to signal Blink's Media Source
+// extensions module.
 class WebSourceBufferClient {
 public:
     virtual ~WebSourceBufferClient() { }

@@ -616,7 +616,7 @@ bool ChunkDemuxer::EvictCodedFrames(const std::string& id,
   return itr->second->EvictCodedFrames(media_time_dts, newDataSize);
 }
 
-void ChunkDemuxer::AppendData(const std::string& id,
+bool ChunkDemuxer::AppendData(const std::string& id,
                               const uint8_t* data,
                               size_t length,
                               TimeDelta append_window_start,
@@ -638,7 +638,7 @@ void ChunkDemuxer::AppendData(const std::string& id,
     bool old_waiting_for_data = IsSeekWaitingForData_Locked();
 
     if (length == 0u)
-      return;
+      return true;
 
     DCHECK(data);
 
@@ -650,19 +650,16 @@ void ChunkDemuxer::AppendData(const std::string& id,
                                            append_window_end,
                                            timestamp_offset)) {
           ReportError_Locked(CHUNK_DEMUXER_ERROR_APPEND_FAILED);
-          return;
+          return false;
         }
         break;
 
       case PARSE_ERROR:
-        DVLOG(1) << "AppendData(): Ignoring data after a parse error.";
-        return;
-
       case WAITING_FOR_INIT:
       case ENDED:
       case SHUTDOWN:
         DVLOG(1) << "AppendData(): called in unexpected state " << state_;
-        return;
+        return false;
     }
 
     // Check to see if data was appended at the pending seek point. This
@@ -676,6 +673,7 @@ void ChunkDemuxer::AppendData(const std::string& id,
   }
 
   host_->OnBufferedTimeRangesChanged(ranges);
+  return true;
 }
 
 void ChunkDemuxer::ResetParserState(const std::string& id,

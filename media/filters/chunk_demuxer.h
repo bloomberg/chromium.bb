@@ -226,8 +226,9 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // and possibly updating |*timestamp_offset| during coded frame processing.
   // |append_window_start| and |append_window_end| correspond to the MSE spec's
   // similarly named source buffer attributes that are used in coded frame
-  // processing.
-  void AppendData(const std::string& id,
+  // processing. Returns true on success, false if the caller needs to run the
+  // append error algorithm with decode error parameter set to true.
+  bool AppendData(const std::string& id,
                   const uint8_t* data,
                   size_t length,
                   base::TimeDelta append_window_start,

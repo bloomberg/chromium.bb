@@ -30,10 +30,9 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
   blink::WebTimeRanges buffered() override;
   bool evictCodedFrames(double currentPlaybackTime,
                         size_t newDataSize) override;
-  void append(
-      const unsigned char* data,
-      unsigned length,
-      double* timestamp_offset) override;
+  bool append(const unsigned char* data,
+              unsigned length,
+              double* timestamp_offset) override;
   void resetParserState() override;
   void remove(double start, double end) override;
   bool setTimestampOffset(double offset) override;

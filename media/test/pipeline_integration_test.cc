@@ -551,19 +551,21 @@ class MockMediaSource {
     DCHECK_LT(current_position_, file_data_->data_size());
     DCHECK_LE(current_position_ + size, file_data_->data_size());
 
-    chunk_demuxer_->AppendData(
+    ASSERT_TRUE(chunk_demuxer_->AppendData(
         kSourceId, file_data_->data() + current_position_, size,
-        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
+        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_));
     current_position_ += size;
   }
 
-  void AppendAtTime(base::TimeDelta timestamp_offset,
+  bool AppendAtTime(base::TimeDelta timestamp_offset,
                     const uint8_t* pData,
                     int size) {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
-    chunk_demuxer_->AppendData(kSourceId, pData, size, base::TimeDelta(),
-                               kInfiniteDuration(), &timestamp_offset);
+    bool success =
+        chunk_demuxer_->AppendData(kSourceId, pData, size, base::TimeDelta(),
+                                   kInfiniteDuration(), &timestamp_offset);
     last_timestamp_offset_ = timestamp_offset;
+    return success;
   }
 
   void AppendAtTimeWithWindow(base::TimeDelta timestamp_offset,
@@ -572,8 +574,9 @@ class MockMediaSource {
                               const uint8_t* pData,
                               int size) {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
-    chunk_demuxer_->AppendData(kSourceId, pData, size, append_window_start,
-                               append_window_end, &timestamp_offset);
+    ASSERT_TRUE(
+        chunk_demuxer_->AppendData(kSourceId, pData, size, append_window_start,
+                                   append_window_end, &timestamp_offset));
     last_timestamp_offset_ = timestamp_offset;
   }
 
@@ -1216,8 +1219,9 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(640, 360))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360.webm");
-  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->data(), second_file->data_size());
+  ASSERT_TRUE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                  second_file->data(),
+                                  second_file->data_size()));
   source.EndOfStream();
 
   Play();
@@ -1278,7 +1282,8 @@ TEST_F(PipelineIntegrationTest, MediaSource_FillUp_Buffer) {
     // Ask MediaSource to evict buffered data if buffering limit has been
     // reached (the data will be evicted from the front of the buffered range).
     source.EvictCodedFrames(media_time, file->data_size());
-    source.AppendAtTime(media_time, file->data(), file->data_size());
+    ASSERT_TRUE(
+        source.AppendAtTime(media_time, file->data(), file->data_size()));
     message_loop_.RunUntilIdle();
 
     buffered_ranges = pipeline_->GetBufferedTimeRanges();
@@ -1301,8 +1306,9 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(640, 360))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
-  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->data(), second_file->data_size());
+  ASSERT_TRUE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                  second_file->data(),
+                                  second_file->data_size()));
   source.EndOfStream();
 
   Play();
@@ -1329,8 +1335,9 @@ TEST_F(PipelineIntegrationTest,
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
 
-  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->data(), second_file->data_size());
+  ASSERT_FALSE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                   second_file->data(),
+                                   second_file->data_size()));
 
   source.EndOfStream();
 
@@ -1361,8 +1368,9 @@ TEST_F(PipelineIntegrationTest,
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360.webm");
 
-  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->data(), second_file->data_size());
+  ASSERT_FALSE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                   second_file->data(),
+                                   second_file->data_size()));
 
   source.EndOfStream();
 
@@ -1579,8 +1587,9 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_MP4) {
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(1280, 720))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
-  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->data(), second_file->data_size());
+  ASSERT_TRUE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                  second_file->data(),
+                                  second_file->data_size()));
   source.EndOfStream();
 
   Play();
@@ -1606,8 +1615,9 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(1280, 720))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
-  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->data(), second_file->data_size());
+  ASSERT_TRUE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                  second_file->data(),
+                                  second_file->data_size()));
   source.EndOfStream();
 
   Play();
@@ -1634,8 +1644,9 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(1280, 720))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc-key_rotation.mp4");
-  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->data(), second_file->data_size());
+  ASSERT_TRUE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                  second_file->data(),
+                                  second_file->data_size()));
   source.EndOfStream();
 
   Play();
@@ -1663,8 +1674,9 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(1280, 720))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
-  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->data(), second_file->data_size());
+  ASSERT_FALSE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                   second_file->data(),
+                                   second_file->data_size()));
 
   source.EndOfStream();
 
@@ -1695,8 +1707,9 @@ TEST_F(PipelineIntegrationTest,
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
 
-  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->data(), second_file->data_size());
+  ASSERT_FALSE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                   second_file->data(),
+                                   second_file->data_size()));
 
   source.EndOfStream();
 

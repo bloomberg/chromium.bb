@@ -816,26 +816,33 @@ void SourceBuffer::appendBufferAsyncPart()
     if (appendSize)
         appendData = m_pendingAppendData.data() + m_pendingAppendDataOffset;
 
-    m_webSourceBuffer->append(appendData, appendSize, &m_timestampOffset);
+    bool appendSuccess = m_webSourceBuffer->append(appendData, appendSize, &m_timestampOffset);
 
-    m_pendingAppendDataOffset += appendSize;
+    if (!appendSuccess) {
+        m_pendingAppendData.clear();
+        m_pendingAppendDataOffset = 0;
+        appendError(DecodeError);
+    } else {
+        m_pendingAppendDataOffset += appendSize;
 
-    if (m_pendingAppendDataOffset < m_pendingAppendData.size()) {
-        m_appendBufferAsyncPartRunner->runAsync();
-        TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "nextPieceDelay");
-        return;
+        if (m_pendingAppendDataOffset < m_pendingAppendData.size()) {
+            m_appendBufferAsyncPartRunner->runAsync();
+            TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "nextPieceDelay");
+            return;
+        }
+
+        // 3. Set the updating attribute to false.
+        m_updating = false;
+        m_pendingAppendData.clear();
+        m_pendingAppendDataOffset = 0;
+
+        // 4. Queue a task to fire a simple event named update at this SourceBuffer object.
+        scheduleEvent(EventTypeNames::update);
+
+        // 5. Queue a task to fire a simple event named updateend at this SourceBuffer object.
+        scheduleEvent(EventTypeNames::updateend);
     }
 
-    // 3. Set the updating attribute to false.
-    m_updating = false;
-    m_pendingAppendData.clear();
-    m_pendingAppendDataOffset = 0;
-
-    // 4. Queue a task to fire a simple event named update at this SourceBuffer object.
-    scheduleEvent(EventTypeNames::update);
-
-    // 5. Queue a task to fire a simple event named updateend at this SourceBuffer object.
-    scheduleEvent(EventTypeNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
     SBLOG << __FUNCTION__ << " done. this=" << this << " buffered=" << webTimeRangesToString(m_webSourceBuffer->buffered());
 }
@@ -910,7 +917,7 @@ void SourceBuffer::appendStreamAsyncPart()
     // 1. If maxSize is set, then let bytesLeft equal maxSize.
     // 2. Loop Top: If maxSize is set and bytesLeft equals 0, then jump to the loop done step below.
     if (m_streamMaxSizeValid && !m_streamMaxSize) {
-        appendStreamDone(true);
+        appendStreamDone(NoError);
         return;
     }
 
@@ -919,7 +926,7 @@ void SourceBuffer::appendStreamAsyncPart()
     m_loader->start(getExecutionContext(), *m_stream, m_streamMaxSizeValid ? m_streamMaxSize : 0);
 }
 
-void SourceBuffer::appendStreamDone(bool success)
+void SourceBuffer::appendStreamDone(AppendStreamDoneAction action)
 {
     DCHECK(m_updating);
     DCHECK(m_loader);
@@ -927,8 +934,14 @@ void SourceBuffer::appendStreamDone(bool success)
 
     clearAppendStreamState();
 
-    if (!success) {
-        appendError(false);
+    if (action != NoError) {
+        if (action == RunAppendErrorWithNoDecodeError) {
+            appendError(NoDecodeError);
+        } else {
+            DCHECK_EQ(action, RunAppendErrorWithDecodeError);
+            appendError(DecodeError);
+        }
+
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
         return;
     }
@@ -956,9 +969,9 @@ void SourceBuffer::clearAppendStreamState()
     m_stream = nullptr;
 }
 
-void SourceBuffer::appendError(bool decodeError)
+void SourceBuffer::appendError(AppendError err)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " decodeError=" << decodeError;
+    SBLOG << __FUNCTION__ << " this=" << this << " AppendError=" << err;
     // Section 3.5.3 Append Error Algorithm
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-append-error
 
@@ -976,8 +989,12 @@ void SourceBuffer::appendError(bool decodeError)
 
     // 5. If decode error is true, then run the end of stream algorithm with the
     // error parameter set to "decode".
-    if (decodeError)
+    if (err == DecodeError) {
         m_source->endOfStream("decode", ASSERT_NO_EXCEPTION);
+    } else {
+        DCHECK_EQ(err, NoDecodeError);
+        // Nothing else to do in this case.
+    }
 }
 
 void SourceBuffer::didStartLoading()
@@ -997,28 +1014,30 @@ void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength
     // 10. Run the coded frame eviction algorithm.
     if (!evictCodedFrames(dataLength)) {
         // 11. (in appendStreamDone) If the buffer full flag equals true, then run the append error algorithm with the decode error parameter set to false and abort this algorithm.
-        appendStreamDone(false);
+        appendStreamDone(RunAppendErrorWithNoDecodeError);
         return;
     }
 
-    m_webSourceBuffer->append(reinterpret_cast<const unsigned char*>(data), dataLength, &m_timestampOffset);
+    if (!m_webSourceBuffer->append(reinterpret_cast<const unsigned char*>(data), dataLength, &m_timestampOffset))
+        appendStreamDone(RunAppendErrorWithDecodeError);
 }
 
 void SourceBuffer::didFinishLoading()
 {
     SBLOG << __FUNCTION__ << " this=" << this;
     DCHECK(m_loader);
-    appendStreamDone(true);
+    appendStreamDone(NoError);
 }
 
 void SourceBuffer::didFail(FileError::ErrorCode errorCode)
 {
     SBLOG << __FUNCTION__ << " this=" << this << " errorCode=" << errorCode;
     // m_loader might be already released, in case appendStream has failed due
-    // to evictCodedFrames failing in didReceiveDataForClient. In that case
-    // appendStreamDone will be invoked from there, no need to repeat it here.
+    // to evictCodedFrames or WebSourceBuffer append failing in
+    // didReceiveDataForClient. In that case appendStreamDone will be invoked
+    // from there, no need to repeat it here.
     if (m_loader)
-        appendStreamDone(false);
+        appendStreamDone(RunAppendErrorWithNoDecodeError);
 }
 
 DEFINE_TRACE(SourceBuffer)

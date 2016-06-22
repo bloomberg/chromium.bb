@@ -32,8 +32,10 @@
             {
                 var mediaSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.media[0]);
 
+                test.expectEvent(sourceBuffer, "error", "sourceBuffer error.");
                 test.expectEvent(sourceBuffer, "updateend", "mediaSegment append ended.");
                 test.expectEvent(mediaElement, "error", "mediaElement error.");
+                test.expectEvent(mediaSource, "sourceended", "mediaSource ended.");
                 test.expectEvent(mediaSource, "sourceclose", "mediaSource closed.");
                 sourceBuffer.appendBuffer(mediaSegment);
 
@@ -52,6 +54,10 @@
             {
                 assert_equals(mediaElement.readyState, HTMLMediaElement.HAVE_NOTHING);
 
+                // Fail if the append error algorithm occurs, since the decode
+                // error will be provided by us directly via endOfStream().
+                sourceBuffer.addEventListener("error", test.unreached_func("'error' should not be fired on sourceBuffer"));
+
                 test.expectEvent(mediaElement, "error", "mediaElement error.");
                 test.expectEvent(mediaSource, "sourceended", "mediaSource ended.");
                 test.expectEvent(mediaSource, "sourceclose", "mediaSource closed.");
@@ -65,13 +71,20 @@
 
                     assert_equals(mediaSource.sourceBuffers.length, 0);
                     assert_equals(mediaSource.readyState, "closed");
-                    test.done();
+
+                    // Give a short time for a broken implementation to errantly fire
+                    // "error" on sourceBuffer.
+                    test.step_timeout(test.step_func_done(), 0);
                 });
             }, "Signaling 'decode' error via endOfStream() before initialization segment has been appended.");
 
             ErrorTest(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
             {
                 assert_equals(mediaElement.readyState, HTMLMediaElement.HAVE_NOTHING);
+
+                // Fail if the append error algorithm occurs, since the network
+                // error will be provided by us directly via endOfStream().
+                sourceBuffer.addEventListener("error", test.unreached_func("'error' should not be fired on sourceBuffer"));
 
                 test.expectEvent(mediaElement, "error", "mediaElement error.");
                 test.expectEvent(mediaSource, "sourceended", "mediaSource ended.");
@@ -86,7 +99,10 @@
 
                     assert_equals(mediaSource.sourceBuffers.length, 0);
                     assert_equals(mediaSource.readyState, "closed");
-                    test.done();
+
+                    // Give a short time for a broken implementation to errantly fire
+                    // "error" on sourceBuffer.
+                    test.step_timeout(test.step_func_done(), 0);
                 });
             }, "Signaling 'network' error via endOfStream() before initialization segment has been appended.");
 
@@ -94,6 +110,10 @@
             {
                 var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
                 assert_equals(mediaElement.readyState, HTMLMediaElement.HAVE_NOTHING);
+
+                // Fail if the append error algorithm occurs, since the decode
+                // error will be provided by us directly via endOfStream().
+                sourceBuffer.addEventListener("error", test.unreached_func("'error' should not be fired on sourceBuffer"));
 
                 test.expectEvent(sourceBuffer, "updateend", "mediaSegment append ended.");
                 test.expectEvent(mediaElement, "loadedmetadata", "mediaElement metadata.");
@@ -113,14 +133,22 @@
                     assert_true(mediaElement.error != null);
                     assert_equals(mediaElement.error.code, MediaError.MEDIA_ERR_DECODE);
                     assert_equals(mediaSource.readyState, "ended");
-                    test.done();
+
+                    // Give a short time for a broken implementation to errantly fire
+                    // "error" on sourceBuffer.
+                    test.step_timeout(test.step_func_done(), 0);
                 });
+
             }, "Signaling 'decode' error via endOfStream() after initialization segment has been appended and the HTMLMediaElement has reached HAVE_METADATA.");
 
             ErrorTest(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
             {
                 var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
                 assert_equals(mediaElement.readyState, HTMLMediaElement.HAVE_NOTHING);
+
+                // Fail if the append error algorithm occurs, since the network
+                // error will be provided by us directly via endOfStream().
+                sourceBuffer.addEventListener("error", test.unreached_func("'error' should not be fired on sourceBuffer"));
 
                 test.expectEvent(sourceBuffer, "updateend", "mediaSegment append ended.");
                 test.expectEvent(mediaElement, "loadedmetadata", "mediaElement metadata.");
@@ -129,7 +157,6 @@
                 test.waitForExpectedEvents(function()
                 {
                     assert_equals(mediaElement.readyState, HTMLMediaElement.HAVE_METADATA);
-
                     test.expectEvent(mediaElement, "error", "mediaElement error.");
                     test.expectEvent(mediaSource, "sourceended", "mediaSource ended.");
                     mediaSource.endOfStream("network");
@@ -140,7 +167,10 @@
                     assert_true(mediaElement.error != null);
                     assert_equals(mediaElement.error.code, MediaError.MEDIA_ERR_NETWORK);
                     assert_equals(mediaSource.readyState, "ended");
-                    test.done();
+
+                    // Give a short time for a broken implementation to errantly fire
+                    // "error" on sourceBuffer.
+                    test.step_timeout(test.step_func_done(), 0);
                 });
             }, "Signaling 'network' error via endOfStream() after initialization segment has been appended and the HTMLMediaElement has reached HAVE_METADATA.");
 
@@ -154,7 +184,11 @@
                 // Here use mediaSegment to replace the original mediaData[index, index + mediaSegment.length]
                 mediaData.set(mediaSegment, index);
 
+                test.expectEvent(mediaElement, "loadedmetadata", "mediaElement metadata.");
+                test.expectEvent(sourceBuffer, "error", "sourceBuffer error.");
+                test.expectEvent(sourceBuffer, "updateend", "mediaSegment append ended.");
                 test.expectEvent(mediaElement, "error", "mediaElement error.");
+                test.expectEvent(mediaSource, "sourceended", "mediaSource ended.");
                 sourceBuffer.appendBuffer(mediaData);
 
                 test.waitForExpectedEvents(function()

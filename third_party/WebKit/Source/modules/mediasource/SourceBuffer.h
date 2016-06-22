@@ -116,6 +116,17 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    enum AppendStreamDoneAction {
+        NoError,
+        RunAppendErrorWithNoDecodeError,
+        RunAppendErrorWithDecodeError
+    };
+
+    enum AppendError {
+        NoDecodeError,
+        DecodeError
+    };
+
     SourceBuffer(std::unique_ptr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
     void dispose();
 
@@ -126,13 +137,13 @@ private:
     bool evictCodedFrames(size_t newDataSize);
     void appendBufferInternal(const unsigned char*, unsigned, ExceptionState&);
     void appendBufferAsyncPart();
-    void appendError(bool decodeError);
+    void appendError(AppendError);
 
     void removeAsyncPart();
 
     void appendStreamInternal(Stream*, ExceptionState&);
     void appendStreamAsyncPart();
-    void appendStreamDone(bool success);
+    void appendStreamDone(AppendStreamDoneAction);
     void clearAppendStreamState();
 
     void removeMediaTracks();
