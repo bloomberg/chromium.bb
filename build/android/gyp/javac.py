@@ -83,7 +83,7 @@ def _ExtractClassFiles(jar_path, dest_dir, java_files):
   def extract_predicate(path):
     if not path.endswith('.class'):
       return False
-    path_without_suffix = re.sub(r'(?:\$|\.)[^/]+class$', '', path)
+    path_without_suffix = re.sub(r'(?:\$|\.)[^/]*class$', '', path)
     partial_java_path = path_without_suffix + '.java'
     return not any(p.endswith(partial_java_path) for p in java_files)
 
