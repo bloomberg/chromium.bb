@@ -128,8 +128,6 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnWaitingForDecryptionKey();
   void OnVideoNaturalSizeChange(const gfx::Size& size);
   void OnVideoOpacityChange(bool opaque);
-  void OnBufferedTimeRangesChange(const Ranges<base::TimeDelta>& ranges);
-  void OnStatisticsUpdate(const PipelineStatistics& stats);
 
   // Task completion callbacks from RendererWrapper.
   void OnSeekDone(base::TimeDelta start_time);
@@ -161,18 +159,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   // filters.
   float volume_;
 
-  // Amount of available buffered data as reported by Demuxer.
-  Ranges<base::TimeDelta> buffered_time_ranges_;
-
   // Current duration as reported by Demuxer.
   base::TimeDelta duration_;
-
-  // True when OnBufferedTimeRangesChange() has been called more recently than
-  // DidLoadingProgress().
-  bool did_loading_progress_;
-
-  // Accumulated statistics reported by the renderer.
-  PipelineStatistics statistics_;
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<PipelineImpl> weak_factory_;
