@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/IdleRequestOptions.h"
+#include "platform/TraceEvent.h"
 
 namespace blink {
 
@@ -70,6 +71,7 @@ void IntersectionObserverController::deliverIntersectionObservations()
 
 void IntersectionObserverController::computeTrackedIntersectionObservations()
 {
+    TRACE_EVENT0("blink", "IntersectionObserverController::computeTrackedIntersectionObservations");
     for (auto& observer : m_trackedIntersectionObservers) {
         observer->computeIntersectionObservations();
         if (observer->hasEntries())
