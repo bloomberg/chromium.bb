@@ -1066,6 +1066,36 @@ TEST_P(GLES3DecoderTest, CompressedTexSubImage3DFails) {
            kBadBucketId);
   bucket->SetSize(kSubImageSize);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+
+  // Bad target
+  cmd.Init(GL_RGBA,
+           kLevel,
+           kXOffset,
+           kYOffset,
+           kZOffset,
+           kSubWidth,
+           kSubHeight,
+           kSubDepth,
+           kFormat,
+           kBucketId);
+  bucket->SetSize(kSubImageSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+
+  // Bad format
+  cmd.Init(kTarget,
+           kLevel,
+           kXOffset,
+           kYOffset,
+           kZOffset,
+           kSubWidth,
+           kSubHeight,
+           kSubDepth,
+           GL_ONE,
+           kBucketId);
+  bucket->SetSize(kSubImageSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_P(GLES3DecoderTest, CompressedTexImage2DBucketBucketSizeIsZero) {

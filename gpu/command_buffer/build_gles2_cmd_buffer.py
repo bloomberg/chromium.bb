@@ -2599,8 +2599,9 @@ _FUNCTION_INFO = {
   },
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {
-    'type': 'Manual',
+    'type': 'Data',
     'data_transfer_methods': ['bucket', 'shm'],
+    'decoder_func': 'DoCompressedTexImage2D',
     'trace_level': 1,
   },
   'CompressedTexSubImage2D': {
@@ -2621,8 +2622,9 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'CompressedTexImage3D': {
-    'type': 'Manual',
+    'type': 'Data',
     'data_transfer_methods': ['bucket', 'shm'],
+    'decoder_func': 'DoCompressedTexImage3D',
     'unsafe': True,
     'trace_level': 1,
   },
@@ -4997,6 +4999,10 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     """Writes the argument unpack code for bucket service handlers."""
     for arg in func.GetCmdArgs():
       arg.WriteGetCode(f)
+    for arg in func.GetOriginalArgs():
+      if arg.IsConstant():
+        arg.WriteGetCode(f)
+    self.WriteGetDataSizeCode(func, f)
 
   def WriteServiceImplementation(self, func, f):
     """Writes the service implementation for a command."""
@@ -5831,15 +5837,6 @@ class HandWrittenHandler(CustomHandler):
 class ManualHandler(CustomHandler):
   """Handler for commands who's handlers must be written by hand."""
 
-  def InitFunction(self, func):
-    """Overrriden from TypeHandler."""
-    if (func.name == 'CompressedTexImage2DBucket' or
-        func.name == 'CompressedTexImage3DBucket'):
-      func.cmd_args = func.cmd_args[:-1]
-      func.AddCmdArg(Argument('bucket_id', 'GLuint'))
-    else:
-      CustomHandler.InitFunction(self, func)
-
   def WriteServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     pass
@@ -5888,10 +5885,12 @@ class DataHandler(TypeHandler):
 
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
-    if (func.name == 'CompressedTexSubImage2DBucket' or
-        func.name == 'CompressedTexSubImage3DBucket'):
-      func.cmd_args = func.cmd_args[:-1]
+    if (func.name.startswith('CompressedTex') and func.name.endswith('Bucket')):
+      # Remove imageSize argument, take the size from the bucket instead.
+      func.cmd_args = [arg for arg in func.cmd_args if arg.name != 'imageSize']
       func.AddCmdArg(Argument('bucket_id', 'GLuint'))
+    else:
+      TypeHandler.InitFunction(self, func)
 
   def WriteGetDataSizeCode(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5901,16 +5900,18 @@ class DataHandler(TypeHandler):
       name = name[0:-9]
     if name == 'BufferData' or name == 'BufferSubData':
       f.write("  uint32_t data_size = size;\n")
-    elif (name == 'CompressedTexImage2D' or
-          name == 'CompressedTexSubImage2D' or
-          name == 'CompressedTexImage3D' or
-          name == 'CompressedTexSubImage3D'):
-      f.write("  uint32_t data_size = imageSize;\n")
-    elif (name == 'CompressedTexSubImage2DBucket' or
-          name == 'CompressedTexSubImage3DBucket'):
-      f.write("  Bucket* bucket = GetBucket(c.bucket_id);\n")
-      f.write("  uint32_t data_size = bucket->size();\n")
-      f.write("  GLsizei imageSize = data_size;\n")
+    elif (name.startswith('CompressedTex')):
+      if name.endswith('Bucket'):
+        f.write("""  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket)
+    return error::kInvalidArguments;
+  uint32_t data_size = bucket->size();
+  GLsizei imageSize = data_size;
+  const void* data = bucket->GetData(0, data_size);
+  DCHECK(data || !imageSize);
+""")
+      else:
+        f.write("  uint32_t data_size = imageSize;\n")
     elif name == 'TexImage2D' or name == 'TexSubImage2D':
       code = """  uint32_t data_size;
   if (!GLES2Util::ComputeImageDataSize(
@@ -5962,18 +5963,6 @@ class DataHandler(TypeHandler):
   def WriteImmediateServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
     pass
-
-  def WriteBucketServiceImplementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    if ((not func.name == 'CompressedTexSubImage2DBucket') and
-        (not func.name == 'CompressedTexSubImage3DBucket')):
-      TypeHandler.WriteBucketServiceImplemenation(self, func, f)
-
-  def WritePassthroughBucketServiceImplementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    if ((not func.name == 'CompressedTexSubImage2DBucket') and
-        (not func.name == 'CompressedTexSubImage3DBucket')):
-      TypeHandler.WritePassthroughBucketServiceImplementation(self, func, f)
 
 class BindHandler(TypeHandler):
   """Handler for glBind___ type functions."""

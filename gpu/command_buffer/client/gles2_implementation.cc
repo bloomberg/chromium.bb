@@ -2256,13 +2256,18 @@ void GLES2Implementation::CompressedTexImage2D(
     }
     return;
   }
-  SetBucketContents(kResultBucketId, data, image_size);
-  helper_->CompressedTexImage2DBucket(
-      target, level, internalformat, width, height, kResultBucketId);
-  // Free the bucket. This is not required but it does free up the memory.
-  // and we don't have to wait for the result so from the client's perspective
-  // it's cheap.
-  helper_->SetBucketSize(kResultBucketId, 0);
+  if (data) {
+    SetBucketContents(kResultBucketId, data, image_size);
+    helper_->CompressedTexImage2DBucket(target, level, internalformat, width,
+                                        height, kResultBucketId);
+    // Free the bucket. This is not required but it does free up the memory.
+    // and we don't have to wait for the result so from the client's perspective
+    // it's cheap.
+    helper_->SetBucketSize(kResultBucketId, 0);
+  } else {
+    helper_->CompressedTexImage2D(target, level, internalformat, width, height,
+                                  image_size, 0, 0);
+  }
   CheckGLError();
 }
 
@@ -2341,13 +2346,18 @@ void GLES2Implementation::CompressedTexImage3D(
     }
     return;
   }
-  SetBucketContents(kResultBucketId, data, image_size);
-  helper_->CompressedTexImage3DBucket(
-      target, level, internalformat, width, height, depth, kResultBucketId);
-  // Free the bucket. This is not required but it does free up the memory.
-  // and we don't have to wait for the result so from the client's perspective
-  // it's cheap.
-  helper_->SetBucketSize(kResultBucketId, 0);
+  if (data) {
+    SetBucketContents(kResultBucketId, data, image_size);
+    helper_->CompressedTexImage3DBucket(target, level, internalformat, width,
+                                        height, depth, kResultBucketId);
+    // Free the bucket. This is not required but it does free up the memory.
+    // and we don't have to wait for the result so from the client's perspective
+    // it's cheap.
+    helper_->SetBucketSize(kResultBucketId, 0);
+  } else {
+    helper_->CompressedTexImage3D(target, level, internalformat, width, height,
+                                  depth, image_size, 0, 0);
+  }
   CheckGLError();
 }
 
