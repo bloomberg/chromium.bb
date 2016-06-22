@@ -17,9 +17,7 @@ scoped_refptr<VideoLayer> VideoLayer::Create(
 VideoLayer::VideoLayer(VideoFrameProvider* provider,
                        media::VideoRotation video_rotation)
     : provider_(provider), video_rotation_(video_rotation) {
-  // TODO(dalecurtis): Turn this back to a DCHECK after tracking down the source
-  // of http://crbug.com/595980
-  CHECK(provider_);
+  DCHECK(provider_);
 }
 
 VideoLayer::~VideoLayer() {}
@@ -40,6 +38,10 @@ bool VideoLayer::Update() {
   updated |= !update_rect_.IsEmpty();
 
   return updated;
+}
+
+void VideoLayer::StopUsingProvider() {
+  provider_ = nullptr;
 }
 
 }  // namespace cc

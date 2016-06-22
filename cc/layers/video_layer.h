@@ -28,6 +28,9 @@ class CC_EXPORT VideoLayer : public Layer {
 
   bool Update() override;
 
+  // Clears |provider_| to ensure it is not used after destruction.
+  void StopUsingProvider();
+
  private:
   VideoLayer(VideoFrameProvider* provider, media::VideoRotation video_rotation);
   ~VideoLayer() override;
