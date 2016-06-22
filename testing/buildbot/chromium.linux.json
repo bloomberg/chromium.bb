@@ -620,7 +620,8 @@
               "device_type": "hammerhead"
             }
           ],
-          "hard_timeout": 1920
+          "hard_timeout": 960,
+          "shards": 12
         }
       }
     ],
@@ -1478,7 +1479,9 @@
           "telemetry_perf_unittests_run"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 960,
+          "shards": 12
         }
       },
       {
@@ -1897,7 +1900,9 @@
           "telemetry_perf_unittests_run"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 960,
+          "shards": 12
         }
       },
       {

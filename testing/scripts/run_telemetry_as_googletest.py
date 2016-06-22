@@ -47,9 +47,24 @@ def main():
     xvfb_proc, openbox_proc, xcompmgr_proc = xvfb.start_xvfb(env=env,
                                                              build_dir='.')
     assert xvfb_proc and openbox_proc and xcompmgr_proc, 'Failed to start xvfb'
+  # Compatibility with gtest-based sharding.
+  total_shards = None
+  shard_index = None
+  if 'GTEST_TOTAL_SHARDS' in env:
+    total_shards = int(env['GTEST_TOTAL_SHARDS'])
+    del env['GTEST_TOTAL_SHARDS']
+  if 'GTEST_SHARD_INDEX' in env:
+    shard_index = int(env['GTEST_SHARD_INDEX'])
+    del env['GTEST_SHARD_INDEX']
+  sharding_args = []
+  if total_shards is not None and shard_index is not None:
+    sharding_args = [
+      '--total-shards=%d' % total_shards,
+      '--shard-index=%d' % shard_index
+    ]
   try:
     with common.temporary_file() as tempfile_path:
-      rc = common.run_command([sys.executable] + rest_args + [
+      rc = common.run_command([sys.executable] + rest_args + sharding_args + [
         '--write-full-results-to', tempfile_path,
       ], env=env)
       with open(tempfile_path) as f:
