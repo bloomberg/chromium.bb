@@ -347,6 +347,10 @@ void BluetoothDeviceChooserController::AdapterPoweredChanged(bool powered) {
     chooser_->SetAdapterPresence(
         powered ? BluetoothChooser::AdapterPresence::POWERED_ON
                 : BluetoothChooser::AdapterPresence::POWERED_OFF);
+    if (powered) {
+      OnBluetoothChooserEvent(BluetoothChooser::Event::RESCAN,
+                              "" /* device_address */);
+    }
   }
 
   if (!powered) {

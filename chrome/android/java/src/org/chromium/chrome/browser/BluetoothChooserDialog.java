@@ -307,9 +307,6 @@ public class BluetoothChooserDialog
     @CalledByNative
     private void notifyAdapterTurnedOn() {
         mItemChooserDialog.clear();
-        if (mNativeBluetoothChooserDialogPtr != 0) {
-            nativeRestartSearch(mNativeBluetoothChooserDialogPtr);
-        }
     }
 
     @VisibleForTesting
