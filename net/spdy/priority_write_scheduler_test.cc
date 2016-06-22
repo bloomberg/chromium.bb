@@ -126,13 +126,6 @@ TEST_F(PriorityWriteSchedulerTest, GetStreamPrecedence) {
                   "Stream 1 not registered");
 }
 
-TEST_F(PriorityWriteSchedulerTest, PopNextReadyStreamAndPriority) {
-  scheduler_.RegisterStream(1, SpdyStreamPrecedence(3));
-  scheduler_.MarkStreamReady(1, true);
-  EXPECT_EQ(std::make_tuple(1, 3), scheduler_.PopNextReadyStreamAndPriority());
-  scheduler_.UnregisterStream(1);
-}
-
 TEST_F(PriorityWriteSchedulerTest, UpdateStreamPrecedence) {
   // Updating priority of unregistered stream should have no effect.
   EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority,

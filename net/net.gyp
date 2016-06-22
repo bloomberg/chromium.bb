@@ -857,8 +857,6 @@
         'tools/quic/quic_spdy_client_stream.h',
         'tools/quic/quic_time_wait_list_manager.cc',
         'tools/quic/quic_time_wait_list_manager.h',
-        'tools/quic/stateless_rejector.cc',
-        'tools/quic/stateless_rejector.h',
         'tools/quic/synchronous_host_resolver.cc',
         'tools/quic/synchronous_host_resolver.h',
       ],

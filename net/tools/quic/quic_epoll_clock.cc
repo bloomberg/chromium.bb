@@ -28,10 +28,4 @@ QuicWallTime QuicEpollClock::WallNow() const {
       epoll_server_->ApproximateNowInUsec());
 }
 
-QuicTime QuicEpollClock::ConvertWallTimeToQuicTime(
-    const QuicWallTime& walltime) const {
-  return QuicTime::Zero().Add(
-      QuicTime::Delta::FromMicroseconds(walltime.ToUNIXMicroseconds()));
-};
-
 }  // namespace net

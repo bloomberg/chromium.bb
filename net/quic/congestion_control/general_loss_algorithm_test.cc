@@ -313,6 +313,7 @@ TEST_F(GeneralLossAlgorithmTest, NoSpuriousLossesFromLargeReordering) {
 }
 
 TEST_F(GeneralLossAlgorithmTest, IncreaseThresholdUponSpuriousLoss) {
+  FLAGS_quic_adaptive_loss_recovery = true;
   loss_algorithm_.SetLossDetectionType(kAdaptiveTime);
   EXPECT_EQ(4, loss_algorithm_.reordering_shift());
   const size_t kNumSentPackets = 10;

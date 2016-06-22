@@ -85,11 +85,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStreamBase : public QuicCryptoStream {
       const = 0;
   virtual void SetPreviousCachedNetworkParams(
       CachedNetworkParameters cached_network_params) = 0;
-
-  // Checks the options on the handshake-message to see whether the
-  // peer supports stateless-rejects.
-  static bool DoesPeerSupportStatelessRejects(
-      const CryptoHandshakeMessage& message);
 };
 
 class NET_EXPORT_PRIVATE QuicCryptoServerStream
@@ -163,6 +158,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream
   void FinishProcessingHandshakeMessage(
       const CryptoHandshakeMessage& message,
       const ValidateClientHelloResultCallback::Result& result);
+
+  // Checks the options on the handshake-message to see whether the
+  // peer supports stateless-rejects.
+  static bool DoesPeerSupportStatelessRejects(
+      const CryptoHandshakeMessage& message);
 
   // crypto_config_ contains crypto parameters for the handshake.
   const QuicCryptoServerConfig* crypto_config_;

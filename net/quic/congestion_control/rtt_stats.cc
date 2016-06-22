@@ -77,8 +77,9 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
   // positive RTT sample. Otherwise, we use the send_delta as a reasonable
   // measure for smoothed_rtt.
   QuicTime::Delta rtt_sample(send_delta);
-  previous_srtt_ = smoothed_rtt_;
-
+  if (FLAGS_quic_adaptive_loss_recovery) {
+    previous_srtt_ = smoothed_rtt_;
+  }
   if (rtt_sample > ack_delay) {
     rtt_sample = rtt_sample.Subtract(ack_delay);
   }

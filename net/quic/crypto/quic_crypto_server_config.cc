@@ -291,11 +291,11 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
 
   msg.set_tag(kSCFG);
   if (options.p256) {
-    msg.SetVector(kKEXS, QuicTagVector{kC255, kP256});
+    msg.SetTaglist(kKEXS, kC255, kP256, 0);
   } else {
-    msg.SetVector(kKEXS, QuicTagVector{kC255});
+    msg.SetTaglist(kKEXS, kC255, 0);
   }
-  msg.SetVector(kAEAD, QuicTagVector{kAESG, kCC20});
+  msg.SetTaglist(kAEAD, kAESG, kCC20, 0);
   msg.SetStringPiece(kPUBS, encoded_public_values);
 
   if (options.expiry_time.IsZero()) {
@@ -318,11 +318,11 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
   msg.SetStringPiece(kORBT, StringPiece(orbit_bytes, sizeof(orbit_bytes)));
 
   if (options.channel_id_enabled) {
-    msg.SetVector(kPDMD, QuicTagVector{kCHID});
+    msg.SetTaglist(kPDMD, kCHID, 0);
   }
 
   if (options.token_binding_enabled) {
-    msg.SetVector(kTBKP, QuicTagVector{kP256});
+    msg.SetTaglist(kTBKP, kP256, 0);
   }
 
   if (options.id.empty()) {
@@ -540,7 +540,6 @@ void QuicCryptoServerConfig::ValidateClientHello(
 
 QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const ValidateClientHelloResultCallback::Result& validate_chlo_result,
-    bool reject_only,
     QuicConnectionId connection_id,
     const IPAddress& server_ip,
     const IPEndPoint& client_address,
@@ -628,10 +627,6 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
                    validate_chlo_result.cached_network_params,
                    use_stateless_rejects, server_designated_connection_id, rand,
                    compressed_certs_cache, params, *crypto_proof, out);
-    return QUIC_NO_ERROR;
-  }
-
-  if (reject_only) {
     return QUIC_NO_ERROR;
   }
 
