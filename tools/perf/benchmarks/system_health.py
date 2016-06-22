@@ -28,7 +28,7 @@ class _SystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     options.config.chrome_trace_config.SetTracingCategoryFilter(
         tracing_category_filter.TracingCategoryFilter(','.join(
             self.TRACING_CATEGORIES)))
-    options.SetTimelineBasedMetric('SystemHealthMetrics')
+    options.SetTimelineBasedMetric('systemHealthMetrics')
     return options
 
   @classmethod
