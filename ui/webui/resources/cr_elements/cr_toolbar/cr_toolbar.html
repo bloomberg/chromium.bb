@@ -13,12 +13,12 @@
 
       h1 {
         @apply(--layout-flex);
-        -webkit-padding-start: 24px;
         font-size: 123%;
         font-weight: 400;
       }
 
       #leftContent {
+        -webkit-padding-start: 24px;
         align-items: center;
         display: flex;
         width: var(--side-bar-width, 0);
@@ -40,6 +40,7 @@
       }
     </style>
     <div id="leftContent">
+      <content select="paper-icon-button"></content>
       <h1>[[pageName]]</h1>
     </div>
 

@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/app-layout/app-drawer/app-drawer.html">
@@ -5,7 +6,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="/direction_delegate.html">
 <link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/icons.html">
@@ -25,46 +25,6 @@
         flex-direction: column;
       }
 
-      paper-icon-button[suffix] {
-        --iron-icon-fill-color: var(--settings-title-search-color);
-        height: 32px; /* After padding, the icon size is 16px. */
-        width: 32px;
-      }
-
-      paper-input {
-        --paper-input-container: {
-          padding-top: 0;
-        };
-        --paper-input-container-color: var(--settings-title-search-color);
-        --paper-input-container-focus-color: var(--settings-title-search-color);
-        --paper-input-container-input: {
-          font-size: 81.25%; /* go to 13px from 16px */
-          position: relative;
-          top: 3px; /* Special positioning needed for UX design. */
-        };
-
-        /*
-         * The button in the input suffix needs special positioning for the UX
-         * design. The hit box extends right and down from the paper-input
-         * underline.
-         */
-        --paper-input-suffix: {
-          left: 8px;
-          line-height: 16px;
-          position: relative;
-          top: 4px;
-        };
-        --paper-input-container-input-color: var(--settings-title-bar-color);
-        --paper-input-container-label: {
-          font-size: 81.25%; /* go to 13px from 16px */
-          top: 3px; /* Special positioning needed for UX design. */
-        };
-        --paper-input-max-width: 200px;
-
-        align-items: center;
-      }
-
-
       paper-header-panel {
         --paper-header-panel-shadow: {
           z-index: 2;
@@ -73,10 +33,6 @@
 
       .heading {
         -webkit-margin-start: 8px;
-      }
-
-      paper-icon-button[toggles]:not([active]) + #search-input {
-        display: none;
       }
 
       .paper-header {
@@ -98,7 +54,6 @@
         z-index: 1;
       }
 
-      .toolbar,
       app-drawer .drawer-header {
         align-items: center;
         display: flex;
@@ -106,13 +61,16 @@
         min-height: 56px;
       }
 
-      .toolbar {
+      cr-toolbar {
+        @apply(--layout-center);
+        --side-bar-width: 256px;
         background-color: var(--settings-title-bar-background-color);
         color: white;
-        padding: 0 16px;
+        min-height: 56px;
       }
 
-      .toolbar paper-icon-button {
+      cr-toolbar,
+      paper-icon-button {
         --iron-icon-fill-color: white;
       }
 
@@ -129,20 +87,14 @@
     <settings-router current-route="{{currentRoute}}"
         current-route-titles="{{currentRouteTitles}}">
     </settings-router>
-    <div class="toolbar">
+    <!-- TODO(dpapad): Remove "coming soon" string once crbug.com/608535 fully
+      addressed -->
+    <cr-toolbar page-name="$i18n{settings}"
+        clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}
+        (coming soon!)">
       <paper-icon-button icon="settings:menu" on-tap="onMenuButtonTap_">
       </paper-icon-button>
-      <div class="heading flex">$i18n{settings}</div>
-      <div class="last">
-        <paper-icon-button icon="cr:search" toggles></paper-icon-button>
-        <paper-input id="search-input" label="$i18n{internalSearch}"
-            no-label-float>
-          <!-- TODO(dschuyler): implement internal search. -->
-          <paper-icon-button suffix icon="cr:cancel">
-          </paper-icon-button>
-        </paper-input>
-      </div>
-    </div>
+    </cr-toolbar>
     <app-drawer swipe-open>
       <div class="drawer-header">$i18n{settings}</div>
       <div class="drawer-content">
