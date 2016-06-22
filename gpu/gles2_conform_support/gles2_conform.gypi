@@ -301,9 +301,6 @@
       '<(SHARED_INTERMEDIATE_DIR)/gles2_conform_test_embedded_data/FilesDATA.c',
       '<(SHARED_INTERMEDIATE_DIR)/gles2_conform_test_embedded_data/FilesDATA.h',
       '<(SHARED_INTERMEDIATE_DIR)/gles2_conform_test_embedded_data/FilesTOC.c',
-      '<@(gl2_extension_test_sources)',
-      '<@(gl2_fixed_test_sources)',
-      '<@(gl2_test_sources)',
     ],
   },
   # We cannot have any targets here because these tests are compiled against

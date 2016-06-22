@@ -182,6 +182,9 @@
           ],
           'sources': [
             '<@(gtf_es_sources)',
+            '<@(gl2_extension_test_sources)',
+            '<@(gl2_fixed_test_sources)',
+            '<@(gl2_test_sources)',
             # Include a dummy c++ file to force linking of libstdc++.
             '<(DEPTH)/gpu/gles2_conform_support/dummy.cc',
           ],
@@ -220,6 +223,9 @@
           ],
           'sources': [
             '<@(gtf_es_sources)',
+            '<@(gl2_extension_test_sources)',
+            '<@(gl2_fixed_test_sources)',
+            '<@(gl2_test_sources)',
           ],
         },
       ],
@@ -246,6 +252,9 @@
           ],
           'sources': [
             '<@(gtf_es_sources)',
+            '<@(gl2_extension_test_sources)',
+            '<@(gl2_fixed_test_sources)',
+            '<@(gl2_test_sources)',
           ],
         },
       ],
