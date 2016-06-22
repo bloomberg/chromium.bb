@@ -6,6 +6,8 @@
 -BrowserViewTest.BrowserViewLayout
 -DownloadRequestLimiterTest.DownloadRequestLimiter_RendererInitiated
 -ExtensionContextMenuModelTest.TestPageAccessSubmenu
+-ExtensionProtocolTest.AllowFrameRequests
+-ExtensionProtocolTest.IncognitoRequest
 -InstantSearchPrerendererTest.PrerenderingAllowed
 -InstantNTPURLRewriteTest.UberURLHandler_InstantExtendedNewTabPage
 -PopupToolbarModelTest.ShouldDisplayURL

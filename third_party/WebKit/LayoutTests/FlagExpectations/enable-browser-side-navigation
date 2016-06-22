@@ -3,6 +3,7 @@
 # before-unload issues
   fast/loader/recursive-before-unload-crash.html [ Failure ]
   virtual/pointerevent/fast/events/before-unload-forbidden-navigation.html [ Crash ]
+  virtual/pointerevent/fast/events/before-unload-in-subframe.html [ Crash ]
 
 # https://crbug.com/608372: PlzNavigate: support POST navigations
   fast/forms/state-restore-skip-stateless.html [ Crash ]
@@ -57,6 +58,7 @@
   http/tests/inspector/console-resource-errors.html [ Failure ]
   http/tests/inspector/extensions-ignore-cache.html [ Failure ]
   http/tests/inspector/extensions-network-redirect.html [ Timeout ]
+  http/tests/inspector/extensions-useragent.html [ Failure ]
   http/tests/inspector/network/network-document-initiator.html [ Failure ]
   http/tests/inspector/network/network-initiator.html [ Failure ]
   http/tests/inspector/resource-har-conversion.html [ Failure ]
@@ -170,6 +172,7 @@
   http/tests/serviceworker/fetch-request-html-imports.html [ Failure ]
   http/tests/serviceworker/fetch-response-taint.html [ Failure ]
   http/tests/serviceworker/fetch-response-xhr.html [ Failure ]
+  http/tests/serviceworker/chromium/force-refresh-ready.html [ Timeout ]
   http/tests/serviceworker/invalid-blobtype.html [ Failure ]
   http/tests/serviceworker/invalid-header.html [ Failure ]
   http/tests/serviceworker/navigation-redirect-to-http.html [ Failure ]
