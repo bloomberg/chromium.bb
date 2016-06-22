@@ -1046,6 +1046,14 @@ private:
     LayoutUnit fillAvailableMeasure(LayoutUnit availableLogicalWidth) const;
     LayoutUnit fillAvailableMeasure(LayoutUnit availableLogicalWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd) const;
 
+    // Calculates the intrinsic(https://drafts.csswg.org/css-sizing-3/#intrinsic) logical widths for this layout box.
+    //
+    // intrinsicWidth is defined as:
+    //     intrinsic size of content (without our border and padding) + scrollbarWidth.
+    //
+    // preferredWidth is defined as:
+    //     fixedWidth OR (intrinsicWidth plus border and padding).
+    //     Note: fixedWidth includes border and padding and scrollbarWidth.
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const;
 
     // This function calculates the preferred widths for an object.

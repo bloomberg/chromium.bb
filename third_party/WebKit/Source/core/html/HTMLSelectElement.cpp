@@ -432,7 +432,6 @@ void HTMLSelectElement::childrenChanged(const ChildrenChange& change)
 void HTMLSelectElement::optionElementChildrenChanged(const HTMLOptionElement& option)
 {
     setNeedsValidityCheck();
-    setOptionsChangedOnLayoutObject();
 
     if (layoutObject()) {
         if (option.selected() && usesMenuList())
@@ -754,7 +753,7 @@ void HTMLSelectElement::setOptionsChangedOnLayoutObject()
 {
     if (LayoutObject* layoutObject = this->layoutObject()) {
         if (usesMenuList())
-            toLayoutMenuList(layoutObject)->setOptionsChanged(true);
+            toLayoutMenuList(layoutObject)->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::MenuOptionsChanged);
     }
 }
 
@@ -1218,7 +1217,6 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
         }
     }
 
-    setOptionsChangedOnLayoutObject();
     setNeedsValidityCheck();
 }
 
@@ -1264,7 +1262,6 @@ void HTMLSelectElement::resetImpl()
         option->setDirty(false);
     }
     resetToDefaultSelection();
-    setOptionsChangedOnLayoutObject();
     setNeedsValidityCheck();
 }
 

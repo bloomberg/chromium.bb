@@ -43,7 +43,6 @@ LayoutMenuList::LayoutMenuList(Element* element)
     : LayoutFlexibleBox(element)
     , m_buttonText(nullptr)
     , m_innerBlock(nullptr)
-    , m_optionsChanged(true)
     , m_isEmpty(false)
     , m_hasUpdatedActiveOption(false)
     , m_optionsHeight(0)
@@ -150,60 +149,27 @@ void LayoutMenuList::styleDidChange(StyleDifference diff, const ComputedStyle* o
 
     m_buttonText->setStyle(mutableStyle());
     adjustInnerStyle();
-
-    bool fontChanged = !oldStyle || oldStyle->font() != style()->font();
-    if (fontChanged)
-        m_optionsChanged = true;
 }
 
 void LayoutMenuList::updateOptionsHeightWidth() const
 {
-    if (!m_optionsChanged)
-        return;
-
     float maxOptionHeight = 0;
     float maxOptionWidth = 0;
-    const HeapVector<Member<HTMLElement>>& listItems = selectElement()->listItems();
-    int size = listItems.size();
 
-    for (int i = 0; i < size; ++i) {
-        HTMLElement* element = listItems[i];
-        if (!isHTMLOptionElement(*element))
+    for (const auto& element : selectElement()->listItems()) {
+        if (!isHTMLOptionElement(element))
             continue;
 
         String text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-
         const ComputedStyle* itemStyle = element->computedStyle() ? element->computedStyle() : style();
         applyTextTransform(itemStyle, text, ' ');
         TextRun textRun = constructTextRun(itemStyle->font(), text, *itemStyle);
 
         maxOptionHeight = std::max(maxOptionHeight, computeTextHeight(textRun, *itemStyle));
-
-        if (LayoutTheme::theme().popupOptionSupportsTextIndent()) {
-            // Add in the option's text indent.  We can't calculate percentage values for now.
-            float optionWidth = 0;
-            if (const ComputedStyle* optionStyle = element->computedStyle())
-                optionWidth += minimumValueForLength(optionStyle->textIndent(), LayoutUnit());
-            if (!text.isEmpty()) {
-                TextRun textRun = constructTextRun(itemStyle->font(), text, styleRef());
-                optionWidth += computeTextWidth(textRun, *itemStyle);
-            }
-            maxOptionWidth = std::max(maxOptionWidth, optionWidth);
-        } else if (!text.isEmpty()) {
-            maxOptionWidth = std::max(maxOptionWidth, computeTextWidth(textRun, *itemStyle));
-        }
+        maxOptionWidth = std::max(maxOptionWidth, computeTextWidth(textRun, *itemStyle));
     }
-
-    m_optionsWidth = static_cast<int>(ceilf(maxOptionWidth));
     m_optionsHeight = static_cast<int>(ceilf(maxOptionHeight));
-    m_optionsChanged = false;
-}
-
-void LayoutMenuList::setOptionsChanged(bool changed)
-{
-    m_optionsChanged = changed;
-    if (changed && parent())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::MenuOptionsChanged);
+    m_optionsWidth = static_cast<int>(ceilf(maxOptionWidth));
 }
 
 float LayoutMenuList::computeTextHeight(const TextRun& textRun, const ComputedStyle& computedStyle) const
@@ -315,15 +281,20 @@ LayoutRect LayoutMenuList::controlClipRect(const LayoutPoint& additionalOffset) 
 void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     updateOptionsHeightWidth();
-    maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(styleRef())) + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
+
+    maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(styleRef()))
+        + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
     if (!style()->width().hasPercent())
         minLogicalWidth = maxLogicalWidth;
+    else
+        minLogicalWidth = LayoutUnit();
 }
 
 void LayoutMenuList::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop,
     LogicalExtentComputedValues& computedValues) const
 {
-    updateOptionsHeightWidth();
+    if (!m_optionsHeight)
+        updateOptionsHeightWidth();
     logicalHeight = LayoutUnit(m_optionsHeight) + borderAndPaddingHeight()
         + LayoutUnit(cInnerBlockVerticalPaddingEm * style()->computedFontSize());
     LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);

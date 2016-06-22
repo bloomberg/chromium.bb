@@ -149,7 +149,6 @@ public:
     virtual int popupInternalPaddingRight(const ComputedStyle&) const { return 0; }
     virtual int popupInternalPaddingTop(const ComputedStyle&) const { return 0; }
     virtual int popupInternalPaddingBottom(const ComputedStyle&) const { return 0; }
-    virtual bool popupOptionSupportsTextIndent() const { return false; }
 
     virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart) { return RegularScrollbar; }
 

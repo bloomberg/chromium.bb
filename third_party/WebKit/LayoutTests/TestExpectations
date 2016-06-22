@@ -220,6 +220,7 @@ crbug.com/593567 [ Debug ] virtual/scalefactor200withzoom/fast/hidpi/static/cale
 crbug.com/484632 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-empty.html [ Failure ]
 crbug.com/484632 [ Win7 ] transforms/2d/zoom-menulist.html [ Failure ]
 crbug.com/484632 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-rtl-default.html [ Failure ]
+crbug.com/484632 http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsManualRebaseline ]
 crbug.com/484632 [ Win7 ] tables/mozilla/bugs/bug2479-3.html [ Failure ]
 crbug.com/484632 [ Win7 ] tables/mozilla/bugs/bug29326.html [ Failure ]
 crbug.com/484632 [ Win7 Linux ] fast/replaced/table-percent-height.html [ Failure ]
@@ -1520,3 +1521,5 @@ crbug.com/621892 css3/filters/effect-sepia-hw.html [ Pass Failure ]
 
 crbug.com/616187 fast/forms/select/listbox-appearance-basic.html [ NeedsRebaseline ]
 crbug.com/616187 fast/text/drawBidiText.html [ NeedsRebaseline ]
+
+crbug.com/585660 fast/repaint/control-clip.html [ NeedsRebaseline ]

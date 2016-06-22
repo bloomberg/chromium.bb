@@ -39,7 +39,6 @@ public:
     ~LayoutMenuList() override;
 
     HTMLSelectElement* selectElement() const;
-    void setOptionsChanged(bool);
     void didSetSelectedIndex(int optionIndex);
     String text() const;
 
@@ -91,7 +90,6 @@ private:
     LayoutText* m_buttonText;
     LayoutBlock* m_innerBlock;
 
-    mutable bool m_optionsChanged : 1;
     bool m_isEmpty : 1;
     bool m_hasUpdatedActiveOption : 1;
     // m_optionsHeight and m_optionsWidth are calculated and cached on demand.
