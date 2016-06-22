@@ -128,12 +128,13 @@ void WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete(
     bool success,
     const std::string& data) {
   if (success) {
-    // Remove BOM from the content.
-    std::string::size_type index = data.find(base::kUtf8ByteOrderMark);
-    if (index == 0)
+    // Remove BOM from |data|.
+    if (base::StartsWith(data, base::kUtf8ByteOrderMark,
+                         base::CompareCase::SENSITIVE)) {
       script_file->set_content(data.substr(strlen(base::kUtf8ByteOrderMark)));
-    else
+    } else {
       script_file->set_content(data);
+    }
   }
 
   ++complete_fetchers_;

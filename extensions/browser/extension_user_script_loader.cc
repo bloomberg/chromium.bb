@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -102,11 +103,12 @@ bool LoadScriptContent(const HostID& host_id,
   }
 
   // Remove BOM from the content.
-  std::string::size_type index = content.find(base::kUtf8ByteOrderMark);
-  if (index == 0)
+  if (base::StartsWith(content, base::kUtf8ByteOrderMark,
+                       base::CompareCase::SENSITIVE)) {
     script_file->set_content(content.substr(strlen(base::kUtf8ByteOrderMark)));
-  else
+  } else {
     script_file->set_content(content);
+  }
 
   return true;
 }
