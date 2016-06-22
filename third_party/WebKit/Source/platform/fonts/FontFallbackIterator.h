@@ -67,7 +67,7 @@ private:
     };
 
     FallbackStage m_fallbackStage;
-    HashMap<UChar32, RefPtr<SimpleFontData>> m_visitedSystemFonts;
+    HashSet<UChar32> m_previouslyAskedForHint;
     Vector<FontDataForRangeSet> m_trackedLoadingRangeSets;
     FontFallbackPriority m_fontFallbackPriority;
 };

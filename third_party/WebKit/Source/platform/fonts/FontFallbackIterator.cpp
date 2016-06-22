@@ -182,13 +182,11 @@ const PassRefPtr<SimpleFontData> FontFallbackIterator::uniqueSystemFontForHint(U
     // When we're asked for a fallback for the same characters again, we give up
     // because the shaper must have previously tried shaping with the font
     // already.
-    if (m_visitedSystemFonts.find(hint) != m_visitedSystemFonts.end()) {
+    if (m_previouslyAskedForHint.contains(hint))
         return nullptr;
-    }
 
-    RefPtr<SimpleFontData> fallbackFont = fontCache->fallbackFontForCharacter(m_fontDescription, hint, m_fontFallbackList->primarySimpleFontData(m_fontDescription));
-
-    return m_visitedSystemFonts.add(hint, fallbackFont).storedValue->value;
+    m_previouslyAskedForHint.add(hint);
+    return fontCache->fallbackFontForCharacter(m_fontDescription, hint, m_fontFallbackList->primarySimpleFontData(m_fontDescription));
 }
 
 } // namespace blink
