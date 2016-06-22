@@ -22,7 +22,8 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                                        std::unique_ptr<OfflinerFactory> factory,
                                        std::unique_ptr<RequestQueue> queue,
                                        std::unique_ptr<Scheduler> scheduler)
-    : policy_(std::move(policy)),
+    : is_busy_(false),
+      policy_(std::move(policy)),
       factory_(std::move(factory)),
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
@@ -50,11 +51,6 @@ bool RequestCoordinator::SavePageLater(
   queue_->AddRequest(request,
                      base::Bind(&RequestCoordinator::AddRequestResultCallback,
                                 weak_ptr_factory_.GetWeakPtr()));
-  // TODO(petewil): Do I need to persist the request in case the add fails?
-
-  // TODO(petewil): Make a new chromium command line switch to send the request
-  // immediately for testing.  It should call SendRequestToOffliner()
-
   return true;
 }
 
@@ -85,19 +81,19 @@ void RequestCoordinator::RequestQueueEmpty() {
   scheduler_callback_.Run(true);
 }
 
+// Returns true if the caller should expect a callback, false otherwise. For
+// instance, this would return false if a request is already in progress.
 bool RequestCoordinator::StartProcessing(
     const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
+  if (is_busy_) return false;
+
   scheduler_callback_ = callback;
   // TODO(petewil): Check existing conditions (should be passed down from
   // BackgroundTask)
 
   TryNextRequest();
 
-  // TODO(petewil): Should return true if the caller should expect a
-  // callback.  Return false if there is already a request running.
-  // Probably best to do this when I prevent multiple instances from
-  // running at the same time.
   return true;
 }
 
@@ -115,7 +111,6 @@ void RequestCoordinator::StopProcessing() {
 }
 
 void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
-  // TODO(petewil): Ensure only one offliner at a time is used.
   // TODO(petewil): When we have multiple offliners, we need to pick one.
   Offliner* offliner = factory_->GetOffliner(policy_.get());
   if (!offliner) {
@@ -123,6 +118,9 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
              << "Cannot background offline page.";
     return;
   }
+
+  DCHECK(!is_busy_);
+  is_busy_ = true;
 
   // Start the load and save process in the offliner (Async).
   offliner->LoadAndSave(request,
@@ -136,6 +134,8 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
            << (status == Offliner::RequestStatus::SAVED) << ", "
            << __FUNCTION__;
   last_offlining_status_ = status;
+
+  is_busy_ = false;
 
   // If the request succeeded, remove it from the Queue and maybe schedule
   // another one.

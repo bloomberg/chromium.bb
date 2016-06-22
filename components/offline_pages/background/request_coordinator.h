@@ -73,6 +73,10 @@ class RequestCoordinator : public KeyedService {
     return last_offlining_status_;
   }
 
+  bool is_busy() {
+    return is_busy_;
+  }
+
  private:
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
@@ -96,6 +100,10 @@ class RequestCoordinator : public KeyedService {
 
   friend class RequestCoordinatorTest;
 
+  // The offliner can only handle one request at a time - if the offliner is
+  // busy, prevent other requests.  This flag marks whether the offliner is in
+  // use.
+  bool is_busy_;
   // RequestCoordinator takes over ownership of the policy
   std::unique_ptr<OfflinerPolicy> policy_;
   // OfflinerFactory.  Used to create offline pages. Owned.
