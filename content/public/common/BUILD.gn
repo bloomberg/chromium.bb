@@ -96,6 +96,7 @@ source_set("common_sources") {
     "//content/common",
     "//mojo/public/cpp/bindings",
     "//services/shell/public/interfaces",
+    "//third_party/WebKit/public:blink_headers",
     "//ui/accessibility",
     "//url/ipc:url_ipc",
   ]
@@ -109,7 +110,6 @@ source_set("common_sources") {
     "//services/shell/public/cpp",
     "//skia",
     "//storage/common",
-    "//third_party/WebKit/public:blink_headers",
     "//third_party/icu",
     "//ui/accessibility",
     "//ui/base",

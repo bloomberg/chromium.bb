@@ -32,6 +32,7 @@
     '../skia/skia.gyp:skia',
     '../storage/storage_common.gyp:storage_common',
     '../third_party/WebKit/public/blink.gyp:blink',
+    '../third_party/WebKit/public/blink.gyp:mojo_bindings_mojom',
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
     '../third_party/boringssl/boringssl.gyp:boringssl',
     '../third_party/icu/icu.gyp:icuuc',
