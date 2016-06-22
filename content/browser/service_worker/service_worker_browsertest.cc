@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
+#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -1657,22 +1658,26 @@ class CacheStorageSideDataSizeChecker
                                          this, result, continuation));
   }
 
-  void OnCacheStorageOpenCallback(int* result,
-                                  const base::Closure& continuation,
-                                  scoped_refptr<CacheStorageCache> cache,
-                                  CacheStorageError error) {
+  void OnCacheStorageOpenCallback(
+      int* result,
+      const base::Closure& continuation,
+      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+      CacheStorageError error) {
     ASSERT_EQ(CACHE_STORAGE_OK, error);
     std::unique_ptr<ServiceWorkerFetchRequest> scoped_request(
         new ServiceWorkerFetchRequest());
     scoped_request->url = url_;
-    cache->Match(std::move(scoped_request),
-                 base::Bind(&self::OnCacheStorageCacheMatchCallback, this,
-                            result, continuation));
+    CacheStorageCache* cache = cache_handle->value();
+    cache->Match(
+        std::move(scoped_request),
+        base::Bind(&self::OnCacheStorageCacheMatchCallback, this, result,
+                   continuation, base::Passed(std::move(cache_handle))));
   }
 
   void OnCacheStorageCacheMatchCallback(
       int* result,
       const base::Closure& continuation,
+      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
       CacheStorageError error,
       std::unique_ptr<ServiceWorkerResponse> response,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {

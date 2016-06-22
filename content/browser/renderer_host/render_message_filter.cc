@@ -23,6 +23,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
+#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
@@ -124,7 +125,9 @@ void ResizeHelperPostMsgToUIThread(int render_process_id,
 }
 #endif
 
-void NoOpCacheStorageErrorCallback(CacheStorageError error) {}
+void NoOpCacheStorageErrorCallback(
+    std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+    CacheStorageError error) {}
 
 }  // namespace
 
@@ -536,12 +539,16 @@ void RenderMessageFilter::OnCacheStorageOpenCallback(
     base::Time expected_response_time,
     scoped_refptr<net::IOBuffer> buf,
     int buf_len,
-    scoped_refptr<CacheStorageCache> cache,
+    std::unique_ptr<CacheStorageCacheHandle> cache_handle,
     CacheStorageError error) {
-  if (error != CACHE_STORAGE_OK)
+  if (error != CACHE_STORAGE_OK || !cache_handle || !cache_handle->value())
     return;
-  cache->WriteSideData(base::Bind(&NoOpCacheStorageErrorCallback), url,
-                       expected_response_time, buf, buf_len);
+  CacheStorageCache* cache = cache_handle->value();
+  if (!cache)
+    return;
+  cache->WriteSideData(base::Bind(&NoOpCacheStorageErrorCallback,
+                                  base::Passed(std::move(cache_handle))),
+                       url, expected_response_time, buf, buf_len);
 }
 
 void RenderMessageFilter::OnKeygen(uint32_t key_size_index,

@@ -90,7 +90,7 @@ class Origin;
 namespace content {
 class BrowserContext;
 class CacheStorageContextImpl;
-class CacheStorageCache;
+class CacheStorageCacheHandle;
 class DOMStorageContextWrapper;
 class MediaInternals;
 class RenderWidgetHelper;
@@ -203,12 +203,13 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
       const std::vector<char>& data,
       const url::Origin& cache_storage_origin,
       const std::string& cache_storage_cache_name);
-  void OnCacheStorageOpenCallback(const GURL& url,
-                                  base::Time expected_response_time,
-                                  scoped_refptr<net::IOBuffer> buf,
-                                  int buf_len,
-                                  scoped_refptr<CacheStorageCache> cache,
-                                  CacheStorageError error);
+  void OnCacheStorageOpenCallback(
+      const GURL& url,
+      base::Time expected_response_time,
+      scoped_refptr<net::IOBuffer> buf,
+      int buf_len,
+      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+      CacheStorageError error);
   void OnKeygen(uint32_t key_size_index,
                 const std::string& challenge_string,
                 const GURL& url,

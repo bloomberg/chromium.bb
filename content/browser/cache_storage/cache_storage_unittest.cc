@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -96,10 +97,10 @@ class CacheStorageTest : public testing::Test {
   }
 
   void OpenCacheCallback(bool* callback_called,
-                         scoped_refptr<CacheStorageCache> cache,
+                         std::unique_ptr<CacheStorageCacheHandle> cache_handle,
                          CacheStorageError error) {
     *callback_called = true;
-    callback_cache_ = cache;
+    callback_cache_handle_ = std::move(cache_handle);
     callback_error_ = error;
   }
 
@@ -110,30 +111,36 @@ class CacheStorageTest : public testing::Test {
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   std::unique_ptr<TestCacheStorage> test_cache_storage_;
 
-  scoped_refptr<CacheStorageCache> callback_cache_;
+  std::unique_ptr<CacheStorageCacheHandle> callback_cache_handle_;
   CacheStorageError callback_error_;
 };
 
 TEST_F(CacheStorageTest, PreserveCache) {
   test_cache_storage_->set_delay_preserved_cache_callback(true);
   EXPECT_TRUE(OpenCache("foo"));
-  EXPECT_TRUE(test_cache_storage_->IsPreservingCache(callback_cache_.get()));
+  EXPECT_TRUE(
+      test_cache_storage_->IsPreservingCache(callback_cache_handle_->value()));
   test_cache_storage_->RunPreservedCacheCallback();
-  EXPECT_FALSE(test_cache_storage_->IsPreservingCache(callback_cache_.get()));
+  EXPECT_FALSE(
+      test_cache_storage_->IsPreservingCache(callback_cache_handle_->value()));
 
-  // Try opening it again, since the cache is already open (callback_cache_ is
-  // referencing it) the cache shouldn't be preserved again.
+  // Try opening it again, since the cache is already open
+  // (callback_cache_handle_ is referencing it) the cache shouldn't be preserved
+  // again.
   EXPECT_TRUE(OpenCache("foo"));
-  EXPECT_FALSE(test_cache_storage_->IsPreservingCache(callback_cache_.get()));
+  EXPECT_FALSE(
+      test_cache_storage_->IsPreservingCache(callback_cache_handle_->value()));
 
   // Remove the reference to the cache so that it's deleted. After that, the
   // next time it's opened will require the cache to be created again and
   // preserved.
-  callback_cache_ = nullptr;
+  callback_cache_handle_.reset();
   EXPECT_TRUE(OpenCache("foo"));
-  EXPECT_TRUE(test_cache_storage_->IsPreservingCache(callback_cache_.get()));
+  EXPECT_TRUE(
+      test_cache_storage_->IsPreservingCache(callback_cache_handle_->value()));
   test_cache_storage_->RunPreservedCacheCallback();
-  EXPECT_FALSE(test_cache_storage_->IsPreservingCache(callback_cache_.get()));
+  EXPECT_FALSE(
+      test_cache_storage_->IsPreservingCache(callback_cache_handle_->value()));
 }
 
 }  // namespace content

@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
+#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/referrer.h"
@@ -42,14 +43,15 @@ namespace {
 class CacheStorageCacheDataHandle
     : public storage::BlobDataBuilder::DataHandle {
  public:
-  CacheStorageCacheDataHandle(scoped_refptr<CacheStorageCache> cache,
-                              disk_cache::ScopedEntryPtr entry)
-      : cache_(cache), entry_(std::move(entry)) {}
+  CacheStorageCacheDataHandle(
+      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+      disk_cache::ScopedEntryPtr entry)
+      : cache_handle_(std::move(cache_handle)), entry_(std::move(entry)) {}
 
  private:
   ~CacheStorageCacheDataHandle() override {}
 
-  scoped_refptr<CacheStorageCache> cache_;
+  std::unique_ptr<CacheStorageCacheHandle> cache_handle_;
   disk_cache::ScopedEntryPtr entry_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageCacheDataHandle);
@@ -280,32 +282,32 @@ struct CacheStorageCache::PutContext {
 };
 
 // static
-scoped_refptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
+std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
     const GURL& origin,
     const std::string& cache_name,
+    CacheStorage* cache_storage,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_refptr(new CacheStorageCache(
-      origin, cache_name, base::FilePath(), std::move(request_context_getter),
-      std::move(quota_manager_proxy), blob_context));
+  return std::unique_ptr<CacheStorageCache>(
+      new CacheStorageCache(origin, cache_name, base::FilePath(), cache_storage,
+                            std::move(request_context_getter),
+                            std::move(quota_manager_proxy), blob_context));
 }
 
 // static
-scoped_refptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
+std::unique_ptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     const GURL& origin,
     const std::string& cache_name,
+    CacheStorage* cache_storage,
     const base::FilePath& path,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_refptr(new CacheStorageCache(
-      origin, cache_name, path, std::move(request_context_getter),
-      std::move(quota_manager_proxy), blob_context));
-}
-
-CacheStorageCache::~CacheStorageCache() {
-  quota_manager_proxy_->NotifyOriginNoLongerInUse(origin_);
+  return std::unique_ptr<CacheStorageCache>(
+      new CacheStorageCache(origin, cache_name, path, cache_storage,
+                            std::move(request_context_getter),
+                            std::move(quota_manager_proxy), blob_context));
 }
 
 base::WeakPtr<CacheStorageCache> CacheStorageCache::AsWeakPtr() {
@@ -427,12 +429,12 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
   std::unique_ptr<ErrorCallback> callback_copy(new ErrorCallback(callback));
   ErrorCallback* callback_ptr = callback_copy.get();
   base::Closure barrier_closure = base::BarrierClosure(
-      operations.size(),
-      base::Bind(&CacheStorageCache::BatchDidAllOperations, this,
-                 base::Passed(std::move(callback_copy))));
+      operations.size(), base::Bind(&CacheStorageCache::BatchDidAllOperations,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    base::Passed(std::move(callback_copy))));
   ErrorCallback completion_callback =
-      base::Bind(&CacheStorageCache::BatchDidOneOperation, this,
-                 barrier_closure, callback_ptr);
+      base::Bind(&CacheStorageCache::BatchDidOneOperation,
+                 weak_ptr_factory_.GetWeakPtr(), barrier_closure, callback_ptr);
 
   for (const auto& operation : operations) {
     switch (operation.operation_type) {
@@ -535,16 +537,22 @@ void CacheStorageCache::GetSizeThenClose(const SizeCallback& callback) {
                             weak_ptr_factory_.GetWeakPtr(), pending_callback)));
 }
 
+CacheStorageCache::~CacheStorageCache() {
+  quota_manager_proxy_->NotifyOriginNoLongerInUse(origin_);
+}
+
 CacheStorageCache::CacheStorageCache(
     const GURL& origin,
     const std::string& cache_name,
     const base::FilePath& path,
+    CacheStorage* cache_storage,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context)
     : origin_(origin),
       cache_name_(cache_name),
       path_(path),
+      cache_storage_(cache_storage),
       request_context_getter_(std::move(request_context_getter)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
       blob_storage_context_(blob_context),
@@ -1158,16 +1166,20 @@ void CacheStorageCache::UpdateCacheSize() {
   if (backend_state_ != BACKEND_OPEN)
     return;
 
-  // Note that the callback holds a refptr to |this| since UpdateCacheSize is
-  // often called after an operation completes and the cache might be freed.
-  int rv = backend_->CalculateSizeOfAllEntries(
-      base::Bind(&CacheStorageCache::UpdateCacheSizeGotSize, this));
+  // Note that the callback holds a cache handle to keep the cache alive during
+  // the operation since this UpdateCacheSize is often run after an operation
+  // completes and runs its callback.
+  int rv = backend_->CalculateSizeOfAllEntries(base::Bind(
+      &CacheStorageCache::UpdateCacheSizeGotSize,
+      weak_ptr_factory_.GetWeakPtr(), base::Passed(CreateCacheHandle())));
 
   if (rv != net::ERR_IO_PENDING)
-    UpdateCacheSizeGotSize(rv);
+    UpdateCacheSizeGotSize(CreateCacheHandle(), rv);
 }
 
-void CacheStorageCache::UpdateCacheSizeGotSize(int current_cache_size) {
+void CacheStorageCache::UpdateCacheSizeGotSize(
+    std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+    int current_cache_size) {
   int64_t old_cache_size = cache_size_;
   cache_size_ = current_cache_size;
 
@@ -1556,9 +1568,14 @@ CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
 
   disk_cache::Entry* temp_entry = entry.get();
   blob_data.AppendDiskCacheEntryWithSideData(
-      new CacheStorageCacheDataHandle(this, std::move(entry)), temp_entry,
-      INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
+      new CacheStorageCacheDataHandle(CreateCacheHandle(), std::move(entry)),
+      temp_entry, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
   return blob_storage_context_->AddFinishedBlob(&blob_data);
+}
+
+std::unique_ptr<CacheStorageCacheHandle>
+CacheStorageCache::CreateCacheHandle() {
+  return cache_storage_->CreateCacheHandle(this);
 }
 
 }  // namespace content

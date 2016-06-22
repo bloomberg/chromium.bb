@@ -19,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/common/cache_storage/cache_storage_types.h"
@@ -266,12 +267,14 @@ class TestCacheStorageCache : public CacheStorageCache {
       const GURL& origin,
       const std::string& cache_name,
       const base::FilePath& path,
+      CacheStorage* cache_storage,
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context)
       : CacheStorageCache(origin,
                           cache_name,
                           path,
+                          cache_storage,
                           request_context_getter,
                           quota_manager_proxy,
                           blob_context),
@@ -303,7 +306,11 @@ class TestCacheStorageCache : public CacheStorageCache {
   }
 
  private:
-  ~TestCacheStorageCache() override {}
+  std::unique_ptr<CacheStorageCacheHandle> CreateCacheHandle() override {
+    // Returns an empty handle. There is no need for CacheStorage and its
+    // handles in these tests.
+    return std::unique_ptr<CacheStorageCacheHandle>();
+  }
 
   bool delay_backend_creation_;
   ErrorCallback backend_creation_callback_;
@@ -349,11 +356,11 @@ class CacheStorageCacheTest : public testing::Test {
 
     CreateRequests(blob_storage_context);
 
-    cache_ = make_scoped_refptr(new TestCacheStorageCache(
-        GURL(kOrigin), kCacheName, temp_dir_.path(),
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)->
-            GetURLRequestContext(),
-        quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr()));
+    cache_ = base::MakeUnique<TestCacheStorageCache>(
+        GURL(kOrigin), kCacheName, temp_dir_.path(), nullptr /* CacheStorage */,
+        BrowserContext::GetDefaultStoragePartition(&browser_context_)
+            ->GetURLRequestContext(),
+        quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr());
   }
 
   void TearDown() override {
@@ -670,7 +677,7 @@ class CacheStorageCacheTest : public testing::Test {
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   storage::BlobStorageContext* blob_storage_context_;
 
-  scoped_refptr<TestCacheStorageCache> cache_;
+  std::unique_ptr<TestCacheStorageCache> cache_;
 
   ServiceWorkerFetchRequest body_request_;
   ServiceWorkerResponse body_response_;

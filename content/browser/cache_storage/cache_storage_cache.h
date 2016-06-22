@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -33,8 +32,9 @@ class QuotaManagerProxy;
 }
 
 namespace content {
-
+class CacheStorage;
 class CacheStorageBlobToDiskCache;
+class CacheStorageCacheHandle;
 class CacheMetadata;
 class CacheStorageScheduler;
 class TestCacheStorageCache;
@@ -43,8 +43,7 @@ class TestCacheStorageCache;
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/ The
 // asynchronous methods are executed serially. Callbacks to the public functions
 // will be called so long as the cache object lives.
-class CONTENT_EXPORT CacheStorageCache
-    : public base::RefCounted<CacheStorageCache> {
+class CONTENT_EXPORT CacheStorageCache {
  public:
   using ErrorCallback = base::Callback<void(CacheStorageError)>;
   using ResponseCallback =
@@ -64,15 +63,17 @@ class CONTENT_EXPORT CacheStorageCache
 
   enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
 
-  static scoped_refptr<CacheStorageCache> CreateMemoryCache(
+  static std::unique_ptr<CacheStorageCache> CreateMemoryCache(
       const GURL& origin,
       const std::string& cache_name,
+      CacheStorage* cache_storage,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
-  static scoped_refptr<CacheStorageCache> CreatePersistentCache(
+  static std::unique_ptr<CacheStorageCache> CreatePersistentCache(
       const GURL& origin,
       const std::string& cache_name,
+      CacheStorage* cache_storage,
       const base::FilePath& path,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
@@ -142,7 +143,12 @@ class CONTENT_EXPORT CacheStorageCache
   // the cache's size.
   void GetSizeThenClose(const SizeCallback& callback);
 
+  // Async operations in progress will cancel and not run their callbacks.
+  virtual ~CacheStorageCache();
+
   base::FilePath path() const { return path_; }
+
+  std::string cache_name() const { return cache_name_; }
 
   base::WeakPtr<CacheStorageCache> AsWeakPtr();
 
@@ -175,12 +181,10 @@ class CONTENT_EXPORT CacheStorageCache
       const GURL& origin,
       const std::string& cache_name,
       const base::FilePath& path,
+      CacheStorage* cache_storage,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
-
-  // Async operations in progress will cancel and not run their callbacks.
-  virtual ~CacheStorageCache();
 
   // Returns true if the backend is ready to operate.
   bool LazyInitialize();
@@ -280,9 +284,10 @@ class CONTENT_EXPORT CacheStorageCache
 
   // Asynchronously calculates the current cache size, notifies the quota
   // manager of any change from the last report, and sets cache_size_ to the new
-  // size. Runs |callback| once complete.
+  // size.
   void UpdateCacheSize();
-  void UpdateCacheSizeGotSize(int current_cache_size);
+  void UpdateCacheSizeGotSize(std::unique_ptr<CacheStorageCacheHandle>,
+                              int current_cache_size);
 
   // Returns ERROR_NOT_FOUND if not found. Otherwise deletes and returns OK.
   void Delete(const CacheStorageBatchOperation& operation,
@@ -355,12 +360,19 @@ class CONTENT_EXPORT CacheStorageCache
       disk_cache::ScopedEntryPtr entry,
       ServiceWorkerResponse* response);
 
+  // Virtual for testing.
+  virtual std::unique_ptr<CacheStorageCacheHandle> CreateCacheHandle();
+
   // Be sure to check |backend_state_| before use.
   std::unique_ptr<disk_cache::Backend> backend_;
 
   GURL origin_;
   const std::string cache_name_;
   base::FilePath path_;
+
+  // Raw pointer is safe because CacheStorage owns this object.
+  CacheStorage* cache_storage_;
+
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
