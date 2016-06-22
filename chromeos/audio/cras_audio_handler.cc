@@ -594,24 +594,25 @@ void CrasAudioHandler::NodesChanged() {
 
 void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
   const AudioDevice* device = this->GetDeviceFromId(node_id);
-  int old_volume;
 
   // If this is not an active output node, ignore this event. Because when this
   // node set to active, it will be applied with the volume value stored in
   // preference.
-  if (!device || !device->active || device->is_input)
+  if (!device || !device->active || device->is_input) {
+    LOG(ERROR) << "Unexpexted OutputNodeVolumeChanged received on node: 0x"
+               << std::hex << node_id;
     return;
+  }
 
-  // If this callback is triggered by a response to previous set volume command,
-  // do nothing.
-  old_volume =
-      static_cast<int>(audio_pref_handler_->GetOutputVolumeValue(device));
-  if (old_volume == volume)
-    return;
-
-  // Otherwise another app or the hardware itself just changed volume, update
-  // the new volume value to all active output nodes.
-  SetOutputVolumePercent(volume);
+  // Sync internal volume state and notify UI for the change. We trust cras
+  // signal to report the volume state of the device, no matter which source
+  // set the volume, i.e., volume could be set from non-chrome source, like
+  // Bluetooth headset, etc. Assume all active output devices share a single
+  // volume.
+  output_volume_ = volume;
+  audio_pref_handler_->SetVolumeGainValue(*device, volume);
+  FOR_EACH_OBSERVER(AudioObserver, observers_,
+                    OnOutputNodeVolumeChanged(node_id, volume));
 }
 
 void CrasAudioHandler::ActiveOutputNodeChanged(uint64_t node_id) {
@@ -789,23 +790,20 @@ void CrasAudioHandler::SetOutputNodeVolume(uint64_t node_id, int volume) {
 
 void CrasAudioHandler::SetOutputNodeVolumePercent(uint64_t node_id,
                                                   int volume_percent) {
-  const AudioDevice* device = this->GetDeviceFromId(node_id);
+  const AudioDevice* device = GetDeviceFromId(node_id);
   if (!device || device->is_input)
     return;
 
   volume_percent = min(max(volume_percent, 0), 100);
   if (volume_percent <= kMuteThresholdPercent)
     volume_percent = 0;
-  if (node_id == active_output_node_id_)
-    output_volume_ = volume_percent;
 
+  // Save the volume setting in pref in case this is called on non-active
+  // node for configuration.
   audio_pref_handler_->SetVolumeGainValue(*device, volume_percent);
 
-  if (device->active) {
+  if (device->active)
     SetOutputNodeVolume(node_id, volume_percent);
-    FOR_EACH_OBSERVER(AudioObserver, observers_,
-                      OnOutputNodeVolumeChanged(node_id, volume_percent));
-  }
 }
 
 bool  CrasAudioHandler::SetOutputMuteInternal(bool mute_on) {

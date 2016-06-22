@@ -244,6 +244,8 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
     return output_volume_changed_count_;
   }
 
+  void reset_output_volume_changed_count() { output_volume_changed_count_ = 0; }
+
   int input_gain_changed_count() const {
     return input_gain_changed_count_;
   }
@@ -1984,6 +1986,101 @@ TEST_F(CrasAudioHandlerTest, SetOutputVolumePercent) {
   EXPECT_EQ(kVolume, audio_pref_handler_->GetOutputVolumeValue(&device));
 }
 
+TEST_F(CrasAudioHandlerTest, SetOutputVolumeWithDelayedSignal) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  SetUpCrasAudioHandler(audio_nodes);
+  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
+
+  const int kDefaultVolume = 75;
+  EXPECT_EQ(kDefaultVolume, cras_audio_handler_->GetOutputVolumePercent());
+
+  // Disable the auto OutputNodeVolumeChanged signal.
+  fake_cras_audio_client_->set_notify_volume_change_with_delay(true);
+
+  // Verify the volume state is not changed before OutputNodeVolumeChanged
+  // signal fires.
+  const int kVolume = 60;
+  cras_audio_handler_->SetOutputVolumePercent(kVolume);
+  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
+  EXPECT_EQ(kDefaultVolume, cras_audio_handler_->GetOutputVolumePercent());
+
+  // Verify the output volume is changed to the designated value after
+  // OnOutputNodeVolumeChanged cras signal fires, and the volume change event
+  // has been fired to notify the observers.
+  fake_cras_audio_client_->NotifyOutputNodeVolumeChangedForTesting(
+      kInternalSpeaker.id, kVolume);
+  EXPECT_EQ(1, test_observer_->output_volume_changed_count());
+  EXPECT_EQ(kVolume, cras_audio_handler_->GetOutputVolumePercent());
+  AudioDevice device;
+  EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
+  EXPECT_EQ(device.id, kInternalSpeaker.id);
+  EXPECT_EQ(kVolume, audio_pref_handler_->GetOutputVolumeValue(&device));
+}
+
+TEST_F(CrasAudioHandlerTest,
+       ChangeOutputVolumesWithDelayedSignalForSingleActiveDevice) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  SetUpCrasAudioHandler(audio_nodes);
+  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
+
+  const int kDefaultVolume = 75;
+  EXPECT_EQ(kDefaultVolume, cras_audio_handler_->GetOutputVolumePercent());
+
+  // Disable the auto OutputNodeVolumeChanged signal.
+  fake_cras_audio_client_->set_notify_volume_change_with_delay(true);
+
+  // Verify the volume state is not changed before OutputNodeVolumeChanged
+  // signal fires.
+  const int kVolume1 = 50;
+  const int kVolume2 = 60;
+  cras_audio_handler_->SetOutputVolumePercent(kVolume1);
+  cras_audio_handler_->SetOutputVolumePercent(kVolume2);
+  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
+  EXPECT_EQ(kDefaultVolume, cras_audio_handler_->GetOutputVolumePercent());
+
+  // Simulate OutputNodeVolumeChanged signal fired with big latency that
+  // it lags behind the SetOutputNodeVolume requests. Chrome sets the volume
+  // to 50 then 60, but the volume changed signal for 50 comes back after
+  // chrome sets the volume to 60. Verify chrome will sync to the designated
+  // volume level after all signals arrive.
+  fake_cras_audio_client_->NotifyOutputNodeVolumeChangedForTesting(
+      kInternalSpeaker.id, kVolume1);
+  EXPECT_EQ(1, test_observer_->output_volume_changed_count());
+  EXPECT_EQ(kVolume1, cras_audio_handler_->GetOutputVolumePercent());
+
+  fake_cras_audio_client_->NotifyOutputNodeVolumeChangedForTesting(
+      kInternalSpeaker.id, kVolume2);
+  EXPECT_EQ(2, test_observer_->output_volume_changed_count());
+  EXPECT_EQ(kVolume2, cras_audio_handler_->GetOutputVolumePercent());
+}
+
+TEST_F(CrasAudioHandlerTest,
+       ChangeOutputVolumeFromNonChromeSourceSingleActiveDevice) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  SetUpCrasAudioHandler(audio_nodes);
+  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
+
+  const int kDefaultVolume = 75;
+  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
+  EXPECT_EQ(kDefaultVolume, cras_audio_handler_->GetOutputVolumePercent());
+
+  // Simulate OutputNodeVolumeChanged signal fired by a non-chrome source.
+  // Verify chrome will sync its volume state to the volume from the signal,
+  // and notify its observers for the volume change event.
+  const int kVolume = 20;
+  fake_cras_audio_client_->NotifyOutputNodeVolumeChangedForTesting(
+      kInternalSpeaker.id, kVolume);
+  EXPECT_EQ(1, test_observer_->output_volume_changed_count());
+  EXPECT_EQ(kVolume, cras_audio_handler_->GetOutputVolumePercent());
+  AudioDevice device;
+  EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
+  EXPECT_EQ(device.id, kInternalSpeaker.id);
+  EXPECT_EQ(kVolume, audio_pref_handler_->GetOutputVolumeValue(&device));
+}
+
 TEST_F(CrasAudioHandlerTest, SetInputGainPercent) {
   AudioNodeList audio_nodes;
   audio_nodes.push_back(kInternalMic);
@@ -2511,6 +2608,79 @@ TEST_F(CrasAudioHandlerTest, ChangeActiveNodesHotrodInit) {
   EXPECT_EQ(25, cras_audio_handler_->GetOutputVolumePercentForDevice(
                     kUSBJabraSpeakerOutput1.id));
   EXPECT_EQ(25, cras_audio_handler_->GetOutputVolumePercentForDevice(
+                    kUSBJabraSpeakerOutput2.id));
+}
+
+TEST_F(CrasAudioHandlerTest, ChangeVolumeHotrodDualSpeakersWithDelayedSignals) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kHDMIOutput);
+  audio_nodes.push_back(kUSBJabraSpeakerOutput1);
+  audio_nodes.push_back(kUSBJabraSpeakerOutput2);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Set both jabra speakers nodes to active, this simulate
+  // the call sent by hotrod initialization process.
+  test_observer_->reset_active_output_node_changed_count();
+  CrasAudioHandler::NodeIdList active_nodes;
+  active_nodes.push_back(kUSBJabraSpeakerOutput1.id);
+  active_nodes.push_back(kUSBJabraSpeakerOutput2.id);
+  cras_audio_handler_->ChangeActiveNodes(active_nodes);
+
+  // Verify both jabra speakers are made active.
+  EXPECT_EQ(2, GetActiveDeviceCount());
+  const AudioDevice* active_output_1 =
+      GetDeviceFromId(kUSBJabraSpeakerOutput1.id);
+  EXPECT_TRUE(active_output_1->active);
+  const AudioDevice* active_output_2 =
+      GetDeviceFromId(kUSBJabraSpeakerOutput2.id);
+  EXPECT_TRUE(active_output_2->active);
+
+  // Verify all active devices are the not muted and their volume values are
+  // the same.
+  EXPECT_FALSE(cras_audio_handler_->IsOutputMuted());
+  EXPECT_FALSE(
+      cras_audio_handler_->IsOutputMutedForDevice(kUSBJabraSpeakerOutput1.id));
+  EXPECT_FALSE(
+      cras_audio_handler_->IsOutputMutedForDevice(kUSBJabraSpeakerOutput2.id));
+  EXPECT_EQ(cras_audio_handler_->GetOutputVolumePercent(),
+            cras_audio_handler_->GetOutputVolumePercentForDevice(
+                kUSBJabraSpeakerOutput1.id));
+  EXPECT_EQ(cras_audio_handler_->GetOutputVolumePercent(),
+            cras_audio_handler_->GetOutputVolumePercentForDevice(
+                kUSBJabraSpeakerOutput2.id));
+  const int kDefaultVolume = 75;
+  EXPECT_EQ(kDefaultVolume, cras_audio_handler_->GetOutputVolumePercent());
+
+  // Disable the auto OutputNodeVolumeChanged signal.
+  fake_cras_audio_client_->set_notify_volume_change_with_delay(true);
+  test_observer_->reset_output_volume_changed_count();
+
+  // Adjust the volume of output devices continuously.
+  cras_audio_handler_->SetOutputVolumePercent(20);
+  cras_audio_handler_->SetOutputVolumePercent(30);
+
+  // Sends delayed OutputNodeVolumeChanged signals.
+  fake_cras_audio_client_->NotifyOutputNodeVolumeChangedForTesting(
+      kUSBJabraSpeakerOutput2.id, 20);
+  fake_cras_audio_client_->NotifyOutputNodeVolumeChangedForTesting(
+      kUSBJabraSpeakerOutput1.id, 20);
+  fake_cras_audio_client_->NotifyOutputNodeVolumeChangedForTesting(
+      kUSBJabraSpeakerOutput2.id, 30);
+  fake_cras_audio_client_->NotifyOutputNodeVolumeChangedForTesting(
+      kUSBJabraSpeakerOutput1.id, 30);
+
+  // Verify that both speakers are set to the designated volume level after
+  // receiving all delayed signals.
+  EXPECT_EQ(4, test_observer_->output_volume_changed_count());
+  EXPECT_EQ(30, cras_audio_handler_->GetOutputVolumePercent());
+  EXPECT_EQ(30, cras_audio_handler_->GetOutputVolumePercentForDevice(
+                    kUSBJabraSpeakerOutput1.id));
+  EXPECT_EQ(30, cras_audio_handler_->GetOutputVolumePercentForDevice(
                     kUSBJabraSpeakerOutput2.id));
 }
 

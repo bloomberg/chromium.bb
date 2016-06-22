@@ -106,7 +106,10 @@ void FakeCrasAudioClient::GetNodes(const GetNodesCallback& callback,
 }
 
 void FakeCrasAudioClient::SetOutputNodeVolume(uint64_t node_id,
-                                              int32_t volume) {}
+                                              int32_t volume) {
+  if (!notify_volume_change_with_delay_)
+    NotifyOutputNodeVolumeChangedForTesting(node_id, volume);
+}
 
 void FakeCrasAudioClient::SetOutputUserMute(bool mute_on) {
   volume_state_.output_user_mute = mute_on;
@@ -215,6 +218,13 @@ void FakeCrasAudioClient::SetAudioNodesAndNotifyObserversForTesting(
     const AudioNodeList& new_nodes) {
   SetAudioNodesForTesting(new_nodes);
   FOR_EACH_OBSERVER(Observer, observers_, NodesChanged());
+}
+
+void FakeCrasAudioClient::NotifyOutputNodeVolumeChangedForTesting(
+    uint64_t node_id,
+    int volume) {
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OutputNodeVolumeChanged(node_id, volume));
 }
 
 AudioNodeList::iterator FakeCrasAudioClient::FindNode(uint64_t node_id) {
