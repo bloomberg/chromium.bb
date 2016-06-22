@@ -201,6 +201,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
   TimeDelta GetSleepTimeout() override;
+  bool CanDetach(SchedulerWorker* worker) override;
 
  private:
   SchedulerWorkerPoolImpl* outer_;
@@ -478,6 +479,11 @@ TimeDelta SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
   return TimeDelta::Max();
 }
 
+bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::CanDetach(
+    SchedulerWorker* worker) {
+  return false;
+}
+
 SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     StringPiece name,
     IORestriction io_restriction,
@@ -514,7 +520,8 @@ bool SchedulerWorkerPoolImpl::Initialize(
             thread_priority, WrapUnique(new SchedulerWorkerDelegateImpl(
                                  this, re_enqueue_sequence_callback,
                                  &shared_priority_queue_, static_cast<int>(i))),
-            task_tracker_);
+            task_tracker_,
+            SchedulerWorker::InitialState::ALIVE);
     if (!worker)
       break;
     idle_workers_stack_.Push(worker.get());

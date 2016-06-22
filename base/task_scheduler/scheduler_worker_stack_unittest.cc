@@ -32,6 +32,9 @@ class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   TimeDelta GetSleepTimeout() override {
     return TimeDelta::Max();
   }
+  bool CanDetach(SchedulerWorker* worker) override {
+    return false;
+  }
 };
 
 class TaskSchedulerWorkerStackTest : public testing::Test {
@@ -39,15 +42,18 @@ class TaskSchedulerWorkerStackTest : public testing::Test {
   void SetUp() override {
     worker_a_ = SchedulerWorker::Create(
         ThreadPriority::NORMAL,
-        WrapUnique(new MockSchedulerWorkerDelegate), &task_tracker_);
+        WrapUnique(new MockSchedulerWorkerDelegate), &task_tracker_,
+        SchedulerWorker::InitialState::ALIVE);
     ASSERT_TRUE(worker_a_);
     worker_b_ = SchedulerWorker::Create(
         ThreadPriority::NORMAL,
-        WrapUnique(new MockSchedulerWorkerDelegate), &task_tracker_);
+        WrapUnique(new MockSchedulerWorkerDelegate), &task_tracker_,
+        SchedulerWorker::InitialState::ALIVE);
     ASSERT_TRUE(worker_b_);
     worker_c_ = SchedulerWorker::Create(
         ThreadPriority::NORMAL,
-        WrapUnique(new MockSchedulerWorkerDelegate), &task_tracker_);
+        WrapUnique(new MockSchedulerWorkerDelegate), &task_tracker_,
+        SchedulerWorker::InitialState::ALIVE);
     ASSERT_TRUE(worker_c_);
   }
 

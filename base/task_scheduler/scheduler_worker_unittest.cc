@@ -41,7 +41,8 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     worker_ = SchedulerWorker::Create(
         ThreadPriority::NORMAL,
         WrapUnique(new TestSchedulerWorkerDelegate(this)),
-        &task_tracker_);
+        &task_tracker_,
+        SchedulerWorker::InitialState::ALIVE);
     ASSERT_TRUE(worker_);
     worker_set_.Signal();
     main_entry_called_.Wait();
@@ -171,6 +172,10 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
       return TimeDelta::Max();
     }
 
+    bool CanDetach(SchedulerWorker* worker) override {
+      return false;
+    }
+
    private:
     TaskSchedulerWorkerTest* outer_;
   };
@@ -284,6 +289,137 @@ INSTANTIATE_TEST_CASE_P(OneTaskPerSequence,
 INSTANTIATE_TEST_CASE_P(TwoTasksPerSequence,
                         TaskSchedulerWorkerTest,
                         ::testing::Values(2));
+
+namespace {
+
+class ControllableDetachDelegate : public SchedulerWorker::Delegate {
+ public:
+  ControllableDetachDelegate()
+      : work_processed_(WaitableEvent::ResetPolicy::MANUAL,
+                        WaitableEvent::InitialState::NOT_SIGNALED),
+        detach_requested_(WaitableEvent::ResetPolicy::MANUAL,
+                          WaitableEvent::InitialState::NOT_SIGNALED) {}
+
+  ~ControllableDetachDelegate() override = default;
+
+  // SchedulerWorker::Delegate:
+  void OnMainEntry(SchedulerWorker* worker) override {}
+
+  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker)
+      override {
+    // Sends one item of work to signal |work_processed_|. On subsequent calls,
+    // sends nullptr to indicate there's no more work to be done.
+    if (work_requested_)
+      return nullptr;
+
+    work_requested_ = true;
+    scoped_refptr<Sequence> sequence(new Sequence);
+    std::unique_ptr<Task> task(new Task(
+        FROM_HERE, Bind(&WaitableEvent::Signal, Unretained(&work_processed_)),
+        TaskTraits(), TimeDelta()));
+    sequence->PushTask(std::move(task));
+    return sequence;
+  }
+
+  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
+    ADD_FAILURE() <<
+        "GetWork() returns a sequence of one, so there's nothing to reenqueue.";
+  }
+
+  TimeDelta GetSleepTimeout() override {
+    return TimeDelta::Max();
+  }
+
+  bool CanDetach(SchedulerWorker* worker) override {
+    detach_requested_.Signal();
+    return can_detach_;
+  }
+
+  void WaitForWorkToRun() {
+    work_processed_.Wait();
+  }
+
+  void WaitForDetachRequest() {
+    detach_requested_.Wait();
+  }
+
+  void ResetState() {
+    work_requested_ = false;
+    work_processed_.Reset();
+    detach_requested_.Reset();
+  }
+
+  void set_can_detach(bool can_detach) { can_detach_ = can_detach; }
+
+ private:
+  bool work_requested_ = false;
+  bool can_detach_ = false;
+  WaitableEvent work_processed_;
+  WaitableEvent detach_requested_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControllableDetachDelegate);
+};
+
+}  // namespace
+
+TEST(TaskSchedulerWorkerTest, WorkerDetaches) {
+  TaskTracker task_tracker;
+  // Will be owned by SchedulerWorker.
+  ControllableDetachDelegate* delegate = new ControllableDetachDelegate;
+  delegate->set_can_detach(true);
+  std::unique_ptr<SchedulerWorker> worker =
+      SchedulerWorker::Create(
+          ThreadPriority::NORMAL, WrapUnique(delegate), &task_tracker,
+          SchedulerWorker::InitialState::ALIVE);
+  worker->WakeUp();
+  delegate->WaitForWorkToRun();
+  delegate->WaitForDetachRequest();
+  // Sleep to give a chance for the detach to happen. A yield is too short.
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
+  ASSERT_FALSE(worker->ThreadAliveForTesting());
+}
+
+TEST(TaskSchedulerWorkerTest, WorkerDetachesAndWakes) {
+  TaskTracker task_tracker;
+  // Will be owned by SchedulerWorker.
+  ControllableDetachDelegate* delegate = new ControllableDetachDelegate;
+  delegate->set_can_detach(true);
+  std::unique_ptr<SchedulerWorker> worker =
+      SchedulerWorker::Create(
+          ThreadPriority::NORMAL, WrapUnique(delegate), &task_tracker,
+          SchedulerWorker::InitialState::ALIVE);
+  worker->WakeUp();
+  delegate->WaitForWorkToRun();
+  delegate->WaitForDetachRequest();
+  // Sleep to give a chance for the detach to happen. A yield is too short.
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
+  ASSERT_FALSE(worker->ThreadAliveForTesting());
+
+  delegate->ResetState();
+  delegate->set_can_detach(false);
+  worker->WakeUp();
+  delegate->WaitForWorkToRun();
+  delegate->WaitForDetachRequest();
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
+  ASSERT_TRUE(worker->ThreadAliveForTesting());
+  worker->JoinForTesting();
+}
+
+TEST(TaskSchedulerWorkerTest, CreateDetached) {
+  TaskTracker task_tracker;
+  // Will be owned by SchedulerWorker.
+  ControllableDetachDelegate* delegate = new ControllableDetachDelegate;
+  std::unique_ptr<SchedulerWorker> worker =
+      SchedulerWorker::Create(
+          ThreadPriority::NORMAL, WrapUnique(delegate), &task_tracker,
+          SchedulerWorker::InitialState::DETACHED);
+  ASSERT_FALSE(worker->ThreadAliveForTesting());
+  worker->WakeUp();
+  delegate->WaitForWorkToRun();
+  delegate->WaitForDetachRequest();
+  ASSERT_TRUE(worker->ThreadAliveForTesting());
+  worker->JoinForTesting();
+}
 
 }  // namespace
 }  // namespace internal

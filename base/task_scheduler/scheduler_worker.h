@@ -21,7 +21,8 @@ namespace internal {
 
 class TaskTracker;
 
-// A thread that runs Tasks from Sequences returned by a delegate.
+// A worker that manages a single thread to run Tasks from Sequences returned
+// by a delegate.
 //
 // A SchedulerWorker starts out sleeping. It is woken up by a call to WakeUp().
 // After a wake-up, a SchedulerWorker runs Tasks from Sequences returned by the
@@ -29,8 +30,11 @@ class TaskTracker;
 // also periodically checks with its TaskTracker whether shutdown has completed
 // and exits when it has.
 //
+// The worker is free to release and reallocate the platform thread with
+// guidance from the delegate.
+//
 // This class is thread-safe.
-class BASE_EXPORT SchedulerWorker : public PlatformThread::Delegate {
+class BASE_EXPORT SchedulerWorker {
  public:
   // Delegate interface for SchedulerWorker. The methods are always called from
   // a thread managed by the SchedulerWorker instance.
@@ -39,6 +43,7 @@ class BASE_EXPORT SchedulerWorker : public PlatformThread::Delegate {
     virtual ~Delegate() = default;
 
     // Called by a thread managed by |worker| when it enters its main function.
+    // If a thread is recreated after detachment, this call will occur again.
     virtual void OnMainEntry(SchedulerWorker* worker) = 0;
 
     // Called by a thread managed by |worker| to get a Sequence from which to
@@ -53,25 +58,46 @@ class BASE_EXPORT SchedulerWorker : public PlatformThread::Delegate {
     // GetWork(). GetWork() may be called before this timeout expires if the
     // worker's WakeUp() method is called.
     virtual TimeDelta GetSleepTimeout() = 0;
+
+    // Called by a thread if it is allowed to detach if the last call to
+    // GetWork() returned nullptr.
+    //
+    // It is the responsibility of the delegate to determine if detachment is
+    // safe. If the delegate is responsible for thread-affine work, detachment
+    // is generally not safe.
+    //
+    // When true is returned:
+    // - The next WakeUp() could be more costly due to new thread creation.
+    // - The worker will take this as a signal that it can detach, but it is not
+    //   obligated to do so.
+    // This MUST return false if SchedulerWorker::JoinForTesting() is in
+    // progress.
+    virtual bool CanDetach(SchedulerWorker* worker) = 0;
   };
+
+  enum class InitialState { ALIVE, DETACHED };
 
   // Creates a SchedulerWorker with priority |thread_priority| that runs Tasks
   // from Sequences returned by |delegate|. |task_tracker| is used to handle
-  // shutdown behavior of Tasks. Returns nullptr if creating the underlying
-  // platform thread fails.
+  // shutdown behavior of Tasks. If |worker_state| is DETACHED, the thread will
+  // be created upon a WakeUp(). Returns nullptr if creating the underlying
+  // platform thread fails during Create().
   static std::unique_ptr<SchedulerWorker> Create(
       ThreadPriority thread_priority,
       std::unique_ptr<Delegate> delegate,
-      TaskTracker* task_tracker);
+      TaskTracker* task_tracker,
+      InitialState initial_state);
 
   // Destroying a SchedulerWorker in production is not allowed; it is always
   // leaked. In tests, it can only be destroyed after JoinForTesting() has
   // returned.
-  ~SchedulerWorker() override;
+  ~SchedulerWorker();
 
   // Wakes up this SchedulerWorker if it wasn't already awake. After this
   // is called, this SchedulerWorker will run Tasks from Sequences
   // returned by the GetWork() method of its delegate until it returns nullptr.
+  // WakeUp() may fail if the worker is detached and it fails to allocate a new
+  // worker. If this happens, there will be no call to GetWork().
   void WakeUp();
 
   SchedulerWorker::Delegate* delegate() { return delegate_.get(); }
@@ -80,22 +106,34 @@ class BASE_EXPORT SchedulerWorker : public PlatformThread::Delegate {
   // allowed to complete its execution. This can only be called once.
   void JoinForTesting();
 
+  // Returns true if the worker is alive.
+  bool ThreadAliveForTesting() const;
+
  private:
+  class Thread;
+
   SchedulerWorker(ThreadPriority thread_priority,
                   std::unique_ptr<Delegate> delegate,
                   TaskTracker* task_tracker);
 
-  // PlatformThread::Delegate:
-  void ThreadMain() override;
+  // Returns the thread instance if the detach was successful so that it can be
+  // freed upon termination of the thread.
+  // If the detach is not possible, returns nullptr.
+  std::unique_ptr<SchedulerWorker::Thread> Detach();
+
+  void CreateThread();
+
+  void CreateThreadAssertSynchronized();
 
   bool ShouldExitForTesting() const;
 
-  // Platform thread managed by this SchedulerWorker.
-  PlatformThreadHandle thread_handle_;
+  // Synchronizes access to |thread_|
+  mutable SchedulerLock thread_lock_;
 
-  // Event signaled to wake up this SchedulerWorker.
-  WaitableEvent wake_up_event_;
+  // The underlying thread for this SchedulerWorker.
+  std::unique_ptr<Thread> thread_;
 
+  const ThreadPriority thread_priority_;
   const std::unique_ptr<Delegate> delegate_;
   TaskTracker* const task_tracker_;
 

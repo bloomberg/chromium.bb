@@ -51,6 +51,10 @@ class ServiceThreadDelegate : public SchedulerWorker::Delegate {
     return sleep_time < zero_delta ? zero_delta : sleep_time;
   }
 
+  bool CanDetach(SchedulerWorker* worker) override {
+    return false;
+  }
+
  private:
   DelayedTaskManager* const delayed_task_manager_;
 
@@ -68,7 +72,8 @@ std::unique_ptr<SchedulerServiceThread> SchedulerServiceThread::Create(
       SchedulerWorker::Create(
           ThreadPriority::NORMAL,
           WrapUnique(new ServiceThreadDelegate(delayed_task_manager)),
-          task_tracker);
+          task_tracker,
+          SchedulerWorker::InitialState::ALIVE);
   if (!worker)
     return nullptr;
 
