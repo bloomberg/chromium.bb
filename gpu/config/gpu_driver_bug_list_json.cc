@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.71",
+  "version": "8.72",
   "entries": [
     {
       "id": 1,
@@ -1621,6 +1621,7 @@ LONG_STRING_CONST(
         "type": "macosx"
       },
       "vendor_id": "0x8086",
+      "multi_gpu_category": "primary",
       "features": [
         "disable_texture_cube_map_seamless"
       ]

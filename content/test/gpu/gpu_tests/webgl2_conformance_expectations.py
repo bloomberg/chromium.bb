@@ -204,12 +204,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
 
     # Mac only.
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_formats_*',
-        ['mac'], bug=606074)
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_*',
-        ['mac'], bug=606074)
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_combinations_*',
-        ['mac'], bug=606074)
     self.Flaky('deqp/functional/gles3/shaderindexing/varying.html',
         ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
@@ -402,6 +396,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['mac', 'intel'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_formats_*',
+        ['mac', 'intel'], bug=606074)
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_*',
+        ['mac', 'intel'], bug=606074)
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_combinations_*',
+        ['mac', 'intel'], bug=606074)
 
     # Linux only.
     self.Fail('deqp/data/gles3/shaders/functions.html',
