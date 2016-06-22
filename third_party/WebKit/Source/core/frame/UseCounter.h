@@ -1214,11 +1214,12 @@ public:
         OpenSearchSecureOriginSecureTarget = 1408,
         RegisterProtocolHandlerSecureOrigin = 1409,
         RegisterProtocolHandlerInsecureOrigin = 1410,
-
         CrossOriginWindowAlert = 1411,
         CrossOriginWindowConfirm = 1412,
         CrossOriginWindowPrompt = 1413,
         CrossOriginWindowPrint = 1414,
+        MediaStreamOnActive = 1415,
+        MediaStreamOnInactive = 1416,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

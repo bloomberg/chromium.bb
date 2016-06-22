@@ -306,6 +306,10 @@ bool MediaStream::addEventListenerInternal(const AtomicString& eventType, EventL
 {
     if (eventType == EventTypeNames::ended)
         Deprecation::countDeprecation(getExecutionContext(), UseCounter::MediaStreamOnEnded);
+    else if (eventType == EventTypeNames::active)
+        UseCounter::count(getExecutionContext(), UseCounter::MediaStreamOnActive);
+    else if (eventType == EventTypeNames::inactive)
+        UseCounter::count(getExecutionContext(), UseCounter::MediaStreamOnInactive);
 
     return EventTargetWithInlineData::addEventListenerInternal(eventType, listener, options);
 }
