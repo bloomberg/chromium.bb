@@ -384,7 +384,8 @@ class TestImporter(object):
                 else:
                     if not self.import_in_place and not self.options.dry_run:
                         self.filesystem.copyfile(orig_filepath, new_filepath)
-                        self.filesystem.copymode(orig_filepath, new_filepath)
+                        if self.filesystem.read_text_file(orig_filepath)[:2] == '#!':
+                            self.filesystem.copymode(orig_filepath, new_filepath)
 
                 copied_files.append(new_filepath.replace(self._webkit_root, ''))
 

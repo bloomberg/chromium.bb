@@ -38,6 +38,7 @@ from webkitpy.w3c.test_importer import TestImporter
 FAKE_SOURCE_REPO_DIR = '/blink'
 
 FAKE_FILES = {'/mock-checkout/third_party/Webkit/LayoutTests/w3c/OWNERS': '',
+              '/blink/w3c/dir/has_shebang.txt': '#!',
               '/blink/w3c/dir/README.txt': '',
               '/blink/w3c/dir/OWNERS': '',
               '/blink/w3c/dir/reftest.list': '',
@@ -90,7 +91,7 @@ class TestImporterTest(unittest.TestCase):
         importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
         importer.find_importable_tests()
         self.assertEqual(importer.import_list,
-                         [{'copy_list': [{'dest': 'README.txt', 'src': '/blink/w3c/dir/README.txt'}],
+                         [{'copy_list': [{'dest': 'has_shebang.txt', 'src': '/blink/w3c/dir/has_shebang.txt'}, {'dest': 'README.txt', 'src': '/blink/w3c/dir/README.txt'}],
                            'dirname': '/blink/w3c/dir',
                            'jstests': 0,
                            'reftests': 0,
@@ -102,7 +103,7 @@ class TestImporterTest(unittest.TestCase):
         importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
         importer.find_importable_tests()
         self.assertEqual(importer.import_list,
-                         [{'copy_list': [{'dest': 'README.txt', 'src': '/blink/w3c/dir/README.txt'}],
+                         [{'copy_list': [{'dest': 'has_shebang.txt', 'src': '/blink/w3c/dir/has_shebang.txt'}, {'dest': 'README.txt', 'src': '/blink/w3c/dir/README.txt'}],
                            'dirname': '/blink/w3c/dir',
                            'jstests': 0,
                            'reftests': 0,
@@ -114,6 +115,8 @@ class TestImporterTest(unittest.TestCase):
         host.filesystem = MockFileSystem(files=FAKE_FILES)
         importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
         host.filesystem.executable_files.add('/blink/w3c/dir/README.txt')
+        host.filesystem.executable_files.add('/blink/w3c/dir/has_shebang.txt')
         importer.do_import()
-        host.filesystem.copymode('/blink/w3c/dir/README.txt', '/mock-checkout/third_party/WebKit/LayoutTests/w3c/blink/w3c/dir/README.txt')
-        self.assertEquals(host.filesystem.executable_files, set(['/blink/w3c/dir/README.txt', '/mock-checkout/third_party/WebKit/LayoutTests/w3c/blink/w3c/dir/README.txt']))
+        self.assertEquals(host.filesystem.executable_files, set(['/blink/w3c/dir/has_shebang.txt',
+                                                                 '/blink/w3c/dir/README.txt',
+                                                                 '/mock-checkout/third_party/WebKit/LayoutTests/w3c/blink/w3c/dir/has_shebang.txt']))
