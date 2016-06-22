@@ -97,12 +97,6 @@
       ],
       'msvs_settings': {
         'VCLinkerTool': {
-          'AdditionalDependencies!': [
-            'user32.lib',
-          ],
-          'IgnoreDefaultLibraryNames': [
-            'user32.lib',
-          ],
           'DelayLoadDLLs': [
             'dbghelp.dll',
             'ole32.dll',
