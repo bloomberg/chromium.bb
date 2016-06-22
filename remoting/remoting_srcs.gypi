@@ -245,8 +245,6 @@
       'protocol/webrtc_data_stream_adapter.h',
       'protocol/webrtc_dummy_video_capturer.cc',
       'protocol/webrtc_dummy_video_capturer.h',
-      'protocol/webrtc_frame_scheduler.cc',
-      'protocol/webrtc_frame_scheduler.h',
       'protocol/webrtc_video_encoder_factory.cc',
       'protocol/webrtc_video_encoder_factory.h',
       'protocol/webrtc_transport.cc',

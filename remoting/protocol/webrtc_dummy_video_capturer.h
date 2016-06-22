@@ -9,23 +9,22 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "remoting/protocol/webrtc_frame_scheduler.h"
 #include "third_party/webrtc/media/base/videocapturer.h"
 
 namespace remoting {
 namespace protocol {
 
 // A dummy video capturer needed to create peer connection. We do not supply
-// captured frames throught this interface, but instead provide encoded
+// captured frames through this interface, but instead provide encoded
 // frames to Webrtc. We expect this requirement to go away once we have
 // proper support for providing encoded frames to Webrtc through
 // VideoSourceInterface
 class WebrtcDummyVideoCapturer : public cricket::VideoCapturer {
  public:
-  explicit WebrtcDummyVideoCapturer(
-      std::unique_ptr<WebrtcFrameScheduler> frame_scheduler);
+  explicit WebrtcDummyVideoCapturer();
   ~WebrtcDummyVideoCapturer() override;
 
+  // cricket::VideoCapturer interface.
   cricket::CaptureState Start(
       const cricket::VideoFormat& capture_format) override;
   void Stop() override;
@@ -34,8 +33,6 @@ class WebrtcDummyVideoCapturer : public cricket::VideoCapturer {
   bool GetPreferredFourccs(std::vector<uint32_t>* fourccs) override;
 
  private:
-  std::unique_ptr<WebrtcFrameScheduler> frame_scheduler_;
-
   DISALLOW_COPY_AND_ASSIGN(WebrtcDummyVideoCapturer);
 };
 

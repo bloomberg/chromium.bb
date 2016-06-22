@@ -221,7 +221,7 @@ void WebrtcVideoEncoderFactory::SetKeyFrameRequestCallback(
     encoders_.front()->SetKeyFrameRequestCallback(key_frame_request);
   } else {
     LOG(ERROR) << "Dropping key frame request callback with unexpected"
-                  " number of encoders"
+                  " number of encoders: "
                << encoders_.size();
   }
 }
@@ -234,7 +234,7 @@ void WebrtcVideoEncoderFactory::SetTargetBitrateCallback(
     encoders_.front()->SetTargetBitrateCallback(target_bitrate_cb);
   } else {
     LOG(ERROR) << "Dropping target bitrate request callback with unexpected"
-                  " number of encoders"
+                  " number of encoders: "
                << encoders_.size();
   }
 }
