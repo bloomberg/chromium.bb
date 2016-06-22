@@ -343,6 +343,7 @@ void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
   }
 
   DownloadHistoryData* data = DownloadHistoryData::Get(item);
+  bool was_persisted = IsPersisted(item);
 
   // The sql INSERT statement failed. Avoid an infinite loop: don't
   // automatically retry. Retry adding the next time the item is updated by
@@ -361,10 +362,13 @@ void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
                               (1 << 7)/*num_buckets*/);
   ++history_size_;
 
+  // Notify the observer about the change in the persistence state.
+  if (was_persisted != IsPersisted(item)) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnDownloadStored(
+        item, *data->info()));
+  }
+
   // In case the item changed or became temporary while it was being added.
-  // Don't just update all of the item's observers because we're the only
-  // observer that can also see data->state(), which is the only thing that
-  // ItemAdded() changed.
   OnDownloadUpdated(notifier_.GetManager(), item);
 }
 
