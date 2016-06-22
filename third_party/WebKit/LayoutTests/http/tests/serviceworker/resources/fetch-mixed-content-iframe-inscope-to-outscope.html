@@ -41,30 +41,17 @@ function test3() {
   img.onerror = function() {
     test4();
   };
-  img.src = host_info['HTTP_ORIGIN'] + image_path;
+  img.src = host_info['UNAUTHENTICATED_ORIGIN'] + image_path;
 }
 
 function test4() {
   var img = document.createElement('img');
   document.body.appendChild(img);
   img.onload = function() {
-    results += 'FAIL(4)';
-    test5();
-  };
-  img.onerror = function() {
-    test5();
-  };
-  img.src = host_info['HTTP_REMOTE_ORIGIN'] + image_path;
-}
-
-function test5() {
-  var img = document.createElement('img');
-  document.body.appendChild(img);
-  img.onload = function() {
     finish();
   };
   img.onerror = function() {
-    results += 'FAIL(5)';
+    results += 'FAIL(4)';
     finish();
   };
   img.src = './dummy?generate-png';

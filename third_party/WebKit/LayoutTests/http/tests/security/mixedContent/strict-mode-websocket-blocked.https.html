@@ -10,7 +10,7 @@
         test(function () {
             assert_throws("SecurityError",
                           function () {
-                              new WebSocket("ws://127.0.0.1:8880/echo");
+                              new WebSocket("ws://example.test:8880/echo");
                           });
         }, "Test that insecure websocket construction throws.");
     </script>

@@ -187,7 +187,7 @@ function testBlockMixedContent(mode) {
             return fetch(HTTPS_REDIRECT_URL +
                          encodeURIComponent(HTTPS_BASE_URL + 'test4-' + mode),
                          {mode: mode})
-              .then(function(res) {assert_equals(res.status, 200); },
+              .then(function(res) {assert_equals(res.status, mode == 'no-cors' ? 0 : 200); },
                     t.unreached_func('Test 4: Must success (' +
                                      mode + ', HTTPS->HTTPS->HTTPS)'));
           })

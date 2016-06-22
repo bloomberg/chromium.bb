@@ -1,7 +1,7 @@
 <script>
 function load_content() {
     var invisible_doc = document.implementation.createHTMLDocument("");
-    invisible_doc.body.innerHTML = '<html><body><form action="http://127.0.0.1:8080/security/resources/boring.html" method="post"></form></body></html>';
+    invisible_doc.body.innerHTML = '<html><body><form action="http://example.test:8080/security/resources/boring.html" method="post"></form></body></html>';
 }
 
 window.addEventListener("DOMContentLoaded", function listener() { load_content(); }, false);

@@ -1,6 +1,0 @@
-CONSOLE WARNING: Mixed Content: The page at 'https://127.0.0.1:8443/security/mixedContent/active-subresource-in-http-iframe-not-blocked.https.html' was loaded over HTTPS, but requested an insecure resource 'http://127.0.0.1:8000/security/mixedContent/resources/frame-loads-insecure-script.html'. This content should also be served over HTTPS.
-CONSOLE WARNING: Mixed Content: The page at 'https://127.0.0.1:8443/security/mixedContent/active-subresource-in-http-iframe-not-blocked.https.html' was loaded over HTTPS, but requested an insecure script 'http://127.0.0.1:8000/security/mixedContent/resources/script-post-message.js'. This content should also be served over HTTPS.
-This is a testharness.js-based test.
-PASS Testing an insecure script in a mixed iframe 
-Harness: the test ran to completion.
-

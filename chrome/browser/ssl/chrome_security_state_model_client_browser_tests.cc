@@ -341,12 +341,17 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  host_resolver()->AddRule("example.test",
+                           https_server_.GetURL("/").host());
+
+  net::HostPortPair replacement_pair = embedded_test_server()->host_port_pair();
+  replacement_pair.set_host("example.test");
 
   // Navigate to an HTTPS page that displays mixed content.
   std::string replacement_path;
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_displays_insecure_content.html",
-      embedded_test_server()->host_port_pair(), &replacement_path);
+      replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
@@ -358,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   // Navigate to an HTTPS page that displays mixed content dynamically.
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_with_dynamic_insecure_content.html",
-      embedded_test_server()->host_port_pair(), &replacement_path);
+      replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
@@ -381,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   // Navigate to an HTTPS page that runs mixed content.
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_runs_insecure_content.html",
-      embedded_test_server()->host_port_pair(), &replacement_path);
+      replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
@@ -394,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   // Navigate to an HTTPS page that runs and displays mixed content.
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_runs_and_displays_insecure_content.html",
-      embedded_test_server()->host_port_pair(), &replacement_path);
+      replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
@@ -436,11 +441,17 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   SetUpMockCertVerifierForHttpsServer(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT,
                                       net::OK);
 
+  host_resolver()->AddRule("example.test",
+                           https_server_.GetURL("/").host());
+
+  net::HostPortPair replacement_pair = embedded_test_server()->host_port_pair();
+  replacement_pair.set_host("example.test");
+
   // Navigate to an HTTPS page that displays mixed content.
   std::string replacement_path;
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_displays_insecure_content.html",
-      embedded_test_server()->host_port_pair(), &replacement_path);
+      replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
@@ -453,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   // Navigate to an HTTPS page that displays mixed content dynamically.
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_with_dynamic_insecure_content.html",
-      embedded_test_server()->host_port_pair(), &replacement_path);
+      replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
@@ -478,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   // Navigate to an HTTPS page that runs mixed content.
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_runs_insecure_content.html",
-      embedded_test_server()->host_port_pair(), &replacement_path);
+      replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
@@ -491,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   // Navigate to an HTTPS page that runs and displays mixed content.
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_runs_and_displays_insecure_content.html",
-      embedded_test_server()->host_port_pair(), &replacement_path);
+      replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(

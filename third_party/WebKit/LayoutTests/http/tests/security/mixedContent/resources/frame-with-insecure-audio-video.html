@@ -16,14 +16,14 @@
         // markup in order to avoid the console's flaky "what line am I on?"
         // autodetection.
         var audioElement = document.querySelector('audio');
-        audioElement.src = "http://127.0.0.1:8080/resources/test.mp4";
+        audioElement.src = "http://example.test:8080/resources/test.mp4";
         audioElement.addEventListener("loadstart", function(event) {
           isAudioLoaded = true;
           checkTestCompletion();
         });
 
         var videoElement = document.querySelector('video');
-        videoElement.src = "http://127.0.0.1:8080/resources/test.mp4";
+        videoElement.src = "http://example.test:8080/resources/test.mp4";
         videoElement.addEventListener("loadstart", function(event) {
           isVideoLoaded = true;
           checkTestCompletion();

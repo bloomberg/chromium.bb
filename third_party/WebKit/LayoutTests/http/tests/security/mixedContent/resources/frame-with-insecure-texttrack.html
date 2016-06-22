@@ -19,7 +19,7 @@
             var track = document.querySelector('track');
             var video = document.querySelector('video');
             track.track.mode = "hidden";
-            url = "http://localhost:8000/security/resources/captions-with-access-control-headers.php?origin=1";
+            url = "http://example.test:8000/security/resources/captions-with-access-control-headers.php?origin=1";
             video.setAttribute('crossorigin', 'anonymous');
             track.setAttribute('src', url);
         };

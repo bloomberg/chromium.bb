@@ -27,12 +27,19 @@ TEST(MixedContentCheckerTest, IsMixedContent)
     } cases[] = {
         {"http://example.com/foo", "http://example.com/foo", false},
         {"http://example.com/foo", "https://example.com/foo", false},
+        {"http://example.com/foo", "data:text/html,<p>Hi!</p>", false},
         {"https://example.com/foo", "https://example.com/foo", false},
         {"https://example.com/foo", "wss://example.com/foo", false},
+        {"https://example.com/foo", "data:text/html,<p>Hi!</p>", false},
+        {"https://example.com/foo", "http://127.0.0.1/", false},
+        {"https://example.com/foo", "http://[::1]/", false},
+
         {"https://example.com/foo", "http://example.com/foo", true},
         {"https://example.com/foo", "http://google.com/foo", true},
         {"https://example.com/foo", "ws://example.com/foo", true},
         {"https://example.com/foo", "ws://google.com/foo", true},
+        {"https://example.com/foo", "http://192.168.1.1/", true},
+        {"https://example.com/foo", "http://localhost/", true},
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); ++i) {

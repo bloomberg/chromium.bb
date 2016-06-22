@@ -6,7 +6,7 @@ function reportResult(msg) {
 }
 
 new Promise(function (resolve, reject) {
-    var ws = new WebSocket("ws://127.0.0.1:8880/echo");
+    var ws = new WebSocket("ws://example.test:8880/echo");
     ws.onopen = function () {
         resolve();
     };

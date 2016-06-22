@@ -10,6 +10,6 @@ xhr.onload = function() {
 xhr.onerror = function() {
   report('DONE');
 };
-xhr.open("POST", "http://127.0.0.1:8000/xmlhttprequest/resources/access-control-allow-lists.php?origin=*", true);
+xhr.open("POST", "http://example.test:8000/xmlhttprequest/resources/access-control-allow-lists.php?origin=*", true);
 xhr.send("foo");
 </script>

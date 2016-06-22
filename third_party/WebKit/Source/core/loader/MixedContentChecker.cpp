@@ -88,8 +88,13 @@ bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin, const K
     if (!SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(securityOrigin->protocol()))
         return false;
 
-    // We're in a secure context, so |url| is mixed content if it's insecure.
-    return !SecurityOrigin::isSecure(url);
+    // |url| is mixed content if its origin is not potentially trustworthy, and
+    // its protocol is not 'data'.
+    bool isAllowed = url.protocolIsData() || SecurityOrigin::create(url)->isPotentiallyTrustworthy();
+    // TODO(mkwst): Remove this once 'localhost' is no longer considered potentially trustworthy:
+    if (isAllowed && url.protocolIs("http") && url.host() == "localhost")
+        isAllowed = false;
+    return !isAllowed;
 }
 
 // static

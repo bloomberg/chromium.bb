@@ -38,27 +38,13 @@ function test3() {
   document.body.appendChild(img);
   img.onload = function() {
     results += 'FAIL(3)';
-    test4();
-  };
-  img.onerror = function() {
-    test4();
-  };
-  img.src = './dummy?mode=no-cors&url=' +
-            encodeURIComponent(host_info['HTTP_ORIGIN'] + image_path);
-}
-
-function test4() {
-  var img = document.createElement('img');
-  document.body.appendChild(img);
-  img.onload = function() {
-    results += 'FAIL(4)';
     finish();
   };
   img.onerror = function() {
     finish();
   };
   img.src = './dummy?mode=no-cors&url=' +
-            encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + image_path);
+            encodeURIComponent(host_info['UNAUTHENTICATED_ORIGIN'] + image_path);
 }
 
 function finish() {

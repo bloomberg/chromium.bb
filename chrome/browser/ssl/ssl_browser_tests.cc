@@ -414,7 +414,7 @@ class SSLUITest
 
     base::StringPairs replacement_text_frame_left;
     replacement_text_frame_left.push_back(
-        make_pair("REPLACE_WITH_HTTP_PAGE", http_url.spec()));
+        make_pair("REPLACE_WITH_HTTP_PORT", http_url.port()));
     replacement_text_frame_left.push_back(
         make_pair("REPLACE_WITH_GOOD_HTTPS_PAGE", good_https_url.spec()));
     replacement_text_frame_left.push_back(
@@ -1617,10 +1617,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
+  host_resolver()->AddRule("example.test",
+                           https_server_.GetURL("/").host());
+
+  net::HostPortPair replacement_pair = embedded_test_server()->host_port_pair();
+  replacement_pair.set_host("example.test");
+
   std::string replacement_path;
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_with_dynamic_insecure_content.html",
-      embedded_test_server()->host_port_pair(), &replacement_path);
+      replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(
       replacement_path));
 
@@ -2119,7 +2125,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   CheckAuthenticationBrokenState(
       tab,
       CertError::NONE,
-      AuthState::DISPLAYED_INSECURE_CONTENT | AuthState::RAN_INSECURE_CONTENT);
+      AuthState::RAN_INSECURE_CONTENT);
 
   // Go back, our state should be unchanged.
   {
@@ -2133,7 +2139,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   CheckAuthenticationBrokenState(
       tab,
       CertError::NONE,
-      AuthState::DISPLAYED_INSECURE_CONTENT | AuthState::RAN_INSECURE_CONTENT);
+      AuthState::RAN_INSECURE_CONTENT);
 }
 
 // From a bad HTTPS top frame:

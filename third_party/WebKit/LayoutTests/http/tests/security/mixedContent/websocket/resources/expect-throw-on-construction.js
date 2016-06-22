@@ -9,7 +9,7 @@ function reportResult(msg) {
 
 (function () {
     try {
-        var ws = new WebSocket("ws://127.0.0.1:8880/echo");
+        var ws = new WebSocket("ws://example.test:8880/echo");
     } catch (e) {
         reportResult("DONE");
         return;

@@ -23,7 +23,7 @@
                 var expectations = {
                     'documentURI': document.location.toString(),
                     'referrer': document.referrer,
-                    'blockedURI': 'http://127.0.0.1:8080/security/resources/compass.jpg?t=1',
+                    'blockedURI': 'http://example.test:8080/security/resources/compass.jpg?t=1',
                     'violatedDirective': 'block-all-mixed-content',
                     'effectiveDirective': 'block-all-mixed-content',
                     'originalPolicy': 'block-all-mixed-content',
@@ -37,6 +37,6 @@
             })
         ]).then(t.step_func_done());
 
-        i.src = "http://127.0.0.1:8080/security/resources/compass.jpg?t=1";
+        i.src = "http://example.test:8080/security/resources/compass.jpg?t=1";
     }, "Mixed images are allowed and generate CSP violation reports in the presence of 'block-all-mixed-content' in report-only mode.");
 </script>
