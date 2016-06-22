@@ -145,27 +145,28 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
             Context context = mRootLayout.getContext();
             Resources resources = context.getResources();
 
-            View view = convertView;
-            if (view == null) {
-                view = LayoutInflater.from(context).inflate(
+            TextView labelView = null;
+            if (convertView instanceof TextView) {
+                labelView = (TextView) convertView;
+            } else {
+                labelView = (TextView) LayoutInflater.from(context).inflate(
                         R.layout.download_manager_ui_drawer_filter, null);
             }
 
             int iconId = FILTER_LIST[position][0];
-            TextView labelView = ((TextView) view.findViewById(R.id.label));
             labelView.setText(FILTER_LIST[position][1]);
 
             Drawable iconDrawable = null;
             if (position == mSelectedIndex) {
                 // Highlight the selected item by changing the foreground and background colors.
-                view.setBackgroundColor(mSelectedBackgroundColor);
+                labelView.setBackgroundColor(mSelectedBackgroundColor);
                 iconDrawable = TintedDrawable.constructTintedDrawable(
                         resources, iconId, R.color.light_active_color);
                 labelView.setTextColor(
                         ApiCompatibilityUtils.getColor(resources, R.color.light_active_color));
             } else {
                 // Draw the item normally.
-                view.setBackground(null);
+                labelView.setBackground(null);
                 iconDrawable = TintedDrawable.constructTintedDrawable(
                         resources, iconId, R.color.descriptive_text_color);
                 labelView.setTextColor(
@@ -173,7 +174,7 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
             }
 
             labelView.setCompoundDrawablesWithIntrinsicBounds(iconDrawable, null, null, null);
-            return view;
+            return labelView;
         }
 
         @Override

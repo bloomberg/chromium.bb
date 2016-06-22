@@ -5,10 +5,10 @@
 
 <!-- Represents a single filter in the drawer.  See DownloadManagerUi#FilterAdapter. --> 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/label"
     android:layout_width="match_parent"
-    android:layout_height="48dp"
+    android:layout_height="wrap_content"
     android:layout_gravity="start"
+    android:minHeight="48dp"
     android:drawablePadding="@dimen/drawer_margin_large"
     android:paddingStart="@dimen/drawer_margin_large"
     android:paddingEnd="@dimen/drawer_margin_large"
