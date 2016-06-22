@@ -157,6 +157,12 @@ var LABEL_TO_LOCALIZED_LABEL_ID = {
   'f10' : 'keyboardOverlayF10',
 };
 
+var COMPOUND_ENTER_KEY_DATA = [815, 107, 60, 120];
+var COMPOUND_ENTER_KEY_CLIP_PATH =
+  'polygon(0% 0%, 100% 0%, 100% 100%, 28% 100%, 28% 47%, 0% 47%)';
+var COMPOUND_ENTER_KEY_OVERLAY_DIV_CLIP_PATH =
+  'polygon(12% 0%, 100% 0%, 100% 97%, 12% 97%)';
+
 var IME_ID_PREFIX = '_comp_ime_';
 var EXTENSION_ID_LEN = 32;
 
@@ -546,8 +552,12 @@ function update(modifiers, normModifiers) {
       // if it was enabled. To fix crbug.com/453623.
       shortcutId = 'keyboardOverlayDisableCapsLock';
     }
+
+    classes.push('keyboard-overlay-key-background');
+
     if (shortcutId) {
       classes.push('is-shortcut');
+      classes.push('keyboard-overlay-shortcut-key-background');
     }
 
     var key = $(keyId(identifier, i));
@@ -572,6 +582,14 @@ function update(modifiers, normModifiers) {
       shortcutText.textContent = loadTimeData.getString(shortcutId);
     } else {
       shortcutText.style.visibility = 'hidden';
+    }
+
+    if (layout[i][1] == 'COMPOUND_ENTER_KEY') {
+      var overlayDivClasses =
+        getKeyClasses(identifier, modifiers, normModifiers);
+      if (shortcutId)
+        overlayDivClasses.push('is-shortcut');
+      $(keyId(identifier, i) + '-sub').className = overlayDivClasses.join(' ');
     }
 
     var format = keyboardGlyphData.keys[layout[i][0]].format;
@@ -678,10 +696,29 @@ function initLayout() {
   for (var i = 0; i < layout.length; i++) {
     var array = layout[i];
     var identifier = remapIdentifier(array[0]);
-    var x = Math.round((array[1] + offsetX) * multiplier);
-    var y = Math.round((array[2] + offsetY) * multiplier);
-    var w = Math.round((array[3] - keyMargin) * multiplier);
-    var h = Math.round((array[4] - keyMargin) * multiplier);
+
+    var keyDataX = 0;
+    var keyDataY = 0;
+    var keyDataW = 0;
+    var keyDataH = 0;
+    var isCompoundEnterKey = false;
+    if (array[1] == 'COMPOUND_ENTER_KEY') {
+      keyDataX = COMPOUND_ENTER_KEY_DATA[0];
+      keyDataY = COMPOUND_ENTER_KEY_DATA[1];
+      keyDataW = COMPOUND_ENTER_KEY_DATA[2];
+      keyDataH = COMPOUND_ENTER_KEY_DATA[3];
+      isCompoundEnterKey = true;
+    } else {
+      keyDataX = array[1];
+      keyDataY = array[2];
+      keyDataW = array[3];
+      keyDataH = array[4];
+    }
+
+    var x = Math.round((keyDataX + offsetX) * multiplier);
+    var y = Math.round((keyDataY + offsetY) * multiplier);
+    var w = Math.round((keyDataW - keyMargin) * multiplier);
+    var h = Math.round((keyDataH - keyMargin) * multiplier);
 
     var key = document.createElement('div');
     key.id = keyId(identifier, i);
@@ -702,6 +739,30 @@ function initLayout() {
     shortcutText.className = 'keyboard-overlay-shortcut-text';
     shortcutText.style.visilibity = 'hidden';
     key.appendChild(shortcutText);
+
+    if (isCompoundEnterKey) {
+      key.style.webkitClipPath = COMPOUND_ENTER_KEY_CLIP_PATH;
+      keyText.style.webkitClipPath = COMPOUND_ENTER_KEY_CLIP_PATH;
+      shortcutText.style.webkitClipPath = COMPOUND_ENTER_KEY_CLIP_PATH;
+
+      // Add an overlay div to account for clipping and show the borders.
+      var overlayDiv = document.createElement('div');
+      overlayDiv.id = keyId(identifier, i) + '-sub';
+      overlayDiv.className = 'keyboard-overlay-key';
+      var overlayDivX = x - 3;
+      var overlayDivY = y + Math.round(h * 0.47) + 2;
+      var overlayDivW = Math.round(w * 0.28);
+      var overlayDivH = Math.round(h * (1 - 0.47)) + 1;
+
+      overlayDiv.style.left = overlayDivX + 'px';
+      overlayDiv.style.top = overlayDivY + 'px';
+      overlayDiv.style.width = overlayDivW + 'px';
+      overlayDiv.style.height = overlayDivH + 'px';
+      overlayDiv.style.webkitClipPath =
+        COMPOUND_ENTER_KEY_OVERLAY_DIV_CLIP_PATH;
+      keyboard.appendChild(overlayDiv);
+    }
+
     keyboard.appendChild(key);
 
     minX = Math.min(minX, x);
