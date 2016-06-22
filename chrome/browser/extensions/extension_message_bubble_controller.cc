@@ -224,6 +224,9 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
   user_action_ = ACTION_LEARN_MORE;
 
   delegate_->LogAction(ACTION_LEARN_MORE);
+  // Opening a new tab for the learn more link can cause the bubble to close, so
+  // perform our cleanup here before opening the new tab.
+  OnClose();
   if (!g_should_ignore_learn_more_for_testing) {
     browser_->OpenURL(
         content::OpenURLParams(delegate_->GetLearnMoreUrl(),
@@ -232,7 +235,7 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
                                ui::PAGE_TRANSITION_LINK,
                                false));
   }
-  OnClose();
+  // Warning: |this| may be deleted here!
 }
 
 void ExtensionMessageBubbleController::SetIsActiveBubble() {

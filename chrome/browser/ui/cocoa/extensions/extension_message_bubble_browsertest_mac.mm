@@ -8,9 +8,11 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
+#import "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
 
@@ -18,6 +20,22 @@ namespace {
 ToolbarController* ToolbarControllerForBrowser(Browser* browser) {
   return [[BrowserWindowController browserWindowControllerForWindow:
              browser->window()->GetNativeWindow()] toolbarController];
+}
+
+ToolbarActionsBarBubbleMac* GetBubbleForBrowser(Browser* browser) {
+  ToolbarController* toolbarController = ToolbarControllerForBrowser(browser);
+  BrowserActionsController* actionsController =
+      [toolbarController browserActionsController];
+  return [actionsController activeBubble];
+}
+
+void ClickInView(NSView* view) {
+  ASSERT_TRUE(view);
+  std::pair<NSEvent*, NSEvent*> events =
+      cocoa_test_event_utils::MouseClickInView(view, 1);
+  [NSApp postEvent:events.second atStart:YES];
+  [NSApp sendEvent:events.first];
+  chrome::testing::NSRunLoopRunAllPending();
 }
 
 // Checks that the |bubble| is using the |expectedReferenceView|, and is in
@@ -73,10 +91,14 @@ class ExtensionMessageBubbleBrowserTestMac
   ~ExtensionMessageBubbleBrowserTestMac() override {}
 
  private:
+  // ExtensionMessageBubbleBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void CheckBubbleNative(Browser* browser, AnchorPosition anchor) override;
   void CloseBubbleNative(Browser* browser) override;
   void CheckBubbleIsNotPresentNative(Browser* browser) override;
+  void ClickLearnMoreButton(Browser* browser) override;
+  void ClickActionButton(Browser* browser) override;
+  void ClickDismissButton(Browser* browser) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBrowserTestMac);
 };
@@ -123,6 +145,23 @@ void ExtensionMessageBubbleBrowserTestMac::CheckBubbleIsNotPresentNative(
           activeBubble]);
 }
 
+void ExtensionMessageBubbleBrowserTestMac::ClickLearnMoreButton(
+    Browser* browser) {
+  ToolbarActionsBarBubbleMac* bubble = GetBubbleForBrowser(browser);
+  ClickInView([bubble learnMoreButton]);
+}
+
+void ExtensionMessageBubbleBrowserTestMac::ClickActionButton(Browser* browser) {
+  ToolbarActionsBarBubbleMac* bubble = GetBubbleForBrowser(browser);
+  ClickInView([bubble actionButton]);
+}
+
+void ExtensionMessageBubbleBrowserTestMac::ClickDismissButton(
+    Browser* browser) {
+  ToolbarActionsBarBubbleMac* bubble = GetBubbleForBrowser(browser);
+  ClickInView([bubble dismissButton]);
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        ExtensionBubbleAnchoredToExtensionAction) {
   TestBubbleAnchoredToExtensionAction();
@@ -161,4 +200,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        TestBubbleWithMultipleWindows) {
   TestBubbleWithMultipleWindows();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       TestClickingLearnMoreButton) {
+  TestClickingLearnMoreButton();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       TestClickingActionButton) {
+  TestClickingActionButton();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       TestClickingDismissButton) {
+  TestClickingDismissButton();
 }

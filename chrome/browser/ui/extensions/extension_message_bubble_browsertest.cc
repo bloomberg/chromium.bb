@@ -15,9 +15,14 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/extension_test_message_listener.h"
 
@@ -265,4 +270,59 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleWithMultipleWindows() {
   CheckBubbleIsNotPresent(third_browser, true, true);
   CheckBubbleIsNotPresent(fourth_browser, true, true);
   CloseBubble(second_browser);
+}
+
+void ExtensionMessageBubbleBrowserTest::TestClickingLearnMoreButton() {
+  CheckBubbleIsNotPresent(browser(), false, false);
+  LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  base::RunLoop().RunUntilIdle();
+  CheckBubble(second_browser, ANCHOR_BROWSER_ACTION, true);
+  ClickLearnMoreButton(second_browser);
+  base::RunLoop().RunUntilIdle();
+  CheckBubbleIsNotPresent(second_browser, false, false);
+  // The learn more link goes to the chrome://extensions page, so it should be
+  // opened in the active tab.
+  content::WebContents* active_web_contents =
+      second_browser->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(active_web_contents);
+  EXPECT_EQ(GURL(chrome::kChromeUIExtensionsURL),
+            active_web_contents->GetLastCommittedURL());
+}
+
+void ExtensionMessageBubbleBrowserTest::TestClickingActionButton() {
+  CheckBubbleIsNotPresent(browser(), false, false);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile());
+  std::string id = extension->id();
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(id));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  base::RunLoop().RunUntilIdle();
+  CheckBubble(second_browser, ANCHOR_BROWSER_ACTION, true);
+  ClickActionButton(second_browser);
+  base::RunLoop().RunUntilIdle();
+  CheckBubbleIsNotPresent(browser(), false, false);
+  // Clicking the action button disabled the extension.
+  EXPECT_FALSE(registry->enabled_extensions().GetByID(id));
+}
+
+void ExtensionMessageBubbleBrowserTest::TestClickingDismissButton() {
+  CheckBubbleIsNotPresent(browser(), false, false);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile());
+  std::string id = extension->id();
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(id));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  base::RunLoop().RunUntilIdle();
+  CheckBubble(second_browser, ANCHOR_BROWSER_ACTION, true);
+  ClickDismissButton(second_browser);
+  base::RunLoop().RunUntilIdle();
+  CheckBubbleIsNotPresent(browser(), false, false);
+  // Clicking dismiss should have no affect, so the extension should still be
+  // active.
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(id));
 }

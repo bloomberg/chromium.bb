@@ -52,6 +52,11 @@ class ExtensionMessageBubbleBrowserTest
   // Performs the platform-specific checks.
   virtual void CheckBubbleIsNotPresentNative(Browser* browser) = 0;
 
+  // Clicks on the corresponding button in the bubble.
+  virtual void ClickLearnMoreButton(Browser* browser) = 0;
+  virtual void ClickActionButton(Browser* browser) = 0;
+  virtual void ClickDismissButton(Browser* browser) = 0;
+
   // Adds a new extension that uses the chrome_settings_overrides api to
   // override a setting specified in |settings_override_value|.
   void AddSettingsOverrideExtension(const std::string& settings_override_value);
@@ -104,6 +109,13 @@ class ExtensionMessageBubbleBrowserTest
   // Tests that having multiple windows, all of which could be vying to show a
   // warning bubble, behaves properly.
   void TestBubbleWithMultipleWindows();
+
+  // Tests clicking on the corresponding button in the bubble view. The logic
+  // for these is tested more thoroughly in the unit tests, but this ensures
+  // that nothing goes wrong end-to-end.
+  void TestClickingLearnMoreButton();
+  void TestClickingActionButton();
+  void TestClickingDismissButton();
 
  private:
   std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
