@@ -289,7 +289,7 @@ VaapiPicture* VaapiVideoDecodeAccelerator::PictureById(
     int32_t picture_buffer_id) {
   Pictures::iterator it = pictures_.find(picture_buffer_id);
   if (it == pictures_.end()) {
-    LOG(ERROR) << "Picture id " << picture_buffer_id << " does not exist";
+    LOG(WARNING) << "Picture id " << picture_buffer_id << " does not exist";
     return NULL;
   }
 
@@ -836,8 +836,13 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
   VaapiPicture* picture = PictureById(picture_buffer_id);
   if (!picture) {
     CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
-    LOG(ERROR) << "Invalid picture_buffer_id";
-    NotifyError(INVALID_ARGUMENT);
+
+    // It's possible that we've already posted a DismissPictureBuffer for this
+    // picture, but it has not yet executed when this ImportBufferForPicture
+    // was posted to us by the client. In that case just ignore this (we've
+    // already dismissed it and accounted for that).
+    DVLOG(3) << "got picture id=" << picture_buffer_id
+             << " not in use (anymore?).";
     return;
   }
 
@@ -859,6 +864,16 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
   TRACE_EVENT1("Video Decoder", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
+
+  if (!PictureById(picture_buffer_id)) {
+    // It's possible that we've already posted a DismissPictureBuffer for this
+    // picture, but it has not yet executed when this ReusePictureBuffer
+    // was posted to us by the client. In that case just ignore this (we've
+    // already dismissed it and accounted for that).
+    DVLOG(3) << "got picture id=" << picture_buffer_id
+             << " not in use (anymore?).";
+    return;
+  }
 
   --num_frames_at_client_;
   TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
