@@ -10,6 +10,7 @@ import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.AccessedByNative;
 
@@ -239,7 +240,12 @@ public abstract class Linker {
     public static final Linker getInstance() {
         synchronized (sSingletonLock) {
             if (sSingleton == null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // With incremental install, it's important to fall back to the "normal"
+                // library loading path in order for the libraries to be found.
+                String appClass =
+                        ContextUtils.getApplicationContext().getApplicationInfo().className;
+                boolean isIncrementalInstall = appClass.contains("incrementalinstall");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isIncrementalInstall) {
                     sSingleton = ModernLinker.create();
                 } else {
                     sSingleton = LegacyLinker.create();
