@@ -15,7 +15,6 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace ntp_snippets {
@@ -43,28 +42,28 @@ class NTPSnippet {
 
   ~NTPSnippet();
 
-  // Creates an NTPSnippet from a dictionary. Returns a null pointer if the
-  // dictionary doesn't correspond to a valid snippet. The keys in the
-  // dictionary are expected to be the same as the property name, with
-  // exceptions documented in the property comment.
-  static std::unique_ptr<NTPSnippet> CreateFromDictionary(
+  // Creates an NTPSnippet from a dictionary, as returned by Chrome Reader.
+  // Returns a null pointer if the dictionary doesn't correspond to a valid
+  // snippet. The keys in the dictionary are expected to be the same as the
+  // property name, with exceptions documented in the property comment.
+  static std::unique_ptr<NTPSnippet> CreateFromChromeReaderDictionary(
+      const base::DictionaryValue& dict);
+
+  // Creates an NTPSnippet from a dictionary, as returned by Chrome Content
+  // Suggestions. Returns a null pointer if the dictionary doesn't correspond to
+  // a valid snippet. Maps field names to Chrome Reader field names.
+  static std::unique_ptr<NTPSnippet> CreateFromContentSuggestionsDictionary(
       const base::DictionaryValue& dict);
 
   // Creates an NTPSnippet from a protocol buffer. Returns a null pointer if the
   // protocol buffer doesn't correspond to a valid snippet.
   static std::unique_ptr<NTPSnippet> CreateFromProto(const SnippetProto& proto);
 
-  // Creates snippets from dictionary values in |list| and adds them to
-  // |snippets|. Returns true on success, false if anything went wrong.
-  // TODO(treib): Move this to NTPSnippetsFetcher where it's used.
-  static bool AddFromListValue(const base::ListValue& list,
-                               PtrVector* snippets);
-
   // Creates a protocol buffer corresponding to this snippet, for persisting.
   SnippetProto ToProto() const;
 
   // A unique ID for identifying the snippet. If initialized by
-  // CreateFromDictionary() the relevant key is 'url'.
+  // CreateFromChromeReaderDictionary() the relevant key is 'url'.
   // TODO(treib): For now, the ID has to be a valid URL spec, otherwise
   // fetching the salient image will fail. See TODO in ntp_snippets_service.cc.
   const std::string& id() const { return id_; }
@@ -78,15 +77,16 @@ class NTPSnippet {
   void set_snippet(const std::string& snippet) { snippet_ = snippet; }
 
   // Link to an image representative of the content. Do not fetch this image
-  // directly. If initialized by CreateFromDictionary() the relevant key is
-  // 'thumbnailUrl'
+  // directly. If initialized by CreateFromChromeReaderDictionary() the relevant
+  // key is 'thumbnailUrl'
   const GURL& salient_image_url() const { return salient_image_url_; }
   void set_salient_image_url(const GURL& salient_image_url) {
     salient_image_url_ = salient_image_url;
   }
 
   // When the page pointed by this snippet was published.  If initialized by
-  // CreateFromDictionary() the relevant key is 'creationTimestampSec'
+  // CreateFromChromeReaderDictionary() the relevant key is
+  // 'creationTimestampSec'
   const base::Time& publish_date() const { return publish_date_; }
   void set_publish_date(const base::Time& publish_date) {
     publish_date_ = publish_date;

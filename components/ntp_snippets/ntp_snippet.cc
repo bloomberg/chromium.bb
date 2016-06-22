@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/ntp_snippet.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -11,20 +12,33 @@
 
 namespace {
 
-const char kScore[] = "score";
-const char kContentInfo[] = "contentInfo";
+// dict.Get() specialization for base::Time values
+bool GetTimeValue(const base::DictionaryValue& dict,
+                  const std::string& key,
+                  base::Time* time) {
+  const base::DictionaryValue* time_value;
+  int seconds = 0, nanos = 0;
+  if (!(dict.GetDictionary(key, &time_value) &&
+        time_value->GetInteger("seconds", &seconds) &&
+        time_value->GetInteger("nanos", &nanos))) {
+    return false;
+  }
+  *time = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(seconds) +
+          base::TimeDelta::FromMicroseconds(nanos / 1000);  // No nano support.
+  return true;
+}
 
-const char kId[] = "url";
-const char kTitle[] = "title";
-const char kSalientImageUrl[] = "thumbnailUrl";
-const char kSnippet[] = "snippet";
-const char kPublishDate[] = "creationTimestampSec";
-const char kExpiryDate[] = "expiryTimestampSec";
-const char kSiteTitle[] = "sourceName";
-const char kPublisherData[] = "publisherData";
-const char kCorpusId[] = "corpusId";
-const char kSourceCorpusInfo[] = "sourceCorpusInfo";
-const char kAmpUrl[] = "ampUrl";
+// dict.Get() specialization for GURL values
+bool GetURLValue(const base::DictionaryValue& dict,
+                 const std::string& key,
+                 GURL* url) {
+  std::string spec;
+  if (!dict.GetString(key, &spec)) {
+    return false;
+  }
+  *url = GURL(spec);
+  return url->is_valid();
+}
 
 }  // namespace
 
@@ -36,38 +50,38 @@ NTPSnippet::NTPSnippet(const std::string& id)
 NTPSnippet::~NTPSnippet() {}
 
 // static
-std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
+std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
     const base::DictionaryValue& dict) {
   const base::DictionaryValue* content = nullptr;
-  if (!dict.GetDictionary(kContentInfo, &content))
+  if (!dict.GetDictionary("contentInfo", &content))
     return nullptr;
 
   // Need at least the id.
   std::string id;
-  if (!content->GetString(kId, &id) || id.empty())
+  if (!content->GetString("url", &id) || id.empty())
     return nullptr;
 
   std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(id));
 
   std::string title;
-  if (content->GetString(kTitle, &title))
+  if (content->GetString("title", &title))
     snippet->set_title(title);
   std::string salient_image_url;
-  if (content->GetString(kSalientImageUrl, &salient_image_url))
+  if (content->GetString("thumbnailUrl", &salient_image_url))
     snippet->set_salient_image_url(GURL(salient_image_url));
   std::string snippet_str;
-  if (content->GetString(kSnippet, &snippet_str))
+  if (content->GetString("snippet", &snippet_str))
     snippet->set_snippet(snippet_str);
   // The creation and expiry timestamps are uint64s which are stored as strings.
   std::string creation_timestamp_str;
-  if (content->GetString(kPublishDate, &creation_timestamp_str))
+  if (content->GetString("creationTimestampSec", &creation_timestamp_str))
     snippet->set_publish_date(TimeFromJsonString(creation_timestamp_str));
   std::string expiry_timestamp_str;
-  if (content->GetString(kExpiryDate, &expiry_timestamp_str))
+  if (content->GetString("expiryTimestampSec", &expiry_timestamp_str))
     snippet->set_expiry_date(TimeFromJsonString(expiry_timestamp_str));
 
   const base::ListValue* corpus_infos_list = nullptr;
-  if (!content->GetList(kSourceCorpusInfo, &corpus_infos_list)) {
+  if (!content->GetList("sourceCorpusInfo", &corpus_infos_list)) {
     DLOG(WARNING) << "No sources found for article " << title;
     return nullptr;
   }
@@ -81,7 +95,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
 
     std::string corpus_id_str;
     GURL corpus_id;
-    if (dict_value->GetString(kCorpusId, &corpus_id_str))
+    if (dict_value->GetString("corpusId", &corpus_id_str))
       corpus_id = GURL(corpus_id_str);
 
     if (!corpus_id.is_valid()) {
@@ -92,8 +106,8 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
 
     const base::DictionaryValue* publisher_data = nullptr;
     std::string site_title;
-    if (dict_value->GetDictionary(kPublisherData, &publisher_data)) {
-      if (!publisher_data->GetString(kSiteTitle, &site_title)) {
+    if (dict_value->GetDictionary("publisherData", &publisher_data)) {
+      if (!publisher_data->GetString("sourceName", &site_title)) {
         // It's possible but not desirable to have no publisher data.
         DLOG(WARNING) << "No publisher name for article " << corpus_id.spec();
       }
@@ -104,7 +118,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
     std::string amp_url_str;
     GURL amp_url;
     // Expected to not have AMP url sometimes.
-    if (dict_value->GetString(kAmpUrl, &amp_url_str)) {
+    if (dict_value->GetString("ampUrl", &amp_url_str)) {
       amp_url = GURL(amp_url_str);
       DLOG_IF(WARNING, !amp_url.is_valid()) << "Invalid AMP url "
                                             << amp_url_str;
@@ -122,8 +136,40 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
   snippet->FindBestSource();
 
   double score;
-  if (dict.GetDouble(kScore, &score))
+  if (dict.GetDouble("score", &score))
     snippet->set_score(score);
+
+  return snippet;
+}
+
+// static
+std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
+    const base::DictionaryValue& dict) {
+  const base::ListValue* id_list;
+  std::string id;
+  if (!(dict.GetList("id", &id_list) &&
+        id_list->GetString(0, &id))) {  // TODO(sfiera): multiple IDs
+    return nullptr;
+  }
+
+  auto snippet = base::MakeUnique<NTPSnippet>(id);
+  snippet->sources_.emplace_back(GURL(), std::string(), GURL());
+  auto source = &snippet->sources_.back();
+  snippet->best_source_index_ = 0;
+
+  if (!(dict.GetString("title", &snippet->title_) &&
+        dict.GetString("summaryText", &snippet->snippet_) &&
+        GetTimeValue(dict, "publishTime", &snippet->publish_date_) &&
+        GetTimeValue(dict, "expirationTime", &snippet->expiry_date_) &&
+        GetURLValue(dict, "imageUrl", &snippet->salient_image_url_) &&
+        GetURLValue(dict, "ampUrl", &source->amp_url) &&
+        dict.GetString("publisherName", &source->publisher_name) &&
+        GetURLValue(dict, "fullPageUrl", &source->url))) {
+    return nullptr;
+  }
+  // TODO(sfiera): also favicon URL.
+
+  snippet->score_ = 0.0;  // TODO(sfiera): put score in protocol.
 
   return snippet;
 }
@@ -175,23 +221,6 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
   return snippet;
 }
 
-// static
-bool NTPSnippet::AddFromListValue(const base::ListValue& list,
-                                  PtrVector* snippets) {
-  for (const auto& value : list) {
-    const base::DictionaryValue* dict = nullptr;
-    if (!value->GetAsDictionary(&dict))
-      return false;
-
-    std::unique_ptr<NTPSnippet> snippet = CreateFromDictionary(*dict);
-    if (!snippet)
-      return false;
-
-    snippets->push_back(std::move(snippet));
-  }
-  return true;
-}
-
 SnippetProto NTPSnippet::ToProto() const {
   SnippetProto result;
 
@@ -241,7 +270,7 @@ void NTPSnippet::FindBestSource() {
   // The same article can be hosted by multiple sources, e.g. nytimes.com,
   // cnn.com, etc. We need to parse the list of sources for this article and
   // find the best match. In order of preference:
-  //  1) A source that has URL, publisher name, AMP URL
+  //  1 A source that has URL, publisher name, AMP URL
   //  2) A source that has URL, publisher name
   //  3) A source that has URL and AMP URL, or URL only (since we won't show
   //  the snippet to users if the article does not have a publisher name, it
