@@ -15,6 +15,29 @@ GEN_INCLUDE(
  * @constructor
  * @extends {PolymerTest}
  */
+function DownloadsItemTest() {}
+
+DownloadsItemTest.prototype = {
+  __proto__: PolymerTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://downloads/item.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'item_tests.js',
+  ]),
+};
+
+TEST_F('DownloadsItemTest', 'All', function() {
+  mocha.run();
+});
+
+
+/**
+ * @constructor
+ * @extends {PolymerTest}
+ */
 function DownloadsLayoutTest() {}
 
 DownloadsLayoutTest.prototype = {
