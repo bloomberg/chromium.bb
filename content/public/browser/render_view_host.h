@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/page_zoom.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/system/core.h"
@@ -40,7 +41,6 @@ class RenderViewHostDelegate;
 class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
-struct DropData;
 struct WebPreferences;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
@@ -123,6 +123,12 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // D&d drop target messages that get sent to WebKit.
   virtual void DragTargetDragEnter(
       const DropData& drop_data,
+      const gfx::Point& client_pt,
+      const gfx::Point& screen_pt,
+      blink::WebDragOperationsMask operations_allowed,
+      int key_modifiers) = 0;
+  virtual void DragTargetDragEnterWithMetaData(
+      const std::vector<DropData::Metadata>& metadata,
       const gfx::Point& client_pt,
       const gfx::Point& screen_pt,
       blink::WebDragOperationsMask operations_allowed,

@@ -622,9 +622,19 @@ void RenderViewHostImpl::DragTargetDragEnter(
     const gfx::Point& screen_pt,
     WebDragOperationsMask operations_allowed,
     int key_modifiers) {
-  Send(new DragMsg_TargetDragEnter(
-      GetRoutingID(), DropDataToMetaData(drop_data), client_pt, screen_pt,
-      operations_allowed, key_modifiers));
+  DragTargetDragEnterWithMetaData(DropDataToMetaData(drop_data), client_pt,
+                                  screen_pt, operations_allowed, key_modifiers);
+}
+
+void RenderViewHostImpl::DragTargetDragEnterWithMetaData(
+    const std::vector<DropData::Metadata>& metadata,
+    const gfx::Point& client_pt,
+    const gfx::Point& screen_pt,
+    WebDragOperationsMask operations_allowed,
+    int key_modifiers) {
+  Send(new DragMsg_TargetDragEnter(GetRoutingID(), metadata, client_pt,
+                                   screen_pt, operations_allowed,
+                                   key_modifiers));
 }
 
 void RenderViewHostImpl::DragTargetDragOver(
