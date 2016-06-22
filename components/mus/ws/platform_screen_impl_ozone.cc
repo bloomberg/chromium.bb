@@ -30,18 +30,11 @@ void FixedSizeScreenConfiguration(
   callback.Run(1, gfx::Rect(1024, 768));
 }
 
-// The display subsystem calls |OnDisplayConfigured| for each display that has
-// been successfully configured. This in turn calls |callback_| with the
-// identity and bounds of each physical display.
-void OnDisplayConfigured(
-    const PlatformScreen::ConfiguredDisplayCallback& callback,
-    int64_t id,
-    const gfx::Rect& bounds,
-    bool success) {
-  if (success)
-    callback.Run(id, bounds);
-  else
-    LOG(FATAL) << "Failed to configure display at " << bounds.ToString();
+void GetDisplaysFinished(const std::vector<ui::DisplaySnapshot*>& displays) {
+  // We don't really care about list of displays, we just want the snapshots
+  // held by DrmDisplayManager to be updated. This only only happens when we
+  // call NativeDisplayDelegate::GetDisplays(). Although, this would be a good
+  // place to have PlatformScreen cache the snapshots if need be.
 }
 
 }  // namespace
@@ -77,11 +70,12 @@ void PlatformScreenImplOzone::ConfigurePhysicalDisplay(
         base::Bind(&PlatformScreenImplOzone::OnDisplaysAquired,
                    weak_ptr_factory_.GetWeakPtr(), callback));
 
-  } else
-#endif // defined(OS_CHROMEOS)
-    // PostTask()ed to maximize control flow similarity with the ChromeOS case.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&FixedSizeScreenConfiguration, callback));
+    return;
+  }
+#endif  // defined(OS_CHROMEOS)
+  // PostTask()ed to maximize control flow similarity with the ChromeOS case.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FixedSizeScreenConfiguration, callback));
 }
 
 void PlatformScreenImplOzone::OnConfigurationChanged() {}
@@ -107,9 +101,24 @@ void PlatformScreenImplOzone::OnDisplaysAquired(
     // Configure.
     native_display_delegate_->Configure(
         *display, display->native_mode(), origin,
-        base::Bind(&OnDisplayConfigured, callback, display->display_id(),
+        base::Bind(&PlatformScreenImplOzone::OnDisplayConfigured,
+                   weak_ptr_factory_.GetWeakPtr(), callback,
+                   display->display_id(),
                    gfx::Rect(origin, display->native_mode()->size())));
     origin.Offset(display->native_mode()->size().width(), 0);
+  }
+}
+
+void PlatformScreenImplOzone::OnDisplayConfigured(
+    const ConfiguredDisplayCallback& callback,
+    int64_t id,
+    const gfx::Rect& bounds,
+    bool success) {
+  if (success) {
+    native_display_delegate_->GetDisplays(base::Bind(&GetDisplaysFinished));
+    callback.Run(id, bounds);
+  } else {
+    LOG(FATAL) << "Failed to configure display at " << bounds.ToString();
   }
 }
 

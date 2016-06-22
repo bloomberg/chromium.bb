@@ -98,6 +98,8 @@ class PlatformDisplay {
   virtual void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) = 0;
 
+  virtual int64_t GetDisplayId() const = 0;
+
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(PlatformDisplayFactory* factory) {
@@ -133,6 +135,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   bool IsFramePending() const override;
   void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) override;
+  int64_t GetDisplayId() const override;
 
  private:
   void WantToDraw();
@@ -161,6 +164,8 @@ class DefaultPlatformDisplay : public PlatformDisplay,
                                     float device_scale_factor) override;
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
+
+  int64_t display_id_;
 
   scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;

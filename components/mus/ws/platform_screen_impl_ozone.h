@@ -51,6 +51,14 @@ class PlatformScreenImplOzone : public PlatformScreen,
   void OnDisplaysAquired(const ConfiguredDisplayCallback& callback,
                          const std::vector<ui::DisplaySnapshot*>& displays);
 
+  // The display subsystem calls |OnDisplayConfigured| for each display that has
+  // been successfully configured. This in turn calls |callback_| with the
+  // identity and bounds of each physical display.
+  void OnDisplayConfigured(const ConfiguredDisplayCallback& callback,
+                           int64_t id,
+                           const gfx::Rect& bounds,
+                           bool success);
+
   std::unique_ptr<ui::NativeDisplayDelegate> native_display_delegate_;
 
   base::WeakPtrFactory<PlatformScreenImplOzone> weak_ptr_factory_;

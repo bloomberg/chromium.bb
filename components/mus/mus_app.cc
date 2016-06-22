@@ -200,6 +200,12 @@ void MusApp::Initialize(shell::Connector* connector,
   platform_screen_->Init();
   window_server_.reset(
       new ws::WindowServer(this, platform_display_init_params_.surfaces_state));
+
+  // DeviceDataManager must be initialized before TouchController. On non-Linux
+  // platforms there is no DeviceDataManager so don't create touch controller.
+  if (ui::DeviceDataManager::HasInstance())
+    touch_controller_.reset(
+        new ws::TouchController(window_server_->display_manager()));
 }
 
 bool MusApp::AcceptConnection(Connection* connection) {
@@ -339,6 +345,9 @@ void MusApp::OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds) {
   ws::Display* host_impl =
       new ws::Display(window_server_.get(), platform_display_init_params_);
   host_impl->Init(nullptr);
+
+  if (touch_controller_)
+    touch_controller_->UpdateTouchTransforms();
 }
 
 }  // namespace mus

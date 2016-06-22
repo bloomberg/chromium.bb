@@ -25,6 +25,7 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/platform_display_init_params.h"
+#include "components/mus/ws/touch_controller.h"
 #include "components/mus/ws/user_id.h"
 #include "components/mus/ws/window_server_delegate.h"
 #include "services/shell/public/cpp/application_runner.h"
@@ -163,6 +164,7 @@ class MusApp
 #endif
 
   std::unique_ptr<ws::PlatformScreen> platform_screen_;
+  std::unique_ptr<ws::TouchController> touch_controller_;
 
   base::WeakPtrFactory<MusApp> weak_ptr_factory_;
 

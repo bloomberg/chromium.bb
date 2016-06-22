@@ -144,6 +144,14 @@ mojom::Rotation Display::GetRotation() const {
   return platform_display_->GetRotation();
 }
 
+gfx::Size Display::GetSize() const {
+  return root_->bounds().size();
+}
+
+int64_t Display::GetPlatformDisplayId() const {
+  return platform_display_->GetDisplayId();
+}
+
 const WindowManagerState* Display::GetActiveWindowManagerState() const {
   return GetWindowManagerStateForUser(
       window_server_->user_id_tracker()->active_id());

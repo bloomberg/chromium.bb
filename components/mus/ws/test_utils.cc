@@ -54,6 +54,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   bool IsFramePending() const override { return false; }
   void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) override {}
+  int64_t GetDisplayId() const override { return 1; }
 
  private:
   ViewportMetrics display_metrics_;

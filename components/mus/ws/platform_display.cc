@@ -142,7 +142,8 @@ PlatformDisplay* PlatformDisplay::Create(
 
 DefaultPlatformDisplay::DefaultPlatformDisplay(
     const PlatformDisplayInitParams& init_params)
-    : gpu_state_(init_params.gpu_state),
+    : display_id_(init_params.display_id),
+      gpu_state_(init_params.gpu_state),
       surfaces_state_(init_params.surfaces_state),
       delegate_(nullptr),
       draw_timer_(false, false),
@@ -277,6 +278,10 @@ void DefaultPlatformDisplay::DidDraw(cc::SurfaceDrawStatus status) {
 
 bool DefaultPlatformDisplay::IsFramePending() const {
   return frame_pending_;
+}
+
+int64_t DefaultPlatformDisplay::GetDisplayId() const {
+  return display_id_;
 }
 
 void DefaultPlatformDisplay::WantToDraw() {

@@ -84,6 +84,10 @@ class Display : public PlatformDisplayDelegate,
   void ScheduleSurfaceDestruction(ServerWindow* window);
 
   mojom::Rotation GetRotation() const;
+  gfx::Size GetSize() const;
+
+  // Returns the id for the corresponding id.
+  int64_t GetPlatformDisplayId() const;
 
   WindowServer* window_server() { return window_server_; }
 
