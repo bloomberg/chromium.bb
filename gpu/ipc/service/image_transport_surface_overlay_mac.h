@@ -100,20 +100,7 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   gfx::Size pixel_size_;
   float scale_factor_;
 
-  struct IOSurfaceInUseQuery {
-    IOSurfaceInUseQuery();
-    explicit IOSurfaceInUseQuery(const IOSurfaceInUseQuery&);
-    explicit IOSurfaceInUseQuery(IOSurfaceInUseQuery&&);
-    ~IOSurfaceInUseQuery();
-
-    // It's possible that the client will have destroyed the texture before
-    // SwapBuffersInternal is called. It's important that |texture| is only used
-    // as an opaque identifier, since it may no longer point to the same
-    // texture.
-    unsigned texture = 0;
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
-  };
-  std::vector<IOSurfaceInUseQuery> io_surface_in_use_queries_;
+  std::vector<CALayerInUseQuery> ca_layer_in_use_queries_;
 
   // A GLFence marking the end of the previous frame. Must only be accessed
   // while in a ScopedSetGLToRealGLApi, and while the associated

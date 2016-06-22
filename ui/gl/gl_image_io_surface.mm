@@ -364,6 +364,10 @@ bool GLImageIOSurface::EmulatingRGB() const {
   return client_internalformat_ == GL_RGB;
 }
 
+bool GLImageIOSurface::CanCheckIOSurfaceIsInUse() const {
+  return !cv_pixel_buffer_;
+}
+
 base::ScopedCFTypeRef<IOSurfaceRef> GLImageIOSurface::io_surface() {
   return io_surface_;
 }
