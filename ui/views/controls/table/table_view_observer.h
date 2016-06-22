@@ -10,9 +10,6 @@
 
 namespace views {
 
-class TableView;
-class TableView2;
-
 // TableViewObserver is notified about the TableView selection.
 class VIEWS_EXPORT TableViewObserver {
  public:
