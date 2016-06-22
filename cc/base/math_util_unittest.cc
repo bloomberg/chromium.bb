@@ -60,6 +60,75 @@ TEST(MathUtilTest, ProjectionOfAlmostPerpendicularPlane) {
   EXPECT_TRUE(projected_rect.IsEmpty()) << projected_rect.ToString();
 }
 
+TEST(MathUtilTest, EnclosingClippedRectHandlesInfinityY) {
+  HomogeneousCoordinate h1(100, 10, 0, 1);
+  HomogeneousCoordinate h2(10, 10, 0, 1);
+  HomogeneousCoordinate h3(-10, -1, 0, -1);
+  HomogeneousCoordinate h4(-100, -1, 0, -1);
+
+  // The bounds of the enclosing clipped rect should be 100 to 10 for x
+  // and 10 to infinity for y. However, if there is a bug where the result
+  // is set so big as to destroy the precision of ymin, we can't deal well
+  // with the resulting rect.
+  gfx::RectF result = MathUtil::ComputeEnclosingClippedRect(h1, h2, h3, h4);
+
+  EXPECT_FALSE(result.IsEmpty());
+  EXPECT_TRUE(result.Contains(50.0f, 50.0f));
+  EXPECT_TRUE(result.Contains(10.1f, 10.1f));
+  EXPECT_TRUE(result.Contains(50.0f, 50000.0f));
+  EXPECT_FALSE(result.Contains(100.1f, 50.0f));
+  EXPECT_FALSE(result.Contains(9.9f, 50.0f));
+  EXPECT_FALSE(result.Contains(50.0f, 9.9f));
+}
+
+TEST(MathUtilTest, EnclosingClippedRectHandlesNegativeInfinityX) {
+  HomogeneousCoordinate h1(100, 10, 0, 1);
+  HomogeneousCoordinate h2(-110, -10, 0, -1);
+  HomogeneousCoordinate h3(-110, -100, 0, -1);
+  HomogeneousCoordinate h4(100, 100, 0, 1);
+
+  // The bounds of the enclosing clipped rect should be 100 to -infinity for x
+  // and 10 to 100 for y. However, if there is a bug where the result
+  // is set so big as to destroy the precision of ymin, we can't deal well
+  // with the resulting rect.
+  gfx::RectF result = MathUtil::ComputeEnclosingClippedRect(h1, h2, h3, h4);
+
+  EXPECT_FALSE(result.IsEmpty());
+  EXPECT_TRUE(result.Contains(50.0f, 50.0f));
+  EXPECT_TRUE(result.Contains(10.1f, 10.1f));
+  EXPECT_TRUE(result.Contains(0.0f, 99.9f));
+  EXPECT_FALSE(result.Contains(100.1f, 50.0f));
+  EXPECT_FALSE(result.Contains(50.0f, 100.1f));
+  EXPECT_FALSE(result.Contains(50.0f, 9.9f));
+}
+
+TEST(MathUtilTest, EnclosingClippedRectHandlesInfinityXY) {
+  HomogeneousCoordinate h1(10, 10, 0, 1);
+  HomogeneousCoordinate h2(0, 0, 0, -1);
+  HomogeneousCoordinate h3(20, -10, 0, 1);
+  HomogeneousCoordinate h4(10, -10, 0, 1);
+
+  // The bounds of the enclosing clipped rect should be 10 to infinity for x
+  // and -infinity to infinity for y.
+  // It would be quite easy for this result to not include anything useful.
+  gfx::RectF result = MathUtil::ComputeEnclosingClippedRect(h1, h2, h3, h4);
+
+  // Notes: (A) In the mapped shape, (B) In the enclosing rect, but not the
+  // mapped shape, (C) In the mapped shape, but clipped.
+  EXPECT_FALSE(result.IsEmpty());
+  EXPECT_TRUE(result.Contains(10.0f, 10.0f));      // Note (A)
+  EXPECT_TRUE(result.Contains(10.11f, 10.1f));     // Note (A)
+  EXPECT_TRUE(result.Contains(10.1f, 10.11f));     // Note (B)
+  EXPECT_TRUE(result.Contains(1000.1f, 1000.2f));  // Note (B)
+  EXPECT_TRUE(result.Contains(20.0f, -10.0f));     // Note (A)
+  EXPECT_TRUE(result.Contains(20.1f, -10.0f));     // Note (A)
+  EXPECT_TRUE(result.Contains(20.0f, -10.1f));     // Note (B)
+  EXPECT_TRUE(result.Contains(10.0f, -10.0f));     // Note (A)
+  EXPECT_TRUE(result.Contains(10.0f, -10.1f));     // Note (B)
+  EXPECT_FALSE(result.Contains(0.0f, 0.0f));       // Note (C)
+  EXPECT_FALSE(result.Contains(0.0f, -9.9f));      // Note (C)
+}
+
 TEST(MathUtilTest, EnclosingClippedRectUsesCorrectInitialBounds) {
   HomogeneousCoordinate h1(-100, -100, 0, 1);
   HomogeneousCoordinate h2(-10, -10, 0, 1);
