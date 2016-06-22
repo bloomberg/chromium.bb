@@ -92,7 +92,7 @@ static const int kHeaderHeight = 32;
 static const float kDimmedItemOpacity = 0.5f;
 
 // Duration of background opacity transition for the selected label.
-static const int kSelectorFadeInMilliseconds = 200;
+static const int kSelectorFadeInMilliseconds = 350;
 
 // Calculates the |window| bounds after being transformed to the selector's
 // space. The returned Rect is in virtual screen coordinates.
@@ -360,8 +360,8 @@ void WindowSelectorItem::SetSelected(bool selected) {
       window->GetLayer()->GetAnimator());
   animation_settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kSelectorFadeInMilliseconds));
-  animation_settings.SetTweenType(selected ? gfx::Tween::LINEAR_OUT_SLOW_IN
-                                           : gfx::Tween::FAST_OUT_LINEAR_IN);
+  animation_settings.SetTweenType(selected ? gfx::Tween::FAST_OUT_LINEAR_IN
+                                           : gfx::Tween::LINEAR_OUT_SLOW_IN);
   animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   window->SetOpacity(selected ? 0.0f : 1.0f);
