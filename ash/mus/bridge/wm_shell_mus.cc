@@ -274,6 +274,21 @@ void WmShellMus::RemoveShellObserver(ShellObserver* observer) {
   wm_shell_common_->RemoveShellObserver(observer);
 }
 
+void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher) {
+  // TODO(jamescook): Move PointerWatcherDelegateMus to //ash/mus and use here.
+  NOTIMPLEMENTED();
+}
+
+void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
+  NOTIMPLEMENTED();
+}
+
+#if defined(OS_CHROMEOS)
+void WmShellMus::ToggleIgnoreExternalKeyboard() {
+  NOTIMPLEMENTED();
+}
+#endif  // defined(OS_CHROMEOS)
+
 // static
 bool WmShellMus::IsActivationParent(::mus::Window* window) {
   return window && IsActivatableShellWindowId(
@@ -304,12 +319,6 @@ void WmShellMus::OnWillDestroyClient(::mus::WindowTreeClient* client) {
   DCHECK_EQ(client, client_);
   RemoveClientObserver();
 }
-
-#if defined(OS_CHROMEOS)
-void WmShellMus::ToggleIgnoreExternalKeyboard() {
-  NOTIMPLEMENTED();
-}
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace mus
 }  // namespace ash

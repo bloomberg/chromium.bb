@@ -12,7 +12,6 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/container_delegate_aura.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
@@ -204,11 +203,6 @@ NewWindowDelegate* TestShellDelegate::CreateNewWindowDelegate() {
 
 MediaDelegate* TestShellDelegate::CreateMediaDelegate() {
   return new MediaDelegateImpl;
-}
-
-std::unique_ptr<ash::ContainerDelegate>
-TestShellDelegate::CreateContainerDelegate() {
-  return base::WrapUnique(new ContainerDelegateAura);
 }
 
 std::unique_ptr<PointerWatcherDelegate>

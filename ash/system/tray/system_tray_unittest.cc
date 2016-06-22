@@ -10,7 +10,6 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_container.h"
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"

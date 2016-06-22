@@ -28,7 +28,6 @@
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_shell_common.h"
-#include "ash/container_delegate.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -801,7 +800,6 @@ Shell::~Shell() {
   accessibility_delegate_.reset();
   new_window_delegate_.reset();
   media_delegate_.reset();
-  container_delegate_.reset();
   pointer_watcher_delegate_.reset();
 
   keyboard::KeyboardController::ResetInstance(nullptr);
@@ -1050,7 +1048,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
   new_window_delegate_.reset(delegate_->CreateNewWindowDelegate());
   media_delegate_.reset(delegate_->CreateMediaDelegate());
-  container_delegate_ = delegate_->CreateContainerDelegate();
   pointer_watcher_delegate_ = delegate_->CreatePointerWatcherDelegate();
 
   resize_shadow_controller_.reset(new ResizeShadowController());

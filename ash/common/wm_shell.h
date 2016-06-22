@@ -17,6 +17,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace views {
+class PointerWatcher;
+}
+
 namespace ash {
 
 class AccessibilityDelegate;
@@ -144,6 +148,9 @@ class ASH_EXPORT WmShell {
 
   virtual void AddShellObserver(ShellObserver* observer) = 0;
   virtual void RemoveShellObserver(ShellObserver* observer) = 0;
+
+  virtual void AddPointerWatcher(views::PointerWatcher* watcher) = 0;
+  virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
 
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Remove this when VirtualKeyboardController has been moved.

@@ -11,7 +11,6 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/container_delegate_aura.h"
 #include "ash/default_user_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
@@ -255,11 +254,6 @@ ash::NewWindowDelegate* ShellDelegateImpl::CreateNewWindowDelegate() {
 
 ash::MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {
   return new MediaDelegateImpl;
-}
-
-std::unique_ptr<ash::ContainerDelegate>
-ShellDelegateImpl::CreateContainerDelegate() {
-  return base::WrapUnique(new ContainerDelegateAura);
 }
 
 std::unique_ptr<ash::PointerWatcherDelegate>

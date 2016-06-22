@@ -5,17 +5,12 @@
 #include "ash/system/tray/tray_event_filter.h"
 
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/system/tray/tray_constants.h"
-#include "ash/container_delegate.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shell.h"
+#include "ash/common/wm/container_finder.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
-#include "ash/system/tray/tray_event_filter.h"
-#include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -31,13 +26,13 @@ void TrayEventFilter::AddWrapper(TrayBubbleWrapper* wrapper) {
   bool was_empty = wrappers_.empty();
   wrappers_.insert(wrapper);
   if (was_empty && !wrappers_.empty())
-    Shell::GetInstance()->AddPointerWatcher(this);
+    WmShell::Get()->AddPointerWatcher(this);
 }
 
 void TrayEventFilter::RemoveWrapper(TrayBubbleWrapper* wrapper) {
   wrappers_.erase(wrapper);
   if (wrappers_.empty())
-    Shell::GetInstance()->RemovePointerWatcher(this);
+    WmShell::Get()->RemovePointerWatcher(this);
 }
 
 void TrayEventFilter::OnMousePressed(const ui::MouseEvent& event,
@@ -55,15 +50,15 @@ void TrayEventFilter::OnTouchPressed(const ui::TouchEvent& event,
 void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
                                           views::Widget* target) {
   if (target) {
-    ContainerDelegate* container_delegate =
-        Shell::GetInstance()->container_delegate();
+    WmWindow* window = WmLookup::Get()->GetWindowForWidget(target);
+    int container_id = wm::GetContainerForWindow(window)->GetShellWindowId();
     // Don't process events that occurred inside an embedded menu, for example
     // the right-click menu in a popup notification.
-    if (container_delegate->IsInMenuContainer(target))
+    if (container_id == kShellWindowId_MenuContainer)
       return;
     // Don't process events that occurred inside the status area widget and
     // a popup notification from message center.
-    if (container_delegate->IsInStatusContainer(target))
+    if (container_id == kShellWindowId_StatusContainer)
       return;
   }
 

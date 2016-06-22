@@ -10,7 +10,6 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"

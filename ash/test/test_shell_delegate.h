@@ -11,7 +11,6 @@
 #include "ash/media_delegate.h"
 #include "ash/shell_delegate.h"
 #include "ash/test/test_session_state_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -61,7 +60,6 @@ class TestShellDelegate : public ShellDelegate {
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   NewWindowDelegate* CreateNewWindowDelegate() override;
   MediaDelegate* CreateMediaDelegate() override;
-  std::unique_ptr<ContainerDelegate> CreateContainerDelegate() override;
   std::unique_ptr<PointerWatcherDelegate> CreatePointerWatcherDelegate()
       override;
   ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,

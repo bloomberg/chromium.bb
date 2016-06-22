@@ -61,6 +61,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddShellObserver(ShellObserver* observer) override;
   void RemoveShellObserver(ShellObserver* observer) override;
+  void AddPointerWatcher(views::PointerWatcher* watcher) override;
+  void RemovePointerWatcher(views::PointerWatcher* watcher) override;
 #if defined(OS_CHROMEOS)
   void ToggleIgnoreExternalKeyboard() override;
 #endif

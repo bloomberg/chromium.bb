@@ -188,6 +188,22 @@ void WmShellAura::RemoveShellObserver(ShellObserver* observer) {
   wm_shell_common_->RemoveShellObserver(observer);
 }
 
+void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher) {
+  Shell::GetInstance()->AddPointerWatcher(watcher);
+}
+
+void WmShellAura::RemovePointerWatcher(views::PointerWatcher* watcher) {
+  Shell::GetInstance()->RemovePointerWatcher(watcher);
+}
+
+#if defined(OS_CHROMEOS)
+void WmShellAura::ToggleIgnoreExternalKeyboard() {
+  Shell::GetInstance()
+      ->virtual_keyboard_controller()
+      ->ToggleIgnoreExternalKeyboard();
+}
+#endif
+
 void WmShellAura::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -214,13 +230,5 @@ void WmShellAura::OnDisplayConfigurationChanged() {
   FOR_EACH_OBSERVER(WmDisplayObserver, display_observers_,
                     OnDisplayConfigurationChanged());
 }
-
-#if defined(OS_CHROMEOS)
-void WmShellAura::ToggleIgnoreExternalKeyboard() {
-  Shell::GetInstance()
-      ->virtual_keyboard_controller()
-      ->ToggleIgnoreExternalKeyboard();
-}
-#endif
 
 }  // namespace ash
