@@ -112,7 +112,6 @@ const char kChromeUIChooseMobileNetworkURL[] =
     "chrome://choose-mobile-network/";
 const char kChromeUIDeviceEmulatorURL[] = "chrome://device-emulator/";
 const char kChromeUIFirstRunURL[] = "chrome://first-run/";
-const char kChromeUIHatsURL[] = "chrome://hats/";
 const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
 const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUINfcDebugURL[] = "chrome://nfc-debug/";
@@ -287,7 +286,6 @@ const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICryptohomeHost[] = "cryptohome";
 const char kChromeUIDeviceEmulatorHost[] = "device-emulator";
 const char kChromeUIFirstRunHost[] = "first-run";
-const char kChromeUIHatsHost[] = "hats";
 const char kChromeUIKeyboardOverlayHost[] = "keyboardoverlay";
 const char kChromeUILoginContainerHost[] = "login-container";
 const char kChromeUILoginHost[] = "login";

@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/eol_notification.h"
+#include "chrome/browser/chromeos/hats/hats_notification_controller.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -490,6 +491,9 @@ class UserSessionManager
 
   // Child account status is necessary for InitializeStartUrls call.
   bool waiting_for_child_account_status_;
+
+  scoped_refptr<typename HatsNotificationController::HatsNotificationController>
+      hats_notification_controller_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 

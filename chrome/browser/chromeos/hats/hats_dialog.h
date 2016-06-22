@@ -41,6 +41,8 @@ class HatsDialog : public ui::WebDialogDelegate {
   bool ShouldShowDialogTitle() const override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
+  const std::string html_data_;
+
   DISALLOW_COPY_AND_ASSIGN(HatsDialog);
 };
 

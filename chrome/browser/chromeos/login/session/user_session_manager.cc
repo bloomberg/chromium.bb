@@ -1743,6 +1743,9 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
                  << " is false. This is normal in some tests.";
   }
 
+  if (HatsNotificationController::ShouldShowSurveyToProfile(profile))
+    hats_notification_controller_ = new HatsNotificationController(profile);
+
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the
   // browser before it is dereferenced by the login host.

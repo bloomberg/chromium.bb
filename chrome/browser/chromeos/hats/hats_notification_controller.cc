@@ -6,7 +6,6 @@
 
 #include "ash/common/system/system_notifier.h"
 #include "base/feature_list.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/hats/hats_dialog.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -67,7 +66,7 @@ HatsNotificationController::~HatsNotificationController() {
 }
 
 // static
-// TODO(malaykeshav): Implement this stub.
+// TODO(malaykeshav): Add check for @google accounts.
 bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   // Do not show the survey if the HaTS feature is disabled for the device.
   if (!base::FeatureList::IsEnabled(features::kHappininessTrackingSystem))
@@ -135,10 +134,8 @@ void HatsNotificationController::OnPortalDetectionCompleted(
     return;
   // Remove self as an observer to no longer receive network change updates.
   network_portal_detector::GetInstance()->RemoveObserver(this);
-  ShowNotification();
-}
 
-void HatsNotificationController::ShowNotification() {
+  // Create and display the notification for the user.
   std::unique_ptr<Notification> notification(CreateNotification());
   g_browser_process->notification_ui_manager()->Add(*notification, profile_);
 }
