@@ -50,10 +50,13 @@ void RecordBackgroundTracingMetric(BackgroundTracingMetrics metric) {
 }
 
 // Tracing enabled callback for BENCHMARK_MEMORY_LIGHT category preset.
-// TODO(ssid): Remove this when background tracing supports trace config strings
-// and memory-infra supports peak detection crbug.com/609935.
 void BenchmarkMemoryLight_TracingEnabledCallback() {
-  base::trace_event::MemoryDumpManager::GetInstance()->RequestGlobalDump(
+  auto dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
+  // Safety check to make sure the memory-infra restrictions are properly
+  // propagated via TraceConfig
+  CHECK(!dump_manager->IsDumpModeAllowed(
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED));
+  dump_manager->RequestGlobalDump(
       base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);
 }
@@ -414,8 +417,13 @@ void BackgroundTracingManagerImpl::StartTracing(
                            BENCHMARK_MEMORY_LIGHT) {
     // On memory light mode, the periodic memory dumps are disabled and a single
     // memory dump is requested after tracing is enabled in all the processes.
-    trace_config.ResetMemoryDumpConfig(
-        base::trace_event::TraceConfig::MemoryDumpConfig());
+    // TODO(ssid): Remove this when background tracing supports trace config
+    // strings and memory-infra supports peak detection crbug.com/609935.
+    base::trace_event::TraceConfig::MemoryDumpConfig memory_config;
+    memory_config.allowed_dump_modes =
+        std::set<base::trace_event::MemoryDumpLevelOfDetail>(
+            {base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND});
+    trace_config.ResetMemoryDumpConfig(memory_config);
     tracing_enabled_callback =
         base::Bind(&BenchmarkMemoryLight_TracingEnabledCallback);
   }

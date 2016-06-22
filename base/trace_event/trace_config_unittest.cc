@@ -35,6 +35,7 @@ const char kCustomTraceConfigString[] =
                             "\"disabled-by-default-cc\","
                             "\"disabled-by-default-memory-infra\"],"
     "\"memory_dump_config\":{"
+      "\"allowed_dump_modes\":[\"background\",\"light\",\"detailed\"],"
       "\"heap_profiler_options\":{"
         "\"breakdown_threshold_bytes\":10240"
       "},"

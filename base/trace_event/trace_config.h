@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -68,6 +69,11 @@ class BASE_EXPORT TraceConfig {
 
     // Reset the values in the config.
     void Clear();
+
+    // Set of memory dump modes allowed for the tracing session. The explicitly
+    // triggered dumps will be successful only if the dump mode is allowed in
+    // the config.
+    std::set<MemoryDumpLevelOfDetail> allowed_dump_modes;
 
     std::vector<Trigger> triggers;
     HeapProfiler heap_profiler_options;
