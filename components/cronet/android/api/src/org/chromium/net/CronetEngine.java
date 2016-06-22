@@ -617,11 +617,21 @@ public abstract class CronetEngine {
          * @return constructed {@link CronetEngine}.
          */
         public CronetEngine build() {
-            CronetEngine engine = createContext(this);
+            if (getUserAgent() == null) {
+                setUserAgent(getDefaultUserAgent());
+            }
+            CronetEngine cronetEngine = null;
+            if (!legacyMode()) {
+                cronetEngine = createCronetEngine(this);
+            }
+            if (cronetEngine == null) {
+                cronetEngine = new JavaCronetEngine(getUserAgent());
+            }
+            Log.i(TAG, "Using network stack: " + cronetEngine.getVersionString());
             // Clear MOCK_CERT_VERIFIER reference if there is any, since
             // the ownership has been transferred to the engine.
             mMockCertVerifier = 0;
-            return engine;
+            return cronetEngine;
         }
     }
 
@@ -924,30 +934,6 @@ public abstract class CronetEngine {
      *         CronetEngine.
      */
     public abstract URLStreamHandlerFactory createURLStreamHandlerFactory();
-
-    /**
-     * Creates a {@link CronetEngine} with the given {@link Builder}.
-     *
-     * @param builder builder to used for creating the CronetEngine instance.
-     * @return the created CronetEngine instance.
-     * @deprecated Use {@link CronetEngine.Builder}.
-     * @hide
-     */
-    @Deprecated
-    public static CronetEngine createContext(Builder builder) {
-        CronetEngine cronetEngine = null;
-        if (builder.getUserAgent() == null) {
-            builder.setUserAgent(builder.getDefaultUserAgent());
-        }
-        if (!builder.legacyMode()) {
-            cronetEngine = createCronetEngine(builder);
-        }
-        if (cronetEngine == null) {
-            cronetEngine = new JavaCronetEngine(builder.getUserAgent());
-        }
-        Log.i(TAG, "Using network stack: " + cronetEngine.getVersionString());
-        return cronetEngine;
-    }
 
     private static CronetEngine createCronetEngine(Builder builder) {
         CronetEngine cronetEngine = null;
