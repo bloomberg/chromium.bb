@@ -22,9 +22,9 @@ namespace protocol {
 class SessionConfig;
 }  // namespace protocol
 
+class AudioConsumer;
 class AudioDecoder;
 class AudioPacket;
-class AudioConsumer;
 
 class AudioDecodeScheduler : public protocol::AudioStub {
  public:

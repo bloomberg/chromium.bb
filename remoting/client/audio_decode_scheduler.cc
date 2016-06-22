@@ -27,9 +27,6 @@ class AudioDecodeScheduler::Core : public base::RefCountedThreadSafe<Core> {
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
                           const base::Closure& done);
 
-  // Called by AudioDecodeScheduler when it is destroyed.
-  void Detach();
-
  private:
   friend class base::RefCountedThreadSafe<Core>;
 
@@ -76,11 +73,6 @@ void AudioDecodeScheduler::Core::ProcessAudioPacket(
       base::Passed(&packet), done));
 }
 
-void AudioDecodeScheduler::Core::Detach() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  // TODO(nicholss) No work to do anymore. Remove this?
-}
-
 void AudioDecodeScheduler::Core::DecodePacket(
     std::unique_ptr<AudioPacket> packet,
     const base::Closure& done) {
@@ -113,7 +105,6 @@ AudioDecodeScheduler::AudioDecodeScheduler(
                      audio_consumer)) {}
 
 AudioDecodeScheduler::~AudioDecodeScheduler() {
-  core_->Detach();
 }
 
 void AudioDecodeScheduler::Initialize(const protocol::SessionConfig& config) {

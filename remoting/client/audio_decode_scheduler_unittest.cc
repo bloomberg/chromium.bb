@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/client/audio_decode_scheduler.h"
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/client/audio_decode_scheduler.h"
 #include "remoting/client/fake_audio_consumer.h"
+#include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/session_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,8 +55,8 @@ void AudioDecodeSchedulerTest::TearDown() {
   run_loop_.Run();
 }
 
-// TODO(nicholss) could share the following in a common class for use
-// other places.
+// TODO(nicholss): Could share the following in a common class for use
+// in other places.
 std::unique_ptr<AudioPacket> CreatePacketWithSamplingRate_(
     AudioPacket::SamplingRate rate,
     int samples) {
@@ -95,6 +97,8 @@ TEST_F(AudioDecodeSchedulerTest, Shutdown) {
 
   audio_scheduler.reset();
   audio_consumer.reset();
+  // TODO(nicholss): This test does not really test anything. Add a way to get
+  // a count of the calls to AddAudioPacket.
 }
 
 }  // namespace remoting

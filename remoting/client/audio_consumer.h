@@ -13,9 +13,10 @@ class AudioPacket;
 
 class AudioConsumer {
  public:
-  virtual ~AudioConsumer(){};
-
   virtual void AddAudioPacket(std::unique_ptr<AudioPacket> packet) = 0;
+
+ protected:
+  virtual ~AudioConsumer() {}
 };
 
 }  // namespace remoting

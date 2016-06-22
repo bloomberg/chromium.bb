@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "remoting/client/fake_audio_consumer.h"
+
 #include "remoting/proto/audio.pb.h"
 
 namespace remoting {

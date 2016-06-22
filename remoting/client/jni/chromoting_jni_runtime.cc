@@ -69,7 +69,7 @@ ChromotingJniRuntime* ChromotingJniRuntime::GetInstance() {
 
 ChromotingJniRuntime::ChromotingJniRuntime() {
   // Grab or create the threads.
-  // TODO(nicholss) We could runtime this as a constructor argument when jni
+  // TODO(nicholss): We could runtime this as a constructor argument when jni
   // runtime is not no longer a singleton.
 
   if (!base::MessageLoop::current()) {

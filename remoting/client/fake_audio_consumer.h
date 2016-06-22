@@ -5,16 +5,11 @@
 #ifndef REMOTING_CLIENT_FAKE_AUDIO_CONSUMER_H_
 #define REMOTING_CLIENT_FAKE_AUDIO_CONSUMER_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include <list>
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/client/audio_consumer.h"
-#include "remoting/proto/audio.pb.h"
 
 namespace remoting {
 

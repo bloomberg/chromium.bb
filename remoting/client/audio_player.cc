@@ -22,8 +22,7 @@ AudioPlayer::AudioPlayer()
       bytes_consumed_(0) {
 }
 
-AudioPlayer::~AudioPlayer() {
-}
+AudioPlayer::~AudioPlayer() {}
 
 void AudioPlayer::AddAudioPacket(std::unique_ptr<AudioPacket> packet) {
   CHECK_EQ(1, packet->data_size());
@@ -69,10 +68,6 @@ void AudioPlayer::AddAudioPacket(std::unique_ptr<AudioPacket> packet) {
     queued_packets_.pop_front();
     bytes_consumed_ = 0;
   }
-}
-
-void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet) {
-  AddAudioPacket(std::move(packet));
 }
 
 // static

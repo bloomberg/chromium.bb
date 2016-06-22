@@ -27,8 +27,6 @@ class AudioPlayer : public AudioConsumer {
 
   ~AudioPlayer() override;
 
-  void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet);
-
   // AudioConsumer implementation.
   void AddAudioPacket(std::unique_ptr<AudioPacket> packet) override;
 
