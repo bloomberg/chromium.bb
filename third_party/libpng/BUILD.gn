@@ -24,7 +24,6 @@ config("libpng_config") {
 # appear after this, and turn it back on).
 config("clang_warnings") {
   if (is_clang) {
-    # Upstream uses self-assignment to avoid warnings.
     cflags = [
       # libpng checks that the width is not greater than PNG_SIZE_MAX.
       # On platforms where size_t is 64-bits, this comparison will always
@@ -61,6 +60,7 @@ source_set("libpng_sources") {
   ]
 
   defines = []
+  cflags = []
 
   if (current_cpu == "x86" || current_cpu == "x64") {
     sources += [
@@ -81,6 +81,11 @@ source_set("libpng_sources") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  if (is_win) {
+    # Unary minus applied to unsigned type.
+    cflags += [ "/wd4146" ]
+  }
 
   if (is_win && is_component_build) {
     defines += [ "PNG_BUILD_DLL" ]

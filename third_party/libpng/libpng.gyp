@@ -47,8 +47,10 @@
       'export_dependent_settings': [
         '../zlib/zlib.gyp:zlib',
       ],
-      # TODO(jschuh): http://crbug.com/167187
-      'msvs_disabled_warnings': [ 4267 ],
+      'msvs_disabled_warnings': [
+        4267, # TODO(jschuh): http://crbug.com/167187
+        4146, # Unary minus applied to unsigned type.
+      ],
       'conditions': [
         # Disable ARM optimizations on IOS.  Can't find a way to get gyp to even try
         # to compile the optimization files.  This works fine on GN.
