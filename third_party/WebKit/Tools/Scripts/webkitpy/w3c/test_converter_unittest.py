@@ -211,36 +211,6 @@ CONTENT OF TEST
         self.verify_conversion_happened(converted)
         self.verify_prefixed_properties(converted, test_content[0])
 
-    def test_hides_all_instructions_for_manual_testers(self):
-        test_html = """<body>
-<h1 class="instructions">Hello manual tester!</h1>
-<p class="instructions some_other_class">This is how you run this test.</p>
-<p style="willbeoverwritten" class="instructions">...</p>
-<doesntmatterwhichtagitis class="some_other_class instructions">...</p>
-<p>Legit content may contain the instructions string</p>
-</body>
-"""
-        expected_test_html = """<body>
-<h1 class="instructions" style="display:none">Hello manual tester!</h1>
-<p class="instructions some_other_class" style="display:none">This is how you run this test.</p>
-<p class="instructions" style="display:none">...</p>
-<doesntmatterwhichtagitis class="some_other_class instructions" style="display:none">...</p>
-<p>Legit content may contain the instructions string</p>
-</body>
-"""
-        converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME, None)
-
-        oc = OutputCapture()
-        oc.capture_output()
-        try:
-            converter.feed(test_html)
-            converter.close()
-            converted = converter.output()
-        finally:
-            oc.restore_output()
-
-        self.assertEqual(converted[1], expected_test_html)
-
     def test_convert_attributes_if_needed(self):
         """Tests convert_attributes_if_needed() using a reference file that has some relative src paths."""
 

@@ -168,10 +168,6 @@ class _W3CTestConverter(HTMLParser):
             if attr_name == 'style':
                 new_style = self.convert_style_data(attr_value)
                 converted = re.sub(re.escape(attr_value), new_style, converted)
-            if attr_name == 'class' and 'instructions' in attr_value:
-                # Always hide instructions, they're for manual testers.
-                converted = re.sub(r' style=".*?"', '', converted)
-                converted = re.sub(r'\>', ' style="display:none">', converted)
 
         src_tags = ('script', 'img', 'style', 'frame', 'iframe', 'input', 'layer', 'textarea', 'video', 'audio')
         if tag in src_tags and self.reference_support_info is not None and self.reference_support_info != {}:
