@@ -1,23 +1,22 @@
-<video controls></video>
-<p>Test that play event does not fire when "src" set with no autoplay attribute.</p>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that play event does not fire when "src" set with no autoplay attribute.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
 <script>
-    testExpected("video.paused", true);
+async_test(function(t) {
+    var video = document.querySelector("video");
+    assert_true(video.paused);
 
-    waitForEvent('play', function () {
-        logResult(false, "PLAY fired");
-        endTest();
-    } );
+    video.onplay = t.unreached_func();
 
-    function testPaused ()
-    {
-        testExpected("video.paused", true);
-        endTest();
-    }
-    waitForEvent('canplaythrough', function () { setTimeout(testPaused, 500);} );
+    video.oncanplaythrough = t.step_func(function() {
+        setTimeout(t.step_func_done(function() {
+            assert_true(video.paused);
+        }), 500);
+    });
 
     video.src = findMediaFile("video", "content/test");
+});
 </script>
