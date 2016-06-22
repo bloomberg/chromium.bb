@@ -121,11 +121,11 @@ private:
     explicit FontFace(ExecutionContext*);
     FontFace(ExecutionContext*, const AtomicString& family, const FontFaceDescriptors&);
 
-    void initCSSFontFace(Document*, CSSValue* src);
+    void initCSSFontFace(Document*, const CSSValue* src);
     void initCSSFontFace(const unsigned char* data, size_t);
     void setPropertyFromString(const Document*, const String&, CSSPropertyID, ExceptionState* = 0);
     bool setPropertyFromStyle(const StylePropertySet&, CSSPropertyID);
-    bool setPropertyValue(CSSValue*, CSSPropertyID);
+    bool setPropertyValue(const CSSValue*, CSSPropertyID);
     bool setFamilyValue(const CSSValue&);
     void loadInternal(ExecutionContext*);
     ScriptPromise fontStatusPromise(ScriptState*);
@@ -134,13 +134,13 @@ private:
 
     AtomicString m_family;
     String m_otsParseMessage;
-    Member<CSSValue> m_style;
-    Member<CSSValue> m_weight;
-    Member<CSSValue> m_stretch;
-    Member<CSSValue> m_unicodeRange;
-    Member<CSSValue> m_variant;
-    Member<CSSValue> m_featureSettings;
-    Member<CSSValue> m_display;
+    Member<const CSSValue> m_style;
+    Member<const CSSValue> m_weight;
+    Member<const CSSValue> m_stretch;
+    Member<const CSSValue> m_unicodeRange;
+    Member<const CSSValue> m_variant;
+    Member<const CSSValue> m_featureSettings;
+    Member<const CSSValue> m_display;
     LoadStatusType m_status;
     Member<DOMException> m_error;
 

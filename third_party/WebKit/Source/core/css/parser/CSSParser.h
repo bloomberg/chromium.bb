@@ -44,7 +44,7 @@ public:
     // This is for non-shorthands only
     static CSSValue* parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());
 
-    static CSSValue* parseFontFaceDescriptor(CSSPropertyID, const String&, const CSSParserContext&);
+    static const CSSValue* parseFontFaceDescriptor(CSSPropertyID, const String&, const CSSParserContext&);
 
     static ImmutableStylePropertySet* parseInlineStyleDeclaration(const String&, Element*);
 

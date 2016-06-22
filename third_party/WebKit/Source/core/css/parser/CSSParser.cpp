@@ -167,7 +167,7 @@ bool CSSParser::parseSystemColor(Color& color, const String& colorString)
     return true;
 }
 
-CSSValue* CSSParser::parseFontFaceDescriptor(CSSPropertyID propertyID, const String& propertyValue, const CSSParserContext& context)
+const CSSValue* CSSParser::parseFontFaceDescriptor(CSSPropertyID propertyID, const String& propertyValue, const CSSParserContext& context)
 {
     StringBuilder builder;
     builder.append("@font-face { ");
