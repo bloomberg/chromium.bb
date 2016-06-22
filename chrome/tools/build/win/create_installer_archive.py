@@ -458,12 +458,24 @@ def _read_configuration_from_gn(build_dir):
   return 'Debug'
 
 
+def ParseDLLsFromDeps(build_dir, runtime_deps_file):
+  """Parses the runtime_deps file and returns the set of DLLs in it, relative
+  to build_dir."""
+  build_dlls = set()
+  args = open(runtime_deps_file).read()
+  for l in args.splitlines():
+    if os.path.splitext(l)[1] == ".dll":
+      build_dlls.add(os.path.join(build_dir, l))
+  return build_dlls
+
 # Copies component build DLLs and generates required config files and manifests
 # in order for chrome.exe and setup.exe to be able to find those DLLs at
 # run-time.
 # This is meant for developer builds only and should never be used to package
 # an official build.
-def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
+def DoComponentBuildTasks(staging_dir, build_dir, target_arch,
+                          setup_runtime_deps, chrome_runtime_deps,
+                          current_version):
   # Get the required directories for the upcoming operations.
   chrome_dir = os.path.join(staging_dir, CHROME_DIR)
   version_dir = os.path.join(chrome_dir, current_version)
@@ -473,44 +485,45 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   if not os.path.exists(installer_dir):
     os.mkdir(installer_dir)
 
-  # Explicitly list the component DLLs setup.exe depends on (this list may
-  # contain wildcards). These will be copied to |installer_dir| in the archive.
-  # The use of source sets in gn builds means that references to some extra
-  # DLLs get pulled in to setup.exe (base_i18n.dll, ipc.dll, etc.). Unpacking
-  # these to |installer_dir| is simpler and more robust than switching setup.exe
-  # to use libraries instead of source sets.
-  setup_component_dll_globs = [ 'api-ms-win-*.dll',
-                                'base.dll',
-                                'boringssl.dll',
-                                'crcrypto.dll',
-                                'icui18n.dll',
-                                'icuuc.dll',
-                                'msvc*.dll',
-                                'ucrtbase*.dll',
-                                'vcruntime*.dll',
-                                # DLLs needed due to source sets.
-                                'base_i18n.dll',
-                                'ipc.dll',
-                                'net.dll',
-                                'prefs.dll',
-                                'protobuf_lite.dll',
-                                'url_lib.dll' ]
-  for setup_component_dll_glob in setup_component_dll_globs:
-    setup_component_dlls = glob.glob(os.path.join(build_dir,
-                                                  setup_component_dll_glob))
-    if len(setup_component_dlls) == 0:
-      raise Exception('Error: missing expected DLL for component build '
-                      'mini_installer: "%s"' % setup_component_dll_glob)
-    for setup_component_dll in setup_component_dlls:
-      g_archive_inputs.append(setup_component_dll)
-      shutil.copy(setup_component_dll, installer_dir)
+  if setup_runtime_deps:
+    setup_component_dlls = ParseDLLsFromDeps(build_dir, setup_runtime_deps)
+  else:
+    # Explicitly list the component DLLs setup.exe depends on (this list may
+    # contain wildcards). These will be copied to |installer_dir| in the
+    # archive.
+    # TODO(jbauman): Remove when GYP is deprecated on Windows.
+    setup_component_dll_globs = [ 'api-ms-win-*.dll',
+                                  'base.dll',
+                                  'boringssl.dll',
+                                  'crcrypto.dll',
+                                  'icui18n.dll',
+                                  'icuuc.dll',
+                                  'msvc*.dll',
+                                  'ucrtbase*.dll',
+                                  'vcruntime*.dll', ]
+    setup_component_dlls = set()
+    for setup_component_dll_glob in setup_component_dll_globs:
+      setup_component_partial_dlls = glob.glob(
+          os.path.join(build_dir, setup_component_dll_glob))
+      if len(setup_component_partial_dlls) == 0:
+        raise Exception('Error: missing expected DLL for component build '
+                        'mini_installer: "%s"' % setup_component_dll_glob)
+      setup_component_dlls.update(setup_component_partial_dlls)
+  for setup_component_dll in setup_component_dlls:
+    g_archive_inputs.append(setup_component_dll)
+    shutil.copy(setup_component_dll, installer_dir)
 
-  # Stage all the component DLLs found in |build_dir| to the |version_dir| (for
+  # Stage all the component DLLs to the |version_dir| (for
   # the version assembly to be able to refer to them below and make sure
-  # chrome.exe can find them at runtime). The component DLLs are considered to
-  # be all the DLLs which have not already been added to the |version_dir| by
-  # virtue of chrome.release.
-  build_dlls = glob.glob(os.path.join(build_dir, '*.dll'))
+  # chrome.exe can find them at runtime), except the ones that are already
+  # staged (i.e. non-component DLLs).
+  if chrome_runtime_deps:
+    build_dlls = ParseDLLsFromDeps(build_dir, chrome_runtime_deps)
+  else:
+    # If no chrome_runtime_deps was specified, every DLL in build_dir is
+    # considered to be a component DLL.
+    # TODO(jbauman): Remove when GYP is deprecated on Windows.
+    build_dlls = glob.glob(os.path.join(build_dir, '*.dll'))
   staged_dll_basenames = [os.path.basename(staged_dll) for staged_dll in \
                           glob.glob(os.path.join(version_dir, '*.dll'))]
   component_dll_filenames = []
@@ -570,7 +583,8 @@ def main(options):
 
   if options.component_build == '1':
     DoComponentBuildTasks(staging_dir, options.build_dir,
-                          options.target_arch, current_version)
+                          options.target_arch, options.setup_runtime_deps,
+                          options.chrome_runtime_deps, current_version)
 
   version_numbers = current_version.split('.')
   current_build_number = version_numbers[2] + '.' + version_numbers[3]
@@ -633,6 +647,15 @@ def _ParseOptions():
   parser.add_option('--depfile',
       help='Generate a depfile with the given name listing the implicit inputs '
            'to the archive process that can be used with a build system.')
+
+  # TODO(jbauman): Make --chrome_runtime_deps and --setup_runtime_deps
+  # mandatory when GYP is deprecated on Windows.
+  parser.add_option('--chrome_runtime_deps',
+      help='A file listing runtime dependencies. This will be used to get a '
+           'list of DLLs to archive in a component build.')
+  parser.add_option('--setup_runtime_deps',
+      help='A file listing runtime dependencies for setup.exe. This will be '
+           'used to get a list of DLLs to archive in a component build.')
   parser.add_option('--target_arch', default='x86',
       help='Specify the target architecture for installer - this is used '
            'to determine which CRT runtime files to pull and package '

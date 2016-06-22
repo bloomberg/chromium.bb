@@ -74,6 +74,25 @@ source_set("unit_tests") {
 
 packed_files_rc_file = "$target_gen_dir/packed_files.rc"
 
+# The runtime deps are used to tell create_installer_archive what component
+# DLLs need to be packaged in a component build.
+chrome_runtime_deps = "$root_gen_dir/chrome_component.runtime_deps"
+setup_runtime_deps = "$root_gen_dir/setup.runtime_deps"
+
+group("chrome_runtime_deps") {
+  write_runtime_deps = chrome_runtime_deps
+  data_deps = [
+    "//chrome",
+  ]
+}
+
+group("setup_runtime_deps") {
+  write_runtime_deps = setup_runtime_deps
+  data_deps = [
+    "//chrome/installer/setup",
+  ]
+}
+
 action("archive") {
   script = "//chrome/tools/build/win/create_installer_archive.py"
 
@@ -104,6 +123,10 @@ action("archive") {
     rebase_path(packed_files_rc_file, root_build_dir),
     "--target_arch=$current_cpu",
     "--distribution=_google_chrome",
+    "--chrome_runtime_deps",
+    rebase_path(chrome_runtime_deps, root_build_dir),
+    "--setup_runtime_deps",
+    rebase_path(setup_runtime_deps, root_build_dir),
 
     # Optional arguments to generate diff installer.
     #'--last_chrome_installer=C:/Temp/base',
@@ -115,6 +138,8 @@ action("archive") {
   ]
 
   deps = [
+    ":chrome_runtime_deps",
+    ":setup_runtime_deps",
     "//chrome",
     "//chrome:main_dll",
     "//chrome/browser/extensions/default_extensions",
