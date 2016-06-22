@@ -102,8 +102,8 @@ TEST_F(EditingUtilitiesTest, tableElementJustBefore)
     Node* host = document().getElementById("host");
     Node* table = document().getElementById("table");
 
-    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(Position::afterNode(table))));
-    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::afterNode(table))));
+    EXPECT_EQ(table, tableElementJustBefore(VisiblePosition::afterNode(table)));
+    EXPECT_EQ(table, tableElementJustBefore(VisiblePositionInFlatTree::afterNode(table)));
 
     EXPECT_EQ(table, tableElementJustBefore(VisiblePosition::lastPositionInNode(table)));
     EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::lastPositionInNode(table))));
@@ -111,8 +111,8 @@ TEST_F(EditingUtilitiesTest, tableElementJustBefore)
     EXPECT_EQ(nullptr, tableElementJustBefore(createVisiblePosition(Position(host, 2))));
     EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree(host, 2))));
 
-    EXPECT_EQ(nullptr, tableElementJustBefore(createVisiblePosition(Position::afterNode(host))));
-    EXPECT_EQ(nullptr, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::afterNode(host))));
+    EXPECT_EQ(nullptr, tableElementJustBefore(VisiblePosition::afterNode(host)));
+    EXPECT_EQ(nullptr, tableElementJustBefore(VisiblePositionInFlatTree::afterNode(host)));
 
     EXPECT_EQ(nullptr, tableElementJustBefore(VisiblePosition::lastPositionInNode(host)));
     EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::lastPositionInNode(host))));

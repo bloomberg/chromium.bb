@@ -1343,7 +1343,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                     if (editingState->isAborted())
                         return;
                 }
-                setEndingSelection(createVisiblePosition(Position::afterNode(insertedNodes.lastLeafInserted())));
+                setEndingSelection(VisiblePosition::afterNode(insertedNodes.lastLeafInserted()));
                 // Select up to the paragraph separator that was added.
                 lastPositionToSelect = endingSelection().visibleStart().deepEquivalent();
             } else if (!isStartOfParagraph(endOfInsertedContent)) {
