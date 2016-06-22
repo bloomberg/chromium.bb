@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/url_request/url_request_test_util.h"
@@ -44,10 +45,9 @@ TEST_F(PushClientTest, CreateDefaultOnIOThread) {
 TEST_F(PushClientTest, CreateDefaultOffIOThread) {
   base::Thread thread("Non-IO thread");
   EXPECT_TRUE(thread.Start());
-  thread.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&PushClient::CreateDefault),
-                 notifier_options_));
+  thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(base::IgnoreResult(&PushClient::CreateDefault),
+                            notifier_options_));
   thread.Stop();
 }
 

@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "jingle/glue/task_pump.h"
 
 namespace jingle_glue {
@@ -23,10 +23,8 @@ TaskPump::~TaskPump() {
 void TaskPump::WakeTasks() {
   DCHECK(CalledOnValidThread());
   if (!stopped_ && !posted_wake_) {
-    base::MessageLoop* current_message_loop = base::MessageLoop::current();
-    CHECK(current_message_loop);
     // Do the requested wake up.
-    current_message_loop->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&TaskPump::CheckAndRunTasks, weak_factory_.GetWeakPtr()));
     posted_wake_ = true;

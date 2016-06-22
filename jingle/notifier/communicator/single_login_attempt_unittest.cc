@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/fake_base_task.h"
@@ -93,7 +94,7 @@ class SingleLoginAttemptTest : public ::testing::Test {
             "auth_mechanism"),
         attempt_(new SingleLoginAttempt(login_settings_, &fake_delegate_)) {}
 
-  void TearDown() override { message_loop_.RunUntilIdle(); }
+  void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
   void FireRedirect(buzz::XmlElement* redirect_error) {
     attempt_->OnError(buzz::XmppEngine::ERROR_STREAM, 0, redirect_error);
@@ -101,7 +102,7 @@ class SingleLoginAttemptTest : public ::testing::Test {
 
   ~SingleLoginAttemptTest() override {
     attempt_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
