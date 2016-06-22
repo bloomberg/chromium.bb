@@ -38,16 +38,12 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import graphite
+from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 from chromite.scripts import cros_mark_android_as_stable
 from chromite.scripts import cros_mark_chrome_as_stable
-
-try:
-  from infra_libs.ts_mon.common import metrics
-except (ImportError, RuntimeError):
-  metrics = None
 
 
 site_config = config_lib.GetConfig()
@@ -1633,13 +1629,11 @@ class PreCQLauncherStage(SyncStage):
         launch_count += len(configs)
         cl_launch_count += len(configs) * len(plan)
 
-    if metrics:
-      metrics.CounterMetric('chromeos/cbuildbot/pre-cq/launch_count')\
-            .increment_by(launch_count)
-      metrics.CounterMetric('chromeos/cbuildbot/pre-cq/cl_launch_count')\
-            .increment_by(cl_launch_count)
-      metrics.CounterMetric('chromeos/cbuildbot/pre-cq/tick_count')\
-            .increment()
+    metrics.Counter('chromeos/cbuildbot/pre-cq/launch_count').increment_by(
+        launch_count)
+    metrics.Counter('chromeos/cbuildbot/pre-cq/cl_launch_count').increment_by(
+        cl_launch_count)
+    metrics.Counter('chromeos/cbuildbot/pre-cq/tick_count').increment()
 
     graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
         'launch_count', launch_count)
@@ -1690,10 +1684,8 @@ class PreCQLauncherStage(SyncStage):
       logging.info('Sending stat (name, subtype, count): (%s, %s, %s)',
                    name, subtype, count)
       graphite.StatsFactory.GetInstance().Gauge(name).send(subtype, count)
-      metrics.GaugeMetric('chromeos/cbuildbot/pre-cq/cl-count').set(
-          count,
-          {'status': str(status),
-           'subtype': subtype})
+      metrics.Gauge('chromeos/cbuildbot/pre-cq/cl-count').set(
+          count, {'status': str(status), 'subtype': subtype})
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):

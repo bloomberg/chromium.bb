@@ -18,15 +18,10 @@ from chromite.lib import clactions
 from chromite.lib import cros_logging as logging
 from chromite.lib import factory
 from chromite.lib import graphite
+from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import retry_stats
 
-try:
-  from infra_libs.ts_mon.common import metrics
-  from infra_libs.ts_mon.common import interface
-except (ImportError, RuntimeError):
-  metrics = None
-  interface = None
 
 sqlalchemy_imported = False
 try:
@@ -704,14 +699,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       statsd_name = 'cl_actions.%s' % cl_action.action
       stats.Counter(statsd_name).increment(r.replace(':', '_'))
 
-      if metrics:
-        monarch_name = 'chromeos/cbuildbot/cl_action/' + cl_action.action
-        # This is necessary because ts_mon does not allow constructing a metrics
-        # object with the same name twice.
-        counter = (
-            interface.state.metrics.get(monarch_name) or
-            metrics.CounterMetric(monarch_name, fields={'reason': r}))
-        counter.increment()
+      monarch_name = 'chromeos/cbuildbot/cl_action/' + cl_action.action
+      counter = metrics.Counter(monarch_name)
+      counter.increment(fields={'reason': r})
 
     return retval
 
