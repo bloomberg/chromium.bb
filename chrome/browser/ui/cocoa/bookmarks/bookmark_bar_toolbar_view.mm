@@ -24,7 +24,9 @@
 @implementation BookmarkBarToolbarView
 
 - (BOOL)isOpaque {
-  return [controller_ isInState:BookmarkBar::DETACHED];
+  // -drawRect: calls -drawAsDetachedBubble: or -drawBackground:, both of which
+  // fill the dirty rect with an opaque color.
+  return YES;
 }
 
 - (void)resetCursorRects {
