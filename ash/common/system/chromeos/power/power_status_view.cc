@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/power/power_status_view.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/tray_power.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
@@ -43,11 +44,17 @@ PowerStatusView::~PowerStatusView() {
 
 void PowerStatusView::OnPowerStatusChanged() {
   UpdateText();
+
+  // We do not show a battery icon in the material design system menu.
+  // TODO(tdanderson): Remove the non-MD code and the IconSet enum once
+  // material design is enabled by default. See crbug.com/614453.
+  if (MaterialDesignController::UseMaterialDesignSystemIcons())
+    return;
+
   const PowerStatus::BatteryImageInfo info =
       PowerStatus::Get()->GetBatteryImageInfo(PowerStatus::ICON_DARK);
   if (info != previous_battery_image_info_) {
-    icon_->SetImage(
-        PowerStatus::Get()->GetBatteryImage(PowerStatus::ICON_DARK));
+    icon_->SetImage(PowerStatus::Get()->GetBatteryImage(info));
     icon_->SetVisible(true);
     previous_battery_image_info_ = info;
   }

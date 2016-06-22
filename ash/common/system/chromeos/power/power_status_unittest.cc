@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/test/material_design_controller_test_api.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +36,9 @@ class TestObserver : public PowerStatus::Observer {
 
 }  // namespace
 
-class PowerStatusTest : public testing::Test {
+class PowerStatusTest
+    : public testing::Test,
+      public testing::WithParamInterface<MaterialDesignController::Mode> {
  public:
   PowerStatusTest() : power_status_(NULL) {}
   ~PowerStatusTest() override {}
@@ -45,9 +49,12 @@ class PowerStatusTest : public testing::Test {
     power_status_ = PowerStatus::Get();
     test_observer_.reset(new TestObserver);
     power_status_->AddObserver(test_observer_.get());
+    material_design_state_.reset(
+        new test::MaterialDesignControllerTestAPI(GetParam()));
   }
 
   void TearDown() override {
+    material_design_state_.reset();
     power_status_->RemoveObserver(test_observer_.get());
     test_observer_.reset();
     PowerStatus::Shutdown();
@@ -60,10 +67,21 @@ class PowerStatusTest : public testing::Test {
   std::unique_ptr<TestObserver> test_observer_;
 
  private:
+  std::unique_ptr<test::MaterialDesignControllerTestAPI> material_design_state_;
+
   DISALLOW_COPY_AND_ASSIGN(PowerStatusTest);
 };
 
-TEST_F(PowerStatusTest, InitializeAndUpdate) {
+// The prefix has intentionally been left blank since there is only one
+// parameterization of this test fixture.
+INSTANTIATE_TEST_CASE_P(
+    /* prefix intentionally left blank */,
+    PowerStatusTest,
+    testing::Values(MaterialDesignController::NON_MATERIAL,
+                    MaterialDesignController::MATERIAL_NORMAL,
+                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
+
+TEST_P(PowerStatusTest, InitializeAndUpdate) {
   // Test that the initial power supply state should be acquired after
   // PowerStatus is instantiated. This depends on
   // PowerManagerClientStubImpl, which responds to power status update
@@ -79,7 +97,7 @@ TEST_F(PowerStatusTest, InitializeAndUpdate) {
   EXPECT_EQ(2, test_observer_->power_changed_count());
 }
 
-TEST_F(PowerStatusTest, ShouldDisplayBatteryTime) {
+TEST_P(PowerStatusTest, ShouldDisplayBatteryTime) {
   EXPECT_FALSE(PowerStatus::ShouldDisplayBatteryTime(
       base::TimeDelta::FromSeconds(-1)));
   EXPECT_FALSE(PowerStatus::ShouldDisplayBatteryTime(
@@ -100,7 +118,7 @@ TEST_F(PowerStatusTest, ShouldDisplayBatteryTime) {
           PowerStatus::kMaxBatteryTimeToDisplaySec + 1)));
 }
 
-TEST_F(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
+TEST_P(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
   int hours = 0, minutes = 0;
   PowerStatus::SplitTimeIntoHoursAndMinutes(
       base::TimeDelta::FromSeconds(0), &hours, &minutes);
@@ -151,7 +169,10 @@ TEST_F(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
   EXPECT_EQ(0, minutes);
 }
 
-TEST_F(PowerStatusTest, GetBatteryImageInfo) {
+TEST_P(PowerStatusTest, GetBatteryImageInfo) {
+  const bool use_md_icon =
+      ash::MaterialDesignController::UseMaterialDesignSystemIcons();
+
   PowerSupplyProperties prop;
   prop.set_external_power(PowerSupplyProperties::AC);
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
@@ -166,10 +187,16 @@ TEST_F(PowerStatusTest, GetBatteryImageInfo) {
   EXPECT_EQ(info_charging_98,
             power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
 
-  // The dark icon set should use a different image.
+  // The dark icon set should use a different image for non-MD, but the
+  // same image for MD.
   prop.set_battery_percent(98.0);
-  EXPECT_NE(info_charging_98,
-            power_status_->GetBatteryImageInfo(PowerStatus::ICON_DARK));
+  if (use_md_icon) {
+    EXPECT_EQ(info_charging_98,
+              power_status_->GetBatteryImageInfo(PowerStatus::ICON_DARK));
+  } else {
+    EXPECT_NE(info_charging_98,
+              power_status_->GetBatteryImageInfo(PowerStatus::ICON_DARK));
+  }
 
   // A different icon should be used when the battery is full, too.
   prop.set_battery_state(PowerSupplyProperties::FULL);
@@ -191,6 +218,138 @@ TEST_F(PowerStatusTest, GetBatteryImageInfo) {
   power_status_->SetProtoForTesting(prop);
   EXPECT_NE(info_charging_98,
             power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
+}
+
+// Tests that the |icon_badge| member of BatteryImageInfo is set correctly
+// with various power supply property values.
+TEST_P(PowerStatusTest, BatteryImageInfoIconBadge) {
+  // The |icon_badge| member is only populated for the material design
+  // battery icon.
+  if (!ash::MaterialDesignController::UseMaterialDesignSystemIcons())
+    return;
+
+  PowerSupplyProperties prop;
+
+  // A charging battery connected to AC power should have an ICON_BADGE_BOLT.
+  prop.set_external_power(PowerSupplyProperties::AC);
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  prop.set_battery_percent(98.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      PowerStatus::ICON_BADGE_BOLT,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+
+  // A discharging battery connected to AC should also have an ICON_BADGE_BOLT.
+  prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      PowerStatus::ICON_BADGE_BOLT,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+
+  // A charging battery connected to USB power should have an
+  // ICON_BADGE_UNRELIABLE.
+  prop.set_external_power(PowerSupplyProperties::USB);
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      PowerStatus::ICON_BADGE_UNRELIABLE,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+
+  // A discharging battery connected to USB power should also have an
+  // ICON_BADGE_UNRELIABLE.
+  prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      PowerStatus::ICON_BADGE_UNRELIABLE,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+
+  // Show an ICON_BADGE_X when no battery is present.
+  prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
+  prop.set_battery_state(PowerSupplyProperties::NOT_PRESENT);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      PowerStatus::ICON_BADGE_X,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+
+  // Do not show a badge when the battery is discharging.
+  prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      PowerStatus::ICON_BADGE_NONE,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+
+  // Show ICON_BADGE_ALERT for a discharging battery when it falls below
+  // a charge level of PowerStatus::kCriticalBatteryChargePercentageMd.
+  prop.set_battery_percent(PowerStatus::kCriticalBatteryChargePercentageMd);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      PowerStatus::ICON_BADGE_NONE,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+  prop.set_battery_percent(PowerStatus::kCriticalBatteryChargePercentageMd - 1);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      PowerStatus::ICON_BADGE_ALERT,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+}
+
+// Tests that the |charge_level| member of BatteryImageInfo is set correctly
+// with various power supply property values.
+TEST_P(PowerStatusTest, BatteryImageInfoChargeLevel) {
+  // The |charge_level| member is only populated for the material design
+  // battery icon.
+  if (!ash::MaterialDesignController::UseMaterialDesignSystemIcons())
+    return;
+
+  PowerSupplyProperties prop;
+
+  // No charge level is drawn when the battery is not present.
+  prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
+  prop.set_battery_state(PowerSupplyProperties::NOT_PRESENT);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      0,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+
+  // A charge level of 0 when the battery is 0% full.
+  prop.set_external_power(PowerSupplyProperties::AC);
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  prop.set_battery_percent(0.0);
+  EXPECT_EQ(
+      0,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+
+  // A charge level of 1 when the battery is up to 16% full, and a level of 2
+  // for 17% full.
+  prop.set_battery_percent(16.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      1,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+  prop.set_battery_percent(17.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      2,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+
+  // A charge level of 6 when the battery is 50% full.
+  prop.set_battery_percent(50.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      6,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+
+  // A charge level of 11 when the battery is 99% full, and a level of 12 when
+  // the battery is 100% full.
+  prop.set_battery_percent(99.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      11,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+  prop.set_battery_percent(100.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(
+      12,
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
 }
 
 }  // namespace ash

@@ -119,7 +119,7 @@ class PowerTrayView : public views::ImageView {
     const PowerStatus::BatteryImageInfo info =
         PowerStatus::Get()->GetBatteryImageInfo(PowerStatus::ICON_LIGHT);
     if (info != previous_image_info_) {
-      SetImage(PowerStatus::Get()->GetBatteryImage(PowerStatus::ICON_LIGHT));
+      SetImage(PowerStatus::Get()->GetBatteryImage(info));
       previous_image_info_ = info;
     }
   }
