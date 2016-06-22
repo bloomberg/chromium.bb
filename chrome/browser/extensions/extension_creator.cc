@@ -119,8 +119,8 @@ bool ExtensionCreator::ValidateManifest(const base::FilePath& extension_dir,
   return !!extension.get();
 }
 
-crypto::RSAPrivateKey* ExtensionCreator::ReadInputKey(const base::FilePath&
-    private_key_path) {
+std::unique_ptr<crypto::RSAPrivateKey> ExtensionCreator::ReadInputKey(
+    const base::FilePath& private_key_path) {
   if (!base::PathExists(private_key_path)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_NO_EXISTS);
@@ -146,8 +146,8 @@ crypto::RSAPrivateKey* ExtensionCreator::ReadInputKey(const base::FilePath&
       std::vector<uint8_t>(private_key_bytes.begin(), private_key_bytes.end()));
 }
 
-crypto::RSAPrivateKey* ExtensionCreator::GenerateKey(const base::FilePath&
-    output_private_key_path) {
+std::unique_ptr<crypto::RSAPrivateKey> ExtensionCreator::GenerateKey(
+    const base::FilePath& output_private_key_path) {
   std::unique_ptr<crypto::RSAPrivateKey> key_pair(
       crypto::RSAPrivateKey::Create(kRSAKeySize));
   if (!key_pair) {
@@ -189,7 +189,7 @@ crypto::RSAPrivateKey* ExtensionCreator::GenerateKey(const base::FilePath&
     }
   }
 
-  return key_pair.release();
+  return key_pair;
 }
 
 bool ExtensionCreator::CreateZip(const base::FilePath& extension_dir,
@@ -301,9 +301,9 @@ bool ExtensionCreator::Run(const base::FilePath& extension_dir,
   // Initialize Key Pair
   std::unique_ptr<crypto::RSAPrivateKey> key_pair;
   if (!private_key_path.value().empty())
-    key_pair.reset(ReadInputKey(private_key_path));
+    key_pair = ReadInputKey(private_key_path);
   else
-    key_pair.reset(GenerateKey(output_private_key_path));
+    key_pair = GenerateKey(output_private_key_path);
   if (!key_pair)
     return false;
 

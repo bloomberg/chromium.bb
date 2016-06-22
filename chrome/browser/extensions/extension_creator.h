@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -72,11 +73,13 @@ class ExtensionCreator {
                         int run_flags);
 
   // Reads private key from |private_key_path|.
-  crypto::RSAPrivateKey* ReadInputKey(const base::FilePath& private_key_path);
+  std::unique_ptr<crypto::RSAPrivateKey> ReadInputKey(
+      const base::FilePath& private_key_path);
 
   // Generates a key pair and writes the private key to |private_key_path|
   // if provided.
-  crypto::RSAPrivateKey* GenerateKey(const base::FilePath& private_key_path);
+  std::unique_ptr<crypto::RSAPrivateKey> GenerateKey(
+      const base::FilePath& private_key_path);
 
   // Creates temporary zip file for the extension.
   bool CreateZip(const base::FilePath& extension_dir, const base::FilePath& temp_path,

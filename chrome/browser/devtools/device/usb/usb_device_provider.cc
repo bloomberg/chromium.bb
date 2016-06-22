@@ -89,7 +89,7 @@ void UsbDeviceProvider::CountDevices(
 }
 
 UsbDeviceProvider::UsbDeviceProvider(Profile* profile){
-  rsa_key_.reset(AndroidRSAPrivateKey(profile));
+  rsa_key_ = AndroidRSAPrivateKey(profile);
 }
 
 void UsbDeviceProvider::QueryDevices(const SerialsCallback& callback) {

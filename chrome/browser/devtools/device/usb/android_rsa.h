@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_RSA_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_RSA_H_
 
+#include <memory>
 #include <string>
 
 namespace crypto {
@@ -13,7 +14,7 @@ class RSAPrivateKey;
 
 class Profile;
 
-crypto::RSAPrivateKey* AndroidRSAPrivateKey(Profile* profile);
+std::unique_ptr<crypto::RSAPrivateKey> AndroidRSAPrivateKey(Profile* profile);
 
 std::string AndroidRSAPublicKey(crypto::RSAPrivateKey* key);
 
