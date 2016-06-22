@@ -1438,8 +1438,7 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 // RenderWidgetHostViewAura, ui::TextInputClient implementation:
 void RenderWidgetHostViewAura::SetCompositionText(
     const ui::CompositionText& composition) {
-  // TODO(wjmaclean): can host_ ever be null?
-  if (!host_)
+  if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
     return;
 
   // TODO(suzhe): convert both renderer_host and renderer to use
@@ -1459,36 +1458,36 @@ void RenderWidgetHostViewAura::SetCompositionText(
 
   // TODO(suzhe): due to a bug of webkit, we can't use selection range with
   // composition string. See: https://bugs.webkit.org/show_bug.cgi?id=37788
-  host_->ImeSetComposition(composition.text, underlines,
-                           gfx::Range::InvalidRange(),
-                           composition.selection.end(),
-                           composition.selection.end());
+  text_input_manager_->GetActiveWidget()->ImeSetComposition(
+      composition.text, underlines, gfx::Range::InvalidRange(),
+      composition.selection.end(), composition.selection.end());
 
   has_composition_text_ = !composition.text.empty();
 }
 
 void RenderWidgetHostViewAura::ConfirmCompositionText() {
-  // TODO(wjmaclean): can host_ ever be null?
-  if (host_ && has_composition_text_) {
-    host_->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(),
-                                 false);
+  if (text_input_manager_ && text_input_manager_->GetActiveWidget() &&
+      has_composition_text_) {
+    text_input_manager_->GetActiveWidget()->ImeConfirmComposition(
+        base::string16(), gfx::Range::InvalidRange(), false);
   }
   has_composition_text_ = false;
 }
 
 void RenderWidgetHostViewAura::ClearCompositionText() {
-  // TODO(wjmaclean): can host_ ever be null?
-  if (host_ && has_composition_text_)
-    host_->ImeCancelComposition();
+  if (text_input_manager_ && text_input_manager_->GetActiveWidget() &&
+      has_composition_text_)
+    text_input_manager_->GetActiveWidget()->ImeCancelComposition();
   has_composition_text_ = false;
 }
 
 void RenderWidgetHostViewAura::InsertText(const base::string16& text) {
   DCHECK_NE(GetTextInputType(), ui::TEXT_INPUT_TYPE_NONE);
 
-  // TODO(wjmaclean): can host_ ever be null?
-  if (host_)
-    host_->ImeConfirmComposition(text, gfx::Range::InvalidRange(), false);
+  if (text_input_manager_ && text_input_manager_->GetActiveWidget()) {
+    text_input_manager_->GetActiveWidget()->ImeConfirmComposition(
+        text, gfx::Range::InvalidRange(), false);
+  }
   has_composition_text_ = false;
 }
 

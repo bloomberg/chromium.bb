@@ -352,6 +352,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   const ui::MotionEventAura& pointer_state() const { return pointer_state_; }
 
  private:
+  friend class InputMethodResultAuraTest;
   friend class RenderWidgetHostViewAuraCopyRequestTest;
   friend class TestInputMethodObserver;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
