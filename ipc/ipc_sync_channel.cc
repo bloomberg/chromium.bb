@@ -49,48 +49,23 @@ void RunOnHandleReady(const base::Closure& callback, MojoResult result) {
     callback.Run();
 }
 
-}  // namespace
-
-// A lazy thread-local Mojo Event which is always signaled. Used to wake up the
-// sync waiter when a SyncMessage requires the MessageLoop to be pumped while
-// waiting for a reply. This object is created lazily and ref-counted so it can
-// be cleaned up when no longer in use.
-class SyncChannel::PumpMessagesEvent
-    : public base::RefCountedThreadSafe<PumpMessagesEvent> {
+class PumpMessagesEvent {
  public:
-  static scoped_refptr<PumpMessagesEvent> current() {
-    scoped_refptr<PumpMessagesEvent> current = current_event_.Pointer()->Get();
-    if (!current) {
-      current = new PumpMessagesEvent;
-      current_event_.Pointer()->Set(current.get());
-    }
-    return current;
-  }
+  PumpMessagesEvent() { event_.Signal(); }
+  ~PumpMessagesEvent() {}
 
   const MojoEvent* event() const { return &event_; }
 
  private:
-  friend class base::RefCountedThreadSafe<PumpMessagesEvent>;
-
-  PumpMessagesEvent() { event_.Signal(); }
-
-  ~PumpMessagesEvent() {
-    DCHECK_EQ(current_event_.Pointer()->Get(), this);
-    current_event_.Pointer()->Set(nullptr);
-  }
-
   MojoEvent event_;
-
-  static base::LazyInstance<base::ThreadLocalPointer<
-      SyncChannel::PumpMessagesEvent>> current_event_;
 
   DISALLOW_COPY_AND_ASSIGN(PumpMessagesEvent);
 };
 
-base::LazyInstance<base::ThreadLocalPointer<SyncChannel::PumpMessagesEvent>>
-    SyncChannel::PumpMessagesEvent::current_event_ =
-        LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<PumpMessagesEvent>::Leaky g_pump_messages_event =
+    LAZY_INSTANCE_INITIALIZER;
 
+}  // namespace
 
 // When we're blocked in a Send(), we need to process incoming synchronous
 // messages right away because it could be blocking our reply (either
@@ -503,7 +478,6 @@ SyncChannel::SyncChannel(
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
     WaitableEvent* shutdown_event)
     : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)),
-      pump_messages_event_(PumpMessagesEvent::current()),
       sync_handle_registry_(mojo::SyncHandleRegistry::current()) {
   // The current (listener) thread must be distinct from the IPC thread, or else
   // sending synchronous messages will deadlock.
@@ -559,9 +533,7 @@ bool SyncChannel::Send(Message* message) {
   // Wait for reply, or for any other incoming synchronous messages.
   // *this* might get deleted, so only call static functions at this point.
   scoped_refptr<mojo::SyncHandleRegistry> registry = sync_handle_registry_;
-  scoped_refptr<PumpMessagesEvent> pump_messages_event = pump_messages_event_;
-  WaitForReply(registry.get(), context.get(),
-               pump_messages ? pump_messages_event->event() : nullptr);
+  WaitForReply(registry.get(), context.get(), pump_messages);
 
   TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
                         "SyncChannel::Send", context->GetSendDoneEvent());
@@ -571,8 +543,12 @@ bool SyncChannel::Send(Message* message) {
 
 void SyncChannel::WaitForReply(mojo::SyncHandleRegistry* registry,
                                SyncContext* context,
-                               const MojoEvent* pump_messages_event) {
+                               bool pump_messages) {
   context->DispatchMessages();
+
+  const MojoEvent* pump_messages_event = nullptr;
+  if (pump_messages)
+    pump_messages_event = g_pump_messages_event.Get().event();
 
   while (true) {
     bool dispatch = false;

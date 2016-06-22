@@ -211,8 +211,6 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   };
 
  private:
-  class PumpMessagesEvent;
-
   SyncChannel(
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
@@ -228,7 +226,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   // latter one also runs a nested message loop in the meantime.
   static void WaitForReply(mojo::SyncHandleRegistry* registry,
                            SyncContext* context,
-                           const MojoEvent* pump_messages_event);
+                           bool pump_messages);
 
   // Runs a nested message loop until a reply arrives, times out, or the process
   // shuts down.
@@ -240,7 +238,6 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   // ChannelProxy overrides:
   void OnChannelInit() override;
 
-  scoped_refptr<PumpMessagesEvent> pump_messages_event_;
   scoped_refptr<mojo::SyncHandleRegistry> sync_handle_registry_;
 
   // Used to signal events between the IPC and listener threads.
