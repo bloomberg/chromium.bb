@@ -106,6 +106,18 @@ struct StructTraits<test::PassByValueStructWithTraits,
   }
 };
 
+template <>
+struct StructTraits<test::StructWithTraitsForUniquePtrTest,
+                    std::unique_ptr<int>> {
+  static int f_int32(const std::unique_ptr<int>& data) { return *data; }
+
+  static bool Read(test::StructWithTraitsForUniquePtrTest::DataView data,
+                   std::unique_ptr<int>* out) {
+    out->reset(new int(data.f_int32()));
+    return true;
+  }
+};
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_STRUCT_WITH_TRAITS_IMPL_TRAITS_H_

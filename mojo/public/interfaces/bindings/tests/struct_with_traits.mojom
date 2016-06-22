@@ -43,6 +43,10 @@ struct PassByValueStructWithTraitsContainer {
   PassByValueStructWithTraits f_struct;
 };
 
+struct StructWithTraitsForUniquePtrTest {
+  int32 f_int32;
+};
+
 interface TraitsTestService {
   EchoStructWithTraits(StructWithTraits s) => (StructWithTraits passed);
 
@@ -50,4 +54,7 @@ interface TraitsTestService {
       (PassByValueStructWithTraits passed);
 
   EchoEnumWithTraits(EnumWithTraits e) => (EnumWithTraits passed);
+
+  EchoStructWithTraitsForUniquePtrTest(StructWithTraitsForUniquePtrTest e) => (
+      StructWithTraitsForUniquePtrTest passed);
 };

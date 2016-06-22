@@ -145,6 +145,12 @@ class StructTraitsTest : public testing::Test,
     callback.Run(e);
   }
 
+  void EchoStructWithTraitsForUniquePtrTest(
+      std::unique_ptr<int> e,
+      const EchoStructWithTraitsForUniquePtrTestCallback& callback) override {
+    callback.Run(std::move(e));
+  }
+
   base::MessageLoop loop_;
 
   ChromiumRectServiceImpl chromium_service_;
@@ -357,6 +363,23 @@ TEST_F(StructTraitsTest, SerializeStructWithTraits) {
   EXPECT_EQ(input.get_struct(), output.get_struct());
   EXPECT_EQ(input.get_struct_array(), output.get_struct_array());
   EXPECT_EQ(input.get_struct_map(), output.get_struct_map());
+}
+
+void ExpectUniquePtr(int expected,
+                     const base::Closure& closure,
+                     std::unique_ptr<int> value) {
+  EXPECT_EQ(expected, *value);
+  closure.Run();
+}
+
+TEST_F(StructTraitsTest, TypemapUniquePtr) {
+  base::RunLoop loop;
+  TraitsTestServicePtr proxy = GetTraitsTestProxy();
+
+  proxy->EchoStructWithTraitsForUniquePtrTest(
+      base::MakeUnique<int>(12345),
+      base::Bind(&ExpectUniquePtr, 12345, loop.QuitClosure()));
+  loop.Run();
 }
 
 }  // namespace test

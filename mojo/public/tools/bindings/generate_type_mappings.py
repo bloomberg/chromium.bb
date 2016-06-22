@@ -87,8 +87,8 @@ def ParseTypemap(typemap):
   mapping_pattern = \
       re.compile(r"""^([^=]+)           # mojom type
                      =
-                     ([^(]+)            # native type
-                     (?:\(([^)]+)\))?$  # optional attribute in parentheses
+                     ([^[]+)            # native type
+                     (?:\[([^]]+)\])?$  # optional attribute in square brackets
                  """, re.X)
   for typename in values['type_mappings']:
     match_result = mapping_pattern.match(typename)
