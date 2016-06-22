@@ -91,6 +91,7 @@ def gen_request_data(properties=None, **kwargs):
     'parent_task_id': '',
     'priority': 101,
     'properties': {
+      'cipd_input': None,
       'command': None,
       'dimensions': [
         {'key': 'foo', 'value': 'bar'},
@@ -309,6 +310,7 @@ class TestSwarmingTrigger(NetTestCase):
         parent_task_id=None,
         priority=101,
         properties=swarming.TaskProperties(
+            cipd_input=None,
             command=['a', 'b'],
             dimensions={'foo': 'bar', 'os': 'Mac'},
             env={},
@@ -375,6 +377,7 @@ class TestSwarmingTrigger(NetTestCase):
         parent_task_id='123',
         priority=101,
         properties=swarming.TaskProperties(
+            cipd_input=None,
             command=['a', 'b'],
             dimensions={'foo': 'bar', 'os': 'Mac'},
             env={},
@@ -389,6 +392,74 @@ class TestSwarmingTrigger(NetTestCase):
 
     request = swarming.task_request_to_raw_request(task_request)
     self.assertEqual('123', request['parent_task_id'])
+
+    result = gen_request_response(request)
+    result['request']['priority'] = 200
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+
+    os.environ['SWARMING_TASK_ID'] = '123'
+    try:
+      tasks = swarming.trigger_task_shards(
+          swarming='https://localhost:1',
+          shards=1,
+          task_request=task_request)
+    finally:
+      os.environ.pop('SWARMING_TASK_ID')
+    expected = {
+      u'unit_tests': {
+        'shard_index': 0,
+        'task_id': '12300',
+        'view_url': 'https://localhost:1/user/task/12300',
+      }
+    }
+    self.assertEqual(expected, tasks)
+    self._check_output('', 'Priority was reset to 200\n')
+
+  def test_trigger_cipd_package(self):
+    task_request = swarming.NewTaskRequest(
+        expiration_secs=60*60,
+        name=TEST_NAME,
+        parent_task_id='123',
+        priority=101,
+        properties=swarming.TaskProperties(
+            cipd_input=swarming.CipdInput(
+                client_package=None,
+                packages=[
+                    swarming.CipdPackage(
+                        package_name='mypackage',
+                        path='path/to/package',
+                        version='abc123')],
+                server=None),
+            command=['a', 'b'],
+            dimensions={'foo': 'bar', 'os': 'Mac'},
+            env={},
+            execution_timeout_secs=60,
+            extra_args=[],
+            grace_period_secs=30,
+            idempotent=False,
+            inputs_ref=None,
+            io_timeout_secs=60),
+        tags=['tag:a', 'tag:b'],
+        user='joe@localhost')
+
+    request = swarming.task_request_to_raw_request(task_request)
+    expected = {
+      'client_package': None,
+      'packages': [{
+          'package_name': 'mypackage',
+          'path': 'path/to/package',
+          'version': 'abc123',
+      }],
+      'server': None
+    }
+    self.assertEqual(expected, request['properties']['cipd_input'])
 
     result = gen_request_response(request)
     result['request']['priority'] = 200
@@ -760,6 +831,7 @@ class TestMain(NetTestCase):
       'parent_task_id': '',
       'priority': 100,
       'properties': {
+        'cipd_input': None,
         'command': ['python', '-c', 'print(\'hi\')'],
         'dimensions': [
           {'key': 'foo', 'value': 'bar'},
@@ -939,6 +1011,7 @@ class TestMain(NetTestCase):
             'parent_task_id': '',
             'priority': 101,
             'properties': {
+              'cipd_input': None,
               'command': None,
               'dimensions': [
                 {'key': 'foo', 'value': 'bar'},
@@ -964,6 +1037,67 @@ class TestMain(NetTestCase):
       ),
     ]
     self.assertEqual(expected, write_json_calls)
+
+  def test_trigger_cipd(self):
+    self.mock(swarming, 'now', lambda: 123456)
+
+    request = gen_request_data(
+        properties={
+          'cipd_input': {
+            'client_package': None,
+            'packages': [{
+              'package_name': 'super/awesome/pkg',
+              'path': 'path/to/pkg',
+              'version': 'version:42',
+            }],
+            'server': None,
+          },
+          'command': None,
+          'inputs_ref': {
+            'isolated': u'1111111111111111111111111111111111111111',
+            'isolatedserver': 'https://localhost:2',
+            'namespace': 'default-gzip',
+          },
+        })
+    result = gen_request_response(request)
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+    ret = main([
+        'trigger',
+        '--swarming', 'https://localhost:1',
+        '--isolate-server', 'https://localhost:2',
+        '--shards', '1',
+        '--priority', '101',
+        '--dimension', 'foo', 'bar',
+        '--dimension', 'os', 'Mac',
+        '--expiration', '3600',
+        '--user', 'joe@localhost',
+        '--tags', 'tag:a',
+        '--tags', 'tag:b',
+        '--hard-timeout', '60',
+        '--io-timeout', '60',
+        '--task-name', 'unit_tests',
+        '--isolated', FILE_HASH,
+        '--cipd-package', 'path/to/pkg:super/awesome/pkg:version:42',
+        '--',
+        '--some-arg',
+        '123',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output(
+        'Triggered task: unit_tests\n'
+        'To collect results, use:\n'
+        '  swarming.py collect -S https://localhost:1 12300\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n',
+        '')
 
   def test_trigger_no_request(self):
     with self.assertRaises(SystemExit):

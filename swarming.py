@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.8.5'
+__version__ = '0.8.6'
 
 import collections
 import datetime
@@ -132,6 +132,26 @@ def isolated_handle_options(options, args):
 
 
 # See ../appengine/swarming/swarming_rpcs.py.
+CipdPackage = collections.namedtuple(
+    'CipdPackage',
+    [
+      'package_name',
+      'path',
+      'version',
+    ])
+
+
+# See ../appengine/swarming/swarming_rpcs.py.
+CipdInput = collections.namedtuple(
+    'CipdInput',
+    [
+      'client_package',
+      'packages',
+      'server',
+    ])
+
+
+# See ../appengine/swarming/swarming_rpcs.py.
 FilesRef = collections.namedtuple(
     'FilesRef',
     [
@@ -145,6 +165,7 @@ FilesRef = collections.namedtuple(
 TaskProperties = collections.namedtuple(
     'TaskProperties',
     [
+      'cipd_input',
       'command',
       'dimensions',
       'env',
@@ -177,6 +198,14 @@ def namedtuple_to_dict(value):
   for k, v in out.iteritems():
     if hasattr(v, '_asdict'):
       out[k] = namedtuple_to_dict(v)
+    elif isinstance(v, (list, tuple)):
+      l = []
+      for elem in v:
+        if hasattr(elem, '_asdict'):
+          l.append(namedtuple_to_dict(elem))
+        else:
+          l.append(elem)
+      out[k] = l
   return out
 
 
@@ -897,6 +926,10 @@ def add_trigger_options(parser):
       '--raw-cmd', action='store_true', default=False,
       help='When set, the command after -- is used as-is without run_isolated. '
            'In this case, no .isolated file is expected.')
+  parser.task_group.add_option(
+      '--cipd-package', action='append', default=[],
+      help='CIPD packages to install on the Swarming bot.  Uses the format: '
+           'path:package_name:version')
   parser.add_option_group(parser.task_group)
 
 
@@ -931,10 +964,27 @@ def process_trigger_options(parser, options, args):
     except ValueError as e:
       parser.error(str(e))
 
+  cipd_packages = []
+  for p in options.cipd_package:
+    split = p.split(':', 2)
+    if len(split) != 3:
+      parser.error('CIPD packages must take the form: path:package:version')
+    cipd_packages.append(CipdPackage(
+        package_name=split[1],
+        path=split[0],
+        version=split[2]))
+  cipd_input = None
+  if cipd_packages:
+    cipd_input = CipdInput(
+        client_package=None,
+        packages=cipd_packages,
+        server=None)
+
   # If inputs_ref.isolated is used, command is actually extra_args.
   # Otherwise it's an actual command to run.
   isolated_input = inputs_ref and inputs_ref.isolated
   properties = TaskProperties(
+      cipd_input=cipd_input,
       command=None if isolated_input else command,
       dimensions=options.dimensions,
       env=options.env,
