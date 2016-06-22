@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 source_set("core") {
   visibility = [ "//blimp/*" ]
 
@@ -18,6 +23,21 @@ source_set("core") {
     "//blimp/client/core/public",
     "//url",
   ]
+
+  if (is_android) {
+    sources += [
+      "android/blimp_contents_factory.cc",
+      "android/blimp_contents_factory.h",
+      "android/blimp_contents_impl_android.cc",
+      "android/blimp_contents_impl_android.h",
+      "android/blimp_contents_observer_proxy.cc",
+      "android/blimp_contents_observer_proxy.h",
+      "android/blimp_navigation_controller_impl_android.cc",
+      "android/blimp_navigation_controller_impl_android.h",
+    ]
+
+    deps += [ "//blimp/client/core:core_jni_headers" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -35,4 +55,33 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//url",
   ]
+}
+
+if (is_android) {
+  android_library("core_java") {
+    visibility = [ "//blimp/*" ]
+
+    java_files = [
+      "android/java/src/org/chromium/blimp/core/BlimpContentsFactory.java",
+      "android/java/src/org/chromium/blimp/core/BlimpContentsImpl.java",
+      "android/java/src/org/chromium/blimp/core/BlimpContentsObserverProxy.java",
+      "android/java/src/org/chromium/blimp/core/BlimpNavigationControllerImpl.java",
+    ]
+
+    deps = [
+      "//base:base_java",
+      "//blimp/client/core/public:public_java",
+    ]
+  }
+
+  generate_jni("core_jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/blimp/core/BlimpContentsFactory.java",
+      "android/java/src/org/chromium/blimp/core/BlimpContentsImpl.java",
+      "android/java/src/org/chromium/blimp/core/BlimpContentsObserverProxy.java",
+      "android/java/src/org/chromium/blimp/core/BlimpNavigationControllerImpl.java",
+    ]
+
+    jni_package = "blimp"
+  }
 }

@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 source_set("public") {
   sources = [
     "blimp_contents.h",
@@ -13,4 +18,15 @@ source_set("public") {
     "//base",
     "//url",
   ]
+}
+
+if (is_android) {
+  android_library("public_java") {
+    java_files = [
+      "android/java/src/org/chromium/blimp/core_public/BlimpContents.java",
+      "android/java/src/org/chromium/blimp/core_public/BlimpContentsObserver.java",
+      "android/java/src/org/chromium/blimp/core_public/BlimpNavigationController.java",
+      "android/java/src/org/chromium/blimp/core_public/EmptyBlimpContentsObserver.java",
+    ]
+  }
 }

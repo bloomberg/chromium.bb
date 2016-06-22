@@ -417,6 +417,8 @@ if (is_android) {
     deps = [
       ":blimp_java_resources",
       "//base:base_java",
+      "//blimp/client/core:core_java",
+      "//blimp/client/core/public:public_java",
 
       # TODO(dtrainor): Remove the ui_java target once no more Android Toast
       # notifications are used.
@@ -454,12 +456,16 @@ if (is_android) {
       ":blimp_java",
       "//base:base_java",
       "//base:base_java_test_support",
+      "//blimp/client/core:core_java",
+      "//blimp/client/core/public:public_java",
       google_play_services_library,
     ]
 
     java_files = [
       "app/android/javatests/src/org/chromium/blimp/auth/MockTokenSource.java",
       "app/android/javatests/src/org/chromium/blimp/auth/RetryingTokenSourceTest.java",
+      "app/android/javatests/src/org/chromium/blimp/core/BlimpContentsTest.java",
+      "app/android/javatests/src/org/chromium/blimp/BlimpNativeInstrumentationTestCase.java",
     ]
   }
 
@@ -469,6 +475,7 @@ if (is_android) {
       ":jni_headers",
       "//base",
       "//blimp/client:compositor",
+      "//blimp/client/core",
       "//blimp/common",
       "//blimp/common/proto",
       "//blimp/net",
@@ -513,6 +520,7 @@ if (is_android) {
       ":blimp_client_android",
       ":blimp_java",
       "//base:base_java",
+      "//blimp/client/core:core_java",
       "//components/safe_json/android:safe_json_java",
       "//net/android:net_java",
     ]

@@ -7,13 +7,22 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/supports_user_data.h"
 #include "blimp/client/core/blimp_navigation_controller_delegate.h"
 #include "blimp/client/core/blimp_navigation_controller_impl.h"
 #include "blimp/client/core/public/blimp_contents.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#endif  // defined(OS_ANDROID)
+
 namespace blimp {
 namespace client {
+
+#if defined(OS_ANDROID)
+class BlimpContentsImplAndroid;
+#endif  // defined(OS_ANDROID)
 
 class BlimpContentsObserver;
 class BlimpNavigationController;
@@ -21,10 +30,16 @@ class BlimpNavigationController;
 // BlimpContentsImpl is the implementation of the core class in
 // //blimp/client/core, the BlimpContents.
 class BlimpContentsImpl : public BlimpContents,
-                          public BlimpNavigationControllerDelegate {
+                          public BlimpNavigationControllerDelegate,
+                          base::SupportsUserData {
  public:
   BlimpContentsImpl();
   ~BlimpContentsImpl() override;
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaLocalRef<jobject> GetJavaBlimpContentsImpl();
+  BlimpContentsImplAndroid* GetBlimpContentsImplAndroid();
+#endif  // defined(OS_ANDROID)
 
   // BlimpContents implementation.
   BlimpNavigationControllerImpl& GetNavigationController() override;
