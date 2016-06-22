@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
+#include "ash/common/wm/overview/scoped_overview_animation_settings_factory.h"
 
 #include "base/logging.h"
 

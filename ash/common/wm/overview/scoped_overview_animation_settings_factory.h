@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_FACTORY_H_
-#define ASH_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_FACTORY_H_
+#ifndef ASH_COMMON_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_FACTORY_H_
+#define ASH_COMMON_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_FACTORY_H_
 
 #include <memory>
 
-#include "ash/wm/overview/overview_animation_type.h"
+#include "ash/common/wm/overview/overview_animation_type.h"
 
 namespace ash {
 
@@ -33,4 +33,4 @@ class ScopedOverviewAnimationSettingsFactory {
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_FACTORY_H_
+#endif  // ASH_COMMON_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_FACTORY_H_

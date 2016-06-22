@@ -5,8 +5,8 @@
 #ifndef ASH_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_AURA_H_
 #define ASH_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_AURA_H_
 
-#include "ash/wm/overview/overview_animation_type.h"
-#include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/common/wm/overview/overview_animation_type.h"
+#include "ash/common/wm/overview/scoped_overview_animation_settings.h"
 #include "base/macros.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 

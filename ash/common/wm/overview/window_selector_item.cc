@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/window_selector_item.h"
+#include "ash/common/wm/overview/window_selector_item.h"
 
 #include <algorithm>
 #include <vector>
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/overview/overview_animation_type.h"
+#include "ash/common/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/common/wm/overview/scoped_overview_animation_settings_factory.h"
+#include "ash/common/wm/overview/scoped_transform_overview_window.h"
+#include "ash/common/wm/overview/window_selector.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
-#include "ash/wm/overview/overview_animation_type.h"
-#include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
-#include "ash/wm/overview/scoped_transform_overview_window.h"
-#include "ash/wm/overview/window_selector.h"
-#include "ash/wm/overview/window_selector_controller.h"
 #include "base/auto_reset.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -166,8 +166,7 @@ OverviewCloseButton::OverviewCloseButton(views::ButtonListener* listener)
   }
 }
 
-OverviewCloseButton::~OverviewCloseButton() {
-}
+OverviewCloseButton::~OverviewCloseButton() {}
 
 // A View having rounded corners and a specified background color which is
 // only painted within the bounds defined by the rounded corners.
@@ -211,8 +210,7 @@ WindowSelectorItem::OverviewLabelButton::OverviewLabelButton(
     const base::string16& text)
     : LabelButton(listener, text) {}
 
-WindowSelectorItem::OverviewLabelButton::~OverviewLabelButton() {
-}
+WindowSelectorItem::OverviewLabelButton::~OverviewLabelButton() {}
 
 void WindowSelectorItem::OverviewLabelButton::SetBackgroundColor(
     SkColor color) {
@@ -381,8 +379,8 @@ void WindowSelectorItem::RecomputeWindowTransforms() {
 }
 
 void WindowSelectorItem::SendAccessibleSelectionEvent() {
-  window_label_button_view_->NotifyAccessibilityEvent(
-      ui::AX_EVENT_SELECTION, true);
+  window_label_button_view_->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION,
+                                                      true);
 }
 
 void WindowSelectorItem::SetDimmed(bool dimmed) {

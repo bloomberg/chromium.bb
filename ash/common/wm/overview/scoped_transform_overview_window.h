@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
-#define ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
+#ifndef ASH_COMMON_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
+#define ASH_COMMON_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
 
 #include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/overview_animation_type.h"
+#include "ash/common/wm/overview/overview_animation_type.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
@@ -77,9 +77,8 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   //  // until scoped_settings is destroyed.
   //  overview_window.SetTransform(root_window, new_transform);
   //  overview_window.SetOpacity(1);
-  void BeginScopedAnimation(
-      OverviewAnimationType animation_type,
-      ScopedAnimationSettings* animation_settings);
+  void BeginScopedAnimation(OverviewAnimationType animation_type,
+                            ScopedAnimationSettings* animation_settings);
 
   // Returns true if this window selector window contains the |target|.
   bool Contains(const WmWindow* target) const;
@@ -153,4 +152,4 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
+#endif  // ASH_COMMON_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_

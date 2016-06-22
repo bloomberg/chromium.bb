@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
-#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
+#ifndef ASH_COMMON_WM_OVERVIEW_WINDOW_SELECTOR_H_
+#define ASH_COMMON_WM_OVERVIEW_WINDOW_SELECTOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -42,12 +42,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Returns true if the window can be selected in overview mode.
   static bool IsSelectable(WmWindow* window);
 
-  enum Direction {
-    LEFT,
-    UP,
-    RIGHT,
-    DOWN
-  };
+  enum Direction { LEFT, UP, RIGHT, DOWN };
 
   using WindowList = std::vector<WmWindow*>;
 
@@ -186,4 +181,4 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
+#endif  // ASH_COMMON_WM_OVERVIEW_WINDOW_SELECTOR_H_

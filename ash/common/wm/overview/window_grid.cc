@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/window_grid.h"
+#include "ash/common/wm/overview/window_grid.h"
 
 #include <algorithm>
 #include <functional>
@@ -13,14 +13,14 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/overview/scoped_transform_overview_window.h"
+#include "ash/common/wm/overview/window_selector.h"
+#include "ash/common/wm/overview/window_selector_item.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
-#include "ash/wm/overview/scoped_transform_overview_window.h"
-#include "ash/wm/overview/window_selector.h"
-#include "ash/wm/overview/window_selector_item.h"
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/scoped_vector.h"
@@ -67,8 +67,7 @@ CleanupWidgetAfterAnimationObserver::CleanupWidgetAfterAnimationObserver(
     std::unique_ptr<views::Widget> widget)
     : widget_(std::move(widget)) {}
 
-CleanupWidgetAfterAnimationObserver::~CleanupWidgetAfterAnimationObserver() {
-}
+CleanupWidgetAfterAnimationObserver::~CleanupWidgetAfterAnimationObserver() {}
 
 void CleanupWidgetAfterAnimationObserver::OnImplicitAnimationsCompleted() {
   delete this;
@@ -596,9 +595,11 @@ void WindowGrid::PositionWindows(bool animate) {
     gfx::Rect target_bounds(item_size.width() * column + bounding_rect.x(),
                             item_size.height() * row + bounding_rect.y(),
                             item_size.width(), item_size.height());
-    window_list_[i]->SetBounds(target_bounds, animate ?
-        OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS :
-        OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
+    window_list_[i]->SetBounds(
+        target_bounds,
+        animate
+            ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
+            : OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   }
 
   // If the selection widget is active, reposition it without any animation.
@@ -691,8 +692,8 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
     changed_selection_index = true;
   }
 
-  MoveSelectionWidget(direction, recreate_selection_widget,
-                      out_of_bounds, animate);
+  MoveSelectionWidget(direction, recreate_selection_widget, out_of_bounds,
+                      animate);
 
   // Make the new selected window header fully transparent.
   if (SelectedWindow())
@@ -813,7 +814,7 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   const gfx::Rect target_bounds =
       root_window_->ConvertRectFromScreen(SelectedWindow()->target_bounds());
   gfx::Vector2d fade_out_direction =
-          GetSlideVectorForFadeIn(direction, target_bounds);
+      GetSlideVectorForFadeIn(direction, target_bounds);
   widget_window->SetBounds(target_bounds - fade_out_direction);
 }
 
@@ -833,9 +834,8 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
 
     ui::ScopedLayerAnimationSettings animation_settings(
         old_selection_window->GetLayer()->GetAnimator());
-    animation_settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(
-            kOverviewSelectorTransitionMilliseconds));
+    animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        kOverviewSelectorTransitionMilliseconds));
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     animation_settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);

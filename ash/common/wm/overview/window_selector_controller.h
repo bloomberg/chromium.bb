@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
-#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
+#ifndef ASH_COMMON_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
+#define ASH_COMMON_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
 
 #include <list>
 #include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/window_selector.h"
-#include "ash/wm/overview/window_selector_delegate.h"
+#include "ash/common/wm/overview/window_selector.h"
+#include "ash/common/wm/overview/window_selector_delegate.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 
@@ -21,8 +21,7 @@ class WindowSelectorTest;
 
 // Manages a window selector which displays an overview of all windows and
 // allows selecting a window to activate it.
-class ASH_EXPORT WindowSelectorController
-    : public WindowSelectorDelegate {
+class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
  public:
   WindowSelectorController();
   ~WindowSelectorController() override;
@@ -60,4 +59,4 @@ class ASH_EXPORT WindowSelectorController
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
+#endif  // ASH_COMMON_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/scoped_transform_overview_window.h"
+#include "ash/common/wm/overview/scoped_transform_overview_window.h"
 
 #include <algorithm>
 #include <vector>
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/common/wm/overview/scoped_overview_animation_settings_factory.h"
+#include "ash/common/wm/overview/window_selector_item.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
-#include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
-#include "ash/wm/overview/window_selector_item.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -58,8 +58,8 @@ class TransientDescendantIterator {
   TransientDescendantIterator();
 
   // Copy constructor required for iterator purposes.
-  TransientDescendantIterator(
-      const TransientDescendantIterator& other) = default;
+  TransientDescendantIterator(const TransientDescendantIterator& other) =
+      default;
 
   // Iterates over |root_window| and all of its transient descendants.
   // Note |root_window| must not have a transient parent.
@@ -111,8 +111,7 @@ class TransientDescendantIteratorRange {
 };
 
 TransientDescendantIterator::TransientDescendantIterator()
-  : current_window_(nullptr) {
-}
+    : current_window_(nullptr) {}
 
 TransientDescendantIterator::TransientDescendantIterator(WmWindow* root_window)
     : current_window_(root_window) {
@@ -120,8 +119,7 @@ TransientDescendantIterator::TransientDescendantIterator(WmWindow* root_window)
 }
 
 // Performs a pre-order traversal of the transient descendants.
-const TransientDescendantIterator&
-TransientDescendantIterator::operator++() {
+const TransientDescendantIterator& TransientDescendantIterator::operator++() {
   DCHECK(current_window_);
 
   const WmWindows transient_children = current_window_->GetTransientChildren();
@@ -160,8 +158,7 @@ WmWindow* TransientDescendantIterator::operator*() const {
 
 TransientDescendantIteratorRange::TransientDescendantIteratorRange(
     const TransientDescendantIterator& begin)
-    : begin_(begin) {
-}
+    : begin_(begin) {}
 
 TransientDescendantIteratorRange GetTransientTreeIterator(WmWindow* window) {
   return TransientDescendantIteratorRange(
@@ -251,8 +248,7 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
       original_transform_(window->GetTargetTransform()),
       original_opacity_(window->GetTargetOpacity()) {}
 
-ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
-}
+ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {}
 
 void ScopedTransformOverviewWindow::RestoreWindow() {
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
@@ -261,9 +257,8 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   }
 
   ScopedAnimationSettings animation_settings_list;
-  BeginScopedAnimation(
-      OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
-      &animation_settings_list);
+  BeginScopedAnimation(OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
+                       &animation_settings_list);
   SetTransform(window()->GetRootWindow(), original_transform_, 0);
 
   std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
@@ -381,8 +376,7 @@ gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
     const gfx::Rect& dst_rect) {
   DCHECK(!src_rect.IsEmpty());
   gfx::Transform transform;
-  transform.Translate(dst_rect.x() - src_rect.x(),
-                      dst_rect.y() - src_rect.y());
+  transform.Translate(dst_rect.x() - src_rect.x(), dst_rect.y() - src_rect.y());
   transform.Scale(static_cast<float>(dst_rect.width()) / src_rect.width(),
                   static_cast<float>(dst_rect.height()) / src_rect.height());
   return transform;
@@ -407,10 +401,10 @@ void ScopedTransformOverviewWindow::SetTransform(
     WmWindow* parent_window = window->GetParent();
     gfx::Point original_origin =
         parent_window->ConvertRectToScreen(window->GetTargetBounds()).origin();
-    gfx::Transform new_transform = TransformAboutPivot(
-        gfx::Point(target_origin.x() - original_origin.x(),
-                   target_origin.y() - original_origin.y()),
-        transform);
+    gfx::Transform new_transform =
+        TransformAboutPivot(gfx::Point(target_origin.x() - original_origin.x(),
+                                       target_origin.y() - original_origin.y()),
+                            transform);
     window->SetTransform(new_transform);
   }
 }

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_ITEM_H_
-#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_ITEM_H_
+#ifndef ASH_COMMON_WM_OVERVIEW_WINDOW_SELECTOR_ITEM_H_
+#define ASH_COMMON_WM_OVERVIEW_WINDOW_SELECTOR_ITEM_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/wm/overview/scoped_transform_overview_window.h"
 #include "ash/common/wm_window_observer.h"
-#include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -194,4 +194,4 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_ITEM_H_
+#endif  // ASH_COMMON_WM_OVERVIEW_WINDOW_SELECTOR_ITEM_H_

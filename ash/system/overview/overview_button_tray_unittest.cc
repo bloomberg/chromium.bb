@@ -6,6 +6,7 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
@@ -18,7 +19,6 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm/overview/window_selector_controller.h"
 #include "base/command_line.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"

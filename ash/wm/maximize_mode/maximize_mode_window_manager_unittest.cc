@@ -8,6 +8,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/mru_window_tracker.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -19,7 +20,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"

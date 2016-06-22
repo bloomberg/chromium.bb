@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/window_selector.h"
+#include "ash/common/wm/overview/window_selector.h"
 
 #include <algorithm>
 #include <functional>
@@ -18,6 +18,9 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/mru_window_tracker.h"
+#include "ash/common/wm/overview/window_grid.h"
+#include "ash/common/wm/overview/window_selector_delegate.h"
+#include "ash/common/wm/overview/window_selector_item.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
@@ -26,9 +29,6 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/wm/overview/window_grid.h"
-#include "ash/wm/overview/window_selector_delegate.h"
-#include "ash/wm/overview/window_selector_item.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -138,9 +138,7 @@ struct WindowSelectorItemForRoot {
 class RoundedContainerView : public views::View {
  public:
   RoundedContainerView(int corner_radius, SkColor background)
-      : corner_radius_(corner_radius),
-        background_(background) {
-  }
+      : corner_radius_(corner_radius), background_(background) {}
 
   ~RoundedContainerView() override {}
 
@@ -413,9 +411,8 @@ void WindowSelector::Shutdown() {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Ash.WindowSelector.TimeInOverviewWithTextFiltering",
         base::Time::Now() - overview_start_time_);
-    UMA_HISTOGRAM_COUNTS_100(
-        "Ash.WindowSelector.ItemsWhenTextFilteringUsed",
-        remaining_items);
+    UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.ItemsWhenTextFilteringUsed",
+                             remaining_items);
   }
 
   // Clearing the window list resets the ignored_by_shelf flag on the windows.
@@ -503,9 +500,9 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
         return false;
       UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.ArrowKeyPresses",
                                num_key_presses_);
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Ash.WindowSelector.KeyPressesOverItemsRatio",
-          (num_key_presses_ * 100) / num_items_, 1, 300, 30);
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.WindowSelector.KeyPressesOverItemsRatio",
+                                  (num_key_presses_ * 100) / num_items_, 1, 300,
+                                  30);
       WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_ENTER_KEY);
       SelectWindow(
           grid_list_[selected_grid_index_]->SelectedWindow()->GetWindow());
@@ -603,8 +600,9 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
         text_filter_widget_window->GetLayer()->GetAnimator());
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    animation_settings.SetTweenType(showing_selection_widget_ ?
-        gfx::Tween::FAST_OUT_LINEAR_IN : gfx::Tween::LINEAR_OUT_SLOW_IN);
+    animation_settings.SetTweenType(showing_selection_widget_
+                                        ? gfx::Tween::FAST_OUT_LINEAR_IN
+                                        : gfx::Tween::LINEAR_OUT_SLOW_IN);
 
     gfx::Transform transform;
     if (should_show_selection_widget) {
@@ -659,7 +657,7 @@ void WindowSelector::ResetFocusRestoreWindow(bool focus) {
   // If the window is in the observed_windows_ list it needs to continue to be
   // observed.
   if (observed_windows_.find(restore_focus_window_) ==
-          observed_windows_.end()) {
+      observed_windows_.end()) {
     restore_focus_window_->RemoveObserver(this);
   }
   restore_focus_window_ = nullptr;
@@ -678,9 +676,9 @@ void WindowSelector::Move(Direction direction, bool animate) {
 
   // Keep calling Move() on the grids until one of them reports no overflow or
   // we made a full cycle on all the grids.
-  for (size_t i = 0;
-      i <= grid_list_.size() &&
-      grid_list_[selected_grid_index_]->Move(direction, animate); i++) {
+  for (size_t i = 0; i <= grid_list_.size() &&
+                     grid_list_[selected_grid_index_]->Move(direction, animate);
+       i++) {
     selected_grid_index_ =
         (selected_grid_index_ + display_direction + grid_list_.size()) %
         grid_list_.size();

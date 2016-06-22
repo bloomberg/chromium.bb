@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
 
 #include <vector>
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
+#include "ash/common/wm/overview/window_selector.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/wm/overview/window_selector.h"
 #include "base/metrics/histogram.h"
 
 namespace ash {
 
-WindowSelectorController::WindowSelectorController() {
-}
+WindowSelectorController::WindowSelectorController() {}
 
-WindowSelectorController::~WindowSelectorController() {
-}
+WindowSelectorController::~WindowSelectorController() {}
 
 // static
 bool WindowSelectorController::CanSelect() {
@@ -83,9 +81,8 @@ void WindowSelectorController::OnSelectionEnded() {
 
 void WindowSelectorController::OnSelectionStarted() {
   if (!last_selection_time_.is_null()) {
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Ash.WindowSelector.TimeBetweenUse",
-        base::Time::Now() - last_selection_time_);
+    UMA_HISTOGRAM_LONG_TIMES("Ash.WindowSelector.TimeBetweenUse",
+                             base::Time::Now() - last_selection_time_);
   }
 }
 
