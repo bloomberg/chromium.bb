@@ -35093,6 +35093,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.MainFrame.EffectiveConnectionType"
+    enum="NQEEffectiveConnectionType">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Effective connection type estimated by network quality estimator. Suffixed
+    with the connection type reported by the operating system.
+
+    This metric is recorded on main-frame requests.
+  </summary>
+</histogram>
+
 <histogram name="NQE.MainFrame.Kbps" units="Kbps">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
@@ -83141,6 +83153,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Enabled">NPAPI is enabled</int>
 </enum>
 
+<enum name="NQEEffectiveConnectionType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Offline"/>
+  <int value="2" label="Slow 2G"/>
+  <int value="3" label="2G"/>
+  <int value="4" label="3G"/>
+  <int value="5" label="4G"/>
+  <int value="6" label="Broadband"/>
+</enum>
+
 <enum name="NQEExternalEstimateProviderStatus" type="int">
   <int value="0" label="External estimate provider was not available"/>
   <int value="1" label="External estimate provider was available"/>
@@ -96714,6 +96736,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="None" label="With no detected network"/>
   <suffix name="Bluetooth" label="On Bluetooth network"/>
   <affected-histogram name="NQE.FastestRTT"/>
+  <affected-histogram name="NQE.MainFrame.EffectiveConnectionType"/>
   <affected-histogram name="NQE.MainFrame.Kbps.Percentile50"/>
   <affected-histogram name="NQE.MainFrame.RTT.Percentile50"/>
   <affected-histogram name="NQE.MainFrame.TransportRTT.Percentile50"/>

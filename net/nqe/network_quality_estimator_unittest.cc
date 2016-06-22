@@ -384,12 +384,19 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   // Check UMA histograms.
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 0);
   histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 0);
+  histogram_tester.ExpectUniqueSample(
+      "NQE.MainFrame.EffectiveConnectionType.Unknown",
+      NetworkQualityEstimator::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+      1);
 
   std::unique_ptr<URLRequest> request2(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
   request2->SetLoadFlags(request2->load_flags() | LOAD_MAIN_FRAME);
   request2->Start();
   base::RunLoop().Run();
+  histogram_tester.ExpectTotalCount(
+      "NQE.MainFrame.EffectiveConnectionType.Unknown", 2);
 
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
@@ -416,6 +423,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
       "NQE.MainFrame.TransportRTT.Percentile50.Unknown", 0);
   histogram_tester.ExpectTotalCount("NQE.MainFrame.Kbps.Percentile50.Unknown",
                                     1);
+
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, std::string());
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
@@ -423,6 +431,17 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
 
   EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
+
+  std::unique_ptr<URLRequest> request3(context.CreateRequest(
+      estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+  request3->SetLoadFlags(request2->load_flags() | LOAD_MAIN_FRAME);
+  request3->Start();
+  base::RunLoop().Run();
+  histogram_tester.ExpectUniqueSample(
+      "NQE.MainFrame.EffectiveConnectionType.WiFi",
+      NetworkQualityEstimator::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+      1);
 }
 
 TEST(NetworkQualityEstimatorTest, StoreObservations) {
@@ -1361,6 +1380,7 @@ TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
 // Tests that the effective connection type is computed at the specified
 // interval, and that the observers are notified of any change.
 TEST(NetworkQualityEstimatorTest, TestEffectiveConnectionTypeObserver) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<base::SimpleTestTickClock> tick_clock(
       new base::SimpleTestTickClock());
   base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
@@ -1388,6 +1408,11 @@ TEST(NetworkQualityEstimatorTest, TestEffectiveConnectionTypeObserver) {
   request->Start();
   base::RunLoop().Run();
   EXPECT_EQ(1U, observer.effective_connection_types().size());
+  histogram_tester.ExpectUniqueSample(
+      "NQE.MainFrame.EffectiveConnectionType.Unknown",
+      NetworkQualityEstimator::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_2G,
+      1);
 
   // Next request should not trigger recomputation of effective connection type
   // since there has been no change in the clock.
@@ -1572,6 +1597,13 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   // Verify that metrics are logged correctly on main-frame requests.
   histogram_tester.ExpectTotalCount(
       "NQE.MainFrame.TransportRTT.Percentile50.Unknown", num_requests);
+  histogram_tester.ExpectTotalCount(
+      "NQE.MainFrame.EffectiveConnectionType.Unknown", num_requests);
+  histogram_tester.ExpectBucketCount(
+      "NQE.MainFrame.EffectiveConnectionType.Unknown",
+      NetworkQualityEstimator::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+      1);
 }
 
 #if defined(OS_IOS)

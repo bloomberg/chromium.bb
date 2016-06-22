@@ -776,6 +776,18 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
         "MainFrame.Kbps.Percentile50.", current_network_id_.type, 1000 * 1000);
     throughput_percentile->Add(kbps);
   }
+
+  const EffectiveConnectionType effective_connection_type =
+      GetEffectiveConnectionType();
+  base::HistogramBase* effective_connection_type_histogram =
+      base::Histogram::FactoryGet(
+          std::string("NQE.MainFrame.EffectiveConnectionType.") +
+              GetNameForConnectionType(current_network_id_.type),
+          0, EFFECTIVE_CONNECTION_TYPE_LAST,
+          EFFECTIVE_CONNECTION_TYPE_LAST /* Number of buckets */,
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+
+  effective_connection_type_histogram->Add(effective_connection_type);
 }
 
 NetworkQualityEstimator::EffectiveConnectionType
