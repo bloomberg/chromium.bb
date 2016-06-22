@@ -87,6 +87,8 @@ public:
 
     void sendPings(const KURL& destinationURL) const;
 
+    DECLARE_VIRTUAL_TRACE();
+
 protected:
     HTMLAnchorElement(const QualifiedName&, Document&);
 
@@ -95,6 +97,8 @@ protected:
     bool matchesEnabledPseudoClass() const override;
 
 private:
+    class NavigationHintSender;
+
     bool shouldHaveFocusAppearance() const final;
     void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) override;
     void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) override;
@@ -111,10 +115,12 @@ private:
     bool isInteractiveContent() const final;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void handleClick(Event*);
+    NavigationHintSender* ensureNavigationHintSender();
 
     uint32_t m_linkRelations;
     mutable LinkHash m_cachedVisitedLinkHash;
     bool m_wasFocusedByMouse;
+    Member<NavigationHintSender> m_navigationHintSender;
 };
 
 inline LinkHash HTMLAnchorElement::visitedLinkHash() const
