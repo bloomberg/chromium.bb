@@ -12,10 +12,12 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Android wrapper of the PersonalDataManager which provides access from the Java
@@ -109,6 +111,30 @@ public class PersonalDataManager {
             mPhoneNumber = phoneNumber;
             mEmailAddress = emailAddress;
             mLanguageCode = languageCode;
+        }
+
+        /**
+         * Builds an empty local profile with "settings" origin and country code from the default
+         * locale. All other fields are empty strings, because JNI does not handle nulls.
+         */
+        public AutofillProfile() {
+            mOrigin = AutofillPreferences.SETTINGS_ORIGIN;
+            mIsLocal = true;
+            mCountryCode = Locale.getDefault().getCountry();
+
+            mGUID = "";
+            mFullName = "";
+            mCompanyName = "";
+            mStreetAddress = "";
+            mRegion = "";
+            mLocality = "";
+            mDependentLocality = "";
+            mPostalCode = "";
+            mSortingCode = "";
+            mPhoneNumber = "";
+            mEmailAddress = "";
+            mLabel = "";
+            mLanguageCode = "";
         }
 
         /** TODO(estade): remove this constructor. */

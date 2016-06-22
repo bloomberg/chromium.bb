@@ -131,6 +131,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
     private PaymentRequestSection(Context context, String sectionName, SectionDelegate delegate) {
         super(context);
         mDelegate = delegate;
+        setId(R.id.payments_section);
         setOnClickListener(delegate);
         setOrientation(HORIZONTAL);
         setGravity(Gravity.CENTER_VERTICAL);
@@ -553,6 +554,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 mLabel.setText(stringId);
             }
 
+            /** Set the button identifier for the option. */
+            public void setId(int id) {
+                mButton.setId(id);
+            }
+
             private View createButton(
                     GridLayout parent, int rowIndex, boolean isSelected, boolean isEnabled) {
                 Context context = parent.getContext();
@@ -690,15 +696,21 @@ public abstract class PaymentRequestSection extends LinearLayout {
         public void onClick(View v) {
             if (!mDelegate.isAcceptingUserInput()) return;
 
+            // Handle click on the "ADD THING" button.
             for (int i = 0; i < mOptionRows.size(); i++) {
                 OptionRow row = mOptionRows.get(i);
-
                 boolean wasClicked = row.mButton == v || row.mLabel == v || row.mIcon == v;
-                if (row.mOption == null) {
-                    if (wasClicked) mDelegate.onAddPaymentOption(this);
-                } else {
-                    row.setChecked(wasClicked);
+                if (row.mOption == null && wasClicked) {
+                    mDelegate.onAddPaymentOption(this);
+                    return;
                 }
+            }
+
+            // Update the radio button state: checked/unchecked.
+            for (int i = 0; i < mOptionRows.size(); i++) {
+                OptionRow row = mOptionRows.get(i);
+                boolean wasClicked = row.mButton == v || row.mLabel == v || row.mIcon == v;
+                if (row.mOption != null) row.setChecked(wasClicked);
             }
         }
 
@@ -841,10 +853,15 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 mOptionRows.add(new OptionRow(mOptionLayout, i, item, item == selectedItem));
             }
 
+            // For testing.
+            if (!mOptionRows.isEmpty()) mOptionRows.get(0).setId(R.id.payments_first_radio_button);
+
             // If the user is allowed to add new options, show the button for it.
             if (information.getAddStringId() != 0) {
-                mOptionRows.add(new OptionRow(mOptionLayout, information.getSize(), null, false));
-                mOptionRows.get(mOptionRows.size() - 1).setLabel(information.getAddStringId());
+                OptionRow addRow = new OptionRow(mOptionLayout, information.getSize(), null, false);
+                addRow.setLabel(information.getAddStringId());
+                addRow.setId(R.id.payments_add_option_button);
+                mOptionRows.add(addRow);
             }
         }
 

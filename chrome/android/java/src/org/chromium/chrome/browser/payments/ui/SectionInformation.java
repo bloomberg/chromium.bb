@@ -28,7 +28,7 @@ public class SectionInformation {
     public static final int INVALID_SELECTION = -2;
 
     @PaymentRequestUI.DataType private final int mDataType;
-    private final ArrayList<PaymentOption> mItems;
+    private ArrayList<PaymentOption> mItems;
     private int mSelectedItem;
 
     /**
@@ -145,6 +145,17 @@ public class SectionInformation {
      */
     public PaymentOption getSelectedItem() {
         return getItem(getSelectedItemIndex());
+    }
+
+    /**
+     * Adds the given item at the head of the list and selects it.
+     *
+     * @param item The item to add.
+     */
+    public void addAndSelectItem(PaymentOption item) {
+        if (mItems == null) mItems = new ArrayList<>();
+        mItems.add(0, item);
+        mSelectedItem = 0;
     }
 
     /**

@@ -4,20 +4,20 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import javax.annotation.Nullable;
+
 /**
  * An option that the user can select, e.g., a shipping option, a shipping address, or a payment
  * method.
  */
 public class PaymentOption {
-    /**
-     * The placeholder value that indicates the absence of an icon for this option.
-     */
+    /** The placeholder value that indicates the absence of an icon for this option. */
     public static final int NO_ICON = 0;
 
     private final String mId;
-    private final String mLabel;
-    private final String mSublabel;
     private final int mIcon;
+    @Nullable private String mLabel;
+    @Nullable private String mSublabel;
     private boolean mIsValid = true;
 
     /**
@@ -28,7 +28,7 @@ public class PaymentOption {
      * @param sublabel The optional sublabel.
      * @param icon The drawable icon identifier or NO_ICON.
      */
-    public PaymentOption(String id, String label, String sublabel, int icon) {
+    public PaymentOption(String id, @Nullable String label, @Nullable String sublabel, int icon) {
         mId = id;
         mLabel = label;
         mSublabel = sublabel;
@@ -46,15 +46,27 @@ public class PaymentOption {
     /**
      * The primary label of this option. For example, “Visa***1234” or "2-day shipping".
      */
-    public String getLabel() {
+    @Nullable public String getLabel() {
         return mLabel;
     }
 
     /**
      * The optional sublabel of this option. For example, “Expiration date: 12/2025”.
      */
-    public String getSublabel() {
+    @Nullable public String getSublabel() {
         return mSublabel;
+    }
+
+    /**
+     * Updates the label and sublabel of this option. Called after the user has edited this option.
+     *
+     * @param label    The new label to use. Should not be null.
+     * @param sublabel The new sublabel to use. Can be null.
+     */
+    protected void updateLabels(String label, @Nullable String sublabel) {
+        assert label != null;
+        mLabel = label;
+        mSublabel = sublabel;
     }
 
     /**
@@ -73,11 +85,7 @@ public class PaymentOption {
         mIsValid = false;
     }
 
-    /**
-     * Returns whether this option is valid.
-     *
-     * @return True if this option is valid.
-     */
+    /** @return True if this option is valid. */
     public boolean isValid() {
         return mIsValid;
     }

@@ -103,7 +103,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
          * check and updated information.
          *
          * For example, if the website needs a shipping address to calculate shipping options, then
-         * calling onSectionOptionChanged(TYPE_SHIPPING_ADDRESS, option, checkedCallback) will
+         * calling onSectionOptionSelected(TYPE_SHIPPING_ADDRESS, option, checkedCallback) will
          * return true. When the website updates the shipping options, the checkedCallback will be
          * invoked.
          *
@@ -112,7 +112,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
          * @param checkedCallback   The callback after an asynchronous check has completed.
          * @return True if the option needs to be asynchronously checked.
          */
-        boolean onSectionOptionChanged(@DataType int optionType, PaymentOption option,
+        boolean onSectionOptionSelected(@DataType int optionType, PaymentOption option,
                 Callback<PaymentInformation> checkedCallback);
 
         /**
@@ -160,6 +160,22 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         void onPaymentRequestReadyToPay(PaymentRequestUI ui);
 
         /**
+         * Called when edit dialog is showing.
+         */
+        void onPaymentRequestReadyToEdit();
+
+        /**
+         * Called when editor validation completes with error. This can happen, for example, when
+         * user enters an invalid email address.
+         */
+        void onPaymentRequestEditorValidationError();
+
+        /**
+         * Called when editor is dismissed.
+         */
+        void onPaymentRequestEditorDismissed();
+
+        /**
          * Called when the result UI is showing.
          */
         void onPaymentRequestResultReady(PaymentRequestUI ui);
@@ -184,6 +200,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final boolean mRequestContactDetails;
 
     private final Dialog mDialog;
+    private final EditorView mEditorView;
     private final ViewGroup mFullContainer;
     private final ViewGroup mRequestView;
     private final PaymentRequestUiErrorView mErrorView;
@@ -236,7 +253,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *                        "https://shop.momandpop.com". If the origin is too long for the UI, it
      *                        should elide according to:
      * https://www.chromium.org/Home/chromium-security/enamel#TOC-Eliding-Origin-Names-And-Hostnames
-     * @return The UI for PaymentRequest.
      */
     public PaymentRequestUI(Activity activity, Client client, boolean requestShipping,
             boolean requestContactDetails, String title, String origin) {
@@ -266,6 +282,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         bottomSheetParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
         mFullContainer.addView(mRequestView, bottomSheetParams);
+
+        mEditorView = new EditorView(activity, sObserverForTest);
 
         // Set up the dialog.
         mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
@@ -507,7 +525,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         if (section == mShippingAddressSection
                 && mShippingAddressSectionInformation.getSelectedItem() != option) {
             mShippingAddressSectionInformation.setSelectedItem(option);
-            mIsClientCheckingSelection = mClient.onSectionOptionChanged(
+            mIsClientCheckingSelection = mClient.onSectionOptionSelected(
                     TYPE_SHIPPING_ADDRESSES, option, new Callback<PaymentInformation>() {
                         // The callback will be fired only if mIsClientCheckingSelection is true.
                         @Override
@@ -533,13 +551,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     });
         } else if (section == mShippingOptionSection) {
             mShippingOptionsSectionInformation.setSelectedItem(option);
-            mClient.onSectionOptionChanged(TYPE_SHIPPING_OPTIONS, option, null);
+            mClient.onSectionOptionSelected(TYPE_SHIPPING_OPTIONS, option, null);
         } else if (section == mContactDetailsSection) {
             mContactDetailsSectionInformation.setSelectedItem(option);
-            mClient.onSectionOptionChanged(TYPE_CONTACT_DETAILS, option, null);
+            mClient.onSectionOptionSelected(TYPE_CONTACT_DETAILS, option, null);
         } else if (section == mPaymentMethodSection) {
             mPaymentMethodSectionInformation.setSelectedItem(option);
-            mClient.onSectionOptionChanged(TYPE_PAYMENT_METHODS, option, null);
+            mClient.onSectionOptionSelected(TYPE_PAYMENT_METHODS, option, null);
         }
 
         if (mIsClientCheckingSelection) {
@@ -562,6 +580,15 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         } else if (section == mPaymentMethodSection) {
             mClient.onSectionAddOption(TYPE_PAYMENT_METHODS);
         }
+    }
+
+    /**
+     * Displays the editor user interface for the given model.
+     *
+     * @param editorModel The description of the editor user interface to display.
+     */
+    public void showEditor(final EditorModel editorModel) {
+        mEditorView.show(editorModel);
     }
 
     /**
@@ -989,8 +1016,18 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     @VisibleForTesting
+    public Dialog getEditorViewForTest() {
+        return mEditorView;
+    }
+
+    @VisibleForTesting
     public ViewGroup getShippingAddressSectionForTest() {
         return mShippingAddressSection;
+    }
+
+    @VisibleForTesting
+    public ViewGroup getContactDetailsSectionForTest() {
+        return mContactDetailsSection;
     }
 
     private void notifyReadyForInput() {

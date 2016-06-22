@@ -18,6 +18,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class PaymentRequestAbortTest extends PaymentRequestTestBase {
     public PaymentRequestAbortTest() {
+        // This merchant aborts the payment request when the "abort" button is clicked.
         super("payment_request_abort_test.html");
     }
 
@@ -28,6 +29,7 @@ public class PaymentRequestAbortTest extends PaymentRequestTestBase {
                 "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa));
     }
 
+    /** If the user has not clicked "Pay" yet, then merchant's abort will succeed. */
     @MediumTest
     public void testAbortBeforePayClicked() throws InterruptedException, ExecutionException,
             TimeoutException {
@@ -36,6 +38,7 @@ public class PaymentRequestAbortTest extends PaymentRequestTestBase {
         expectResultContains(new String[] {"Aborted"});
     }
 
+    /** If the user has already clicked the "Pay" button, then merchant won't be able to abort. */
     @MediumTest
     public void testAbortWhileUnmaskingCard() throws InterruptedException, ExecutionException,
             TimeoutException {

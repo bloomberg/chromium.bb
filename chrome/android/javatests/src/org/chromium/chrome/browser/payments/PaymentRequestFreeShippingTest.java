@@ -20,6 +20,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     public PaymentRequestFreeShippingTest() {
+        // This merchant provides free shipping worldwide.
         super("payment_request_free_shipping_test.html");
     }
 
@@ -27,20 +28,20 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
+        // The user has a shipping address on disk.
         helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "", "", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa));
     }
 
+    /** Submit the shipping address to the merchant when the user clicks "Pay." */
     @MediumTest
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        typeInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123",
-                mReadyForUnmaskInput.getTarget(), mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE,
-                mReadyToUnmask.getTarget(), mDismissed);
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
                 "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
                 "freeShippingOption"});
