@@ -21,8 +21,7 @@ class HostContentSettingsMap;
 
 class SiteEngagementScore {
  public:
-  // The parameters which can be varied via field trial. All "points" values
-  // should be appended to the end of the enum prior to MAX_VARIATION.
+  // The parameters which can be varied via field trial.
   enum Variation {
     // The maximum number of points that can be accrued in one day.
     MAX_POINTS_PER_DAY = 0,

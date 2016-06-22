@@ -12,8 +12,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
+#include "chrome/browser/engagement/site_engagement_observer.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/page_transition_types.h"
@@ -114,6 +116,7 @@ class SiteEngagementService : public KeyedService,
   double GetTotalEngagementPoints() const override;
 
  private:
+  friend class SiteEngagementObserver;
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CleanupEngagementScores);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ClearHistoryForURLs);
@@ -125,6 +128,7 @@ class SiteEngagementService : public KeyedService,
                            CleanupOriginsOnHistoryDeletion);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, IsBootstrapped);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, EngagementLevel);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, Observers);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ScoreDecayHistograms);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
 
@@ -183,6 +187,10 @@ class SiteEngagementService : public KeyedService,
       bool expired,
       const history::OriginCountAndLastVisitMap& remaining_origin_counts);
 
+  // Add and remove observers of this service.
+  void AddObserver(SiteEngagementObserver* observer);
+  void RemoveObserver(SiteEngagementObserver* observer);
+
   Profile* profile_;
 
   // The clock used to vend times.
@@ -194,6 +202,10 @@ class SiteEngagementService : public KeyedService,
   // origin's engagement score after an hour has elapsed triggers the next
   // upload.
   base::Time last_metrics_time_;
+
+  // A list of observers. When any origin registers an engagement-increasing
+  // event, each observer's OnEngagementIncreased method will be called.
+  base::ObserverList<SiteEngagementObserver> observer_list_;
 
   base::WeakPtrFactory<SiteEngagementService> weak_factory_;
 

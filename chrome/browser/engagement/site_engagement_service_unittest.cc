@@ -97,6 +97,46 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
 
 }  // namespace
 
+class ObserverTester : public SiteEngagementObserver {
+ public:
+  ObserverTester(SiteEngagementService* service,
+                 content::WebContents* web_contents,
+                 const GURL& url,
+                 double score)
+      : SiteEngagementObserver(service),
+        web_contents_(web_contents),
+        url_(url),
+        score_(score),
+        callback_called_(false),
+        run_loop_() {}
+
+  void OnEngagementIncreased(content::WebContents* web_contents,
+                             const GURL& url,
+                             double score) override {
+    EXPECT_EQ(web_contents_, web_contents);
+    EXPECT_EQ(url_, url);
+    EXPECT_DOUBLE_EQ(score_, score);
+    set_callback_called(true);
+    run_loop_.Quit();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  bool callback_called() { return callback_called_; }
+  void set_callback_called(bool callback_called) {
+    callback_called_ = callback_called;
+  }
+
+ private:
+  content::WebContents* web_contents_;
+  GURL url_;
+  double score_;
+  bool callback_called_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObserverTester);
+};
+
 class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
@@ -1014,6 +1054,69 @@ TEST_F(SiteEngagementServiceTest, EngagementLevel) {
       url2, SiteEngagementService::ENGAGEMENT_LEVEL_HIGH));
   EXPECT_TRUE(service->IsEngagementAtLeast(
       url2, SiteEngagementService::ENGAGEMENT_LEVEL_MAX));
+}
+
+TEST_F(SiteEngagementServiceTest, Observers) {
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
+
+  GURL url_score_1("http://www.google.com/maps");
+  GURL url_score_2("http://www.google.com/drive");
+  GURL url_score_3("http://www.google.com/");
+  GURL url_not_called("https://www.google.com/");
+
+  // Create an observer and Observe(nullptr).
+  ObserverTester tester_not_called(service, web_contents(), url_not_called, 1);
+  tester_not_called.Observe(nullptr);
+
+  {
+    // Create an observer for navigation.
+    ObserverTester tester(service, web_contents(), url_score_1, 0.5);
+    NavigateAndCommit(url_score_1);
+    service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+    tester.Wait();
+    EXPECT_TRUE(tester.callback_called());
+    EXPECT_FALSE(tester_not_called.callback_called());
+    tester.Observe(nullptr);
+  }
+
+  {
+    // Update observer for a user input.
+    ObserverTester tester(service, web_contents(), url_score_2, 0.55);
+    NavigateAndCommit(url_score_2);
+    service->HandleUserInput(web_contents(),
+                             SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+    tester.Wait();
+    EXPECT_TRUE(tester.callback_called());
+    EXPECT_FALSE(tester_not_called.callback_called());
+    tester.Observe(nullptr);
+  }
+
+  // Add two observers for media playing in the foreground.
+  {
+    ObserverTester tester_1(service, web_contents(), url_score_3, 0.57);
+    ObserverTester tester_2(service, web_contents(), url_score_3, 0.57);
+    NavigateAndCommit(url_score_3);
+    service->HandleMediaPlaying(web_contents(), false);
+    tester_1.Wait();
+    tester_2.Wait();
+
+    EXPECT_TRUE(tester_1.callback_called());
+    EXPECT_TRUE(tester_2.callback_called());
+    EXPECT_FALSE(tester_not_called.callback_called());
+    tester_1.Observe(nullptr);
+    tester_2.Observe(nullptr);
+  }
+
+  // Add an observer for media playing in the background.
+  {
+    ObserverTester tester(service, web_contents(), url_score_3, 0.58);
+    service->HandleMediaPlaying(web_contents(), true);
+    tester.Wait();
+
+    EXPECT_TRUE(tester.callback_called());
+    EXPECT_FALSE(tester_not_called.callback_called());
+    tester.Observe(nullptr);
+  }
 }
 
 TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {

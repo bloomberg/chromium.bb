@@ -167,9 +167,8 @@ bool SiteEngagementService::IsBootstrapped() const {
          SiteEngagementScore::GetBootstrapPoints();
 }
 
-bool SiteEngagementService::IsEngagementAtLeast(
-    const GURL& url,
-    EngagementLevel level) const {
+bool SiteEngagementService::IsEngagementAtLeast(const GURL& url,
+                                                EngagementLevel level) const {
   DCHECK_LT(SiteEngagementScore::GetMediumEngagementBoundary(),
             SiteEngagementScore::GetHighEngagementBoundary());
   double score = GetScore(url);
@@ -187,6 +186,14 @@ bool SiteEngagementService::IsEngagementAtLeast(
   }
   NOTREACHED();
   return false;
+}
+
+void SiteEngagementService::AddObserver(SiteEngagementObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void SiteEngagementService::RemoveObserver(SiteEngagementObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void SiteEngagementService::ResetScoreForURL(const GURL& url, double score) {
@@ -251,14 +258,14 @@ void SiteEngagementService::AfterStartupTask() {
 
 void SiteEngagementService::CleanupEngagementScores() {
   HostContentSettingsMap* settings_map =
-    HostContentSettingsMapFactory::GetForProfile(profile_);
+      HostContentSettingsMapFactory::GetForProfile(profile_);
   std::unique_ptr<ContentSettingsForOneType> engagement_settings =
       GetEngagementContentSettings(settings_map);
 
   for (const auto& site : *engagement_settings) {
     GURL origin(site.primary_pattern.ToString());
     if (origin.is_valid() && GetScore(origin) != 0)
-        continue;
+      continue;
 
     settings_map->SetWebsiteSettingDefaultScope(
         origin, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
@@ -276,8 +283,9 @@ void SiteEngagementService::RecordMetrics() {
     int origins_with_max_engagement = OriginsWithMaxEngagement(score_map);
     int total_origins = score_map.size();
     int percent_origins_with_max_engagement =
-        (total_origins == 0 ? 0 : (origins_with_max_engagement * 100) /
-                                      total_origins);
+        (total_origins == 0
+             ? 0
+             : (origins_with_max_engagement * 100) / total_origins);
 
     double total_engagement = GetTotalEngagementPoints();
     double mean_engagement =
@@ -321,34 +329,47 @@ double SiteEngagementService::GetMedianEngagement(
 }
 
 void SiteEngagementService::HandleMediaPlaying(
-    content::WebContents* web_contents, bool is_hidden) {
+    content::WebContents* web_contents,
+    bool is_hidden) {
+  const GURL& url = web_contents->GetVisibleURL();
   SiteEngagementMetrics::RecordEngagement(
       is_hidden ? SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN
                 : SiteEngagementMetrics::ENGAGEMENT_MEDIA_VISIBLE);
-  AddPoints(web_contents->GetVisibleURL(),
-            is_hidden ? SiteEngagementScore::GetHiddenMediaPoints()
-                      : SiteEngagementScore::GetVisibleMediaPoints());
+  AddPoints(url, is_hidden ? SiteEngagementScore::GetHiddenMediaPoints()
+                           : SiteEngagementScore::GetVisibleMediaPoints());
+
   RecordMetrics();
+  FOR_EACH_OBSERVER(
+      SiteEngagementObserver, observer_list_,
+      OnEngagementIncreased(web_contents, url, GetScore(url)));
 }
 
 void SiteEngagementService::HandleNavigation(content::WebContents* web_contents,
                                              ui::PageTransition transition) {
   if (IsEngagementNavigation(transition)) {
+    const GURL& url = web_contents->GetLastCommittedURL();
     SiteEngagementMetrics::RecordEngagement(
         SiteEngagementMetrics::ENGAGEMENT_NAVIGATION);
-    AddPoints(web_contents->GetLastCommittedURL(),
-              SiteEngagementScore::GetNavigationPoints());
+    AddPoints(url, SiteEngagementScore::GetNavigationPoints());
+
     RecordMetrics();
+    FOR_EACH_OBSERVER(
+        SiteEngagementObserver, observer_list_,
+        OnEngagementIncreased(web_contents, url, GetScore(url)));
   }
 }
 
 void SiteEngagementService::HandleUserInput(
     content::WebContents* web_contents,
     SiteEngagementMetrics::EngagementType type) {
+  const GURL& url = web_contents->GetVisibleURL();
   SiteEngagementMetrics::RecordEngagement(type);
-  AddPoints(web_contents->GetVisibleURL(),
-            SiteEngagementScore::GetUserInputPoints());
+  AddPoints(url, SiteEngagementScore::GetUserInputPoints());
+
   RecordMetrics();
+  FOR_EACH_OBSERVER(
+      SiteEngagementObserver, observer_list_,
+      OnEngagementIncreased(web_contents, url, GetScore(url)));
 }
 
 void SiteEngagementService::OnURLsDeleted(
@@ -421,7 +442,6 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
     const std::multiset<GURL>& deleted_origins,
     bool expired,
     const history::OriginCountAndLastVisitMap& remaining_origins) {
-
   // The most in-the-past option in the Clear Browsing Dialog aside from "all
   // time" is 4 weeks ago. Set the last updated date to 4 weeks ago for origins
   // where we can't find a valid last visit date.
@@ -465,8 +485,8 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
     int undecay = 0;
     int days_since_engagement = (now - last_visit).InDays();
     if (days_since_engagement > 0) {
-      int periods = days_since_engagement /
-                    SiteEngagementScore::GetDecayPeriodInDays();
+      int periods =
+          days_since_engagement / SiteEngagementScore::GetDecayPeriodInDays();
       undecay = periods * SiteEngagementScore::GetDecayPoints();
     }
 
@@ -476,8 +496,8 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
         SiteEngagementScore::kMaxPoints,
         (proportion_remaining * engagement_score.GetScore()) + undecay);
     engagement_score.Reset(score, last_visit);
-    if (!engagement_score.last_shortcut_launch_time().is_null()
-        && engagement_score.last_shortcut_launch_time() > last_visit) {
+    if (!engagement_score.last_shortcut_launch_time().is_null() &&
+        engagement_score.last_shortcut_launch_time() > last_visit) {
       engagement_score.set_last_shortcut_launch_time(last_visit);
     }
 
