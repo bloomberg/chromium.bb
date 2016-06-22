@@ -18,6 +18,10 @@ namespace mus {
 class GpuService;
 }
 
+namespace views {
+class ClipboardMus;
+}
+
 namespace mojo {
 
 // In some processes, sync calls are disallowed. For example, in the browser
@@ -44,10 +48,17 @@ class SyncCallRestrictions {
 #endif
 
  private:
-// DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to mojo/OWNERS first.
-// BEGIN ALLOWED USAGE.
+  // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to mojo/OWNERS first.
+  // BEGIN ALLOWED USAGE.
   friend class mus::GpuService;  // http://crbug.com/620058
-// END ALLOWED USAGE.
+  // END ALLOWED USAGE.
+
+  // BEGIN USAGE THAT NEEDS TO BE FIXED.
+  // In the non-mus case, we called blocking OS functions in the ui::Clipboard
+  // implementation which weren't caught by sync call restrictions. Our blocking
+  // calls to mus, however, are.
+  friend class views::ClipboardMus;
+  // END USAGE THAT NEEDS TO BE FIXED.
 
 #if ENABLE_SYNC_CALL_RESTRICTIONS
   static void IncreaseScopedAllowCount();

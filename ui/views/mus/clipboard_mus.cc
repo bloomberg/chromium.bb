@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/shell/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -82,7 +82,7 @@ bool ClipboardMus::HasMimeType(const mojo::Array<mojo::String>& available_types,
 }
 
 uint64_t ClipboardMus::GetSequenceNumber(ui::ClipboardType type) const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   uint64_t sequence_number = 0;
   clipboard_->GetSequenceNumber(GetType(type), &sequence_number);
   return sequence_number;
@@ -90,7 +90,7 @@ uint64_t ClipboardMus::GetSequenceNumber(ui::ClipboardType type) const {
 
 bool ClipboardMus::IsFormatAvailable(const FormatType& format,
                                      ui::ClipboardType type) const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
 
   uint64_t sequence_number = 0;
   mojo::Array<mojo::String> available_types;
@@ -104,7 +104,7 @@ bool ClipboardMus::IsFormatAvailable(const FormatType& format,
 void ClipboardMus::Clear(ui::ClipboardType type) {
   // Sends the data to mus server.
   uint64_t sequence_number = 0;
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   clipboard_->WriteClipboardData(GetType(type), nullptr,
                                  &sequence_number);
 }
@@ -112,7 +112,7 @@ void ClipboardMus::Clear(ui::ClipboardType type) {
 void ClipboardMus::ReadAvailableTypes(ui::ClipboardType type,
                                       std::vector<base::string16>* types,
                                       bool* contains_filenames) const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
 
   uint64_t sequence_number = 0;
   mojo::Array<mojo::String> available_types;
@@ -143,7 +143,7 @@ void ClipboardMus::ReadAvailableTypes(ui::ClipboardType type,
 
 void ClipboardMus::ReadText(ui::ClipboardType type,
                             base::string16* result) const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   mojo::Array<uint8_t> text_data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(GetType(type),
@@ -156,7 +156,7 @@ void ClipboardMus::ReadText(ui::ClipboardType type,
 
 void ClipboardMus::ReadAsciiText(ui::ClipboardType type,
                                  std::string* result) const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   mojo::Array<uint8_t> text_data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(GetType(type),
@@ -177,7 +177,7 @@ void ClipboardMus::ReadHTML(ui::ClipboardType type,
   *fragment_start = 0;
   *fragment_end = 0;
 
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   mojo::Array<uint8_t> html_data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(GetType(type),
@@ -197,7 +197,7 @@ void ClipboardMus::ReadHTML(ui::ClipboardType type,
 }
 
 void ClipboardMus::ReadRTF(ui::ClipboardType type, std::string* result) const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   mojo::Array<uint8_t> rtf_data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(
@@ -208,7 +208,7 @@ void ClipboardMus::ReadRTF(ui::ClipboardType type, std::string* result) const {
 }
 
 SkBitmap ClipboardMus::ReadImage(ui::ClipboardType type) const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   mojo::Array<uint8_t> data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(
@@ -225,7 +225,7 @@ SkBitmap ClipboardMus::ReadImage(ui::ClipboardType type) const {
 void ClipboardMus::ReadCustomData(ui::ClipboardType clipboard_type,
                                   const base::string16& type,
                                   base::string16* result) const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   mojo::Array<uint8_t> custom_data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(GetType(clipboard_type),
@@ -243,7 +243,7 @@ void ClipboardMus::ReadBookmark(base::string16* title, std::string* url) const {
 
 void ClipboardMus::ReadData(const FormatType& format,
                             std::string* result) const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   mojo::Array<uint8_t> data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(mus::mojom::Clipboard::Type::COPY_PASTE,
@@ -261,7 +261,7 @@ void ClipboardMus::WriteObjects(ui::ClipboardType type,
 
   // Sends the data to mus server.
   uint64_t sequence_number = 0;
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   clipboard_->WriteClipboardData(GetType(type), std::move(*current_clipboard_),
                                  &sequence_number);
   current_clipboard_.reset();
