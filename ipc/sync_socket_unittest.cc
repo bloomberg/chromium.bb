@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -115,7 +116,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SyncSocketServerClient) {
       IPCTestBase::GetChannelName("SyncSocketServerClient"), &listener));
   EXPECT_TRUE(channel->Connect());
   listener.Init(channel.get());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   return 0;
 }
 
@@ -199,7 +200,7 @@ TEST_F(SyncSocketTest, SanityTest) {
 #endif  // defined(OS_WIN)
   EXPECT_TRUE(sender()->Send(msg));
   // Use the current thread as the I/O thread.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   // Shut down.
   pair[0].Close();
   pair[1].Close();

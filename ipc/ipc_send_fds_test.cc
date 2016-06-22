@@ -24,6 +24,7 @@ extern "C" {
 #include "base/location.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_message_attachment_set.h"
@@ -133,7 +134,7 @@ class IPCSendFdsTest : public IPCTestBase {
     }
 
     // Run message loop.
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     // Close the channel so the client's OnChannelError() gets fired.
     channel()->Close();
@@ -159,7 +160,7 @@ int SendFdsClientCommon(const std::string& test_client_name,
   CHECK(channel->Connect());
 
   // Run message loop.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // Verify that the message loop was exited due to getting the correct number
   // of descriptors, and not because of the channel closing unexpectedly.

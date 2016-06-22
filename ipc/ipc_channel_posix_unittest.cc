@@ -23,6 +23,7 @@
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
@@ -177,7 +178,7 @@ void IPCChannelPosixTest::SpinRunLoop(base::TimeDelta delay) {
   // current run loop on any channel activity.
   loop->task_runner()->PostDelayedTask(FROM_HERE, loop->QuitWhenIdleClosure(),
                                        delay);
-  loop->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(IPCChannelPosixTest, BasicListen) {

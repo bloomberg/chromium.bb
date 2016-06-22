@@ -20,6 +20,7 @@
 #include "base/mac/mach_logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/shared_memory.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/spin_wait.h"
 #include "base/time/time.h"
@@ -584,7 +585,7 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
   while (true) {
     if (globals->message_logging)
       LOG(INFO) << "Privileged process spinning run loop.";
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     ProxyListener::Reason reason = listener.get_reason();
     if (reason == ProxyListener::CHANNEL_ERROR)
       break;
@@ -613,7 +614,7 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandle) {
   CommonSetUp("SendSharedMemoryHandle");
 
   SendMessage1(kDataBuffer1);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -636,7 +637,7 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleLong) {
 
   std::string buffer(1 << 23, 'a');
   SendMessage1(buffer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -660,7 +661,7 @@ TEST_F(IPCAttachmentBrokerMacTest, SendTwoMessagesDifferentSharedMemoryHandle) {
 
   SendMessage1(kDataBuffer1);
   SendMessage1(kDataBuffer2);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -701,7 +702,7 @@ TEST_F(IPCAttachmentBrokerMacTest, SendTwoMessagesSameSharedMemoryHandle) {
     }
   }
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -745,7 +746,7 @@ TEST_F(IPCAttachmentBrokerMacTest,
         shared_memory1->handle(), shared_memory2->handle());
     sender()->Send(message);
   }
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -786,7 +787,7 @@ TEST_F(IPCAttachmentBrokerMacTest,
         shared_memory->handle(), shared_memory->handle());
     sender()->Send(message);
   }
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -841,7 +842,7 @@ TEST_F(IPCAttachmentBrokerMacTest, SendPosixFDAndMachPort) {
     sender()->Send(message);
   }
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -899,10 +900,10 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelf) {
     sender()->Send(message);
 
     // Wait until the child process has sent this process a message.
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     // Wait for any asynchronous activity to complete.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // Get the received attachment.
     IPC::BrokerableAttachment::AttachmentId* id = get_observer()->get_id();
@@ -964,7 +965,7 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleChannelProxy) {
   get_proxy_listener()->set_listener(get_result_listener());
 
   SendMessage1(kDataBuffer1);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   CheckChildResult();
 
@@ -1006,7 +1007,7 @@ TEST_F(IPCAttachmentBrokerMacTest, ShareToProcess) {
     sender()->Send(message);
   }
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -1036,7 +1037,7 @@ TEST_F(IPCAttachmentBrokerMacTest, ShareReadOnlyToProcess) {
     sender()->Send(message);
   }
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -1105,10 +1106,10 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelfDelayedPort) {
     int received_message_count = 0;
     while (received_message_count < kMessagesToTest) {
       // Wait until the child process has sent this process a message.
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
 
       // Wait for any asynchronous activity to complete.
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
       while (get_proxy_listener()->has_message()) {
         get_proxy_listener()->pop_first_message();
@@ -1173,7 +1174,7 @@ TEST_F(IPCAttachmentBrokerMacTest, MemoryUsageLargeMessage) {
 
   std::string test_string(g_large_message_size, 'a');
   SendMessage1(test_string);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CommonTearDown();
 }
 
@@ -1229,11 +1230,11 @@ TEST_F(IPCAttachmentBrokerMacTest, MemoryUsageManyMessages) {
     std::fill(message.begin() + end, message.end(), 'a');
     SendMessage1(message);
 
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   if (get_result_listener()->get_result() == RESULT_UNKNOWN)
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
   CommonTearDown();
 }

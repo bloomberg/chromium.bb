@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/pickle.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_base.h"
@@ -260,7 +261,7 @@ class IPCChannelProxyTest : public IPCTestBase {
 
   void SendQuitMessageAndWaitForIdle() {
     sender()->Send(new WorkerMsg_Quit);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     EXPECT_TRUE(WaitForClientShutdown());
   }
 
@@ -400,7 +401,7 @@ class IPCChannelBadMessageTest : public IPCTestBase {
 
   void SendQuitMessageAndWaitForIdle() {
     sender()->Send(new WorkerMsg_Quit);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     EXPECT_TRUE(WaitForClientShutdown());
   }
 
@@ -431,7 +432,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ChannelProxyClient) {
   CHECK(channel->Connect());
   listener.Init(channel.get());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   return 0;
 }
 

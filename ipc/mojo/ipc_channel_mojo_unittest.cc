@@ -182,7 +182,7 @@ TEST_F(IPCChannelMojoTest, ConnectedFromClient) {
 
   IPC::TestChannelListener::SendOneMessage(sender(), "hello from parent");
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   channel()->Close();
 
@@ -200,7 +200,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestClient, ChannelClient) {
   listener.Init(channel());
 
   IPC::TestChannelListener::SendOneMessage(channel(), "hello from child");
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(listener.is_connected_called());
   EXPECT_TRUE(listener.HasSentAll());
 
@@ -245,7 +245,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoErraticTestClient,
   ListenerThatQuits listener;
   Connect(&listener);
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   Close();
 }
@@ -267,7 +267,7 @@ TEST_F(IPCChannelMojoTest, SendFailWithPendingMessages) {
                                              overly_large_data.c_str());
   }
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   channel()->Close();
 
@@ -407,7 +407,7 @@ TEST_F(IPCChannelMojoTest, SendMessagePipe) {
   TestingMessagePipe pipe;
   HandleSendingHelper::WritePipeThenSend(channel(), &pipe);
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
@@ -420,7 +420,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendMessagePipeClient,
   Connect(&listener);
   listener.set_sender(channel());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   Close();
 }
@@ -484,7 +484,7 @@ class ParamTraitMessagePipeClient : public ChannelClient {
     Connect(&listener);
     listener.set_sender(channel());
 
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     Close();
   }
@@ -505,7 +505,7 @@ TEST_F(IPCChannelMojoTest, ParamTraitValidMessagePipe) {
   WriteOK(pipe.self.get());
 
   channel()->Send(message.release());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
@@ -530,7 +530,7 @@ TEST_F(IPCChannelMojoTest, ParamTraitInvalidMessagePipe) {
                                                    invalid_handle);
 
   channel()->Send(message.release());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
@@ -549,7 +549,7 @@ TEST_F(IPCChannelMojoTest, SendFailAfterClose) {
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   channel()->Close();
   ASSERT_FALSE(channel()->Send(new IPC::Message()));
 
@@ -580,7 +580,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendOkClient,
   Connect(&listener);
   listener.set_sender(channel());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   Close();
 }
@@ -620,7 +620,7 @@ TEST_F(IPCChannelMojoTest, SendPlatformHandle) {
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
                       base::File::FLAG_READ);
   HandleSendingHelper::WriteFileThenSend(channel(), file);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   channel()->Close();
 
@@ -634,7 +634,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendPlatformHandleClient,
   Connect(&listener);
   listener.set_sender(channel());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   Close();
 }
@@ -676,7 +676,7 @@ TEST_F(IPCChannelMojoTest, SendPlatformHandleAndPipe) {
   TestingMessagePipe pipe;
   HandleSendingHelper::WriteFileAndPipeThenSend(channel(), file, &pipe);
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
@@ -690,7 +690,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
   Connect(&listener);
   listener.set_sender(channel());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   Close();
 }

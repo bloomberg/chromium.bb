@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/pickle.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
 #include "base/test/test_io_thread.h"
@@ -269,7 +270,7 @@ void IPCChannelPerfTestBase::RunTestChannelPingPong(
     sender()->Send(message);
 
     // Run message loop.
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   // Send quit message.
@@ -309,7 +310,7 @@ void IPCChannelPerfTestBase::RunTestChannelProxyPingPong(
     sender()->Send(message);
 
     // Run message loop.
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   // Send quit message.
@@ -344,7 +345,7 @@ int PingPongTestClient::RunMain() {
   listener_->Init(channel.get());
   CHECK(channel->Connect());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   return 0;
 }
 

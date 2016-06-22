@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -244,7 +245,7 @@ class FuzzerClientListener : public SimpleListener {
 
  private:
   bool MsgHandlerInternal(uint32_t type_id) {
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     if (NULL == last_msg_)
       return false;
     if (FUZZER_ROUTING_ID != last_msg_->routing_id())
@@ -264,7 +265,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(FuzzServerClient) {
       IPCTestBase::GetChannelName("FuzzServerClient"), &listener));
   CHECK(channel->Connect());
   listener.Init(channel.get());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   return 0;
 }
 
