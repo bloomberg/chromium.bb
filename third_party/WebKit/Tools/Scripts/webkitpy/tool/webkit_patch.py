@@ -50,6 +50,7 @@ from webkitpy.tool.commands.rebaseline import RebaselineExpectations
 from webkitpy.tool.commands.rebaseline import RebaselineJson
 from webkitpy.tool.commands.rebaseline import RebaselineTest
 from webkitpy.tool.commands.rebaseline_server import RebaselineServer
+from webkitpy.tool.commands.rebaseline_from_try_jobs import RebaselineFromTryJobs
 
 
 class WebKitPatch(MultiCommandTool, Host):
@@ -74,6 +75,7 @@ class WebKitPatch(MultiCommandTool, Host):
             PrintExpectations(),
             Rebaseline(),
             RebaselineExpectations(),
+            RebaselineFromTryJobs(),
             RebaselineJson(),
             RebaselineServer(),
             RebaselineTest(),
