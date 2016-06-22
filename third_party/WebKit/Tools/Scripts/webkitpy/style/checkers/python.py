@@ -66,26 +66,27 @@ class PythonChecker(object):
         pep8_errors = pep8_checker.check_all()
 
     def _check_pylint(self):
-        output = self._run_pylint(self._file_path)
+        output = self.run_pylint(self._file_path)
         errors = self._parse_pylint_output(output)
         for line_number, category, message in errors:
             self._handle_style_error(line_number, category, 5, message)
 
-    def _run_pylint(self, path):
+    def run_pylint(self, path):
         wkf = WebKitFinder(FileSystem())
         executive = Executive()
         env = os.environ.copy()
-        env['PYTHONPATH'] = ('%s%s%s%s%s' % (wkf.path_from_webkit_base('Tools', 'Scripts'),
-                                             os.pathsep,
-                                             wkf.path_from_webkit_base('Source', 'build', 'scripts'),
-                                             os.pathsep,
-                                             wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')))
-        return executive.run_command([sys.executable, wkf.path_from_depot_tools_base('pylint.py'),
-                                      '--output-format=parseable',
-                                      '--rcfile=' + wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'pylintrc'),
-                                      path],
-                                     env=env,
-                                     error_handler=executive.ignore_error)
+        env['PYTHONPATH'] = os.pathsep.join([
+            wkf.path_from_webkit_base('Tools', 'Scripts'),
+            wkf.path_from_webkit_base('Source', 'build', 'scripts'),
+            wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty'),
+        ])
+        return executive.run_command([
+            sys.executable,
+            wkf.path_from_depot_tools_base('pylint.py'),
+            '--output-format=parseable',
+            '--rcfile=' + wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'pylintrc'),
+            path,
+        ], env=env, error_handler=executive.ignore_error)
 
     def _parse_pylint_output(self, output):
         # We filter out these messages because they are bugs in pylint that produce false positives.
