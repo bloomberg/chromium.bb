@@ -14,7 +14,7 @@
     'chromium': {
       'Android': 'android_without_codecs_gn_release_bot_minimal_symbols',
       'Linux x64': 'noswarming_gn_release_bot',
-      'Mac': 'noswarming_gyp_release_bot_mac_strip',
+      'Mac': 'noswarming_gn_release_bot_mac_strip',
       'Win': 'noswarming_gn_release_bot_minimal_symbols_x86',
       'Win x64': 'noswarming_gn_release_bot_minimal_symbols_x64',
     },
@@ -63,7 +63,7 @@
     'chromium.chrome': {
       'Google Chrome ChromeOS': 'gn_official_goma_chromeos',
       'Google Chrome Linux x64': 'gn_official_goma',
-      'Google Chrome Mac': 'gyp_official_goma',
+      'Google Chrome Mac': 'gn_official_goma',
       'Google Chrome Win': 'gn_official_goma_minimal_symbols_x86',
     },
 
@@ -464,7 +464,7 @@
       'Mac 10.11 Perf (3)': 'none',
       'Mac 10.11 Perf (4)': 'none',
       'Mac 10.11 Perf (5)': 'none',
-      'Mac Builder': 'gyp_official_goma',
+      'Mac Builder': 'gn_official_goma',
       'Mac HDD Perf (1)': 'none',
       'Mac HDD Perf (2)': 'none',
       'Mac HDD Perf (3)': 'none',
@@ -796,9 +796,9 @@
       'ios-device-gn': 'ios_gn',
       'ios-simulator': 'ios_gyp',
       'ios-simulator-gn': 'ios_gn',
-      'mac_chromium_10.10_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
+      'mac_chromium_10.10_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'mac_chromium_10.10_macviews': 'mac_views_browser_gyp_release_trybot',
-      'mac_chromium_archive_rel_ng': 'noswarming_gyp_release_trybot',
+      'mac_chromium_archive_rel_ng': 'noswarming_gn_release_trybot',
       'mac_chromium_asan_rel_ng': 'swarming_asan_dcheck_gyp_release_bot',
       'mac_chromium_asan_variable': 'findit',
       'mac_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot',
@@ -817,10 +817,9 @@
       'mac_chromium_variable_chrome': 'findit',
       'mac_chromium_variable_gn': 'findit',
       'mac_chromium_variable_layout': 'findit',
-      'mac_nacl_sdk': 'gyp_release_bot',
-      'mac_nacl_sdk_build': 'gyp_release_bot',
-      'mac_optional_gpu_tests_rel':
-        'swarming_gpu_fyi_tests_gyp_release_trybot',
+      'mac_nacl_sdk': 'gn_release_bot',
+      'mac_nacl_sdk_build': 'gn_release_bot',
+      'mac_optional_gpu_tests_rel': 'swarming_gpu_fyi_tests_gn_release_trybot',
       'mac_upload_clang': 'gn_release_bot',
     },
 
@@ -1434,12 +1433,12 @@
       'noswarming', 'gn', 'release_bot', 'x64',
     ],
 
-    'noswarming_gyp_release_bot_mac_strip': [
-      'noswarming', 'gyp', 'release_bot', 'mac_strip',
+    'noswarming_gn_release_bot_mac_strip': [
+      'noswarming', 'gn', 'release_bot', 'mac_strip',
     ],
 
-    'noswarming_gyp_release_trybot': [
-      'noswarming', 'gyp', 'release_trybot',
+    'noswarming_gn_release_trybot': [
+      'noswarming', 'gn', 'release_trybot',
     ],
 
     'noswarming_gn_release_trybot_x64': [
@@ -1691,10 +1690,6 @@
 
     'swarming_gpu_tests_gyp_release_bot_x86': [
       'swarming', 'gpu_tests', 'gyp', 'release_bot',
-    ],
-
-    'swarming_gpu_tests_gyp_release_trybot': [
-      'swarming', 'gpu_tests', 'gyp', 'release_trybot',
     ],
 
     ('swarming_gyp_asan_clang_edge_fuzzer'
