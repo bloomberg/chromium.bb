@@ -152,7 +152,7 @@ void ExtensionAppModelBuilder::OnAppInstalled(
   DVLOG(2) << service() << ": OnAppInstalled: " << app_id.substr(0, 8);
   ExtensionAppItem* existing_item = GetExtensionAppItem(app_id);
   if (existing_item) {
-    existing_item->UpdateIcon();
+    existing_item->Reload();
     if (service())
       service()->UpdateItem(existing_item);
     return;
