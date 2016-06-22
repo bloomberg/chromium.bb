@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
+#include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/test/test_synchronous_compositor_android.h"
 
 namespace android_webview {
@@ -80,7 +81,7 @@ CompositorFrameProducer* RenderingTest::GetCompositorFrameProducer() {
 void RenderingTest::InitializeCompositor() {
   DCHECK(!compositor_.get());
   DCHECK(browser_view_renderer_.get());
-  compositor_.reset(new content::TestSynchronousCompositor);
+  compositor_.reset(new content::TestSynchronousCompositor(0, 0));
   compositor_->SetClient(browser_view_renderer_.get());
 }
 
@@ -105,6 +106,10 @@ void RenderingTest::EndTest() {
 void RenderingTest::QuitMessageLoop() {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_.get());
   message_loop_->QuitWhenIdle();
+}
+
+content::SynchronousCompositor* RenderingTest::ActiveCompositor() const {
+  return browser_view_renderer_->GetActiveCompositorForTesting();
 }
 
 std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {

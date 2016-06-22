@@ -21,7 +21,7 @@ namespace android_webview {
 
 class SmokeTest : public RenderingTest {
   void StartTest() override {
-    browser_view_renderer_->PostInvalidate(compositor_.get());
+    browser_view_renderer_->PostInvalidate(ActiveCompositor());
   }
 
   void DidDrawOnRT() override { EndTest(); }
@@ -29,12 +29,105 @@ class SmokeTest : public RenderingTest {
 
 RENDERING_TEST_F(SmokeTest);
 
+// Test the case where SynchronousCompositor is constructed after the RVH that
+// owns it is switched to be active.
+class ActiveCompositorSwitchBeforeConstructionTest : public RenderingTest {
+ public:
+  ActiveCompositorSwitchBeforeConstructionTest()
+      : on_draw_count_(0), new_compositor_(nullptr) {}
+  void StartTest() override {
+    browser_view_renderer_->PostInvalidate(ActiveCompositor());
+  }
+
+  void DidOnDraw(bool success) override {
+    on_draw_count_++;
+    switch (on_draw_count_) {
+      case 1:
+        EXPECT_TRUE(success);
+        // Change compositor here. And do another ondraw.
+        // The previous active compositor id is 0, 0, now change it to 0, 1.
+        browser_view_renderer_->SetActiveCompositorID(CompositorID(0, 1));
+        browser_view_renderer_->PostInvalidate(ActiveCompositor());
+        break;
+      case 2:
+        // The 2nd ondraw is skipped because there is no active compositor at
+        // the moment.
+        EXPECT_FALSE(success);
+        new_compositor_.reset(new content::TestSynchronousCompositor(0, 1));
+        new_compositor_->SetClient(browser_view_renderer_.get());
+        EXPECT_EQ(ActiveCompositor(), new_compositor_.get());
+        browser_view_renderer_->PostInvalidate(ActiveCompositor());
+        break;
+      case 3:
+        EXPECT_TRUE(success);
+        compositor_ = std::move(new_compositor_);
+
+        EXPECT_EQ(ActiveCompositor(), compositor_.get());
+        browser_view_renderer_->PostInvalidate(ActiveCompositor());
+        break;
+      case 4:
+        EXPECT_TRUE(success);
+        EndTest();
+    }
+  }
+
+ private:
+  int on_draw_count_;
+  std::unique_ptr<content::TestSynchronousCompositor> new_compositor_;
+};
+
+RENDERING_TEST_F(ActiveCompositorSwitchBeforeConstructionTest);
+
+// Test the case where SynchronousCompositor is constructed before the RVH that
+// owns it is switched to be active.
+class ActiveCompositorSwitchAfterConstructionTest : public RenderingTest {
+ public:
+  ActiveCompositorSwitchAfterConstructionTest()
+      : on_draw_count_(0), new_compositor_(nullptr) {}
+  void StartTest() override {
+    browser_view_renderer_->PostInvalidate(ActiveCompositor());
+  }
+
+  void DidOnDraw(bool success) override {
+    on_draw_count_++;
+    switch (on_draw_count_) {
+      case 1:
+        EXPECT_TRUE(success);
+        // Create a new compositor here. And switch it to be active.  And then
+        // do another ondraw.
+        new_compositor_.reset(new content::TestSynchronousCompositor(0, 1));
+        new_compositor_->SetClient(browser_view_renderer_.get());
+        browser_view_renderer_->SetActiveCompositorID(CompositorID(0, 1));
+
+        EXPECT_EQ(ActiveCompositor(), new_compositor_.get());
+        browser_view_renderer_->PostInvalidate(ActiveCompositor());
+        break;
+      case 2:
+        EXPECT_TRUE(success);
+        compositor_ = std::move(new_compositor_);
+
+        EXPECT_EQ(ActiveCompositor(), compositor_.get());
+        browser_view_renderer_->PostInvalidate(ActiveCompositor());
+        break;
+      case 3:
+        EXPECT_TRUE(success);
+        EndTest();
+    }
+  }
+
+ private:
+  int on_draw_count_;
+  std::unique_ptr<content::TestSynchronousCompositor> new_compositor_;
+};
+
+RENDERING_TEST_F(ActiveCompositorSwitchAfterConstructionTest);
+
 class ClearViewTest : public RenderingTest {
  public:
   ClearViewTest() : on_draw_count_(0) {}
 
   void StartTest() override {
-    browser_view_renderer_->PostInvalidate(compositor_.get());
+    browser_view_renderer_->PostInvalidate(ActiveCompositor());
     browser_view_renderer_->ClearView();
   }
 
@@ -44,8 +137,8 @@ class ClearViewTest : public RenderingTest {
       // First OnDraw should be skipped due to ClearView.
       EXPECT_FALSE(success);
       browser_view_renderer_->DidUpdateContent(
-          compositor_.get());  // Unset ClearView.
-      browser_view_renderer_->PostInvalidate(compositor_.get());
+          ActiveCompositor());  // Unset ClearView.
+      browser_view_renderer_->PostInvalidate(ActiveCompositor());
     } else {
       // Following OnDraws should succeed.
       EXPECT_TRUE(success);
@@ -68,7 +161,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
     new_constraints_ = ParentCompositorDrawConstraints(
         false, gfx::Transform(), window_->surface_size().IsEmpty());
     new_constraints_.transform.Scale(2.0, 2.0);
-    browser_view_renderer_->PostInvalidate(compositor_.get());
+    browser_view_renderer_->PostInvalidate(ActiveCompositor());
   }
 
   void WillOnDraw() override {
@@ -160,7 +253,7 @@ class CompositorNoFrameTest : public RenderingTest {
   CompositorNoFrameTest() : on_draw_count_(0) {}
 
   void StartTest() override {
-    browser_view_renderer_->PostInvalidate(compositor_.get());
+    browser_view_renderer_->PostInvalidate(ActiveCompositor());
   }
 
   void WillOnDraw() override {
@@ -178,11 +271,11 @@ class CompositorNoFrameTest : public RenderingTest {
     if (0 == on_draw_count_) {
       // Should fail as there has been no frames from compositor.
       EXPECT_FALSE(success);
-      browser_view_renderer_->PostInvalidate(compositor_.get());
+      browser_view_renderer_->PostInvalidate(ActiveCompositor());
     } else if (1 == on_draw_count_) {
       // Should succeed with frame from compositor.
       EXPECT_TRUE(success);
-      browser_view_renderer_->PostInvalidate(compositor_.get());
+      browser_view_renderer_->PostInvalidate(ActiveCompositor());
     } else if (2 == on_draw_count_) {
       // Should still succeed with last frame, even if no frame from compositor.
       EXPECT_TRUE(success);
@@ -245,7 +338,7 @@ class ResourceRenderingTest : public RenderingTest {
   bool AdvanceFrame() {
     next_frame_ = GetFrame(frame_number_++);
     if (next_frame_) {
-      browser_view_renderer_->PostInvalidate(compositor_.get());
+      browser_view_renderer_->PostInvalidate(ActiveCompositor());
       return true;
     }
     return false;

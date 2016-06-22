@@ -10,8 +10,9 @@
 
 namespace content {
 
-TestSynchronousCompositor::TestSynchronousCompositor() : client_(NULL) {
-}
+TestSynchronousCompositor::TestSynchronousCompositor(int process_id,
+                                                     int routing_id)
+    : client_(NULL), process_id_(process_id), routing_id_(routing_id) {}
 
 TestSynchronousCompositor::~TestSynchronousCompositor() {
   SetClient(NULL);
@@ -19,11 +20,10 @@ TestSynchronousCompositor::~TestSynchronousCompositor() {
 
 void TestSynchronousCompositor::SetClient(SynchronousCompositorClient* client) {
   if (client_)
-    client_->DidDestroyCompositor(this, 0, 0);
+    client_->DidDestroyCompositor(this, process_id_, routing_id_);
   client_ = client;
-  if (client_) {
-    client_->DidInitializeCompositor(this, 0, 0);
-  }
+  if (client_)
+    client_->DidInitializeCompositor(this, process_id_, routing_id_);
 }
 
 SynchronousCompositor::Frame TestSynchronousCompositor::DemandDrawHw(

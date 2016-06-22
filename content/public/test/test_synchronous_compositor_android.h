@@ -19,7 +19,7 @@ namespace content {
 
 class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
  public:
-  TestSynchronousCompositor();
+  TestSynchronousCompositor(int process_id, int routing_id);
   ~TestSynchronousCompositor() override;
 
   void SetClient(SynchronousCompositorClient* client);
@@ -58,6 +58,8 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
 
  private:
   SynchronousCompositorClient* client_;
+  const int process_id_;
+  const int routing_id_;
   SynchronousCompositor::Frame hardware_frame_;
   FrameAckArray frame_ack_array_;
 

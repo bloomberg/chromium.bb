@@ -24,6 +24,7 @@ class CompositorFrame;
 }
 
 namespace content {
+class SynchronousCompositor;
 class TestSynchronousCompositor;
 }
 
@@ -80,6 +81,7 @@ class RenderingTest : public testing::Test,
   void RunTest();
   void InitializeCompositor();
   void EndTest();
+  content::SynchronousCompositor* ActiveCompositor() const;
   std::unique_ptr<cc::CompositorFrame> ConstructEmptyFrame();
   std::unique_ptr<cc::CompositorFrame> ConstructFrame(
       cc::ResourceId resource_id);

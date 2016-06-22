@@ -138,6 +138,11 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   void SetActiveCompositorID(const CompositorID& compositor_id);
 
+  // Visible for testing.
+  content::SynchronousCompositor* GetActiveCompositorForTesting() const {
+    return compositor_;
+  }
+
  private:
   void SetTotalRootLayerScrollOffset(const gfx::Vector2dF& new_value_dip);
   bool CanOnDraw();
