@@ -337,9 +337,7 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 
 crbug.com/548904 [ Linux Win ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
 
-crbug.com/552433 svg/W3C-SVG-1.1/coords-units-02-b.svg [ Pass Failure ]
-crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/dom/length-list-parser.html [ Failure Pass ]
-crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/transforms/text-with-pattern-with-svg-transform.svg [ Failure Pass ]
+crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Failure ]
 crbug.com/605024 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
