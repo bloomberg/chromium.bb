@@ -265,8 +265,13 @@
         '../fishhook/fishhook.gyp:fishhook',
         '../ochamcrest/ochamcrest.gyp:OCHamcrest',
       ],
+      # EarlGrey.pch requires that NS_BLOCK_ASSERTIONS be undefined.
+      'defines!': [
+        'NS_BLOCK_ASSERTIONS=1',
+      ],
       'xcode_settings': {
         'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+        'GCC_PREFIX_HEADER': 'src/EarlGrey.pch',
         'USE_HEADERMAP': 'YES',
         'CLANG_ENABLE_OBJC_ARC': 'YES',
         'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',

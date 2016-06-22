@@ -240,6 +240,8 @@ ios_framework_bundle("earl_grey") {
   public_deps = [
     "//ios/third_party/ochamcrest:ochamcrest+link",
   ]
+  precompiled_header = "src/EarlGrey.pch"
+  precompiled_source = "src/EarlGrey.pch"
 
   libs = [
     "CoreGraphics.framework",
