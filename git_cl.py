@@ -2035,6 +2035,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def _GetGerritHost(self):
     # Lazy load of configs.
     self.GetCodereviewServer()
+    if self._gerrit_host and '.' not in self._gerrit_host:
+      # Abbreviated domain like "chromium" instead of chromium.googlesource.com.
+      # This happens for internal stuff http://crbug.com/614312.
+      parsed = urlparse.urlparse(self.GetRemoteUrl())
+      if parsed.scheme == 'sso':
+        print('WARNING: using non https URLs for remote is likely broken\n'
+              '  Your current remote is: %s'  % self.GetRemoteUrl())
+        self._gerrit_host = '%s.googlesource.com' % self._gerrit_host
+        self._gerrit_server = 'https://%s' % self._gerrit_host
     return self._gerrit_host
 
   def _GetGitHost(self):
