@@ -1516,6 +1516,52 @@ TEST_F(WebViewTest, LongPressEmptyDivAlwaysShow)
     EXPECT_EQ(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
 }
 
+TEST_F(WebViewTest, LongPressObject)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("long_press_object.html"));
+
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_object.html", true);
+    webView->settingsImpl()->setAlwaysShowContextMenuOnTouch(true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureLongPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
+    event.x = 10;
+    event.y = 10;
+
+    EXPECT_NE(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
+
+    HTMLElement* element = toHTMLElement(webView->mainFrame()->document().getElementById("obj"));
+    EXPECT_FALSE(element->canStartSelection());
+}
+
+TEST_F(WebViewTest, LongPressObjectFallback)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("long_press_object_fallback.html"));
+
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_object_fallback.html", true);
+    webView->settingsImpl()->setAlwaysShowContextMenuOnTouch(true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureLongPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
+    event.x = 10;
+    event.y = 10;
+
+    EXPECT_EQ(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
+
+    HTMLElement* element = toHTMLElement(webView->mainFrame()->document().getElementById("obj"));
+    EXPECT_TRUE(element->canStartSelection());
+}
+
 TEST_F(WebViewTest, LongPressImage)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),

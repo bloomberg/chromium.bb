@@ -104,6 +104,7 @@ private:
 
     // Node functions:
     bool canContainRangeEndPoint() const override { return false; }
+    bool canStartSelection() const override;
     bool willRespondToMouseClickEvents() final;
     void defaultEventHandler(Event*) final;
     void attach(const AttachContext& = AttachContext()) final;

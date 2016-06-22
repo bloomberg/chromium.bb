@@ -109,11 +109,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # Mac has different fallback behavior so that this test won't work there
 [ Mac ] fast/text/font-cachekey.html [ WontFix ]
 
-# These tests are specific to Android. Because long pressing on disabled/readonly input/textarea
-# won't trigger text selection on Linux/Mac/Windows platforms, hence we need to skip it.
-[ Linux Mac Win ] editing/selection/readonly-disabled-text-selection.html [ WontFix ]
-[ Linux Mac Win ] editing/selection/android-longtap-not-select-empty.html [ WontFix ]
-
 # AAT/mortx shaping not supported on platforms other than Mac
 [ Linux Win Android ] fast/text/aat-morx.html [ WontFix ]
 

@@ -102,6 +102,11 @@ bool HTMLPlugInElement::canProcessDrag() const
     return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->canProcessDrag();
 }
 
+bool HTMLPlugInElement::canStartSelection() const
+{
+    return useFallbackContent() && Node::canStartSelection();
+}
+
 bool HTMLPlugInElement::willRespondToMouseClickEvents()
 {
     if (isDisabledFormControl())

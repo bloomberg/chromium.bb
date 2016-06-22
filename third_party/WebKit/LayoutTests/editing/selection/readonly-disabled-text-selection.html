@@ -29,10 +29,9 @@ onload = function() {
 function doLongPressOnElement(elementId) {
     var element = document.getElementById(elementId);
     var bounds = element.getBoundingClientRect();
-    var middleX = (bounds.left + bounds.right) / 2;
-    var middleY = (bounds.top + bounds.bottom) / 2;
-    // Touch directly in the center of the element.
-    window.eventSender.gestureLongPress(middleX, middleY);
+    var x = bounds.left + 5;
+    var y = bounds.top + 5;
+    window.eventSender.gestureLongPress(x, y);
     shouldBeEqualToString('window.getSelection().toString()', element.value);
 }
 </script>
