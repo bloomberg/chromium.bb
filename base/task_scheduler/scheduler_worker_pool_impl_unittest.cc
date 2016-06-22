@@ -72,7 +72,7 @@ class TaskSchedulerWorkerPoolImplTest
   }
 
   void TearDown() override {
-    worker_pool_->WaitForAllWorkerWorkersIdleForTesting();
+    worker_pool_->WaitForAllWorkersIdleForTesting();
     worker_pool_->JoinForTesting();
   }
 
@@ -99,12 +99,12 @@ class ThreadPostingTasks : public SimpleThread {
  public:
   enum class WaitBeforePostTask {
     NO_WAIT,
-    WAIT_FOR_ALL_THREADS_IDLE,
+    WAIT_FOR_ALL_WORKERS_IDLE,
   };
 
   // Constructs a thread that posts tasks to |worker_pool| through an
   // |execution_mode| task runner. If |wait_before_post_task| is
-  // WAIT_FOR_ALL_THREADS_IDLE, the thread waits until all worker threads in
+  // WAIT_FOR_ALL_WORKERS_IDLE, the thread waits until all workers in
   // |worker_pool| are idle before posting a new task. If |post_nested_task| is
   // YES, each task posted by this thread posts another task when it runs.
   ThreadPostingTasks(SchedulerWorkerPoolImpl* worker_pool,
@@ -129,8 +129,8 @@ class ThreadPostingTasks : public SimpleThread {
 
     for (size_t i = 0; i < kNumTasksPostedPerThread; ++i) {
       if (wait_before_post_task_ ==
-          WaitBeforePostTask::WAIT_FOR_ALL_THREADS_IDLE) {
-        worker_pool_->WaitForAllWorkerWorkersIdleForTesting();
+          WaitBeforePostTask::WAIT_FOR_ALL_WORKERS_IDLE) {
+        worker_pool_->WaitForAllWorkersIdleForTesting();
       }
       EXPECT_TRUE(factory_.PostTask(post_nested_task_, Closure()));
     }
@@ -169,20 +169,20 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasks) {
     thread_posting_tasks->factory()->WaitForAllTasksToRun();
   }
 
-  // Wait until all worker threads are idle to be sure that no task accesses
+  // Wait until all workers are idle to be sure that no task accesses
   // its TestTaskFactory after |thread_posting_tasks| is destroyed.
-  worker_pool_->WaitForAllWorkerWorkersIdleForTesting();
+  worker_pool_->WaitForAllWorkersIdleForTesting();
 }
 
-TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWaitAllThreadsIdle) {
-  // Create threads to post tasks. To verify that worker threads can sleep and
-  // be woken up when new tasks are posted, wait for all threads to become idle
-  // before posting a new task.
+TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWaitAllWorkersIdle) {
+  // Create threads to post tasks. To verify that workers can sleep and be woken
+  // up when new tasks are posted, wait for all workers to become idle before
+  // posting a new task.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
     threads_posting_tasks.push_back(WrapUnique(new ThreadPostingTasks(
         worker_pool_.get(), GetParam(),
-        WaitBeforePostTask::WAIT_FOR_ALL_THREADS_IDLE, PostNestedTask::NO)));
+        WaitBeforePostTask::WAIT_FOR_ALL_WORKERS_IDLE, PostNestedTask::NO)));
     threads_posting_tasks.back()->Start();
   }
 
@@ -192,9 +192,9 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWaitAllThreadsIdle) {
     thread_posting_tasks->factory()->WaitForAllTasksToRun();
   }
 
-  // Wait until all worker threads are idle to be sure that no task accesses
-  // its TestTaskFactory after |thread_posting_tasks| is destroyed.
-  worker_pool_->WaitForAllWorkerWorkersIdleForTesting();
+  // Wait until all workers are idle to be sure that no task accesses its
+  // TestTaskFactory after |thread_posting_tasks| is destroyed.
+  worker_pool_->WaitForAllWorkersIdleForTesting();
 }
 
 TEST_P(TaskSchedulerWorkerPoolImplTest, NestedPostTasks) {
@@ -214,13 +214,13 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, NestedPostTasks) {
     thread_posting_tasks->factory()->WaitForAllTasksToRun();
   }
 
-  // Wait until all worker threads are idle to be sure that no task accesses
-  // its TestTaskFactory after |thread_posting_tasks| is destroyed.
-  worker_pool_->WaitForAllWorkerWorkersIdleForTesting();
+  // Wait until all workers are idle to be sure that no task accesses its
+  // TestTaskFactory after |thread_posting_tasks| is destroyed.
+  worker_pool_->WaitForAllWorkersIdleForTesting();
 }
 
-TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWithOneAvailableThread) {
-  // Post blocking tasks to keep all threads busy except one until |event| is
+TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWithOneAvailableWorker) {
+  // Post blocking tasks to keep all workers busy except one until |event| is
   // signaled. Use different factories so that tasks are added to different
   // sequences and can run simultaneously when the execution mode is SEQUENCED.
   WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
@@ -236,7 +236,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWithOneAvailableThread) {
   }
 
   // Post |kNumTasksPostedPerThread| tasks that should all run despite the fact
-  // that only one thread in |worker_pool_| isn't busy.
+  // that only one worker in |worker_pool_| isn't busy.
   test::TestTaskFactory short_task_factory(
       worker_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam()),
       GetParam());
@@ -247,9 +247,9 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWithOneAvailableThread) {
   // Release tasks waiting on |event|.
   event.Signal();
 
-  // Wait until all worker threads are idle to be sure that no task accesses
+  // Wait until all workers are idle to be sure that no task accesses
   // its TestTaskFactory after it is destroyed.
-  worker_pool_->WaitForAllWorkerWorkersIdleForTesting();
+  worker_pool_->WaitForAllWorkersIdleForTesting();
 }
 
 TEST_P(TaskSchedulerWorkerPoolImplTest, Saturate) {
@@ -272,9 +272,9 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, Saturate) {
   // Release tasks waiting on |event|.
   event.Signal();
 
-  // Wait until all worker threads are idle to be sure that no task accesses
+  // Wait until all workers are idle to be sure that no task accesses
   // its TestTaskFactory after it is destroyed.
-  worker_pool_->WaitForAllWorkerWorkersIdleForTesting();
+  worker_pool_->WaitForAllWorkersIdleForTesting();
 }
 
 // Verify that a Task can't be posted after shutdown.

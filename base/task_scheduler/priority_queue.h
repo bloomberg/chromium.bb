@@ -27,11 +27,11 @@ class BASE_EXPORT PriorityQueue {
   // PriorityQueue. While a Transaction is alive, it is guaranteed that nothing
   // else will access the PriorityQueue.
   //
-  // A WorkerThread needs to be able to Peek sequences from both its
-  // PriorityQueues (single-threaded and shared) and then Pop the sequence with
-  // the highest priority. If the Peek and the Pop are done through the same
-  // Transaction, it is guaranteed that the PriorityQueue hasn't changed between
-  // the 2 operations.
+  // A Worker needs to be able to Peek sequences from both its PriorityQueues
+  // (single-threaded and shared) and then Pop the sequence with the highest
+  // priority. If the Peek and the Pop are done through the same Transaction, it
+  // is guaranteed that the PriorityQueue hasn't changed between the 2
+  // operations.
   class BASE_EXPORT Transaction : public NonThreadSafe {
    public:
     ~Transaction();

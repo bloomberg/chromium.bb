@@ -41,7 +41,7 @@ enum class TaskPriority {
 enum class TaskShutdownBehavior {
   // Tasks posted with this mode which have not started executing before
   // shutdown is initiated will never run. Tasks with this mode running at
-  // shutdown will be ignored (the worker thread will not be joined).
+  // shutdown will be ignored (the worker will not be joined).
   //
   // This option provides a nice way to post stuff you don't want blocking
   // shutdown. For example, you might be doing a slow DNS lookup and if it's

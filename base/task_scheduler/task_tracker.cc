@@ -171,8 +171,8 @@ bool TaskTracker::BeforeRunTask(TaskShutdownBehavior shutdown_behavior) {
     // or should be blocking shutdown if it was posted before it did.
     DCHECK_NE(shutdown_behavior, TaskShutdownBehavior::BLOCK_SHUTDOWN);
 
-    // A WorkerThread might extract a non BLOCK_SHUTDOWN task from a
-    // PriorityQueue after shutdown. It shouldn't be allowed to run it.
+    // A worker might extract a non BLOCK_SHUTDOWN task from a PriorityQueue
+    // after shutdown. It shouldn't be allowed to run it.
     return false;
   }
 

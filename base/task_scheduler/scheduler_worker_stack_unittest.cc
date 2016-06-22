@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task_scheduler/scheduler_worker_thread_stack.h"
+#include "base/task_scheduler/scheduler_worker_stack.h"
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_scheduler/scheduler_worker_thread.h"
+#include "base/task_scheduler/scheduler_worker.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/task_scheduler/test_utils.h"
@@ -20,50 +20,46 @@ namespace internal {
 
 namespace {
 
-class MockSchedulerWorkerThreadDelegate
-    : public SchedulerWorkerThread::Delegate {
+class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
  public:
-  void OnMainEntry(SchedulerWorkerThread* worker_thread) override {}
-  scoped_refptr<Sequence> GetWork(
-      SchedulerWorkerThread* worker_thread) override {
+  void OnMainEntry(SchedulerWorker* worker) override {}
+  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     return nullptr;
   }
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
     ADD_FAILURE() << "This delegate not expect to have sequences to reenqueue.";
   }
   TimeDelta GetSleepTimeout() override {
-    ADD_FAILURE() <<
-        "The mock thread is not expected to be woken before it is shutdown";
     return TimeDelta::Max();
   }
 };
 
-class TaskSchedulerWorkerThreadStackTest : public testing::Test {
+class TaskSchedulerWorkerStackTest : public testing::Test {
  protected:
   void SetUp() override {
-    thread_a_ = SchedulerWorkerThread::Create(
+    worker_a_ = SchedulerWorker::Create(
         ThreadPriority::NORMAL,
-        WrapUnique(new MockSchedulerWorkerThreadDelegate), &task_tracker_);
-    ASSERT_TRUE(thread_a_);
-    thread_b_ = SchedulerWorkerThread::Create(
+        WrapUnique(new MockSchedulerWorkerDelegate), &task_tracker_);
+    ASSERT_TRUE(worker_a_);
+    worker_b_ = SchedulerWorker::Create(
         ThreadPriority::NORMAL,
-        WrapUnique(new MockSchedulerWorkerThreadDelegate), &task_tracker_);
-    ASSERT_TRUE(thread_b_);
-    thread_c_ = SchedulerWorkerThread::Create(
+        WrapUnique(new MockSchedulerWorkerDelegate), &task_tracker_);
+    ASSERT_TRUE(worker_b_);
+    worker_c_ = SchedulerWorker::Create(
         ThreadPriority::NORMAL,
-        WrapUnique(new MockSchedulerWorkerThreadDelegate), &task_tracker_);
-    ASSERT_TRUE(thread_c_);
+        WrapUnique(new MockSchedulerWorkerDelegate), &task_tracker_);
+    ASSERT_TRUE(worker_c_);
   }
 
   void TearDown() override {
-    thread_a_->JoinForTesting();
-    thread_b_->JoinForTesting();
-    thread_c_->JoinForTesting();
+    worker_a_->JoinForTesting();
+    worker_b_->JoinForTesting();
+    worker_c_->JoinForTesting();
   }
 
-  std::unique_ptr<SchedulerWorkerThread> thread_a_;
-  std::unique_ptr<SchedulerWorkerThread> thread_b_;
-  std::unique_ptr<SchedulerWorkerThread> thread_c_;
+  std::unique_ptr<SchedulerWorker> worker_a_;
+  std::unique_ptr<SchedulerWorker> worker_b_;
+  std::unique_ptr<SchedulerWorker> worker_c_;
 
  private:
   TaskTracker task_tracker_;
@@ -72,99 +68,99 @@ class TaskSchedulerWorkerThreadStackTest : public testing::Test {
 }  // namespace
 
 // Verify that Push() and Pop() add/remove values in FIFO order.
-TEST_F(TaskSchedulerWorkerThreadStackTest, PushPop) {
-  SchedulerWorkerThreadStack stack;
+TEST_F(TaskSchedulerWorkerStackTest, PushPop) {
+  SchedulerWorkerStack stack;
   EXPECT_TRUE(stack.IsEmpty());
   EXPECT_EQ(0U, stack.Size());
 
-  stack.Push(thread_a_.get());
+  stack.Push(worker_a_.get());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(1U, stack.Size());
 
-  stack.Push(thread_b_.get());
+  stack.Push(worker_b_.get());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(2U, stack.Size());
 
-  stack.Push(thread_c_.get());
+  stack.Push(worker_c_.get());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(3U, stack.Size());
 
-  EXPECT_EQ(thread_c_.get(), stack.Pop());
+  EXPECT_EQ(worker_c_.get(), stack.Pop());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(2U, stack.Size());
 
-  stack.Push(thread_c_.get());
+  stack.Push(worker_c_.get());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(3U, stack.Size());
 
-  EXPECT_EQ(thread_c_.get(), stack.Pop());
+  EXPECT_EQ(worker_c_.get(), stack.Pop());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(2U, stack.Size());
 
-  EXPECT_EQ(thread_b_.get(), stack.Pop());
+  EXPECT_EQ(worker_b_.get(), stack.Pop());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(1U, stack.Size());
 
-  EXPECT_EQ(thread_a_.get(), stack.Pop());
+  EXPECT_EQ(worker_a_.get(), stack.Pop());
   EXPECT_TRUE(stack.IsEmpty());
   EXPECT_EQ(0U, stack.Size());
 }
 
 // Verify that a value can be removed by Remove().
-TEST_F(TaskSchedulerWorkerThreadStackTest, Remove) {
-  SchedulerWorkerThreadStack stack;
+TEST_F(TaskSchedulerWorkerStackTest, Remove) {
+  SchedulerWorkerStack stack;
   EXPECT_TRUE(stack.IsEmpty());
   EXPECT_EQ(0U, stack.Size());
 
-  stack.Push(thread_a_.get());
+  stack.Push(worker_a_.get());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(1U, stack.Size());
 
-  stack.Push(thread_b_.get());
+  stack.Push(worker_b_.get());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(2U, stack.Size());
 
-  stack.Push(thread_c_.get());
+  stack.Push(worker_c_.get());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(3U, stack.Size());
 
-  stack.Remove(thread_b_.get());
+  stack.Remove(worker_b_.get());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(2U, stack.Size());
 
-  EXPECT_EQ(thread_c_.get(), stack.Pop());
+  EXPECT_EQ(worker_c_.get(), stack.Pop());
   EXPECT_FALSE(stack.IsEmpty());
   EXPECT_EQ(1U, stack.Size());
 
-  EXPECT_EQ(thread_a_.get(), stack.Pop());
+  EXPECT_EQ(worker_a_.get(), stack.Pop());
   EXPECT_TRUE(stack.IsEmpty());
   EXPECT_EQ(0U, stack.Size());
 }
 
 // Verify that a value can be pushed again after it has been removed.
-TEST_F(TaskSchedulerWorkerThreadStackTest, PushAfterRemove) {
-  SchedulerWorkerThreadStack stack;
+TEST_F(TaskSchedulerWorkerStackTest, PushAfterRemove) {
+  SchedulerWorkerStack stack;
   EXPECT_EQ(0U, stack.Size());
   EXPECT_TRUE(stack.IsEmpty());
 
-  stack.Push(thread_a_.get());
+  stack.Push(worker_a_.get());
   EXPECT_EQ(1U, stack.Size());
   EXPECT_FALSE(stack.IsEmpty());
 
-  stack.Remove(thread_a_.get());
+  stack.Remove(worker_a_.get());
   EXPECT_EQ(0U, stack.Size());
   EXPECT_TRUE(stack.IsEmpty());
 
-  stack.Push(thread_a_.get());
+  stack.Push(worker_a_.get());
   EXPECT_EQ(1U, stack.Size());
   EXPECT_FALSE(stack.IsEmpty());
 }
 
 // Verify that Push() DCHECKs when a value is inserted twice.
-TEST_F(TaskSchedulerWorkerThreadStackTest, PushTwice) {
-  SchedulerWorkerThreadStack stack;
-  stack.Push(thread_a_.get());
-  EXPECT_DCHECK_DEATH({ stack.Push(thread_a_.get()); }, "");
+TEST_F(TaskSchedulerWorkerStackTest, PushTwice) {
+  SchedulerWorkerStack stack;
+  stack.Push(worker_a_.get());
+  EXPECT_DCHECK_DEATH({ stack.Push(worker_a_.get()); }, "");
 }
 
 }  // namespace internal

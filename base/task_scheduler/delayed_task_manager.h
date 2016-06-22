@@ -23,8 +23,8 @@
 namespace base {
 namespace internal {
 
+class SchedulerWorker;
 class SchedulerWorkerPool;
-class SchedulerWorkerThread;
 
 // A DelayedTaskManager holds delayed Tasks until they become ripe for
 // execution. This class is thread-safe.
@@ -36,17 +36,16 @@ class BASE_EXPORT DelayedTaskManager {
   ~DelayedTaskManager();
 
   // Adds |task| to a queue of delayed tasks. The task will be posted to
-  // |worker_pool| with |sequence| and |worker_thread| the first time that
+  // |worker_pool| with |sequence| and |worker| the first time that
   // PostReadyTasks() is called while Now() is passed |task->delayed_run_time|.
-  // |worker_thread| is a SchedulerWorkerThread owned by |worker_pool| or
-  // nullptr.
+  // |worker| is a SchedulerWorker owned by |worker_pool| or nullptr.
   //
-  // TODO(robliao): Find a concrete way to manage the memory of |worker_thread|
-  // and |worker_pool|. These objects are never deleted in production, but it is
+  // TODO(robliao): Find a concrete way to manage the memory of |worker| and
+  // |worker_pool|. These objects are never deleted in production, but it is
   // better not to spread this assumption throughout the scheduler.
   void AddDelayedTask(std::unique_ptr<Task> task,
                       scoped_refptr<Sequence> sequence,
-                      SchedulerWorkerThread* worker_thread,
+                      SchedulerWorker* worker,
                       SchedulerWorkerPool* worker_pool);
 
   // Posts delayed tasks that are ripe for execution.

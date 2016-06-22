@@ -14,7 +14,7 @@ namespace base {
 namespace internal {
 
 class DelayedTaskManager;
-class SchedulerWorkerThread;
+class SchedulerWorker;
 class TaskTracker;
 
 // A thread dedicated to performing Task Scheduler related work.
@@ -23,8 +23,8 @@ class BASE_EXPORT SchedulerServiceThread {
   ~SchedulerServiceThread();
 
   // Creates a SchedulerServiceThread. |task_tracker| and |delayed_task_manager|
-  // are passed through to the underlying SchedulerWorkerThread. Returns a
-  // nullptr on failure.
+  // are passed through to the underlying SchedulerWorker. Returns a nullptr on
+  // failure.
   static std::unique_ptr<SchedulerServiceThread> Create(
       TaskTracker* task_tracker, DelayedTaskManager* delayed_task_manager);
 
@@ -37,9 +37,9 @@ class BASE_EXPORT SchedulerServiceThread {
   void JoinForTesting();
 
  private:
-  SchedulerServiceThread(std::unique_ptr<SchedulerWorkerThread> worker_thread);
+  SchedulerServiceThread(std::unique_ptr<SchedulerWorker> worker);
 
-  const std::unique_ptr<SchedulerWorkerThread> worker_thread_;
+  const std::unique_ptr<SchedulerWorker> worker_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerServiceThread);
 };

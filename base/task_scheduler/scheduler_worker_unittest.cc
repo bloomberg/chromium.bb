@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task_scheduler/scheduler_worker_thread.h"
+#include "base/task_scheduler/scheduler_worker.h"
 
 #include <stddef.h>
 
@@ -28,27 +28,27 @@ namespace {
 const size_t kNumSequencesPerTest = 150;
 
 // The test parameter is the number of Tasks per Sequence returned by GetWork().
-class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t> {
+class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
  protected:
-  TaskSchedulerWorkerThreadTest()
+  TaskSchedulerWorkerTest()
       : main_entry_called_(WaitableEvent::ResetPolicy::MANUAL,
                            WaitableEvent::InitialState::NOT_SIGNALED),
         num_get_work_cv_(lock_.CreateConditionVariable()),
-        worker_thread_set_(WaitableEvent::ResetPolicy::MANUAL,
-                           WaitableEvent::InitialState::NOT_SIGNALED) {}
+        worker_set_(WaitableEvent::ResetPolicy::MANUAL,
+                    WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void SetUp() override {
-    worker_thread_ = SchedulerWorkerThread::Create(
+    worker_ = SchedulerWorker::Create(
         ThreadPriority::NORMAL,
-        WrapUnique(new TestSchedulerWorkerThreadDelegate(this)),
+        WrapUnique(new TestSchedulerWorkerDelegate(this)),
         &task_tracker_);
-    ASSERT_TRUE(worker_thread_);
-    worker_thread_set_.Signal();
+    ASSERT_TRUE(worker_);
+    worker_set_.Signal();
     main_entry_called_.Wait();
   }
 
   void TearDown() override {
-    worker_thread_->JoinForTesting();
+    worker_->JoinForTesting();
   }
 
   size_t TasksPerSequence() const { return GetParam(); }
@@ -86,19 +86,19 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t> {
     return re_enqueued_sequences_;
   }
 
-  std::unique_ptr<SchedulerWorkerThread> worker_thread_;
+  std::unique_ptr<SchedulerWorker> worker_;
 
  private:
-  class TestSchedulerWorkerThreadDelegate
-      : public SchedulerWorkerThread::Delegate {
+  class TestSchedulerWorkerDelegate
+      : public SchedulerWorker::Delegate {
    public:
-    TestSchedulerWorkerThreadDelegate(TaskSchedulerWorkerThreadTest* outer)
+    TestSchedulerWorkerDelegate(TaskSchedulerWorkerTest* outer)
         : outer_(outer) {}
 
-    // SchedulerWorkerThread::Delegate:
-    void OnMainEntry(SchedulerWorkerThread* worker_thread) override {
-      outer_->worker_thread_set_.Wait();
-      EXPECT_EQ(outer_->worker_thread_.get(), worker_thread);
+    // SchedulerWorker::Delegate:
+    void OnMainEntry(SchedulerWorker* worker) override {
+      outer_->worker_set_.Wait();
+      EXPECT_EQ(outer_->worker_.get(), worker);
 
       // Without synchronization, OnMainEntry() could be called twice without
       // generating an error.
@@ -107,9 +107,8 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t> {
       outer_->main_entry_called_.Signal();
     }
 
-    scoped_refptr<Sequence> GetWork(
-        SchedulerWorkerThread* worker_thread) override {
-      EXPECT_EQ(outer_->worker_thread_.get(), worker_thread);
+    scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+      EXPECT_EQ(outer_->worker_.get(), worker);
 
       {
         AutoSchedulerLock auto_lock(outer_->lock_);
@@ -131,7 +130,7 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t> {
       scoped_refptr<Sequence> sequence(new Sequence);
       for (size_t i = 0; i < outer_->TasksPerSequence(); ++i) {
         std::unique_ptr<Task> task(new Task(
-            FROM_HERE, Bind(&TaskSchedulerWorkerThreadTest::RunTaskCallback,
+            FROM_HERE, Bind(&TaskSchedulerWorkerTest::RunTaskCallback,
                             Unretained(outer_)),
             TaskTraits(), TimeDelta()));
         EXPECT_TRUE(outer_->task_tracker_.WillPostTask(task.get()));
@@ -173,7 +172,7 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t> {
     }
 
    private:
-    TaskSchedulerWorkerThreadTest* outer_;
+    TaskSchedulerWorkerTest* outer_;
   };
 
   void RunTaskCallback() {
@@ -212,15 +211,15 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t> {
   // Number of times that RunTaskCallback() has been called.
   size_t num_run_tasks_ = 0;
 
-  // Signaled after |worker_thread_| is set.
-  WaitableEvent worker_thread_set_;
+  // Signaled after |worker_| is set.
+  WaitableEvent worker_set_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerThreadTest);
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerTest);
 };
 
 // Verify that when GetWork() continuously returns Sequences, all Tasks in these
-// Sequences run successfully. The test wakes up the SchedulerWorkerThread once.
-TEST_P(TaskSchedulerWorkerThreadTest, ContinuousWork) {
+// Sequences run successfully. The test wakes up the SchedulerWorker once.
+TEST_P(TaskSchedulerWorkerTest, ContinuousWork) {
   // Set GetWork() to return |kNumSequencesPerTest| Sequences before starting to
   // return nullptr.
   SetNumSequencesToCreate(kNumSequencesPerTest);
@@ -230,17 +229,17 @@ TEST_P(TaskSchedulerWorkerThreadTest, ContinuousWork) {
   const size_t kExpectedNumGetWork = kNumSequencesPerTest + 1;
   SetMaxGetWork(kExpectedNumGetWork);
 
-  // Wake up |worker_thread_| and wait until GetWork() has been invoked the
+  // Wake up |worker_| and wait until GetWork() has been invoked the
   // expected amount of times.
-  worker_thread_->WakeUp();
+  worker_->WakeUp();
   WaitForNumGetWork(kExpectedNumGetWork);
 
   // All tasks should have run.
   EXPECT_EQ(kNumSequencesPerTest, NumRunTasks());
 
   // If Sequences returned by GetWork() contain more than one Task, they aren't
-  // empty after the worker thread pops Tasks from them and thus should be
-  // returned to EnqueueSequence().
+  // empty after the worker pops Tasks from them and thus should be returned to
+  // EnqueueSequence().
   if (TasksPerSequence() > 1)
     EXPECT_EQ(CreatedSequences(), EnqueuedSequences());
   else
@@ -249,8 +248,8 @@ TEST_P(TaskSchedulerWorkerThreadTest, ContinuousWork) {
 
 // Verify that when GetWork() alternates between returning a Sequence and
 // returning nullptr, all Tasks in the returned Sequences run successfully. The
-// test wakes up the SchedulerWorkerThread once for each Sequence.
-TEST_P(TaskSchedulerWorkerThreadTest, IntermittentWork) {
+// test wakes up the SchedulerWorker once for each Sequence.
+TEST_P(TaskSchedulerWorkerTest, IntermittentWork) {
   for (size_t i = 0; i < kNumSequencesPerTest; ++i) {
     // Set GetWork() to return 1 Sequence before starting to return
     // nullptr.
@@ -261,17 +260,17 @@ TEST_P(TaskSchedulerWorkerThreadTest, IntermittentWork) {
     const size_t expected_num_get_work = 2 * (i + 1);
     SetMaxGetWork(expected_num_get_work);
 
-    // Wake up |worker_thread_| and wait until GetWork() has been invoked
+    // Wake up |worker_| and wait until GetWork() has been invoked
     // the expected amount of times.
-    worker_thread_->WakeUp();
+    worker_->WakeUp();
     WaitForNumGetWork(expected_num_get_work);
 
     // The Task should have run
     EXPECT_EQ(i + 1, NumRunTasks());
 
     // If Sequences returned by GetWork() contain more than one Task, they
-    // aren't empty after the worker thread pops Tasks from them and thus should
-    // be returned to EnqueueSequence().
+    // aren't empty after the worker pops Tasks from them and thus should be
+    // returned to EnqueueSequence().
     if (TasksPerSequence() > 1)
       EXPECT_EQ(CreatedSequences(), EnqueuedSequences());
     else
@@ -280,10 +279,10 @@ TEST_P(TaskSchedulerWorkerThreadTest, IntermittentWork) {
 }
 
 INSTANTIATE_TEST_CASE_P(OneTaskPerSequence,
-                        TaskSchedulerWorkerThreadTest,
+                        TaskSchedulerWorkerTest,
                         ::testing::Values(1));
 INSTANTIATE_TEST_CASE_P(TwoTasksPerSequence,
-                        TaskSchedulerWorkerThreadTest,
+                        TaskSchedulerWorkerTest,
                         ::testing::Values(2));
 
 }  // namespace

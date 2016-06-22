@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/delayed_task_manager.h"
-#include "base/task_scheduler/scheduler_worker_thread.h"
+#include "base/task_scheduler/scheduler_worker.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -19,16 +19,15 @@ namespace base {
 namespace internal {
 namespace {
 
-class ServiceThreadDelegate : public SchedulerWorkerThread::Delegate {
+class ServiceThreadDelegate : public SchedulerWorker::Delegate {
  public:
   ServiceThreadDelegate(DelayedTaskManager* delayed_task_manager)
       : delayed_task_manager_(delayed_task_manager) {}
 
-  // SchedulerWorkerThread::Delegate:
-  void OnMainEntry(SchedulerWorkerThread* worker_thread) override {}
+  // SchedulerWorker::Delegate:
+  void OnMainEntry(SchedulerWorker* worker) override {}
 
-  scoped_refptr<Sequence> GetWork(SchedulerWorkerThread* worker_thread)
-      override {
+  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     delayed_task_manager_->PostReadyTasks();
     return nullptr;
   }
@@ -65,28 +64,27 @@ SchedulerServiceThread::~SchedulerServiceThread() = default;
 // static
 std::unique_ptr<SchedulerServiceThread> SchedulerServiceThread::Create(
     TaskTracker* task_tracker, DelayedTaskManager* delayed_task_manager) {
-  std::unique_ptr<SchedulerWorkerThread> worker_thread =
-      SchedulerWorkerThread::Create(
+  std::unique_ptr<SchedulerWorker> worker =
+      SchedulerWorker::Create(
           ThreadPriority::NORMAL,
           WrapUnique(new ServiceThreadDelegate(delayed_task_manager)),
           task_tracker);
-  if (!worker_thread)
+  if (!worker)
     return nullptr;
 
-  return WrapUnique(new SchedulerServiceThread(std::move(worker_thread)));
+  return WrapUnique(new SchedulerServiceThread(std::move(worker)));
 }
 
 void SchedulerServiceThread::WakeUp() {
-  worker_thread_->WakeUp();
+  worker_->WakeUp();
 }
 
 void SchedulerServiceThread::JoinForTesting() {
-  worker_thread_->JoinForTesting();
+  worker_->JoinForTesting();
 }
 
 SchedulerServiceThread::SchedulerServiceThread(
-    std::unique_ptr<SchedulerWorkerThread> worker_thread)
-    : worker_thread_(std::move(worker_thread)) {}
+    std::unique_ptr<SchedulerWorker> worker) : worker_(std::move(worker)) {}
 
 }  // namespace internal
 }  // namespace base

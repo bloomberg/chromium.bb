@@ -21,9 +21,9 @@
 #include "base/task_runner.h"
 #include "base/task_scheduler/priority_queue.h"
 #include "base/task_scheduler/scheduler_lock.h"
+#include "base/task_scheduler/scheduler_worker.h"
 #include "base/task_scheduler/scheduler_worker_pool.h"
-#include "base/task_scheduler/scheduler_worker_thread.h"
-#include "base/task_scheduler/scheduler_worker_thread_stack.h"
+#include "base/task_scheduler/scheduler_worker_stack.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_traits.h"
@@ -70,7 +70,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
       DelayedTaskManager* delayed_task_manager);
 
   // Waits until all workers are idle.
-  void WaitForAllWorkerWorkersIdleForTesting();
+  void WaitForAllWorkersIdleForTesting();
 
   // Joins all workers of this worker pool. Tasks that are already running are
   // allowed to complete their execution. This can only be called once.
@@ -84,13 +84,13 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
                          const SequenceSortKey& sequence_sort_key) override;
   bool PostTaskWithSequence(std::unique_ptr<Task> task,
                             scoped_refptr<Sequence> sequence,
-                            SchedulerWorkerThread* worker_thread) override;
+                            SchedulerWorker* worker) override;
   void PostTaskWithSequenceNow(std::unique_ptr<Task> task,
                                scoped_refptr<Sequence> sequence,
-                               SchedulerWorkerThread* worker_thread) override;
+                               SchedulerWorker* worker) override;
 
  private:
-  class SchedulerWorkerThreadDelegateImpl;
+  class SchedulerWorkerDelegateImpl;
 
   SchedulerWorkerPoolImpl(StringPiece name,
                           IORestriction io_restriction,
@@ -105,25 +105,25 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Wakes up the last worker from this worker pool to go idle, if any.
   void WakeUpOneWorker();
 
-  // Adds |worker_thread| to |idle_worker_threads_stack_|.
-  void AddToIdleWorkerThreadsStack(SchedulerWorkerThread* worker_thread);
+  // Adds |worker| to |idle_workers_stack_|.
+  void AddToIdleWorkersStack(SchedulerWorker* worker);
 
-  // Removes |worker_thread| from |idle_worker_threads_stack_|.
-  void RemoveFromIdleWorkerThreadsStack(SchedulerWorkerThread* worker_thread);
+  // Removes |worker| from |idle_workers_stack_|.
+  void RemoveFromIdleWorkersStack(SchedulerWorker* worker);
 
   // The name of this worker pool, used to label its worker threads.
   const std::string name_;
 
-  // All worker threads owned by this worker pool. Only modified during
-  // initialization of the worker pool.
-  std::vector<std::unique_ptr<SchedulerWorkerThread>> worker_threads_;
+  // All worker owned by this worker pool. Only modified during initialization
+  // of the worker pool.
+  std::vector<std::unique_ptr<SchedulerWorker>> workers_;
 
-  // Synchronizes access to |next_worker_thread_index_|.
-  SchedulerLock next_worker_thread_index_lock_;
+  // Synchronizes access to |next_worker_index_|.
+  SchedulerLock next_worker_index_lock_;
 
-  // Index of the worker thread that will be assigned to the next single-
-  // threaded TaskRunner returned by this pool.
-  size_t next_worker_thread_index_ = 0;
+  // Index of the worker that will be assigned to the next single-threaded
+  // TaskRunner returned by this pool.
+  size_t next_worker_index_ = 0;
 
   // PriorityQueue from which all threads of this worker pool get work.
   PriorityQueue shared_priority_queue_;
@@ -131,25 +131,25 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Indicates whether Tasks on this worker pool are allowed to make I/O calls.
   const IORestriction io_restriction_;
 
-  // Synchronizes access to |idle_worker_threads_stack_| and
-  // |idle_worker_threads_stack_cv_for_testing_|. Has |shared_priority_queue_|'s
-  // lock as its predecessor so that a thread can be pushed to
-  // |idle_worker_threads_stack_| within the scope of a Transaction (more
+  // Synchronizes access to |idle_workers_stack_| and
+  // |idle_workers_stack_cv_for_testing_|. Has |shared_priority_queue_|'s
+  // lock as its predecessor so that a worker can be pushed to
+  // |idle_workers_stack_| within the scope of a Transaction (more
   // details in GetWork()).
-  SchedulerLock idle_worker_threads_stack_lock_;
+  SchedulerLock idle_workers_stack_lock_;
 
-  // Stack of idle worker threads.
-  SchedulerWorkerThreadStack idle_worker_threads_stack_;
+  // Stack of idle workers.
+  SchedulerWorkerStack idle_workers_stack_;
 
-  // Signaled when all worker threads become idle.
-  std::unique_ptr<ConditionVariable> idle_worker_threads_stack_cv_for_testing_;
+  // Signaled when all workers become idle.
+  std::unique_ptr<ConditionVariable> idle_workers_stack_cv_for_testing_;
 
   // Signaled once JoinForTesting() has returned.
   WaitableEvent join_for_testing_returned_;
 
 #if DCHECK_IS_ON()
-  // Signaled when all threads have been created.
-  WaitableEvent threads_created_;
+  // Signaled when all workers have been created.
+  WaitableEvent workers_created_;
 #endif
 
   TaskTracker* const task_tracker_;

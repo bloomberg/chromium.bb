@@ -59,7 +59,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   SchedulerWorkerPool* GetWorkerPoolForTraits(const TaskTraits& traits);
 
   // Callback invoked when a non-single-thread |sequence| isn't empty after a
-  // worker thread pops a Task from it.
+  // worker pops a Task from it.
   void ReEnqueueSequenceCallback(scoped_refptr<Sequence> sequence);
 
   // Callback invoked when the delayed run time is changed from the

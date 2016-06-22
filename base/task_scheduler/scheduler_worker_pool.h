@@ -17,7 +17,7 @@
 namespace base {
 namespace internal {
 
-class SchedulerWorkerThread;
+class SchedulerWorker;
 class SequenceSortKey;
 
 // Interface for a worker pool.
@@ -32,33 +32,32 @@ class BASE_EXPORT SchedulerWorkerPool {
       ExecutionMode execution_mode) = 0;
 
   // Inserts |sequence| with |sequence_sort_key| into a queue of Sequences that
-  // can be processed by any worker thread owned by this SchedulerWorkerPool.
-  // Must only be used to put |sequence| back into a queue after running a Task
-  // from it. The thread that calls this doesn't have to belong to this
+  // can be processed by any worker owned by this SchedulerWorkerPool. Must only
+  // be used to put |sequence| back into a queue after running a Task from it.
+  // The thread that calls this doesn't have to belong to this
   // SchedulerWorkerPool.
   virtual void ReEnqueueSequence(scoped_refptr<Sequence> sequence,
                                  const SequenceSortKey& sequence_sort_key) = 0;
 
   // Posts |task| to be executed by this SchedulerWorkerPool as part of
-  // |sequence|. If |worker_thread| is non-null, |task| will be scheduled to run
-  // on it specifically (note: |worker_thread| must be owned by this
-  // SchedulerWorkerPool); otherwise, |task| will be added to the pending shared
-  // work. |task| won't be executed before its delayed run time, if any. Returns
-  // true if |task| is posted.
+  // |sequence|. If |worker| is non-null, |task| will be scheduled to run on it
+  // specifically (note: |worker| must be owned by this SchedulerWorkerPool);
+  // otherwise, |task| will be added to the pending shared work. |task| won't be
+  // executed before its delayed run time, if any. Returns true if |task| is
+  // posted.
   virtual bool PostTaskWithSequence(std::unique_ptr<Task> task,
                                     scoped_refptr<Sequence> sequence,
-                                    SchedulerWorkerThread* worker_thread) = 0;
+                                    SchedulerWorker* worker) = 0;
 
   // Posts |task| to be executed by this SchedulerWorkerPool as part of
-  // |sequence|. If |worker_thread| is non-null, |task| will be scheduled to run
-  // on it specifically (note: |worker_thread| must be owned by this
-  // SchedulerWorkerPool); otherwise, |task| will be added to the pending shared
-  // work. This must only be called after |task| has gone through
-  // PostTaskWithSequence() and after |task|'s delayed run time.
-  virtual void PostTaskWithSequenceNow(
-      std::unique_ptr<Task> task,
-      scoped_refptr<Sequence> sequence,
-      SchedulerWorkerThread* worker_thread) = 0;
+  // |sequence|. If |worker| is non-null, |task| will be scheduled to run on it
+  // specifically (note: |worker| must be owned by this SchedulerWorkerPool);
+  // otherwise, |task| will be added to the pending shared work. This must only
+  // be called after |task| has gone through PostTaskWithSequence() and after
+  // |task|'s delayed run time.
+  virtual void PostTaskWithSequenceNow(std::unique_ptr<Task> task,
+                                       scoped_refptr<Sequence> sequence,
+                                       SchedulerWorker* worker) = 0;
 };
 
 }  // namespace internal

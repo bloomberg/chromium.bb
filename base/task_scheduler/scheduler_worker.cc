@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task_scheduler/scheduler_worker_thread.h"
+#include "base/task_scheduler/scheduler_worker.h"
 
 #include <stddef.h>
 
@@ -14,28 +14,28 @@
 namespace base {
 namespace internal {
 
-std::unique_ptr<SchedulerWorkerThread> SchedulerWorkerThread::Create(
+std::unique_ptr<SchedulerWorker> SchedulerWorker::Create(
     ThreadPriority thread_priority,
     std::unique_ptr<Delegate> delegate,
     TaskTracker* task_tracker) {
-  std::unique_ptr<SchedulerWorkerThread> worker_thread(
-      new SchedulerWorkerThread(thread_priority, std::move(delegate),
+  std::unique_ptr<SchedulerWorker> worker(
+      new SchedulerWorker(thread_priority, std::move(delegate),
                                 task_tracker));
 
-  if (worker_thread->thread_handle_.is_null())
+  if (worker->thread_handle_.is_null())
     return nullptr;
-  return worker_thread;
+  return worker;
 }
 
-SchedulerWorkerThread::~SchedulerWorkerThread() {
+SchedulerWorker::~SchedulerWorker() {
   DCHECK(ShouldExitForTesting());
 }
 
-void SchedulerWorkerThread::WakeUp() {
+void SchedulerWorker::WakeUp() {
   wake_up_event_.Signal();
 }
 
-void SchedulerWorkerThread::JoinForTesting() {
+void SchedulerWorker::JoinForTesting() {
   {
     AutoSchedulerLock auto_lock(should_exit_for_testing_lock_);
     should_exit_for_testing_ = true;
@@ -44,9 +44,9 @@ void SchedulerWorkerThread::JoinForTesting() {
   PlatformThread::Join(thread_handle_);
 }
 
-SchedulerWorkerThread::SchedulerWorkerThread(ThreadPriority thread_priority,
-                                             std::unique_ptr<Delegate> delegate,
-                                             TaskTracker* task_tracker)
+SchedulerWorker::SchedulerWorker(ThreadPriority thread_priority,
+                                 std::unique_ptr<Delegate> delegate,
+                                 TaskTracker* task_tracker)
     : wake_up_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
                      WaitableEvent::InitialState::NOT_SIGNALED),
       delegate_(std::move(delegate)),
@@ -59,10 +59,10 @@ SchedulerWorkerThread::SchedulerWorkerThread(ThreadPriority thread_priority,
                                      thread_priority);
 }
 
-void SchedulerWorkerThread::ThreadMain() {
+void SchedulerWorker::ThreadMain() {
   delegate_->OnMainEntry(this);
 
-  // A SchedulerWorkerThread starts out sleeping.
+  // A SchedulerWorker starts out sleeping.
   wake_up_event_.Wait();
 
   while (!task_tracker_->shutdown_completed() && !ShouldExitForTesting()) {
@@ -87,22 +87,22 @@ void SchedulerWorkerThread::ThreadMain() {
 
     // If |sequence| isn't empty immediately after the pop, re-enqueue it to
     // maintain the invariant that a non-empty Sequence is always referenced by
-    // either a PriorityQueue or a SchedulerWorkerThread. If it is empty and
-    // there are live references to it, it will be enqueued when a Task is added
-    // to it. Otherwise, it will be destroyed at the end of this scope.
+    // either a PriorityQueue or a SchedulerWorker. If it is empty and there are
+    // live references to it, it will be enqueued when a Task is added to it.
+    // Otherwise, it will be destroyed at the end of this scope.
     if (!sequence_became_empty)
       delegate_->ReEnqueueSequence(std::move(sequence));
 
-    // Calling WakeUp() guarantees that this SchedulerWorkerThread will run
-    // Tasks from Sequences returned by the GetWork() method of |delegate_|
-    // until it returns nullptr. Resetting |wake_up_event_| here doesn't break
-    // this invariant and avoids a useless loop iteration before going to sleep
-    // if WakeUp() is called while this SchedulerWorkerThread is awake.
+    // Calling WakeUp() guarantees that this SchedulerWorker will run Tasks from
+    // Sequences returned by the GetWork() method of |delegate_| until it
+    // returns nullptr. Resetting |wake_up_event_| here doesn't break this
+    // invariant and avoids a useless loop iteration before going to sleep if
+    // WakeUp() is called while this SchedulerWorker is awake.
     wake_up_event_.Reset();
   }
 }
 
-bool SchedulerWorkerThread::ShouldExitForTesting() const {
+bool SchedulerWorker::ShouldExitForTesting() const {
   AutoSchedulerLock auto_lock(should_exit_for_testing_lock_);
   return should_exit_for_testing_;
 }

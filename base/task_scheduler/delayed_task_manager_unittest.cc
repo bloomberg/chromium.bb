@@ -60,21 +60,21 @@ class MockSchedulerWorkerPool : public SchedulerWorkerPool {
 
   bool PostTaskWithSequence(std::unique_ptr<Task> task,
                             scoped_refptr<Sequence> sequence,
-                            SchedulerWorkerThread* worker_thread) override {
+                            SchedulerWorker* worker) override {
     NOTREACHED();
     return true;
   }
 
   void PostTaskWithSequenceNow(std::unique_ptr<Task> task,
                                scoped_refptr<Sequence> sequence,
-                               SchedulerWorkerThread* worker_thread) override {
-    PostTaskWithSequenceNowMock(task.get(), sequence.get(), worker_thread);
+                               SchedulerWorker* worker) override {
+    PostTaskWithSequenceNowMock(task.get(), sequence.get(), worker);
   }
 
   MOCK_METHOD3(PostTaskWithSequenceNowMock,
                void(const Task*,
                     const Sequence*,
-                    const SchedulerWorkerThread* worker_thread));
+                    const SchedulerWorker* worker));
 };
 
 }  // namespace
