@@ -141,6 +141,7 @@ component("views") {
     ]
     libs = [
       "AppKit.framework",
+      "ApplicationServices.framework",  # Temporary hack around https://crbug.com/620127. Remove after https://crbug.com/622481 is fixed.
       "CoreGraphics.framework",
       "Foundation.framework",
       "QuartzCore.framework",  # Required by bridged_native_widget.mm.

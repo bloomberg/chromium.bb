@@ -58,8 +58,9 @@ component("native_theme") {
 
   if (is_mac) {
     libs = [
-      "CoreGraphics.framework",
       "AppKit.framework",
+      "ApplicationServices.framework",  # Temporary hack around https://crbug.com/620127. Remove after https://crbug.com/622481 is fixed.
+      "CoreGraphics.framework",
     ]
   }
 }

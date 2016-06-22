@@ -105,6 +105,7 @@ component("capture") {
   if (is_mac) {
     deps += [ "//third_party/decklink" ]
     libs = [
+      "ApplicationServices.framework",  # Temporary hack around https://crbug.com/620127. Remove after https://crbug.com/622481 is fixed.
       "CoreFoundation.framework",
       "CoreGraphics.framework",
       "CoreVideo.framework",

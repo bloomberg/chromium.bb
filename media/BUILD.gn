@@ -361,6 +361,7 @@ component("media") {
   if (is_mac) {
     public_deps += [ "//media/base/mac" ]
     libs += [
+      "ApplicationServices.framework",  # Temporary hack around https://crbug.com/620127. Remove after https://crbug.com/622481 is fixed.
       "CoreFoundation.framework",
       "CoreGraphics.framework",
       "Foundation.framework",
