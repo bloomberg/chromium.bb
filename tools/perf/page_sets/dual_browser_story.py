@@ -101,11 +101,6 @@ class MultiBrowserSharedState(story_module.SharedState):
     self.platform.network_controller.Open(wpr_mode,
                                           browser_options.extra_wpr_args)
 
-    # Make sure all browsers are open before starting.
-    for story in story_set:
-      if story.browser_type not in self._browsers:
-        self._SetCurrentBrowser(story.browser_type)
-
   @property
   def current_tab(self):
     return self._current_tab
