@@ -59,11 +59,11 @@ uniform, predictable two day commitment for all triagers.
       triagers did not, so when an issue is investigated, the person who did
       so should respond to chrome-network-debugging@google.com with a short
       email, describing their conclusions.  Future triagers can then use the
-      fact an alert was responded to as an inidicator of which of them need
+      fact an alert was responded to as an indicator of which of them need
       to be followed up on.  Alerts fired before the beginning of the
       previous triager's rotation may be ignored. 
 
-* Investigate [Uncomfirmed / Untriaged Internals>Network issues that don't belong to a more specific network component](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+status%3AUnconfirmed,Untriaged+-label:Needs-Feedback&sort=-modified),
+* Investigate [Unconfirmed / Untriaged Internals>Network issues that don't belong to a more specific network component](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+status%3AUnconfirmed,Untriaged+-label:Needs-Feedback&sort=-modified),
   prioritizing the most recent issues, ones with the most responsive reporters,
   and major crashers.  This will generally take up the majority of your time as
   triager. Continue digging until you can do one of the following:

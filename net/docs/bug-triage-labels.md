@@ -28,7 +28,7 @@
 * **Internals>Network>DataProxy**
 
     Flywheel / the Data Reduction Proxy.  Issues require "Reduce Data Usage" be
-    turned on.  Proxy url is [https://proxy.googlezip.net:443](#), with
+    turned on.  Proxy URL is [https://proxy.googlezip.net:443](#), with
     [http://compress.googlezip.net:80](#) as a fallback.  Currently Android and
     iOS only.
 
@@ -125,7 +125,7 @@ they fall largely outside the purview of the network stack team:
 
     Basically any issue with the omnibox.  URLs being treated as search queries
     rather than navigations, dropdown results being weird, not handling certain
-    unicode characters, etc.  If the issue is new TLDs not being recognized by
+    Unicode characters, etc.  If the issue is new TLDs not being recognized by
     the omnibox, that's due to Chrome's TLD list being out of date, and not an
     omnibox issue.  Such TLD issues should be duped against
     http://crbug.com/37436.
@@ -138,7 +138,7 @@ they fall largely outside the purview of the network stack team:
 
 * **Internals>Plugins>PDF**
 
-    Issues loading pdf files.  These are often related to range requests, which
+    Issues loading PDF files.  These are often related to range requests, which
     also have some logic at the Internals>Network>Cache layer.
 
 * **UI>Browser>Navigation**

@@ -4,7 +4,7 @@
 
 ## Identifying unlabeled network bugs on the tracker
 
-* Look at new uncomfirmed bugs since noon PST on the last triager's rotation.
+* Look at new unconfirmed bugs since noon PST on the last triager's rotation.
   [Use this issue tracker
   query](https://code.google.com/p/chromium/issues/list?can=2&q=status%3Aunconfirmed&sort=-id&num=1000).
 
@@ -58,7 +58,7 @@ For each alert that fires, determine if it's a real alert and file a bug if so.
     * Query: component=Internals>Network
     * Subscription options: Notify Immediately
 
-* Look through uncomfirmed and untriaged component=Internals>Network bugs,
+* Look through unconfirmed and untriaged component=Internals>Network bugs,
   prioritizing those updated within the last week. [Use this issue tracker
   query](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+status%3AUnconfirmed,Untriaged+-label:Needs-Feedback&sort=-modified).
 
