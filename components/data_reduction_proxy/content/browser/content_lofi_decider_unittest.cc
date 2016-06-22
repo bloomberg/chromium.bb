@@ -176,8 +176,11 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
   const struct {
     bool is_using_lofi;
     bool is_using_previews;
+    bool is_main_frame;
   } tests[] = {
-      {false, false}, {true, false}, {false, true}, {true, true},
+      {false, false, false}, {false, false, true}, {true, false, true},
+      {true, false, false},  {false, true, false}, {false, true, true},
+      {true, true, true},    {true, true, false},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
@@ -202,15 +205,21 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     command_line->AppendSwitchASCII(
         switches::kDataReductionProxyLoFi,
         switches::kDataReductionProxyLoFiValueAlwaysOn);
-    request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
+    if (tests[i].is_main_frame)
+      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
     headers.Clear();
     NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews &&
+                         !tests[i].is_main_frame,
                      headers);
-    VerifyLoFiPreviewHeader(
-        tests[i].is_using_lofi && tests[i].is_using_previews, headers);
-    VerifyLoFiIgnorePreviewBlacklistHeader(
-        tests[i].is_using_lofi && tests[i].is_using_previews, headers);
+    VerifyLoFiPreviewHeader(tests[i].is_using_lofi &&
+                                tests[i].is_using_previews &&
+                                tests[i].is_main_frame,
+                            headers);
+    VerifyLoFiIgnorePreviewBlacklistHeader(tests[i].is_using_lofi &&
+                                               tests[i].is_using_previews &&
+                                               tests[i].is_main_frame,
+                                           headers);
 
     // The Lo-Fi flag is "always-on" and Lo-Fi is being used. Lo-Fi header
     // should be added.
@@ -255,16 +264,18 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
   // Enable Lo-Fi.
   const struct {
     bool is_using_lofi;
-  } tests[] = {
-      {false}, {true},
-  };
+    bool is_main_frame;
+  } tests[] = {{false, false}, {false, true}, {true, false}, {true, true}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].is_using_lofi);
+    if (tests[i].is_main_frame)
+      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(tests[i].is_using_lofi, headers);
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_main_frame,
+                     headers);
     VerifyLoFiPreviewHeader(false, headers);
     VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
   }
@@ -277,13 +288,14 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
   // Enable Lo-Fi.
   const struct {
     bool is_using_lofi;
-  } tests[] = {
-      {false}, {true},
-  };
+    bool is_main_frame;
+  } tests[] = {{false, false}, {false, true}, {true, false}, {true, true}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].is_using_lofi);
+    if (tests[i].is_main_frame)
+      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
@@ -323,24 +335,25 @@ TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
     bool auto_lofi_enabled_group;
     bool auto_lofi_control_group;
     bool network_prohibitively_slow;
+    bool is_main_frame;
   } tests[] = {
-      {false, false, false},
-      {false, false, true},
-      {true, false, false},
-      {true, false, true},
-      {false, true, false},
-      {false, true, true},
+      {false, false, false, false},
+      {false, false, true, false},
+      {true, false, false, false},
+      {true, false, true, false},
+      {true, false, true, true},
+      {false, true, false, false},
+      {false, true, true, false},
       // Repeat this test data to simulate user moving out of Lo-Fi control
       // experiment.
-      {false, true, false},
+      {false, true, false, false},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     test_context_->config()->ResetLoFiStatusForTest();
-    // Lo-Fi header is expected only if session is part of Lo-Fi enabled field
-    // trial and network is prohibitively slow.
-    bool expect_lofi_header =
-        tests[i].auto_lofi_enabled_group && tests[i].network_prohibitively_slow;
+    const bool expect_lofi_header = tests[i].auto_lofi_enabled_group &&
+                                    tests[i].network_prohibitively_slow &&
+                                    !tests[i].is_main_frame;
 
     base::FieldTrialList field_trial_list(nullptr);
     if (tests[i].auto_lofi_enabled_group) {
@@ -358,6 +371,8 @@ TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
 
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].network_prohibitively_slow);
+    if (tests[i].is_main_frame)
+      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
 
@@ -370,11 +385,13 @@ TEST_F(ContentLoFiDeciderTest, SlowConnectionsFlag) {
     bool slow_connections_flag_enabled;
     bool network_prohibitively_slow;
     bool auto_lofi_enabled_group;
-
+    bool is_main_frame;
   } tests[] = {
-      {false, false, false}, {false, true, false}, {true, false, false},
-      {true, true, false},   {false, false, true}, {false, true, true},
-      {true, false, true},   {true, true, true},
+      {false, false, false, false}, {false, true, false, false},
+      {true, false, false, false},  {true, true, false, false},
+      {true, true, false, true},    {false, false, true, false},
+      {false, false, true, true},   {false, true, true, false},
+      {true, false, true, false},   {true, true, true, false},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
@@ -383,11 +400,12 @@ TEST_F(ContentLoFiDeciderTest, SlowConnectionsFlag) {
     // Connection Flag is enabled or session is part of Lo-Fi enabled field
     // trial. For both cases, an additional condition is that network must be
     // prohibitively slow.
-    bool expect_lofi_header = (tests[i].slow_connections_flag_enabled &&
-                               tests[i].network_prohibitively_slow) ||
-                              (!tests[i].slow_connections_flag_enabled &&
-                               tests[i].auto_lofi_enabled_group &&
-                               tests[i].network_prohibitively_slow);
+    const bool expect_lofi_header = ((tests[i].slow_connections_flag_enabled &&
+                                      tests[i].network_prohibitively_slow) ||
+                                     (!tests[i].slow_connections_flag_enabled &&
+                                      tests[i].auto_lofi_enabled_group &&
+                                      tests[i].network_prohibitively_slow)) &&
+                                    !tests[i].is_main_frame;
 
     std::string expected_header;
 
@@ -408,6 +426,8 @@ TEST_F(ContentLoFiDeciderTest, SlowConnectionsFlag) {
 
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].network_prohibitively_slow);
+    if (tests[i].is_main_frame)
+      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
 

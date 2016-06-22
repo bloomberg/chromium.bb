@@ -67,8 +67,7 @@ bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
 
   // If in the preview field trial or the preview flag is enabled, only add the
   // "q=preview" directive on main frame requests. Do not add Lo-Fi directives
-  // to other requests when previews are enabled. If previews are not enabled,
-  // add "q=low".
+  // to other requests when previews are enabled.
   if (lofi_preview_via_flag_or_field_trial) {
     if (request.load_flags() & net::LOAD_MAIN_FRAME) {
       if (params::AreLoFiPreviewsEnabledViaFlags()) {
@@ -77,12 +76,12 @@ bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
       }
       header_value += chrome_proxy_lo_fi_preview_directive();
     }
-  } else {
+  } else if (!(request.load_flags() & net::LOAD_MAIN_FRAME)) {
+    // If previews are not enabled, add "q=low" for requests that are not main
+    // frame.
     header_value += chrome_proxy_lo_fi_directive();
   }
 
-  // |header_value| may be empty because the Lo-Fi directive is not added
-  // to subrequests when preview mode is enabled.
   if (!header_value.empty())
     headers->SetHeader(chrome_proxy_header(), header_value);
 
