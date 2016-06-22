@@ -2,12 +2,12 @@
 .\"     Title: git-freeze
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/10/2014
+.\"      Date: 06/04/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 68b1017
+.\"    Source: depot_tools d39bbb5
 .\"  Language: English
 .\"
-.TH "GIT\-FREEZE" "1" "04/10/2014" "depot_tools 68b1017" "Chromium depot_tools Manual"
+.TH "GIT\-FREEZE" "1" "06/04/2014" "depot_tools d39bbb5" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,6 +40,8 @@ git-freeze \- Freeze all changes on a branch (indexed and unindexed)\&.
 git freeze works a lot like git stash, in that it stores the current changes in your working copy and index \fIsomewhere\fR\&. Unlike git stash, git freeze stores those changes on your current branch\&. This effectively allows you to \fIpause\fR development of a branch, work on something else, and then come back to exactly the same working state later (by running git thaw)\&.
 .sp
 git freeze will make up to 2 commits on your branch\&. A commit with the message FREEZE\&.indexed will contain all changes which you\(cqve added to your index (like with \fIgit add\fR, \fIgit mv\fR, \fIgit rm\fR, etc\&.)\&. A commit with the message FREEZE\&.unindexed will contain all changes which were not in your index at the time you ran git freeze (freshly modified files, new files, etc\&.)\&.
+.sp
+By default git freeze will only freeze up to 100MB of untracked files\&. See \fICONFIGURATION VARIABLES\fR for more details\&.
 .SH "EXAMPLE"
 .sp
 
@@ -58,7 +60,7 @@ D  deleted_file
 \fB$ git freeze\fR
 \fB$ git status \-\-short\fR
 \fB$ git log \-n 2 \-\-stat\fR
-commit 85b90eda860a6f62d95efdb29a09ebe2bace018d
+commit 13e157e1f666206fca297c48bec82f3f16ae3c2f
 Author: local <local@chromium\&.org>
 Date:   Thu Apr 10 08:54:56 2014 +0000
 
@@ -70,7 +72,7 @@ Date:   Thu Apr 10 08:54:56 2014 +0000
  unstaged_deleted_file            | 1 \-
  4 files changed, 2 insertions(+), 1 deletion(\-)
 
-commit 4d4db1b3bfbb42b0c9c87326bd522cc9d6946911
+commit 30791edff23b9a8fecc5f863da134e820a4c9f1a
 Author: local <local@chromium\&.org>
 Date:   Thu Apr 10 08:54:56 2014 +0000
 
@@ -93,6 +95,10 @@ D  deleted_file
 .RE
 .\}
 .sp
+.SH "CONFIGURATION VARIABLES"
+.SS "depot\-tools\&.freeze\-size\-limit"
+.sp
+This sets the size limit as an integer number of megabytes of untracked files that git\-freeze will be willing to put in suspended animation\&. A 0 or negative limit disables the size\-limit check entirely\&. \fB100\fR by default\&.
 .SH "SEE ALSO"
 .sp
 \fBgit-thaw\fR(1)

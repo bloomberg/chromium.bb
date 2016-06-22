@@ -32,8 +32,10 @@ import threading
 
 import subprocess2
 
-ROOT = os.path.abspath(os.path.dirname(__file__))
+from StringIO import StringIO
 
+
+ROOT = os.path.abspath(os.path.dirname(__file__))
 IS_WIN = sys.platform == 'win32'
 GIT_EXE = ROOT+'\\git.bat' if IS_WIN else 'git'
 TEST_MODE = False
@@ -392,6 +394,36 @@ def diff(oldrev, newrev, *args):
 
 def freeze():
   took_action = False
+  key = 'depot-tools.freeze-size-limit'
+  MB = 2**20
+  limit_mb = get_config_int(key, 100)
+  untracked_bytes = 0
+
+  for f, s in status():
+    if is_unmerged(s):
+      die("Cannot freeze unmerged changes!")
+    if limit_mb > 0:
+      if s.lstat == '?':
+        untracked_bytes += os.stat(f).st_size
+      if untracked_bytes > limit_mb * MB:
+        die("""\
+          You appear to have too much untracked+unignored data in your git
+          checkout: %.1f / %d MB.
+
+          Run `git status` to see what it is.
+
+          In addition to making many git commands slower, this will prevent
+          depot_tools from freezing your in-progress changes.
+
+          You should add untracked data that you want to ignore to your repo's
+            .git/info/excludes
+          file. See `git help ignore` for the format of this file.
+
+          If this data is indended as part of your commit, you may adjust the
+          freeze limit by running:
+            git config %s <new_limit>
+          Where <new_limit> is an integer threshold in megabytes.""",
+          untracked_bytes / (MB * 1.0), limit_mb, key)
 
   try:
     run('commit', '--no-verify', '-m', FREEZE + '.indexed')
@@ -500,6 +532,13 @@ def intern_f(f, kind='blob'):
 def is_dormant(branch):
   # TODO(iannucci): Do an oldness check?
   return branch_config(branch, 'dormant', 'false') != 'false'
+
+
+def is_unmerged(stat_value):
+  return (
+      'U' in (stat_value.lstat, stat_value.rstat) or
+      ((stat_value.lstat == stat_value.rstat) and stat_value.lstat in 'AD')
+  )
 
 
 def manual_merge_base(branch, base, parent):
@@ -709,6 +748,45 @@ def is_dirty_git_tree(cmd):
       print '... (run "git diff-index --name-status HEAD" to see full output).'
     return True
   return False
+
+
+def status():
+  """Returns a parsed version of git-status.
+
+  Returns a generator of (current_name, (lstat, rstat, src)) pairs where:
+    * current_name is the name of the file
+    * lstat is the left status code letter from git-status
+    * rstat is the left status code letter from git-status
+    * src is the current name of the file, or the original name of the file
+      if lstat == 'R'
+  """
+  stat_entry = collections.namedtuple('stat_entry', 'lstat rstat src')
+
+  def tokenizer(stream):
+    acc = StringIO()
+    c = None
+    while c != '':
+      c = stream.read(1)
+      if c in (None, '', '\0'):
+        if acc.len:
+          yield acc.getvalue()
+          acc = StringIO()
+      else:
+        acc.write(c)
+
+  def parser(tokens):
+    while True:
+      # Raises StopIteration if it runs out of tokens.
+      status_dest = next(tokens)
+      stat, dest = status_dest[:2], status_dest[3:]
+      lstat, rstat = stat
+      if lstat == 'R':
+        src = next(tokens)
+      else:
+        src = dest
+      yield (dest, stat_entry(lstat, rstat, src))
+
+  return parser(tokenizer(run_stream('status', '-z', bufsize=-1)))
 
 
 def squash_current_branch(header=None, merge_base=None):

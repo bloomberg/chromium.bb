@@ -731,6 +731,23 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     CAT DOG
     """)
 
+  def testStatus(self):
+    def inner():
+      dictified_status = lambda: {
+          k: dict(v._asdict())  # pylint: disable=W0212
+          for k, v in self.repo.run(self.gc.status)
+      }
+      self.repo.git('mv', 'file', 'cat')
+      with open('COOL', 'w') as f:
+        f.write('Super cool file!')
+      self.assertDictEqual(
+          dictified_status(),
+          {'cat':  {'lstat': 'R', 'rstat': ' ', 'src': 'file'},
+           'COOL': {'lstat': '?', 'rstat': '?', 'src': 'COOL'}}
+      )
+
+    self.repo.run(inner)
+
 
 class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
   @classmethod
@@ -806,6 +823,52 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
       self.assertIsNotNone(self.gc.thaw())  # One thaw should thaw everything
 
       self.assertEquals(self.repo.git('status', '--porcelain').stdout, STATUS_1)
+
+    self.repo.run(inner)
+
+  def testTooBig(self):
+    def inner():
+      self.repo.git('config', 'depot-tools.freeze-size-limit', '1')
+      with open('bigfile', 'w') as f:
+        chunk = 'NERDFACE' * 1024
+        for _ in xrange(128 * 2 + 1):  # Just over 2 mb
+          f.write(chunk)
+      _, err = self.repo.capture_stdio(self.gc.freeze)
+      self.assertIn('too much untracked+unignored', err)
+
+    self.repo.run(inner)
+
+  def testTooBigMultipleFiles(self):
+    def inner():
+      self.repo.git('config', 'depot-tools.freeze-size-limit', '1')
+      for i in xrange(3):
+        with open('file%d' % i, 'w') as f:
+          chunk = 'NERDFACE' * 1024
+          for _ in xrange(50):  # About 400k
+            f.write(chunk)
+      _, err = self.repo.capture_stdio(self.gc.freeze)
+      self.assertIn('too much untracked+unignored', err)
+
+    self.repo.run(inner)
+
+  def testMerge(self):
+    def inner():
+      self.repo.git('checkout', '-b', 'bad_merge_branch')
+      with open('bad_merge', 'w') as f:
+        f.write('bad_merge_left')
+      self.repo.git('add', 'bad_merge')
+      self.repo.git('commit', '-m', 'bad_merge')
+
+      self.repo.git('checkout', 'branch_D')
+      with open('bad_merge', 'w') as f:
+        f.write('bad_merge_right')
+      self.repo.git('add', 'bad_merge')
+      self.repo.git('commit', '-m', 'bad_merge_d')
+
+      self.repo.git('merge', 'bad_merge_branch')
+
+      _, err = self.repo.capture_stdio(self.gc.freeze)
+      self.assertIn('Cannot freeze unmerged changes', err)
 
     self.repo.run(inner)
 
