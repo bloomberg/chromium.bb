@@ -634,6 +634,10 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   GLuint service_id() const { return texture_->service_id(); }
   GLint num_observers() const { return num_observers_; }
 
+  // When the TextureRef is destroyed, it will assume that the context has been
+  // lost, regardless of the state of the TextureManager.
+  void ForceContextLost();
+
  private:
   friend class base::RefCounted<TextureRef>;
   friend class Texture;
@@ -648,6 +652,7 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   Texture* texture_;
   GLuint client_id_;
   GLint num_observers_;
+  bool force_context_lost_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureRef);
 };

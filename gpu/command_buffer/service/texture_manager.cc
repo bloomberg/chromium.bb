@@ -1698,7 +1698,8 @@ TextureRef::TextureRef(TextureManager* manager,
     : manager_(manager),
       texture_(texture),
       client_id_(client_id),
-      num_observers_(0) {
+      num_observers_(0),
+      force_context_lost_(false) {
   DCHECK(manager_);
   DCHECK(texture_);
   texture_->AddTextureRef(this);
@@ -1713,8 +1714,13 @@ scoped_refptr<TextureRef> TextureRef::Create(TextureManager* manager,
 
 TextureRef::~TextureRef() {
   manager_->StopTracking(this);
-  texture_->RemoveTextureRef(this, manager_->have_context_);
+  texture_->RemoveTextureRef(
+      this, force_context_lost_ ? false : manager_->have_context_);
   manager_ = NULL;
+}
+
+void TextureRef::ForceContextLost() {
+  force_context_lost_ = true;
 }
 
 TextureManager::TextureManager(MemoryTracker* memory_tracker,

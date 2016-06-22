@@ -387,7 +387,7 @@ class ScopedFrameBufferReadPixelHelper {
 // Encapsulates an OpenGL texture.
 class BackTexture {
  public:
-  explicit BackTexture(MemoryTracker* memory_tracker, ContextState* state);
+  explicit BackTexture(GLES2DecoderImpl* decoder);
   ~BackTexture();
 
   // Create a new render texture.
@@ -407,8 +407,10 @@ class BackTexture {
   // not possible to make it current in order to free the resource.
   void Invalidate();
 
+  scoped_refptr<TextureRef> texture_ref() { return texture_ref_; }
+
   GLuint id() const {
-    return id_;
+    return texture_ref_ ? texture_ref_->service_id() : 0;
   }
 
   gfx::Size size() const {
@@ -417,10 +419,12 @@ class BackTexture {
 
  private:
   MemoryTypeTracker memory_tracker_;
-  ContextState* state_;
   size_t bytes_allocated_;
-  GLuint id_;
   gfx::Size size_;
+  GLES2DecoderImpl* decoder_;
+
+  scoped_refptr<TextureRef> texture_ref_;
+
   DISALLOW_COPY_AND_ASSIGN(BackTexture);
 };
 
@@ -575,7 +579,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void TakeFrontBuffer(const Mailbox& mailbox) override;
   void ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) override;
   bool ResizeOffscreenFrameBuffer(const gfx::Size& size) override;
-  void UpdateParentTextureInfo();
   bool MakeCurrent() override;
   GLES2Util* GetGLES2Util() override { return &util_; }
   gl::GLContext* GetGLContext() override { return context_.get(); }
@@ -705,6 +708,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   friend class ScopedFrameBufferReadPixelHelper;
   friend class ScopedResolvedFrameBufferBinder;
   friend class BackFramebuffer;
+  friend class BackTexture;
 
   enum FramebufferOperation {
     kFramebufferDiscard,
@@ -2049,8 +2053,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // For simplicity, |offscreen_saved_color_texture_| is always bound to
   // |offscreen_saved_frame_buffer_|.
   std::unique_ptr<BackFramebuffer> offscreen_saved_frame_buffer_;
-  scoped_refptr<TextureRef>
-      offscreen_saved_color_texture_info_;
 
   // When a client requests ownership of the swapped front buffer, all
   // information is saved in this structure, and |in_use| is set to true. When a
@@ -2060,7 +2062,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // making a new BackTexture.
   struct SavedBackTexture {
     std::unique_ptr<BackTexture> back_texture;
-    scoped_refptr<TextureRef> texture_ref;
     bool in_use;
   };
   std::vector<SavedBackTexture> saved_back_textures_;
@@ -2074,7 +2075,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void ReleaseNotInUseBackTextures();
 
   // Releases all saved BackTextures.
-  void ReleaseAllBackTextures();
+  void ReleaseAllBackTextures(bool have_context);
 
   size_t GetSavedBackTextureCountForTest() override;
   size_t GetCreatedBackTextureCountForTest() override;
@@ -2334,7 +2335,7 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
           new BackFramebuffer(decoder_));
       decoder_->offscreen_resolved_frame_buffer_->Create();
       decoder_->offscreen_resolved_color_texture_.reset(
-          new BackTexture(decoder->memory_tracker(), &decoder->state_));
+          new BackTexture(decoder));
       decoder_->offscreen_resolved_color_texture_->Create();
 
       DCHECK(decoder_->offscreen_saved_color_format_);
@@ -2418,40 +2419,64 @@ ScopedFrameBufferReadPixelHelper::~ScopedFrameBufferReadPixelHelper() {
   glDeleteFramebuffersEXT(1, &temp_fbo_id_);
 }
 
-BackTexture::BackTexture(
-    MemoryTracker* memory_tracker,
-    ContextState* state)
-    : memory_tracker_(memory_tracker),
-      state_(state),
+BackTexture::BackTexture(GLES2DecoderImpl* decoder)
+    : memory_tracker_(decoder->memory_tracker()),
       bytes_allocated_(0),
-      id_(0) {
-}
+      decoder_(decoder) {}
 
 BackTexture::~BackTexture() {
   // This does not destroy the render texture because that would require that
   // the associated GL context was current. Just check that it was explicitly
   // destroyed.
-  DCHECK_EQ(id_, 0u);
+  DCHECK_EQ(id(), 0u);
 }
 
 void BackTexture::Create() {
-  DCHECK_EQ(id_, 0u);
+  DCHECK_EQ(id(), 0u);
   ScopedGLErrorSuppressor suppressor("BackTexture::Create",
-                                     state_->GetErrorState());
-  glGenTextures(1, &id_);
-  ScopedTextureBinder binder(state_, id_, GL_TEXTURE_2D);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                                     decoder_->state_.GetErrorState());
+  GLuint id;
+  glGenTextures(1, &id);
+
+  GLenum target = GL_TEXTURE_2D;
+  ScopedTextureBinder binder(&decoder_->state_, id, target);
+
+  // No client id is necessary because this texture will never be directly
+  // accessed by a client, only indirectly via a mailbox.
+  texture_ref_ = TextureRef::Create(decoder_->texture_manager(), 0, id);
+  decoder_->texture_manager()->SetTarget(texture_ref_.get(), target);
+  decoder_->texture_manager()->SetParameteri(
+      "BackTexture::Create",
+      decoder_->GetErrorState(),
+      texture_ref_.get(),
+      GL_TEXTURE_MAG_FILTER,
+      GL_LINEAR);
+  decoder_->texture_manager()->SetParameteri(
+      "BackTexture::Create",
+      decoder_->GetErrorState(),
+      texture_ref_.get(),
+      GL_TEXTURE_MIN_FILTER,
+      GL_LINEAR);
+  decoder_->texture_manager()->SetParameteri(
+      "BackTexture::Create",
+      decoder_->GetErrorState(),
+      texture_ref_.get(),
+      GL_TEXTURE_WRAP_S,
+      GL_CLAMP_TO_EDGE);
+  decoder_->texture_manager()->SetParameteri(
+      "BackTexture::Create",
+      decoder_->GetErrorState(),
+      texture_ref_.get(),
+      GL_TEXTURE_WRAP_T,
+      GL_CLAMP_TO_EDGE);
 }
 
 bool BackTexture::AllocateStorage(
     const gfx::Size& size, GLenum format, bool zero) {
-  DCHECK_NE(id_, 0u);
+  DCHECK_NE(id(), 0u);
   ScopedGLErrorSuppressor suppressor("BackTexture::AllocateStorage",
-                                     state_->GetErrorState());
-  ScopedTextureBinder binder(state_, id_, GL_TEXTURE_2D);
+                                     decoder_->state_.GetErrorState());
+  ScopedTextureBinder binder(&decoder_->state_, id(), GL_TEXTURE_2D);
   uint32_t image_size = 0;
   GLES2Util::ComputeImageDataSizes(
       size.width(), size.height(), 1, format, GL_UNSIGNED_BYTE, 8, &image_size,
@@ -2478,6 +2503,12 @@ bool BackTexture::AllocateStorage(
                zero_data.get());
 
   size_ = size;
+  decoder_->texture_manager()->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D,
+      0,  // level
+      GL_RGBA, size_.width(), size_.height(),
+      1,  // depth
+      0,  // border
+      GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(size_));
 
   bool success = glGetError() == GL_NO_ERROR;
   if (success) {
@@ -2489,10 +2520,10 @@ bool BackTexture::AllocateStorage(
 }
 
 void BackTexture::Copy(const gfx::Size& size, GLenum format) {
-  DCHECK_NE(id_, 0u);
+  DCHECK_NE(id(), 0u);
   ScopedGLErrorSuppressor suppressor("BackTexture::Copy",
-                                     state_->GetErrorState());
-  ScopedTextureBinder binder(state_, id_, GL_TEXTURE_2D);
+                                     decoder_->state_.GetErrorState());
+  ScopedTextureBinder binder(&decoder_->state_, id(), GL_TEXTURE_2D);
   glCopyTexImage2D(GL_TEXTURE_2D,
                    0,  // level
                    format,
@@ -2503,18 +2534,20 @@ void BackTexture::Copy(const gfx::Size& size, GLenum format) {
 }
 
 void BackTexture::Destroy() {
-  if (id_ != 0) {
+  if (texture_ref_) {
     ScopedGLErrorSuppressor suppressor("BackTexture::Destroy",
-                                       state_->GetErrorState());
-    glDeleteTextures(1, &id_);
-    id_ = 0;
+                                       decoder_->state_.GetErrorState());
+    texture_ref_ = nullptr;
   }
   memory_tracker_.TrackMemFree(bytes_allocated_);
   bytes_allocated_ = 0;
 }
 
 void BackTexture::Invalidate() {
-  id_ = 0;
+  if (texture_ref_) {
+    texture_ref_->ForceContextLost();
+    texture_ref_ = nullptr;
+  }
 }
 
 BackRenderbuffer::BackRenderbuffer(
@@ -2990,8 +3023,7 @@ bool GLES2DecoderImpl::Initialize(
           renderbuffer_manager(), memory_tracker(), &state_));
       offscreen_target_color_render_buffer_->Create();
     } else {
-      offscreen_target_color_texture_.reset(new BackTexture(
-          memory_tracker(), &state_));
+      offscreen_target_color_texture_.reset(new BackTexture(this));
       offscreen_target_color_texture_->Create();
     }
     offscreen_target_depth_render_buffer_.reset(new BackRenderbuffer(
@@ -3006,8 +3038,7 @@ bool GLES2DecoderImpl::Initialize(
     offscreen_saved_frame_buffer_.reset(new BackFramebuffer(this));
     offscreen_saved_frame_buffer_->Create();
     //
-    offscreen_saved_color_texture_.reset(new BackTexture(
-        memory_tracker(), &state_));
+    offscreen_saved_color_texture_.reset(new BackTexture(this));
     offscreen_saved_color_texture_->Create();
 
     // Allocate the render buffers at their initial size and check the status
@@ -4158,47 +4189,6 @@ void GLES2DecoderImpl::MarkDrawBufferAsCleared(
       renderbuffer_manager(), texture_manager(), attachment, true);
 }
 
-void GLES2DecoderImpl::UpdateParentTextureInfo() {
-  if (!offscreen_saved_color_texture_info_.get())
-    return;
-  GLenum target = offscreen_saved_color_texture_info_->texture()->target();
-  glBindTexture(target, offscreen_saved_color_texture_info_->service_id());
-  texture_manager()->SetLevelInfo(
-      offscreen_saved_color_texture_info_.get(), GL_TEXTURE_2D,
-      0,  // level
-      GL_RGBA, offscreen_size_.width(), offscreen_size_.height(),
-      1,  // depth
-      0,  // border
-      GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(offscreen_size_));
-  texture_manager()->SetParameteri(
-      "UpdateParentTextureInfo",
-      GetErrorState(),
-      offscreen_saved_color_texture_info_.get(),
-      GL_TEXTURE_MAG_FILTER,
-      GL_LINEAR);
-  texture_manager()->SetParameteri(
-      "UpdateParentTextureInfo",
-      GetErrorState(),
-      offscreen_saved_color_texture_info_.get(),
-      GL_TEXTURE_MIN_FILTER,
-      GL_LINEAR);
-  texture_manager()->SetParameteri(
-      "UpdateParentTextureInfo",
-      GetErrorState(),
-      offscreen_saved_color_texture_info_.get(),
-      GL_TEXTURE_WRAP_S,
-      GL_CLAMP_TO_EDGE);
-  texture_manager()->SetParameteri(
-      "UpdateParentTextureInfo",
-      GetErrorState(),
-      offscreen_saved_color_texture_info_.get(),
-      GL_TEXTURE_WRAP_T,
-      GL_CLAMP_TO_EDGE);
-  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
-      &state_, target);
-  glBindTexture(target, texture_ref ? texture_ref->service_id() : 0);
-}
-
 Logger* GLES2DecoderImpl::GetLogger() {
   return &logger_;
 }
@@ -4294,14 +4284,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.default_transform_feedback = nullptr;
   state_.indexed_uniform_buffer_bindings = nullptr;
 
-  if (offscreen_saved_color_texture_info_.get()) {
-    DCHECK(offscreen_saved_color_texture_);
-    DCHECK_EQ(offscreen_saved_color_texture_info_->service_id(),
-              offscreen_saved_color_texture_->id());
-    offscreen_saved_color_texture_->Invalidate();
-    offscreen_saved_color_texture_info_ = NULL;
-  }
-  ReleaseAllBackTextures();
+  ReleaseAllBackTextures(have_context);
   if (have_context) {
     if (apply_framebuffer_attachment_cmaa_intel_.get()) {
       apply_framebuffer_attachment_cmaa_intel_->Destroy();
@@ -4468,25 +4451,14 @@ void GLES2DecoderImpl::TakeFrontBuffer(const Mailbox& mailbox) {
     return;
   }
 
-  if (!offscreen_saved_color_texture_info_.get()) {
-    GLuint service_id = offscreen_saved_color_texture_->id();
-    offscreen_saved_color_texture_info_ = TextureRef::Create(
-        texture_manager(), 0, service_id);
-    texture_manager()->SetTarget(offscreen_saved_color_texture_info_.get(),
-                                 GL_TEXTURE_2D);
-    UpdateParentTextureInfo();
-  }
-
   mailbox_manager()->ProduceTexture(
-      mailbox, offscreen_saved_color_texture_info_->texture());
+      mailbox, offscreen_saved_color_texture_->texture_ref()->texture());
 
   // Save the BackTexture and TextureRef. There's no need to update
   // |offscreen_saved_frame_buffer_| since CreateBackTexture() will take care of
   // that.
   SavedBackTexture save;
   save.back_texture.swap(offscreen_saved_color_texture_);
-  save.texture_ref = offscreen_saved_color_texture_info_;
-  offscreen_saved_color_texture_info_ = nullptr;
   save.in_use = true;
   saved_back_textures_.push_back(std::move(save));
 
@@ -4497,7 +4469,7 @@ void GLES2DecoderImpl::ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) {
   Texture* texture = mailbox_manager()->ConsumeTexture(mailbox);
   for (auto it = saved_back_textures_.begin(); it != saved_back_textures_.end();
        ++it) {
-    if (texture != it->texture_ref->texture())
+    if (texture != it->back_texture->texture_ref()->texture())
       continue;
 
     if (is_lost || it->back_texture->size() != offscreen_size_) {
@@ -4522,7 +4494,6 @@ void GLES2DecoderImpl::CreateBackTexture() {
     if (it->back_texture->size() != offscreen_size_)
       continue;
     offscreen_saved_color_texture_ = std::move(it->back_texture);
-    offscreen_saved_color_texture_info_ = it->texture_ref;
     offscreen_saved_frame_buffer_->AttachRenderTexture(
         offscreen_saved_color_texture_.get());
     saved_back_textures_.erase(it);
@@ -4530,8 +4501,7 @@ void GLES2DecoderImpl::CreateBackTexture() {
   }
 
   ++create_back_texture_count_for_test_;
-  offscreen_saved_color_texture_.reset(
-      new BackTexture(memory_tracker(), &state_));
+  offscreen_saved_color_texture_.reset(new BackTexture(this));
   offscreen_saved_color_texture_->Create();
   offscreen_saved_color_texture_->AllocateStorage(
       offscreen_size_, offscreen_saved_color_format_, false);
@@ -4542,9 +4512,8 @@ void GLES2DecoderImpl::CreateBackTexture() {
 void GLES2DecoderImpl::ReleaseNotInUseBackTextures() {
   for (auto& saved_back_texture : saved_back_textures_) {
     if (!saved_back_texture.in_use)
-      saved_back_texture.back_texture->Invalidate();
+      saved_back_texture.back_texture->Destroy();
   }
-
   auto to_remove =
       std::remove_if(saved_back_textures_.begin(), saved_back_textures_.end(),
                      [](const SavedBackTexture& saved_back_texture) {
@@ -4553,11 +4522,12 @@ void GLES2DecoderImpl::ReleaseNotInUseBackTextures() {
   saved_back_textures_.erase(to_remove, saved_back_textures_.end());
 }
 
-void GLES2DecoderImpl::ReleaseAllBackTextures() {
+void GLES2DecoderImpl::ReleaseAllBackTextures(bool have_context) {
   for (auto& saved_back_texture : saved_back_textures_) {
-    // The texture will be destroyed by texture_ref's destructor.
-    DCHECK(saved_back_texture.texture_ref);
-    saved_back_texture.back_texture->Invalidate();
+    if (have_context)
+      saved_back_texture.back_texture->Destroy();
+    else
+      saved_back_texture.back_texture->Invalidate();
   }
   saved_back_textures_.clear();
 }
@@ -13475,8 +13445,6 @@ void GLES2DecoderImpl::DoSwapBuffers() {
           RestoreClearState();
         }
       }
-
-      UpdateParentTextureInfo();
     }
 
     if (offscreen_size_.width() == 0 || offscreen_size_.height() == 0)
@@ -13497,11 +13465,6 @@ void GLES2DecoderImpl::DoSwapBuffers() {
             offscreen_saved_color_texture_->size(),
             offscreen_saved_color_format_);
       } else {
-        // Flip the textures in the parent context via the texture manager.
-        if (!!offscreen_saved_color_texture_info_.get())
-          offscreen_saved_color_texture_info_->texture()->
-              SetServiceId(offscreen_target_color_texture_->id());
-
         offscreen_saved_color_texture_.swap(offscreen_target_color_texture_);
         offscreen_target_frame_buffer_->AttachRenderTexture(
             offscreen_target_color_texture_.get());
