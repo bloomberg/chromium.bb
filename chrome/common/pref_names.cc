@@ -2240,4 +2240,8 @@ const char kMediaRouterFirstRunFlowAcknowledged[] =
     "media_router.firstrunflow.acknowledged";
 #endif
 
+// The base64-encoded representation of the public key to use to validate origin
+// trial token signatures.
+const char kOriginTrialPublicKey[] = "origin_trials.public_key";
+
 }  // namespace prefs

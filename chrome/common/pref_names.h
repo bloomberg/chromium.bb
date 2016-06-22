@@ -815,6 +815,8 @@ extern const char kMediaRouterEnableCloudServices[];
 extern const char kMediaRouterFirstRunFlowAcknowledged[];
 #endif
 
+extern const char kOriginTrialPublicKey[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

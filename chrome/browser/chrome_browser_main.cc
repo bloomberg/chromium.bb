@@ -821,6 +821,19 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
       base::TimeTicks::Now(), is_first_run, g_browser_process->local_state());
 }
 
+void ChromeBrowserMainParts::SetupOriginTrialsCommandLine() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kOriginTrialPublicKey)) {
+    std::string new_public_key =
+        local_state_->GetString(prefs::kOriginTrialPublicKey);
+    if (!new_public_key.empty()) {
+      command_line->AppendSwitchASCII(
+          switches::kOriginTrialPublicKey,
+          local_state_->GetString(prefs::kOriginTrialPublicKey));
+    }
+  }
+}
+
 // -----------------------------------------------------------------------------
 // TODO(viettrungluu): move more/rest of BrowserMain() into BrowserMainParts.
 
@@ -1153,6 +1166,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // SetupMetricsAndFieldTrials().
   chromeos::CrosSettings::Initialize();
 #endif  // defined(OS_CHROMEOS)
+
+  SetupOriginTrialsCommandLine();
 
   // Now the command line has been mutated based on about:flags, we can setup
   // metrics and initialize field trials. The field trials are needed by

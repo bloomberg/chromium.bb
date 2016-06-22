@@ -8,8 +8,12 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/prefs/pref_service.h"
 
 // The client-side configuration for the origin trial framework can be
 // overridden by an installed component named 'OriginTrials' (extension id
@@ -65,12 +69,13 @@ void OriginTrialsComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
-  // Read the public key from the manifest and set the command line.
+  // Read the public key from the manifest and set values in browser
+  // local_state. These will be used on the next browser restart.
+  PrefService* local_state = g_browser_process->local_state();
   std::string override_public_key;
   if (manifest->GetString("origin-trials.public-key", &override_public_key)) {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitchASCII(switches::kOriginTrialPublicKey,
-                                    override_public_key);
+    local_state->Set(prefs::kOriginTrialPublicKey,
+                     base::StringValue(override_public_key));
   }
 }
 

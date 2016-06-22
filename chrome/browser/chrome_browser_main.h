@@ -118,6 +118,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Record time from process startup to present time in an UMA histogram.
   void RecordBrowserStartupTime();
 
+  // Reads origin trial policy data from local state and configures command line
+  // for child processes.
+  void SetupOriginTrialsCommandLine();
+
   // Methods for Main Message Loop -------------------------------------------
 
   int PreCreateThreadsImpl();
