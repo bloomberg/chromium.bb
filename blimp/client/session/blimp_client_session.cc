@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -46,7 +47,7 @@ class CrossThreadNetworkEventObserver : public NetworkEventObserver {
  public:
   CrossThreadNetworkEventObserver(
       const base::WeakPtr<NetworkEventObserver>& target,
-      const scoped_refptr<base::TaskRunner>& task_runner)
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner)
       : target_(target), task_runner_(task_runner) {}
 
   ~CrossThreadNetworkEventObserver() override {}
@@ -64,7 +65,9 @@ class CrossThreadNetworkEventObserver : public NetworkEventObserver {
 
  private:
   base::WeakPtr<NetworkEventObserver> target_;
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrossThreadNetworkEventObserver);
 };
 
 }  // namespace
