@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-package android.os;
+package org.chromium.third_party.android.os;
 
-import android.annotation.MainThread;
-import android.annotation.WorkerThread;
+import android.os.Binder;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Process;
+import android.support.annotation.MainThread;
+import android.support.annotation.WorkerThread;
 
 import java.util.ArrayDeque;
 import java.util.concurrent.BlockingQueue;
@@ -355,6 +360,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * @see #onPostExecute
      * @see #publishProgress
      */
+    @SuppressWarnings("unchecked")
     @WorkerThread
     protected abstract Result doInBackground(Params... params);
 
@@ -394,7 +400,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * @see #publishProgress
      * @see #doInBackground
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration", "unchecked"})
     @MainThread
     protected void onProgressUpdate(Progress... values) {
     }
@@ -546,6 +552,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * @see #executeOnExecutor(java.util.concurrent.Executor, Object[])
      * @see #execute(Runnable)
      */
+    @SuppressWarnings("unchecked")
     @MainThread
     public final AsyncTask<Params, Progress, Result> execute(Params... params) {
         return executeOnExecutor(sDefaultExecutor, params);
@@ -584,6 +591,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
      *
      * @see #execute(Object[])
      */
+    @SuppressWarnings("unchecked")
     @MainThread
     public final AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec,
             Params... params) {
@@ -636,6 +644,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * @see #onProgressUpdate
      * @see #doInBackground
      */
+    @SuppressWarnings("unchecked")
     @WorkerThread
     protected final void publishProgress(Progress... values) {
         if (!isCancelled()) {
@@ -678,7 +687,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
         Params[] mParams;
     }
 
-    @SuppressWarnings({"RawUseOfParameterizedType"})
+    @SuppressWarnings({"RawUseOfParameterizedType", "unchecked"})
     private static class AsyncTaskResult<Data> {
         final AsyncTask mTask;
         final Data[] mData;
