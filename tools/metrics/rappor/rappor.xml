@@ -1008,6 +1008,35 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Media.OriginUrl.MSE.VideoCodec.h264" type="ETLD_PLUS_ONE">
+<!--
+We record all codecs (see list in GetCodecName() in video_codecs.cc). But for
+now we are only interested in H264, VP8 and VP9.
+-->
+
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    MSE with H264 video codec.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Media.OriginUrl.MSE.VideoCodec.vp8" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    MSE with VP8 video codec.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Media.OriginUrl.MSE.VideoCodec.vp9" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    MSE with VP9 video codec.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Media.OriginUrl.SRC" type="ETLD_PLUS_ONE">
   <owner>xhwang@chromium.org</owner>
   <summary>
@@ -1021,6 +1050,35 @@ components/rappor/rappor_parameters.h.
   <summary>
     The domain and registry of the URL that loads an HTML5 media player using
     SRC and ends up with an error.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Media.OriginUrl.SRC.VideoCodec.h264" type="ETLD_PLUS_ONE">
+<!--
+We record all codecs (see list in GetCodecName() in video_codecs.cc). But for
+now we are only interested in H264, VP8 and VP9.
+-->
+
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    SRC with H264 video codec.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Media.OriginUrl.SRC.VideoCodec.vp8" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    SRC with VP8 video codec.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Media.OriginUrl.SRC.VideoCodec.vp9" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    SRC with VP9 video codec.
   </summary>
 </rappor-metric>
 

@@ -30,6 +30,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
 #include "media/base/timestamp_constants.h"
+#include "media/base/video_codecs.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_aac_bitstream_converter.h"
 #include "media/filters/ffmpeg_bitstream_converter.h"
@@ -146,7 +147,11 @@ static void RecordAudioCodecStats(const AudioDecoderConfig& audio_config) {
 
 // Record video decoder config UMA stats corresponding to a src= playback.
 static void RecordVideoCodecStats(const VideoDecoderConfig& video_config,
-                                  AVColorRange color_range) {
+                                  AVColorRange color_range,
+                                  MediaLog* media_log) {
+  media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.SRC.VideoCodec." +
+                                            GetCodecName(video_config.codec()));
+
   UMA_HISTOGRAM_ENUMERATION("Media.VideoCodec", video_config.codec(),
                             kVideoCodecMax + 1);
 
@@ -1245,7 +1250,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       CHECK(!video_stream);
       video_stream = stream;
       video_config = streams_[i]->video_decoder_config();
-      RecordVideoCodecStats(video_config, stream->codec->color_range);
+
+      RecordVideoCodecStats(video_config, stream->codec->color_range,
+                            media_log_.get());
 
       media_track = media_tracks->AddVideoTrack(video_config, track_id, "main",
                                                 track_label, track_language);

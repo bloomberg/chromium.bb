@@ -21,6 +21,7 @@
 #include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
+#include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/frame_processor.h"
 #include "media/filters/stream_parser_factory.h"
@@ -994,6 +995,12 @@ void ChunkDemuxer::OnSourceInitDone(
                            detected_video_track_count_);
   UMA_HISTOGRAM_COUNTS_100("Media.MSE.DetectedTrackCount.Text",
                            detected_text_track_count_);
+
+  if (video_) {
+    media_log_->RecordRapporWithSecurityOrigin(
+        "Media.OriginUrl.MSE.VideoCodec." +
+        GetCodecName(video_->video_decoder_config().codec()));
+  }
 
   SeekAllSources(GetStartTime());
   StartReturningData();
