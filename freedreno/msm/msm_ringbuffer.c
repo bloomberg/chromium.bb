@@ -295,13 +295,35 @@ static void flush_reset(struct fd_ringbuffer *ring)
 	msm_ring->nr_bos = 0;
 }
 
+static void dump_submit(struct msm_ringbuffer *msm_ring)
+{
+	uint32_t i, j;
+
+	for (i = 0; i < msm_ring->submit.nr_bos; i++) {
+		struct drm_msm_gem_submit_bo *bo = &msm_ring->submit.bos[i];
+		ERROR_MSG("  bos[%d]: handle=%u, flags=%x", i, bo->handle, bo->flags);
+	}
+	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
+		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
+		struct drm_msm_gem_submit_reloc *relocs = U642VOID(cmd->relocs);
+		ERROR_MSG("  cmd[%d]: type=%u, submit_idx=%u, submit_offset=%u, size=%u",
+				i, cmd->type, cmd->submit_idx, cmd->submit_offset, cmd->size);
+		for (j = 0; j < cmd->nr_relocs; j++) {
+			struct drm_msm_gem_submit_reloc *r = &relocs[j];
+			ERROR_MSG("    reloc[%d]: submit_offset=%u, or=%08x, shift=%d, reloc_idx=%u"
+					", reloc_offset=%"PRIu64, j, r->submit_offset, r->or, r->shift,
+					r->reloc_idx, r->reloc_offset);
+		}
+	}
+}
+
 static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	struct drm_msm_gem_submit req = {
 			.pipe = to_msm_pipe(ring->pipe)->pipe,
 	};
-	uint32_t i, j, submit_offset, size;
+	uint32_t i, submit_offset, size;
 	int ret;
 
 	submit_offset = offset_bytes(last_start, ring->start);
@@ -331,23 +353,7 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 			&req, sizeof(req));
 	if (ret) {
 		ERROR_MSG("submit failed: %d (%s)", ret, strerror(errno));
-		ERROR_MSG("  pipe:  %u", req.pipe);
-		for (i = 0; i < msm_ring->submit.nr_bos; i++) {
-			struct drm_msm_gem_submit_bo *bo = &msm_ring->submit.bos[i];
-			ERROR_MSG("  bos[%d]: handle=%u, flags=%x", i, bo->handle, bo->flags);
-		}
-		for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
-			struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
-			struct drm_msm_gem_submit_reloc *relocs = U642VOID(cmd->relocs);
-			ERROR_MSG("  cmd[%d]: type=%u, submit_idx=%u, submit_offset=%u, size=%u",
-					i, cmd->type, cmd->submit_idx, cmd->submit_offset, cmd->size);
-			for (j = 0; j < cmd->nr_relocs; j++) {
-				struct drm_msm_gem_submit_reloc *r = &relocs[j];
-				ERROR_MSG("    reloc[%d]: submit_offset=%u, or=%08x, shift=%d, reloc_idx=%u"
-						", reloc_offset=%"PRIu64, j, r->submit_offset, r->or, r->shift,
-						r->reloc_idx, r->reloc_offset);
-			}
-		}
+		dump_submit(msm_ring);
 	} else if (!ret) {
 		/* update timestamp on all rings associated with submit: */
 		for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
