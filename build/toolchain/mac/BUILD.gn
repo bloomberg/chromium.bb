@@ -27,11 +27,10 @@ if (use_goma) {
   compiler_prefix = ""
 }
 
-if (use_xcode_clang) {
-  _clang_prefix = ""
-} else {
-  _clang_prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin/",
-                              root_build_dir)
+if (!use_xcode_clang) {
+  compiler_prefix = compiler_prefix +
+                    rebase_path("//third_party/llvm-build/Release+Asserts/bin/",
+                                root_build_dir)
 }
 
 if (current_toolchain == default_toolchain) {
@@ -77,9 +76,6 @@ assert(tool_versions != "")
 # build args in this definition.
 template("mac_toolchain") {
   toolchain(target_name) {
-    assert(defined(invoker.cc), "mac_toolchain() must specify a \"cc\" value")
-    assert(defined(invoker.cxx), "mac_toolchain() must specify a \"cxx\" value")
-    assert(defined(invoker.ld), "mac_toolchain() must specify a \"ld\" value")
     assert(defined(invoker.toolchain_cpu),
            "mac_toolchain() must specify a \"toolchain_cpu\"")
     assert(defined(invoker.toolchain_os),
@@ -87,12 +83,9 @@ template("mac_toolchain") {
 
     # concurrent_links is picked up from the declare_arg().
 
-    # We can't do string interpolation ($ in strings) on things with dots in
-    # them. To allow us to use $cc below, for example, we create copies of
-    # these values in our scope.
-    cc = invoker.cc
-    cxx = invoker.cxx
-    ld = invoker.ld
+    cc = "${compiler_prefix}clang"
+    cxx = "${compiler_prefix}clang++"
+    ld = cxx
 
     linker_driver =
         "TOOL_VERSION=${tool_versions.linker_driver} " +
@@ -350,10 +343,7 @@ template("mac_toolchain") {
       host_toolchain = host_toolchain
       target_os = target_os
       target_cpu = target_cpu
-
-      if (defined(invoker.is_clang)) {
-        is_clang = invoker.is_clang
-      }
+      is_clang = true
     }
   }
 }
@@ -361,71 +351,29 @@ template("mac_toolchain") {
 mac_toolchain("clang_arm") {
   toolchain_cpu = "arm"
   toolchain_os = "mac"
-  cc = "${compiler_prefix}${_clang_prefix}clang"
-  cxx = "${compiler_prefix}${_clang_prefix}clang++"
-  ld = cxx
-  is_clang = true
-}
-
-mac_toolchain("arm") {
-  toolchain_cpu = "arm"
-  toolchain_os = "mac"
-  cc = "${compiler_prefix}gcc"
-  cxx = "${compiler_prefix}g++"
-  ld = cxx
-  is_clang = false
 }
 
 mac_toolchain("clang_x64") {
   toolchain_cpu = "x64"
   toolchain_os = "mac"
-  cc = "${compiler_prefix}${_clang_prefix}clang"
-  cxx = "${compiler_prefix}${_clang_prefix}clang++"
-  ld = cxx
-  is_clang = true
-}
-
-mac_toolchain("x64") {
-  toolchain_cpu = "x64"
-  toolchain_os = "mac"
-  cc = "${compiler_prefix}gcc"
-  cxx = "${compiler_prefix}g++"
-  ld = cxx
-  is_clang = false
 }
 
 mac_toolchain("ios_clang_arm") {
   toolchain_cpu = "arm"
-  toolchain_os = "mac"
-  cc = "${compiler_prefix}${_clang_prefix}clang"
-  cxx = "${compiler_prefix}${_clang_prefix}clang++"
-  ld = cxx
-  is_clang = true
+  toolchain_os = "ios"
 }
 
 mac_toolchain("ios_clang_arm64") {
   toolchain_cpu = "arm64"
-  toolchain_os = "mac"
-  cc = "${compiler_prefix}${_clang_prefix}clang"
-  cxx = "${compiler_prefix}${_clang_prefix}clang++"
-  ld = cxx
-  is_clang = true
+  toolchain_os = "ios"
 }
 
 mac_toolchain("ios_clang_x86") {
   toolchain_cpu = "x86"
-  toolchain_os = "mac"
-  cc = "${compiler_prefix}${_clang_prefix}clang"
-  cxx = "${compiler_prefix}${_clang_prefix}clang++"
-  ld = cxx
-  is_clang = true
+  toolchain_os = "ios"
 }
 
 mac_toolchain("ios_clang_x64") {
   toolchain_cpu = "x64"
-  toolchain_os = "mac"
-  cc = "${compiler_prefix}${_clang_prefix}clang"
-  cxx = "${compiler_prefix}${_clang_prefix}clang++"
-  ld = cxx
-  is_clang = true
+  toolchain_os = "ios"
 }
