@@ -463,6 +463,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_ZIP_SELECTION_BUTTON_LABEL" desc="Menu item label, showing dialog to create zip file for selected files.">
     Zip selection
   </message>
+  <message name="IDS_FILE_BROWSER_SET_WALLPAPER_BUTTON_LABEL" desc="The context menu item to set wallpaper.">
+    Set wallpaper
+  </message>
   <message name="IDS_FILE_BROWSER_CREATE_FOLDER_SHORTCUT_BUTTON_LABEL" desc="Menu item label, creating a shortcut of the selected folder to the left nav.">
     Create shortcut
   </message>
