@@ -700,7 +700,7 @@
 
     'tryserver.chromium.angle': {
       'android_angle_rel_ng':
-        'swarming_gpu_fyi_tests_android_gn_release_trybot',
+        'swarming_gpu_tests_android_gn_release_trybot',
       'linux_angle_chromeos_rel_ng':
         'swarming_gpu_fyi_tests_chromeos_gyp_release_trybot',
       'linux_angle_dbg_ng': 'swarming_gpu_fyi_tests_gn_debug_trybot',
@@ -1611,9 +1611,8 @@
       'swarming', 'gn', 'release_trybot', 'x64',
     ],
 
-    'swarming_gpu_fyi_tests_android_gn_release_trybot': [
-      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
-      'android', 'release_trybot', 'angle_deqp_tests',
+    'swarming_gpu_tests_android_gn_release_trybot': [
+      'swarming', 'gpu_tests', 'android', 'gn', 'release_trybot',
     ],
 
     'swarming_gpu_fyi_tests_chromeos_gyp_release_trybot': [
