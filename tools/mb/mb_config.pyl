@@ -108,10 +108,10 @@
       'Chromium Win PGO Builder': 'gyp_official_winpgo',
       'Chromium Win x64 PGO Builder': 'gyp_official_winpgo_x64',
       'Chromium Windows Analyze': 'gn_windows_analyze',
-      'CrWin7Goma': 'gyp_release_bot_minimal_symbols_x86',
-      'CrWin7Goma(clbr)': 'gyp_shared_release_bot_minimal_symbols_x86',
-      'CrWin7Goma(dbg)': 'gyp_debug_bot_minimal_symbols_x86',
-      'CrWin7Goma(dll)': 'gyp_shared_release_bot_minimal_symbols_x86',
+      'CrWin7Goma': 'gn_release_bot_minimal_symbols_x86',
+      'CrWin7Goma(clbr)': 'gn_shared_release_bot_minimal_symbols_x86',
+      'CrWin7Goma(dbg)': 'gn_debug_bot_minimal_symbols_x86',
+      'CrWin7Goma(dll)': 'gn_shared_release_bot_minimal_symbols_x86',
       'CrWinClang':
         'swarming_gn_clang_official_release_bot_minimal_symbols_x86',
       'CrWinClang(dbg)':
@@ -123,8 +123,8 @@
       'CrWinClang64(dll)':
         'swarming_gyp_clang_minimal_symbols_shared_release_bot_x64',
       'CrWinClangGoma': 'gyp_clang_minimal_symbols_shared_release_bot_x86',
-      'CrWinGoma': 'gyp_release_bot_minimal_symbols_x86',
-      'CrWinGoma(dll)': 'gyp_shared_release_bot_minimal_symbols_x86',
+      'CrWinGoma': 'gn_release_bot_minimal_symbols_x86',
+      'CrWinGoma(dll)': 'gn_shared_release_bot_minimal_symbols_x86',
       'ClangToTAndroidASan': 'android_clang_tot_asan',
       'ClangToTAndroidASan tester': 'none',
       'ClangToTLinux':
@@ -1301,8 +1301,8 @@
       'gyp', 'debug_bot_minimal_symbols', 'x64',
     ],
 
-    'gyp_debug_bot_minimal_symbols_x86': [
-      'gyp', 'debug_bot_minimal_symbols', 'x86',
+    'gn_debug_bot_minimal_symbols_x86': [
+      'gn', 'debug_bot_minimal_symbols', 'x86',
     ],
 
     'gyp_drmemory_shared_release_x86': [
@@ -1367,8 +1367,8 @@
       'gyp', 'release_trybot', 'x64',
     ],
 
-    'gyp_shared_release_bot_minimal_symbols_x86': [
-      'gyp', 'shared_release_bot', 'minimal_symbols', 'x86',
+    'gn_shared_release_bot_minimal_symbols_x86': [
+      'gn', 'shared_release_bot', 'minimal_symbols', 'x86',
     ],
 
     'gyp_syzyasan_no_pch_win_z7_x86': [
