@@ -35,6 +35,12 @@ void GetSizeStatOnBlockingPool(const base::FilePath& mount_path,
     *available_size = size;
 }
 
+// Threshold to show a message indicating space is critically low (512 MB).
+const int64_t kSpaceCriticallyLowBytes = 512 * 1024 * 1024;
+
+// Threshold to show a message indicating space is low (1 GB).
+const int64_t kSpaceLowBytes = 1 * 1024 * 1024 * 1024;
+
 }  // namespace
 
 StorageManagerHandler::StorageManagerHandler() : weak_ptr_factory_(this) {
@@ -79,6 +85,24 @@ void StorageManagerHandler::GetLocalizedValues(
   localized_strings->SetString(
       "storageDeleteAllButtonTitle", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE));
+  localized_strings->SetString(
+      "storageLowMessageTitle", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_TITLE));
+  localized_strings->SetString(
+      "storageLowMessageLine1", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_1));
+  localized_strings->SetString(
+      "storageLowMessageLine2", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_2));
+  localized_strings->SetString(
+      "storageCriticallyLowMessageTitle", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_TITLE));
+  localized_strings->SetString(
+      "storageCriticallyLowMessageLine1", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_1));
+  localized_strings->SetString(
+      "storageCriticallyLowMessageLine2", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_2));
 }
 
 void StorageManagerHandler::InitializePage() {
@@ -169,6 +193,13 @@ void StorageManagerHandler::OnGetSizeStat(int64_t* total_size,
   size_stat.SetString("usedSize", ui::FormatBytes(used_size));
   size_stat.SetDouble("usedRatio",
                       static_cast<double>(used_size) / *total_size);
+  int storage_space_state = STORAGE_SPACE_NORMAL;
+  if (*available_size < kSpaceCriticallyLowBytes)
+    storage_space_state = STORAGE_SPACE_CRITICALLY_LOW;
+  else if (*available_size < kSpaceLowBytes)
+    storage_space_state = STORAGE_SPACE_LOW;
+  size_stat.SetInteger("spaceState", storage_space_state);
+
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.StorageManager.setSizeStat", size_stat);
 }

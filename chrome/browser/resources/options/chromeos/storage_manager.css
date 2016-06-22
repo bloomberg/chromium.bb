@@ -3,12 +3,19 @@
  * found in the LICENSE file. */
 
 #storageManagerPage {
-  min-width: 320px;
+  width: 400px;
+}
+
+.storage-manager-section {
+  margin: 0 40px;
+}
+
+.storage-manager-section:not(:last-child) {
+  margin-bottom: 28px;
 }
 
 .storage-manager-item,
 .storage-manager-subitem {
-  -webkit-padding-end: 20px;
   display: flex;
   font-size: 108.33%; /* go to 13px from 12px */
   justify-content: space-between;
@@ -16,13 +23,65 @@
 }
 
 .storage-manager-item {
-  -webkit-padding-start: 20px;
-}
-
-.storage-manager-subitem {
-  -webkit-padding-start: 40px;
+  font-weight: 500;
 }
 
 .storage-manager-item-size {
   color: rgb(153, 153, 153);
+}
+
+.critically-low-space #storage-manager-message-critically-low-space,
+.low-space #storage-manager-message-low-space {
+  display: block;
+}
+
+.storage-manager-message-area {
+  background-color: rgb(245, 245, 245);
+  display: none;
+  padding: 20px 24px;
+}
+
+.storage-manager-message-area img {
+  height: 20px;
+  width: 20px;
+}
+
+.storage-manager-message-title {
+  align-items: center;
+  display: flex;
+}
+
+.storage-manager-message-title span {
+  font-size: 115%;
+  font-weight: 500;
+  margin: 0 10px;
+}
+
+.storage-manager-message-area p {
+  color: rgb(90, 90, 90);
+}
+
+#storage-bar-progress {
+  -webkit-appearance: none;
+  display: block;
+  height: 6px;
+  width: 100%;
+}
+
+#storage-bar-progress::-webkit-progress-bar {
+  background-color: rgb(229, 229, 229);
+  border-radius: 3px;
+}
+
+#storage-bar-progress::-webkit-progress-value {
+  background-color: rgb(74, 144, 226);
+  border-radius: 3px;
+}
+
+.critically-low-space #storage-bar-progress::-webkit-progress-value {
+  background-color: rgb(219, 68, 55);
+}
+
+.low-space #storage-bar-progress::-webkit-progress-value {
+  background-color: rgb(255, 176, 0);
 }

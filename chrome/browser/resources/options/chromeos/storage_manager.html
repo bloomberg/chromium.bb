@@ -2,46 +2,72 @@
   <div class="close-button"></div>
   <h1 i18n-content="storageManagerPage"></h1>
 
+  <div id="storage-manager-message-low-space"
+       class="storage-manager-message-area">
+    <div class="storage-manager-message-title">
+      <img src="space_low.svg"></img>
+      <span i18n-content="storageLowMessageTitle"></span>
+    </div>
+    <p i18n-content="storageLowMessageLine1"></p>
+    <p i18n-content="storageLowMessageLine2"></p>
+  </div>
+  <div id="storage-manager-message-critically-low-space"
+       class="storage-manager-message-area">
+    <div class="storage-manager-message-title">
+      <img src="space_critically_low.svg"></img>
+      <span i18n-content="storageCriticallyLowMessageTitle"></span>
+    </div>
+    <p i18n-content="storageCriticallyLowMessageLine1"></p>
+    <p i18n-content="storageCriticallyLowMessageLine2"></p>
+  </div>
+
   <div class="content-area">
-    <div class="storage-manager-item">
-      <span i18n-content="storageItemLabelCapacity"></span>
-      <span id="storage-manager-size-capacity"
-            class="storage-manager-item-size"></span>
+    <div class="storage-manager-section">
+      <div class="storage-manager-item">
+        <span i18n-content="storageItemLabelCapacity"></span>
+        <span id="storage-manager-size-capacity"
+              class="storage-manager-item-size"></span>
+      </div>
+      <progress id="storage-bar-progress"></progress>
     </div>
-    <div class="storage-manager-item">
-      <span i18n-content="storageItemLabelInUse"></span>
-      <span id="storage-manager-size-in-use"
-            class="storage-manager-item-size"></span>
+    <div class="storage-manager-section">
+      <div class="storage-manager-item">
+        <span i18n-content="storageItemLabelInUse"></span>
+        <span id="storage-manager-size-in-use"
+              class="storage-manager-item-size"></span>
+      </div>
+      <div class="storage-manager-subitem">
+        <a is="action-link"
+           id="storage-manager-label-downloads"
+           i18n-content="storageSubitemLabelDownloads"></a>
+        <span id="storage-manager-size-downloads"
+              class="storage-manager-item-size"
+              i18n-content="storageSizeCalculating"></span>
+      </div>
+      <div class="storage-manager-subitem">
+        <a is="action-link"
+           id="storage-manager-label-drive-cache"
+           i18n-content="storageSubitemLabelDriveCache"></a>
+        <span id="storage-manager-size-drive-cache"
+              class="storage-manager-item-size"
+              i18n-content="storageSizeCalculating"></span>
+      </div>
+      <div id="storage-manager-item-arc"
+           class="storage-manager-subitem" hidden>
+        <a is="action-link"
+           id="storage-manager-label-arc"
+           i18n-content="storageSubitemLabelArc"></a>
+        <span id="storage-manager-size-arc"
+              class="storage-manager-item-size"
+              i18n-content="storageSizeCalculating"></span>
+      </div>
     </div>
-    <div class="storage-manager-subitem">
-      <a is="action-link"
-         id="storage-manager-label-downloads"
-         i18n-content="storageSubitemLabelDownloads"></a>
-      <span id="storage-manager-size-downloads"
-            class="storage-manager-item-size"
-            i18n-content="storageSizeCalculating"></span>
-    </div>
-    <div class="storage-manager-subitem">
-      <a is="action-link"
-         id="storage-manager-label-drive-cache"
-         i18n-content="storageSubitemLabelDriveCache"></a>
-      <span id="storage-manager-size-drive-cache"
-            class="storage-manager-item-size"
-            i18n-content="storageSizeCalculating"></span>
-    </div>
-    <div id="storage-manager-item-arc"
-         class="storage-manager-subitem" hidden>
-      <a is="action-link"
-         id="storage-manager-label-arc"
-         i18n-content="storageSubitemLabelArc"></a>
-      <span id="storage-manager-size-arc"
-            class="storage-manager-item-size"
-            i18n-content="storageSizeCalculating"></span>
-    </div>
-    <div class="storage-manager-item">
-      <span i18n-content="storageItemLabelAvailable"></span>
-      <span id="storage-manager-size-available"
-            class="storage-manager-item-size"></span>
+    <div class="storage-manager-section">
+      <div class="storage-manager-item">
+        <span i18n-content="storageItemLabelAvailable"></span>
+        <span id="storage-manager-size-available"
+              class="storage-manager-item-size"></span>
+      </div>
     </div>
   </div>
 

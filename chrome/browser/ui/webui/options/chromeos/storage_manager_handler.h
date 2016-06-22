@@ -16,6 +16,14 @@ namespace options {
 // Storage manager overlay page UI handler.
 class StorageManagerHandler : public ::options::OptionsPageUIHandler {
  public:
+  // Enumeration for device state about remaining space. These values must be
+  // kept in sync with options.StorageSpaceState in JS code.
+  enum StorageSpaceState {
+    STORAGE_SPACE_NORMAL = 0,
+    STORAGE_SPACE_LOW = 1,
+    STORAGE_SPACE_CRITICALLY_LOW = 2,
+  };
+
   StorageManagerHandler();
   ~StorageManagerHandler() override;
 

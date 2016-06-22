@@ -2075,7 +2075,7 @@ Press any key to continue exploring.
     Keyboard settings
   </message>
   <message name="IDS_OPTIONS_DEVICE_GROUP_STORAGE_MANAGER_BUTTON_TITLE">
-    Storage
+    Storage management
   </message>
   <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
     Pointer speed:
@@ -2552,7 +2552,25 @@ Press any key to continue exploring.
     Disable mobile data roaming
   </message>
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_MANAGER_TAB_TITLE" desc="Title for the storage manager tab.">
-    Storage
+    Storage management
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_TITLE" desc="Title of a warning message indicating device's available disk space is low.">
+    Device is low on space
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_1" desc="The first paragraph of a warning message indicating device's available disk space is low.">
+    To free up space, delete files from device storage.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_2" desc="The second paragraph of a warning message indicating device's available disk space is low.">
+    If space isn't made available, users and data may be automatically deleted.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_TITLE" desc="Title of a warning message indicating device's available disk space is critically low.">
+    Device space criticaly low
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_1" desc="The first paragraph of a warning message indicating device's available disk space is critically low.">
+    Free up at least 512 MB of space or your device will become unresponsible. To free up space, delete files from device storage.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_2" desc="The second paragraph of a warning message indicating device's available disk space is critically low.">
+    Users and data may be automatically removed until at least 512 MB of space is available.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_TAB_TITLE" desc="Title for the storage manager confirmation dialog tab to remove Google Drive offline files.">
     Offline files
@@ -2582,7 +2600,7 @@ Press any key to continue exploring.
     Offline files
   </message>
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_ARC" desc="In storage manager overlay, label for the total size size of Android apps and cache.">
-    Android apps and cache
+    Android storage
   </message>
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE" desc="In storage manager overlay, label for the total size size of Android apps and cache.">
     Delete all

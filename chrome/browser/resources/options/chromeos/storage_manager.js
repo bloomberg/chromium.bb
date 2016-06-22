@@ -3,11 +3,25 @@
 // found in the LICENSE file.
 
 /**
+ * Enumeration for device state about remaining space.
+ * These values must be kept in sync with
+ * StorageManagerHandler::StorageSpaceState in C++ code.
+ * @enum {number}
+ * @const
+ */
+options.StorageSpaceState = {
+  STORAGE_SPACE_NORMAL: 0,
+  STORAGE_SPACE_LOW: 1,
+  STORAGE_SPACE_CRITICALLY_LOW: 2
+};
+
+/**
  * @typedef {{
  *   totalSize: string,
  *   availableSize: string,
  *   usedSize: string,
- *   usedRatio: number
+ *   usedRatio: number,
+ *   spaceState: options.StorageSpaceState,
  * }}
  */
 options.StorageSizeStat;
@@ -63,6 +77,13 @@ cr.define('options', function() {
       $('storage-manager-size-capacity').textContent = sizeStat.totalSize;
       $('storage-manager-size-in-use').textContent = sizeStat.usedSize;
       $('storage-manager-size-available').textContent = sizeStat.availableSize;
+      $('storage-bar-progress').setAttribute('value', sizeStat.usedRatio);
+      $('storageManagerPage').classList.toggle('low-space',
+          sizeStat.spaceState ===
+              options.StorageSpaceState.STORAGE_SPACE_LOW);
+      $('storageManagerPage').classList.toggle('critically-low-space',
+          sizeStat.spaceState ===
+              options.StorageSpaceState.STORAGE_SPACE_CRITICALLY_LOW);
     },
 
     /**
