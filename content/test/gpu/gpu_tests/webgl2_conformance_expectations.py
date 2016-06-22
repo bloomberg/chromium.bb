@@ -415,8 +415,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
-        ['linux', 'no_angle'], bug=483282)
     self.Fail('deqp/functional/gles3/fbodepthbuffer.html',
         ['linux'], bug=483282)
 

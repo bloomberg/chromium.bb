@@ -5701,6 +5701,12 @@ bool GLES2DecoderImpl::GetHelper(
              feature_info_->context_type() == CONTEXT_TYPE_OPENGLES2)) {
           *params = GL_HALF_FLOAT_OES;
         }
+        if (*params == GL_SRGB_ALPHA_EXT) {
+          *params = GL_RGBA;
+        }
+        if (*params == GL_SRGB_EXT) {
+          *params = GL_RGB;
+        }
       }
       return true;
     default:
