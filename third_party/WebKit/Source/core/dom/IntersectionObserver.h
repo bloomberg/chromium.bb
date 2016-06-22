@@ -5,6 +5,7 @@
 #ifndef IntersectionObserver_h
 #define IntersectionObserver_h
 
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/IntersectionObservation.h"
 #include "core/dom/IntersectionObserverEntry.h"
@@ -15,6 +16,7 @@
 
 namespace blink {
 
+class Document;
 class Element;
 class ExceptionState;
 class LayoutObject;
@@ -25,16 +27,19 @@ class CORE_EXPORT IntersectionObserver final : public GarbageCollectedFinalized<
     DEFINE_WRAPPERTYPEINFO();
 
 public:
+    using EventCallback = Function<void(const HeapVector<Member<IntersectionObserverEntry>>&), WTF::SameThreadAffinity>;
+
     static IntersectionObserver* create(const IntersectionObserverInit&, IntersectionObserverCallback&, ExceptionState&);
+    static IntersectionObserver* create(const Vector<Length>& rootMargin, const Vector<float>& thresholds, Document*, std::unique_ptr<EventCallback>);
     static void resumeSuspendedObservers();
 
-    // API methods
-    void observe(Element*, ExceptionState&);
-    void unobserve(Element*, ExceptionState&);
+    // API methods.
+    void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void unobserve(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void disconnect(ExceptionState&);
     HeapVector<Member<IntersectionObserverEntry>> takeRecords(ExceptionState&);
 
-    // API attributes
+    // API attributes.
     Element* root() const;
     String rootMargin() const;
     const Vector<float>& thresholds() const { return m_thresholds; }

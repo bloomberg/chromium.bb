@@ -35,6 +35,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
@@ -355,7 +356,6 @@ private:
     Member<HTMLMediaElement> m_element;
 };
 
-
 void HTMLMediaElement::recordAutoplayMetric(AutoplayMetrics metric)
 {
     DEFINE_STATIC_LOCAL(EnumerationHistogram, autoplayHistogram, ("Blink.MediaElement.Autoplay", NumberOfAutoplayMetrics));
@@ -451,6 +451,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_autoplayHelperClient(AutoplayHelperClientImpl::create(this))
     , m_autoplayHelper(AutoplayExperimentHelper::create(m_autoplayHelperClient.get()))
     , m_remotePlaybackClient(nullptr)
+    , m_autoplayVisibilityObserver(nullptr)
 {
     ThreadState::current()->registerPreFinalizer(this);
 
@@ -1642,16 +1643,22 @@ void HTMLMediaElement::setReadyState(ReadyState state)
         // Check for autoplay, and record metrics about it if needed.
         if (shouldAutoplay(RecordMetricsBehavior::DoRecord)) {
             recordAutoplaySourceMetric(AutoplaySourceAttribute);
+
             // If the autoplay experiment says that it's okay to play now,
             // then don't require a user gesture.
             m_autoplayHelper->becameReadyToPlay();
 
             if (!isGestureNeededForPlayback()) {
-                m_paused = false;
-                invalidateCachedTime();
-                scheduleEvent(EventTypeNames::play);
-                scheduleNotifyPlaying();
-                m_autoplaying = false;
+                if (isHTMLVideoElement() && muted() && RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
+                    m_autoplayVisibilityObserver = new ElementVisibilityObserver(this, WTF::bind<bool>(&HTMLMediaElement::onVisibilityChangedForAutoplay, this));
+                    m_autoplayVisibilityObserver->start();
+                } else {
+                    m_paused = false;
+                    invalidateCachedTime();
+                    scheduleEvent(EventTypeNames::play);
+                    scheduleNotifyPlaying();
+                    m_autoplaying = false;
+                }
             }
         }
 
@@ -3650,6 +3657,7 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_autoplayHelperClient);
     visitor->trace(m_autoplayHelper);
     visitor->trace(m_srcObject);
+    visitor->trace(m_autoplayVisibilityObserver);
     visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
     Supplementable<HTMLMediaElement>::trace(visitor);
     HTMLElement::trace(visitor);
@@ -3878,6 +3886,25 @@ void HTMLMediaElement::recordAutoplaySourceMetric(int source)
     } else {
         audioHistogram.count(source);
     }
+}
+
+void HTMLMediaElement::onVisibilityChangedForAutoplay(bool isVisible)
+{
+    if (!isVisible)
+        return;
+
+    if (shouldAutoplay()) {
+        m_paused = false;
+        invalidateCachedTime();
+        scheduleEvent(EventTypeNames::play);
+        scheduleNotifyPlaying();
+        m_autoplaying = false;
+
+        updatePlayState();
+    }
+
+    m_autoplayVisibilityObserver->stop();
+    m_autoplayVisibilityObserver = nullptr;
 }
 
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)

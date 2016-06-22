@@ -2485,6 +2485,8 @@
             'dom/ElementRareData.cpp',
             'dom/ElementRareData.h',
             'dom/ElementTraversal.h',
+            'dom/ElementVisibilityObserver.cpp',
+            'dom/ElementVisibilityObserver.h',
             'dom/EmptyNodeList.cpp',
             'dom/EmptyNodeList.h',
             'dom/ExecutionContext.cpp',

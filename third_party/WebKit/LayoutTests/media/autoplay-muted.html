@@ -4,6 +4,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="media-file.js"></script>
 <script src="media-controls.js"></script>
+<body>
 <script>
     test(function() {
         assert_true(!!window.internals
@@ -35,6 +36,7 @@
     async_test(function(t) {
         var e = createMutedVideoElement();
         e.autoplay = true;
+        document.body.appendChild(e);
 
         var expectedEvents = [ 'canplay', 'play', 'playing'];
         var eventWatcher = new EventWatcher(t, e, expectedEvents);
@@ -100,3 +102,4 @@
             createMutedVideoElement().play());
     }, "Test that muted videos don't autoplay when the setting is disabled");
 </script>
+</body>

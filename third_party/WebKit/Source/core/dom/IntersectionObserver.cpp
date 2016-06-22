@@ -29,7 +29,40 @@
 
 namespace blink {
 
-static void parseRootMargin(String rootMarginParameter, Vector<Length>& rootMargin, ExceptionState& exceptionState)
+namespace {
+
+// Internal implementation of IntersectionObserverCallback when using
+// IntersectionObserver with an EventCallback.
+class IntersectionObserverCallbackImpl final : public IntersectionObserverCallback {
+    WTF_MAKE_NONCOPYABLE(IntersectionObserverCallbackImpl);
+public:
+    IntersectionObserverCallbackImpl(ExecutionContext* context, std::unique_ptr<IntersectionObserver::EventCallback> callback)
+        : m_context(context)
+        , m_callback(std::move(callback))
+    {}
+
+    void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>& entries, IntersectionObserver&) override
+    {
+        (*m_callback.get())(entries);
+    }
+
+    ExecutionContext* getExecutionContext() const override
+    {
+        return m_context;
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        IntersectionObserverCallback::trace(visitor);
+        visitor->trace(m_context);
+    }
+
+private:
+    WeakMember<ExecutionContext> m_context;
+    std::unique_ptr<IntersectionObserver::EventCallback> m_callback;
+};
+
+void parseRootMargin(String rootMarginParameter, Vector<Length>& rootMargin, ExceptionState& exceptionState)
 {
     // TODO(szager): Make sure this exact syntax and behavior is spec-ed somewhere.
 
@@ -67,7 +100,7 @@ static void parseRootMargin(String rootMarginParameter, Vector<Length>& rootMarg
     }
 }
 
-static void parseThresholds(const DoubleOrDoubleArray& thresholdParameter, Vector<float>& thresholds, ExceptionState& exceptionState)
+void parseThresholds(const DoubleOrDoubleArray& thresholdParameter, Vector<float>& thresholds, ExceptionState& exceptionState)
 {
     if (thresholdParameter.isDouble()) {
         thresholds.append(static_cast<float>(thresholdParameter.getAsDouble()));
@@ -86,16 +119,26 @@ static void parseThresholds(const DoubleOrDoubleArray& thresholdParameter, Vecto
     std::sort(thresholds.begin(), thresholds.end());
 }
 
+// Returns the root Node of a given Document to use as the IntersectionObserver
+// root when no root is given.
+// TODO(szager): it doesn't support RemoteFrames, see https://crbug.com/615156
+Node* getRootNode(Document* document)
+{
+    Frame* mainFrame = document->frame()->tree().top();
+    if (mainFrame && mainFrame->isLocalFrame())
+        return toLocalFrame(mainFrame)->document();
+    return nullptr;
+}
+
+} // anonymous namespace
+
 IntersectionObserver* IntersectionObserver::create(const IntersectionObserverInit& observerInit, IntersectionObserverCallback& callback, ExceptionState& exceptionState)
 {
     Node* root = observerInit.root();
     if (!root) {
-        // TODO(szager): Use Document instead of document element for implicit root. (crbug.com/570538)
         ExecutionContext* context = callback.getExecutionContext();
         DCHECK(context->isDocument());
-        Frame* mainFrame = toDocument(context)->frame()->tree().top();
-        if (mainFrame && mainFrame->isLocalFrame())
-            root = toLocalFrame(mainFrame)->document();
+        root = getRootNode(toDocument(context));
     }
     if (!root) {
         exceptionState.throwDOMException(HierarchyRequestError, "Unable to get root node in main frame to track.");
@@ -117,6 +160,16 @@ IntersectionObserver* IntersectionObserver::create(const IntersectionObserverIni
         return nullptr;
 
     return new IntersectionObserver(callback, *root, rootMargin, thresholds);
+}
+
+IntersectionObserver* IntersectionObserver::create(const Vector<Length>& rootMargin, const Vector<float>& thresholds, Document* document, std::unique_ptr<EventCallback> callback)
+{
+    Node* root = getRootNode(document);
+    if (!root)
+        return nullptr;
+
+    IntersectionObserverCallbackImpl* intersectionObserverCallback = new IntersectionObserverCallbackImpl(document, std::move(callback));
+    return new IntersectionObserver(*intersectionObserverCallback, *root, rootMargin, thresholds);
 }
 
 IntersectionObserver::IntersectionObserver(IntersectionObserverCallback& callback, Node& root, const Vector<Length>& rootMargin, const Vector<float>& thresholds)
@@ -185,7 +238,6 @@ void IntersectionObserver::observe(Element* target, ExceptionState& exceptionSta
 
     if (target->ensureIntersectionObserverData().getObservationFor(*this))
         return;
-
     bool shouldReportRootBounds = false;
     bool isDOMDescendant = false;
     LocalFrame* targetFrame = target->document().frame();
@@ -341,7 +393,6 @@ unsigned IntersectionObserver::firstThresholdGreaterThan(float ratio) const
 
 void IntersectionObserver::deliver()
 {
-
     if (m_entries.isEmpty())
         return;
 

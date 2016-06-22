@@ -48,6 +48,7 @@ class AudioSourceProviderClient;
 class AudioTrackList;
 class ContentType;
 class CueTimeline;
+class ElementVisibilityObserver;
 class EnumerationHistogram;
 class Event;
 class ExceptionState;
@@ -492,6 +493,8 @@ private:
 
     void recordAutoplaySourceMetric(int source);
 
+    void onVisibilityChangedForAutoplay(bool isVisible);
+
     UnthrottledTimer<HTMLMediaElement> m_loadTimer;
     UnthrottledTimer<HTMLMediaElement> m_progressEventTimer;
     UnthrottledTimer<HTMLMediaElement> m_playbackProgressTimer;
@@ -668,6 +671,9 @@ private:
     Member<AutoplayExperimentHelper> m_autoplayHelper;
 
     WebRemotePlaybackClient* m_remotePlaybackClient;
+
+    // class AutoplayVisibilityObserver;
+    Member<ElementVisibilityObserver> m_autoplayVisibilityObserver;
 
     static URLRegistry* s_mediaStreamRegistry;
 };
