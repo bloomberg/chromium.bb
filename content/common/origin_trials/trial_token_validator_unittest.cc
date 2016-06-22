@@ -11,6 +11,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/origin_trial_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h"
 #include "url/gurl.h"
@@ -84,14 +85,33 @@ const char kExpiredToken[] =
 
 const char kUnparsableToken[] = "abcde";
 
-class TestContentClient : public ContentClient {
+class TestOriginTrialPolicy : public OriginTrialPolicy {
  public:
-  base::StringPiece GetOriginTrialPublicKey() override {
+  base::StringPiece GetPublicKey() const override {
     return base::StringPiece(reinterpret_cast<const char*>(key_),
                              arraysize(kTestPublicKey));
   }
-  void SetOriginTrialPublicKey(const uint8_t* key) { key_ = key; }
+
+  // Test setup methods
+  void SetPublicKey(const uint8_t* key) { key_ = key; }
+
+ private:
   const uint8_t* key_ = nullptr;
+};
+
+class TestContentClient : public ContentClient {
+ public:
+  // ContentRendererClient methods
+  OriginTrialPolicy* GetOriginTrialPolicy() override {
+    return &origin_trial_policy_;
+  }
+  // Test setup methods
+  void SetOriginTrialPublicKey(const uint8_t* key) {
+    origin_trial_policy_.SetPublicKey(key);
+  }
+
+ private:
+  TestOriginTrialPolicy origin_trial_policy_;
 };
 
 }  // namespace

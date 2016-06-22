@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #include "content/common/origin_trials/trial_token.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/origin_trial_policy.h"
 #include "third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h"
 
 namespace content {
@@ -15,10 +16,15 @@ blink::WebOriginTrialTokenStatus TrialTokenValidator::ValidateToken(
     const std::string& token,
     const url::Origin& origin,
     base::StringPiece feature_name) {
+  ContentClient* content_client = GetContentClient();
+  const OriginTrialPolicy* origin_trial_policy =
+      content_client->GetOriginTrialPolicy();
+  if (!origin_trial_policy)
+    return blink::WebOriginTrialTokenStatus::NotSupported;
+
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220
-  ContentClient* content_client = GetContentClient();
-  base::StringPiece public_key = content_client->GetOriginTrialPublicKey();
+  base::StringPiece public_key = origin_trial_policy->GetPublicKey();
   if (public_key.empty()) {
     return blink::WebOriginTrialTokenStatus::NotSupported;
   }

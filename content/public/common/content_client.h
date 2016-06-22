@@ -49,6 +49,7 @@ class ContentClient;
 class ContentGpuClient;
 class ContentRendererClient;
 class ContentUtilityClient;
+class OriginTrialPolicy;
 struct CdmInfo;
 struct PepperPluginInfo;
 
@@ -168,9 +169,9 @@ class CONTENT_EXPORT ContentClient {
   // model decisions.
   virtual bool IsSupplementarySiteIsolationModeEnabled();
 
-  // Returns the public key to be used for origin trials, or an empty string if
-  // origin trials are not enabled in this context.
-  virtual base::StringPiece GetOriginTrialPublicKey();
+  // Returns the origin trial policy, or nullptr if origin trials are not
+  // supported by the embedder.
+  virtual OriginTrialPolicy* GetOriginTrialPolicy();
 
 #if defined(OS_ANDROID)
   // Returns true for clients like Android WebView that uses synchronous

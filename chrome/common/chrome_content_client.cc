@@ -430,6 +430,12 @@ std::string GetUserAgent() {
   return content::BuildUserAgentFromProduct(product);
 }
 
+ChromeContentClient::ChromeContentClient() {
+}
+
+ChromeContentClient::~ChromeContentClient() {
+}
+
 #if !defined(DISABLE_NACL)
 void ChromeContentClient::SetNaClEntryFunctions(
     content::PepperPluginInfo::GetInterfaceFunc get_interface,
@@ -700,8 +706,11 @@ bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
 #endif
 }
 
-base::StringPiece ChromeContentClient::GetOriginTrialPublicKey() {
-  return origin_trial_key_manager_.GetPublicKey();
+content::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
+  if (!origin_trial_policy_) {
+    origin_trial_policy_ = base::WrapUnique(new ChromeOriginTrialPolicy());
+  }
+  return origin_trial_policy_.get();
 }
 
 #if defined(OS_ANDROID)

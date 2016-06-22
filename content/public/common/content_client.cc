@@ -119,8 +119,8 @@ bool ContentClient::IsSupplementarySiteIsolationModeEnabled() {
   return false;
 }
 
-base::StringPiece ContentClient::GetOriginTrialPublicKey() {
-  return base::StringPiece();
+OriginTrialPolicy* ContentClient::GetOriginTrialPolicy() {
+  return nullptr;
 }
 
 bool ContentClient::AllowScriptExtensionForServiceWorker(

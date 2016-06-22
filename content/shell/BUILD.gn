@@ -159,6 +159,8 @@ static_library("content_shell_lib") {
     "common/shell_content_client.h",
     "common/shell_messages.cc",
     "common/shell_messages.h",
+    "common/shell_origin_trial_policy.cc",
+    "common/shell_origin_trial_policy.h",
     "common/shell_switches.cc",
     "common/shell_switches.h",
     "common/shell_test_configuration.cc",

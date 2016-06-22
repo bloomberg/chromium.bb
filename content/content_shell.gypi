@@ -206,6 +206,8 @@
         'shell/common/leak_detection_result.h',
         'shell/common/shell_content_client.cc',
         'shell/common/shell_content_client.h',
+        'shell/common/shell_origin_trial_policy.cc',
+        'shell/common/shell_origin_trial_policy.h',
         'shell/common/shell_messages.cc',
         'shell/common/shell_messages.h',
         'shell/common/shell_switches.cc',

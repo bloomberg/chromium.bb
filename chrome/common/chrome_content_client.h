@@ -5,13 +5,14 @@
 #ifndef CHROME_COMMON_CHROME_CONTENT_CLIENT_H_
 #define CHROME_COMMON_CHROME_CONTENT_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "build/build_config.h"
-#include "chrome/common/origin_trials/origin_trial_key_manager.h"
+#include "chrome/common/origin_trials/chrome_origin_trial_policy.h"
 #include "content/public/common/content_client.h"
 
 #if defined(ENABLE_PLUGINS)
@@ -28,6 +29,9 @@ class ChromeContentClient : public content::ContentClient {
   static const char kPDFPluginName[];
   static const char kPDFPluginPath[];
   static const char kRemotingViewerPluginPath[];
+
+  ChromeContentClient();
+  ~ChromeContentClient() override;
 
   // The methods below are called by child processes to set the function
   // pointers for built-in plugins. We avoid linking these plugins into
@@ -90,18 +94,15 @@ class ChromeContentClient : public content::ContentClient {
   bool AllowScriptExtensionForServiceWorker(const GURL& script_url) override;
 
   bool IsSupplementarySiteIsolationModeEnabled() override;
-  base::StringPiece GetOriginTrialPublicKey() override;
 
-  OriginTrialKeyManager* origin_trial_key_manager() {
-    return &origin_trial_key_manager_;
-  }
+  content::OriginTrialPolicy* GetOriginTrialPolicy() override;
 
 #if defined(OS_ANDROID)
   media::MediaClientAndroid* GetMediaClientAndroid() override;
 #endif  // OS_ANDROID
 
  private:
-  OriginTrialKeyManager origin_trial_key_manager_;
+  std::unique_ptr<ChromeOriginTrialPolicy> origin_trial_policy_;
 };
 
 #endif  // CHROME_COMMON_CHROME_CONTENT_CLIENT_H_

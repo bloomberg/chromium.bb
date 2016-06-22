@@ -20,19 +20,6 @@
 
 namespace content {
 
-namespace {
-
-// This is the public key which the content shell will use to enable origin
-// trial features.
-// TODO(iclelland): Update this comment with the location of the public and
-// private key files when the command-line tool CL lands
-static const uint8_t kOriginTrialPublicKey[] = {
-    0x75, 0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2,
-    0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
-    0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
-};
-}  // namespace
-
 std::string GetShellUserAgent() {
   std::string product = "Chrome/" CONTENT_SHELL_VERSION;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -41,10 +28,7 @@ std::string GetShellUserAgent() {
   return BuildUserAgentFromProduct(product);
 }
 
-ShellContentClient::ShellContentClient()
-    : origin_trial_public_key_(base::StringPiece(
-          reinterpret_cast<const char*>(kOriginTrialPublicKey),
-          arraysize(kOriginTrialPublicKey))) {}
+ShellContentClient::ShellContentClient() {}
 
 ShellContentClient::~ShellContentClient() {}
 
@@ -112,8 +96,8 @@ bool ShellContentClient::IsSupplementarySiteIsolationModeEnabled() {
       switches::kIsolateSitesForTesting);
 }
 
-base::StringPiece ShellContentClient::GetOriginTrialPublicKey() {
-  return origin_trial_public_key_;
+OriginTrialPolicy* ShellContentClient::GetOriginTrialPolicy() {
+  return &origin_trial_policy_;
 }
 
 }  // namespace content

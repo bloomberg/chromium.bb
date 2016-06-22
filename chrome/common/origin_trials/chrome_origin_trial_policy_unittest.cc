@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/origin_trials/origin_trial_key_manager.h"
+#include "chrome/common/origin_trials/chrome_origin_trial_policy.h"
 
 #include <memory>
 
@@ -28,24 +28,24 @@ const char kTooShortPublicKeyString[] =
 const char kTooLongPublicKeyString[] =
     "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNAA";
 
-class OriginTrialKeyManagerTest : public testing::Test {
+class ChromeOriginTrialPolicyTest : public testing::Test {
  protected:
-  OriginTrialKeyManagerTest()
-      : manager_(base::WrapUnique(new OriginTrialKeyManager())),
+  ChromeOriginTrialPolicyTest()
+      : manager_(base::WrapUnique(new ChromeOriginTrialPolicy())),
         default_key_(manager_->GetPublicKey().as_string()),
         test_key_(std::string(reinterpret_cast<const char*>(kTestPublicKey),
                               arraysize(kTestPublicKey))) {}
-  OriginTrialKeyManager* manager() { return manager_.get(); }
+  ChromeOriginTrialPolicy* manager() { return manager_.get(); }
   base::StringPiece default_key() { return default_key_; }
   base::StringPiece test_key() { return test_key_; }
 
  private:
-  std::unique_ptr<OriginTrialKeyManager> manager_;
+  std::unique_ptr<ChromeOriginTrialPolicy> manager_;
   std::string default_key_;
   std::string test_key_;
 };
 
-TEST_F(OriginTrialKeyManagerTest, DefaultConstructor) {
+TEST_F(ChromeOriginTrialPolicyTest, DefaultConstructor) {
   // We don't specify here what the key should be, but make sure that it is
   // returned, is valid, and is consistent.
   base::StringPiece key = manager()->GetPublicKey();
@@ -53,30 +53,30 @@ TEST_F(OriginTrialKeyManagerTest, DefaultConstructor) {
   EXPECT_EQ(default_key(), key);
 }
 
-TEST_F(OriginTrialKeyManagerTest, DefaultKeyIsConsistent) {
-  OriginTrialKeyManager manager2;
+TEST_F(ChromeOriginTrialPolicyTest, DefaultKeyIsConsistent) {
+  ChromeOriginTrialPolicy manager2;
   EXPECT_EQ(manager()->GetPublicKey(), manager2.GetPublicKey());
 }
 
-TEST_F(OriginTrialKeyManagerTest, OverridePublicKey) {
+TEST_F(ChromeOriginTrialPolicyTest, OverridePublicKey) {
   EXPECT_TRUE(manager()->SetPublicKeyFromASCIIString(kTestPublicKeyString));
   EXPECT_NE(default_key(), manager()->GetPublicKey());
   EXPECT_EQ(test_key(), manager()->GetPublicKey());
 }
 
-TEST_F(OriginTrialKeyManagerTest, OverrideKeyNotBase64) {
+TEST_F(ChromeOriginTrialPolicyTest, OverrideKeyNotBase64) {
   EXPECT_FALSE(
       manager()->SetPublicKeyFromASCIIString(kBadEncodingPublicKeyString));
   EXPECT_EQ(default_key(), manager()->GetPublicKey());
 }
 
-TEST_F(OriginTrialKeyManagerTest, OverrideKeyTooShort) {
+TEST_F(ChromeOriginTrialPolicyTest, OverrideKeyTooShort) {
   EXPECT_FALSE(
       manager()->SetPublicKeyFromASCIIString(kTooShortPublicKeyString));
   EXPECT_EQ(default_key(), manager()->GetPublicKey());
 }
 
-TEST_F(OriginTrialKeyManagerTest, OverrideKeyTooLong) {
+TEST_F(ChromeOriginTrialPolicyTest, OverrideKeyTooLong) {
   EXPECT_FALSE(manager()->SetPublicKeyFromASCIIString(kTooLongPublicKeyString));
   EXPECT_EQ(default_key(), manager()->GetPublicKey());
 }
