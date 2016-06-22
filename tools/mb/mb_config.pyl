@@ -376,7 +376,7 @@
 
     'chromium.memory.fyi': {
       'Chromium Linux ChromeOS MSan Builder':
-        'swarming_gn_chromeos_msan_release_bot',
+        'swarming_gyp_chromeos_msan_release_bot',
       'Chromium Linux MSan Builder':
         'swarming_msan_gn_release_bot',
       'Chromium Linux TSan Builder':
@@ -1690,8 +1690,8 @@
       'release',
     ],
 
-    'swarming_gn_chromeos_msan_release_bot': [
-      'swarming', 'gn', 'chromeos', 'msan', 'release_bot',
+    'swarming_gyp_chromeos_msan_release_bot': [
+      'swarming', 'gyp', 'chromeos', 'msan', 'release_bot',
     ],
 
     'swarming_gyp_clang_debug_bot_minimal_symbols_x86': [
