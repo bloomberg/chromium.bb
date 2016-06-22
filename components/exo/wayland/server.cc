@@ -20,6 +20,7 @@
 #include <vsync-feedback-unstable-v1-server-protocol.h>     // NOLINT
 
 #include <algorithm>
+#include <cstdlib>
 #include <iterator>
 #include <string>
 #include <utility>
@@ -1764,10 +1765,28 @@ class VSyncTiming : public ui::CompositorVSyncManager::Observer {
                                base::TimeDelta interval) override {
     uint64_t timebase_us = timebase.ToInternalValue();
     uint64_t interval_us = interval.ToInternalValue();
+    uint64_t offset_us = timebase_us % interval_us;
+
+    // Avoid sending update events if interval did not change.
+    if (interval_us == last_interval_us_) {
+      int64_t offset_delta_us =
+          static_cast<int64_t>(last_offset_us_ - offset_us);
+
+      // Reduce the amount of events by only sending an update if the offset
+      // changed compared to the last offset sent to the client by this amount.
+      const int64_t kOffsetDeltaThresholdInMicroseconds = 25;
+
+      if (std::abs(offset_delta_us) < kOffsetDeltaThresholdInMicroseconds)
+        return;
+    }
+
     zwp_vsync_timing_v1_send_update(timing_resource_, timebase_us & 0xffffffff,
                                     timebase_us >> 32, interval_us & 0xffffffff,
                                     interval_us >> 32);
     wl_client_flush(wl_resource_get_client(timing_resource_));
+
+    last_interval_us_ = interval_us;
+    last_offset_us_ = offset_us;
   }
 
  private:
@@ -1780,6 +1799,9 @@ class VSyncTiming : public ui::CompositorVSyncManager::Observer {
 
   // The VSync timing resource.
   wl_resource* const timing_resource_;
+
+  uint64_t last_interval_us_{0};
+  uint64_t last_offset_us_{0};
 
   DISALLOW_COPY_AND_ASSIGN(VSyncTiming);
 };
