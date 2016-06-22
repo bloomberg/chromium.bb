@@ -32,12 +32,14 @@ constexpr int kMinVersion = 0;
 constexpr int kCanHandleResolutionMinVersion = 1;
 constexpr int kShowPackageInfoMinVersion = 5;
 constexpr int kUninstallPackageMinVersion = 2;
+constexpr int kRemoveIconMinVersion = 9;
 
 // Service name strings.
 constexpr char kCanHandleResolutionStr[] = "get resolution capability";
 constexpr char kLaunchAppStr[] = "launch app";
 constexpr char kShowPackageInfoStr[] = "show package info";
 constexpr char kUninstallPackageStr[] = "uninstall package";
+constexpr char kRemoveIconStr[] = "remove icon";
 
 // Helper function which returns the AppInstance. Create related logs when error
 // happens.
@@ -185,8 +187,12 @@ bool LaunchAppWithRect(content::BrowserContext* context,
   if (!app_instance)
     return false;
 
-  app_instance->LaunchApp(app_info->package_name, app_info->activity,
-                          target_rect);
+  if (app_info->shortcut) {
+    app_instance->LaunchIntent(app_info->intent_uri, target_rect);
+  } else {
+    app_instance->LaunchApp(app_info->package_name, app_info->activity,
+                            target_rect);
+  }
   prefs->SetLastLaunchTime(app_id, base::Time::Now());
 
   return true;
@@ -255,6 +261,17 @@ void UninstallPackage(const std::string& package_name) {
     return;
 
   app_instance->UninstallPackage(package_name);
+}
+
+void RemoveCachedIcon(const std::string& icon_resource_id) {
+  VLOG(2) << "Removing icon " << icon_resource_id;
+
+  arc::mojom::AppInstance* app_instance =
+      GetAppInstance(kRemoveIconMinVersion, kRemoveIconStr);
+  if (!app_instance)
+    return;
+
+  app_instance->RemoveCachedIcon(icon_resource_id);
 }
 
 bool ShowPackageInfo(const std::string& package_name) {

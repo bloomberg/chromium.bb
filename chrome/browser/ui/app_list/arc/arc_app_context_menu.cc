@@ -30,10 +30,16 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   }
   // Create default items.
-  AppContextMenu::BuildMenu(menu_model);
+  app_list::AppContextMenu::BuildMenu(menu_model);
   if (CanBeUninstalled()) {
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-    menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
+    const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+    DCHECK(arc_prefs);
+    if (arc_prefs->IsShortcut(app_id())) {
+      menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT);
+    } else {
+      menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
+    }
   }
   // App Info item.
   menu_model->AddItemWithStringId(SHOW_APP_INFO,
@@ -56,12 +62,12 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
       ShowPackageInfo();
       break;
     default:
-      AppContextMenu::ExecuteCommand(command_id, event_flags);
+      app_list::AppContextMenu::ExecuteCommand(command_id, event_flags);
   }
 }
 
 void ArcAppContextMenu::UninstallPackage() {
-  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
   DCHECK(arc_prefs);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_prefs->GetApp(app_id());
@@ -69,7 +75,12 @@ void ArcAppContextMenu::UninstallPackage() {
     VLOG(2) << "Package being uninstalled does not exist: " << app_id() << ".";
     return;
   }
-  arc::UninstallPackage(app_info->package_name);
+  if (app_info->shortcut) {
+    // for shortcut we just remove the shortcut instead of the package
+    arc_prefs->RemoveApp(app_id());
+  } else {
+    arc::UninstallPackage(app_info->package_name);
+  }
 }
 
 void ArcAppContextMenu::ShowPackageInfo() {

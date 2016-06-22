@@ -53,6 +53,9 @@ bool CanHandleResolution(content::BrowserContext* context,
 // Uninstalls the package in ARC.
 void UninstallPackage(const std::string& package_name);
 
+// Removes cached app shortcut icon in ARC.
+void RemoveCachedIcon(const std::string& icon_resource_id);
+
 // Show package info for ARC package.
 bool ShowPackageInfo(const std::string& package_name);
 

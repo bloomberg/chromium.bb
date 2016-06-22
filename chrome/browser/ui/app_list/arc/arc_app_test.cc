@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/common/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +26,10 @@ constexpr char kPackageName3[] = "fakepackagename3";
 // static
 std::string ArcAppTest::GetAppId(const arc::mojom::AppInfo& app_info) {
   return ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
+}
+
+std::string ArcAppTest::GetAppId(const arc::mojom::ShortcutInfo& shortcut) {
+  return ArcAppListPrefs::GetAppId(shortcut.package_name, shortcut.intent_uri);
 }
 
 ArcAppTest::ArcAppTest() {
@@ -83,6 +86,17 @@ void ArcAppTest::SetUp(Profile* profile) {
   package3.last_backup_time = 3;
   package3.sync = false;
   fake_packages_.push_back(package3);
+
+  for (int i = 0; i < 3; ++i) {
+    arc::mojom::ShortcutInfo shortcutInfo;
+    shortcutInfo.name = base::StringPrintf("Fake Shortcut %d", i);
+    shortcutInfo.package_name = base::StringPrintf("fake.shortcut.%d", i);
+    shortcutInfo.intent_uri =
+        base::StringPrintf("fake.shortcut.%d.intent_uri", i);
+    shortcutInfo.icon_resource_id =
+        base::StringPrintf("fake.shortcut.%d.icon_resource_id", i);
+    fake_shortcuts_.push_back(shortcutInfo);
+  }
 
   bridge_service_.reset(new arc::FakeArcBridgeService());
 

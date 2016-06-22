@@ -58,6 +58,24 @@ class FakeAppInstance : public mojom::AppInstance {
     DISALLOW_COPY_AND_ASSIGN(IconRequest);
   };
 
+  class ShortcutIconRequest {
+   public:
+    ShortcutIconRequest(const std::string& icon_resource_id,
+                        mojom::ScaleFactor scale_factor)
+        : icon_resource_id_(icon_resource_id),
+          scale_factor_(static_cast<int>(scale_factor)) {}
+    ~ShortcutIconRequest() {}
+
+    const std::string& icon_resource_id() const { return icon_resource_id_; }
+    int scale_factor() const { return scale_factor_; }
+
+   private:
+    std::string icon_resource_id_;
+    int scale_factor_;
+
+    DISALLOW_COPY_AND_ASSIGN(ShortcutIconRequest);
+  };
+
   explicit FakeAppInstance(mojom::AppHost* app_host);
   ~FakeAppInstance() override;
 
@@ -74,6 +92,12 @@ class FakeAppInstance : public mojom::AppInstance {
   void RequestAppIcon(const mojo::String& package_name,
                       const mojo::String& activity,
                       mojom::ScaleFactor scale_factor) override;
+  void LaunchIntent(const mojo::String& intent_uri,
+                    const gfx::Rect& dimension_on_screen) override;
+  void RequestIcon(const mojo::String& icon_resource_id,
+                   arc::mojom::ScaleFactor scale_factor,
+                   const RequestIconCallback& callback) override;
+  void RemoveCachedIcon(const mojo::String& icon_resource_id) override;
   void CanHandleResolution(
       const mojo::String& package_name,
       const mojo::String& activity,
@@ -97,6 +121,8 @@ class FakeAppInstance : public mojom::AppInstance {
   bool GenerateAndSendIcon(const mojom::AppInfo& app,
                            mojom::ScaleFactor scale_factor,
                            std::string* png_data_as_string);
+  void SendInstallShortcut(const mojom::ShortcutInfo& shortcuts);
+  void SendInstallShortcuts(const std::vector<mojom::ShortcutInfo>& shortcuts);
   void SetTaskInfo(int32_t task_id,
                    const std::string& package_name,
                    const std::string& activity);
@@ -111,8 +137,16 @@ class FakeAppInstance : public mojom::AppInstance {
     return launch_requests_;
   }
 
+  const ScopedVector<mojo::String>& launch_intents() const {
+    return launch_intents_;
+  }
+
   const ScopedVector<IconRequest>& icon_requests() const {
     return icon_requests_;
+  }
+
+  const ScopedVector<ShortcutIconRequest>& shortcut_icon_requests() const {
+    return shortcut_icon_requests_;
   }
 
   // This method can be called on tests when a method is intended to
@@ -138,10 +172,17 @@ class FakeAppInstance : public mojom::AppInstance {
   int refresh_app_list_count_ = 0;
   // Keeps information about launch requests.
   ScopedVector<Request> launch_requests_;
+  // Keeps information about launch intents.
+  ScopedVector<mojo::String> launch_intents_;
   // Keeps information about icon load requests.
   ScopedVector<IconRequest> icon_requests_;
+  // Keeps information about shortcut icon load requests.
+  ScopedVector<ShortcutIconRequest> shortcut_icon_requests_;
   // Keeps information for running tasks.
   TaskIdToInfo task_id_to_info_;
+
+  bool GetFakeIcon(mojom::ScaleFactor scale_factor,
+                   std::string* png_data_as_string);
 
   DISALLOW_COPY_AND_ASSIGN(FakeAppInstance);
 };

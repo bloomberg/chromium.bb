@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/common/app.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/layout.h"
@@ -52,20 +53,27 @@ class ArcAppListPrefs : public KeyedService,
     AppInfo(const std::string& name,
             const std::string& package_name,
             const std::string& activity,
+            const std::string& intent_uri,
+            const std::string& icon_resource_id,
             const base::Time& last_launch_time,
             bool sticky,
             bool notifications_enabled,
             bool ready,
-            bool showInLauncher);
+            bool showInLauncher,
+            bool shortcut);
+    ~AppInfo();
 
     std::string name;
     std::string package_name;
     std::string activity;
+    std::string intent_uri;
+    std::string icon_resource_id;
     base::Time last_launch_time;
     bool sticky;
     bool notifications_enabled;
     bool ready;
     bool showInLauncher;
+    bool shortcut;
   };
 
   struct PackageInfo {
@@ -164,6 +172,8 @@ class ArcAppListPrefs : public KeyedService,
 
   // Returns true if app is registered.
   bool IsRegistered(const std::string& app_id) const;
+  // Returns true if app is a shortcut
+  bool IsShortcut(const std::string& app_id) const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -171,6 +181,9 @@ class ArcAppListPrefs : public KeyedService,
 
   // arc::ArcAuthService::Observer:
   void OnOptInEnabled(bool enabled) override;
+
+  // Removes app with the given app_id.
+  void RemoveApp(const std::string& app_id);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerImplTest, ArcAppPinPolicy);
@@ -185,11 +198,15 @@ class ArcAppListPrefs : public KeyedService,
   // arc::mojom::AppHost:
   void OnAppListRefreshed(mojo::Array<arc::mojom::AppInfoPtr> apps) override;
   void OnAppAdded(arc::mojom::AppInfoPtr app) override;
+  void OnInstallShortcut(arc::mojom::ShortcutInfoPtr app) override;
   void OnPackageRemoved(const mojo::String& package_name) override;
   void OnAppIcon(const mojo::String& package_name,
                  const mojo::String& activity,
                  arc::mojom::ScaleFactor scale_factor,
                  mojo::Array<uint8_t> icon_png_data) override;
+  void OnIcon(const mojo::String& app_id,
+              arc::mojom::ScaleFactor scale_factor,
+              mojo::Array<uint8_t> icon_png_data);
   void OnTaskCreated(int32_t task_id,
                      const mojo::String& package_name,
                      const mojo::String& activity) override;
@@ -202,8 +219,14 @@ class ArcAppListPrefs : public KeyedService,
   void OnPackageListRefreshed(
       mojo::Array<arc::mojom::ArcPackageInfoPtr> packages) override;
 
-  void AddApp(const arc::mojom::AppInfo& app);
-  void RemoveApp(const std::string& app_id);
+  void AddAppAndShortcut(const std::string& name,
+                         const std::string& package_name,
+                         const std::string& activity,
+                         const std::string& intent_uri,
+                         const std::string& icon_resource_id,
+                         const bool sticky,
+                         const bool notifications_enabled,
+                         const bool shortcut);
   void DisableAllApps();
   void RemoveAllApps();
   std::vector<std::string> GetAppIdsNoArcEnabledCheck() const;

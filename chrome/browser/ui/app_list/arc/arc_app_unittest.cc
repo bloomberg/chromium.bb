@@ -144,11 +144,22 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
   // Validate that prefs and model have right content.
   void ValidateHaveApps(const std::vector<arc::mojom::AppInfo> apps) {
+    ValidateHaveAppsAndShortcuts(apps, std::vector<arc::mojom::ShortcutInfo>());
+  }
+
+  void ValidateHaveShortcuts(
+      const std::vector<arc::mojom::ShortcutInfo> shortcuts) {
+    ValidateHaveAppsAndShortcuts(std::vector<arc::mojom::AppInfo>(), shortcuts);
+  }
+
+  void ValidateHaveAppsAndShortcuts(
+      const std::vector<arc::mojom::AppInfo> apps,
+      const std::vector<arc::mojom::ShortcutInfo> shortcuts) {
     ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
     ASSERT_NE(nullptr, prefs);
     const std::vector<std::string> ids = prefs->GetAppIds();
-    ASSERT_EQ(apps.size(), ids.size());
-    ASSERT_EQ(apps.size(), GetArcItemCount());
+    ASSERT_EQ(apps.size() + shortcuts.size(), ids.size());
+    ASSERT_EQ(apps.size() + shortcuts.size(), GetArcItemCount());
     // In principle, order of items is not defined.
     for (const auto& app : apps) {
       const std::string id = ArcAppTest::GetAppId(app);
@@ -162,6 +173,20 @@ class ArcAppModelBuilderTest : public AppListTestBase {
       const ArcAppItem* app_item = FindArcItem(id);
       ASSERT_NE(nullptr, app_item);
       EXPECT_EQ(app.name, app_item->GetDisplayName());
+    }
+
+    for (auto& shortcut : shortcuts) {
+      const std::string id = ArcAppTest::GetAppId(shortcut);
+      EXPECT_NE(std::find(ids.begin(), ids.end(), id), ids.end());
+      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
+      ASSERT_NE(nullptr, app_info.get());
+      EXPECT_EQ(shortcut.name, app_info->name);
+      EXPECT_EQ(shortcut.package_name, app_info->package_name);
+      EXPECT_EQ(shortcut.intent_uri, app_info->intent_uri);
+
+      const ArcAppItem* app_item = FindArcItem(id);
+      ASSERT_NE(nullptr, app_item);
+      EXPECT_EQ(shortcut.name, app_item->GetDisplayName());
     }
   }
 
@@ -217,6 +242,30 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     }
   }
 
+  // Validate that requested shortcuts have required ready state
+  void ValidateShortcutReadyState(
+      const std::vector<arc::mojom::ShortcutInfo> shortcuts,
+      bool ready) {
+    ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+    ASSERT_NE(nullptr, prefs);
+
+    std::vector<std::string> ids = prefs->GetAppIds();
+    EXPECT_EQ(ids.size(), GetArcItemCount());
+
+    // Process requested apps.
+    for (auto& shortcut : shortcuts) {
+      const std::string id = ArcAppTest::GetAppId(shortcut);
+      std::vector<std::string>::iterator it_id =
+          std::find(ids.begin(), ids.end(), id);
+      ASSERT_NE(it_id, ids.end());
+      ids.erase(it_id);
+
+      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
+      ASSERT_NE(nullptr, app_info.get());
+      EXPECT_EQ(ready, app_info->ready);
+    }
+  }
+
   // Validates that provided image is acceptable as Arc app icon.
   void ValidateIcon(const gfx::ImageSkia& image) {
     EXPECT_EQ(app_list::kGridIconDimension, image.width());
@@ -254,6 +303,10 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
   const std::vector<arc::mojom::ArcPackageInfo>& fake_packages() const {
     return arc_test_.fake_packages();
+  }
+
+  const std::vector<arc::mojom::ShortcutInfo>& fake_shortcuts() const {
+    return arc_test_.fake_shortcuts();
   }
 
   arc::FakeArcBridgeService* bridge_service() {
@@ -310,6 +363,29 @@ TEST_F(ArcAppModelBuilderTest, RefreshAllFillsContent) {
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(fake_apps());
   ValidateHaveApps(fake_apps());
+}
+
+TEST_F(ArcAppModelBuilderTest, InstallShortcut) {
+  ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
+  bridge_service()->SetReady();
+
+  app_instance()->SendInstallShortcuts(fake_shortcuts());
+  ValidateHaveShortcuts(fake_shortcuts());
+}
+
+TEST_F(ArcAppModelBuilderTest, RefreshAllPreservesShortcut) {
+  ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
+  bridge_service()->SetReady();
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(fake_apps());
+  ValidateHaveApps(fake_apps());
+
+  app_instance()->SendInstallShortcuts(fake_shortcuts());
+  ValidateHaveAppsAndShortcuts(fake_apps(), fake_shortcuts());
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(fake_apps());
+  ValidateHaveAppsAndShortcuts(fake_apps(), fake_shortcuts());
 }
 
 TEST_F(ArcAppModelBuilderTest, MultipleRefreshAll) {
@@ -378,6 +454,40 @@ TEST_F(ArcAppModelBuilderTest, StopStartServicePreserveApps) {
   ValidateAppReadyState(fake_apps(), true);
 }
 
+TEST_F(ArcAppModelBuilderTest, StopStartServicePreserveShortcuts) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  bridge_service()->SetReady();
+  app_instance()->RefreshAppList();
+  EXPECT_EQ(0u, GetArcItemCount());
+  EXPECT_EQ(0u, prefs->GetAppIds().size());
+
+  app_instance()->SendInstallShortcuts(fake_shortcuts());
+  std::vector<std::string> ids = prefs->GetAppIds();
+  EXPECT_EQ(fake_shortcuts().size(), ids.size());
+  ValidateShortcutReadyState(fake_shortcuts(), true);
+
+  // Stopping service does not delete items. It makes them non-ready.
+  bridge_service()->SetStopped();
+  // Ids should be the same.
+  EXPECT_EQ(ids, prefs->GetAppIds());
+  ValidateShortcutReadyState(fake_shortcuts(), false);
+
+  // Setting service ready does not change anything because RefreshAppList is
+  // not called.
+  bridge_service()->SetReady();
+  // Ids should be the same.
+  EXPECT_EQ(ids, prefs->GetAppIds());
+  ValidateShortcutReadyState(fake_shortcuts(), false);
+
+  // Refreshing app list makes apps available.
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>());
+  EXPECT_EQ(ids, prefs->GetAppIds());
+  ValidateShortcutReadyState(fake_shortcuts(), true);
+}
+
 TEST_F(ArcAppModelBuilderTest, RestartPreserveApps) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
@@ -393,6 +503,23 @@ TEST_F(ArcAppModelBuilderTest, RestartPreserveApps) {
   bridge_service()->SetStopped();
   CreateBuilder();
   ValidateAppReadyState(fake_apps(), false);
+}
+
+TEST_F(ArcAppModelBuilderTest, RestartPreserveShortcuts) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  // Start from scratch and install shortcuts.
+  bridge_service()->SetReady();
+  app_instance()->SendInstallShortcuts(fake_shortcuts());
+  std::vector<std::string> ids = prefs->GetAppIds();
+  EXPECT_EQ(fake_apps().size(), ids.size());
+  ValidateShortcutReadyState(fake_shortcuts(), true);
+
+  // This recreates model and ARC apps and shortcuts will be read from prefs.
+  bridge_service()->SetStopped();
+  CreateBuilder();
+  ValidateShortcutReadyState(fake_shortcuts(), false);
 }
 
 TEST_F(ArcAppModelBuilderTest, LaunchApps) {
@@ -433,6 +560,46 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
   // Number of launch requests must not change.
   EXPECT_EQ(launch_request_count_before,
             app_instance()->launch_requests().size());
+}
+
+TEST_F(ArcAppModelBuilderTest, LaunchShortcuts) {
+  // Disable attempts to dismiss app launcher view.
+  ChromeAppListItem::OverrideAppListControllerDelegateForTesting(controller());
+
+  bridge_service()->SetReady();
+  app_instance()->RefreshAppList();
+  app_instance()->SendInstallShortcuts(fake_shortcuts());
+
+  // Simulate item activate.
+  const arc::mojom::ShortcutInfo& app_first = fake_shortcuts()[0];
+  const arc::mojom::ShortcutInfo& app_last = fake_shortcuts()[0];
+  ArcAppItem* item_first = FindArcItem(ArcAppTest::GetAppId(app_first));
+  ArcAppItem* item_last = FindArcItem(ArcAppTest::GetAppId(app_last));
+  ASSERT_NE(nullptr, item_first);
+  ASSERT_NE(nullptr, item_last);
+  item_first->Activate(0);
+  app_instance()->WaitForIncomingMethodCall();
+  item_last->Activate(0);
+  app_instance()->WaitForIncomingMethodCall();
+  item_first->Activate(0);
+  app_instance()->WaitForIncomingMethodCall();
+
+  const ScopedVector<mojo::String>& launch_intents =
+      app_instance()->launch_intents();
+  ASSERT_EQ(3u, launch_intents.size());
+  EXPECT_EQ(true, app_first.intent_uri == *launch_intents[0]);
+  EXPECT_EQ(true, app_last.intent_uri == *launch_intents[1]);
+  EXPECT_EQ(true, app_first.intent_uri == *launch_intents[2]);
+
+  // Test an attempt to launch of a not-ready shortcut.
+  bridge_service()->SetStopped();
+  item_first = FindArcItem(ArcAppTest::GetAppId(app_first));
+  ASSERT_NE(nullptr, item_first);
+  size_t launch_request_count_before = app_instance()->launch_intents().size();
+  item_first->Activate(0);
+  // Number of launch requests must not change.
+  EXPECT_EQ(launch_request_count_before,
+            app_instance()->launch_intents().size());
 }
 
 TEST_F(ArcAppModelBuilderTest, RequestIcons) {
@@ -492,6 +659,66 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
     const std::string id = ArcAppTest::GetAppId(app);
     ASSERT_NE(app_masks.find(id), app_masks.end());
     EXPECT_EQ(app_masks[id], expected_mask);
+  }
+}
+
+TEST_F(ArcAppModelBuilderTest, RequestShortcutIcons) {
+  // Make sure we are on UI thread.
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  bridge_service()->SetReady();
+  const arc::mojom::ShortcutInfo& shortcut = fake_shortcuts()[0];
+  app_instance()->SendInstallShortcut(shortcut);
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  // Validate that no icon exists at the beginning and request icon for
+  // each supported scale factor. This will start asynchronous loading.
+  uint32_t expected_mask = 0;
+  ArcAppItem* app_item = FindArcItem(ArcAppTest::GetAppId(shortcut));
+  ASSERT_NE(nullptr, app_item);
+  const std::vector<ui::ScaleFactor>& scale_factors =
+      ui::GetSupportedScaleFactors();
+  for (auto& scale_factor : scale_factors) {
+    expected_mask |= 1 << scale_factor;
+    const float scale = ui::GetScaleForScaleFactor(scale_factor);
+    const base::FilePath icon_path =
+        prefs->GetIconPath(ArcAppTest::GetAppId(shortcut), scale_factor);
+    EXPECT_EQ(true, !base::PathExists(icon_path));
+
+    app_item->icon().GetRepresentation(scale);
+  }
+
+  // Process pending tasks.
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  // At this moment we should receive all requests for icon loading.
+  const size_t expected_size = scale_factors.size();
+  const ScopedVector<arc::FakeAppInstance::ShortcutIconRequest>& icon_requests =
+      app_instance()->shortcut_icon_requests();
+  EXPECT_EQ(expected_size, icon_requests.size());
+  uint32_t app_mask = 0;
+  for (size_t i = 0; i < icon_requests.size(); ++i) {
+    const arc::FakeAppInstance::ShortcutIconRequest* icon_request =
+        icon_requests[i];
+    EXPECT_EQ(shortcut.icon_resource_id, icon_request->icon_resource_id());
+
+    // Make sure no double requests.
+    EXPECT_NE(app_mask, app_mask | (1 << icon_request->scale_factor()));
+    app_mask |= (1 << icon_request->scale_factor());
+  }
+
+  // Validate that we have a request for each icon for each supported scale
+  // factor.
+  EXPECT_EQ(app_mask, expected_mask);
+
+  // Validate all icon files are installed.
+  for (auto& scale_factor : scale_factors) {
+    const base::FilePath icon_path =
+        prefs->GetIconPath(ArcAppTest::GetAppId(shortcut), scale_factor);
+    EXPECT_EQ(true, base::PathExists(icon_path));
   }
 }
 

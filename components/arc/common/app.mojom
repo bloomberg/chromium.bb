@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 9
+// Next MinVersion: 10
 
 module arc.mojom;
 
@@ -27,7 +27,15 @@ struct ArcPackageInfo {
   bool sync;  // true if package installation should be synced
 };
 
-// Next method ID: 11
+// Describes ARC app shortcut.
+struct ShortcutInfo {
+  string name;
+  string package_name;
+  string icon_resource_id;
+  string intent_uri;
+};
+
+// Next method ID: 12
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
   // package added notification. Multiple apps may be added in the one package.
@@ -74,10 +82,13 @@ interface AppHost {
   // Notifies that notifications enabled settings in Android is changed.
   [MinVersion=7] OnNotificationsEnabledChanged@7(string package_name,
                                                  bool enabled);
+
+  // Notifies that an application shortcut needs to be created.
+  [MinVersion=9] OnInstallShortcut@11(ShortcutInfo shortcut);
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 12
+// Next method ID: 15
 interface AppInstance {
   Init@0(AppHost host_ptr);
 
@@ -103,6 +114,11 @@ interface AppInstance {
   LaunchApp@1(string package_name, string activity,
               [MinVersion=1] ScreenRect? dimension_on_screen);
 
+  // Sends a reqeust to ARC to launch an intent.  The intent is encoded as a
+  // Uri string, see Intent.toUri().
+  [MinVersion=9] LaunchIntent@12(string intent_uri,
+                                 ScreenRect? dimension_on_screen);
+
   // Sends a request to ARC to refresh a list of ARC apps.
   // OnRefreshAppsList is expected in response to this message. However,
   // response may not be sent if ARC is not ready yet (boot completed event is
@@ -114,6 +130,15 @@ interface AppInstance {
   // |package_name| and |activity|, which cannot be empty.
   RequestAppIcon@3(string package_name, string activity,
                    ScaleFactor scale_factor);
+
+  // Sends a request for the ARC shortcut icon of a given resource id and scale
+  // factor.
+  [MinVersion=9] RequestIcon@13(string icon_resource_id,
+                                ScaleFactor scale_factor) =>
+                                    (array<uint8> icon_png_data);
+
+  // Removes cached shortcut icon with the given resource id.
+  [MinVersion=9] RemoveCachedIcon@14(string icon_resource_id);
 
   // Activates the given task and move it to foreground.
   [MinVersion=4] SetTaskActive@7(int32 task_id);

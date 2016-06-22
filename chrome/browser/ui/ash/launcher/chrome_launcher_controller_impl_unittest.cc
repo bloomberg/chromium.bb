@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -3334,7 +3335,11 @@ TEST_F(ChromeLauncherControllerImplTest, ArcAppPinPolicy) {
   ASSERT_TRUE(prefs);
 
   // Adding app to the prefs, and check that the app is accessible by id.
-  prefs->AddApp(appinfo);
+  prefs->AddAppAndShortcut(appinfo.name, appinfo.package_name, appinfo.activity,
+                           std::string() /* intent_uri */,
+                           std::string() /* icon_resource_id */,
+                           false /* sticky */, true /* notifications_enabled */,
+                           false /* shortcut */);
   const std::string app_id =
       ArcAppListPrefs::GetAppId(appinfo.package_name, appinfo.activity);
   EXPECT_TRUE(prefs->GetApp(app_id));
