@@ -77,6 +77,8 @@ To just build a single package:
                       default=True, dest='deps', action='store_false')
     deps.add_argument('--rebuild-deps', default=False, action='store_true',
                       help='Automatically rebuild dependencies.')
+    deps.add_argument('--test', default=False, action='store_true',
+                      help='Build/run the package tests.')
     parser.add_argument('packages',
                         help='Packages to build. If no packages listed, uses '
                         'the current brick main package.',
@@ -135,6 +137,13 @@ To just build a single package:
                        use_binary=self.options.binary, jobs=self.options.jobs,
                        debug_output=(self.options.log_level.lower() == 'debug'))
 
+  def _Test(self):
+    """Update the chroot, then merge the requested packages."""
+    # This ALWAYS runs after build, so we don't need to update the chroot.
+    chroot_util.RunUnittests(
+        self.sysroot, self.build_pkgs,
+        verbose=(self.options.log_level.lower() == 'debug'))
+
   def Run(self):
     """Run cros build."""
     self.options.Freeze()
@@ -178,6 +187,10 @@ To just build a single package:
         op.Run(
             parallel.RunParallelSteps, [self._CheckDependencies, self._Build],
             log_level=logging.DEBUG)
+        if self.options.test:
+          self._Test()
       else:
         parallel.RunParallelSteps([self._CheckDependencies, self._Build])
+        if self.options.test:
+          self._Test()
       logging.notice('Build completed successfully.')
