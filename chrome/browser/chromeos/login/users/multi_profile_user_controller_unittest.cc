@@ -28,6 +28,8 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/x509_certificate.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -439,8 +441,8 @@ TEST_F(MultiProfileUserControllerTest,
             MultiProfileUserController::GetPrimaryUserPolicy());
 
   net::CertificateList certificates;
-  certificates.push_back(new net::X509Certificate(
-      "subject", "issuer", base::Time(), base::Time()));
+  certificates.push_back(
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem"));
   service->OnTrustAnchorsChanged(certificates);
   EXPECT_TRUE(service->has_policy_certificates());
   EXPECT_FALSE(controller()->IsUserAllowedInSession(

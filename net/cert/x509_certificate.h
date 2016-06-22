@@ -127,11 +127,6 @@ class NET_EXPORT X509Certificate
     PICKLETYPE_CERTIFICATE_CHAIN_V3,
   };
 
-  // Creates a X509Certificate from the ground up.  Used by tests that simulate
-  // SSL connections.
-  X509Certificate(const std::string& subject, const std::string& issuer,
-                  base::Time start_date, base::Time expiration_date);
-
   // Create an X509Certificate from a handle to the certificate object in the
   // underlying crypto library.
   static scoped_refptr<X509Certificate> CreateFromHandle(

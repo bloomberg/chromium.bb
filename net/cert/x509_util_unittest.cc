@@ -19,27 +19,53 @@ namespace x509_util {
 
 TEST(X509UtilTest, SortClientCertificates) {
   CertificateList certs;
+  certs.push_back(nullptr);
+
+  std::unique_ptr<crypto::RSAPrivateKey> key(
+      crypto::RSAPrivateKey::Create(1024));
+  ASSERT_TRUE(key);
+
+  scoped_refptr<X509Certificate> cert;
+  std::string der_cert;
+
+  ASSERT_TRUE(CreateSelfSignedCert(key.get(), x509_util::DIGEST_SHA1,
+                                   "CN=expired", 1, base::Time::UnixEpoch(),
+                                   base::Time::UnixEpoch(), &der_cert));
+  cert = X509Certificate::CreateFromBytes(der_cert.data(), der_cert.size());
+  ASSERT_TRUE(cert);
+  certs.push_back(cert);
 
   const base::Time now = base::Time::Now();
-  const base::TimeDelta five_days = base::TimeDelta::FromDays(5);
 
-  certs.push_back(scoped_refptr<X509Certificate>(NULL));
-  certs.push_back(new X509Certificate(
-      "expired", "expired",
-      base::Time::UnixEpoch(), base::Time::UnixEpoch()));
-  certs.push_back(new X509Certificate(
-      "not yet valid", "not yet valid",
-      base::Time::Max(), base::Time::Max()));
-  certs.push_back(new X509Certificate(
-      "older cert", "older cert",
-      now - five_days, now + five_days));
-  certs.push_back(scoped_refptr<X509Certificate>(NULL));
-  certs.push_back(new X509Certificate(
-      "newer cert", "newer cert",
-      now - base::TimeDelta::FromDays(3), now + five_days));
+  ASSERT_TRUE(CreateSelfSignedCert(
+      key.get(), x509_util::DIGEST_SHA1, "CN=not yet valid", 2,
+      now + base::TimeDelta::FromDays(10), now + base::TimeDelta::FromDays(15),
+      &der_cert));
+  cert = X509Certificate::CreateFromBytes(der_cert.data(), der_cert.size());
+  ASSERT_TRUE(cert);
+  certs.push_back(cert);
+
+  ASSERT_TRUE(
+      CreateSelfSignedCert(key.get(), x509_util::DIGEST_SHA1, "CN=older cert",
+                           3, now - base::TimeDelta::FromDays(5),
+                           now + base::TimeDelta::FromDays(5), &der_cert));
+  cert = X509Certificate::CreateFromBytes(der_cert.data(), der_cert.size());
+  ASSERT_TRUE(cert);
+  certs.push_back(cert);
+
+  certs.push_back(nullptr);
+
+  ASSERT_TRUE(
+      CreateSelfSignedCert(key.get(), x509_util::DIGEST_SHA1, "CN=newer cert",
+                           2, now - base::TimeDelta::FromDays(3),
+                           now + base::TimeDelta::FromDays(5), &der_cert));
+  cert = X509Certificate::CreateFromBytes(der_cert.data(), der_cert.size());
+  ASSERT_TRUE(cert);
+  certs.push_back(cert);
 
   std::sort(certs.begin(), certs.end(), ClientCertSorter());
 
+  ASSERT_EQ(6u, certs.size());
   ASSERT_TRUE(certs[0].get());
   EXPECT_EQ("newer cert", certs[0]->subject().common_name);
   ASSERT_TRUE(certs[1].get());

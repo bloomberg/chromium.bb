@@ -9,11 +9,13 @@
 
 #include "base/time/time.h"
 #include "base/version.h"
+#include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
 #include "net/cert/ct_ev_whitelist.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/ct_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -125,43 +127,6 @@ class CTPolicyEnforcerTest : public ::testing::Test {
     desired_log_ids.push_back(google_log_id_);
     FillListWithSCTsOfOrigin(desired_origin, num_scts, desired_log_ids, true,
                              verified_scts);
-  }
-
-  void CheckCertificateCompliesWithExactNumberOfEmbeddedSCTs(
-      const base::Time& start,
-      const base::Time& end,
-      size_t required_scts) {
-    scoped_refptr<X509Certificate> cert(
-        new X509Certificate("subject", "issuer", start, end));
-    for (size_t i = 0; i < required_scts - 1; ++i) {
-      ct::SCTList scts;
-      FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, i,
-                               std::vector<std::string>(), false, &scts);
-      EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS,
-                policy_enforcer_->DoesConformToCertPolicy(cert.get(), scts,
-                                                          BoundNetLog()))
-          << " for: " << (end - start).InDays() << " and " << required_scts
-          << " scts=" << scts.size() << " i=" << i;
-      EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS,
-                policy_enforcer_->DoesConformToCTEVPolicy(cert.get(), nullptr,
-                                                          scts, BoundNetLog()))
-          << " for: " << (end - start).InDays() << " and " << required_scts
-          << " scts=" << scts.size() << " i=" << i;
-    }
-    ct::SCTList scts;
-    FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED,
-                             required_scts, std::vector<std::string>(), false,
-                             &scts);
-    EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS,
-              policy_enforcer_->DoesConformToCertPolicy(cert.get(), scts,
-                                                        BoundNetLog()))
-        << " for: " << (end - start).InDays() << " and " << required_scts
-        << " scts=" << scts.size();
-    EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS,
-              policy_enforcer_->DoesConformToCTEVPolicy(cert.get(), nullptr,
-                                                        scts, BoundNetLog()))
-        << " for: " << (end - start).InDays() << " and " << required_scts
-        << " scts=" << scts.size();
   }
 
  protected:
@@ -470,33 +435,12 @@ TEST_F(CTPolicyEnforcerTest,
                                                       scts, BoundNetLog()));
 }
 
-// TODO(estark): fix this test so that it can check if
-// |no_valid_dates_cert| is on the whitelist without
-// crashing. https://crbug.com/582740
-TEST_F(CTPolicyEnforcerTest, DISABLED_DoesNotConformToPolicyInvalidDates) {
-  scoped_refptr<X509Certificate> no_valid_dates_cert(new X509Certificate(
-      "subject", "issuer", base::Time(), base::Time::Now()));
-  ct::SCTList scts;
-  FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 5,
-                           &scts);
-  ASSERT_TRUE(no_valid_dates_cert);
-  EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS,
-            policy_enforcer_->DoesConformToCertPolicy(no_valid_dates_cert.get(),
-                                                      scts, BoundNetLog()));
-  EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS,
-            policy_enforcer_->DoesConformToCTEVPolicy(
-                no_valid_dates_cert.get(), nullptr, scts, BoundNetLog()));
-  // ... but should be OK if whitelisted.
-  scoped_refptr<ct::EVCertsWhitelist> whitelist(
-      new DummyEVCertsWhitelist(true, true));
-  EXPECT_EQ(
-      ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST,
-      policy_enforcer_->DoesConformToCTEVPolicy(
-          no_valid_dates_cert.get(), whitelist.get(), scts, BoundNetLog()));
-}
-
 TEST_F(CTPolicyEnforcerTest,
        ConformsToPolicyExactNumberOfSCTsForValidityPeriod) {
+  std::unique_ptr<crypto::RSAPrivateKey> private_key(
+      crypto::RSAPrivateKey::Create(1024));
+  ASSERT_TRUE(private_key);
+
   // Test multiple validity periods
   const struct TestData {
     base::Time validity_start;
@@ -533,9 +477,48 @@ TEST_F(CTPolicyEnforcerTest,
 
   for (size_t i = 0; i < arraysize(kTestData); ++i) {
     SCOPED_TRACE(i);
-    CheckCertificateCompliesWithExactNumberOfEmbeddedSCTs(
-        kTestData[i].validity_start, kTestData[i].validity_end,
-        kTestData[i].scts_required);
+    const base::Time& start = kTestData[i].validity_start;
+    const base::Time& end = kTestData[i].validity_end;
+    size_t required_scts = kTestData[i].scts_required;
+
+    // Create a self-signed certificate with exactly the validity period.
+    std::string cert_data;
+    ASSERT_TRUE(x509_util::CreateSelfSignedCert(
+        private_key.get(), x509_util::DIGEST_SHA256, "CN=test",
+        i * 10 + required_scts, start, end, &cert_data));
+    scoped_refptr<X509Certificate> cert(
+        X509Certificate::CreateFromBytes(cert_data.data(), cert_data.size()));
+    ASSERT_TRUE(cert);
+
+    for (size_t i = 0; i < required_scts - 1; ++i) {
+      ct::SCTList scts;
+      FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, i,
+                               std::vector<std::string>(), false, &scts);
+      EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS,
+                policy_enforcer_->DoesConformToCertPolicy(cert.get(), scts,
+                                                          BoundNetLog()))
+          << " for: " << (end - start).InDays() << " and " << required_scts
+          << " scts=" << scts.size() << " i=" << i;
+      EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS,
+                policy_enforcer_->DoesConformToCTEVPolicy(cert.get(), nullptr,
+                                                          scts, BoundNetLog()))
+          << " for: " << (end - start).InDays() << " and " << required_scts
+          << " scts=" << scts.size() << " i=" << i;
+    }
+    ct::SCTList scts;
+    FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED,
+                             required_scts, std::vector<std::string>(), false,
+                             &scts);
+    EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS,
+              policy_enforcer_->DoesConformToCertPolicy(cert.get(), scts,
+                                                        BoundNetLog()))
+        << " for: " << (end - start).InDays() << " and " << required_scts
+        << " scts=" << scts.size();
+    EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS,
+              policy_enforcer_->DoesConformToCTEVPolicy(cert.get(), nullptr,
+                                                        scts, BoundNetLog()))
+        << " for: " << (end - start).InDays() << " and " << required_scts
+        << " scts=" << scts.size();
   }
 }
 

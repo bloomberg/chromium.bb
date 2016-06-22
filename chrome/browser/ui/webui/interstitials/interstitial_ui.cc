@@ -121,8 +121,6 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
     strict_enforcement = strict_enforcement_param == "1";
   }
   net::SSLInfo ssl_info;
-  ssl_info.cert = new net::X509Certificate(
-      request_url.host(), "CA", base::Time::Max(), base::Time::Max());
   // This delegate doesn't create an interstitial.
   int options_mask = 0;
   if (overridable)
@@ -170,8 +168,6 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
   }
 
   net::SSLInfo ssl_info;
-  ssl_info.cert = new net::X509Certificate(
-      request_url.host(), "CA", base::Time::Max(), base::Time::Max());
   // This delegate doesn't create an interstitial.
   int options_mask = 0;
   if (overridable)
@@ -268,8 +264,6 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
     wifi_ssid = wifi_ssid_param;
   }
   net::SSLInfo ssl_info;
-  ssl_info.cert = new net::X509Certificate(
-      request_url.host(), "CA", base::Time::Max(), base::Time::Max());
   CaptivePortalBlockingPage* blocking_page =
       new CaptivePortalBlockingPageWithNetInfo(
           web_contents, request_url, landing_url, ssl_info,

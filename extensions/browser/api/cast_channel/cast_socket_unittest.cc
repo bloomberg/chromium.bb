@@ -35,6 +35,8 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/ssl/ssl_info.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -316,10 +318,10 @@ class TestCastSocket : public CastSocketImpl {
   }
 
   scoped_refptr<net::X509Certificate> ExtractPeerCert() override {
-    return extract_cert_result_ ? make_scoped_refptr<net::X509Certificate>(
-                                      new net::X509Certificate(
-                                          "", "", base::Time(), base::Time()))
-                                : nullptr;
+    return extract_cert_result_
+               ? net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                         "ok_cert.pem")
+               : nullptr;
   }
 
   bool VerifyChallengeReply() override {

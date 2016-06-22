@@ -488,11 +488,9 @@ void TwoStartsSSLCallback(bool* called, bool ok) {
 
 // crbug/386180
 TEST_F(RequestTrackerTest, DISABLED_TwoStartsNoEstimate) {
-  net::X509Certificate* cert =
-      new net::X509Certificate("subject", "issuer", base::Time::Now(),
-                               base::Time::Max());
   net::SSLInfo ssl_info;
-  ssl_info.cert = cert;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   ssl_info.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
   scoped_refptr<MockCertificatePolicyCache> cache;
   tracker_->SetCertificatePolicyCacheForTest(cache.get());

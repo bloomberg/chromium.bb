@@ -27,6 +27,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/cert/x509_certificate.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -132,8 +134,8 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
       browser()->tab_strip_model()->GetActiveWebContents();
   DCHECK(contents);
   net::SSLInfo ssl_info;
-  ssl_info.cert = new net::X509Certificate(
-      login_url.host(), "CA", base::Time::Max(), base::Time::Max());
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   // Blocking page is owned by the interstitial.
   CaptivePortalBlockingPage* blocking_page =
       new CaptivePortalBlockingPageForTesting(

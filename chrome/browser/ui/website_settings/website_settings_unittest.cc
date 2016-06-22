@@ -33,7 +33,9 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -97,13 +99,9 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
 
     // Create the certificate.
     cert_id_ = 1;
-    base::Time start_date = base::Time::Now();
-    base::Time expiration_date = base::Time::FromInternalValue(
-        start_date.ToInternalValue() + base::Time::kMicrosecondsPerWeek);
-    cert_ = new net::X509Certificate("subject",
-                                     "issuer",
-                                     start_date,
-                                     expiration_date);
+    cert_ =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+    ASSERT_TRUE(cert_);
 
     TabSpecificContentSettings::CreateForWebContents(web_contents());
     InfoBarService::CreateForWebContents(web_contents());

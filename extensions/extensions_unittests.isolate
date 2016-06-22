@@ -39,6 +39,7 @@
         'files': [
           '../chrome/test/data/extensions/',
           '../components/test/data/cast_certificate/',
+          '../net/data/',
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/extensions_shell_and_test.pak',
           'test/data/',

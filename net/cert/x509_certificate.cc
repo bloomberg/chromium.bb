@@ -224,17 +224,6 @@ void SplitOnChar(const base::StringPiece& src,
 
 }  // namespace
 
-X509Certificate::X509Certificate(const std::string& subject,
-                                 const std::string& issuer,
-                                 base::Time start_date,
-                                 base::Time expiration_date)
-    : subject_(subject),
-      issuer_(issuer),
-      valid_start_(start_date),
-      valid_expiry_(expiration_date),
-      cert_handle_(NULL) {
-}
-
 // static
 scoped_refptr<X509Certificate> X509Certificate::CreateFromHandle(
     OSCertHandle cert_handle,

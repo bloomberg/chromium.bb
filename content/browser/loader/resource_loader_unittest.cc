@@ -732,8 +732,7 @@ TEST_F(ClientCertResourceLoaderTest, WithStoreLookup) {
   // Set up the test client cert store.
   int store_request_count;
   std::vector<std::string> store_requested_authorities;
-  net::CertificateList dummy_certs(1, scoped_refptr<net::X509Certificate>(
-      new net::X509Certificate("test", "test", base::Time(), base::Time())));
+  net::CertificateList dummy_certs(1, GetTestCert());
   std::unique_ptr<ClientCertStoreStub> test_store(new ClientCertStoreStub(
       dummy_certs, &store_request_count, &store_requested_authorities));
   SetClientCertStore(std::move(test_store));
