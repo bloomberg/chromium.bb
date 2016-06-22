@@ -60,8 +60,6 @@ const double kPrepareTilesEstimationPercentile = 90.0;
 const double kActivateEstimationPercentile = 90.0;
 const double kDrawEstimationPercentile = 90.0;
 
-// Only log UMA histograms once every N frames to reduce the data volume.
-const int kUmaSamplingFrequency = 10;
 const int kUmaDurationMinMicros = 1;
 const int64_t kUmaDurationMaxMicros = base::Time::kMicrosecondsPerSecond / 5;
 const int kUmaDurationBucketCount = 100;
@@ -261,7 +259,6 @@ CompositorTimingHistory::CompositorTimingHistory(
     : using_synchronous_renderer_compositor_(
           using_synchronous_renderer_compositor),
       enabled_(false),
-      draw_count_(0),
       did_send_begin_main_frame_(false),
       begin_main_frame_needed_continuously_(false),
       begin_main_frame_committing_continuously_(false),
@@ -493,15 +490,13 @@ void CompositorTimingHistory::DidBeginMainFrame() {
   // of our predictions.
   base::TimeDelta begin_main_frame_sent_to_commit_estimate =
       BeginMainFrameToCommitDurationEstimate();
-  if (ShouldReportUma()) {
-    uma_reporter_->AddBeginMainFrameToCommitDuration(
-        begin_main_frame_sent_to_commit_duration);
-  }
+  uma_reporter_->AddBeginMainFrameToCommitDuration(
+      begin_main_frame_sent_to_commit_duration);
   rendering_stats_instrumentation_->AddBeginMainFrameToCommitDuration(
       begin_main_frame_sent_to_commit_duration,
       begin_main_frame_sent_to_commit_estimate);
 
-  if (ShouldReportUma() && begin_main_frame_start_time_is_valid) {
+  if (begin_main_frame_start_time_is_valid) {
     if (begin_main_frame_on_critical_path_) {
       uma_reporter_->AddBeginMainFrameQueueDurationCriticalDuration(
           begin_main_frame_queue_duration);
@@ -511,10 +506,8 @@ void CompositorTimingHistory::DidBeginMainFrame() {
     }
   }
 
-  if (ShouldReportUma()) {
-    uma_reporter_->AddBeginMainFrameStartToCommitDuration(
-        begin_main_frame_start_to_commit_duration);
-  }
+  uma_reporter_->AddBeginMainFrameStartToCommitDuration(
+      begin_main_frame_start_to_commit_duration);
 
   if (enabled_) {
     begin_main_frame_sent_to_commit_duration_history_.InsertSample(
@@ -533,7 +526,7 @@ void CompositorTimingHistory::DidBeginMainFrame() {
   }
 
   if (begin_main_frame_needed_continuously_) {
-    if (ShouldReportUma() && !begin_main_frame_end_time_prev_.is_null()) {
+    if (!begin_main_frame_end_time_prev_.is_null()) {
       base::TimeDelta commit_interval =
           begin_main_frame_end_time_ - begin_main_frame_end_time_prev_;
       if (begin_main_frame_on_critical_path_)
@@ -557,9 +550,7 @@ void CompositorTimingHistory::DidPrepareTiles() {
   DCHECK_NE(base::TimeTicks(), prepare_tiles_start_time_);
 
   base::TimeDelta prepare_tiles_duration = Now() - prepare_tiles_start_time_;
-  if (ShouldReportUma()) {
-    uma_reporter_->AddPrepareTilesDuration(prepare_tiles_duration);
-  }
+  uma_reporter_->AddPrepareTilesDuration(prepare_tiles_duration);
   if (enabled_)
     prepare_tiles_duration_history_.InsertSample(prepare_tiles_duration);
 
@@ -580,9 +571,7 @@ void CompositorTimingHistory::ReadyToActivate() {
 
   base::TimeDelta commit_to_ready_to_activate_estimate =
       CommitToReadyToActivateDurationEstimate();
-  if (ShouldReportUma()) {
-    uma_reporter_->AddCommitToReadyToActivateDuration(time_since_commit);
-  }
+  uma_reporter_->AddCommitToReadyToActivateDuration(time_since_commit);
   rendering_stats_instrumentation_->AddCommitToActivateDuration(
       time_since_commit, commit_to_ready_to_activate_estimate);
 
@@ -603,9 +592,7 @@ void CompositorTimingHistory::DidActivate() {
   DCHECK_NE(base::TimeTicks(), activate_start_time_);
   base::TimeDelta activate_duration = Now() - activate_start_time_;
 
-  if (ShouldReportUma()) {
-    uma_reporter_->AddActivateDuration(activate_duration);
-  }
+  uma_reporter_->AddActivateDuration(activate_duration);
   if (enabled_)
     activate_duration_history_.InsertSample(activate_duration);
 
@@ -633,7 +620,6 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
   DCHECK_NE(base::TimeTicks(), draw_start_time_);
   base::TimeTicks draw_end_time = Now();
   base::TimeDelta draw_duration = draw_end_time - draw_start_time_;
-  draw_count_++;
 
   // Before adding the new data point to the timing history, see what we would
   // have predicted for this frame. This allows us to keep track of the accuracy
@@ -642,16 +628,14 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
   rendering_stats_instrumentation_->AddDrawDuration(draw_duration,
                                                     draw_estimate);
 
-  if (ShouldReportUma()) {
-    uma_reporter_->AddDrawDuration(draw_duration);
-  }
+  uma_reporter_->AddDrawDuration(draw_duration);
 
   if (enabled_) {
     draw_duration_history_.InsertSample(draw_duration);
   }
 
   SetCompositorDrawingContinuously(true);
-  if (ShouldReportUma() && !draw_end_time_prev_.is_null()) {
+  if (!draw_end_time_prev_.is_null()) {
     base::TimeDelta draw_interval = draw_end_time - draw_end_time_prev_;
     uma_reporter_->AddDrawInterval(draw_interval);
   }
@@ -662,18 +646,14 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
     base::TimeDelta main_and_impl_delta =
         impl_frame_time - active_tree_main_frame_time_;
     DCHECK_GE(main_and_impl_delta, base::TimeDelta());
-    if (ShouldReportUma()) {
-      uma_reporter_->AddMainAndImplFrameTimeDelta(main_and_impl_delta);
-    }
+    uma_reporter_->AddMainAndImplFrameTimeDelta(main_and_impl_delta);
     active_tree_main_frame_time_ = base::TimeTicks();
 
     if (begin_main_frame_committing_continuously_) {
       if (!new_active_tree_draw_end_time_prev_.is_null()) {
         base::TimeDelta draw_interval =
             draw_end_time - new_active_tree_draw_end_time_prev_;
-        if (ShouldReportUma()) {
-          uma_reporter_->AddCommitInterval(draw_interval);
-        }
+        uma_reporter_->AddCommitInterval(draw_interval);
       }
       new_active_tree_draw_end_time_prev_ = draw_end_time;
     }
@@ -690,14 +670,8 @@ void CompositorTimingHistory::DidSwapBuffers() {
 void CompositorTimingHistory::DidSwapBuffersComplete() {
   DCHECK_NE(base::TimeTicks(), swap_start_time_);
   base::TimeDelta swap_to_ack_duration = Now() - swap_start_time_;
-  if (ShouldReportUma()) {
-    uma_reporter_->AddSwapToAckLatency(swap_to_ack_duration);
-  }
+  uma_reporter_->AddSwapToAckLatency(swap_to_ack_duration);
   swap_start_time_ = base::TimeTicks();
-}
-
-bool CompositorTimingHistory::ShouldReportUma() const {
-  return (draw_count_ % kUmaSamplingFrequency) == 0;
 }
 
 }  // namespace cc
