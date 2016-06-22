@@ -2430,21 +2430,6 @@ def GetConfig():
       'parrot',
   ])
 
-  site_config.Add(
-      'samus-release', _release,
-      _base_configs['samus'],
-      important=True,
-  )
-
-  ### Arm release configs.
-
-  site_config.Add(
-      'smaug-release', _release,
-      _base_configs['smaug'],
-      images=['base', 'recovery', 'test'],
-      sign_types=['nv_lp0_firmware'],
-  )
-
   ### Informational hwtest
 
   _chrome_informational_hwtest_boards = frozenset([
@@ -2493,42 +2478,6 @@ def GetConfig():
   _AddInformationalConfigs()
   _AddReleaseConfigs()
 
-  # beaglebone build doesn't generate signed images, so don't try to release
-  # them.
-  _beaglebone_release = _release.derive(beaglebone,
-                                        paygen=False,
-                                        signer_tests=False,
-                                        images=['base', 'test'],
-                                        important=True)
-
-  site_config.Add(
-      'beaglebone-release', _beaglebone_release,
-      boards=['beaglebone'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-  )
-
-  site_config.Add(
-      'beaglebone_servo-release', _beaglebone_release,
-      boards=['beaglebone_servo'],
-      payload_image='base',
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-  )
-
-  site_config.Add(
-      'storm-release', _release,
-      _base_configs['storm'],
-
-      # Hw Lab can't test storm, yet.
-      paygen_skip_testing=True,
-      signer_tests=False,
-  )
-
-  site_config.Add(
-      'amd64-generic-goofy-release', _release,
-      _base_configs['amd64-generic-goofy'],
-      important=False,
-  )
-
   moblab_release = site_config.AddTemplate(
       'moblab-release',
       _release,
@@ -2549,11 +2498,6 @@ def GetConfig():
                                   warn_only=True, num=1)],
   )
 
-  site_config.Add(
-      'guado_moblab-release', moblab_release,
-      _base_configs['guado_moblab'],
-  )
-
   cheets_release = site_config.AddTemplate(
       'cheets-release',
       _release,
@@ -2562,106 +2506,6 @@ def GetConfig():
           config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE, num=1),
           config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                   warn_only=True, num=1)],
-  )
-
-  site_config.Add(
-      'cyan-cheets-release', cheets_release,
-      _base_configs['cyan-cheets'],
-  )
-
-  site_config.Add(
-      'elm-cheets-release', cheets_release,
-      _base_configs['elm-cheets'],
-  )
-
-  site_config.Add(
-      'glados-cheets-release', cheets_release,
-      _base_configs['glados-cheets'],
-  )
-
-  site_config.Add(
-      'glimmer-cheets-release', cheets_release,
-      _base_configs['glimmer-cheets'],
-  )
-
-  site_config.Add(
-      'oak-cheets-release', cheets_release,
-      _base_configs['oak-cheets'],
-  )
-
-  site_config.Add(
-      'samus-cheets-release', cheets_release,
-      _base_configs['samus-cheets'],
-  )
-
-  site_config.Add(
-      'smaug-cheets-release', cheets_release,
-      _base_configs['smaug-cheets'],
-  )
-
-  site_config.Add(
-      'celes-cheets-release', cheets_release,
-      _base_configs['celes-cheets'],
-  )
-
-  site_config.Add(
-      'chell-cheets-release', cheets_release,
-      _base_configs['chell-cheets'],
-  )
-
-  site_config.Add(
-      'lulu-cheets-release', cheets_release,
-      _base_configs['lulu-cheets'],
-  )
-
-  site_config.Add(
-      'veyron_minnie-cheets-release', cheets_release,
-      _base_configs['veyron_minnie-cheets'],
-  )
-
-  site_config.Add(
-      'veyron_mickey-release', _release,
-      _base_configs['veyron_mickey'],
-      vm_tests=[],
-  )
-
-  site_config.Add(
-      'whirlwind-release', _release,
-      _base_configs['whirlwind'],
-      dev_installer_prebuilts=True,
-  )
-
-  site_config.Add(
-      'lakitu-release', _release,
-      _base_configs['lakitu'],
-      lakitu_test_customizations,
-      sign_types=['base'],
-      important=True,
-      images=['base', 'recovery', 'test'],
-  )
-
-  site_config.Add(
-      'lakitu_next-release', _release,
-      _base_configs['lakitu_next'],
-      lakitu_test_customizations,
-      signer_tests=False,
-      images=['base', 'recovery', 'test'],
-  )
-
-  site_config.Add(
-      'guado_labstation-release', _release,
-      _base_configs['guado_labstation'],
-      hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
-                                  num=1, timeout=120*60, warn_only=True,
-                                  async=True, retry=False, max_retries=None,
-                                  file_bugs=False),
-      ],
-      image_test=False,
-      images=['test'],
-      signer_tests=False,
-      paygen=False,
-      vm_tests=[],
   )
 
   _wificell_pre_cq = site_config.AddTemplate(
@@ -3244,13 +3088,137 @@ def GetConfig():
 
   _AddKernelConfigs()
 
-
   # This is an example factory branch configuration.
   # Modify it to match your factory branch.
   site_config.Add(
       'x86-mario-factory', _factory_release,
       boards=['x86-mario'],
   )
+
+    # Add special builders to help with cbuidlbot development/testing.
+  site_config.Add(
+      'sync-test-cbuildbot',
+      no_hwtest_builder,
+      boards=[],
+      build_type=constants.INCREMENTAL_TYPE,
+      builder_class_name='test_builders.ManifestVersionedSyncBuilder',
+      chroot_replace=True,
+  )
+
+  def MergeOverwrittenConfigs(*args, **kwargs):
+    """Merge overwritten configs."""
+    merged_configs = {}
+    for arg in args:
+      merged_configs.update(arg)
+    merged_configs.update(kwargs)
+    return merged_configs
+
+  overwritten_configs = {
+      'samus-release' : {
+          'important': True,
+      },
+
+      ### Arm release configs
+      'smaug-release' : {
+          'images':['base', 'recovery', 'test'],
+          'sign_types':['nv_lp0_firmware'],
+      },
+
+      # beaglebone build doesn't generate signed images, so don't try
+      # to release them.
+      'beaglebone-release': MergeOverwrittenConfigs(
+          beaglebone,
+          {
+              'paygen': False,
+              'signer_tests': False,
+              'images': ['base', 'test'],
+              'important': True,
+              'boards':['beaglebone'],
+              'buildslave_type':constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+          }
+      ),
+
+      'beaglebone_servo-release': MergeOverwrittenConfigs(
+          beaglebone,
+          {
+              'paygen': False,
+              'signer_tests': False,
+              'images': ['base', 'test'],
+              'important': True,
+              'boards':['beaglebone_servo'],
+              'payload_image':'base',
+              'buildslave_type':constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+          }
+      ),
+
+      # Hw Lab can't test storm, yet.
+      'storm-release': {
+          'paygen_skip_testing':True,
+          'signer_tests':False,
+      },
+
+      'veyron_mickey-release': {
+          'vm_tests':[],
+      },
+
+      'whirlwind-release': {
+          'dev_installer_prebuilts':True,
+      },
+
+      'lakitu-release': MergeOverwrittenConfigs(
+          lakitu_test_customizations,
+          {
+              'sign_types':['base'],
+              'important': True,
+              'images':['base', 'recovery', 'test'],
+          }
+      ),
+
+      'lakitu_next-release': MergeOverwrittenConfigs(
+          lakitu_test_customizations,
+          {
+              'signer_tests':False,
+              'images':['base', 'recovery', 'test'],
+          }
+      ),
+
+      'guado_labstation-release': {
+          'hw_tests':[config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
+                      num=1, timeout=120*60, warn_only=True,
+                      async=True, retry=False, max_retries=None,
+                      file_bugs=False),
+          ],
+           'image_test':False,
+           'images':['test'],
+           'signer_tests':False,
+           'paygen':False,
+           'vm_tests':[],
+      }
+  }
+
+  def GetReleaseConfigName(board):
+    """Convert a board name into config name."""
+    return '%s-release' % board
+
+  def _OverwriteBoardConfigs():
+    """Given boards, overwrite special configs if needed."""
+    for board in _cheets_boards:
+      config_name = GetReleaseConfigName(board)
+      # For boards in _cheets_boards, use cheets_release template
+      site_config[config_name] = site_config[config_name].derive(
+          cheets_release, _base_configs[board])
+
+    for board in _moblab_boards:
+      config_name = GetReleaseConfigName(board)
+      # If the board is in _moblab_boards, use moblab_release template
+      site_config[config_name] = site_config[config_name].derive(
+          moblab_release, _base_configs[board])
+
+    for config_name in overwritten_configs:
+      site_config[config_name] = site_config[config_name].derive(
+        **overwritten_configs[config_name])
+
+  _OverwriteBoardConfigs()
 
   _payloads = site_config.AddTemplate(
       'payloads',
@@ -3301,16 +3269,6 @@ def GetConfig():
 
   _AddPayloadConfigs()
 
-  # Add special builders to help with cbuidlbot development/testing.
-  site_config.Add(
-      'sync-test-cbuildbot',
-      no_hwtest_builder,
-      boards=[],
-      build_type=constants.INCREMENTAL_TYPE,
-      builder_class_name='test_builders.ManifestVersionedSyncBuilder',
-      chroot_replace=True,
-  )
-
   def _SetupWaterfalls():
     for name, c in site_config.iteritems():
       if not c.get('active_waterfall'):
@@ -3323,7 +3281,6 @@ def GetConfig():
           site_config[name]['active_waterfall'] = waterfall
 
   _SetupWaterfalls()
-
 
   def _InsertHwTestsOverrideDefaults(build):
     """Insert default hw_tests values for a given build.

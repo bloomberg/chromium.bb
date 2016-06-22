@@ -3769,7 +3769,8 @@
         "rootfs_verification": false,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone-release-afdo": {
         "_template": "release-afdo-generate",
@@ -3973,7 +3974,8 @@
         "rootfs_verification": false,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone_servo-release-afdo": {
         "_template": "release-afdo-generate",
