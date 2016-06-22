@@ -449,7 +449,6 @@ class Generator(generator.Generator):
     "is_array_kind": mojom.IsArrayKind,
     "is_enum_kind": mojom.IsEnumKind,
     "is_integral_kind": mojom.IsIntegralKind,
-    "is_move_only_kind": mojom.IsMoveOnlyKind,
     "is_native_only_kind": IsNativeOnlyKind,
     "is_any_handle_kind": mojom.IsAnyHandleKind,
     "is_interface_kind": mojom.IsInterfaceKind,

@@ -30,11 +30,7 @@
 
 {%- macro pass_params(parameters) %}
 {%-   for param in parameters %}
-{%-     if param.kind|is_move_only_kind -%}
 std::move(p_{{param.name}})
-{%-     else -%}
-p_{{param.name}}
-{%-     endif -%}
 {%-     if not loop.last %}, {% endif %}
 {%-   endfor %}
 {%- endmacro %}
@@ -111,11 +107,7 @@ bool {{class_name}}_{{method.name}}_HandleSyncResponse::Accept(
                  "{{class_name}}::{{method.name}} response")}}
 
 {%-       for param in method.response_parameters %}
-{%-         if param.kind|is_move_only_kind %}
   *out_{{param.name}}_ = std::move(p_{{param.name}});
-{%-         else %}
-  *out_{{param.name}}_ = p_{{param.name}};
-{%-         endif %}
 {%-       endfor %}
   *result_ = true;
   return true;
@@ -262,8 +254,7 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
       // Is the Mojo application destroying the callback without running it
       // and without first closing the pipe?
       responder_->DCheckInvalid("The callback passed to "
-          "{{class_name}}::{{method.name}}({%- if method.parameters -%}{{pass_params(method.parameters)}}, {% endif -%}callback) "
-          "was never run.");
+          "{{class_name}}::{{method.name}}() was never run.");
     }
 #endif
     // If the Callback was dropped then deleting the responder will close
