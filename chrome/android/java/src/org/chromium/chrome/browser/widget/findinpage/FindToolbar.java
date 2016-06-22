@@ -23,6 +23,7 @@ import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.OnKeyListener;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -89,11 +90,12 @@ public class FindToolbar extends LinearLayout
 
     /** Subclasses EditText in order to intercept BACK key presses. */
     @SuppressLint("Instantiatable")
-    static class FindQuery extends VerticallyFixedEditText {
+    static class FindQuery extends VerticallyFixedEditText implements OnKeyListener {
         private FindToolbar mFindToolbar;
 
         public FindQuery(Context context, AttributeSet attrs) {
             super(context, attrs);
+            setOnKeyListener(this);
         }
 
         void setFindToolbar(FindToolbar findToolbar) {
@@ -101,10 +103,9 @@ public class FindToolbar extends LinearLayout
         }
 
         @Override
-        public boolean onKeyPreIme(int keyCode, KeyEvent event) {
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN
-                        && event.getRepeatCount() == 0) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
                     // Tell the framework to start tracking this event.
                     getKeyDispatcherState().startTracking(event, this);
                     return true;
@@ -116,7 +117,7 @@ public class FindToolbar extends LinearLayout
                     }
                 }
             }
-            return super.onKeyPreIme(keyCode, event);
+            return false;
         }
 
         @Override

@@ -338,6 +338,57 @@ public class FindTest extends ChromeTabbedActivityTestBase {
         assertEquals(0, spans.length);
     }
 
+    /**
+     * Verify Find in page toolbar is not dismissed when device back key is pressed with the
+     * presence of IME. First back key should dismiss IME and second back key should dismiss
+     * Find in page toolbar.
+     */
+    @MediumTest
+    @Feature({"FindInPage"})
+    public void testBackKeyDoesNotDismissFindWhenImeIsPresent() throws InterruptedException {
+        loadUrl(mTestServer.getURL(FILEPATH));
+        findInPageFromMenu();
+        final TextView findQueryText = getFindQueryText();
+        KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_A);
+        waitForIME(true);
+        // IME is present at this moment, so IME will consume BACK key.
+        sendKeys(KeyEvent.KEYCODE_BACK);
+        waitForIME(false);
+        waitForFindInPageVisibility(true);
+        sendKeys(KeyEvent.KEYCODE_BACK);
+        waitForFindInPageVisibility(false);
+    }
+
+    /**
+     * Verify Find in page toolbar is dismissed when device back key is pressed when IME
+     * is not present. First back key press itself will dismiss Find in page toolbar.
+     */
+    @MediumTest
+    @Feature({"FindInPage"})
+    public void testBackKeyDismissesFind() throws InterruptedException {
+        loadUrl(mTestServer.getURL(FILEPATH));
+        findInPageFromMenu();
+        final TextView findQueryText = getFindQueryText();
+        KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_A);
+        waitForIME(true);
+        // Hide IME by clicking next button from find tool bar.
+        singleClickView(getActivity().findViewById(R.id.find_next_button));
+        waitForIME(false);
+        sendKeys(KeyEvent.KEYCODE_BACK);
+        waitForFindInPageVisibility(false);
+    }
+
+    private void waitForIME(final boolean imePresent) throws InterruptedException {
+        // Wait for IME to appear.
+        CriteriaHelper.pollUiThread(new Criteria("IME is not getting shown!") {
+            @Override
+            public boolean isSatisfied() {
+                return org.chromium.ui.UiUtils.isKeyboardShowing(getActivity(), getFindQueryText())
+                        == imePresent;
+            }
+        });
+    }
+
     @Override
     public void startMainActivity() throws InterruptedException {
         startMainActivityOnBlankPage();
