@@ -794,6 +794,7 @@
     ],
     'subresource_filter_content_browser_unittest_sources': [
       'subresource_filter/content/browser/content_ruleset_distributor_unittest.cc',
+      'subresource_filter/content/browser/content_subresource_filter_driver_factory_unittest.cc',
     ],
     'subresource_filter_core_browser_unittest_sources': [
       'subresource_filter/core/browser/ruleset_service_unittest.cc',

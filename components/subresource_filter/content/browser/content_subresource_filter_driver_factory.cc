@@ -4,6 +4,7 @@
 
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 
+#include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/render_frame_host.h"
@@ -53,6 +54,24 @@ void ContentSubresourceFilterDriverFactory::CreateDriverForFrameHostIfNeeded(
     iterator_and_inserted.first->second.reset(
         new ContentSubresourceFilterDriver(render_frame_host));
   }
+}
+
+void ContentSubresourceFilterDriverFactory::
+    OnMainResourceMatchedSafeBrowsingBlacklist(
+        const GURL& url,
+        const std::vector<GURL>& redirect_urls,
+        safe_browsing::ThreatPatternType threat_type) {
+  if (threat_type != safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS)
+    return;
+  activate_on_origins_.insert(url.host());
+  for (const auto& url : redirect_urls) {
+    activate_on_origins_.insert(url.host());
+  }
+}
+
+bool ContentSubresourceFilterDriverFactory::ShouldActivateForURL(
+    const GURL& url) {
+  return activation_set().find(url.host()) != activation_set().end();
 }
 
 ContentSubresourceFilterDriver*

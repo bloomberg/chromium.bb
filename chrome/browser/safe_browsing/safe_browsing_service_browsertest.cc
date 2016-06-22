@@ -54,6 +54,7 @@
 #include "components/safe_browsing_db/metadata.pb.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -488,6 +489,14 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     full_hash->list_id = list_id;
   }
 
+  static void GenUrlFullHashResultWithMetadata(const GURL& url,
+                                               int list_id,
+                                               ThreatPatternType threat,
+                                               SBFullHashResult* full_hash) {
+    GenUrlFullHashResult(url, list_id, full_hash);
+    full_hash->metadata.threat_pattern_type = threat;
+  }
+
   void SetUp() override {
     // InProcessBrowserTest::SetUp() instantiates SafebrowsingService.
     // RegisterFactory and plugging test UI manager / protocol config have to
@@ -885,6 +894,60 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
   EXPECT_EQ(bad_url, hit_report().page_url);
   EXPECT_EQ(first_url, hit_report().referrer_url);
   EXPECT_FALSE(hit_report().is_subresource);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
+                       SocEngReportingBlacklistNotEmpty) {
+  // Tests that when Safe Browsing gets hit which is corresponding to the
+  // SOCIAL_ENGINEERING_ADS threat type, then URL is added to the Subresource
+  // Filter.
+  GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
+
+  SBFullHashResult malware_full_hash;
+  GenUrlFullHashResultWithMetadata(bad_url, MALWARE,
+                                   ThreatPatternType::SOCIAL_ENGINEERING_ADS,
+                                   &malware_full_hash);
+  SetupResponseForUrl(bad_url, malware_full_hash);
+
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
+      .Times(1);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  subresource_filter::ContentSubresourceFilterDriverFactory* driver_factory =
+      subresource_filter::ContentSubresourceFilterDriverFactory::
+          FromWebContents(web_contents);
+
+  EXPECT_EQ(0U, driver_factory->activation_set().size());
+  chrome::NavigateParams params(browser(), bad_url, ui::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&params);
+
+  EXPECT_EQ(1U, driver_factory->activation_set().size());
+  EXPECT_TRUE(got_hit_report());
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SocEngReportingBlacklistEmpty) {
+  // Tests that URLS which doesn't belong to the SOCIAL_ENGINEERING_ADS threat
+  // type aren't seen by the Subresource Filter.
+  GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
+
+  SBFullHashResult malware_full_hash;
+  GenUrlFullHashResult(bad_url, MALWARE, &malware_full_hash);
+  SetupResponseForUrl(bad_url, malware_full_hash);
+
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
+      .Times(1);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  subresource_filter::ContentSubresourceFilterDriverFactory* driver_factory =
+      subresource_filter::ContentSubresourceFilterDriverFactory::
+          FromWebContents(web_contents);
+
+  EXPECT_EQ(0U, driver_factory->activation_set().size());
+  chrome::NavigateParams params(browser(), bad_url, ui::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&params);
+
+  EXPECT_EQ(0U, driver_factory->activation_set().size());
+  EXPECT_TRUE(got_hit_report());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,

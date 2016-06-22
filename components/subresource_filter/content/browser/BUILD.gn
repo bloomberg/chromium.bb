@@ -13,6 +13,7 @@ source_set("browser") {
   ]
   deps = [
     "//base",
+    "//components/safe_browsing_db:util",
     "//components/subresource_filter/content/common",
     "//components/subresource_filter/core/browser",
     "//components/subresource_filter/core/common",
@@ -27,10 +28,12 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_ruleset_distributor_unittest.cc",
+    "content_subresource_filter_driver_factory_unittest.cc",
   ]
   deps = [
     ":browser",
     "//base/test:test_support",
+    "//components/safe_browsing_db:util",
     "//components/subresource_filter/content/common",
     "//content/test:test_support",
     "//ipc",

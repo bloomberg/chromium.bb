@@ -14,6 +14,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_controller.h"
@@ -286,6 +287,14 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
         content::WebContents::FromRenderFrameHost(rfh);
     prerender::PrerenderContents* prerender_contents =
         prerender::PrerenderContents::FromWebContents(web_contents);
+
+    subresource_filter::ContentSubresourceFilterDriverFactory* driver_factory =
+        subresource_filter::ContentSubresourceFilterDriverFactory::
+            FromWebContents(web_contents);
+    DCHECK(driver_factory);
+    driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
+        resource.url, resource.redirect_urls,
+        resource.threat_metadata.threat_pattern_type);
 
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
