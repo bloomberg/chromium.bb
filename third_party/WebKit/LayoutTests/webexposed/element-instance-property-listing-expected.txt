@@ -748,6 +748,7 @@ html element object
     property codeBase
     property codeType
     property contentDocument
+    property contentWindow
     property data
     property declare
     property form

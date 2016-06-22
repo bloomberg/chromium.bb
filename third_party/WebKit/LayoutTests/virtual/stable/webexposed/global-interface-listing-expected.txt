@@ -2346,6 +2346,7 @@ interface HTMLObjectElement : HTMLElement
     getter codeBase
     getter codeType
     getter contentDocument
+    getter contentWindow
     getter data
     getter declare
     getter form
