@@ -558,12 +558,15 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
 bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
 {
     const LayoutBox* thisBox = isBox() ? toLayoutBox(this) : nullptr;
+    Length logicalHeightLength = style()->logicalHeight();
+    LayoutBlock* cb = containingBlockForAutoHeightDetection(logicalHeightLength);
+    if (logicalHeightLength.hasPercent() && cb && isBox())
+        cb->addPercentHeightDescendant(const_cast<LayoutBox*>(toLayoutBox(this)));
     if (thisBox && thisBox->isFlexItem()) {
         LayoutFlexibleBox& flexBox = toLayoutFlexibleBox(*parent());
         if (flexBox.childLogicalHeightForPercentageResolution(*thisBox) != LayoutUnit(-1))
             return false;
     }
-    Length logicalHeightLength = style()->logicalHeight();
     if (logicalHeightLength.isAuto())
         return true;
 
@@ -571,7 +574,7 @@ bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
         return false;
 
     // If the height of the containing block computes to 'auto', then it hasn't been 'specified explicitly'.
-    if (LayoutBlock* cb = containingBlockForAutoHeightDetection(logicalHeightLength))
+    if (cb)
         return cb->hasAutoHeightOrContainingBlockWithAutoHeight();
     return false;
 }

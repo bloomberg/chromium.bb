@@ -2910,8 +2910,14 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
         LayoutObject* cb = isOutOfFlowPositioned() ? container() : containingBlock();
         while (cb->isAnonymous())
             cb = cb->containingBlock();
-        if (cb->isLayoutBlock())
-            toLayoutBlock(cb)->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
+        LayoutUnit stretchedFlexHeight(-1);
+        if (cb->isLayoutBlock()) {
+            LayoutBlock* block = toLayoutBlock(cb);
+            block->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
+            if (block->isFlexItem())
+                stretchedFlexHeight = toLayoutFlexibleBox(block->parent())->childLogicalHeightForPercentageResolution(*block);
+
+        }
 
         if (cb->isOutOfFlowPositioned() && cb->style()->height().isAuto() && !(cb->style()->top().isAuto() || cb->style()->bottom().isAuto())) {
             ASSERT_WITH_SECURITY_IMPLICATION(cb->isLayoutBlock());
@@ -2929,6 +2935,8 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
         LayoutUnit availableHeight;
         if (isOutOfFlowPositioned()) {
             availableHeight = containingBlockLogicalHeightForPositioned(toLayoutBoxModelObject(cb));
+        } else if (stretchedFlexHeight != -1) {
+            availableHeight = stretchedFlexHeight;
         } else {
             availableHeight = containingBlockLogicalHeightForContent(IncludeMarginBorderPadding);
             // It is necessary to use the border-box to match WinIE's broken
