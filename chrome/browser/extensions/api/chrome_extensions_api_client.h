@@ -40,8 +40,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       WebViewGuest* web_view_guest) const override;
   WebViewPermissionHelperDelegate* CreateWebViewPermissionHelperDelegate(
       WebViewPermissionHelper* web_view_permission_helper) const override;
-  WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
-      const override;
+  std::unique_ptr<WebRequestEventRouterDelegate>
+  CreateWebRequestEventRouterDelegate() const override;
   scoped_refptr<ContentRulesRegistry> CreateContentRulesRegistry(
       content::BrowserContext* browser_context,
       RulesCacheDelegate* cache_delegate) const override;

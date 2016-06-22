@@ -39,21 +39,16 @@ const uint32_t kFilteredMessageClasses[] = {
     ChromeExtensionMsgStart, ExtensionMsgStart,
 };
 
-// Logs an action to the extension activity log for the specified profile.  Can
-// be called from any thread.
-void AddActionToExtensionActivityLog(
-    Profile* profile,
-    scoped_refptr<extensions::Action> action) {
+// Logs an action to the extension activity log for the specified profile.
+void AddActionToExtensionActivityLog(Profile* profile,
+                                     extensions::ActivityLog* activity_log,
+                                     scoped_refptr<extensions::Action> action) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
-    return;
   // If the action included a URL, check whether it is for an incognito
   // profile.  The check is performed here so that it can safely be done from
   // the UI thread.
   if (action->page_url().is_valid() || !action->page_title().empty())
     action->set_page_incognito(profile->IsOffTheRecord());
-  extensions::ActivityLog* activity_log =
-      extensions::ActivityLog::GetInstance(profile);
   activity_log->LogAction(action);
 }
 
@@ -66,6 +61,7 @@ ChromeExtensionMessageFilter::ChromeExtensionMessageFilter(
                            arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
       profile_(profile),
+      activity_log_(extensions::ActivityLog::GetInstance(profile)),
       extension_info_map_(
           extensions::ExtensionSystem::Get(profile)->info_map()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -286,6 +282,9 @@ void ChromeExtensionMessageFilter::OnGetExtMessageBundleOnBlockingPool(
 void ChromeExtensionMessageFilter::OnAddAPIActionToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_APIActionOrEvent_Params& params) {
+  if (!ShouldLogExtensionAction(extension_id))
+    return;
+
   scoped_refptr<extensions::Action> action = new extensions::Action(
       extension_id, base::Time::Now(), extensions::Action::ACTION_API_CALL,
       params.api_call);
@@ -294,12 +293,15 @@ void ChromeExtensionMessageFilter::OnAddAPIActionToExtensionActivityLog(
     action->mutable_other()->SetString(
         activity_log_constants::kActionExtra, params.extra);
   }
-  AddActionToExtensionActivityLog(profile_, action);
+  AddActionToExtensionActivityLog(profile_, activity_log_, action);
 }
 
 void ChromeExtensionMessageFilter::OnAddDOMActionToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_DOMAction_Params& params) {
+  if (!ShouldLogExtensionAction(extension_id))
+    return;
+
   scoped_refptr<extensions::Action> action = new extensions::Action(
       extension_id, base::Time::Now(), extensions::Action::ACTION_DOM_ACCESS,
       params.api_call);
@@ -308,12 +310,15 @@ void ChromeExtensionMessageFilter::OnAddDOMActionToExtensionActivityLog(
   action->set_page_title(base::UTF16ToUTF8(params.url_title));
   action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
                                       params.call_type);
-  AddActionToExtensionActivityLog(profile_, action);
+  AddActionToExtensionActivityLog(profile_, activity_log_, action);
 }
 
 void ChromeExtensionMessageFilter::OnAddEventToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_APIActionOrEvent_Params& params) {
+  if (!ShouldLogExtensionAction(extension_id))
+    return;
+
   scoped_refptr<extensions::Action> action = new extensions::Action(
       extension_id, base::Time::Now(), extensions::Action::ACTION_API_EVENT,
       params.api_call);
@@ -322,7 +327,7 @@ void ChromeExtensionMessageFilter::OnAddEventToExtensionActivityLog(
     action->mutable_other()->SetString(activity_log_constants::kActionExtra,
                                        params.extra);
   }
-  AddActionToExtensionActivityLog(profile_, action);
+  AddActionToExtensionActivityLog(profile_, activity_log_, action);
 }
 
 void ChromeExtensionMessageFilter::Observe(
@@ -331,4 +336,15 @@ void ChromeExtensionMessageFilter::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
   profile_ = NULL;
+  activity_log_ = nullptr;
+}
+
+bool ChromeExtensionMessageFilter::ShouldLogExtensionAction(
+    const std::string& extension_id) const {
+  // TODO(devlin): Ideally, we'd be able to determine this in the renderer so
+  // that we don't even send the IPC.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return profile_ &&
+         g_browser_process->profile_manager()->IsValidProfile(profile_) &&
+         activity_log_ && activity_log_->ShouldLog(extension_id);
 }

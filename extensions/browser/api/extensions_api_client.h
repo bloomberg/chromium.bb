@@ -107,8 +107,8 @@ class ExtensionsAPIClient {
       WebViewPermissionHelper* web_view_permission_helper) const;
 
   // Creates a delegate for WebRequestEventRouter.
-  virtual WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
-      const;
+  virtual std::unique_ptr<WebRequestEventRouterDelegate>
+  CreateWebRequestEventRouterDelegate() const;
 
   // TODO(wjmaclean): Remove this when (if) ContentRulesRegistry code moves
   // to extensions/browser/api.

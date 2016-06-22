@@ -4,15 +4,11 @@
 
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 
-#include "chrome/browser/extensions/activity_log/activity_action_constants.h"
-#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/api/activity_log/web_request_constants.h"
-#include "extensions/browser/api/web_request/web_request_event_details.h"
 #include "extensions/browser/extension_registry.h"
-#include "net/url_request/url_request.h"
 
 namespace {
 
@@ -53,31 +49,6 @@ ChromeExtensionWebRequestEventRouterDelegate::
 
 ChromeExtensionWebRequestEventRouterDelegate::
     ~ChromeExtensionWebRequestEventRouterDelegate() {
-}
-
-void ChromeExtensionWebRequestEventRouterDelegate::LogExtensionActivity(
-    content::BrowserContext* browser_context,
-    bool is_incognito,
-    const std::string& extension_id,
-    const GURL& url,
-    const std::string& api_call,
-    std::unique_ptr<base::DictionaryValue> details) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(
-      browser_context)) {
-    return;
-  }
-
-  scoped_refptr<extensions::Action> action =
-      new extensions::Action(extension_id,
-                              base::Time::Now(),
-                              extensions::Action::ACTION_WEB_REQUEST,
-                              api_call);
-  action->set_page_url(url);
-  action->set_page_incognito(is_incognito);
-  action->mutable_other()->Set(activity_log_constants::kActionWebRequest,
-                               details.release());
-  extensions::ActivityLog::GetInstance(browser_context)->LogAction(action);
 }
 
 void ChromeExtensionWebRequestEventRouterDelegate::NotifyWebRequestWithheld(

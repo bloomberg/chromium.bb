@@ -77,6 +77,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
   ASSERT_TRUE(ext);
 
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+  activity_log->SetWatchdogAppActiveForTesting(true);
   ASSERT_TRUE(activity_log);
 
   // Disable rate limiting in PrerenderManager

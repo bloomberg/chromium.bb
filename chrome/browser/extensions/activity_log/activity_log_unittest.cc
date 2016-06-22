@@ -30,6 +30,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/dom_action_types.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -61,14 +62,17 @@ namespace extensions {
 
 class ActivityLogTest : public ChromeRenderViewHostTestHarness {
  protected:
+  virtual bool enable_activity_logging_switch() const { return true; }
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExtensionActivityLogging);
+    if (enable_activity_logging_switch()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableExtensionActivityLogging);
+    }
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
     extension_service_ = static_cast<TestExtensionSystem*>(
@@ -246,6 +250,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
           .Build();
   extension_service_->AddExtension(extension.get());
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+  EXPECT_TRUE(activity_log->ShouldLog(extension->id()));
   ASSERT_TRUE(GetDatabaseEnabled());
   GURL url("http://www.google.com");
 
@@ -292,6 +297,7 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
 
   // Submit a DOM API call which should have its URL extracted into the arg_url
   // field.
+  EXPECT_TRUE(activity_log->ShouldLog(kExtensionId));
   scoped_refptr<Action> action = new Action(kExtensionId,
                                             now,
                                             Action::ACTION_DOM_ACCESS,
@@ -414,6 +420,36 @@ TEST_F(ActivityLogTest, ArgUrlApiCalls) {
       "",
       -1,
       base::Bind(ActivityLogTest::RetrieveActions_ArgUrlApiCalls));
+}
+
+class ActivityLogTestWithoutSwitch : public ActivityLogTest {
+ public:
+  ActivityLogTestWithoutSwitch() {}
+  ~ActivityLogTestWithoutSwitch() override {}
+  bool enable_activity_logging_switch() const override { return false; }
+};
+
+TEST_F(ActivityLogTestWithoutSwitch, TestShouldLog) {
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+  scoped_refptr<const Extension> empty_extension =
+      test_util::CreateEmptyExtension();
+  extension_service_->AddExtension(empty_extension.get());
+  // Since the command line switch for logging isn't enabled and there's no
+  // watchdog app active, the activity log shouldn't log anything.
+  EXPECT_FALSE(activity_log->ShouldLog(empty_extension->id()));
+  const char kWhitelistedExtensionId[] = "eplckmlabaanikjjcgnigddmagoglhmp";
+  scoped_refptr<const Extension> activity_log_extension =
+      test_util::CreateEmptyExtension(kWhitelistedExtensionId);
+  extension_service_->AddExtension(activity_log_extension.get());
+  // Loading a watchdog app means the activity log should log other extension
+  // activities...
+  EXPECT_TRUE(activity_log->ShouldLog(empty_extension->id()));
+  // ... but not those of the watchdog app.
+  EXPECT_FALSE(activity_log->ShouldLog(activity_log_extension->id()));
+  extension_service_->DisableExtension(activity_log_extension->id(),
+                                       Extension::DISABLE_USER_ACTION);
+  // Disabling the watchdog app means that we're back to never logging anything.
+  EXPECT_FALSE(activity_log->ShouldLog(empty_extension->id()));
 }
 
 }  // namespace extensions

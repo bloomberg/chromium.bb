@@ -54,28 +54,10 @@ namespace {
 // called. May be called from any thread.
 void NotifyApiFunctionCalled(const std::string& extension_id,
                              const std::string& api_name,
-                             std::unique_ptr<base::ListValue> args,
+                             const base::ListValue& args,
                              content::BrowserContext* browser_context) {
-  // The ApiActivityMonitor can only be accessed from the main (UI) thread. If
-  // we're running on the wrong thread, re-dispatch from the main thread.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&NotifyApiFunctionCalled,
-                                       extension_id,
-                                       api_name,
-                                       base::Passed(&args),
-                                       browser_context));
-    return;
-  }
-  // The BrowserContext may become invalid after the task above is posted.
-  if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
-    return;
-
-  ApiActivityMonitor* monitor =
-      ExtensionsBrowserClient::Get()->GetApiActivityMonitor(browser_context);
-  if (monitor)
-    monitor->OnApiFunctionCalled(extension_id, api_name, std::move(args));
+  activity_monitor::OnApiFunctionCalled(browser_context, extension_id, api_name,
+                                        args);
 }
 
 // Separate copy of ExtensionAPI used for IO thread extension functions. We need
@@ -384,8 +366,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                                               &params.arguments,
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {
-    std::unique_ptr<base::ListValue> args(params.arguments.DeepCopy());
-    NotifyApiFunctionCalled(extension->id(), params.name, std::move(args),
+    NotifyApiFunctionCalled(extension->id(), params.name, params.arguments,
                             static_cast<content::BrowserContext*>(profile_id));
     UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
                                 function->histogram_value());
@@ -525,11 +506,9 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
                                               base::TimeTicks::Now());
 
   if (violation_error.empty()) {
-    std::unique_ptr<base::ListValue> args(params.arguments.DeepCopy());
-
     // See crbug.com/39178.
     ExtensionsBrowserClient::Get()->PermitExternalProtocolHandler();
-    NotifyApiFunctionCalled(extension->id(), params.name, std::move(args),
+    NotifyApiFunctionCalled(extension->id(), params.name, params.arguments,
                             browser_context_);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
                                 function->histogram_value());

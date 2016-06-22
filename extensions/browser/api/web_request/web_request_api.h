@@ -372,14 +372,6 @@ class ExtensionWebRequestEventRouter
                            uint64_t request_id,
                            EventResponse* response);
 
-  // Logs an extension action.
-  void LogExtensionActivity(void* browser_context_id,
-                            bool is_incognito,
-                            const std::string& extension_id,
-                            const GURL& url,
-                            const std::string& api_call,
-                            std::unique_ptr<base::DictionaryValue> details);
-
   // Processes the generated deltas from blocked_requests_ on the specified
   // request. If |call_back| is true, the callback registered in
   // |blocked_requests_| is called.

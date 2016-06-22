@@ -63,24 +63,11 @@ const char kFilteredEvents[] = "filtered_events";
 void NotifyEventDispatched(void* browser_context_id,
                            const std::string& extension_id,
                            const std::string& event_name,
-                           std::unique_ptr<ListValue> args) {
-  // The ApiActivityMonitor can only be accessed from the UI thread.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&NotifyEventDispatched, browser_context_id, extension_id,
-                   event_name, base::Passed(&args)));
-    return;
-  }
-
+                           const base::ListValue& args) {
   // Notify the ApiActivityMonitor about the event dispatch.
   BrowserContext* context = static_cast<BrowserContext*>(browser_context_id);
-  if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
-    return;
-  ApiActivityMonitor* monitor =
-      ExtensionsBrowserClient::Get()->GetApiActivityMonitor(context);
-  if (monitor)
-    monitor->OnApiEventDispatched(extension_id, event_name, std::move(args));
+  activity_monitor::OnApiEventDispatched(context, extension_id, event_name,
+                                         args);
 }
 
 // A global identifier used to distinguish extension events.
@@ -114,7 +101,7 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
                                            UserGestureState user_gesture,
                                            const EventFilteringInfo& info) {
   NotifyEventDispatched(browser_context_id, extension_id, event_name,
-                        base::WrapUnique(event_args->DeepCopy()));
+                        *event_args);
 
   // TODO(chirantan): Make event dispatch a separate IPC so that it doesn't
   // piggyback off MessageInvoke, which is used for other things.

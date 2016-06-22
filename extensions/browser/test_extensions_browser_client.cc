@@ -152,11 +152,6 @@ bool TestExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
   return false;
 }
 
-ApiActivityMonitor* TestExtensionsBrowserClient::GetApiActivityMonitor(
-    BrowserContext* context) {
-  return NULL;
-}
-
 ExtensionSystemProvider*
 TestExtensionsBrowserClient::GetExtensionSystemFactory() {
   DCHECK(extension_system_factory_);

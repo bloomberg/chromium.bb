@@ -16,7 +16,9 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
@@ -31,7 +33,10 @@
 #include "chrome/common/pref_names.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
@@ -333,6 +338,179 @@ void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
   }
 }
 
+// A global, thread-safe record of activity log state.
+class ActivityLogState {
+ public:
+  ActivityLogState() {}
+  ~ActivityLogState() {}
+
+  void AddActiveContext(content::BrowserContext* context) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    base::AutoLock lock(lock_);
+    contexts_.insert(context);
+  }
+
+  void RemoveActiveContext(content::BrowserContext* context) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    base::AutoLock lock(lock_);
+    contexts_.erase(context);
+  }
+
+  bool IsActiveContext(content::BrowserContext* context) {
+    base::AutoLock lock(lock_);
+    return contexts_.count(context) > 0;
+  }
+
+  void AddWhitelistedId(const std::string& id) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    base::AutoLock lock(lock_);
+    whitelisted_ids_.insert(id);
+  }
+
+  // We don't remove the id entry from g_activity_log_state because it may be
+  // loaded in multiple profiles, and being whitelisted for the ActivityLog
+  // is a global permission.
+
+  bool IsWhitelistedId(const std::string& id) {
+    base::AutoLock lock(lock_);
+    return whitelisted_ids_.count(id) > 0;
+  }
+
+ private:
+  std::set<const content::BrowserContext*> contexts_;
+  std::set<std::string> whitelisted_ids_;
+  base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActivityLogState);
+};
+
+base::LazyInstance<ActivityLogState> g_activity_log_state =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Calls into the ActivityLog to log an api event or function call.
+// Must be called on the UI thread.
+void LogApiActivityOnUI(content::BrowserContext* browser_context,
+                        const std::string& extension_id,
+                        const std::string& activity_name,
+                        std::unique_ptr<base::ListValue> args,
+                        Action::ActionType type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ActivityLog* activity_log = ActivityLog::GetInstance(browser_context);
+  if (!activity_log || !activity_log->ShouldLog(extension_id))
+    return;
+  scoped_refptr<Action> action =
+      new Action(extension_id, base::Time::Now(), type, activity_name);
+  action->set_args(std::move(args));
+  activity_log->LogAction(action);
+}
+
+// Generic thread-safe handler for API calls and events.
+void LogApiActivity(content::BrowserContext* browser_context,
+                    const std::string& extension_id,
+                    const std::string& activity_name,
+                    const base::ListValue& args,
+                    Action::ActionType type) {
+  ActivityLogState& state = g_activity_log_state.Get();
+  if (!state.IsActiveContext(browser_context) ||
+      state.IsWhitelistedId(extension_id))
+    return;
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&LogApiActivityOnUI, browser_context, extension_id,
+                   activity_name, base::Passed(args.CreateDeepCopy()), type));
+    return;
+  }
+  LogApiActivityOnUI(browser_context, extension_id, activity_name,
+                     args.CreateDeepCopy(), type);
+}
+
+// Handler for API events. Thread-safe.
+void LogApiEvent(content::BrowserContext* browser_context,
+                 const std::string& extension_id,
+                 const std::string& event_name,
+                 const base::ListValue& args) {
+  LogApiActivity(browser_context, extension_id, event_name, args,
+                 Action::ACTION_API_EVENT);
+}
+
+// Handler for API function calls. Thread-safe.
+void LogApiFunction(content::BrowserContext* browser_context,
+                    const std::string& extension_id,
+                    const std::string& event_name,
+                    const base::ListValue& args) {
+  LogApiActivity(browser_context, extension_id, event_name, args,
+                 Action::ACTION_API_CALL);
+}
+
+// Calls into the ActivityLog to log a webRequest usage.
+// Must be called on the UI thread.
+void LogWebRequestActivityOnUI(content::BrowserContext* browser_context,
+                               const std::string& extension_id,
+                               const GURL& url,
+                               bool is_incognito,
+                               const std::string& api_call,
+                               std::unique_ptr<base::DictionaryValue> details) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ActivityLog* activity_log = ActivityLog::GetInstance(browser_context);
+  if (!activity_log || !activity_log->ShouldLog(extension_id))
+    return;
+  scoped_refptr<Action> action = new Action(
+      extension_id, base::Time::Now(), Action::ACTION_WEB_REQUEST, api_call);
+  action->set_page_url(url);
+  action->set_page_incognito(is_incognito);
+  action->mutable_other()->Set(activity_log_constants::kActionWebRequest,
+                               std::move(details));
+  activity_log->LogAction(action);
+}
+
+// Handler for webRequest use. Thread-safe.
+void LogWebRequestActivity(content::BrowserContext* browser_context,
+                           const std::string& extension_id,
+                           const GURL& url,
+                           bool is_incognito,
+                           const std::string& api_call,
+                           std::unique_ptr<base::DictionaryValue> details) {
+  ActivityLogState& state = g_activity_log_state.Get();
+  if (!state.IsActiveContext(browser_context) ||
+      state.IsWhitelistedId(extension_id))
+    return;
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&LogWebRequestActivityOnUI, browser_context, extension_id,
+                   url, is_incognito, api_call, base::Passed(&details)));
+    return;
+  }
+  LogWebRequestActivityOnUI(browser_context, extension_id, url, is_incognito,
+                            api_call, std::move(details));
+}
+
+void SetActivityHandlers() {
+  // Set up event handlers. We don't have to worry about unsetting these,
+  // because we check whether or not the activity log is active for the context
+  // in the monitor methods.
+  activity_monitor::Monitor current_function_monitor =
+      activity_monitor::GetApiFunctionMonitor();
+  DCHECK(!current_function_monitor ||
+         current_function_monitor == &LogApiFunction);
+  if (!current_function_monitor)
+    activity_monitor::SetApiFunctionMonitor(&LogApiFunction);
+
+  activity_monitor::Monitor current_event_monitor =
+      activity_monitor::GetApiEventMonitor();
+  DCHECK(!current_event_monitor || current_event_monitor == &LogApiEvent);
+  if (!current_function_monitor)
+    activity_monitor::SetApiEventMonitor(&LogApiEvent);
+
+  activity_monitor::WebRequestMonitor current_web_request_monitor =
+      activity_monitor::GetWebRequestMonitor();
+  DCHECK(!current_web_request_monitor ||
+         current_web_request_monitor == &LogWebRequestActivity);
+  if (!current_web_request_monitor)
+    activity_monitor::SetWebRequestMonitor(&LogWebRequestActivity);
+}
+
 }  // namespace
 
 // SET THINGS UP. --------------------------------------------------------------
@@ -359,7 +537,10 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
       testing_mode_(false),
       has_threads_(true),
       extension_registry_observer_(this),
-      watchdog_apps_active_(0) {
+      watchdog_apps_active_(0),
+      is_active_(false) {
+  SetActivityHandlers();
+
   // This controls whether logging statements are printed & which policy is set.
   testing_mode_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExtensionActivityLogTesting);
@@ -385,6 +566,8 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
 
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   ChooseDatabasePolicy();
+
+  CheckActive();
 }
 
 void ActivityLog::SetDatabasePolicy(
@@ -422,6 +605,8 @@ void ActivityLog::SetDatabasePolicy(
 ActivityLog::~ActivityLog() {
   if (database_policy_)
     database_policy_->Close();
+  if (is_active_)
+    g_activity_log_state.Get().RemoveActiveContext(profile_);
 }
 
 // MAINTAIN STATUS. ------------------------------------------------------------
@@ -447,24 +632,31 @@ bool ActivityLog::IsWatchdogAppActive() {
 
 void ActivityLog::SetWatchdogAppActiveForTesting(bool active) {
   watchdog_apps_active_ = active ? 1 : 0;
+  CheckActive();
 }
 
 void ActivityLog::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
-  if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id())) return;
+  if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
+    return;
   if (has_threads_)
     db_enabled_ = true;
+  g_activity_log_state.Get().AddWhitelistedId(extension->id());
   watchdog_apps_active_++;
   profile_->GetPrefs()->SetInteger(prefs::kWatchdogExtensionActive,
                                    watchdog_apps_active_);
   if (watchdog_apps_active_ == 1)
     ChooseDatabasePolicy();
+
+  if (!is_active_)
+    CheckActive();
 }
 
 void ActivityLog::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UnloadedExtensionInfo::Reason reason) {
-  if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id())) return;
+  if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
+    return;
   watchdog_apps_active_--;
   profile_->GetPrefs()->SetInteger(prefs::kWatchdogExtensionActive,
                                    watchdog_apps_active_);
@@ -473,6 +665,9 @@ void ActivityLog::OnExtensionUnloaded(content::BrowserContext* browser_context,
           switches::kEnableExtensionActivityLogging)) {
     db_enabled_ = false;
   }
+
+  if (is_active_)
+    CheckActive();
 }
 
 // OnExtensionUnloaded will also be called right before this.
@@ -507,8 +702,7 @@ void ActivityLog::RegisterProfilePrefs(
 // LOG ACTIONS. ----------------------------------------------------------------
 
 void ActivityLog::LogAction(scoped_refptr<Action> action) {
-  if (ActivityLogAPI::IsExtensionWhitelisted(action->extension_id()))
-    return;
+  DCHECK(ShouldLog(action->extension_id()));
 
   // Perform some preprocessing of the Action data: convert tab IDs to URLs and
   // mask out incognito URLs if appropriate.
@@ -535,13 +729,17 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
     VLOG(1) << action->PrintForDebug();
 }
 
+bool ActivityLog::ShouldLog(const std::string& extension_id) const {
+  return is_active_ && !ActivityLogAPI::IsExtensionWhitelisted(extension_id);
+}
+
 void ActivityLog::OnScriptsExecuted(
     const content::WebContents* web_contents,
     const ExecutingScriptsMap& extension_ids,
     const GURL& on_url) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  if (!is_active_)
+    return;
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   for (ExecutingScriptsMap::const_iterator it = extension_ids.begin();
        it != extension_ids.end(); ++it) {
     const Extension* extension =
@@ -564,7 +762,7 @@ void ActivityLog::OnScriptsExecuted(
           web_contents->GetBrowserContext()->IsOffTheRecord());
 
       const prerender::PrerenderManager* prerender_manager =
-          prerender::PrerenderManagerFactory::GetForProfile(profile);
+          prerender::PrerenderManagerFactory::GetForProfile(profile_);
       if (prerender_manager &&
           prerender_manager->IsWebContentsPrerendering(web_contents, NULL))
         action->mutable_other()->SetBoolean(constants::kActionPrerender, true);
@@ -576,31 +774,6 @@ void ActivityLog::OnScriptsExecuted(
       LogAction(action);
     }
   }
-}
-
-void ActivityLog::OnApiEventDispatched(
-    const std::string& extension_id,
-    const std::string& event_name,
-    std::unique_ptr<base::ListValue> event_args) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_refptr<Action> action = new Action(extension_id,
-                                            base::Time::Now(),
-                                            Action::ACTION_API_EVENT,
-                                            event_name);
-  action->set_args(std::move(event_args));
-  LogAction(action);
-}
-
-void ActivityLog::OnApiFunctionCalled(const std::string& extension_id,
-                                      const std::string& api_name,
-                                      std::unique_ptr<base::ListValue> args) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_refptr<Action> action = new Action(extension_id,
-                                            base::Time::Now(),
-                                            Action::ACTION_API_CALL,
-                                            api_name);
-  action->set_args(std::move(args));
-  LogAction(action);
 }
 
 // LOOKUP ACTIONS. -------------------------------------------------------------
@@ -658,6 +831,54 @@ void ActivityLog::DeleteDatabase() {
   if (!database_policy_)
     return;
   database_policy_->DeleteDatabase();
+}
+
+void ActivityLog::CheckActive() {
+  bool has_db = db_enabled_ && database_policy_;
+  ActivityLogState& state = g_activity_log_state.Get();
+  content::BrowserContext* off_the_record =
+      profile_->HasOffTheRecordProfile() ? profile_->GetOffTheRecordProfile()
+                                         : nullptr;
+  if (has_db || IsWatchdogAppActive()) {
+    if (is_active_)
+      return;  // Already enabled.
+    state.AddActiveContext(profile_);
+    if (off_the_record)
+      state.AddActiveContext(off_the_record);
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                   content::NotificationService::AllSources());
+    is_active_ = true;
+  } else if (is_active_) {
+    state.RemoveActiveContext(profile_);
+    if (off_the_record)
+      state.RemoveActiveContext(off_the_record);
+    registrar_.RemoveAll();
+    is_active_ = false;
+  }
+}
+
+void ActivityLog::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  DCHECK(is_active_);
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_CREATED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (profile_->IsSameProfile(profile))
+        g_activity_log_state.Get().AddActiveContext(profile);
+      break;
+    }
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (profile_->IsSameProfile(profile))
+        g_activity_log_state.Get().RemoveActiveContext(profile);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }
 
 template <>

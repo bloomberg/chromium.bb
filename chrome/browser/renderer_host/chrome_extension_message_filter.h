@@ -25,6 +25,7 @@ class FilePath;
 }
 
 namespace extensions {
+class ActivityLog;
 class InfoMap;
 struct Message;
 }
@@ -108,6 +109,9 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Returns true if an action should be logged for the given extension.
+  bool ShouldLogExtensionAction(const std::string& extension_id) const;
+
   const int render_process_id_;
 
   // The Profile associated with our renderer process.  This should only be
@@ -115,6 +119,10 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
   // may outlive |profile_|, so make sure to NULL check if in doubt; async
   // calls and the like.
   Profile* profile_;
+
+  // The ActivityLog associated with the given profile. Also only safe to
+  // access on the UI thread, and may be null.
+  extensions::ActivityLog* activity_log_;
 
   scoped_refptr<extensions::InfoMap> extension_info_map_;
 

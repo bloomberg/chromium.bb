@@ -16,11 +16,11 @@
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/scoped_observer.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
-#include "extensions/browser/api_activity_monitor.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/script_execution_observer.h"
@@ -46,9 +46,9 @@ class ExtensionRegistry;
 // each profile.
 //
 class ActivityLog : public BrowserContextKeyedAPI,
-                    public ApiActivityMonitor,
                     public ScriptExecutionObserver,
-                    public ExtensionRegistryObserver {
+                    public ExtensionRegistryObserver,
+                    public content::NotificationObserver {
  public:
   // Observers can listen for activity events. There is probably only one
   // observer: the activityLogPrivate API.
@@ -72,6 +72,9 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // to the database, to any observers, and logs to the console if in testing
   // mode.
   void LogAction(scoped_refptr<Action> action);
+
+  // Returns true if an event for the given extension should be logged.
+  bool ShouldLog(const std::string& extension_id) const;
 
   // Gets all actions that match the specified fields. URLs are treated like
   // prefixes; other fields are exact matches. Empty strings are not matched to
@@ -98,16 +101,6 @@ class ActivityLog : public BrowserContextKeyedAPI,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               extensions::UninstallReason reason) override;
-
-  // ApiActivityMonitor.
-  void OnApiEventDispatched(
-      const std::string& extension_id,
-      const std::string& event_name,
-      std::unique_ptr<base::ListValue> event_args) override;
-  void OnApiFunctionCalled(
-      const std::string& extension_id,
-      const std::string& api_name,
-      std::unique_ptr<base::ListValue> event_args) override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -158,6 +151,14 @@ class ActivityLog : public BrowserContextKeyedAPI,
   void ChooseDatabasePolicy();
   void SetDatabasePolicy(ActivityLogPolicy::PolicyType policy_type);
 
+  // Checks the current |is_active_| state and modifies it if appropriate.
+  void CheckActive();
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ActivityLog"; }
   static const bool kServiceRedirectedInIncognito = true;
@@ -201,6 +202,11 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // kWatchdogExtensionActive pref variable. Since there are multiple valid
   // extension IDs, this needs to be an int to count how many are installed.
   int watchdog_apps_active_;
+
+  // True if the activity log is currently active.
+  bool is_active_;
+
+  content::NotificationRegistrar registrar_;
 
   FRIEND_TEST_ALL_PREFIXES(ActivityLogApiTest, TriggerEvent);
   FRIEND_TEST_ALL_PREFIXES(ActivityLogEnabledTest, AppAndCommandLine);

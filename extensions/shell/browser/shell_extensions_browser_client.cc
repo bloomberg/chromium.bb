@@ -167,12 +167,6 @@ bool ShellExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
   return false;
 }
 
-ApiActivityMonitor* ShellExtensionsBrowserClient::GetApiActivityMonitor(
-    BrowserContext* context) {
-  // app_shell doesn't monitor API function calls or events.
-  return NULL;
-}
-
 ExtensionSystemProvider*
 ShellExtensionsBrowserClient::GetExtensionSystemFactory() {
   return ShellExtensionSystemFactory::GetInstance();

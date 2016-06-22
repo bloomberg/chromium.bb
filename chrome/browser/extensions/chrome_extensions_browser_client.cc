@@ -248,12 +248,6 @@ bool ChromeExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
 #endif
 }
 
-ApiActivityMonitor* ChromeExtensionsBrowserClient::GetApiActivityMonitor(
-    content::BrowserContext* context) {
-  // The ActivityLog monitors and records function calls and events.
-  return ActivityLog::GetInstance(context);
-}
-
 ExtensionSystemProvider*
 ChromeExtensionsBrowserClient::GetExtensionSystemFactory() {
   return ExtensionSystemFactory::GetInstance();

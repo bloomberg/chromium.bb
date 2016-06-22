@@ -15,14 +15,6 @@ class ChromeExtensionWebRequestEventRouterDelegate
   ChromeExtensionWebRequestEventRouterDelegate();
   ~ChromeExtensionWebRequestEventRouterDelegate() override;
 
-  // WebRequestEventRouterDelegate implementation.
-  void LogExtensionActivity(
-      content::BrowserContext* browser_context,
-      bool is_incognito,
-      const std::string& extension_id,
-      const GURL& url,
-      const std::string& api_call,
-      std::unique_ptr<base::DictionaryValue> details) override;
   void NotifyWebRequestWithheld(int render_process_id,
                                 int render_frame_id,
                                 const std::string& extension_id) override;

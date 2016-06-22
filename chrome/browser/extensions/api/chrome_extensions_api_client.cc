@@ -118,9 +118,9 @@ WebViewPermissionHelperDelegate* ChromeExtensionsAPIClient::
   return new ChromeWebViewPermissionHelperDelegate(web_view_permission_helper);
 }
 
-WebRequestEventRouterDelegate*
+std::unique_ptr<WebRequestEventRouterDelegate>
 ChromeExtensionsAPIClient::CreateWebRequestEventRouterDelegate() const {
-  return new ChromeExtensionWebRequestEventRouterDelegate();
+  return base::WrapUnique(new ChromeExtensionWebRequestEventRouterDelegate());
 }
 
 scoped_refptr<ContentRulesRegistry>

@@ -44,7 +44,6 @@ class UpdateClient;
 
 namespace extensions {
 
-class ApiActivityMonitor;
 class ComponentExtensionResourceManager;
 class Extension;
 class ExtensionCache;
@@ -176,11 +175,6 @@ class ExtensionsBrowserClient {
 
   // Return true if the user is logged in as a public session.
   virtual bool IsLoggedInAsPublicAccount() = 0;
-
-  // Returns the embedder's ApiActivityMonitor for |context|. Returns NULL if
-  // the embedder does not monitor extension API activity.
-  virtual ApiActivityMonitor* GetApiActivityMonitor(
-      content::BrowserContext* context) = 0;
 
   // Returns the factory that provides an ExtensionSystem to be returned from
   // ExtensionSystem::Get.

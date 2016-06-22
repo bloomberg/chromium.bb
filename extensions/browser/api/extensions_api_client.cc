@@ -71,9 +71,9 @@ WebViewPermissionHelperDelegate* ExtensionsAPIClient::
   return new WebViewPermissionHelperDelegate(web_view_permission_helper);
 }
 
-WebRequestEventRouterDelegate*
+std::unique_ptr<WebRequestEventRouterDelegate>
 ExtensionsAPIClient::CreateWebRequestEventRouterDelegate() const {
-  return new WebRequestEventRouterDelegate();
+  return nullptr;
 }
 
 scoped_refptr<ContentRulesRegistry>
