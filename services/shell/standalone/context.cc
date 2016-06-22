@@ -220,10 +220,10 @@ void Context::Shutdown() {
 
   TRACE_EVENT0("mojo_shell", "Context::Shutdown");
   // Post a task in case OnShutdownComplete is called synchronously.
-  base::MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE, base::Bind(mojo::edk::ShutdownIPCSupport));
   // We'll quit when we get OnShutdownComplete().
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void Context::OnShutdownComplete() {

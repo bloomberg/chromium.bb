@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -59,7 +60,7 @@ int TestNativeMain(shell::ShellClient* shell_client) {
     base::MessageLoop loop;
     shell::ShellConnection impl(shell_client,
                                 shell::GetShellClientRequestFromCommandLine());
-    loop.Run();
+    base::RunLoop().Run();
 
     mojo::edk::ShutdownIPCSupport();
   }

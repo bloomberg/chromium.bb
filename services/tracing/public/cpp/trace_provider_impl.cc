@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
@@ -59,7 +60,7 @@ void TraceProviderImpl::ForceEnableTracing() {
       base::trace_event::TraceConfig("*", base::trace_event::RECORD_UNTIL_FULL),
       base::trace_event::TraceLog::RECORDING_MODE);
   tracing_forced_ = true;
-  base::MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&TraceProviderImpl::DelayedStop, weak_factory_.GetWeakPtr()));
 }
@@ -69,7 +70,7 @@ void TraceProviderImpl::DelayedStop() {
   // method (within which TraceProviderImpl is created) takes more than one
   // second to finish; thus we start the countdown only when the current thread
   // is unblocked.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TraceProviderImpl::StopIfForced, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(1));

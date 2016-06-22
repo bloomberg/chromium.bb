@@ -15,6 +15,8 @@
 #include "base/i18n/icu_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "services/shell/standalone/context.h"
@@ -40,12 +42,11 @@ int LauncherProcessMain() {
     CHECK(base::i18n::InitializeICU());
     shell_context.Init(nullptr);
 
-    message_loop.PostTask(
-        FROM_HERE,
-        base::Bind(&Context::RunCommandLineApplication,
-                    base::Unretained(&shell_context)));
+    message_loop.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&Context::RunCommandLineApplication,
+                              base::Unretained(&shell_context)));
 
-    message_loop.Run();
+    base::RunLoop().Run();
 
     // Must be called before |message_loop| is destroyed.
     shell_context.Shutdown();
