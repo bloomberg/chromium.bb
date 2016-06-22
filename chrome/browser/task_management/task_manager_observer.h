@@ -73,13 +73,13 @@ class TaskManagerObserver {
   // Notifies the observer that a chrome task with |id| has started and the task
   // manager is now monitoring it. The resource usage of this newly-added task
   // will remain invalid until the next refresh cycle of the task manager.
-  virtual void OnTaskAdded(TaskId id) = 0;
+  virtual void OnTaskAdded(TaskId id) {}
 
   // Notifies the observer that a chrome task with |id| is about to be destroyed
   // and removed from the task manager right after this call. Observers which
   // are interested in doing some calculations related to the resource usage of
   // this task upon its removal may do so inside this call.
-  virtual void OnTaskToBeRemoved(TaskId id) = 0;
+  virtual void OnTaskToBeRemoved(TaskId id) {}
 
   // Notifies the observer that the task manager has just finished a refresh
   // cycle to calculate the resources usage of all tasks whose IDs are given in
@@ -87,7 +87,7 @@ class TaskManagerObserver {
   // browser process is at the top of the list and the rest of the IDs will be
   // sorted by the process IDs on which the tasks are running, then by the task
   // IDs themselves.
-  virtual void OnTasksRefreshed(const TaskIdList& task_ids) = 0;
+  virtual void OnTasksRefreshed(const TaskIdList& task_ids) {}
 
   // Notifies the observer that the task manager has just finished a refresh
   // cycle that calculated all the resource usage of all tasks whose IDs are in

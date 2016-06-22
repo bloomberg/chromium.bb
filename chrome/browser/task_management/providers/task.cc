@@ -24,11 +24,11 @@ int64_t g_last_id = 0;
 
 }  // namespace
 
-
 Task::Task(const base::string16& title,
            const std::string& rappor_sample,
            const gfx::ImageSkia* icon,
-           base::ProcessHandle handle)
+           base::ProcessHandle handle,
+           base::ProcessId process_id)
     : task_id_(g_last_id++),
       network_usage_(-1),
       current_byte_count_(-1),
@@ -36,11 +36,11 @@ Task::Task(const base::string16& title,
       rappor_sample_name_(rappor_sample),
       icon_(icon ? *icon : gfx::ImageSkia()),
       process_handle_(handle),
-      process_id_(base::GetProcId(handle)) {
-}
+      process_id_(process_id != base::kNullProcessId
+                      ? process_id
+                      : base::GetProcId(handle)) {}
 
-Task::~Task() {
-}
+Task::~Task() {}
 
 // static
 base::string16 Task::GetProfileNameFromProfile(Profile* profile) {
@@ -105,6 +105,14 @@ base::string16 Task::GetProfileName() const {
 
 int Task::GetTabId() const {
   return -1;
+}
+
+bool Task::HasParentTask() const {
+  return GetParentTask() != nullptr;
+}
+
+const Task* Task::GetParentTask() const {
+  return nullptr;
 }
 
 bool Task::ReportsSqliteMemory() const {

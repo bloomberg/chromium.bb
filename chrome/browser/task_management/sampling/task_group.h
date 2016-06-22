@@ -45,10 +45,6 @@ class TaskGroup {
                base::TimeDelta update_interval,
                int64_t refresh_flags);
 
-  // Appends the sorted IDs of the tasks that belong to this group to
-  // |out_list|.
-  void AppendSortedTaskIds(TaskIdList* out_list) const;
-
   Task* GetTaskById(TaskId task_id) const;
 
   // This is to be called after the task manager had informed its observers with
@@ -63,8 +59,9 @@ class TaskGroup {
   const base::ProcessHandle& process_handle() const { return process_handle_; }
   const base::ProcessId& process_id() const { return process_id_; }
 
-  size_t num_tasks() const { return tasks_.size(); }
-  bool empty() const { return tasks_.empty(); }
+  const std::vector<Task*>& tasks() const { return tasks_; }
+  size_t num_tasks() const { return tasks().size(); }
+  bool empty() const { return tasks().empty(); }
 
   double cpu_usage() const { return cpu_usage_; }
   int64_t private_bytes() const { return memory_usage_.private_bytes; }
@@ -129,9 +126,9 @@ class TaskGroup {
 
   scoped_refptr<TaskGroupSampler> worker_thread_sampler_;
 
-  // Maps the Tasks by their IDs.
+  // Lists the Tasks in this TaskGroup.
   // Tasks are not owned by the TaskGroup. They're owned by the TaskProviders.
-  std::map<TaskId, Task*> tasks_;
+  std::vector<Task*> tasks_;
 
   // Flags will be used to determine when the background calculations has
   // completed for the enabled refresh types for this TaskGroup.

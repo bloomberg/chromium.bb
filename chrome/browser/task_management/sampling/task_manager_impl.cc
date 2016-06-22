@@ -4,10 +4,14 @@
 
 #include "chrome/browser/task_management/sampling/task_manager_impl.h"
 
+#include <algorithm>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_management/providers/browser_process_task_provider.h"
@@ -250,21 +254,90 @@ const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
       "task manager for it to start running";
 
   if (sorted_task_ids_.empty()) {
-    sorted_task_ids_.reserve(task_groups_by_task_id_.size());
+    // |comparator| groups and sorts by subtask-ness (to push all subtasks to be
+    // last), then by process type (e.g. the browser process should be first;
+    // renderer processes should be together), then tab id (processes used by
+    // the same tab should be kept together, and a tab should have a stable
+    // position in the list as it cycles through processes, and tab creation
+    // order is meaningful), and finally by task id (when all else is equal, put
+    // the oldest tasks first).
+    auto comparator = [](const Task* a, const Task* b) -> bool {
+      return std::make_tuple(a->HasParentTask(), a->GetType(), a->GetTabId(),
+                             a->task_id()) <
+             std::make_tuple(b->HasParentTask(), b->GetType(), b->GetTabId(),
+                             b->task_id());
+    };
 
-    // Ensure browser process group of task IDs are at the beginning of the
-    // list.
-    auto it = task_groups_by_proc_id_.find(base::GetCurrentProcId());
-    DCHECK(it != task_groups_by_proc_id_.end());
-    const TaskGroup* browser_group = it->second;
-    browser_group->AppendSortedTaskIds(&sorted_task_ids_);
+    const size_t num_groups = task_groups_by_proc_id_.size();
+    const size_t num_tasks = task_groups_by_task_id_.size();
 
+    // Populate |tasks_to_visit| with one task from each group.
+    std::vector<const Task*> tasks_to_visit;
+    tasks_to_visit.reserve(num_groups);
+    std::unordered_map<const Task*, std::vector<const Task*>> children;
     for (const auto& groups_pair : task_groups_by_proc_id_) {
-      if (groups_pair.second == browser_group)
+      // The first task in the group (per |comparator|) is the one used for
+      // sorting the group relative to other groups.
+      const std::vector<Task*>& tasks = groups_pair.second->tasks();
+      Task* group_task =
+          *std::min_element(tasks.begin(), tasks.end(), comparator);
+      tasks_to_visit.push_back(group_task);
+
+      // Build the parent-to-child map, for use later.
+      for (const Task* task : tasks) {
+        if (task->HasParentTask())
+          children[task->GetParentTask()].push_back(task);
+        else
+          DCHECK(!group_task->HasParentTask());
+      }
+    }
+
+    // Now sort |tasks_to_visit| in reverse order (putting the browser process
+    // at back()). We will treat it as a stack from now on.
+    std::sort(tasks_to_visit.rbegin(), tasks_to_visit.rend(), comparator);
+    DCHECK_EQ(Task::BROWSER, tasks_to_visit.back()->GetType());
+
+    // Using |tasks_to_visit| as a stack, and |visited_groups| to track which
+    // groups we've already added, add groups to |sorted_task_ids_| until all
+    // groups have been added.
+    sorted_task_ids_.reserve(num_tasks);
+    std::unordered_set<TaskGroup*> visited_groups;
+    visited_groups.reserve(num_groups);
+    std::vector<Task*> current_group_tasks;  // Outside loop for fewer mallocs.
+    while (visited_groups.size() < num_groups) {
+      DCHECK(!tasks_to_visit.empty());
+      TaskGroup* current_group =
+          GetTaskGroupByTaskId(tasks_to_visit.back()->task_id());
+      tasks_to_visit.pop_back();
+
+      // Mark |current_group| as visited. If this fails, we've already added
+      // the group, and should skip over it.
+      if (!visited_groups.insert(current_group).second)
         continue;
 
-      groups_pair.second->AppendSortedTaskIds(&sorted_task_ids_);
+      // Make a copy of |current_group->tasks()|, sort it, and append the ids.
+      current_group_tasks = current_group->tasks();
+      std::sort(current_group_tasks.begin(), current_group_tasks.end(),
+                comparator);
+      for (Task* task : current_group_tasks)
+        sorted_task_ids_.push_back(task->task_id());
+
+      // Find the children of the tasks we just added, and push them into
+      // |tasks_to_visit|, so that we visit them soon. Work in reverse order,
+      // so that we visit them in forward order.
+      for (Task* parent : base::Reversed(current_group_tasks)) {
+        auto children_of_parent = children.find(parent);
+        if (children_of_parent != children.end()) {
+          // Sort children[parent], and then append in reversed order.
+          std::sort(children_of_parent->second.begin(),
+                    children_of_parent->second.end(), comparator);
+          tasks_to_visit.insert(tasks_to_visit.end(),
+                                children_of_parent->second.rbegin(),
+                                children_of_parent->second.rend());
+        }
+      }
     }
+    DCHECK_EQ(num_tasks, sorted_task_ids_.size());
   }
 
   return sorted_task_ids_;
@@ -276,7 +349,12 @@ TaskIdList TaskManagerImpl::GetIdsOfTasksSharingSameProcess(
       "task manager for it to start running";
 
   TaskIdList result;
-  GetTaskGroupByTaskId(task_id)->AppendSortedTaskIds(&result);
+  TaskGroup* group = GetTaskGroupByTaskId(task_id);
+  if (group) {
+    result.reserve(group->tasks().size());
+    for (Task* task : group->tasks())
+      result.push_back(task->task_id());
+  }
   return result;
 }
 

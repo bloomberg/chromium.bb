@@ -28,30 +28,39 @@ namespace task_management {
 // shared by multiple tasks.
 class Task {
  public:
+  // Note that the declaration order here determines the default sort order
+  // in the task manager.
   enum Type {
     UNKNOWN = 0,
-    BROWSER,        /* The main browser process. */
-    RENDERER,       /* A normal WebContents renderer process. */
-    EXTENSION,      /* An extension or app process. */
+
+    /* Singleton processes first that don't belong to a particular tab. */
+    BROWSER, /* The main browser process. */
+    GPU,     /* A graphics process. */
+    ARC,     /* An ARC process. */
+    ZYGOTE,  /* A Linux zygote process. */
+    UTILITY, /* A browser utility process. */
+
+    /* Per-Tab processes next. */
+    RENDERER,  /* A normal WebContents renderer process. */
+    EXTENSION, /* An extension or app process. */
+
+    /* Plugin processes last.*/
     GUEST,          /* A browser plugin guest process. */
     PLUGIN,         /* A plugin process. */
     WORKER,         /* A web worker process. */
     NACL,           /* A NativeClient loader or broker process. */
-    UTILITY,        /* A browser utility process. */
-    ZYGOTE,         /* A Linux zygote process. */
     SANDBOX_HELPER, /* A sandbox helper process. */
-    GPU,            /* A graphics process. */
-    ARC,            /* An ARC process. */
   };
 
   // Create a task with the given |title| and the given favicon |icon|. This
   // task runs on a process whose handle is |handle|. |rappor_sample| is the
   // name of the sample to be recorded if this task needs to be reported by
-  // Rappor.
+  // Rappor. If |process_id| is not supplied, it will be determined by |handle|.
   Task(const base::string16& title,
        const std::string& rappor_sample,
        const gfx::ImageSkia* icon,
-       base::ProcessHandle handle);
+       base::ProcessHandle handle,
+       base::ProcessId process_id = base::kNullProcessId);
   virtual ~Task();
 
   // Gets the name of the given |profile| from the ProfileAttributesStorage.
@@ -101,6 +110,12 @@ class Task {
   // WebContents used for a tab. Returns -1 if this task does not represent
   // a renderer, or a contents of a tab.
   virtual int GetTabId() const;
+
+  // For Tasks that represent a subactivity of some other task (e.g. a plugin
+  // embedded in a page), this returns the Task representing the parent
+  // activity.
+  bool HasParentTask() const;
+  virtual const Task* GetParentTask() const;
 
   // Getting the Sqlite used memory (in bytes). Not all tasks reports Sqlite
   // memory, in this case a default invalid value of -1 will be returned.

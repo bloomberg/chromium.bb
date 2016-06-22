@@ -74,6 +74,10 @@ void SubframeTask::UpdateFavicon() {
   // frame, but this Task represents other frames, so we don't care.
 }
 
+Task* SubframeTask::GetParentTask() const {
+  return main_task_;
+}
+
 void SubframeTask::Activate() {
   // Activate the root task.
   main_task_->Activate();

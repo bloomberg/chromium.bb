@@ -29,6 +29,9 @@ class SubframeTask : public RendererTask {
   void UpdateFavicon() override;
   void Activate() override;
 
+  // task_management::Task:
+  Task* GetParentTask() const override;
+
  private:
   // The task for the main frame of this WebContents.
   RendererTask* main_task_;

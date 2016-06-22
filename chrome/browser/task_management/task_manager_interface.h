@@ -189,10 +189,12 @@ class TaskManagerInterface {
       TaskId task_id,
       blink::WebCache::ResourceTypeStats* stats) const = 0;
 
-  // Gets the list of task IDs currently tracked by the task manager. The list
-  // will be sorted such that the task representing the browser process is at
-  // the top of the list and the rest of the IDs will be sorted by the process
-  // IDs on which the tasks are running, then by the task IDs themselves.
+  // Gets the list of task IDs currently tracked by the task manager. Tasks that
+  // share the same process id will always be consecutive. The list will be
+  // sorted in a way that reflects the process tree: the browser process will be
+  // first, followed by the gpu process if it exists. Related processes (e.g., a
+  // subframe process and its parent) will be kept together if possible. Callers
+  // can expect this ordering to be stable when a process is added or removed.
   virtual const TaskIdList& GetTaskIdsList() const = 0;
 
   // Gets the list of task IDs of the tasks that run on the same process as the

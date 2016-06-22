@@ -730,6 +730,7 @@
     'chrome_unit_tests_task_manager_sources': [
       'browser/task_management/providers/browser_process_task_unittest.cc',
       'browser/task_management/providers/child_process_task_unittest.cc',
+      'browser/task_management/sampling/task_manager_impl_unittest.cc',
       'browser/task_management/task_manager_observer_unittest.cc',
       'browser/task_management/test_task_manager.cc',
       'browser/task_management/test_task_manager.h',

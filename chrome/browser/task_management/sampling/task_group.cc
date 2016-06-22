@@ -4,6 +4,9 @@
 
 #include "chrome/browser/task_management/sampling/task_group.h"
 
+#include <algorithm>
+#include <limits>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
@@ -112,17 +115,12 @@ TaskGroup::~TaskGroup() {
 
 void TaskGroup::AddTask(Task* task) {
   DCHECK(task);
-  DCHECK(task->process_id() == process_id_);
-  DCHECK(!ContainsKey(tasks_, task->task_id()));
-
-  tasks_[task->task_id()] = task;
+  tasks_.push_back(task);
 }
 
 void TaskGroup::RemoveTask(Task* task) {
   DCHECK(task);
-  DCHECK(ContainsKey(tasks_, task->task_id()));
-
-  tasks_.erase(task->task_id());
+  tasks_.erase(std::remove(tasks_.begin(), tasks_.end(), task), tasks_.end());
 }
 
 void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
@@ -140,8 +138,7 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
       TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_NETWORK_USAGE,
                                                     refresh_flags);
   per_process_network_usage_ = network_usage_refresh_enabled ? 0 : -1;
-  for (auto& task_pair : tasks_) {
-    Task* task = task_pair.second;
+  for (Task* task : tasks_) {
     task->Refresh(update_interval, refresh_flags);
 
     if (network_usage_refresh_enabled && task->ReportsNetworkUsage())
@@ -167,7 +164,7 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
   if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_NACL,
                                                     refresh_flags) &&
       !tasks_.empty()) {
-    RefreshNaClDebugStubPort(tasks_.begin()->second->GetChildProcessUniqueID());
+    RefreshNaClDebugStubPort(tasks_[0]->GetChildProcessUniqueID());
   }
 #endif  // !defined(DISABLE_NACL)
 
@@ -181,18 +178,13 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
   worker_thread_sampler_->Refresh(refresh_flags);
 }
 
-void TaskGroup::AppendSortedTaskIds(TaskIdList* out_list) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(out_list);
-
-  for (const auto& task_pair : tasks_)
-    out_list->push_back(task_pair.first);
-}
-
 Task* TaskGroup::GetTaskById(TaskId task_id) const {
-  auto it = tasks_.find(task_id);
-  DCHECK(it != tasks_.end());
-  return it->second;
+  for (Task* task : tasks_) {
+    if (task->task_id() == task_id)
+      return task;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 void TaskGroup::ClearCurrentBackgroundCalculationsFlags() {

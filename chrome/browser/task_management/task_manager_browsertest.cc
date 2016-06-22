@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -45,6 +47,7 @@
 #include "extensions/common/extension.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -71,7 +74,6 @@ const base::FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
 }  // namespace
 
-// TODO(nick): Move this file into task_management. https://crbug.com/606963
 class TaskManagerBrowserTest : public ExtensionBrowserTest {
  public:
   TaskManagerBrowserTest() {}
@@ -121,6 +123,18 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   }
 
   void TearDownOnMainThread() override { model_.reset(); }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    // Add content/test/data so we can use cross_site_iframe_factory.html
+    base::FilePath test_data_dir;
+    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+    embedded_test_server()->ServeFilesFromDirectory(
+        test_data_dir.AppendASCII("content/test/data/"));
+    ASSERT_TRUE(embedded_test_server()->Start());
+    content::SetupCrossSiteRedirector(embedded_test_server());
+  }
 
  private:
   std::unique_ptr<task_management::TaskManagerTester> model_;
@@ -229,8 +243,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
 
 // Regression test for http://crbug.com/444945.
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NavigateAwayFromHungRenderer) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
   ShowTaskManager();
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
@@ -642,8 +654,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
   GURL::Replacements replace_host;
   replace_host.SetHostStr("localhost");
   GURL base_url = embedded_test_server()->GetURL(
@@ -697,13 +707,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr("localhost");
-  GURL base_url =
-      embedded_test_server()->GetURL("/extensions/api_test/app_process/");
-  base_url = base_url.ReplaceComponents(replace_host);
+  GURL base_url = embedded_test_server()->GetURL(
+      "localhost", "/extensions/api_test/app_process/");
 
   // Open a new tab to an app URL before the app is loaded.
   GURL url(base_url.Resolve("path1/empty.html"));
@@ -732,13 +737,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabBeforeReload) {
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr("localhost");
-  GURL base_url =
-      embedded_test_server()->GetURL("/extensions/api_test/app_process/");
-  base_url = base_url.ReplaceComponents(replace_host);
+  GURL base_url = embedded_test_server()->GetURL(
+      "localhost", "/extensions/api_test/app_process/");
 
   // Open a new tab to an app URL before the app is loaded.
   GURL url(base_url.Resolve("path1/empty.html"));
@@ -914,10 +914,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldUndockedWindow) {
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
   ShowTaskManager();
 
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  content::SetupCrossSiteRedirector(embedded_test_server());
-
   GURL main_url(embedded_test_server()->GetURL(
       "/cross-site/a.com/iframe_cross_site.html"));
   browser()->OpenURL(content::OpenURLParams(main_url, content::Referrer(),
@@ -972,10 +968,6 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, NavigateToSubframeProcess) {
   ShowTaskManager();
 
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  content::SetupCrossSiteRedirector(embedded_test_server());
-
   // Navigate the tab to a page on a.com with cross-process subframes to
   // b.com and c.com.
   GURL a_dotcom(embedded_test_server()->GetURL(
@@ -1020,10 +1012,6 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, NavigateToSubframeProcess) {
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
                        NavigateToSiteWithSubframeToOriginalSite) {
   ShowTaskManager();
-
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  content::SetupCrossSiteRedirector(embedded_test_server());
 
   // Navigate to a page on b.com with a simple (same-site) iframe.
   // This should not show any subframe resources in the task manager.
@@ -1079,10 +1067,6 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
                        CrossSiteIframeBecomesSameSite) {
   ShowTaskManager();
-
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  content::SetupCrossSiteRedirector(embedded_test_server());
 
   // Navigate the tab to a page on a.com with cross-process subframes to
   // b.com and c.com.
@@ -1145,10 +1129,6 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
                        LeavePageWithCrossSiteIframes) {
   ShowTaskManager();
 
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  content::SetupCrossSiteRedirector(embedded_test_server());
-
   // Navigate the tab to a page on a.com with cross-process subframes.
   GURL a_dotcom_with_iframes(embedded_test_server()->GetURL(
       "/cross-site/a.com/iframe_cross_site.html"));
@@ -1187,4 +1167,96 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ASSERT_NO_FATAL_FAILURE(
       WaitForTaskManagerRows(1, MatchTab("Title Of Awesomeness")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnySubframe()));
+}
+
+IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, OrderingOfDependentRows) {
+#if defined(OS_MACOSX)
+  // The ordering under test here is not implemented in the legacy task manager.
+  if (!task_management::TaskManagerInterface::IsNewTaskManagerEnabled())
+    return;
+#endif
+
+  ShowTaskManager();
+
+  GURL a_with_frames(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b,c(d,a,b,c))"));
+  browser()->OpenURL(content::OpenURLParams(a_with_frames, content::Referrer(),
+                                            CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
+
+  if (ShouldExpectSubframes()) {
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchSubframe("http://d.com/")));
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnySubframe()));
+  }
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchTab("Cross-site iframe factory")));
+
+  int index = FindResourceIndex(MatchTab("Cross-site iframe factory"));
+  std::vector<int> subframe_offsets;
+  if (ShouldExpectSubframes()) {
+    subframe_offsets = {
+        FindResourceIndex(MatchSubframe("http://b.com/")) - index,
+        FindResourceIndex(MatchSubframe("http://c.com/")) - index,
+        FindResourceIndex(MatchSubframe("http://d.com/")) - index};
+    EXPECT_THAT(subframe_offsets, testing::UnorderedElementsAre(1, 2, 3));
+  }
+
+  // Opening a new tab should appear below the existing tab.
+  GURL other_tab_url(embedded_test_server()->GetURL(
+      "d.com", "/cross_site_iframe_factory.html?d(a(c(b)))"));
+  browser()->OpenURL(content::OpenURLParams(other_tab_url, content::Referrer(),
+                                            NEW_FOREGROUND_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
+
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(2, MatchTab("Cross-site iframe factory")));
+  if (ShouldExpectSubframes()) {
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(6, MatchAnySubframe()));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(2, MatchSubframe("http://b.com/")));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(2, MatchSubframe("http://c.com/")));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchSubframe("http://d.com/")));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchSubframe("http://a.com/")));
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(6, MatchAnySubframe()));
+  } else {
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnySubframe()));
+  }
+
+  // The first tab may have moved in absolute position in the list (due to
+  // random e.g. zygote or gpu activity).
+  index = FindResourceIndex(MatchTab("Cross-site iframe factory"));
+
+  // Tab 2's rows should immediately follow tab 1.
+  int tab2_start = index + static_cast<int>(subframe_offsets.size()) + 1;
+  int tab2_count = ShouldExpectSubframes() ? 4 : 1;
+  ASSERT_LE(tab2_start + tab2_count, model()->GetRowCount());
+
+  EXPECT_EQ("Tab: Cross-site iframe factory",
+            base::UTF16ToUTF8(model()->GetRowTitle(tab2_start)));
+  if (ShouldExpectSubframes()) {
+    // The relative ordering of tab1's subframe rows shall be the same as what
+    // was observed previously.
+    ASSERT_EQ(subframe_offsets[0],
+              FindResourceIndex(MatchSubframe("http://b.com/")) - index);
+    ASSERT_EQ(subframe_offsets[1],
+              FindResourceIndex(MatchSubframe("http://c.com/")) - index);
+    ASSERT_EQ(subframe_offsets[2],
+              FindResourceIndex(MatchSubframe("http://d.com/")) - index);
+
+    // Because the subframes for tab 2 are nested, their order is deterministic.
+    EXPECT_EQ("Subframe: http://a.com/",
+              base::UTF16ToUTF8(model()->GetRowTitle(tab2_start + 1)));
+    EXPECT_EQ("Subframe: http://c.com/",
+              base::UTF16ToUTF8(model()->GetRowTitle(tab2_start + 2)));
+    EXPECT_EQ("Subframe: http://b.com/",
+              base::UTF16ToUTF8(model()->GetRowTitle(tab2_start + 3)));
+  }
 }
