@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import signal
+import time
 import unittest
 
 import common_util
@@ -45,6 +47,51 @@ class SerializeAttributesTestCase(unittest.TestCase):
       json_dict['baz'] = 'bad'
       foo_fighters = common_util.DeserializeAttributesFromJsonDict(
           json_dict, foo_fighters, ['foo_fighters', 'whisky_bar', 'baz'])
+
+
+class TimeoutScopeTestCase(unittest.TestCase):
+  def testTimeoutRaise(self):
+    self.assertEquals(0, signal.alarm(0))
+
+    with self.assertRaisesRegexp(common_util.TimeoutError, 'hello'):
+      with common_util.TimeoutScope(seconds=1, error_name='hello'):
+        signal.pause()
+        self.fail()
+    self.assertEquals(0, signal.alarm(0))
+
+    with self.assertRaisesRegexp(common_util.TimeoutError, 'world'):
+      with common_util.TimeoutScope(seconds=1, error_name='world'):
+        time.sleep(2)
+    self.assertEquals(0, signal.alarm(0))
+
+  def testCollisionDetection(self):
+    ONE_YEAR = 365 * 24 * 60 * 60
+
+    def _mock_callback(signum, frame):
+      del signum, frame # unused.
+
+    flag = False
+    with self.assertRaises(common_util.TimeoutCollisionError):
+      with common_util.TimeoutScope(seconds=ONE_YEAR, error_name=''):
+        flag = True
+        signal.signal(signal.SIGALRM, _mock_callback)
+    self.assertTrue(flag)
+    self.assertEquals(0, signal.alarm(0))
+
+    flag = False
+    with self.assertRaises(common_util.TimeoutCollisionError):
+      with common_util.TimeoutScope(seconds=ONE_YEAR, error_name=''):
+        flag = True
+        with common_util.TimeoutScope(seconds=ONE_YEAR, error_name=''):
+          self.fail()
+    self.assertTrue(flag)
+    self.assertEquals(0, signal.alarm(0))
+
+    signal.alarm(ONE_YEAR)
+    with self.assertRaises(common_util.TimeoutCollisionError):
+      with common_util.TimeoutScope(seconds=ONE_YEAR, error_name=''):
+        self.fail()
+    self.assertEquals(0, signal.alarm(0))
 
 
 if __name__ == '__main__':

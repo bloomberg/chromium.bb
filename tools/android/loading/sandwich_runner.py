@@ -19,6 +19,7 @@ sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'telemetry',
 import websocket
 
 import chrome_cache
+import common_util
 import controller
 import devtools_monitor
 import device_setup
@@ -86,6 +87,7 @@ class SandwichRunner(object):
   """
   _ATTEMPT_COUNT = 3
   _STOP_DELAY_MULTIPLIER = 2
+  _ABORT_RUN_TIMEOUT_SECONDS = 30 * 60
 
   def __init__(self):
     """Configures a sandwich runner out of the box.
@@ -181,30 +183,32 @@ class SandwichRunner(object):
     if self.wpr_record or self.cache_operation == CacheOperation.SAVE:
       stop_delay_multiplier = self._STOP_DELAY_MULTIPLIER
     # TODO(gabadie): add a way to avoid recording a trace.
-    with self._chrome_ctl.Open() as connection:
-      if clear_cache:
-        connection.ClearCache()
+    with common_util.TimeoutScope(
+        self._ABORT_RUN_TIMEOUT_SECONDS, 'Sandwich run overdue.'):
+      with self._chrome_ctl.Open() as connection:
+        if clear_cache:
+          connection.ClearCache()
 
-      # Binds all parameters of RecordUrlNavigation() to avoid repetition.
-      def RecordTrace():
-        return loading_trace.LoadingTrace.RecordUrlNavigation(
-            url=self.url,
-            connection=connection,
-            chrome_metadata=self._chrome_ctl.ChromeMetadata(),
-            categories=categories,
-            timeout_seconds=_DEVTOOLS_TIMEOUT,
-            stop_delay_multiplier=stop_delay_multiplier)
+        # Binds all parameters of RecordUrlNavigation() to avoid repetition.
+        def RecordTrace():
+          return loading_trace.LoadingTrace.RecordUrlNavigation(
+              url=self.url,
+              connection=connection,
+              chrome_metadata=self._chrome_ctl.ChromeMetadata(),
+              categories=categories,
+              timeout_seconds=_DEVTOOLS_TIMEOUT,
+              stop_delay_multiplier=stop_delay_multiplier)
 
-      if run_path is not None and self.record_video:
-        device = self._chrome_ctl.GetDevice()
-        if device is None:
-          raise RuntimeError('Can only record video on a remote device.')
-        video_recording_path = os.path.join(run_path, VIDEO_FILENAME)
-        with device_setup.RemoteSpeedIndexRecorder(device, connection,
-                                                   video_recording_path):
+        if run_path is not None and self.record_video:
+          device = self._chrome_ctl.GetDevice()
+          if device is None:
+            raise RuntimeError('Can only record video on a remote device.')
+          video_recording_path = os.path.join(run_path, VIDEO_FILENAME)
+          with device_setup.RemoteSpeedIndexRecorder(device, connection,
+                                                     video_recording_path):
+            trace = RecordTrace()
+        else:
           trace = RecordTrace()
-      else:
-        trace = RecordTrace()
     if run_path is not None:
       trace_path = os.path.join(run_path, TRACE_FILENAME)
       trace.ToJsonFile(trace_path)

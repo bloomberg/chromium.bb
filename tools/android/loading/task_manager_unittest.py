@@ -4,6 +4,7 @@
 
 import argparse
 import contextlib
+import errno
 import os
 import re
 import shutil
@@ -12,6 +13,7 @@ import sys
 import tempfile
 import unittest
 
+import common_util
 import task_manager
 
 
@@ -405,12 +407,28 @@ class CommandLineControlledExecutionTest(TaskManagerTestCase):
     def SimulateKillTask():
       self.task_execution_history.append(SimulateKillTask.name)
       raise MemoryError
+    @builder.RegisterTask('timeout_error', dependencies=[TaskD])
+    def SimulateTimeoutError():
+      self.task_execution_history.append(SimulateTimeoutError.name)
+      raise common_util.TimeoutError
+    @builder.RegisterTask('errno_ENOSPC', dependencies=[TaskD])
+    def SimulateENOSPC():
+      self.task_execution_history.append(SimulateENOSPC.name)
+      raise IOError(errno.ENOSPC, os.strerror(errno.ENOSPC))
+    @builder.RegisterTask('errno_EPERM', dependencies=[TaskD])
+    def SimulateEPERM():
+      self.task_execution_history.append(SimulateEPERM.name)
+      raise IOError(errno.EPERM, os.strerror(errno.EPERM))
 
     default_final_tasks = [TaskD, TaskE]
     if self.with_raise_exception_tasks:
-      default_final_tasks.append(RaiseExceptionTask)
-      default_final_tasks.append(RaiseKeyboardInterruptTask)
-      default_final_tasks.append(SimulateKillTask)
+      default_final_tasks.extend([
+          RaiseExceptionTask,
+          RaiseKeyboardInterruptTask,
+          SimulateKillTask,
+          SimulateTimeoutError,
+          SimulateENOSPC,
+          SimulateEPERM])
     task_parser = task_manager.CommandLineParser()
     parser = argparse.ArgumentParser(parents=[task_parser],
         fromfile_prefix_chars=task_manager.FROMFILE_PREFIX_CHARS)
@@ -521,6 +539,31 @@ class CommandLineControlledExecutionTest(TaskManagerTestCase):
     self.assertListEqual(['sudden_death'], self.task_execution_history)
     with open(self.ResumeFilePath()) as resume_input:
       self.assertEqual(EXPECTED_RESUME_FILE_CONTENT, resume_input.read())
+
+  def testTimeoutError(self):
+    self.with_raise_exception_tasks = True
+    self.Execute(['-k', '-e', 'timeout_error', '-e', r'^b$'])
+    self.assertListEqual(['a', 'd', 'timeout_error', 'b'],
+                         self.task_execution_history)
+    with open(self.ResumeFilePath()) as resume_input:
+      self.assertEqual('-f\n^d$\n-f\n^b$', resume_input.read())
+
+  def testENOSPC(self):
+    self.with_raise_exception_tasks = True
+    with self.assertRaises(IOError):
+      self.Execute(['-k', '-e', 'errno_ENOSPC', '-e', r'^a$'])
+    self.assertListEqual(
+        ['a', 'd', 'errno_ENOSPC'], self.task_execution_history)
+    with open(self.ResumeFilePath()) as resume_input:
+      self.assertEqual('-f\n^a$\n-f\n^d$\n', resume_input.read())
+
+  def testEPERM(self):
+    self.with_raise_exception_tasks = True
+    self.Execute(['-k', '-e', 'errno_EPERM', '-e', r'^b$'])
+    self.assertListEqual(['a', 'd', 'errno_EPERM', 'b'],
+                         self.task_execution_history)
+    with open(self.ResumeFilePath()) as resume_input:
+      self.assertEqual('-f\n^d$\n-f\n^b$', resume_input.read())
 
   def testImpossibleTasks(self):
     self.assertEqual(1, self.Execute(['-f', r'^a$', '-e', r'^c$']))

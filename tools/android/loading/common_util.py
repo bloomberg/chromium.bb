@@ -8,6 +8,7 @@ import logging
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -114,3 +115,36 @@ def GetCommandLineForLogging(cmd, env_diff=None):
     for key, value in env_diff.iteritems():
       cmd_str += '{}={} '.format(key, value)
   return cmd_str + subprocess.list2cmdline(cmd)
+
+
+# TimeoutError inherit from BaseException to pass through DevUtils' retries
+# decorator that catches only exceptions inheriting from Exception.
+class TimeoutError(BaseException):
+  pass
+
+
+# If this exception is ever raised, then might be better to replace this
+# implementation with Thread.join(timeout=XXX).
+class TimeoutCollisionError(Exception):
+  pass
+
+
+@contextlib.contextmanager
+def TimeoutScope(seconds, error_name):
+  """Raises TimeoutError if the with statement is finished within |seconds|."""
+  assert seconds > 0
+  def _signal_callback(signum, frame):
+    del signum, frame # unused.
+    raise TimeoutError(error_name)
+
+  try:
+    signal.signal(signal.SIGALRM, _signal_callback)
+    if signal.alarm(seconds) != 0:
+      raise TimeoutCollisionError(
+          'Discarding an alarm that was scheduled before.')
+    yield
+  finally:
+    signal.alarm(0)
+    if signal.getsignal(signal.SIGALRM) != _signal_callback:
+      raise TimeoutCollisionError('Looks like there is a signal.signal(signal.'
+          'SIGALRM) made within the with statement.')
