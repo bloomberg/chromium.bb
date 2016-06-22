@@ -48,6 +48,8 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
     controller_ = controller;
   }
 
+  void ResetController() { controller_ = nullptr; }
+
   void SetFullscreenMode(FullScreenMode mode) {
     DCHECK(mode != FullScreenMode::NOT_DEFINED);
     fullscreen_mode_ = mode;
@@ -284,6 +286,8 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
     AppWindow* app_window = GetAppWindowForTask(task_id);
     if (app_window) {
       app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+      if (app_window->controller())
+        window->SetTitle(app_window->controller()->GetTitle());
       chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
           window,
           user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
@@ -469,4 +473,5 @@ void ArcAppWindowLauncherController::UnregisterApp(AppWindow* app_window) {
     owner()->CloseLauncherItem(shelf_id);
     app_controller_map_.erase(it);
   }
+  app_window->ResetController();
 }
