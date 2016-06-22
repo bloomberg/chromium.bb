@@ -28,11 +28,11 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilled(
   red_paint.setColor(SK_ColorRED);
   recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
 
-  gfx::Size smaller_size(size.width() - 10, size.height() - 10);
-  SkPaint green_paint;
-  green_paint.setColor(SK_ColorGREEN);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(smaller_size),
-                                             green_paint);
+  SkPaint salmon_pink_paint;
+  salmon_pink_paint.setColor(SK_ColorRED);
+  salmon_pink_paint.setAlpha(128);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(size),
+                                             salmon_pink_paint);
 
   recording_source->Rerecord();
 
