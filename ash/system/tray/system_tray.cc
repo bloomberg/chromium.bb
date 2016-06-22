@@ -15,7 +15,10 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/update/tray_update.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/audio/tray_audio.h"
@@ -689,6 +692,18 @@ gfx::Rect SystemTray::GetAnchorRect(
     TrayBubbleView::AnchorType anchor_type,
     TrayBubbleView::AnchorAlignment anchor_alignment) const {
   return GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
+}
+
+void SystemTray::OnBeforeBubbleWidgetInit(
+    views::Widget* anchor_widget,
+    views::Widget* bubble_widget,
+    views::Widget::InitParams* params) const {
+  // Place the bubble in the same root window as |anchor_widget|.
+  WmLookup::Get()
+      ->GetWindowForWidget(anchor_widget)
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          bubble_widget, kShellWindowId_SettingBubbleContainer, params);
 }
 
 void SystemTray::HideBubble(const TrayBubbleView* bubble_view) {

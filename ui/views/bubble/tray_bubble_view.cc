@@ -293,10 +293,10 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
 TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
 
 // static
-TrayBubbleView* TrayBubbleView::Create(gfx::NativeView parent_window,
-                                       View* anchor,
+TrayBubbleView* TrayBubbleView::Create(View* anchor,
                                        Delegate* delegate,
                                        InitParams* init_params) {
+  DCHECK(anchor);
   // Set arrow here so that it can be passed to the BubbleView constructor.
   if (init_params->anchor_type == ANCHOR_TYPE_TRAY) {
     if (init_params->anchor_alignment == ANCHOR_ALIGNMENT_BOTTOM) {
@@ -313,11 +313,10 @@ TrayBubbleView* TrayBubbleView::Create(gfx::NativeView parent_window,
     init_params->arrow = BubbleBorder::NONE;
   }
 
-  return new TrayBubbleView(parent_window, anchor, delegate, *init_params);
+  return new TrayBubbleView(anchor, delegate, *init_params);
 }
 
-TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
-                               View* anchor,
+TrayBubbleView::TrayBubbleView(View* anchor,
                                Delegate* delegate,
                                const InitParams& init_params)
     : BubbleDialogDelegateView(anchor, init_params.arrow),
@@ -328,7 +327,7 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
       mouse_actively_entered_(false) {
-  set_parent_window(parent_window);
+  DCHECK(anchor_widget());  // Computed by BubbleDialogDelegateView().
   set_notify_enter_exit_on_child(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
@@ -407,6 +406,12 @@ gfx::Rect TrayBubbleView::GetAnchorRect() const {
   return delegate_->GetAnchorRect(anchor_widget(),
                                   params_.anchor_type,
                                   params_.anchor_alignment);
+}
+
+void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
+                                              Widget* bubble_widget) const {
+  if (delegate_)
+    delegate_->OnBeforeBubbleWidgetInit(anchor_widget(), bubble_widget, params);
 }
 
 bool TrayBubbleView::CanActivate() const {

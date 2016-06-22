@@ -81,6 +81,12 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
         AnchorType anchor_type,
         AnchorAlignment anchor_alignment) const = 0;
 
+    // Called before Widget::Init() on |bubble_widget|. Allows |params| to be
+    // modified.
+    virtual void OnBeforeBubbleWidgetInit(Widget* anchor_widget,
+                                          Widget* bubble_widget,
+                                          Widget::InitParams* params) const = 0;
+
     // Called when a bubble wants to hide/destroy itself (e.g. last visible
     // child view was closed).
     virtual void HideBubble(const TrayBubbleView* bubble_view) = 0;
@@ -113,9 +119,8 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     views::BubbleBorder::BubbleAlignment arrow_alignment;
   };
 
-  // Constructs and returns a TrayBubbleView. init_params may be modified.
-  static TrayBubbleView* Create(gfx::NativeView parent_window,
-                                views::View* anchor,
+  // Constructs and returns a TrayBubbleView. |init_params| may be modified.
+  static TrayBubbleView* Create(views::View* anchor,
                                 Delegate* delegate,
                                 InitParams* init_params);
 
@@ -157,6 +162,8 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
 
   // Overridden from views::BubbleDialogDelegateView.
   gfx::Rect GetAnchorRect() const override;
+  void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
+                                Widget* bubble_widget) const override;
 
   // Overridden from views::View.
   gfx::Size GetPreferredSize() const override;
@@ -170,8 +177,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   void MouseMovedOutOfHost() override;
 
  protected:
-  TrayBubbleView(gfx::NativeView parent_window,
-                 views::View* anchor,
+  TrayBubbleView(views::View* anchor,
                  Delegate* delegate,
                  const InitParams& init_params);
 

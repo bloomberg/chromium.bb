@@ -423,12 +423,6 @@ void TrayBackgroundView::HideTransformation() {
   layer()->SetTransform(transform);
 }
 
-aura::Window* TrayBackgroundView::GetBubbleWindowContainer() const {
-  return ash::Shell::GetContainer(
-      tray_container()->GetWidget()->GetNativeWindow()->GetRootWindow(),
-      ash::kShellWindowId_SettingBubbleContainer);
-}
-
 gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
     views::Widget* anchor_widget,
     TrayBubbleView::AnchorType anchor_type,

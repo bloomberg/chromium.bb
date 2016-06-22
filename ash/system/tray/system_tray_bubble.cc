@@ -13,7 +13,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -183,7 +182,8 @@ void SystemTrayBubble::UpdateView(
 void SystemTrayBubble::InitView(views::View* anchor,
                                 LoginStatus login_status,
                                 TrayBubbleView::InitParams* init_params) {
-  DCHECK(bubble_view_ == NULL);
+  DCHECK(anchor);
+  DCHECK(!bubble_view_);
 
   if (bubble_type_ == BUBBLE_TYPE_DETAILED &&
       init_params->max_height < kDetailedBubbleMaxHeight) {
@@ -191,8 +191,9 @@ void SystemTrayBubble::InitView(views::View* anchor,
   } else if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION) {
     init_params->close_on_deactivate = false;
   }
-  bubble_view_ = TrayBubbleView::Create(
-      tray_->GetBubbleWindowContainer(), anchor, tray_, init_params);
+  // The TrayBubbleView will use |anchor| and |tray_| to determine the parent
+  // container for the bubble.
+  bubble_view_ = TrayBubbleView::Create(anchor, tray_, init_params);
   bubble_view_->set_adjust_if_offscreen(false);
   CreateItemViews(login_status);
 

@@ -97,6 +97,10 @@ class ASH_EXPORT WebNotificationTray
   gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
                           AnchorType anchor_type,
                           AnchorAlignment anchor_alignment) const override;
+  void OnBeforeBubbleWidgetInit(
+      views::Widget* anchor_widget,
+      views::Widget* bubble_widget,
+      views::Widget::InitParams* params) const override;
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
   // Overridden from ButtonListener.

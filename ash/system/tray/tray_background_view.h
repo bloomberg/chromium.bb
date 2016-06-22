@@ -113,9 +113,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Creates and sets contents background to |background_|.
   void SetContentsBackground();
 
-  // Returns the window hosting the bubble.
-  aura::Window* GetBubbleWindowContainer() const;
-
   // Returns the anchor rect for the bubble.
   gfx::Rect GetBubbleAnchorRect(
       views::Widget* anchor_widget,

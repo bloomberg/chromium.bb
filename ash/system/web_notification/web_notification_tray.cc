@@ -10,6 +10,7 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_lookup.h"
@@ -94,8 +95,11 @@ class WebNotificationBubbleWrapper {
       views::View::ConvertPointToWidget(anchor, &bounds);
       init_params.arrow_offset = bounds.x();
     }
-    views::TrayBubbleView* bubble_view = views::TrayBubbleView::Create(
-        tray->GetBubbleWindowContainer(), anchor, tray, &init_params);
+    DCHECK(anchor);
+    // TrayBubbleView uses |anchor| and |tray| to determine the parent
+    // container. See WebNotificationTray::OnBeforeBubbleWidgetInit().
+    views::TrayBubbleView* bubble_view =
+        views::TrayBubbleView::Create(anchor, tray, &init_params);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_view));
     bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     bubble->InitializeContents(bubble_view);
@@ -405,6 +409,18 @@ gfx::Rect WebNotificationTray::GetAnchorRect(
     views::TrayBubbleView::AnchorType anchor_type,
     views::TrayBubbleView::AnchorAlignment anchor_alignment) const {
   return GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
+}
+
+void WebNotificationTray::OnBeforeBubbleWidgetInit(
+    views::Widget* anchor_widget,
+    views::Widget* bubble_widget,
+    views::Widget::InitParams* params) const {
+  // Place the bubble in the same root window as |anchor_widget|.
+  WmLookup::Get()
+      ->GetWindowForWidget(anchor_widget)
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          bubble_widget, kShellWindowId_SettingBubbleContainer, params);
 }
 
 void WebNotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {

@@ -132,7 +132,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
 
-  // Overridden from message_center::TrayBubbleView::Delegate.
+  // views::TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
   void OnMouseEnteredView() override;
   void OnMouseExitedView() override;
@@ -140,6 +140,10 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
                           AnchorType anchor_type,
                           AnchorAlignment anchor_alignment) const override;
+  void OnBeforeBubbleWidgetInit(
+      views::Widget* anchor_widget,
+      views::Widget* bubble_widget,
+      views::Widget::InitParams* params) const override;
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
   ScreenTrayItem* GetScreenShareItem() { return screen_share_tray_item_; }
