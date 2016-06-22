@@ -105,6 +105,11 @@ class VIEWS_EXPORT Combobox : public PrefixDelegate, public ButtonListener {
   // Overriden from ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
+ protected:
+  void set_size_to_largest_label(bool size_to_largest_label) {
+    size_to_largest_label_ = size_to_largest_label;
+  }
+
  private:
   friend class test::ComboboxTestApi;
 
@@ -203,6 +208,11 @@ class VIEWS_EXPORT Combobox : public PrefixDelegate, public ButtonListener {
 
   // The image to be drawn for this combobox's arrow.
   gfx::ImageSkia arrow_image_;
+
+  // When true, the size of contents is defined by the selected label.
+  // Otherwise, it's defined by the widest label in the menu. If this is set to
+  // true, the parent view must relayout in ChildPreferredSizeChanged().
+  bool size_to_largest_label_;
 
   // Used for making calbacks.
   base::WeakPtrFactory<Combobox> weak_ptr_factory_;

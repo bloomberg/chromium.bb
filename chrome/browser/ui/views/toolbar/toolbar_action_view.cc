@@ -62,7 +62,10 @@ ToolbarActionView::ToolbarActionView(
       wants_to_run_(false),
       menu_(nullptr),
       weak_factory_(this) {
-  SetHasInkDrop(ui::MaterialDesignController::IsModeMaterial());
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SetHasInkDrop(true);
+    SetFocusPainter(nullptr);
+  }
   set_has_ink_drop_action_on_click(true);
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);

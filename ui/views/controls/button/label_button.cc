@@ -127,10 +127,8 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
 
   // Inset the button focus rect from the actual border; roughly match Windows.
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(
-        kFocusRectInset, kFocusRectInset, kFocusRectInset, kFocusRectInset)));
-  }
+  SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(
+      kFocusRectInset, kFocusRectInset, kFocusRectInset, kFocusRectInset)));
 }
 
 LabelButton::~LabelButton() {}

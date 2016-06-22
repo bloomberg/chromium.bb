@@ -366,6 +366,7 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
       menu_model_adapter_(new ComboboxMenuModelAdapter(this, model)),
       text_button_(new TransparentButton(this)),
       arrow_button_(new TransparentButton(this)),
+      size_to_largest_label_(style_ == STYLE_NORMAL),
       weak_ptr_factory_(this) {
   ModelChanged();
 #if defined(OS_MACOSX)
@@ -438,7 +439,12 @@ void Combobox::SetSelectedIndex(int index) {
     return;
 
   selected_index_ = index;
-  SchedulePaint();
+  if (size_to_largest_label_) {
+    SchedulePaint();
+  } else {
+    content_size_ = GetContentSize();
+    PreferredSizeChanged();
+  }
 }
 
 bool Combobox::SelectValue(const base::string16& value) {
@@ -878,7 +884,7 @@ gfx::Size Combobox::GetContentSize() const {
     if (model_->IsItemSeparatorAt(i))
       continue;
 
-    if (style_ != STYLE_ACTION || i == selected_index_) {
+    if (size_to_largest_label_ || i == selected_index_) {
       width = std::max(
           width,
           gfx::GetStringWidth(menu_model_adapter_->GetLabelAt(i), font_list));

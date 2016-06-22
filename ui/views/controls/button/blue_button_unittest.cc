@@ -25,9 +25,8 @@ TEST_F(BlueButtonTest, Border) {
   // Compared to a normal LabelButton...
   LabelButton* button = new LabelButton(nullptr, base::ASCIIToUTF16("foo"));
   EXPECT_EQ(Button::STYLE_TEXTBUTTON, button->style());
-  // Focus painter by default only in non-md.
-  EXPECT_EQ(ui::MaterialDesignController::IsModeMaterial(),
-            !button->focus_painter());
+  // Focus painter by default.
+  EXPECT_TRUE(button->focus_painter());
 
   // Switch to the same style as BlueButton for a more compelling comparison.
   button->SetStyle(Button::STYLE_BUTTON);

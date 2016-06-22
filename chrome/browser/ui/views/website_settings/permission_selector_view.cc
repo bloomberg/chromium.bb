@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -180,6 +181,9 @@ class PermissionCombobox : public views::Combobox,
   void UpdateSelectedIndex(bool use_default);
 
  private:
+  // views::Combobox:
+  void OnPaintBorder(gfx::Canvas* canvas) override;
+
   // views::ComboboxListener:
   void OnPerformAction(Combobox* combobox) override;
 
@@ -194,6 +198,10 @@ PermissionCombobox::PermissionCombobox(const base::string16& text,
   set_listener(this);
   SetEnabled(enabled);
   UpdateSelectedIndex(use_default);
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    set_size_to_largest_label(false);
+    ModelChanged();
+  }
 }
 
 PermissionCombobox::~PermissionCombobox() {}
@@ -203,6 +211,13 @@ void PermissionCombobox::UpdateSelectedIndex(bool use_default) {
   if (use_default && index == -1)
     index = 0;
   SetSelectedIndex(index);
+}
+
+void PermissionCombobox::OnPaintBorder(gfx::Canvas* canvas) {
+  // No border except a focus indicator for MD mode.
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial() && !HasFocus())
+    return;
+  Combobox::OnPaintBorder(canvas);
 }
 
 void PermissionCombobox::OnPerformAction(Combobox* combobox) {
@@ -268,12 +283,18 @@ PermissionSelectorView::PermissionSelectorView(
       permission,
       base::Bind(&PermissionSelectorView::PermissionChanged,
                  base::Unretained(this))));
+
   // Create the permission menu button.
 #if defined(OS_MACOSX)
-  InitializeComboboxView(layout, permission);
+  bool use_real_combobox = true;
 #else
-  InitializeMenuButtonView(layout, permission);
+  bool use_real_combobox =
+      ui::MaterialDesignController::IsSecondaryUiMaterial();
 #endif
+  if (use_real_combobox)
+    InitializeComboboxView(layout, permission);
+  else
+    InitializeMenuButtonView(layout, permission);
 }
 
 void PermissionSelectorView::AddObserver(
