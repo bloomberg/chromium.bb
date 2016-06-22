@@ -4164,6 +4164,10 @@ String Document::lastModified() const
 
 const KURL Document::firstPartyForCookies() const
 {
+    // If this is an imported document, grab its master document's first-party:
+    if (importsController() && importsController()->master() && importsController()->master() != this)
+        return importsController()->master()->firstPartyForCookies();
+
     // TODO(mkwst): This doesn't correctly handle sandboxed documents; we want to look at their URL,
     // but we can't because we don't know what it is.
     Frame* top = frame()->tree().top();

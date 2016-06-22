@@ -14,6 +14,9 @@
   function setPortNumber(portNumber) {
     var link = document.getElementById("cross_site_link");
     link.setAttribute("href", "http://foo.com:" + portNumber + "/title2.html");
+
+    link = document.getElementById("cross_site_new_window_link");
+    link.setAttribute("href", "http://foo.com:" + portNumber + "/title2.html");
     return true;
   }
 
@@ -21,8 +24,16 @@
     return simulateClick(document.getElementById("same_site_link"));
   }
 
+  function clickSameSiteNewWindowLink() {
+    return simulateClick(document.getElementById("same_site_new_window_link"));
+  }
+
   function clickCrossSiteLink() {
     return simulateClick(document.getElementById("cross_site_link"));
+  }
+
+  function clickCrossSiteNewWindowLink() {
+    return simulateClick(document.getElementById("cross_site_new_window_link"));
   }
 
   function clickViewSourceLink() {
@@ -34,5 +45,7 @@
 <a href="title2.html" id="same_site_link">same-site</a><br>
 <a href="http://foo.com/title2.html" id="cross_site_link">cross-site</a><br>
 <a href="view-source:about:blank" id="view_source_link">view-source:</a><br>
+<a href="title2.html" id="same_site_new_window_link" target="_blank">same-site new window</a>
+<a href="http://foo.com/title2.html" id="cross_site_new_window_link" target="_blank">cross-site new window</a>
 
 </html>

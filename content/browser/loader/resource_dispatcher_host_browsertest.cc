@@ -32,6 +32,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "net/base/net_errors.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -747,6 +748,228 @@ IN_PROC_BROWSER_TEST_F(LoFiResourceDispatcherHostBrowserTest,
   shell()->web_contents()->GetController().ReloadDisableLoFi(true);
   tab_observer.Wait();
   CheckResourcesRequested(false);
+}
+
+namespace {
+
+struct RequestDataForDelegate {
+  const GURL url;
+  const GURL first_party;
+
+  RequestDataForDelegate(const GURL& url,
+                         const GURL& first_party)
+      : url(url), first_party(first_party) {}
+};
+
+// Captures calls to 'RequestBeginning' and records the URL, first-party for
+// cookies, and initiator.
+class RequestDataResourceDispatcherHostDelegate
+    : public ResourceDispatcherHostDelegate {
+ public:
+  RequestDataResourceDispatcherHostDelegate() {}
+
+  const ScopedVector<RequestDataForDelegate>& data() { return requests_; }
+
+  // ResourceDispatcherHostDelegate implementation:
+  void RequestBeginning(net::URLRequest* request,
+                        ResourceContext* resource_context,
+                        AppCacheService* appcache_service,
+                        ResourceType resource_type,
+                        ScopedVector<ResourceThrottle>* throttles) override {
+    requests_.push_back(new RequestDataForDelegate(
+        request->url(), request->first_party_for_cookies()));
+  }
+
+  void SetDelegate() { ResourceDispatcherHost::Get()->SetDelegate(this); }
+
+ private:
+  ScopedVector<RequestDataForDelegate> requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestDataResourceDispatcherHostDelegate);
+};
+
+const GURL kURLWithUniqueOrigin("data:,");
+
+}  // namespace
+
+class RequestDataResourceDispatcherHostBrowserTest : public ContentBrowserTest {
+ public:
+  ~RequestDataResourceDispatcherHostBrowserTest() override {}
+
+ protected:
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    delegate_.reset(new RequestDataResourceDispatcherHostDelegate());
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&RequestDataResourceDispatcherHostDelegate::SetDelegate,
+                   base::Unretained(delegate_.get())));
+  }
+
+ protected:
+  std::unique_ptr<RequestDataResourceDispatcherHostDelegate> delegate_;
+};
+
+IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
+  GURL top_url(embedded_test_server()->GetURL("/simple_page.html"));
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
+
+  EXPECT_EQ(1u, delegate_->data().size());
+
+  // User-initiated top-level navigations have a first-party and initiator that
+  // matches the URL to which they navigate.
+  EXPECT_EQ(top_url, delegate_->data()[0]->url);
+  EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+}
+
+IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
+                       SameOriginNested) {
+  GURL top_url(embedded_test_server()->GetURL("/page_with_iframe.html"));
+  GURL image_url(embedded_test_server()->GetURL("/image.jpg"));
+  GURL nested_url(embedded_test_server()->GetURL("/title1.html"));
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
+
+  EXPECT_EQ(3u, delegate_->data().size());
+
+  // User-initiated top-level navigations have a first-party and initiator that
+  // matches the URL to which they navigate.
+  EXPECT_EQ(top_url, delegate_->data()[0]->url);
+  EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+
+  // Subresource requests have a first-party and initiator that matches the
+  // document in which they're embedded.
+  EXPECT_EQ(image_url, delegate_->data()[1]->url);
+  EXPECT_EQ(top_url, delegate_->data()[1]->first_party);
+
+  // Same-origin nested frames have a first-party and initiator that matches
+  // the document in which they're embedded.
+  EXPECT_EQ(nested_url, delegate_->data()[2]->url);
+  EXPECT_EQ(top_url, delegate_->data()[2]->first_party);
+}
+
+IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
+                       SameOriginAuxiliary) {
+  GURL top_url(embedded_test_server()->GetURL("/simple_links.html"));
+  GURL auxiliary_url(embedded_test_server()->GetURL("/title2.html"));
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
+
+  ShellAddedObserver new_shell_observer;
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell(),
+      "window.domAutomationController.send(clickSameSiteNewWindowLink());",
+      &success));
+  EXPECT_TRUE(success);
+  Shell* new_shell = new_shell_observer.GetShell();
+  WaitForLoadStop(new_shell->web_contents());
+
+  EXPECT_EQ(2u, delegate_->data().size());
+
+  // User-initiated top-level navigations have a first-party and initiator that
+  // matches the URL to which they navigate, even if they fail to load.
+  EXPECT_EQ(top_url, delegate_->data()[0]->url);
+  EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+
+  // Auxiliary navigations have a first-party that matches the URL to which they
+  // navigate, and an initiator that matches the document that triggered them.
+  EXPECT_EQ(auxiliary_url, delegate_->data()[1]->url);
+  EXPECT_EQ(auxiliary_url, delegate_->data()[1]->first_party);
+}
+
+IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
+                       CrossOriginAuxiliary) {
+  GURL top_url(embedded_test_server()->GetURL("/simple_links.html"));
+  GURL auxiliary_url(embedded_test_server()->GetURL("foo.com", "/title2.html"));
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
+
+  const char kReplacePortNumber[] =
+      "window.domAutomationController.send(setPortNumber(%d));";
+  uint16_t port_number = embedded_test_server()->port();
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell(), base::StringPrintf(kReplacePortNumber, port_number), &success));
+  success = false;
+
+  ShellAddedObserver new_shell_observer;
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell(),
+      "window.domAutomationController.send(clickCrossSiteNewWindowLink());",
+      &success));
+  EXPECT_TRUE(success);
+  Shell* new_shell = new_shell_observer.GetShell();
+  WaitForLoadStop(new_shell->web_contents());
+
+  EXPECT_EQ(2u, delegate_->data().size());
+
+  // User-initiated top-level navigations have a first-party and initiator that
+  // matches the URL to which they navigate, even if they fail to load.
+  EXPECT_EQ(top_url, delegate_->data()[0]->url);
+  EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+
+  // Auxiliary navigations have a first-party that matches the URL to which they
+  // navigate, and an initiator that matches the document that triggered them.
+  EXPECT_EQ(auxiliary_url, delegate_->data()[1]->url);
+  EXPECT_EQ(auxiliary_url, delegate_->data()[1]->first_party);
+}
+
+IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
+                       FailedNavigation) {
+  // Navigating to this URL will fail, as we haven't taught the host resolver
+  // about 'a.com'.
+  GURL top_url(embedded_test_server()->GetURL("a.com", "/simple_page.html"));
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
+
+  EXPECT_EQ(1u, delegate_->data().size());
+
+  // User-initiated top-level navigations have a first-party and initiator that
+  // matches the URL to which they navigate, even if they fail to load.
+  EXPECT_EQ(top_url, delegate_->data()[0]->url);
+  EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+}
+
+IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
+                       CrossOriginNested) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  GURL top_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL top_js_url(
+      embedded_test_server()->GetURL("a.com", "/tree_parser_util.js"));
+  GURL nested_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b()"));
+  GURL nested_js_url(
+      embedded_test_server()->GetURL("b.com", "/tree_parser_util.js"));
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
+
+  EXPECT_EQ(4u, delegate_->data().size());
+
+  // User-initiated top-level navigations have a first-party and initiator that
+  // matches the URL to which they navigate.
+  EXPECT_EQ(top_url, delegate_->data()[0]->url);
+  EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+
+  EXPECT_EQ(top_js_url, delegate_->data()[1]->url);
+  EXPECT_EQ(top_url, delegate_->data()[1]->first_party);
+
+  // Cross-origin frame requests have a first-party and initiator that matches
+  // the URL in which they're embedded.
+  EXPECT_EQ(nested_url, delegate_->data()[2]->url);
+  EXPECT_EQ(top_url, delegate_->data()[2]->first_party);
+
+  // Cross-origin subresource requests have a unique first-party, and an
+  // initiator that matches the document in which they're embedded.
+  EXPECT_EQ(nested_js_url, delegate_->data()[3]->url);
+  EXPECT_EQ(kURLWithUniqueOrigin, delegate_->data()[3]->first_party);
 }
 
 }  // namespace content

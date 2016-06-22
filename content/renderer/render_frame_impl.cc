@@ -3928,17 +3928,10 @@ void RenderFrameImpl::willSendRequest(
   // requests). This value will be updated during redirects, consistent with
   // https://tools.ietf.org/html/draft-west-first-party-cookies-04#section-2.1.1
   if (request.firstPartyForCookies().isEmpty()) {
-    if (request.getFrameType() == blink::WebURLRequest::FrameTypeTopLevel) {
+    if (request.getFrameType() == blink::WebURLRequest::FrameTypeTopLevel)
       request.setFirstPartyForCookies(request.url());
-    } else {
-      // TODO(nasko): When the top-level frame is remote, there is no document.
-      // This is broken and should be fixed to propagate the first party.
-      WebFrame* top = frame->top();
-      if (top->isWebLocalFrame()) {
-        request.setFirstPartyForCookies(
-            frame->top()->document().firstPartyForCookies());
-      }
-    }
+    else
+      request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
 
     // If we need to set the first party, then we need to set the request's
     // initiator as well; it will not be updated during redirects.
