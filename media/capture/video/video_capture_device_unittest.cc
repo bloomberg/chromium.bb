@@ -57,6 +57,13 @@
 #define DeAllocateCameraWhileRunning DISABLED_DeAllocateCameraWhileRunning
 #define DeAllocateCameraWhileRunning DISABLED_DeAllocateCameraWhileRunning
 #define MAYBE_CaptureMjpeg DISABLED_CaptureMjpeg
+#elif defined(OS_LINUX)
+// AllocateBadSize will hang when a real camera is attached and if more than one
+// test is trying to use the camera (even across processes). Do NOT renable
+// this test without fixing the many bugs associated with it:
+// http://crbug.com/94134 http://crbug.com/137260 http://crbug.com/417824
+#define MAYBE_AllocateBadSize DISABLED_AllocateBadSize
+#define MAYBE_CaptureMjpeg CaptureMjpeg
 #else
 #define MAYBE_AllocateBadSize AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
