@@ -77,12 +77,12 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     base::Time t = base::Time::Now();
     for (int domain_num = 0; domain_num < 300; domain_num++) {
       std::string domain_name(base::StringPrintf(".domain_%d.com", domain_num));
-      GURL gurl("www" + domain_name);
+      GURL gurl("http://www" + domain_name);
       for (int cookie_num = 0; cookie_num < 50; ++cookie_num) {
         t += base::TimeDelta::FromInternalValue(10);
-        store_->AddCookie(CanonicalCookie(
+        store_->AddCookie(*CanonicalCookie::Create(
             gurl, base::StringPrintf("Cookie_%d", cookie_num), "1", domain_name,
-            "/", t, t, t, false, false, CookieSameSite::DEFAULT_MODE,
+            "/", t, t, false, false, CookieSameSite::DEFAULT_MODE, false,
             COOKIE_PRIORITY_DEFAULT));
       }
     }
