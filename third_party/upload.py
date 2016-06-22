@@ -36,7 +36,6 @@ against by using the '--rev' option.
 
 from __future__ import print_function
 
-import ConfigParser
 import cookielib
 import errno
 import fnmatch
@@ -55,6 +54,12 @@ import urllib2
 import urlparse
 
 from multiprocessing.pool import ThreadPool
+
+# The configparser module was renamed in Python 3.
+try:
+  import configparser
+except ImportError:
+  import ConfigParser as configparser
 
 # The md5 module was deprecated in Python 2.5.
 try:
@@ -2241,7 +2246,7 @@ def LoadSubversionAutoProperties():
     subversion_config = os.path.expanduser("~/.subversion/config")
   if not os.path.exists(subversion_config):
     return {}
-  config = ConfigParser.ConfigParser()
+  config = configparser.ConfigParser()
   config.read(subversion_config)
   if (config.has_section("miscellany") and
       config.has_option("miscellany", "enable-auto-props") and

@@ -7,7 +7,6 @@
 Includes support for svn, git-svn and git.
 """
 
-import ConfigParser
 import fnmatch
 import logging
 import os
@@ -16,6 +15,12 @@ import shutil
 import subprocess
 import sys
 import tempfile
+
+# The configparser module was renamed in Python 3.
+try:
+  import configparser
+except ImportError:
+  import ConfigParser as configparser
 
 import patch
 import scm
@@ -258,7 +263,7 @@ class SvnConfig(object):
         self.svn_config_dir = os.path.expanduser(
             os.path.join('~', '.subversion'))
     svn_config_file = os.path.join(self.svn_config_dir, 'config')
-    parser = ConfigParser.SafeConfigParser()
+    parser = configparser.SafeConfigParser()
     if os.path.isfile(svn_config_file):
       parser.read(svn_config_file)
     else:
