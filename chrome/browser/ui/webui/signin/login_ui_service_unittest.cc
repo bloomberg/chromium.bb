@@ -14,65 +14,36 @@ class TestLoginUI : public LoginUIService::LoginUI {
   TestLoginUI() { }
   ~TestLoginUI() override {}
   void FocusUI() override {}
-  void CloseUI() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestLoginUI);
 };
 
-class TestObserver : public LoginUIService::Observer {
- public:
-  TestObserver() : ui_shown_count_(0),
-                   ui_closed_count_(0) {
-  }
+TEST(LoginUIServiceTest, CanSetMultipleLoginUIs) {
+  LoginUIService service(nullptr);
 
-  int ui_shown_count() const { return ui_shown_count_; }
-  int ui_closed_count() const { return ui_closed_count_; }
+  EXPECT_EQ(nullptr, service.current_login_ui());
 
- private:
-  void OnLoginUIShown(LoginUIService::LoginUI* ui) override {
-    ++ui_shown_count_;
-  }
-
-  void OnLoginUIClosed(LoginUIService::LoginUI* ui) override {
-    ++ui_closed_count_;
-  }
-
-  int ui_shown_count_;
-  int ui_closed_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
-};
-
-class LoginUIServiceTest : public testing::Test {
- public:
-  LoginUIServiceTest() : service_(NULL) { }
-  ~LoginUIServiceTest() override {}
-
- protected:
-  LoginUIService service_;
-  TestObserver observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginUIServiceTest);
-};
-
-// Test that the observer is called back when login UI is shown
-// or closed.
-TEST_F(LoginUIServiceTest, LoginUIServiceObserver) {
-  service_.AddObserver(&observer_);
-  EXPECT_EQ(NULL, service_.current_login_ui());
   TestLoginUI ui;
-  service_.SetLoginUI(&ui);
-  EXPECT_EQ(1, observer_.ui_shown_count());
+  service.SetLoginUI(&ui);
+  EXPECT_EQ(&ui, service.current_login_ui());
 
-  // If a different UI is closed than the one that was shown, no
-  // notification should be fired.
+  // Test that we can replace the active login UI.
   TestLoginUI other_ui;
-  service_.LoginUIClosed(&other_ui);
-  EXPECT_EQ(1, observer_.ui_shown_count());
+  service.SetLoginUI(&other_ui);
+  EXPECT_EQ(&other_ui, service.current_login_ui());
 
-  // If the right UI is closed, notification should be fired.
-  service_.LoginUIClosed(&ui);
-  EXPECT_EQ(1, observer_.ui_closed_count());
-  service_.RemoveObserver(&observer_);
+  // Test that closing the non-active login UI has no effect.
+  service.LoginUIClosed(&ui);
+  EXPECT_EQ(&other_ui, service.current_login_ui());
+
+  // Test that closing the foreground UI yields the background UI.
+  service.SetLoginUI(&ui);
+  EXPECT_EQ(&ui, service.current_login_ui());
+  service.LoginUIClosed(&ui);
+  EXPECT_EQ(&other_ui, service.current_login_ui());
+
+  // Test that closing the last login UI makes the current login UI nullptr.
+  service.LoginUIClosed(&other_ui);
+  EXPECT_EQ(nullptr, service.current_login_ui());
 }

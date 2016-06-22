@@ -358,7 +358,6 @@ void OneClickSigninSyncStarter::ConfirmAndSignin() {
         base::UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
         base::Bind(&OneClickSigninSyncStarter::UntrustedSigninConfirmed,
                    weak_pointer_factory_.GetWeakPtr()));
-    LoginUIServiceFactory::GetForProfile(profile_)->UntrustedLoginUIShown();
   } else {
     // No confirmation required - just sign in the user.
     signin->CompletePendingSignin();

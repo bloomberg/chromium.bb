@@ -1757,8 +1757,12 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   // start syncing data until the user is done configuring encryption options,
   // etc. ReconfigureDatatypeManager() will get called again once the UI calls
   // SetSetupInProgress(false).
-  if (!CanConfigureDataTypes())
+  if (!CanConfigureDataTypes()) {
+    // If we can't configure the data type manager yet, we should still notify
+    // observers. This is to support multiple setup UIs being open at once.
+    NotifyObservers();
     return;
+  }
 
   bool restart = false;
   if (!data_type_manager_) {

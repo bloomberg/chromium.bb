@@ -48,7 +48,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 
   // LoginUIService::LoginUI implementation.
   void FocusUI() override;
-  void CloseUI() override;
 
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings,
@@ -140,6 +139,9 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 
   // Displays an error dialog which shows timeout of starting the sync backend.
   void DisplayTimeout();
+
+  // Closes the associated sync settings page.
+  void CloseUI();
 
   // Returns true if this object is the active login object.
   bool IsActiveLogin() const;

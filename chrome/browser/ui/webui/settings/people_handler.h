@@ -107,7 +107,6 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // LoginUIService::LoginUI implementation.
   void FocusUI() override;
-  void CloseUI() override;
 
   // SigninManagerBase::Observer implementation.
   void GoogleSigninSucceeded(const std::string& account_id,
@@ -152,10 +151,6 @@ class PeopleHandler : public SettingsPageUIHandler,
       signin_metrics::AccessPoint access_point);
 #endif
 
-  // A utility function to call before actually showing setup dialog. Makes sure
-  // that a new dialog can be shown and sets flag that setup is in progress.
-  bool PrepareSyncSetup();
-
   // Displays spinner-only UI indicating that something is going on in the
   // background.
   // TODO(kochi): better to show some message that the user can understand what
@@ -165,14 +160,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   // Displays an error dialog which shows timeout of starting the sync backend.
   void DisplayTimeout();
 
-  // Returns true if this object is the active login object.
-  bool IsActiveLogin() const;
-
-  // If a wizard already exists, return true. Otherwise, return false.
-  bool IsExistingWizardPresent();
-
-  // If a wizard already exists, focus it and return true.
-  bool FocusExistingWizardIfPresent();
+  // Closes the associated sync settings page.
+  void CloseUI();
 
   // Pushes the updated sync prefs to JavaScript.
   void PushSyncPrefs();

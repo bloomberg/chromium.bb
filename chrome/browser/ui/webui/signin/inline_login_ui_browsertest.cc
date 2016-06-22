@@ -122,11 +122,6 @@ class FooWebUIProvider
                                                    const GURL& url));
 };
 
-class MockLoginUIObserver : public LoginUIService::Observer {
- public:
-  MOCK_METHOD0(OnUntrustedLoginUIShown, void());
-};
-
 const char kFooWebUIURL[] = "chrome://foo/";
 
 bool AddToSet(std::set<content::WebContents*>* set,
@@ -860,35 +855,3 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
 
   EXPECT_EQ(GURL("about:blank"), contents->GetVisibleURL());
 }
-
-// Flaky on win_chromium_x64_rel_ng: http://crbug605357
-#if !defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
-    ConfirmationRequiredForNonsecureSignin) {
-  FakeGaia fake_gaia;
-  fake_gaia.Initialize();
-
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&FakeGaia::HandleRequest,
-                 base::Unretained(&fake_gaia)));
-  fake_gaia.SetFakeMergeSessionParams(
-      "email@gmail.com", "fake-sid-cookie", "fake-lsid-cookie");
-
-  // Navigates to the Chrome signin page which loads the fake gaia auth page.
-  // Since the fake gaia auth page is served over HTTP, thus expects to see an
-  // untrusted signin confirmation dialog upon submitting credentials below.
-  ui_test_utils::NavigateToURL(browser(), GetSigninPromoURL());
-  WaitUntilUIReady(browser());
-
-  MockLoginUIObserver observer;
-  LoginUIServiceFactory::GetForProfile(browser()->profile())
-      ->AddObserver(&observer);
-  base::RunLoop run_loop;
-  EXPECT_CALL(observer, OnUntrustedLoginUIShown())
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-
-  ExecuteJsToSigninInSigninFrame(browser(), "email@gmail.com", "password");
-  run_loop.Run();
-  base::RunLoop().RunUntilIdle();
-}
-#endif  // OS_WIN

@@ -72,7 +72,6 @@ class FakeLoginUI : public LoginUIService::LoginUI {
  private:
   // LoginUIService::LoginUI:
   void FocusUI() override { ++focus_ui_call_count_; }
-  void CloseUI() override {}
 
   int focus_ui_call_count_;
 };

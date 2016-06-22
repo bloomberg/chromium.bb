@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_LOGIN_UI_SERVICE_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_LOGIN_UI_SERVICE_H_
 
+#include <list>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -24,9 +26,6 @@ class LoginUIService : public KeyedService {
     // Invoked when the login UI should be brought to the foreground.
     virtual void FocusUI() = 0;
 
-    // Invoked when the login UI should be closed. This can be invoked if the
-    // user takes an action that should display new login UI.
-    virtual void CloseUI() = 0;
    protected:
     virtual ~LoginUI() {}
   };
@@ -45,21 +44,10 @@ class LoginUIService : public KeyedService {
   // Interface for obervers of LoginUIService.
   class Observer {
    public:
-    // Called when a new login UI is shown.
-    // |ui| The login UI that was just shown. Will never be null.
-    virtual void OnLoginUIShown(LoginUI* ui) {}
-
-    // Called when a login UI is closed.
-    // |ui| The login UI that was just closed; will never be null.
-    virtual void OnLoginUIClosed(LoginUI* ui) {}
-
     // Called when the sync confirmation UI is closed. |result| indicates the
     // option chosen by the user in the confirmation UI.
     virtual void OnSyncConfirmationUIClosed(
         SyncConfirmationUIClosedResult result) {}
-
-    // Called when a confirmation UI for untrusted signin is shown.
-    virtual void OnUntrustedLoginUIShown() {}
 
    protected:
     virtual ~Observer() {}
@@ -68,29 +56,23 @@ class LoginUIService : public KeyedService {
   explicit LoginUIService(Profile* profile);
   ~LoginUIService() override;
 
-  // Gets the currently active login UI, or null if no login UI is active.
-  LoginUI* current_login_ui() const {
-    return ui_;
-  }
-
   // |observer| The observer to add or remove; cannot be NULL.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Sets the currently active login UI. It is illegal to call this if there is
-  // already login UI visible.
+  // Gets the currently active login UI, or null if no login UI is active.
+  LoginUI* current_login_ui() const;
+
+  // Sets the currently active login UI. Callers must call LoginUIClosed when
+  // |ui| is no longer valid.
   void SetLoginUI(LoginUI* ui);
 
-  // Called when login UI is closed. If the passed UI is the current login UI,
-  // sets current_login_ui() to null.
+  // Called when login UI is closed.
   void LoginUIClosed(LoginUI* ui);
 
   // Called when the sync confirmation UI is closed. |result| indicates the
   // option chosen by the user in the confirmation UI.
   void SyncConfirmationUIClosed(SyncConfirmationUIClosedResult result);
-
-  // Called when a confirmation UI for untrusted signin is shown.
-  void UntrustedLoginUIShown();
 
   // Delegate to an existing login dialog if one exists.
   // If not, we make a new popup dialog window, and set it to
@@ -104,8 +86,8 @@ class LoginUIService : public KeyedService {
   const base::string16& GetLastLoginResult();
 
  private:
-  // Weak pointer to the currently active login UI, or null if none.
-  LoginUI* ui_ = nullptr;
+  // Weak pointers to the recently opened UIs, with the most recent in front.
+  std::list<LoginUI*> ui_list_;
 #if !defined(OS_CHROMEOS)
   Profile* profile_;
 #endif

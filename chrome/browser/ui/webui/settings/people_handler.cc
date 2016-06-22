@@ -175,13 +175,6 @@ PeopleHandler::~PeopleHandler() {
   CloseSyncSetup();
 }
 
-bool PeopleHandler::IsActiveLogin() const {
-  // LoginUIService can be nullptr if page is brought up in incognito mode
-  // (i.e. if the user is running in guest mode in cros and brings up settings).
-  LoginUIService* service = GetLoginUIService();
-  return service && (service->current_login_ui() == this);
-}
-
 void PeopleHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SyncSetupDidClosePage",
@@ -301,24 +294,6 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     chrome::ShowSingletonTab(browser, url);
 }
 #endif
-
-bool PeopleHandler::PrepareSyncSetup() {
-  // If the wizard is already visible, just focus that one.
-  if (FocusExistingWizardIfPresent()) {
-    if (!IsActiveLogin())
-      CloseSyncSetup();
-    return false;
-  }
-
-  // Notify services that login UI is now active.
-  GetLoginUIService()->SetLoginUI(this);
-
-  ProfileSyncService* service = GetSyncService();
-  if (service)
-    sync_blocker_ = service->GetSetupInProgressHandle();
-
-  return true;
-}
 
 void PeopleHandler::DisplaySpinner() {
   configuring_sync_ = true;
@@ -514,18 +489,7 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     return;
   }
 
-  // If a setup wizard is already present, but not on this page, close the
-  // blank setup overlay on this page by showing the "done" page. This can
-  // happen if the user navigates to chrome://settings/syncSetup in more than
-  // one tab. See crbug.com/261566.
-  // Note: The following block will transfer focus to the existing wizard.
-  if (IsExistingWizardPresent() && !IsActiveLogin())
-    CloseUI();
-
-  // If a setup wizard is present on this page or another, bring it to focus.
-  // Otherwise, display a new one on this page.
-  if (!FocusExistingWizardIfPresent())
-    OpenSyncSetup(false /* creating_supervised_user */);
+  OpenSyncSetup(false /* creating_supervised_user */);
 }
 
 #if defined(OS_CHROMEOS)
@@ -590,7 +554,11 @@ void PeopleHandler::CloseSyncSetup() {
   sync_startup_tracker_.reset();
 
   ProfileSyncService* sync_service = GetSyncService();
-  if (IsActiveLogin()) {
+
+  // LoginUIService can be nullptr if page is brought up in incognito mode
+  // (i.e. if the user is running in guest mode in cros and brings up settings).
+  LoginUIService* service = GetLoginUIService();
+  if (service && (service->current_login_ui() == this)) {
     // Don't log a cancel event if the sync setup dialog is being
     // automatically closed due to an auth error.
     if (!sync_service || (!sync_service->IsFirstSetupComplete() &&
@@ -635,8 +603,12 @@ void PeopleHandler::CloseSyncSetup() {
 }
 
 void PeopleHandler::OpenSyncSetup(bool creating_supervised_user) {
-  if (!PrepareSyncSetup())
-    return;
+  // Notify services that login UI is now active.
+  GetLoginUIService()->SetLoginUI(this);
+
+  ProfileSyncService* service = GetSyncService();
+  if (service)
+    sync_blocker_ = service->GetSetupInProgressHandle();
 
   // There are several different UI flows that can bring the user here:
   // 1) Signin promo.
@@ -665,7 +637,7 @@ void PeopleHandler::OpenSyncSetup(bool creating_supervised_user) {
     return;
   }
 #endif
-  if (!GetSyncService()) {
+  if (!service) {
     // This can happen if the user directly navigates to /settings/syncSetup.
     DLOG(WARNING) << "Cannot display sync UI when sync is disabled";
     CloseUI();
@@ -676,11 +648,9 @@ void PeopleHandler::OpenSyncSetup(bool creating_supervised_user) {
   // via the "Advanced..." button or through One-Click signin (cases 4-6), or
   // they are re-enabling sync after having disabled it (case 7).
   PushSyncPrefs();
-  FocusUI();
 }
 
 void PeopleHandler::FocusUI() {
-  DCHECK(IsActiveLogin());
   WebContents* web_contents = web_ui()->GetWebContents();
   web_contents->GetDelegate()->ActivateContents(web_contents);
 }
@@ -763,22 +733,6 @@ PeopleHandler::GetSyncStatusDictionary() {
                           service && service->HasUnrecoverableError());
 
   return sync_status;
-}
-
-bool PeopleHandler::IsExistingWizardPresent() {
-  LoginUIService* service = GetLoginUIService();
-  DCHECK(service);
-  return service->current_login_ui() != nullptr;
-}
-
-bool PeopleHandler::FocusExistingWizardIfPresent() {
-  if (!IsExistingWizardPresent())
-    return false;
-
-  LoginUIService* service = GetLoginUIService();
-  DCHECK(service);
-  service->current_login_ui()->FocusUI();
-  return true;
 }
 
 void PeopleHandler::PushSyncPrefs() {
