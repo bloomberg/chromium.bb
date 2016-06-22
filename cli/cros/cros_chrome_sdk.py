@@ -742,6 +742,10 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_target_cc'] = env['CC']
     gn_args['cros_target_cxx'] = env['CXX']
     gn_args['cros_target_ld'] = env['LD']
+    # We need to reset extra C/CXX flags to remove references to
+    # EBUILD_CFLAGS, EBUILD_CXXFLAGS
+    gn_args['cros_target_extra_cflags'] = env['CFLAGS']
+    gn_args['cros_target_extra_cxxflags'] = env['CXXFLAGS']
     gn_args['cros_host_cc'] = env['CC_host']
     gn_args['cros_host_cxx'] = env['CXX_host']
     gn_args['cros_host_ld'] = env['LD_host']
