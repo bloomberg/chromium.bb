@@ -16,7 +16,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -178,12 +177,10 @@ void ElevateIfNeededToReenableUpdates() {
   base::LaunchOptions launch_options;
   launch_options.force_breakaway_from_job_ = true;
 
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
-      base::win::UserAccountControlIsEnabled()) {
+  if (base::win::UserAccountControlIsEnabled())
     base::LaunchElevatedProcess(cmd, launch_options);
-  } else {
+  else
     base::LaunchProcess(cmd, launch_options);
-  }
 }
 
 }  // namespace google_update

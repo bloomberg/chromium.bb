@@ -122,7 +122,6 @@ static const int kMessageFilterCode = 0x5001;
 // MessagePumpWin public:
 
 MessagePumpWin::MessagePumpWin() {
-  InitUser32APIs();
 }
 
 void MessagePumpWin::Run(Delegate* delegate) {
@@ -175,6 +174,7 @@ int MessagePumpWin::GetCurrentDelay() const {
 
 MessagePumpForUI::MessagePumpForUI()
     : atom_(0) {
+  InitUser32APIs();
   InitMessageWnd();
 }
 
@@ -511,7 +511,9 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
 // MessagePumpForGpu public:
 
 MessagePumpForGpu::MessagePumpForGpu()
-    : event_(CreateEvent(nullptr, FALSE, FALSE, nullptr)) {}
+    : event_(CreateEvent(nullptr, FALSE, FALSE, nullptr)) {
+  InitUser32APIs();
+}
 
 MessagePumpForGpu::~MessagePumpForGpu() {
   CloseHandle(event_);

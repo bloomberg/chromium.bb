@@ -76,6 +76,7 @@
         'blacklist/test/blacklist_test.cc',
         'chrome_elf_util_unittest.cc',
         'elf_imports_unittest.cc',
+        'run_all_unittests.cc',
       ],
       'include_dirs': [
         '..',
@@ -94,6 +95,28 @@
         'blacklist_test_dll_3',
         'blacklist_test_main_dll',
       ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'AdditionalDependencies!': [
+            'user32.lib',
+          ],
+          'IgnoreDefaultLibraryNames': [
+            'user32.lib',
+          ],
+          'DelayLoadDLLs': [
+            'dbghelp.dll',
+            'ole32.dll',
+            'psapi.dll',
+            'rpcrt4.dll',
+            'shell32.dll',
+            'shlwapi.dll',
+            'user32.dll',
+            'winhttp.dll',
+            'winmm.dll',
+            'ws2_32.dll',
+          ],
+        },
+      },
     },
     {
       # A dummy target to ensure that chrome_elf.dll and chrome.exe gets built

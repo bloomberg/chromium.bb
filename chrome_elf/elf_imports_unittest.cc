@@ -107,6 +107,22 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
     ASSERT_TRUE(match) << "Illegal import in chrome_elf.dll: " << import;
   }
 }
+TEST_F(ELFImportsTest, ChromeElfLoadSanityTest) {
+  base::FilePath dll;
+  ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dll));
+  dll = dll.Append(L"chrome_elf.dll");
+
+  // We don't expect user32 to be loaded in chrome_elf_unittests. If this test
+  // case fails, then it means that a dependency on user32 has crept into the
+  // chrome_elf_unittests executable, which needs to be removed.
+  EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
+
+  HMODULE chrome_elf_module_handle = ::LoadLibrary(dll.value().c_str());
+  EXPECT_TRUE(chrome_elf_module_handle != nullptr);
+  // Loading chrome_elf.dll should not load user32.dll
+  EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
+  EXPECT_TRUE(!!::FreeLibrary(chrome_elf_module_handle));
+}
 #endif  // NDEBUG
 
 TEST_F(ELFImportsTest, ChromeExeSanityCheck) {
