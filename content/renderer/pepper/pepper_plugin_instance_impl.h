@@ -268,7 +268,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool StartFind(const base::string16& search_text,
                  bool case_sensitive,
                  int identifier);
-  void SelectFindResult(bool forward);
+  void SelectFindResult(bool forward, int identifier);
   void StopFind();
 
   bool SupportsPrintInterface();

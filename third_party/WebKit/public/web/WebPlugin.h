@@ -172,7 +172,7 @@ public:
     // Returns true if the search started, or false if the plugin doesn't support search.
     virtual bool startFind(const WebString& searchText, bool caseSensitive, int identifier) { return false; }
     // Tells the plugin to jump forward or backward in the list of find results.
-    virtual void selectFindResult(bool forward) { }
+    virtual void selectFindResult(bool forward, int identifier) { }
     // Tells the plugin that the user has stopped the find operation.
     virtual void stopFind() { }
 

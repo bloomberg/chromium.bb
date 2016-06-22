@@ -1460,12 +1460,13 @@ bool PepperPluginInstanceImpl::StartFind(const base::string16& search_text,
                                         PP_FromBool(case_sensitive)));
 }
 
-void PepperPluginInstanceImpl::SelectFindResult(bool forward) {
+void PepperPluginInstanceImpl::SelectFindResult(bool forward, int identifier) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  if (LoadFindInterface())
-    plugin_find_interface_->SelectFindResult(pp_instance(),
-                                             PP_FromBool(forward));
+  if (!LoadFindInterface())
+    return;
+  find_identifier_ = identifier;
+  plugin_find_interface_->SelectFindResult(pp_instance(), PP_FromBool(forward));
 }
 
 void PepperPluginInstanceImpl::StopFind() {

@@ -269,8 +269,8 @@ bool PepperWebPluginImpl::startFind(const blink::WebString& search_text,
   return instance_->StartFind(search_text, case_sensitive, identifier);
 }
 
-void PepperWebPluginImpl::selectFindResult(bool forward) {
-  instance_->SelectFindResult(forward);
+void PepperWebPluginImpl::selectFindResult(bool forward, int identifier) {
+  instance_->SelectFindResult(forward, identifier);
 }
 
 void PepperWebPluginImpl::stopFind() { instance_->StopFind(); }

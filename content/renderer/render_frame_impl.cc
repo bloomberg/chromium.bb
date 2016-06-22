@@ -5170,7 +5170,7 @@ void RenderFrameImpl::OnFind(int request_id,
   if (plugin) {
     if (options.findNext) {
       // Just navigate back/forward.
-      plugin->selectFindResult(options.forward);
+      plugin->selectFindResult(options.forward, request_id);
     } else {
       if (!plugin->startFind(search_text, options.matchCase, request_id)) {
         // Send "no results".
