@@ -117,7 +117,6 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::GetHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::IO_SURFACE_BUFFER;
   handle.id = id_;
-  handle.mach_port.reset(IOSurfaceCreateMachPort(io_surface_));
   return handle;
 }
 

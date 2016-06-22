@@ -661,7 +661,6 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
                  base::Owned(release_callback_impl.release()));
   resource->read_lock_fences_enabled = read_lock_fences_enabled;
   resource->is_overlay_candidate = mailbox.is_overlay_candidate();
-  resource->gpu_memory_buffer_id = mailbox.gpu_memory_buffer_id();
 
   return id;
 }
@@ -1104,8 +1103,6 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
   DCHECK(!resource_->gpu_memory_buffer);
   resource_provider_->LazyCreate(resource_);
   resource_->gpu_memory_buffer = std::move(gpu_memory_buffer_);
-  if (resource_->gpu_memory_buffer)
-    resource_->gpu_memory_buffer_id = resource_->gpu_memory_buffer->GetId();
   resource_->allocated = true;
   resource_provider_->LazyCreateImage(resource_);
   resource_->dirty_image = true;
@@ -1392,7 +1389,6 @@ void ResourceProvider::ReceiveFromChild(
                                            it->mailbox_holder.texture_target));
       resource->read_lock_fences_enabled = it->read_lock_fences_enabled;
       resource->is_overlay_candidate = it->is_overlay_candidate;
-      resource->gpu_memory_buffer_id = it->gpu_memory_buffer_id;
     }
     resource->child_id = child;
     // Don't allocate a texture for a child.
@@ -1517,7 +1513,6 @@ void ResourceProvider::TransferResource(Resource* source,
   resource->filter = source->filter;
   resource->size = source->size;
   resource->read_lock_fences_enabled = source->read_lock_fences_enabled;
-  resource->gpu_memory_buffer_id = source->gpu_memory_buffer_id;
   resource->is_overlay_candidate = source->is_overlay_candidate;
 
   if (source->type == RESOURCE_TYPE_BITMAP) {
@@ -1735,8 +1730,6 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
         gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
             size, BufferFormat(format),
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
-    if (resource->gpu_memory_buffer)
-      resource->gpu_memory_buffer_id = resource->gpu_memory_buffer->GetId();
     LazyCreateImage(resource);
     resource->dirty_image = true;
     resource->is_overlay_candidate = true;

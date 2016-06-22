@@ -88,14 +88,6 @@ MusGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return nullptr;
 }
 
-std::unique_ptr<gfx::GpuMemoryBuffer>
-MusGpuMemoryBufferManager::CreateGpuMemoryBufferFromClientId(
-    int client_id,
-    const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 gfx::GpuMemoryBuffer*
 MusGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {

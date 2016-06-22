@@ -29,10 +29,6 @@ using GpuMemoryBufferConfigurationSet =
 
 }  // content
 
-namespace gpu {
-class GpuMemoryBufferImpl;
-}  // gpu
-
 namespace BASE_HASH_NAMESPACE {
 
 template <>
@@ -77,9 +73,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format) override;
-  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromClientId(
-      int client_id,
-      const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
   void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,
@@ -115,7 +108,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
                gfx::BufferFormat format,
                gfx::BufferUsage usage,
                int gpu_host_id);
-    BufferInfo(BufferInfo&& other);
+    BufferInfo(const BufferInfo& other);
     ~BufferInfo();
 
     gfx::Size size;
@@ -123,16 +116,10 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
     gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
     gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ;
     int gpu_host_id = 0;
-
-    // An open instance of the buffer in the browser process.
-    // TODO(ccameron): This only is implemented for IOSurface buffers. Ensure
-    // that this is always valid, and delete the then-redundant above state.
-    std::unique_ptr<gpu::GpuMemoryBufferImpl> buffer;
   };
 
   struct CreateGpuMemoryBufferRequest;
   struct CreateGpuMemoryBufferFromHandleRequest;
-  struct CreateGpuMemoryBufferFromClientIdRequest;
 
   using CreateDelegate = base::Callback<void(GpuProcessHost* host,
                                              gfx::GpuMemoryBufferId id,
@@ -152,8 +139,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   void HandleCreateGpuMemoryBufferOnIO(CreateGpuMemoryBufferRequest* request);
   void HandleCreateGpuMemoryBufferFromHandleOnIO(
       CreateGpuMemoryBufferFromHandleRequest* request);
-  void HandleCreateGpuMemoryBufferFromClientIdOnIO(
-      CreateGpuMemoryBufferFromClientIdRequest* request);
   void HandleGpuMemoryBufferCreatedOnIO(
       CreateGpuMemoryBufferRequest* request,
       const gfx::GpuMemoryBufferHandle& handle);

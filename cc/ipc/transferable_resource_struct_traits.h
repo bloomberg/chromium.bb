@@ -43,11 +43,6 @@ struct StructTraits<cc::mojom::TransferableResource, cc::TransferableResource> {
     return resource.is_software;
   }
 
-  static int32_t gpu_memory_buffer_id(
-      const cc::TransferableResource& resource) {
-    return resource.gpu_memory_buffer_id.id;
-  }
-
   static bool is_overlay_candidate(const cc::TransferableResource& resource) {
     return resource.is_overlay_candidate;
   }
@@ -62,7 +57,6 @@ struct StructTraits<cc::mojom::TransferableResource, cc::TransferableResource> {
     out->filter = data.filter();
     out->read_lock_fences_enabled = data.read_lock_fences_enabled();
     out->is_software = data.is_software();
-    out->gpu_memory_buffer_id.id = data.gpu_memory_buffer_id();
     out->is_overlay_candidate = data.is_overlay_candidate();
     return true;
   }

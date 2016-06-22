@@ -214,26 +214,6 @@ TestGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
   return reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
 }
 
-std::unique_ptr<gfx::GpuMemoryBuffer>
-TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromClientId(
-    int client_id,
-    const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) {
-  // Check that the client and id are valid to ensure that the ResourceProvider
-  // is doing appropriate validation.
-  auto client_it = clients_.find(client_id);
-  DCHECK(client_it != clients_.end());
-  auto buffer_it = client_it->second->buffers_.find(gpu_memory_buffer_id.id);
-  DCHECK(buffer_it != client_it->second->buffers_.end());
-
-  gfx::GpuMemoryBuffer* found = buffer_it->second;
-
-  last_gpu_memory_buffer_id_ += 1;
-  std::unique_ptr<gfx::GpuMemoryBuffer> result(
-      new GpuMemoryBufferFromClient(this, last_gpu_memory_buffer_id_, found));
-  buffers_[last_gpu_memory_buffer_id_] = result.get();
-  return result;
-}
-
 void TestGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {}

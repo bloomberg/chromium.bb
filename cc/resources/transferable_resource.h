@@ -14,7 +14,6 @@
 #include "cc/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace cc {
 
@@ -39,7 +38,6 @@ struct CC_EXPORT TransferableResource {
   gpu::MailboxHolder mailbox_holder;
   bool read_lock_fences_enabled;
   bool is_software;
-  gfx::GpuMemoryBufferId gpu_memory_buffer_id;
   bool is_overlay_candidate;
 };
 

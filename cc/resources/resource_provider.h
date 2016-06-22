@@ -548,7 +548,6 @@ class CC_EXPORT ResourceProvider
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
-    gfx::GpuMemoryBufferId gpu_memory_buffer_id;
 
    private:
     SynchronizationState synchronization_state_ = SYNCHRONIZED;

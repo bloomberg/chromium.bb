@@ -197,9 +197,9 @@ std::unique_ptr<RenderPass> CreateRenderPass() {
 ResourceId CreateResource(ResourceProvider* resource_provider,
                           const gfx::Size& size,
                           bool is_overlay_candidate) {
-  TextureMailbox mailbox = TextureMailbox(
-      gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D, size,
-      gfx::GpuMemoryBufferId(), is_overlay_candidate, false);
+  TextureMailbox mailbox =
+      TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
+                     size, is_overlay_candidate, false);
   std::unique_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
 

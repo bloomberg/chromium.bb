@@ -427,10 +427,10 @@ std::unique_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
     // This binds the latest contents of this buffer to |texture|.
     gpu::SyncToken sync_token = texture->BindTexImage();
 
-    *texture_mailbox = cc::TextureMailbox(
-        texture->mailbox(), sync_token, texture_target_,
-        gpu_memory_buffer_->GetSize(), gpu_memory_buffer_->GetId(),
-        is_overlay_candidate_, secure_output_only);
+    *texture_mailbox =
+        cc::TextureMailbox(texture->mailbox(), sync_token, texture_target_,
+                           gpu_memory_buffer_->GetSize(), is_overlay_candidate_,
+                           secure_output_only);
     // The contents texture will be released when no longer used by the
     // compositor.
     return cc::SingleReleaseCallback::Create(
@@ -452,10 +452,10 @@ std::unique_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
   gpu::SyncToken sync_token = contents_texture->CopyTexImage(
       texture, base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
                           base::Passed(&contents_texture_)));
-  *texture_mailbox = cc::TextureMailbox(
-      texture->mailbox(), sync_token, GL_TEXTURE_2D,
-      gpu_memory_buffer_->GetSize(), gfx::GpuMemoryBufferId(),
-      false /* is_overlay_candidate */, secure_output_only);
+  *texture_mailbox =
+      cc::TextureMailbox(texture->mailbox(), sync_token, GL_TEXTURE_2D,
+                         gpu_memory_buffer_->GetSize(),
+                         false /* is_overlay_candidate */, secure_output_only);
   // The mailbox texture will be released when no longer used by the
   // compositor.
   return cc::SingleReleaseCallback::Create(

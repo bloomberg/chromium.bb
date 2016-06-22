@@ -475,7 +475,6 @@ TEST_F(StructTraitsTest, TransferableResource) {
   const uint32_t texture_target = 1337;
   const bool read_lock_fences_enabled = true;
   const bool is_software = false;
-  const int gpu_memory_buffer_id = 0xdeadbeef;
   const bool is_overlay_candidate = true;
 
   gpu::MailboxHolder mailbox_holder;
@@ -492,7 +491,6 @@ TEST_F(StructTraitsTest, TransferableResource) {
   input.mailbox_holder = mailbox_holder;
   input.read_lock_fences_enabled = read_lock_fences_enabled;
   input.is_software = is_software;
-  input.gpu_memory_buffer_id.id = gpu_memory_buffer_id;
   input.is_overlay_candidate = is_overlay_candidate;
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   TransferableResource output;
@@ -507,7 +505,6 @@ TEST_F(StructTraitsTest, TransferableResource) {
             output.mailbox_holder.texture_target);
   EXPECT_EQ(read_lock_fences_enabled, output.read_lock_fences_enabled);
   EXPECT_EQ(is_software, output.is_software);
-  EXPECT_EQ(gpu_memory_buffer_id, output.gpu_memory_buffer_id.id);
   EXPECT_EQ(is_overlay_candidate, output.is_overlay_candidate);
 }
 

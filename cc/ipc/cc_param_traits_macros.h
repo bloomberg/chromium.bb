@@ -147,7 +147,6 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
   IPC_STRUCT_TRAITS_MEMBER(mailbox_holder)
   IPC_STRUCT_TRAITS_MEMBER(read_lock_fences_enabled)
   IPC_STRUCT_TRAITS_MEMBER(is_software)
-  IPC_STRUCT_TRAITS_MEMBER(gpu_memory_buffer_id)
   IPC_STRUCT_TRAITS_MEMBER(is_overlay_candidate)
 IPC_STRUCT_TRAITS_END()
 

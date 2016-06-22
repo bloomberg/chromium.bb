@@ -14,7 +14,6 @@
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace cc {
 class SharedBitmap;
@@ -32,7 +31,6 @@ class CC_EXPORT TextureMailbox {
                  const gpu::SyncToken& sync_token,
                  uint32_t target,
                  const gfx::Size& size_in_pixels,
-                 const gfx::GpuMemoryBufferId& gpu_memory_buffer_id,
                  bool is_overlay_candidate,
                  bool secure_output_only);
   TextureMailbox(SharedBitmap* shared_bitmap, const gfx::Size& size_in_pixels);
@@ -58,9 +56,6 @@ class CC_EXPORT TextureMailbox {
     mailbox_holder_.sync_token = sync_token;
   }
 
-  gfx::GpuMemoryBufferId gpu_memory_buffer_id() const {
-    return gpu_memory_buffer_id_;
-  }
   bool is_overlay_candidate() const { return is_overlay_candidate_; }
   bool secure_output_only() const { return secure_output_only_; }
   bool nearest_neighbor() const { return nearest_neighbor_; }
@@ -78,7 +73,6 @@ class CC_EXPORT TextureMailbox {
   gpu::MailboxHolder mailbox_holder_;
   SharedBitmap* shared_bitmap_;
   gfx::Size size_in_pixels_;
-  gfx::GpuMemoryBufferId gpu_memory_buffer_id_;
   bool is_overlay_candidate_;
   bool secure_output_only_;
   bool nearest_neighbor_;

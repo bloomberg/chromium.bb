@@ -117,7 +117,7 @@ TEST(TextureLayerImplTest, OutputIsSecure) {
       mailbox,
       gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
                      gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),
-      GL_TEXTURE_2D, layer_size, gfx::GpuMemoryBufferId(), false, true);
+      GL_TEXTURE_2D, layer_size, false, true);
 
   TextureLayerImpl* texture_layer_impl =
       impl.AddChildToRoot<TextureLayerImpl>();
