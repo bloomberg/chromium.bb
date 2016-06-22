@@ -24,6 +24,7 @@ import devtools_monitor
 
 class Timing(object):
   """Collects the timing data for a request."""
+  UNVAILABLE = -1
   _TIMING_NAMES = (
       ('connectEnd', 'connect_end'), ('connectStart', 'connect_start'),
       ('dnsEnd', 'dns_end'), ('dnsStart', 'dns_start'),
@@ -44,7 +45,7 @@ class Timing(object):
     Initialize with keywords arguments from __slots__.
     """
     for slot in self.__slots__:
-      setattr(self, slot, -1)
+      setattr(self, slot, self.UNVAILABLE)
     for (attr, value) in kwargs.items():
       setattr(self, attr, value)
 
@@ -249,6 +250,24 @@ class Request(object):
     else:
       result.timing = Timing(request_time=result.timestamp)
     return result
+
+  def GetEncodedDataLength(self):
+    """Get the total amount of encoded data no matter whether load has finished
+    or not.
+    """
+    assert self.HasReceivedResponse()
+    assert not self.from_disk_cache and not self.served_from_cache
+    if self.failed:
+      # TODO(gabadie): Once crbug.com/622018 is fixed, remove this branch.
+      return 0
+    if self.timing.loading_finished != Timing.UNVAILABLE:
+      encoded_data_length = self.encoded_data_length
+      assert encoded_data_length > 0
+    else:
+      encoded_data_length = sum(
+          [chunk_size for _, chunk_size in self.data_chunks])
+      assert encoded_data_length > 0 or len(self.data_chunks) == 0
+    return encoded_data_length
 
   def GetHTTPResponseHeader(self, header_name):
     """Gets the value of a HTTP response header.

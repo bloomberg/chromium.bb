@@ -286,7 +286,8 @@ class _RunOutputVerifier(object):
       benchmark_setup: JSON of the benchmark setup.
     """
     self._cache_whitelist = set(benchmark_setup['cache_whitelist'])
-    self._original_requests = set(cache_validation_result['effective_requests'])
+    self._original_requests = set(
+        cache_validation_result['effective_encoded_data_lengths'].keys())
     self._original_post_requests = set(
         cache_validation_result['effective_post_requests'])
     self._original_cached_requests = self._original_requests.intersection(
@@ -360,7 +361,8 @@ def _ValidateCacheArchiveContent(cache_build_trace_path, cache_archive_path):
 
   Returns:
     {
-      'effective_requests': [URLs of all requests],
+      'effective_encoded_data_lengths':
+        {URL of all requests: encoded_data_length},
       'effective_post_requests': [URLs of POST requests],
       'expected_cached_resources': [URLs of resources expected to be cached],
       'successfully_cached': [URLs of cached sub-resources]
@@ -375,6 +377,20 @@ def _ValidateCacheArchiveContent(cache_build_trace_path, cache_archive_path):
   trace = loading_trace.LoadingTrace.FromJsonFile(cache_build_trace_path)
   effective_requests = _ListUrlRequests(trace, _RequestOutcome.All)
   effective_post_requests = _ListUrlRequests(trace, _RequestOutcome.Post)
+  effective_encoded_data_lengths = {}
+  for request in _FilterOutDataAndIncompleteRequests(
+      trace.request_track.GetEvents()):
+    if request.from_disk_cache or request.served_from_cache:
+      # At cache archive creation time, a request might be loaded several times,
+      # but avoid the request.encoded_data_length == 0 if loaded from cache.
+      continue
+    if request.url in effective_encoded_data_lengths:
+      effective_encoded_data_lengths[request.url] = max(
+          effective_encoded_data_lengths[request.url],
+          request.GetEncodedDataLength())
+    else:
+      effective_encoded_data_lengths[request.url] = (
+          request.GetEncodedDataLength())
 
   upload_data_stream_cache_entry_keys = set()
   upload_data_stream_requests = set()
@@ -396,7 +412,7 @@ def _ValidateCacheArchiveContent(cache_build_trace_path, cache_archive_path):
                          'Cached resources')
 
   return {
-      'effective_requests': [url for url in effective_requests],
+      'effective_encoded_data_lengths': effective_encoded_data_lengths,
       'effective_post_requests': [url for url in effective_post_requests],
       'expected_cached_resources': [url for url in expected_cached_requests],
       'successfully_cached_resources': [url for url in effective_cache_keys]
@@ -418,6 +434,8 @@ def _ProcessRunOutputDir(
   run_metrics_list = []
   run_output_verifier = _RunOutputVerifier(
       cache_validation_result, benchmark_setup)
+  cached_encoded_data_lengths = (
+      cache_validation_result['effective_encoded_data_lengths'])
   for repeat_id, repeat_dir in sandwich_runner.WalkRepeatedRuns(
       runner_output_dir):
     trace_path = os.path.join(repeat_dir, sandwich_runner.TRACE_FILENAME)
@@ -429,12 +447,33 @@ def _ProcessRunOutputDir(
     run_output_verifier.VerifyTrace(trace)
 
     logging.info('extracting metrics from trace: %s', trace_path)
+    served_from_network_bytes = 0
+    served_from_cache_bytes = 0
+    urls_hitting_network = set()
+    for request in _FilterOutDataAndIncompleteRequests(
+        trace.request_track.GetEvents()):
+      # Ignore requests served from the blink's cache.
+      if request.served_from_cache:
+        continue
+      urls_hitting_network.add(request.url)
+      if request.from_disk_cache:
+        served_from_cache_bytes += cached_encoded_data_lengths[request.url]
+      else:
+        served_from_network_bytes += request.GetEncodedDataLength()
+
+    # Make sure the served from blink's cache requests have at least one
+    # corresponding request that was not served from the blink's cache.
+    for request in _FilterOutDataAndIncompleteRequests(
+        trace.request_track.GetEvents()):
+      assert (request.url in urls_hitting_network or
+              not request.served_from_cache)
+
     run_metrics = {
         'url': trace.url,
         'repeat_id': repeat_id,
         'subresource_discoverer': benchmark_setup['subresource_discoverer'],
         'cache_recording.subresource_count':
-            len(cache_validation_result['effective_requests']),
+            len(cache_validation_result['effective_encoded_data_lengths']),
         'cache_recording.cached_subresource_count_theoretic':
             len(cache_validation_result['successfully_cached_resources']),
         'cache_recording.cached_subresource_count':
@@ -445,6 +484,8 @@ def _ProcessRunOutputDir(
             len(benchmark_setup['cache_whitelist']),
         'benchmark.served_from_cache_count': len(_ListUrlRequests(
             trace, _RequestOutcome.ServedFromCache)),
+        'benchmark.served_from_network_bytes': served_from_network_bytes,
+        'benchmark.served_from_cache_bytes': served_from_cache_bytes
     }
     run_metrics.update(
         sandwich_metrics.ExtractCommonMetricsFromRepeatDirectory(
@@ -555,7 +596,9 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
         'cache_recording.cached_subresource_count',
         'benchmark.subresource_count',
         'benchmark.served_from_cache_count_theoretic',
-        'benchmark.served_from_cache_count']
+        'benchmark.served_from_cache_count',
+        'benchmark.served_from_network_bytes',
+        'benchmark.served_from_cache_bytes']
 
     assert subresource_discoverer in SUBRESOURCE_DISCOVERERS
     assert 'common' not in SUBRESOURCE_DISCOVERERS

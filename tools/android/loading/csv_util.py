@@ -40,7 +40,8 @@ def CollectCSVsFromDirectory(directory_path, file_output):
       if csv_field_names is None:
         csv_field_names = reader.fieldnames
       else:
-        assert reader.fieldnames == csv_field_names
+        assert reader.fieldnames == csv_field_names, (
+            'Different field names in: {}'.format(csv_file))
       for row in reader:
         csv_rows.append(row)
 
