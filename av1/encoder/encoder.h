@@ -112,7 +112,12 @@ typedef enum {
 typedef enum {
   FRAMEFLAGS_KEY = 1 << 0,
   FRAMEFLAGS_GOLDEN = 1 << 1,
+#if CONFIG_EXT_REFS
+  FRAMEFLAGS_BWDREF = 1 << 2,
+  FRAMEFLAGS_ALTREF = 1 << 3,
+#else
   FRAMEFLAGS_ALTREF = 1 << 2,
+#endif  // CONFIG_EXT_REFS
 } FRAMETYPE_FLAGS;
 
 typedef enum {
@@ -324,8 +329,15 @@ typedef struct AV1_COMP {
   int partition_search_skippable_frame;
 
   int scaled_ref_idx[MAX_REF_FRAMES];
+#if CONFIG_EXT_REFS
+  int lst_fb_idxes[LAST_REF_FRAMES];
+#else
   int lst_fb_idx;
+#endif  // CONFIG_EXT_REFS
   int gld_fb_idx;
+#if CONFIG_EXT_REFS
+  int bwd_fb_idx;  // BWD_REF_FRAME
+#endif             // CONFIG_EXT_REFS
   int alt_fb_idx;
 
   int refresh_last_frame;
@@ -509,6 +521,11 @@ typedef struct AV1_COMP {
   int64_t vbp_threshold_sad;
   BLOCK_SIZE vbp_bsize_min;
 
+#if CONFIG_EXT_REFS
+  int refresh_frame_mask;
+  int existing_fb_idx_to_show;
+#endif  // CONFIG_EXT_REFS
+
   // Multi-threading
   int num_workers;
   AVxWorker *workers;
@@ -567,13 +584,20 @@ static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
 
 static INLINE int get_ref_frame_map_idx(const AV1_COMP *cpi,
                                         MV_REFERENCE_FRAME ref_frame) {
-  if (ref_frame == LAST_FRAME) {
-    return cpi->lst_fb_idx;
-  } else if (ref_frame == GOLDEN_FRAME) {
+#if CONFIG_EXT_REFS
+  if (ref_frame >= LAST_FRAME && ref_frame <= LAST3_FRAME)
+    return cpi->lst_fb_idxes[ref_frame - 1];
+#else
+  if (ref_frame == LAST_FRAME) return cpi->lst_fb_idx;
+#endif  // CONFIG_EXT_REFS
+  else if (ref_frame == GOLDEN_FRAME)
     return cpi->gld_fb_idx;
-  } else {
+#if CONFIG_EXT_REFS
+  else if (ref_frame == BWDREF_FRAME)
+    return cpi->bwd_fb_idx;
+#endif  // CONFIG_EXT_REFS
+  else
     return cpi->alt_fb_idx;
-  }
 }
 
 static INLINE int get_ref_frame_buf_idx(const AV1_COMP *const cpi,
@@ -590,6 +614,27 @@ static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
   return buf_idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[buf_idx].buf
                                 : NULL;
 }
+
+static INLINE const YV12_BUFFER_CONFIG *get_upsampled_ref(
+    AV1_COMP *cpi, const MV_REFERENCE_FRAME ref_frame) {
+  // Use up-sampled reference frames.
+  const int buf_idx =
+      cpi->upsampled_ref_idx[get_ref_frame_map_idx(cpi, ref_frame)];
+  return &cpi->upsampled_ref_bufs[buf_idx].buf;
+}
+
+#if CONFIG_EXT_REFS
+static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
+  MV_REFERENCE_FRAME ref_frame;
+  AV1_COMMON *const cm = &cpi->common;
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
+    if (buf_idx == INVALID_IDX) continue;
+    if (frame_buf == &cm->buffer_pool->frame_bufs[buf_idx]) break;
+  }
+  return (ref_frame <= ALTREF_FRAME);
+}
+#endif  // CONFIG_EXT_REFS
 
 static INLINE int get_token_alloc(int mb_rows, int mb_cols) {
   // TODO(JBB): double check we can't exceed this token count if we have a

@@ -57,27 +57,48 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  */
 #define AOM_EFLAG_NO_REF_GF (1 << 17)
 
+#if CONFIG_EXT_REFS
+/*!\brief Don't reference the backward reference frame
+ *
+ * When this flag is set, the encoder will not use the bwd frame as a
+ * predictor. When not set, the encoder will choose whether to use the
+ * bwd frame or not automatically.
+ */
+#define AOM_EFLAG_NO_REF_BRF (1 << 18)
+
+#endif  // CONFIG_EXT_REFS
+
 /*!\brief Don't reference the alternate reference frame
  *
  * When this flag is set, the encoder will not use the alt ref frame as a
  * predictor. When not set, the encoder will choose whether to use the
  * alt ref frame or not automatically.
  */
-#define AOM_EFLAG_NO_REF_ARF (1 << 21)
+#define AOM_EFLAG_NO_REF_ARF (1 << 19)
 
 /*!\brief Don't update the last frame
  *
  * When this flag is set, the encoder will not update the last frame with
  * the contents of the current frame.
  */
-#define AOM_EFLAG_NO_UPD_LAST (1 << 18)
+#define AOM_EFLAG_NO_UPD_LAST (1 << 20)
 
 /*!\brief Don't update the golden frame
  *
  * When this flag is set, the encoder will not update the golden frame with
  * the contents of the current frame.
  */
-#define AOM_EFLAG_NO_UPD_GF (1 << 22)
+#define AOM_EFLAG_NO_UPD_GF (1 << 21)
+
+#if CONFIG_EXT_REFS
+/*!\brief Don't update the backward reference frame
+ *
+ * When this flag is set, the encoder will not update the bwd frame with
+ * the contents of the current frame.
+ */
+#define AOM_EFLAG_NO_UPD_BRF (1 << 22)
+
+#endif  // CONFIG_EXT_REFS
 
 /*!\brief Don't update the alternate reference frame
  *
@@ -91,21 +112,30 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  * When this flag is set, the encoder copy the contents of the current frame
  * to the golden frame buffer.
  */
-#define AOM_EFLAG_FORCE_GF (1 << 19)
+#define AOM_EFLAG_FORCE_GF (1 << 24)
+
+#if CONFIG_EXT_REFS
+/*!\brief Force backward reference frame update
+ *
+ * When this flag is set, the encoder copy the contents of the current frame
+ * to the bwd frame buffer.
+ */
+#define AOM_EFLAG_FORCE_BRF (1 << 25)
+#endif  // CONFIG_EXT_REFS
 
 /*!\brief Force alternate reference frame update
  *
  * When this flag is set, the encoder copy the contents of the current frame
  * to the alternate reference frame buffer.
  */
-#define AOM_EFLAG_FORCE_ARF (1 << 24)
+#define AOM_EFLAG_FORCE_ARF (1 << 26)
 
 /*!\brief Disable entropy update
  *
  * When this flag is set, the encoder will not update its internal entropy
  * model based on the entropy of this frame.
  */
-#define AOM_EFLAG_NO_UPD_ENTROPY (1 << 20)
+#define AOM_EFLAG_NO_UPD_ENTROPY (1 << 27)
 
 /*!\brief AVx encoder control functions
  *

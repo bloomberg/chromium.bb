@@ -62,20 +62,6 @@ void av1_rd_pick_inter_mode_sub8x8(struct AV1_COMP *cpi,
                                    PICK_MODE_CONTEXT *ctx,
                                    int64_t best_rd_so_far);
 
-static INLINE const YV12_BUFFER_CONFIG *get_upsampled_ref(AV1_COMP *cpi,
-                                                          const int ref) {
-  // Use up-sampled reference frames.
-  int ref_idx = 0;
-  if (ref == LAST_FRAME)
-    ref_idx = cpi->lst_fb_idx;
-  else if (ref == GOLDEN_FRAME)
-    ref_idx = cpi->gld_fb_idx;
-  else if (ref == ALTREF_FRAME)
-    ref_idx = cpi->alt_fb_idx;
-
-  return &cpi->upsampled_ref_bufs[cpi->upsampled_ref_idx[ref_idx]].buf;
-}
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif
