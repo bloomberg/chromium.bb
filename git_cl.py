@@ -64,6 +64,7 @@ import watchlists
 
 __version__ = '2.0'
 
+COMMIT_BOT_EMAIL = 'commit-bot@chromium.org'
 DEFAULT_SERVER = 'https://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
@@ -1707,11 +1708,23 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
     messages = props.get('messages') or []
 
+    # Skip CQ messages that don't require owner's action.
+    while messages and messages[-1]['sender'] == COMMIT_BOT_EMAIL:
+      if 'Dry run:' in messages[-1]['text']:
+        messages.pop()
+      elif 'The CQ bit was unchecked' in messages[-1]['text']:
+        # This message always follows prior messages from CQ,
+        # so skip this too.
+        messages.pop()
+      else:
+        # This is probably a CQ messages warranting user attention.
+        break
+
     if not messages:
       # No message was sent.
       return 'unsent'
     if messages[-1]['sender'] != props.get('owner_email'):
-      # Non-LGTM reply from non-owner
+      # Non-LGTM reply from non-owner and not CQ bot.
       return 'reply'
     return 'waiting'
 
