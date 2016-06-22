@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "tools/gn/standard_out.h"
@@ -101,9 +102,9 @@ void Scheduler::Log(const std::string& verb, const std::string& msg) {
   } else {
     // The run loop always joins on the sub threads, so the lifetime of this
     // object outlives the invocations of this function, hence "unretained".
-    main_loop_.PostTask(FROM_HERE,
-                        base::Bind(&Scheduler::LogOnMainThread,
-                                   base::Unretained(this), verb, msg));
+    main_loop_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&Scheduler::LogOnMainThread,
+                              base::Unretained(this), verb, msg));
   }
 }
 
@@ -122,9 +123,9 @@ void Scheduler::FailWithError(const Err& err) {
   } else {
     // The run loop always joins on the sub threads, so the lifetime of this
     // object outlives the invocations of this function, hence "unretained".
-    main_loop_.PostTask(FROM_HERE,
-                        base::Bind(&Scheduler::FailWithErrorOnMainThread,
-                                   base::Unretained(this), err));
+    main_loop_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&Scheduler::FailWithErrorOnMainThread,
+                              base::Unretained(this), err));
   }
 }
 
@@ -210,9 +211,9 @@ void Scheduler::DecrementWorkCount() {
     if (base::MessageLoop::current() == &main_loop_) {
       OnComplete();
     } else {
-      main_loop_.PostTask(FROM_HERE,
-                          base::Bind(&Scheduler::OnComplete,
-                                     base::Unretained(this)));
+      main_loop_.task_runner()->PostTask(
+          FROM_HERE,
+          base::Bind(&Scheduler::OnComplete, base::Unretained(this)));
     }
   }
 }

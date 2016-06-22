@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
@@ -238,8 +239,8 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
                                     const LocationRange& origin,
                                     const ParseNode* root) {
   if (!root) {
-    main_loop_->PostTask(FROM_HERE,
-        base::Bind(&LoaderImpl::DecrementPendingLoads, this));
+    main_loop_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&LoaderImpl::DecrementPendingLoads, this));
     return;
   }
 
@@ -279,7 +280,8 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
 
   trace.Done();
 
-  main_loop_->PostTask(FROM_HERE, base::Bind(&LoaderImpl::DidLoadFile, this));
+  main_loop_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&LoaderImpl::DidLoadFile, this));
 }
 
 void LoaderImpl::BackgroundLoadBuildConfig(
@@ -287,8 +289,8 @@ void LoaderImpl::BackgroundLoadBuildConfig(
     const Scope::KeyValueMap& toolchain_overrides,
     const ParseNode* root) {
   if (!root) {
-    main_loop_->PostTask(FROM_HERE,
-        base::Bind(&LoaderImpl::DecrementPendingLoads, this));
+    main_loop_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&LoaderImpl::DecrementPendingLoads, this));
     return;
   }
 
@@ -337,9 +339,9 @@ void LoaderImpl::BackgroundLoadBuildConfig(
     }
   }
 
-  main_loop_->PostTask(FROM_HERE,
-      base::Bind(&LoaderImpl::DidLoadBuildConfig, this,
-                 settings->toolchain_label()));
+  main_loop_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&LoaderImpl::DidLoadBuildConfig, this,
+                            settings->toolchain_label()));
 }
 
 void LoaderImpl::DidLoadFile() {

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
@@ -157,7 +158,7 @@ void ReplayProcess::Run() {
                 base::TimeDelta::FromMilliseconds(1),
                 base::Bind(&ReplayProcess::SendNextMessage,
                            base::Unretained(this)));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 bool ReplayProcess::OnMessageReceived(const IPC::Message& msg) {

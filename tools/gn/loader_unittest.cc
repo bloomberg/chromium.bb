@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/err.h"
@@ -146,12 +147,12 @@ TEST_F(LoaderTest, Foo) {
 
   // Completing the build config load should kick off the root build file load.
   mock_ifm_.IssueAllPending();
-  scheduler_.main_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(mock_ifm_.HasOnePending(root_build));
 
   // Load the root build file.
   mock_ifm_.IssueAllPending();
-  scheduler_.main_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Schedule some other file to load in another toolchain.
   Label second_tc(SourceDir("//tc2/"), "tc2");
@@ -162,7 +163,7 @@ TEST_F(LoaderTest, Foo) {
   // Running the toolchain file should schedule the build config file to load
   // for that toolchain.
   mock_ifm_.IssueAllPending();
-  scheduler_.main_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We have to tell it we have a toolchain definition now (normally the
   // builder would do this).
@@ -179,7 +180,7 @@ TEST_F(LoaderTest, Foo) {
 
   // Running the build config file should make our third file pending.
   mock_ifm_.IssueAllPending();
-  scheduler_.main_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(mock_ifm_.HasTwoPending(second_file, third_file));
 
   EXPECT_FALSE(scheduler_.is_failed());
