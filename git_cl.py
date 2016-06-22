@@ -2263,6 +2263,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def CMDLand(self, force, bypass_hooks, verbose):
     if git_common.is_dirty_git_tree('land'):
       return 1
+    detail = self._GetChangeDetail(['CURRENT_REVISION', 'LABELS'])
+    if u'Commit-Queue' in detail.get('labels', {}):
+      if not force:
+        ask_for_data('\nIt seems this repository has a Commit Queue, '
+                     'which can test and land changes for you. '
+                     'Are you sure you wish to bypass it?\n'
+                     'Press Enter to continue, Ctrl+C to abort.')
+
     differs = True
     last_upload = RunGit(['config',
                           'branch.%s.gerritsquashhash' % self.GetBranch()],
@@ -2271,7 +2279,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if not last_upload or RunGit(['diff', last_upload]).strip():
       print('WARNING: some changes from local branch haven\'t been uploaded')
     else:
-      detail = self._GetChangeDetail(['CURRENT_REVISION'])
       if detail['current_revision'] == last_upload:
         differs = False
       else:
