@@ -70,12 +70,63 @@ float ShapeResultSpacing::nextExpansion()
     return m_expansionPerOpportunity;
 }
 
+bool ShapeResultSpacing::isFirstRun(const TextRun& run) const
+{
+    if (&run == &m_textRun)
+        return true;
+    return run.is8Bit()
+        ? run.characters8() == m_textRun.characters8()
+        : run.characters16() == m_textRun.characters16();
+}
+
 float ShapeResultSpacing::computeSpacing(const TextRun& run, size_t index,
     float& offset)
 {
-    if (run.is8Bit())
-        return computeSpacing(run.characters8(), run.length(), index, offset);
-    return computeSpacing(run.characters16(), run.length(), index, offset);
+    UChar32 character = run[index];
+    bool treatAsSpace = (Character::treatAsSpace(character)
+        || (m_normalizeSpace && Character::isNormalizedCanvasSpaceCharacter(character)))
+        && (character != '\t' || !m_allowTabs);
+    if (treatAsSpace && character != noBreakSpaceCharacter)
+        character = spaceCharacter;
+
+    float spacing = 0;
+    if (m_letterSpacing && !Character::treatAsZeroWidthSpace(character))
+        spacing += m_letterSpacing;
+
+    if (treatAsSpace && (index || !isFirstRun(run) || character == noBreakSpaceCharacter))
+        spacing += m_wordSpacing;
+
+    if (!hasExpansion())
+        return spacing;
+
+    if (treatAsSpace)
+        return spacing + nextExpansion();
+
+    if (run.is8Bit() || m_textJustify != TextJustify::TextJustifyAuto)
+        return spacing;
+
+    // isCJKIdeographOrSymbol() has expansion opportunities both before and
+    // after each character.
+    // http://www.w3.org/TR/jlreq/#line_adjustment
+    if (U16_IS_LEAD(character) && index + 1 < run.length() && U16_IS_TRAIL(run[index + 1]))
+        character = U16_GET_SUPPLEMENTARY(character, run[index + 1]);
+    if (!Character::isCJKIdeographOrSymbol(character)) {
+        m_isAfterExpansion = false;
+        return spacing;
+    }
+
+    if (!m_isAfterExpansion) {
+        // Take the expansion opportunity before this ideograph.
+        float expandBefore = nextExpansion();
+        if (expandBefore) {
+            offset += expandBefore;
+            spacing += expandBefore;
+        }
+        if (!hasExpansion())
+            return spacing;
+    }
+
+    return spacing + nextExpansion();
 }
 
 } // namespace blink
