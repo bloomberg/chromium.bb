@@ -1518,5 +1518,3 @@ crbug.com/621892 css3/filters/effect-brightness-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-hue-rotate-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-saturate-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-sepia-hw.html [ Pass Failure ]
-
-crbug.com/585660 fast/repaint/control-clip.html [ NeedsRebaseline ]
