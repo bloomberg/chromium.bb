@@ -1,30 +1,22 @@
-<html>
-<body>
-<video controls></video>
-
-<p>Video has no src. Test that the playing event is not dispatched.</p>
-
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that the playing event is not fired when video has no src.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video></video>
 <script>
-    waitForEventAndFail('playing');
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-    waitForEvent("loadstart");
-    waitForEvent("timeupdate");
-    waitForEvent("waiting");
+    video.onplaying = t.unreached_func();
+    video.onloadstart = t.step_func(function() {});
+    video.ontimeupdate = t.step_func(function() {});
+    video.onwaiting = t.step_func(function() {});
 
-    function onpause()
-    {
-        testExpected("video.networkState", HTMLMediaElement.NETWORK_EMPTY);
-        endTest();
-        consoleWrite("");
-     }
+    video.onpause = t.step_func_done(function() {
+        assert_equals(video.networkState, HTMLMediaElement.NETWORK_EMPTY);
+    });
 
-    waitForEvent("pause", onpause);
-
-    run("video.play()");
-    run("video.pause()");
+    video.play();
+    video.pause();
+});
 </script>
-</body>
-</html>

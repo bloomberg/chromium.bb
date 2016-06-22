@@ -1,28 +1,38 @@
-<video controls></video>
-<p>Test that calling play() and pause() triggers async play, timeupdate and pause events.</p>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that calling play() and pause() triggers async play, timeupdate and pause events.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
 <script>
-    video.src = findMediaFile("video", "content/test.mp4");
+async_test(function(t) {
+    var eventCount = 0;
+    var video = document.querySelector("video");
 
-    waitForEvent("loadstart");
-    waitForEvent("ratechange");
-    waitForEvent("waiting");
-    waitForEvent("ratechange");
-    waitForEvent("durationchange");
-    waitForEvent("loadedmetadata");
-    waitForEvent("loadeddata");
-    waitForEvent("canplay");
-    waitForEvent("canplaythrough");
-    waitForEvent("play");
-    waitForEvent("timeupdate");
-    waitForEvent('pause', function () { testExpected("video.paused", true); endTest(); } );
+    video.onloadstart = t.step_func(function() {});
+    video.onratechange = t.step_func(function() {});
+    video.onwaiting = t.step_func(function() {});
+    video.ondurationchange = t.step_func(function() {});
+    video.onloadedmetadata = t.step_func(function() {});
+    video.onloadeddata = t.step_func(function() {});
+    video.oncanplay = t.step_func(function() {});
+    video.oncanplaythrough = t.step_func(function() {});
 
+    video.onplay = t.step_func(function() {
+        eventCount++;
+    });
 
-    run("video.play()");
-    run("video.pause()");
+    video.ontimeupdate = t.step_func(function() {
+        eventCount++;
+    });
 
-    consoleWrite("SCRIPT DONE");
+    video.onpause = t.step_func_done(function () {
+        assert_equals(eventCount, 2);
+        assert_true(video.paused);
+    });
+
+    video.src = findMediaFile("video", "content/test");
+    video.play();
+    video.pause();
+});
 </script>
