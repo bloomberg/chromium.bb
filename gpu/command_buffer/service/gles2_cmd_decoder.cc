@@ -873,9 +873,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   GLenum GetBoundReadFrameBufferTextureType();
   GLenum GetBoundReadFrameBufferInternalFormat();
 
-  // Get the i-th draw buffer's internal format from the bound framebuffer.
+  // Get the i-th draw buffer's internal format/type from the bound framebuffer.
   // If no framebuffer is bound, or no image is attached, or the DrawBuffers
   // setting for that image is GL_NONE, return 0.
+  GLenum GetBoundColorDrawBufferType(GLint drawbuffer_i);
   GLenum GetBoundColorDrawBufferInternalFormat(GLint drawbuffer_i);
 
   GLsizei GetBoundFrameBufferSamples(GLenum target);
@@ -4041,6 +4042,26 @@ GLenum GLES2DecoderImpl::GetBoundReadFrameBufferInternalFormat() {
   }
 }
 
+GLenum GLES2DecoderImpl::GetBoundColorDrawBufferType(GLint drawbuffer_i) {
+  DCHECK(drawbuffer_i >= 0 &&
+         drawbuffer_i < static_cast<GLint>(group_->max_draw_buffers()));
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+  if (!framebuffer) {
+    return 0;
+  }
+  GLenum drawbuffer = static_cast<GLenum>(GL_DRAW_BUFFER0 + drawbuffer_i);
+  if (framebuffer->GetDrawBuffer(drawbuffer) == GL_NONE) {
+    return 0;
+  }
+  GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer_i);
+  const Framebuffer::Attachment* buffer =
+      framebuffer->GetAttachment(attachment);
+  if (!buffer) {
+    return 0;
+  }
+  return buffer->texture_type();
+}
+
 GLenum GLES2DecoderImpl::GetBoundColorDrawBufferInternalFormat(
     GLint drawbuffer_i) {
   DCHECK(drawbuffer_i >= 0 &&
@@ -7164,7 +7185,9 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
                        "destination framebuffer is multisampled");
     return;
   }
-  if (GetBoundFrameBufferSamples(GL_READ_FRAMEBUFFER) > 0 &&
+
+  GLsizei read_buffer_samples = GetBoundFrameBufferSamples(GL_READ_FRAMEBUFFER);
+  if (read_buffer_samples > 0 &&
       (srcX0 != dstX0 || srcY0 != dstY0 || srcX1 != dstX1 || srcY1 != dstY1)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
         "src framebuffer is multisampled, but src/dst regions are different");
@@ -7172,6 +7195,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
   }
 
   GLenum src_format = GetBoundReadFrameBufferInternalFormat();
+  GLenum src_type = GetBoundReadFrameBufferTextureType();
 
   if ((mask & GL_COLOR_BUFFER_BIT) != 0) {
     bool is_src_signed_int = GLES2Util::IsSignedIntegerFormat(src_format);
@@ -7184,11 +7208,21 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       return;
     }
 
+    GLenum src_sized_format =
+        GLES2Util::ConvertToSizedFormat(src_format, src_type);
     for (uint32_t ii = 0; ii < group_->max_draw_buffers(); ++ii) {
       GLenum dst_format = GetBoundColorDrawBufferInternalFormat(
           static_cast<GLint>(ii));
+      GLenum dst_type = GetBoundColorDrawBufferType(static_cast<GLint>(ii));
       if (dst_format == 0)
         continue;
+      if (read_buffer_samples > 0 &&
+          (src_sized_format !=
+           GLES2Util::ConvertToSizedFormat(dst_format, dst_type))) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                           "src and dst formats differ for color");
+        return;
+      }
       bool is_dst_signed_int = GLES2Util::IsSignedIntegerFormat(dst_format);
       bool is_dst_unsigned_int = GLES2Util::IsUnsignedIntegerFormat(dst_format);
       DCHECK(!is_dst_signed_int || !is_dst_unsigned_int);

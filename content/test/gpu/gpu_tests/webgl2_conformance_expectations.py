@@ -438,8 +438,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux NVIDIA only.
     self.Fail('conformance2/glsl3/array-complex-indexing.html',
         ['linux', 'nvidia', 'no_angle'], bug=606498)
-    self.Fail('deqp/functional/gles3/negativebufferapi.html',
-        ['linux', 'nvidia', 'no_angle'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformapi/random.html',
         ['linux', 'nvidia'], bug=621178)
 
@@ -517,8 +515,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/negativetextureapi.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback/*.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/negativebufferapi.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['linux', 'amd'], bug=483282)
