@@ -132,6 +132,9 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   virtual void ForceReclaimResources() {}
 
   virtual void BindFramebuffer();
+  // Gives the GL internal format that should be used for calling CopyTexImage2D
+  // when the framebuffer is bound via BindFramebuffer().
+  virtual uint32_t GetFramebufferCopyTextureFormat() = 0;
 
   // The implementation may destroy or steal the contents of the CompositorFrame
   // passed in (though it will not take ownership of the CompositorFrame

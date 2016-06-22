@@ -30,6 +30,8 @@ using gpu::gles2::GLES2Interface;
 
 namespace content {
 
+static cc::ResourceFormat kFboTextureFormat = cc::RGBA_8888;
+
 OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
         scoped_refptr<ContextProviderCommandBuffer> context,
@@ -55,7 +57,7 @@ OffscreenBrowserCompositorOutputSurface::
 void OffscreenBrowserCompositorOutputSurface::EnsureBackbuffer() {
   is_backbuffer_discarded_ = false;
 
-  if (!reflector_texture_.get()) {
+  if (!reflector_texture_) {
     reflector_texture_.reset(new ReflectorTexture(context_provider()));
 
     GLES2Interface* gl = context_provider_->ContextGL();
@@ -65,15 +67,15 @@ void OffscreenBrowserCompositorOutputSurface::EnsureBackbuffer() {
     int texture_width = std::min(max_texture_size, surface_size_.width());
     int texture_height = std::min(max_texture_size, surface_size_.height());
 
-    cc::ResourceFormat format = cc::RGBA_8888;
     gl->BindTexture(GL_TEXTURE_2D, reflector_texture_->texture_id());
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    gl->TexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(format),
+    gl->TexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(kFboTextureFormat),
                    texture_width, texture_height, 0,
-                   GLDataFormat(format), GLDataType(format), nullptr);
+                   GLDataFormat(kFboTextureFormat),
+                   GLDataType(kFboTextureFormat), nullptr);
     if (!fbo_)
       gl->GenFramebuffers(1, &fbo_);
 
@@ -125,6 +127,11 @@ void OffscreenBrowserCompositorOutputSurface::BindFramebuffer() {
     GLES2Interface* gl = context_provider_->ContextGL();
     gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
   }
+}
+
+GLenum
+OffscreenBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
+  return GLCopyTextureInternalFormat(kFboTextureFormat);
 }
 
 void OffscreenBrowserCompositorOutputSurface::SwapBuffers(

@@ -156,6 +156,10 @@ void MailboxOutputSurface::BindFramebuffer() {
                            current_backing_.texture_id, 0);
 }
 
+uint32_t MailboxOutputSurface::GetFramebufferCopyTextureFormat() {
+  return GLCopyTextureInternalFormat(cc::RGBA_8888);
+}
+
 void MailboxOutputSurface::OnSwapAck(uint32_t output_surface_id,
                                      const cc::CompositorFrameAck& ack) {
   // Ignore message if it's a stale one coming from a different output surface

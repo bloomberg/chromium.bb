@@ -22,11 +22,12 @@ namespace {
 
 class TestOutputSurface : public OutputSurface {
  public:
-  explicit TestOutputSurface(scoped_refptr<ContextProvider> context_provider)
+  explicit TestOutputSurface(
+      scoped_refptr<TestContextProvider> context_provider)
       : OutputSurface(std::move(context_provider), nullptr, nullptr) {}
 
-  TestOutputSurface(scoped_refptr<ContextProvider> context_provider,
-                    scoped_refptr<ContextProvider> worker_context_provider)
+  TestOutputSurface(scoped_refptr<TestContextProvider> context_provider,
+                    scoped_refptr<TestContextProvider> worker_context_provider)
       : OutputSurface(std::move(context_provider),
                       std::move(worker_context_provider),
                       nullptr) {}
@@ -35,7 +36,7 @@ class TestOutputSurface : public OutputSurface {
       std::unique_ptr<SoftwareOutputDevice> software_device)
       : OutputSurface(nullptr, nullptr, std::move(software_device)) {}
 
-  TestOutputSurface(scoped_refptr<ContextProvider> context_provider,
+  TestOutputSurface(scoped_refptr<TestContextProvider> context_provider,
                     std::unique_ptr<SoftwareOutputDevice> software_device)
       : OutputSurface(std::move(context_provider),
                       nullptr,
@@ -44,6 +45,10 @@ class TestOutputSurface : public OutputSurface {
   void SwapBuffers(CompositorFrame* frame) override {
     client_->DidSwapBuffers();
     client_->DidSwapBuffersComplete();
+  }
+  uint32_t GetFramebufferCopyTextureFormat() override {
+    // TestContextProvider has no real framebuffer, just use RGB.
+    return GL_RGB;
   }
 
   void DidSwapBuffersForTesting() { client_->DidSwapBuffers(); }

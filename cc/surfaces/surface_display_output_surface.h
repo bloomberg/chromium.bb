@@ -45,6 +45,8 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
   bool BindToClient(OutputSurfaceClient* client) override;
   void ForceReclaimResources() override;
   void DetachFromClient() override;
+  void BindFramebuffer() override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const ReturnedResourceArray& resources) override;

@@ -202,6 +202,11 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     return overlay_candidate_validator_.get();
   }
 
+  uint32_t GetFramebufferCopyTextureFormat() override {
+    auto* gl = static_cast<ContextProviderCommandBuffer*>(context_provider());
+    return gl->GetCopyTextureInternalFormat();
+  }
+
  private:
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
     ContextProviderCommandBuffer* provider_command_buffer =

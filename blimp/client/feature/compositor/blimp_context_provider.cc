@@ -124,5 +124,11 @@ void BlimpContextProvider::OnLostContext() {
     gr_context_->OnLostContext();
 }
 
+uint32_t BlimpContextProvider::GetCopyTextureInternalFormat() {
+  // The attributes used to create the context in the constructor specify
+  // an alpha channel.
+  return GL_RGBA;
+}
+
 }  // namespace client
 }  // namespace blimp

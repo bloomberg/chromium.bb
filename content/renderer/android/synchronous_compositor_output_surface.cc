@@ -200,6 +200,17 @@ void SynchronousCompositorOutputSurface::Invalidate() {
   }
 }
 
+void SynchronousCompositorOutputSurface::BindFramebuffer() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+}
+
+uint32_t SynchronousCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+  return 0;
+}
+
 void SynchronousCompositorOutputSurface::DemandDrawHw(
     const gfx::Size& surface_size,
     const gfx::Transform& transform,

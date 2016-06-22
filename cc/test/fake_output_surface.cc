@@ -38,13 +38,7 @@ FakeOutputSurface::FakeOutputSurface(
     bool delegated_rendering)
     : OutputSurface(std::move(context_provider),
                     std::move(worker_context_provider),
-                    std::move(software_device)),
-      client_(NULL),
-      num_sent_frames_(0),
-      has_external_stencil_test_(false),
-      suspended_for_recycle_(false),
-      framebuffer_(0),
-      overlay_candidate_validator_(nullptr) {
+                    std::move(software_device)) {
   capabilities_.delegated_rendering = delegated_rendering;
 }
 
@@ -72,11 +66,19 @@ void FakeOutputSurface::SwapBuffers(CompositorFrame* frame) {
 }
 
 void FakeOutputSurface::BindFramebuffer() {
-  if (framebuffer_)
+  if (framebuffer_) {
     context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER,
                                                     framebuffer_);
-  else
+  } else {
     OutputSurface::BindFramebuffer();
+  }
+}
+
+uint32_t FakeOutputSurface::GetFramebufferCopyTextureFormat() {
+  if (framebuffer_)
+    return framebuffer_format_;
+  else
+    return GL_RGB;
 }
 
 bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {

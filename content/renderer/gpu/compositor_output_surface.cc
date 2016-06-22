@@ -121,6 +121,17 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   client_->DidSwapBuffers();
 }
 
+void CompositorOutputSurface::BindFramebuffer() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+}
+
+uint32_t CompositorOutputSurface::GetFramebufferCopyTextureFormat() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+  return 0;
+}
+
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
   DCHECK(client_thread_checker_.CalledOnValidThread());
   if (!HasClient())

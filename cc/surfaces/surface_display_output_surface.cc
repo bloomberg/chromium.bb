@@ -124,6 +124,17 @@ void SurfaceDisplayOutputSurface::DetachFromClient() {
   OutputSurface::DetachFromClient();
 }
 
+void SurfaceDisplayOutputSurface::BindFramebuffer() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+}
+
+uint32_t SurfaceDisplayOutputSurface::GetFramebufferCopyTextureFormat() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+  return 0;
+}
+
 void SurfaceDisplayOutputSurface::ReturnResources(
     const ReturnedResourceArray& resources) {
   CompositorFrameAck ack;

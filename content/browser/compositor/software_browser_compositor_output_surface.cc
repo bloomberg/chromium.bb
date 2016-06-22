@@ -57,6 +57,18 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
   client_->DidSwapBuffers();
 }
 
+void SoftwareBrowserCompositorOutputSurface::BindFramebuffer() {
+  // Not used for software surfaces.
+  NOTREACHED();
+}
+
+GLenum
+SoftwareBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
+  // Not used for software surfaces.
+  NOTREACHED();
+  return 0;
+}
+
 void SoftwareBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result,

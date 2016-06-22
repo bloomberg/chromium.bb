@@ -80,10 +80,10 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
   blur->SetBackgroundFilters(filters);
 
 #if defined(OS_WIN)
-  // Windows has 7.6975% pixels by at most 2: crbug.com/259922
-  float percentage_pixels_large_error = 7.7f;
+  // Windows has 5.6075% pixels by at most 2: crbug.com/259922
+  float percentage_pixels_large_error = 5.7f;
   float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 1.f;
+  float average_error_allowed_in_bad_pixels = 2.f;
   int large_error_allowed = 2;
   int small_error_allowed = 0;
   pixel_comparator_.reset(new FuzzyPixelComparator(
@@ -437,10 +437,10 @@ class ImageBackgroundFilter : public LayerTreeHostFiltersPixelTest {
     filter->SetBackgroundFilters(filters);
 
 #if defined(OS_WIN)
-    // Windows has 2.5875% pixels off by at most 2: crbug.com/225027
-    float percentage_pixels_large_error = 2.6f;  // 994px / (200*200)
+    // Windows has 3.065% pixels off by at most 2: crbug.com/225027
+    float percentage_pixels_large_error = 3.1f;
     float percentage_pixels_small_error = 0.0f;
-    float average_error_allowed_in_bad_pixels = 1.f;
+    float average_error_allowed_in_bad_pixels = 2.f;
     int large_error_allowed = 2;
     int small_error_allowed = 0;
     pixel_comparator_.reset(new FuzzyPixelComparator(

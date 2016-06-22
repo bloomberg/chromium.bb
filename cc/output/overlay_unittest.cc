@@ -133,8 +133,9 @@ size_t DefaultOverlayProcessor::GetStrategyCount() {
 
 class OverlayOutputSurface : public OutputSurface {
  public:
-  explicit OverlayOutputSurface(scoped_refptr<ContextProvider> context_provider)
-      : OutputSurface(context_provider, nullptr, nullptr) {
+  explicit OverlayOutputSurface(
+      scoped_refptr<TestContextProvider> context_provider)
+      : OutputSurface(std::move(context_provider), nullptr, nullptr) {
     surface_size_ = kDisplaySize;
     device_scale_factor_ = 1;
     is_displayed_as_overlay_plane_ = true;
@@ -148,6 +149,10 @@ class OverlayOutputSurface : public OutputSurface {
   void BindFramebuffer() override {
     OutputSurface::BindFramebuffer();
     bind_framebuffer_count_ += 1;
+  }
+  uint32_t GetFramebufferCopyTextureFormat() override {
+    // TestContextProvider has no real framebuffer, just use RGB.
+    return GL_RGB;
   }
   void SwapBuffers(CompositorFrame* frame) override {
     client_->DidSwapBuffers();

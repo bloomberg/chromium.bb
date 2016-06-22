@@ -34,6 +34,8 @@ class PixelTestDelegatingOutputSurface : public OutputSurface,
   void DetachFromClient() override;
   void SwapBuffers(CompositorFrame* frame) override;
   void ForceReclaimResources() override;
+  void BindFramebuffer() override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const ReturnedResourceArray& resources) override;

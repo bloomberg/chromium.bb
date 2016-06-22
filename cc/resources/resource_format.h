@@ -34,6 +34,7 @@ CC_EXPORT int BitsPerPixel(ResourceFormat format);
 CC_EXPORT GLenum GLDataType(ResourceFormat format);
 CC_EXPORT GLenum GLDataFormat(ResourceFormat format);
 CC_EXPORT GLenum GLInternalFormat(ResourceFormat format);
+CC_EXPORT GLenum GLCopyTextureInternalFormat(ResourceFormat format);
 CC_EXPORT gfx::BufferFormat BufferFormat(ResourceFormat format);
 
 bool IsResourceFormatCompressed(ResourceFormat format);

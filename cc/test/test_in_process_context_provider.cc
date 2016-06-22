@@ -32,10 +32,7 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
     gpu::GLInProcessContext* shared_context) {
   const bool is_offscreen = true;
   gpu::gles2::ContextCreationAttribHelper attribs;
-  attribs.alpha_size = 8;
-  attribs.blue_size = 8;
-  attribs.green_size = 8;
-  attribs.red_size = 8;
+  attribs.alpha_size = -1;
   attribs.depth_size = 24;
   attribs.stencil_size = 8;
   attribs.samples = 0;

@@ -160,4 +160,13 @@ void InProcessContextProvider::SetLostContextCallback(
   // Pixel tests do not test lost context.
 }
 
+uint32_t InProcessContextProvider::GetCopyTextureInternalFormat() {
+  if (attribs_.alpha_size > 0)
+    return GL_RGBA;
+  DCHECK_NE(attribs_.red_size, 0);
+  DCHECK_NE(attribs_.green_size, 0);
+  DCHECK_NE(attribs_.blue_size, 0);
+  return GL_RGB;
+}
+
 }  // namespace ui

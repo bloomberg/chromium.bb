@@ -21,8 +21,9 @@ class TestOutputSurface : public OutputSurface {
   explicit TestOutputSurface(scoped_refptr<ContextProvider> context_provider);
   ~TestOutputSurface() override;
 
-  // OutputSurface implementation
+  // OutputSurface implementation.
   void SwapBuffers(CompositorFrame* frame) override;
+  uint32_t GetFramebufferCopyTextureFormat() override { return GL_RGB; }
 };
 
 TestOutputSurface::TestOutputSurface(

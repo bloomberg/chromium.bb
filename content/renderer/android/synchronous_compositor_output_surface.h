@@ -79,6 +79,8 @@ class SynchronousCompositorOutputSurface
                bool has_alpha) override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
   void Invalidate() override;
+  void BindFramebuffer() override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
 
   // Partial SynchronousCompositor API implementation.
   void DemandDrawHw(const gfx::Size& surface_size,

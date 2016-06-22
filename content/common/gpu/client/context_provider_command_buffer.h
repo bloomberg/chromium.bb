@@ -62,6 +62,9 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
       command_buffer_metrics::ContextType type);
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
+  // Gives the GL internal format that should be used for calling CopyTexImage2D
+  // on the default framebuffer.
+  uint32_t GetCopyTextureInternalFormat();
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;

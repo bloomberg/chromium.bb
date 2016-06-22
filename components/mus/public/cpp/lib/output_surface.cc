@@ -34,6 +34,17 @@ void OutputSurface::DetachFromClient() {
   cc::OutputSurface::DetachFromClient();
 }
 
+void OutputSurface::BindFramebuffer() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+}
+
+uint32_t OutputSurface::GetFramebufferCopyTextureFormat() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+  return 0;
+}
+
 void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   // TODO(fsamuel, rjkroege): We should probably throttle compositor frames.
   client_->DidSwapBuffers();

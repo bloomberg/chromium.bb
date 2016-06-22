@@ -43,6 +43,10 @@ class BlimpContextProvider : public cc::ContextProvider {
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
 
+  // Gives the GL internal format that should be used for calling CopyTexImage2D
+  // on the default framebuffer.
+  uint32_t GetCopyTextureInternalFormat();
+
  protected:
   BlimpContextProvider(
       gfx::AcceleratedWidget widget,

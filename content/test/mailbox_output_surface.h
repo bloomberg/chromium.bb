@@ -44,6 +44,7 @@ class MailboxOutputSurface : public cc::OutputSurface {
   void DiscardBackbuffer() override;
   void Reshape(const gfx::Size& size, float scale_factor, bool alpha) override;
   void BindFramebuffer() override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
 
  private:

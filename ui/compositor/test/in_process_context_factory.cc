@@ -50,8 +50,8 @@ class FakeReflector : public Reflector {
 class DirectOutputSurface : public cc::OutputSurface {
  public:
   DirectOutputSurface(
-      scoped_refptr<cc::ContextProvider> context_provider,
-      scoped_refptr<cc::ContextProvider> worker_context_provider)
+      scoped_refptr<InProcessContextProvider> context_provider,
+      scoped_refptr<InProcessContextProvider> worker_context_provider)
       : cc::OutputSurface(std::move(context_provider),
                           std::move(worker_context_provider),
                           nullptr),
@@ -59,7 +59,7 @@ class DirectOutputSurface : public cc::OutputSurface {
 
   ~DirectOutputSurface() override {}
 
-  // cc::OutputSurface implementation
+  // cc::OutputSurface implementation.
   bool BindToClient(cc::OutputSurfaceClient* client) override {
     if (!OutputSurface::BindToClient(client))
       return false;
@@ -86,6 +86,10 @@ class DirectOutputSurface : public cc::OutputSurface {
         sync_token, base::Bind(&OutputSurface::OnSwapBuffersComplete,
                                weak_ptr_factory_.GetWeakPtr()));
     client_->DidSwapBuffers();
+  }
+  uint32_t GetFramebufferCopyTextureFormat() override {
+    auto* gl = static_cast<InProcessContextProvider*>(context_provider());
+    return gl->GetCopyTextureInternalFormat();
   }
 
  private:

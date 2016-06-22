@@ -55,6 +55,7 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
   void BindFramebuffer() override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
   void Reshape(const gfx::Size& size, float scale_factor, bool alpha) override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;

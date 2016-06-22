@@ -92,7 +92,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                  const gfx::Rect& rect,
                                  std::unique_ptr<CopyOutputRequest> request);
   void GetFramebufferTexture(unsigned texture_id,
-                             ResourceFormat texture_format,
                              const gfx::Rect& device_rect);
   void ReleaseRenderPassTextures();
   enum BoundGeometry { NO_BINDING, SHARED_BINDING, CLIPPED_BINDING };
@@ -511,6 +510,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   std::unique_ptr<ResourceProvider::ScopedWriteLockGL>
       current_framebuffer_lock_;
+  // This is valid when current_framebuffer_lock_ is not null.
+  ResourceFormat current_framebuffer_format_;
 
   class SyncQuery;
   std::deque<std::unique_ptr<SyncQuery>> pending_sync_queries_;

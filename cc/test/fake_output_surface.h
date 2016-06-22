@@ -117,8 +117,12 @@ class FakeOutputSurface : public OutputSurface {
   OutputSurfaceClient* client() { return client_; }
   bool BindToClient(OutputSurfaceClient* client) override;
 
-  void set_framebuffer(unsigned framebuffer) { framebuffer_ = framebuffer; }
+  void set_framebuffer(GLint framebuffer, GLenum format) {
+    framebuffer_ = framebuffer;
+    framebuffer_format_ = format;
+  }
   void BindFramebuffer() override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
 
   void SetTreeActivationCallback(const base::Closure& callback);
 
@@ -165,15 +169,16 @@ class FakeOutputSurface : public OutputSurface {
                     std::unique_ptr<SoftwareOutputDevice> software_device,
                     bool delegated_rendering);
 
-  OutputSurfaceClient* client_;
+  OutputSurfaceClient* client_ = nullptr;
   CompositorFrame last_sent_frame_;
-  size_t num_sent_frames_;
-  bool has_external_stencil_test_;
-  bool suspended_for_recycle_;
-  unsigned framebuffer_;
+  size_t num_sent_frames_ = 0;
+  bool has_external_stencil_test_ = false;
+  bool suspended_for_recycle_ = false;
+  GLint framebuffer_ = 0;
+  GLenum framebuffer_format_ = 0;
   TransferableResourceArray resources_held_by_parent_;
   std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
-  OverlayCandidateValidator* overlay_candidate_validator_;
+  OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   gfx::Rect last_swap_rect_;
 };
 

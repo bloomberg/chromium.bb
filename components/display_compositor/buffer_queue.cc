@@ -20,8 +20,8 @@
 namespace display_compositor {
 
 BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
-                         unsigned int texture_target,
-                         unsigned int internalformat,
+                         uint32_t texture_target,
+                         uint32_t internal_format,
                          GLHelper* gl_helper,
                          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                          gpu::SurfaceHandle surface_handle)
@@ -29,7 +29,7 @@ BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
       fbo_(0),
       allocated_count_(0),
       texture_target_(texture_target),
-      internal_format_(internalformat),
+      internal_format_(internal_format),
       gl_helper_(gl_helper),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       surface_handle_(surface_handle) {}
@@ -83,7 +83,7 @@ void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
       // Copy damage from the most recently swapped buffer. In the event that
       // the buffer was destroyed and failed to recreate, pick from the most
       // recently available buffer.
-      unsigned int texture_id = 0;
+      uint32_t texture_id = 0;
       for (auto& surface : base::Reversed(in_flight_surfaces_)) {
         if (surface) {
           texture_id = surface->texture;
@@ -219,7 +219,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
     return nullptr;
   }
 
-  unsigned int id =
+  uint32_t id =
       gl_->CreateImageCHROMIUM(buffer->AsClientBuffer(), size_.width(),
                                size_.height(), internal_format_);
   if (!id) {
@@ -238,8 +238,8 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
 BufferQueue::AllocatedSurface::AllocatedSurface(
     BufferQueue* buffer_queue,
     std::unique_ptr<gfx::GpuMemoryBuffer> buffer,
-    unsigned int texture,
-    unsigned int image,
+    uint32_t texture,
+    uint32_t image,
     const gfx::Rect& rect)
     : buffer_queue(buffer_queue),
       buffer(buffer.release()),

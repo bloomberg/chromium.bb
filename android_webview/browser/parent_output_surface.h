@@ -10,11 +10,12 @@
 #include "cc/output/output_surface.h"
 
 namespace android_webview {
+class AwRenderThreadContextProvider;
 
 class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
  public:
   explicit ParentOutputSurface(
-      scoped_refptr<cc::ContextProvider> context_provider);
+      scoped_refptr<AwRenderThreadContextProvider> context_provider);
   ~ParentOutputSurface() override;
 
   // OutputSurface overrides.
@@ -24,6 +25,7 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
                bool has_alpha) override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
   void ApplyExternalStencil() override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
 
   void SetGLState(const ScopedAppGLStateRestore& gl_state);
 

@@ -65,6 +65,11 @@ bool GpuBrowserCompositorOutputSurface::BindToClient(
   return true;
 }
 
+uint32_t GpuBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
+  auto* gl = static_cast<ContextProviderCommandBuffer*>(context_provider());
+  return gl->GetCopyTextureInternalFormat();
+}
+
 void GpuBrowserCompositorOutputSurface::OnReflectorChanged() {
   if (!reflector_) {
     reflector_texture_.reset();

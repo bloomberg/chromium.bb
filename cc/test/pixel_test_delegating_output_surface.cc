@@ -162,6 +162,17 @@ void PixelTestDelegatingOutputSurface::ForceReclaimResources() {
   }
 }
 
+void PixelTestDelegatingOutputSurface::BindFramebuffer() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+}
+
+uint32_t PixelTestDelegatingOutputSurface::GetFramebufferCopyTextureFormat() {
+  // This is a delegating output surface, no framebuffer/direct drawing support.
+  NOTREACHED();
+  return 0;
+}
+
 void PixelTestDelegatingOutputSurface::ReturnResources(
     const ReturnedResourceArray& resources) {
   CompositorFrameAck ack;

@@ -57,6 +57,8 @@ class GpuBrowserCompositorOutputSurface
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
   bool BindToClient(cc::OutputSurfaceClient* client) override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
+
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
   base::CancelableCallback<void(

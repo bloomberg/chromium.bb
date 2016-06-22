@@ -72,4 +72,10 @@ void DirectOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   client_->DidSwapBuffers();
 }
 
+uint32_t DirectOutputSurface::GetFramebufferCopyTextureFormat() {
+  // TODO(danakj): What attributes are used for the default framebuffer here?
+  // Can it have alpha? SurfacesContextProvider doesn't take any attributes.
+  return GL_RGB;
+}
+
 }  // namespace mus

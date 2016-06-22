@@ -1392,7 +1392,7 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
   gpu::gles2::GLES2Interface* gl =
       output_surface->context_provider()->ContextGL();
   gl->GenFramebuffers(1, &fbo);
-  output_surface->set_framebuffer(fbo);
+  output_surface->set_framebuffer(fbo, GL_RGB);
 
   renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
   renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, device_viewport_rect,
@@ -1779,6 +1779,7 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD3(Reshape,
                void(const gfx::Size& size, float scale_factor, bool has_alpha));
   MOCK_METHOD0(BindFramebuffer, void());
+  MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
   MOCK_METHOD1(SwapBuffers, void(CompositorFrame* frame));
 };
 

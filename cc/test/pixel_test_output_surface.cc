@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "cc/output/output_surface_client.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -52,6 +53,13 @@ bool PixelTestOutputSurface::HasExternalStencilTest() const {
 void PixelTestOutputSurface::SwapBuffers(CompositorFrame* frame) {
   PostSwapBuffersComplete();
   client_->DidSwapBuffers();
+}
+
+uint32_t PixelTestOutputSurface::GetFramebufferCopyTextureFormat() {
+  // This format will work if the |context_provider| has an RGB or RGBA
+  // framebuffer. For now assume tests do not want/care about alpha in
+  // the root render pass.
+  return GL_RGB;
 }
 
 }  // namespace cc

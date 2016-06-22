@@ -32,6 +32,10 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
       scoped_refptr<gl::GLSurface> surface,
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
 
+  // Gives the GL internal format that should be used for calling CopyTexImage2D
+  // on the default framebuffer.
+  uint32_t GetCopyTextureInternalFormat();
+
  private:
   AwRenderThreadContextProvider(
       scoped_refptr<gl::GLSurface> surface,

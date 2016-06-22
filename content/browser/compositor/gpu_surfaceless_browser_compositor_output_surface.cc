@@ -86,6 +86,11 @@ void GpuSurfacelessBrowserCompositorOutputSurface::BindFramebuffer() {
   buffer_queue_->BindFramebuffer();
 }
 
+GLenum GpuSurfacelessBrowserCompositorOutputSurface::
+    GetFramebufferCopyTextureFormat() {
+  return buffer_queue_->internal_format();
+}
+
 void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
     const gfx::Size& size,
     float scale_factor,

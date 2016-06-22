@@ -58,6 +58,8 @@ class CompositorOutputSurface
   bool BindToClient(cc::OutputSurfaceClient* client) override;
   void DetachFromClient() override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
+  void BindFramebuffer() override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
 
  protected:
   uint32_t output_surface_id_;

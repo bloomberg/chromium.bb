@@ -31,8 +31,13 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
 
   ~SoftwareBrowserCompositorOutputSurface() override;
 
- private:
+  // OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
+  void BindFramebuffer() override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
+
+ private:
+  // BrowserCompositorOutputSurface implementation.
   void OnGpuSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result,

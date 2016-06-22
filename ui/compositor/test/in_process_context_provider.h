@@ -45,7 +45,7 @@ class InProcessContextProvider : public cc::ContextProvider {
       gpu::ImageFactory* image_factory,
       InProcessContextProvider* shared_context);
 
-  // cc::ContextProvider:
+  // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
   gpu::Capabilities ContextCapabilities() override;
@@ -57,6 +57,10 @@ class InProcessContextProvider : public cc::ContextProvider {
   void DeleteCachedResources() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
+
+  // Gives the GL internal format that should be used for calling CopyTexImage2D
+  // on the default framebuffer.
+  uint32_t GetCopyTextureInternalFormat();
 
  private:
   InProcessContextProvider(

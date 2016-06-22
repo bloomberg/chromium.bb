@@ -75,6 +75,11 @@ AwRenderThreadContextProvider::~AwRenderThreadContextProvider() {
     gr_context_->releaseResourcesAndAbandonContext();
 }
 
+uint32_t AwRenderThreadContextProvider::GetCopyTextureInternalFormat() {
+  // The attributes used in the constructor included an alpha channel.
+  return GL_RGBA;
+}
+
 bool AwRenderThreadContextProvider::BindToCurrentThread() {
   // This is called on the thread the context will be used.
   DCHECK(main_thread_checker_.CalledOnValidThread());

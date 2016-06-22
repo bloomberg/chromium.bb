@@ -145,6 +145,10 @@ void DirectOutputSurfaceOzone::BindFramebuffer() {
   buffer_queue_->BindFramebuffer();
 }
 
+uint32_t DirectOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
+  return buffer_queue_->internal_format();
+}
+
 // We call this on every frame but changing the size once we've allocated
 // backing NativePixmapOzone instances will cause a DCHECK because
 // Chrome never Reshape(s) after the first one from (0,0). NB: this implies

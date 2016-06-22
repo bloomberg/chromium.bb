@@ -833,7 +833,7 @@ std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
   {
     ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
                                              device_background_texture->id());
-    GetFramebufferTexture(lock.texture_id(), RGBA_8888, bounding_rect);
+    GetFramebufferTexture(lock.texture_id(), bounding_rect);
   }
   return device_background_texture;
 }
@@ -2869,7 +2869,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
       texture_id =
           gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     }
-    GetFramebufferTexture(texture_id, RGBA_8888, window_rect);
+    GetFramebufferTexture(texture_id, window_rect);
 
     const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
     gl_->ShallowFlushCHROMIUM();
@@ -3009,7 +3009,6 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
 }
 
 void GLRenderer::GetFramebufferTexture(unsigned texture_id,
-                                       ResourceFormat texture_format,
                                        const gfx::Rect& window_rect) {
   DCHECK(texture_id);
   DCHECK_GE(window_rect.x(), 0);
@@ -3017,9 +3016,19 @@ void GLRenderer::GetFramebufferTexture(unsigned texture_id,
   DCHECK_LE(window_rect.right(), current_surface_size_.width());
   DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
 
+  // If copying a non-root renderpass then use the format of the bound
+  // texture. Otherwise, we use the format of the default framebuffer.
+  GLenum format = current_framebuffer_lock_
+                      ? GLCopyTextureInternalFormat(current_framebuffer_format_)
+                      : output_surface_->GetFramebufferCopyTextureFormat();
+  // Verify the format is valid for GLES2's glCopyTexImage2D.
+  DCHECK(format == GL_ALPHA || format == GL_LUMINANCE ||
+         format == GL_LUMINANCE_ALPHA || format == GL_RGB || format == GL_RGBA)
+      << format;
+
   gl_->BindTexture(GL_TEXTURE_2D, texture_id);
-  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GLDataFormat(texture_format),
-                      window_rect.x(), window_rect.y(), window_rect.width(),
+  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, format, window_rect.x(),
+                      window_rect.y(), window_rect.width(),
                       window_rect.height(), 0);
   gl_->BindTexture(GL_TEXTURE_2D, 0);
 }
@@ -3049,6 +3058,7 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   current_framebuffer_lock_ =
       base::WrapUnique(new ResourceProvider::ScopedWriteLockGL(
           resource_provider_, texture->id()));
+  current_framebuffer_format_ = texture->format();
   unsigned texture_id = current_framebuffer_lock_->texture_id();
   gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                             texture_id, 0);
