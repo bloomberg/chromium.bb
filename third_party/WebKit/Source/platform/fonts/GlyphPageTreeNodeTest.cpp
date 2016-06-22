@@ -107,8 +107,8 @@ TEST(GlyphPageTreeNodeTest, segmentedData)
         RefPtr<TestSimpleFontData> dataBtoC = TestSimpleFontData::create('B', 'C');
         RefPtr<TestSimpleFontData> dataCtoE = TestSimpleFontData::create('C', 'E');
         RefPtr<SegmentedFontData> segmentedData = SegmentedFontData::create();
-        segmentedData->appendFace(FontDataForRangeSet(dataBtoC, 'A', 'C'));
-        segmentedData->appendFace(FontDataForRangeSet(dataCtoE, 'C', 'D'));
+        segmentedData->appendFace(adoptRef(new FontDataForRangeSet(dataBtoC, 'A', 'C')));
+        segmentedData->appendFace(adoptRef(new FontDataForRangeSet(dataCtoE, 'C', 'D')));
         GlyphPageTreeNode* node = GlyphPageTreeNode::getNormalRootChild(segmentedData.get(), kPageNumber);
 
         EXPECT_EQ(0, node->page()->glyphDataForCharacter('A').fontData);
@@ -145,9 +145,9 @@ TEST(GlyphPageTreeNodeTest, customData)
         RefPtr<TestSimpleFontData> dataBtoD = TestSimpleFontData::create('B', 'D');
         RefPtr<TestSimpleFontData> dataCtoE = TestSimpleFontData::createUnloaded('C', 'E');
         RefPtr<SegmentedFontData> segmentedData = SegmentedFontData::create();
-        segmentedData->appendFace(FontDataForRangeSet(dataAtoC, 'A', 'C'));
-        segmentedData->appendFace(FontDataForRangeSet(dataBtoD, 'B', 'D'));
-        segmentedData->appendFace(FontDataForRangeSet(dataCtoE, 'C', 'E'));
+        segmentedData->appendFace(adoptRef(new FontDataForRangeSet(dataAtoC, 'A', 'C')));
+        segmentedData->appendFace(adoptRef(new FontDataForRangeSet(dataBtoD, 'B', 'D')));
+        segmentedData->appendFace(adoptRef(new FontDataForRangeSet(dataCtoE, 'C', 'E')));
         GlyphPageTreeNode* node = GlyphPageTreeNode::getNormalRootChild(segmentedData.get(), kPageNumber);
 
         EXPECT_EQ(0, node->page()->glyphDataForCharacter('A').fontData);
@@ -176,9 +176,9 @@ TEST(GlyphPageTreeNodeTest, customDataWithMultiplePages)
         RefPtr<SegmentedFontData> segmentedData1 = SegmentedFontData::create();
         RefPtr<SegmentedFontData> segmentedData2 = SegmentedFontData::create();
         RefPtr<SegmentedFontData> segmentedData3 = SegmentedFontData::create();
-        segmentedData1->appendFace(FontDataForRangeSet(dataAtoC, 'A', 'C'));
-        segmentedData2->appendFace(FontDataForRangeSet(dataBtoD, 'B', 'D'));
-        segmentedData3->appendFace(FontDataForRangeSet(dataCtoE, 'C', 'E'));
+        segmentedData1->appendFace(adoptRef(new FontDataForRangeSet(dataAtoC, 'A', 'C')));
+        segmentedData2->appendFace(adoptRef(new FontDataForRangeSet(dataBtoD, 'B', 'D')));
+        segmentedData3->appendFace(adoptRef(new FontDataForRangeSet(dataCtoE, 'C', 'E')));
         GlyphPageTreeNode* node1 = GlyphPageTreeNode::getNormalRootChild(segmentedData1.get(), kPageNumber);
         GlyphPageTreeNode* node2 = node1->getNormalChild(segmentedData2.get(), kPageNumber);
         GlyphPageTreeNode* node3 = node2->getNormalChild(segmentedData3.get(), kPageNumber);
@@ -206,7 +206,7 @@ TEST(GlyphPageTreeNodeTest, systemFallback)
         RefPtr<TestSimpleFontData> dataAtoC = TestSimpleFontData::createUnloaded('A', 'C');
         RefPtr<TestSimpleFontData> dataBtoD = TestSimpleFontData::create('B', 'D');
         RefPtr<SegmentedFontData> segmentedData = SegmentedFontData::create();
-        segmentedData->appendFace(FontDataForRangeSet(dataAtoC, 'A', 'C'));
+        segmentedData->appendFace(adoptRef(new FontDataForRangeSet(dataAtoC, 'A', 'C')));
         GlyphPageTreeNode* node1 = GlyphPageTreeNode::getNormalRootChild(segmentedData.get(), kPageNumber);
         GlyphPageTreeNode* node2 = node1->getNormalChild(dataBtoD.get(), kPageNumber);
         SystemFallbackGlyphPageTreeNode* node3 = node2->getSystemFallbackChild(kPageNumber);

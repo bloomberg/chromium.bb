@@ -583,8 +583,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
         appendToHolesQueue(HolesQueueNextFont, 0, 0);
         appendToHolesQueue(HolesQueueRange, segmentRange.start, segmentRange.end - segmentRange.start);
 
-        const SimpleFontData* currentFont = nullptr;
-        RefPtr<UnicodeRangeSet> currentFontRangeSet;
+        RefPtr<FontDataForRangeSet> currentFontDataForRangeSet;
 
         bool fontCycleQueued = false;
         while (m_holesQueue.size()) {
@@ -604,11 +603,9 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                     break;
                 }
 
-                FontDataForRangeSet nextFontDataForRangeSet = fallbackIterator->next(fallbackCharsHint);
-                currentFont = nextFontDataForRangeSet.fontData();
-                currentFontRangeSet = nextFontDataForRangeSet.ranges();
+                currentFontDataForRangeSet = fallbackIterator->next(fallbackCharsHint);
 
-                if (!currentFont) {
+                if (!currentFontDataForRangeSet->fontData()) {
                     ASSERT(!m_holesQueue.size());
                     break;
                 }
@@ -618,7 +615,8 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
 
             SmallCapsIterator::SmallCapsBehavior smallCapsBehavior = SmallCapsIterator::SmallCapsSameCase;
             if (needsCapsHandling) {
-                capsSupport = OpenTypeCapsSupport(currentFont->platformData().harfBuzzFace(),
+                capsSupport = OpenTypeCapsSupport(
+                    currentFontDataForRangeSet->fontData()->platformData().harfBuzzFace(),
                     fontDescription.variantCaps(),
                     ICUScriptToHBScript(segmentRange.script));
                 if (capsSupport.needsRunCaseSplitting())
@@ -629,8 +627,8 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
 
             const SimpleFontData* smallcapsAdjustedFont = needsCapsHandling
                 && capsSupport.needsSyntheticFont(smallCapsBehavior)
-                ? currentFont->smallCapsFontData(fontDescription).get()
-                : currentFont;
+                ? currentFontDataForRangeSet->fontData()->smallCapsFontData(fontDescription).get()
+                : currentFontDataForRangeSet->fontData();
 
             // Compatibility with SimpleFontData approach of keeping a flag for overriding drawing direction.
             // TODO: crbug.com/506224 This should go away in favor of storing that information elsewhere, for example in
@@ -658,7 +656,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                 currentQueueItem.m_startIndex,
                 currentQueueItem.m_numCharacters,
                 directionAndSmallCapsAdjustedFont,
-                currentFontRangeSet,
+                currentFontDataForRangeSet->ranges(),
                 segmentRange.script,
                 language))
                 DLOG(ERROR) << "Shaping range failed.";

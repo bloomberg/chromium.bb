@@ -39,9 +39,9 @@ public:
 
     ~SegmentedFontData() override;
 
-    void appendFace(const FontDataForRangeSet& fontDataForRangeSet) { m_faces.append(fontDataForRangeSet); }
+    void appendFace(const PassRefPtr<FontDataForRangeSet> fontDataForRangeSet) { m_faces.append(fontDataForRangeSet); }
     unsigned numFaces() const { return m_faces.size(); }
-    const FontDataForRangeSet& faceAt(unsigned i) const { return m_faces[i]; }
+    const PassRefPtr<FontDataForRangeSet> faceAt(unsigned i) const { return m_faces[i]; }
     bool containsCharacter(UChar32) const;
 
 private:
@@ -55,7 +55,7 @@ private:
     bool isSegmented() const override;
     bool shouldSkipDrawing() const override;
 
-    Vector<FontDataForRangeSet, 1> m_faces;
+    Vector<RefPtr<FontDataForRangeSet>, 1> m_faces;
 };
 
 DEFINE_FONT_DATA_TYPE_CASTS(SegmentedFontData, true);

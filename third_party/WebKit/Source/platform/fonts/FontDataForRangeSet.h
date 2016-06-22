@@ -36,9 +36,8 @@ namespace blink {
 
 class SimpleFontData;
 
-class FontDataForRangeSet final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
+class PLATFORM_EXPORT FontDataForRangeSet : public RefCounted<FontDataForRangeSet> {
+public:
     explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData = nullptr, PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
         : m_fontData(fontData)
         , m_rangeSet(rangeSet)
@@ -55,6 +54,9 @@ class FontDataForRangeSet final {
         m_rangeSet = adoptRef(new UnicodeRangeSet(rangeVector));
     }
 
+    FontDataForRangeSet(const FontDataForRangeSet& other);
+
+    virtual ~FontDataForRangeSet() { };
 
     bool contains(UChar32 testChar) const { return m_rangeSet->contains(testChar); }
     bool isEntireRange() const { return m_rangeSet->isEntireRange(); }
@@ -62,9 +64,19 @@ class FontDataForRangeSet final {
     bool hasFontData() const { return m_fontData.get(); }
     const SimpleFontData* fontData() const { return m_fontData.get(); }
 
-private:
+protected:
     RefPtr<SimpleFontData> m_fontData;
     RefPtr<UnicodeRangeSet> m_rangeSet;
+};
+
+class PLATFORM_EXPORT FontDataForRangeSetFromCache : public FontDataForRangeSet {
+public:
+    explicit FontDataForRangeSetFromCache(PassRefPtr<SimpleFontData> fontData,
+        PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
+        : FontDataForRangeSet(fontData, rangeSet)
+    {
+    }
+    virtual ~FontDataForRangeSetFromCache();
 };
 
 } // namespace blink

@@ -402,6 +402,7 @@
       'fonts/FontDataCache.cpp',
       'fonts/FontDataCache.h',
       'fonts/FontDataForRangeSet.h',
+      'fonts/FontDataForRangeSet.cpp',
       'fonts/FontDescription.cpp',
       'fonts/FontFaceCreationParams.h',
       'fonts/FontFallbackIterator.cpp',

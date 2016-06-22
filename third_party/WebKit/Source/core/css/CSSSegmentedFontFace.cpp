@@ -125,7 +125,10 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
             continue;
         if (RefPtr<SimpleFontData> faceFontData = (*it)->cssFontFace()->getFontData(requestedFontDescription)) {
             ASSERT(!faceFontData->isSegmented());
-            fontData->appendFace(FontDataForRangeSet(faceFontData.release(), (*it)->cssFontFace()->ranges()));
+            if (faceFontData->isCustomFont())
+                fontData->appendFace(adoptRef(new FontDataForRangeSet(faceFontData.release(), (*it)->cssFontFace()->ranges())));
+            else
+                fontData->appendFace(adoptRef(new FontDataForRangeSetFromCache(faceFontData.release(), (*it)->cssFontFace()->ranges())));
         }
     }
     if (fontData->numFaces())

@@ -38,19 +38,19 @@ SegmentedFontData::~SegmentedFontData()
 
 const SimpleFontData* SegmentedFontData::fontDataForCharacter(UChar32 c) const
 {
-    Vector<FontDataForRangeSet>::const_iterator end = m_faces.end();
-    for (Vector<FontDataForRangeSet>::const_iterator it = m_faces.begin(); it != end; ++it) {
-        if (it->contains(c))
-            return it->fontData();
+    auto end = m_faces.end();
+    for (auto it = m_faces.begin(); it != end; ++it) {
+        if ((*it)->contains(c))
+            return (*it)->fontData();
     }
-    return m_faces[0].fontData();
+    return m_faces[0]->fontData();
 }
 
 bool SegmentedFontData::containsCharacter(UChar32 c) const
 {
-    Vector<FontDataForRangeSet>::const_iterator end = m_faces.end();
-    for (Vector<FontDataForRangeSet>::const_iterator it = m_faces.begin(); it != end; ++it) {
-        if (it->contains(c))
+    auto end = m_faces.end();
+    for (auto it = m_faces.begin(); it != end; ++it) {
+        if ((*it)->contains(c))
             return true;
     }
     return false;
@@ -64,9 +64,9 @@ bool SegmentedFontData::isCustomFont() const
 
 bool SegmentedFontData::isLoading() const
 {
-    Vector<FontDataForRangeSet>::const_iterator end = m_faces.end();
-    for (Vector<FontDataForRangeSet>::const_iterator it = m_faces.begin(); it != end; ++it) {
-        if (it->fontData()->isLoading())
+    auto end = m_faces.end();
+    for (auto it = m_faces.begin(); it != end; ++it) {
+        if ((*it)->fontData()->isLoading())
             return true;
     }
     return false;
@@ -75,9 +75,9 @@ bool SegmentedFontData::isLoading() const
 // Returns true if any of the sub fonts are loadingFallback.
 bool SegmentedFontData::isLoadingFallback() const
 {
-    Vector<FontDataForRangeSet>::const_iterator end = m_faces.end();
-    for (Vector<FontDataForRangeSet>::const_iterator it = m_faces.begin(); it != end; ++it) {
-        if (it->fontData()->isLoadingFallback())
+    auto end = m_faces.end();
+    for (auto it = m_faces.begin(); it != end; ++it) {
+        if ((*it)->fontData()->isLoadingFallback())
             return true;
     }
     return false;
@@ -90,9 +90,9 @@ bool SegmentedFontData::isSegmented() const
 
 bool SegmentedFontData::shouldSkipDrawing() const
 {
-    Vector<FontDataForRangeSet>::const_iterator end = m_faces.end();
-    for (Vector<FontDataForRangeSet>::const_iterator it = m_faces.begin(); it != end; ++it) {
-        if (it->fontData()->shouldSkipDrawing())
+    auto end = m_faces.end();
+    for (auto it = m_faces.begin(); it != end; ++it) {
+        if ((*it)->fontData()->shouldSkipDrawing())
             return true;
     }
     return false;
