@@ -17,3 +17,17 @@ source_set("image_fetcher") {
     "//url",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "image_data_fetcher_unittest.cc",
+  ]
+  deps = [
+    ":image_fetcher",
+    "//net",
+    "//net:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

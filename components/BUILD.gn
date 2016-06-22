@@ -86,6 +86,7 @@ test("components_unittests") {
     "//components/google/core/browser:unit_tests",
     "//components/history/core/browser:unit_tests",
     "//components/history/core/common:unit_tests",
+    "//components/image_fetcher:unit_tests",
     "//components/json_schema:unit_tests",
     "//components/keyed_service/core:unit_tests",
     "//components/language_usage_metrics:unit_tests",

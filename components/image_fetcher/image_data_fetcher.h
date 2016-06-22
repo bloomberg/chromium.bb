@@ -49,6 +49,13 @@ class ImageDataFetcher : public net::URLFetcherDelegate {
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
+  // The next ID to use for a newly created URLFetcher. Each URLFetcher gets an
+  // id when it is created. The |url_fetcher_id_| is incremented by one for each
+  // newly created URLFetcher. The URLFetcher ID can be used during testing to
+  // get individual URLFetchers and modify their state. Outside of tests this ID
+  // is not used.
+  int next_url_fetcher_id_;
+
   DISALLOW_COPY_AND_ASSIGN(ImageDataFetcher);
 };
 

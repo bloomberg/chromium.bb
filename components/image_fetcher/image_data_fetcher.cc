@@ -32,14 +32,16 @@ struct ImageDataFetcher::ImageDataFetcherRequest {
 
 ImageDataFetcher::ImageDataFetcher(
     net::URLRequestContextGetter* url_request_context_getter)
-    : url_request_context_getter_(url_request_context_getter) {}
+    : url_request_context_getter_(url_request_context_getter),
+      next_url_fetcher_id_(0) {}
 
 ImageDataFetcher::~ImageDataFetcher() {}
 
 void ImageDataFetcher::FetchImageData(
     const GURL& url, const ImageDataFetcherCallback& callback) {
   std::unique_ptr<net::URLFetcher> url_fetcher =
-      net::URLFetcher::Create(url, net::URLFetcher::GET, this);
+      net::URLFetcher::Create(
+          next_url_fetcher_id_++, url, net::URLFetcher::GET, this);
 
   std::unique_ptr<ImageDataFetcherRequest> request(
       new ImageDataFetcherRequest(callback, std::move(url_fetcher)));

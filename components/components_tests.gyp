@@ -316,6 +316,9 @@
       'history/core/browser/web_history_service_unittest.cc',
       'history/core/common/thumbnail_score_unittest.cc',
     ],
+    'image_fetcher_unittest_sources': [
+      'image_fetcher/image_data_fetcher_unittest.cc',
+    ],
     'instance_id_unittest_sources': [
       'gcm_driver/instance_id/instance_id_driver_unittest.cc',
     ],
@@ -1033,6 +1036,7 @@
         '<@(gcm_driver_unittest_sources)',
         '<@(google_unittest_sources)',
         '<@(history_unittest_sources)',
+	'<@(image_fetcher_unittest_sources)',
         '<@(instance_id_unittest_sources)',
         '<@(json_schema_unittest_sources)',
         '<@(keyed_service_unittest_sources)',
