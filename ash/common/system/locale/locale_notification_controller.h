@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_LOCALE_LOCALE_NOTIFICATION_CONTROLLER_H_
-#define ASH_SYSTEM_LOCALE_LOCALE_NOTIFICATION_CONTROLLER_H_
+#ifndef ASH_COMMON_SYSTEM_LOCALE_LOCALE_NOTIFICATION_CONTROLLER_H_
+#define ASH_COMMON_SYSTEM_LOCALE_LOCALE_NOTIFICATION_CONTROLLER_H_
 
 #include <string>
 
-#include "ash/system/locale/locale_observer.h"
-#include "base/compiler_specific.h"
+#include "ash/common/system/locale/locale_observer.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -35,4 +34,4 @@ class LocaleNotificationController : public LocaleObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_LOCALE_LOCALE_NOTIFICATION_CONTROLLER_H_
+#endif  // ASH_COMMON_SYSTEM_LOCALE_LOCALE_NOTIFICATION_CONTROLLER_H_

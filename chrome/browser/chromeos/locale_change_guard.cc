@@ -6,9 +6,8 @@
 
 #include <algorithm>
 
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -177,7 +176,7 @@ void LocaleChangeGuard::Check() {
     PrepareChangingLocale(from_locale, to_locale);
   }
 
-  ash::Shell::GetInstance()->system_tray_notifier()->NotifyLocaleChanged(
+  ash::WmShell::Get()->system_tray_notifier()->NotifyLocaleChanged(
       this, cur_locale, from_locale_, to_locale_);
 }
 

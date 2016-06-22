@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/system/locale/locale_observer.h"
+#include "ash/common/system/locale/locale_observer.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"

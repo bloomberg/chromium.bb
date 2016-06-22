@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/locale/locale_notification_controller.h"
+#include "ash/common/system/locale/locale_notification_controller.h"
 
 #include <utility>
 
 #include "ash/common/system/system_notifier.h"
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "base/strings/string16.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -47,12 +47,11 @@ class LocaleNotificationDelegate : public message_center::NotificationDelegate {
 
 LocaleNotificationDelegate::LocaleNotificationDelegate(
     LocaleObserver::Delegate* delegate)
-  : delegate_(delegate) {
+    : delegate_(delegate) {
   DCHECK(delegate_);
 }
 
-LocaleNotificationDelegate::~LocaleNotificationDelegate() {
-}
+LocaleNotificationDelegate::~LocaleNotificationDelegate() {}
 
 void LocaleNotificationDelegate::Close(bool by_user) {
   delegate_->AcceptLocaleChange();
@@ -74,11 +73,11 @@ void LocaleNotificationDelegate::ButtonClick(int button_index) {
 }  // namespace
 
 LocaleNotificationController::LocaleNotificationController() {
-  Shell::GetInstance()->system_tray_notifier()->AddLocaleObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddLocaleObserver(this);
 }
 
 LocaleNotificationController::~LocaleNotificationController() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveLocaleObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveLocaleObserver(this);
 }
 
 void LocaleNotificationController::OnLocaleChanged(

@@ -13,7 +13,6 @@
 #include "ash/ash_export.h"
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
-#include "ash/system/locale/locale_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -45,9 +44,6 @@ class ASH_EXPORT SystemTrayNotifier {
 
   void AddAudioObserver(AudioObserver* observer);
   void RemoveAudioObserver(AudioObserver* observer);
-
-  void AddLocaleObserver(LocaleObserver* observer);
-  void RemoveLocaleObserver(LocaleObserver* observer);
 
   void AddTracingObserver(TracingObserver* observer);
   void RemoveTracingObserver(TracingObserver* observer);
@@ -95,10 +91,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyAudioActiveOutputNodeChanged();
   void NotifyAudioActiveInputNodeChanged();
   void NotifyTracingModeChanged(bool value);
-  void NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
-                           const std::string& cur_locale,
-                           const std::string& from_locale,
-                           const std::string& to_locale);
   void NotifyUserUpdate();
   void NotifyUserAddedToSession();
 #if defined(OS_CHROMEOS)
@@ -123,7 +115,6 @@ class ASH_EXPORT SystemTrayNotifier {
 
  private:
   base::ObserverList<AudioObserver> audio_observers_;
-  base::ObserverList<LocaleObserver> locale_observers_;
   base::ObserverList<TracingObserver> tracing_observers_;
   base::ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)

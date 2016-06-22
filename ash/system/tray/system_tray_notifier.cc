@@ -20,14 +20,6 @@ void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
   audio_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddLocaleObserver(LocaleObserver* observer) {
-  locale_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveLocaleObserver(LocaleObserver* observer) {
-  locale_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddTracingObserver(TracingObserver* observer) {
   tracing_observers_.AddObserver(observer);
 }
@@ -182,17 +174,6 @@ void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
       TracingObserver,
       tracing_observers_,
       OnTracingModeChanged(value));
-}
-
-void SystemTrayNotifier::NotifyLocaleChanged(
-    LocaleObserver::Delegate* delegate,
-    const std::string& cur_locale,
-    const std::string& from_locale,
-    const std::string& to_locale) {
-  FOR_EACH_OBSERVER(
-      LocaleObserver,
-      locale_observers_,
-      OnLocaleChanged(delegate, cur_locale, from_locale, to_locale));
 }
 
 void SystemTrayNotifier::NotifyUserUpdate() {
