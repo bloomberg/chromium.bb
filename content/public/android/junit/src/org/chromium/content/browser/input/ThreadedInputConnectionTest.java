@@ -13,8 +13,11 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
+import android.content.Context;
 import android.os.Handler;
 import android.view.KeyCharacterMap;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -38,6 +41,8 @@ public class ThreadedInputConnectionTest {
 
     ThreadedInputConnection mConnection;
     InOrder mInOrder;
+    View mView;
+    Context mContext;
 
     @Before
     public void setUp() throws Exception {
@@ -45,8 +50,15 @@ public class ThreadedInputConnectionTest {
 
         mImeAdapter = Mockito.mock(ImeAdapter.class);
         mInOrder = inOrder(mImeAdapter);
+
+        // Mocks required to create a ThreadedInputConnection object
+        mView = Mockito.mock(View.class);
+        mContext = Mockito.mock(Context.class);
+        when(mView.getContext()).thenReturn(mContext);
+        when(mContext.getSystemService(Context.INPUT_METHOD_SERVICE)).thenReturn(Mockito.mock(
+                InputMethodManager.class));
         // Let's create Handler for test thread and pretend that it is running on IME thread.
-        mConnection = new ThreadedInputConnection(mImeAdapter, new Handler());
+        mConnection = new ThreadedInputConnection(mView, mImeAdapter, new Handler());
     }
 
     @Test
