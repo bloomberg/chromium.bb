@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 285x18
           text run at (0,0) width 285: "This tests GraphicsContext::drawBidiText()."
-layer at (8,42) size 345x205 clip at (9,43) size 332x203 scrollHeight 206
-  LayoutListBox {SELECT} at (0,34) size 345.22x205.34 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (8,42) size 345x227 clip at (9,43) size 332x225
+  LayoutListBox {SELECT} at (0,34) size 345.22x227 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 332.22x22.59
       LayoutText {#text} at (2,0) size 223x21
         text run at (2,0) width 43: "First "
@@ -49,8 +49,8 @@ layer at (8,42) size 345x205 clip at (9,43) size 332x203 scrollHeight 206
         text run at (163,0) width 37: "TNT"
         text run at (199,0) width 25 RTL: "\x{202B}\x{5D9}\x{5E9} "
         text run at (223,0) width 108: "\x{202C}\x{201D} and ran off"
-layer at (8,247) size 377x18 clip at (9,248) size 364x16
-  LayoutListBox {SELECT} at (0,239.34) size 377.11x18 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (8,269) size 377x18 clip at (9,270) size 364x16
+  LayoutListBox {SELECT} at (0,261) size 377.11x18 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 364.11x16
       LayoutText {#text} at (2,0) size 361x15
         text run at (2,0) width 361: "There are two ways to measure text: my way and the wrong way"
