@@ -152,6 +152,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
@@ -2497,6 +2498,17 @@ bool ChromeContentBrowserClient::IsPepperVpnProviderAPIAllowed(
       browser_context, url);
 #else
   return false;
+#endif
+}
+
+std::unique_ptr<content::VpnServiceProxy>
+ChromeContentBrowserClient::GetVpnServiceProxy(
+    content::BrowserContext* browser_context) {
+#if defined(ENABLE_EXTENSIONS)
+  return ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
+      browser_context);
+#else
+  return nullptr;
 #endif
 }
 

@@ -11,6 +11,7 @@
 
 namespace content {
 class ResourceContext;
+class VpnServiceProxy;
 }
 
 namespace extensions {
@@ -64,6 +65,11 @@ class ChromeContentBrowserClientExtensionsPart
 
   // Helper function to call InfoMap::SetSigninProcess().
   static void SetSigninProcess(content::SiteInstance* site_instance);
+
+  // Creates a new VpnServiceProxy. The caller owns the returned value. It's
+  // valid to return nullptr.
+  static std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
+      content::BrowserContext* browser_context);
 
  private:
   // ChromeContentBrowserClientParts:

@@ -228,6 +228,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const content::SocketPermissionRequest* params) override;
   bool IsPepperVpnProviderAPIAllowed(content::BrowserContext* browser_context,
                                      const GURL& url) override;
+  std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
+      content::BrowserContext* browser_context) override;
   ui::SelectFilePolicy* CreateSelectFilePolicy(
       content::WebContents* web_contents) override;
   void GetAdditionalAllowedSchemesForFileSystem(

@@ -28,6 +28,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
@@ -495,6 +496,13 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
     }
   }
   return false;
+}
+
+// static
+std::unique_ptr<content::VpnServiceProxy>
+ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
+    content::BrowserContext* browser_context) {
+  return nullptr;
 }
 
 void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(

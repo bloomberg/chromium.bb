@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/sandbox_type.h"
 #include "media/base/cdm_factory.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -343,6 +344,11 @@ bool ContentBrowserClient::IsPepperVpnProviderAPIAllowed(
     BrowserContext* browser_context,
     const GURL& url) {
   return false;
+}
+
+std::unique_ptr<VpnServiceProxy> ContentBrowserClient::GetVpnServiceProxy(
+    BrowserContext* browser_context) {
+  return nullptr;
 }
 
 ui::SelectFilePolicy* ContentBrowserClient::CreateSelectFilePolicy(

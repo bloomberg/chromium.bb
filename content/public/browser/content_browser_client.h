@@ -121,6 +121,7 @@ class ServiceRegistry;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class TracingDelegate;
+class VpnServiceProxy;
 class WebContents;
 class WebContentsViewDelegate;
 struct MainFunctionParams;
@@ -587,6 +588,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |browser_context| and |url|.
   virtual bool IsPepperVpnProviderAPIAllowed(BrowserContext* browser_context,
                                              const GURL& url);
+
+  // Creates a new VpnServiceProxy. The caller owns the returned value. It's
+  // valid to return nullptr.
+  virtual std::unique_ptr<VpnServiceProxy> GetVpnServiceProxy(
+      BrowserContext* browser_context);
 
   // Returns an implementation of a file selecition policy. Can return nullptr.
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
