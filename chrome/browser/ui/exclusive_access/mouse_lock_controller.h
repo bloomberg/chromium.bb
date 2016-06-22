@@ -15,7 +15,14 @@ class MouseLockController : public ExclusiveAccessControllerBase {
   explicit MouseLockController(ExclusiveAccessManager* manager);
   ~MouseLockController() override;
 
+  // Returns true if the mouse is locked.
   bool IsMouseLocked() const;
+
+  // Returns true if the mouse was locked and no notification should be
+  // displayed to the user. This is the case when a notice has already been
+  // displayed to the user, and the application voluntarily unlocks, then
+  // re-locks the mouse (a duplicate notification should not be given). See
+  // content::MouseLockDispatcher::LockMouse.
   bool IsMouseLockedSilently() const;
 
   void RequestToLockMouse(content::WebContents* web_contents,

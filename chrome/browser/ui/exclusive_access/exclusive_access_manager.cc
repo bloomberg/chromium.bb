@@ -47,32 +47,37 @@ ExclusiveAccessManager::GetExclusiveAccessExitBubbleType() const {
   app_mode = chrome::IsRunningInAppMode();
 #endif
 
-  if (mouse_lock_controller_.IsMouseLockedSilently() &&
-      (!fullscreen_controller_.IsWindowFullscreenForTabOrPending() ||
-       fullscreen_controller_.IsTabFullscreen()))
-    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
+  if (fullscreen_controller_.IsWindowFullscreenForTabOrPending()) {
+    if (!fullscreen_controller_.IsTabFullscreen())
+      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
 
-  if (!fullscreen_controller_.IsWindowFullscreenForTabOrPending()) {
-    if (mouse_lock_controller_.IsMouseLocked())
-      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION;
-    if (fullscreen_controller_.IsExtensionFullscreenOrPending())
-      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION;
-    if (fullscreen_controller_.IsControllerInitiatedFullscreen() && !app_mode)
-      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
-    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
-  }
-
-  if (fullscreen_controller_.IsTabFullscreen()) {
-    if (fullscreen_controller_.IsPrivilegedFullscreenForTab())
+    if (mouse_lock_controller_.IsMouseLockedSilently() ||
+        fullscreen_controller_.IsPrivilegedFullscreenForTab()) {
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
+    }
+
     if (IsExperimentalKeyboardLockUIEnabled())
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION;
+
     if (mouse_lock_controller_.IsMouseLocked())
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION;
+
     return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
   }
 
-  return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
+  if (mouse_lock_controller_.IsMouseLockedSilently())
+    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
+
+  if (mouse_lock_controller_.IsMouseLocked())
+    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION;
+
+  if (fullscreen_controller_.IsExtensionFullscreenOrPending())
+    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION;
+
+  if (fullscreen_controller_.IsControllerInitiatedFullscreen() && !app_mode)
+    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
+
+  return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
 }
 
 void ExclusiveAccessManager::UpdateExclusiveAccessExitBubbleContent() {
