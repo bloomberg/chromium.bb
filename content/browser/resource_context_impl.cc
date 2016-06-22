@@ -19,7 +19,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/keygen_handler.h"
-#include "net/ssl/client_cert_store.h"
 
 using base::UserDataAdapter;
 
@@ -41,10 +40,6 @@ ResourceContext::~ResourceContext() {
 
 std::string ResourceContext::GetMediaDeviceIDSalt() {
   return media_device_id_salt_;
-}
-
-std::unique_ptr<net::ClientCertStore> ResourceContext::CreateClientCertStore() {
-  return std::unique_ptr<net::ClientCertStore>();
 }
 
 void ResourceContext::CreateKeygenHandler(

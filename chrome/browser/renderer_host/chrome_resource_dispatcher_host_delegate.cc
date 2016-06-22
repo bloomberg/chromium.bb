@@ -68,6 +68,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
+#include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request.h"
 
 #if !defined(DISABLE_NACL)
@@ -847,4 +848,11 @@ ChromeResourceDispatcherHostDelegate::GetNavigationData(
   if (data_reduction_proxy_data)
     data->SetDataReductionProxyData(data_reduction_proxy_data->DeepCopy());
   return data;
+}
+
+std::unique_ptr<net::ClientCertStore>
+ChromeResourceDispatcherHostDelegate::CreateClientCertStore(
+    content::ResourceContext* resource_context) {
+  return ProfileIOData::FromResourceContext(resource_context)->
+      CreateClientCertStore();
 }

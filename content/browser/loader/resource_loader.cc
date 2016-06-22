@@ -27,7 +27,6 @@
 #include "content/browser/ssl/ssl_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/cert_store.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -324,8 +323,7 @@ void ResourceLoader::OnCertificateRequested(
   DCHECK(!ssl_client_auth_handler_)
       << "OnCertificateRequested called with ssl_client_auth_handler pending";
   ssl_client_auth_handler_.reset(new SSLClientAuthHandler(
-      GetRequestInfo()->GetContext()->CreateClientCertStore(), request_.get(),
-      cert_info, this));
+      delegate_->CreateClientCertStore(this), request_.get(), cert_info, this));
   ssl_client_auth_handler_->SelectCertificate();
 }
 

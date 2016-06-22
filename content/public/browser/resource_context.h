@@ -18,7 +18,6 @@
 class GURL;
 
 namespace net {
-class ClientCertStore;
 class HostResolver;
 class KeygenHandler;
 class URLRequestContext;
@@ -41,9 +40,6 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   // storage partitioning. This getter returns the default context associated
   // with a BrowsingContext.
   virtual net::URLRequestContext* GetRequestContext() = 0;
-
-  // Get platform ClientCertStore. May return nullptr.
-  virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
 
   // Create a platform KeygenHandler and pass it to |callback|. The |callback|
   // may be run synchronously.

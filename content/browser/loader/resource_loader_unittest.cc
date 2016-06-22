@@ -489,23 +489,6 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
   DISALLOW_COPY_AND_ASSIGN(SelectCertificateBrowserClient);
 };
 
-class ResourceContextStub : public MockResourceContext {
- public:
-  explicit ResourceContextStub(net::URLRequestContext* test_request_context)
-      : MockResourceContext(test_request_context) {}
-
-  std::unique_ptr<net::ClientCertStore> CreateClientCertStore() override {
-    return std::move(dummy_cert_store_);
-  }
-
-  void SetClientCertStore(std::unique_ptr<net::ClientCertStore> store) {
-    dummy_cert_store_ = std::move(store);
-  }
-
- private:
-  std::unique_ptr<net::ClientCertStore> dummy_cert_store_;
-};
-
 // Wraps a ChunkedUploadDataStream to behave as non-chunked to enable upload
 // progress reporting.
 class NonChunkedUploadDataStream : public net::UploadDataStream {
@@ -659,6 +642,10 @@ class ResourceLoaderTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetClientCertStore(std::unique_ptr<net::ClientCertStore> store) {
+    dummy_cert_store_ = std::move(store);
+  }
+
   // ResourceLoaderDelegate:
   ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       ResourceLoader* loader,
@@ -674,6 +661,10 @@ class ResourceLoaderTest : public testing::Test,
                           const GURL& new_url) override {}
   void DidReceiveResponse(ResourceLoader* loader) override {}
   void DidFinishLoading(ResourceLoader* loader) override {}
+  std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
+      ResourceLoader* loader) override {
+    return std::move(dummy_cert_store_);
+  }
 
   TestBrowserThreadBundle thread_bundle_;
   RenderViewHostTestEnabler rvh_test_enabler_;
@@ -681,9 +672,10 @@ class ResourceLoaderTest : public testing::Test,
   net::URLRequestJobFactoryImpl job_factory_;
   TestNetworkQualityEstimator network_quality_estimator_;
   net::TestURLRequestContext test_url_request_context_;
-  ResourceContextStub resource_context_;
+  MockResourceContext resource_context_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<TestWebContents> web_contents_;
+  std::unique_ptr<net::ClientCertStore> dummy_cert_store_;
 
   // The ResourceLoader owns the URLRequest and the ResourceHandler.
   ResourceHandlerStub* raw_ptr_resource_handler_;
@@ -744,7 +736,7 @@ TEST_F(ClientCertResourceLoaderTest, WithStoreLookup) {
       new net::X509Certificate("test", "test", base::Time(), base::Time())));
   std::unique_ptr<ClientCertStoreStub> test_store(new ClientCertStoreStub(
       dummy_certs, &store_request_count, &store_requested_authorities));
-  resource_context_.SetClientCertStore(std::move(test_store));
+  SetClientCertStore(std::move(test_store));
 
   // Plug in test content browser client.
   SelectCertificateBrowserClient test_client;
@@ -854,7 +846,7 @@ TEST_F(ClientCertResourceLoaderTest, StoreAsyncCancel) {
   LoaderDestroyingCertStore* test_store =
       new LoaderDestroyingCertStore(&loader_,
                                     loader_destroyed_run_loop.QuitClosure());
-  resource_context_.SetClientCertStore(base::WrapUnique(test_store));
+  SetClientCertStore(base::WrapUnique(test_store));
 
   loader_->StartRequest();
   loader_destroyed_run_loop.Run();

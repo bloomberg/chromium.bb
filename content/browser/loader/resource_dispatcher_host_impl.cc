@@ -106,6 +106,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -1103,6 +1104,12 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
 
   // Destroy the ResourceLoader.
   RemovePendingRequest(info->GetChildID(), info->GetRequestID());
+}
+
+std::unique_ptr<net::ClientCertStore>
+    ResourceDispatcherHostImpl::CreateClientCertStore(ResourceLoader* loader) {
+  return delegate_->CreateClientCertStore(
+      loader->GetRequestInfo()->GetContext());
 }
 
 void ResourceDispatcherHostImpl::OnInit() {

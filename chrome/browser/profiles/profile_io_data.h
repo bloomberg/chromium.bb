@@ -73,6 +73,7 @@ class InfoMap;
 namespace net {
 class CertVerifier;
 class ChannelIDService;
+class ClientCertStore;
 class CookieStore;
 class CTVerifier;
 class FtpTransactionFactory;
@@ -203,8 +204,6 @@ class ProfileIOData {
   std::string username_hash() const {
     return username_hash_;
   }
-
-  bool use_system_key_slot() const { return use_system_key_slot_; }
 #endif
 
   Profile::ProfileType profile_type() const {
@@ -261,6 +260,9 @@ class ProfileIOData {
   // Returns the predictor service for this Profile. Returns nullptr if there is
   // no Predictor, as is the case with OffTheRecord profiles.
   virtual chrome_browser_net::Predictor* GetPredictor();
+
+  // Get platform ClientCertStore. May return nullptr.
+  std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
 
  protected:
   // A URLRequestContext for media that owns its HTTP factory, to ensure
@@ -433,7 +435,6 @@ class ProfileIOData {
     // ResourceContext implementation:
     net::HostResolver* GetHostResolver() override;
     net::URLRequestContext* GetRequestContext() override;
-    std::unique_ptr<net::ClientCertStore> CreateClientCertStore() override;
     void CreateKeygenHandler(
         uint32_t key_size_in_bits,
         const std::string& challenge_string,

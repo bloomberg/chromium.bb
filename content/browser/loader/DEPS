@@ -201,7 +201,6 @@ specific_include_rules = {
     "+content/browser/ssl/ssl_manager.h",
     "+content/browser/ssl/ssl_policy.h",
     "+content/public/browser/cert_store.h",
-    "+content/public/browser/resource_context.h",
     "+content/public/browser/signed_certificate_timestamp_store.h",
     "+content/public/common/content_client.h",
     "+content/public/common/content_switches.h",

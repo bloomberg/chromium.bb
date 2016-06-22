@@ -23,6 +23,7 @@ class Sender;
 
 namespace net {
 class AuthChallengeInfo;
+class ClientCertStore;
 class URLRequest;
 }
 
@@ -135,8 +136,11 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // called for navigation requests.
   virtual NavigationData* GetNavigationData(net::URLRequest* request) const;
 
+  // Get platform ClientCertStore. May return nullptr.
+  virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
+      ResourceContext* resource_context);
+
  protected:
-  ResourceDispatcherHostDelegate();
   virtual ~ResourceDispatcherHostDelegate();
 };
 

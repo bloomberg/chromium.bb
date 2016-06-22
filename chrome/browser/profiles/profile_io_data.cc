@@ -910,6 +910,35 @@ chrome_browser_net::Predictor* ProfileIOData::GetPredictor() {
   return nullptr;
 }
 
+std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
+  if (!client_cert_store_factory_.is_null())
+    return client_cert_store_factory_.Run();
+#if defined(OS_CHROMEOS)
+  return std::unique_ptr<net::ClientCertStore>(
+      new chromeos::ClientCertStoreChromeOS(
+          certificate_provider_ ? certificate_provider_->Copy() : nullptr,
+          base::WrapUnique(new chromeos::ClientCertFilterChromeOS(
+              use_system_key_slot_, username_hash_)),
+          base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
+                     chrome::kCryptoModulePasswordClientAuth)));
+#elif defined(USE_NSS_CERTS)
+  return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(
+      base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
+                 chrome::kCryptoModulePasswordClientAuth)));
+#elif defined(OS_WIN)
+  return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
+#elif defined(OS_MACOSX)
+  return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreMac());
+#elif defined(OS_ANDROID)
+  // Android does not use the ClientCertStore infrastructure. On Android client
+  // cert matching is done by the OS as part of the call to show the cert
+  // selection dialog.
+  return nullptr;
+#else
+#error Unknown platform.
+#endif
+}
+
 void ProfileIOData::set_data_reduction_proxy_io_data(
     std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
         data_reduction_proxy_io_data) const {
@@ -944,38 +973,6 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(io_data_->initialized_);
   return request_context_;
-}
-
-std::unique_ptr<net::ClientCertStore>
-ProfileIOData::ResourceContext::CreateClientCertStore() {
-  if (!io_data_->client_cert_store_factory_.is_null())
-    return io_data_->client_cert_store_factory_.Run();
-#if defined(OS_CHROMEOS)
-  return std::unique_ptr<net::ClientCertStore>(
-      new chromeos::ClientCertStoreChromeOS(
-          io_data_->certificate_provider_
-              ? io_data_->certificate_provider_->Copy()
-              : nullptr,
-          base::WrapUnique(new chromeos::ClientCertFilterChromeOS(
-              io_data_->use_system_key_slot(), io_data_->username_hash())),
-          base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
-                     chrome::kCryptoModulePasswordClientAuth)));
-#elif defined(USE_NSS_CERTS)
-  return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(
-      base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
-                 chrome::kCryptoModulePasswordClientAuth)));
-#elif defined(OS_WIN)
-  return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
-#elif defined(OS_MACOSX)
-  return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreMac());
-#elif defined(OS_ANDROID)
-  // Android does not use the ClientCertStore infrastructure. On Android client
-  // cert matching is done by the OS as part of the call to show the cert
-  // selection dialog.
-  return nullptr;
-#else
-#error Unknown platform.
-#endif
 }
 
 void ProfileIOData::ResourceContext::CreateKeygenHandler(
