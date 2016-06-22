@@ -56,7 +56,7 @@ class ExtensionSettingsFrontendTest : public ExtensionsTest {
   void TearDown() override {
     frontend_.reset();
     // Execute any pending deletion tasks.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ExtensionsTest::TearDown();
   }
 

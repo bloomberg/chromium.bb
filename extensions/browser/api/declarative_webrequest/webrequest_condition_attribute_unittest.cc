@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
@@ -151,7 +152,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   std::unique_ptr<net::URLRequest> url_request(context.CreateRequest(
       test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate));
   url_request->Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   base::ListValue content_types;
   content_types.AppendString("text/plain");
@@ -455,7 +456,7 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
   url_request->SetExtraRequestHeaderByName(
       "Custom-header", "custom/value", true /* overwrite */);
   url_request->Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   std::vector<std::vector<const std::string*> > tests;
   bool result = false;
@@ -540,7 +541,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   std::unique_ptr<net::URLRequest> url_request(context.CreateRequest(
       test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate));
   url_request->Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // In all the tests below we assume that the server includes the headers
   // Custom-Header: custom/value

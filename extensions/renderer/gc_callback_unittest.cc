@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature.h"
@@ -106,7 +107,7 @@ TEST_F(GCCallbackTest, GCBeforeContextInvalidated) {
 
   // Trigger a GC. Only the callback should be invoked.
   RequestGarbageCollection();
-  message_loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(callback_invoked);
   EXPECT_FALSE(fallback_invoked);
@@ -114,7 +115,7 @@ TEST_F(GCCallbackTest, GCBeforeContextInvalidated) {
   // Invalidate the context. The fallback should not be invoked because the
   // callback was already invoked.
   script_context_set().Remove(script_context);
-  message_loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(fallback_invoked);
 }
@@ -144,7 +145,7 @@ TEST_F(GCCallbackTest, ContextInvalidatedBeforeGC) {
 
   // Invalidate the context. Only the fallback should be invoked.
   script_context_set().Remove(script_context);
-  message_loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(callback_invoked);
   EXPECT_TRUE(fallback_invoked);
@@ -152,7 +153,7 @@ TEST_F(GCCallbackTest, ContextInvalidatedBeforeGC) {
   // Trigger a GC. The callback should not be invoked because the fallback was
   // already invoked.
   RequestGarbageCollection();
-  message_loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(callback_invoked);
 }

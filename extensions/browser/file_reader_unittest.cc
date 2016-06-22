@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/file_reader.h"
@@ -69,7 +70,7 @@ void RunBasicTest(const char* filename) {
       new FileReader(resource, receiver.NewCallback()));
   file_reader->Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(receiver.succeeded());
   EXPECT_EQ(file_contents, receiver.data());
@@ -97,7 +98,7 @@ TEST_F(FileReaderTest, NonExistantFile) {
       new FileReader(resource, receiver.NewCallback()));
   file_reader->Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(receiver.succeeded());
 }

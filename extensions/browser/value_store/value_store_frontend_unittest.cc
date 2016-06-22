@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/value_store/test_value_store_factory.h"
 #include "extensions/common/extension_paths.h"
@@ -40,7 +41,7 @@ class ValueStoreFrontendTest : public testing::Test {
   }
 
   void TearDown() override {
-    base::MessageLoop::current()->RunUntilIdle();  // wait for storage to delete
+    base::RunLoop().RunUntilIdle();  // wait for storage to delete
     storage_.reset();
   }
 
@@ -53,7 +54,7 @@ class ValueStoreFrontendTest : public testing::Test {
   bool Get(const std::string& key, std::unique_ptr<base::Value>* output) {
     storage_->Get(key, base::Bind(&ValueStoreFrontendTest::GetAndWait,
                                   base::Unretained(this), output));
-    base::MessageLoop::current()->Run();  // wait for GetAndWait
+    base::RunLoop().Run();  // wait for GetAndWait
     return !!output->get();
   }
 

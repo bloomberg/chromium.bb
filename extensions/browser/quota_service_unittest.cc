@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/public/test/test_browser_thread.h"
@@ -112,7 +113,7 @@ class QuotaServiceTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &loop_) {}
   void SetUp() override { service_.reset(new QuotaService()); }
   void TearDown() override {
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     service_.reset();
   }
 

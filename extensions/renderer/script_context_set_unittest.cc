@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature.h"
@@ -56,7 +57,7 @@ TEST(ScriptContextSetTest, Lifecycle) {
   EXPECT_FALSE(context->is_valid());
 
   // Run loop to do the actual deletion.
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace extensions

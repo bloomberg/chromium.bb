@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_context.h"
@@ -63,7 +64,7 @@ class ImageLoaderTest : public ExtensionsTest {
 
   void WaitForImageLoad() {
     quit_in_image_loaded_ = true;
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     quit_in_image_loaded_ = false;
   }
 
