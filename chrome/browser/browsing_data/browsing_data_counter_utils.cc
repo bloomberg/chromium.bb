@@ -58,13 +58,17 @@ base::string16 GetCounterTextFromResult(
     // The counter is still counting.
     text = l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_CALCULATING);
 
-  } else if (pref_name == prefs::kDeletePasswords) {
-    // Passwords counter.
-    BrowsingDataCounter::ResultInt passwords_count =
+  } else if (pref_name == prefs::kDeletePasswords ||
+             pref_name == prefs::kDeleteDownloadHistory) {
+    // Counters with trivially formatted result: passwords and downloads.
+    BrowsingDataCounter::ResultInt count =
         static_cast<const BrowsingDataCounter::FinishedResult*>(
             result)->Value();
     text = l10n_util::GetPluralStringFUTF16(
-        IDS_DEL_PASSWORDS_COUNTER, passwords_count);
+        pref_name == prefs::kDeletePasswords
+            ? IDS_DEL_PASSWORDS_COUNTER
+            : IDS_DEL_DOWNLOADS_COUNTER,
+        count);
 
   } else if (pref_name == prefs::kDeleteCache) {
     // Cache counter.
