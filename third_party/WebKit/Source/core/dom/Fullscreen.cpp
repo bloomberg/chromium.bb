@@ -123,6 +123,35 @@ Event* createEvent(const AtomicString& type, EventTarget& target)
     return event;
 }
 
+// Helper to walk the ancestor chain and return the Document of the topmost
+// local ancestor frame. Note that this is not the same as the topmost frame's
+// Document, which might be unavailable in OOPIF scenarios. For example, with
+// OOPIFs, when called on the bottom frame's Document in a A-B-C-B hierarchy in
+// process B, this will skip remote frame C and return this frame: A-[B]-C-B.
+Document& topmostLocalAncestor(Document& document)
+{
+    Document* topmost = &document;
+    Frame* frame = document.frame();
+    while (frame) {
+        frame = frame->tree().parent();
+        if (frame && frame->isLocalFrame())
+            topmost = toLocalFrame(frame)->document();
+    }
+    return *topmost;
+}
+
+// Helper to find the browsing context container in |doc| that embeds the
+// |descendant| Document, possibly through multiple levels of nesting.  This
+// works even in OOPIF scenarios like A-B-A, where there may be remote frames
+// in between |doc| and |descendant|.
+HTMLFrameOwnerElement* findContainerForDescendant(const Document& doc, const Document& descendant)
+{
+    Frame* frame = descendant.frame();
+    while (frame->tree().parent() != doc.frame())
+        frame = frame->tree().parent();
+    return toHTMLFrameOwnerElement(frame->owner());
+}
+
 } // anonymous namespace
 
 const char* Fullscreen::supplementName()
@@ -249,12 +278,22 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bo
         Document* currentDoc = document();
 
         // 3. Let docs be all doc's ancestor browsing context's documents (if any) and doc.
+        //
+        // For OOPIF scenarios, |docs| will only contain documents for local
+        // ancestors, and remote ancestors will be processed in their
+        // respective processes.  This preserves the spec's event firing order
+        // for local ancestors, but not for remote ancestors.  However, that
+        // difference shouldn't be observable in practice: a fullscreenchange
+        // event handler would need to postMessage a frame in another renderer
+        // process, where the message should be queued up and processed after
+        // the IPC that dispatches fullscreenchange.
         HeapDeque<Member<Document>> docs;
 
-        do {
-            docs.prepend(currentDoc);
-            currentDoc = currentDoc->localOwner() ? &currentDoc->localOwner()->document() : nullptr;
-        } while (currentDoc);
+        docs.prepend(currentDoc);
+        for (Frame* frame = currentDoc->frame()->tree().parent(); frame; frame = frame->tree().parent()) {
+            if (frame->isLocalFrame())
+                docs.prepend(toLocalFrame(frame)->document());
+        }
 
         // 4. For each document in docs, run these substeps:
         HeapDeque<Member<Document>>::iterator current = docs.begin(), following = docs.begin();
@@ -279,11 +318,12 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bo
             // 3. Otherwise, if document's fullscreen element stack is either empty or its top element
             // is not following document's browsing context container,
             Element* topElement = fullscreenElementFrom(*currentDoc);
-            if (!topElement || topElement != followingDoc->localOwner()) {
+            HTMLFrameOwnerElement* followingOwner = findContainerForDescendant(*currentDoc, *followingDoc);
+            if (!topElement || topElement != followingOwner) {
                 // ...push following document's browsing context container on document's fullscreen element
                 // stack, and queue a task to fire an event named fullscreenchange with its bubbles attribute
                 // set to true on document.
-                from(*currentDoc).pushFullscreenElementStack(*followingDoc->localOwner(), requestType);
+                from(*currentDoc).pushFullscreenElementStack(*followingOwner, requestType);
                 enqueueChangeEvent(*currentDoc, requestType);
                 continue;
             }
@@ -309,7 +349,14 @@ void Fullscreen::fullyExitFullscreen(Document& document)
     // To fully exit fullscreen, run these steps:
 
     // 1. Let |doc| be the top-level browsing context's document.
-    Document& doc = document.topDocument();
+    //
+    // Since the top-level browsing context's document might be unavailable in
+    // OOPIF scenarios (i.e., when the top frame is remote), this actually uses
+    // the Document of the topmost local ancestor frame.  Without OOPIF, this
+    // will be the top frame's document.  With OOPIF, each renderer process for
+    // the current page will separately call fullyExitFullscreen to cover all
+    // local frames in each process.
+    Document& doc = topmostLocalAncestor(document);
 
     // 2. If |doc|'s fullscreen element stack is empty, terminate these steps.
     if (!fullscreenElementFrom(doc))
@@ -378,9 +425,20 @@ void Fullscreen::exitFullscreen()
 
         // 3. If doc's fullscreen element stack is empty and doc's browsing context has a browsing context
         // container, set doc to that browsing context container's node document.
-        if (!newTop && currentDoc->localOwner()) {
-            currentDoc = &currentDoc->localOwner()->document();
-            continue;
+        //
+        // OOPIF: If browsing context container's document is in another
+        // process, keep moving up the ancestor chain and looking for a
+        // browsing context container with a local document.
+        // TODO(alexmos): Deal with nested fullscreen cases, see
+        // https://crbug.com/617369.
+        if (!newTop) {
+            Frame* frame = currentDoc->frame()->tree().parent();
+            while (frame && frame->isRemoteFrame())
+                frame = frame->tree().parent();
+            if (frame) {
+                currentDoc = toLocalFrame(frame)->document();
+                continue;
+            }
         }
 
         // 4. Otherwise, set doc to null.
@@ -505,7 +563,7 @@ void Fullscreen::didExitFullScreenForElement()
     // exiting document.
     Document* exitingDocument = document();
     if (m_eventQueue.isEmpty())
-        exitingDocument = &document()->topDocument();
+        exitingDocument = &topmostLocalAncestor(*document());
     DCHECK(exitingDocument);
     from(*exitingDocument).m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 

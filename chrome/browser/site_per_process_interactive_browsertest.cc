@@ -51,6 +51,13 @@ class SitePerProcessInteractiveBrowserTest : public InProcessBrowserTest {
     return display.bounds().size();
   }
 
+  enum class FullscreenExitMethod {
+    JS_CALL,
+    ESC_PRESS,
+  };
+
+  void FullscreenElementInABA(FullscreenExitMethod exit_method);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SitePerProcessInteractiveBrowserTest);
 };
@@ -465,14 +472,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 }
 
 // Check that on a page with A-embed-B-embed-A frame hierarchy, an element in
-// the bottom frame can enter and exit fullscreen.
-//
-// TODO(alexmos): For now, the test will verify sizing and fullscreen CSS
-// styles, but additional refactoring of Blink's Fullscreen class is required
-// to fully handle fullscreenchange events and webkitFullscreenElement in the
-// main frame.
-IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       FullscreenElementInABA) {
+// the bottom frame can enter and exit fullscreen.  |exit_method| specifies
+// whether to use browser-initiated vs. renderer-initiated fullscreen exit
+// (i.e., pressing escape vs. a JS call), since they trigger different code
+// paths on the Blink side.
+void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
+    FullscreenExitMethod exit_method) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(a))"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -509,11 +514,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // (1) the fullscreenchange events in all frames send a response, and
   // (2) the frame is resized to fill the whole screen.
   // (3) the browser has finished the fullscreen transition.
-  //
-  // TODO(alexmos): Also wait for "main_frame" once
-  // blink::Fullscreen::requestFullscreen() and exitFullscreen() are fixed to
-  // process all local ancestors.
-  std::set<std::string> expected_events = {"child", "grandchild"};
+  std::set<std::string> expected_events = {"main_frame", "child", "grandchild"};
   {
     content::DOMMessageQueue queue;
     std::unique_ptr<FullscreenNotificationObserver> observer(
@@ -538,11 +539,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_TRUE(ElementHasFullscreenAncestorStyle(main_frame, "child-0"));
 
   // Check document.webkitFullscreenElement in all frames.
+  EXPECT_EQ("child-0", GetFullscreenElementId(main_frame));
   EXPECT_EQ("child-0", GetFullscreenElementId(child));
   EXPECT_EQ("fullscreen-div", GetFullscreenElementId(grandchild));
-  // TODO(alexmos): Also check that |main_frame|'s webkitFullscreenElement is
-  // "child-0" once blink::Fullscreen::requestFullscreen() is fixed to handle
-  // all local ancestors.
 
   // Now exit fullscreen from the subframe.
   AddResizeListener(grandchild, original_grandchild_size);
@@ -550,7 +549,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
     content::DOMMessageQueue queue;
     std::unique_ptr<FullscreenNotificationObserver> observer(
         new FullscreenNotificationObserver());
-    EXPECT_TRUE(ExecuteScript(grandchild, "exitFullscreen()"));
+    switch (exit_method) {
+      case FullscreenExitMethod::JS_CALL:
+        EXPECT_TRUE(ExecuteScript(grandchild, "exitFullscreen()"));
+        break;
+      case FullscreenExitMethod::ESC_PRESS:
+        ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+            browser(), ui::VKEY_ESCAPE, false, false, false, false));
+        break;
+      default:
+        NOTREACHED();
+    }
     WaitForMultipleFullscreenEvents(expected_events, queue);
     observer->Wait();
   }
@@ -570,6 +579,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ("none", GetFullscreenElementId(main_frame));
   EXPECT_EQ("none", GetFullscreenElementId(child));
   EXPECT_EQ("none", GetFullscreenElementId(grandchild));
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
+                       FullscreenElementInABAAndExitViaEscapeKey) {
+  FullscreenElementInABA(FullscreenExitMethod::ESC_PRESS);
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
+                       FullscreenElementInABAAndExitViaJS) {
+  FullscreenElementInABA(FullscreenExitMethod::JS_CALL);
 }
 
 // Check that fullscreen works on a more complex page hierarchy with multiple
