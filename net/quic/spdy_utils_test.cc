@@ -230,6 +230,22 @@ TEST(SpdyUtilsTest, CopyAndValidateHeadersInconsistentContentLengths) {
       SpdyUtils::CopyAndValidateHeaders(*headers, &content_length, &block));
 }
 
+TEST(SpdyUtilsTest, CopyAndValidateHeadersLargeContentLength) {
+  auto headers = FromList({{"content-length", "9000000000"},
+                           {"foo", "foovalue"},
+                           {"bar", "barvalue"},
+                           {"baz", ""}});
+  int64_t content_length = -1;
+  SpdyHeaderBlock block;
+  ASSERT_TRUE(
+      SpdyUtils::CopyAndValidateHeaders(*headers, &content_length, &block));
+  EXPECT_THAT(block, UnorderedElementsAre(
+                         Pair("foo", "foovalue"), Pair("bar", "barvalue"),
+                         Pair("content-length", StringPiece("9000000000")),
+                         Pair("baz", "")));
+  EXPECT_EQ(9000000000, content_length);
+}
+
 TEST(SpdyUtilsTest, CopyAndValidateHeadersMultipleValues) {
   auto headers = FromList({{"foo", "foovalue"},
                            {"bar", "barvalue"},
