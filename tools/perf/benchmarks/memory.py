@@ -23,7 +23,8 @@ class MemoryMobile(perf_benchmark.PerfBenchmark):
 # Disable on reference due to crbug.com/539728
 # Disable on all Mac as it's also failing on 10.11 and retina.
 # crbug.com/555045
-@benchmark.Disabled('mac', 'reference')
+# Disabling on WebView due to crbug.com/621489
+@benchmark.Disabled('mac', 'android-webview', 'reference')
 class MemoryTop7Stress(perf_benchmark.PerfBenchmark):
   """Use (recorded) real world web sites and measure memory consumption."""
   test = memory.Memory
