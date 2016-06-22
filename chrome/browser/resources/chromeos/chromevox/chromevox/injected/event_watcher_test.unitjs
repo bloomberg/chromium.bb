@@ -558,8 +558,9 @@ TEST_F('CvoxEventWatcherUnitTest',
 
 /**
  * Test time widget.
+ * Disabled because test relies on removed behavior; see crbug.com/520519.
  */
-TEST_F('CvoxEventWatcherUnitTest', 'TimeWidget', function() {
+TEST_F('CvoxEventWatcherUnitTest', 'DISABLED_TimeWidget', function() {
   this.loadHtml(
     '<label for="timewidget">Set alarm for:</label>' +
     '<input id="timewidget" type="time" value="12:00">');
@@ -615,8 +616,9 @@ TEST_F('CvoxEventWatcherUnitTest', 'TimeWidget', function() {
 
 /**
  * Test date widget.
+ * Disabled because test relies on removed behavior; see crbug.com/520519.
  */
-TEST_F('CvoxEventWatcherUnitTest', 'DateWidget', function() {
+TEST_F('CvoxEventWatcherUnitTest', 'DISABLED_DateWidget', function() {
   this.loadHtml(
     '<label for="datewidget">Set birthdate:</label>' +
     '<input id="datewidget" type="date" value="1998-09-04"/>');
