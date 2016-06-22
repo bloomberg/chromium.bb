@@ -41,6 +41,7 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/extension.h"
@@ -407,14 +408,14 @@ class SupervisedUserServiceExtensionTestBase
             .Set(extensions::manifest_keys::kName, "Extension")
             .Set(extensions::manifest_keys::kVersion, "1.0")
             .Build();
-    int creation_flags = extensions::Extension::NO_FLAGS;
-    if (by_custodian)
-      creation_flags |= extensions::Extension::WAS_INSTALLED_BY_CUSTODIAN;
+
     extensions::ExtensionBuilder builder;
     scoped_refptr<extensions::Extension> extension =
         builder.SetManifest(std::move(manifest))
-            .AddFlags(creation_flags)
             .Build();
+    extensions::util::SetWasInstalledByCustodian(extension->id(),
+                                                 profile_.get(), by_custodian);
+
     return extension;
   }
 

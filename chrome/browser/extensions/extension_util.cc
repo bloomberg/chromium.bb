@@ -54,6 +54,10 @@ const char kExtensionAllowedOnAllUrlsPrefName[] =
 // allowed on all urls" pref.
 const char kHasSetScriptOnAllUrlsPrefName[] = "has_set_script_all_urls";
 
+// The entry into the prefs used to flag an extension as installed by custodian.
+// It is relevant only for supervised users.
+const char kWasInstalledByCustodianPrefName[] = "was_installed_by_custodian";
+
 // Returns true if |extension| should always be enabled in incognito mode.
 bool IsWhitelistedForIncognito(const Extension* extension) {
   const Feature* feature = FeatureProvider::GetBehaviorFeature(
@@ -222,6 +226,49 @@ void SetAllowFileAccess(const std::string& extension_id,
   ReloadExtensionIfEnabled(extension_id, context);
 }
 
+void SetWasInstalledByCustodian(const std::string& extension_id,
+                                content::BrowserContext* context,
+                                bool installed_by_custodian) {
+  if (installed_by_custodian == WasInstalledByCustodian(extension_id, context))
+    return;
+
+  ExtensionPrefs::Get(context)->UpdateExtensionPref(
+      extension_id, kWasInstalledByCustodianPrefName,
+      installed_by_custodian ? new base::FundamentalValue(true) : nullptr);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  const Extension* extension = registry->GetInstalledExtension(extension_id);
+  ExtensionService* service =
+      ExtensionSystem::Get(context)->extension_service();
+
+  // If the installed_by_custodian flag is reset, do nothing.
+  if (!installed_by_custodian) {
+    // If installed_by_custodian changes to false, the extension may need to
+    // be unloaded now.
+    service->ReloadExtension(extension_id);
+    return;
+  }
+
+  // If it is already enabled, do nothing.
+  if (registry->enabled_extensions().Contains(extension_id))
+    return;
+
+  // If the extension is not loaded, it may need to be reloaded.
+  // Example is a pre-installed extension that was unloaded when a
+  // supervised user flag has been received.
+  if (!extension) {
+    service->ReloadExtension(extension_id);
+  }
+}
+
+bool WasInstalledByCustodian(const std::string& extension_id,
+                             content::BrowserContext* context) {
+  bool installed_by_custodian = false;
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
+  prefs->ReadPrefAsBoolean(extension_id, kWasInstalledByCustodianPrefName,
+                           &installed_by_custodian);
+  return installed_by_custodian;
+}
+
 bool AllowedScriptingOnAllUrls(const std::string& extension_id,
                                content::BrowserContext* context) {
   bool allowed = false;
@@ -380,8 +427,9 @@ bool CanHostedAppsOpenInWindows() {
 #endif
 }
 
-bool IsExtensionSupervised(const Extension* extension, const Profile* profile) {
-  return extension->was_installed_by_custodian() && profile->IsSupervised();
+bool IsExtensionSupervised(const Extension* extension, Profile* profile) {
+  return WasInstalledByCustodian(extension->id(), profile) &&
+         profile->IsSupervised();
 }
 
 bool NeedCustodianApprovalForPermissionIncrease(const Profile* profile) {

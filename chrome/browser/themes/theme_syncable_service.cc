@@ -235,14 +235,12 @@ void ThemeSyncableService::SetCurrentThemeFromThemeSpecifics(
       // so by adding it as a pending extension and then triggering an
       // auto-update cycle.
       const bool kRemoteInstall = false;
-      const bool kInstalledByCustodian = false;
       if (!extensions_service->pending_extension_manager()->AddFromSync(
               id,
               update_url,
               base::Version(),
               &IsTheme,
-              kRemoteInstall,
-              kInstalledByCustodian)) {
+              kRemoteInstall)) {
         LOG(WARNING) << "Could not add pending extension for " << id;
         return;
       }

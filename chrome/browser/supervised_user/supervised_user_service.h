@@ -302,6 +302,25 @@ class SupervisedUserService : public KeyedService,
   bool MustRemainInstalled(const extensions::Extension* extension,
                            base::string16* error) const override;
 
+  // An extension can be in one of the following states:
+  //
+  // FORCED: if it is installed by the custodian.
+  // ALLOWED: Components, Themes, Default extensions ..etc
+  //    are generally allowed.  Extensions that have been approved by the
+  //    custodian are also allowed.
+  // BLOCKED: if it is not ALLOWED or FORCED
+  //    and supervised users initiated installs are disabled.
+  enum ExtensionState {
+    EXTENSION_FORCED,
+    EXTENSION_BLOCKED,
+    EXTENSION_ALLOWED
+  };
+
+  // Returns the state of an extension whether being FORCED, BLOCK, or ALLOWED
+  // from the Supervised User service's point of view.
+  ExtensionState GetExtensionState(
+      const extensions::Extension* extension) const;
+
   // Extensions helper to SetActive().
   void SetExtensionsActive();
 #endif

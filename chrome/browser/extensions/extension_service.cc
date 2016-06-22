@@ -546,7 +546,6 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
       installer->set_expected_version(expected_version,
                                       false /* fail_install_if_unexpected */);
     }
-    creation_flags = pending_extension_info->creation_flags();
     if (pending_extension_info->mark_acknowledged())
       external_install_manager_->AcknowledgeExternalExtension(id);
   } else if (extension) {
@@ -576,9 +575,6 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
 
   if (extension && extension->was_installed_by_oem())
     creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
-
-  if (extension && extension->was_installed_by_custodian())
-    creation_flags |= Extension::WAS_INSTALLED_BY_CUSTODIAN;
 
   if (extension)
     installer->set_do_not_sync(extension_prefs_->DoNotSync(id));
@@ -730,7 +726,7 @@ bool ExtensionService::UninstallExtension(
       (reason == extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION) ||
       (reason == extensions::UNINSTALL_REASON_ORPHANED_SHARED_MODULE) ||
       (reason == extensions::UNINSTALL_REASON_SYNC &&
-       extension->was_installed_by_custodian());
+       extensions::util::WasInstalledByCustodian(extension->id(), profile_));
   if (!external_uninstall &&
       (!by_policy->UserMayModifySettings(extension.get(), error) ||
        by_policy->MustRemainInstalled(extension.get(), error))) {

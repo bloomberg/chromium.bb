@@ -68,6 +68,8 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #endif
 
@@ -79,6 +81,10 @@
 using base::DictionaryValue;
 using base::UserMetricsAction;
 using content::BrowserThread;
+
+#if defined(ENABLE_EXTENSIONS)
+using extensions::ExtensionPrefs;
+#endif
 
 namespace {
 
@@ -123,45 +129,6 @@ base::FilePath GetBlacklistPath() {
   PathService::Get(chrome::DIR_USER_DATA, &blacklist_dir);
   return blacklist_dir.AppendASCII(kBlacklistFilename);
 }
-
-#if defined(ENABLE_EXTENSIONS)
-enum ExtensionState {
-  EXTENSION_FORCED,
-  EXTENSION_BLOCKED,
-  EXTENSION_ALLOWED
-};
-
-ExtensionState GetExtensionState(const extensions::Extension* extension) {
-  bool was_installed_by_default = extension->was_installed_by_default();
-#if defined(OS_CHROMEOS)
-  // On Chrome OS all external sources are controlled by us so it means that
-  // they are "default". Method was_installed_by_default returns false because
-  // extensions creation flags are ignored in case of default extensions with
-  // update URL(the flags aren't passed to OnExternalExtensionUpdateUrlFound).
-  // TODO(dpolukhin): remove this Chrome OS specific code as soon as creation
-  // flags are not ignored.
-  was_installed_by_default =
-      extensions::Manifest::IsExternalLocation(extension->location());
-#endif
-  // Note: Component extensions are protected from modification/uninstallation
-  // anyway, so there's no need to enforce them again for supervised users.
-  // Also, leave policy-installed extensions alone - they have their own
-  // management; in particular we don't want to override the force-install list.
-  if (extensions::Manifest::IsComponentLocation(extension->location()) ||
-      extensions::Manifest::IsPolicyLocation(extension->location()) ||
-      extension->is_theme() ||
-      extension->from_bookmark() ||
-      extension->is_shared_module() ||
-      was_installed_by_default) {
-    return EXTENSION_ALLOWED;
-  }
-
-  if (extension->was_installed_by_custodian())
-    return EXTENSION_FORCED;
-
-  return EXTENSION_BLOCKED;
-}
-#endif
 
 }  // namespace
 
@@ -956,6 +923,38 @@ void SupervisedUserService::Shutdown() {
 }
 
 #if defined(ENABLE_EXTENSIONS)
+SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
+    const extensions::Extension* extension) const {
+  bool was_installed_by_default = extension->was_installed_by_default();
+#if defined(OS_CHROMEOS)
+  // On Chrome OS all external sources are controlled by us so it means that
+  // they are "default". Method was_installed_by_default returns false because
+  // extensions creation flags are ignored in case of default extensions with
+  // update URL(the flags aren't passed to OnExternalExtensionUpdateUrlFound).
+  // TODO(dpolukhin): remove this Chrome OS specific code as soon as creation
+  // flags are not ignored.
+  was_installed_by_default =
+      extensions::Manifest::IsExternalLocation(extension->location());
+#endif
+  // Note: Component extensions are protected from modification/uninstallation
+  // anyway, so there's no need to enforce them again for supervised users.
+  // Also, leave policy-installed extensions alone - they have their own
+  // management; in particular we don't want to override the force-install list.
+  if (extensions::Manifest::IsComponentLocation(extension->location()) ||
+      extensions::Manifest::IsPolicyLocation(extension->location()) ||
+      extension->is_theme() ||
+      extension->from_bookmark() ||
+      extension->is_shared_module() ||
+      was_installed_by_default) {
+    return ExtensionState::EXTENSION_ALLOWED;
+  }
+
+  if (extensions::util::WasInstalledByCustodian(extension->id(), profile_))
+    return ExtensionState::EXTENSION_FORCED;
+
+  return ExtensionState::EXTENSION_BLOCKED;
+}
+
 std::string SupervisedUserService::GetDebugPolicyProviderName() const {
   // Save the string space in official builds.
 #ifdef NDEBUG

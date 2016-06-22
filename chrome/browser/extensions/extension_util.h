@@ -63,6 +63,20 @@ void SetAllowFileAccess(const std::string& extension_id,
                         content::BrowserContext* context,
                         bool allow);
 
+// Returns true if this extension has been installed by the custodian of
+// a supervised user. It is relevant for supervised users and used to block
+// them from uninstalling the extension for example.
+bool WasInstalledByCustodian(const std::string& extension_id,
+                             content::BrowserContext* context);
+
+// Sets whether |extension_id| is installed by a custodian.
+// This is relevant for supervised users and is used to limit their privileges
+// for extensions installed by their custodians (e.g. supervised users cannot
+// uninstall such extensions).
+void SetWasInstalledByCustodian(const std::string& extension_id,
+                                content::BrowserContext* context,
+                                bool installed_by_custodian);
+
 // Returns true if the extension with |extension_id| is allowed to execute
 // scripts on all urls (exempting chrome:// urls, etc) without explicit
 // user consent.
@@ -131,7 +145,7 @@ bool IsNewBookmarkAppsEnabled();
 bool CanHostedAppsOpenInWindows();
 
 // Returns true for custodian-installed extensions in a supervised profile.
-bool IsExtensionSupervised(const Extension* extension, const Profile* profile);
+bool IsExtensionSupervised(const Extension* extension, Profile* profile);
 
 // Returns true if supervised users need approval from their custodian for
 // approving escalated permissions on updated extensions.

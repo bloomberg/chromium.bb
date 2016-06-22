@@ -436,7 +436,6 @@ void SetupPendingExtensionManagerForTest(
                              should_allow_install,
                              kIsFromSync,
                              Manifest::INTERNAL,
-                             Extension::NO_FLAGS,
                              kMarkAcknowledged,
                              kRemoteInstall));
   }
@@ -1193,7 +1192,6 @@ class ExtensionUpdaterTest : public testing::Test {
                                &ShouldAlwaysInstall,
                                kIsFromSync,
                                Manifest::INTERNAL,
-                               Extension::NO_FLAGS,
                                kMarkAcknowledged,
                                kRemoteInstall));
     }

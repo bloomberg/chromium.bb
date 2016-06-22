@@ -87,9 +87,11 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
                                      int disable_reasons,
                                      bool incognito_enabled,
                                      bool remote_install,
-                                     OptionalBoolean all_urls_enabled)
+                                     OptionalBoolean all_urls_enabled,
+                                     bool installed_by_custodian)
     : ExtensionSyncData(extension, enabled, disable_reasons, incognito_enabled,
-                        remote_install, all_urls_enabled, StringOrdinal(),
+                        remote_install, all_urls_enabled,
+                        installed_by_custodian, StringOrdinal(),
                         StringOrdinal(), LAUNCH_TYPE_INVALID) {
 }
 
@@ -99,6 +101,7 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
                                      bool incognito_enabled,
                                      bool remote_install,
                                      OptionalBoolean all_urls_enabled,
+                                     bool installed_by_custodian,
                                      const StringOrdinal& app_launch_ordinal,
                                      const StringOrdinal& page_ordinal,
                                      extensions::LaunchType launch_type)
@@ -111,7 +114,7 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
       incognito_enabled_(incognito_enabled),
       remote_install_(remote_install),
       all_urls_enabled_(all_urls_enabled),
-      installed_by_custodian_(extension.was_installed_by_custodian()),
+      installed_by_custodian_(installed_by_custodian),
       version_(extension.from_bookmark() ? base::Version("0")
                                          : *extension.version()),
       update_url_(ManifestURL::GetUpdateURL(&extension)),

@@ -16,7 +16,6 @@ PendingExtensionInfo::PendingExtensionInfo(
     ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     Manifest::Location install_source,
-    int creation_flags,
     bool mark_acknowledged,
     bool remote_install)
     : id_(id),
@@ -26,7 +25,6 @@ PendingExtensionInfo::PendingExtensionInfo(
       should_allow_install_(should_allow_install),
       is_from_sync_(is_from_sync),
       install_source_(install_source),
-      creation_flags_(creation_flags),
       mark_acknowledged_(mark_acknowledged),
       remote_install_(remote_install) {
 }
@@ -36,7 +34,6 @@ PendingExtensionInfo::PendingExtensionInfo()
       should_allow_install_(NULL),
       is_from_sync_(true),
       install_source_(Manifest::INVALID_LOCATION),
-      creation_flags_(0),
       mark_acknowledged_(false),
       remote_install_(false) {
 }

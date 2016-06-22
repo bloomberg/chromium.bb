@@ -280,18 +280,21 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
       extension_prefs->HasDisableReason(id, Extension::DISABLE_REMOTE_INSTALL);
   ExtensionSyncData::OptionalBoolean allowed_on_all_url =
       GetAllowedOnAllUrlsOptionalBoolean(id, profile_);
+  bool installed_by_custodian =
+      extensions::util::WasInstalledByCustodian(id, profile_);
   AppSorting* app_sorting = ExtensionSystem::Get(profile_)->app_sorting();
 
   ExtensionSyncData result = extension.is_app()
       ? ExtensionSyncData(
             extension, enabled, disable_reasons, incognito_enabled,
             remote_install, allowed_on_all_url,
+            installed_by_custodian,
             app_sorting->GetAppLaunchOrdinal(id),
             app_sorting->GetPageOrdinal(id),
             extensions::GetLaunchTypePrefValue(extension_prefs, id))
       : ExtensionSyncData(
             extension, enabled, disable_reasons, incognito_enabled,
-            remote_install, allowed_on_all_url);
+            remote_install, allowed_on_all_url, installed_by_custodian);
 
   // If there's a pending update, send the new version to sync instead of the
   // installed one.
@@ -314,6 +317,11 @@ void ExtensionSyncService::ApplySyncData(
   // Ignore any pref change notifications etc. while we're applying incoming
   // sync data, so that we don't end up notifying ourselves.
   base::AutoReset<bool> ignore_updates(&ignore_updates_, true);
+
+  // Note: this may cause an existing version of the extension to be reloaded.
+  extensions::util::SetWasInstalledByCustodian(
+      extension_sync_data.id(), profile_,
+      extension_sync_data.installed_by_custodian());
 
   syncer::ModelType type = extension_sync_data.is_app() ? syncer::APPS
                                                         : syncer::EXTENSIONS;
@@ -503,8 +511,7 @@ void ExtensionSyncService::ApplySyncData(
             extension_sync_data.update_url(),
             extension_sync_data.version(),
             ShouldAllowInstall,
-            extension_sync_data.remote_install(),
-            extension_sync_data.installed_by_custodian())) {
+            extension_sync_data.remote_install())) {
       LOG(WARNING) << "Could not add pending extension for " << id;
       // This means that the extension is already pending installation, with a
       // non-INTERNAL location.  Add to pending_sync_data, even though it will

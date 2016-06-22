@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_signer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
@@ -56,7 +57,8 @@ void PopulateExtensionInfo(
   }
 
   extension_info->set_installed_by_custodian(
-      extension.was_installed_by_custodian());
+      extensions::util::WasInstalledByCustodian(
+          extension.id(), extension_registry.browser_context()));
   extension_info->set_installed_by_default(
       extension.was_installed_by_default());
   extension_info->set_installed_by_oem(extension.was_installed_by_oem());

@@ -152,9 +152,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // also installed by Default (i.e. WAS_INSTALLED_BY_DEFAULT is also true).
     WAS_INSTALLED_BY_OEM = 1 << 10,
 
-    // |WAS_INSTALLED_BY_CUSTODIAN| means this extension was installed by the
-    // custodian of a supervised user.
-    WAS_INSTALLED_BY_CUSTODIAN = 1 << 11,
+    // DEPRECATED: WAS_INSTALLED_BY_CUSTODIAN is now stored as a pref instead.
+    // WAS_INSTALLED_BY_CUSTODIAN = 1 << 11,
 
     // |MAY_BE_UNTRUSTED| indicates that this extension came from a potentially
     // unsafe source (e.g., sideloaded from a local CRX file via the Windows
@@ -330,9 +329,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   bool was_installed_by_oem() const {
     return (creation_flags_ & WAS_INSTALLED_BY_OEM) != 0;
-  }
-  bool was_installed_by_custodian() const {
-    return (creation_flags_ & WAS_INSTALLED_BY_CUSTODIAN) != 0;
   }
 
   // Type-related queries.
