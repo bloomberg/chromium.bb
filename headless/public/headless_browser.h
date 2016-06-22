@@ -145,11 +145,33 @@ class HeadlessBrowser::Options::Builder {
   DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
+// The headless browser may need to create child processes (e.g., a renderer
+// which runs web content). This is done by re-executing the parent process as
+// a zygote[1] and forking each child process from that zygote.
+//
+// For this to work, the embedder should call RunChildProcess as soon as
+// possible (i.e., before creating any threads) to pass control to the headless
+// library. In a browser process this function will return immediately, but in a
+// child process it will never return. For example:
+//
+// int main(int argc, const char** argv) {
+//   headless::RunChildProcessIfNeeded(argc, argv);
+//   headless::HeadlessBrowser::Options::Builder builder(argc, argv);
+//   return headless::HeadlessBrowserMain(
+//       builder.Build(),
+//       base::Callback<void(headless::HeadlessBrowser*)>());
+// }
+//
+// [1]
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
+void RunChildProcessIfNeeded(int argc, const char** argv);
+
 // Main entry point for running the headless browser. This function constructs
 // the headless browser instance, passing it to the given
 // |on_browser_start_callback| callback. Note that since this function executes
 // the main loop, it will only return after HeadlessBrowser::Shutdown() is
-// called, returning the exit code for the process.
+// called, returning the exit code for the process. It is not possible to
+// initialize the browser again after it has been torn down.
 int HeadlessBrowserMain(
     HeadlessBrowser::Options options,
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback);

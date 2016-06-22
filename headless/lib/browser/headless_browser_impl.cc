@@ -6,11 +6,13 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
@@ -21,6 +23,26 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace headless {
+namespace {
+
+int RunContentMain(
+    HeadlessBrowser::Options options,
+    const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {
+  content::ContentMainParams params(nullptr);
+  params.argc = options.argc;
+  params.argv = options.argv;
+
+  // TODO(skyostil): Implement custom message pumps.
+  DCHECK(!options.message_pump);
+
+  std::unique_ptr<HeadlessBrowserImpl> browser(
+      new HeadlessBrowserImpl(on_browser_start_callback, std::move(options)));
+  headless::HeadlessContentMainDelegate delegate(std::move(browser));
+  params.delegate = &delegate;
+  return content::ContentMain(params);
+}
+
+}  // namespace
 
 HeadlessBrowserImpl::HeadlessBrowserImpl(
     const base::Callback<void(HeadlessBrowser*)>& on_start_callback,
@@ -28,7 +50,6 @@ HeadlessBrowserImpl::HeadlessBrowserImpl(
     : on_start_callback_(on_start_callback),
       options_(std::move(options)),
       browser_main_parts_(nullptr) {
-  DCHECK(!on_start_callback_.is_null());
 }
 
 HeadlessBrowserImpl::~HeadlessBrowserImpl() {}
@@ -141,21 +162,32 @@ void HeadlessBrowserImpl::SetOptionsForTesting(
       &options_);
 }
 
+void RunChildProcessIfNeeded(int argc, const char** argv) {
+  base::CommandLine command_line(argc, argv);
+  if (!command_line.HasSwitch(switches::kProcessType))
+    return;
+
+  HeadlessBrowser::Options::Builder builder(argc, argv);
+  exit(RunContentMain(builder.Build(),
+                      base::Callback<void(HeadlessBrowser*)>()));
+}
+
 int HeadlessBrowserMain(
     HeadlessBrowser::Options options,
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {
-  content::ContentMainParams params(nullptr);
-  params.argc = options.argc;
-  params.argv = options.argv;
+  DCHECK(!on_browser_start_callback.is_null());
+#if DCHECK_IS_ON()
+  // The browser can only be initialized once.
+  static bool browser_was_initialized;
+  DCHECK(!browser_was_initialized);
+  browser_was_initialized = true;
 
-  // TODO(skyostil): Implement custom message pumps.
-  DCHECK(!options.message_pump);
-
-  std::unique_ptr<HeadlessBrowserImpl> browser(
-      new HeadlessBrowserImpl(on_browser_start_callback, std::move(options)));
-  headless::HeadlessContentMainDelegate delegate(std::move(browser));
-  params.delegate = &delegate;
-  return content::ContentMain(params);
+  // Child processes should not end up here.
+  base::CommandLine command_line(options.argc, options.argv);
+  DCHECK(!command_line.HasSwitch(switches::kProcessType));
+#endif
+  return RunContentMain(std::move(options),
+                        std::move(on_browser_start_callback));
 }
 
 }  // namespace headless

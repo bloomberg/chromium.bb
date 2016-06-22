@@ -285,6 +285,7 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
 };
 
 int main(int argc, const char** argv) {
+  headless::RunChildProcessIfNeeded(argc, argv);
   HeadlessShell shell;
   HeadlessBrowser::Options::Builder builder(argc, argv);
 
