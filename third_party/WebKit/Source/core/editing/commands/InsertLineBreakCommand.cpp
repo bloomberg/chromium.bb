@@ -115,7 +115,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
             nodeToInsert = extraNode;
         }
 
-        VisiblePosition endingPosition = createVisiblePosition(Position::beforeNode(nodeToInsert));
+        VisiblePosition endingPosition = VisiblePosition::beforeNode(nodeToInsert);
         setEndingSelection(VisibleSelection(endingPosition, endingSelection().isDirectional()));
     } else if (pos.computeEditingOffset() <= caretMinOffset(pos.anchorNode())) {
         insertNodeAt(nodeToInsert, pos, editingState);
@@ -123,7 +123,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
             return;
 
         // Insert an extra br or '\n' if the just inserted one collapsed.
-        if (!isStartOfParagraph(createVisiblePosition(Position::beforeNode(nodeToInsert)))) {
+        if (!isStartOfParagraph(VisiblePosition::beforeNode(nodeToInsert))) {
             insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert, editingState);
             if (editingState->isAborted())
                 return;
