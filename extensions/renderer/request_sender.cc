@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/request_sender.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
@@ -66,7 +68,7 @@ int RequestSender::GetNextRequestId() const {
   return next_request_id++;
 }
 
-void RequestSender::StartRequest(Source* source,
+bool RequestSender::StartRequest(Source* source,
                                  const std::string& name,
                                  int request_id,
                                  bool has_callback,
@@ -74,7 +76,7 @@ void RequestSender::StartRequest(Source* source,
                                  base::ListValue* value_args) {
   ScriptContext* context = source->GetContext();
   if (!context)
-    return;
+    return false;
 
   bool for_service_worker =
       context->context_type() == Feature::SERVICE_WORKER_CONTEXT;
@@ -86,12 +88,12 @@ void RequestSender::StartRequest(Source* source,
   if (!for_service_worker && !render_frame) {
     // It is important to early exit here for non Service Worker contexts so
     // that we do not create orphaned PendingRequests below.
-    return;
+    return false;
   }
 
   // TODO(koz): See if we can make this a CHECK.
   if (!context->HasAccessOrThrowError(name))
-    return;
+    return false;
 
   GURL source_url;
   if (blink::WebLocalFrame* webframe = context->web_frame())
@@ -116,6 +118,7 @@ void RequestSender::StartRequest(Source* source,
   params.embedded_worker_id = -1;
 
   SendRequest(render_frame, for_io_thread, params);
+  return true;
 }
 
 void RequestSender::SendRequest(content::RenderFrame* render_frame,
@@ -134,6 +137,7 @@ void RequestSender::HandleResponse(int request_id,
                                    bool success,
                                    const base::ListValue& response,
                                    const std::string& error) {
+  base::ElapsedTimer timer;
   linked_ptr<PendingRequest> request = RemoveRequest(request_id);
 
   if (!request.get()) {
@@ -141,9 +145,13 @@ void RequestSender::HandleResponse(int request_id,
     return;
   }
 
+  // TODO(devlin): Would it be useful to partition this data based on
+  // extension function once we have a suitable baseline? crbug.com/608561.
   blink::WebScopedUserGesture gesture(request->token);
   request->source->OnResponseReceived(
       request->name, request_id, success, response, error);
+  UMA_HISTOGRAM_TIMES("Extensions.Functions.HandleResponseElapsedTime",
+                      timer.Elapsed());
 }
 
 void RequestSender::InvalidateSource(Source* source) {

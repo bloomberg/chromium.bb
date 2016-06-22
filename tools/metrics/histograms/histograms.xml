@@ -14456,6 +14456,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Functions.HandleResponseElapsedTime" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The amount of time it takes to handle a response for an extension API
+    request. Recorded on the renderer side once we receive the response IPC from
+    the browser and have deserialized the arguments and passed them to the JS
+    context. Only recorded if the response is successfully handled.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Functions.StartRequestElapsedTime" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The amount of time it takes to start an extension API request. Recorded on
+    the renderer side after we perform JS pre-processing, but includes all
+    serialization and dispatching. Only recorded if the request is successfully
+    dispatched.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Functions.SucceededTotalExecutionTime" units="ms">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>

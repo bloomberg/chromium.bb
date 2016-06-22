@@ -75,7 +75,8 @@ class RequestSender {
   // TODO(koz): Remove |request_id| and generate that internally.
   //            There are multiple of these per render view though, so we'll
   //            need to vend the IDs centrally.
-  void StartRequest(Source* source,
+  // Returns true if the request is successfully sent.
+  bool StartRequest(Source* source,
                     const std::string& name,
                     int request_id,
                     bool has_callback,
