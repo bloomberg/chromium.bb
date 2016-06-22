@@ -141,9 +141,6 @@ void BrowserViewRenderer::TrimMemory() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::TrimMemory");
   // Just set the memory limit to 0 and drop all tiles. This will be reset to
   // normal levels in the next DrawGL call.
-  // TODO(hush): need to setMemoryPolicy to 0 for non-current compositors too.
-  // But WebView only has non-current compositors temporarily. So don't have to
-  // do it now.
   if (!offscreen_pre_raster_)
     ReleaseHardware();
 }
@@ -513,8 +510,13 @@ void BrowserViewRenderer::DidDestroyCompositor(
 
 void BrowserViewRenderer::SetActiveCompositorID(
     const CompositorID& compositor_id) {
-  if (compositor_map_.count(compositor_id)) {
-    compositor_ = compositor_map_[compositor_id];
+  // Set the old compositor memory policy to 0.
+  if (!compositor_id_.Equals(compositor_id) && compositor_)
+    compositor_->SetMemoryPolicy(0u);
+
+  if (content::SynchronousCompositor* compositor =
+          FindCompositor(compositor_id)) {
+    compositor_ = compositor;
     UpdateMemoryPolicy();
     compositor_->DidChangeRootLayerScrollOffset(
         gfx::ScrollOffset(scroll_offset_dip_));
