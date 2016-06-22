@@ -319,22 +319,27 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_NavigateAppLauncher) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
 
-  // Wait for it to say "Launcher", "Button".
+  // Wait for it to say "Launcher", "Button", "Shelf", "Tool bar".
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "Button"))
+    if (base::MatchPattern(utterance, "Launcher"))
       break;
   }
+  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Shelf", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
 
   // Click on the launcher, it brings up the app list UI.
   SendKeyPress(ui::VKEY_SPACE);
-  EXPECT_EQ("Search or type URL", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
+  while ("Search or type URL" != speech_monitor_.GetNextUtterance()) {
+  }
+  while ("Edit text" != speech_monitor_.GetNextUtterance()) {
+  }
 
   // Close it and open it again.
   SendKeyPress(ui::VKEY_ESCAPE);
@@ -364,9 +369,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_NavigateAppLauncher) {
   // Now press the down arrow and we should be focused on an app button
   // in a dialog.
   SendKeyPress(ui::VKEY_DOWN);
-  EXPECT_EQ("Dialog", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+  while ("Button" != speech_monitor_.GetNextUtterance()) {
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
@@ -560,8 +564,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxNavigateAndSelect) {
   EXPECT_EQ("Title", speech_monitor_.GetNextUtterance());
 }
 
-// flaky: http://crbug.com/418572
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxStickyMode) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
   LoadChromeVoxAndThenNavigateToURL(
       GURL("data:text/html;charset=utf-8,"
            "<label>Enter your name <input autofocus></label>"
@@ -583,24 +586,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxStickyMode) {
   // "slash". If sticky mode is on, it will open "Find in page". Keep pressing
   // '/' until we get "Find in page.".
   PressRepeatedlyUntilUtterance(ui::VKEY_OEM_2, "Find in page.");
-  EXPECT_EQ("Enter a search query.", speech_monitor_.GetNextUtterance());
+  while (speech_monitor_.GetNextUtterance() != "Enter a search query.") {
+  }
 
   // Press Esc to exit Find in Page mode.
   SendKeyPress(ui::VKEY_ESCAPE);
   EXPECT_EQ("Exited", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Find in page.", speech_monitor_.GetNextUtterance());
-
-  // Press N H to jump to the next heading. Skip over speech in-between
-  // but make sure we end up at the heading.
-  SendKeyPress(ui::VKEY_N);
-  SendKeyPress(ui::VKEY_H);
-  while (speech_monitor_.GetNextUtterance() != "Two") {
+  while (speech_monitor_.GetNextUtterance() != "Find in page.") {
   }
-  EXPECT_EQ("Heading 2", speech_monitor_.GetNextUtterance());
-
-  // Press the up arrow to go to the previous element.
-  SendKeyPress(ui::VKEY_UP);
-  EXPECT_EQ("One", speech_monitor_.GetNextUtterance());
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextStickyMode) {
