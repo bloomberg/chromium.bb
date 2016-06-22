@@ -34,6 +34,7 @@ class BluetoothTestBlueZ : public BluetoothTestBase {
   bool PlatformSupportsLowEnergy() override;
   void InitWithFakeAdapter() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
+  BluetoothDevice* SimulateClassicDevice() override;
   void SimulateLocalGattCharacteristicValueReadRequest(
       BluetoothDevice* from_device,
       BluetoothLocalGattCharacteristic* characteristic,

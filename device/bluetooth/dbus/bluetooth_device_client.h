@@ -41,6 +41,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     // The Bluetooth class of the device. Read-only.
     dbus::Property<uint32_t> bluetooth_class;
 
+    // The transport type of the device. Read-only.
+    dbus::Property<std::string> type;
+
     // The GAP external appearance of the device. Read-only.
     dbus::Property<uint16_t> appearance;
 
@@ -199,6 +202,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
   // Constants used to indicate exceptional error conditions.
   static const char kNoResponseError[];
   static const char kUnknownDeviceError[];
+
+  // Strings used by BlueZ for the transport type of the remote device.
+  // See https://chromium-review.googlesource.com/c/351512/
+  static const char kTypeBredr[];
+  static const char kTypeLe[];
+  static const char kTypeDual[];
 
  protected:
   BluetoothDeviceClient();

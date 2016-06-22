@@ -23,6 +23,7 @@ const std::string BluetoothTestBase::kTestDeviceNameEmpty = "";
 
 const std::string BluetoothTestBase::kTestDeviceAddress1 = "01:00:00:90:1E:BE";
 const std::string BluetoothTestBase::kTestDeviceAddress2 = "02:00:00:8B:74:63";
+const std::string BluetoothTestBase::kTestDeviceAddress3 = "03:00:00:17:C0:57";
 
 const std::string BluetoothTestBase::kTestUUIDGenericAccess = "1800";
 const std::string BluetoothTestBase::kTestUUIDGenericAttribute = "1801";
@@ -63,6 +64,11 @@ bool BluetoothTestBase::DenyPermission() {
 
 BluetoothDevice* BluetoothTestBase::SimulateLowEnergyDevice(
     int device_ordinal) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+BluetoothDevice* BluetoothTestBase::SimulateClassicDevice() {
   NOTIMPLEMENTED();
   return nullptr;
 }

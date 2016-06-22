@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "dbus/object_path.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
@@ -44,6 +45,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
  public:
   // BluetoothDevice override
   uint32_t GetBluetoothClass() const override;
+  device::BluetoothTransport GetType() const override;
   std::string GetAddress() const override;
   VendorIDSource GetVendorIDSource() const override;
   uint16_t GetVendorID() const override;

@@ -28,6 +28,10 @@ const char BluetoothDeviceClient::kNoResponseError[] =
 const char BluetoothDeviceClient::kUnknownDeviceError[] =
     "org.chromium.Error.UnknownDevice";
 
+const char BluetoothDeviceClient::kTypeBredr[] = "BR/EDR";
+const char BluetoothDeviceClient::kTypeLe[] = "LE";
+const char BluetoothDeviceClient::kTypeDual[] = "DUAL";
+
 BluetoothDeviceClient::Properties::Properties(
     dbus::ObjectProxy* object_proxy,
     const std::string& interface_name,
@@ -37,6 +41,7 @@ BluetoothDeviceClient::Properties::Properties(
   RegisterProperty(bluetooth_device::kNameProperty, &name);
   RegisterProperty(bluetooth_device::kIconProperty, &icon);
   RegisterProperty(bluetooth_device::kClassProperty, &bluetooth_class);
+  RegisterProperty(bluetooth_device::kTypeProperty, &type);
   RegisterProperty(bluetooth_device::kAppearanceProperty, &appearance);
   RegisterProperty(bluetooth_device::kUUIDsProperty, &uuids);
   RegisterProperty(bluetooth_device::kPairedProperty, &paired);

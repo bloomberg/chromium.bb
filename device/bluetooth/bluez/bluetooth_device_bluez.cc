@@ -188,6 +188,28 @@ uint32_t BluetoothDeviceBlueZ::GetBluetoothClass() const {
   return properties->bluetooth_class.value();
 }
 
+device::BluetoothTransport BluetoothDeviceBlueZ::GetType() const {
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path_);
+  DCHECK(properties);
+
+  if (!properties->type.is_valid())
+    return device::BLUETOOTH_TRANSPORT_INVALID;
+
+  std::string type = properties->type.value();
+  if (type == bluez::BluetoothDeviceClient::kTypeBredr) {
+    return device::BLUETOOTH_TRANSPORT_CLASSIC;
+  } else if (type == bluez::BluetoothDeviceClient::kTypeLe) {
+    return device::BLUETOOTH_TRANSPORT_LE;
+  } else if (type == bluez::BluetoothDeviceClient::kTypeDual) {
+    return device::BLUETOOTH_TRANSPORT_DUAL;
+  }
+
+  NOTREACHED();
+  return device::BLUETOOTH_TRANSPORT_INVALID;
+}
+
 std::string BluetoothDeviceBlueZ::GetDeviceName() const {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(

@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "net/log/net_log.h"
@@ -204,6 +205,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Returns the Bluetooth class of the device, used by GetDeviceType()
   // and metrics logging,
   virtual uint32_t GetBluetoothClass() const = 0;
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  // Returns the transport type of the device. Some devices only support one
+  // of BR/EDR or LE, and some support both.
+  virtual BluetoothTransport GetType() const = 0;
+#endif
 
   // Returns the identifier of the bluetooth device.
   virtual std::string GetIdentifier() const;

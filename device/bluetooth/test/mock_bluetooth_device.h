@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
@@ -33,6 +34,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   virtual ~MockBluetoothDevice();
 
   MOCK_CONST_METHOD0(GetBluetoothClass, uint32_t());
+  MOCK_CONST_METHOD0(GetType, BluetoothTransport());
   MOCK_CONST_METHOD0(GetIdentifier, std::string());
   MOCK_CONST_METHOD0(GetAddress, std::string());
   MOCK_CONST_METHOD0(GetVendorIDSource, BluetoothDevice::VendorIDSource());

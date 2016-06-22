@@ -20,6 +20,8 @@
 #include "device/bluetooth/test/bluetooth_test_mac.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/test/bluetooth_test_win.h"
+#elif defined(OS_CHROMEOS) || defined(OS_LINUX)
+#include "device/bluetooth/test/bluetooth_test_bluez.h"
 #endif
 
 namespace device {
@@ -640,5 +642,23 @@ TEST_F(BluetoothTest, GetGattServices_DiscoveryError) {
   EXPECT_EQ(0u, device->GetGattServices().size());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+TEST_F(BluetoothTest, GetDeviceTransportType) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+  EXPECT_EQ(BLUETOOTH_TRANSPORT_LE, device->GetType());
+
+  BluetoothDevice* device2 = SimulateLowEnergyDevice(6);
+  EXPECT_EQ(BLUETOOTH_TRANSPORT_DUAL, device2->GetType());
+
+  BluetoothDevice* device3 = SimulateClassicDevice();
+  EXPECT_EQ(BLUETOOTH_TRANSPORT_CLASSIC, device3->GetType());
+}
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 }  // namespace device
