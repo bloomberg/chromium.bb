@@ -553,10 +553,6 @@ if (enable_java_templates) {
         _proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
       }
       _output_jar_path = invoker.output_jar_path
-      _input_jars_paths = []
-      if (defined(invoker.input_jars_paths)) {
-        _input_jars_paths += invoker.input_jars_paths
-      }
       inputs = [
         _proguard_jar_path,
       ]
@@ -590,9 +586,6 @@ if (enable_java_templates) {
         "--classpath",
         _rebased_android_sdk_jar,
       ]
-      foreach(c, _input_jars_paths) {
-        args += [ "--classpath=" + c ]
-      }
       if (proguard_verbose) {
         args += [ "--verbose" ]
       }
@@ -816,12 +809,7 @@ if (enable_java_templates) {
 
   template("process_java_prebuilt") {
     set_sources_assignment_filter([])
-    forward_variables_from(invoker,
-                           [
-                             "testonly",
-                             "input_jars_paths",
-                           ])
-    assert(!defined(input_jars_paths) || input_jars_paths != [] || true)  # Mark as used
+    forward_variables_from(invoker, [ "testonly" ])
 
     assert(invoker.build_config != "")
     _build_config = invoker.build_config
@@ -1616,10 +1604,7 @@ if (enable_java_templates) {
                              [
                                "jar_excluded_patterns",
                                "strip_resource_classes",
-                               "input_jars_paths",
                              ])
-      assert(!defined(input_jars_paths) || input_jars_paths != [] || true)  # Mark as used
-
       visibility = [
         ":$_ijar_target_name",
         ":$_template_name",
