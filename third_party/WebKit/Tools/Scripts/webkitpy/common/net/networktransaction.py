@@ -46,6 +46,8 @@ class NetworkTransaction(object):
         self._grown_factor = grown_factor
         self._timeout_seconds = timeout_seconds
         self._convert_404_to_None = convert_404_to_None
+        self._total_sleep = 0
+        self._backoff_seconds = 0
 
     def run(self, request):
         self._total_sleep = 0

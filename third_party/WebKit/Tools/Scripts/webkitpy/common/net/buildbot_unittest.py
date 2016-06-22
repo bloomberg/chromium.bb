@@ -42,21 +42,19 @@ class BuilderTest(unittest.TestCase):
     def _mock_test_result(self, testname):
         return test_results.TestResult(testname, [test_failures.FailureTextMismatch()])
 
-    def _install_fetch_build(self, failure):
+    def setUp(self):
+        self.buildbot = BuildBot()
+        self.builder = Builder(u"Test Builder \u2661", self.buildbot)
+
         def _mock_fetch_build(build_number):
             build = Build(
                 builder=self.builder,
                 build_number=build_number,
                 revision=build_number + 1000,
-                is_green=build_number < 4
-            )
+                is_green=build_number < 4)
             return build
-        self.builder._fetch_build = _mock_fetch_build
 
-    def setUp(self):
-        self.buildbot = BuildBot()
-        self.builder = Builder(u"Test Builder \u2661", self.buildbot)
-        self._install_fetch_build(lambda build_number: ["test1", "test2"])
+        self.builder._fetch_build = _mock_fetch_build
 
     def test_latest_layout_test_results(self):
         self.builder.fetch_layout_test_results = lambda results_url: LayoutTestResults(None)
@@ -88,16 +86,15 @@ class BuilderTest(unittest.TestCase):
         buildbot = BuildBot()
         builder = Builder(u"Test Builder \u2661", buildbot)
 
-        def mock_fetch_build_dictionary(self, build_number):
-            build_dictionary = {
+        def mock_fetch_build_dictionary(_, build_number):
+            return {
                 "sourceStamp": {
                     "revision": None,  # revision=None means a trunk build started from the force-build button on the builder page.
                 },
                 "number": int(build_number),
                 # Intentionally missing the 'results' key, meaning it's a "pass" build.
             }
-            return build_dictionary
-        buildbot._fetch_build_dictionary = mock_fetch_build_dictionary
+        buildbot.fetch_build_dictionary = mock_fetch_build_dictionary
         self.assertIsNotNone(builder._fetch_build(1))
 
     def test_results_url(self):
@@ -197,18 +194,17 @@ class BuildBotTest(unittest.TestCase):
         self.assertEqual(builder.url_encoded_name(), "Test%20Builder")
         self.assertEqual(builder.results_url(), "https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder")
 
-        # Override _fetch_build_dictionary function to not touch the network.
-        def mock_fetch_build_dictionary(self, build_number):
-            build_dictionary = {
+        # Override fetch_build_dictionary function to not touch the network.
+        def mock_fetch_build_dictionary(_, build_number):
+            return {
                 "sourceStamp": {
                     "revision": 2 * build_number,
                 },
                 "number": int(build_number),
                 "results": build_number % 2,  # 0 means pass
             }
-            return build_dictionary
-        buildbot._fetch_build_dictionary = mock_fetch_build_dictionary
 
+        buildbot.fetch_build_dictionary = mock_fetch_build_dictionary
         build = builder.build(10)
         self.assertEqual(build.builder(), builder)
         self.assertEqual(build.url(), "http://build.chromium.org/p/chromium.webkit/builders/Test%20Builder/builds/10")
@@ -348,13 +344,15 @@ class BuildBotTest(unittest.TestCase):
         buildbot._fetch_builder_page = lambda builder: builder.page
         builder_with_success = Builder('Some builder', None)
         builder_with_success.page = self._fake_builder_page
-        self.assertEqual(buildbot._revisions_for_builder(builder_with_success), [
-                         (104643, False), (104636, False), (104635, True), (104633, False)])
+        self.assertEqual(
+            buildbot._revisions_for_builder(builder_with_success),
+            [(104643, False), (104636, False), (104635, True), (104633, False)])
 
         builder_without_success = Builder('Some builder', None)
         builder_without_success.page = self._fake_builder_page_without_success
-        self.assertEqual(buildbot._revisions_for_builder(builder_without_success), [
-                         (104643, False), (104636, False), (104635, False), (104633, False)])
+        self.assertEqual(
+            buildbot._revisions_for_builder(builder_without_success),
+            [(104643, False), (104636, False), (104635, False), (104633, False)])
 
     def test_find_green_revision(self):
         buildbot = BuildBot()

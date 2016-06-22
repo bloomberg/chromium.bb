@@ -29,7 +29,6 @@
 import mimetypes
 import urllib2
 
-from webkitpy.common.net.networktransaction import NetworkTimeout
 from webkitpy.common.net.networktransaction import NetworkTransaction
 
 

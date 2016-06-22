@@ -8,7 +8,7 @@
 
 
 from webkitpy.common.system.outputcapture import OutputCaptureTestCaseBase
-import sheriff_calendar as calendar
+from webkitpy.common.net import sheriff_calendar as calendar
 
 
 class SheriffCalendarTest(OutputCaptureTestCaseBase):
@@ -45,7 +45,7 @@ class SheriffCalendarTest(OutputCaptureTestCaseBase):
         self.assertFalse(calendar._email_is_valid('some?body@example.com'))
         self.assertFalse(calendar._email_is_valid('some" "body@example.com'))
         self.assertFalse(calendar._email_is_valid('"{somebody}"@example.com'))
-        # Bogus.
+        # Bogus emails, not valid according to the standard.
         self.assertFalse(calendar._email_is_valid('rm -rf /#@example.com'))
         self.assertFalse(calendar._email_is_valid('some body@example.com'))
         self.assertFalse(calendar._email_is_valid('[some body]@example.com'))

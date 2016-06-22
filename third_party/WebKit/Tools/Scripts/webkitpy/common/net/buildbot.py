@@ -98,7 +98,7 @@ class Builder(object):
 
     # This provides a single place to mock
     def _fetch_build(self, build_number):
-        build_dictionary = self._buildbot._fetch_build_dictionary(self, build_number)
+        build_dictionary = self._buildbot.fetch_build_dictionary(self, build_number)
         if not build_dictionary:
             return None
         revision_string = build_dictionary['sourceStamp'].get('revision')
@@ -108,8 +108,7 @@ class Builder(object):
                      revision=(int(revision_string) if revision_string else None),
                      # Buildbot uses any number other than 0 to mean fail.  Since we fetch with
                      # filter=1, passing builds may contain no 'results' value.
-                     is_green=(not build_dictionary.get('results')),
-                     )
+                     is_green=(not build_dictionary.get('results')))
 
     def build(self, build_number):
         if not build_number:
@@ -281,7 +280,8 @@ class BuildBot(object):
         return False
 
     # FIXME: These _fetch methods should move to a networking class.
-    def _fetch_build_dictionary(self, builder, build_number):
+    @staticmethod
+    def fetch_build_dictionary(builder, build_number):
         # Note: filter=1 will remove None and {} and '', which cuts noise but can
         # cause keys to be missing which you might otherwise expect.
         # FIXME: The bot sends a *huge* amount of data for each request, we should

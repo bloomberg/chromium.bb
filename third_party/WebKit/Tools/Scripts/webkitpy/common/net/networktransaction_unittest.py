@@ -35,6 +35,10 @@ from webkitpy.common.system.logtesting import LoggingTestCase
 class NetworkTransactionTest(LoggingTestCase):
     exception = Exception("Test exception")
 
+    def setUp(self):
+        super(NetworkTransactionTest, self).setUp()
+        self._run_count = 0
+
     def test_success(self):
         transaction = NetworkTransaction()
         self.assertEqual(transaction.run(lambda: 42), 42)
@@ -47,7 +51,7 @@ class NetworkTransactionTest(LoggingTestCase):
         did_process_exception = False
         did_throw_exception = True
         try:
-            transaction.run(lambda: self._raise_exception())
+            transaction.run(self._raise_exception)
             did_throw_exception = False
         except Exception as e:
             did_process_exception = True
@@ -65,9 +69,8 @@ class NetworkTransactionTest(LoggingTestCase):
         raise HTTPError("http://foo.com/", 404, "not found", None, None)
 
     def test_retry(self):
-        self._run_count = 0
         transaction = NetworkTransaction(initial_backoff_seconds=0)
-        self.assertEqual(transaction.run(lambda: self._raise_500_error()), 42)
+        self.assertEqual(transaction.run(self._raise_500_error), 42)
         self.assertEqual(self._run_count, 3)
         self.assertLog(['WARNING: Received HTTP status 500 loading "http://example.com/".  '
                         'Retrying in 0 seconds...\n',
@@ -76,17 +79,16 @@ class NetworkTransactionTest(LoggingTestCase):
 
     def test_convert_404_to_None(self):
         transaction = NetworkTransaction(convert_404_to_None=True)
-        self.assertIsNone(transaction.run(lambda: self._raise_404_error()))
+        self.assertIsNone(transaction.run(self._raise_404_error))
 
     def test_timeout(self):
-        self._run_count = 0
         transaction = NetworkTransaction(initial_backoff_seconds=60 * 60, timeout_seconds=60)
         did_process_exception = False
         did_throw_exception = True
         try:
-            transaction.run(lambda: self._raise_500_error())
+            transaction.run(self._raise_500_error)
             did_throw_exception = False
-        except NetworkTimeout as e:
+        except NetworkTimeout:
             did_process_exception = True
         self.assertTrue(did_throw_exception)
         self.assertTrue(did_process_exception)
