@@ -3645,8 +3645,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // CONFIG_MOTION_VAR
 
-  av1_zero(best_mbmode);
-
 #if CONFIG_EXT_INTRA
   memset(directional_mode_skip_mask, 0,
          sizeof(directional_mode_skip_mask[0]) * INTRA_MODES);
