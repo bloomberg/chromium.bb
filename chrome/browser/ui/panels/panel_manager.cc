@@ -131,11 +131,16 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
   }
 #endif  // USE_X11 && !OS_CHROMEOS
 
-  // Without --enable-panels, only support Hangouts.
+// Panels are an Eraser target. See http://crbug.com/571511 for details.
+// TODO(dimich): remove the rest of Panels code (except ChromeOS) once
+// erasure is stable.
+#if defined(OS_CHROMEOS)
+  // Without --enable-panels, only support Hangouts on ChromeOS.
   for (const char* id : extension_misc::kHangoutsExtensionIds) {
     if (extension_id == id)
       return true;
   }
+#endif  // OS_CHROMEOS
 
   return false;
 }
