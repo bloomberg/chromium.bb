@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "device/serial/serial.mojom.h"
 #include "device/serial/serial_service_impl.h"
 #include "device/serial/test_serial_io_handler.h"
@@ -63,7 +64,7 @@ class SerialServiceTest : public testing::Test {
 
   void StopMessageLoop() {
     ASSERT_TRUE(run_loop_);
-    message_loop_.PostTask(FROM_HERE, run_loop_->QuitClosure());
+    message_loop_.task_runner()->PostTask(FROM_HERE, run_loop_->QuitClosure());
   }
 
   void OnGotInfo(serial::ConnectionInfoPtr options) {

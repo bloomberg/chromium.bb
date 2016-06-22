@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -107,12 +108,12 @@ PowerSaveBlocker::PowerSaveBlocker(
     : delegate_(new Delegate(type, description)),
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {
-  g_power_thread.Pointer()->message_loop()->PostTask(
+  g_power_thread.Pointer()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
 PowerSaveBlocker::~PowerSaveBlocker() {
-  g_power_thread.Pointer()->message_loop()->PostTask(
+  g_power_thread.Pointer()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&Delegate::RemoveBlock, delegate_));
 }
 
