@@ -139,6 +139,10 @@ class ShellSurface : public SurfaceDelegate,
   // for the surface from the user's perspective.
   void SetGeometry(const gfx::Rect& geometry);
 
+  // Set the content bounds for the shadow. Empty bounds will delete
+  // the shadow.
+  void SetRectangularShadow(const gfx::Rect& content_bounds);
+
   // Set scale factor for surface. The scale factor will be applied to surface
   // and all descendants.
   void SetScale(double scale);
@@ -240,6 +244,10 @@ class ShellSurface : public SurfaceDelegate,
   // Updates the bounds of widget to match the current surface bounds.
   void UpdateWidgetBounds();
 
+  // Creates, deletes and update the shadow bounds based on
+  // |pending_shadow_content_bounds_|.
+  void UpdateShadow();
+
   views::Widget* widget_;
   Surface* surface_;
   aura::Window* parent_;
@@ -265,6 +273,8 @@ class ShellSurface : public SurfaceDelegate,
   gfx::Vector2d pending_origin_config_offset_;
   int resize_component_;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_;
+  std::unique_ptr<aura::Window> shadow_parent_;
+  gfx::Rect shadow_content_bounds_;
   std::deque<Config> pending_configs_;
   std::unique_ptr<ash::WindowResizer> resizer_;
   std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;

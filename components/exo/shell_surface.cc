@@ -28,6 +28,9 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -244,6 +247,7 @@ ShellSurface::ShellSurface(Surface* surface)
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  shadow_parent_.reset();
   if (surface_) {
     if (scale_ != 1.0)
       surface_->window()->SetTransform(gfx::Transform());
@@ -434,6 +438,13 @@ void ShellSurface::SetGeometry(const gfx::Rect& geometry) {
   pending_geometry_ = geometry;
 }
 
+void ShellSurface::SetRectangularShadow(const gfx::Rect& content_bounds) {
+  TRACE_EVENT1("exo", "ShellSurface::SetRectangularRect", "content_bounds",
+               content_bounds.ToString());
+
+  shadow_content_bounds_ = content_bounds;
+}
+
 void ShellSurface::SetScale(double scale) {
   TRACE_EVENT1("exo", "ShellSurface::SetScale", "scale", scale);
 
@@ -487,6 +498,7 @@ void ShellSurface::OnSurfaceCommit() {
     geometry_ = pending_geometry_;
 
     UpdateWidgetBounds();
+    UpdateShadow();
 
     gfx::Point surface_origin = GetSurfaceOrigin();
 
@@ -691,6 +703,12 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
 
     surface_->window()->SetBounds(
         gfx::Rect(GetSurfaceOrigin(), surface_->window()->layer()->size()));
+
+    // The shadow size may be updated to match the widget. Change it back
+    // to the opaque content size.
+    // TODO(oshima): When the arc window reiszing is enabled, we may want to
+    // implement shadow management here instead of using shadow controller.
+    UpdateShadow();
 
     Configure();
   }
@@ -1093,6 +1111,34 @@ void ShellSurface::UpdateWidgetBounds() {
   // A change to the widget size requires surface bounds to be re-adjusted.
   surface_->window()->SetBounds(
       gfx::Rect(GetSurfaceOrigin(), surface_->window()->layer()->size()));
+}
+
+void ShellSurface::UpdateShadow() {
+  if (!widget_)
+    return;
+  aura::Window* window = widget_->GetNativeWindow();
+  wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+  if (shadow) {
+    if (shadow_content_bounds_.IsEmpty()) {
+      wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
+    } else {
+      ui::Layer* shadow_layer = shadow->layer();
+      if (!shadow_parent_) {
+        shadow_parent_ = base::WrapUnique(new aura::Window(nullptr));
+        shadow_parent_->set_ignore_events(true);
+        shadow_parent_->Init(ui::LAYER_NOT_DRAWN);
+        shadow_parent_->layer()->Add(shadow_layer);
+        window->AddChild(shadow_parent_.get());
+        shadow_parent_->Show();
+      }
+      gfx::Rect shadow_bounds(shadow_content_bounds_);
+      aura::Window::ConvertRectToTarget(window->parent(), window,
+                                        &shadow_bounds);
+      shadow_parent_->SetBounds(shadow_bounds);
+      shadow->SetContentBounds(gfx::Rect(shadow_bounds.size()));
+      wm::SetShadowType(window, wm::SHADOW_TYPE_RECTANGULAR);
+    }
+  }
 }
 
 }  // namespace exo

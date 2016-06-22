@@ -1471,6 +1471,16 @@ void remote_surface_unfullscreen(wl_client* client, wl_resource* resource) {
   GetUserDataAs<ShellSurface>(resource)->SetFullscreen(false);
 }
 
+void remote_surface_set_rectangular_shadow(wl_client* client,
+                                           wl_resource* resource,
+                                           int32_t x,
+                                           int32_t y,
+                                           int32_t width,
+                                           int32_t height) {
+  GetUserDataAs<ShellSurface>(resource)->SetRectangularShadow(
+      gfx::Rect(x, y, width, height));
+}
+
 const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -1482,7 +1492,8 @@ const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_restore,
     remote_surface_pin,
     remote_surface_unpin,
-    remote_surface_unfullscreen};
+    remote_surface_unfullscreen,
+    remote_surface_set_rectangular_shadow};
 
 ////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
+#include "components/exo/display.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
@@ -16,6 +19,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -356,7 +362,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
 TEST_F(ShellSurfaceTest, ModalWindow) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(
-      new ShellSurface(surface.get(), nullptr, gfx::Rect(), true, true,
+      new ShellSurface(surface.get(), nullptr, gfx::Rect(), true,
                        ash::kShellWindowId_SystemModalContainer));
   gfx::Size desktop_size(640, 480);
   std::unique_ptr<Buffer> desktop_buffer(
@@ -397,6 +403,71 @@ TEST_F(ShellSurfaceTest, ModalWindow) {
   surface->SetInputRegion(SkRegion());
   surface->Commit();
   EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+}
+
+TEST_F(ShellSurfaceTest, Shadow) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(
+      new ShellSurface(surface.get(), nullptr, gfx::Rect(), true,
+                       ash::kShellWindowId_DefaultContainer));
+  surface->Commit();
+
+  views::Widget* widget = shell_surface->GetWidget();
+  aura::Window* window = widget->GetNativeWindow();
+
+  // 1) Initial state, no shadow.
+  wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+  ASSERT_TRUE(shadow);
+  EXPECT_FALSE(shadow->layer()->visible());
+
+  std::unique_ptr<Display> display(new Display);
+
+  // 2) Just creating a sub surface won't create a shadow.
+  std::unique_ptr<Surface> child = display->CreateSurface();
+  gfx::Size buffer_size(128, 128);
+  std::unique_ptr<Buffer> child_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  child->Attach(child_buffer.get());
+  std::unique_ptr<SubSurface> sub_surface(
+      display->CreateSubSurface(child.get(), surface.get()));
+  surface->Commit();
+
+  EXPECT_FALSE(shadow->layer()->visible());
+
+  // 3) Create a shadow.
+  shell_surface->SetRectangularShadow(gfx::Rect(10, 10, 100, 100));
+  surface->Commit();
+  EXPECT_TRUE(shadow->layer()->visible());
+
+  gfx::Rect before = shadow->layer()->bounds();
+
+  // 4) Shadow bounds is independent of the sub surface.
+  gfx::Size new_buffer_size(256, 256);
+  std::unique_ptr<Buffer> new_child_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(new_buffer_size)));
+  child->Attach(new_child_buffer.get());
+  child->Commit();
+  surface->Commit();
+
+  EXPECT_EQ(before, shadow->layer()->bounds());
+
+  // 4) Updating the widget's window bounds should not change the shadow bounds.
+  window->SetBounds(gfx::Rect(10, 10, 100, 100));
+  EXPECT_EQ(before, shadow->layer()->bounds());
+
+  // 5) Set empty content bounds should disable shadow.
+  shell_surface->SetRectangularShadow(gfx::Rect());
+  surface->Commit();
+
+  EXPECT_EQ(wm::SHADOW_TYPE_NONE, wm::GetShadowType(window));
+  EXPECT_FALSE(shadow->layer()->visible());
+
+  // 6) Seting non empty content bounds should enable shadow.
+  shell_surface->SetRectangularShadow(gfx::Rect(10, 10, 100, 100));
+  surface->Commit();
+
+  EXPECT_EQ(wm::SHADOW_TYPE_RECTANGULAR, wm::GetShadowType(window));
+  EXPECT_TRUE(shadow->layer()->visible());
 }
 
 }  // namespace
