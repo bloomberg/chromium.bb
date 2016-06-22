@@ -18,10 +18,6 @@ from pylib.utils import test_environment
 
 
 def _GetAllDevices(active_devices, devices_path):
-  # TODO(rnephew): Delete this when recipes change to pass file path.
-  if not devices_path:
-    logging.warning('Known devices file path not being passed. For device '
-                    'affinity to work properly, it must be passed.')
   try:
     if devices_path:
       devices = [device_utils.DeviceUtils(s)
