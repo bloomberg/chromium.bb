@@ -165,4 +165,4 @@ ZoomControllerBrowserTest.NavigationResetsManualMode
 AppViewTests/AppViewTest.KillGuestCommunicatingWithWrongAppView/*
 
 # https://crbug.com/620370
-MdSettingsBrowserTest.BackForwardDoesntCrash
+MdSettingsUITest.BackForwardDoesntCrash
