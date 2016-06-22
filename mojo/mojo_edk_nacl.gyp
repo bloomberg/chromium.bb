@@ -41,6 +41,13 @@
         '<@(mojo_edk_ports_sources)',
         '<@(mojo_edk_system_impl_sources)',
       ],
+      'conditions': [
+        ['OS=="android" or chromeos==1', {
+          'defines': [
+            'MOJO_EDK_LEGACY_PROTOCOL',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'mojo_system_impl_nacl_nonsfi',
