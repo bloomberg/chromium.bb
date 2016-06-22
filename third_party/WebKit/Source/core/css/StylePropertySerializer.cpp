@@ -400,6 +400,8 @@ String StylePropertySerializer::commonShorthandChecks(const StylePropertyShortha
         // TODO(timloh): This should also check unset
         if (value.isInheritedValue())
             return emptyString();
+        if (value.isVariableReferenceValue())
+            return emptyString();
     }
 
     return String();
