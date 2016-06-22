@@ -25,7 +25,7 @@ const wchar_t kModAppLauncherDeprecated[] = L"-applauncher";
 const wchar_t kModMultiInstall[] = L"-multi";
 const wchar_t kModReadyMode[] = L"-readymode";
 const wchar_t kModStage[] = L"-stage:";
-const wchar_t kModStatsDefault[] = L"-statsdef=";
+const wchar_t kModStatsDefault[] = L"-statsdef_";
 const wchar_t kSfxFull[] = L"-full";
 const wchar_t kSfxMigrating[] = L"-migrating";
 const wchar_t kSfxMultiFail[] = L"-multifail";
@@ -74,7 +74,7 @@ bool FindModifier(ModifierIndex index,
   base::string16::size_type mod_length =
       base::string16::traits_type::length(kModifiers[index]);
   char last_char = kModifiers[index][mod_length - 1];
-  const bool mod_takes_arg = (last_char == L':' || last_char == L'=');
+  const bool mod_takes_arg = (last_char == L':' || last_char == L'_');
   base::string16::size_type pos = 0;
   do {
     mod_position = ap_value.find(kModifiers[index], pos, mod_length);
