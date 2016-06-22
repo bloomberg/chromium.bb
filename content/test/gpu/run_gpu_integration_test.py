@@ -40,6 +40,7 @@ def main():
   option, _ = parser.parse_known_args(rest_args)
   if option.write_abbreviated_json_results_to:
     PostprocessJSON(option.write_abbreviated_json_results_to)
+  return retval
 
 if __name__ == '__main__':
   sys.exit(main())
