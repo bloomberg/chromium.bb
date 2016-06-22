@@ -861,6 +861,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The FrameTreeNode which this RenderFrameHostImpl is hosted in.
   FrameTreeNode* frame_tree_node_;
 
+  // The active parent RenderFrameHost for this frame, if it is a subframe.
+  // Null for the main frame.  This is cached because the parent FrameTreeNode
+  // may change its current RenderFrameHost while this child is pending
+  // deletion, and GetParent() should never return a different value.
+  RenderFrameHostImpl* parent_;
+
   // Track this frame's last committed URL.
   GURL last_committed_url_;
 

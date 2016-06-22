@@ -228,6 +228,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       render_frame_proxy_host_(NULL),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
+      parent_(nullptr),
       render_widget_host_(nullptr),
       routing_id_(routing_id),
       is_waiting_for_swapout_ack_(false),
@@ -256,8 +257,13 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
   site_instance_->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
 
-  // New child frames should inherit the nav_entry_id of their parent.
   if (frame_tree_node_->parent()) {
+    // Keep track of the parent RenderFrameHost, which shouldn't change even if
+    // this RenderFrameHost is on the pending deletion list and the parent
+    // FrameTreeNode has changed its current RenderFrameHost.
+    parent_ = frame_tree_node_->parent()->current_frame_host();
+
+    // New child frames should inherit the nav_entry_id of their parent.
     set_nav_entry_id(
         frame_tree_node_->parent()->current_frame_host()->nav_entry_id());
   }
@@ -350,10 +356,7 @@ RenderProcessHost* RenderFrameHostImpl::GetProcess() {
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetParent() {
-  FrameTreeNode* parent_node = frame_tree_node_->parent();
-  if (!parent_node)
-    return NULL;
-  return parent_node->current_frame_host();
+  return parent_;
 }
 
 int RenderFrameHostImpl::GetFrameTreeNodeId() {
@@ -365,11 +368,9 @@ const std::string& RenderFrameHostImpl::GetFrameName() {
 }
 
 bool RenderFrameHostImpl::IsCrossProcessSubframe() {
-  FrameTreeNode* parent_node = frame_tree_node_->parent();
-  if (!parent_node)
+  if (!parent_)
     return false;
-  return GetSiteInstance() !=
-      parent_node->current_frame_host()->GetSiteInstance();
+  return GetSiteInstance() != parent_->GetSiteInstance();
 }
 
 const GURL& RenderFrameHostImpl::GetLastCommittedURL() {
