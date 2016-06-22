@@ -5,7 +5,9 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/scoped_native_library.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "remoting/base/auto_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,10 +69,10 @@ class AutoThreadTest : public testing::Test {
     // references created in tests are gone.  We also post a delayed quit
     // task to |message_loop_| so the test will not hang on failure.
     main_task_runner_ = NULL;
-    message_loop_.PostDelayedTask(FROM_HERE,
-                                  base::MessageLoop::QuitWhenIdleClosure(),
-                                  base::TimeDelta::FromSeconds(5));
-    message_loop_.Run();
+    message_loop_.task_runner()->PostDelayedTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+        base::TimeDelta::FromSeconds(5));
+    base::RunLoop().Run();
   }
 
   void SetUp() override {
@@ -88,7 +90,8 @@ class AutoThreadTest : public testing::Test {
  protected:
   void QuitMainMessageLoop() {
     message_loop_quit_correctly_ = true;
-    message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   base::MessageLoop message_loop_;

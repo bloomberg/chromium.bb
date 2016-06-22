@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/signaling/mock_signal_strategy.h"
@@ -96,9 +98,9 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveValidNotification) {
       GetNotificationStanza("delete", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
-  message_loop_.Run();
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
+  base::RunLoop().Run();
 }
 
 TEST_F(HostChangeNotificationListenerTest, ReceiveNotificationBeforeDelete) {
@@ -109,9 +111,9 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveNotificationBeforeDelete) {
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   host_change_notification_listener_.reset();
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
-  message_loop_.Run();
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
+  base::RunLoop().Run();
 }
 
 
@@ -122,9 +124,9 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidHostIdNotification) {
       GetNotificationStanza("delete", "1", kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
-  message_loop_.Run();
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
+  base::RunLoop().Run();
 }
 
 TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidBotJidNotification) {
@@ -134,9 +136,9 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidBotJidNotification) {
       "delete", kHostId, "notremotingbot@bot.talk.google.com");
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
-  message_loop_.Run();
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
+  base::RunLoop().Run();
 }
 
 TEST_F(HostChangeNotificationListenerTest, ReceiveNonDeleteNotification) {
@@ -146,9 +148,9 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveNonDeleteNotification) {
       GetNotificationStanza("update", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
-  message_loop_.Run();
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
+  base::RunLoop().Run();
 }
 
 }  // namespace remoting

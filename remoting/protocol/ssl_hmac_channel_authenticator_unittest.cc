@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer/timer.h"
 #include "crypto/rsa_private_key.h"
@@ -113,7 +114,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     base::Timer shutdown_timer(false, false);
     shutdown_timer.Start(FROM_HERE, TestTimeouts::action_timeout(),
                          base::MessageLoop::QuitWhenIdleClosure());
-    message_loop_.Run();
+    base::RunLoop().Run();
   }
 
   void OnHostConnected(const std::string& ref_argument,
@@ -166,7 +167,7 @@ TEST_F(SslHmacChannelAuthenticatorTest, SuccessfulAuth) {
                                 100, 2);
 
   tester.Start();
-  message_loop_.Run();
+  base::RunLoop().Run();
   tester.CheckResults();
 }
 

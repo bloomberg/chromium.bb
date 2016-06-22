@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/screen_resolution.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -302,10 +303,8 @@ TEST_F(ResizingHostObserverTest, RateLimited) {
   // Since it was queued 900 + 99 ms after the first, we need to wait an
   // additional 1ms. However, since RunLoop is not guaranteed to process tasks
   // with the same due time in FIFO order, wait an additional 1ms for safety.
-  message_loop.PostDelayedTask(
-      FROM_HERE,
-      run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(2));
+  message_loop.task_runner()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(2));
   run_loop.Run();
 
   // If the QuitClosure fired before the final resize, it's a test failure.

@@ -11,6 +11,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
@@ -53,8 +54,8 @@ class ChromiumSocketFactoryTest : public testing::Test,
     while (last_packet_.empty() && attempts++ < kMaxAttempts) {
       sender->SendTo(test_packet.data(), test_packet.size(),
                      socket_->GetLocalAddress(), options);
-      message_loop_.PostDelayedTask(FROM_HERE, run_loop_.QuitClosure(),
-                                    kAttemptPeriod);
+      message_loop_.task_runner()->PostDelayedTask(
+          FROM_HERE, run_loop_.QuitClosure(), kAttemptPeriod);
       run_loop_.Run();
     }
     EXPECT_EQ(test_packet, last_packet_);

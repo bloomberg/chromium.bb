@@ -88,7 +88,8 @@ std::string ReadString(bool no_echo) {
 // Called when the HostStarter has finished.
 void OnDone(HostStarter::Result result) {
   if (!g_message_loop->task_runner()->BelongsToCurrentThread()) {
-    g_message_loop->PostTask(FROM_HERE, base::Bind(&OnDone, result));
+    g_message_loop->task_runner()->PostTask(FROM_HERE,
+                                            base::Bind(&OnDone, result));
     return;
   }
   switch (result) {

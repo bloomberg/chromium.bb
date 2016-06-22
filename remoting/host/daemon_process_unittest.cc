@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
+#include "base/single_thread_task_runner.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -210,7 +211,8 @@ void DaemonProcessTest::DeleteDaemonProcess() {
 }
 
 void DaemonProcessTest::QuitMessageLoop() {
-  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 void DaemonProcessTest::StartDaemonProcess() {

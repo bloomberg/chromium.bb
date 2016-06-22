@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_local.h"
@@ -207,7 +208,7 @@ void AutoThread::ThreadMain() {
       CreateComInitializer(com_init_type_));
 #endif
 
-  message_loop.Run();
+  base::RunLoop().Run();
 
   // Assert that MessageLoop::QuitWhenIdle was called by AutoThread::QuitThread.
   DCHECK(was_quit_properly_);

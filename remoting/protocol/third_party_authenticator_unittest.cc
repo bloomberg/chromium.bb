@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator_test_base.h"
@@ -140,7 +141,7 @@ TEST_F(ThirdPartyAuthenticatorTest, SuccessfulAuth) {
                                 kMessageSize, kMessages);
 
   tester.Start();
-  message_loop_.Run();
+  base::RunLoop().Run();
   tester.CheckResults();
 }
 

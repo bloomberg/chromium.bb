@@ -11,6 +11,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -147,7 +148,7 @@ TEST_F(TokenValidatorFactoryImplTest, Success) {
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(&TokenValidatorFactoryImplTest::SuccessCallback,
                              base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(TokenValidatorFactoryImplTest, BadToken) {
@@ -159,7 +160,7 @@ TEST_F(TokenValidatorFactoryImplTest, BadToken) {
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(&TokenValidatorFactoryImplTest::FailureCallback,
                              base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(TokenValidatorFactoryImplTest, BadScope) {
@@ -172,7 +173,7 @@ TEST_F(TokenValidatorFactoryImplTest, BadScope) {
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(&TokenValidatorFactoryImplTest::FailureCallback,
                          base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(TokenValidatorFactoryImplTest, DeleteOnFailure) {
@@ -185,7 +186,7 @@ TEST_F(TokenValidatorFactoryImplTest, DeleteOnFailure) {
       kToken, base::Bind(
           &TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
           base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace remoting

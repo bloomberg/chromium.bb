@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator_test_base.h"
 #include "remoting/protocol/channel_authenticator.h"
@@ -68,7 +69,7 @@ TEST_F(Spake2AuthenticatorTest, SuccessfulAuth) {
                                 kMessageSize, kMessages);
 
   tester.Start();
-  message_loop_.Run();
+  base::RunLoop().Run();
   tester.CheckResults();
 }
 

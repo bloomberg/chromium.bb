@@ -5,6 +5,7 @@
 #include "remoting/host/host_status_logger.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "remoting/host/fake_host_status_monitor.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -162,7 +163,7 @@ TEST_F(HostStatusLoggerTest, SendNow) {
   host_status_logger_->OnClientConnected(kClientJid1);
   host_status_logger_->SetSignalingStateForTest(
       SignalStrategy::DISCONNECTED);
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(HostStatusLoggerTest, SendLater) {
@@ -185,7 +186,7 @@ TEST_F(HostStatusLoggerTest, SendLater) {
   }
   host_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
   host_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(HostStatusLoggerTest, SendTwoEntriesLater) {
@@ -214,7 +215,7 @@ TEST_F(HostStatusLoggerTest, SendTwoEntriesLater) {
   }
   host_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
   host_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(HostStatusLoggerTest, HandleRouteChangeInUnusualOrder) {
@@ -249,7 +250,7 @@ TEST_F(HostStatusLoggerTest, HandleRouteChangeInUnusualOrder) {
   host_status_logger_->OnClientAuthenticated(kClientJid2);
   host_status_logger_->OnClientConnected(kClientJid2);
   host_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace remoting
