@@ -94,7 +94,7 @@ DecoderBufferClear::ToMediaBuffer() const {
 scoped_refptr<DecoderBufferBase> DecryptDecoderBuffer(
     const scoped_refptr<DecoderBufferBase>& buffer,
     DecryptContextImpl* decrypt_ctxt) {
-  if (decrypt_ctxt->Decrypt(buffer.get(), buffer->writable_data()))
+  if (decrypt_ctxt->Decrypt(buffer.get(), buffer->writable_data(), 0))
     return scoped_refptr<DecoderBufferBase>(new DecoderBufferClear(buffer));
 
   NOTREACHED();

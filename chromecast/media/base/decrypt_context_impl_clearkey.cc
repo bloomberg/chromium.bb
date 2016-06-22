@@ -27,7 +27,8 @@ DecryptContextImplClearKey::DecryptContextImplClearKey(
 DecryptContextImplClearKey::~DecryptContextImplClearKey() {}
 
 bool DecryptContextImplClearKey::Decrypt(CastDecoderBuffer* buffer,
-                                         uint8_t* output) {
+                                         uint8_t* output,
+                                         size_t data_offset) {
   DCHECK(buffer);
   DCHECK(output);
 
@@ -37,6 +38,9 @@ bool DecryptContextImplClearKey::Decrypt(CastDecoderBuffer* buffer,
   const CastDecryptConfig* decrypt_config = buffer->decrypt_config();
   if (!decrypt_config || decrypt_config->iv().size() == 0)
     return false;
+
+  // Apply the |data_offset|, if requested.
+  output += data_offset;
 
   // Get the key.
   std::string raw_key;

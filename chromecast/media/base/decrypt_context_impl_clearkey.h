@@ -22,7 +22,9 @@ class DecryptContextImplClearKey : public DecryptContextImpl {
   ~DecryptContextImplClearKey() override;
 
   // DecryptContext implementation.
-  bool Decrypt(CastDecoderBuffer* buffer, uint8_t* output) override;
+  bool Decrypt(CastDecoderBuffer* buffer,
+               uint8_t* output,
+               size_t data_offset) override;
 
   // DecryptContextImpl implementation.
   bool CanDecryptToBuffer() const override;
