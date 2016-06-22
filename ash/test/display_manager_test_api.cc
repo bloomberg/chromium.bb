@@ -109,12 +109,9 @@ void DisplayManagerTestApi::UpdateDisplay(const std::string& display_specs) {
     }
   }
 
-// TODO(msw): This seems to cause test hangs on Windows. http://crbug.com/584038
-#if !defined(OS_WIN)
   display_manager_->OnNativeDisplaysChanged(display_info_list);
   display_manager_->UpdateInternalDisplayModeListForTest();
   display_manager_->RunPendingTasksForTest();
-#endif
 }
 
 int64_t DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
