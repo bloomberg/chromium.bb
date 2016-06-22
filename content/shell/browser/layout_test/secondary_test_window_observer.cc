@@ -35,12 +35,4 @@ void SecondaryTestWindowObserver::RenderFrameCreated(
   BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
 }
 
-void SecondaryTestWindowObserver::RenderFrameHostChanged(
-    RenderFrameHost* old_host,
-    RenderFrameHost* new_host) {
-  DCHECK(!BlinkTestController::Get()->IsMainWindow(
-      WebContents::FromRenderFrameHost(new_host)));
-  BlinkTestController::Get()->HandleNewRenderFrameHost(new_host);
-}
-
 }  // namespace content

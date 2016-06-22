@@ -472,12 +472,6 @@ void BlinkTestController::RenderFrameCreated(
   HandleNewRenderFrameHost(render_frame_host);
 }
 
-void BlinkTestController::RenderFrameHostChanged(RenderFrameHost* old_host,
-                                                 RenderFrameHost* new_host) {
-  DCHECK(CalledOnValidThread());
-  HandleNewRenderFrameHost(new_host);
-}
-
 void BlinkTestController::DevToolsProcessCrashed() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("#CRASHED - devtools");

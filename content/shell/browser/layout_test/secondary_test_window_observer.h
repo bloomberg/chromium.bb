@@ -19,8 +19,6 @@ class SecondaryTestWindowObserver
 
   // WebContentsObserver implementation.
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
-  void RenderFrameHostChanged(RenderFrameHost* old_host,
-                              RenderFrameHost* new_host) override;
 
  private:
   friend class WebContentsUserData<SecondaryTestWindowObserver>;
