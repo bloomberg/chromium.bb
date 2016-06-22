@@ -1,6 +1,6 @@
 first "let a = 1;" result: wasThrown = false
 second "let a = 1;" result: wasThrown = true
-exception message: Uncaught TypeError: Identifier 'a' has already been declared
+exception message: Uncaught SyntaxError: Identifier 'a' has already been declared
 {"result":{"type":"number","value":42,"description":"42"},"wasThrown":false}
 function $(selector, [startNode]) { [Command Line API] }
 function $$(selector, [startNode]) { [Command Line API] }
