@@ -14,6 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/nix/xdg_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/password_manager/kwallet_dbus.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,11 +27,6 @@ namespace base {
 class Pickle;
 class PickleIterator;
 class WaitableEvent;
-}
-
-namespace dbus {
-class Bus;
-class ObjectProxy;
 }
 
 // NativeBackend implementation using KWallet.
@@ -94,7 +90,6 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   enum class BlacklistOptions { AUTOFILLABLE, BLACKLISTED };
 
   // Initialization.
-  bool StartKWalletd();
   InitResult InitWallet();
   void InitOnDBThread(scoped_refptr<dbus::Bus> optional_bus,
                       base::WaitableEvent* event,
@@ -143,25 +138,15 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   // The local profile id, used to generate the folder name.
   const LocalProfileId profile_id_;
 
+  KWalletDBus kwallet_dbus_;
+
   // The KWallet folder name, possibly based on the local profile id.
   std::string folder_name_;
-
-  // DBus handle for communication with klauncher and kwalletd.
-  scoped_refptr<dbus::Bus> session_bus_;
-  // Object proxy for kwalletd. We do not own this.
-  dbus::ObjectProxy* kwallet_proxy_;
 
   // The name of the wallet we've opened. Set during Init().
   std::string wallet_name_;
   // The application name (e.g. "Chromium"), shown in KWallet auth dialogs.
   const std::string app_name_;
-
-  // KWallet DBus name
-  std::string dbus_service_name_;
-  // DBus path to KWallet interfaces
-  std::string dbus_path_;
-  // The name used for logging and by klauncher when starting KWallet
-  std::string kwalletd_name_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeBackendKWallet);
 };

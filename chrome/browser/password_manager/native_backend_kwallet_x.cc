@@ -26,7 +26,6 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
-#include "dbus/object_proxy.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
@@ -43,18 +42,6 @@ const int kPickleVersion = 8;
 // you to lose access to all your stored passwords. Maybe best not to do that.
 // Name of the folder to store passwords in.
 const char kKWalletFolder[] = "Chrome Form Data";
-
-// DBus service, path, and interface names for klauncher and kwalletd.
-const char kKWalletDName[] = "kwalletd";
-const char kKWalletD5Name[] = "kwalletd5";
-const char kKWalletServiceName[] = "org.kde.kwalletd";
-const char kKWallet5ServiceName[] = "org.kde.kwalletd5";
-const char kKWalletPath[] = "/modules/kwalletd";
-const char kKWallet5Path[] = "/modules/kwalletd5";
-const char kKWalletInterface[] = "org.kde.KWallet";
-const char kKLauncherServiceName[] = "org.kde.klauncher";
-const char kKLauncherPath[] = "/KLauncher";
-const char kKLauncherInterface[] = "org.kde.KLauncher";
 
 // Checks a serialized list of PasswordForms for sanity. Returns true if OK.
 // Note that |realm| is only used for generating a useful warning message.
@@ -303,21 +290,12 @@ void UMALogDeserializationStatus(bool success) {
 }  // namespace
 
 NativeBackendKWallet::NativeBackendKWallet(
-    LocalProfileId id, base::nix::DesktopEnvironment desktop_env)
+    LocalProfileId id,
+    base::nix::DesktopEnvironment desktop_env)
     : profile_id_(id),
-      kwallet_proxy_(nullptr),
+      kwallet_dbus_(desktop_env),
       app_name_(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)) {
   folder_name_ = GetProfileSpecificFolderName();
-
-  if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
-    dbus_service_name_ = kKWallet5ServiceName;
-    dbus_path_ = kKWallet5Path;
-    kwalletd_name_ = kKWalletD5Name;
-  } else {
-    dbus_service_name_ = kKWalletServiceName;
-    dbus_path_ = kKWalletPath;
-    kwalletd_name_ = kKWalletDName;
-  }
 }
 
 NativeBackendKWallet::~NativeBackendKWallet() {
@@ -327,10 +305,10 @@ NativeBackendKWallet::~NativeBackendKWallet() {
   // shut it down on the DB thread, and it will be destructed afterward when the
   // scoped_refptr<dbus::Bus> goes out of scope. The NativeBackend will be
   // destroyed before that occurs, but that's OK.
-  if (session_bus_.get()) {
+  if (kwallet_dbus_.GetSessionBus()) {
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
                             base::Bind(&dbus::Bus::ShutdownAndBlock,
-                                       session_bus_.get()));
+                                       kwallet_dbus_.GetSessionBus()));
   }
 }
 
@@ -363,115 +341,53 @@ void NativeBackendKWallet::InitOnDBThread(scoped_refptr<dbus::Bus> optional_bus,
                                           base::WaitableEvent* event,
                                           bool* success) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
-  DCHECK(!session_bus_.get());
+  DCHECK(!kwallet_dbus_.GetSessionBus());
   if (optional_bus.get()) {
     // The optional_bus parameter is given when this method is called in tests.
-    session_bus_ = optional_bus;
+    kwallet_dbus_.SetSessionBus(optional_bus);
   } else {
     // Get a (real) connection to the session bus.
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SESSION;
     options.connection_type = dbus::Bus::PRIVATE;
-    session_bus_ = new dbus::Bus(options);
+    kwallet_dbus_.SetSessionBus(new dbus::Bus(options));
   }
-  kwallet_proxy_ =
-      session_bus_->GetObjectProxy(dbus_service_name_,
-                                   dbus::ObjectPath(dbus_path_));
   // kwalletd may not be running. If we get a temporary failure initializing it,
   // try to start it and then try again. (Note the short-circuit evaluation.)
   const InitResult result = InitWallet();
   *success = (result == INIT_SUCCESS ||
-              (result == TEMPORARY_FAIL &&
-               StartKWalletd() && InitWallet() == INIT_SUCCESS));
+              (result == TEMPORARY_FAIL && kwallet_dbus_.StartKWalletd() &&
+               InitWallet() == INIT_SUCCESS));
   event->Signal();
-}
-
-bool NativeBackendKWallet::StartKWalletd() {
-  DCHECK_CURRENTLY_ON(BrowserThread::DB);
-  // Sadly kwalletd doesn't use DBus activation, so we have to make a call to
-  // klauncher to start it.
-  dbus::ObjectProxy* klauncher =
-      session_bus_->GetObjectProxy(kKLauncherServiceName,
-                                   dbus::ObjectPath(kKLauncherPath));
-
-  dbus::MethodCall method_call(kKLauncherInterface,
-                               "start_service_by_desktop_name");
-  dbus::MessageWriter builder(&method_call);
-  std::vector<std::string> empty;
-  builder.AppendString(kwalletd_name_);  // serviceName
-  builder.AppendArrayOfStrings(empty);   // urls
-  builder.AppendArrayOfStrings(empty);   // envs
-  builder.AppendString(std::string());   // startup_id
-  builder.AppendBool(false);             // blind
-  std::unique_ptr<dbus::Response> response(klauncher->CallMethodAndBlock(
-      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
-    LOG(ERROR) << "Error contacting klauncher to start " << kwalletd_name_;
-    return false;
-  }
-  dbus::MessageReader reader(response.get());
-  int32_t ret = -1;
-  std::string dbus_name;
-  std::string error;
-  int32_t pid = -1;
-  if (!reader.PopInt32(&ret) || !reader.PopString(&dbus_name) ||
-      !reader.PopString(&error) || !reader.PopInt32(&pid)) {
-    LOG(ERROR) << "Error reading response from klauncher to start "
-               << kwalletd_name_ << ": " << response->ToString();
-    return false;
-  }
-  if (!error.empty() || ret) {
-    LOG(ERROR) << "Error launching " << kwalletd_name_ << ": error '" << error
-               << "' (code " << ret << ")";
-    return false;
-  }
-
-  return true;
 }
 
 NativeBackendKWallet::InitResult NativeBackendKWallet::InitWallet() {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
-  {
-    // Check that KWallet is enabled.
-    dbus::MethodCall method_call(kKWalletInterface, "isEnabled");
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (isEnabled)";
-      return TEMPORARY_FAIL;
-    }
-    dbus::MessageReader reader(response.get());
-    bool enabled = false;
-    if (!reader.PopBool(&enabled)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (isEnabled): " << response->ToString();
-      return PERMANENT_FAIL;
-    }
-    // Not enabled? Don't use KWallet. But also don't warn here.
-    if (!enabled) {
-      VLOG(1) << kwalletd_name_ << " reports that KWallet is not enabled.";
-      return PERMANENT_FAIL;
-    }
-  }
 
-  {
-    // Get the wallet name.
-    dbus::MethodCall method_call(kKWalletInterface, "networkWallet");
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (networkWallet)";
+  // Check that KWallet is enabled.
+  bool enabled = false;
+  KWalletDBus::Error error = kwallet_dbus_.IsEnabled(&enabled);
+  switch (error) {
+    case KWalletDBus::Error::CANNOT_CONTACT:
       return TEMPORARY_FAIL;
-    }
-    dbus::MessageReader reader(response.get());
-    if (!reader.PopString(&wallet_name_)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (networkWallet): " << response->ToString();
+    case KWalletDBus::Error::CANNOT_READ:
       return PERMANENT_FAIL;
-    }
+    case KWalletDBus::Error::SUCCESS:
+      break;
   }
+  if (!enabled)
+    return PERMANENT_FAIL;
 
-  return INIT_SUCCESS;
+  // Get the wallet name.
+  error = kwallet_dbus_.NetworkWallet(&wallet_name_);
+  switch (error) {
+    case KWalletDBus::Error::CANNOT_CONTACT:
+      return TEMPORARY_FAIL;
+    case KWalletDBus::Error::CANNOT_READ:
+      return PERMANENT_FAIL;
+    case KWalletDBus::Error::SUCCESS:
+      return INIT_SUCCESS;
+  }
 }
 
 password_manager::PasswordStoreChangeList NativeBackendKWallet::AddLogin(
@@ -638,67 +554,32 @@ bool NativeBackendKWallet::GetLoginsList(
     ScopedVector<autofill::PasswordForm>* forms) {
   forms->clear();
   // Is there an entry in the wallet?
-  {
-    dbus::MethodCall method_call(kKWalletInterface, "hasEntry");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendInt32(wallet_handle);  // handle
-    builder.AppendString(folder_name_);  // folder
-    builder.AppendString(signon_realm);  // key
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (hasEntry)";
-      return false;
-    }
-    dbus::MessageReader reader(response.get());
-    bool has_entry = false;
-    if (!reader.PopBool(&has_entry)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (hasEntry): " << response->ToString();
-      return false;
-    }
-    if (!has_entry) {
-      // This is not an error. There just isn't a matching entry.
-      return true;
-    }
+  bool has_entry = false;
+  KWalletDBus::Error error = kwallet_dbus_.HasEntry(
+      wallet_handle, folder_name_, signon_realm, app_name_, &has_entry);
+  if (error)
+    return false;
+  if (!has_entry)
+    return true;
+
+  std::vector<uint8_t> bytes;
+  error = kwallet_dbus_.ReadEntry(wallet_handle, folder_name_, signon_realm,
+                                  app_name_, &bytes);
+  if (error)
+    return false;
+  if (!bytes.empty() &&
+      !CheckSerializedValue(bytes.data(), bytes.size(), signon_realm)) {
+    // This is weird, but we choose not to call it an error. There is an
+    // invalid entry somehow, but by just ignoring it, we make it easier to
+    // repair without having to delete it using kwalletmanager (that is, by
+    // just saving a new password within this realm to overwrite it).
+    return true;
   }
 
-  {
-    dbus::MethodCall method_call(kKWalletInterface, "readEntry");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendInt32(wallet_handle);  // handle
-    builder.AppendString(folder_name_);  // folder
-    builder.AppendString(signon_realm);  // key
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (readEntry)";
-      return false;
-    }
-    dbus::MessageReader reader(response.get());
-    const uint8_t* bytes = nullptr;
-    size_t length = 0;
-    if (!reader.PopArrayOfBytes(&bytes, &length)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (readEntry): " << response->ToString();
-      return false;
-    }
-    if (!bytes)
-      return false;
-    if (!CheckSerializedValue(bytes, length, signon_realm)) {
-      // This is weird, but we choose not to call it an error. There is an
-      // invalid entry somehow, but by just ignoring it, we make it easier to
-      // repair without having to delete it using kwalletmanager (that is, by
-      // just saving a new password within this realm to overwrite it).
-      return true;
-    }
-
-    // Can't we all just agree on whether bytes are signed or not? Please?
-    base::Pickle pickle(reinterpret_cast<const char*>(bytes), length);
-    *forms = DeserializeValue(signon_realm, pickle);
-  }
+  // Can't we all just agree on whether bytes are signed or not? Please?
+  base::Pickle pickle(reinterpret_cast<const char*>(bytes.data()),
+                      bytes.size());
+  *forms = DeserializeValue(signon_realm, pickle);
 
   return true;
 }
@@ -754,53 +635,25 @@ bool NativeBackendKWallet::GetAllLoginsInternal(
     ScopedVector<autofill::PasswordForm>* forms) {
   // We could probably also use readEntryList here.
   std::vector<std::string> realm_list;
-  {
-    dbus::MethodCall method_call(kKWalletInterface, "entryList");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendInt32(wallet_handle);  // handle
-    builder.AppendString(folder_name_);  // folder
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (entryList)";
-      return false;
-    }
-    dbus::MessageReader reader(response.get());
-    if (!reader.PopArrayOfStrings(&realm_list)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << "(entryList): " << response->ToString();
-      return false;
-    }
-  }
+  KWalletDBus::Error error = kwallet_dbus_.EntryList(
+      wallet_handle, folder_name_, app_name_, &realm_list);
+  if (error)
+    return false;
 
   forms->clear();
   for (const std::string& signon_realm : realm_list) {
-    dbus::MethodCall method_call(kKWalletInterface, "readEntry");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendInt32(wallet_handle);  // handle
-    builder.AppendString(folder_name_);  // folder
-    builder.AppendString(signon_realm);  // key
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << "(readEntry)";
+    std::vector<uint8_t> bytes;
+    KWalletDBus::Error error = kwallet_dbus_.ReadEntry(
+        wallet_handle, folder_name_, signon_realm, app_name_, &bytes);
+    if (error)
       return false;
-    }
-    dbus::MessageReader reader(response.get());
-    const uint8_t* bytes = nullptr;
-    size_t length = 0;
-    if (!reader.PopArrayOfBytes(&bytes, &length)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (readEntry): " << response->ToString();
-      return false;
-    }
-    if (!bytes || !CheckSerializedValue(bytes, length, signon_realm))
+    if (bytes.empty() ||
+        !CheckSerializedValue(bytes.data(), bytes.size(), signon_realm))
       continue;
 
     // Can't we all just agree on whether bytes are signed or not? Please?
-    base::Pickle pickle(reinterpret_cast<const char*>(bytes), length);
+    base::Pickle pickle(reinterpret_cast<const char*>(bytes.data()),
+                        bytes.size());
     AppendSecondToFirst(forms, DeserializeValue(signon_realm, pickle));
   }
   return true;
@@ -811,26 +664,11 @@ bool NativeBackendKWallet::SetLoginsList(
     const std::string& signon_realm,
     int wallet_handle) {
   if (forms.empty()) {
-    // No items left? Remove the entry from the wallet.
-    dbus::MethodCall method_call(kKWalletInterface, "removeEntry");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendInt32(wallet_handle);  // handle
-    builder.AppendString(folder_name_);  // folder
-    builder.AppendString(signon_realm);  // key
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (removeEntry)";
-      return kInvalidKWalletHandle;
-    }
-    dbus::MessageReader reader(response.get());
     int ret = 0;
-    if (!reader.PopInt32(&ret)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (removeEntry): " << response->ToString();
+    KWalletDBus::Error error = kwallet_dbus_.RemoveEntry(
+        wallet_handle, folder_name_, signon_realm, app_name_, &ret);
+    if (error)
       return false;
-    }
     if (ret != 0)
       LOG(ERROR) << "Bad return code " << ret << " from KWallet removeEntry";
     return ret == 0;
@@ -839,27 +677,12 @@ bool NativeBackendKWallet::SetLoginsList(
   base::Pickle value;
   SerializeValue(forms, &value);
 
-  dbus::MethodCall method_call(kKWalletInterface, "writeEntry");
-  dbus::MessageWriter builder(&method_call);
-  builder.AppendInt32(wallet_handle);  // handle
-  builder.AppendString(folder_name_);  // folder
-  builder.AppendString(signon_realm);  // key
-  builder.AppendArrayOfBytes(static_cast<const uint8_t*>(value.data()),
-                             value.size());  // value
-  builder.AppendString(app_name_);     // appid
-  std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
-    LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (writeEntry)";
-    return kInvalidKWalletHandle;
-  }
-  dbus::MessageReader reader(response.get());
   int ret = 0;
-  if (!reader.PopInt32(&ret)) {
-    LOG(ERROR) << "Error reading response from " << kwalletd_name_
-               << " (writeEntry): " << response->ToString();
+  KWalletDBus::Error error = kwallet_dbus_.WriteEntry(
+      wallet_handle, folder_name_, signon_realm, app_name_,
+      static_cast<const uint8_t*>(value.data()), value.size(), &ret);
+  if (error)
     return false;
-  }
   if (ret != 0)
     LOG(ERROR) << "Bad return code " << ret << " from KWallet writeEntry";
   return ret == 0;
@@ -878,64 +701,27 @@ bool NativeBackendKWallet::RemoveLoginsBetween(
 
   // We could probably also use readEntryList here.
   std::vector<std::string> realm_list;
-  {
-    dbus::MethodCall method_call(kKWalletInterface, "entryList");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendInt32(wallet_handle);  // handle
-    builder.AppendString(folder_name_);  // folder
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (entryList)";
-      return false;
-    }
-    dbus::MessageReader reader(response.get());
-    dbus::MessageReader array(response.get());
-    if (!reader.PopArray(&array)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (entryList): " << response->ToString();
-      return false;
-    }
-    while (array.HasMoreData()) {
-      std::string realm;
-      if (!array.PopString(&realm)) {
-        LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                   << " (entryList): " << response->ToString();
-        return false;
-      }
-      realm_list.push_back(realm);
-    }
-  }
+  KWalletDBus::Error error = kwallet_dbus_.EntryList(
+      wallet_handle, folder_name_, app_name_, &realm_list);
+  if (error)
+    return false;
 
   bool ok = true;
   for (size_t i = 0; i < realm_list.size(); ++i) {
     const std::string& signon_realm = realm_list[i];
-    dbus::MethodCall method_call(kKWalletInterface, "readEntry");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendInt32(wallet_handle);  // handle
-    builder.AppendString(folder_name_);  // folder
-    builder.AppendString(signon_realm);  // key
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (readEntry)";
+
+    std::vector<uint8_t> bytes;
+    KWalletDBus::Error error = kwallet_dbus_.ReadEntry(
+        wallet_handle, folder_name_, signon_realm, app_name_, &bytes);
+    if (error)
       continue;
-    }
-    dbus::MessageReader reader(response.get());
-    const uint8_t* bytes = nullptr;
-    size_t length = 0;
-    if (!reader.PopArrayOfBytes(&bytes, &length)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (readEntry): " << response->ToString();
-      continue;
-    }
-    if (!bytes || !CheckSerializedValue(bytes, length, signon_realm))
+    if (bytes.size() == 0 ||
+        !CheckSerializedValue(bytes.data(), bytes.size(), signon_realm))
       continue;
 
     // Can't we all just agree on whether bytes are signed or not? Please?
-    base::Pickle pickle(reinterpret_cast<const char*>(bytes), length);
+    base::Pickle pickle(reinterpret_cast<const char*>(bytes.data()),
+                        bytes.size());
     ScopedVector<autofill::PasswordForm> all_forms =
         DeserializeValue(signon_realm, pickle);
 
@@ -1008,73 +794,28 @@ int NativeBackendKWallet::WalletHandle() {
   // Open the wallet.
   // TODO(mdm): Are we leaking these handles? Find out.
   int32_t handle = kInvalidKWalletHandle;
-  {
-    dbus::MethodCall method_call(kKWalletInterface, "open");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendString(wallet_name_);  // wallet
-    builder.AppendInt64(0);              // wid
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (open)";
-      return kInvalidKWalletHandle;
-    }
-    dbus::MessageReader reader(response.get());
-    if (!reader.PopInt32(&handle)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (open): " << response->ToString();
-      return kInvalidKWalletHandle;
-    }
-    if (handle == kInvalidKWalletHandle) {
-      LOG(ERROR) << "Error obtaining KWallet handle";
-      return kInvalidKWalletHandle;
-    }
+  KWalletDBus::Error error =
+      kwallet_dbus_.Open(wallet_name_, app_name_, &handle);
+  if (error)
+    return kInvalidKWalletHandle;
+  if (handle == kInvalidKWalletHandle) {
+    LOG(ERROR) << "Error obtaining KWallet handle";
+    return kInvalidKWalletHandle;
   }
 
   // Check if our folder exists.
   bool has_folder = false;
-  {
-    dbus::MethodCall method_call(kKWalletInterface, "hasFolder");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendInt32(handle);         // handle
-    builder.AppendString(folder_name_);  // folder
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (hasFolder)";
-      return kInvalidKWalletHandle;
-    }
-    dbus::MessageReader reader(response.get());
-    if (!reader.PopBool(&has_folder)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (hasFolder): " << response->ToString();
-      return kInvalidKWalletHandle;
-    }
-  }
+  error = kwallet_dbus_.HasFolder(handle, folder_name_, app_name_, &has_folder);
+  if (error)
+    return kInvalidKWalletHandle;
 
   // Create it if it didn't.
   if (!has_folder) {
-    dbus::MethodCall method_call(kKWalletInterface, "createFolder");
-    dbus::MessageWriter builder(&method_call);
-    builder.AppendInt32(handle);         // handle
-    builder.AppendString(folder_name_);  // folder
-    builder.AppendString(app_name_);     // appid
-    std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
-      LOG(ERROR) << "Error contacting << " << kwalletd_name_
-                 << " (createFolder)";
-      return kInvalidKWalletHandle;
-    }
-    dbus::MessageReader reader(response.get());
     bool success = false;
-    if (!reader.PopBool(&success)) {
-      LOG(ERROR) << "Error reading response from " << kwalletd_name_
-                 << " (createFolder): " << response->ToString();
+    error =
+        kwallet_dbus_.CreateFolder(handle, folder_name_, app_name_, &success);
+    if (error)
       return kInvalidKWalletHandle;
-    }
     if (!success) {
       LOG(ERROR) << "Error creating KWallet folder";
       return kInvalidKWalletHandle;
