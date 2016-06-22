@@ -777,6 +777,8 @@
       'desktop_background/desktop_background_controller_test_api.h',
       'shell/toplevel_window.cc',
       'shell/toplevel_window.h',
+      'test/ash_md_test_base.cc',
+      'test/ash_md_test_base.h',
       'test/ash_test_base.cc',
       'test/ash_test_base.h',
       'test/ash_test_helper.cc',

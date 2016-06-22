@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -13,6 +14,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/test/ash_md_test_base.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -97,7 +99,7 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
 
 namespace test {
 
-class RootWindowControllerTest : public test::AshTestBase {
+class RootWindowControllerTest : public AshMDTestBase {
  public:
   views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
     views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
@@ -129,9 +131,18 @@ class RootWindowControllerTest : public test::AshTestBase {
   }
 };
 
-TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
+INSTANTIATE_TEST_CASE_P(
+    /* prefix intentionally left blank due to only one parameterization */,
+    RootWindowControllerTest,
+    testing::Values(MaterialDesignController::NON_MATERIAL,
+                    MaterialDesignController::MATERIAL_NORMAL,
+                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
+
+TEST_P(RootWindowControllerTest, MoveWindows_Basic) {
   if (!SupportsMultipleDisplays())
     return;
+  const int height_offset = GetMdMaximizedWindowHeightOffset();
+
   // Windows origin should be doubled when moved to the 1st display.
   UpdateDisplay("600x600,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -145,8 +156,9 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   views::Widget* maximized = CreateTestWidget(gfx::Rect(700, 10, 100, 100));
   maximized->Maximize();
   EXPECT_EQ(root_windows[1], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("600,0 300x253", maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 300x253",
+  EXPECT_EQ(gfx::Rect(600, 0, 300, 253 + height_offset).ToString(),
+            maximized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 253 + height_offset).ToString(),
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   views::Widget* minimized = CreateTestWidget(gfx::Rect(800, 10, 100, 100));
@@ -207,16 +219,18 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   // share the same desktop workspace, which cancels the shelf status.
   fullscreen->SetFullscreen(false);
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("0,0 600x553", maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 600x553",
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 553 + height_offset).ToString(),
+            maximized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 553 + height_offset).ToString(),
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   // Set fullscreen to true, but maximized window's size won't change because
   // it's not visible. see crbug.com/504299.
   fullscreen->SetFullscreen(true);
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("0,0 600x553", maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 600x553",
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 553 + height_offset).ToString(),
+            maximized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 553 + height_offset).ToString(),
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   EXPECT_EQ(root_windows[0], minimized->GetNativeView()->GetRootWindow());
@@ -253,7 +267,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ(kShellWindowId_PanelContainer, panel->parent()->id());
 }
 
-TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
+TEST_P(RootWindowControllerTest, MoveWindows_Modal) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -286,7 +300,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
 }
 
 // Make sure lock related windows moves.
-TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
+TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   if (!SupportsMultipleDisplays())
     return;
   Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
@@ -368,7 +382,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   EXPECT_EQ("0,0 600x500", lock_screen->GetNativeWindow()->bounds().ToString());
 }
 
-TEST_F(RootWindowControllerTest, ModalContainer) {
+TEST_P(RootWindowControllerTest, ModalContainer) {
   UpdateDisplay("600x600");
   Shell* shell = Shell::GetInstance();
   WmShell* wm_shell = WmShell::Get();
@@ -409,7 +423,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
   shell->session_state_delegate()->UnlockScreen();
 }
 
-TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
+TEST_P(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   UpdateDisplay("600x600");
   Shell* shell = Shell::GetInstance();
   WmShell* wm_shell = WmShell::Get();
@@ -455,7 +469,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
                 session_modal_widget->GetNativeView()));
 }
 
-TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
+TEST_P(RootWindowControllerTest, ModalContainerBlockedSession) {
   UpdateDisplay("600x600");
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   aura::Window* lock_container =
@@ -501,7 +515,7 @@ TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
   }
 }
 
-TEST_F(RootWindowControllerTest, GetWindowForFullscreenMode) {
+TEST_P(RootWindowControllerTest, GetWindowForFullscreenMode) {
   UpdateDisplay("600x600");
   RootWindowController* controller =
       Shell::GetInstance()->GetPrimaryRootWindowController();
@@ -533,7 +547,7 @@ TEST_F(RootWindowControllerTest, GetWindowForFullscreenMode) {
   EXPECT_EQ(NULL, controller->GetWindowForFullscreenMode());
 }
 
-TEST_F(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
+TEST_P(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -573,7 +587,7 @@ TEST_F(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
 
 // Test that GetRootWindowController() works with multiple displays and
 // child widgets.
-TEST_F(RootWindowControllerTest, GetRootWindowController) {
+TEST_P(RootWindowControllerTest, GetRootWindowController) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("600x600,600x600");
@@ -603,7 +617,7 @@ TEST_F(RootWindowControllerTest, GetRootWindowController) {
 
 // Test that user session window can't be focused if user session blocked by
 // some overlapping UI.
-TEST_F(RootWindowControllerTest, FocusBlockedWindow) {
+TEST_P(RootWindowControllerTest, FocusBlockedWindow) {
   UpdateDisplay("600x600");
   RootWindowController* controller =
       Shell::GetInstance()->GetPrimaryRootWindowController();
@@ -662,7 +676,7 @@ class DestroyedWindowObserver : public aura::WindowObserver {
 };
 
 // Verifies shutdown doesn't delete windows that are not owned by the parent.
-TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
+TEST_P(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
   DestroyedWindowObserver observer1;
   aura::test::TestWindowDelegate delegate1;
   aura::Window* window1 = new aura::Window(&delegate1);

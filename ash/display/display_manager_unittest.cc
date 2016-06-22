@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_info.h"
@@ -15,6 +16,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/test/ash_md_test_base.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/mirror_window_test_api.h"
@@ -51,7 +53,7 @@ std::string ToDisplayName(int64_t id) {
 
 }  // namespace
 
-class DisplayManagerTest : public test::AshTestBase,
+class DisplayManagerTest : public test::AshMDTestBase,
                            public display::DisplayObserver,
                            public aura::WindowObserver {
  public:
@@ -63,14 +65,14 @@ class DisplayManagerTest : public test::AshTestBase,
   ~DisplayManagerTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    AshMDTestBase::SetUp();
     display::Screen::GetScreen()->AddObserver(this);
     Shell::GetPrimaryRootWindow()->AddObserver(this);
   }
   void TearDown() override {
     Shell::GetPrimaryRootWindow()->RemoveObserver(this);
     display::Screen::GetScreen()->RemoveObserver(this);
-    AshTestBase::TearDown();
+    AshMDTestBase::TearDown();
   }
 
   DisplayManager* display_manager() {
@@ -142,7 +144,14 @@ class DisplayManagerTest : public test::AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerTest);
 };
 
-TEST_F(DisplayManagerTest, UpdateDisplayTest) {
+INSTANTIATE_TEST_CASE_P(
+    /* prefix intentionally left blank due to only one parameterization */,
+    DisplayManagerTest,
+    testing::Values(MaterialDesignController::NON_MATERIAL,
+                    MaterialDesignController::MATERIAL_NORMAL,
+                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
+
+TEST_P(DisplayManagerTest, UpdateDisplayTest) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -244,7 +253,7 @@ TEST_F(DisplayManagerTest, UpdateDisplayTest) {
             display_manager()->GetDisplayAt(1).bounds().ToString());
 }
 
-TEST_F(DisplayManagerTest, ScaleOnlyChange) {
+TEST_P(DisplayManagerTest, ScaleOnlyChange) {
   if (!SupportsMultipleDisplays())
     return;
   display_manager()->ToggleDisplayScaleFactor();
@@ -255,7 +264,7 @@ TEST_F(DisplayManagerTest, ScaleOnlyChange) {
 }
 
 // Test in emulation mode (use_fullscreen_host_window=false)
-TEST_F(DisplayManagerTest, EmulatorTest) {
+TEST_P(DisplayManagerTest, EmulatorTest) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -278,7 +287,7 @@ TEST_F(DisplayManagerTest, EmulatorTest) {
 }
 
 // Tests support for 3 displays.
-TEST_F(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
+TEST_P(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -336,7 +345,7 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
             display_manager()->GetDisplayAt(2).bounds().ToString());
 }
 
-TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
+TEST_P(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -451,7 +460,7 @@ TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
   }
 }
 
-TEST_F(DisplayManagerTest, NoMirrorInThreeDisplays) {
+TEST_P(DisplayManagerTest, NoMirrorInThreeDisplays) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -466,7 +475,7 @@ TEST_F(DisplayManagerTest, NoMirrorInThreeDisplays) {
 #endif
 }
 
-TEST_F(DisplayManagerTest, OverscanInsetsTest) {
+TEST_P(DisplayManagerTest, OverscanInsetsTest) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -599,7 +608,7 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().ToString());
 }
 
-TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
+TEST_P(DisplayManagerTest, ZeroOverscanInsets) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -623,7 +632,7 @@ TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
   EXPECT_EQ(display2_id, changed()[0].id());
 }
 
-TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
+TEST_P(DisplayManagerTest, TestDeviceScaleOnlyChange) {
   if (!SupportsHostWindowResize())
     return;
 
@@ -647,7 +656,7 @@ DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
   return info;
 }
 
-TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
+TEST_P(DisplayManagerTest, TestNativeDisplaysChanged) {
   const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   const int external_id = 10;
@@ -815,7 +824,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
 
 // Make sure crash does not happen if add and remove happens at the same time.
 // See: crbug.com/414394
-TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
+TEST_P(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -844,16 +853,10 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
   EXPECT_EQ("600x600", GetDisplayForId(third_id).size().ToString());
 }
 
-#if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows
 // Ash. http://crbug.com/247916.
-#define MAYBE_TestNativeDisplaysChangedNoInternal \
-        DISABLED_TestNativeDisplaysChangedNoInternal
-#else
-#define MAYBE_TestNativeDisplaysChangedNoInternal \
-        TestNativeDisplaysChangedNoInternal
-#endif
-TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
+#if defined(OS_CHROMEOS)
+TEST_P(DisplayManagerTest, TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   // Don't change the display info if all displays are disconnected.
@@ -872,8 +875,9 @@ TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ("100x100", ash::Shell::GetPrimaryRootWindow()->GetHost()->
       GetBounds().size().ToString());
 }
+#endif  // defined(OS_CHROMEOS)
 
-TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
+TEST_P(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -907,13 +911,9 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
   EXPECT_EQ("0,0 100x100", GetDisplayForId(10).bounds().ToString());
 }
 
-#if defined(OS_WIN)
 // TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_DontRememberBestResolution DISABLED_DontRememberBestResolution
-#else
-#define MAYBE_DontRememberBestResolution DontRememberBestResolution
-#endif
-TEST_F(DisplayManagerTest, MAYBE_DontRememberBestResolution) {
+#if defined(OS_CHROMEOS)
+TEST_P(DisplayManagerTest, DontRememberBestResolution) {
   int display_id = 1000;
   DisplayInfo native_display_info =
       CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
@@ -968,14 +968,11 @@ TEST_F(DisplayManagerTest, MAYBE_DontRememberBestResolution) {
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
 }
+#endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN)
 // TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_ResolutionFallback DISABLED_ResolutionFallback
-#else
-#define MAYBE_ResolutionFallback ResolutionFallback
-#endif
-TEST_F(DisplayManagerTest, MAYBE_ResolutionFallback) {
+#if defined(OS_CHROMEOS)
+TEST_P(DisplayManagerTest, ResolutionFallback) {
   int display_id = 1000;
   DisplayInfo native_display_info =
       CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
@@ -1029,8 +1026,9 @@ TEST_F(DisplayManagerTest, MAYBE_ResolutionFallback) {
     EXPECT_TRUE(mode.native);
   }
 }
+#endif  // defined(OS_CHROMEOS)
 
-TEST_F(DisplayManagerTest, Rotate) {
+TEST_P(DisplayManagerTest, Rotate) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -1122,13 +1120,9 @@ TEST_F(DisplayManagerTest, Rotate) {
             post_rotation_info.GetActiveRotation());
 }
 
-#if defined(OS_WIN)
 // TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_UIScale DISABLED_UIScale
-#else
-#define MAYBE_UIScale UIScale
-#endif
-TEST_F(DisplayManagerTest, MAYBE_UIScale) {
+#if defined(OS_CHROMEOS)
+TEST_P(DisplayManagerTest, UIScale) {
   test::ScopedDisable125DSFForUIScaling disable;
 
   UpdateDisplay("1280x800");
@@ -1221,8 +1215,9 @@ TEST_F(DisplayManagerTest, MAYBE_UIScale) {
   EXPECT_EQ(1.0f, display.device_scale_factor());
   EXPECT_EQ("1280x850", display.bounds().size().ToString());
 }
+#endif  // defined(OS_CHROMEOS)
 
-TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
+TEST_P(DisplayManagerTest, UIScaleWithDisplayMode) {
   int display_id = 1000;
 
   // Setup the display modes with UI-scale.
@@ -1280,13 +1275,9 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
       display_manager()->GetActiveModeForDisplayId(display_id)));
 }
 
-#if defined(OS_WIN) && !defined(USE_ASH)
 // TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_Use125DSFForUIScaling DISABLED_Use125DSFForUIScaling
-#else
-#define MAYBE_Use125DSFForUIScaling Use125DSFForUIScaling
-#endif
-TEST_F(DisplayManagerTest, MAYBE_Use125DSFForUIScaling) {
+#if defined(OS_CHROMEOS)
+TEST_P(DisplayManagerTest, Use125DSFForUIScaling) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
 
   test::ScopedSetInternalDisplayId set_internal(display_id);
@@ -1309,14 +1300,11 @@ TEST_F(DisplayManagerTest, MAYBE_Use125DSFForUIScaling) {
   EXPECT_EQ(1.25f, GetDisplayInfoAt(0).GetEffectiveUIScale());
   EXPECT_EQ("2400x1350", GetDisplayForId(display_id).size().ToString());
 }
+#endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) && !defined(USE_ASH)
 // TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_FHD125DefaultsTo08UIScaling DISABLED_FHD125DefaultsTo08UIScaling
-#else
-#define MAYBE_FHD125DefaultsTo08UIScaling FHD125DefaultsTo08UIScaling
-#endif
-TEST_F(DisplayManagerTest, MAYBE_FHD125DefaultsTo08UIScaling) {
+#if defined(OS_CHROMEOS)
+TEST_P(DisplayManagerTest, FHD125DefaultsTo08UIScaling) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
 
   display_id++;
@@ -1339,18 +1327,13 @@ TEST_F(DisplayManagerTest, MAYBE_FHD125DefaultsTo08UIScaling) {
   EXPECT_EQ(1.25f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
 }
+#endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) && !defined(USE_ASH)
 // TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_FHD125DefaultsTo08UIScalingNoOverride \
-  DISABLED_FHD125DefaultsTo08UIScalingNoOverride
-#else
-#define MAYBE_FHD125DefaultsTo08UIScalingNoOverride \
-  FHD125DefaultsTo08UIScalingNoOverride
-#endif
+#if defined(OS_CHROMEOS)
 // Don't default to 1.25 DSF if the user already has a prefrence stored for
 // the internal display.
-TEST_F(DisplayManagerTest, MAYBE_FHD125DefaultsTo08UIScalingNoOverride) {
+TEST_P(DisplayManagerTest, FHD125DefaultsTo08UIScalingNoOverride) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
 
   display_id++;
@@ -1377,8 +1360,9 @@ TEST_F(DisplayManagerTest, MAYBE_FHD125DefaultsTo08UIScalingNoOverride) {
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
 }
+#endif  // defined(OS_CHROMEOS)
 
-TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
+TEST_P(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
   if (!SupportsMultipleDisplays())
     return;
   // Don't check root window destruction in unified mode.
@@ -1423,15 +1407,10 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
   EXPECT_EQ("1200x600", active_mode.size.ToString());
 }
 
-#if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows
 // Ash. http://crbug.com/247916.
-#define MAYBE_UpdateMouseCursorAfterRotateZoom \
-  DISABLED_UpdateMouseCursorAfterRotateZoom
-#else
-#define MAYBE_UpdateMouseCursorAfterRotateZoom UpdateMouseCursorAfterRotateZoom
-#endif
-TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
+#if defined(OS_CHROMEOS)
+TEST_P(DisplayManagerTest, UpdateMouseCursorAfterRotateZoom) {
   // Make sure just rotating will not change native location.
   UpdateDisplay("300x200,200x150");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -1478,6 +1457,7 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
   UpdateDisplay("600x400,400x200*2@1.5");
   EXPECT_EQ("750,75", env->last_mouse_location().ToString());
 }
+#endif  // defined(OS_CHROMEOS)
 
 class TestDisplayObserver : public display::DisplayObserver {
  public:
@@ -1512,7 +1492,7 @@ class TestDisplayObserver : public display::DisplayObserver {
   DISALLOW_COPY_AND_ASSIGN(TestDisplayObserver);
 };
 
-TEST_F(DisplayManagerTest, SoftwareMirroring) {
+TEST_P(DisplayManagerTest, SoftwareMirroring) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -1578,7 +1558,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   display::Screen::GetScreen()->RemoveObserver(&display_observer);
 }
 
-TEST_F(DisplayManagerTest, RotateInSoftwareMirroring) {
+TEST_P(DisplayManagerTest, RotateInSoftwareMirroring) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -1593,7 +1573,7 @@ TEST_F(DisplayManagerTest, RotateInSoftwareMirroring) {
   display_manager->SetMirrorMode(false);
 }
 
-TEST_F(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
+TEST_P(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("600x400");
@@ -1620,7 +1600,7 @@ TEST_F(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
 // Make sure this does not cause any crashes. See http://crbug.com/412910
 // This test is limited to OS_CHROMEOS because CursorCompositingEnabled is only
 // for ChromeOS.
-TEST_F(DisplayManagerTest, SoftwareMirroringWithCompositingCursor) {
+TEST_P(DisplayManagerTest, SoftwareMirroringWithCompositingCursor) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -1656,7 +1636,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroringWithCompositingCursor) {
 }
 #endif  // OS_CHROMEOS
 
-TEST_F(DisplayManagerTest, MirroredLayout) {
+TEST_P(DisplayManagerTest, MirroredLayout) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -1677,7 +1657,7 @@ TEST_F(DisplayManagerTest, MirroredLayout) {
   EXPECT_EQ(2U, display_manager->num_connected_displays());
 }
 
-TEST_F(DisplayManagerTest, InvertLayout) {
+TEST_P(DisplayManagerTest, InvertLayout) {
   EXPECT_EQ("left, 0",
             display::DisplayPlacement(display::DisplayPlacement::RIGHT, 0)
                 .Swap()
@@ -1731,7 +1711,7 @@ TEST_F(DisplayManagerTest, InvertLayout) {
                 .ToString());
 }
 
-TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
+TEST_P(DisplayManagerTest, NotifyPrimaryChange) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("500x500,500x500");
@@ -1756,7 +1736,7 @@ TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
               display::DisplayObserver::DISPLAY_METRIC_PRIMARY);
 }
 
-TEST_F(DisplayManagerTest, NotifyPrimaryChangeUndock) {
+TEST_P(DisplayManagerTest, NotifyPrimaryChangeUndock) {
   if (!SupportsMultipleDisplays())
     return;
   // Assume the default display is an external display, and
@@ -1775,15 +1755,10 @@ TEST_F(DisplayManagerTest, NotifyPrimaryChangeUndock) {
               display::DisplayObserver::DISPLAY_METRIC_PRIMARY);
 }
 
-#if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows
 // Ash. http://crbug.com/247916.
-#define MAYBE_UpdateDisplayWithHostOrigin DISABLED_UpdateDisplayWithHostOrigin
-#else
-#define MAYBE_UpdateDisplayWithHostOrigin UpdateDisplayWithHostOrigin
-#endif
-
-TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
+#if defined(OS_CHROMEOS)
+TEST_P(DisplayManagerTest, UpdateDisplayWithHostOrigin) {
   UpdateDisplay("100x200,300x400");
   ASSERT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
   aura::Window::Windows root_windows =
@@ -1819,8 +1794,9 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
   EXPECT_EQ("300,500", host1->GetBounds().origin().ToString());
   EXPECT_EQ("200x300", host1->GetBounds().size().ToString());
 }
+#endif  // defined(OS_CHROMEOS)
 
-TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
+TEST_P(DisplayManagerTest, UnifiedDesktopBasic) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -1879,7 +1855,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
                 .size());
 }
 
-TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
+TEST_P(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
   if (!SupportsMultipleDisplays())
     return;
   // Don't check root window destruction in unified mode.
@@ -1919,7 +1895,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
   EXPECT_TRUE(display_manager()->IsInUnifiedMode());
 }
 
-TEST_F(DisplayManagerTest, UnifiedDesktopEnabledWithExtended) {
+TEST_P(DisplayManagerTest, UnifiedDesktopEnabledWithExtended) {
   if (!SupportsMultipleDisplays())
     return;
   // Don't check root window destruction in unified mode.
@@ -1936,7 +1912,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopEnabledWithExtended) {
   EXPECT_FALSE(display_manager()->IsInUnifiedMode());
 }
 
-TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
+TEST_P(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   if (!SupportsMultipleDisplays())
     return;
   // Don't check root window destruction in unified mode.
@@ -2040,7 +2016,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
 
 // Updating displays again in unified desktop mode should not crash.
 // crbug.com/491094.
-TEST_F(DisplayManagerTest, ConfigureUnifiedTwice) {
+TEST_P(DisplayManagerTest, ConfigureUnifiedTwice) {
   if (!SupportsMultipleDisplays())
     return;
   // Don't check root window destruction in unified mode.
@@ -2054,7 +2030,7 @@ TEST_F(DisplayManagerTest, ConfigureUnifiedTwice) {
   RunAllPendingInMessageLoop();
 }
 
-TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
+TEST_P(DisplayManagerTest, NoRotateUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
   display_manager()->SetUnifiedDesktopEnabled(true);
@@ -2082,9 +2058,10 @@ TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
 
 // Makes sure the transition from unified to single won't crash
 // with docked windows.
-TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
+TEST_P(DisplayManagerTest, UnifiedWithDockWindows) {
   if (!SupportsMultipleDisplays())
     return;
+  const int height_offset = GetMdMaximizedWindowHeightOffset();
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   // Don't check root window destruction in unified mode.
@@ -2096,15 +2073,18 @@ TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 50, 50)));
   docked->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DOCKED);
   ASSERT_TRUE(wm::GetWindowState(docked.get())->IsDocked());
-  // 47 pixels reserved for launcher shelf height.
-  EXPECT_EQ("0,0 250x453", docked->bounds().ToString());
+  // 47 pixels reserved for launcher shelf height in non-material design, and
+  // 48 pixels reserved in material design.
+  EXPECT_EQ(gfx::Rect(0, 0, 250, 453 + height_offset).ToString(),
+            docked->bounds().ToString());
   UpdateDisplay("300x300");
   // Make sure the window is still docked.
   EXPECT_TRUE(wm::GetWindowState(docked.get())->IsDocked());
-  EXPECT_EQ("0,0 250x253", docked->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 250, 253 + height_offset).ToString(),
+            docked->bounds().ToString());
 }
 
-TEST_F(DisplayManagerTest, DockMode) {
+TEST_P(DisplayManagerTest, DockMode) {
   if (!SupportsMultipleDisplays())
     return;
   const int64_t internal_id = 1;
@@ -2146,7 +2126,7 @@ TEST_F(DisplayManagerTest, DockMode) {
 }
 
 // Make sure that bad layout information is ignored and does not crash.
-TEST_F(DisplayManagerTest, DontRegisterBadConfig) {
+TEST_P(DisplayManagerTest, DontRegisterBadConfig) {
   if (!SupportsMultipleDisplays())
     return;
   display::DisplayIdList list = ash::test::CreateDisplayIdList2(1, 2);
@@ -2320,7 +2300,7 @@ TEST_F(DisplayManagerFontTest,
   EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
-TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
+TEST_P(DisplayManagerTest, CheckInitializationOfRotationProperty) {
   int64_t id = display_manager()->GetDisplayAt(0).id();
   display_manager()->RegisterDisplayProperty(id, display::Display::ROTATE_90,
                                              1.0f, nullptr, gfx::Size(), 1.0f,
@@ -2334,7 +2314,7 @@ TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
             info.GetRotation(display::Display::ROTATION_SOURCE_ACTIVE));
 }
 
-TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
+TEST_P(DisplayManagerTest, RejectInvalidLayoutData) {
   DisplayLayoutStore* layout_store = display_manager()->layout_store();
   int64_t id1 = 10001;
   int64_t id2 = 10002;
@@ -2358,7 +2338,7 @@ TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
             layout_store->GetRegisteredDisplayLayout(good_list).ToString());
 }
 
-TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
+TEST_P(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
   int64_t id1 = 10001;
   int64_t id2 = 10002;
 

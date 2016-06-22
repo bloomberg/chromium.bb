@@ -6,11 +6,12 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
+#include "ash/test/ash_md_test_base.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -28,16 +29,20 @@
 
 namespace ash {
 
-typedef ash::test::AshTestBase DIPTest;
+using DIPTest = test::AshMDTestBase;
+
+INSTANTIATE_TEST_CASE_P(
+    /* prefix intentionally left blank due to only one parameterization */,
+    DIPTest,
+    testing::Values(MaterialDesignController::NON_MATERIAL,
+                    MaterialDesignController::MATERIAL_NORMAL,
+                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
 
 // Test if the WM sets correct work area under different density.
-#if defined(OS_WIN) && !defined(USE_ASH)
 // TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_WorkArea DISABLED_WorkArea
-#else
-#define MAYBE_WorkArea WorkArea
-#endif
-TEST_F(DIPTest, MAYBE_WorkArea) {
+#if defined(OS_CHROMEOS)
+TEST_P(DIPTest, WorkArea) {
+  const int height_offset = GetMdMaximizedWindowHeightOffset();
   UpdateDisplay("1000x900*1.0f");
 
   aura::Window* root = Shell::GetPrimaryRootWindow();
@@ -46,8 +51,10 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
 
   EXPECT_EQ("0,0 1000x900", display.bounds().ToString());
   gfx::Rect work_area = display.work_area();
-  EXPECT_EQ("0,0 1000x853", work_area.ToString());
-  EXPECT_EQ("0,0,47,0", display.bounds().InsetsFrom(work_area).ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 1000, 853 + height_offset).ToString(),
+            work_area.ToString());
+  EXPECT_EQ(gfx::Insets(0, 0, 47 - height_offset, 0).ToString(),
+            display.bounds().InsetsFrom(work_area).ToString());
 
   UpdateDisplay("2000x1800*2.0f");
   display::Screen* screen = display::Screen::GetScreen();
@@ -63,8 +70,10 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
   // Aura and views coordinates are in DIP, so they their bounds do not change.
   EXPECT_EQ("0,0 1000x900", display_2x.bounds().ToString());
   work_area = display_2x.work_area();
-  EXPECT_EQ("0,0 1000x853", work_area.ToString());
-  EXPECT_EQ("0,0,47,0", display_2x.bounds().InsetsFrom(work_area).ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 1000, 853 + height_offset).ToString(),
+            work_area.ToString());
+  EXPECT_EQ(gfx::Insets(0, 0, 47 - height_offset, 0).ToString(),
+            display_2x.bounds().InsetsFrom(work_area).ToString());
 
   // Sanity check if the workarea's inset hight is same as
   // the shelf's height.
@@ -73,5 +82,6 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
       display_2x.bounds().InsetsFrom(work_area).height(),
       shelf->shelf_widget()->GetNativeView()->layer()->bounds().height());
 }
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

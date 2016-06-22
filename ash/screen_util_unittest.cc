@@ -6,7 +6,7 @@
 
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
+#include "ash/test/ash_md_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
@@ -18,11 +18,19 @@
 namespace ash {
 namespace test {
 
-typedef test::AshTestBase ScreenUtilTest;
+using ScreenUtilTest = AshMDTestBase;
 
-TEST_F(ScreenUtilTest, Bounds) {
+INSTANTIATE_TEST_CASE_P(
+    /* prefix intentionally left blank due to only one parameterization */,
+    ScreenUtilTest,
+    testing::Values(MaterialDesignController::NON_MATERIAL,
+                    MaterialDesignController::MATERIAL_NORMAL,
+                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
+
+TEST_P(ScreenUtilTest, Bounds) {
   if (!SupportsMultipleDisplays())
     return;
+  const int height_offset = GetMdMaximizedWindowHeightOffset();
 
   UpdateDisplay("600x600,500x500");
   views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(
@@ -33,12 +41,14 @@ TEST_F(ScreenUtilTest, Bounds) {
   secondary->Show();
 
   // Maximized bounds. By default the shelf is 47px tall (ash::kShelfSize).
-  EXPECT_EQ("0,0 600x553", ScreenUtil::GetMaximizedWindowBoundsInParent(
-                               primary->GetNativeView())
-                               .ToString());
-  EXPECT_EQ("0,0 500x453",
-            ScreenUtil::GetMaximizedWindowBoundsInParent(
-                secondary->GetNativeView()).ToString());
+  EXPECT_EQ(
+      gfx::Rect(0, 0, 600, 553 + height_offset).ToString(),
+      ScreenUtil::GetMaximizedWindowBoundsInParent(primary->GetNativeView())
+          .ToString());
+  EXPECT_EQ(
+      gfx::Rect(0, 0, 500, 453 + height_offset).ToString(),
+      ScreenUtil::GetMaximizedWindowBoundsInParent(secondary->GetNativeView())
+          .ToString());
 
   // Display bounds
   EXPECT_EQ("0,0 600x600",
@@ -49,17 +59,19 @@ TEST_F(ScreenUtilTest, Bounds) {
                 secondary->GetNativeView()).ToString());
 
   // Work area bounds
-  EXPECT_EQ("0,0 600x553", ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-                               primary->GetNativeView())
-                               .ToString());
-  EXPECT_EQ("0,0 500x453",
-            ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-                secondary->GetNativeView()).ToString());
+  EXPECT_EQ(
+      gfx::Rect(0, 0, 600, 553 + height_offset).ToString(),
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(primary->GetNativeView())
+          .ToString());
+  EXPECT_EQ(
+      gfx::Rect(0, 0, 500, 453 + height_offset).ToString(),
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(secondary->GetNativeView())
+          .ToString());
 }
 
 // Test verifies a stable handling of secondary screen widget changes
 // (crbug.com/226132).
-TEST_F(ScreenUtilTest, StabilityTest) {
+TEST_P(ScreenUtilTest, StabilityTest) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -76,7 +88,7 @@ TEST_F(ScreenUtilTest, StabilityTest) {
   secondary->Close();
 }
 
-TEST_F(ScreenUtilTest, ConvertRect) {
+TEST_P(ScreenUtilTest, ConvertRect) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -108,7 +120,7 @@ TEST_F(ScreenUtilTest, ConvertRect) {
           secondary->GetNativeView(), gfx::Rect(40, 40, 100, 100)).ToString());
 }
 
-TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
+TEST_P(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
