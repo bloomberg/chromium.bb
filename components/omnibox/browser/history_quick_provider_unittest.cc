@@ -17,6 +17,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/sequenced_worker_pool_owner.h"
@@ -323,7 +324,7 @@ void HistoryQuickProviderTest::TearDown() {
   // History index rebuild task is created from main thread during SetUp,
   // performed on DB thread and must be deleted on main thread.
   // Run main loop to process delete task, to prevent leaks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void HistoryQuickProviderTest::GetTestData(size_t* data_count,
@@ -412,7 +413,7 @@ void HistoryQuickProviderTest::RunTestWithCursor(
     base::string16 expected_fill_into_edit,
     base::string16 expected_autocompletion) {
   SCOPED_TRACE(text);  // Minimal hint to query being run.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   AutocompleteInput input(text, cursor_position, std::string(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true, false,
@@ -472,7 +473,7 @@ bool HistoryQuickProviderTest::GetURLProxy(const GURL& url) {
       &task_tracker);
   // Run the message loop until GetURLTask::DoneRunOnMainThread stops it.  If
   // the test hangs, DoneRunOnMainThread isn't being invoked correctly.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   return result;
 }
 

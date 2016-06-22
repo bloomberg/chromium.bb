@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -95,6 +96,6 @@ TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
 
   // We are on the UI thread, so run our loop to process the
   // (hopefully) scheduled task from a SyncShare invocation.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   syncer_thread()->Stop();
 }

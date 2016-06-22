@@ -63,7 +63,7 @@ class NonBlockingInvalidatorTestDelegate {
     invalidator_.reset();
     request_context_getter_ = NULL;
     io_thread_.Stop();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void WaitForInvalidator() {

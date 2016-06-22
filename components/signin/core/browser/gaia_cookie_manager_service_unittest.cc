@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
@@ -226,7 +227,7 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(1100));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   SimulateMergeSessionSuccess(&helper, "token");
   DCHECK(!helper.is_running());
 }
@@ -250,7 +251,7 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(1100));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
   // Next transient error incurs a retry after 3 seconds.
@@ -259,7 +260,7 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(3100));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   SimulateMergeSessionSuccess(&helper, "token");
   DCHECK(!helper.is_running());
   histograms.ExpectUniqueSample("OAuth2Login.MergeSessionRetry",

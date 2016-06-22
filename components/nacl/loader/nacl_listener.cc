@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "components/nacl/loader/nacl_listener.h"
 
 #include <errno.h>
@@ -231,7 +232,7 @@ void NaClListener::Listen() {
     global->RegisterBrokerCommunicationChannel(channel_.get());
   channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
   main_loop_ = base::MessageLoop::current();
-  main_loop_->Run();
+  base::RunLoop().Run();
 }
 
 bool NaClListener::OnMessageReceived(const IPC::Message& msg) {

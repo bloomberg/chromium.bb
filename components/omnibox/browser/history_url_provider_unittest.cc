@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -328,7 +329,7 @@ void HistoryURLProviderTest::RunTest(
   *identified_input_type = input.type();
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
   matches_ = autocomplete_->matches();
   if (sort_matches_) {
@@ -665,7 +666,7 @@ TEST_F(HistoryURLProviderTest, EmptyVisits) {
   int pandora_relevance = matches_[0].relevance;
 
   // Run the message loop. When |autocomplete_| finishes the loop is quit.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(autocomplete_->done());
   matches_ = autocomplete_->matches();
   ASSERT_GT(matches_.size(), 0u);
@@ -698,7 +699,7 @@ TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
       TestSchemeClassifier());
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
   // None of the matches should attempt to autocomplete.
   matches_ = autocomplete_->matches();
@@ -837,7 +838,7 @@ TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
         true, false, TestSchemeClassifier());
     autocomplete_->Start(input, false);
     if (!autocomplete_->done())
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
   }
 }
 

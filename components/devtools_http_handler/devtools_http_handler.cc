@@ -178,11 +178,11 @@ void TerminateOnUI(base::Thread* thread,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (server_wrapper) {
     DCHECK(thread);
-    thread->message_loop()->DeleteSoon(FROM_HERE, server_wrapper);
+    thread->task_runner()->DeleteSoon(FROM_HERE, server_wrapper);
   }
   if (socket_factory) {
     DCHECK(thread);
-    thread->message_loop()->DeleteSoon(FROM_HERE, socket_factory);
+    thread->task_runner()->DeleteSoon(FROM_HERE, socket_factory);
   }
   if (thread) {
     BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, thread);

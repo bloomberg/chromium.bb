@@ -848,7 +848,7 @@ void HistoryService::Cleanup() {
     closing_task.Reset();
     HistoryBackend* raw_ptr = history_backend_.get();
     history_backend_ = nullptr;
-    thread_->message_loop()->ReleaseSoon(FROM_HERE, raw_ptr);
+    thread_->task_runner()->ReleaseSoon(FROM_HERE, raw_ptr);
   }
 
   // Delete the thread, which joins with the background thread. We defensively

@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
@@ -305,7 +306,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
         FROM_HERE, task,
         base::Bind(&base::MessageLoop::QuitNow,
                    base::Unretained(base::MessageLoop::current())));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   void SendNotificationURLVisited(ui::PageTransition transition,

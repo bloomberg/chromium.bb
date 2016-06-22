@@ -83,7 +83,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestTaskObserver) {
 
   thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
                                         task.release());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
 
@@ -102,7 +102,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithOneTask) {
 
   thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
                                         task.release());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
 
@@ -128,7 +128,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithTwoTasks) {
                                         task1.release());
   thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
                                         task2.release());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
 
@@ -161,7 +161,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithThreeTasks) {
                                         task2.release());
   thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
                                         task3.release());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
 
@@ -206,7 +206,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestNestedRunLoop) {
   message_loop_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&EnterRunLoop, base::Unretained(&message_loop_),
                             base::Unretained(thread_.get())));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
 

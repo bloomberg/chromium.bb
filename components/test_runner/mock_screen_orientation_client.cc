@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace test_runner {
@@ -115,19 +116,15 @@ bool MockScreenOrientationClient::IsOrientationAllowedByCurrentLock(
 void MockScreenOrientationClient::lockOrientation(
     blink::WebScreenOrientationLockType orientation,
     blink::WebLockOrientationCallback* callback) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MockScreenOrientationClient::UpdateLockSync,
-                 base::Unretained(this),
-                 orientation,
-                 callback));
+  base::MessageLoop::current()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MockScreenOrientationClient::UpdateLockSync,
+                            base::Unretained(this), orientation, callback));
 }
 
 void MockScreenOrientationClient::unlockOrientation() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MockScreenOrientationClient::ResetLockSync,
-                 base::Unretained(this)));
+  base::MessageLoop::current()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MockScreenOrientationClient::ResetLockSync,
+                            base::Unretained(this)));
 }
 
 void MockScreenOrientationClient::UpdateLockSync(

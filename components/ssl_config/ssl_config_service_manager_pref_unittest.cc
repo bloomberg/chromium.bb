@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_service.h"
@@ -71,7 +72,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, GoodDisabledCipherSuites) {
 
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the
   // preferences changed.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   SSLConfig config;
   config_service->GetSSLConfig(&config);
@@ -109,7 +110,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
 
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the
   // preferences changed.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   SSLConfig config;
   config_service->GetSSLConfig(&config);

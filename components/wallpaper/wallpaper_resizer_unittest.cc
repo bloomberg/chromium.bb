@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,7 +82,7 @@ class WallpaperResizerTest : public testing::Test,
     return worker_pool_owner_.pool().get();
   }
 
-  void WaitForResize() { message_loop_.Run(); }
+  void WaitForResize() { base::RunLoop().Run(); }
 
   void OnWallpaperResized() override { message_loop_.QuitWhenIdle(); }
 

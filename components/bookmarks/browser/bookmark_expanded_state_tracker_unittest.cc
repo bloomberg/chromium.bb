@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -54,7 +55,7 @@ void BookmarkExpandedStateTrackerTest::SetUp() {
 
 void BookmarkExpandedStateTrackerTest::TearDown() {
   model_.reset();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Various assertions for SetExpandedNodes.

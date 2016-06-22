@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
@@ -57,13 +58,11 @@ class InvalidationNotifierTestDelegate {
     // another task, so they must be run in order to avoid leaking the inner
     // task.  Stopping does not schedule any tasks, so it's both necessary and
     // sufficient to drain the task queue before stopping the notifier.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     invalidator_.reset();
   }
 
-  void WaitForInvalidator() {
-    message_loop_.RunUntilIdle();
-  }
+  void WaitForInvalidator() { base::RunLoop().RunUntilIdle(); }
 
   void TriggerOnInvalidatorStateChange(InvalidatorState state) {
     invalidator_->OnInvalidatorStateChange(state);

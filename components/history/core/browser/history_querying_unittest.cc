@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -85,7 +86,7 @@ class HistoryQueryTest : public testing::Test {
                                       base::Unretained(this)),
                            &tracker_);
     // Will go until ...Complete calls Quit.
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     results->Swap(&last_query_results_);
   }
 
@@ -185,7 +186,7 @@ class HistoryQueryTest : public testing::Test {
           base::MessageLoop::QuitWhenIdleClosure());
       history_->Cleanup();
       history_.reset();
-      base::MessageLoop::current()->Run();  // Wait for the other thread.
+      base::RunLoop().Run();  // Wait for the other thread.
     }
   }
 

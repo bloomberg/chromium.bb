@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -45,7 +46,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
   void TearDown() override {
     if (model_)
       model_->RemoveObserver(&observer_);
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void CreateModel(bool is_supervised) {

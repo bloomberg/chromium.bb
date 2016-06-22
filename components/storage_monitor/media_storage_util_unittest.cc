@@ -79,7 +79,7 @@ class MediaStorageUtilTest : public testing::Test {
     BrowserThread::PostTask(BrowserThread::FILE,
                             FROM_HERE,
                             base::Bind(&PostQuitToUIThread));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
  private:

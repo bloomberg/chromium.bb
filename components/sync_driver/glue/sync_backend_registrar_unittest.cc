@@ -120,7 +120,7 @@ class SyncBackendRegistrarTest : public testing::Test {
         FROM_HERE, base::Bind(&SyncBackendRegistrar::Shutdown,
                               base::Unretained(registrar_.release())));
     sync_thread_->WaitUntilThreadStarted();
-    sync_thread_->message_loop()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ExpectRoutingInfo(
@@ -455,7 +455,7 @@ TEST_F(SyncBackendRegistrarShutdownTest, BlockingShutdown) {
 
   // The test verifies that the sync thread doesn't block because
   // of the blocked DB thread and can finish the shutdown.
-  sync_thread->message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   db_thread_lock_.Release();
 

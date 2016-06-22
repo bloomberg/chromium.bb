@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -62,7 +63,7 @@ TEST(FetcherPoolTest, AddDelete) {
   EXPECT_FALSE(pool.IsEmpty());
   EXPECT_CALL(delegate, OnURLFetchComplete(url_fetcher_ptr));
 
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   pool.Delete(*url_fetcher_ptr);
   EXPECT_TRUE(pool.IsEmpty());
@@ -86,7 +87,7 @@ TEST(FetcherPoolTest, Delete) {
   EXPECT_TRUE(pool.IsEmpty());
 
   EXPECT_CALL(delegate, OnURLFetchComplete(_)).Times(0);
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST(FetcherPoolTest, ParallelURLFetchers) {
@@ -116,7 +117,7 @@ TEST(FetcherPoolTest, ParallelURLFetchers) {
         pool.Delete(*fetcher);
       }));
 
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(pool.IsEmpty());
   EXPECT_TRUE(pool.IsAvailable());
@@ -139,7 +140,7 @@ TEST(FetcherPoolTest, DeleteAll) {
 
   pool.DeleteAll();
 
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(pool.IsEmpty());
   EXPECT_TRUE(pool.IsAvailable());
@@ -208,7 +209,7 @@ TEST(FetcherPoolTest, ExampleUsage) {
   EXPECT_FALSE(pool.IsEmpty());
   EXPECT_FALSE(pool.IsAvailable());
 
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(pool.IsEmpty());
   EXPECT_TRUE(pool.IsAvailable());

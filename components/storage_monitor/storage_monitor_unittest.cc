@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/storage_monitor/mock_removable_storage_observer.h"
@@ -47,7 +48,7 @@ TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
   StorageInfo info(kDeviceId1, FILE_PATH_LITERAL("path"), base::string16(),
                    base::string16(), base::string16(), 0);
   monitor.receiver()->ProcessAttach(info);
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kDeviceId1, observer1.last_attached().device_id());
   EXPECT_EQ(FILE_PATH_LITERAL("path"), observer1.last_attached().location());
@@ -58,7 +59,7 @@ TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
 
   monitor.receiver()->ProcessDetach(kDeviceId1);
   monitor.receiver()->ProcessDetach(kDeviceId2);
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kDeviceId1, observer1.last_detached().device_id());
   EXPECT_EQ(FILE_PATH_LITERAL("path"), observer1.last_detached().location());
@@ -93,7 +94,7 @@ TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   StorageInfo info1(kDeviceId1, kDevicePath1.value(), base::string16(),
                     base::string16(), base::string16(), 0);
   monitor.receiver()->ProcessAttach(info1);
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   std::vector<StorageInfo> devices = monitor.GetAllAvailableStorages();
   ASSERT_EQ(1U, devices.size());
   EXPECT_EQ(kDeviceId1, devices[0].device_id());
@@ -104,7 +105,7 @@ TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   StorageInfo info2(kDeviceId2, kDevicePath2.value(), base::string16(),
                     base::string16(), base::string16(), 0);
   monitor.receiver()->ProcessAttach(info2);
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   devices = monitor.GetAllAvailableStorages();
   ASSERT_EQ(2U, devices.size());
   EXPECT_EQ(kDeviceId1, devices[0].device_id());
@@ -113,14 +114,14 @@ TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   EXPECT_EQ(kDevicePath2.value(), devices[1].location());
 
   monitor.receiver()->ProcessDetach(kDeviceId1);
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   devices = monitor.GetAllAvailableStorages();
   ASSERT_EQ(1U, devices.size());
   EXPECT_EQ(kDeviceId2, devices[0].device_id());
   EXPECT_EQ(kDevicePath2.value(), devices[0].location());
 
   monitor.receiver()->ProcessDetach(kDeviceId2);
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   devices = monitor.GetAllAvailableStorages();
   EXPECT_EQ(0U, devices.size());
 }

@@ -115,7 +115,7 @@ void PostFromNestedRunloop(base::MessageLoop* message_loop,
       runner->PostNonNestableTask(FROM_HERE, pair.first);
     }
   }
-  message_loop->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void NopTask() {}
@@ -1352,7 +1352,7 @@ void PostTestTasksFromNestedMessageLoop(
                                    base::Bind(&TestTask, 1, run_order));
   // The following should never get executed.
   wake_up_runner->PostTask(FROM_HERE, base::Bind(&TestTask, 2, run_order));
-  message_loop->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(TaskQueueManagerTest, DeferredNonNestableTaskDoesNotTriggerWakeUp) {
@@ -1814,7 +1814,7 @@ void RunloopCurrentlyExecutingTaskQueueTestTask(
     pair.second->PostTask(FROM_HERE, pair.first);
   }
 
-  message_loop->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   task_sources->push_back(task_queue_manager->currently_executing_task_queue());
 }
 }

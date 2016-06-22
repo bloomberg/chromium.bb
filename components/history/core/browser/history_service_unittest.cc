@@ -26,6 +26,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -83,7 +84,7 @@ class HistoryServiceTest : public testing::Test {
     // test.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   void CleanupHistoryService() {
@@ -99,7 +100,7 @@ class HistoryServiceTest : public testing::Test {
     // moving to the next test. Note: if this never terminates, somebody is
     // probably leaking a reference to the history backend, so it never calls
     // our destroy task.
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   // Fills the query_url_row_ and query_url_visits_ structures with the
@@ -111,7 +112,7 @@ class HistoryServiceTest : public testing::Test {
         true,
         base::Bind(&HistoryServiceTest::SaveURLAndQuit, base::Unretained(this)),
         &tracker_);
-    base::MessageLoop::current()->Run();  // Will be exited in SaveURLAndQuit.
+    base::RunLoop().Run();  // Will be exited in SaveURLAndQuit.
     return query_url_success_;
   }
 
@@ -138,7 +139,7 @@ class HistoryServiceTest : public testing::Test {
         base::Bind(&HistoryServiceTest::OnRedirectQueryComplete,
                    base::Unretained(this)),
         &tracker_);
-    base::MessageLoop::current()->Run();  // Will be exited in *QueryComplete.
+    base::RunLoop().Run();  // Will be exited in *QueryComplete.
   }
 
   // Callback for QueryRedirects.
@@ -465,7 +466,7 @@ TEST_F(HistoryServiceTest, MostVisitedURLs) {
       base::Bind(&HistoryServiceTest::OnMostVisitedURLsAvailable,
                  base::Unretained(this)),
       &tracker_);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(2U, most_visited_urls_.size());
   EXPECT_EQ(url0, most_visited_urls_[0].url);
@@ -482,7 +483,7 @@ TEST_F(HistoryServiceTest, MostVisitedURLs) {
       base::Bind(&HistoryServiceTest::OnMostVisitedURLsAvailable,
                  base::Unretained(this)),
       &tracker_);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(3U, most_visited_urls_.size());
   EXPECT_EQ(url0, most_visited_urls_[0].url);
@@ -500,7 +501,7 @@ TEST_F(HistoryServiceTest, MostVisitedURLs) {
       base::Bind(&HistoryServiceTest::OnMostVisitedURLsAvailable,
                  base::Unretained(this)),
       &tracker_);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(3U, most_visited_urls_.size());
   EXPECT_EQ(url2, most_visited_urls_[0].url);
@@ -518,7 +519,7 @@ TEST_F(HistoryServiceTest, MostVisitedURLs) {
       base::Bind(&HistoryServiceTest::OnMostVisitedURLsAvailable,
                  base::Unretained(this)),
       &tracker_);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(3U, most_visited_urls_.size());
   EXPECT_EQ(url1, most_visited_urls_[0].url);
@@ -541,7 +542,7 @@ TEST_F(HistoryServiceTest, MostVisitedURLs) {
       base::Bind(&HistoryServiceTest::OnMostVisitedURLsAvailable,
                  base::Unretained(this)),
       &tracker_);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(4U, most_visited_urls_.size());
   EXPECT_EQ(url1, most_visited_urls_[0].url);
@@ -600,7 +601,7 @@ TEST_F(HistoryServiceTest, HistoryDBTask) {
   // Run the message loop. When HistoryDBTaskImpl::DoneRunOnMainThread runs,
   // it will stop the message loop. If the test hangs here, it means
   // DoneRunOnMainThread isn't being invoked correctly.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   CleanupHistoryService();
   // WARNING: history has now been deleted.
   history_service_.reset();
@@ -758,7 +759,7 @@ TEST_F(HistoryServiceTest, ProcessGlobalIdDeleteDirective) {
       base::Bind(&CheckDirectiveProcessingResult,
                  base::Time::Now() + base::TimeDelta::FromSeconds(10),
                  &change_processor, 2));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   ASSERT_EQ(5, query_url_row_.visit_count());
   EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1),
@@ -842,7 +843,7 @@ TEST_F(HistoryServiceTest, ProcessTimeRangeDeleteDirective) {
       base::Bind(&CheckDirectiveProcessingResult,
                  base::Time::Now() + base::TimeDelta::FromSeconds(10),
                  &change_processor, 2));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   ASSERT_EQ(3, query_url_row_.visit_count());
   EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1),

@@ -495,8 +495,8 @@ void SyncBackendHostImpl::GetModelSafeRoutingInfo(
 
 void SyncBackendHostImpl::FlushDirectory() const {
   DCHECK(initialized());
-  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHostCore::SaveChanges, core_));
+  registrar_->sync_thread()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&SyncBackendHostCore::SaveChanges, core_));
 }
 
 void SyncBackendHostImpl::RequestBufferedProtocolEventsAndEnableForwarding() {

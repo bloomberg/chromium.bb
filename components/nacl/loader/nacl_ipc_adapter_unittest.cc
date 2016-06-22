@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -41,7 +42,7 @@ class NaClIPCAdapterTest : public testing::Test {
     // The adapter destructor has to post a task to destroy the Channel on the
     // IO thread. For the purposes of the test, we just need to make sure that
     // task gets run, or it will appear as a leak.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -132,7 +133,7 @@ TEST_F(NaClIPCAdapterTest, SendRewriting) {
 
   // Check that the message came out the other end in the test sink
   // (messages are posted, so we have to pump).
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, sink_->message_count());
   const IPC::Message* msg = sink_->GetMessageAt(0);
 
@@ -148,14 +149,14 @@ TEST_F(NaClIPCAdapterTest, SendRewriting) {
   EXPECT_EQ(first_chunk_size, result);
 
   // First partial send should not have made any messages.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(0u, sink_->message_count());
 
   // Second partial send should do the same.
   int second_chunk_size = 2;
   result = Send(&buf[first_chunk_size], second_chunk_size);
   EXPECT_EQ(second_chunk_size, result);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(0u, sink_->message_count());
 
   // Send the rest of the message in a third chunk.
@@ -165,7 +166,7 @@ TEST_F(NaClIPCAdapterTest, SendRewriting) {
   EXPECT_EQ(third_chunk_size, result);
 
   // Last send should have generated one message.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, sink_->message_count());
   msg = sink_->GetMessageAt(0);
   EXPECT_EQ(sizeof(int), msg->payload_size());
@@ -248,7 +249,7 @@ TEST_F(NaClIPCAdapterTest, SendOverflow) {
   // Send too much data and make sure that the send fails.
   int result = Send(buf, big_buf_size);
   EXPECT_EQ(-1, result);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(0u, sink_->message_count());
 
   // Send too much data in two chunks and make sure that the send fails.
@@ -257,13 +258,13 @@ TEST_F(NaClIPCAdapterTest, SendOverflow) {
   EXPECT_EQ(first_chunk_size, result);
 
   // First partial send should not have made any messages.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(0u, sink_->message_count());
 
   int second_chunk_size = big_buf_size - first_chunk_size;
   result = Send(&buf[first_chunk_size], second_chunk_size);
   EXPECT_EQ(-1, result);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(0u, sink_->message_count());
 }
 

@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -227,7 +228,8 @@ HistoryBackend::~HistoryBackend() {
   if (!backend_destroy_task_.is_null()) {
     // Notify an interested party (typically a unit test) that we're done.
     DCHECK(backend_destroy_message_loop_);
-    backend_destroy_message_loop_->PostTask(FROM_HERE, backend_destroy_task_);
+    backend_destroy_message_loop_->task_runner()->PostTask(
+        FROM_HERE, backend_destroy_task_);
   }
 
 #if defined(OS_ANDROID)

@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "components/tracing/common/tracing_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
@@ -56,7 +57,7 @@ TEST_F(ChildTraceMessageFilterTest, TestHistogramDoesNotTrigger) {
 
   OnSetUMACallback("foo1", 20000, 25000, true);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(fake_sender_.last_message_);
 }
@@ -66,7 +67,7 @@ TEST_F(ChildTraceMessageFilterTest, TestHistogramTriggers) {
 
   OnSetUMACallback("foo2", 1, 3, true);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(fake_sender_.last_message_);
   EXPECT_EQ(fake_sender_.last_message_->type(),
@@ -78,7 +79,7 @@ TEST_F(ChildTraceMessageFilterTest, TestHistogramAborts) {
 
   OnSetUMACallback("foo3", 1, 3, false);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(fake_sender_.last_message_);
   EXPECT_EQ(fake_sender_.last_message_->type(),

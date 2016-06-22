@@ -204,7 +204,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
       wifi_service_->StartConnect(network_guid, &error);
       VLOG(0) << error;
       if (error.empty())
-        base::MessageLoop::current()->Run();
+        base::RunLoop().Run();
       return true;
     }
   }
@@ -234,7 +234,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
         base::Bind(&WiFiTest::OnNetworksChanged, base::Unretained(this)),
         base::Bind(&WiFiTest::OnNetworkListChanged, base::Unretained(this)));
     wifi_service_->RequestNetworkScan();
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     return true;
   }
 

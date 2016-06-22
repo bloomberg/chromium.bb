@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -80,7 +81,7 @@ void HistoryBackendDBBaseTest::TearDown() {
   // test.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void HistoryBackendDBBaseTest::CreateBackendAndDatabase() {

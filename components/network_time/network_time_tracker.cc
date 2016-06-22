@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/tick_clock.h"
@@ -291,7 +292,7 @@ bool NetworkTimeTracker::QueryTimeServiceForTesting() {
 
 void NetworkTimeTracker::WaitForFetchForTesting(uint32_t nonce) {
   query_signer_->OverrideNonceForTesting(kKeyVersion, nonce);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 base::TimeDelta NetworkTimeTracker::GetTimerDelayForTesting() const {

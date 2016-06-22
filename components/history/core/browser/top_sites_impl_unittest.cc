@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
@@ -91,7 +92,7 @@ class TopSitesQuerier {
         include_forced_urls);
     if (wait && start_number_of_callbacks == number_of_callbacks_) {
       waiting_ = true;
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
     }
   }
 
@@ -179,7 +180,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     history_service()->ScheduleDBTask(
         std::unique_ptr<history::HistoryDBTask>(new WaitForHistoryTask()),
         &history_tracker_);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   // Waits for top sites to finish processing a task. This is useful if you need
@@ -188,7 +189,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     top_sites()->backend_->DoEmptyRequest(
         base::Bind(&TopSitesImplTest::QuitCallback, base::Unretained(this)),
         &top_sites_tracker_);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   TopSitesImpl* top_sites() { return top_sites_impl_.get(); }
@@ -325,7 +326,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
       top_sites_impl_ = nullptr;
 
       if (base::MessageLoop::current())
-        base::MessageLoop::current()->RunUntilIdle();
+        base::RunLoop().RunUntilIdle();
     }
   }
 
