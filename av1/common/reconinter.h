@@ -30,7 +30,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                                    int xs, int ys) {
   InterpFilterParams interp_filter_params =
       get_interp_filter_params(*interp_filter);
-  if (interp_filter_params.taps == SUBPEL_TAPS) {
+  if (interp_filter_params.taps == SUBPEL_TAPS && w > 2 && h > 2) {
     const int16_t *filter_x =
         get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
     const int16_t *filter_y =
@@ -54,7 +54,7 @@ static INLINE void high_inter_predictor(const uint8_t *src, int src_stride,
                                         int xs, int ys, int bd) {
   InterpFilterParams interp_filter_params =
       get_interp_filter_params(*interp_filter);
-  if (interp_filter_params.taps == SUBPEL_TAPS) {
+  if (interp_filter_params.taps == SUBPEL_TAPS && w > 2 && h > 2) {
     const int16_t *filter_x =
         get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
     const int16_t *filter_y =
