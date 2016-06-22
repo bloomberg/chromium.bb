@@ -95,7 +95,7 @@ class OfflinePageModel : public base::SupportsUserData {
   // Wipes out all the data by deleting all saved files and clearing the store.
   virtual void ClearAll(const base::Closure& callback) = 0;
 
-  // Deletes pages based on |ofline_ids|.
+  // Deletes pages based on |offline_ids|.
   virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                                       const DeletePageCallback& callback) = 0;
 

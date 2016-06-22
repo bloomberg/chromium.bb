@@ -349,8 +349,9 @@ void OfflinePageModelImpl::DoDeletePagesByOfflineId(
     }
   }
 
+  // If there're no pages to delete, return early.
   if (paths_to_delete.empty()) {
-    InformDeletePageDone(callback, DeletePageResult::NOT_FOUND);
+    InformDeletePageDone(callback, DeletePageResult::SUCCESS);
     return;
   }
 
@@ -831,8 +832,6 @@ void OfflinePageModelImpl::OnRemoveOfflinePagesDone(
     bool success) {
   ReportPageHistogramsAfterDelete(offline_pages_, offline_ids);
 
-  // Delete the offline page from the in memory cache regardless of success in
-  // store.
   for (int64_t offline_id : offline_ids) {
     auto iter = offline_pages_.find(offline_id);
     if (iter == offline_pages_.end())
@@ -842,6 +841,7 @@ void OfflinePageModelImpl::OnRemoveOfflinePagesDone(
         OfflinePageDeleted(iter->second.offline_id, iter->second.client_id));
     offline_pages_.erase(iter);
   }
+
   // Deleting multiple pages always succeeds when it gets to this point.
   InformDeletePageDone(callback, (success || offline_ids.size() > 1)
                                      ? DeletePageResult::SUCCESS

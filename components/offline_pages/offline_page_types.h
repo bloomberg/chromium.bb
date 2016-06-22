@@ -48,6 +48,8 @@ enum class DeletePageResult {
   CANCELLED,
   STORE_FAILURE,
   DEVICE_FAILURE,
+  // Deprecated. Deleting pages which are not in metadata store would be
+  // returing |SUCCESS|. Should not be used anymore.
   NOT_FOUND,
   // NOTE: always keep this entry at the end. Add new result types only
   // immediately above this line. Make sure to update the corresponding

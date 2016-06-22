@@ -145,7 +145,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     public void testDeleteOfflinePage() throws Exception {
-        deletePage(BOOKMARK_ID, DeletePageResult.NOT_FOUND);
+        deletePage(BOOKMARK_ID, DeletePageResult.SUCCESS);
         loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
         assertNotNull(

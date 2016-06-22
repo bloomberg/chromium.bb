@@ -152,10 +152,7 @@ void RecentTabHelper::ContinueSnapshotWithIdsToPurge(
 
 void RecentTabHelper::ContinueSnapshotAfterPurge(
     OfflinePageModel::DeletePageResult result) {
-  // NOT_FOUND is because it's what we get when passing empty vector of ids.
-  // TODO(dimich): remove NOT_FOUND when bug 608057 is fixed.
-  if (result != OfflinePageModel::DeletePageResult::SUCCESS &&
-      result != OfflinePageModel::DeletePageResult::NOT_FOUND) {
+  if (result != OfflinePageModel::DeletePageResult::SUCCESS) {
     // If previous pages can't be deleted, don't add new ones.
     ReportSnapshotCompleted();
     return;
