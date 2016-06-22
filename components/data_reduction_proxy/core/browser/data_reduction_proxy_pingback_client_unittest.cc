@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
@@ -17,6 +18,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -27,6 +29,10 @@ namespace data_reduction_proxy {
 
 namespace {
 
+static const char kHistogramSucceeded[] =
+    "DataReductionProxy.Pingback.Succeeded";
+static const char kHistogramAttempted[] =
+    "DataReductionProxy.Pingback.Attempted";
 static const char kSessionKey[] = "fake-session";
 static const char kFakeURL[] = "http://www.google.com/";
 
@@ -91,12 +97,15 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
 
   const DataReductionProxyPageLoadTiming& timing() { return timing_; }
 
+  const base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
  private:
   base::MessageLoopForIO message_loop_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::unique_ptr<TestDataReductionProxyPingbackClient> pingback_client_;
   net::TestURLFetcherFactory factory_;
   DataReductionProxyPageLoadTiming timing_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
@@ -105,7 +114,7 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   pingback_client()->OverrideRandom(true, 0.5f);
   pingback_client()->SetPingbackReportingFraction(1.0f);
   CreateAndSendPingback();
-
+  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
   RecordPageloadMetricsRequest batched_request;
@@ -129,6 +138,7 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
   EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 1);
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
@@ -140,12 +150,17 @@ TEST_F(DataReductionProxyPingbackClientTest, SendTwoPingbacks) {
   CreateAndSendPingback();
   CreateAndSendPingback();
 
+  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 1);
+  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 2);
   EXPECT_TRUE(factory()->GetFetcherByID(0));
   test_fetcher = factory()->GetFetcherByID(0);
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 2);
   EXPECT_FALSE(factory()->GetFetcherByID(0));
+  histogram_tester().ExpectTotalCount(kHistogramAttempted, 2);
 }
 
 TEST_F(DataReductionProxyPingbackClientTest, NoPingbackSent) {
@@ -154,6 +169,8 @@ TEST_F(DataReductionProxyPingbackClientTest, NoPingbackSent) {
   pingback_client()->OverrideRandom(true, 0.5f);
   pingback_client()->SetPingbackReportingFraction(0.0f);
   CreateAndSendPingback();
+  histogram_tester().ExpectUniqueSample(kHistogramAttempted, false, 1);
+  histogram_tester().ExpectTotalCount(kHistogramSucceeded, 0);
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
@@ -166,14 +183,17 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
   pingback_client()->SetPingbackReportingFraction(0.5f);
   pingback_client()->OverrideRandom(true, 0.4f);
   CreateAndSendPingback();
+  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 1);
 
   // Verify that if the random number is greater than the reporting fraction,
   // the pingback is not created.
   pingback_client()->OverrideRandom(true, 0.6f);
   CreateAndSendPingback();
+  histogram_tester().ExpectBucketCount(kHistogramAttempted, false, 1);
   test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_FALSE(test_fetcher);
 
@@ -183,6 +203,7 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
   pingback_client()->SetPingbackReportingFraction(0.0f);
   pingback_client()->OverrideRandom(true, 0.0f);
   CreateAndSendPingback();
+  histogram_tester().ExpectBucketCount(kHistogramAttempted, false, 2);
   test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_FALSE(test_fetcher);
 
@@ -192,9 +213,27 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
   pingback_client()->SetPingbackReportingFraction(0.0f);
   pingback_client()->OverrideRandom(true, 1.0f);
   CreateAndSendPingback();
+  histogram_tester().ExpectBucketCount(kHistogramAttempted, true, 2);
   test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 2);
+}
+
+TEST_F(DataReductionProxyPingbackClientTest, FailedPingback) {
+  Init();
+  EXPECT_FALSE(factory()->GetFetcherByID(0));
+  pingback_client()->OverrideRandom(true, 0.5f);
+  pingback_client()->SetPingbackReportingFraction(1.0f);
+  CreateAndSendPingback();
+  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
+  net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
+  EXPECT_TRUE(test_fetcher);
+  // Simulate a network error.
+  test_fetcher->set_status(net::URLRequestStatus(
+      net::URLRequestStatus::FAILED, net::ERR_INVALID_AUTH_CREDENTIALS));
+  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  histogram_tester().ExpectUniqueSample(kHistogramSucceeded, false, 1);
 }
 
 }  // namespace data_reduction_proxy

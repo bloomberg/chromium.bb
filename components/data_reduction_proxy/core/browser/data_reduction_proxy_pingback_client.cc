@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
@@ -20,6 +21,11 @@
 namespace data_reduction_proxy {
 
 namespace {
+
+static const char kHistogramSucceeded[] =
+    "DataReductionProxy.Pingback.Succeeded";
+static const char kHistogramAttempted[] =
+    "DataReductionProxy.Pingback.Attempted";
 
 // Creates a PageloadMetrics protobuf for this page load and serializes to a
 // string.
@@ -77,7 +83,7 @@ void DataReductionProxyPingbackClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(source == current_fetcher_.get());
-  // TODO(ryansturm): Add UMA to measure failures. crbug.com/616544
+  UMA_HISTOGRAM_BOOLEAN(kHistogramSucceeded, source->GetStatus().is_success());
   current_fetcher_.reset();
   while (!current_fetcher_ && !data_to_send_.empty()) {
     current_fetcher_ = MaybeCreateFetcherForDataAndStart(data_to_send_.front());
@@ -101,9 +107,10 @@ void DataReductionProxyPingbackClient::SendPingback(
 std::unique_ptr<net::URLFetcher>
 DataReductionProxyPingbackClient::MaybeCreateFetcherForDataAndStart(
     const std::string& request_data) {
-  if (!ShouldSendPingback())
+  bool send_pingback = ShouldSendPingback();
+  UMA_HISTOGRAM_BOOLEAN(kHistogramAttempted, send_pingback);
+  if (!send_pingback)
     return nullptr;
-  // TODO(ryansturm): Add UMA to measure failures. crbug.com/616544
   std::unique_ptr<net::URLFetcher> fetcher(
       net::URLFetcher::Create(pingback_url_, net::URLFetcher::POST, this));
   fetcher->SetLoadFlags(net::LOAD_BYPASS_PROXY);

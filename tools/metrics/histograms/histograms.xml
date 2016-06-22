@@ -7574,6 +7574,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.Pingback.Attempted" enum="BooleanAttempted">
+  <owner>bengr@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <summary>
+    Counts the number of times a pingback was attempted or not attempted based
+    on the reporting fraction.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.Pingback.Succeeded" enum="BooleanSuccess">
+  <owner>bengr@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <summary>
+    Counts the number of times that a pingback succeeded or failed at being sent
+    to the server.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.ProbeURL"
     enum="DataReductionProxyProbeURLFetchResult">
   <owner>bengr@chromium.org</owner>
