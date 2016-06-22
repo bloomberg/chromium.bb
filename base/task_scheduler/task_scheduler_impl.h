@@ -23,7 +23,7 @@ namespace base {
 namespace internal {
 
 class SchedulerServiceThread;
-class SchedulerThreadPoolImpl;
+class SchedulerWorkerPoolImpl;
 
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
@@ -55,8 +55,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
 
   void Initialize();
 
-  // Returns the thread pool that runs Tasks with |traits|.
-  SchedulerThreadPool* GetThreadPoolForTraits(const TaskTraits& traits);
+  // Returns the worker pool that runs Tasks with |traits|.
+  SchedulerWorkerPool* GetWorkerPoolForTraits(const TaskTraits& traits);
 
   // Callback invoked when a non-single-thread |sequence| isn't empty after a
   // worker thread pops a Task from it.
@@ -69,17 +69,17 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   TaskTracker task_tracker_;
   DelayedTaskManager delayed_task_manager_;
 
-  // Thread pool for BACKGROUND Tasks without file I/O.
-  std::unique_ptr<SchedulerThreadPoolImpl> background_thread_pool_;
+  // Worker pool for BACKGROUND Tasks without file I/O.
+  std::unique_ptr<SchedulerWorkerPoolImpl> background_worker_pool_;
 
-  // Thread pool for BACKGROUND Tasks with file I/O.
-  std::unique_ptr<SchedulerThreadPoolImpl> background_file_io_thread_pool_;
+  // Worker pool for BACKGROUND Tasks with file I/O.
+  std::unique_ptr<SchedulerWorkerPoolImpl> background_file_io_worker_pool_;
 
-  // Thread pool for USER_VISIBLE and USER_BLOCKING Tasks without file I/O.
-  std::unique_ptr<SchedulerThreadPoolImpl> normal_thread_pool_;
+  // Worker pool for USER_VISIBLE and USER_BLOCKING Tasks without file I/O.
+  std::unique_ptr<SchedulerWorkerPoolImpl> normal_worker_pool_;
 
-  // Thread pool for USER_VISIBLE and USER_BLOCKING Tasks with file I/O.
-  std::unique_ptr<SchedulerThreadPoolImpl> normal_file_io_thread_pool_;
+  // Worker pool for USER_VISIBLE and USER_BLOCKING Tasks with file I/O.
+  std::unique_ptr<SchedulerWorkerPoolImpl> normal_file_io_worker_pool_;
 
   std::unique_ptr<SchedulerServiceThread> service_thread_;
 

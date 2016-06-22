@@ -555,7 +555,7 @@
         'task_scheduler/priority_queue_unittest.cc',
         'task_scheduler/scheduler_lock_unittest.cc',
         'task_scheduler/scheduler_service_thread_unittest.cc',
-        'task_scheduler/scheduler_thread_pool_impl_unittest.cc',
+        'task_scheduler/scheduler_worker_pool_impl_unittest.cc',
         'task_scheduler/scheduler_worker_thread_stack_unittest.cc',
         'task_scheduler/scheduler_worker_thread_unittest.cc',
         'task_scheduler/sequence_sort_key_unittest.cc',

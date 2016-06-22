@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_scheduler/scheduler_lock.h"
-#include "base/task_scheduler/scheduler_thread_pool.h"
+#include "base/task_scheduler/scheduler_worker_pool.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/time/time.h"
@@ -43,9 +43,9 @@ class TestDelayedTaskManager : public DelayedTaskManager {
   DISALLOW_COPY_AND_ASSIGN(TestDelayedTaskManager);
 };
 
-class MockSchedulerThreadPool : public SchedulerThreadPool {
+class MockSchedulerWorkerPool : public SchedulerWorkerPool {
  public:
-  // SchedulerThreadPool:
+  // SchedulerWorkerPool:
   scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
       const TaskTraits& traits,
       ExecutionMode execution_mode) override {
@@ -96,16 +96,16 @@ TEST(TaskSchedulerDelayedTaskManagerTest, PostReadyTaskBeforeDelayedRunTime) {
   task->delayed_run_time = manager.Now() + TimeDelta::FromSeconds(1);
   const Task* task_raw = task.get();
   scoped_refptr<Sequence> sequence(new Sequence);
-  testing::StrictMock<MockSchedulerThreadPool> thread_pool;
+  testing::StrictMock<MockSchedulerWorkerPool> worker_pool;
 
   // Add |task| to the DelayedTaskManager.
   EXPECT_CALL(manager, OnDelayedRunTimeUpdated());
-  manager.AddDelayedTask(std::move(task), sequence, nullptr, &thread_pool);
+  manager.AddDelayedTask(std::move(task), sequence, nullptr, &worker_pool);
   testing::Mock::VerifyAndClear(&manager);
   EXPECT_EQ(task_raw->delayed_run_time, manager.GetDelayedRunTime());
 
   // Ask the DelayedTaskManager to post tasks that are ripe for execution. Don't
-  // expect any call to the mock method of |thread_pool|.
+  // expect any call to the mock method of |worker_pool|.
   manager.PostReadyTasks();
 
   // The delayed run time shouldn't have changed.
@@ -122,11 +122,11 @@ TEST(TaskSchedulerDelayedTaskManagerTest, PostReadyTasksAtDelayedRunTime) {
   task->delayed_run_time = manager.Now() + TimeDelta::FromSeconds(1);
   const Task* task_raw = task.get();
   scoped_refptr<Sequence> sequence(new Sequence);
-  testing::StrictMock<MockSchedulerThreadPool> thread_pool;
+  testing::StrictMock<MockSchedulerWorkerPool> worker_pool;
 
   // Add |task| to the DelayedTaskManager.
   EXPECT_CALL(manager, OnDelayedRunTimeUpdated());
-  manager.AddDelayedTask(std::move(task), sequence, nullptr, &thread_pool);
+  manager.AddDelayedTask(std::move(task), sequence, nullptr, &worker_pool);
   testing::Mock::VerifyAndClear(&manager);
   EXPECT_EQ(task_raw->delayed_run_time, manager.GetDelayedRunTime());
 
@@ -134,7 +134,7 @@ TEST(TaskSchedulerDelayedTaskManagerTest, PostReadyTasksAtDelayedRunTime) {
   manager.SetCurrentTime(task_raw->delayed_run_time);
 
   // Ask the DelayedTaskManager to post tasks that are ripe for execution.
-  EXPECT_CALL(thread_pool,
+  EXPECT_CALL(worker_pool,
               PostTaskWithSequenceNowMock(task_raw, sequence.get(), nullptr));
   manager.PostReadyTasks();
   testing::Mock::VerifyAndClear(&manager);
@@ -151,11 +151,11 @@ TEST(TaskSchedulerDelayedTaskManagerTest, PostReadyTasksAfterDelayedRunTime) {
   task->delayed_run_time = manager.Now() + TimeDelta::FromSeconds(1);
   const Task* task_raw = task.get();
   scoped_refptr<Sequence> sequence(new Sequence);
-  testing::StrictMock<MockSchedulerThreadPool> thread_pool;
+  testing::StrictMock<MockSchedulerWorkerPool> worker_pool;
 
   // Add |task| to the DelayedTaskManager.
   EXPECT_CALL(manager, OnDelayedRunTimeUpdated());
-  manager.AddDelayedTask(std::move(task), sequence, nullptr, &thread_pool);
+  manager.AddDelayedTask(std::move(task), sequence, nullptr, &worker_pool);
   testing::Mock::VerifyAndClear(&manager);
   EXPECT_EQ(task_raw->delayed_run_time, manager.GetDelayedRunTime());
 
@@ -164,7 +164,7 @@ TEST(TaskSchedulerDelayedTaskManagerTest, PostReadyTasksAfterDelayedRunTime) {
                          TimeDelta::FromSeconds(10));
 
   // Ask the DelayedTaskManager to post tasks that are ripe for execution.
-  EXPECT_CALL(thread_pool,
+  EXPECT_CALL(worker_pool,
               PostTaskWithSequenceNowMock(task_raw, sequence.get(), nullptr));
   manager.PostReadyTasks();
   testing::Mock::VerifyAndClear(&manager);
@@ -177,7 +177,7 @@ TEST(TaskSchedulerDelayedTaskManagerTest, AddAndPostReadyTasks) {
   testing::StrictMock<TestDelayedTaskManager> manager;
 
   scoped_refptr<Sequence> sequence(new Sequence);
-  testing::StrictMock<MockSchedulerThreadPool> thread_pool;
+  testing::StrictMock<MockSchedulerWorkerPool> worker_pool;
 
   std::unique_ptr<Task> task_a(
       new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
@@ -197,20 +197,20 @@ TEST(TaskSchedulerDelayedTaskManagerTest, AddAndPostReadyTasks) {
   // Add |task_a| to the DelayedTaskManager. The delayed run time should be
   // updated to |task_a|'s delayed run time.
   EXPECT_CALL(manager, OnDelayedRunTimeUpdated());
-  manager.AddDelayedTask(std::move(task_a), sequence, nullptr, &thread_pool);
+  manager.AddDelayedTask(std::move(task_a), sequence, nullptr, &worker_pool);
   testing::Mock::VerifyAndClear(&manager);
   EXPECT_EQ(task_a_raw->delayed_run_time, manager.GetDelayedRunTime());
 
   // Add |task_b| to the DelayedTaskManager. The delayed run time shouldn't
   // change.
-  manager.AddDelayedTask(std::move(task_b), sequence, nullptr, &thread_pool);
+  manager.AddDelayedTask(std::move(task_b), sequence, nullptr, &worker_pool);
   testing::Mock::VerifyAndClear(&manager);
   EXPECT_EQ(task_a_raw->delayed_run_time, manager.GetDelayedRunTime());
 
   // Add |task_c| to the DelayedTaskManager. The delayed run time should be
   // updated to |task_c|'s delayed run time.
   EXPECT_CALL(manager, OnDelayedRunTimeUpdated());
-  manager.AddDelayedTask(std::move(task_c), sequence, nullptr, &thread_pool);
+  manager.AddDelayedTask(std::move(task_c), sequence, nullptr, &worker_pool);
   testing::Mock::VerifyAndClear(&manager);
   EXPECT_EQ(task_c_raw->delayed_run_time, manager.GetDelayedRunTime());
 
@@ -220,10 +220,10 @@ TEST(TaskSchedulerDelayedTaskManagerTest, AddAndPostReadyTasks) {
   // Ask the DelayedTaskManager to post tasks that are ripe for execution.
   // |task_c_raw| should be posted and the delayed run time should become
   // |task_a_raw|'s delayed run time.
-  EXPECT_CALL(thread_pool,
+  EXPECT_CALL(worker_pool,
               PostTaskWithSequenceNowMock(task_c_raw, sequence.get(), nullptr));
   manager.PostReadyTasks();
-  testing::Mock::VerifyAndClear(&thread_pool);
+  testing::Mock::VerifyAndClear(&worker_pool);
   EXPECT_EQ(task_a_raw->delayed_run_time, manager.GetDelayedRunTime());
 
   // Fast-forward time to |task_a_raw|'s delayed run time.
@@ -232,12 +232,12 @@ TEST(TaskSchedulerDelayedTaskManagerTest, AddAndPostReadyTasks) {
   // Ask the DelayedTaskManager to post tasks that are ripe for execution.
   // |task_a_raw| and |task_b_raw| should be posted and the delayed run time
   // should become a null TimeTicks.
-  EXPECT_CALL(thread_pool,
+  EXPECT_CALL(worker_pool,
               PostTaskWithSequenceNowMock(task_a_raw, sequence.get(), nullptr));
-  EXPECT_CALL(thread_pool,
+  EXPECT_CALL(worker_pool,
               PostTaskWithSequenceNowMock(task_b_raw, sequence.get(), nullptr));
   manager.PostReadyTasks();
-  testing::Mock::VerifyAndClear(&thread_pool);
+  testing::Mock::VerifyAndClear(&worker_pool);
   EXPECT_EQ(TimeTicks(), manager.GetDelayedRunTime());
 }
 

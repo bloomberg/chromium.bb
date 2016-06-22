@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/delayed_task_manager.h"
-#include "base/task_scheduler/scheduler_thread_pool_impl.h"
+#include "base/task_scheduler/scheduler_worker_pool_impl.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_tracker.h"
@@ -53,19 +53,19 @@ class TaskSchedulerServiceThreadTest : public testing::Test {
   TaskSchedulerServiceThreadTest() : delayed_task_manager_(Bind(&DoNothing)) {}
 
   void SetUp() override {
-    scheduler_thread_pool_ = SchedulerThreadPoolImpl::Create(
-        "TestThreadPoolForSchedulerThread", ThreadPriority::BACKGROUND, 1u,
-        SchedulerThreadPoolImpl::IORestriction::DISALLOWED,
+    scheduler_worker_pool_ = SchedulerWorkerPoolImpl::Create(
+        "TestWorkerPoolForSchedulerServiceThread", ThreadPriority::BACKGROUND,
+        1u, SchedulerWorkerPoolImpl::IORestriction::DISALLOWED,
         Bind(&ReEnqueueSequenceCallback), &task_tracker_,
         &delayed_task_manager_);
-    ASSERT_TRUE(scheduler_thread_pool_);
+    ASSERT_TRUE(scheduler_worker_pool_);
     service_thread_ = SchedulerServiceThread::Create(
         &task_tracker_, &delayed_task_manager_);
     ASSERT_TRUE(service_thread_);
   }
 
   void TearDown() override {
-    scheduler_thread_pool_->JoinForTesting();
+    scheduler_worker_pool_->JoinForTesting();
     service_thread_->JoinForTesting();
   }
 
@@ -77,8 +77,8 @@ class TaskSchedulerServiceThreadTest : public testing::Test {
     return delayed_task_manager_;
   }
 
-  SchedulerThreadPoolImpl* thread_pool() {
-    return scheduler_thread_pool_.get();
+  SchedulerWorkerPoolImpl* worker_pool() {
+    return scheduler_worker_pool_.get();
   }
 
  private:
@@ -88,7 +88,7 @@ class TaskSchedulerServiceThreadTest : public testing::Test {
 
   DelayedTaskManager delayed_task_manager_;
   TaskTracker task_tracker_;
-  std::unique_ptr<SchedulerThreadPoolImpl> scheduler_thread_pool_;
+  std::unique_ptr<SchedulerWorkerPoolImpl> scheduler_worker_pool_;
   std::unique_ptr<SchedulerServiceThread> service_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerServiceThreadTest);
@@ -104,7 +104,7 @@ TEST_F(TaskSchedulerServiceThreadTest, RunSingleDelayedTask) {
       WrapUnique(new Task(FROM_HERE,
                           Bind(&WaitableEvent::Signal, Unretained(&event)),
                           TaskTraits(), TimeDelta::FromMilliseconds(100))),
-      make_scoped_refptr(new Sequence), nullptr, thread_pool());
+      make_scoped_refptr(new Sequence), nullptr, worker_pool());
   // Waking the service thread shouldn't cause the task to be executed per its
   // delay not having expired (racy in theory, see test-fixture meta-comment).
   service_thread()->WakeUp();
@@ -129,7 +129,7 @@ TEST_F(TaskSchedulerServiceThreadTest, RunMultipleDelayedTasks) {
       WrapUnique(new Task(FROM_HERE,
                           Bind(&WaitableEvent::Signal, Unretained(&event1)),
                           TaskTraits(), delay1)),
-      make_scoped_refptr(new Sequence), nullptr, thread_pool());
+      make_scoped_refptr(new Sequence), nullptr, worker_pool());
 
   WaitableEvent event2(WaitableEvent::ResetPolicy::MANUAL,
                        WaitableEvent::InitialState::NOT_SIGNALED);
@@ -137,7 +137,7 @@ TEST_F(TaskSchedulerServiceThreadTest, RunMultipleDelayedTasks) {
       WrapUnique(new Task(FROM_HERE,
                           Bind(&WaitableEvent::Signal, Unretained(&event2)),
                           TaskTraits(), delay2)),
-      make_scoped_refptr(new Sequence), nullptr, thread_pool());
+      make_scoped_refptr(new Sequence), nullptr, worker_pool());
 
   // Adding the task shouldn't have caused them to be executed.
   EXPECT_FALSE(event1.IsSignaled());

@@ -213,7 +213,7 @@ TEST(TaskSchedulerImplTest, MultipleTraitsExecutionModePairs) {
   scheduler->JoinForTesting();
 }
 
-// TODO(fdoray): Add tests with Sequences that move around thread pools once
+// TODO(fdoray): Add tests with Sequences that move around worker pools once
 // child TaskRunners are supported.
 
 }  // namespace internal

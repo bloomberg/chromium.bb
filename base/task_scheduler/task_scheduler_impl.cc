@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/scheduler_service_thread.h"
-#include "base/task_scheduler/scheduler_thread_pool_impl.h"
+#include "base/task_scheduler/scheduler_worker_pool_impl.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
 #include "base/time/time.h"
@@ -36,7 +36,7 @@ void TaskSchedulerImpl::PostTaskWithTraits(
     const TaskTraits& traits,
     const Closure& task) {
   // Post |task| as part of a one-off single-task Sequence.
-  GetThreadPoolForTraits(traits)->PostTaskWithSequence(
+  GetWorkerPoolForTraits(traits)->PostTaskWithSequence(
       WrapUnique(new Task(from_here, task, traits, TimeDelta())),
       make_scoped_refptr(new Sequence), nullptr);
 }
@@ -44,7 +44,7 @@ void TaskSchedulerImpl::PostTaskWithTraits(
 scoped_refptr<TaskRunner> TaskSchedulerImpl::CreateTaskRunnerWithTraits(
     const TaskTraits& traits,
     ExecutionMode execution_mode) {
-  return GetThreadPoolForTraits(traits)->CreateTaskRunnerWithTraits(
+  return GetWorkerPoolForTraits(traits)->CreateTaskRunnerWithTraits(
       traits, execution_mode);
 }
 
@@ -57,10 +57,10 @@ void TaskSchedulerImpl::JoinForTesting() {
 #if DCHECK_IS_ON()
   DCHECK(!join_for_testing_returned_.IsSignaled());
 #endif
-  background_thread_pool_->JoinForTesting();
-  background_file_io_thread_pool_->JoinForTesting();
-  normal_thread_pool_->JoinForTesting();
-  normal_file_io_thread_pool_->JoinForTesting();
+  background_worker_pool_->JoinForTesting();
+  background_file_io_worker_pool_->JoinForTesting();
+  normal_worker_pool_->JoinForTesting();
+  normal_file_io_worker_pool_->JoinForTesting();
   service_thread_->JoinForTesting();
 #if DCHECK_IS_ON()
   join_for_testing_returned_.Signal();
@@ -79,9 +79,9 @@ TaskSchedulerImpl::TaskSchedulerImpl()
 }
 
 void TaskSchedulerImpl::Initialize() {
-  using IORestriction = SchedulerThreadPoolImpl::IORestriction;
+  using IORestriction = SchedulerWorkerPoolImpl::IORestriction;
 
-  const SchedulerThreadPoolImpl::ReEnqueueSequenceCallback
+  const SchedulerWorkerPoolImpl::ReEnqueueSequenceCallback
       re_enqueue_sequence_callback =
           Bind(&TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
 
@@ -89,48 +89,48 @@ void TaskSchedulerImpl::Initialize() {
   // characteristics rather than using hard-coded constants.
 
   // Passing pointers to objects owned by |this| to
-  // SchedulerThreadPoolImpl::Create() is safe because a TaskSchedulerImpl can't
-  // be deleted before all its thread pools have been joined.
-  background_thread_pool_ = SchedulerThreadPoolImpl::Create(
+  // SchedulerWorkerPoolImpl::Create() is safe because a TaskSchedulerImpl can't
+  // be deleted before all its worker pools have been joined.
+  background_worker_pool_ = SchedulerWorkerPoolImpl::Create(
       "TaskSchedulerBackground", ThreadPriority::BACKGROUND, 1U,
       IORestriction::DISALLOWED, re_enqueue_sequence_callback, &task_tracker_,
       &delayed_task_manager_);
-  CHECK(background_thread_pool_);
+  CHECK(background_worker_pool_);
 
-  background_file_io_thread_pool_ = SchedulerThreadPoolImpl::Create(
+  background_file_io_worker_pool_ = SchedulerWorkerPoolImpl::Create(
       "TaskSchedulerBackgroundFileIO", ThreadPriority::BACKGROUND, 1U,
       IORestriction::ALLOWED, re_enqueue_sequence_callback, &task_tracker_,
       &delayed_task_manager_);
-  CHECK(background_file_io_thread_pool_);
+  CHECK(background_file_io_worker_pool_);
 
-  normal_thread_pool_ = SchedulerThreadPoolImpl::Create(
+  normal_worker_pool_ = SchedulerWorkerPoolImpl::Create(
       "TaskSchedulerForeground", ThreadPriority::NORMAL, 4U,
       IORestriction::DISALLOWED, re_enqueue_sequence_callback, &task_tracker_,
       &delayed_task_manager_);
-  CHECK(normal_thread_pool_);
+  CHECK(normal_worker_pool_);
 
-  normal_file_io_thread_pool_ = SchedulerThreadPoolImpl::Create(
+  normal_file_io_worker_pool_ = SchedulerWorkerPoolImpl::Create(
       "TaskSchedulerForegroundFileIO", ThreadPriority::NORMAL, 12U,
       IORestriction::ALLOWED, re_enqueue_sequence_callback, &task_tracker_,
       &delayed_task_manager_);
-  CHECK(normal_file_io_thread_pool_);
+  CHECK(normal_file_io_worker_pool_);
 
   service_thread_ = SchedulerServiceThread::Create(&task_tracker_,
                                                    &delayed_task_manager_);
   CHECK(service_thread_);
 }
 
-SchedulerThreadPool* TaskSchedulerImpl::GetThreadPoolForTraits(
+SchedulerWorkerPool* TaskSchedulerImpl::GetWorkerPoolForTraits(
     const TaskTraits& traits) {
   if (traits.with_file_io()) {
     if (traits.priority() == TaskPriority::BACKGROUND)
-      return background_file_io_thread_pool_.get();
-    return normal_file_io_thread_pool_.get();
+      return background_file_io_worker_pool_.get();
+    return normal_file_io_worker_pool_.get();
   }
 
   if (traits.priority() == TaskPriority::BACKGROUND)
-    return background_thread_pool_.get();
-  return normal_thread_pool_.get();
+    return background_worker_pool_.get();
+  return normal_worker_pool_.get();
 }
 
 void TaskSchedulerImpl::ReEnqueueSequenceCallback(
@@ -145,7 +145,7 @@ void TaskSchedulerImpl::ReEnqueueSequenceCallback(
   // specific priority.
   traits.WithPriority(sort_key.priority());
 
-  GetThreadPoolForTraits(traits)->ReEnqueueSequence(std::move(sequence),
+  GetWorkerPoolForTraits(traits)->ReEnqueueSequence(std::move(sequence),
                                                     sort_key);
 }
 
