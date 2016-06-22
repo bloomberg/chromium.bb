@@ -104,12 +104,12 @@ public class SignInPreference extends Preference
                 }
                 title = TextUtils.isEmpty(cachedName) ? account.name : cachedName;
             }
-            updateSyncStatusIcon();
         }
 
         setTitle(title);
         setSummary(summary);
         setFragment(fragment);
+        updateSyncStatusIcon();
 
         ChromeSigninController signinController = ChromeSigninController.get(getContext());
         boolean enabled = signinController.isSignedIn()
@@ -149,7 +149,8 @@ public class SignInPreference extends Preference
     }
 
     private void updateSyncStatusIcon() {
-        if (SyncPreference.showSyncErrorIcon(getContext())) {
+        if (SyncPreference.showSyncErrorIcon(getContext())
+                && ChromeSigninController.get(getContext()).isSignedIn()) {
             setWidgetLayoutResource(R.layout.sync_error_widget);
         } else {
             setWidgetLayoutResource(0);
@@ -169,7 +170,7 @@ public class SignInPreference extends Preference
 
     @Override
     public void syncStateChanged() {
-        updateSyncStatusIcon();
+        update();
     }
 
     // SignInAllowedObserver
