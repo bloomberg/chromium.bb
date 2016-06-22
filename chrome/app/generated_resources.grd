@@ -12550,6 +12550,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MANAGE_PASSWORDS_UNDO" desc="The text that is used in the manage passwords bubble when a password is deleted.">
         Undo
       </message>
+      <message name="IDS_MANAGE_PASSWORDS_DELETE" desc="The tooltip of a button that is used in the manage passwords bubble for removing the credential.">
+        Delete
+      </message>
+
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE" desc="The title of the auto-signin toast.">
         Signing in as <ph name="username">$1<ex>chef@google.com</ex></ph>
       </message>

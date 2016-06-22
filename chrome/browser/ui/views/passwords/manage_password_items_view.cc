@@ -104,6 +104,8 @@ std::unique_ptr<views::ImageButton> GenerateDeleteButton(
   button->SetImage(views::ImageButton::STATE_PRESSED,
                    rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
   button->SetFocusForPlatform();
+  button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETE));
   return button;
 }
 
