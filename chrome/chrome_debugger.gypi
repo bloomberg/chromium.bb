@@ -15,6 +15,7 @@
         '../net/net.gyp:net',
         'browser/devtools/devtools_protocol_constants.gyp:devtools_protocol_constants',
         'chrome_features.gyp:chrome_common_features',
+        '../ui/events/events.gyp:dom_keycode_converter',
       ],
       'include_dirs': [
         '..',

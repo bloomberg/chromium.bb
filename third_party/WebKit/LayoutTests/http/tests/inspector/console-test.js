@@ -23,8 +23,12 @@ InspectorTest.evaluateInConsole = function(code, callback, dontForceMainContext)
     var consoleView = WebInspector.ConsoleView.instance();
     consoleView.visible = true;
     consoleView._prompt.setText(code);
-    var event = document.createEvent("KeyboardEvent");
-    event.initKeyboardEvent("keydown", true, true, null, "Enter", "");
+    var event = new KeyboardEvent("keydown", {
+        key: "Enter",
+        keyIdentifier: "Enter",
+        bubbles: true,
+        cancelable: true
+    });
     consoleView._prompt.proxyElementForTests().dispatchEvent(event);
     InspectorTest.addConsoleViewSniffer(function(commandResult) {
         callback(commandResult.toMessageElement().deepTextContent());

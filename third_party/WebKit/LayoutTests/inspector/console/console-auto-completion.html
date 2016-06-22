@@ -26,7 +26,7 @@ function test()
 
     function keyDownTab()
     {
-        consoleView._prompt._element.dispatchEvent(new KeyboardEvent("keydown", { keyIdentifier: "U+0009" }));
+        consoleView._prompt._element.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
         InspectorTest.completeTest();
     }
 }

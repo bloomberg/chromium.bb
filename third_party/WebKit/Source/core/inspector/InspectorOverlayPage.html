@@ -1011,9 +1011,9 @@ function onDocumentKeyDown(event)
 {
     if (!window._controlsVisible)
         return;
-    if (event.keyIdentifier == "F8" || eventHasCtrlOrMeta(event) && event.keyCode == 220 /* backslash */)
+    if (event.key == "F8" || eventHasCtrlOrMeta(event) && event.keyCode == 220 /* backslash */)
         InspectorOverlayHost.resume();
-    else if (event.keyIdentifier == "F10" || eventHasCtrlOrMeta(event) && event.keyCode == 222 /* single quote */)
+    else if (event.key == "F10" || eventHasCtrlOrMeta(event) && event.keyCode == 222 /* single quote */)
         InspectorOverlayHost.stepOver();
 }
 
@@ -1543,7 +1543,7 @@ LayoutEditor.prototype = {
             return;
 
         // Clear selection on Esc.
-        if (event.keyIdentifier === "U+001B") {
+        if (event.key === "Escape") {
             event.preventDefault();
             InspectorOverlayHost.clearSelection(false);
         }

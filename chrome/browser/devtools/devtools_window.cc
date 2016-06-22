@@ -51,6 +51,7 @@
 #include "net/base/escape.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -272,7 +273,10 @@ bool DevToolsEventForwarder::ForwardEvent(
 
   base::DictionaryValue event_data;
   event_data.SetString("type", event_type);
-  event_data.SetString("keyIdentifier", event.keyIdentifier);
+  event_data.SetString("key", ui::KeycodeConverter::DomKeyToKeyString(
+                                  static_cast<ui::DomKey>(event.domKey)));
+  event_data.SetString("code", ui::KeycodeConverter::DomCodeToCodeString(
+                                   static_cast<ui::DomCode>(event.domCode)));
   event_data.SetInteger("keyCode", key_code);
   event_data.SetInteger("modifiers", modifiers);
   devtools_window_->bindings_->CallClientFunction(

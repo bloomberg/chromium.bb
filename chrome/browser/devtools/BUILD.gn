@@ -68,6 +68,7 @@ static_library("devtools") {
     "//base",
     "//content/public/browser",
     "//net",
+    "//ui/events:dom_keycode_converter",
   ]
 
   if (!is_android) {
