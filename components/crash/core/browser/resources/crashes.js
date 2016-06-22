@@ -88,6 +88,10 @@ function updateCrashList(enabled, dynamicBackend, crashes, version, os) {
       var params = {
         template: 'Crash Report',
         comment: commentLines.join('\n'),
+        // TODO(scottmg): Use add_labels to add 'User-Submitted' rather than
+        // duplicating the template's labels (the first two) once
+        // https://bugs.chromium.org/p/monorail/issues/detail?id=1488 is done.
+        labels: 'Restrict-View-EditIssue,Stability-Crash,User-Submitted',
       };
       var href = 'https://code.google.com/p/chromium/issues/entry';
       for (var param in params) {
