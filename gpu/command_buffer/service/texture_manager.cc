@@ -2681,10 +2681,12 @@ void TextureManager::ValidateAndDoTexSubImage(
     // NOTE: In OpenGL ES 2/3 border is always zero. If that changes we'll need
     // to look it up.
     if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
-      glTexImage3D(args.target, args.level, internal_format, args.width,
-                   args.height, args.depth, 0,
-                   AdjustTexFormat(feature_info_.get(), args.format), args.type,
-                   args.pixels);
+      glTexImage3D(
+          args.target, args.level,
+          AdjustTexInternalFormat(feature_info_.get(), internal_format),
+          args.width, args.height, args.depth, 0,
+          AdjustTexFormat(feature_info_.get(), args.format), args.type,
+          args.pixels);
     } else {
       glTexImage2D(
           args.target, args.level,
@@ -2949,9 +2951,10 @@ void TextureManager::DoTexImage(
     {
       ScopedTextureUploadTimer timer(texture_state);
       if (args.command_type == DoTexImageArguments::kTexImage3D) {
-        glTexSubImage3D(args.target, args.level, 0, 0, 0,
-                        args.width, args.height, args.depth,
-                        args.format, args.type, args.pixels);
+        glTexSubImage3D(args.target, args.level, 0, 0, 0, args.width,
+                        args.height, args.depth,
+                        AdjustTexFormat(feature_info_.get(), args.format),
+                        args.type, args.pixels);
       } else {
         glTexSubImage2D(args.target, args.level, 0, 0, args.width, args.height,
                         AdjustTexFormat(feature_info_.get(), args.format),
@@ -2969,9 +2972,12 @@ void TextureManager::DoTexImage(
   {
     ScopedTextureUploadTimer timer(texture_state);
     if (args.command_type == DoTexImageArguments::kTexImage3D) {
-      glTexImage3D(args.target, args.level, args.internal_format, args.width,
-                   args.height, args.depth, args.border, args.format,
-                   args.type, args.pixels);
+      glTexImage3D(
+          args.target, args.level,
+          AdjustTexInternalFormat(feature_info_.get(), args.internal_format),
+          args.width, args.height, args.depth, args.border,
+          AdjustTexFormat(feature_info_.get(), args.format), args.type,
+          args.pixels);
     } else {
       glTexImage2D(
           args.target, args.level,

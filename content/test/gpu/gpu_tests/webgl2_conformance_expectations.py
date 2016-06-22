@@ -224,10 +224,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac'], bug=618464)
 
-    self.Fail('deqp/functional/gles3/textureformat/unsized_2d_array.html',
-        ['mac'], bug=577144)
-    self.Fail('deqp/functional/gles3/textureformat/unsized_3d.html',
-        ['mac'], bug=577144)
     self.Fail('deqp/functional/gles3/textureformat/compressed_2d.html',
         ['mac'], bug=612205)
     self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
