@@ -5,6 +5,7 @@
 #include "ui/views/animation/bounds_animator.h"
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
@@ -122,7 +123,7 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
 
   // Run the message loop; the delegate exits the loop when the animation is
   // done.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // Make sure the bounds match of the view that was animated match.
   EXPECT_EQ(target_bounds, child()->bounds());

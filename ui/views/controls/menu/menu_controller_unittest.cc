@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/aura/scoped_window_targeter.h"
@@ -1124,7 +1125,7 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
 TEST_F(MenuControllerTest, AsynchronousNestedExitAll) {
   InstallTestMenuMessageLoop();
 
-  base::MessageLoopForUI::current()->PostTask(
+  base::MessageLoopForUI::current()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&MenuControllerTest::TestAsynchronousNestedExitAll,
                             base::Unretained(this)));
 
@@ -1137,7 +1138,7 @@ TEST_F(MenuControllerTest, AsynchronousNestedExitAll) {
 TEST_F(MenuControllerTest, AsynchronousNestedExitOutermost) {
   InstallTestMenuMessageLoop();
 
-  base::MessageLoopForUI::current()->PostTask(
+  base::MessageLoopForUI::current()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&MenuControllerTest::TestAsynchronousNestedExitOutermost,
                  base::Unretained(this)));
@@ -1236,7 +1237,7 @@ TEST_F(MenuControllerTest, NestedMessageLoopDiesWithNestedMenu) {
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
   // This will nest an asynchronous menu, and then kill the nested message loop.
-  base::MessageLoopForUI::current()->PostTask(
+  base::MessageLoopForUI::current()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&MenuControllerTest::TestNestedMessageLoopKillsItself,
                  base::Unretained(this), nested_delegate.get()));

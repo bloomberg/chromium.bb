@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -88,7 +89,7 @@ TEST_F(AnimationTest, RunCase) {
   RunAnimation a1(150, &ad);
   a1.SetDuration(2000);
   a1.Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(ad.finished());
   EXPECT_FALSE(ad.canceled());
@@ -98,7 +99,7 @@ TEST_F(AnimationTest, CancelCase) {
   TestAnimationDelegate ad;
   CancelAnimation a2(2000, 150, &ad);
   a2.Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(ad.finished());
   EXPECT_TRUE(ad.canceled());
@@ -110,7 +111,7 @@ TEST_F(AnimationTest, EndCase) {
   TestAnimationDelegate ad;
   EndAnimation a2(2000, 150, &ad);
   a2.Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(ad.finished());
   EXPECT_FALSE(ad.canceled());
@@ -121,7 +122,7 @@ TEST_F(AnimationTest, DeleteFromEnd) {
   DeletingAnimationDelegate delegate;
   RunAnimation* animation = new RunAnimation(150, &delegate);
   animation->Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   // delegate should have deleted animation.
 }
 

@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -418,7 +419,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   static void RunTasksAndWait(base::TimeDelta delay) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(), delay);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   std::vector<GestureEventData> gestures_;

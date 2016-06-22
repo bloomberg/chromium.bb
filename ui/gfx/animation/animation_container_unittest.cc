@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_container_observer.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -95,7 +96,7 @@ TEST_F(AnimationContainerTest, Multi) {
   EXPECT_TRUE(container->is_running());
 
   // Run the message loop the delegate quits the message loop when notified.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // Both timers should have finished.
   EXPECT_TRUE(delegate1.finished());
@@ -120,7 +121,7 @@ TEST_F(AnimationContainerTest, Observer) {
   EXPECT_TRUE(container->is_running());
 
   // Run the message loop. The delegate quits the message loop when notified.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1, observer.progressed_count());
 
