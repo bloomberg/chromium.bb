@@ -9096,10 +9096,10 @@ std::unique_ptr<HttpNetworkSession> SetupSessionForGroupNameTests(
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
-      AlternateProtocolFromNextProto(next_proto), "", 443);
+      AlternateProtocolFromNextProto(next_proto), "", 444);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
-      url::SchemeHostPort("http", "host.with.alternate", 80),
+      url::SchemeHostPort("https", "host.with.alternate", 443),
       alternative_service, expiration);
 
   return session;
@@ -9153,7 +9153,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
       },
       {
        "",  // unused
-       "http://host.with.alternate/direct",
+       "https://host.with.alternate/direct",
        "ssl/host.with.alternate:443",
        true,
       },
@@ -9208,7 +9208,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
 
       {
        "http_proxy",
-       "http://host.with.alternate/direct",
+       "https://host.with.alternate/direct",
        "ssl/host.with.alternate:443",
        true,
       },
@@ -9285,7 +9285,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
 
       {
        "socks4://socks_proxy:1080",
-       "http://host.with.alternate/direct",
+       "https://host.with.alternate/direct",
        "socks4/ssl/host.with.alternate:443",
        true,
       },
