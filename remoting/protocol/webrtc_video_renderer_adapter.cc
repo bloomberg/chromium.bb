@@ -29,14 +29,17 @@ namespace {
 std::unique_ptr<webrtc::DesktopFrame> ConvertYuvToRgb(
     scoped_refptr<webrtc::VideoFrameBuffer> yuv_frame,
     std::unique_ptr<webrtc::DesktopFrame> rgb_frame,
-    uint32_t format) {
+    FrameConsumer::PixelFormat pixel_format) {
   DCHECK(rgb_frame->size().equals(
       webrtc::DesktopSize(yuv_frame->width(), yuv_frame->height())));
-  libyuv::I420ToARGB(yuv_frame->DataY(), yuv_frame->StrideY(),
-                     yuv_frame->DataU(), yuv_frame->StrideU(),
-                     yuv_frame->DataV(), yuv_frame->StrideV(),
-                     rgb_frame->data(), rgb_frame->stride(), yuv_frame->width(),
-                     yuv_frame->height());
+  auto yuv_to_rgb_function = (pixel_format == FrameConsumer::FORMAT_BGRA)
+                                 ? &libyuv::I420ToARGB
+                                 : &libyuv::I420ToABGR;
+  yuv_to_rgb_function(yuv_frame->DataY(), yuv_frame->StrideY(),
+                      yuv_frame->DataU(), yuv_frame->StrideU(),
+                      yuv_frame->DataV(), yuv_frame->StrideV(),
+                      rgb_frame->data(), rgb_frame->stride(),
+                      yuv_frame->width(), yuv_frame->height());
 
   rgb_frame->mutable_updated_region()->AddRect(
       webrtc::DesktopRect::MakeSize(rgb_frame->size()));
@@ -50,10 +53,6 @@ WebrtcVideoRendererAdapter::WebrtcVideoRendererAdapter(
     FrameConsumer* frame_consumer)
     : media_stream_(std::move(media_stream)),
       frame_consumer_(frame_consumer),
-      output_format_fourcc_(frame_consumer_->GetPixelFormat() ==
-                                    FrameConsumer::FORMAT_BGRA
-                                ? libyuv::FOURCC_ARGB
-                                : libyuv::FOURCC_ABGR),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   webrtc::VideoTrackVector video_tracks = media_stream_->GetVideoTracks();
@@ -103,7 +102,7 @@ void WebrtcVideoRendererAdapter::HandleFrameOnMainThread(
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(false).get(), FROM_HERE,
       base::Bind(&ConvertYuvToRgb, base::Passed(&frame),
-                 base::Passed(&rgb_frame), output_format_fourcc_),
+                 base::Passed(&rgb_frame), frame_consumer_->GetPixelFormat()),
       base::Bind(&WebrtcVideoRendererAdapter::DrawFrame,
                  weak_factory_.GetWeakPtr()));
 }

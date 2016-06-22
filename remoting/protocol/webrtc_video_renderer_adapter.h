@@ -45,7 +45,6 @@ class WebrtcVideoRendererAdapter
 
   scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
   FrameConsumer* frame_consumer_;
-  uint32_t output_format_fourcc_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<WebrtcVideoRendererAdapter> weak_factory_;
