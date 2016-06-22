@@ -184,6 +184,9 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
     if (style.position() == StaticPosition && !parentStyleForcesZIndexToCreateStackingContext(parentStyle))
         style.setHasAutoZIndex();
 
+    if (style.overflowX() != OverflowVisible || style.overflowY() != OverflowVisible)
+        adjustOverflow(style);
+
     // Auto z-index becomes 0 for the root element and transparent objects. This prevents
     // cases where objects that should be blended as a single unit end up with a non-transparent
     // object wedged in between them. Auto z-index also becomes 0 for objects that specify transforms/masks/reflections.
@@ -207,9 +210,6 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 
     style.applyTextDecorations();
 
-    if (style.overflowX() != OverflowVisible || style.overflowY() != OverflowVisible)
-        adjustOverflow(style);
-
     // Cull out any useless layers and also repeat patterns into additional layers.
     style.adjustBackgroundLayers();
     style.adjustMaskLayers();
@@ -221,12 +221,6 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
     // If we have first-letter pseudo style, transitions, or animations, do not share this style.
     if (style.hasPseudoStyle(PseudoIdFirstLetter) || style.transitions() || style.animations())
         style.setUnique();
-
-    // FIXME: when dropping the -webkit prefix on transform-style, we should also have opacity < 1 cause flattening.
-    if (style.preserves3D() && (style.overflowX() != OverflowVisible
-        || style.overflowY() != OverflowVisible
-        || style.hasFilterInducingProperty()))
-        style.setTransformStyle3D(TransformStyle3DFlat);
 
     adjustStyleForEditing(style);
 

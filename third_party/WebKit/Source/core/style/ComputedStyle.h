@@ -457,6 +457,17 @@ public:
     // used (including, but not limited to, 'filter').
     bool hasFilterInducingProperty() const { return hasFilter() || (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasBoxReflect()); }
 
+    // Returns |true| if opacity should be considered to have non-initial value for the purpose
+    // of creating stacking contexts.
+    bool hasNonInitialOpacity() const { return hasOpacity() || hasWillChangeOpacityHint() || hasCurrentOpacityAnimation(); }
+
+    // Returns whether this style contains any grouping property as defined by [css-transforms].
+    // The main purpose of this is to adjust the used value of transform-style property.
+    // Note: We currently don't include every grouping property on the spec to maintain
+    //       backward compatibility.
+    // [css-transforms] https://drafts.csswg.org/css-transforms/#grouping-property-values
+    bool hasGroupingProperty() const { return !isOverflowVisible() || hasFilterInducingProperty() || hasNonInitialOpacity(); }
+
     Order rtlOrdering() const { return static_cast<Order>(inherited_flags.m_rtlOrdering); }
     void setRTLOrdering(Order o) { inherited_flags.m_rtlOrdering = o; }
 
@@ -962,7 +973,8 @@ public:
     CSSTransitionData& accessTransitions();
 
     ETransformStyle3D transformStyle3D() const { return static_cast<ETransformStyle3D>(rareNonInheritedData->m_transformStyle3D); }
-    bool preserves3D() const { return rareNonInheritedData->m_transformStyle3D == TransformStyle3DPreserve3D; }
+    ETransformStyle3D usedTransformStyle3D() const { return hasGroupingProperty() ? TransformStyle3DFlat : transformStyle3D(); }
+    bool preserves3D() const { return usedTransformStyle3D() != TransformStyle3DFlat; }
 
     EBackfaceVisibility backfaceVisibility() const { return static_cast<EBackfaceVisibility>(rareNonInheritedData->m_backfaceVisibility); }
     float perspective() const { return rareNonInheritedData->m_perspective; }
@@ -1030,6 +1042,7 @@ public:
     bool willChangeContents() const { return rareNonInheritedData->m_willChange->m_contents; }
     bool willChangeScrollPosition() const { return rareNonInheritedData->m_willChange->m_scrollPosition; }
     bool hasWillChangeCompositingHint() const;
+    bool hasWillChangeOpacityHint() const { return willChangeProperties().contains(CSSPropertyOpacity); }
     bool hasWillChangeTransformHint() const;
     bool subtreeWillChangeContents() const { return rareInheritedData->m_subtreeWillChangeContents; }
 

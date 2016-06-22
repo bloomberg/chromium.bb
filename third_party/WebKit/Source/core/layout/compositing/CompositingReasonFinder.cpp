@@ -92,7 +92,7 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
     if (style.hasInlineTransform())
         reasons |= CompositingReasonInlineTransform;
 
-    if (style.transformStyle3D() == TransformStyle3DPreserve3D)
+    if (style.usedTransformStyle3D() == TransformStyle3DPreserve3D)
         reasons |= CompositingReasonPreserve3DWith3DDescendants;
 
     if (style.hasPerspective())

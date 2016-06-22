@@ -27,7 +27,6 @@ transform: translateZ(-100px) rotateY(45deg);
                 {
                   "position": [12, 12],
                   "bounds": [280, 280],
-                  "opacity": 0.800000011920929,
                   "contentsOpaque": true,
                   "shouldFlattenTransform": false,
                   "3dRenderingContext": 1,

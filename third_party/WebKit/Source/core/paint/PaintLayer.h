@@ -403,11 +403,11 @@ public:
     // Note that this transform does not have the perspective-origin baked in.
     TransformationMatrix perspectiveTransform() const;
     FloatPoint perspectiveOrigin() const;
-    bool preserves3D() const { return layoutObject()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
+    bool preserves3D() const { return layoutObject()->style()->preserves3D(); }
     bool has3DTransform() const { return m_rareData && m_rareData->transform && !m_rareData->transform->isAffine(); }
 
     // FIXME: reflections should force transform-style to be flat in the style: https://bugs.webkit.org/show_bug.cgi?id=106959
-    bool shouldPreserve3D() const { return !layoutObject()->hasReflection() && layoutObject()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
+    bool shouldPreserve3D() const { return !layoutObject()->hasReflection() && layoutObject()->style()->preserves3D(); }
 
     void filterNeedsPaintInvalidation();
 
