@@ -157,6 +157,7 @@ public:
     }
 
 protected:
+    NO_SANITIZE_ADDRESS
     T* atomicGet() { return reinterpret_cast<T*>(acquireLoad(reinterpret_cast<void* volatile*>(&m_raw))); }
 
 private:
