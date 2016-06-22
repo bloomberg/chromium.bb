@@ -79,17 +79,24 @@ LayoutUnit LayoutListBox::itemHeight() const
     HTMLSelectElement* select = selectElement();
     if (!select)
         return LayoutUnit();
-    Element* baseItem = ElementTraversal::firstChild(*select);
-    if (!baseItem)
+
+    const auto& items = select->listItems();
+    if (items.isEmpty())
         return defaultItemHeight();
-    if (isHTMLOptGroupElement(baseItem))
-        baseItem = &toHTMLOptGroupElement(baseItem)->optGroupLabelElement();
-    else if (!isHTMLOptionElement(baseItem))
-        return defaultItemHeight();
-    LayoutObject* baseItemLayoutObject = baseItem->layoutObject();
-    if (!baseItemLayoutObject || !baseItemLayoutObject->isBox())
-        return defaultItemHeight();
-    return toLayoutBox(baseItemLayoutObject)->size().height();
+
+    LayoutUnit maxHeight;
+    for (Element* element : items) {
+        if (isHTMLOptGroupElement(element))
+            element = &toHTMLOptGroupElement(element)->optGroupLabelElement();
+        LayoutObject* layoutObject = element->layoutObject();
+        LayoutUnit itemHeight;
+        if (layoutObject && layoutObject->isBox())
+            itemHeight = toLayoutBox(layoutObject)->size().height();
+        else
+            itemHeight = defaultItemHeight();
+        maxHeight = std::max(maxHeight, itemHeight);
+    }
+    return maxHeight;
 }
 
 void LayoutListBox::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
