@@ -12,6 +12,7 @@ cr.exportPath('settings');
 /**
  * @typedef {{actionLinkText: (string|undefined),
  *            childUser: (boolean|undefined),
+ *            domain: (string|undefined),
  *            hasError: (boolean|undefined),
  *            hasUnrecoverableError: (boolean|undefined),
  *            managed: (boolean|undefined),
@@ -19,7 +20,6 @@ cr.exportPath('settings');
  *            setupInProgress: (boolean|undefined),
  *            signedIn: (boolean|undefined),
  *            signinAllowed: (boolean|undefined),
- *            signoutAllowed: (boolean|undefined),
  *            statusText: (string|undefined),
  *            supervisedUser: (boolean|undefined),
  *            syncSystemEnabled: (boolean|undefined)}}

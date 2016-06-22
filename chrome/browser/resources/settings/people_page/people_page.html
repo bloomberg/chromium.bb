@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
@@ -50,8 +51,8 @@
       }
 </if>
 
-      #sync-icon {
-        margin: 0 10px;
+      #managed-by-domain-name {
+        font-weight: bold;
       }
 
       iron-icon[icon="settings:sync-problem"] {
@@ -62,7 +63,7 @@
         color: var(--settings-error-color);
       }
 
-      #googleg-logo-container {
+      .icon-container {
         display: flex;
         justify-content: center;
         width: 40px;
@@ -116,11 +117,26 @@
           $i18n{syncOverview}
         </div>
 
+<if expr="not chromeos">
+        <template is="dom-if" if="[[syncStatus.domain]]">
+          <div class="settings-box">
+            <div class="icon-container">
+              <iron-icon icon="cr:domain"></iron-icon>
+            </div>
+            <div class="middle"
+                inner-h-t-m-l="[[getDomainHtml_(syncStatus.domain)]]">
+            </div>
+          </div>
+        </template>
+</if>
+
         <template is="dom-if"
             if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
           <div class="settings-box two-line" on-tap="onSyncTap_">
-            <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
-            </iron-icon>
+            <div class="icon-container">
+              <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
+              </iron-icon>
+            </div>
             <div class="middle">
               <div>$i18n{sync}</div>
               <div class="secondary" hidden="[[syncStatus.hasError]]">
@@ -136,7 +152,7 @@
 
         <div class="settings-box two-line" id="activity-controls"
             on-tap="onActivityControlsTap_">
-          <div id="googleg-logo-container">
+          <div class="icon-container">
             <div id="googleg-logo"></div>
           </div>
           <div class="middle">

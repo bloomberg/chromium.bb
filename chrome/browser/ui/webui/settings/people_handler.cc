@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/settings_strings.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -697,18 +698,22 @@ PeopleHandler::GetSyncStatusDictionary() {
   sync_status->SetBoolean("supervisedUser", profile_->IsSupervised());
   sync_status->SetBoolean("childUser", profile_->IsChild());
 
-  bool signout_prohibited = false;
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
+  DCHECK(signin);
 #if !defined(OS_CHROMEOS)
   // Signout is not allowed if the user has policy (crbug.com/172204).
-  signout_prohibited =
-      SigninManagerFactory::GetForProfile(profile_)->IsSignoutProhibited();
+  if (SigninManagerFactory::GetForProfile(profile_)->IsSignoutProhibited()) {
+    std::string username = signin->GetAuthenticatedAccountInfo().email;
+
+    // If there is no one logged in or if the profile name is empty then the
+    // domain name is empty. This happens in browser tests.
+    if (!username.empty())
+      sync_status->SetString("domain", gaia::ExtractDomainName(username));
+  }
 #endif
 
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
-  DCHECK(signin);
-  sync_status->SetBoolean("signoutAllowed", !signout_prohibited);
   sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
   sync_status->SetBoolean("syncSystemEnabled", (service != nullptr));
   sync_status->SetBoolean("setupCompleted",

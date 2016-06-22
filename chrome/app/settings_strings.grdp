@@ -1198,6 +1198,9 @@
   </if>
 
   <if expr="not chromeos">
+    <message name="IDS_SETTINGS_PEOPLE_DOMAIN_MANAGED_PROFILE" desc="Provides the domain information for domain-managed accounts.">
+      Managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>
+    </message>
     <message name="IDS_SETTINGS_EDIT_PERSON" desc="Title of the edit person subpage">
       Edit person
     </message>

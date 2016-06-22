@@ -259,6 +259,19 @@ Polymer({
     window.open(loadTimeData.getString('supervisedUsersUrl'));
   },
 
+<if expr="not chromeos">
+  /**
+   * @private
+   * @param {string} domain
+   * @return {string}
+   */
+  getDomainHtml_: function(domain) {
+    var innerSpan =
+        '<span id="managed-by-domain-name">' + domain + '</span>';
+    return loadTimeData.getStringF('domainManagedProfile', innerSpan);
+  },
+</if>
+
   /**
    * @private
    * @param {?settings.SyncStatus} syncStatus
