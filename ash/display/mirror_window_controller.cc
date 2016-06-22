@@ -14,8 +14,8 @@
 #undef RootWindow
 #endif
 
+#include "ash/common/display/display_info.h"
 #include "ash/display/cursor_window_controller.h"
-#include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/display/screen_position_controller.h"

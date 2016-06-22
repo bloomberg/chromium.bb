@@ -25,10 +25,10 @@
 #include <string>
 #include <utility>
 
+#include "ash/common/display/display_info.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/bind.h"

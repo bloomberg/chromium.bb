@@ -10,8 +10,8 @@
 #include <map>
 
 #include "ash/ash_export.h"
+#include "ash/common/display/display_info.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/display/display_info.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"

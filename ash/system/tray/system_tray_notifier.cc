@@ -12,14 +12,6 @@ SystemTrayNotifier::SystemTrayNotifier() {
 SystemTrayNotifier::~SystemTrayNotifier() {
 }
 
-void SystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
-  audio_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
-  audio_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddTracingObserver(TracingObserver* observer) {
   tracing_observers_.AddObserver(observer);
 }
@@ -135,39 +127,6 @@ void SystemTrayNotifier::RemoveLastWindowClosedObserver(
 }
 
 #endif  // defined(OS_CHROMEOS)
-
-void SystemTrayNotifier::NotifyAudioOutputVolumeChanged(uint64_t node_id,
-                                                        double volume) {
-  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
-                    OnOutputNodeVolumeChanged(node_id, volume));
-}
-
-void SystemTrayNotifier::NotifyAudioOutputMuteChanged(bool mute_on,
-                                                      bool system_adjust) {
-  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
-                    OnOutputMuteChanged(mute_on, system_adjust));
-}
-
-void SystemTrayNotifier::NotifyAudioNodesChanged() {
-  FOR_EACH_OBSERVER(
-      AudioObserver,
-      audio_observers_,
-      OnAudioNodesChanged());
-}
-
-void SystemTrayNotifier::NotifyAudioActiveOutputNodeChanged() {
-  FOR_EACH_OBSERVER(
-      AudioObserver,
-      audio_observers_,
-      OnActiveOutputNodeChanged());
-}
-
-void SystemTrayNotifier::NotifyAudioActiveInputNodeChanged() {
-  FOR_EACH_OBSERVER(
-      AudioObserver,
-      audio_observers_,
-      OnActiveInputNodeChanged());
-}
 
 void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
   FOR_EACH_OBSERVER(

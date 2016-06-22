@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/audio/volume_view.h"
+#include "ash/common/system/audio/volume_view.h"
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/metrics/user_metrics_action.h"
+#include "ash/common/system/audio/tray_audio.h"
+#include "ash/common/system/audio/tray_audio_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_container.h"
-#include "ash/shell.h"
-#include "ash/system/audio/tray_audio.h"
-#include "ash/system/audio/tray_audio_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -252,10 +253,9 @@ void VolumeView::SliderValueChanged(views::Slider* sender,
     // 1%, which is beyond cras audio api's granularity for output volume.
     if (std::abs(new_volume - current_volume) < 1.0f)
       return;
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        is_default_view_ ?
-        ash::UMA_STATUS_AREA_CHANGED_VOLUME_MENU :
-        ash::UMA_STATUS_AREA_CHANGED_VOLUME_POPUP);
+    WmShell::Get()->RecordUserMetricsAction(
+        is_default_view_ ? UMA_STATUS_AREA_CHANGED_VOLUME_MENU
+                         : UMA_STATUS_AREA_CHANGED_VOLUME_POPUP);
     if (new_volume > current_volume)
       HandleVolumeUp(new_volume);
     else

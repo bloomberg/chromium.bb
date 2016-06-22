@@ -21,7 +21,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/system/audio/tray_audio.h"
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"

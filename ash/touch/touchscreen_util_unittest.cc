@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/display/display_info.h"
+#include "ash/common/display/display_info.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/touch/touchscreen_util.h"

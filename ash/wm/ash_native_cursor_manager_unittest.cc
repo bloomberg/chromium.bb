@@ -4,7 +4,6 @@
 
 #include "ash/wm/ash_native_cursor_manager.h"
 
-#include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"

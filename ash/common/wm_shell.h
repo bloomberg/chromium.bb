@@ -24,6 +24,7 @@ class PointerWatcher;
 namespace ash {
 
 class AccessibilityDelegate;
+class DisplayInfo;
 class FocusCycler;
 class MruWindowTracker;
 class SessionStateDelegate;
@@ -77,6 +78,10 @@ class ASH_EXPORT WmShell {
   // appropriate container in the returned window.
   virtual WmWindow* GetRootWindowForNewWindows() = 0;
 
+  // Retuns the display info associated with |display_id|.
+  // TODO(msw): Remove this when DisplayManager has been moved. crbug.com/622480
+  virtual const DisplayInfo& GetDisplayInfo(int64_t display_id) const = 0;
+
   // Returns true if the first window shown on first run should be
   // unconditionally maximized, overriding the heuristic that normally chooses
   // the window size.
@@ -105,8 +110,7 @@ class ASH_EXPORT WmShell {
   // Returns true if |window| can be shown for the current user. This is
   // intended to check if the current user matches the user associated with
   // |window|.
-  // TODO(jamescook): Remove this when ShellDelegate is accessible via this
-  // interface.
+  // TODO(jamescook): Remove this when ShellDelegate has been moved.
   virtual bool CanShowWindowForUser(WmWindow* window) = 0;
 
   // See aura::client::CursorClient for details on these.

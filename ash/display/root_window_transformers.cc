@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "ash/common/ash_switches.h"
-#include "ash/display/display_info.h"
+#include "ash/common/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"

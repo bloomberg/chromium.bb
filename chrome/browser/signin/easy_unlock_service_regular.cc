@@ -55,7 +55,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "apps/app_lifetime_monitor_factory.h"
-#include "ash/display/display_info.h"
+#include "ash/common/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/linux_util.h"

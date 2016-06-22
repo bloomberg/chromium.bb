@@ -12,6 +12,7 @@
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
 #include "ash/common/wm_shell_common.h"
+#include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -79,6 +80,9 @@ WmWindow* WmShellAura::GetRootWindowForNewWindows() {
   return WmWindowAura::Get(Shell::GetTargetRootWindow());
 }
 
+const DisplayInfo& WmShellAura::GetDisplayInfo(int64_t display_id) const {
+  return Shell::GetInstance()->display_manager()->GetDisplayInfo(display_id);
+}
 
 bool WmShellAura::IsForceMaximizeOnFirstRun() {
   return Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();

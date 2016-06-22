@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/system/audio/audio_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/user/user_observer.h"
 #include "base/macros.h"
@@ -41,9 +40,6 @@ class ASH_EXPORT SystemTrayNotifier {
  public:
   SystemTrayNotifier();
   ~SystemTrayNotifier();
-
-  void AddAudioObserver(AudioObserver* observer);
-  void RemoveAudioObserver(AudioObserver* observer);
 
   void AddTracingObserver(TracingObserver* observer);
   void RemoveTracingObserver(TracingObserver* observer);
@@ -85,11 +81,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveLastWindowClosedObserver(LastWindowClosedObserver* observer);
 #endif
 
-  void NotifyAudioOutputVolumeChanged(uint64_t node_id, double volume);
-  void NotifyAudioOutputMuteChanged(bool mute_on, bool system_adjust);
-  void NotifyAudioNodesChanged();
-  void NotifyAudioActiveOutputNodeChanged();
-  void NotifyAudioActiveInputNodeChanged();
   void NotifyTracingModeChanged(bool value);
   void NotifyUserUpdate();
   void NotifyUserAddedToSession();
@@ -114,7 +105,6 @@ class ASH_EXPORT SystemTrayNotifier {
 #endif
 
  private:
-  base::ObserverList<AudioObserver> audio_observers_;
   base::ObserverList<TracingObserver> tracing_observers_;
   base::ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)

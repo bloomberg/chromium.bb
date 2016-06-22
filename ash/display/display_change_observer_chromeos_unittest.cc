@@ -4,7 +4,7 @@
 
 #include "ash/display/display_change_observer_chromeos.h"
 
-#include "ash/display/display_info.h"
+#include "ash/common/display/display_info.h"
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_configurator.h"

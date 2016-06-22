@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_info.h"
+#include "ash/common/display/display_info.h"
 
 #include <stdio.h>
 
@@ -20,7 +20,7 @@
 #include "ui/gfx/geometry/size_f.h"
 
 #if defined(OS_WIN)
-#include "ui/aura/window_tree_host.h"
+#include <windows.h>
 #include "ui/display/win/dpi.h"
 #endif
 

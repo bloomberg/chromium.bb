@@ -4,9 +4,9 @@
 
 #include "ash/system/chromeos/audio/tray_audio_chromeos.h"
 
+#include "ash/common/system/audio/volume_view.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/system/audio/volume_view.h"
 #include "ash/system/chromeos/audio/audio_detailed_view.h"
 #include "ash/system/chromeos/audio/tray_audio_delegate_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

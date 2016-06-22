@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_AUDIO_TRAY_AUDIO_H_
-#define ASH_SYSTEM_AUDIO_TRAY_AUDIO_H_
+#ifndef ASH_COMMON_SYSTEM_AUDIO_TRAY_AUDIO_H_
+#define ASH_COMMON_SYSTEM_AUDIO_TRAY_AUDIO_H_
 
 #include <stdint.h>
 
 #include <memory>
 
+#include "ash/common/system/audio/audio_observer.h"
 #include "ash/common/system/tray/tray_image_item.h"
-#include "ash/system/audio/audio_observer.h"
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
 
@@ -76,4 +76,4 @@ class TrayAudio : public TrayImageItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_AUDIO_TRAY_AUDIO_H_
+#endif  // ASH_COMMON_SYSTEM_AUDIO_TRAY_AUDIO_H_

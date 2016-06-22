@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/display/display_info.h"
+#include "ash/common/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/rotator/screen_rotation_animation.h"

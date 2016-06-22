@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 #include "ash/wm/ash_native_cursor_manager.h"
 
-#include "ash/display/display_info.h"
+#include "ash/common/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_interactive_ui_test_base.h"

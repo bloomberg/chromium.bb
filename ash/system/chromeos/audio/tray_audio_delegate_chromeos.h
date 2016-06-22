@@ -6,8 +6,7 @@
 #define ASH_SYSTEM_AUDIO_TRAY_AUDIO_DELEGATE_CHROMEOS_H_
 
 #include "ash/ash_export.h"
-#include "ash/system/audio/tray_audio_delegate.h"
-#include "base/compiler_specific.h"
+#include "ash/common/system/audio/tray_audio_delegate.h"
 
 namespace ash {
 namespace system {

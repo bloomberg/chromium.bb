@@ -5,6 +5,7 @@
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 
 #include "ash/common/system/accessibility_observer.h"
+#include "ash/common/system/audio/audio_observer.h"
 #include "ash/common/system/date/clock_observer.h"
 #include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/update/update_observer.h"
@@ -33,6 +34,40 @@ void WmSystemTrayNotifier::NotifyAccessibilityModeChanged(
     AccessibilityNotificationVisibility notify) {
   FOR_EACH_OBSERVER(AccessibilityObserver, accessibility_observers_,
                     OnAccessibilityModeChanged(notify));
+}
+
+void WmSystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
+  audio_observers_.AddObserver(observer);
+}
+
+void WmSystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
+  audio_observers_.RemoveObserver(observer);
+}
+
+void WmSystemTrayNotifier::NotifyAudioOutputVolumeChanged(uint64_t node_id,
+                                                          double volume) {
+  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
+                    OnOutputNodeVolumeChanged(node_id, volume));
+}
+
+void WmSystemTrayNotifier::NotifyAudioOutputMuteChanged(bool mute_on,
+                                                        bool system_adjust) {
+  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
+                    OnOutputMuteChanged(mute_on, system_adjust));
+}
+
+void WmSystemTrayNotifier::NotifyAudioNodesChanged() {
+  FOR_EACH_OBSERVER(AudioObserver, audio_observers_, OnAudioNodesChanged());
+}
+
+void WmSystemTrayNotifier::NotifyAudioActiveOutputNodeChanged() {
+  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
+                    OnActiveOutputNodeChanged());
+}
+
+void WmSystemTrayNotifier::NotifyAudioActiveInputNodeChanged() {
+  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
+                    OnActiveInputNodeChanged());
 }
 
 void WmSystemTrayNotifier::AddClockObserver(ClockObserver* observer) {

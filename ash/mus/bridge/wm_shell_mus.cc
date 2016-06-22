@@ -5,6 +5,7 @@
 #include "ash/mus/bridge/wm_shell_mus.h"
 
 #include "ash/common/default_accessibility_delegate.h"
+#include "ash/common/display/display_info.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
@@ -175,6 +176,12 @@ WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
 WmWindow* WmShellMus::GetRootWindowForNewWindows() {
   NOTIMPLEMENTED();
   return root_window_controllers_[0]->GetWindow();
+}
+
+const DisplayInfo& WmShellMus::GetDisplayInfo(int64_t display_id) const {
+  NOTIMPLEMENTED();
+  static DisplayInfo fake_info;
+  return fake_info;
 }
 
 bool WmShellMus::IsForceMaximizeOnFirstRun() {

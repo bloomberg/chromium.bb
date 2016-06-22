@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/display/display_info.h"
+#include "ash/common/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/host/root_window_transformer.h"

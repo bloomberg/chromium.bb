@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "ash/common/display/display_info.h"
 #include "ash/common/system/system_notifier.h"
-#include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"

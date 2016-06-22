@@ -1157,12 +1157,13 @@ void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
 // Overridden from CrasAudioHandler::AudioObserver.
 void SystemTrayDelegateChromeOS::OnOutputNodeVolumeChanged(uint64_t node_id,
                                                            int volume) {
-  GetSystemTrayNotifier()->NotifyAudioOutputVolumeChanged(node_id, volume);
+  GetWmSystemTrayNotifier()->NotifyAudioOutputVolumeChanged(node_id, volume);
 }
 
 void SystemTrayDelegateChromeOS::OnOutputMuteChanged(bool mute_on,
                                                      bool system_adjust) {
-  GetSystemTrayNotifier()->NotifyAudioOutputMuteChanged(mute_on, system_adjust);
+  GetWmSystemTrayNotifier()->NotifyAudioOutputMuteChanged(mute_on,
+                                                          system_adjust);
 }
 
 void SystemTrayDelegateChromeOS::OnInputNodeGainChanged(uint64_t /* node_id */,
@@ -1173,15 +1174,15 @@ void SystemTrayDelegateChromeOS::OnInputMuteChanged(bool /* mute_on */) {
 }
 
 void SystemTrayDelegateChromeOS::OnAudioNodesChanged() {
-  GetSystemTrayNotifier()->NotifyAudioNodesChanged();
+  GetWmSystemTrayNotifier()->NotifyAudioNodesChanged();
 }
 
 void SystemTrayDelegateChromeOS::OnActiveOutputNodeChanged() {
-  GetSystemTrayNotifier()->NotifyAudioActiveOutputNodeChanged();
+  GetWmSystemTrayNotifier()->NotifyAudioActiveOutputNodeChanged();
 }
 
 void SystemTrayDelegateChromeOS::OnActiveInputNodeChanged() {
-  GetSystemTrayNotifier()->NotifyAudioActiveInputNodeChanged();
+  GetWmSystemTrayNotifier()->NotifyAudioActiveInputNodeChanged();
 }
 
 // Overridden from BluetoothAdapter::Observer.

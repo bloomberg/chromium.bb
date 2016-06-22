@@ -14,6 +14,7 @@
 namespace ash {
 
 class AccessibilityObserver;
+class AudioObserver;
 class ClockObserver;
 class IMEObserver;
 struct UpdateInfo;
@@ -38,6 +39,15 @@ class ASH_EXPORT WmSystemTrayNotifier {
   void RemoveAccessibilityObserver(AccessibilityObserver* observer);
   void NotifyAccessibilityModeChanged(
       AccessibilityNotificationVisibility notify);
+
+  // Audio.
+  void AddAudioObserver(AudioObserver* observer);
+  void RemoveAudioObserver(AudioObserver* observer);
+  void NotifyAudioOutputVolumeChanged(uint64_t node_id, double volume);
+  void NotifyAudioOutputMuteChanged(bool mute_on, bool system_adjust);
+  void NotifyAudioNodesChanged();
+  void NotifyAudioActiveOutputNodeChanged();
+  void NotifyAudioActiveInputNodeChanged();
 
   // Date and time.
   void AddClockObserver(ClockObserver* observer);
@@ -75,6 +85,7 @@ class ASH_EXPORT WmSystemTrayNotifier {
 
  private:
   base::ObserverList<AccessibilityObserver> accessibility_observers_;
+  base::ObserverList<AudioObserver> audio_observers_;
   base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<LocaleObserver> locale_observers_;

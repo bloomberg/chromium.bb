@@ -2,25 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/audio/tray_audio.h"
+#include "ash/common/system/audio/tray_audio.h"
 
 #include <cmath>
 #include <utility>
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/display/display_info.h"
+#include "ash/common/system/audio/tray_audio_delegate.h"
+#include "ash/common/system/audio/volume_view.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/system/volume_control_delegate.h"
-#include "ash/display/display_manager.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
-#include "ash/system/audio/tray_audio_delegate.h"
-#include "ash/system/audio/volume_view.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -28,6 +26,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
@@ -47,13 +46,13 @@ TrayAudio::TrayAudio(SystemTray* system_tray,
       audio_delegate_(std::move(audio_delegate)),
       volume_view_(NULL),
       pop_up_volume_view_(false) {
-  Shell::GetInstance()->system_tray_notifier()->AddAudioObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddAudioObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
 
 TrayAudio::~TrayAudio() {
   display::Screen::GetScreen()->RemoveObserver(this);
-  Shell::GetInstance()->system_tray_notifier()->RemoveAudioObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveAudioObserver(this);
 }
 
 // static
@@ -145,8 +144,7 @@ void TrayAudio::ChangeInternalSpeakerChannelMode() {
       system::TrayAudioDelegate::NORMAL;
   if (display::Display::HasInternalDisplay()) {
     const DisplayInfo& display_info =
-        Shell::GetInstance()->display_manager()->GetDisplayInfo(
-            display::Display::InternalDisplayId());
+        WmShell::Get()->GetDisplayInfo(display::Display::InternalDisplayId());
     if (display_info.GetActiveRotation() == display::Display::ROTATE_180)
       channel_mode = system::TrayAudioDelegate::LEFT_RIGHT_SWAPPED;
   }

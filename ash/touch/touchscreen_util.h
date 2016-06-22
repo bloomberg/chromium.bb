@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/display/display_info.h"
+#include "ash/common/display/display_info.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 namespace ash {
