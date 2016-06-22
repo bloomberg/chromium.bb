@@ -215,7 +215,7 @@ Suborigins status=experimental
 // touchscreen) in ApplyWebPreferences.
 Touch status=stable
 TraceWrappables
-TrustedEventsDefaultAction
+TrustedEventsDefaultAction status=stable
 UnsafeES3APIs
 UnsandboxedAuxiliary status=stable
 UserSelectAll status=stable

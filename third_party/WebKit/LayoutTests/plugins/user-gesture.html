@@ -4,8 +4,8 @@
 <embed id="plugin" type="application/x-webkit-test-webplugin" accepts-touch="raw" print-user-gesture-status="true" width="100" height="100"></embed>
 <p>
   Test that the user gesture indicator is correctly set for events forwarded
-  through the WebPluginContainer. The tests succeeds if the first
-  mousedown/mouseup event pair is a user gesture, and the second is not.
+  through the WebPluginContainer. The tests succeeds if the mousedown/mouseup
+  event pair is a user gesture.
 </p>
 <script>
     if (!window.testRunner || !window.eventSender) {
@@ -21,16 +21,6 @@
 
         // Stray mouse up event, should get its own gesture.
         eventSender.mouseUp();
-
-        // Fake mouse events
-        var plugin = document.getElementById("plugin");
-        var evt = document.createEvent("MouseEvent");
-        evt.initMouseEvent("mousedown", true, true, window, 1, 20, 20, 20, 20, false, false, false, false, 0, null);
-        plugin.dispatchEvent(evt);
-
-        evt = document.createEvent("MouseEvent");
-        evt.initMouseEvent("mouseup", true, true, window, 1, 20, 20, 20, 20, false, false, false, false, 0, null);
-        plugin.dispatchEvent(evt);
     }
 </script>
 </body>

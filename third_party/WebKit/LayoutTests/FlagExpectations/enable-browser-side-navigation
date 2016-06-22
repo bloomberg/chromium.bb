@@ -21,7 +21,6 @@
 
 # Failing due to extra error due to bad timing.
   fast/events/before-unload-in-subframe.html [ Crash ]
-  virtual/trustedeventsdefaultaction/fast/events/before-unload-in-subframe.html [ Crash ]
 
 # Failing due to empty data url
   editing/execCommand/apply-style-command-crash.html [ Crash ]
@@ -313,5 +312,3 @@
   virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]
   virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Timeout ]
   virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/drag-file-crash.html [ Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/iframe-object-onload.html [ Failure ]

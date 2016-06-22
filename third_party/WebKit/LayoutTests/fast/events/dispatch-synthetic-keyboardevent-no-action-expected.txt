@@ -1,12 +1,11 @@
-CONSOLE WARNING: line 16: A DOM event generated from JavaScript has triggered a default action inside the browser. This behavior is non-standard and will be removed in M53, around September 2016. See https://www.chromestatus.com/features/5718803933560832 for more details.
 Tests to ensure that default action does not occur for untrusted events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
  
-FAIL document.getElementById('radio1').checked should be true. Was false.
-FAIL document.getElementById('radio2').checked should be false. Was true.
+PASS document.getElementById('radio1').checked is true
+PASS document.getElementById('radio2').checked is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
