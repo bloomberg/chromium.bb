@@ -1511,6 +1511,8 @@ crbug.com/484632 css3/flexbox/stretch-input-in-column.html [ Failure ]
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
+crbug.com/622368 [ Linux Win Debug ] fast/repaint/obscured-background-no-repaint.html [ Pass Failure ]
+
 crbug.com/621892 css3/filters/effect-brightness-clamping-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-brightness-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-hue-rotate-hw.html [ Pass Failure ]
