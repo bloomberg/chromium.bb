@@ -146,27 +146,29 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
   DCHECK_EQ(fds.size(), 1u);
   DCHECK_EQ(offsets[0], 0);
 
-  struct gbm_import_fd_data fd_data;
-  fd_data.fd = fds[0].get();
-  fd_data.width = size.width();
-  fd_data.height = size.height();
-  fd_data.stride = strides[0];
-  fd_data.format = GetFourCCFormatFromBufferFormat(format);
+  uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
 
   // Use scanout if supported.
   const std::vector<uint32_t>& scanout_formats =
       gbm->plane_manager()->GetSupportedFormats();
   bool use_scanout = std::find(scanout_formats.begin(), scanout_formats.end(),
-                               fd_data.format) != scanout_formats.end();
-  unsigned flags = 0;
-  if (use_scanout)
-    flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+                               fourcc_format) != scanout_formats.end();
+  gbm_bo* bo = nullptr;
+  if (use_scanout) {
+    struct gbm_import_fd_data fd_data;
+    fd_data.fd = fds[0].get();
+    fd_data.width = size.width();
+    fd_data.height = size.height();
+    fd_data.stride = strides[0];
+    fd_data.format = fourcc_format;
 
-  // The fd passed to gbm_bo_import is not ref-counted and need to be
-  // kept open for the lifetime of the buffer.
-  gbm_bo* bo = gbm_bo_import(gbm->device(), GBM_BO_IMPORT_FD, &fd_data, flags);
-  if (!bo)
-    return nullptr;
+    // The fd passed to gbm_bo_import is not ref-counted and need to be
+    // kept open for the lifetime of the buffer.
+    bo = gbm_bo_import(gbm->device(), GBM_BO_IMPORT_FD, &fd_data,
+                       GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+    if (!bo)
+      return nullptr;
+  }
 
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
       gbm, bo, format,
