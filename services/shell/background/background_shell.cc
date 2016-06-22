@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "services/catalog/store.h"
@@ -55,7 +56,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
                                 const std::string& name,
                                 mojom::ShellClientRequest* request) {
     // Only valid to call this on the background thread.
-    DCHECK_EQ(message_loop_, base::MessageLoop::current());
+    DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
     *request = context_->shell()->InitInstanceForEmbedder(name);
     signal->Signal();
   }
@@ -75,7 +76,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   }
 
   void RunShellCallback(const BackgroundShell::ShellThreadCallback& callback) {
-    DCHECK_EQ(message_loop_, base::MessageLoop::current());
+    DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
     callback.Run(context_->shell());
   }
 
@@ -154,14 +155,14 @@ mojom::ShellClientRequest BackgroundShell::CreateShellClientRequest(
   base::WaitableEvent signal(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread_->message_loop()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MojoThread::CreateShellClientRequest,
-                            base::Unretained(thread_.get()), &signal, name,
-                            &request));
+      FROM_HERE,
+      base::Bind(&MojoThread::CreateShellClientRequest,
+                 base::Unretained(thread_.get()), &signal, name, &request));
   signal.Wait();
   thread_->message_loop()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MojoThread::Connect,
-                            base::Unretained(thread_.get()),
-                            base::Passed(&params)));
+      FROM_HERE,
+      base::Bind(&MojoThread::Connect, base::Unretained(thread_.get()),
+                 base::Passed(&params)));
   return request;
 }
 
