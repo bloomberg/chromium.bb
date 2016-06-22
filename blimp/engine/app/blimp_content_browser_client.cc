@@ -39,6 +39,18 @@ BlimpBrowserContext* BlimpContentBrowserClient::GetBrowserContext() {
   return blimp_browser_main_parts_->GetBrowserContext();
 }
 
+content::LocationProvider*
+BlimpContentBrowserClient::OverrideSystemLocationProvider() {
+  if (!location_provider_) {
+    location_provider_ = base::WrapUnique(new BlimpLocationProvider());
+  }
+  return location_provider_.get();
+}
+
+bool BlimpContentBrowserClient::UseNetworkLocationProviders() {
+  return false;
+}
+
 void BlimpContentBrowserClient::RegisterRenderProcessMojoServices(
     content::ServiceRegistry* registry,
     content::RenderProcessHost* render_process_host) {

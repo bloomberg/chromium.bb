@@ -69,6 +69,7 @@ source_set("app") {
     ":blob_channel_service",
     ":common",
     ":crash",
+    ":feature",
     ":renderer",
     ":session",
     "//base",

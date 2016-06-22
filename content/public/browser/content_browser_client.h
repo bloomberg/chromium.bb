@@ -624,10 +624,15 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows an embedder to return its own LocationProvider implementation.
   // Return nullptr to use the default one for the platform to be created.
+  // Caller takes ownership of the returned LocationProvider.
   // FYI: Used by an external project; please don't remove.
   // Contact Viatcheslav Ostapenko at sl.ostapenko@samsung.com for more
   // information.
   virtual LocationProvider* OverrideSystemLocationProvider();
+
+  // Returns true if the location API should use network-based
+  // location approximation in addition to the system provider, if any.
+  virtual bool UseNetworkLocationProviders();
 
   // Creates a new DevToolsManagerDelegate. The caller owns the returned value.
   // It's valid to return nullptr.

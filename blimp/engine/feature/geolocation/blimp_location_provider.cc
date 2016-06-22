@@ -9,9 +9,7 @@
 namespace blimp {
 namespace engine {
 
-BlimpLocationProvider::BlimpLocationProvider() {
-  NOTIMPLEMENTED();
-}
+BlimpLocationProvider::BlimpLocationProvider() {}
 
 BlimpLocationProvider::~BlimpLocationProvider() {
   StopProvider();
@@ -23,7 +21,6 @@ bool BlimpLocationProvider::StartProvider(bool high_accuracy) {
 }
 
 void BlimpLocationProvider::StopProvider() {
-  NOTIMPLEMENTED();
 }
 
 void BlimpLocationProvider::GetPosition(content::Geoposition* position) {

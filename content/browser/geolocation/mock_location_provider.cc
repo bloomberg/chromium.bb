@@ -16,22 +16,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace content {
-MockLocationProvider* MockLocationProvider::instance_ = NULL;
 
-MockLocationProvider::MockLocationProvider(MockLocationProvider** self_ref)
+MockLocationProvider::MockLocationProvider()
     : state_(STOPPED),
       is_permission_granted_(false),
-      self_ref_(self_ref),
-      provider_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  CHECK(self_ref_);
-  CHECK(*self_ref_ == NULL);
-  *self_ref_ = this;
-}
+      provider_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-MockLocationProvider::~MockLocationProvider() {
-  CHECK(*self_ref_ == this);
-  *self_ref_ = NULL;
-}
+MockLocationProvider::~MockLocationProvider() {}
 
 void MockLocationProvider::HandlePositionChanged(const Geoposition& position) {
   if (provider_task_runner_->BelongsToCurrentThread()) {
@@ -70,9 +61,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
  public:
   AutoMockLocationProvider(bool has_valid_location,
                            bool requires_permission_to_start)
-      : MockLocationProvider(&instance_),
-        weak_factory_(this),
-        requires_permission_to_start_(requires_permission_to_start),
+      : requires_permission_to_start_(requires_permission_to_start),
         listeners_updated_(false) {
     if (has_valid_location) {
       position_.accuracy = 3;
@@ -105,17 +94,19 @@ class AutoMockLocationProvider : public MockLocationProvider {
       listeners_updated_ = true;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&MockLocationProvider::HandlePositionChanged,
-                                weak_factory_.GetWeakPtr(), position_));
+                                base::Unretained(this), position_));
     }
   }
 
-  base::WeakPtrFactory<MockLocationProvider> weak_factory_;
+ private:
   const bool requires_permission_to_start_;
   bool listeners_updated_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoMockLocationProvider);
 };
 
 LocationProvider* NewMockLocationProvider() {
-  return new MockLocationProvider(&MockLocationProvider::instance_);
+  return new MockLocationProvider;
 }
 
 LocationProvider* NewAutoSuccessMockLocationProvider() {

@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/public/common/geoposition.h"
+#include "content/test/test_content_browser_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,16 +66,40 @@ void SetReferencePosition(MockLocationProvider* provider) {
 
 namespace {
 
+class GeolocationContentBrowserClient : public TestContentBrowserClient {
+ public:
+  GeolocationContentBrowserClient() {}
+
+  void set_use_network(bool use_network) { use_network_ = use_network; }
+
+  LocationProvider* OverrideSystemLocationProvider() override {
+    provider_ = new MockLocationProvider;
+    return provider_;
+  }
+
+  bool UseNetworkLocationProviders() override { return use_network_; }
+
+  // This provider does not own the object. It is returned by
+  // GeolocationLocationAribtratorTest::GetSystemLocationProviderOverride().
+  // The caller takes ownership. This is just a reference we can use for
+  // mocking purposes.
+  MockLocationProvider* provider_ = nullptr;
+
+ private:
+  bool use_network_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(GeolocationContentBrowserClient);
+};
+
 class TestingLocationArbitrator : public LocationArbitratorImpl {
  public:
   TestingLocationArbitrator(
       const LocationArbitratorImpl::LocationUpdateCallback& callback,
       AccessTokenStore* access_token_store)
       : LocationArbitratorImpl(callback),
-        cell_(NULL),
-        gps_(NULL),
-        access_token_store_(access_token_store) {
-  }
+        cell_(nullptr),
+        gps_(nullptr),
+        access_token_store_(access_token_store) {}
 
   base::Time GetTimeNow() const override { return GetTimeNowForTest(); }
 
@@ -81,22 +107,27 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
     return access_token_store_.get();
   }
 
-  LocationProvider* NewNetworkLocationProvider(
+  std::unique_ptr<LocationProvider> NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
       const base::string16& access_token) override {
-    return new MockLocationProvider(&cell_);
+    cell_ = new MockLocationProvider;
+    return base::WrapUnique(cell_);
   }
 
-  LocationProvider* NewSystemLocationProvider() override {
-    return new MockLocationProvider(&gps_);
+  std::unique_ptr<LocationProvider> NewSystemLocationProvider() override {
+    gps_ = new MockLocationProvider;
+    return base::WrapUnique(gps_);
   }
 
   // Two location providers, with nice short names to make the tests more
   // readable. Note |gps_| will only be set when there is a high accuracy
   // observer registered (and |cell_| when there's at least one observer of any
   // type).
+
+  // TODO(mvanouwerkerk): rename |cell_| to |network_location_provider_| and
+  // |gps_| to |system_location_provider_|
   MockLocationProvider* cell_;
   MockLocationProvider* gps_;
   scoped_refptr<AccessTokenStore> access_token_store_;
@@ -115,6 +146,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
                    base::Unretained(observer_.get()));
     arbitrator_.reset(new TestingLocationArbitrator(
         callback, access_token_store_.get()));
+    override_content_browser_client_.reset(new GeolocationContentBrowserClient);
   }
 
   // testing::Test
@@ -144,15 +176,21 @@ class GeolocationLocationArbitratorTest : public testing::Test {
     return arbitrator_->gps_;
   }
 
+  MockLocationProvider* GetSystemLocationProviderOverride() {
+    return override_content_browser_client_->provider_;
+  }
+
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   std::unique_ptr<MockLocationObserver> observer_;
   std::unique_ptr<TestingLocationArbitrator> arbitrator_;
   base::MessageLoop loop_;
+  std::unique_ptr<GeolocationContentBrowserClient>
+      override_content_browser_client_;
 };
 
 TEST_F(GeolocationLocationArbitratorTest, CreateDestroy) {
   EXPECT_TRUE(access_token_store_.get());
-  EXPECT_TRUE(arbitrator_ != NULL);
+  EXPECT_TRUE(arbitrator_);
   arbitrator_.reset();
   SUCCEED();
 }
@@ -165,22 +203,24 @@ TEST_F(GeolocationLocationArbitratorTest, OnPermissionGranted) {
   // motions to create the provider (see next test).
   EXPECT_FALSE(cell());
   EXPECT_FALSE(gps());
+  EXPECT_FALSE(GetSystemLocationProviderOverride());
 }
 
 TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   ASSERT_TRUE(access_token_store_.get());
-  ASSERT_TRUE(arbitrator_ != NULL);
+  ASSERT_TRUE(arbitrator_);
 
   EXPECT_FALSE(cell());
   EXPECT_FALSE(gps());
+  EXPECT_FALSE(GetSystemLocationProviderOverride());
   arbitrator_->StartProviders(false);
 
-  EXPECT_TRUE(access_token_store_->access_token_map_.empty());
   EXPECT_TRUE(access_token_store_->access_token_map_.empty());
 
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   EXPECT_TRUE(gps());
+  EXPECT_FALSE(GetSystemLocationProviderOverride());
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
   EXPECT_FALSE(observer_->last_position_.Validate());
@@ -202,11 +242,83 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_TRUE(cell()->is_permission_granted_);
 }
 
+TEST_F(GeolocationLocationArbitratorTest, CustomSystemProviderOnly) {
+  override_content_browser_client_->set_use_network(false);
+  SetBrowserClientForTesting(override_content_browser_client_.get());
+  ASSERT_TRUE(arbitrator_);
+
+  EXPECT_FALSE(cell());
+  EXPECT_FALSE(gps());
+  EXPECT_FALSE(GetSystemLocationProviderOverride());
+  arbitrator_->StartProviders(false);
+
+  ASSERT_FALSE(cell());
+  EXPECT_FALSE(gps());
+  EXPECT_TRUE(GetSystemLocationProviderOverride());
+  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY,
+            GetSystemLocationProviderOverride()->state_);
+  EXPECT_FALSE(observer_->last_position_.Validate());
+  EXPECT_EQ(Geoposition::ERROR_CODE_NONE, observer_->last_position_.error_code);
+
+  SetReferencePosition(GetSystemLocationProviderOverride());
+
+  EXPECT_TRUE(observer_->last_position_.Validate() ||
+              observer_->last_position_.error_code !=
+                  Geoposition::ERROR_CODE_NONE);
+  EXPECT_EQ(GetSystemLocationProviderOverride()->position_.latitude,
+            observer_->last_position_.latitude);
+
+  EXPECT_FALSE(GetSystemLocationProviderOverride()->is_permission_granted_);
+  EXPECT_FALSE(arbitrator_->HasPermissionBeenGranted());
+  arbitrator_->OnPermissionGranted();
+  EXPECT_TRUE(arbitrator_->HasPermissionBeenGranted());
+  EXPECT_TRUE(GetSystemLocationProviderOverride()->is_permission_granted_);
+}
+
+TEST_F(GeolocationLocationArbitratorTest,
+       CustomSystemAndDefaultNetworkProviders) {
+  override_content_browser_client_->set_use_network(true);
+  content::SetBrowserClientForTesting(override_content_browser_client_.get());
+  ASSERT_TRUE(arbitrator_);
+
+  EXPECT_FALSE(cell());
+  EXPECT_FALSE(gps());
+  EXPECT_FALSE(GetSystemLocationProviderOverride());
+  arbitrator_->StartProviders(false);
+
+  EXPECT_TRUE(access_token_store_->access_token_map_.empty());
+
+  access_token_store_->NotifyDelegateTokensLoaded();
+
+  ASSERT_TRUE(cell());
+  EXPECT_FALSE(gps());
+  EXPECT_TRUE(GetSystemLocationProviderOverride());
+  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY,
+            GetSystemLocationProviderOverride()->state_);
+  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
+  EXPECT_FALSE(observer_->last_position_.Validate());
+  EXPECT_EQ(Geoposition::ERROR_CODE_NONE, observer_->last_position_.error_code);
+
+  SetReferencePosition(cell());
+
+  EXPECT_TRUE(observer_->last_position_.Validate() ||
+              observer_->last_position_.error_code !=
+                  Geoposition::ERROR_CODE_NONE);
+  EXPECT_EQ(cell()->position_.latitude, observer_->last_position_.latitude);
+
+  EXPECT_FALSE(cell()->is_permission_granted_);
+  EXPECT_FALSE(arbitrator_->HasPermissionBeenGranted());
+  arbitrator_->OnPermissionGranted();
+  EXPECT_TRUE(arbitrator_->HasPermissionBeenGranted());
+  EXPECT_TRUE(cell()->is_permission_granted_);
+}
+
 TEST_F(GeolocationLocationArbitratorTest, SetObserverOptions) {
   arbitrator_->StartProviders(false);
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   ASSERT_TRUE(gps());
+  EXPECT_FALSE(GetSystemLocationProviderOverride());
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
   SetReferencePosition(cell());
@@ -215,6 +327,7 @@ TEST_F(GeolocationLocationArbitratorTest, SetObserverOptions) {
   arbitrator_->StartProviders(true);
   EXPECT_EQ(MockLocationProvider::HIGH_ACCURACY, cell()->state_);
   EXPECT_EQ(MockLocationProvider::HIGH_ACCURACY, gps()->state_);
+  EXPECT_FALSE(GetSystemLocationProviderOverride());
 }
 
 TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
@@ -222,6 +335,7 @@ TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   ASSERT_TRUE(gps());
+  EXPECT_FALSE(GetSystemLocationProviderOverride());
 
   SetPositionFix(cell(), 1, 2, 150);
 
@@ -298,6 +412,7 @@ TEST_F(GeolocationLocationArbitratorTest, TwoOneShotsIsNewPositionBetter) {
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   ASSERT_TRUE(gps());
+  EXPECT_FALSE(GetSystemLocationProviderOverride());
 
   // Set the initial position.
   SetPositionFix(cell(), 3, 139, 100);
@@ -308,9 +423,8 @@ TEST_F(GeolocationLocationArbitratorTest, TwoOneShotsIsNewPositionBetter) {
 
   // To test 240956, perform a throwaway alloc.
   // This convinces the allocator to put the providers in a new memory location.
-  MockLocationProvider* fakeMockProvider = NULL;
-  LocationProvider* fakeProvider =
-      new MockLocationProvider(&fakeMockProvider);
+  std::unique_ptr<MockLocationProvider> dummy_provider(
+      new MockLocationProvider);
 
   arbitrator_->StartProviders(false);
   access_token_store_->NotifyDelegateTokensLoaded();
@@ -321,9 +435,6 @@ TEST_F(GeolocationLocationArbitratorTest, TwoOneShotsIsNewPositionBetter) {
   // Update with a less accurate position to verify 240956.
   SetPositionFix(cell(), 3, 139, 150);
   CheckLastPositionInfo(3, 139, 150);
-
-  // No delete required for fakeMockProvider. It points to fakeProvider.
-  delete fakeProvider;
 }
 
 }  // namespace content

@@ -360,6 +360,10 @@ LocationProvider* ContentBrowserClient::OverrideSystemLocationProvider() {
   return nullptr;
 }
 
+bool ContentBrowserClient::UseNetworkLocationProviders() {
+  return true;
+}
+
 DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {
   return nullptr;
 }

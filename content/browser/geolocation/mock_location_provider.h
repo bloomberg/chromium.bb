@@ -19,9 +19,9 @@ namespace content {
 // Mock implementation of a location provider for testing.
 class MockLocationProvider : public LocationProviderBase {
  public:
-  // Will update |*self_ref| to point to |this| on construction, and to NULL
-  // on destruction.
-  explicit MockLocationProvider(MockLocationProvider** self_ref);
+  enum State { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;
+
+  MockLocationProvider();
   ~MockLocationProvider() override;
 
   // Updates listeners with the new position.
@@ -33,16 +33,11 @@ class MockLocationProvider : public LocationProviderBase {
   void GetPosition(Geoposition* position) override;
   void OnPermissionGranted() override;
 
-  Geoposition position_;
-  enum State { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;
   bool is_permission_granted_;
-  MockLocationProvider** self_ref_;
-
+  Geoposition position_;
   scoped_refptr<base::SingleThreadTaskRunner> provider_task_runner_;
 
-  // Set when an instance of the mock is created via a factory function.
-  static MockLocationProvider* instance_;
-
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockLocationProvider);
 };
 

@@ -6,8 +6,10 @@
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_IMPL_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
@@ -56,18 +58,20 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   // These functions are useful for injection of dependencies in derived
   // testing classes.
   virtual AccessTokenStore* NewAccessTokenStore();
-  virtual LocationProvider* NewNetworkLocationProvider(
+  virtual std::unique_ptr<LocationProvider> NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
       const base::string16& access_token);
-  virtual LocationProvider* NewSystemLocationProvider();
+  virtual std::unique_ptr<LocationProvider> NewSystemLocationProvider();
   virtual base::Time GetTimeNow() const;
 
  private:
-  // Takes ownership of |provider| on entry; it will either be added to
-  // |providers_| or deleted on error (e.g. it fails to start).
-  void RegisterProvider(LocationProvider* provider);
+  // Provider will either be added to |providers_| or
+  // deleted on error (e.g. it fails to start).
+  void RegisterProvider(std::unique_ptr<LocationProvider> provider);
+
+  void RegisterSystemProvider();
   void OnAccessTokenStoresLoaded(
       AccessTokenStore::AccessTokenMap access_token_map,
       net::URLRequestContextGetter* context_getter);
@@ -87,7 +91,13 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   scoped_refptr<AccessTokenStore> access_token_store_;
   LocationUpdateCallback arbitrator_update_callback_;
   LocationProvider::LocationProviderUpdateCallback provider_update_callback_;
-  ScopedVector<LocationProvider> providers_;
+
+  // The CancelableCallback will prevent OnAccessTokenStoresLoaded from being
+  // called multiple times by calling Reset() at the time of binding.
+  base::CancelableCallback<void(AccessTokenStore::AccessTokenMap,
+                                net::URLRequestContextGetter*)>
+      token_store_callback_;
+  std::vector<std::unique_ptr<LocationProvider>> providers_;
   bool enable_high_accuracy_;
   // The provider which supplied the current |position_|
   const LocationProvider* position_provider_;
