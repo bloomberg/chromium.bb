@@ -119,7 +119,12 @@ int ServiceWorkerProviderHost::frame_id() const {
 }
 
 bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
-  DCHECK(document_url_.is_valid());
+  // |document_url_| may be empty if loading has not begun, or
+  // ServiceWorkerRequestHandler didn't handle the load (because e.g. another
+  // handler did first, or the initial request URL was such that
+  // OriginCanAccessServiceWorkers returned false).
+  if (!document_url_.is_valid())
+    return false;
   if (!OriginCanAccessServiceWorkers(document_url_))
     return false;
 
