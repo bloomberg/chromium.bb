@@ -165,6 +165,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_needsScrollbarsUpdate(false)
     , m_suppressAdjustViewSize(false)
     , m_inPluginUpdate(false)
+    , m_inForcedLayoutByChildEmbeddedReplacedContent(false)
 {
     ASSERT(m_frame);
     init();
@@ -770,6 +771,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     // correct size, which LayoutSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
     // out for the first time, or when the LayoutSVGRoot size has changed dynamically (eg. via <script>).
     FrameView* frameView = ownerLayoutObject->frame()->view();
+    TemporaryChange<bool> t(frameView->m_inForcedLayoutByChildEmbeddedReplacedContent, true);
 
     // Mark the owner layoutObject as needing layout.
     ownerLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
@@ -1809,14 +1811,44 @@ void FrameView::layoutOrthogonalWritingModeRoots()
     }
 }
 
+void FrameView::checkLayoutInvalidationIsAllowed() const
+{
+    CHECK(!m_inPluginUpdate);
+
+    if (!m_frame->document())
+        return;
+
+    // TODO(crbug.com/442939): These are hacks to support embedded SVG. This is called from
+    // FrameView::forceLayoutParentViewIfNeeded() and the dirty layout will be cleaned up immediately.
+    // This is for the parent view of the view containing the embedded SVG.
+    if (m_inForcedLayoutByChildEmbeddedReplacedContent)
+        return;
+    // This is for the view containing the embedded SVG.
+    if (embeddedReplacedContent()) {
+        if (const LayoutObject* ownerLayoutObject = m_frame->ownerLayoutObject()) {
+            if (LocalFrame* frame = ownerLayoutObject->frame()) {
+                if (frame->view()->m_inForcedLayoutByChildEmbeddedReplacedContent)
+                    return;
+            }
+        }
+    }
+
+    CHECK(lifecycle().stateAllowsLayoutInvalidation());
+    if (m_isUpdatingAllLifecyclePhases) {
+        // If we are updating all lifecycle phases, we don't expect dirty layout after layout has been clean.
+        CHECK(lifecycle().state() <= DocumentLifecycle::LayoutClean);
+    }
+}
+
 void FrameView::scheduleRelayout()
 {
     DCHECK(m_frame->view() == this);
-    CHECK(lifecycle().stateAllowsLayoutInvalidation());
-    CHECK(!m_inPluginUpdate);
 
     if (!m_layoutSchedulingEnabled)
         return;
+
+    checkLayoutInvalidationIsAllowed();
+
     if (!needsLayout())
         return;
     if (!m_frame->document()->shouldScheduleLayout())
@@ -1836,8 +1868,8 @@ void FrameView::scheduleRelayout()
 void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
 {
     DCHECK(m_frame->view() == this);
-    CHECK(lifecycle().stateAllowsLayoutInvalidation());
-    CHECK(!m_inPluginUpdate);
+
+    checkLayoutInvalidationIsAllowed();
 
     // FIXME: Should this call shouldScheduleLayout instead?
     if (!m_frame->document()->isActive())
@@ -1887,19 +1919,31 @@ bool FrameView::needsLayout() const
         || isSubtreeLayout();
 }
 
-NOINLINE void FrameView::checkDoesNotNeedLayout() const
+NOINLINE void FrameView::checkNoLayoutPending() const
 {
     CHECK(!layoutPending());
+}
+
+NOINLINE void FrameView::checkLayoutViewDoesNotNeedLayout() const
+{
     CHECK(layoutViewItem().isNull() || !layoutViewItem().needsLayout());
+}
+
+NOINLINE void FrameView::checkIsNotSubtreeLayout() const
+{
     CHECK(!isSubtreeLayout());
+}
+
+NOINLINE void FrameView::checkDoesNotNeedLayout() const
+{
+    checkNoLayoutPending();
+    checkLayoutViewDoesNotNeedLayout();
+    checkIsNotSubtreeLayout();
 }
 
 void FrameView::setNeedsLayout()
 {
-    LayoutReplaced* box = embeddedReplacedContent();
-    // It's illegal to ask for layout changes during the layout compositing or paint invalidation step.
-    // FIXME: the third conditional is a hack to support embedded SVG. See FrameView::forceLayoutParentViewIfNeeded and crbug.com/442939
-    RELEASE_ASSERT(!m_frame->document() || m_frame->document()->lifecycle().stateAllowsLayoutInvalidation() || (box && box->isSVGRoot()));
+    checkLayoutInvalidationIsAllowed();
 
     LayoutViewItem layoutViewItem = this->layoutViewItem();
     if (!layoutViewItem.isNull())

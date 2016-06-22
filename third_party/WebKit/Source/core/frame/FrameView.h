@@ -777,6 +777,12 @@ private:
     LayoutBox& boxForScrollControlPaintInvalidation() const override;
     LayoutScrollbarPart* resizer() const override { return nullptr; }
 
+    void checkNoLayoutPending() const;
+    void checkLayoutViewDoesNotNeedLayout() const;
+    void checkIsNotSubtreeLayout() const;
+
+    void checkLayoutInvalidationIsAllowed() const;
+
     LayoutSize m_size;
 
     typedef HashSet<RefPtr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -920,6 +926,7 @@ private:
     bool m_needsScrollbarsUpdate;
     bool m_suppressAdjustViewSize;
     bool m_inPluginUpdate;
+    bool m_inForcedLayoutByChildEmbeddedReplacedContent;
 
     // For testing.
     struct ObjectPaintInvalidation {
