@@ -2000,8 +2000,9 @@ void HTMLMediaElement::setPreload(const AtomicString& preload)
 
 WebMediaPlayer::Preload HTMLMediaElement::preloadType() const
 {
-    // Force preload to none for cellular connections.
-    if (networkStateNotifier().isCellularConnectionType()) {
+    // Force preload to none for cellular connections or when data saver is explicitly set.
+    if (networkStateNotifier().isCellularConnectionType()
+        || (document().settings() && document().settings()->dataSaverEnabled())) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadForcedNone);
         return WebMediaPlayer::PreloadNone;
     }
@@ -2040,7 +2041,7 @@ String HTMLMediaElement::effectivePreload() const
 
 WebMediaPlayer::Preload HTMLMediaElement::effectivePreloadType() const
 {
-    if (autoplay())
+    if (autoplay() && !isGestureNeededForPlayback())
         return WebMediaPlayer::PreloadAuto;
 
     WebMediaPlayer::Preload preload = preloadType();
