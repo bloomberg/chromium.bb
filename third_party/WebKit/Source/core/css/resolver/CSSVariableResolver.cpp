@@ -89,7 +89,7 @@ bool CSSVariableResolver::resolveVariableReference(CSSParserTokenRange range, Ve
 void CSSVariableResolver::resolveApplyAtRule(CSSParserTokenRange& range,
     Vector<CSSParserToken>& result)
 {
-    ASSERT(range.peek().type() == AtKeywordToken && range.peek().valueEqualsIgnoringASCIICase("apply"));
+    DCHECK(range.peek().type() == AtKeywordToken && equalIgnoringASCIICase(range.peek().value(), "apply"));
     range.consumeIncludingWhitespace();
     const CSSParserToken& variableName = range.consumeIncludingWhitespace();
     // TODO(timloh): Should we actually be consuming this?
@@ -119,7 +119,7 @@ bool CSSVariableResolver::resolveTokenRange(CSSParserTokenRange range,
     while (!range.atEnd()) {
         if (range.peek().functionId() == CSSValueVar) {
             success &= resolveVariableReference(range.consumeBlock(), result);
-        } else if (range.peek().type() == AtKeywordToken && range.peek().valueEqualsIgnoringASCIICase("apply")
+        } else if (range.peek().type() == AtKeywordToken && equalIgnoringASCIICase(range.peek().value(), "apply")
             && RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
             resolveApplyAtRule(range, result);
         } else {

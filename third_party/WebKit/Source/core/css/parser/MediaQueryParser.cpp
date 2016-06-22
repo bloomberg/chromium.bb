@@ -64,7 +64,7 @@ void MediaQueryParser::readRestrictor(CSSParserTokenType type, const CSSParserTo
 
 void MediaQueryParser::readMediaNot(CSSParserTokenType type, const CSSParserToken& token)
 {
-    if (type == IdentToken && token.valueEqualsIgnoringASCIICase("not"))
+    if (type == IdentToken && equalIgnoringASCIICase(token.value(), "not"))
         setStateAndRestrict(ReadFeatureStart, MediaQuery::Not);
     else
         readFeatureStart(type, token);
@@ -73,10 +73,10 @@ void MediaQueryParser::readMediaNot(CSSParserTokenType type, const CSSParserToke
 static bool isRestrictorOrLogicalOperator(const CSSParserToken& token)
 {
     // FIXME: it would be more efficient to use lower-case always for tokenValue.
-    return token.valueEqualsIgnoringASCIICase("not")
-        || token.valueEqualsIgnoringASCIICase("and")
-        || token.valueEqualsIgnoringASCIICase("or")
-        || token.valueEqualsIgnoringASCIICase("only");
+    return equalIgnoringASCIICase(token.value(), "not")
+        || equalIgnoringASCIICase(token.value(), "and")
+        || equalIgnoringASCIICase(token.value(), "or")
+        || equalIgnoringASCIICase(token.value(), "only");
 }
 
 void MediaQueryParser::readMediaType(CSSParserTokenType type, const CSSParserToken& token)
@@ -87,9 +87,9 @@ void MediaQueryParser::readMediaType(CSSParserTokenType type, const CSSParserTok
         else
             m_state = ReadFeature;
     } else if (type == IdentToken) {
-        if (m_state == ReadRestrictor && token.valueEqualsIgnoringASCIICase("not")) {
+        if (m_state == ReadRestrictor && equalIgnoringASCIICase(token.value(), "not")) {
             setStateAndRestrict(ReadMediaType, MediaQuery::Not);
-        } else if (m_state == ReadRestrictor && token.valueEqualsIgnoringASCIICase("only")) {
+        } else if (m_state == ReadRestrictor && equalIgnoringASCIICase(token.value(), "only")) {
             setStateAndRestrict(ReadMediaType, MediaQuery::Only);
         } else if (m_mediaQueryData.restrictor() != MediaQuery::None
             && isRestrictorOrLogicalOperator(token)) {
@@ -109,7 +109,7 @@ void MediaQueryParser::readMediaType(CSSParserTokenType type, const CSSParserTok
 
 void MediaQueryParser::readAnd(CSSParserTokenType type, const CSSParserToken& token)
 {
-    if (type == IdentToken && token.valueEqualsIgnoringASCIICase("and")) {
+    if (type == IdentToken && equalIgnoringASCIICase(token.value(), "and")) {
         m_state = ReadFeatureStart;
     } else if (type == CommaToken && m_parserType != MediaConditionParser) {
         m_querySet->addMediaQuery(m_mediaQueryData.takeMediaQuery());

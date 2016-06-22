@@ -1115,7 +1115,7 @@ static CSSValue* consumeAnimationName(CSSParserTokenRange& range, const CSSParse
             context.useCounter()->count(UseCounter::QuotedAnimationName);
 
         const CSSParserToken& token = range.consumeIncludingWhitespace();
-        if (token.valueEqualsIgnoringASCIICase("none"))
+        if (equalIgnoringASCIICase(token.value(), "none"))
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
         return CSSCustomIdentValue::create(token.value().toString());
     }

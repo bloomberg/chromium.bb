@@ -96,8 +96,6 @@ public:
     {
         return StringView(m_valueDataCharRaw, m_valueLength, m_valueIs8Bit);
     }
-    // TODO(esprehn): Remove this method, callers should just use equalIgnoringASCIICase directly.
-    bool valueEqualsIgnoringASCIICase(StringView match) const { return equalIgnoringASCIICase(value(), match); }
 
     UChar delimiter() const;
     NumericSign numericSign() const;

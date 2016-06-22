@@ -50,8 +50,8 @@ CSSSupportsParser::SupportsResult CSSSupportsParser::consumeCondition(CSSParserT
             return Invalid;
         if (clauseType == Unresolved)
             clauseType = token.value().length() == 3 ? Conjunction : Disjunction;
-        if ((clauseType == Conjunction && !token.valueEqualsIgnoringASCIICase("and"))
-            || (clauseType == Disjunction && !token.valueEqualsIgnoringASCIICase("or")))
+        if ((clauseType == Conjunction && !equalIgnoringASCIICase(token.value(), "and"))
+            || (clauseType == Disjunction && !equalIgnoringASCIICase(token.value(), "or")))
             return Invalid;
 
         if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
@@ -63,7 +63,7 @@ CSSSupportsParser::SupportsResult CSSSupportsParser::consumeCondition(CSSParserT
 CSSSupportsParser::SupportsResult CSSSupportsParser::consumeNegation(CSSParserTokenRange range)
 {
     ASSERT(range.peek().type() == IdentToken);
-    if (!range.consume().valueEqualsIgnoringASCIICase("not"))
+    if (!equalIgnoringASCIICase(range.consume().value(), "not"))
         return Invalid;
     if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
         return Invalid;
