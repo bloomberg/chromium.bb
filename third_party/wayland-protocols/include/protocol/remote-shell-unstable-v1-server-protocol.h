@@ -375,27 +375,55 @@ struct zwp_remote_surface_v1_interface {
 	 */
 	void (*unfullscreen)(struct wl_client *client,
 			     struct wl_resource *resource);
-
 	/**
-         * set_rectangular_shadow
-         * Request that surface neesds a rectangular shadow.
-         *
-         * This is only a request that the surface should have a rectangular
-         * shadow. The compositor may choose to ignore this request.
-         *
-         * The arguments are given in the output coordinate space and specifies
-         * the inner bounds of the shadow.
-         *
-         * The arguments are given in the output coordinate space.
-         * Specifying zero width and height will disable the shadow.
+	 * set a rectangular shadow
+	 *
+	 * Request that surface needs a rectangular shadow.
+	 *
+	 * This is only a request that the surface should have a
+	 * rectangular shadow. The compositor may choose to ignore this
+	 * request.
+	 *
+	 * The arguments are given in the output coordinate space and
+	 * specifies the inner bounds of the shadow.
+	 *
+	 * The arguments are given in the output coordinate space.
+	 * Specifying zero width and height will disable the shadow.
 	 * @since 4
 	 */
 	void (*set_rectangular_shadow)(struct wl_client *client,
-                                       struct wl_resource *resource,
-                                       int32_t x,
-                                       int32_t y,
-                                       int32_t width,
-                                       int32_t height);
+				       struct wl_resource *resource,
+				       int32_t x,
+				       int32_t y,
+				       int32_t width,
+				       int32_t height);
+	/**
+	 * set surface title
+	 *
+	 * Set a short title for the surface.
+	 *
+	 * This string may be used to identify the surface in a task bar,
+	 * window list, or other user interface elements provided by the
+	 * compositor.
+	 *
+	 * The string must be encoded in UTF-8.
+	 * @since 5
+	 */
+	void (*set_title)(struct wl_client *client,
+			  struct wl_resource *resource,
+			  const char *title);
+	/**
+	 * set top inset for surface
+	 *
+	 * Set distance from the top of the surface to the contents.
+	 *
+	 * This distance typically represents the size of the window
+	 * caption.
+	 * @since 5
+	 */
+	void (*set_top_inset)(struct wl_client *client,
+			      struct wl_resource *resource,
+			      int32_t height);
 };
 
 #define ZWP_REMOTE_SURFACE_V1_SET_FULLSCREEN	0

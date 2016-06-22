@@ -402,6 +402,8 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
 #define ZWP_REMOTE_SURFACE_V1_UNPIN	9
 #define ZWP_REMOTE_SURFACE_V1_UNFULLSCREEN	10
 #define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW	11
+#define ZWP_REMOTE_SURFACE_V1_SET_TITLE	12
+#define ZWP_REMOTE_SURFACE_V1_SET_TOP_INSET	13
 
 /**
  * @ingroup iface_zwp_remote_surface_v1
@@ -451,6 +453,14 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
  * @ingroup iface_zwp_remote_surface_v1
  */
 #define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_SINCE_VERSION	4
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ */
+#define ZWP_REMOTE_SURFACE_V1_SET_TITLE_SINCE_VERSION	5
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ */
+#define ZWP_REMOTE_SURFACE_V1_SET_TOP_INSET_SINCE_VERSION	5
 
 /** @ingroup iface_zwp_remote_surface_v1 */
 static inline void
@@ -666,7 +676,7 @@ zwp_remote_surface_v1_unfullscreen(struct zwp_remote_surface_v1 *zwp_remote_surf
 /**
  * @ingroup iface_zwp_remote_surface_v1
  *
- * Request that surface neesds a rectangular shadow.
+ * Request that surface needs a rectangular shadow.
  *
  * This is only a request that the surface should have a rectangular
  * shadow. The compositor may choose to ignore this request.
@@ -681,7 +691,39 @@ static inline void
 zwp_remote_surface_v1_set_rectangular_shadow(struct zwp_remote_surface_v1 *zwp_remote_surface_v1, int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
-			 ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_GEOMETRY, x, y, width, height);
+			 ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW, x, y, width, height);
+}
+
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ *
+ * Set a short title for the surface.
+ *
+ * This string may be used to identify the surface in a task bar,
+ * window list, or other user interface elements provided by the
+ * compositor.
+ *
+ * The string must be encoded in UTF-8.
+ */
+static inline void
+zwp_remote_surface_v1_set_title(struct zwp_remote_surface_v1 *zwp_remote_surface_v1, const char *title)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_SET_TITLE, title);
+}
+
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ *
+ * Set distance from the top of the surface to the contents.
+ *
+ * This distance typically represents the size of the window caption.
+ */
+static inline void
+zwp_remote_surface_v1_set_top_inset(struct zwp_remote_surface_v1 *zwp_remote_surface_v1, int32_t height)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_SET_TOP_INSET, height);
 }
 
 #ifdef  __cplusplus

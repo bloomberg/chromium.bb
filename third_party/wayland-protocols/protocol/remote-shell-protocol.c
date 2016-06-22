@@ -55,7 +55,7 @@ static const struct wl_message zwp_remote_shell_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_shell_v1_interface = {
-	"zwp_remote_shell_v1", 3,
+	"zwp_remote_shell_v1", 5,
 	2, zwp_remote_shell_v1_requests,
 	2, zwp_remote_shell_v1_events,
 };
@@ -72,7 +72,9 @@ static const struct wl_message zwp_remote_surface_v1_requests[] = {
 	{ "pin", "3", types + 0 },
 	{ "unpin", "3", types + 0 },
 	{ "unfullscreen", "3", types + 0 },
-	{ "set_rectangular_shadow", "iiii", types + 0 },
+	{ "set_rectangular_shadow", "4iiii", types + 0 },
+	{ "set_title", "5s", types + 0 },
+	{ "set_top_inset", "5i", types + 0 },
 };
 
 static const struct wl_message zwp_remote_surface_v1_events[] = {
@@ -88,7 +90,8 @@ static const struct wl_message zwp_remote_surface_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_surface_v1_interface = {
-	"zwp_remote_surface_v1", 3,
-	11, zwp_remote_surface_v1_requests,
+	"zwp_remote_surface_v1", 5,
+	14, zwp_remote_surface_v1_requests,
 	9, zwp_remote_surface_v1_events,
 };
+
