@@ -243,10 +243,6 @@ public:
     // control what are valid states for top controls and if it should animate.
     virtual void updateTopControlsState(WebTopControlsState constraints, WebTopControlsState current, bool animate) { }
 
-    // Report that the last frame had a fixed raster scale with blurry content
-    // or potential performance issues.
-    virtual void reportFixedRasterScaleUseCounters(bool hasBlurryContent, bool hasPotentialPerformanceRegression) {}
-
 protected:
     ~WebWidget() { }
 };

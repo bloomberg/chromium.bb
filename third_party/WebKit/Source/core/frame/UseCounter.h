@@ -1174,6 +1174,7 @@ public:
         DurableStoragePersisted = 1370,
         DurableStorageEstimate = 1371,
         UntrustedEventDefaultHandled = 1372,
+        // The following two items (FixedRasterScale*) are unused.
         FixedRasterScaleBlurryContent = 1373,
         FixedRasterScalePotentialPerformanceRegression = 1374,
         CSSDeepCombinatorAndShadow = 1375,

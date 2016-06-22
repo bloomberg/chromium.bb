@@ -58,9 +58,6 @@ class LayerTreeHostClient {
   virtual void DidCommitAndDrawFrame() = 0;
   virtual void DidCompleteSwapBuffers() = 0;
   virtual void DidCompletePageScaleAnimation() = 0;
-  virtual void ReportFixedRasterScaleUseCounters(
-      bool has_blurry_content,
-      bool has_potential_performance_regression) = 0;
 
  protected:
   virtual ~LayerTreeHostClient() {}

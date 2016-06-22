@@ -32,8 +32,6 @@ struct CC_EXPORT BeginMainFrameAndCommitState {
   std::unique_ptr<ScrollAndScaleSet> scroll_info;
   size_t memory_allocation_limit_bytes = 0;
   bool evicted_ui_resources = false;
-  bool has_fixed_raster_scale_blurry_content = false;
-  bool has_fixed_raster_scale_potential_performance_regression = false;
 
   void ToProtobuf(proto::BeginMainFrameAndCommitState* proto) const;
   void FromProtobuf(const proto::BeginMainFrameAndCommitState& proto);

@@ -60,9 +60,6 @@ class StubRenderWidgetCompositorDelegate
   void RequestScheduleAnimation() override {}
   void UpdateVisualState() override {}
   void WillBeginCompositorFrame() override {}
-  void ReportFixedRasterScaleUseCounters(
-      bool has_blurry_content,
-      bool has_potential_performance_regression) override {}
 };
 
 class FakeRenderWidgetCompositorDelegate

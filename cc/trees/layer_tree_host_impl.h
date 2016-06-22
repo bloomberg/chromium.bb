@@ -620,16 +620,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
   LayerTreeMutator* mutator() { return mutator_.get(); }
 
-  void set_fixed_raster_scale_has_blurry_content() {
-    has_fixed_raster_scale_blurry_content_ = true;
-  }
-  bool has_fixed_raster_scale_blurry_content() const {
-    return has_fixed_raster_scale_blurry_content_;
-  }
-
-  bool HasFixedRasterScalePotentialPerformanceRegression() const;
-  void SetFixedRasterScaleAttemptedToChangeScale();
-
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -658,9 +648,6 @@ class CC_EXPORT LayerTreeHostImpl
   BeginFrameTracker current_begin_frame_tracker_;
 
  private:
-  enum { kFixedRasterScaleAttemptedScaleChangeThreshold = 5 };
-  enum { kFixedRasterScaleAttemptedScaleChangeHistoryCount = 10 };
-
   gfx::Vector2dF ScrollNodeWithViewportSpaceDelta(
       ScrollNode* scroll_node,
       const gfx::PointF& viewport_point,
@@ -861,9 +848,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::unique_ptr<LayerTreeMutator> mutator_;
 
-  bool has_fixed_raster_scale_blurry_content_;
-  std::bitset<kFixedRasterScaleAttemptedScaleChangeHistoryCount>
-      fixed_raster_scale_attempted_scale_change_history_;
   std::unique_ptr<PendingTreeDurationHistogramTimer>
       pending_tree_duration_timer_;
 

@@ -243,8 +243,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       id_(id),
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
-      mutator_(nullptr),
-      has_fixed_raster_scale_blurry_content_(false) {
+      mutator_(nullptr) {
   DCHECK(animation_host_);
   animation_host_->SetMutatorHostClient(this);
 
@@ -355,9 +354,6 @@ void LayerTreeHostImpl::CommitComplete() {
   // may require an update of the tree resources.
   UpdateTreeResourcesForGpuRasterizationIfNeeded();
   sync_tree()->set_needs_update_draw_properties();
-
-  // Advance the attempted scale change history before updating draw properties.
-  fixed_raster_scale_attempted_scale_change_history_ <<= 1;
 
   // We need an update immediately post-commit to have the opportunity to create
   // tilings.  Because invalidations may be coming from the main thread, it's
@@ -4018,16 +4014,6 @@ bool LayerTreeHostImpl::CommitToActiveTree() const {
   // In single threaded mode we skip the pending tree and commit directly to the
   // active tree.
   return !task_runner_provider_->HasImplThread();
-}
-
-bool LayerTreeHostImpl::HasFixedRasterScalePotentialPerformanceRegression()
-    const {
-  return fixed_raster_scale_attempted_scale_change_history_.count() >=
-         kFixedRasterScaleAttemptedScaleChangeThreshold;
-}
-
-void LayerTreeHostImpl::SetFixedRasterScaleAttemptedToChangeScale() {
-  fixed_raster_scale_attempted_scale_change_history_.set(0);
 }
 
 }  // namespace cc

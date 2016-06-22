@@ -1025,13 +1025,6 @@ void RenderWidgetCompositor::DidCompletePageScaleAnimation() {
   delegate_->DidCompletePageScaleAnimation();
 }
 
-void RenderWidgetCompositor::ReportFixedRasterScaleUseCounters(
-    bool has_blurry_content,
-    bool has_potential_performance_regression) {
-  delegate_->ReportFixedRasterScaleUseCounters(
-      has_blurry_content, has_potential_performance_regression);
-}
-
 void RenderWidgetCompositor::RequestScheduleAnimation() {
   delegate_->RequestScheduleAnimation();
 }

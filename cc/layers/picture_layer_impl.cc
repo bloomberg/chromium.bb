@@ -69,13 +69,11 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
       ideal_device_scale_(0.f),
       ideal_source_scale_(0.f),
       ideal_contents_scale_(0.f),
-      last_ideal_source_scale_(0.f),
       raster_page_scale_(0.f),
       raster_device_scale_(0.f),
       raster_source_scale_(0.f),
       raster_contents_scale_(0.f),
       low_res_raster_contents_scale_(0.f),
-      raster_source_scale_is_fixed_(false),
       was_screen_space_transform_animating_(false),
       only_used_low_res_last_append_quads_(false),
       is_mask_(is_mask),
@@ -432,17 +430,6 @@ bool PictureLayerImpl::UpdateTiles() {
   if (!raster_contents_scale_ || ShouldAdjustRasterScale()) {
     RecalculateRasterScales();
     AddTilingsForRasterScale();
-  }
-
-  // Inform layer tree impl if we will have blurry content because of fixed
-  // raster scale (note that this check should happen after we
-  // ReclaculateRasterScales, since that's the function that will determine
-  // whether our raster scale is fixed.
-  if (raster_source_scale_is_fixed_ && !has_will_change_transform_hint()) {
-    if (raster_source_scale_ != ideal_source_scale_)
-      layer_tree_impl()->SetFixedRasterScaleHasBlurryContent();
-    if (ideal_source_scale_ != last_ideal_source_scale_)
-      layer_tree_impl()->SetFixedRasterScaleAttemptedToChangeScale();
   }
 
   if (layer_tree_impl()->IsActiveTree())
@@ -915,19 +902,23 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
   if (raster_device_scale_ != ideal_device_scale_)
     return true;
 
-  // When the source scale changes we want to match it, but not when animating
-  // or when we've fixed the scale in place.
-  if (!draw_properties().screen_space_transform_is_animating &&
-      !raster_source_scale_is_fixed_ &&
-      raster_source_scale_ != ideal_source_scale_)
-    return true;
-
   if (raster_contents_scale_ > MaximumContentsScale())
     return true;
   if (raster_contents_scale_ < MinimumContentsScale())
     return true;
 
-  return false;
+  // Don't change the raster scale if any of the following are true:
+  //  - We have an animating transform.
+  //  - We have a will-change transform hint.
+  //  - The raster scale is already ideal.
+  if (draw_properties().screen_space_transform_is_animating ||
+      has_will_change_transform_hint() ||
+      raster_source_scale_ == ideal_source_scale_) {
+    return false;
+  }
+
+  // Match the raster scale in all other cases.
+  return true;
 }
 
 void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
@@ -961,30 +952,11 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
 void PictureLayerImpl::RecalculateRasterScales() {
   float old_raster_contents_scale = raster_contents_scale_;
   float old_raster_page_scale = raster_page_scale_;
-  float old_raster_source_scale = raster_source_scale_;
 
   raster_device_scale_ = ideal_device_scale_;
   raster_page_scale_ = ideal_page_scale_;
   raster_source_scale_ = ideal_source_scale_;
   raster_contents_scale_ = ideal_contents_scale_;
-
-  // If we're not animating, or leaving an animation, and the
-  // ideal_source_scale_ changes, then things are unpredictable, and we fix
-  // the raster_source_scale_ in place.
-  if (old_raster_source_scale &&
-      !draw_properties().screen_space_transform_is_animating &&
-      !was_screen_space_transform_animating_ &&
-      old_raster_source_scale != ideal_source_scale_)
-    raster_source_scale_is_fixed_ = true;
-
-  // TODO(danakj): Adjust raster source scale closer to ideal source scale at
-  // a throttled rate. Possibly make use of invalidation_.IsEmpty() on pending
-  // tree. This will allow CSS scale changes to get re-rastered at an
-  // appropriate rate. (crbug.com/413636)
-  if (raster_source_scale_is_fixed_) {
-    raster_contents_scale_ /= raster_source_scale_;
-    raster_source_scale_ = 1.f;
-  }
 
   // During pinch we completely ignore the current ideal scale, and just use
   // a multiple of the previous scale.
@@ -1156,7 +1128,6 @@ void PictureLayerImpl::ResetRasterScale() {
   raster_source_scale_ = 0.f;
   raster_contents_scale_ = 0.f;
   low_res_raster_contents_scale_ = 0.f;
-  raster_source_scale_is_fixed_ = false;
 }
 
 bool PictureLayerImpl::CanHaveTilings() const {
@@ -1218,7 +1189,6 @@ void PictureLayerImpl::UpdateIdealScales() {
                           : 1.f;
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
   ideal_contents_scale_ = std::max(GetIdealContentsScale(), min_contents_scale);
-  last_ideal_source_scale_ = ideal_source_scale_;
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
 }

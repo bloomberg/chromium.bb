@@ -2823,17 +2823,6 @@ void WebViewImpl::didChangeWindowResizerRect()
         mainFrameImpl()->frameView()->windowResizerRectChanged();
 }
 
-void WebViewImpl::reportFixedRasterScaleUseCounters(bool hasBlurryContent, bool hasPotentialPerformanceRegression)
-{
-    if (!mainFrameImpl())
-        return;
-    Document* document = mainFrameImpl()->frame()->document();
-    if (hasBlurryContent)
-        UseCounter::count(document, UseCounter::FixedRasterScaleBlurryContent);
-    if (hasPotentialPerformanceRegression)
-        UseCounter::count(document, UseCounter::FixedRasterScalePotentialPerformanceRegression);
-}
-
 // WebView --------------------------------------------------------------------
 
 WebSettingsImpl* WebViewImpl::settingsImpl()

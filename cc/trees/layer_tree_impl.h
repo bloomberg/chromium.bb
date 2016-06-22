@@ -118,8 +118,6 @@ class CC_EXPORT LayerTreeImpl {
   AnimationHost* animation_host() const {
     return layer_tree_host_impl_->animation_host();
   }
-  void SetFixedRasterScaleHasBlurryContent();
-  void SetFixedRasterScaleAttemptedToChangeScale();
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------
