@@ -73,3 +73,15 @@ function setForeignSessions(sessionList, isTabSyncEnabled) {
  */
 function historyDeleted() {
 }
+
+/**
+ * Called by the history backend after user's sign in state changes.
+ * @param {boolean} isUserSignedIn Whether user is signed in or not now.
+ */
+function updateSignInState(isUserSignedIn) {
+  var appElem = $('history-app');
+  waitForUpgrade(appElem).then(function() {
+    /** @type {HistoryAppElement} */(appElem)
+        .updateSignInState(isUserSignedIn);
+  });
+}

@@ -7,16 +7,19 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
@@ -53,6 +56,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                              IDS_MD_HISTORY_OPEN_TABS_MENU_ITEM);
   source->AddLocalizedString("noResults", IDS_HISTORY_NO_RESULTS);
   source->AddLocalizedString("noSearchResults", IDS_HISTORY_NO_SEARCH_RESULTS);
+  source->AddLocalizedString("noSyncedResults",
+                             IDS_MD_HISTORY_NO_SYNCED_RESULTS);
   source->AddLocalizedString("rangeAllTime", IDS_HISTORY_RANGE_ALL_TIME);
   source->AddLocalizedString("rangeWeek", IDS_HISTORY_RANGE_WEEK);
   source->AddLocalizedString("rangeMonth", IDS_HISTORY_RANGE_MONTH);
@@ -63,6 +68,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("searchPrompt", IDS_MD_HISTORY_SEARCH_PROMPT);
   source->AddLocalizedString("searchResult", IDS_HISTORY_SEARCH_RESULT);
   source->AddLocalizedString("searchResults", IDS_HISTORY_SEARCH_RESULTS);
+  source->AddLocalizedString("signInButton", IDS_MD_HISTORY_SIGN_IN_BUTTON);
+  source->AddLocalizedString("signInPromo", IDS_MD_HISTORY_SIGN_IN_PROMO);
+  source->AddLocalizedString("signInPromoDesc",
+                             IDS_MD_HISTORY_SIGN_IN_PROMO_DESC);
   source->AddLocalizedString("title", IDS_HISTORY_TITLE);
 
   bool allow_deleting_history =
@@ -72,6 +81,12 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   bool group_by_domain = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHistoryEnableGroupByDomain) || profile->IsSupervised();
   source->AddBoolean("groupByDomain", group_by_domain);
+
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  bool is_authenticated = signin_manager != nullptr &&
+      signin_manager->IsAuthenticated();
+  source->AddBoolean("isUserSignedIn", is_authenticated);
 
   source->AddResourcePath("app.html", IDR_MD_HISTORY_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_HISTORY_APP_JS);
@@ -96,6 +111,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                           IDR_MD_HISTORY_HISTORY_TOOLBAR_JS);
   source->AddResourcePath("history.js", IDR_MD_HISTORY_HISTORY_JS);
   source->AddResourcePath("icons.html", IDR_MD_HISTORY_ICONS_HTML);
+  source->AddResourcePath("images/100/sign_in_promo.png",
+                          IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_PNG);
+  source->AddResourcePath("images/200/sign_in_promo.png",
+                          IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_PNG);
   source->AddResourcePath("searched_label.html",
                           IDR_MD_HISTORY_SEARCHED_LABEL_HTML);
   source->AddResourcePath("searched_label.js",
@@ -122,15 +141,17 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
 }  // namespace
 
 MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
   web_ui->AddMessageHandler(new MetricsHandler());
+  // Add handler for showing Chrome sign in overlay.
+  web_ui->AddMessageHandler(new settings::PeopleHandler(profile));
 
   if (search::IsInstantExtendedAPIEnabled()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new HistoryLoginHandler());
   }
 
-  Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateMdHistoryUIHTMLSource(profile));
 }
 

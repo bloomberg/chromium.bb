@@ -225,6 +225,17 @@ Polymer({
   },
 
   /**
+   * Update sign in state of synced device manager after user logs in or out.
+   * @param {boolean} isUserSignedIn
+   */
+  updateSignInState: function(isUserSignedIn) {
+    var syncedDeviceManagerElem =
+      /** @type {HistorySyncedDeviceManagerElement} */this
+          .$$('history-synced-device-manager');
+    syncedDeviceManagerElem.updateSignInState(isUserSignedIn);
+  },
+
+  /**
    * @param {string} selectedPage
    * @return {boolean}
    * @private

@@ -36,6 +36,18 @@ Polymer({
     syncedDevices_: {
       type: Array,
       value: function() { return []; }
+    },
+
+    /** @private */
+    signInState_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('isUserSignedIn'),
+    },
+
+    /** @private */
+    fetchingSyncedTabs_: {
+      type: Boolean,
+      value: false,
     }
   },
 
@@ -81,6 +93,38 @@ Polymer({
     };
   },
 
+
+  onSignInTap_: function() {
+    chrome.send('SyncSetupShowSetupUI');
+    chrome.send('SyncSetupStartSignIn', [false]);
+  },
+
+  /** @private */
+  clearDisplayedSyncedDevices_: function() {
+    this.syncedDevices_ = [];
+  },
+
+  /**
+   * Decide whether or not should display no synced tabs message.
+   * @param {boolean} signInState
+   * @param {number} syncedDevicesLength
+   * @return {boolean}
+   */
+  showNoSyncedMessage: function(signInState, syncedDevicesLength) {
+    return signInState && syncedDevicesLength == 0;
+  },
+
+  /**
+   * Decide what message should be displayed when user is logged in and there
+   * are no synced tabs.
+   * @param {boolean} fetchingSyncedTabs
+   * @return {string}
+   */
+  noSyncedTabsMessage: function(fetchingSyncedTabs) {
+    return loadTimeData.getString(
+        fetchingSyncedTabs ? 'loading' : 'noSyncedResults');
+  },
+
   /**
    * Replaces the currently displayed synced tabs with |sessionList|. It is
    * common for only a single session within the list to have changed, We try to
@@ -90,6 +134,8 @@ Polymer({
    * @param {?Array<!ForeignSession>} sessionList
    */
   updateSyncedDevices: function(sessionList) {
+    this.fetchingSyncedTabs_ = false;
+
     if (!sessionList)
       return;
 
@@ -110,8 +156,32 @@ Polymer({
     }
   },
 
+  /**
+   * Get called when user's sign in state changes, this will affect UI of synced
+   * tabs page. Sign in promo gets displayed when user is signed out, and
+   * different messages are shown when there are no synced tabs.
+   * @param {boolean} isUserSignedIn
+   */
+  updateSignInState: function(isUserSignedIn) {
+    // If user's sign in state didn't change, then don't change message or
+    // update UI.
+    if (this.signInState_ == isUserSignedIn)
+      return;
+
+    this.signInState_ = isUserSignedIn;
+
+    // User signed out, clear synced device list and show the sign in promo.
+    if (!isUserSignedIn) {
+      this.clearDisplayedSyncedDevices_();
+      return;
+    }
+    // User signed in, show the loading message when querying for synced
+    // devices.
+    this.fetchingSyncedTabs_ = true;
+  },
+
   searchTermChanged: function(searchedTerm) {
-    this.syncedDevices_ = [];
+    this.clearDisplayedSyncedDevices_();
     this.updateSyncedDevices(this.sessionList);
   }
 });

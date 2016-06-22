@@ -173,6 +173,73 @@ cr.define('md_history.history_synced_tabs_test', function() {
         });
       });
 
+      test('show sign in promo', function() {
+        updateSignInState(false);
+        return flush().then(function() {
+          assertFalse(element.$['sign-in-guide'].hidden);
+          updateSignInState(true);
+          return flush();
+        }).then(function() {
+          assertTrue(element.$['sign-in-guide'].hidden);
+        });
+      });
+
+      test('no synced tabs message', function() {
+        // When user is not logged in, there is no synced tabs.
+        element.signInState_ = false;
+        element.syncedDevices_ = [];
+        return flush().then(function() {
+          assertTrue(element.$['no-synced-tabs'].hidden);
+
+          var cards = getCards();
+          assertEquals(0, cards.length);
+
+          updateSignInState(true);
+
+          return flush();
+        }).then(function() {
+          // When user signs in, first show loading message.
+          assertFalse(element.$['no-synced-tabs'].hidden);
+          var loading = loadTimeData.getString('loading');
+          assertNotEquals(
+              -1, element.$['no-synced-tabs'].textContent.indexOf(loading));
+
+          var sessionList = [];
+          setForeignSessions(sessionList, true);
+          return flush();
+        }).then(function() {
+          cards = getCards();
+          assertEquals(0, cards.length);
+          // If no synced tabs are fetched, show 'no synced tabs'.
+          assertFalse(element.$['no-synced-tabs'].hidden);
+          var noSyncedResults = loadTimeData.getString('noSyncedResults');
+          assertNotEquals(
+              -1,
+              element.$['no-synced-tabs'].textContent.indexOf(noSyncedResults));
+
+          var sessionList = [
+            createSession(
+                'Nexus 5',
+                [createWindow(['http://www.google.com', 'http://example.com'])]
+            )
+          ];
+          setForeignSessions(sessionList, true);
+
+          return flush();
+        }).then(function() {
+          cards = getCards();
+          assertEquals(1, cards.length);
+          // If there are any synced tabs, hide the 'no synced tabs' message.
+          assertTrue(element.$['no-synced-tabs'].hidden);
+
+          updateSignInState(false);
+          return flush();
+        }).then(function() {
+          // When user signs out, don't show the message.
+          assertTrue(element.$['no-synced-tabs'].hidden);
+        });
+      });
+
       teardown(function() {
         element.syncedDevices = [];
         element.searchedTerm = '';
