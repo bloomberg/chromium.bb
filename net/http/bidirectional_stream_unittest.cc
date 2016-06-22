@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "net/base/net_errors.h"
-#include "net/base/test_data_directory.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
@@ -26,6 +25,7 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

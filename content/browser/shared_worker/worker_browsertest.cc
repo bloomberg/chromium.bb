@@ -22,10 +22,10 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 #include "net/base/escape.h"
-#include "net/base/test_data_directory.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "url/gurl.h"
 
 namespace content {

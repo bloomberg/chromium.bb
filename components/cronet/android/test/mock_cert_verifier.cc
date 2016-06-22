@@ -14,12 +14,12 @@
 #include "crypto/sha2.h"
 #include "jni/MockCertVerifier_jni.h"
 #include "net/base/net_errors.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 
 namespace cronet {
 

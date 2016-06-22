@@ -23,7 +23,6 @@
 #include "crypto/rsa_private_key.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/cert/test_root_certs.h"
 #include "net/socket/ssl_server_socket.h"
@@ -37,6 +36,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "net/test/test_data_directory.h"
 
 namespace net {
 namespace test_server {

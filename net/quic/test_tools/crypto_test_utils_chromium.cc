@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
@@ -33,6 +32,7 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 
 using base::StringPiece;
 using base::StringPrintf;

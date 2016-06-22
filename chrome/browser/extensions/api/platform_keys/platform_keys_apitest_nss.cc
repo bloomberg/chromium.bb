@@ -29,10 +29,10 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/net_errors.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/test_root_certs.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "policy/policy_constants.h"
 
 namespace {

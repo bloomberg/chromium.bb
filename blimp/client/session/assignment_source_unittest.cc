@@ -21,7 +21,7 @@
 #include "blimp/common/protocol_version.h"
 #include "blimp/common/switches.h"
 #include "components/safe_json/testing_json_parser.h"
-#include "net/base/test_data_directory.h"
+#include "net/test/test_data_directory.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

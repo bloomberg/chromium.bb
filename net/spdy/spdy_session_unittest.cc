@@ -17,7 +17,6 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/request_priority.h"
-#include "net/base/test_data_directory.h"
 #include "net/base/test_data_stream.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/log/test_net_log.h"
@@ -35,6 +34,7 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/platform_test.h"
 
 namespace net {

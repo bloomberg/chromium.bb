@@ -5,13 +5,13 @@
 #include "net/cert/ct_objects_extractor.h"
 
 #include "base/files/file_path.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/ct_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

@@ -25,12 +25,12 @@
 #include "net/base/crypto_module.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_proc_nss.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

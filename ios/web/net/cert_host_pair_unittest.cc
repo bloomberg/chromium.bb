@@ -4,8 +4,8 @@
 
 #include "ios/web/net/cert_host_pair.h"
 
-#include "net/base/test_data_directory.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/platform_test.h"
 
 namespace web {

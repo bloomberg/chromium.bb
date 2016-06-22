@@ -214,8 +214,8 @@
         }],
         [ 'use_nss_certs != 1', {
           'sources!': [
-            'cert/nss_cert_database_unittest.cc',
             'cert/nss_cert_database_chromeos_unittest.cc',
+            'cert/nss_cert_database_unittest.cc',
             'cert/nss_profile_filter_chromeos_unittest.cc',
             'ssl/client_cert_store_nss_unittest.cc',
           ],
@@ -383,6 +383,8 @@
               },
             ],
             'sources!': [
+              # Need TestServer.
+              "cert_net/cert_net_fetcher_impl_unittest.cc",
               # TODO(droger): The following tests are disabled because the
               # implementation is missing or incomplete.
               # KeygenHandler::GenKeyAndSignChallenge() is not ported to iOS.
@@ -392,8 +394,6 @@
               # Need to read input data files.
               'filter/brotli_filter_unittest.cc',
               'filter/gzip_filter_unittest.cc',
-              # Need TestServer.
-              "cert_net/cert_net_fetcher_impl_unittest.cc",
               'proxy/proxy_script_fetcher_impl_unittest.cc',
               'socket/ssl_client_socket_unittest.cc',
               'socket/ssl_server_socket_unittest.cc',
@@ -435,7 +435,6 @@
             'base/filename_util_unittest.cc',
             'base/url_util_unittest.cc',
             'cert/x509_certificate_unittest.cc',
-            'socket/ssl_client_socket_pool_unittest.cc',
             'http/http_auth_handler_basic_unittest.cc',
             'http/http_auth_handler_digest_unittest.cc',
             'http/http_auth_handler_factory_unittest.cc',
@@ -443,6 +442,7 @@
             'http/http_content_disposition_unittest.cc',
             'http/http_network_transaction_unittest.cc',
             'http/http_proxy_client_socket_pool_unittest.cc',
+            'socket/ssl_client_socket_pool_unittest.cc',
             'spdy/spdy_network_transaction_unittest.cc',
             'spdy/spdy_proxy_client_socket_unittest.cc',
             'url_request/url_request_job_unittest.cc',
@@ -555,8 +555,6 @@
         'base/mock_file_stream.h',
         'base/test_completion_callback.cc',
         'base/test_completion_callback.h',
-        'base/test_data_directory.cc',
-        'base/test_data_directory.h',
         'cert/mock_cert_verifier.cc',
         'cert/mock_cert_verifier.h',
         'cert/mock_client_cert_verifier.cc',
@@ -578,10 +576,10 @@
         'dns/mock_host_resolver.h',
         'dns/mock_mdns_socket_factory.cc',
         'dns/mock_mdns_socket_factory.h',
-        'http/http_transaction_test_util.cc',
-        'http/http_transaction_test_util.h',
         'http/http_stream_factory_test_util.cc',
         'http/http_stream_factory_test_util.h',
+        'http/http_transaction_test_util.cc',
+        'http/http_transaction_test_util.h',
         'log/test_net_log.cc',
         'log/test_net_log.h',
         'log/test_net_log_entry.cc',
@@ -631,6 +629,8 @@
         'test/spawned_test_server/local_test_server_win.cc',
         'test/spawned_test_server/spawned_test_server.h',
         'test/test_certificate_data.h',
+        'test/test_data_directory.cc',
+        'test/test_data_directory.h',
         'test/url_request/ssl_certificate_error_job.cc',
         'test/url_request/ssl_certificate_error_job.h',
         'test/url_request/url_request_failed_job.cc',
@@ -826,8 +826,8 @@
         'net_quic_proto',
       ],
       'sources': [
-        'tools/quic/chlo_extractor.cc',
 	'tools/quic/chlo_extractor.h',
+        'tools/quic/chlo_extractor.cc',
         'tools/quic/quic_client_base.cc',
         'tools/quic/quic_client_base.h',
         'tools/quic/quic_client_session.cc',
@@ -851,10 +851,10 @@
         'tools/quic/quic_simple_server_session.h',
         'tools/quic/quic_simple_server_session_helper.cc',
         'tools/quic/quic_simple_server_session_helper.h',
-        'tools/quic/quic_spdy_client_stream.cc',
-        'tools/quic/quic_spdy_client_stream.h',
         'tools/quic/quic_simple_server_stream.cc',
         'tools/quic/quic_simple_server_stream.h',
+        'tools/quic/quic_spdy_client_stream.cc',
+        'tools/quic/quic_spdy_client_stream.h',
         'tools/quic/quic_time_wait_list_manager.cc',
         'tools/quic/quic_time_wait_list_manager.h',
         'tools/quic/synchronous_host_resolver.cc',

@@ -26,9 +26,9 @@
 #include "crypto/openssl_util.h"
 #include "net/android/keystore.h"
 #include "net/android/keystore_openssl.h"
-#include "net/base/test_data_directory.h"
 #include "net/ssl/scoped_openssl_types.h"
 #include "net/test/jni/AndroidKeyStoreTestUtil_jni.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Technical note:

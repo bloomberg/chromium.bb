@@ -15,12 +15,12 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/asn1_util.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/channel_id_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

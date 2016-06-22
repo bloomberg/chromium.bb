@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "net/base/port_util.h"
 #include "net/base/test_completion_callback.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -51,6 +50,7 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't

@@ -10,7 +10,6 @@
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/test_completion_callback.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/test_net_log.h"
@@ -38,6 +37,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "net/udp/datagram_client_socket.h"
 
 using testing::_;

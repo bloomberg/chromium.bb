@@ -34,8 +34,8 @@
 #include "content/public/test/ppapi_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
-#include "net/base/test_data_directory.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "ui/gl/gl_switches.h"
 

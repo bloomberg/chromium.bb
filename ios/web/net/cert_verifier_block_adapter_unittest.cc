@@ -8,7 +8,6 @@
 #include "base/test/ios/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "net/base/net_errors.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
@@ -16,6 +15,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/platform_test.h"
 
 namespace web {

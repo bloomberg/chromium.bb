@@ -5,9 +5,9 @@
 #include "net/cert/cert_verify_proc_whitelist.h"
 
 #include "base/memory/ref_counted.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
