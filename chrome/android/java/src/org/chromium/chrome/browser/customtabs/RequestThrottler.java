@@ -178,6 +178,14 @@ class RequestThrottler {
                 .apply();
     }
 
+    /** Bans from prerendering. Used for testing. */
+    void ban() {
+        mScore = -1;
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        updateBan(editor);
+        editor.apply();
+    }
+
     /**
      * Loads the SharedPreferences in the background.
      *

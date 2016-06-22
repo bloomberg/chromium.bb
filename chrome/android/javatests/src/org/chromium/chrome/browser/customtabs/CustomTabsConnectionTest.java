@@ -23,10 +23,13 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
 /** Tests for CustomTabsConnection. */
 public class CustomTabsConnectionTest extends InstrumentationTestCase {
@@ -47,6 +50,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
                 .ensureInitialized(mContext);
         mCustomTabsConnection = CustomTabsTestUtils.setUpConnection((Application) mContext);
+        mCustomTabsConnection.resetThrottling(mContext, Process.myUid());
     }
 
     @Override
@@ -455,5 +459,84 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
             mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null);
         }
         assertWarmupAndMayLaunchUrl(token2, URL, false);
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testBanningWorks() {
+        mCustomTabsConnection.ban(mContext, Process.myUid());
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
+        assertTrue(mCustomTabsConnection.newSession(token));
+
+        assertTrue(mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertSpareWebContentsNotNullAndDestroy();
+                String referrer = mCustomTabsConnection.getReferrerForSession(token).getUrl();
+                assertNull(mCustomTabsConnection.takePrerenderedUrl(token, URL, referrer));
+            }
+        });
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testBanningDisabledForCellular() {
+        mCustomTabsConnection.ban(mContext, Process.myUid());
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
+        assertTrue(mCustomTabsConnection.newSession(token));
+        mCustomTabsConnection.setShouldPrerenderOnCellularForSession(token, true);
+
+        assertTrue(mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
+                String referrer = mCustomTabsConnection.getReferrerForSession(token).getUrl();
+                WebContents prerender = mCustomTabsConnection.takePrerenderedUrl(
+                        token, URL, referrer);
+                assertNotNull(prerender);
+                prerender.destroy();
+            }
+        });
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testCellularPrerenderingDoesntOverrideSettings() throws Exception {
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
+        assertTrue(mCustomTabsConnection.newSession(token));
+        mCustomTabsConnection.setShouldPrerenderOnCellularForSession(token, true);
+        mCustomTabsConnection.warmup(0);
+
+        // Needs the browser process to be initialized.
+        FutureTask<Boolean> result = ThreadUtils.runOnUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                PrefServiceBridge prefs = PrefServiceBridge.getInstance();
+                boolean result = prefs.getNetworkPredictionEnabled();
+                prefs.setNetworkPredictionEnabled(false);
+                return result;
+            }});
+        final boolean enabled = result.get();
+
+        try {
+            assertTrue(mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    assertSpareWebContentsNotNullAndDestroy();
+                }
+            });
+        } finally {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    PrefServiceBridge.getInstance().setNetworkPredictionEnabled(enabled);
+                }
+            });
+        }
     }
 }

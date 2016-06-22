@@ -335,6 +335,11 @@ class ClientManager {
         RequestThrottler.getForUid(mContext, uid).reset();
     }
 
+    /** See {@link RequestThrottler#ban()} */
+    public synchronized void ban(int uid) {
+        RequestThrottler.getForUid(mContext, uid).ban();
+    }
+
     /**
      * Cleans up all data associated with all sessions.
      */

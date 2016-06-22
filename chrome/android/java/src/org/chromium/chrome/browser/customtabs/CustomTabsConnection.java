@@ -508,6 +508,11 @@ public class CustomTabsConnection {
         return mClientManager.getIgnoreFragmentsForSession(session);
     }
 
+    @VisibleForTesting
+    void setShouldPrerenderOnCellularForSession(CustomTabsSessionToken session, boolean value) {
+        mClientManager.setPrerenderCellularForSession(session, value);
+    }
+
     /**
      * Extracts the creator package name from the intent.
      * @param intent The intent to get the package name from.
@@ -695,7 +700,8 @@ public class CustomTabsConnection {
         // Last one wins and cancels the previous prerender.
         cancelPrerender(null);
         if (TextUtils.isEmpty(url)) return false;
-        if (!mClientManager.isPrerenderingAllowed(uid)) return false;
+        boolean throttle = !shouldPrerenderOnCellularForSession(session);
+        if (throttle && !mClientManager.isPrerenderingAllowed(uid)) return false;
 
         // A prerender will be requested. Time to destroy the spare WebContents.
         destroySpareWebContents();
@@ -717,7 +723,7 @@ public class CustomTabsConnection {
                 Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y,
                 shouldPrerenderOnCellularForSession(session));
         if (webContents == null) return false;
-        mClientManager.registerPrerenderRequest(uid, url);
+        if (throttle) mClientManager.registerPrerenderRequest(uid, url);
         mPrerender = new PrerenderedUrlParams(session, webContents, url, referrer, extras);
         return true;
     }
@@ -754,5 +760,10 @@ public class CustomTabsConnection {
     @VisibleForTesting
     void resetThrottling(Context context, int uid) {
         mClientManager.resetThrottling(uid);
+    }
+
+    @VisibleForTesting
+    void ban(Context context, int uid) {
+        mClientManager.ban(uid);
     }
 }
