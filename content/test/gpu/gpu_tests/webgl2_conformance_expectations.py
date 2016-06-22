@@ -62,10 +62,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['amd'], bug=617290)
 
     # Windows only.
-
-    self.Fail('deqp/functional/gles3/vertexarrays.html',
-        ['win'], bug=483282)
-
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
         ['win'], bug=483282)
@@ -247,8 +243,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/negativeshaderapi.html',
         ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/vertexarrays.html',
-        ['mac'], bug=483282)
 
     self.Fail('conformance2/textures/misc/compressed-tex-image.html',
         ['mac'], bug=565438)
@@ -355,6 +349,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojlod.html',
         ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/vertexarrays/' +
+        'single_attribute.normalize.html',
+        ['mac', 'amd'], bug=483282)
 
     # Mac Intel
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
@@ -429,9 +426,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_cube.html',
         ['linux'], bug=483282)
-
-    # Temporary supression due to timeout from perf regression
-    self.Fail('deqp/functional/gles3/vertexarrays.html', ['linux'], bug=618139)
 
     # Linux NVIDIA only.
     self.Fail('conformance2/glsl3/array-complex-indexing.html',
