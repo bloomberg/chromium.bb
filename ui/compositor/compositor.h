@@ -366,9 +366,6 @@ class COMPOSITOR_EXPORT Compositor
   // layers on.
   float device_scale_factor_;
 
-  int last_started_frame_;
-  int last_ended_frame_;
-
   bool locks_will_time_out_;
   CompositorLock* compositor_lock_;
 
