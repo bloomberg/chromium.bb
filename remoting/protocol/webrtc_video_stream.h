@@ -49,7 +49,7 @@ class WebrtcVideoStream : public VideoStream,
   void OnInputEventReceived(int64_t event_timestamp) override;
   void SetLosslessEncode(bool want_lossless) override;
   void SetLosslessColor(bool want_lossless) override;
-  void SetSizeCallback(const SizeCallback& size_callback) override;
+  void SetObserver(Observer* observer) override;
 
  private:
   // webrtc::DesktopCapturer::Callback interface.
@@ -84,7 +84,7 @@ class WebrtcVideoStream : public VideoStream,
 
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;
-  SizeCallback size_callback_;
+  Observer* observer_ = nullptr;
 
   // Main task runner.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

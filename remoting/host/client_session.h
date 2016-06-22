@@ -29,6 +29,7 @@
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/pairing_registry.h"
+#include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace base {
@@ -53,6 +54,7 @@ class VideoLayout;
 class ClientSession : public base::NonThreadSafe,
                       public protocol::HostStub,
                       public protocol::ConnectionToClient::EventHandler,
+                      public protocol::VideoStream::Observer,
                       public ClientSessionControl {
  public:
   // Callback interface for passing events to the ChromotingHost.
@@ -144,8 +146,13 @@ class ClientSession : public base::NonThreadSafe,
   // Creates a proxy for sending clipboard events to the client.
   std::unique_ptr<protocol::ClipboardStub> CreateClipboardProxy();
 
-  void OnScreenSizeChanged(const webrtc::DesktopSize& size,
-                           const webrtc::DesktopVector& dpi);
+  // protocol::VideoStream::Observer implementation.
+  void OnVideoSizeChanged(protocol::VideoStream* stream,
+                          const webrtc::DesktopSize& size,
+                          const webrtc::DesktopVector& dpi) override;
+  void OnVideoFrameSent(protocol::VideoStream* stream,
+                        uint32_t frame_id,
+                        int64_t input_event_timestamp) override;
 
   EventHandler* event_handler_;
 

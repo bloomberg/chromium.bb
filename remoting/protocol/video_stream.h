@@ -21,11 +21,21 @@ namespace protocol {
 
 class VideoStream {
  public:
-  // Callback used to notify about screen size changes. The size must be
-  // specified in physical pixels.
-  typedef base::Callback<void(const webrtc::DesktopSize& size,
-                              const webrtc::DesktopVector& dpi)>
-      SizeCallback;
+  class Observer {
+   public:
+    // Called to notify about screen size changes. The size is specified in
+    // physical pixels.
+    virtual void OnVideoSizeChanged(VideoStream* stream,
+                                    const webrtc::DesktopSize& size,
+                                    const webrtc::DesktopVector& dpi) = 0;
+
+    // Called to notify about an outgoing video frame. |input_event_timestamp|
+    // corresponds to the last input event that was injected before the frame
+    // was captured.
+    virtual void OnVideoFrameSent(VideoStream* stream,
+                                  uint32_t frame_id,
+                                  int64_t event_timestamp) = 0;
+  };
 
   VideoStream() {}
   virtual ~VideoStream() {}
@@ -42,8 +52,8 @@ class VideoStream {
   virtual void SetLosslessEncode(bool want_lossless) = 0;
   virtual void SetLosslessColor(bool want_lossless) = 0;
 
-  // Sets SizeCallback to be called when screen size is changed.
-  virtual void SetSizeCallback(const SizeCallback& size_callback) = 0;
+  // Sets stream observer.
+  virtual void SetObserver(Observer* observer) = 0;
 };
 
 }  // namespace protocol

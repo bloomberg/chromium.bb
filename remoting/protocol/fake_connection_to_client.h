@@ -30,14 +30,14 @@ class FakeVideoStream : public protocol::VideoStream {
   void OnInputEventReceived(int64_t event_timestamp) override;
   void SetLosslessEncode(bool want_lossless) override;
   void SetLosslessColor(bool want_lossless) override;
-  void SetSizeCallback(const SizeCallback& size_callback) override;
+  void SetObserver(Observer* observer) override;
 
-  const SizeCallback& size_callback() { return size_callback_; }
+  Observer* observer() { return observer_; }
 
   base::WeakPtr<FakeVideoStream> GetWeakPtr();
 
  private:
-  SizeCallback size_callback_;
+  Observer* observer_ = nullptr;
 
   base::WeakPtrFactory<FakeVideoStream> weak_factory_;
 

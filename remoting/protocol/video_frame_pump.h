@@ -87,7 +87,7 @@ class VideoFramePump : public VideoStream,
   void OnInputEventReceived(int64_t event_timestamp) override;
   void SetLosslessEncode(bool want_lossless) override;
   void SetLosslessColor(bool want_lossless) override;
-  void SetSizeCallback(const SizeCallback& size_callback) override;
+  void SetObserver(Observer* observer) override;
 
   protocol::VideoFeedbackStub* video_feedback_stub() {
     return &capture_scheduler_;
@@ -165,7 +165,7 @@ class VideoFramePump : public VideoStream,
   // Interface through which video frames are passed to the client.
   protocol::VideoStub* video_stub_;
 
-  SizeCallback size_callback_;
+  Observer* observer_ = nullptr;
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;
 

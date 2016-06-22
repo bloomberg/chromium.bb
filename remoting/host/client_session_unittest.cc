@@ -210,7 +210,8 @@ void ClientSessionTest::ConnectClientSession() {
 }
 
 void ClientSessionTest::NotifyVideoSize() {
-  connection_->last_video_stream()->size_callback().Run(
+  connection_->last_video_stream()->observer()->OnVideoSizeChanged(
+      connection_->last_video_stream().get(),
       webrtc::DesktopSize(protocol::FakeDesktopCapturer::kWidth,
                           protocol::FakeDesktopCapturer::kHeight),
       webrtc::DesktopVector(kDefaultDpi, kDefaultDpi));

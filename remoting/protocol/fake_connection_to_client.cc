@@ -25,8 +25,8 @@ void FakeVideoStream::SetLosslessEncode(bool want_lossless) {}
 
 void FakeVideoStream::SetLosslessColor(bool want_lossless) {}
 
-void FakeVideoStream::SetSizeCallback(const SizeCallback& size_callback) {
-  size_callback_ = size_callback;
+void FakeVideoStream::SetObserver(Observer* observer) {
+  observer_ = observer;
 }
 
 base::WeakPtr<FakeVideoStream> FakeVideoStream::GetWeakPtr() {

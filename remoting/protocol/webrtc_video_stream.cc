@@ -166,9 +166,9 @@ void WebrtcVideoStream::SetLosslessColor(bool want_lossless) {
   NOTIMPLEMENTED();
 }
 
-void WebrtcVideoStream::SetSizeCallback(const SizeCallback& size_callback) {
+void WebrtcVideoStream::SetObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  size_callback_ = size_callback;
+  observer_ = observer;
 }
 
 void WebrtcVideoStream::SetKeyFrameRequest() {
@@ -230,8 +230,8 @@ void WebrtcVideoStream::OnCaptureResult(
   if (!frame_size_.equals(frame->size()) || !frame_dpi_.equals(dpi)) {
     frame_size_ = frame->size();
     frame_dpi_ = dpi;
-    if (!size_callback_.is_null())
-      size_callback_.Run(frame_size_, frame_dpi_);
+    if (observer_)
+      observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
   }
   encode_pending_ = true;
   base::PostTaskAndReplyWithResult(
