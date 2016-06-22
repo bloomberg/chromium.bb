@@ -35,8 +35,6 @@ import xml.dom.minidom
 from util import build_utils
 from util import md5_check
 
-import write_ordered_libraries
-
 
 # Types that should never be used as a dependency of another build config.
 _ROOT_TYPES = ('android_apk', 'deps_dex', 'java_binary', 'resource_rewriter')
@@ -181,6 +179,19 @@ def _AsInterfaceJar(jar_path):
   return jar_path[:-3] + 'interface.jar'
 
 
+def _ExtractSharedLibsFromRuntimeDeps(runtime_deps_files):
+  ret = []
+  for path in runtime_deps_files:
+    with open(path) as f:
+      for line in f:
+        line = line.rstrip()
+        if not line.endswith('.so'):
+          continue
+        ret.append(os.path.normpath(line))
+  ret.reverse()
+  return ret
+
+
 def main(argv):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
@@ -228,8 +239,9 @@ def main(argv):
   parser.add_option('--dex-path', help='Path to target\'s dex output.')
 
   # native library options
-  parser.add_option('--native-libs', help='List of top-level native libs.')
-  parser.add_option('--readelf-path', help='Path to toolchain\'s readelf.')
+  parser.add_option('--shared-libraries-runtime-deps',
+                    help='Path to file containing runtime deps for shared '
+                         'libraries.')
 
   # apk options
   parser.add_option('--apk-path', help='Path to the target\'s apk output.')
@@ -267,9 +279,6 @@ def main(argv):
   required_options = required_options_map.get(options.type)
   if not required_options:
     raise Exception('Unknown type: <%s>' % options.type)
-
-  if options.native_libs:
-    required_options.append('readelf_path')
 
   build_utils.CheckOptions(options, parser, required_options)
 
@@ -532,40 +541,20 @@ def main(argv):
       manifest.CheckInstrumentation(manifest.GetPackageName())
 
     library_paths = []
-    java_libraries_list_holder = [None]
-    libraries = build_utils.ParseGypList(options.native_libs or '[]')
-    if libraries:
-      def recompute_ordered_libraries():
-        libraries_dir = os.path.dirname(libraries[0])
-        write_ordered_libraries.SetReadelfPath(options.readelf_path)
-        write_ordered_libraries.SetLibraryDirs([libraries_dir])
-        all_deps = (
-            write_ordered_libraries.GetSortedTransitiveDependenciesForBinaries(
-                libraries))
-        # Create a java literal array with the "base" library names:
-        # e.g. libfoo.so -> foo
-        java_libraries_list_holder[0] = ('{%s}' % ','.join(
-            ['"%s"' % s[3:-3] for s in all_deps]))
-        library_paths.extend(
-            write_ordered_libraries.FullLibraryPath(x) for x in all_deps)
+    java_libraries_list = None
+    runtime_deps_files = build_utils.ParseGypList(
+        options.shared_libraries_runtime_deps or '[]')
+    if runtime_deps_files:
+      library_paths = _ExtractSharedLibsFromRuntimeDeps(runtime_deps_files)
+      # Create a java literal array with the "base" library names:
+      # e.g. libfoo.so -> foo
+      java_libraries_list = ('{%s}' % ','.join(
+          ['"%s"' % s[3:-3] for s in library_paths]))
 
-      # This step takes about 600ms on a z620 for chrome_apk, so it's worth
-      # caching.
-      md5_check.CallAndRecordIfStale(
-          recompute_ordered_libraries,
-          record_path=options.build_config + '.nativelibs.md5.stamp',
-          input_paths=libraries,
-          output_paths=[options.build_config])
-      if not library_paths:
-        prev_config = build_utils.ReadJson(options.build_config)
-        java_libraries_list_holder[0] = (
-            prev_config['native']['java_libraries_list'])
-        library_paths.extend(prev_config['native']['libraries'])
-
-    all_inputs.extend(library_paths)
+    all_inputs.extend(runtime_deps_files)
     config['native'] = {
       'libraries': library_paths,
-      'java_libraries_list': java_libraries_list_holder[0],
+      'java_libraries_list': java_libraries_list,
     }
     config['assets'], config['uncompressed_assets'] = (
         _MergeAssets(deps.All('android_assets')))

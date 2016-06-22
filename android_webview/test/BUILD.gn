@@ -20,8 +20,6 @@ android_apk("android_webview_apk") {
   deps = [
     ":android_webview_apk_assets",
     ":android_webview_apk_resources",
-    ":libdrawgl",
-    ":libstandalonelibwebviewchromium",
     "//android_webview:android_webview_java",
     "//base:base_java",
     "//base:base_java_test_support",
@@ -45,9 +43,9 @@ android_apk("android_webview_apk") {
     "shell/src/org/chromium/android_webview/test/SecondBrowserProcess.java",
     "shell/src/org/chromium/android_webview/test/TestContentProvider.java",
   ]
-  native_libs = [
-    "libdrawgl.so",
-    "libstandalonelibwebviewchromium.so",
+  shared_libraries = [
+    ":libdrawgl",
+    ":libstandalonelibwebviewchromium",
   ]
 
   native_lib_version_rule = "//build/util:chrome_version_json"

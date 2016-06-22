@@ -96,13 +96,12 @@ shared_library("net_java_test_native_support") {
 android_apk("net_test_support_apk") {
   testonly = true
   deps = [
-    ":net_java_test_native_support",
     ":net_java_test_support",
     "//base:base_java",
   ]
   android_manifest = "../test/android/javatests/AndroidManifest.xml"
   apk_name = "ChromiumNetTestSupport"
-  native_libs = [ "libnet_java_test_native_support.so" ]
+  shared_libraries = [ ":net_java_test_native_support" ]
 }
 
 android_resources("net_unittests_apk_resources") {

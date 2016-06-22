@@ -495,10 +495,9 @@ chrome_public_apk_tmpl_shared("chrome_public_apk") {
   android_manifest = get_target_outputs(":chrome_public_apk_manifest")
   android_manifest = android_manifest[1]
   apk_name = "ChromePublic"
-  native_libs = [ "libchrome.so" ]
+  shared_libraries = [ ":chrome" ]
 
   deps = [
-    ":chrome",
     ":chrome_public_apk_manifest",
     ":chrome_public_apk_template_resources",
   ]
@@ -509,10 +508,9 @@ chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
   android_manifest = get_target_outputs(":chrome_sync_shell_apk_manifest")
   android_manifest = android_manifest[1]
   apk_name = "ChromeSyncShell"
-  native_libs = [ "libchrome_sync_shell.so" ]
+  shared_libraries = [ ":chrome_sync_shell" ]
 
   deps = [
-    ":chrome_sync_shell",
     ":chrome_sync_shell_apk_manifest",
     ":chrome_sync_shell_apk_template_resources",
 

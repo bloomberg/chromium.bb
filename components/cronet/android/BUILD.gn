@@ -330,10 +330,9 @@ android_library("cronet_sample_apk_java") {
 android_apk("cronet_sample_apk") {
   apk_name = "CronetSample"
   android_manifest = "sample/AndroidManifest.xml"
-  native_libs = [ "libcronet.so" ]
+  shared_libraries = [ ":cronet" ]
 
   deps = [
-    ":cronet",
     ":cronet_sample_apk_java",
     ":cronet_sample_apk_resources",
     "//base:base_java",
@@ -533,14 +532,13 @@ android_apk("cronet_test_apk") {
   testonly = true
   apk_name = "CronetTest"
   android_manifest = "test/AndroidManifest.xml"
-  native_libs = [ "libcronet_tests.so" ]
+  shared_libraries = [ ":cronet_tests" ]
   loadable_modules = [ "$root_out_dir/libnetty-tcnative.so" ]
 
   deps = [
     ":cronet_test_apk_assets",
     ":cronet_test_apk_java",
     ":cronet_test_apk_resources",
-    ":cronet_tests",
     "//base:base_java",
     "//third_party/netty-tcnative:netty-tcnative_all",
   ]
@@ -652,12 +650,11 @@ android_apk("cronet_perf_test_apk") {
   testonly = true
   apk_name = "CronetPerfTest"
   android_manifest = "test/javaperftests/AndroidManifest.xml"
-  native_libs = [ "libcronet_tests.so" ]
+  shared_libraries = [ ":cronet_tests" ]
 
   deps = [
     ":cronet_perf_test_apk_java",
     ":cronet_test_apk_java",
-    ":cronet_tests",
     "//base:base_java",
   ]
 

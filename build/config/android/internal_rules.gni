@@ -191,13 +191,14 @@ template("write_build_config") {
     }
 
     if (is_apk) {
-      if (defined(invoker.native_libs)) {
-        inputs += invoker.native_libs
-        rebased_native_libs = rebase_path(invoker.native_libs, root_build_dir)
-        rebased_android_readelf = rebase_path(android_readelf, root_build_dir)
+      if (defined(invoker.shared_libraries_runtime_deps_file)) {
+        # Don't list shared_libraries_runtime_deps_file as an input in order to
+        # avoid having to depend on the runtime_deps target. See comment in
+        # rules.gni for why we do this.
         args += [
-          "--native-libs=$rebased_native_libs",
-          "--readelf-path=$rebased_android_readelf",
+          "--shared-libraries-runtime-deps",
+          rebase_path(invoker.shared_libraries_runtime_deps_file,
+                      root_build_dir),
         ]
       }
 

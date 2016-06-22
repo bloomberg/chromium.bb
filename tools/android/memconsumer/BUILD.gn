@@ -16,10 +16,9 @@ android_apk("memconsumer_apk") {
     "java/src/org/chromium/memconsumer/MemConsumer.java",
     "java/src/org/chromium/memconsumer/ResidentService.java",
   ]
-  native_libs = [ "libmemconsumer.so" ]
+  shared_libraries = [ ":libmemconsumer" ]
 
   deps = [
-    ":libmemconsumer",
     ":memconsumer_apk_resources",
     "//base:base_java",
   ]

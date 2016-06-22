@@ -1389,18 +1389,17 @@ if (enable_java_templates) {
   #   final_apk_path: Path to final built apk. Default is
   #     $root_out_dir/apks/$apk_name.apk. Setting this will override apk_name.
   #   loadable_modules: List of paths to native libraries to include. Different
-  #     from |native_libs| in that:
+  #     from |shared_libraries| in that:
   #       * dependencies of this .so are not automatically included
   #       * ".cr.so" is never added
   #       * they are not side-loaded for _incremental targets.
   #       * load_library_from_apk, use_chromium_linker,
   #         and enable_relocation_packing do not apply
-  #     Use this instead of native_libs when you are going to load the library
-  #     conditionally, and only when native_libs doesn't work for you.
-  #   native_libs: List paths of native libraries to include in this apk. If these
+  #     Use this instead of shared_libraries when you are going to load the library
+  #     conditionally, and only when shared_libraries doesn't work for you.
+  #   shared_libraries: List shared_library targets to bundle. If these
   #     libraries depend on other shared_library targets, those dependencies will
-  #     also be included in the apk. When building with is_component_build,
-  #     The extension is automatically changed to ".cr.so".
+  #     also be included in the apk (e.g. for is_component_build).
   #   native_lib_placeholders: List of placeholder filenames to add to the apk
   #     (optional).
   #   apk_under_test: For an instrumentation test apk, this is the target of the
@@ -1435,8 +1434,8 @@ if (enable_java_templates) {
   #     srcjar_deps = [
   #       ":foo_generated_enum"
   #     ]
-  #     native_libs = [
-  #       native_lib_path
+  #     shared_libraries = [
+  #       ":my_shared_lib",
   #     ]
   #   }
   template("android_apk") {
@@ -1482,8 +1481,6 @@ if (enable_java_templates) {
     }
     _incremental_install_script_path =
         "${root_out_dir}/bin/${_install_script_name}_incremental"
-
-    _native_libs = []
 
     _version_code = android_default_version_code
     if (defined(invoker.version_code)) {
@@ -1534,18 +1531,23 @@ if (enable_java_templates) {
     # The dependency that makes the chromium linker, if any is needed.
     _native_libs_deps = []
 
-    if (defined(invoker.native_libs) && invoker.native_libs != []) {
+    if (defined(invoker.shared_libraries) && invoker.shared_libraries != []) {
+      _native_libs_deps += invoker.shared_libraries
+
       if (is_component_build || is_asan) {
-        _native_libs += [ "$root_shlib_dir/libc++_shared.so" ]
         _native_libs_deps += [ "//build/android:cpplib_stripped" ]
       }
 
-      # Allow native_libs to be in the form "foo.so" or "foo.cr.so"
-      _first_ext_removed =
-          process_file_template(invoker.native_libs, "{{source_name_part}}")
-      _native_libs += process_file_template(
-              _first_ext_removed,
-              "$root_shlib_dir/{{source_name_part}}$shlib_extension")
+      # To determine the filenames of all dependent shared libraries, write the
+      # runtime deps of |shared_libraries| to a file during "gn gen".
+      # write_build_config.py will then grep this file for *.so to obtain the
+      # complete list.
+      _runtime_deps_file =
+          "$target_gen_dir/${_template_name}.native.runtimedeps"
+      group("${_template_name}__runtime_deps") {
+        deps = _native_libs_deps
+        write_runtime_deps = _runtime_deps_file
+      }
 
       _native_lib_version_rule = ""
       if (defined(invoker.native_lib_version_rule)) {
@@ -1595,7 +1597,7 @@ if (enable_java_templates) {
       build_config = _build_config
       android_manifest = _android_manifest
 
-      deps = _native_libs_deps + _android_manifest_deps
+      deps = _android_manifest_deps
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }
@@ -1615,7 +1617,13 @@ if (enable_java_templates) {
         proguard_info = "$_proguard_output_jar_path.info"
       }
 
-      native_libs = _native_libs
+      # Don't depend on the runtime_deps target in order to avoid having to
+      # build the native libraries just to create the .build_config file.
+      # The dep is unnecessary since the runtime_deps file is created by gn gen
+      # and the runtime_deps file is added to write_build_config.py's depfile.
+      if (_native_libs_deps != []) {
+        shared_libraries_runtime_deps_file = _runtime_deps_file
+      }
     }
 
     _final_deps = []
@@ -1648,7 +1656,7 @@ if (enable_java_templates) {
     }
     _srcjar_deps += [ ":$process_resources_target" ]
 
-    if (_native_libs != []) {
+    if (_native_libs_deps != []) {
       _enable_chromium_linker_tests = false
       if (defined(invoker.enable_chromium_linker_tests)) {
         _enable_chromium_linker_tests = invoker.enable_chromium_linker_tests
@@ -1841,7 +1849,7 @@ if (enable_java_templates) {
     _native_libs_file_arg_dep = ":$build_config_target"
     _native_libs_file_arg = "@FileArg($_rebased_build_config:native:libraries)"
 
-    if (_native_libs != [] && _enable_relocation_packing) {
+    if (_native_libs_deps != [] && _enable_relocation_packing) {
       _prepare_native_target_name = "${_template_name}__prepare_native"
       _native_libs_dir = "$gen_dir/packed-libs"
       _native_libs_json = "$gen_dir/packed-libs/filelist.json"
@@ -1863,7 +1871,9 @@ if (enable_java_templates) {
           _native_libs_json,
         ]
 
-        inputs = _native_libs + [ _build_config ]
+        inputs = [
+          _build_config,
+        ]
 
         deps += _native_libs_deps
         deps += [
@@ -1892,7 +1902,7 @@ if (enable_java_templates) {
     _extra_native_libs_even_when_incremental = []
     _extra_native_libs_even_when_incremental_deps = []
     assert(_extra_native_libs_even_when_incremental_deps == [])  # Mark as used.
-    if (_native_libs != []) {
+    if (_native_libs_deps != []) {
       if (is_debug) {
         _extra_native_libs_even_when_incremental = [ android_gdbserver ]
       }
@@ -1964,7 +1974,7 @@ if (enable_java_templates) {
                 ":$final_dex_target_name",
               ]
 
-      if ((_native_libs != [] ||
+      if ((_native_libs_deps != [] ||
            _extra_native_libs_even_when_incremental != []) &&
           !_create_abi_split) {
         deps += _native_libs_deps + _extra_native_libs_deps +
@@ -1981,7 +1991,8 @@ if (enable_java_templates) {
       forward_variables_from(invoker, [ "native_lib_placeholders" ])
     }
 
-    if ((_native_libs != [] || _extra_native_libs_even_when_incremental != []) && _create_abi_split) {
+    if ((_native_libs_deps != [] ||
+         _extra_native_libs_even_when_incremental != []) && _create_abi_split) {
       _manifest_rule =
           "${_template_name}__split_manifest_abi_${android_app_abi}"
       generate_split_manifest(_manifest_rule) {
@@ -2139,9 +2150,9 @@ if (enable_java_templates) {
   #   apk_name: Name for final apk.
   #   final_apk_path: Path to final built apk. Default is
   #     $root_out_dir/apks/$apk_name.apk. Setting this will override apk_name.
-  #   native_libs: List paths of native libraries to include in this apk. If these
+  #   shared_libraries: List shared_library targets to bundle. If these
   #     libraries depend on other shared_library targets, those dependencies will
-  #     also be included in the apk.
+  #     also be included in the apk (e.g. for is_component_build).
   #   apk_under_test: The apk being tested.
   #   isolate_file: Isolate file containing the list of test data dependencies.
   #
@@ -2262,15 +2273,9 @@ if (enable_java_templates) {
   #   deps: Specifies the dependencies of this target. These will be passed to
   #     the underlying android_apk invocation and should include the java and
   #     resource dependencies of the apk.
-  #   unittests_dep: This should be the label of the gtest native target. This
-  #     target must be defined previously in the same file.
-  #   unittests_binary: The basename of the library produced by the unittests_dep
-  #     target. If unspecified, it assumes the name of the unittests_dep target
-  #     (which will be correct unless that target specifies an "output_name".
-  #     TODO(brettw) make this automatic by allowing get_target_outputs to
-  #     support executables.
+  #   shared_library: shared_library target that contains the unit tests.
   #   apk_name: The name of the produced apk. If unspecified, it uses the name
-  #             of the unittests_dep target postfixed with "_apk"
+  #             of the shared_library target suffixed with "_apk"
   #   use_default_launcher: Whether the default activity (NativeUnitTestActivity)
   #     should be used for launching tests.
   #   use_native_activity: Test implements ANativeActivity_onCreate().
@@ -2278,21 +2283,13 @@ if (enable_java_templates) {
   # Example
   #   unittest_apk("foo_unittests_apk") {
   #     deps = [ ":foo_java", ":foo_resources" ]
-  #     unittests_dep = ":foo_unittests"
+  #     shared_library = ":foo_unittests"
   #   }
   template("unittest_apk") {
-    assert(defined(invoker.unittests_dep),
-           "Need unittests_dep for $target_name")
-
-    test_suite_name = get_label_info(invoker.unittests_dep, "name")
-
-    # This trivial assert is needed in case both unittests_binary and apk_name
-    # are defined, as otherwise test_suite_name would not be used.
-    assert(test_suite_name != "")
-
     _use_native_activity =
         defined(invoker.use_native_activity) && invoker.use_native_activity
     _android_manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
+    assert(invoker.shared_library != "")
 
     # This trivial assert is needed in case android_manifest is defined,
     # as otherwise _use_native_activity and _android_manifest would not be used.
@@ -2300,16 +2297,12 @@ if (enable_java_templates) {
 
     if (!defined(invoker.android_manifest)) {
       jinja_template("${target_name}_manifest") {
-        if (!defined(invoker.unittests_binary)) {
-          native_library_name = test_suite_name
-        } else {
-          native_library_name = invoker.unittests_binary
-        }
+        _native_library_name = get_label_info(invoker.shared_library, "name")
         input = "//testing/android/native_test/java/AndroidManifest.xml.jinja2"
         output = _android_manifest
         variables = [
           "is_component_build=${is_component_build}",
-          "native_library_name=${native_library_name}",
+          "native_library_name=${_native_library_name}",
           "use_native_activity=${_use_native_activity}",
         ]
       }
@@ -2329,7 +2322,7 @@ if (enable_java_templates) {
       }
 
       if (!defined(apk_name)) {
-        apk_name = test_suite_name
+        apk_name = get_label_info(invoker.shared_library, "name")
       }
 
       if (!defined(android_manifest)) {
@@ -2337,16 +2330,12 @@ if (enable_java_templates) {
         android_manifest = _android_manifest
       }
 
-      if (!defined(unittests_binary)) {
-        unittests_binary = "lib${test_suite_name}${shlib_extension}"
-      }
-
       final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
 
       if (!defined(use_default_launcher) || use_default_launcher) {
         deps += [ "//testing/android/native_test:native_test_java" ]
       }
-      native_libs = [ unittests_binary ]
+      shared_libraries = [ invoker.shared_library ]
       deps += [
         "//base:base_java",
         "//testing/android/appurify_support:appurify_support_java",

@@ -74,6 +74,9 @@ action("cpplib_stripped") {
   outputs = [
     _output_so,
   ]
+  data = [
+    _output_so,
+  ]
 
   _rebased_strip_bin = rebase_path(_strip_bin, root_out_dir)
   _rebased_input_so = rebase_path(_input_so, root_out_dir)

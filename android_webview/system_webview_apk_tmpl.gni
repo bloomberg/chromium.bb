@@ -11,7 +11,6 @@ template("system_webview_apk_tmpl") {
 
     deps += [
       "//android_webview:assets",
-      "//android_webview:libwebviewchromium",
       "//base:base_java",
     ]
 
@@ -20,7 +19,7 @@ template("system_webview_apk_tmpl") {
     }
 
     shared_resources = true
-    native_libs = [ "libwebviewchromium.so" ]
+    shared_libraries = [ "//android_webview:libwebviewchromium" ]
     native_lib_version_rule = "//build/util:chrome_version_json"
     _native_lib_file =
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)

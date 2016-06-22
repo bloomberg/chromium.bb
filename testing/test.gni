@@ -187,14 +187,12 @@ template("test") {
       }
       unittest_apk(_apk_target) {
         forward_variables_from(invoker, _apk_specific_vars + [ "deps" ])
-        unittests_dep = ":$_library_target"
+        shared_library = ":$_library_target"
         apk_name = invoker.target_name
         if (defined(invoker.output_name)) {
           apk_name = invoker.output_name
-          unittests_binary = "lib${apk_name}.so"
           install_script_name = "install_${invoker.output_name}"
         }
-        deps += [ ":$_library_target" ]
 
         # TODO(agrieve): Remove this data_dep once bots don't build the _apk
         #     target (post-GYP).

@@ -132,14 +132,13 @@ shared_library("mojo_java_unittests") {
 
 instrumentation_test_apk("mojo_test_apk") {
   deps = [
-    ":mojo_java_unittests",
     ":mojo_javatests",
     ":system_java",
     "//base:base_java",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//mojo/public/java:bindings",
   ]
-  native_libs = [ "libmojo_java_unittests.so" ]
+  shared_libraries = [ ":mojo_java_unittests" ]
   apk_name = "MojoTest"
   android_manifest = "javatests/AndroidManifest.xml"
   isolate_file = "../mojo_test_apk.isolate"
