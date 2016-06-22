@@ -238,6 +238,10 @@ void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
   }
 }
 
+ScopedVector<WebUIMessageHandler>* WebUIImpl::GetHandlersForTesting() {
+  return &handlers_;
+}
+
 // WebUIImpl, protected: -------------------------------------------------------
 
 void WebUIImpl::AddMessageHandler(WebUIMessageHandler* handler) {

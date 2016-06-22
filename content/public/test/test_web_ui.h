@@ -63,6 +63,7 @@ class TestWebUI : public WebUI {
   void CallJavascriptFunctionUnsafe(
       const std::string& function_name,
       const std::vector<const base::Value*>& args) override;
+  ScopedVector<WebUIMessageHandler>* GetHandlersForTesting() override;
 
   class CallData {
    public:

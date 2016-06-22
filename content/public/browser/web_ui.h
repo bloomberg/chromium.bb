@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ui/base/page_transition_types.h"
@@ -124,6 +125,9 @@ class CONTENT_EXPORT WebUI {
   virtual void CallJavascriptFunctionUnsafe(
       const std::string& function_name,
       const std::vector<const base::Value*>& args) = 0;
+
+  // Allows mutable access to this WebUI's message handlers for testing.
+  virtual ScopedVector<WebUIMessageHandler>* GetHandlersForTesting() = 0;
 };
 
 }  // namespace content

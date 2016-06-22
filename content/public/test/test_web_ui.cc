@@ -97,6 +97,10 @@ void TestWebUI::CallJavascriptFunctionUnsafe(
   NOTREACHED();
 }
 
+ScopedVector<WebUIMessageHandler>* TestWebUI::GetHandlersForTesting() {
+  return &handlers_;
+}
+
 TestWebUI::CallData::CallData(const std::string& function_name)
     : function_name_(function_name) {
 }

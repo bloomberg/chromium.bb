@@ -11,6 +11,10 @@
 
 namespace content {
 
+void WebUIMessageHandler::AllowJavascriptForTesting() {
+  AllowJavascript();
+}
+
 void WebUIMessageHandler::AllowJavascript() {
   if (javascript_allowed_)
     return;

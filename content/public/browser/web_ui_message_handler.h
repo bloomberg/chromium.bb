@@ -38,6 +38,10 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // Call this when a page should not receive JavaScript messages.
   void DisallowJavascript();
 
+  // Called from tests to toggle JavaScript to catch bugs. If AllowJavascript()
+  // is needed from production code, just publicize AllowJavascript() instead.
+  void AllowJavascriptForTesting();
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractIntegerValue);
   FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractDoubleValue);

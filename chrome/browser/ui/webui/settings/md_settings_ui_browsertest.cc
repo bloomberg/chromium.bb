@@ -10,17 +10,20 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-typedef InProcessBrowserTest MdSettingsBrowserTest;
+typedef InProcessBrowserTest MdSettingsUITest;
 
 using ui_test_utils::NavigateToURL;
 using content::WaitForLoadStop;
 
-IN_PROC_BROWSER_TEST_F(MdSettingsBrowserTest, ViewSourceDoesntCrash) {
+IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ViewSourceDoesntCrash) {
   NavigateToURL(browser(),
       GURL(content::kViewSourceScheme + std::string(":") +
            chrome::kChromeUIMdSettingsURL));
@@ -34,11 +37,26 @@ IN_PROC_BROWSER_TEST_F(MdSettingsBrowserTest, ViewSourceDoesntCrash) {
 #define MAYBE_BackForwardDoesntCrash BackForwardDoesntCrash
 #endif
 
-IN_PROC_BROWSER_TEST_F(MdSettingsBrowserTest, MAYBE_BackForwardDoesntCrash) {
+IN_PROC_BROWSER_TEST_F(MdSettingsUITest, MAYBE_BackForwardDoesntCrash) {
   NavigateToURL(browser(), GURL(chrome::kChromeUIMdSettingsURL));
 
   NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   chrome::GoBack(browser(), CURRENT_TAB);
   WaitForLoadStop(browser()->tab_strip_model()->GetActiveWebContents());
+}
+
+// Catch lifetime issues in message handlers. There was previously a problem
+// with PrefMember calling Init again after Destroy.
+IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ToggleJavaScript) {
+  NavigateToURL(browser(), GURL(chrome::kChromeUIMdSettingsURL));
+
+  auto handlers = browser()->tab_strip_model()->GetActiveWebContents()
+      ->GetWebUI()->GetHandlersForTesting();
+
+  for (content::WebUIMessageHandler* handler : *handlers) {
+    handler->AllowJavascriptForTesting();
+    handler->DisallowJavascript();
+    handler->AllowJavascriptForTesting();
+  }
 }
