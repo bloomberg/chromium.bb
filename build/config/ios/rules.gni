@@ -428,7 +428,7 @@ template("ios_framework_bundle") {
     _compile_headers_map_target = _target_name + "_compile_headers_map"
     action(_compile_headers_map_target) {
       visibility = [ ":$_framework_headers_target" ]
-      script = "$root_out_dir/gyp-mac-tool"
+      script = "//build/config/ios/write_framework_hmap.py"
       outputs = [
         _header_map_filename,
       ]
@@ -448,7 +448,6 @@ template("ios_framework_bundle") {
       set_sources_assignment_filter([])
 
       args = [
-               "compile-ios-framework-header-map",
                rebase_path(_header_map_filename),
                rebase_path(_framework_root, root_out_dir),
              ] + rebase_path(sources, root_out_dir)
@@ -457,14 +456,11 @@ template("ios_framework_bundle") {
     _create_module_map_target = _target_name + "_module_map"
     action(_create_module_map_target) {
       visibility = [ ":$_framework_headers_target" ]
-      script = "$root_out_dir/gyp-mac-tool"
+      script = "//build/config/ios/write_framework_modulemap.py"
       outputs = [
         "$_framework_root/Modules/module.modulemap",
       ]
-      args = [
-        "package-ios-framework",
-        rebase_path("$_framework_root", root_out_dir),
-      ]
+      args = [ rebase_path("$_framework_root", root_out_dir) ]
     }
 
     _copy_public_headers_target = _target_name + "_copy_public_headers"
