@@ -144,6 +144,15 @@ class QuicDispatcher : public QuicServerSessionBase::Visitor,
       QuicConnectionId connection_id,
       const IPEndPoint& client_address);
 
+  // Called when a connection is rejected statelessly.
+  virtual void OnConnectionRejectedStatelessly();
+
+  // Called when a connection is closed statelessly.
+  virtual void OnConnectionClosedStatelessly(QuicErrorCode error);
+
+  // Returns true if cheap stateless rejection should be attempted.
+  virtual bool ShouldAttemptCheapStatelessRejection();
+
   // Values to be returned by ValidityChecks() to indicate what should be done
   // with a packet.  Fates with greater values are considered to be higher
   // priority, in that if one validity check indicates a lower-valued fate and
@@ -228,6 +237,13 @@ class QuicDispatcher : public QuicServerSessionBase::Visitor,
   void CleanUpSession(SessionMap::iterator it, bool session_closed_statelessly);
 
   bool HandlePacketForTimeWait(const QuicPacketPublicHeader& header);
+
+  // Attempts to reject the connection statelessly, if stateless rejects are
+  // possible and if the current packet contains a CHLO message.
+  // Returns a fate which describes what subsequent processing should be
+  // performed on the packets, like ValidityChecks.
+  QuicPacketFate MaybeRejectStatelessly(QuicConnectionId connection_id,
+                                        const QuicPacketHeader& header);
 
   const QuicConfig& config_;
 
