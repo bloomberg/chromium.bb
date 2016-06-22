@@ -188,6 +188,28 @@ def _CheckForPrintfDebugging(input_api, output_api):
     return []
 
 
+def _CheckForJSTest(input_api, output_api):
+    """'js-test.js' is the past, 'testharness.js' is our glorious future"""
+    jstest_re = input_api.re.compile(r'resources/js-test.js')
+
+    def source_file_filter(path):
+        return input_api.FilterSourceFile(path,
+                                          white_list=[r'third_party/WebKit/LayoutTests/.*\.(html|js|php|pl|svg)$'])
+
+    errors = input_api.canned_checks._FindNewViolationsOfRule(
+        lambda _, x: not jstest_re.search(x), input_api, source_file_filter)
+    errors = ['  * %s' % violation for violation in errors]
+    if errors:
+        return [output_api.PresubmitPromptOrNotify(
+            '"resources/js-test.js" is deprecated; please write new layout '
+            'tests using the assertions in "resources/testharness.js" '
+            'instead, as these can be more easily upstreamed to Web Platform '
+            'Tests for cross-vendor compatibility testing. If you\'re not '
+            'already familiar with this framework, a tutorial is available at '
+            'https://darobin.github.io/test-harness-tutorial/docs/using-testharness.html.'
+            'with the new framework.\n\n%s' % '\n'.join(errors))]
+    return []
+
 def _CheckForFailInFile(input_api, f):
     pattern = input_api.re.compile('^FAIL')
     errors = []
@@ -283,6 +305,7 @@ def CheckChangeOnUpload(input_api, output_api):
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckStyle(input_api, output_api))
     results.extend(_CheckForPrintfDebugging(input_api, output_api))
+    results.extend(_CheckForJSTest(input_api, output_api))
     results.extend(_CheckForInvalidPreferenceError(input_api, output_api))
     results.extend(_CheckForForbiddenNamespace(input_api, output_api))
     return results
