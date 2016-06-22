@@ -456,6 +456,12 @@ void ShellSurface::SetScale(double scale) {
   pending_scale_ = scale;
 }
 
+void ShellSurface::SetTopInset(int height) {
+  TRACE_EVENT1("exo", "ShellSurface::SetTopInset", "height", height);
+
+  pending_top_inset_height_ = height;
+}
+
 // static
 void ShellSurface::SetMainSurface(aura::Window* window, Surface* surface) {
   window->SetProperty(kMainSurfaceKey, surface);
@@ -499,6 +505,13 @@ void ShellSurface::OnSurfaceCommit() {
 
     UpdateWidgetBounds();
     UpdateShadow();
+
+    // Apply new top inset height.
+    if (pending_top_inset_height_ != top_inset_height_) {
+      widget_->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
+                                              pending_top_inset_height_);
+      top_inset_height_ = pending_top_inset_height_;
+    }
 
     gfx::Point surface_origin = GetSurfaceOrigin();
 

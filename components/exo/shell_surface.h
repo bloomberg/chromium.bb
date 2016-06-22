@@ -147,6 +147,9 @@ class ShellSurface : public SurfaceDelegate,
   // and all descendants.
   void SetScale(double scale);
 
+  // Set top inset for surface.
+  void SetTopInset(int height);
+
   // Sets the main surface for the window.
   static void SetMainSurface(aura::Window* window, Surface* surface);
 
@@ -278,6 +281,8 @@ class ShellSurface : public SurfaceDelegate,
   std::deque<Config> pending_configs_;
   std::unique_ptr<ash::WindowResizer> resizer_;
   std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;
+  int top_inset_height_{0};
+  int pending_top_inset_height_{0};
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

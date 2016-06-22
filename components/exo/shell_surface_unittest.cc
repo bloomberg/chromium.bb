@@ -16,6 +16,7 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
@@ -256,6 +257,25 @@ TEST_F(ShellSurfaceTest, SetScale) {
   transform.Scale(1.0 / scale, 1.0 / scale);
   EXPECT_EQ(transform.ToString(),
             surface->window()->layer()->GetTargetTransform().ToString());
+}
+
+TEST_F(ShellSurfaceTest, SetTopInset) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ASSERT_TRUE(window);
+  EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
+  int top_inset_height = 20;
+  shell_surface->SetTopInset(top_inset_height);
+  surface->Commit();
+  EXPECT_EQ(top_inset_height, window->GetProperty(aura::client::kTopViewInset));
 }
 
 void Close(int* close_call_count) {
