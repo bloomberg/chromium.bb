@@ -132,7 +132,9 @@ private:
     BlobDataHandleMap m_blobDataHandles;
     intptr_t m_externallyAllocatedMemory;
 
+    // TODO(peria): remove SerializedScriptValueFactory from friend class
     friend class SerializedScriptValueFactory;
+    friend class ScriptValueSerializer;
 };
 
 } // namespace blink

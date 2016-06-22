@@ -204,19 +204,19 @@ class CORE_EXPORT ScriptValueSerializer {
     WTF_MAKE_NONCOPYABLE(ScriptValueSerializer);
 protected:
     class StateBase;
-public:
-    enum Status {
+    enum class Status {
         Success,
         InputError,
         DataCloneError,
         JSException
     };
 
-    ScriptValueSerializer(SerializedScriptValueWriter&, const Transferables*, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
+public:
+    ScriptValueSerializer(SerializedScriptValueWriter&, const Transferables*, WebBlobInfoArray*, ScriptState*);
     v8::Isolate* isolate() { return m_scriptState->isolate(); }
     v8::Local<v8::Context> context() { return m_scriptState->context(); }
 
-    Status serialize(v8::Local<v8::Value>);
+    PassRefPtr<SerializedScriptValue> serialize(v8::Local<v8::Value>, Transferables*, ExceptionState&);
     String errorMessage() { return m_errorMessage; }
 
     static String serializeWTFString(const String&);
@@ -374,6 +374,8 @@ protected:
 private:
     StateBase* doSerialize(v8::Local<v8::Value>, StateBase* next);
     StateBase* doSerializeArrayBuffer(v8::Local<v8::Value> arrayBuffer, StateBase* next);
+    void transferData(Transferables*, ExceptionState&, SerializedScriptValue*);
+
     StateBase* checkException(StateBase*);
     StateBase* writeObject(uint32_t numProperties, StateBase*);
     StateBase* writeSparseArray(uint32_t numProperties, uint32_t length, StateBase*);
@@ -385,7 +387,7 @@ private:
     {
         ASSERT(state);
         ++m_depth;
-        return checkComposite(state) ? state : handleError(InputError, "Value being cloned is either cyclic or too deeply nested.", state);
+        return checkComposite(state) ? state : handleError(Status::InputError, "Value being cloned is either cyclic or too deeply nested.", state);
     }
 
     StateBase* pop(StateBase* state)
@@ -439,7 +441,7 @@ private:
 
     RefPtr<ScriptState> m_scriptState;
     SerializedScriptValueWriter& m_writer;
-    v8::TryCatch& m_tryCatch;
+    v8::TryCatch m_tryCatch;
     int m_depth;
     Status m_status;
     String m_errorMessage;
@@ -451,7 +453,7 @@ private:
     ObjectPool m_transferredOffscreenCanvas;
     uint32_t m_nextObjectReference;
     WebBlobInfoArray* m_blobInfo;
-    BlobDataHandleMap& m_blobDataHandles;
+    BlobDataHandleMap* m_blobDataHandles;
 };
 
 class ScriptValueDeserializer;

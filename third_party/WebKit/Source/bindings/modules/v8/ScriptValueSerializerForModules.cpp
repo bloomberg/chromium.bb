@@ -79,8 +79,8 @@ enum AssymetricCryptoKeyType {
 };
 
 
-ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, const Transferables* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
-    : ScriptValueSerializer(writer, transferables, blobInfo, blobDataHandles, tryCatch, scriptState)
+ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, const Transferables* transferables, WebBlobInfoArray* blobInfo, ScriptState* scriptState)
+    : ScriptValueSerializer(writer, transferables, blobInfo, scriptState)
 {
 }
 
@@ -90,7 +90,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeDOMFileS
     if (!fs)
         return 0;
     if (!fs->clonable())
-        return handleError(DataCloneError, "A FileSystem object could not be cloned.", next);
+        return handleError(Status::DataCloneError, "A FileSystem object could not be cloned.", next);
 
     toSerializedScriptValueWriterForModules(writer()).writeDOMFileSystem(fs->type(), fs->name(), fs->rootURL().getString());
     return 0;
@@ -108,7 +108,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeRTCCerti
 {
     RTCCertificate* certificate = V8RTCCertificate::toImpl(value.As<v8::Object>());
     if (!certificate)
-        return handleError(DataCloneError, "An RTCCertificate object could not be cloned.", next);
+        return handleError(Status::DataCloneError, "An RTCCertificate object could not be cloned.", next);
     toSerializedScriptValueWriterForModules(writer()).writeRTCCertificate(*certificate);
     return nullptr;
 }
@@ -325,7 +325,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeOb
     if (V8CryptoKey::hasInstance(jsObject, isolate())) {
         greyObject(jsObject);
         if (!writeCryptoKey(jsObject))
-            return handleError(DataCloneError, "Couldn't serialize key data", next);
+            return handleError(Status::DataCloneError, "Couldn't serialize key data", next);
         return nullptr;
     }
     if (V8RTCCertificate::hasInstance(jsObject, isolate())) {

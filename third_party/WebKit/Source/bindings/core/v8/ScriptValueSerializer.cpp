@@ -558,7 +558,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::se
     while (m_index < m_propertyNames->Length()) {
         v8::Local<v8::Value> propertyName;
         if (!m_propertyNames->Get(serializer.context(), m_index).ToLocal(&propertyName))
-            return serializer.handleError(JSException, "Failed to get a property while cloning an object.", this);
+            return serializer.handleError(Status::JSException, "Failed to get a property while cloning an object.", this);
 
         bool hasProperty = false;
         if (propertyName->IsString()) {
@@ -578,7 +578,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::se
 
         v8::Local<v8::Value> value;
         if (!composite()->Get(serializer.context(), propertyName).ToLocal(&value))
-            return serializer.handleError(JSException, "Failed to get a property while cloning an object.", this);
+            return serializer.handleError(Status::JSException, "Failed to get a property while cloning an object.", this);
         ++m_index;
         ++m_numSerializedProperties;
         // If we return early here, it's either because we have pushed a new state onto the
@@ -609,7 +609,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::DenseArrayState::advanc
     while (m_arrayIndex < m_arrayLength) {
         v8::Local<v8::Value> value;
         if (!composite().As<v8::Array>()->Get(serializer.context(), m_arrayIndex).ToLocal(&value))
-            return serializer.handleError(JSException, "Failed to get an element while cloning an array.", this);
+            return serializer.handleError(Status::JSException, "Failed to get an element while cloning an array.", this);
         m_arrayIndex++;
         if (StateBase* newState = serializer.checkException(this))
             return newState;
@@ -640,7 +640,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::CollectionState<T>::adv
     while (m_index < m_length) {
         v8::Local<v8::Value> value;
         if (!m_entries->Get(serializer.context(), m_index).ToLocal(&value))
-            return serializer.handleError(JSException, "Failed to get an element while cloning a collection.", this);
+            return serializer.handleError(Status::JSException, "Failed to get an element while cloning a collection.", this);
         m_index++;
         if (StateBase* newState = serializer.checkException(this))
             return newState;
@@ -702,17 +702,17 @@ static bool isHostObject(v8::Local<v8::Object> object)
     return object->InternalFieldCount();
 }
 
-ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, const Transferables* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
+ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, const Transferables* transferables, WebBlobInfoArray* blobInfo, ScriptState* scriptState)
     : m_scriptState(scriptState)
     , m_writer(writer)
-    , m_tryCatch(tryCatch)
+    , m_tryCatch(scriptState->isolate())
     , m_depth(0)
-    , m_status(Success)
+    , m_status(Status::Success)
     , m_nextObjectReference(0)
     , m_blobInfo(blobInfo)
-    , m_blobDataHandles(blobDataHandles)
+    , m_blobDataHandles(nullptr)
 {
-    ASSERT(!tryCatch.HasCaught());
+    DCHECK(!m_tryCatch.HasCaught());
     if (transferables)
         copyTransferables(*transferables);
 }
@@ -753,14 +753,51 @@ void ScriptValueSerializer::copyTransferables(const Transferables& transferables
     }
 }
 
-ScriptValueSerializer::Status ScriptValueSerializer::serialize(v8::Local<v8::Value> value)
+PassRefPtr<SerializedScriptValue> ScriptValueSerializer::serialize(v8::Local<v8::Value> value, Transferables* transferables, ExceptionState& exceptionState)
 {
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create();
+    m_blobDataHandles = &serializedValue->blobDataHandles();
+
     v8::HandleScope scope(isolate());
-    m_writer.writeVersion();
-    StateBase* state = doSerialize(value, 0);
+    writer().writeVersion();
+    StateBase* state = doSerialize(value, nullptr);
     while (state)
         state = state->advance(*this);
-    return m_status;
+
+    switch (m_status) {
+    case Status::Success:
+        transferData(transferables, exceptionState, serializedValue.get());
+        break;
+    case Status::InputError:
+    case Status::DataCloneError:
+        exceptionState.throwDOMException(blink::DataCloneError, errorMessage());
+        break;
+    case Status::JSException:
+        exceptionState.rethrowV8Exception(m_tryCatch.Exception());
+        break;
+    default:
+        NOTREACHED();
+    }
+
+    m_blobDataHandles = nullptr;
+
+    return serializedValue.release();
+}
+
+void ScriptValueSerializer::transferData(Transferables* transferables, ExceptionState& exceptionState, SerializedScriptValue* serializedValue)
+{
+    serializedValue->setData(m_writer.takeWireString());
+    DCHECK(serializedValue->data().impl()->hasOneRef());
+    if (!transferables)
+        return;
+
+    serializedValue->transferImageBitmaps(isolate(), transferables->imageBitmaps, exceptionState);
+    if (exceptionState.hadException())
+        return;
+    serializedValue->transferArrayBuffers(isolate(), transferables->arrayBuffers, exceptionState);
+    if (exceptionState.hadException())
+        return;
+    serializedValue->transferOffscreenCanvas(isolate(), transferables->offscreenCanvases, exceptionState);
 }
 
 // static
@@ -784,7 +821,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(v8::Local<v
     m_writer.writeReferenceCount(m_nextObjectReference);
 
     if (value.IsEmpty())
-        return handleError(InputError, "The empty property cannot be cloned.", next);
+        return handleError(Status::InputError, "The empty property cannot be cloned.", next);
 
     uint32_t objectReference;
     if ((value->IsObject() || value->IsDate() || value->IsRegExp())
@@ -815,7 +852,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(v8::Local<v
     } else if (value->IsString()) {
         writeString(value);
     } else {
-        return handleError(DataCloneError, "A value could not be cloned.", next);
+        return handleError(Status::DataCloneError, "A value could not be cloned.", next);
     }
     return nullptr;
 }
@@ -834,7 +871,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::L
     if (object->IsSharedArrayBuffer()) {
         uint32_t index;
         if (!m_transferredArrayBuffers.tryGet(object, &index)) {
-            return handleError(DataCloneError, "A SharedArrayBuffer could not be cloned.", next);
+            return handleError(Status::DataCloneError, "A SharedArrayBuffer could not be cloned.", next);
         }
         return writeTransferredSharedArrayBuffer(object, index, next);
     }
@@ -843,7 +880,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::L
     if (V8MessagePort::hasInstance(object, isolate())) {
         uint32_t index;
         if (!m_transferredMessagePorts.tryGet(object, &index)) {
-            return handleError(DataCloneError, "A MessagePort could not be cloned.", next);
+            return handleError(Status::DataCloneError, "A MessagePort could not be cloned.", next);
         }
         m_writer.writeTransferredMessagePort(index);
         return nullptr;
@@ -851,7 +888,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::L
     if (V8OffscreenCanvas::hasInstance(object, isolate())) {
         uint32_t index;
         if (!m_transferredOffscreenCanvas.tryGet(object, &index)) {
-            return handleError(DataCloneError, "A OffscreenCanvas could not be cloned.", next);
+            return handleError(Status::DataCloneError, "A OffscreenCanvas could not be cloned.", next);
         }
         return writeTransferredOffscreenCanvas(object, index, next);
     }
@@ -910,7 +947,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::L
 
     // Since IsNativeError is expensive, this check should always be the last check.
     if (isHostObject(object) || object->IsCallable() || object->IsNativeError()) {
-        return handleError(DataCloneError, "An object could not be cloned.", next);
+        return handleError(Status::DataCloneError, "An object could not be cloned.", next);
     }
 
     return startObjectState(object, next);
@@ -923,7 +960,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeArrayBuffer(
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::checkException(ScriptValueSerializer::StateBase* state)
 {
-    return m_tryCatch.HasCaught() ? handleError(JSException, "", state) : 0;
+    return m_tryCatch.HasCaught() ? handleError(Status::JSException, "", state) : nullptr;
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::writeObject(uint32_t numProperties, ScriptValueSerializer::StateBase* state)
@@ -960,7 +997,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeCollection<v8::Set
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::handleError(ScriptValueSerializer::Status errorStatus, const String& message, ScriptValueSerializer::StateBase* state)
 {
-    ASSERT(errorStatus != Success);
+    DCHECK(errorStatus != Status::Success);
     m_status = errorStatus;
     m_errorMessage = message;
     while (state) {
@@ -1020,9 +1057,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeBlob(v8::Local<v8:
     if (!blob)
         return 0;
     if (blob->isClosed())
-        return handleError(DataCloneError, "A Blob object has been closed, and could therefore not be cloned.", next);
+        return handleError(Status::DataCloneError, "A Blob object has been closed, and could therefore not be cloned.", next);
     int blobIndex = -1;
-    m_blobDataHandles.set(blob->uuid(), blob->blobDataHandle());
+    m_blobDataHandles->set(blob->uuid(), blob->blobDataHandle());
     if (appendBlobInfo(blob->uuid(), blob->type(), blob->size(), &blobIndex))
         m_writer.writeBlobIndex(blobIndex);
     else
@@ -1036,7 +1073,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeCompositorProxy(v8
     if (!compositorProxy)
         return nullptr;
     if (!compositorProxy->connected())
-        return handleError(DataCloneError, "A CompositorProxy object has been disconnected, and could therefore not be cloned.", next);
+        return handleError(Status::DataCloneError, "A CompositorProxy object has been disconnected, and could therefore not be cloned.", next);
     m_writer.writeCompositorProxy(*compositorProxy);
     return nullptr;
 }
@@ -1047,9 +1084,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFile(v8::Local<v8:
     if (!file)
         return 0;
     if (file->isClosed())
-        return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
+        return handleError(Status::DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
     int blobIndex = -1;
-    m_blobDataHandles.set(file->uuid(), file->blobDataHandle());
+    m_blobDataHandles->set(file->uuid(), file->blobDataHandle());
     if (appendFileInfo(file, &blobIndex)) {
         ASSERT(blobIndex >= 0);
         m_writer.writeFileIndex(blobIndex);
@@ -1070,8 +1107,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFileList(v8::Local
         int blobIndex = -1;
         const File* file = fileList->item(i);
         if (file->isClosed())
-            return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
-        m_blobDataHandles.set(file->uuid(), file->blobDataHandle());
+            return handleError(Status::DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
+        m_blobDataHandles->set(file->uuid(), file->blobDataHandle());
         if (appendFileInfo(file, &blobIndex)) {
             ASSERT(!i || blobIndex > 0);
             ASSERT(blobIndex >= 0);
@@ -1100,7 +1137,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyImageBitmap
     if (!imageBitmap)
         return nullptr;
     if (imageBitmap->isNeutered())
-        return handleError(DataCloneError, "An ImageBitmap is detached and could not be cloned.", next);
+        return handleError(Status::DataCloneError, "An ImageBitmap is detached and could not be cloned.", next);
 
     uint32_t index;
     if (m_transferredImageBitmaps.tryGet(object, &index)) {
@@ -1126,10 +1163,10 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer
     if (!arrayBufferView)
         return 0;
     if (!arrayBufferView->bufferBase())
-        return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
+        return handleError(Status::DataCloneError, "An ArrayBuffer could not be cloned.", next);
     v8::Local<v8::Value> underlyingBuffer = toV8(arrayBufferView->bufferBase(), m_scriptState->context()->Global(), isolate());
     if (underlyingBuffer.IsEmpty())
-        return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
+        return handleError(Status::DataCloneError, "An ArrayBuffer could not be cloned.", next);
     StateBase* stateOut = doSerializeArrayBuffer(underlyingBuffer, next);
     if (stateOut)
         return stateOut;
@@ -1154,7 +1191,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer
     if (!arrayBuffer)
         return nullptr;
     if (arrayBuffer->isNeutered())
-        return handleError(DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
+        return handleError(Status::DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
 
     uint32_t index;
     if (m_transferredArrayBuffers.tryGet(object, &index)) {
@@ -1172,9 +1209,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredOffscre
     if (!offscreenCanvas)
         return nullptr;
     if (offscreenCanvas->isNeutered())
-        return handleError(DataCloneError, "An OffscreenCanvas is detached and could not be cloned.", next);
+        return handleError(Status::DataCloneError, "An OffscreenCanvas is detached and could not be cloned.", next);
     if (offscreenCanvas->renderingContext())
-        return handleError(DataCloneError, "An OffscreenCanvas with a context could not be cloned.", next);
+        return handleError(Status::DataCloneError, "An OffscreenCanvas with a context could not be cloned.", next);
     m_writer.writeTransferredOffscreenCanvas(index, offscreenCanvas->width(), offscreenCanvas->height(), offscreenCanvas->getAssociatedCanvasId());
     return nullptr;
 }

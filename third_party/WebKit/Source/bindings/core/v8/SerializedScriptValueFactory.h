@@ -28,7 +28,7 @@ public:
 protected:
     friend class SerializedScriptValue;
 
-    // Following 4 methods are expected to be called by SerializedScriptValue.
+    // Following 2 methods are expected to be called by SerializedScriptValue.
 
     // If a serialization error occurs (e.g., cyclic input value) this
     // function returns an empty representation, schedules a V8 exception to
@@ -36,13 +36,11 @@ protected:
     // the caller must not invoke any V8 operations until control returns to
     // V8. When serialization is successful, |didThrow| is false.
     virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&);
-    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, ExceptionState&);
 
     v8::Local<v8::Value> deserialize(SerializedScriptValue*, v8::Isolate*, MessagePortArray*, const WebBlobInfoArray*);
 
     // Following methods are expected to be called in SerializedScriptValueFactory{ForModules}.
     SerializedScriptValueFactory() { }
-    virtual ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*);
     virtual v8::Local<v8::Value> deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray*, ImageBitmapContentsArray*, v8::Isolate*, MessagePortArray* messagePorts, const WebBlobInfoArray*);
 
 private:
@@ -54,8 +52,6 @@ private:
         }
         return *m_instance;
     }
-
-    void transferData(SerializedScriptValue*, SerializedScriptValueWriter&, Transferables*, ExceptionState&, v8::Isolate*);
 
     static SerializedScriptValueFactory* m_instance;
 };
