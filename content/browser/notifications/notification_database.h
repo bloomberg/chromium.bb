@@ -61,9 +61,12 @@ class CONTENT_EXPORT NotificationDatabase {
     // leveldb operation not supported
     STATUS_NOT_SUPPORTED = 5,
 
+    // Invalid database ID or snapshot ID provided.
+    STATUS_INVALID_ARGUMENT = 6,
+
     // Number of entries in the status enumeration. Used by UMA. Must always be
     // one higher than the otherwise highest value in this enumeration.
-    STATUS_COUNT = 6
+    STATUS_COUNT = 7
   };
 
   explicit NotificationDatabase(const base::FilePath& path);
