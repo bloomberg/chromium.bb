@@ -142,7 +142,7 @@ class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactoryImpl {
   void WaitForPreconnects() {
     while (!preconnect_done_) {
       waiting_for_preconnect_ = true;
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
       waiting_for_preconnect_ = false;
     }
   }
@@ -233,7 +233,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void WaitForStream() {
     while (!stream_done_) {
       waiting_for_stream_ = true;
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
       waiting_for_stream_ = false;
     }
   }

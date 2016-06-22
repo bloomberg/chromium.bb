@@ -32,6 +32,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -1033,7 +1034,7 @@ TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(10));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 // This test executes ExportKeyingMaterial() on the client and server sockets,

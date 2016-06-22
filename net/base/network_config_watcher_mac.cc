@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -75,10 +76,9 @@ void NetworkConfigWatcherMacThread::Init() {
   // TODO(willchan): Look to see if there's a better signal for when it's ok to
   // initialize this, rather than just delaying it by a fixed time.
   const base::TimeDelta kInitializationDelay = base::TimeDelta::FromSeconds(1);
-  message_loop()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&NetworkConfigWatcherMacThread::InitNotifications,
-                 weak_factory_.GetWeakPtr()),
+  task_runner()->PostDelayedTask(
+      FROM_HERE, base::Bind(&NetworkConfigWatcherMacThread::InitNotifications,
+                            weak_factory_.GetWeakPtr()),
       kInitializationDelay);
 }
 

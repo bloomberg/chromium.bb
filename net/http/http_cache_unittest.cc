@@ -6294,7 +6294,7 @@ TEST(HttpCache, SyncRead) {
   r3.load_flags |= LOAD_ONLY_FROM_CACHE;
   c3.Start(&r3, BoundNetLog());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(c1.is_done());
   EXPECT_TRUE(c2.is_done());

@@ -163,7 +163,7 @@ class EmbeddedTestServerTest
     num_responses_received_ = 0;
     num_responses_expected_ = num_responses;
     // Will be terminated in OnURLFetchComplete().
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   // Handles |request| sent to |path| and returns the response per |content|,

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
@@ -50,7 +51,7 @@ class CloseResultWaiter {
     CHECK(!waiting_for_result_);
     while (!have_result_) {
       waiting_for_result_ = true;
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
       waiting_for_result_ = false;
     }
     return result_;

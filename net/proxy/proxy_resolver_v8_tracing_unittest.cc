@@ -721,7 +721,7 @@ class BlockableHostResolver : public HostResolver {
   // Waits until Resolve() has been called.
   void WaitUntilRequestIsReceived() {
     waiting_for_resolve_ = true;
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     DCHECK(waiting_for_resolve_);
     waiting_for_resolve_ = false;
   }

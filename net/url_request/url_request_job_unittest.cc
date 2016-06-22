@@ -160,7 +160,7 @@ TEST(URLRequestJob, TransactionNotifiedWhenDone) {
   req->set_method("GET");
   req->Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(network_layer.done_reading_called());
 
@@ -272,7 +272,7 @@ TEST(URLRequestJob, EmptyBodySkipFilter) {
   req->set_method("GET");
   req->Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(d.request_failed());
   EXPECT_EQ(200, req->GetResponseCode());
@@ -296,7 +296,7 @@ TEST(URLRequestJob, InvalidContentGZipTransaction) {
   req->set_method("GET");
   req->Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // Request failed indicates the request failed before headers were received,
   // so should be false.
@@ -324,7 +324,7 @@ TEST(URLRequestJob, SlowFilterRead) {
   req->set_method("GET");
   req->Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(d.request_failed());
   EXPECT_EQ(200, req->GetResponseCode());

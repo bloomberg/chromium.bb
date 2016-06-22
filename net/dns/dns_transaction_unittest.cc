@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/sys_byteorder.h"
 #include "base/test/test_timeouts.h"
 #include "net/base/ip_address.h"
@@ -304,7 +305,7 @@ class TransactionHelper {
 
   bool Run(DnsTransactionFactory* factory) {
     StartTransaction(factory);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return has_completed();
   }
 
@@ -312,7 +313,7 @@ class TransactionHelper {
   bool RunUntilDone(DnsTransactionFactory* factory) {
     set_quit_in_callback();
     StartTransaction(factory);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     return has_completed();
   }
 
@@ -497,7 +498,7 @@ TEST_F(DnsTransactionTest, ConcurrentLookup) {
   TransactionHelper helper1(kT1HostName, kT1Qtype, kT1RecordCount);
   helper1.StartTransaction(transaction_factory_.get());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(helper0.has_completed());
   EXPECT_TRUE(helper1.has_completed());
@@ -516,7 +517,7 @@ TEST_F(DnsTransactionTest, CancelLookup) {
 
   helper0.Cancel();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(helper0.has_completed());
   EXPECT_TRUE(helper1.has_completed());
@@ -532,7 +533,7 @@ TEST_F(DnsTransactionTest, DestroyFactory) {
   // Destroying the client does not affect running requests.
   transaction_factory_.reset(NULL);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(helper0.has_completed());
 }

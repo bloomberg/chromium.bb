@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -62,7 +63,7 @@ bool MockProxyScriptFetcher::has_pending_request() const {
 void MockProxyScriptFetcher::WaitUntilFetch() {
   DCHECK(!has_pending_request());
   waiting_for_fetch_ = true;
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   waiting_for_fetch_ = false;
 }
 

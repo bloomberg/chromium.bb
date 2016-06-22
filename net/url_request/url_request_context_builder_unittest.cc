@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
@@ -79,7 +80,7 @@ TEST_F(URLRequestContextBuilderTest, DefaultSettings) {
   request->set_method("GET");
   request->SetExtraRequestHeaderByName("Foo", "Bar", false);
   request->Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_EQ("Bar", delegate.data_received());
 }
 
@@ -94,7 +95,7 @@ TEST_F(URLRequestContextBuilderTest, UserAgent) {
                              DEFAULT_PRIORITY, &delegate));
   request->set_method("GET");
   request->Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_EQ("Bar", delegate.data_received());
 }
 

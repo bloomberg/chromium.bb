@@ -645,7 +645,7 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
     DCHECK(!waiting_for_result_);
     while (!have_result_) {
       waiting_for_result_ = true;
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
       waiting_for_result_ = false;
     }
     have_result_ = false;  // auto-reset for next callback
@@ -1022,7 +1022,7 @@ TEST_F(ClientSocketPoolBaseTest, TotalLimitCountsConnectingSockets) {
   // to flush all tasks, we need to wait so that we know there are no
   // soon-to-be-pending tasks waiting.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The next synchronous request should wait for its turn.
   connect_job_factory_->set_job_type(TestConnectJob::kMockJob);
@@ -1240,7 +1240,7 @@ TEST_F(ClientSocketPoolBaseTest, CloseIdleSocketAtSocketLimitDeleteGroup) {
   }
 
   // Flush all the DoReleaseSocket tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Stall a group.  Set a pending job so it'll trigger a backup job if we don't
   // reuse a socket.
@@ -1574,7 +1574,7 @@ TEST_F(ClientSocketPoolBaseTest, GroupWithPendingRequestsIsNotEmpty) {
   pool_->CloseIdleSockets();
 
   // Run the released socket wakeups.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ClientSocketPoolBaseTest, BasicAsynchronous) {
@@ -1757,7 +1757,7 @@ TEST_F(ClientSocketPoolBaseTest, ReleaseSockets) {
   // service request 2.  Request 3 should still be waiting.
   req1.handle()->Reset();
   // Run the released socket wakeups.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(req2.handle()->socket());
   EXPECT_EQ(OK, req2.WaitForResult());
   EXPECT_FALSE(req3.handle()->socket());
@@ -2154,7 +2154,7 @@ TEST_F(ClientSocketPoolBaseTest, MAYBE_CleanupTimedOutIdleSocketsNoReuse) {
   // to flush all tasks, we need to wait so that we know there are no
   // soon-to-be-pending tasks waiting.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Both sockets should now be idle.
   ASSERT_EQ(2, pool_->IdleSocketCount());
@@ -2289,7 +2289,7 @@ TEST_F(ClientSocketPoolBaseTest, SocketLimitReleasingSockets) {
   handle_a[0].Reset();
 
   // Used to get stuck here.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   handle_b[1].socket()->Disconnect();
   handle_b[1].Reset();
@@ -2443,7 +2443,7 @@ TEST_F(ClientSocketPoolBaseTest, DoNotReuseSocketAfterFlush) {
   pool_->FlushWithError(ERR_NETWORK_CHANGED);
 
   handle.Reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ERR_IO_PENDING,
             handle.Init("a", params_, DEFAULT_PRIORITY,
@@ -2542,7 +2542,7 @@ TEST_F(ClientSocketPoolBaseTest, BackupSocketCancelAtMaxSockets) {
                               callback.callback(), pool_.get(), BoundNetLog()));
   }
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Cancel the pending request.
   handle.Reset();
@@ -2551,7 +2551,7 @@ TEST_F(ClientSocketPoolBaseTest, BackupSocketCancelAtMaxSockets) {
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
       ClientSocketPool::kMaxConnectRetryIntervalMs / 2 * 3));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kDefaultMaxSockets, client_socket_factory_.allocation_count());
 }
 
@@ -2578,7 +2578,7 @@ TEST_F(ClientSocketPoolBaseTest, CancelBackupSocketAfterCancelingAllRequests) {
   // Wait for the backup timer to fire (add some slop to ensure it fires)
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
       ClientSocketPool::kMaxConnectRetryIntervalMs / 2 * 3));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(pool_->HasGroup("bar"));
   EXPECT_EQ(1, pool_->NumConnectJobsInGroup("bar"));
 }
@@ -2613,7 +2613,7 @@ TEST_F(ClientSocketPoolBaseTest, CancelBackupSocketAfterFinishingAllRequests) {
   // Wait for the backup timer to fire (add some slop to ensure it fires)
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
       ClientSocketPool::kMaxConnectRetryIntervalMs / 2 * 3));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test delayed socket binding for the case where we have two connects,
@@ -2651,7 +2651,7 @@ TEST_F(ClientSocketPoolBaseTest, DelayedSocketBindingWaitingForConnect) {
   // binding.
   handle1.Reset();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Still no idle sockets, still one pending connect job.
   EXPECT_EQ(0, pool_->IdleSocketCount());
@@ -2667,7 +2667,7 @@ TEST_F(ClientSocketPoolBaseTest, DelayedSocketBindingWaitingForConnect) {
   client_socket_factory_.SignalJobs();
   EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test delayed socket binding when a group is at capacity and one
@@ -2703,7 +2703,7 @@ TEST_F(ClientSocketPoolBaseTest, DelayedSocketBindingAtGroupCapacity) {
   // binding.
   handle1.Reset();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Still no idle sockets, still one pending connect job.
   EXPECT_EQ(0, pool_->IdleSocketCount());
@@ -2719,7 +2719,7 @@ TEST_F(ClientSocketPoolBaseTest, DelayedSocketBindingAtGroupCapacity) {
   client_socket_factory_.SignalJobs();
   EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test out the case where we have one socket connected, one
@@ -2757,7 +2757,7 @@ TEST_F(ClientSocketPoolBaseTest, DelayedSocketBindingAtStall) {
   // binding.
   handle1.Reset();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Still no idle sockets, still one pending connect job.
   EXPECT_EQ(0, pool_->IdleSocketCount());
@@ -2773,7 +2773,7 @@ TEST_F(ClientSocketPoolBaseTest, DelayedSocketBindingAtStall) {
   client_socket_factory_.SignalJobs();
   EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Cover the case where on an available socket slot, we have one pending
@@ -3362,7 +3362,7 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithoutBackupJob) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(1));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_FALSE(pool_->HasGroup("a"));
 }
 
@@ -3376,7 +3376,7 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithBackupJob) {
   EXPECT_EQ(1, pool_->NumConnectJobsInGroup("a"));
   EXPECT_EQ(1, pool_->NumUnassignedConnectJobsInGroup("a"));
   EXPECT_EQ(0, pool_->IdleSocketCountInGroup("a"));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Make the backup job be a pending job, so it completes normally.
   connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);

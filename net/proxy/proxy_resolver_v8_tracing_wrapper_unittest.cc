@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -41,7 +42,7 @@ class ProxyResolverV8TracingWrapperTest : public testing::Test {
     // Drain any pending messages, which may be left over from cancellation.
     // This way they get reliably run as part of the current test, rather than
     // spilling into the next test's execution.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 };
 
@@ -804,7 +805,7 @@ class BlockableHostResolver : public HostResolver {
   // Waits until Resolve() has been called.
   void WaitUntilRequestIsReceived() {
     waiting_for_resolve_ = true;
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     DCHECK(waiting_for_resolve_);
     waiting_for_resolve_ = false;
   }

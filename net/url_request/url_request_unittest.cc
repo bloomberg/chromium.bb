@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -6576,7 +6577,7 @@ TEST_F(URLRequestTestHTTP, RestrictDataRedirects) {
       http_test_server()->GetURL("/redirect-to-data.html"), DEFAULT_PRIORITY,
       &d));
   req->Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(URLRequestStatus::FAILED, req->status().status());
   EXPECT_EQ(ERR_UNSAFE_REDIRECT, req->status().error());

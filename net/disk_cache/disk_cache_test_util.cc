@@ -7,6 +7,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/blockfile/backend_impl.h"
@@ -96,7 +97,7 @@ bool MessageLoopHelper::WaitUntilCacheIoFinished(int num_callbacks) {
   if (!timer_.IsRunning())
     timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(50), this,
                  &MessageLoopHelper::TimerExpired);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   return completed_;
 }
 
