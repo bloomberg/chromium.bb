@@ -2121,7 +2121,7 @@
      },
 
     'mac_strip': {
-      'gn_args': 'error', # TODO(GYP): Port mac_strip_release
+      'gn_args': 'enable_stripping=true',
       'gyp_defines': 'mac_strip_release=1',
     },
 
