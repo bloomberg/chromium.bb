@@ -11,10 +11,26 @@
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/system/core.h"
 
-namespace WTF {
-class String;
-}
 namespace mojo {
+
+template <typename T>
+class Array;
+
+template <typename T>
+class AssociatedInterfacePtrInfo;
+
+template <typename T>
+class AssociatedInterfaceRequest;
+
+template <typename T>
+class InterfacePtr;
+
+template <typename T>
+class InterfaceRequest;
+
+template <typename K, typename V>
+class Map;
+
 class String;
 
 template <typename T>
@@ -35,6 +51,9 @@ const uint32_t kUnionDataSize = 16;
 
 template <typename T>
 class Array_Data;
+
+template <typename K, typename V>
+class Map_Data;
 
 using String_Data = Array_Data<char>;
 
@@ -87,27 +106,11 @@ using AssociatedInterfaceRequest_Data = InterfaceId;
 #pragma pack(pop)
 
 template <typename T>
-void ResetIfNonNull(T* ptr) {
-  if (ptr)
-    *ptr = T();
-}
-
-template <typename T>
 T FetchAndReset(T* ptr) {
   T temp = *ptr;
   *ptr = T();
   return temp;
 }
-
-template <typename H>
-struct IsHandle {
-  enum { value = 0 };
-};
-
-template <>
-struct IsHandle<Handle_Data> {
-  enum { value = 1 };
-};
 
 template <typename T>
 struct IsUnionDataType {
@@ -125,48 +128,157 @@ struct IsUnionDataType {
       sizeof(Test<T>(0)) == sizeof(YesType) && !IsConst<T>::value;
 };
 
-template <typename MojomType, bool move_only = IsMoveOnlyType<MojomType>::value>
-struct GetDataTypeAsArrayElement;
+enum class MojomTypeCategory : uint32_t {
+  ARRAY = 1 << 0,
+  ASSOCIATED_INTERFACE = 1 << 1,
+  ASSOCIATED_INTERFACE_REQUEST = 1 << 2,
+  BOOLEAN = 1 << 3,
+  ENUM = 1 << 4,
+  HANDLE = 1 << 5,
+  INTERFACE = 1 << 6,
+  INTERFACE_REQUEST = 1 << 7,
+  MAP = 1 << 8,
+  // POD except boolean and enum.
+  POD = 1 << 9,
+  STRING = 1 << 10,
+  STRUCT = 1 << 11,
+  UNION = 1 << 12
+};
+
+inline constexpr MojomTypeCategory operator&(MojomTypeCategory x,
+                                             MojomTypeCategory y) {
+  return static_cast<MojomTypeCategory>(static_cast<uint32_t>(x) &
+                                        static_cast<uint32_t>(y));
+}
+
+inline constexpr MojomTypeCategory operator|(MojomTypeCategory x,
+                                             MojomTypeCategory y) {
+  return static_cast<MojomTypeCategory>(static_cast<uint32_t>(x) |
+                                        static_cast<uint32_t>(y));
+}
+
+template <typename T, bool is_enum = std::is_enum<T>::value>
+struct MojomTypeTraits {
+  using Data = T;
+  using DataAsArrayElement = Data;
+
+  static const MojomTypeCategory category = MojomTypeCategory::POD;
+};
 
 template <typename T>
-struct GetDataTypeAsArrayElement<T, false> {
-  using Data =
-      typename std::conditional<std::is_enum<T>::value, int32_t, T>::type;
+struct MojomTypeTraits<Array<T>, false> {
+  using Data = Array_Data<typename MojomTypeTraits<T>::DataAsArrayElement>;
+  using DataAsArrayElement = Data*;
+
+  static const MojomTypeCategory category = MojomTypeCategory::ARRAY;
 };
-template <typename H>
-struct GetDataTypeAsArrayElement<ScopedHandleBase<H>, true> {
+
+template <typename T>
+struct MojomTypeTraits<AssociatedInterfacePtrInfo<T>, false> {
+  using Data = AssociatedInterface_Data;
+  using DataAsArrayElement = Data;
+
+  static const MojomTypeCategory category =
+      MojomTypeCategory::ASSOCIATED_INTERFACE;
+};
+
+template <typename T>
+struct MojomTypeTraits<AssociatedInterfaceRequest<T>, false> {
+  using Data = AssociatedInterfaceRequest_Data;
+  using DataAsArrayElement = Data;
+
+  static const MojomTypeCategory category =
+      MojomTypeCategory::ASSOCIATED_INTERFACE_REQUEST;
+};
+
+template <>
+struct MojomTypeTraits<bool, false> {
+  using Data = bool;
+  using DataAsArrayElement = Data;
+
+  static const MojomTypeCategory category = MojomTypeCategory::BOOLEAN;
+};
+
+template <typename T>
+struct MojomTypeTraits<T, true> {
+  using Data = int32_t;
+  using DataAsArrayElement = Data;
+
+  static const MojomTypeCategory category = MojomTypeCategory::ENUM;
+};
+
+template <typename T>
+struct MojomTypeTraits<ScopedHandleBase<T>, false> {
   using Data = Handle_Data;
+  using DataAsArrayElement = Data;
+
+  static const MojomTypeCategory category = MojomTypeCategory::HANDLE;
 };
-template <typename S>
-struct GetDataTypeAsArrayElement<StructPtr<S>, true> {
-  using Data =
-      typename std::conditional<IsUnionDataType<typename S::Data_>::value,
-                                typename S::Data_,
-                                typename S::Data_*>::type;
+
+template <typename T>
+struct MojomTypeTraits<InterfacePtr<T>, false> {
+  using Data = Interface_Data;
+  using DataAsArrayElement = Data;
+
+  static const MojomTypeCategory category = MojomTypeCategory::INTERFACE;
 };
-template <typename S>
-struct GetDataTypeAsArrayElement<InlinedStructPtr<S>, true> {
-  using Data =
-      typename std::conditional<IsUnionDataType<typename S::Data_>::value,
-                                typename S::Data_,
-                                typename S::Data_*>::type;
+
+template <typename T>
+struct MojomTypeTraits<InterfaceRequest<T>, false> {
+  using Data = Handle_Data;
+  using DataAsArrayElement = Data;
+
+  static const MojomTypeCategory category =
+      MojomTypeCategory::INTERFACE_REQUEST;
 };
-template <typename S>
-struct GetDataTypeAsArrayElement<S, true> {
-  using Data =
-      typename std::conditional<IsUnionDataType<typename S::Data_>::value,
-                                typename S::Data_,
-                                typename S::Data_*>::type;
+
+template <typename K, typename V>
+struct MojomTypeTraits<Map<K, V>, false> {
+  using Data = Map_Data<typename MojomTypeTraits<K>::DataAsArrayElement,
+                        typename MojomTypeTraits<V>::DataAsArrayElement>;
+  using DataAsArrayElement = Data*;
+
+  static const MojomTypeCategory category = MojomTypeCategory::MAP;
 };
 
 template <>
-struct GetDataTypeAsArrayElement<String, false> {
-  using Data = String_Data*;
+struct MojomTypeTraits<String, false> {
+  using Data = String_Data;
+  using DataAsArrayElement = Data*;
+
+  static const MojomTypeCategory category = MojomTypeCategory::STRING;
 };
 
-template <>
-struct GetDataTypeAsArrayElement<WTF::String, false> {
-  using Data = String_Data*;
+template <typename T>
+struct MojomTypeTraits<StructPtr<T>, false> {
+  using Data = typename T::Data_;
+  using DataAsArrayElement =
+      typename std::conditional<IsUnionDataType<Data>::value,
+                                Data,
+                                Data*>::type;
+
+  static const MojomTypeCategory category = IsUnionDataType<Data>::value
+                                                ? MojomTypeCategory::UNION
+                                                : MojomTypeCategory::STRUCT;
+};
+
+template <typename T>
+struct MojomTypeTraits<InlinedStructPtr<T>, false> {
+  using Data = typename T::Data_;
+  using DataAsArrayElement =
+      typename std::conditional<IsUnionDataType<Data>::value,
+                                Data,
+                                Data*>::type;
+
+  static const MojomTypeCategory category = IsUnionDataType<Data>::value
+                                                ? MojomTypeCategory::UNION
+                                                : MojomTypeCategory::STRUCT;
+};
+
+template <typename T, MojomTypeCategory categories>
+struct BelongsTo {
+  static const bool value =
+      static_cast<uint32_t>(MojomTypeTraits<T>::category & categories) != 0;
 };
 
 }  // namespace internal

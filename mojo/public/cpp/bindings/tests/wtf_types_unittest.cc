@@ -179,7 +179,7 @@ TEST_F(WTFTypesTest, Serialization_WTFMapToWTFMap) {
       mojo::internal::PrepareToSerialize<MojomType>(cloned_str_map, &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
-  typename MojomType::Data_* data;
+  typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
   mojo::internal::ContainerValidateParams validate_params(
       new mojo::internal::ContainerValidateParams(
           0, false,
@@ -207,7 +207,7 @@ TEST_F(WTFTypesTest, Serialization_WTFMapToMojoMap) {
       mojo::internal::PrepareToSerialize<MojomType>(str_map, &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
-  typename MojomType::Data_* data;
+  typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
   mojo::internal::ContainerValidateParams validate_params(
       new mojo::internal::ContainerValidateParams(
           0, false,

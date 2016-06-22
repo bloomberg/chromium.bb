@@ -165,7 +165,7 @@ class MapCommonTest {
       size_t size =
           mojo::internal::PrepareToSerialize<MojomType>(array, &context);
       mojo::internal::FixedBufferForTesting buf(size);
-      typename MojomType::Data_* data;
+      typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
       mojo::internal::ContainerValidateParams validate_params(
           0, false,
           new mojo::internal::ContainerValidateParams(
@@ -198,7 +198,7 @@ class MapCommonTest {
       size_t size =
           mojo::internal::PrepareToSerialize<MojomType>(array, &context);
       mojo::internal::FixedBufferForTesting buf(size);
-      typename MojomType::Data_* data;
+      typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
       mojo::internal::ContainerValidateParams validate_params(
           0, false,
           new mojo::internal::ContainerValidateParams(

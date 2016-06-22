@@ -29,8 +29,7 @@ namespace internal {
 
 template <typename MojomType, typename DataArrayType, typename UserType>
 DataArrayType StructSerializeImpl(UserType* input) {
-  static_assert(IsSpecializationOf<StructPtr, MojomType>::value ||
-                    IsSpecializationOf<InlinedStructPtr, MojomType>::value,
+  static_assert(BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value,
                 "Unexpected type.");
 
   SerializationContext context;
@@ -70,8 +69,7 @@ DataArrayType StructSerializeImpl(UserType* input) {
 
 template <typename MojomType, typename DataArrayType, typename UserType>
 bool StructDeserializeImpl(DataArrayType input, UserType* output) {
-  static_assert(IsSpecializationOf<StructPtr, MojomType>::value ||
-                    IsSpecializationOf<InlinedStructPtr, MojomType>::value,
+  static_assert(BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value,
                 "Unexpected type.");
   using DataType = typename MojomType::Struct::Data_;
 

@@ -30,8 +30,6 @@ class Array {
   using RefType = typename std::vector<T>::reference;
 
   using Element = T;
-  using Data_ = internal::Array_Data<
-      typename internal::GetDataTypeAsArrayElement<T>::Data>;
 
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;

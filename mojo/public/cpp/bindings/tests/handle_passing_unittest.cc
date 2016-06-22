@@ -320,17 +320,6 @@ TEST_F(HandlePassingTest, PipesAreClosed) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(handle1_value));
 }
 
-TEST_F(HandlePassingTest, IsHandle) {
-  // Validate that mojo::internal::IsHandle<> works as expected since this.
-  // template is key to ensuring that we don't leak handles.
-  EXPECT_TRUE(internal::IsHandle<internal::Handle_Data>::value);
-
-  // Basic sanity checks...
-  EXPECT_FALSE(internal::IsHandle<int>::value);
-  EXPECT_FALSE(internal::IsHandle<sample::FactoryPtr>::value);
-  EXPECT_FALSE(internal::IsHandle<String>::value);
-}
-
 TEST_F(HandlePassingTest, CreateNamedObject) {
   sample::FactoryPtr factory;
   SampleFactoryImpl factory_impl(GetProxy(&factory));

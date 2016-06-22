@@ -83,7 +83,7 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
   using Traits = MapTraits<UserType>;
   using UserKey = typename Traits::Key;
   using UserValue = typename Traits::Value;
-  using Data = typename Map<Key, Value>::Data_;
+  using Data = typename MojomTypeTraits<Map<Key, Value>>::Data;
   using KeyArraySerializer = ArraySerializer<Array<Key>,
                                              std::vector<UserKey>,
                                              MapKeyReader<MaybeConstUserType>>;
@@ -122,7 +122,8 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
 
     auto result = Data::New(buf);
     if (result) {
-      result->keys.ptr = Array<Key>::Data_::New(Traits::GetSize(input), buf);
+      result->keys.ptr =
+          MojomTypeTraits<Array<Key>>::Data::New(Traits::GetSize(input), buf);
       if (result->keys.ptr) {
         MapKeyReader<MaybeConstUserType> key_reader(input);
         KeyArraySerializer::SerializeElements(
@@ -131,7 +132,7 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
       }
 
       result->values.ptr =
-          Array<Value>::Data_::New(Traits::GetSize(input), buf);
+          MojomTypeTraits<Array<Value>>::Data::New(Traits::GetSize(input), buf);
       if (result->values.ptr) {
         MapValueReader<MaybeConstUserType> value_reader(input);
         ValueArraySerializer::SerializeElements(

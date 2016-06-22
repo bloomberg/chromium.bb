@@ -24,38 +24,6 @@
 namespace mojo {
 namespace internal {
 
-enum class ArraySerializerType {
-  BOOLEAN,
-  ENUM,
-  // Except boolean and enum.
-  POD,
-  HANDLE,
-  // String, array, map and struct.
-  POINTER,
-  UNION
-};
-
-// TODO(yzshen): Consider reuse this type check, e.g., with
-// GetDataTypeAsArrayElement.
-template <typename T>
-struct GetArraySerializerType {
-  using DataElement = typename T::Data_::Element;
-  using Element = typename T::Element;
-
-  static const ArraySerializerType value =
-      IsUnionDataType<DataElement>::value
-          ? ArraySerializerType::UNION
-          : (std::is_pointer<DataElement>::value
-                 ? ArraySerializerType::POINTER
-                 : (IsHandle<DataElement>::value
-                        ? ArraySerializerType::HANDLE
-                        : (std::is_same<Element, bool>::value
-                               ? ArraySerializerType::BOOLEAN
-                               : (std::is_enum<Element>::value
-                                      ? ArraySerializerType::ENUM
-                                      : ArraySerializerType::POD))));
-};
-
 template <typename Traits,
           typename MaybeConstUserType,
           bool HasGetBegin =
@@ -127,19 +95,21 @@ class ArrayIterator<Traits, MaybeConstUserType, false> {
 template <typename MojomType,
           typename MaybeConstUserType,
           typename UserTypeIterator,
-          ArraySerializerType type = GetArraySerializerType<MojomType>::value>
+          typename EnableType = void>
 struct ArraySerializer;
 
 // Handles serialization and deserialization of arrays of pod types.
 template <typename MojomType,
           typename MaybeConstUserType,
           typename UserTypeIterator>
-struct ArraySerializer<MojomType,
-                       MaybeConstUserType,
-                       UserTypeIterator,
-                       ArraySerializerType::POD> {
+struct ArraySerializer<
+    MojomType,
+    MaybeConstUserType,
+    UserTypeIterator,
+    typename std::enable_if<BelongsTo<typename MojomType::Element,
+                                      MojomTypeCategory::POD>::value>::type> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
-  using Data = typename MojomType::Data_;
+  using Data = typename MojomTypeTraits<MojomType>::Data;
   using DataElement = typename Data::Element;
   using Element = typename MojomType::Element;
   using Traits = ArrayTraits<UserType>;
@@ -200,12 +170,14 @@ struct ArraySerializer<MojomType,
 template <typename MojomType,
           typename MaybeConstUserType,
           typename UserTypeIterator>
-struct ArraySerializer<MojomType,
-                       MaybeConstUserType,
-                       UserTypeIterator,
-                       ArraySerializerType::ENUM> {
+struct ArraySerializer<
+    MojomType,
+    MaybeConstUserType,
+    UserTypeIterator,
+    typename std::enable_if<BelongsTo<typename MojomType::Element,
+                                      MojomTypeCategory::ENUM>::value>::type> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
-  using Data = typename MojomType::Data_;
+  using Data = typename MojomTypeTraits<MojomType>::Data;
   using DataElement = typename Data::Element;
   using Element = typename MojomType::Element;
   using Traits = ArrayTraits<UserType>;
@@ -254,10 +226,12 @@ template <typename MojomType,
 struct ArraySerializer<MojomType,
                        MaybeConstUserType,
                        UserTypeIterator,
-                       ArraySerializerType::BOOLEAN> {
+                       typename std::enable_if<BelongsTo<
+                           typename MojomType::Element,
+                           MojomTypeCategory::BOOLEAN>::value>::type> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = ArrayTraits<UserType>;
-  using Data = typename MojomType::Data_;
+  using Data = typename MojomTypeTraits<MojomType>::Data;
 
   static_assert(std::is_same<bool, typename Traits::Element>::value,
                 "Incorrect array serializer");
@@ -300,9 +274,11 @@ template <typename MojomType,
 struct ArraySerializer<MojomType,
                        MaybeConstUserType,
                        UserTypeIterator,
-                       ArraySerializerType::HANDLE> {
+                       typename std::enable_if<
+                           BelongsTo<typename MojomType::Element,
+                                     MojomTypeCategory::HANDLE>::value>::type> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
-  using Data = typename MojomType::Data_;
+  using Data = typename MojomTypeTraits<MojomType>::Data;
   using Element = typename MojomType::Element;
   using Traits = ArrayTraits<UserType>;
 
@@ -357,9 +333,13 @@ template <typename MojomType,
 struct ArraySerializer<MojomType,
                        MaybeConstUserType,
                        UserTypeIterator,
-                       ArraySerializerType::POINTER> {
+                       typename std::enable_if<BelongsTo<
+                           typename MojomType::Element,
+                           MojomTypeCategory::ARRAY | MojomTypeCategory::MAP |
+                               MojomTypeCategory::STRING |
+                               MojomTypeCategory::STRUCT>::value>::type> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
-  using Data = typename MojomType::Data_;
+  using Data = typename MojomTypeTraits<MojomType>::Data;
   using DataElement = typename Data::Element;
   using Element = typename MojomType::Element;
   using Traits = ArrayTraits<UserType>;
@@ -415,8 +395,9 @@ struct ArraySerializer<MojomType,
 
  private:
   template <typename T,
-            bool is_array_or_map = IsSpecializationOf<Array, T>::value ||
-                                   IsSpecializationOf<Map, T>::value>
+            bool is_array_or_map = BelongsTo<T,
+                                             MojomTypeCategory::ARRAY |
+                                                 MojomTypeCategory::MAP>::value>
   struct SerializeCaller {
     template <typename InputElementType>
     static void Run(InputElementType&& input,
@@ -446,12 +427,14 @@ struct ArraySerializer<MojomType,
 template <typename MojomType,
           typename MaybeConstUserType,
           typename UserTypeIterator>
-struct ArraySerializer<MojomType,
-                       MaybeConstUserType,
-                       UserTypeIterator,
-                       ArraySerializerType::UNION> {
+struct ArraySerializer<
+    MojomType,
+    MaybeConstUserType,
+    UserTypeIterator,
+    typename std::enable_if<BelongsTo<typename MojomType::Element,
+                                      MojomTypeCategory::UNION>::value>::type> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
-  using Data = typename MojomType::Data_;
+  using Data = typename MojomTypeTraits<MojomType>::Data;
   using Element = typename MojomType::Element;
   using Traits = ArrayTraits<UserType>;
 
@@ -514,7 +497,7 @@ struct Serializer<Array<Element>, MaybeConstUserType> {
   using Impl = ArraySerializer<Array<Element>,
                                MaybeConstUserType,
                                ArrayIterator<Traits, MaybeConstUserType>>;
-  using Data = typename Array<Element>::Data_;
+  using Data = typename MojomTypeTraits<Array<Element>>::Data;
 
   static size_t PrepareToSerialize(MaybeConstUserType& input,
                                    SerializationContext* context) {

@@ -20,8 +20,6 @@ namespace mojo {
 // object.
 class String {
  public:
-  typedef internal::String_Data Data_;
-
   // Constructs an empty string.
   String() : is_null_(false) {}
   String(const std::string& str) : value_(str), is_null_(false) {}

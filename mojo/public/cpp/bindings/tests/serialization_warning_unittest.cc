@@ -79,7 +79,7 @@ class SerializationWarningTest : public testing::Test {
     mojo::internal::SerializationContext context;
     mojo::internal::FixedBufferForTesting buf(
         mojo::internal::PrepareToSerialize<T>(obj, &context));
-    typename T::Data_* data;
+    typename mojo::internal::MojomTypeTraits<T>::Data* data;
     mojo::internal::Serialize<T>(obj, &buf, &data, validate_params, &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
