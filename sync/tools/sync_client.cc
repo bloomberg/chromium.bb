@@ -22,6 +22,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -454,7 +455,7 @@ int SyncClientMain(int argc, char* argv[]) {
       shim.get(), ModelTypeSetToObjectIdSet(model_types)));
   sync_manager->StartSyncingNormally(routing_info, base::Time());
 
-  sync_loop.Run();
+  base::RunLoop().Run();
 
   io_thread.Stop();
   return 0;

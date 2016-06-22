@@ -75,7 +75,7 @@ void QuitLoopNow() {
 }
 
 void RunLoop() {
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void PumpLoop() {

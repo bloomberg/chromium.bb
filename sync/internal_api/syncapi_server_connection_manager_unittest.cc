@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
@@ -108,10 +109,9 @@ TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
 
   base::Thread abort_thread("Test_AbortThread");
   ASSERT_TRUE(abort_thread.Start());
-  abort_thread.message_loop()->PostDelayedTask(
+  abort_thread.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CancelationSignal::Signal,
-                 base::Unretained(&signal)),
+      base::Bind(&CancelationSignal::Signal, base::Unretained(&signal)),
       TestTimeouts::tiny_timeout());
 
   bool result = server.PostBufferToPath(&params, "/testpath", "testauth");

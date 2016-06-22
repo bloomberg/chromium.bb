@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,7 +61,7 @@ class WeakHandleTest : public ::testing::Test {
                                       const WeakHandle<Base>& h) {
     base::Thread t("Test thread");
     ASSERT_TRUE(t.Start());
-    t.message_loop()->PostTask(
+    t.task_runner()->PostTask(
         from_here, base::Bind(&WeakHandleTest::CallTest, from_here, h));
   }
 
@@ -200,7 +201,7 @@ TEST_F(WeakHandleTest, DeleteOnOtherThread) {
   {
     base::Thread t("Test thread");
     ASSERT_TRUE(t.Start());
-    t.message_loop()->DeleteSoon(FROM_HERE, h);
+    t.task_runner()->DeleteSoon(FROM_HERE, h);
   }
 
   PumpLoop();
@@ -219,9 +220,8 @@ TEST_F(WeakHandleTest, WithDestroyedThread) {
   {
     base::Thread t("Test thread");
     ASSERT_TRUE(t.Start());
-    t.message_loop()->PostTask(FROM_HERE,
-                               base::Bind(&CallTestWithSelf,
-                                          b1.AsWeakHandle()));
+    t.task_runner()->PostTask(FROM_HERE,
+                              base::Bind(&CallTestWithSelf, b1.AsWeakHandle()));
   }
 
   // Calls b1.TestWithSelf().

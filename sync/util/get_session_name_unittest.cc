@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "sync/util/get_session_name.h"
@@ -68,7 +69,7 @@ TEST_F(GetSessionNameTest, GetSessionName) {
   GetSessionName(message_loop_.task_runner(),
                  base::Bind(&GetSessionNameTest::SetSessionNameAndQuit,
                             base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
   EXPECT_EQ(session_name_, GetSessionNameSynchronouslyForTesting());
 }
 

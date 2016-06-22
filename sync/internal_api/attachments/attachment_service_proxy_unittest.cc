@@ -101,7 +101,7 @@ class AttachmentServiceProxyTest : public testing::Test,
     // We must take care to call the stub's destructor on the stub_thread
     // because that's the thread to which its WeakPtrs are bound.
     if (stub) {
-      stub_thread->message_loop()->DeleteSoon(FROM_HERE, stub.release());
+      stub_thread->task_runner()->DeleteSoon(FROM_HERE, stub.release());
       WaitForStubThread();
     }
     stub_thread->Stop();
@@ -117,7 +117,7 @@ class AttachmentServiceProxyTest : public testing::Test,
   void WaitForStubThread() {
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    stub_thread->message_loop()->PostTask(
+    stub_thread->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
@@ -167,7 +167,7 @@ TEST_F(AttachmentServiceProxyTest, WrappedIsDestroyed) {
   EXPECT_EQ(1, count_callback_get_or_download);
 
   // Destroy the stub and call GetOrDownloadAttachments again.
-  stub_thread->message_loop()->DeleteSoon(FROM_HERE, stub.release());
+  stub_thread->task_runner()->DeleteSoon(FROM_HERE, stub.release());
   WaitForStubThread();
 
   // Now that the wrapped object has been destroyed, call again and see that we

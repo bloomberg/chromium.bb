@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
@@ -203,7 +204,7 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
   CHECK(invalidator->UpdateRegisteredIds(
       &notification_printer, ModelTypeSetToObjectIdSet(ModelTypeSet::All())));
 
-  ui_loop.Run();
+  base::RunLoop().Run();
 
   invalidator->UnregisterHandler(&notification_printer);
   io_thread.Stop();

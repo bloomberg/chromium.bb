@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/bit_cast.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -55,8 +56,8 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
 
   void TearDown() override {
     if (fake_default_request_context_getter_) {
-      GetIOThreadLoop()->ReleaseSoon(FROM_HERE,
-          fake_default_request_context_getter_);
+      GetIOThreadLoop()->task_runner()->ReleaseSoon(
+          FROM_HERE, fake_default_request_context_getter_);
       fake_default_request_context_getter_ = NULL;
     }
     io_thread_.Stop();
@@ -94,8 +95,8 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
               http_bridge->GetRequestContextGetterForTest()->
                   GetURLRequestContext()->
                   http_transaction_factory()->GetSession());
-    main_message_loop->PostTask(FROM_HERE,
-                                base::MessageLoop::QuitWhenIdleClosure());
+    main_message_loop->task_runner()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   base::MessageLoop* GetIOThreadLoop() { return io_thread_.message_loop(); }
@@ -150,7 +151,8 @@ class ShuntedHttpBridge : public HttpBridge {
 
     // We don't actually want to make a request for this test, so just callback
     // as if it completed.
-    test_->GetIOThreadLoop()->PostTask(FROM_HERE,
+    test_->GetIOThreadLoop()->task_runner()->PostTask(
+        FROM_HERE,
         base::Bind(&ShuntedHttpBridge::CallOnURLFetchComplete, this));
   }
 
@@ -198,11 +200,11 @@ void MAYBE_SyncHttpBridgeTest::RunSyncThreadBridgeUseTest(
 TEST_F(MAYBE_SyncHttpBridgeTest, TestUsesSameHttpNetworkSession) {
   // Run this test on the IO thread because we can only call
   // URLRequestContextGetter::GetURLRequestContext on the IO thread.
-  io_thread()->message_loop()->PostTask(
+  io_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&MAYBE_SyncHttpBridgeTest::TestSameHttpNetworkSession,
                  base::MessageLoop::current(), this));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 // Test the HttpBridge without actually making any network requests.
@@ -414,10 +416,10 @@ TEST_F(MAYBE_SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   base::WaitableEvent signal_when_released(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  sync_thread.message_loop()->PostTask(FROM_HERE,
+  sync_thread.task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(&MAYBE_SyncHttpBridgeTest::RunSyncThreadBridgeUseTest,
-                 base::Unretained(this),
-                 &signal_when_created,
+                 base::Unretained(this), &signal_when_created,
                  &signal_when_released));
 
   // Stop IO so we can control order of operations.
@@ -514,7 +516,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
 
   // Create bridge factory and factory on sync thread and wait for the creation
   // to finish.
-  sync_thread.message_loop()->PostTask(
+  sync_thread.task_runner()->PostTask(
       FROM_HERE, base::Bind(&HttpBridgeRunOnSyncThread,
                             base::Unretained(baseline_context_getter.get()),
                             &release_request_context_signal, &factory, &bridge,
@@ -534,9 +536,8 @@ TEST_F(MAYBE_SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
   base::WaitableEvent wait_done(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  io_thread()->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&WaitOnIOThread, &signal_wait_start, &wait_done));
+  io_thread()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&WaitOnIOThread, &signal_wait_start, &wait_done));
   signal_wait_start.Wait();
   // |baseline_context_getter| should have only one reference from local
   // variable.
