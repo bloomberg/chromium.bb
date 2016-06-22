@@ -317,7 +317,8 @@ class HWTestList(object):
   @classmethod
   def ToolchainTest(cls, **kwargs):
     """Return a list of HWTESTConfigs which run toolchain correctness tests."""
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=False,
+    default_dict = dict(pool=constants.HWTEST_MACH_POOL, async=False,
+                        file_bugs=False,
                         priority=constants.HWTEST_DEFAULT_PRIORITY)
     default_dict.update(kwargs)
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
@@ -2146,7 +2147,7 @@ def GetConfig():
       internal,
       default_hw_tests_override,
       build_type=constants.TOOLCHAIN_TYPE,
-      build_timeout=(9 * 60 + 50) * 60,
+      build_timeout=(15 * 60 + 50) * 60,
       useflags=append_useflags(['-cros-debug']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
@@ -2164,7 +2165,7 @@ def GetConfig():
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
-      hw_tests=HWTestList.SharedPoolCanary(),
+      hw_tests=HWTestList.ToolchainTest(),
       paygen=True,
       signer_tests=True,
       trybot_list=True,

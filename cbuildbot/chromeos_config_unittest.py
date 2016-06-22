@@ -749,7 +749,7 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
         else:
           expected = 12 * 60 * 60
       elif config.build_type == constants.TOOLCHAIN_TYPE:
-        expected = (9 * 60 + 50) * 60
+        expected = (15 * 60 + 50) * 60
       else:
         expected = (4 * 60 + 30) * 60
 
