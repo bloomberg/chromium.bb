@@ -73,7 +73,7 @@ void GLVersionInfo::ParseVersionString(const char* version_str,
   *is_es = (lstr.length() > 12) && (lstr.substr(0, 9) == "opengl es");
   if (*is_es)
     lstr = lstr.substr(10, 3);
-  base::StringTokenizer tokenizer(lstr.begin(), lstr.end(), ".");
+  base::StringTokenizer tokenizer(lstr.begin(), lstr.end(), ". ");
   unsigned major, minor;
   if (tokenizer.GetNext() &&
       base::StringToUint(tokenizer.token_piece(), &major)) {

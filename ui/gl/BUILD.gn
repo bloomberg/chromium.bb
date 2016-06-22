@@ -340,6 +340,7 @@ test("gl_unittests") {
     "gl_api_unittest.cc",
     "gl_image_ref_counted_memory_unittest.cc",
     "gl_image_shared_memory_unittest.cc",
+    "gl_version_info_unittest.cc",
     "gpu_timing_unittest.cc",
     "test/run_all_unittests.cc",
   ]

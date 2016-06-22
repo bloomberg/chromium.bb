@@ -16,6 +16,7 @@
         'gl_api_unittest.cc',
         'gl_image_ref_counted_memory_unittest.cc',
         'gl_image_shared_memory_unittest.cc',
+        'gl_version_info_unittest.cc',
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',
