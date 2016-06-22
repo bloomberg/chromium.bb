@@ -6,6 +6,7 @@
 
 #include "core/fetch/MemoryCache.h"
 #include "platform/TraceEvent.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/heap/Heap.h"
 #include "wtf/allocator/Partitions.h"
@@ -32,6 +33,7 @@ void MemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel level)
     if (level == WebMemoryPressureLevelCritical) {
         // Clear the image cache.
         ImageDecodingStore::instance().clear();
+        FontCache::fontCache()->invalidate();
     }
     if (ProcessHeap::isLowEndDevice())
         memoryCache()->pruneAll();
