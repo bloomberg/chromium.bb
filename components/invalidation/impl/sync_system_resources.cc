@@ -68,20 +68,20 @@ void SyncLogger::SetSystemResources(invalidation::SystemResources* resources) {
 }
 
 SyncInvalidationScheduler::SyncInvalidationScheduler()
-    : created_on_loop_(base::MessageLoop::current()),
+    : created_on_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       is_started_(false),
       is_stopped_(false),
       weak_factory_(this) {
-  CHECK(created_on_loop_);
+  CHECK(!!created_on_task_runner_);
 }
 
 SyncInvalidationScheduler::~SyncInvalidationScheduler() {
-  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
+  CHECK(IsRunningOnThread());
   CHECK(is_stopped_);
 }
 
 void SyncInvalidationScheduler::Start() {
-  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
+  CHECK(IsRunningOnThread());
   CHECK(!is_started_);
   is_started_ = true;
   is_stopped_ = false;
@@ -89,7 +89,7 @@ void SyncInvalidationScheduler::Start() {
 }
 
 void SyncInvalidationScheduler::Stop() {
-  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
+  CHECK(IsRunningOnThread());
   is_stopped_ = true;
   is_started_ = false;
   weak_factory_.InvalidateWeakPtrs();
@@ -99,7 +99,7 @@ void SyncInvalidationScheduler::Stop() {
 void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,
                                          invalidation::Closure* task) {
   DCHECK(invalidation::IsCallbackRepeatable(task));
-  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
+  CHECK(IsRunningOnThread());
 
   if (!is_started_) {
     delete task;
@@ -114,11 +114,11 @@ void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,
 }
 
 bool SyncInvalidationScheduler::IsRunningOnThread() const {
-  return created_on_loop_ == base::MessageLoop::current();
+  return created_on_task_runner_->BelongsToCurrentThread();
 }
 
 invalidation::Time SyncInvalidationScheduler::GetCurrentTime() const {
-  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
+  CHECK(IsRunningOnThread());
   return base::Time::Now();
 }
 
@@ -128,7 +128,7 @@ void SyncInvalidationScheduler::SetSystemResources(
 }
 
 void SyncInvalidationScheduler::RunPostedTask(invalidation::Closure* task) {
-  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
+  CHECK(IsRunningOnThread());
   task->Run();
   posted_tasks_.erase(task);
   delete task;

@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -43,7 +45,7 @@ class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
   std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) override;
 
-  base::MessageLoop* main_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   base::WaitableEvent shutdown_event_;
   base::Thread io_thread_;
   std::unique_ptr<MojoGpuMemoryBufferManager> gpu_memory_buffer_manager_;

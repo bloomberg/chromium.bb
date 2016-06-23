@@ -8,10 +8,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -23,7 +22,7 @@ WebDataRequest::WebDataRequest(WebDataServiceConsumer* consumer,
                                WebDataRequestManager* manager)
     : manager_(manager), cancelled_(false), consumer_(consumer) {
   handle_ = manager_->GetNextRequestHandle();
-  message_loop_ = base::MessageLoop::current();
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
   manager_->RegisterRequest(this);
 }
 
@@ -44,8 +43,9 @@ WebDataServiceConsumer* WebDataRequest::GetConsumer() const {
   return consumer_;
 }
 
-base::MessageLoop* WebDataRequest::GetMessageLoop() const {
-  return message_loop_;
+scoped_refptr<base::SingleThreadTaskRunner> WebDataRequest::GetTaskRunner()
+    const {
+  return task_runner_;
 }
 
 bool WebDataRequest::IsCancelled() const {
@@ -114,8 +114,9 @@ void WebDataRequestManager::CancelRequest(WebDataServiceBase::Handle h) {
 
 void WebDataRequestManager::RequestCompleted(
     std::unique_ptr<WebDataRequest> request) {
-  base::MessageLoop* loop = request->GetMessageLoop();
-  loop->task_runner()->PostTask(
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      request->GetTaskRunner();
+  task_runner->PostTask(
       FROM_HERE, base::Bind(&WebDataRequestManager::RequestCompletedOnThread,
                             this, base::Passed(&request)));
 }

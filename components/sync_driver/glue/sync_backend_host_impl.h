@@ -15,7 +15,9 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
@@ -318,9 +320,9 @@ class SyncBackendHostImpl
   void ClearServerDataDoneOnFrontendLoop(
       const syncer::SyncManager::ClearServerDataCallback& frontend_callback);
 
-  // A reference to the MessageLoop used to construct |this|, so we know how
-  // to safely talk back to the SyncFrontend.
-  base::MessageLoop* const frontend_loop_;
+  // A reference to the TaskRUnner used to construct |this|, so we know how to
+  // safely talk back to the SyncFrontend.
+  scoped_refptr<base::SingleThreadTaskRunner> const frontend_task_runner_;
 
   sync_driver::SyncClient* const sync_client_;
 

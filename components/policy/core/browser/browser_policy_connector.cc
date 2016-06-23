@@ -16,6 +16,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
@@ -106,8 +107,7 @@ void BrowserPolicyConnector::InitInternal(
 
   policy_statistics_collector_.reset(new policy::PolicyStatisticsCollector(
       base::Bind(&GetChromePolicyDetails), GetChromeSchema(),
-      GetPolicyService(), local_state,
-      base::MessageLoop::current()->task_runner()));
+      GetPolicyService(), local_state, base::ThreadTaskRunnerHandle::Get()));
   policy_statistics_collector_->Initialize();
 
   InitPolicyProviders();

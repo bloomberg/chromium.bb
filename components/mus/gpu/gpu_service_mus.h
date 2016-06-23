@@ -134,8 +134,8 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
   // The next client id.
   int next_client_id_;
 
-  // The main thread message loop.
-  base::MessageLoop* main_message_loop_;
+  // The main thread task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;

@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
@@ -22,10 +23,6 @@
 
 class WebDataServiceConsumer;
 class WebDataRequestManager;
-
-namespace base {
-class MessageLoop;
-}
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -46,8 +43,8 @@ class WebDataRequest {
   // Retrieves the |consumer_| set in the constructor.
   WebDataServiceConsumer* GetConsumer() const;
 
-  // Retrieves the original message loop the of the request.
-  base::MessageLoop* GetMessageLoop() const;
+  // Retrieves the original task runner of the request.
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const;
 
   // Returns |true| if the request was cancelled via the |Cancel()| method.
   bool IsCancelled() const;
@@ -71,8 +68,8 @@ class WebDataRequest {
   // a ref_ptr so that it can be set to NULL when a request is cancelled.
   WebDataRequestManager* manager_;
 
-  // Tracks loop that the request originated on.
-  base::MessageLoop* message_loop_;
+  // Tracks task runner that the request originated on.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Identifier for this request.
   WebDataServiceBase::Handle handle_;

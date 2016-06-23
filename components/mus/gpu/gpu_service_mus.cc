@@ -50,7 +50,7 @@ void EstablishGpuChannelDone(
 
 GpuServiceMus::GpuServiceMus()
     : next_client_id_(kLocalGpuChannelClientId),
-      main_message_loop_(base::MessageLoop::current()),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       gpu_thread_("GpuThread"),
@@ -260,7 +260,7 @@ void GpuServiceMus::EstablishGpuChannelOnGpuThread(
 }
 
 bool GpuServiceMus::IsMainThread() {
-  return main_message_loop_ == base::MessageLoop::current();
+  return main_task_runner_->BelongsToCurrentThread();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

@@ -13,7 +13,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -107,7 +109,7 @@ class NaClListener : public IPC::Listener {
   ResolveFileTokenCallback resolved_cb_;
 
   // Used to identify what thread we're on.
-  base::MessageLoop* main_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   typedef std::map<
     std::string,  // manifest key

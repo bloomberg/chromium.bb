@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Simple system resources class that uses the current message loop
-// for scheduling.  Assumes the current message loop is already
-// running.
+// Simple system resources class that uses the current thread for scheduling.
+// Assumes the current thread is already running tasks.
 
 #ifndef COMPONENTS_INVALIDATION_IMPL_SYNC_SYSTEM_RESOURCES_H_
 #define COMPONENTS_INVALIDATION_IMPL_SYNC_SYSTEM_RESOURCES_H_
@@ -15,8 +14,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "components/invalidation/impl/state_writer.h"
@@ -72,7 +72,7 @@ class SyncInvalidationScheduler : public invalidation::Scheduler {
   // Holds all posted tasks that have not yet been run.
   std::set<invalidation::Closure*> posted_tasks_;
 
-  const base::MessageLoop* created_on_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> const created_on_task_runner_;
   bool is_started_;
   bool is_stopped_;
 

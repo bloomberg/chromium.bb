@@ -210,7 +210,7 @@ void StartServerOnHandlerThread(
     const base::FilePath& output_directory,
     const base::FilePath& frontend_dir,
     bool bundles_resources) {
-  DCHECK_EQ(thread->message_loop(), base::MessageLoop::current());
+  DCHECK(thread->task_runner()->BelongsToCurrentThread());
   ServerWrapper* server_wrapper = nullptr;
   std::unique_ptr<net::ServerSocket> server_socket =
       server_socket_factory->CreateForHttpServer();

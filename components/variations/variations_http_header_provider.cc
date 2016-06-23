@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/variations/proto/client_variations.pb.h"
 
 namespace variations {
@@ -139,7 +140,7 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
 
   // Register for additional cache updates. This is done first to avoid a race
   // that could cause registered FieldTrials to be missed.
-  DCHECK(base::MessageLoop::current());
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   base::FieldTrialList::AddObserver(this);
 
   base::TimeTicks before_time = base::TimeTicks::Now();

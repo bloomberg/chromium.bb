@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/mus/common/gpu_type_converters.h"
 #include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/common/switches.h"
@@ -17,7 +18,7 @@
 namespace mus {
 
 GpuService::GpuService()
-    : main_message_loop_(base::MessageLoop::current()),
+    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       io_thread_("GPUIOThread"),
@@ -78,7 +79,7 @@ scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannel(
 }
 
 bool GpuService::IsMainThread() {
-  return base::MessageLoop::current() == main_message_loop_;
+  return main_task_runner_->BelongsToCurrentThread();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
