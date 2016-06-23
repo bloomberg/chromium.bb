@@ -41,6 +41,7 @@
       'target_name': 'ipc_interfaces_mojom',
       'type': 'none',
       'variables': {
+        'require_interface_bindings': 0,
         'mojom_files': [
           'ipc.mojom',
         ],
@@ -51,7 +52,9 @@
       'target_name': 'ipc_interfaces',
       'type': 'static_library',
       'dependencies': [
-        'ipc_interfaces_mojom'
+        'ipc_interfaces_mojom',
+        '../base/base.gyp:base',
+        '../mojo/mojo_public.gyp:mojo_interface_bindings_generation',
       ],
       'include_dirs': [
         '..',
@@ -204,7 +207,9 @@
           'target_name': 'ipc_interfaces_win64',
           'type': 'static_library',
           'dependencies': [
-            'ipc_interfaces_mojom'
+            'ipc_interfaces_mojom',
+            '../base/base.gyp:base_win64',
+            '../mojo/mojo_public.gyp:mojo_interface_bindings_generation',
           ],
           'include_dirs': [
             '..',
