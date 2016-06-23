@@ -11,17 +11,20 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/translate/language_combobox_model.h"
-#include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
+#include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/common/referrer.h"
 #include "grit/components_strings.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
@@ -103,6 +106,7 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 - (void)handleCancelButtonPressed;
 - (void)handleShowOriginalButtonPressed;
 - (void)handleAdvancedLinkButtonPressed;
+- (void)handleLanguageSettingsLinkButtonPressed;
 - (void)handleDenialPopUpButtonNopeSelected;
 - (void)handleDenialPopUpButtonNeverTranslateLanguageSelected;
 - (void)handleDenialPopUpButtonNeverTranslateSiteSelected;
@@ -445,6 +449,14 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
                action:@selector(handleCancelButtonPressed)
                toView:view];
 
+  NSString* message = l10n_util::GetNSStringWithFixup(
+        IDS_TRANSLATE_BUBBLE_LANGUAGE_SETTINGS);
+  action = @selector(handleLanguageSettingsLinkButtonPressed);
+  NSButton* languageSettingsLinkButton =
+      [self addLinkButtonWithText:message
+                           action:action
+                           toView:view];
+
   // Layout
   CGFloat textLabelWidth = NSWidth([sourceLanguageLabel frame]);
   if (textLabelWidth < NSWidth([targetLanguageLabel frame]))
@@ -455,7 +467,16 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
   [advancedDoneButton_ setFrameOrigin:NSMakePoint(0, yPos)];
   [advancedCancelButton_ setFrameOrigin:NSMakePoint(0, yPos)];
 
-  yPos += NSHeight([advancedDoneButton_ frame]) +
+  [languageSettingsLinkButton setFrameOrigin:NSMakePoint(0, yPos)];
+
+  // Vertical center the languageSettingsLinkButton with the
+  // advancedDoneButton_. Move the link position by 1px to make the baseline of
+  // the text inside the link vertically align with the text inside the buttons.
+  yPos = 1 + floor((NSHeight([advancedDoneButton_ frame]) -
+         NSHeight([languageSettingsLinkButton frame])) / 2);
+  [languageSettingsLinkButton setFrameOrigin:NSMakePoint(0, yPos)];
+
+  yPos = NSHeight([advancedDoneButton_ frame]) +
       kUnrelatedControlVerticalSpacing;
 
   if (alwaysTranslateCheckbox_) {
@@ -646,6 +667,15 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 - (void)handleAdvancedLinkButtonPressed {
   translate::ReportUiAction(translate::ADVANCED_LINK_CLICKED);
   [self switchView:TranslateBubbleModel::VIEW_STATE_ADVANCED];
+}
+
+- (void)handleLanguageSettingsLinkButtonPressed {
+  GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);
+  webContents_->OpenURL(
+      content::OpenURLParams(url, content::Referrer(), NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false));
+  translate::ReportUiAction(translate::SETTINGS_LINK_CLICKED);
+  [self close];
 }
 
 - (void)handleDenialPopUpButtonNopeSelected {
