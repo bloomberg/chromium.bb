@@ -1875,8 +1875,13 @@ TEST_P(SpdySessionTest, SynCompressionHistograms) {
   // Regression test of compression performance under the request fixture.
   switch (spdy_util_.spdy_version()) {
     case SPDY3:
+#if defined(USE_SYSTEM_ZLIB)
       histogram_tester.ExpectBucketCount(
           "Net.SpdySynStreamCompressionPercentage", 30, 1);
+#else
+            histogram_tester.ExpectBucketCount(
+          "Net.SpdySynStreamCompressionPercentage", 31, 1);
+#endif
       break;
     case HTTP2:
       histogram_tester.ExpectBucketCount(
