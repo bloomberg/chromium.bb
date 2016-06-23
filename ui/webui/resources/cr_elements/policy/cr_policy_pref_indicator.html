@@ -21,7 +21,7 @@
         hidden$="[[!isIndicatorVisible(indicatorType)]]"
         icon="[[getPolicyIndicatorIcon(indicatorType)]]"></iron-icon>
     <paper-tooltip for="indicator" position="top">
-      [[getPolicyIndicatorTooltip(indicatorType, pref, controllingUser)]]
+      [[getTooltip_(indicatorType, pref, controllingUser)]]
     </paper-tooltip>
   </template>
   <script src="cr_policy_pref_indicator.js"></script>
