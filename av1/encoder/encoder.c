@@ -402,7 +402,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   cpi->active_map.map = NULL;
 
   // Free up-sampled reference buffers.
-  for (i = 0; i < MAX_REF_FRAMES; i++)
+  for (i = 0; i < MAX_UPSAMPLED_BUFS; i++)
     aom_free_frame_buffer(&cpi->upsampled_ref_bufs[i].buf);
 
   av1_free_ref_frame_buffers(cm->buffer_pool);
@@ -1431,7 +1431,7 @@ static void cal_nmvsadcosts_hp(int *mvsadcost[2]) {
 static INLINE void init_upsampled_ref_frame_bufs(AV1_COMP *cpi) {
   int i;
 
-  for (i = 0; i < MAX_REF_FRAMES; ++i) {
+  for (i = 0; i < MAX_UPSAMPLED_BUFS; ++i) {
     cpi->upsampled_ref_bufs[i].ref_count = 0;
     cpi->upsampled_ref_idx[i] = INVALID_IDX;
   }
@@ -2193,7 +2193,7 @@ static int recode_loop_test(AV1_COMP *cpi, int high_limit, int low_limit, int q,
 static INLINE int get_free_upsampled_ref_buf(EncRefCntBuffer *ubufs) {
   int i;
 
-  for (i = 0; i < MAX_REF_FRAMES; i++) {
+  for (i = 0; i < MAX_UPSAMPLED_BUFS; i++) {
     if (!ubufs[i].ref_count) {
       return i;
     }
@@ -2249,6 +2249,7 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
 
     new_uidx = upsample_ref_frame(cpi, ref);
   }
+  assert(new_uidx != -1);
 
   // At this point the new frame has been encoded.
   // If any buffer copy / swapping is signaled it should be done here.
@@ -2293,8 +2294,8 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
 
       ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[arf_idx], cm->new_fb_idx);
       if (use_upsampled_ref)
-        uref_cnt_fb(cpi->upsampled_ref_bufs,
-                    &cpi->upsampled_ref_idx[cpi->alt_fb_idx], new_uidx);
+        uref_cnt_fb(cpi->upsampled_ref_bufs, &cpi->upsampled_ref_idx[arf_idx],
+                    new_uidx);
 
       memcpy(cpi->interp_filter_selected[ALTREF_FRAME],
              cpi->interp_filter_selected[0],

@@ -706,7 +706,7 @@ int av1_find_best_sub_pixel_tree(
   if (use_upsampled_ref)
     besterr = upsampled_setup_center_error(
         xd, bestmv, ref_mv, error_per_bit, vfp, z, src_stride, y, y_stride,
-        second_pred, w, h, (offset << 3), mvjcost, mvcost, sse1, distortion);
+        second_pred, w, h, offset * 8, mvjcost, mvcost, sse1, distortion);
   else
     besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
                                  src_stride, y, y_stride, second_pred, w, h,
