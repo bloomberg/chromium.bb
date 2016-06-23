@@ -50,18 +50,6 @@ declare_args() {
   # This is initialized below, after use_gold might have been overridden.
   gold_path = false
 
-  # use_debug_fission: whether to use split DWARF debug info
-  # files. This can reduce link time significantly, but is incompatible
-  # with some utilities such as icecc and ccache. Requires gold and
-  # gcc >= 4.8 or clang.
-  # http://gcc.gnu.org/wiki/DebugFission
-  #
-  # This is a placeholder value indicating that the code below should set
-  # the default.  This is necessary to delay the evaluation of the default
-  # value expression until after its input values such as use_gold have
-  # been set, e.g. by a toolchain_args() block.
-  use_debug_fission = "default"
-
   if (is_win) {
     # Whether the VS xtree header has been patched to disable warning 4702. If
     # it has, then we don't need to disable 4702 (unreachable code warning).
