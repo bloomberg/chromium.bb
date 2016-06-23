@@ -95,18 +95,20 @@ const uint32_t kPendingPageColor = 0xFFEEEEEE;
 
 // The maximum amount of time we'll spend doing a paint before we give back
 // control of the thread.
-#define kMaxProgressivePaintTimeMs 50
+#define kMaxProgressivePaintTimeMs 300
 
 // The maximum amount of time we'll spend doing the first paint. This is less
-// than the above to keep things smooth if the user is scrolling quickly. We
-// try painting a little because with accelerated compositing, we get flushes
-// only every 16 ms. If we were to wait until the next flush to paint the rest
-// of the pdf, we would never get to draw the pdf and would only draw the
-// scrollbars. This value is picked to give enough time for gpu related code to
-// do its thing and still fit within the timelimit for 60Hz. For the
-// non-composited case, this doesn't make things worse since we're still
-// painting the scrollbars > 60 Hz.
-#define kMaxInitialProgressivePaintTimeMs 10
+// than the above to keep things smooth if the user is scrolling quickly. This
+// is set to 250 ms to give enough time for most PDFs to render, while avoiding
+// adding too much latency to the display of the final image when the user
+// stops scrolling.
+// Setting a higher value has minimal benefit (scrolling at less than 4 fps will
+// never be a great experience) and there is some cost, since when the user
+// stops scrolling the in-progress painting has to complete or timeout before
+// the final painting can start.
+// The scrollbar will always be responsive since it is managed by a separate
+// process.
+#define kMaxInitialProgressivePaintTimeMs 250
 
 std::vector<uint32_t> GetPageNumbersFromPrintPageNumberRange(
     const PP_PrintPageNumberRange_Dev* page_ranges,
