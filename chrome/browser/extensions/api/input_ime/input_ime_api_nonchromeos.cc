@@ -44,11 +44,17 @@ const char kErrorNotCalledFromUserAction[] =
     "This API is only allowed to be called from a user action.";
 
 // A preference determining whether to hide the warning bubble next time.
+// Not used for now.
 const char kPrefWarningBubbleNeverShow[] = "skip_ime_warning_bubble";
 
-// A preference to see whether it is the first time to call input.ime.activate
-// since the extension is loaded.
-const char kPrefImeActivatedCalledBefore[] = "ime_activate_called_before";
+// A preference to see whether the API has never been called, or it's the first
+// time to call since loaded the extension.
+// This is used from make an exception for user_gesture checking: no need the
+// check when restarting chrome.
+const char kPrefNeverActivatedSinceLoaded[] = "never_activated_since_loaded";
+
+// A preference to see whether the extension is the last active extension.
+const char kPrefLastActiveEngine[] = "last_activated_ime_engine";
 
 bool IsInputImeEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -127,10 +133,13 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   // No-op if called multiple times.
   ui::IMEBridge::Initialize();
+
+  // Set the preference kPrefNeverActivatedSinceLoaded true to indicate
+  // input.ime.activate API has been never called since loaded.
   Profile* profile = Profile::FromBrowserContext(browser_context);
   ExtensionPrefs::Get(profile)->UpdateExtensionPref(
-      extension->id(), kPrefImeActivatedCalledBefore,
-      new base::FundamentalValue(false));
+      extension->id(), kPrefNeverActivatedSinceLoaded,
+      new base::FundamentalValue(true));
 }
 
 void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -138,8 +147,13 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       UnloadedExtensionInfo::Reason reason) {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context));
-  if (event_router)
+  if (event_router) {
+    // Records the extension is not the last active IME engine.
+    ExtensionPrefs::Get(Profile::FromBrowserContext(browser_context))
+        ->UpdateExtensionPref(extension->id(), kPrefLastActiveEngine,
+                              new base::FundamentalValue(false));
     event_router->DeleteInputMethodEngine(extension->id());
+  }
 }
 
 void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {}
@@ -162,12 +176,21 @@ InputMethodEngineBase* InputImeEventRouter::GetActiveEngine(
 }
 
 void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
+  // Records the extension is the last active IME engine.
+  ExtensionPrefs::Get(GetProfile())
+      ->UpdateExtensionPref(extension_id, kPrefLastActiveEngine,
+                            new base::FundamentalValue(true));
   if (active_engine_) {
     if (active_engine_->GetExtensionId() == extension_id) {
       active_engine_->Enable(std::string());
       ui::IMEBridge::Get()->SetCurrentEngineHandler(active_engine_);
       return;
     }
+    // Records the extension is not the last active IME engine.
+    ExtensionPrefs::Get(GetProfile())
+        ->UpdateExtensionPref(active_engine_->GetExtensionId(),
+                              kPrefLastActiveEngine,
+                              new base::FundamentalValue(false));
     DeleteInputMethodEngine(active_engine_->GetExtensionId());
   }
 
@@ -203,30 +226,31 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
     return RespondNow(Error(kErrorNoActiveEngine));
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
-  bool warning_bubble_never_show = false;
-  bool ime_activated_called = false;
 
-  if (prefs->ReadPrefAsBoolean(extension_id(), kPrefImeActivatedCalledBefore,
-                               &ime_activated_called) &&
-      prefs->ReadPrefAsBoolean(extension_id(), kPrefWarningBubbleNeverShow,
-                               &warning_bubble_never_show) &&
-      !ime_activated_called &&
-      warning_bubble_never_show) {
-    // If it the first time that the extension call input.ime.activate() since
-    // loaded, we allow it to be automatically activated from a non user action.
+  bool never_activated_since_loaded = false;
+  bool last_active_ime_engine = false;
+
+  if (prefs->ReadPrefAsBoolean(extension_id(), kPrefNeverActivatedSinceLoaded,
+                               &never_activated_since_loaded) &&
+      never_activated_since_loaded &&
+      prefs->ReadPrefAsBoolean(extension_id(), kPrefLastActiveEngine,
+                               &last_active_ime_engine) &&
+      last_active_ime_engine) {
+    // If the extension is the last active IME engine, and the API is called at
+    // loading the extension, we can tell the API is called from restarting
+    // chrome. No need for user gesture checking.
     event_router->SetActiveEngine(extension_id());
     ExtensionPrefs::Get(profile)->UpdateExtensionPref(
-        extension_id(), kPrefImeActivatedCalledBefore,
-        new base::FundamentalValue(true));
+        extension_id(), kPrefNeverActivatedSinceLoaded,
+        new base::FundamentalValue(false));
     return RespondNow(NoArguments());
   }
-
+  // The API has already been called at least once.
   ExtensionPrefs::Get(profile)->UpdateExtensionPref(
-      extension_id(), kPrefImeActivatedCalledBefore,
-      new base::FundamentalValue(true));
+      extension_id(), kPrefNeverActivatedSinceLoaded,
+      new base::FundamentalValue(false));
 
-  // If not the first time, this API is only allowed to be called from a user
-  // action.
+  // Otherwise, this API is only allowed to be called from a user action.
   if (!user_gesture())
     return RespondNow(Error(kErrorNotCalledFromUserAction));
 
@@ -236,6 +260,8 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
     return RespondNow(NoArguments());
   }
 
+  // Disables the warning bubble since we don't need run-time checking anymore.
+  bool warning_bubble_never_show = true;
   if (warning_bubble_never_show) {
     // If user allows to activate the extension without showing the warning
     // bubble, sets the active engine directly.
@@ -245,6 +271,7 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
     return RespondNow(NoArguments());
   }
 
+  // TODO(azurewei): Remove the warning bubble related codes.
   Browser* browser = chrome::FindLastActiveWithProfile(profile);
   if (!browser)
     return RespondNow(Error(kErrorCouldNotFindActiveBrowser));
