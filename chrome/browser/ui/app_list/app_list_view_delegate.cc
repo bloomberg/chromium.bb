@@ -255,6 +255,8 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     model_ = NULL;
   }
 
+  template_url_service_observer_.RemoveAll();
+
   profile_ = new_profile;
   if (!profile_) {
     speech_ui_->SetSpeechRecognitionState(app_list::SPEECH_RECOGNITION_OFF,
@@ -274,7 +276,6 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "431326 AppListViewDelegate TemplateURL etc."));
-    template_url_service_observer_.RemoveAll();
     if (app_list::switches::IsExperimentalAppListEnabled()) {
       TemplateURLService* template_url_service =
           TemplateURLServiceFactory::GetForProfile(profile_);
