@@ -29,6 +29,7 @@
 #include "net/base/filename_util.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "ui/base/page_transition_types.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
@@ -322,6 +323,16 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
   ScopedJavaLocalRef<jstring> jreferrer_url =
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec());
 
+  ui::PageTransition base_transition =
+      ui::PageTransitionStripQualifier(item->GetTransitionType());
+  bool user_initiated =
+      item->GetTransitionType() & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR ||
+      base_transition == ui::PAGE_TRANSITION_TYPED ||
+      base_transition == ui::PAGE_TRANSITION_AUTO_BOOKMARK ||
+      base_transition == ui::PAGE_TRANSITION_GENERATED ||
+      base_transition == ui::PAGE_TRANSITION_RELOAD ||
+      base_transition == ui::PAGE_TRANSITION_KEYWORD;
+  bool hasUserGesture = item->HasUserGesture() || user_initiated;
   switch (item->GetState()) {
     case DownloadItem::IN_PROGRESS: {
       base::TimeDelta time_delta;
@@ -331,7 +342,7 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
           item->GetReceivedBytes(), jguid.obj(),
           item->PercentComplete(), time_delta.InMilliseconds(),
-          item->HasUserGesture(), item->IsPaused(),
+          hasUserGesture, item->IsPaused(),
           item->GetBrowserContext()->IsOffTheRecord());
       break;
     }
@@ -345,7 +356,7 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
           item->GetReceivedBytes(), jguid.obj(),
-          joriginal_url.obj(), jreferrer_url.obj(), item->HasUserGesture());
+          joriginal_url.obj(), jreferrer_url.obj(), hasUserGesture);
       DownloadController::RecordDownloadCancelReason(
              DownloadController::CANCEL_REASON_NOT_CANCELED);
       break;
