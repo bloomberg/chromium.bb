@@ -293,7 +293,8 @@ static void fdct16(const tran_low_t in[16], tran_low_t out[16]) {
   out[15] = (tran_low_t)fdct_round_shift(temp2);
 }
 
-/* TODO(angiebird): Unify this with av1_fwd_txfm.c: av1_fdct32
+// TODO(angiebird): Unify this with av1_fwd_txfm.c: av1_fdct32
+#if CONFIG_EXT_TX
 static void fdct32(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
   tran_low_t step[32];
@@ -691,7 +692,7 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
 
   range_check(output, 32, 18);
 }
-*/
+#endif  // CONFIG_EXT_TX
 
 static void fadst4(const tran_low_t *input, tran_low_t *output) {
   tran_high_t x0, x1, x2, x3;
@@ -967,26 +968,222 @@ static void fadst16(const tran_low_t *input, tran_low_t *output) {
   output[15] = (tran_low_t)-x1;
 }
 
+#if CONFIG_EXT_TX
+static void fidtx4(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  for (i = 0; i < 4; ++i)
+    output[i] = (tran_low_t)fdct_round_shift(input[i] * Sqrt2);
+}
+
+static void fidtx8(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  for (i = 0; i < 8; ++i) output[i] = input[i] * 2;
+}
+
+static void fidtx16(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  for (i = 0; i < 16; ++i)
+    output[i] = (tran_low_t)fdct_round_shift(input[i] * 2 * Sqrt2);
+}
+
+static void fidtx32(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  for (i = 0; i < 32; ++i) output[i] = input[i] * 4;
+}
+
+// For use in lieu of ADST
+static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  tran_low_t inputhalf[16];
+  for (i = 0; i < 16; ++i) {
+    output[16 + i] = input[i] * 4;
+  }
+  // Multiply input by sqrt(2)
+  for (i = 0; i < 16; ++i) {
+    inputhalf[i] = (tran_low_t)fdct_round_shift(input[i + 16] * Sqrt2);
+  }
+  fdct16(inputhalf, output);
+  // Note overall scaling factor is 4 times orthogonal
+}
+
+static void copy_block(const int16_t *src, int src_stride, int l, int16_t *dest,
+                       int dest_stride) {
+  int i;
+  for (i = 0; i < l; ++i) {
+    memcpy(dest + dest_stride * i, src + src_stride * i, l * sizeof(int16_t));
+  }
+}
+
+static void fliplr(int16_t *dest, int stride, int l) {
+  int i, j;
+  for (i = 0; i < l; ++i) {
+    for (j = 0; j < l / 2; ++j) {
+      const int16_t tmp = dest[i * stride + j];
+      dest[i * stride + j] = dest[i * stride + l - 1 - j];
+      dest[i * stride + l - 1 - j] = tmp;
+    }
+  }
+}
+
+static void flipud(int16_t *dest, int stride, int l) {
+  int i, j;
+  for (j = 0; j < l; ++j) {
+    for (i = 0; i < l / 2; ++i) {
+      const int16_t tmp = dest[i * stride + j];
+      dest[i * stride + j] = dest[(l - 1 - i) * stride + j];
+      dest[(l - 1 - i) * stride + j] = tmp;
+    }
+  }
+}
+
+static void fliplrud(int16_t *dest, int stride, int l) {
+  int i, j;
+  for (i = 0; i < l / 2; ++i) {
+    for (j = 0; j < l; ++j) {
+      const int16_t tmp = dest[i * stride + j];
+      dest[i * stride + j] = dest[(l - 1 - i) * stride + l - 1 - j];
+      dest[(l - 1 - i) * stride + l - 1 - j] = tmp;
+    }
+  }
+}
+
+static void copy_fliplr(const int16_t *src, int src_stride, int l,
+                        int16_t *dest, int dest_stride) {
+  copy_block(src, src_stride, l, dest, dest_stride);
+  fliplr(dest, dest_stride, l);
+}
+
+static void copy_flipud(const int16_t *src, int src_stride, int l,
+                        int16_t *dest, int dest_stride) {
+  copy_block(src, src_stride, l, dest, dest_stride);
+  flipud(dest, dest_stride, l);
+}
+
+static void copy_fliplrud(const int16_t *src, int src_stride, int l,
+                          int16_t *dest, int dest_stride) {
+  copy_block(src, src_stride, l, dest, dest_stride);
+  fliplrud(dest, dest_stride, l);
+}
+
+static void maybe_flip_input(const int16_t **src, int *src_stride, int l,
+                             int16_t *buff, int tx_type) {
+  switch (tx_type) {
+    case DCT_DCT:
+    case ADST_DCT:
+    case DCT_ADST:
+    case ADST_ADST:
+    case IDTX:
+    case V_DCT:
+    case H_DCT:
+    case V_ADST:
+    case H_ADST: break;
+    case FLIPADST_DCT:
+    case FLIPADST_ADST:
+    case V_FLIPADST:
+      copy_flipud(*src, *src_stride, l, buff, l);
+      *src = buff;
+      *src_stride = l;
+      break;
+    case DCT_FLIPADST:
+    case ADST_FLIPADST:
+    case H_FLIPADST:
+      copy_fliplr(*src, *src_stride, l, buff, l);
+      *src = buff;
+      *src_stride = l;
+      break;
+    case FLIPADST_FLIPADST:
+      copy_fliplrud(*src, *src_stride, l, buff, l);
+      *src = buff;
+      *src_stride = l;
+      break;
+    default: assert(0); break;
+  }
+}
+#endif  // CONFIG_EXT_TX
+
 static const transform_2d FHT_4[] = {
-  { fdct4, fdct4 },   // DCT_DCT  = 0
-  { fadst4, fdct4 },  // ADST_DCT = 1
-  { fdct4, fadst4 },  // DCT_ADST = 2
-  { fadst4, fadst4 }  // ADST_ADST = 3
+  { fdct4, fdct4 },    // DCT_DCT  = 0
+  { fadst4, fdct4 },   // ADST_DCT = 1
+  { fdct4, fadst4 },   // DCT_ADST = 2
+  { fadst4, fadst4 },  // ADST_ADST = 3
+#if CONFIG_EXT_TX
+  { fadst4, fdct4 },   // FLIPADST_DCT = 4
+  { fdct4, fadst4 },   // DCT_FLIPADST = 5
+  { fadst4, fadst4 },  // FLIPADST_FLIPADST = 6
+  { fadst4, fadst4 },  // ADST_FLIPADST = 7
+  { fadst4, fadst4 },  // FLIPADST_ADST = 8
+  { fidtx4, fidtx4 },  // IDTX = 9
+  { fdct4, fidtx4 },   // V_DCT = 10
+  { fidtx4, fdct4 },   // H_DCT = 11
+  { fadst4, fidtx4 },  // V_ADST = 12
+  { fidtx4, fadst4 },  // H_ADST = 13
+  { fadst4, fidtx4 },  // V_FLIPADST = 14
+  { fidtx4, fadst4 },  // H_FLIPADST = 15
+#endif                 // CONFIG_EXT_TX
 };
 
 static const transform_2d FHT_8[] = {
-  { fdct8, fdct8 },   // DCT_DCT  = 0
-  { fadst8, fdct8 },  // ADST_DCT = 1
-  { fdct8, fadst8 },  // DCT_ADST = 2
-  { fadst8, fadst8 }  // ADST_ADST = 3
+  { fdct8, fdct8 },    // DCT_DCT  = 0
+  { fadst8, fdct8 },   // ADST_DCT = 1
+  { fdct8, fadst8 },   // DCT_ADST = 2
+  { fadst8, fadst8 },  // ADST_ADST = 3
+#if CONFIG_EXT_TX
+  { fadst8, fdct8 },   // FLIPADST_DCT = 4
+  { fdct8, fadst8 },   // DCT_FLIPADST = 5
+  { fadst8, fadst8 },  // FLIPADST_FLIPADST = 6
+  { fadst8, fadst8 },  // ADST_FLIPADST = 7
+  { fadst8, fadst8 },  // FLIPADST_ADST = 8
+  { fidtx8, fidtx8 },  // IDTX = 9
+  { fdct8, fidtx8 },   // V_DCT = 10
+  { fidtx8, fdct8 },   // H_DCT = 11
+  { fadst8, fidtx8 },  // V_ADST = 12
+  { fidtx8, fadst8 },  // H_ADST = 13
+  { fadst8, fidtx8 },  // V_FLIPADST = 14
+  { fidtx8, fadst8 },  // H_FLIPADST = 15
+#endif                 // CONFIG_EXT_TX
 };
 
 static const transform_2d FHT_16[] = {
-  { fdct16, fdct16 },   // DCT_DCT  = 0
-  { fadst16, fdct16 },  // ADST_DCT = 1
-  { fdct16, fadst16 },  // DCT_ADST = 2
-  { fadst16, fadst16 }  // ADST_ADST = 3
+  { fdct16, fdct16 },    // DCT_DCT  = 0
+  { fadst16, fdct16 },   // ADST_DCT = 1
+  { fdct16, fadst16 },   // DCT_ADST = 2
+  { fadst16, fadst16 },  // ADST_ADST = 3
+#if CONFIG_EXT_TX
+  { fadst16, fdct16 },   // FLIPADST_DCT = 4
+  { fdct16, fadst16 },   // DCT_FLIPADST = 5
+  { fadst16, fadst16 },  // FLIPADST_FLIPADST = 6
+  { fadst16, fadst16 },  // ADST_FLIPADST = 7
+  { fadst16, fadst16 },  // FLIPADST_ADST = 8
+  { fidtx16, fidtx16 },  // IDTX = 9
+  { fdct16, fidtx16 },   // V_DCT = 10
+  { fidtx16, fdct16 },   // H_DCT = 11
+  { fadst16, fidtx16 },  // V_ADST = 12
+  { fidtx16, fadst16 },  // H_ADST = 13
+  { fadst16, fidtx16 },  // V_FLIPADST = 14
+  { fidtx16, fadst16 },  // H_FLIPADST = 15
+#endif                   // CONFIG_EXT_TX
 };
+
+#if CONFIG_EXT_TX
+static const transform_2d FHT_32[] = {
+  { fdct32, fdct32 },              // DCT_DCT = 0
+  { fhalfright32, fdct32 },        // ADST_DCT = 1
+  { fdct32, fhalfright32 },        // DCT_ADST = 2
+  { fhalfright32, fhalfright32 },  // ADST_ADST = 3
+  { fhalfright32, fdct32 },        // FLIPADST_DCT = 4
+  { fdct32, fhalfright32 },        // DCT_FLIPADST = 5
+  { fhalfright32, fhalfright32 },  // FLIPADST_FLIPADST = 6
+  { fhalfright32, fhalfright32 },  // ADST_FLIPADST = 7
+  { fhalfright32, fhalfright32 },  // FLIPADST_ADST = 8
+  { fidtx32, fidtx32 },            // IDTX = 9
+  { fdct32, fidtx32 },             // V_DCT = 10
+  { fidtx32, fdct32 },             // H_DCT = 11
+  { fhalfright32, fidtx32 },       // V_ADST = 12
+  { fidtx32, fhalfright32 },       // H_ADST = 13
+  { fhalfright32, fidtx32 },       // V_FLIPADST = 14
+  { fidtx32, fhalfright32 },       // H_FLIPADST = 15
+};
+#endif  // CONFIG_EXT_TX
 
 void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
                   int tx_type) {
@@ -997,6 +1194,11 @@ void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
     int i, j;
     tran_low_t temp_in[4], temp_out[4];
     const transform_2d ht = FHT_4[tx_type];
+
+#if CONFIG_EXT_TX
+    int16_t flipped_input[4 * 4];
+    maybe_flip_input(&input, &stride, 4, flipped_input, tx_type);
+#endif
 
     // Columns
     for (i = 0; i < 4; ++i) {
@@ -1151,6 +1353,11 @@ void av1_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
     tran_low_t temp_in[8], temp_out[8];
     const transform_2d ht = FHT_8[tx_type];
 
+#if CONFIG_EXT_TX
+    int16_t flipped_input[8 * 8];
+    maybe_flip_input(&input, &stride, 8, flipped_input, tx_type);
+#endif
+
     // Columns
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < 8; ++j) temp_in[j] = input[j * stride + i] * 4;
@@ -1233,6 +1440,11 @@ void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
     int i, j;
     tran_low_t temp_in[16], temp_out[16];
     const transform_2d ht = FHT_16[tx_type];
+
+#if CONFIG_EXT_TX
+    int16_t flipped_input[16 * 16];
+    maybe_flip_input(&input, &stride, 16, flipped_input, tx_type);
+#endif
 
     // Columns
     for (i = 0; i < 16; ++i) {
