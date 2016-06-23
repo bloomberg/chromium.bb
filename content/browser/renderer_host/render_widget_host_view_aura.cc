@@ -864,7 +864,9 @@ bool RenderWidgetHostViewAura::ShouldRouteEvent(const ui::Event* event) const {
   //    in a similar manner to RenderWidgetHostViewGuest.
   bool result = host_->delegate() && host_->delegate()->GetInputEventRouter() &&
                 !disable_input_event_router_for_testing_;
-  if (event->IsMouseEvent())
+  // ScrollEvents get transformed into MouseWheel events, and so are treated
+  // the same as mouse events for routing purposes.
+  if (event->IsMouseEvent() || event->type() == ui::ET_SCROLL)
     result = result && SiteIsolationPolicy::AreCrossProcessFramesPossible();
   return result;
 }
@@ -2132,16 +2134,33 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
 #endif
     blink::WebGestureEvent gesture_event =
         MakeWebGestureEventFlingCancel();
-    host_->ForwardGestureEvent(gesture_event);
+    // Coordinates need to be transferred to the fling cancel gesture only
+    // for Surface-targeting to ensure that it is targeted to the correct
+    // RenderWidgetHost.
+    gesture_event.x = event->x();
+    gesture_event.y = event->y();
     blink::WebMouseWheelEvent mouse_wheel_event =
         MakeWebMouseWheelEvent(*event);
-    host_->ForwardWheelEventWithLatencyInfo(mouse_wheel_event,
-                                            *event->latency());
+    if (ShouldRouteEvent(event)) {
+      host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
+          this, &gesture_event, ui::LatencyInfo());
+      host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
+          this, &mouse_wheel_event);
+    } else {
+      host_->ForwardGestureEvent(gesture_event);
+      host_->ForwardWheelEventWithLatencyInfo(mouse_wheel_event,
+                                              *event->latency());
+    }
     RecordAction(base::UserMetricsAction("TrackpadScroll"));
   } else if (event->type() == ui::ET_SCROLL_FLING_START ||
              event->type() == ui::ET_SCROLL_FLING_CANCEL) {
     blink::WebGestureEvent gesture_event = MakeWebGestureEvent(*event);
-    host_->ForwardGestureEvent(gesture_event);
+    if (ShouldRouteEvent(event)) {
+      host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
+          this, &gesture_event, ui::LatencyInfo());
+    } else {
+      host_->ForwardGestureEvent(gesture_event);
+    }
     if (event->type() == ui::ET_SCROLL_FLING_START)
       RecordAction(base::UserMetricsAction("TrackpadScrollFling"));
   }

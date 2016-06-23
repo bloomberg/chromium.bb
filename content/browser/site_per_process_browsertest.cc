@@ -177,6 +177,33 @@ class RenderWidgetHostMouseEventMonitor {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostMouseEventMonitor);
 };
 
+class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
+ public:
+  explicit TestInputEventObserver(RenderWidgetHost* host)
+      : host_(host),
+        event_received_(false),
+        last_event_type_(blink::WebInputEvent::Undefined) {
+    host_->AddInputEventObserver(this);
+  }
+
+  ~TestInputEventObserver() override { host_->RemoveInputEventObserver(this); }
+
+  bool EventWasReceived() const { return event_received_; }
+  void ResetEventReceived() { event_received_ = false; }
+  blink::WebInputEvent::Type EventType() const { return last_event_type_; }
+
+  void OnInputEvent(const blink::WebInputEvent& event) override {
+    event_received_ = true;
+    last_event_type_ = event.type;
+  };
+
+  RenderWidgetHost* host_;
+  bool event_received_;
+  blink::WebInputEvent::Type last_event_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInputEventObserver);
+};
+
 // Helper function that performs a surface hittest.
 void SurfaceHitTestTestHelper(
     Shell* shell,
@@ -1046,6 +1073,59 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     run_loop.Run();
     update_rect = filter->last_rect();
   }
+}
+
+// Test that an ET_SCROLL event sent to an out-of-process iframe correctly
+// results in a scroll. This is only handled by RenderWidgetHostViewAura
+// and is needed for trackpad scrolling on Chromebooks.
+#if !defined(USE_AURA)
+#define MAYBE_ScrollEventToOOPIF DISABLED_ScrollEventToOOPIF
+#else
+#define MAYBE_ScrollEventToOOPIF ScrollEventToOOPIF
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollEventToOOPIF) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, child_node->current_url());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node->current_frame_host()->GetSiteInstance());
+
+  RenderWidgetHostViewAura* rwhv_parent =
+      static_cast<RenderWidgetHostViewAura*>(
+          root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
+  notifier.WaitForSurfaceReady();
+
+  // Create listener for input events.
+  TestInputEventObserver child_frame_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  // Send a ui::ScrollEvent that will hit test to the child frame.
+  ui::ScrollEvent scroll_event(ui::ET_SCROLL, gfx::Point(75, 75),
+                               ui::EventTimeForNow(), ui::EF_NONE,
+                               0, 10,     // Offsets
+                               0, 10,  // Offset ordinals
+                               2);
+  rwhv_parent->OnScrollEvent(&scroll_event);
+
+  // Verify that this a mouse wheel event was sent to the child frame renderer.
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::MouseWheel);
 }
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
