@@ -63,6 +63,109 @@ std::unique_ptr<ClientSocketHandle> CreateConnectedSocketHandle(
   return socket_handle;
 }
 
+class ReadErrorUploadDataStream : public UploadDataStream {
+ public:
+  enum class FailureMode { SYNC, ASYNC };
+
+  explicit ReadErrorUploadDataStream(FailureMode mode)
+      : UploadDataStream(true, 0), async_(mode), weak_factory_(this) {}
+
+ private:
+  void CompleteRead() { UploadDataStream::OnReadCompleted(ERR_FAILED); }
+
+  // UploadDataStream implementation:
+  int InitInternal() override { return OK; }
+
+  int ReadInternal(IOBuffer* buf, int buf_len) override {
+    if (async_ == FailureMode::ASYNC) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&ReadErrorUploadDataStream::CompleteRead,
+                                weak_factory_.GetWeakPtr()));
+      return ERR_IO_PENDING;
+    }
+    return ERR_FAILED;
+  }
+
+  void ResetInternal() override {}
+
+  const FailureMode async_;
+
+  base::WeakPtrFactory<ReadErrorUploadDataStream> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadErrorUploadDataStream);
+};
+
+TEST(HttpStreamParser, DataReadErrorSynchronous) {
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "POST / HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Content-Length: 12\r\n\r\n"),
+  };
+
+  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  std::unique_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  ReadErrorUploadDataStream upload_data_stream(
+      ReadErrorUploadDataStream::FailureMode::SYNC);
+  ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://localhost");
+  request.upload_data_stream = &upload_data_stream;
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
+                          BoundNetLog());
+
+  HttpRequestHeaders headers;
+  headers.SetHeader("Content-Length", "12");
+
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+  int result = parser.SendRequest("POST / HTTP/1.1\r\n", headers, &response,
+                                  callback.callback());
+  EXPECT_EQ(ERR_FAILED, callback.GetResult(result));
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+}
+
+TEST(HttpStreamParser, DataReadErrorAsynchronous) {
+  MockWrite writes[] = {
+      MockWrite(ASYNC, 0, "POST / HTTP/1.1\r\n"),
+      MockWrite(ASYNC, 1, "Content-Length: 12\r\n\r\n"),
+  };
+
+  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  std::unique_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  ReadErrorUploadDataStream upload_data_stream(
+      ReadErrorUploadDataStream::FailureMode::ASYNC);
+  ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://localhost");
+  request.upload_data_stream = &upload_data_stream;
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
+                          BoundNetLog());
+
+  HttpRequestHeaders headers;
+  headers.SetHeader("Content-Length", "12");
+
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+  int result = parser.SendRequest("POST / HTTP/1.1\r\n", headers, &response,
+                                  callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, result);
+
+  EXPECT_EQ(ERR_FAILED, callback.GetResult(result));
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+}
+
 // The empty payload is how the last chunk is encoded.
 TEST(HttpStreamParser, EncodeChunk_EmptyPayload) {
   char output[kOutputSize];
