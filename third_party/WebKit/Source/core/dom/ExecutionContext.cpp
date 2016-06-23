@@ -94,7 +94,7 @@ void ExecutionContext::postSuspendableTask(std::unique_ptr<SuspendableTask> task
 {
     m_suspendedTasks.append(std::move(task));
     if (!m_activeDOMObjectsAreSuspended)
-        postTask(BLINK_FROM_HERE, createSameThreadTask(&ExecutionContext::runSuspendableTasks, this));
+        postTask(BLINK_FROM_HERE, createSameThreadTask(&ExecutionContext::runSuspendableTasks, wrapPersistent(this)));
 }
 
 void ExecutionContext::notifyContextDestroyed()
@@ -120,7 +120,7 @@ void ExecutionContext::resumeScheduledTasks()
     if (m_isRunSuspendableTasksScheduled)
         return;
     m_isRunSuspendableTasksScheduled = true;
-    postTask(BLINK_FROM_HERE, createSameThreadTask(&ExecutionContext::runSuspendableTasks, this));
+    postTask(BLINK_FROM_HERE, createSameThreadTask(&ExecutionContext::runSuspendableTasks, wrapPersistent(this)));
 }
 
 void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)

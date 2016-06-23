@@ -148,7 +148,7 @@ void ExternalPopupMenu::updateFromElement(UpdateReason reason)
         if (m_needsUpdate)
             return;
         m_needsUpdate = true;
-        m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, this));
+        m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, wrapPersistent(this)));
         break;
 
     case ByStyleChange:

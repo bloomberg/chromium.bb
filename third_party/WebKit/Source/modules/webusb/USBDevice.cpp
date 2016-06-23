@@ -143,7 +143,7 @@ ScriptPromise USBDevice::open(ScriptState* scriptState)
         } else {
             m_deviceStateChangeInProgress = true;
             m_deviceRequests.add(resolver);
-            m_device->Open(createBaseCallback(bind(&USBDevice::asyncOpen, this, resolver)));
+            m_device->Open(createBaseCallback(bind(&USBDevice::asyncOpen, wrapPersistent(this), wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -159,7 +159,7 @@ ScriptPromise USBDevice::close(ScriptState* scriptState)
         } else {
             m_deviceStateChangeInProgress = true;
             m_deviceRequests.add(resolver);
-            m_device->Close(createBaseCallback(bind(&USBDevice::asyncClose, this, resolver)));
+            m_device->Close(createBaseCallback(bind(&USBDevice::asyncClose, wrapPersistent(this), wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -181,7 +181,7 @@ ScriptPromise USBDevice::selectConfiguration(ScriptState* scriptState, uint8_t c
             } else {
                 m_deviceStateChangeInProgress = true;
                 m_deviceRequests.add(resolver);
-                m_device->SetConfiguration(configurationValue, createBaseCallback(bind(&USBDevice::asyncSelectConfiguration, this, configurationIndex, resolver)));
+                m_device->SetConfiguration(configurationValue, createBaseCallback(bind(&USBDevice::asyncSelectConfiguration, wrapPersistent(this), configurationIndex, wrapPersistent(resolver))));
             }
         }
     }
@@ -203,7 +203,7 @@ ScriptPromise USBDevice::claimInterface(ScriptState* scriptState, uint8_t interf
         } else {
             m_interfaceStateChangeInProgress.set(interfaceIndex);
             m_deviceRequests.add(resolver);
-            m_device->ClaimInterface(interfaceNumber, createBaseCallback(bind(&USBDevice::asyncClaimInterface, this, interfaceIndex, resolver)));
+            m_device->ClaimInterface(interfaceNumber, createBaseCallback(bind(&USBDevice::asyncClaimInterface, wrapPersistent(this), interfaceIndex, wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -227,7 +227,7 @@ ScriptPromise USBDevice::releaseInterface(ScriptState* scriptState, uint8_t inte
             setEndpointsForInterface(interfaceIndex, false);
             m_interfaceStateChangeInProgress.set(interfaceIndex);
             m_deviceRequests.add(resolver);
-            m_device->ReleaseInterface(interfaceNumber, createBaseCallback(bind(&USBDevice::asyncReleaseInterface, this, interfaceIndex, resolver)));
+            m_device->ReleaseInterface(interfaceNumber, createBaseCallback(bind(&USBDevice::asyncReleaseInterface, wrapPersistent(this), interfaceIndex, wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -250,7 +250,7 @@ ScriptPromise USBDevice::selectAlternateInterface(ScriptState* scriptState, uint
             setEndpointsForInterface(interfaceIndex, false);
             m_interfaceStateChangeInProgress.set(interfaceIndex);
             m_deviceRequests.add(resolver);
-            m_device->SetInterfaceAlternateSetting(interfaceNumber, alternateSetting, createBaseCallback(bind(&USBDevice::asyncSelectAlternateInterface, this, interfaceNumber, alternateSetting, resolver)));
+            m_device->SetInterfaceAlternateSetting(interfaceNumber, alternateSetting, createBaseCallback(bind(&USBDevice::asyncSelectAlternateInterface, wrapPersistent(this), interfaceNumber, alternateSetting, wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -264,7 +264,7 @@ ScriptPromise USBDevice::controlTransferIn(ScriptState* scriptState, const USBCo
         auto parameters = convertControlTransferParameters(setup, resolver);
         if (parameters) {
             m_deviceRequests.add(resolver);
-            m_device->ControlTransferIn(std::move(parameters), length, 0, createBaseCallback(bind(&USBDevice::asyncControlTransferIn, this, resolver)));
+            m_device->ControlTransferIn(std::move(parameters), length, 0, createBaseCallback(bind(&USBDevice::asyncControlTransferIn, wrapPersistent(this), wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -278,7 +278,7 @@ ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBC
         auto parameters = convertControlTransferParameters(setup, resolver);
         if (parameters) {
             m_deviceRequests.add(resolver);
-            m_device->ControlTransferOut(std::move(parameters), mojo::WTFArray<uint8_t>(), 0, createBaseCallback(bind(&USBDevice::asyncControlTransferOut, this, 0, resolver)));
+            m_device->ControlTransferOut(std::move(parameters), mojo::WTFArray<uint8_t>(), 0, createBaseCallback(bind(&USBDevice::asyncControlTransferOut, wrapPersistent(this), 0, wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -294,7 +294,7 @@ ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBC
             mojo::WTFArray<uint8_t> buffer = convertBufferSource(data);
             unsigned transferLength = buffer.size();
             m_deviceRequests.add(resolver);
-            m_device->ControlTransferOut(std::move(parameters), std::move(buffer), 0, createBaseCallback(bind(&USBDevice::asyncControlTransferOut, this, transferLength, resolver)));
+            m_device->ControlTransferOut(std::move(parameters), std::move(buffer), 0, createBaseCallback(bind(&USBDevice::asyncControlTransferOut, wrapPersistent(this), transferLength, wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -306,7 +306,7 @@ ScriptPromise USBDevice::clearHalt(ScriptState* scriptState, String direction, u
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(direction == "in", endpointNumber, resolver)) {
         m_deviceRequests.add(resolver);
-        m_device->ClearHalt(endpointNumber, createBaseCallback(bind(&USBDevice::asyncClearHalt, this, resolver)));
+        m_device->ClearHalt(endpointNumber, createBaseCallback(bind(&USBDevice::asyncClearHalt, wrapPersistent(this), wrapPersistent(resolver))));
     }
     return promise;
 }
@@ -317,7 +317,7 @@ ScriptPromise USBDevice::transferIn(ScriptState* scriptState, uint8_t endpointNu
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(true /* in */, endpointNumber, resolver)) {
         m_deviceRequests.add(resolver);
-        m_device->GenericTransferIn(endpointNumber, length, 0, createBaseCallback(bind(&USBDevice::asyncTransferIn, this, resolver)));
+        m_device->GenericTransferIn(endpointNumber, length, 0, createBaseCallback(bind(&USBDevice::asyncTransferIn, wrapPersistent(this), wrapPersistent(resolver))));
     }
     return promise;
 }
@@ -330,7 +330,7 @@ ScriptPromise USBDevice::transferOut(ScriptState* scriptState, uint8_t endpointN
         mojo::WTFArray<uint8_t> buffer = convertBufferSource(data);
         unsigned transferLength = buffer.size();
         m_deviceRequests.add(resolver);
-        m_device->GenericTransferOut(endpointNumber, std::move(buffer), 0, createBaseCallback(bind(&USBDevice::asyncTransferOut, this, transferLength, resolver)));
+        m_device->GenericTransferOut(endpointNumber, std::move(buffer), 0, createBaseCallback(bind(&USBDevice::asyncTransferOut, wrapPersistent(this), transferLength, wrapPersistent(resolver))));
     }
     return promise;
 }
@@ -341,7 +341,7 @@ ScriptPromise USBDevice::isochronousTransferIn(ScriptState* scriptState, uint8_t
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(true /* in */, endpointNumber, resolver)) {
         m_deviceRequests.add(resolver);
-        m_device->IsochronousTransferIn(endpointNumber, mojo::WTFArray<uint32_t>(std::move(packetLengths)), 0, createBaseCallback(bind(&USBDevice::asyncIsochronousTransferIn, this, resolver)));
+        m_device->IsochronousTransferIn(endpointNumber, mojo::WTFArray<uint32_t>(std::move(packetLengths)), 0, createBaseCallback(bind(&USBDevice::asyncIsochronousTransferIn, wrapPersistent(this), wrapPersistent(resolver))));
     }
     return promise;
 }
@@ -352,7 +352,7 @@ ScriptPromise USBDevice::isochronousTransferOut(ScriptState* scriptState, uint8_
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(false /* out */, endpointNumber, resolver)) {
         m_deviceRequests.add(resolver);
-        m_device->IsochronousTransferOut(endpointNumber, convertBufferSource(data), mojo::WTFArray<uint32_t>(std::move(packetLengths)), 0, createBaseCallback(bind(&USBDevice::asyncIsochronousTransferOut, this, resolver)));
+        m_device->IsochronousTransferOut(endpointNumber, convertBufferSource(data), mojo::WTFArray<uint32_t>(std::move(packetLengths)), 0, createBaseCallback(bind(&USBDevice::asyncIsochronousTransferOut, wrapPersistent(this), wrapPersistent(resolver))));
     }
     return promise;
 }
@@ -366,7 +366,7 @@ ScriptPromise USBDevice::reset(ScriptState* scriptState)
             resolver->reject(DOMException::create(InvalidStateError, kOpenRequired));
         } else {
             m_deviceRequests.add(resolver);
-            m_device->Reset(createBaseCallback(bind(&USBDevice::asyncReset, this, resolver)));
+            m_device->Reset(createBaseCallback(bind(&USBDevice::asyncReset, wrapPersistent(this), wrapPersistent(resolver))));
         }
     }
     return promise;

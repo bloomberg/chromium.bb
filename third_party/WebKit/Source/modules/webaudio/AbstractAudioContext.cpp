@@ -602,7 +602,7 @@ void AbstractAudioContext::setContextState(AudioContextState newState)
 
     // Notify context that state changed
     if (getExecutionContext())
-        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&AbstractAudioContext::notifyStateChange, this));
+        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&AbstractAudioContext::notifyStateChange, wrapPersistent(this)));
 }
 
 void AbstractAudioContext::notifyStateChange()

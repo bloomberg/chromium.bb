@@ -91,7 +91,7 @@ void Sensor::updateState(SensorState newState)
     m_sensorState = newState;
     // Notify context that state changed.
     if (getExecutionContext())
-        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Sensor::notifyStateChange, this));
+        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Sensor::notifyStateChange, wrapPersistent(this)));
 }
 
 void Sensor::notifyStateChange()

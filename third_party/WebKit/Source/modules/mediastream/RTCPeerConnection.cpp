@@ -113,7 +113,7 @@ bool throwExceptionIfSignalingStateClosed(RTCPeerConnection::SignalingState stat
 void asyncCallErrorCallback(RTCPeerConnectionErrorCallback* errorCallback, DOMException* exception)
 {
     DCHECK(errorCallback);
-    Microtask::enqueueMicrotask(bind(&RTCPeerConnectionErrorCallback::handleEvent, errorCallback, exception));
+    Microtask::enqueueMicrotask(bind(&RTCPeerConnectionErrorCallback::handleEvent, wrapPersistent(errorCallback), wrapPersistent(exception)));
 }
 
 bool callErrorCallbackIfSignalingStateClosed(RTCPeerConnection::SignalingState state, RTCPeerConnectionErrorCallback* errorCallback)
@@ -1179,7 +1179,7 @@ void RTCPeerConnection::changeIceConnectionState(ICEConnectionState iceConnectio
 {
     if (m_iceConnectionState != ICEConnectionStateClosed) {
         scheduleDispatchEvent(Event::create(EventTypeNames::iceconnectionstatechange),
-            WTF::bind(&RTCPeerConnection::setIceConnectionState, this, iceConnectionState));
+            WTF::bind(&RTCPeerConnection::setIceConnectionState, wrapPersistent(this), iceConnectionState));
     }
 }
 

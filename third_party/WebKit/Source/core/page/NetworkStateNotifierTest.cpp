@@ -119,12 +119,12 @@ protected:
 
     void addObserverOnNotification(StateObserver* observer, StateObserver* observerToAdd)
     {
-        observer->setNotificationCallback(bind(&NetworkStateNotifier::addObserver, &m_notifier, observerToAdd, getExecutionContext()));
+        observer->setNotificationCallback(bind(&NetworkStateNotifier::addObserver, &m_notifier, observerToAdd, wrapPersistent(getExecutionContext())));
     }
 
     void removeObserverOnNotification(StateObserver* observer, StateObserver* observerToRemove)
     {
-        observer->setNotificationCallback(bind(&NetworkStateNotifier::removeObserver, &m_notifier, observerToRemove, getExecutionContext()));
+        observer->setNotificationCallback(bind(&NetworkStateNotifier::removeObserver, &m_notifier, observerToRemove, wrapPersistent(getExecutionContext())));
     }
 
     bool verifyObservations(const StateObserver& observer, WebConnectionType type, double maxBandwidthMbps)

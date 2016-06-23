@@ -296,7 +296,7 @@ std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, Ca
     switch (cacheOptions) {
     case V8CacheOptionsParse:
         // Use parser-cache; in-memory only.
-        return bind(compileAndConsumeOrProduce, cacheHandler, cacheTag(CacheTagParser, cacheHandler), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, CachedMetadataHandler::CacheLocally);
+        return bind(compileAndConsumeOrProduce, wrapPersistent(cacheHandler), cacheTag(CacheTagParser, cacheHandler), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, CachedMetadataHandler::CacheLocally);
         break;
 
     case V8CacheOptionsDefault:
@@ -307,12 +307,12 @@ std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, Ca
         unsigned codeCacheTag = cacheTag(CacheTagCode, cacheHandler);
         CachedMetadata* codeCache = cacheHandler->cachedMetadata(codeCacheTag);
         if (codeCache)
-            return bind(compileAndConsumeCache, cacheHandler, codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache);
+            return bind(compileAndConsumeCache, wrapPersistent(cacheHandler), codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache);
         if (cacheOptions != V8CacheOptionsAlways && !isResourceHotForCaching(cacheHandler, hotHours)) {
             V8ScriptRunner::setCacheTimeStamp(cacheHandler);
             return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
         }
-        return bind(compileAndProduceCache, cacheHandler, codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, CachedMetadataHandler::SendToPlatform);
+        return bind(compileAndProduceCache, wrapPersistent(cacheHandler), codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, CachedMetadataHandler::SendToPlatform);
         break;
     }
 
@@ -338,7 +338,7 @@ std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, Sc
     ASSERT(!resource->errorOccurred());
     ASSERT(streamer->isFinished());
     ASSERT(!streamer->streamingSuppressed());
-    return WTF::bind(postStreamCompile, cacheOptions, resource->cacheHandler(), streamer);
+    return WTF::bind(postStreamCompile, cacheOptions, wrapPersistent(resource->cacheHandler()), wrapPersistent(streamer));
 }
 } // namespace
 

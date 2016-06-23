@@ -495,7 +495,7 @@ ScriptPromise NFC::push(ScriptState* scriptState, const NFCPushMessage& pushMess
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     m_requests.add(resolver);
-    auto callback = createBaseCallback(bind(&NFC::OnRequestCompleted, this, resolver));
+    auto callback = createBaseCallback(bind(&NFC::OnRequestCompleted, wrapPersistent(this), wrapPersistent(resolver)));
     m_nfc->Push(std::move(message), nfc::NFCPushOptions::From(options), callback);
 
     return resolver->promise();
@@ -512,7 +512,7 @@ ScriptPromise NFC::cancelPush(ScriptState* scriptState, const String& target)
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     m_requests.add(resolver);
-    auto callback = createBaseCallback(bind(&NFC::OnRequestCompleted, this, resolver));
+    auto callback = createBaseCallback(bind(&NFC::OnRequestCompleted, wrapPersistent(this), wrapPersistent(resolver)));
     m_nfc->CancelPush(mojo::toNFCPushTarget(target), callback);
 
     return resolver->promise();

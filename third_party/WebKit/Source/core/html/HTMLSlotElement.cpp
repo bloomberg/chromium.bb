@@ -313,7 +313,7 @@ void HTMLSlotElement::lazyReattachDistributedNodesIfNeeded()
 void HTMLSlotElement::enqueueSlotChangeEvent()
 {
     if (!m_slotchangeEventEnqueued) {
-        Microtask::enqueueMicrotask(WTF::bind(&HTMLSlotElement::dispatchSlotChangeEvent, Persistent<HTMLSlotElement>(this)));
+        Microtask::enqueueMicrotask(WTF::bind(&HTMLSlotElement::dispatchSlotChangeEvent, wrapPersistent(this)));
         m_slotchangeEventEnqueued = true;
     }
 

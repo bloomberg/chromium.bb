@@ -240,7 +240,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Re
     cachedLiveResource->appendData(data, 4u);
     cachedLiveResource->finish();
 
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask1, cachedLiveResource, cachedDeadResource));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask1, wrapPersistent(cachedLiveResource), wrapPersistent(cachedDeadResource)));
     Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask2, cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
     testing::runPendingTasks();
 }

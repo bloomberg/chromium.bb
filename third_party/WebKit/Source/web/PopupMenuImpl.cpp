@@ -473,7 +473,7 @@ void PopupMenuImpl::updateFromElement(UpdateReason)
     if (m_needsUpdate)
         return;
     m_needsUpdate = true;
-    ownerElement().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&PopupMenuImpl::update, this));
+    ownerElement().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&PopupMenuImpl::update, wrapPersistent(this)));
 }
 
 void PopupMenuImpl::update()

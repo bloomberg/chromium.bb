@@ -430,7 +430,7 @@ void Geolocation::requestPermission()
         mojom::blink::PermissionName::GEOLOCATION,
         getExecutionContext()->getSecurityOrigin()->toString(),
         UserGestureIndicator::processingUserGesture(),
-        createBaseCallback(bind(&Geolocation::onGeolocationPermissionUpdated, this)));
+        createBaseCallback(bind(&Geolocation::onGeolocationPermissionUpdated, wrapPersistent(this))));
 }
 
 void Geolocation::makeSuccessCallbacks()
@@ -503,7 +503,7 @@ void Geolocation::updateGeolocationServiceConnection()
 
 void Geolocation::queryNextPosition()
 {
-    m_geolocationService->QueryNextPosition(createBaseCallback(bind(&Geolocation::onPositionUpdated, this)));
+    m_geolocationService->QueryNextPosition(createBaseCallback(bind(&Geolocation::onPositionUpdated, wrapPersistent(this))));
 }
 
 void Geolocation::onPositionUpdated(mojom::blink::GeopositionPtr position)

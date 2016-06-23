@@ -176,7 +176,7 @@ void Notification::close()
 
     if (m_persistentId == kInvalidPersistentId) {
         // Fire the close event asynchronously.
-        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent, this));
+        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent, wrapPersistent(this)));
 
         m_state = NotificationStateClosing;
         notificationManager()->close(this);

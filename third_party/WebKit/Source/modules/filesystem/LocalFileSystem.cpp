@@ -86,16 +86,16 @@ void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSyst
 {
     CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
     requestFileSystemAccessInternal(context,
-        bind(&LocalFileSystem::resolveURLInternal, this, context, fileSystemURL, wrapper),
-        bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, context, wrapper));
+        bind(&LocalFileSystem::resolveURLInternal, wrapPersistent(this), wrapPersistent(context), fileSystemURL, wrapPersistent(wrapper)),
+        bind(&LocalFileSystem::fileSystemNotAllowedInternal, wrapPersistent(this), wrapPersistent(context), wrapPersistent(wrapper)));
 }
 
 void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, std::unique_ptr<AsyncFileSystemCallbacks> callbacks)
 {
     CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
     requestFileSystemAccessInternal(context,
-        bind(&LocalFileSystem::fileSystemAllowedInternal, this, context, type, wrapper),
-        bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, context, wrapper));
+        bind(&LocalFileSystem::fileSystemAllowedInternal, wrapPersistent(this), wrapPersistent(context), type, wrapPersistent(wrapper)),
+        bind(&LocalFileSystem::fileSystemNotAllowedInternal, wrapPersistent(this), wrapPersistent(context), wrapPersistent(wrapper)));
 }
 
 void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType type, std::unique_ptr<AsyncFileSystemCallbacks> callbacks)
@@ -105,8 +105,8 @@ void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType
 
     CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
     requestFileSystemAccessInternal(context,
-        bind(&LocalFileSystem::deleteFileSystemInternal, this, context, type, wrapper),
-        bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, context, wrapper));
+        bind(&LocalFileSystem::deleteFileSystemInternal, wrapPersistent(this), wrapPersistent(context), type, wrapPersistent(wrapper)),
+        bind(&LocalFileSystem::fileSystemNotAllowedInternal, wrapPersistent(this), wrapPersistent(context), wrapPersistent(wrapper)));
 }
 
 WebFileSystem* LocalFileSystem::getFileSystem() const

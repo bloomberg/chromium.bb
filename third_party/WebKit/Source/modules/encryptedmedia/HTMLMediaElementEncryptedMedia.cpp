@@ -168,8 +168,8 @@ void SetMediaKeysHandler::clearExistingMediaKeys()
             //       attribute to decrypt media data and remove the association
             //       with the media element.
             // (All 3 steps handled as needed in Chromium.)
-            std::unique_ptr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::setNewMediaKeys, this);
-            std::unique_ptr<FailureCallback> failureCallback = bind(&SetMediaKeysHandler::clearFailed, this);
+            std::unique_ptr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::setNewMediaKeys, wrapPersistent(this));
+            std::unique_ptr<FailureCallback> failureCallback = bind(&SetMediaKeysHandler::clearFailed, wrapPersistent(this));
             ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(std::move(successCallback), std::move(failureCallback));
             mediaPlayer->setContentDecryptionModule(nullptr, result->result());
 
@@ -196,8 +196,8 @@ void SetMediaKeysHandler::setNewMediaKeys()
         //       algorithm on the media element.
         //       (Handled in Chromium).
         if (m_element->webMediaPlayer()) {
-            std::unique_ptr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::finish, this);
-            std::unique_ptr<FailureCallback> failureCallback = bind(&SetMediaKeysHandler::setFailed, this);
+            std::unique_ptr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::finish, wrapPersistent(this));
+            std::unique_ptr<FailureCallback> failureCallback = bind(&SetMediaKeysHandler::setFailed, wrapPersistent(this));
             ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(std::move(successCallback), std::move(failureCallback));
             m_element->webMediaPlayer()->setContentDecryptionModule(m_newMediaKeys->contentDecryptionModule(), result->result());
 

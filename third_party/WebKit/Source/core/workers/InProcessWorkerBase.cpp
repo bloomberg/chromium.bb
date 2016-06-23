@@ -57,8 +57,8 @@ bool InProcessWorkerBase::initialize(ExecutionContext* context, const String& ur
         scriptURL,
         DenyCrossOriginRequests,
         context->securityContext().addressSpace(),
-        bind(&InProcessWorkerBase::onResponse, this),
-        bind(&InProcessWorkerBase::onFinished, this));
+        bind(&InProcessWorkerBase::onResponse, wrapPersistent(this)),
+        bind(&InProcessWorkerBase::onFinished, wrapPersistent(this)));
 
     m_contextProxy = createInProcessWorkerGlobalScopeProxy(context);
 

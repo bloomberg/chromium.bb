@@ -665,7 +665,7 @@ void InspectorCSSAgent::enable(ErrorString* errorString, std::unique_ptr<EnableC
         return;
     }
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, true);
-    m_resourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, WTF::bind(&InspectorCSSAgent::resourceContentLoaded, this, passed(std::move(prpCallback))));
+    m_resourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, WTF::bind(&InspectorCSSAgent::resourceContentLoaded, wrapPersistent(this), passed(std::move(prpCallback))));
 }
 
 void InspectorCSSAgent::resourceContentLoaded(std::unique_ptr<EnableCallback> callback)

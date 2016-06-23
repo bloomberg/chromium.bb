@@ -110,7 +110,7 @@ void SearchInputType::startSearchEventTimer()
 
     if (!length) {
         m_searchEventTimer.stop();
-        element().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLInputElement::onSearch, &element()));
+        element().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLInputElement::onSearch, wrapPersistent(&element())));
         return;
     }
 

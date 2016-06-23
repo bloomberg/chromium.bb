@@ -114,7 +114,7 @@ void DatabaseThread::cleanupDatabaseThread()
     }
     m_openDatabaseSet.clear();
 
-    m_thread->postTask(BLINK_FROM_HERE, WTF::bind(&DatabaseThread::cleanupDatabaseThreadCompleted, this));
+    m_thread->postTask(BLINK_FROM_HERE, WTF::bind(&DatabaseThread::cleanupDatabaseThreadCompleted, wrapCrossThreadPersistent(this)));
 }
 
 void DatabaseThread::cleanupDatabaseThreadCompleted()

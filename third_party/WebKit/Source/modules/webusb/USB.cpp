@@ -88,7 +88,7 @@ ScriptPromise USB::getDevices(ScriptState* scriptState)
             resolver->reject(DOMException::create(SecurityError, errorMessage));
         } else {
             m_deviceManagerRequests.add(resolver);
-            m_deviceManager->GetDevices(nullptr, createBaseCallback(bind(&USB::onGetDevices, this, resolver)));
+            m_deviceManager->GetDevices(nullptr, createBaseCallback(bind(&USB::onGetDevices, wrapPersistent(this), wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -122,7 +122,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
                 filters.append(convertDeviceFilter(filter));
         }
         m_chooserServiceRequests.add(resolver);
-        m_chooserService->GetPermission(std::move(filters), createBaseCallback(bind(&USB::onGetPermission, this, resolver)));
+        m_chooserService->GetPermission(std::move(filters), createBaseCallback(bind(&USB::onGetPermission, wrapPersistent(this), wrapPersistent(resolver))));
     }
     return promise;
 }
