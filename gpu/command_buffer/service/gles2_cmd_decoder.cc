@@ -1638,6 +1638,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLenum target, GLsizei samples, GLenum internalformat,
       GLsizei width, GLsizei height);
 
+  // Wrapper for glFenceSync.
+  GLsync DoFenceSync(GLenum condition, GLbitfield flags);
+
   // Common validation for multisample extensions.
   bool ValidateRenderbufferStorageMultisample(GLsizei samples,
                                               GLenum internalformat,
@@ -3819,7 +3822,7 @@ void GLES2DecoderImpl::DeleteSyncHelper(GLuint sync) {
   if (group_->GetSyncServiceId(sync, &service_id)) {
     glDeleteSync(service_id);
     group_->RemoveSyncId(sync);
-  } else {
+  } else if (sync != 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteSync", "unknown sync");
   }
 }
@@ -15392,12 +15395,13 @@ error::Error GLES2DecoderImpl::HandleUniformBlockBinding(
 
 error::Error GLES2DecoderImpl::HandleClientWaitSync(
     uint32_t immediate_data_size, const void* cmd_data) {
+  const char* function_name = "glClientWaitSync";
   if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
   const gles2::cmds::ClientWaitSync& c =
       *static_cast<const gles2::cmds::ClientWaitSync*>(cmd_data);
   const GLuint sync = static_cast<GLuint>(c.sync);
-  const GLbitfield flags = static_cast<GLbitfield>(c.flags);
+  GLbitfield flags = static_cast<GLbitfield>(c.flags);
   const GLuint64 timeout = c.timeout();
   typedef cmds::ClientWaitSync::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
@@ -15410,15 +15414,37 @@ error::Error GLES2DecoderImpl::HandleClientWaitSync(
   }
   GLsync service_sync = 0;
   if (!group_->GetSyncServiceId(sync, &service_sync)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "ClientWaitSync", "invalid sync");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "invalid sync");
     return error::kNoError;
   }
-  *result_dst = glClientWaitSync(service_sync, flags, timeout);
+  if ((flags & ~GL_SYNC_FLUSH_COMMANDS_BIT) != 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "invalid flags");
+    return error::kNoError;
+  }
+  // Force GL_SYNC_FLUSH_COMMANDS_BIT to avoid infinite wait.
+  flags |= GL_SYNC_FLUSH_COMMANDS_BIT;
+
+  GLenum status = glClientWaitSync(service_sync, flags, timeout);
+  switch (status) {
+    case GL_ALREADY_SIGNALED:
+    case GL_TIMEOUT_EXPIRED:
+    case GL_CONDITION_SATISFIED:
+      break;
+    case GL_WAIT_FAILED:
+      // Avoid leaking GL errors when using virtual contexts.
+      LOCAL_PEEK_GL_ERROR(function_name);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  *result_dst = status;
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleWaitSync(
     uint32_t immediate_data_size, const void* cmd_data) {
+  const char* function_name = "glWaitSync";
   if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
   const gles2::cmds::WaitSync& c =
@@ -15428,11 +15454,32 @@ error::Error GLES2DecoderImpl::HandleWaitSync(
   const GLuint64 timeout = c.timeout();
   GLsync service_sync = 0;
   if (!group_->GetSyncServiceId(sync, &service_sync)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "WaitSync", "invalid sync");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "invalid sync");
+    return error::kNoError;
+  }
+  if (flags != 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "invalid flags");
+    return error::kNoError;
+  }
+  if (timeout != GL_TIMEOUT_IGNORED) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "invalid timeout");
     return error::kNoError;
   }
   glWaitSync(service_sync, flags, timeout);
   return error::kNoError;
+}
+
+GLsync GLES2DecoderImpl::DoFenceSync(GLenum condition, GLbitfield flags) {
+  const char* function_name = "glFenceSync";
+  if (condition != GL_SYNC_GPU_COMMANDS_COMPLETE) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, function_name, "invalid condition");
+    return 0;
+  }
+  if (flags != 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "invalid flags");
+    return 0;
+  }
+  return glFenceSync(condition, flags);
 }
 
 error::Error GLES2DecoderImpl::HandleGetInternalformativ(

@@ -2870,6 +2870,7 @@ _FUNCTION_INFO = {
   'FenceSync': {
     'type': 'Create',
     'client_test': False,
+    'decoder_func': 'DoFenceSync',
     'unsafe': True,
     'trace_level': 1,
   },
@@ -4854,7 +4855,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     if func.IsUnsafe() and func.GetInfo('id_mapping'):
       code_no_gen = """  if (!group_->Get%(type)sServiceId(
         %(var)s, &%(service_var)s)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "%(func)s", "invalid %(var)s id");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "%(func)s", "invalid %(var)s id");
     return error::kNoError;
   }
 """

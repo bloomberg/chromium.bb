@@ -1418,7 +1418,7 @@ error::Error GLES2DecoderImpl::HandleFenceSync(uint32_t immediate_data_size,
   if (group_->GetSyncServiceId(client_id, &service_id)) {
     return error::kInvalidArguments;
   }
-  service_id = glFenceSync(condition, flags);
+  service_id = DoFenceSync(condition, flags);
   if (service_id) {
     group_->AddSyncId(client_id, service_id);
   }
@@ -2235,7 +2235,7 @@ error::Error GLES2DecoderImpl::HandleGetSynciv(uint32_t immediate_data_size,
   }
   GLsync service_sync = 0;
   if (!group_->GetSyncServiceId(sync, &service_sync)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glGetSynciv", "invalid sync id");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glGetSynciv", "invalid sync id");
     return error::kNoError;
   }
   glGetSynciv(service_sync, pname, num_values, nullptr, values);
