@@ -211,4 +211,81 @@ bool StructTraits<mojom::FormDataPredictions, FormDataPredictions>::Read(
   return true;
 }
 
+// static
+bool StructTraits<mojom::PasswordAndRealm, PasswordAndRealm>::Read(
+    mojom::PasswordAndRealmDataView data,
+    PasswordAndRealm* out) {
+  if (!data.ReadPassword(&out->password))
+    return false;
+  if (!data.ReadRealm(&out->realm))
+    return false;
+
+  return true;
+}
+
+// static
+bool StructTraits<mojom::UsernamesCollectionKey, UsernamesCollectionKey>::Read(
+    mojom::UsernamesCollectionKeyDataView data,
+    UsernamesCollectionKey* out) {
+  if (!data.ReadUsername(&out->username))
+    return false;
+  if (!data.ReadPassword(&out->password))
+    return false;
+  if (!data.ReadRealm(&out->realm))
+    return false;
+
+  return true;
+}
+
+// static
+void* StructTraits<mojom::PasswordFormFillData, PasswordFormFillData>::
+    SetUpContext(const PasswordFormFillData& r) {
+  // Extracts keys vector and values vector from the map, saves them as a pair.
+  auto* pair = new UsernamesCollectionKeysValuesPair();
+  for (const auto& i : r.other_possible_usernames) {
+    pair->first.push_back(i.first);
+    pair->second.push_back(i.second);
+  }
+
+  return pair;
+}
+
+// static
+void StructTraits<mojom::PasswordFormFillData, PasswordFormFillData>::
+    TearDownContext(const PasswordFormFillData& r, void* context) {
+  delete static_cast<UsernamesCollectionKeysValuesPair*>(context);
+}
+
+// static
+bool StructTraits<mojom::PasswordFormFillData, PasswordFormFillData>::Read(
+    mojom::PasswordFormFillDataDataView data,
+    PasswordFormFillData* out) {
+  if (!data.ReadName(&out->name) || !data.ReadOrigin(&out->origin) ||
+      !data.ReadAction(&out->action) ||
+      !data.ReadUsernameField(&out->username_field) ||
+      !data.ReadPasswordField(&out->password_field) ||
+      !data.ReadPreferredRealm(&out->preferred_realm) ||
+      !data.ReadAdditionalLogins(&out->additional_logins))
+    return false;
+
+  // Combines keys vector and values vector to the map.
+  std::vector<UsernamesCollectionKey> keys;
+  if (!data.ReadOtherPossibleUsernamesKeys(&keys))
+    return false;
+  std::vector<std::vector<base::string16>> values;
+  if (!data.ReadOtherPossibleUsernamesValues(&values))
+    return false;
+  if (keys.size() != values.size())
+    return false;
+  out->other_possible_usernames.clear();
+  for (size_t i = 0; i < keys.size(); ++i)
+    out->other_possible_usernames.insert({keys[i], values[i]});
+
+  out->wait_for_username = data.wait_for_username();
+  out->is_possible_change_password_form =
+      data.is_possible_change_password_form();
+
+  return true;
+}
+
 }  // namespace mojo

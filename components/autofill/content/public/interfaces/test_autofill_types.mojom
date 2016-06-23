@@ -11,4 +11,5 @@ interface TypeTraitsTest {
   PassFormFieldData(FormFieldData s) => (FormFieldData passed);
   PassFormDataPredictions(FormDataPredictions s) => (FormDataPredictions passed);
   PassFormFieldDataPredictions(FormFieldDataPredictions s) => (FormFieldDataPredictions passed);
+  PassPasswordFormFillData(PasswordFormFillData s) => (PasswordFormFillData passed);
 };

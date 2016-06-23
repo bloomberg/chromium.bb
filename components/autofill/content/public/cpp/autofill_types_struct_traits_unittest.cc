@@ -4,6 +4,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/public/interfaces/test_autofill_types.mojom.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/form_data.h"
@@ -27,6 +28,95 @@ void CreateTestFieldDataPredictions(const std::string& signature,
   field_predict->server_type = "TestServerType";
   field_predict->overall_type = "TestOverallType";
   field_predict->parseable_name = "TestParseableName";
+}
+
+void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
+  fill_data->name = base::ASCIIToUTF16("TestName");
+  fill_data->origin = GURL("https://foo.com/");
+  fill_data->action = GURL("https://foo.com/login");
+  test::CreateTestSelectField("TestUsernameFieldLabel", "TestUsernameFieldName",
+                              "TestUsernameFieldValue", kOptions, kOptions, 4,
+                              &fill_data->username_field);
+  test::CreateTestSelectField("TestPasswordFieldLabel", "TestPasswordFieldName",
+                              "TestPasswordFieldValue", kOptions, kOptions, 4,
+                              &fill_data->password_field);
+  fill_data->preferred_realm = "https://foo.com/";
+
+  base::string16 name;
+  PasswordAndRealm pr;
+  name = base::ASCIIToUTF16("Tom");
+  pr.password = base::ASCIIToUTF16("Tom_Password");
+  pr.realm = "https://foo.com/";
+  fill_data->additional_logins[name] = pr;
+  name = base::ASCIIToUTF16("Jerry");
+  pr.password = base::ASCIIToUTF16("Jerry_Password");
+  pr.realm = "https://bar.com/";
+  fill_data->additional_logins[name] = pr;
+
+  UsernamesCollectionKey key;
+  key.username = base::ASCIIToUTF16("Tom");
+  key.password = base::ASCIIToUTF16("Tom_Password");
+  key.realm = "https://foo.com/";
+  std::vector<base::string16>& possible_names =
+      fill_data->other_possible_usernames[key];
+  possible_names.push_back(base::ASCIIToUTF16("Tom_1"));
+  possible_names.push_back(base::ASCIIToUTF16("Tom_2"));
+  key.username = base::ASCIIToUTF16("Jerry");
+  key.password = base::ASCIIToUTF16("Jerry_Password");
+  key.realm = "https://bar.com/";
+  possible_names = fill_data->other_possible_usernames[key];
+  possible_names.push_back(base::ASCIIToUTF16("Jerry_1"));
+  possible_names.push_back(base::ASCIIToUTF16("Jerry_2"));
+
+  fill_data->wait_for_username = true;
+  fill_data->is_possible_change_password_form = false;
+}
+
+void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
+                                    const PasswordFormFillData& actual) {
+  EXPECT_EQ(expected.name, actual.name);
+  EXPECT_EQ(expected.origin, actual.origin);
+  EXPECT_EQ(expected.action, actual.action);
+  EXPECT_TRUE(expected.username_field.SameFieldAs(actual.username_field));
+  EXPECT_TRUE(expected.password_field.SameFieldAs(actual.password_field));
+  EXPECT_EQ(expected.preferred_realm, actual.preferred_realm);
+
+  {
+    EXPECT_EQ(expected.additional_logins.size(),
+              actual.additional_logins.size());
+    auto iter1 = expected.additional_logins.begin();
+    auto end1 = expected.additional_logins.end();
+    auto iter2 = actual.additional_logins.begin();
+    auto end2 = actual.additional_logins.end();
+    for (; iter1 != end1 && iter2 != end2; ++iter1, ++iter2) {
+      EXPECT_EQ(iter1->first, iter2->first);
+      EXPECT_EQ(iter1->second.password, iter2->second.password);
+      EXPECT_EQ(iter1->second.realm, iter2->second.realm);
+    }
+    ASSERT_EQ(iter1, end1);
+    ASSERT_EQ(iter2, end2);
+  }
+
+  {
+    EXPECT_EQ(expected.other_possible_usernames.size(),
+              actual.other_possible_usernames.size());
+    auto iter1 = expected.other_possible_usernames.begin();
+    auto end1 = expected.other_possible_usernames.end();
+    auto iter2 = actual.other_possible_usernames.begin();
+    auto end2 = actual.other_possible_usernames.end();
+    for (; iter1 != end1 && iter2 != end2; ++iter1, ++iter2) {
+      EXPECT_EQ(iter1->first.username, iter2->first.username);
+      EXPECT_EQ(iter1->first.password, iter2->first.password);
+      EXPECT_EQ(iter1->first.realm, iter2->first.realm);
+      EXPECT_EQ(iter1->second, iter2->second);
+    }
+    ASSERT_EQ(iter1, end1);
+    ASSERT_EQ(iter2, end2);
+  }
+
+  EXPECT_EQ(expected.wait_for_username, actual.wait_for_username);
+  EXPECT_EQ(expected.is_possible_change_password_form,
+            actual.is_possible_change_password_form);
 }
 
 }  // namespace
@@ -63,6 +153,12 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
     callback.Run(s);
   }
 
+  void PassPasswordFormFillData(
+      const PasswordFormFillData& s,
+      const PassPasswordFormFillDataCallback& callback) override {
+    callback.Run(s);
+  }
+
  private:
   base::MessageLoop loop_;
 
@@ -96,6 +192,13 @@ void ExpectFormDataPredictions(const FormDataPredictions& expected,
                                const base::Closure& closure,
                                const FormDataPredictions& passed) {
   EXPECT_EQ(expected, passed);
+  closure.Run();
+}
+
+void ExpectPasswordFormFillData(const PasswordFormFillData& expected,
+                                const base::Closure& closure,
+                                const PasswordFormFillData& passed) {
+  CheckEqualPasswordFormFillData(expected, passed);
   closure.Run();
 }
 
@@ -152,6 +255,17 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormDataPredictions) {
   proxy->PassFormDataPredictions(
       input,
       base::Bind(&ExpectFormDataPredictions, input, loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormFillData) {
+  PasswordFormFillData input;
+  CreateTestPasswordFormFillData(&input);
+
+  base::RunLoop loop;
+  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
+  proxy->PassPasswordFormFillData(input, base::Bind(&ExpectPasswordFormFillData,
+                                                    input, loop.QuitClosure()));
   loop.Run();
 }
 

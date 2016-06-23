@@ -70,3 +70,30 @@ struct FormDataPredictions {
   string signature;
   array<FormFieldDataPredictions> fields;
 };
+
+struct PasswordAndRealm {
+  string password;
+  string realm;
+};
+
+struct UsernamesCollectionKey {
+  string username;
+  string password;
+  string realm;
+};
+
+struct PasswordFormFillData {
+  string name;
+  url.mojom.Url origin;
+  url.mojom.Url action;
+  FormFieldData username_field;
+  FormFieldData password_field;
+  string preferred_realm;
+  map<string, PasswordAndRealm> additional_logins;
+  // Keys for std::map<UsernamesCollectionKey, std::vector<base::string16>>
+  array<UsernamesCollectionKey> other_possible_usernames_keys;
+  // Values for std::map<UsernamesCollectionKey, std::vector<base::string16>>
+  array<array<string>> other_possible_usernames_values;
+  bool wait_for_username;
+  bool is_possible_change_password_form;
+};

@@ -8,12 +8,11 @@ public_headers = [
   "//components/autofill/core/common/form_data_predictions.h",
   "//components/autofill/core/common/form_field_data.h",
   "//components/autofill/core/common/form_field_data_predictions.h",
+  "//components/autofill/core/common/password_form_fill_data.h",
 ]
-traits_headers = [
-  "//components/autofill/content/public/cpp/autofill_types_struct_traits.h"
-]
+traits_headers = [ "//components/autofill/content/public/cpp/autofill_types_struct_traits.h" ]
 sources = [
-  "//components/autofill/content/public/cpp/autofill_types_struct_traits.cc"
+  "//components/autofill/content/public/cpp/autofill_types_struct_traits.cc",
 ]
 deps = [
   "//base",
@@ -27,6 +26,9 @@ type_mappings = [
   "autofill.mojom.FormDataPredictions=autofill::FormDataPredictions",
   "autofill.mojom.FormFieldData=autofill::FormFieldData",
   "autofill.mojom.FormFieldDataPredictions=autofill::FormFieldDataPredictions",
+  "autofill.mojom.PasswordAndRealm=autofill::PasswordAndRealm",
+  "autofill.mojom.PasswordFormFillData=autofill::PasswordFormFillData",
   "autofill.mojom.RoleAttribute=autofill::FormFieldData::RoleAttribute",
   "autofill.mojom.TextDirection=base::i18n::TextDirection",
+  "autofill.mojom.UsernamesCollectionKey=autofill::UsernamesCollectionKey",
 ]
