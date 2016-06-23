@@ -356,7 +356,10 @@ TEST_F(InputMethodControllerTest, CompositionFireBeforeInput)
     Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
     script->setInnerHTML(
         "document.getElementById('sample').addEventListener('beforeinput', function(event) {"
-        "    document.title = `beforeinput.isComposing:${event.isComposing}`;"
+        "    document.title = `beforeinput.isComposing:${event.isComposing};`;"
+        "});"
+        "document.getElementById('sample').addEventListener('input', function(event) {"
+        "    document.title += `input.isComposing:${event.isComposing};`;"
         "});",
         ASSERT_NO_EXCEPTION);
     document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
@@ -369,12 +372,12 @@ TEST_F(InputMethodControllerTest, CompositionFireBeforeInput)
 
     document().setTitle(emptyString());
     controller().setComposition("foo", underlines, 0, 3);
-    EXPECT_STREQ("beforeinput.isComposing:true", document().title().utf8().data());
+    EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;", document().title().utf8().data());
 
     document().setTitle(emptyString());
     controller().confirmComposition();
     // Last 'beforeinput' should also be inside composition scope.
-    EXPECT_STREQ("beforeinput.isComposing:true", document().title().utf8().data());
+    EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;", document().title().utf8().data());
 }
 
 } // namespace blink

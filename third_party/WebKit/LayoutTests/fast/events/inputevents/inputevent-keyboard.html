@@ -9,18 +9,28 @@
 <input type="text" id="txt">
 <script>
 test(function() {
+    var lastBeforeInputType = '';
     var lastInputType = '';
     var txt = document.getElementById('txt');
     txt.addEventListener('beforeinput', function(event) {
+        assert_true(event instanceof InputEvent);
+        assert_false(event.isComposing);
+        lastBeforeInputType = event.inputType;
+    });
+    txt.addEventListener('input', function(event) {
+        assert_true(event instanceof InputEvent);
+        assert_false(event.isComposing);
         lastInputType = event.inputType;
     });
     if (!window.eventSender) {
         document.write('This test requires eventSender');
     } else {
-        var kNoBeforeInputFired = 'noBeforeInputFired';
+        var kNoInputEventFired = 'noInputEventFired';
         function testKeyDownInputType(key, modifiers, inputType) {
-            lastInputType = kNoBeforeInputFired;
+            lastBeforeInputType = kNoInputEventFired;
+            lastInputType = kNoInputEventFired;
             eventSender.keyDown(key, modifiers);
+            assert_equals(lastBeforeInputType, inputType, `${modifiers.toString()}+${key} should produce beforeInputType: ${inputType}`);
             assert_equals(lastInputType, inputType, `${modifiers.toString()}+${key} should produce inputType: ${inputType}`);
         }
 
@@ -40,9 +50,9 @@ test(function() {
             testKeyDownInputType('z', ['ctrlKey', 'shiftKey'], 'redo');
         }
         // Move command should not generate input events.
-        testKeyDownInputType('leftArrow', [], kNoBeforeInputFired);
-        testKeyDownInputType('leftArrow', ['shiftKey'], kNoBeforeInputFired);
-        testKeyDownInputType('home', [], kNoBeforeInputFired);
+        testKeyDownInputType('leftArrow', [], kNoInputEventFired);
+        testKeyDownInputType('leftArrow', ['shiftKey'], kNoInputEventFired);
+        testKeyDownInputType('home', [], kNoInputEventFired);
     }
 }, 'Testing beforeinput inputType');
 </script>

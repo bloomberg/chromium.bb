@@ -2110,13 +2110,8 @@ void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEve
 
 void Node::dispatchInputEvent()
 {
-    if (RuntimeEnabledFeatures::inputEventEnabled()) {
-        InputEventInit eventInitDict;
-        eventInitDict.setBubbles(true);
-        dispatchScopedEvent(InputEvent::create(EventTypeNames::input, eventInitDict));
-    } else {
-        dispatchScopedEvent(Event::createBubble(EventTypeNames::input));
-    }
+    // Legacy 'input' event for forms set value and checked.
+    dispatchScopedEvent(Event::createBubble(EventTypeNames::input));
 }
 
 void Node::defaultEventHandler(Event* event)
@@ -2165,7 +2160,10 @@ void Node::defaultEventHandler(Event* event)
         }
 #endif
     } else if (event->type() == EventTypeNames::webkitEditableContentChanged) {
-        dispatchInputEvent();
+        // TODO(chongz): Remove after shipped.
+        // New InputEvent are dispatched in Editor::appliedEditing, etc.
+        if (!RuntimeEnabledFeatures::inputEventEnabled())
+            dispatchInputEvent();
     }
 }
 

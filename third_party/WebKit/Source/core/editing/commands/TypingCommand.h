@@ -77,6 +77,9 @@ public:
     void deleteSelection(bool smartDelete, EditingState*);
     void setCompositionType(TextCompositionType type) { m_compositionType = type; }
 
+    ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
+    TextCompositionType compositionType() const { return m_compositionType; }
+
 private:
     static TypingCommand* create(Document& document, ETypingCommand command, const String& text = "", Options options = 0, TextGranularity granularity = CharacterGranularity)
     {
@@ -112,7 +115,6 @@ private:
     bool makeEditableRootEmpty(EditingState*);
 
     void updateCommandTypeOfOpenCommand(ETypingCommand typingCommand) { m_commandType = typingCommand; }
-    ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
 
     ETypingCommand m_commandType;
     String m_textToInsert;
@@ -132,6 +134,8 @@ private:
     bool m_shouldRetainAutocorrectionIndicator;
     bool m_shouldPreventSpellChecking;
 };
+
+DEFINE_TYPE_CASTS(TypingCommand, CompositeEditCommand, command, command->isTypingCommand(), command.isTypingCommand());
 
 } // namespace blink
 

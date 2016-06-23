@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>InputEvent: execCommand test</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<p id="txt" contenteditable></p>
+<script>
+test(function() {
+    var lastBeforeInputType = '';
+    var lastInputType = '';
+    var txt = document.getElementById('txt');
+    txt.addEventListener('beforeinput', function(event) {
+        assert_true(event instanceof InputEvent);
+        assert_false(event.isComposing);
+        lastBeforeInputType = event.inputType;
+    });
+    txt.addEventListener('input', function(event) {
+        assert_true(event instanceof InputEvent);
+        assert_false(event.isComposing);
+        lastInputType = event.inputType;
+    });
+    if (!window.eventSender) {
+        document.write('This test requires eventSender');
+    } else {
+        var kNoInputEventFired = 'noInputEventFired';
+        function testExecCommandInputType(command, args, inputType) {
+            lastBeforeInputType = kNoInputEventFired;
+            lastInputType = kNoInputEventFired;
+            document.execCommand(command, false, args);
+            assert_equals(lastBeforeInputType, kNoInputEventFired, `execCommand(${command}, false, ${args}) shouldn't fire beforeinput`);
+            assert_equals(lastInputType, inputType, `execCommand(${command}, false, ${args}) should produce inputType: ${inputType}`);
+        }
+
+        txt.focus();
+        // InsertText
+        testExecCommandInputType('insertText', 'a', 'insertText');
+        testExecCommandInputType('insertText', 'bc', 'insertText');
+        assert_equals('abc', txt.innerHTML);
+
+        // Styling
+        var selection = window.getSelection();
+        selection.collapse(txt, 0);
+        selection.extend(txt, 1);
+        // TODO(chongz): Add |inputType| for 'bold'.
+        testExecCommandInputType('bold', 'bc', '');
+        assert_equals('<b>abc</b>', txt.innerHTML);
+
+        // Copy shouldn't fire 'input'.
+        testExecCommandInputType('copy', null, kNoInputEventFired);
+        // Paste should fire 'input'.
+        // TODO(chongz): Add |inputType| for 'paste'.
+        testExecCommandInputType('paste', null, '');
+    }
+}, 'Testing input with execCommand');
+</script>
+</body>
+</html>

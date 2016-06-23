@@ -49,6 +49,7 @@ public:
     };
 
     static InputEvent* createBeforeInput(InputType, const String& data, EventCancelable, EventIsComposing, const RangeVector*);
+    static InputEvent* createInput(InputType, const String& data, EventIsComposing, const RangeVector*);
 
     String inputType() const;
     const String& data() const { return m_data; }
