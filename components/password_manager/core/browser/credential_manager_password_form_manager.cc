@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
 
@@ -21,11 +23,13 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
     const PasswordForm& observed_form,
     std::unique_ptr<autofill::PasswordForm> saved_form,
     CredentialManagerPasswordFormManagerDelegate* delegate)
-    : PasswordFormManager(driver->GetPasswordManager(),
-                          client,
-                          driver,
-                          observed_form,
-                          true),
+    : PasswordFormManager(
+          driver->GetPasswordManager(),
+          client,
+          driver,
+          observed_form,
+          true,
+          base::WrapUnique(new FormSaverImpl(client->GetPasswordStore()))),
       delegate_(delegate),
       saved_form_(std::move(saved_form)) {
   DCHECK(saved_form_);

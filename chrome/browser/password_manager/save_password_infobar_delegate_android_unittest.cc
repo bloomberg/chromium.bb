@@ -8,12 +8,14 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -33,7 +35,13 @@ class MockPasswordFormManager : public password_manager::PasswordFormManager {
       password_manager::PasswordManagerClient* client,
       base::WeakPtr<password_manager::PasswordManagerDriver> driver,
       const autofill::PasswordForm& form)
-      : PasswordFormManager(password_manager, client, driver, form, false) {}
+      : PasswordFormManager(
+            password_manager,
+            client,
+            driver,
+            form,
+            false,
+            base::WrapUnique(new password_manager::StubFormSaver)) {}
 
   ~MockPasswordFormManager() override {}
 

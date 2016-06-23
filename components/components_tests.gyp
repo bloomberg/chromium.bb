@@ -515,6 +515,7 @@
       'password_manager/core/browser/export/password_csv_writer_unittest.cc',
       'password_manager/core/browser/export/password_exporter_unittest.cc',
       'password_manager/core/browser/facet_manager_unittest.cc',
+      'password_manager/core/browser/form_saver_impl_unittest.cc',
       'password_manager/core/browser/import/csv_reader_unittest.cc',
       'password_manager/core/browser/import/password_csv_reader_unittest.cc',
       'password_manager/core/browser/import/password_importer_unittest.cc',

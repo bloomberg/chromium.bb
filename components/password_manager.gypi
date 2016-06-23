@@ -64,6 +64,9 @@
         'password_manager/core/browser/facet_manager.cc',
         'password_manager/core/browser/facet_manager.h',
         'password_manager/core/browser/facet_manager_host.h',
+        'password_manager/core/browser/form_saver.h',
+        'password_manager/core/browser/form_saver_impl.cc',
+        'password_manager/core/browser/form_saver_impl.h',
         'password_manager/core/browser/import/csv_reader.cc',
         'password_manager/core/browser/import/csv_reader.h',
         'password_manager/core/browser/import/password_csv_reader.cc',
@@ -192,6 +195,7 @@
         'password_manager/core/browser/password_manager_test_utils.cc',
         'password_manager/core/browser/password_manager_test_utils.h',
         # Note: sources list duplicated in GN build.
+        'password_manager/core/browser/stub_form_saver.h',
         'password_manager/core/browser/stub_log_manager.cc',
         'password_manager/core/browser/stub_log_manager.h',
         'password_manager/core/browser/stub_password_manager_client.cc',

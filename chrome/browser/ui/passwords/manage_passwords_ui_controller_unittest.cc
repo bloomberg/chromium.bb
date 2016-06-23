@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
@@ -233,9 +234,9 @@ ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
     const autofill::PasswordForm& observed_form,
     ScopedVector<autofill::PasswordForm> best_matches) {
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
-      new password_manager::PasswordFormManager(&password_manager_, &client_,
-                                                driver_.AsWeakPtr(),
-                                                observed_form, true));
+      new password_manager::PasswordFormManager(
+          &password_manager_, &client_, driver_.AsWeakPtr(), observed_form,
+          true, base::WrapUnique(new password_manager::StubFormSaver)));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   test_form_manager->OnGetPasswordStoreResults(std::move(best_matches));
   return test_form_manager;

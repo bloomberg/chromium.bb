@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -118,7 +119,8 @@ ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           &password_manager_, &stub_client_, driver_.AsWeakPtr(),
-          test_local_form(), false));
+          test_local_form(), false,
+          base::WrapUnique(new password_manager::StubFormSaver)));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   if (include_federated) {
     test_stored_forms_.push_back(

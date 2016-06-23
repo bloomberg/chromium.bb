@@ -8,6 +8,7 @@
 #include <map>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -20,6 +21,7 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/keychain_migration_status_mac.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
@@ -186,7 +188,7 @@ void PasswordManager::OnPresaveGeneratedPassword(
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
   PasswordFormManager* form_manager = GetMatchingPendingManager(form);
   if (form_manager) {
-    form_manager->PresaveGeneratedPassword(form);
+    form_manager->form_saver()->PresaveGeneratedPassword(form);
     return;
   }
 }
@@ -200,7 +202,7 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
   PasswordFormManager* form_manager = GetMatchingPendingManager(form);
   if (form_manager) {
     if (!password_is_generated)
-      form_manager->RemovePresavedPassword();
+      form_manager->form_saver()->RemovePresavedPassword();
     form_manager->set_has_generated_password(password_is_generated);
     return;
   }
@@ -229,7 +231,8 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   // ability to detect forms.
   bool ssl_valid = form.origin.SchemeIsCryptographic();
   PasswordFormManager* manager = new PasswordFormManager(
-      this, client_, driver->AsWeakPtr(), form, ssl_valid);
+      this, client_, driver->AsWeakPtr(), form, ssl_valid,
+      base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
   pending_login_managers_.push_back(manager);
   manager->FetchDataFromPasswordStore();
 }
@@ -531,7 +534,8 @@ void PasswordManager::CreatePendingLoginManagers(
     PasswordFormManager* manager = new PasswordFormManager(
         this, client_,
         (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
-        *iter, ssl_valid);
+        *iter, ssl_valid,
+        base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
     pending_login_managers_.push_back(manager);
 
     manager->FetchDataFromPasswordStore();

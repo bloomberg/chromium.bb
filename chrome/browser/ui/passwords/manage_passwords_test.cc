@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 
@@ -62,7 +63,8 @@ void ManagePasswordsTest::SetupPendingPassword() {
 
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          nullptr, &client, driver.AsWeakPtr(), *test_form(), false));
+          nullptr, &client, driver.AsWeakPtr(), *test_form(), false,
+          base::WrapUnique(new password_manager::StubFormSaver)));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<autofill::PasswordForm> best_matches;
   test_form_manager->OnGetPasswordStoreResults(std::move(best_matches));
@@ -76,7 +78,8 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
 
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          nullptr, &client, driver.AsWeakPtr(), *test_form(), false));
+          nullptr, &client, driver.AsWeakPtr(), *test_form(), false,
+          base::WrapUnique(new password_manager::StubFormSaver)));
   GetController()->OnAutomaticPasswordSave(std::move(test_form_manager));
 }
 
