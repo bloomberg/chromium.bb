@@ -1604,10 +1604,6 @@ main(int argc, char *argv[])
 
 	memset(&editor, 0, sizeof editor);
 
-#ifdef HAVE_PANGO
-	g_type_init();
-#endif
-
 	editor.display = display_create(&argc, argv);
 	if (editor.display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");

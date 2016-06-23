@@ -288,10 +288,6 @@ main(int argc, char *argv[])
 
 	memset(&stacking, 0, sizeof stacking);
 
-#ifdef HAVE_PANGO
-	g_type_init();
-#endif
-
 	stacking.display = display_create(&argc, argv);
 	if (stacking.display == NULL) {
 		fprintf(stderr, "Failed to create display: %m\n");

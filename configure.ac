@@ -420,7 +420,7 @@ if test x$enable_clients = xyes; then
 	  [AC_ERROR([cairo-egl not used because $CAIRO_EGL_PKG_ERRORS])])],
   [have_cairo_egl=no])
 
-  PKG_CHECK_MODULES(PANGO, [pangocairo], [have_pango=yes], [have_pango=no])
+  PKG_CHECK_MODULES(PANGO, [pangocairo pango glib-2.0 >= 2.36], [have_pango=yes], [have_pango=no])
 fi
 
 AC_ARG_ENABLE(resize-optimization,
