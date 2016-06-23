@@ -32,11 +32,6 @@ ios_app_bundle("ios_web_shell") {
   assert_no_deps = ios_assert_no_deps
 }
 
-bundle_data_xib("main_view_bundle_data") {
-  visibility = [ ":shell" ]
-  source = "MainView.xib"
-}
-
 bundle_data("shell_bundle_data") {
   visibility = [ ":shell" ]
   sources = [
@@ -71,7 +66,6 @@ source_set("shell") {
   ]
 
   deps = [
-    ":main_view_bundle_data",
     ":shell_bundle_data",
     "//base",
     "//ios/net",

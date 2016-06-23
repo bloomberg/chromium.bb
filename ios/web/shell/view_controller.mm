@@ -38,7 +38,8 @@ using web::NavigationManager;
 
 @interface ViewController ()<CRWWebStateDelegate,
                              CRWWebStateObserver,
-                             UITextFieldDelegate> {
+                             UITextFieldDelegate,
+                             UIToolbarDelegate> {
   web::BrowserState* _browserState;
   std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
@@ -55,7 +56,7 @@ using web::NavigationManager;
 @synthesize toolbarView = _toolbarView;
 
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState {
-  self = [super initWithNibName:@"MainView" bundle:nil];
+  self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _browserState = browserState;
   }
@@ -69,6 +70,27 @@ using web::NavigationManager;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  CGRect bounds = self.view.bounds;
+
+  // Set up the toolbar.
+  _toolbarView = [[UIToolbar alloc] init];
+  _toolbarView.barTintColor =
+      [UIColor colorWithRed:0.337 green:0.467 blue:0.988 alpha:1.0];
+  _toolbarView.frame = CGRectMake(0, 20, CGRectGetWidth(bounds), 44);
+  _toolbarView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
+  _toolbarView.delegate = self;
+  [self.view addSubview:_toolbarView];
+
+  // Set up the container view.
+  _containerView = [[UIView alloc] init];
+  _containerView.frame =
+      CGRectMake(0, 64, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - 64);
+  _containerView.backgroundColor = [UIColor lightGrayColor];
+  _containerView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  [self.view addSubview:_containerView];
 
   // Set up the toolbar buttons.
   UIButton* back = [UIButton buttonWithType:UIButtonTypeCustom];

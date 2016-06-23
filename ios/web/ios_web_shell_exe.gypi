@@ -55,7 +55,6 @@
     ],
     'mac_bundle_resources': [
       'shell/Default.png',
-      'shell/MainView.xib',
       'shell/textfield_background@2x.png',
       'shell/toolbar_back@2x.png',
       'shell/toolbar_forward@2x.png',
