@@ -16,11 +16,16 @@ AshMDTestBase::~AshMDTestBase() {}
 
 void AshMDTestBase::SetUp() {
   AshTestBase::SetUp();
-  const int default_shelf_size = GetShelfConstant(SHELF_SIZE);
+
+  material_design_state_.reset(new test::MaterialDesignControllerTestAPI(
+      MaterialDesignController::Mode::NON_MATERIAL));
+  const int non_md_shelf_size = GetShelfConstant(SHELF_SIZE);
+
   material_design_state_.reset(
       new test::MaterialDesignControllerTestAPI(GetParam()));
   const int md_state_shelf_size = GetShelfConstant(SHELF_SIZE);
-  md_maximized_window_height_offset_ = default_shelf_size - md_state_shelf_size;
+
+  md_maximized_window_height_offset_ = non_md_shelf_size - md_state_shelf_size;
 }
 
 void AshMDTestBase::TearDown() {
