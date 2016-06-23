@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -32,6 +33,48 @@ using extensions::ExtensionAPI;
 using extensions::Feature;
 
 namespace {
+
+// Logs UMA about the performance for a given extension function run.
+void LogUma(bool success,
+            base::TimeDelta elapsed_time,
+            extensions::functions::HistogramValue histogram_value) {
+  // Note: Certain functions perform actions that are inherently slow - such as
+  // anything waiting on user action. As such, we can't always assume that a
+  // long execution time equates to a poorly-performing function.
+  if (success) {
+    if (elapsed_time < base::TimeDelta::FromMilliseconds(1)) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Extensions.Functions.SucceededTime.LessThan1ms", histogram_value);
+    } else if (elapsed_time < base::TimeDelta::FromMilliseconds(5)) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.SucceededTime.1msTo5ms",
+                                  histogram_value);
+    } else if (elapsed_time < base::TimeDelta::FromMilliseconds(10)) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Extensions.Functions.SucceededTime.5msTo10ms", histogram_value);
+    } else {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.SucceededTime.Over10ms",
+                                  histogram_value);
+    }
+    UMA_HISTOGRAM_TIMES("Extensions.Functions.SucceededTotalExecutionTime",
+                        elapsed_time);
+  } else {
+    if (elapsed_time < base::TimeDelta::FromMilliseconds(1)) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.FailedTime.LessThan1ms",
+                                  histogram_value);
+    } else if (elapsed_time < base::TimeDelta::FromMilliseconds(5)) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.FailedTime.1msTo5ms",
+                                  histogram_value);
+    } else if (elapsed_time < base::TimeDelta::FromMilliseconds(10)) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.FailedTime.5msTo10ms",
+                                  histogram_value);
+    } else {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.FailedTime.Over10ms",
+                                  histogram_value);
+    }
+    UMA_HISTOGRAM_TIMES("Extensions.Functions.FailedTotalExecutionTime",
+                        elapsed_time);
+  }
+}
 
 class ArgumentListResponseValue
     : public ExtensionFunction::ResponseValueObject {
@@ -414,20 +457,7 @@ void ExtensionFunction::SendResponseImpl(bool success) {
     results_.reset(new base::ListValue());
 
   response_callback_.Run(type, *results_, GetError(), histogram_value());
-
-  // TODO(devlin): Once we have a baseline metric for how long functions take,
-  // we can create a handful of buckets and record the function name so that we
-  // can find what the fastest/slowest are. See crbug.com/608561.
-  // Note: Certain functions perform actions that are inherently slow - such as
-  // anything waiting on user action. As such, we can't always assume that a
-  // long execution time equates to a poorly-performing function.
-  if (success) {
-    UMA_HISTOGRAM_TIMES("Extensions.Functions.SucceededTotalExecutionTime",
-                        timer_.Elapsed());
-  } else {
-    UMA_HISTOGRAM_TIMES("Extensions.Functions.FailedTotalExecutionTime",
-                        timer_.Elapsed());
-  }
+  LogUma(success, timer_.Elapsed(), histogram_value_);
 }
 
 void ExtensionFunction::OnRespondingLater(ResponseValue value) {

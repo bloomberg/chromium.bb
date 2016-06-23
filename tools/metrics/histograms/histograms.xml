@@ -14445,6 +14445,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of calls to extension functions.</summary>
 </histogram>
 
+<histogram name="Extensions.Functions.FailedTime" enum="ExtensionFunctions">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Recorded when an extension function call fails and finishes execution. The
+    suffix indicates the exact bucket the function is in. See also
+    Extensions.Functions.FailedTotalExecutionTime.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Functions.FailedTotalExecutionTime" units="ms">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -14473,6 +14482,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     the renderer side after we perform JS pre-processing, but includes all
     serialization and dispatching. Only recorded if the request is successfully
     dispatched.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Functions.SucceededTime" enum="ExtensionFunctions">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Recorded when an extension function call succeeds and finishes execution.
+    The suffix indicates the exact bucket the function is in. See also
+    Extensions.Functions.SucceededTotalExecutionTime.
   </summary>
 </histogram>
 
@@ -94368,6 +94386,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="WatcherQueryEndSession"/>
   <suffix name="WM_ENDSESSION"/>
   <affected-histogram name="Stability.ExitFunnel"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ExtensionFunctionExecutionTime" separator=".">
+  <suffix name="1msTo5ms"
+      label="Execution took between 1ms and 5ms (tolerable)."/>
+  <suffix name="5msTo10ms" label="Execution took between 5ms and 10ms (slow)."/>
+  <suffix name="LessThan1ms" label="Execution took less than 1ms (fast)."/>
+  <suffix name="Over10ms" label="Execution took over 10ms (glacial)."/>
+  <affected-histogram name="Extensions.Functions.FailedTime"/>
+  <affected-histogram name="Extensions.Functions.SucceededTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExtensionsDatabaseOpen" separator=".">
