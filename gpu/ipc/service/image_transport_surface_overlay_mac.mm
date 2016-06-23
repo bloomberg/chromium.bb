@@ -242,7 +242,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   // appropriate window.
 
   // Update the latency info to reflect the swap time.
-  for (auto latency_info : latency_info_) {
+  for (auto& latency_info : latency_info_) {
     latency_info.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, finish_time, 1);
     latency_info.AddLatencyNumberWithTimestamp(
