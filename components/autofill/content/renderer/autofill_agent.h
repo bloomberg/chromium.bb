@@ -188,6 +188,11 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Called when a same-page navigation is detected.
   void OnSamePageNavigationCompleted();
+  // Helper method which collects unowned elements (i.e., those not inside a
+  // form tag) and writes them into |output|. Returns true if the process is
+  // successful, and all conditions for firing events are true.
+  bool CollectFormlessElements(FormData* output);
+  FRIEND_TEST_ALL_PREFIXES(FormAutocompleteTest, CollectFormlessElements);
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976
@@ -269,6 +274,10 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Last form which was interacted with by the user.
   blink::WebFormElement last_interacted_form_;
+
+  // When dealing with forms that don't use a <form> tag, we keep track of the
+  // elements the user has modified so we can determine when submission occurs.
+  std::set<blink::WebFormControlElement> formless_elements_user_edited_;
 
   // Was the query node autofilled prior to previewing the form?
   bool was_query_node_autofilled_;

@@ -49,7 +49,7 @@ void VerifyReceivedRendererMessages(content::MockRenderThread* render_thread,
   // The tuple also includes a timestamp, which is ignored.
   std::tuple<FormData, base::TimeTicks> will_submit_forms;
   AutofillHostMsg_WillSubmitForm::Read(will_submit_message, &will_submit_forms);
-  ASSERT_EQ(2U, std::get<0>(will_submit_forms).fields.size());
+  ASSERT_LE(2U, std::get<0>(will_submit_forms).fields.size());
 
   FormFieldData& will_submit_form_field =
       std::get<0>(will_submit_forms).fields[0];
@@ -62,7 +62,7 @@ void VerifyReceivedRendererMessages(content::MockRenderThread* render_thread,
   if (expect_submitted_message) {
     std::tuple<FormData> submitted_forms;
     AutofillHostMsg_FormSubmitted::Read(submitted_message, &submitted_forms);
-    ASSERT_EQ(2U, std::get<0>(submitted_forms).fields.size());
+    ASSERT_LE(2U, std::get<0>(submitted_forms).fields.size());
 
     FormFieldData& submitted_field = std::get<0>(submitted_forms).fields[0];
     EXPECT_EQ(WebString("fname"), submitted_field.name);
@@ -388,6 +388,63 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormStillVisible) {
 
   // No submission messages sent.
   VerifyNoSubmitMessagesReceived(render_thread_.get());
+}
+
+// Tests that completing an Ajax request without a form present will still
+// trigger submission, if all the inputs the user has modified disappear.
+TEST_F(FormAutocompleteTest, AjaxSucceeded_FormlessElements) {
+  // Load a "form." Note that kRequiredFieldsForUpload fields are required
+  // for the formless logic to trigger, so we add a throwaway third field.
+  LoadHTML(
+      "<head><title>Checkout</title></head>"
+      "<input type='text' name='fname' id='fname'/>"
+      "<input type='text' name='lname' value='Puckett'/>"
+      "<input type='number' name='number' value='34'/>");
+
+  // Simulate user input.
+  WebDocument document = GetMainFrame()->document();
+  WebElement element = document.getElementById(WebString::fromUTF8("fname"));
+  ASSERT_FALSE(element.isNull());
+  WebInputElement fname_element = element.to<WebInputElement>();
+  SimulateUserInputChangeForElement(&fname_element, std::string("Kirby"));
+
+  // Remove element from view.
+  ExecuteJavaScriptForTests(
+      "var element = document.getElementById('fname');"
+      "element.style.display = 'none';");
+
+  // Simulate AJAX request.
+  static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
+  ProcessPendingMessages();
+
+  VerifyReceivedRendererMessages(render_thread_.get(), "Kirby", "Puckett",
+                                 /* expect_submitted_message = */ true);
+}
+
+// Unit test for CollectFormlessElements.
+TEST_F(FormAutocompleteTest, CollectFormlessElements) {
+  LoadHTML(
+    "<html><title>Checkout</title></head>"
+    "<input type='text' name='text_input'/>"
+    "<input type='checkbox' name='check_input'/>"
+    "<input type='number' name='number_input'/>"
+    "<select name='select_input'/>"
+    "  <option value='option_1'></option>"
+    "  <option value='option_2'></option>"
+    "</select>"
+    "<form><input type='text' name='excluded'/></form>"
+    "</html>");
+
+  FormData result;
+  autofill_agent_->CollectFormlessElements(&result);
+
+  // Asserting size 4 also ensures that 'excluded' field inside <form> is not
+  // collected.
+  ASSERT_EQ(4U, result.fields.size());
+  EXPECT_EQ(WebString("text_input"), result.fields[0].name);
+  EXPECT_EQ(WebString("check_input"), result.fields[1].name);
+  EXPECT_EQ(WebString("number_input"), result.fields[2].name);
+  EXPECT_EQ(WebString("select_input"), result.fields[3].name);
 }
 
 // Test that a FocusNoLongerOnForm message is sent if focus goes from an

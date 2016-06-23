@@ -245,6 +245,7 @@ void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
     form_cache_.Reset();
     submitted_forms_.clear();
     last_interacted_form_.reset();
+    formless_elements_user_edited_.clear();
   }
 }
 
@@ -409,8 +410,11 @@ void AutofillAgent::TextFieldDidChangeImpl(
   const WebInputElement* input_element = toWebInputElement(&element);
   if (input_element) {
     // Remember the last form the user interacted with.
-    if (!element.form().isNull())
+    if (element.form().isNull()) {
+      formless_elements_user_edited_.insert(element);
+    } else {
       last_interacted_form_ = element.form();
+    }
 
     // |password_autofill_agent_| keeps track of all text changes even if
     // it isn't displaying UI.
@@ -625,16 +629,52 @@ void AutofillAgent::OnShowInitialPasswordAccountSuggestions(
 }
 
 void AutofillAgent::OnSamePageNavigationCompleted() {
-  if (!last_interacted_form_.isNull()) {
-    // Assume form submission only if the form is now gone, either invisible or
-    // removed from the DOM.
+  if (last_interacted_form_.isNull()) {
+    // If no last interacted form is available (i.e., there is no form tag),
+    // we check if all the elements the user has interacted with are gone,
+    // to decide if submission has occurred.
+    if (formless_elements_user_edited_.size() == 0 ||
+        form_util::IsSomeControlElementVisible(formless_elements_user_edited_))
+      return;
+
+    FormData constructed_form;
+    if (CollectFormlessElements(&constructed_form))
+      FireHostSubmitEvents(constructed_form, /*form_submitted=*/true);
+  } else {
+    // Otherwise, assume form submission only if the form is now gone, either
+    // invisible or removed from the DOM.
     if (form_util::AreFormContentsVisible(last_interacted_form_))
       return;
 
     FireHostSubmitEvents(last_interacted_form_, /*form_submitted=*/true);
-    last_interacted_form_.reset();
   }
-  // TODO(tmartino): Else, try using Synthetic Form from form_cache.
+
+  last_interacted_form_.reset();
+  formless_elements_user_edited_.clear();
+}
+
+bool AutofillAgent::CollectFormlessElements(FormData* output) {
+  WebDocument document = render_frame()->GetWebFrame()->document();
+
+  // Build up the FormData from the unowned elements. This logic mostly
+  // mirrors the construction of the synthetic form in form_cache.cc, but
+  // happens at submit-time so we can capture the modifications the user
+  // has made, and doesn't depend on form_cache's internal state.
+  std::vector<WebElement> fieldsets;
+  std::vector<WebFormControlElement> control_elements =
+      form_util::GetUnownedAutofillableFormFieldElements(document.all(),
+                                                         &fieldsets);
+
+  if (control_elements.size() > form_util::kMaxParseableFields)
+    return false;
+
+  const form_util::ExtractMask extract_mask =
+      static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
+                                          form_util::EXTRACT_OPTIONS);
+
+  return form_util::UnownedCheckoutFormElementsAndFieldSetsToFormData(
+      fieldsets, control_elements, nullptr, document, extract_mask, output,
+      nullptr);
 }
 
 void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
