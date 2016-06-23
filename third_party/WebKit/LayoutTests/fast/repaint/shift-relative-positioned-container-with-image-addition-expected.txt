@@ -51,11 +51,6 @@
         {
           "object": "LayoutView #document",
           "rect": [10, 88, 728, 90],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [10, 88, 728, 90],
           "reason": "bounds change"
         },
         {

@@ -15,11 +15,6 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 785, 585],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
           "rect": [0, 585, 785, 15],
           "reason": "scroll"
         },
@@ -74,10 +69,6 @@
     },
     {
       "object": "InlineTextBox '.'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutView #document",
       "reason": "full"
     },
     {

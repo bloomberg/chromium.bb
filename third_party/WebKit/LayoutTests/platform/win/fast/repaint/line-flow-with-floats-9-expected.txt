@@ -14,11 +14,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 485, 600],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [8, 569, 418, 21],
           "reason": "incremental"
@@ -27,6 +22,11 @@
           "object": "LayoutBlockFlow P",
           "rect": [8, 572, 418, 18],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 566, 418, 18],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutText #text",

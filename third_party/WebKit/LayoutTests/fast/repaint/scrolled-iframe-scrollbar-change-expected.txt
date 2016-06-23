@@ -6,10 +6,6 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutView #document",
       "reason": "style change"
     },
     {

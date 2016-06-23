@@ -53,11 +53,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 400, 250],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
           "rect": [400, 0, 200, 250],
           "reason": "incremental"
         }
@@ -65,10 +60,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "full"
-    },
     {
       "object": "LayoutView #document",
       "reason": "incremental"
@@ -91,11 +82,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 400, 600],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
           "rect": [0, 250, 400, 350],
           "reason": "incremental"
         },
@@ -113,10 +99,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "full"
-    },
     {
       "object": "LayoutView #document",
       "reason": "incremental"
@@ -143,11 +125,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
           "rect": [400, 0, 400, 600],
           "reason": "incremental"
         }
@@ -155,10 +132,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "full"
-    },
     {
       "object": "LayoutView #document",
       "reason": "incremental"

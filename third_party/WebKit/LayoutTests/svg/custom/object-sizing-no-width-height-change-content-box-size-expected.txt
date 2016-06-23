@@ -24,11 +24,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [9, 9, 400, 400],
-          "reason": "full"
-        },
-        {
           "object": "LayoutEmbeddedObject object",
           "rect": [209, 9, 200, 400],
           "reason": "incremental"

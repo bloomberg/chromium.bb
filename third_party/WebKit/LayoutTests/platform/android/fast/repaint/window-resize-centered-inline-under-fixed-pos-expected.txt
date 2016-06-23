@@ -1,0 +1,263 @@
+{
+  "bounds": [600, 250],
+  "children": [
+    {
+      "bounds": [600, 250],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "rect": [0, 0, 600, 500],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 250, 600, 250],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 600, 8],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='parent'",
+          "rect": [0, 250, 6, 250],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='parent'",
+          "rect": [0, 0, 6, 34],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
+          "rect": [0, 250, 6, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
+          "rect": [0, 125, 6, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        }
+      ]
+    }
+  ]
+}
+{
+  "bounds": [400, 250],
+  "children": [
+    {
+      "bounds": [400, 250],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "rect": [0, 0, 600, 250],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 600, 8],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 400, 250],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [400, 0, 200, 250],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        }
+      ]
+    }
+  ]
+}
+{
+  "bounds": [400, 600],
+  "children": [
+    {
+      "bounds": [400, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "rect": [0, 0, 400, 600],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 400, 600],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 250, 400, 350],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 400, 8],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='parent'",
+          "rect": [0, 250, 6, 350],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
+          "rect": [0, 300, 6, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
+          "rect": [0, 125, 6, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        }
+      ]
+    }
+  ]
+}
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "rect": [0, 0, 800, 600],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 800, 8],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [400, 0, 400, 600],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        }
+      ]
+    }
+  ]
+}
+

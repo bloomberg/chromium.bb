@@ -29,15 +29,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutView #document",
       "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow HTML",
       "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "full"
     }
   ]
 }
@@ -52,19 +52,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 600, 250],
+          "reason": "bounds change"
+        },
+        {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 600, 8],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 400, 250],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [400, 0, 200, 250],
-          "reason": "incremental"
         }
       ]
     }
@@ -72,11 +67,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow HTML",
@@ -101,12 +92,7 @@
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 400, 600],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 250, 400, 350],
-          "reason": "incremental"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow HTML",
@@ -119,11 +105,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow HTML",
@@ -144,17 +126,12 @@
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 800, 600],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 800, 8],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [400, 0, 400, 600],
-          "reason": "incremental"
         }
       ]
     }
@@ -162,11 +139,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow HTML",

@@ -42,11 +42,6 @@
                   "reason": "forced by layout"
                 },
                 {
-                  "object": "LayoutView #document",
-                  "rect": [0, 500, 285, 150],
-                  "reason": "full"
-                },
-                {
                   "object": "LayoutBlockFlow BODY",
                   "rect": [8, 508, 284, 20],
                   "reason": "forced by layout"

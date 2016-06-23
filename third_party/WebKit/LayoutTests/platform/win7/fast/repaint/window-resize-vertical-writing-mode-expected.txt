@@ -1,7 +1,0 @@
-layer at (0,0) size 800x600
-  LayoutView at (0,0) size 800x600
-layer at (766,0) size 34x600
-  LayoutBlockFlow {HTML} at (0,0) size 34x600
-    LayoutBlockFlow {BODY} at (8,8) size 18x584
-      LayoutText {#text} at (0,0) size 17x248
-        text run at (0,0) width 248: "AAAA AAAA AAAA AAAA AAAA"
