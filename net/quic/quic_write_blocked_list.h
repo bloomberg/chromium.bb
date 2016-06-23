@@ -79,9 +79,10 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
       return kHeadersStreamId;
     }
 
-    QuicStreamId id = priority_write_scheduler_.PopNextReadyStream();
-    SpdyPriority priority =
-        priority_write_scheduler_.GetStreamPrecedence(id).spdy3_priority();
+    QuicStreamId id;
+    SpdyPriority priority;
+    std::tie(id, priority) =
+        priority_write_scheduler_.PopNextReadyStreamAndPriority();
 
     if (!priority_write_scheduler_.HasReadyStreams()) {
       // If no streams are blocked, don't bother latching.  This stream will be

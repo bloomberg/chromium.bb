@@ -273,7 +273,7 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
     os << ", version:";
     for (size_t i = 0; i < header.public_header.versions.size(); ++i) {
       os << " ";
-      os << header.public_header.versions[i];
+      os << QuicVersionToString(header.public_header.versions[i]);
     }
   }
   if (header.public_header.nonce != nullptr) {
