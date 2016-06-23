@@ -32,6 +32,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Passing tests, waiting to be turned on when sharding is implemented.
     self.Skip('deqp/functional/gles3/draw/*', bug=1)
     self.Skip('deqp/functional/gles3/shadermatrix/*', bug=1)
+    self.Skip('deqp/functional/gles3/texturefiltering/cube_formats_*',
+        ['mac', ('nvidia', 0xfe9)], bug=1)
+    self.Skip('deqp/functional/gles3/texturefiltering/cube_sizes_*',
+        ['mac', ('nvidia', 0xfe9)], bug=1)
+    self.Skip('deqp/functional/gles3/texturefiltering/cube_combinations_*',
+        ['mac', ('nvidia', 0xfe9)], bug=1)
 
     # All platforms.
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=483282)
