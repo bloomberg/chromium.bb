@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -98,7 +99,7 @@ class ExtensionActionIconFactoryTest
 
   void WaitForIconUpdate() {
     quit_in_icon_updated_ = true;
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     quit_in_icon_updated_ = false;
   }
 
@@ -151,7 +152,7 @@ class ExtensionActionIconFactoryTest
   void TearDown() override {
     material_design_state_.reset();
     profile_.reset();  // Get all DeleteSoon calls sent to ui_loop_.
-    ui_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // ExtensionActionIconFactory::Observer overrides:

@@ -228,7 +228,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
     history->ScheduleDBTask(
         std::unique_ptr<history::HistoryDBTask>(new QuittingHistoryDBTask()),
         &tracker);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   int CountSearchProviderSuggestions() {

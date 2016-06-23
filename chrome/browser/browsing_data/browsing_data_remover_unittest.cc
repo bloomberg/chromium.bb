@@ -446,7 +446,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
         safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
     browser_process_->SetSafeBrowsingService(sb_service.get());
     sb_service->Initialize();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // Make sure the safe browsing cookie store has no cookies.
     // TODO(mmenke): Is this really needed?
@@ -462,7 +462,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 
   virtual ~RemoveSafeBrowsingCookieTester() {
     browser_process_->safe_browsing_service()->ShutDown();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     browser_process_->SetSafeBrowsingService(nullptr);
   }
 
@@ -732,7 +732,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
     profiles.push_back(profile);
 
     personal_data_manager_->SetProfiles(&profiles);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     std::vector<autofill::CreditCard> cards;
     autofill::CreditCard card;
@@ -747,7 +747,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
     cards.push_back(card);
 
     personal_data_manager_->SetCreditCards(&cards);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
  private:
@@ -1030,7 +1030,7 @@ class BrowsingDataRemoverTest : public testing::Test {
     // the message loop is cleared out, before destroying the threads and loop.
     // Otherwise we leak memory.
     profile_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }

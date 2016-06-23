@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback_forward.h"
+#include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/app_data_migrator.h"
@@ -138,7 +139,7 @@ void OpenFileSystems(storage::FileSystemContext* fs_context,
   fs_context->OpenFileSystem(extension_url, storage::kFileSystemTypePersistent,
                              storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                              base::Bind(&DidOpenFileSystem));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void GenerateTestFiles(content::MockBlobURLRequestContext* url_request_context,
@@ -169,16 +170,16 @@ void GenerateTestFiles(content::MockBlobURLRequestContext* url_request_context,
 
   fs_context->operation_runner()->CreateFile(fs_persistent_url, false,
                                              base::Bind(&DidCreate));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   fs_context->operation_runner()->Write(url_request_context, fs_temp_url,
                                         blob1.GetBlobDataHandle(), 0,
                                         base::Bind(&DidWrite));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   fs_context->operation_runner()->Write(url_request_context, fs_persistent_url,
                                         blob1.GetBlobDataHandle(), 0,
                                         base::Bind(&DidWrite));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void VerifyFileContents(base::File file,
@@ -220,11 +221,11 @@ void VerifyTestFilesMigrated(content::StoragePartition* new_partition,
   new_fs_context->operation_runner()->OpenFile(
       fs_temp_url, base::File::FLAG_READ | base::File::FLAG_OPEN,
       base::Bind(&VerifyFileContents));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   new_fs_context->operation_runner()->OpenFile(
       fs_persistent_url, base::File::FLAG_READ | base::File::FLAG_OPEN,
       base::Bind(&VerifyFileContents));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(AppDataMigratorTest, ShouldMigrate) {
@@ -267,7 +268,7 @@ TEST_F(AppDataMigratorTest, FileSystemMigration) {
   migrator_->DoMigrationAndReply(old_ext.get(), new_ext.get(),
                                  base::Bind(&MigrationCallback));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   registry_->AddEnabled(new_ext);
   GURL extension_url =

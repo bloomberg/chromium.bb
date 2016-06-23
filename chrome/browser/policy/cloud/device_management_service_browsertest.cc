@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
@@ -141,7 +142,7 @@ class DeviceManagementServiceIntegrationTest
     job->GetRequest()->mutable_register_request();
     job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                           base::Unretained(this)));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   void SetUpOnMainThread() override {
@@ -203,7 +204,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
   request->set_oauth2_client_id("oauth2ClientId4Test");
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   ASSERT_EQ("fake_auth_code", robot_auth_code_);
 }
 
@@ -224,7 +225,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
   request->add_request()->set_policy_type(dm_protocol::kChromeUserPolicyType);
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
@@ -242,7 +243,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
   job->GetRequest()->mutable_unregister_request();
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
@@ -258,7 +259,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   job->GetRequest()->mutable_auto_enrollment_request()->set_modulus(1);
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 INSTANTIATE_TEST_CASE_P(

@@ -8,6 +8,7 @@
 
 #include "base/format_macros.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -2471,7 +2472,7 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
       "newInput.setAttribute('id', 'telephone');"
       "newInput.value = '12345';"
       "document.getElementById('testform').appendChild(newInput);");
-  msg_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   forms = form_cache.ExtractNewForms();
   ASSERT_EQ(1U, forms.size());
@@ -2527,7 +2528,7 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
       "newForm.appendChild(newLastname);"
       "newForm.appendChild(newEmail);"
       "document.body.appendChild(newForm);");
-  msg_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   web_frame = GetMainFrame();
   forms = form_cache.ExtractNewForms();

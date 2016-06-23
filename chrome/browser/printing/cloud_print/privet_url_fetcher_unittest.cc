@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/location.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -112,7 +113,7 @@ class PrivetURLFetcherTest : public ::testing::Test {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, callback.callback(), time_period);
 
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     callback.Cancel();
   }
 

@@ -283,8 +283,9 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
     ASSERT_TRUE(service_process_state_.Initialize());
     ASSERT_TRUE(service_process_state_.SignalReady(
         io_thread_.task_runner().get(), base::Closure()));
-    loop_.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-                          TestTimeouts::action_max_timeout());
+    loop_.task_runner()->PostDelayedTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+        TestTimeouts::action_max_timeout());
   }
 
   const MockLaunchd* mock_launchd() const { return mock_launchd_.get(); }

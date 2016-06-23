@@ -5,6 +5,7 @@
 #include "chrome/browser/media/combined_desktop_media_list.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/desktop_media_list_base.h"
@@ -178,7 +179,7 @@ class CombinedDesktopMediaListTest : public testing::Test {
     }
 
     combined_list_->StartUpdating(&observer_);
-    message_loop_.Run();
+    base::RunLoop().Run();
 
     // list1_'s sources.
     for (int i = 0; i < kDefaultSourceCount; ++i) {
@@ -224,7 +225,7 @@ TEST_F(CombinedDesktopMediaListTest, AddSource) {
       .WillOnce(QuitMessageLoop(&message_loop_));
 
   list1_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   list2_->AddFakeSource(index, base::UTF8ToUTF16("Test media"), index);
 
@@ -237,7 +238,7 @@ TEST_F(CombinedDesktopMediaListTest, AddSource) {
       .WillOnce(QuitMessageLoop(&message_loop_));
 
   list2_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Verify last source for list1_ and first source for list2_.
   EXPECT_EQ(combined_list_->GetSource(index).id.type,
@@ -260,7 +261,7 @@ TEST_F(CombinedDesktopMediaListTest, RemoveSource) {
           QuitMessageLoop(&message_loop_)));
 
   list1_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   list2_->RemoveFakeSource(index);
 
@@ -271,7 +272,7 @@ TEST_F(CombinedDesktopMediaListTest, RemoveSource) {
           QuitMessageLoop(&message_loop_)));
 
   list2_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Verify last source for list1_ and first source for list2_.
   EXPECT_EQ(combined_list_->GetSource(index - 1).id.type,
@@ -301,7 +302,7 @@ TEST_F(CombinedDesktopMediaListTest, MoveSource) {
       .WillOnce(QuitMessageLoop(&message_loop_));
 
   list1_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Swap sources.
   list2_->RemoveFakeSource(kDefaultSourceCount - 1);
@@ -319,7 +320,7 @@ TEST_F(CombinedDesktopMediaListTest, MoveSource) {
       .WillOnce(QuitMessageLoop(&message_loop_));
 
   list2_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CombinedDesktopMediaListTest, UpdateTitle) {
@@ -336,7 +337,7 @@ TEST_F(CombinedDesktopMediaListTest, UpdateTitle) {
       .WillOnce(QuitMessageLoop(&message_loop_));
 
   list1_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Change title.
   list2_->RemoveFakeSource(kDefaultSourceCount - 1);
@@ -349,7 +350,7 @@ TEST_F(CombinedDesktopMediaListTest, UpdateTitle) {
       .WillOnce(QuitMessageLoop(&message_loop_));
 
   list2_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(combined_list_->GetSource(kDefaultSourceCount - 1).name,
             base::UTF8ToUTF16("New test media"));
@@ -370,7 +371,7 @@ TEST_F(CombinedDesktopMediaListTest, UpdateThumbnail) {
       .WillOnce(QuitMessageLoop(&message_loop_));
 
   list1_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Change thumbnail.
   list2_->RemoveFakeSource(kDefaultSourceCount - 1);
@@ -382,5 +383,5 @@ TEST_F(CombinedDesktopMediaListTest, UpdateThumbnail) {
       .WillOnce(QuitMessageLoop(&message_loop_));
 
   list2_->Refresh();
-  message_loop_.Run();
+  base::RunLoop().Run();
 }

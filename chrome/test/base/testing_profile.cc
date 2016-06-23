@@ -578,13 +578,13 @@ void TestingProfile::DestroyHistoryService() {
   // moving to the next test. Note: if this never terminates, somebody is
   // probably leaking a reference to the history backend, so it never calls
   // our destroy task.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // Make sure we don't have any event pending that could disrupt the next
   // test.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
@@ -867,7 +867,7 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   history_service->ScheduleDBTask(
       std::unique_ptr<history::HistoryDBTask>(new QuittingHistoryDBTask()),
       &tracker);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {

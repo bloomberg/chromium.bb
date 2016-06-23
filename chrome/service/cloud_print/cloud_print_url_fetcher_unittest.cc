@@ -335,7 +335,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {
   SetHandleRawResponse(true);
 
   CreateFetcher(test_server.GetURL("/echo"), 0);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CloudPrintURLFetcherBasicTest, HandleRawData) {
@@ -345,7 +345,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, HandleRawData) {
 
   SetHandleRawData(true);
   CreateFetcher(test_server.GetURL("/echo"), 0);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
@@ -356,7 +356,7 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
   GURL url(test_server.GetURL("/defaultresponse"));
   CreateFetcher(url, 11);
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CloudPrintURLFetcherRetryBackoffTest, GiveUp) {
@@ -367,7 +367,7 @@ TEST_F(CloudPrintURLFetcherRetryBackoffTest, GiveUp) {
   GURL url(test_server.GetURL("/defaultresponse"));
   CreateFetcher(url, 11);
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace cloud_print

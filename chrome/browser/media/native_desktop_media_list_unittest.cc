@@ -11,6 +11,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -322,7 +323,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
           .WillOnce(QuitMessageLoop(message_loop()));
     }
     model_->StartUpdating(&observer_);
-    message_loop()->Run();
+    base::RunLoop().Run();
 
     if (screen) {
       EXPECT_EQ(model_->GetSource(0).id.type, DesktopMediaID::TYPE_SCREEN);
@@ -390,7 +391,7 @@ TEST_F(NativeDesktopMediaListTest, AddNativeWindow) {
   AddNativeWindow(index);
   window_capturer_->SetWindowList(window_list_);
 
-  message_loop()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(model_->GetSource(index).id.type, DesktopMediaID::TYPE_WINDOW);
   EXPECT_EQ(model_->GetSource(index).id.id, index);
@@ -428,7 +429,7 @@ TEST_F(NativeDesktopMediaListTest, RemoveNativeWindow) {
   window_list_.erase(window_list_.begin());
   window_capturer_->SetWindowList(window_list_);
 
-  message_loop()->Run();
+  base::RunLoop().Run();
 }
 
 #if defined(ENABLE_AURA_WINDOW_TESTS)
@@ -462,7 +463,7 @@ TEST_F(NativeDesktopMediaListTest, RemoveAllWindows) {
   window_list_.clear();
   window_capturer_->SetWindowList(window_list_);
 
-  message_loop()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(NativeDesktopMediaListTest, UpdateTitle) {
@@ -475,7 +476,7 @@ TEST_F(NativeDesktopMediaListTest, UpdateTitle) {
   window_list_[0].title = kTestTitle;
   window_capturer_->SetWindowList(window_list_);
 
-  message_loop()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(model_->GetSource(1).name, base::UTF8ToUTF16(kTestTitle));
 }
@@ -496,7 +497,7 @@ TEST_F(NativeDesktopMediaListTest, UpdateThumbnail) {
   // Update frame for the window and verify that we get notification about it.
   window_capturer_->SetNextFrameValue(1, 10);
 
-  message_loop()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(NativeDesktopMediaListTest, MoveWindow) {
@@ -512,5 +513,5 @@ TEST_F(NativeDesktopMediaListTest, MoveWindow) {
   window_list_[1] = temp;
   window_capturer_->SetWindowList(window_list_);
 
-  message_loop()->Run();
+  base::RunLoop().Run();
 }

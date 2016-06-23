@@ -180,7 +180,7 @@ ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
 
 ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() {
   profile_.reset(NULL);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void ResourcePrefetchPredictorTest::SetUp() {

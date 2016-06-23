@@ -349,7 +349,7 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, callback.callback(), time_period);
 
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     callback.Cancel();
   }
 

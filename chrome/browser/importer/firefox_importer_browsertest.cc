@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -327,7 +328,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     host->set_observer(observer);
     host->StartImportSettings(
         source_profile, browser()->profile(), items, writer);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   base::ScopedTempDir temp_dir_;

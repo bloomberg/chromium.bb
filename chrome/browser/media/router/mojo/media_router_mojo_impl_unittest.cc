@@ -1317,7 +1317,7 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
                    base::Unretained(&provide_handler_)));
   }
 
-  void ProcessEventLoop() { message_loop_.RunUntilIdle(); }
+  void ProcessEventLoop() { base::RunLoop().RunUntilIdle(); }
 
   void ExpectWakeReasonBucketCount(MediaRouteProviderWakeReason reason,
                                    int expected_count) {

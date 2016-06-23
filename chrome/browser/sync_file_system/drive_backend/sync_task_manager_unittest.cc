@@ -314,7 +314,7 @@ TEST(SyncTaskManagerTest, ScheduleTask) {
   client.ScheduleTask(kStatus1, base::Bind(&IncrementAndAssign, 0,
                                            &callback_count,
                                            &callback_status));
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kStatus1, callback_status);
   EXPECT_EQ(kStatus1, client.last_operation_status());
@@ -337,7 +337,7 @@ TEST(SyncTaskManagerTest, ScheduleTwoTasks) {
   client.ScheduleTask(kStatus2, base::Bind(&IncrementAndAssign, 1,
                                            &callback_count,
                                            &callback_status));
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kStatus2, callback_status);
   EXPECT_EQ(kStatus2, client.last_operation_status());
@@ -353,7 +353,7 @@ TEST(SyncTaskManagerTest, ScheduleIdleTask) {
   TaskManagerClient client(0 /* maximum_background_task */);
 
   client.ScheduleTaskIfIdle(kStatus1);
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kStatus1, client.last_operation_status());
 
@@ -372,7 +372,7 @@ TEST(SyncTaskManagerTest, ScheduleIdleTaskWhileNotIdle) {
                                            &callback_count,
                                            &callback_status));
   client.ScheduleTaskIfIdle(kStatus2);
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Idle task must not have run.
   EXPECT_EQ(kStatus1, callback_status);
@@ -399,14 +399,14 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
                                  base::ThreadTaskRunnerHandle::Get(),
                                  nullptr /* worker_pool */);
     task_manager.Initialize(SYNC_STATUS_OK);
-    message_loop.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     task_manager.ScheduleSyncTask(
         FROM_HERE, std::unique_ptr<SyncTask>(
                        new MultihopSyncTask(&task_started, &task_completed)),
         SyncTaskManager::PRIORITY_MED,
         base::Bind(&IncrementAndAssign, 0, &callback_count, &status));
   }
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, callback_count);
   EXPECT_EQ(SYNC_STATUS_UNKNOWN, status);
@@ -421,7 +421,7 @@ TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
                                base::ThreadTaskRunnerHandle::Get(),
                                nullptr /* worker_pool */);
   task_manager.Initialize(SYNC_STATUS_OK);
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   int callback_count = 0;
   SyncStatusCode callback_status1 = SYNC_STATUS_OK;
@@ -466,7 +466,7 @@ TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
       SyncTaskManager::PRIORITY_HIGH,
       base::Bind(&IncrementAndAssign, 2, &callback_count, &callback_status5));
 
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kStatus1, callback_status1);
   EXPECT_EQ(kStatus2, callback_status2);
@@ -501,7 +501,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
                      "app_id", MAKE_PATH("/hoge/fuga/piyo"), &stats)),
       SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(SYNC_STATUS_OK, status);
   EXPECT_EQ(0, stats.running_background_task);
@@ -534,7 +534,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
                      new BackgroundTask("app_id", MAKE_PATH("/piyo"), &stats)),
       SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(SYNC_STATUS_OK, status);
   EXPECT_EQ(0, stats.running_background_task);
@@ -567,7 +567,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
                      new BackgroundTask("app_id", MAKE_PATH("/piyo"), &stats)),
       SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(SYNC_STATUS_OK, status);
   EXPECT_EQ(0, stats.running_background_task);
@@ -609,7 +609,7 @@ TEST(SyncTaskManagerTest, UpdateTaskBlocker) {
         SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status2));
   }
 
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(SYNC_STATUS_OK, status1);
   EXPECT_EQ(SYNC_STATUS_OK, status2);

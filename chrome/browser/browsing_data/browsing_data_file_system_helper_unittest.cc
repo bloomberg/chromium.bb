@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
@@ -70,13 +71,13 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     helper_ = BrowsingDataFileSystemHelper::Create(
         BrowserContext::GetDefaultStoragePartition(profile_.get())->
             GetFileSystemContext());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     canned_helper_ = new CannedBrowsingDataFileSystemHelper(profile_.get());
   }
   ~BrowsingDataFileSystemHelperTest() override {
     // Avoid memory leaks.
     profile_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   TestingProfile* GetProfile() {
@@ -84,9 +85,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   }
 
   // Blocks on the current MessageLoop until Notify() is called.
-  void BlockUntilNotified() {
-    base::MessageLoop::current()->Run();
-  }
+  void BlockUntilNotified() { base::RunLoop().Run(); }
 
   // Unblocks the current MessageLoop. Should be called in response to some sort
   // of async activity in a callback method.

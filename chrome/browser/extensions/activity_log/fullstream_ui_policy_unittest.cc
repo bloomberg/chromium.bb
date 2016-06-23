@@ -108,7 +108,7 @@ class FullStreamUIPolicyTest : public testing::Test {
 
     // Wait for results; either the checker or the timeout callbacks should
     // cause the main loop to exit.
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     timeout.Cancel();
   }
@@ -933,7 +933,7 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
   BrowserThread::PostTaskAndReply(
       BrowserThread::DB, FROM_HERE, base::Bind(&base::DoNothing),
       base::MessageLoop::current()->QuitWhenIdleClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   CheckReadFilteredData(
       policy,

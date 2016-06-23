@@ -224,7 +224,7 @@ class TabDesktopMediaListTest : public testing::Test {
     }
 
     list_->StartUpdating(&observer_);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     for (int i = 0; i < kDefaultSourceCount; ++i) {
       EXPECT_EQ(list_->GetSource(i).id.type,
@@ -268,7 +268,7 @@ TEST_F(TabDesktopMediaListTest, AddTab) {
   EXPECT_CALL(observer_, OnSourceThumbnailChanged(list_.get(), 0))
       .WillOnce(QuitMessageLoop());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   list_.reset();
 }
@@ -285,7 +285,7 @@ TEST_F(TabDesktopMediaListTest, RemoveTab) {
           testing::DoAll(CheckListSize(list_.get(), kDefaultSourceCount - 1),
                          QuitMessageLoop()));
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   list_.reset();
 }
@@ -311,7 +311,7 @@ TEST_F(TabDesktopMediaListTest, MoveTab) {
       .WillOnce(testing::DoAll(CheckListSize(list_.get(), kDefaultSourceCount),
                                QuitMessageLoop()));
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   list_.reset();
 }
@@ -331,7 +331,7 @@ TEST_F(TabDesktopMediaListTest, UpdateTitle) {
   EXPECT_CALL(observer_, OnSourceNameChanged(list_.get(), 0))
       .WillOnce(QuitMessageLoop());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(list_->GetSource(0).name, base::UTF8ToUTF16("New test tab"));
 
@@ -355,7 +355,7 @@ TEST_F(TabDesktopMediaListTest, UpdateThumbnail) {
   EXPECT_CALL(observer_, OnSourceThumbnailChanged(list_.get(), 0))
       .WillOnce(QuitMessageLoop());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   list_.reset();
 }

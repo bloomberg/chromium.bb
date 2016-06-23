@@ -99,7 +99,7 @@ void BrowserWithTestWindowTest::TearDown() {
   // loop.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 gfx::NativeWindow BrowserWithTestWindowTest::GetContext() {

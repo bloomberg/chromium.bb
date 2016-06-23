@@ -15,6 +15,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -102,7 +103,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
         shingle_hashes,
         base::Bind(&PhishingTermFeatureExtractorTest::ExtractionDone,
                    base::Unretained(this)));
-    msg_loop_.Run();
+    base::RunLoop().Run();
     return success_;
   }
 
@@ -118,7 +119,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
     msg_loop_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&PhishingTermFeatureExtractorTest::QuitExtraction,
                               base::Unretained(this)));
-    msg_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Completion callback for feature extraction.

@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -172,7 +173,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                policy::POLICY_SOURCE_CLOUD, value.CreateDeepCopy(), nullptr);
   store_->SetCurrentPolicy(policies);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Notify when new policies are added.
@@ -188,7 +189,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                policy::POLICY_SOURCE_CLOUD, value.CreateDeepCopy(), nullptr);
   store_->SetCurrentPolicy(policies);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Notify when policies change.
@@ -207,7 +208,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
                policy::POLICY_SOURCE_CLOUD, new_value.CreateDeepCopy(),
                nullptr);
   store_->SetCurrentPolicy(policies);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Notify when policies are removed.
@@ -223,13 +224,13 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
 
   policies.Erase("bbb");
   store_->SetCurrentPolicy(policies);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Don't notify when there aren't any changes.
   EXPECT_CALL(observer_, OnSettingsChanged(_, _, _)).Times(0);
   store_->SetCurrentPolicy(policies);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 }
 

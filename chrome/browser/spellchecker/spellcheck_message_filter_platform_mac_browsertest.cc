@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -26,7 +27,8 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterPlatform {
 
   bool Send(IPC::Message* message) override {
     sent_messages_.push_back(message);
-    loop_->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+    loop_->task_runner()->PostTask(FROM_HERE,
+                                   base::MessageLoop::QuitWhenIdleClosure());
     return true;
   }
 

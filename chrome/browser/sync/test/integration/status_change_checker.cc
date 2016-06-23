@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/timer/timer.h"
 
 StatusChangeChecker::StatusChangeChecker() : timed_out_(false) {
@@ -31,7 +32,7 @@ void StatusChangeChecker::StartBlockingWait() {
   {
     base::MessageLoop* loop = base::MessageLoop::current();
     base::MessageLoop::ScopedNestableTaskAllower allow(loop);
-    loop->Run();
+    base::RunLoop().Run();
   }
 }
 

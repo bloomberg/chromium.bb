@@ -606,7 +606,7 @@ DnsProbeStatus DnsProbeBrowserTest::WaitForSentStatus() {
   CHECK(!awaiting_dns_probe_status_);
   while (dns_probe_status_queue_.empty()) {
     awaiting_dns_probe_status_ = true;
-    MessageLoop::current()->Run();
+    base::RunLoop().Run();
     awaiting_dns_probe_status_ = false;
   }
 

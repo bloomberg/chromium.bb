@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
@@ -44,7 +45,7 @@ class ExtensionIconManagerTest : public testing::Test {
   void WaitForImageLoad() {
     if (unwaited_image_loads_ == 0) {
       waiting_ = true;
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
       waiting_ = false;
     }
     ASSERT_GT(unwaited_image_loads_, 0);

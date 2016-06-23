@@ -370,7 +370,7 @@ bool CloudPolicyInvalidatorTest::IsInvalidationAcknowledged(
   // The acknowledgement task is run through a WeakHandle that posts back to our
   // own thread.  We need to run any posted tasks before we can check
   // acknowledgement status.
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(IsUnsent(invalidation));
   return !invalidation_service_.GetMockAckHandler()->IsUnacked(invalidation);

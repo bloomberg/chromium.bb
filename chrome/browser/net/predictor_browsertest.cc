@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -839,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(500));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   ExpectUrlRequestedFromPredictor(delayed_url);
   EXPECT_FALSE(observer()->HasHostBeenLookedUp(delayed_url));

@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -207,7 +208,7 @@ PasswordStoreMacTestDelegate::~PasswordStoreMacTestDelegate() {
 }
 
 void PasswordStoreMacTestDelegate::FinishAsyncProcessing() {
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void PasswordStoreMacTestDelegate::Initialize() {
@@ -1321,7 +1322,7 @@ class PasswordStoreMacTest : public testing::Test {
       EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()))
           .WillOnce(QuitUIMessageLoop());
       store()->GetAutofillableLogins(&mock_consumer);
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
       ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 
       store()->AddLogin(form);
@@ -1338,7 +1339,7 @@ class PasswordStoreMacTest : public testing::Test {
       // is incorrect, this will wipe the newly added form before the second
       // query.
       store()->GetAutofillableLogins(&mock_consumer);
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
       ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
       EXPECT_EQ(form, returned_form);
 
@@ -1349,7 +1350,7 @@ class PasswordStoreMacTest : public testing::Test {
           .WillOnce(
               DoAll(SaveACopyOfFirstForm(&returned_form), QuitUIMessageLoop()));
       store()->GetLogins(query_form, &mock_consumer);
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
       ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
       EXPECT_EQ(form, returned_form);
 
@@ -1522,7 +1523,7 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
       .WillOnce(
           DoAll(SaveACopyOfFirstForm(&returned_form), QuitUIMessageLoop()));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // 3. Add the returned password for m.facebook.com.
   returned_form.signon_realm = "http://m.facebook.com";
@@ -1812,7 +1813,7 @@ TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
   // the keychain.
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   store_->GetLogins(m_form, &consumer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   ScopedVector<autofill::PasswordForm> all_forms;
   EXPECT_TRUE(login_db()->GetAutofillableLogins(&all_forms));
   EXPECT_EQ(1u, all_forms.size());
@@ -1826,7 +1827,7 @@ TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
   EXPECT_CALL(mock_observer, OnLoginsChanged(list));
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   store_->GetLogins(*www_form, &consumer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(login_db()->GetAutofillableLogins(&all_forms));
   EXPECT_EQ(0u, all_forms.size());
 }

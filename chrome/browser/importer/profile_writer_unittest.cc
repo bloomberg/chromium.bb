@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -101,7 +102,7 @@ class ProfileWriterTest : public testing::Test {
         base::Bind(&ProfileWriterTest::HistoryQueryComplete,
                    base::Unretained(this)),
         &history_task_tracker);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   void HistoryQueryComplete(history::QueryResults* results) {

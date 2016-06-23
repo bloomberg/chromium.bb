@@ -211,7 +211,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
     frontend_.reset();
     profile_.reset();
     // Execute any pending deletion tasks.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:

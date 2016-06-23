@@ -3409,7 +3409,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
                  this));
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
@@ -3443,7 +3443,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
             &MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
             this));
 
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 }
 
@@ -3466,7 +3466,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
                  this));
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
@@ -3499,7 +3499,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
             &MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
             this));
 
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 }
 

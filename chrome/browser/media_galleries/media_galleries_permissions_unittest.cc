@@ -54,7 +54,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
     gallery_prefs_->SetExtensionPrefsForTesting(prefs());
     Verify();
     prefs_.pref_service()->CommitPendingWrite();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     storage_monitor::TestStorageMonitor::Destroy();
 

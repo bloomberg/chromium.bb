@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
@@ -76,7 +77,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
   void TearDown() override {
-    msg_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     csd_service_.reset();
     file_thread_.reset();
     browser_thread_.reset();
@@ -94,7 +95,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
         base::Bind(&ClientSideDetectionServiceTest::SendRequestDone,
                    base::Unretained(this)));
     phishing_url_ = phishing_url;
-    msg_loop_.Run();  // Waits until callback is called.
+    base::RunLoop().Run();  // Waits until callback is called.
     return is_phishing_;
   }
 
@@ -106,7 +107,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
         base::Bind(&ClientSideDetectionServiceTest::SendMalwareRequestDone,
                    base::Unretained(this)));
     phishing_url_ = url;
-    msg_loop_.Run();  // Waits until callback is called.
+    base::RunLoop().Run();  // Waits until callback is called.
     return is_malware_;
   }
 
@@ -272,7 +273,7 @@ TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
   csd_service_.reset();
   // Waiting for the callbacks to run should not crash even if the service
   // object is gone.
-  msg_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
@@ -457,7 +458,7 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
               ScheduleFetch(
                   ClientSideDetectionService::kInitialClientModelFetchDelayMs));
   csd_service_->SetEnabledAndRefreshState(true);
-  msg_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(service);
   Mock::VerifyAndClearExpectations(loader_1);
   Mock::VerifyAndClearExpectations(loader_2);
@@ -465,7 +466,7 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   // Check that enabling again doesn't request the model.
   csd_service_->SetEnabledAndRefreshState(true);
   // No calls expected.
-  msg_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(service);
   Mock::VerifyAndClearExpectations(loader_1);
   Mock::VerifyAndClearExpectations(loader_2);
@@ -474,7 +475,7 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   EXPECT_CALL(*loader_1, CancelFetcher());
   EXPECT_CALL(*loader_2, CancelFetcher());
   csd_service_->SetEnabledAndRefreshState(false);
-  msg_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(service);
   Mock::VerifyAndClearExpectations(loader_1);
   Mock::VerifyAndClearExpectations(loader_2);
@@ -482,7 +483,7 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   // Check that disabling again doesn't request the model.
   csd_service_->SetEnabledAndRefreshState(false);
   // No calls expected.
-  msg_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(service);
   Mock::VerifyAndClearExpectations(loader_1);
   Mock::VerifyAndClearExpectations(loader_2);

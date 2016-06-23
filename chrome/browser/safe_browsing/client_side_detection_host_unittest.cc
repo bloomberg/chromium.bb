@@ -629,7 +629,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   redirect_chain.push_back(other_phishing_url);
   SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_FALSE(cb_other.is_null());
@@ -706,7 +706,7 @@ TEST_F(ClientSideDetectionHostTest,
   redirect_chain.push_back(url);
   SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
 }
 
@@ -745,7 +745,7 @@ TEST_F(ClientSideDetectionHostTest,
   redirect_chain.push_back(url);
   SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
 
   ExpectPreClassificationChecks(start_url, &kFalse, &kFalse, &kFalse, &kFalse,
@@ -799,7 +799,7 @@ TEST_F(
   redirect_chain.push_back(url);
   SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
 }
 

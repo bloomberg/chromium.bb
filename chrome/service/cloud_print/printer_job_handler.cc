@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -247,7 +248,7 @@ void PrinterJobHandler::OnJobChanged() {
 void PrinterJobHandler::OnJobSpoolSucceeded(const PlatformJobId& job_id) {
   DCHECK(CurrentlyOnPrintThread());
   job_spooler_->AddRef();
-  print_thread_.message_loop()->ReleaseSoon(FROM_HERE, job_spooler_.get());
+  print_thread_.task_runner()->ReleaseSoon(FROM_HERE, job_spooler_.get());
   job_spooler_ = NULL;
   job_handler_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PrinterJobHandler::JobSpooled, this, job_id));
@@ -256,7 +257,7 @@ void PrinterJobHandler::OnJobSpoolSucceeded(const PlatformJobId& job_id) {
 void PrinterJobHandler::OnJobSpoolFailed() {
   DCHECK(CurrentlyOnPrintThread());
   job_spooler_->AddRef();
-  print_thread_.message_loop()->ReleaseSoon(FROM_HERE, job_spooler_.get());
+  print_thread_.task_runner()->ReleaseSoon(FROM_HERE, job_spooler_.get());
   job_spooler_ = NULL;
   VLOG(1) << "CP_CONNECTOR: Job failed (spool failed)";
   job_handler_task_runner_->PostTask(

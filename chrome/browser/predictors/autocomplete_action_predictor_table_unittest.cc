@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
@@ -81,7 +82,7 @@ AutocompleteActionPredictorTableTest::~AutocompleteActionPredictorTableTest() {
 
 void AutocompleteActionPredictorTableTest::SetUp() {
   db_.reset(new PredictorDatabase(&profile_));
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   test_db_.push_back(AutocompleteActionPredictorTable::Row(
       "BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
@@ -99,7 +100,7 @@ void AutocompleteActionPredictorTableTest::SetUp() {
 
 void AutocompleteActionPredictorTableTest::TearDown() {
   db_.reset(NULL);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   test_db_.clear();
 }
 

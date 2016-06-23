@@ -5,6 +5,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -130,7 +131,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
     ExternalProtocolHandler::LaunchUrlWithDelegate(
         url, 0, 0, ui::PAGE_TRANSITION_LINK, true, &delegate_);
     if (block_state != ExternalProtocolHandler::BLOCK)
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
 
     ASSERT_EQ(should_prompt, delegate_.has_prompted());
     ASSERT_EQ(should_launch, delegate_.has_launched());

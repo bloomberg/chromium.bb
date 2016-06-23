@@ -15,6 +15,7 @@
 #include "base/posix/global_descriptors.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -292,7 +293,7 @@ MULTIPROCESS_IPC_TEST_MAIN(NSSDecrypterChildProcess) {
   listener.SetSender(channel.get());
 
   // run message loop
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   return 0;
 }

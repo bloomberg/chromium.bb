@@ -6,6 +6,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -66,7 +67,7 @@ void ExtensionPrefsTest::TearDown() {
   prefs_.RecreateExtensionPrefs();
   Verify();
   prefs_.pref_service()->CommitPendingWrite();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests the LastPingDay/SetLastPingDay functions.

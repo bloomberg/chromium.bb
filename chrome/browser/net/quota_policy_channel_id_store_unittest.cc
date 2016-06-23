@@ -68,7 +68,7 @@ class QuotaPolicyChannelIDStoreTest : public testing::Test {
 
   void TearDown() override {
     store_ = NULL;
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   base::ScopedTempDir temp_dir_;

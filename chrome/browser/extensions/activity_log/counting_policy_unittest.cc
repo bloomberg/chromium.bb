@@ -75,7 +75,7 @@ class CountingPolicyTest : public testing::Test {
     BrowserThread::PostTaskAndReply(
         thread, FROM_HERE, base::Bind(&base::DoNothing),
         base::MessageLoop::current()->QuitWhenIdleClosure());
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   // A wrapper function for CheckReadFilteredData, so that we don't need to
@@ -118,7 +118,7 @@ class CountingPolicyTest : public testing::Test {
 
     // Wait for results; either the checker or the timeout callbacks should
     // cause the main loop to exit.
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     timeout.Cancel();
   }

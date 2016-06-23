@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -123,7 +124,7 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
         base::Bind(&base::DoNothing), base::MessageLoop::QuitWhenIdleClosure());
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   // Implicitly waits for the renderer process associated with the specified

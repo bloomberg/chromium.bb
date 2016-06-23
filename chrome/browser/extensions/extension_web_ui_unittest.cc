@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
@@ -55,7 +56,7 @@ class ExtensionWebUITest : public testing::Test {
 
   void TearDown() override {
     profile_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   std::unique_ptr<TestingProfile> profile_;

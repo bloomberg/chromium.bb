@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
@@ -82,7 +83,7 @@ class ResourcePrefetchPredictorTablesReopenTest
     ResourcePrefetchPredictorTablesTest::TearDown();
 
     db_.reset(new PredictorDatabase(&profile_));
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     tables_ = db_->resource_prefetch_tables();
   }
 };
@@ -92,7 +93,7 @@ ResourcePrefetchPredictorTablesTest::ResourcePrefetchPredictorTablesTest()
       db_thread_(content::BrowserThread::DB, &loop_),
       db_(new PredictorDatabase(&profile_)),
       tables_(db_->resource_prefetch_tables()) {
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 ResourcePrefetchPredictorTablesTest::~ResourcePrefetchPredictorTablesTest() {
@@ -106,7 +107,7 @@ void ResourcePrefetchPredictorTablesTest::SetUp() {
 void ResourcePrefetchPredictorTablesTest::TearDown() {
   tables_ = NULL;
   db_.reset();
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void ResourcePrefetchPredictorTablesTest::TestGetAllData() {

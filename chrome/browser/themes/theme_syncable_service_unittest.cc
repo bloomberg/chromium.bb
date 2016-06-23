@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -179,7 +180,7 @@ class ThemeSyncableServiceTest : public testing::Test {
 
   void TearDown() override {
     profile_.reset();
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetUpExtension() {
@@ -191,7 +192,7 @@ class ThemeSyncableServiceTest : public testing::Test {
         &command_line, base::FilePath(kExtensionFilePath), false);
     EXPECT_TRUE(service->extensions_enabled());
     service->Init();
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // Create and add custom theme extension so the ThemeSyncableService can
     // find it.

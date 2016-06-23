@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -153,7 +154,7 @@ void TemplateURLFetcherTest::StartDownload(
 void TemplateURLFetcherTest::WaitForDownloadToFinish() {
   ASSERT_FALSE(waiting_for_download_);
   waiting_for_download_ = true;
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   waiting_for_download_ = false;
 }
 

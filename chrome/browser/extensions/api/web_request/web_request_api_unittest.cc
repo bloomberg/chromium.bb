@@ -295,7 +295,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
             request->identifier(), response));
 
     request->Start();
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     EXPECT_TRUE(!request->is_pending());
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
@@ -346,7 +346,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
             request2->identifier(), response));
 
     request2->Start();
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     EXPECT_TRUE(!request2->is_pending());
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request2->status().status());
@@ -411,7 +411,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
 
   request->Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(!request->is_pending());
   EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
@@ -473,7 +473,7 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
   request->Start();
   // request->Start() will have submitted OnBeforeRequest by the time we cancel.
   request->Cancel();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(!request->is_pending());
   EXPECT_EQ(net::URLRequestStatus::CANCELED, request->status().status());
@@ -984,7 +984,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   // exists and are therefore not listed in the responses. This makes
   // them seem deleted.
   request->Start();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(!request->is_pending());
   // This cannot succeed as we send the request to a server that does not exist.

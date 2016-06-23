@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -149,7 +150,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
 
   bool ExtractFeatures(ClientPhishingRequest* request) {
     StartExtractFeatures(request);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     EXPECT_EQ(1U, success_.count(request));
     return success_.count(request) ? success_[request] : false;
   }
@@ -340,7 +341,7 @@ TEST_F(BrowserFeatureExtractorTest, MultipleRequestsAtOnce) {
   request2.set_client_score(1.0);
   StartExtractFeatures(&request2);
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(success_[&request]);
   // Success is false because the second URL is not in the history and we are
   // not able to distinguish between a missing URL in the history and an error.

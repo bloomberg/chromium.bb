@@ -4,11 +4,12 @@
 
 #include "chrome/utility/image_writer/disk_unmounter_mac.h"
 
-#include <sys/socket.h>
 #include <IOKit/storage/IOStorageProtocolCharacteristics.h>
+#include <sys/socket.h>
 
 #include "base/message_loop/message_pump_mac.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/utility/image_writer/error_messages.h"
 #include "chrome/utility/image_writer/image_writer.h"
@@ -36,11 +37,9 @@ void DiskUnmounterMac::Unmount(const std::string& device_path,
   success_continuation_ = success_continuation;
   failure_continuation_ = failure_continuation;
 
-  cf_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DiskUnmounterMac::UnmountOnWorker,
-                 base::Unretained(this),
-                 device_path));
+  cf_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&DiskUnmounterMac::UnmountOnWorker,
+                            base::Unretained(this), device_path));
 }
 
 // static
