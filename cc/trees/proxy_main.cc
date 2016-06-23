@@ -106,6 +106,7 @@ void ProxyMain::DidLoseOutputSurface() {
 }
 
 void ProxyMain::RequestNewOutputSurface() {
+  TRACE_EVENT0("cc", "ProxyMain::RequestNewOutputSurface");
   DCHECK(IsMainThread());
   layer_tree_host_->RequestNewOutputSurface();
 }
