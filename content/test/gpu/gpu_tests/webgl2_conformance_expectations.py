@@ -40,7 +40,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=1)
 
     # All platforms.
-    self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=483282)
+    self.Skip('deqp/functional/gles3/builtinprecision/atan2.html', bug=619403)
+    self.Skip('deqp/functional/gles3/builtinprecision/tanh.html', bug=619403)
     self.Skip('deqp/functional/gles3/fbocolorbuffer/*.html', bug=618408)
     self.Skip('deqp/functional/gles3/fboinvalidate.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbomultisample.html', bug=483282)
@@ -65,8 +66,23 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['d3d9', 'd3d11', 'opengl'], bug=483282)
 
     # All platforms with AMD GPU.
+    self.Fail('deqp/functional/gles3/builtinprecision/reflect.html',
+        ['amd'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/min.html',
+        ['amd'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/max.html',
+        ['amd'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/clamp.html',
+        ['amd'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/dot.html',
+        ['amd'], bug=619403)
+
     self.Fail('deqp/functional/gles3/multisample.html',
         ['amd'], bug=617290)
+
+    # All platforms with NVIDIA GPU.
+    self.Fail('deqp/functional/gles3/builtinprecision/log.html',
+        ['nvidia'], bug=619403)
 
     # Windows only.
     self.Fail('deqp/functional/gles3/texturespecification/' +
@@ -137,6 +153,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'debug'], bug=542901)
 
     # Win / NVidia
+    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
+        ['win', 'nvidia'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/reflect.html',
+        ['win', 'nvidia'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/matrixcompmult.html',
+        ['win', 'nvidia'], bug=619403)
+
     self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
         ['win', 'nvidia'], bug=614573)
 
@@ -147,6 +170,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
 
+    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
+        ['win', 'amd'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/matrixcompmult.html',
+        ['win', 'amd'], bug=619403)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage2d_format_depth_stencil.html',
         ['win', ('amd', 0x6779)], bug=614178)
@@ -325,6 +352,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     # Mac AMD
+    self.Fail('deqp/functional/gles3/builtinprecision/acosh.html',
+        ['mac', 'amd'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/abs.html',
+        ['mac', 'amd'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/ceil.html',
+        ['mac', 'amd'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/fract.html',
+        ['mac', 'amd'], bug=619403)
+
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/primitiverestart.html',
@@ -353,6 +389,19 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac Intel
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['mac', 'intel', 'no_angle'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/builtinprecision/sin.html',
+        ['mac', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/cos.html',
+        ['mac', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/acos.html',
+        ['mac', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/atan.html',
+        ['mac', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/fract.html',
+        ['mac', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/mix.html',
+        ['mac', 'intel'], bug=619403)
 
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['mac', 'intel'], bug=483282)
