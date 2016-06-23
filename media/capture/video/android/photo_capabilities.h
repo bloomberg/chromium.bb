@@ -9,10 +9,11 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
-class PhotoCapabilities {
+class MEDIA_EXPORT PhotoCapabilities {
  public:
   explicit PhotoCapabilities(base::android::ScopedJavaLocalRef<jobject> object);
   ~PhotoCapabilities();

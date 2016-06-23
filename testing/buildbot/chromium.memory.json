@@ -42,12 +42,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "capture_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "cast_unittests"
       },
       {
@@ -331,12 +325,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "capture_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "cast_unittests"
       },
       {
@@ -586,12 +574,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "cacheinvalidation_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "capture_unittests"
       },
       {
         "swarming": {

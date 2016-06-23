@@ -130,20 +130,6 @@
         "test": "breakpad_unittests"
       },
       {
-        "override_isolate_target": "capture_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "4",
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ]
-        },
-        "test": "capture_unittests"
-      },
-      {
         "override_isolate_target": "cc_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -687,9 +673,6 @@
         "test": "breakpad_unittests"
       },
       {
-        "test": "capture_unittests"
-      },
-      {
         "test": "cc_unittests"
       },
       {
@@ -857,12 +840,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "cacheinvalidation_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "capture_unittests"
       },
       {
         "test": "cast_alsa_cma_backend_unittests"
@@ -1056,12 +1033,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "cacheinvalidation_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "capture_unittests"
       },
       {
         "swarming": {
@@ -1574,12 +1545,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "capture_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "cast_unittests"
       },
       {
@@ -1978,12 +1943,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "cacheinvalidation_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "capture_unittests"
       },
       {
         "swarming": {

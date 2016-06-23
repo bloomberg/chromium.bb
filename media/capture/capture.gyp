@@ -129,7 +129,6 @@
         ['OS=="android"', {
           'dependencies': [
             'capture_java',
-            '<(DEPTH)/media/capture/video/android'
           ],
         }],
         ['OS=="mac"', {
@@ -158,64 +157,21 @@
     },
 
     {
-      # GN version: //media/capture:capture_unittests
-      'target_name': 'capture_unittests',
-      'type': '<(gtest_target_type)',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
+      # GN version: //media/capture:unittests source_set
+      'target_name': 'unittests',
+      'type': 'none',
       'dependencies': [
         'capture',
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:run_all_unittests',
-        '<(DEPTH)/media/media.gyp:media',
-        '<(DEPTH)/testing/gmock.gyp:gmock',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
-        '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
-        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
-        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_test_support',
       ],
-      'sources': [
-        '<@(capture_unittests_sources)'
-      ],
-      'conditions': [
-        ['OS=="android"', {
-          'dependencies': [
-            '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
-          ],
-        }],
-        ['OS=="win"', {
-          'dependencies': [
-            '<(DEPTH)/media/media.gyp:mf_initializer',
-          ],
-          # TODO(jschuh): http://crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
-        }],
-      ], # conditions
+      'direct_dependent_settings': {
+        'sources': [
+          '<@(capture_unittests_sources)'
+        ],
+      },
     },
   ],
 
   'conditions': [
-
-    ['test_isolation_mode != "noop"', {
-      'targets': [
-        {
-          # There's no GN equivalent to this.
-          'target_name': 'capture_unittests_run',
-          'type': 'none',
-          'dependencies': [
-            'capture_unittests',
-          ],
-          'includes': [
-            '../../build/isolate.gypi',
-          ],
-          'sources': [
-            'capture_unittests.isolate',
-          ]
-        }
-      ]
-    }],
-
     ['OS=="android"', {
       'targets': [
         {
@@ -263,42 +219,7 @@
           },
          'includes': ['../../build/jni_generator.gypi'],
         },
-
-        {
-          # There's no GN equivalent to this.
-          'target_name': 'capture_unittests_apk',
-          'type': 'none',
-          'dependencies': [
-            'capture_java',
-            'capture_unittests',
-          ],
-          'variables': {
-            'test_suite_name': 'capture_unittests',
-          },
-          'includes': ['../../build/apk_test.gypi'],
-        },
       ],
-      'conditions': [
-        ['test_isolation_mode != "noop"', {
-          'targets': [
-            {
-              'target_name': 'capture_unittests_apk_run',
-              'type': 'none',
-              'dependencies': [
-                'capture_unittests_apk',
-              ],
-              'includes': [
-                '../../build/isolate.gypi',
-              ],
-              'sources': [
-                'capture_unittests_apk.isolate',
-              ],
-            },
-          ],
-        }],
-      ],
-
     }],
-
   ],
 }
