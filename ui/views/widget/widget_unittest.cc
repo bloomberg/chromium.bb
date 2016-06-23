@@ -888,10 +888,14 @@ TEST_F(WidgetObserverTest, WidgetBoundsChangedNative) {
 
   EXPECT_FALSE(widget_bounds_changed());
 
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+
+  // Use an origin within the work area since platforms (e.g. Mac) may move a
+  // window into the work area when showing, triggering a bounds change.
+  params.bounds = gfx::Rect(50, 50, 100, 100);
+
   // Init causes a bounds change, even while not showing. Note some platforms
   // cause a bounds change even when the bounds are empty. Mac does not.
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
   EXPECT_TRUE(widget_bounds_changed());
   reset();
@@ -920,6 +924,20 @@ TEST_F(WidgetObserverTest, WidgetBoundsChangedNative) {
 
   // Resize to the same thing while shown does nothing.
   widget->SetSize(gfx::Size(170, 100));
+  EXPECT_FALSE(widget_bounds_changed());
+  reset();
+
+  // Move, but don't change the size.
+  widget->SetBounds(gfx::Rect(110, 110, 170, 100));
+  // Currently fails on Mus. http://crbug.com/622575.
+  if (IsMus())
+    EXPECT_FALSE(widget_bounds_changed());
+  else
+    EXPECT_TRUE(widget_bounds_changed());
+  reset();
+
+  // Moving to the same place does nothing.
+  widget->SetBounds(gfx::Rect(110, 110, 170, 100));
   EXPECT_FALSE(widget_bounds_changed());
   reset();
 
