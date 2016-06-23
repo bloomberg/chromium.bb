@@ -2191,10 +2191,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   std::queue<linked_ptr<FenceCallback> > pending_readpixel_fences_;
 
-  // After this fence is inserted, both the GpuChannelMessageQueue and
-  // CommandExecutor are descheduled. Once the fence has completed, both get
-  // rescheduled.
-  std::unique_ptr<gl::GLFence> deschedule_until_finished_fence_;
+  // After a second fence is inserted, both the GpuChannelMessageQueue and
+  // CommandExecutor are descheduled. Once the first fence has completed, both
+  // get rescheduled.
+  std::vector<std::unique_ptr<gl::GLFence>> deschedule_until_finished_fences_;
 
   // Used to validate multisample renderbuffers if needed
   GLuint validation_texture_;
@@ -13674,10 +13674,16 @@ error::Error GLES2DecoderImpl::HandleDescheduleUntilFinishedCHROMIUM(
     return error::kNoError;
   }
 
-  deschedule_until_finished_fence_.reset(gl::GLFence::Create());
-  DCHECK(deschedule_until_finished_fence_);
-  if (deschedule_until_finished_fence_->HasCompleted()) {
-    deschedule_until_finished_fence_.reset();
+  std::unique_ptr<gl::GLFence> fence(gl::GLFence::Create());
+  deschedule_until_finished_fences_.push_back(std::move(fence));
+
+  if (deschedule_until_finished_fences_.size() == 1)
+    return error::kNoError;
+
+  DCHECK_EQ(2u, deschedule_until_finished_fences_.size());
+  if (deschedule_until_finished_fences_[0]->HasCompleted()) {
+    deschedule_until_finished_fences_.erase(
+        deschedule_until_finished_fences_.begin());
     return error::kNoError;
   }
 
@@ -13814,15 +13820,17 @@ void GLES2DecoderImpl::ProcessPendingReadPixels(bool did_finish) {
 }
 
 void GLES2DecoderImpl::ProcessDescheduleUntilFinished() {
-  if (!deschedule_until_finished_fence_)
+  if (deschedule_until_finished_fences_.size() < 2)
     return;
+  DCHECK_EQ(2u, deschedule_until_finished_fences_.size());
 
-  if (!deschedule_until_finished_fence_->HasCompleted())
+  if (!deschedule_until_finished_fences_[0]->HasCompleted())
     return;
 
   TRACE_EVENT_ASYNC_END0("cc", "GLES2DecoderImpl::DescheduleUntilFinished",
                          this);
-  deschedule_until_finished_fence_.reset();
+  deschedule_until_finished_fences_.erase(
+      deschedule_until_finished_fences_.begin());
   reschedule_after_finished_callback_.Run();
 }
 
@@ -13837,7 +13845,7 @@ void GLES2DecoderImpl::PerformIdleWork() {
 }
 
 bool GLES2DecoderImpl::HasPollingWork() const {
-  return !!deschedule_until_finished_fence_.get();
+  return deschedule_until_finished_fences_.size() >= 2;
 }
 
 void GLES2DecoderImpl::PerformPollingWork() {

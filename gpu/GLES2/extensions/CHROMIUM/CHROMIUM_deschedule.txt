@@ -31,9 +31,9 @@ New Procedures and Functions
 
     void DescheduleUntilFinishedCHROMIUM()
 
-    This command prevents decoding of subsequent commands until all previously
-    issued commands have finished. Its behavior is equivalent to a service side
-    glFinish.
+    Each call to this command inserts a fence into the command stream. Decoding
+    of subsequent commands is delayed until the fence inserted from the last
+    call to DescheduleUntilFinishedCHROMIUM has completed.
 
 Errors
 
