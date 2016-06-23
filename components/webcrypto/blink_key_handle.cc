@@ -26,6 +26,9 @@ class AsymKey;
 // 'raw', 'pkcs8', or 'spki' format. This is to allow structured cloning of
 // keys to be done synchronously from the target Blink thread, without having to
 // lock access to the key throughout the code.
+//
+// TODO(eroman): Should be able to do the key export needed for structured
+//               clone synchronously.
 class Key : public blink::WebCryptoKeyHandle {
  public:
   explicit Key(const CryptoData& serialized_key_data)
@@ -63,12 +66,14 @@ class SymKey : public Key {
 
 class AsymKey : public Key {
  public:
+  // After construction the |pkey| should NOT be mutated.
   AsymKey(crypto::ScopedEVP_PKEY pkey,
           const std::vector<uint8_t>& serialized_key_data)
       : Key(CryptoData(serialized_key_data)), pkey_(std::move(pkey)) {}
 
   AsymKey* AsAsymKey() override { return this; }
 
+  // The caller should NOT mutate this EVP_PKEY.
   EVP_PKEY* pkey() { return pkey_.get(); }
 
  private:

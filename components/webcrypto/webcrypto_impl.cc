@@ -36,10 +36,7 @@ namespace {
 // ---------------------
 //
 // WebCrypto operations can be slow. For instance generating an RSA key can
-// seconds.
-//
-// Moreover the underlying crypto libraries are not threadsafe when operating
-// on the same key.
+// take seconds.
 //
 // The strategy used here is to run a sequenced worker pool for all WebCrypto
 // operations (except structured cloning). This same pool is also used by
@@ -47,26 +44,24 @@ namespace {
 //
 // A few notes to keep in mind:
 //
-// * PostTaskAndReply() cannot be used for two reasons:
+// * PostTaskAndReply() is not used because of how it handles failures -- it
+//   leaks the callback when failing to post back to the origin thread.
 //
-//   (1) Blink web worker threads do not have an associated message loop so
-//       construction of the reply callback will crash.
-//
-//   (2) PostTaskAndReply() handles failure posting the reply by leaking the
-//       callback, rather than destroying it. In the case of Web Workers this
-//       condition is reachable via normal execution, since Web Workers can
-//       be stopped before the WebCrypto operation has finished. A policy of
-//       leaking would therefore be problematic.
+//   This is a problem since WebCrypto may be called from WebWorker threads,
+//   which may be aborted at any time. Leaking would be undesirable, and
+//   reachable in practice.
 //
 // * blink::WebArrayBuffer is NOT threadsafe, and should therefore be allocated
-//   on the target Blink thread.
+//   only on the target Blink thread.
 //
 //   TODO(eroman): Is there any way around this? Copying the result between
 //                 threads is silly.
 //
-// * WebCryptoAlgorithm and WebCryptoKey are threadsafe (however the key's
-//   handle(), which wraps an OpenSSL type, may not be and should only be
-//   used from the webcrypto thread).
+// * WebCryptoAlgorithm and WebCryptoKey are threadsafe, by virtue of being
+//   immutable. Internally asymmetric WebCryptoKeys wrap BoringSSL's EVP_PKEY.
+//   These are safe to use for BoringSSL operations across threads, provided
+//   the internals of the EVP_PKEY are not mutated (they never should be
+//   following ImportKey()).
 //
 // * blink::WebCryptoResult is not threadsafe and should only be operated on
 //   the target Blink thread. HOWEVER, it is safe to delete it from any thread.
