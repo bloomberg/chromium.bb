@@ -212,8 +212,11 @@ headless_backend_create(struct weston_compositor *compositor,
 	if (b->use_pixman) {
 		pixman_renderer_init(compositor);
 	}
-	if (headless_backend_create_output(b, config) < 0)
-		goto err_input;
+
+	if (!config->no_outputs) {
+		if (headless_backend_create_output(b, config) < 0)
+			goto err_input;
+	}
 
 	if (!b->use_pixman && noop_renderer_init(compositor) < 0)
 		goto err_input;

@@ -526,7 +526,9 @@ usage(int error_code)
 		"  --height=HEIGHT\tHeight of memory surface\n"
 		"  --transform=TR\tThe output transformation, TR is one of:\n"
 		"\tnormal 90 180 270 flipped flipped-90 flipped-180 flipped-270\n"
-		"  --use-pixman\t\tUse the pixman (CPU) renderer (default: no rendering)\n\n");
+		"  --use-pixman\t\tUse the pixman (CPU) renderer (default: no rendering)\n"
+		"  --no-outputs\t\tDo not create any virtual outputs\n"
+		"\n");
 #endif
 
 #if defined(BUILD_RDP_COMPOSITOR)
@@ -1037,6 +1039,7 @@ load_headless_backend(struct weston_compositor *c,
 		{ WESTON_OPTION_INTEGER, "height", 0, &config.height },
 		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
 		{ WESTON_OPTION_STRING, "transform", 0, &transform },
+		{ WESTON_OPTION_BOOLEAN, "no-outputs", 0, &config.no_outputs },
 	};
 
 	parse_options(options, ARRAY_LENGTH(options), argc, argv);

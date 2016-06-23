@@ -44,6 +44,7 @@ struct weston_headless_backend_config {
 	int use_pixman;
 
 	uint32_t transform;
+	bool no_outputs;
 };
 
 #ifdef  __cplusplus
