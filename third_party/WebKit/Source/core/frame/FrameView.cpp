@@ -1402,10 +1402,8 @@ bool FrameView::invalidateViewportConstrainedObjects()
         if (layer->subtreeIsInvisible())
             continue;
 
-        // If the fixed layer has a blur/drop-shadow filter applied on at least one of its parents, we cannot
-        // scroll using the fast path, otherwise the outsets of the filter will be moved around the page.
-        if (layer->hasAncestorWithFilterThatMovesPixels())
-            return false;
+        // invalidate even if there is an ancestor with a filter that moves pixels.
+        layoutItem.setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
 
         TRACE_EVENT_INSTANT1(
             TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
@@ -1414,7 +1412,10 @@ bool FrameView::invalidateViewportConstrainedObjects()
             "data",
             InspectorScrollInvalidationTrackingEvent::data(*layoutObject));
 
-        layoutItem.setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+        // If the fixed layer has a blur/drop-shadow filter applied on at least one of its parents, we cannot
+        // scroll using the fast path, otherwise the outsets of the filter will be moved around the page.
+        if (layer->hasAncestorWithFilterThatMovesPixels())
+            return false;
     }
     return true;
 }
