@@ -7,23 +7,25 @@
 
 """
 
-import os
-import sys
-import shutil
-import zipfile
-import filecmp
-import tempfile
 import argparse
-import subprocess
+import collections
+import filecmp
+import os
+import pprint
 import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import zipfile
 
 SRC_DIR = os.path.join(os.path.dirname(__file__), '..', '..')
 SRC_DIR = os.path.abspath(SRC_DIR)
 BUILD_ANDROID_GYP_DIR = os.path.join(SRC_DIR, 'build/android/gyp')
 sys.path.append(BUILD_ANDROID_GYP_DIR)
 
-import finalize_apk
-from util import build_utils
+import finalize_apk # pylint: disable=import-error
+from util import build_utils # pylint: disable=import-error
 
 class ApkMergeFailure(Exception):
   pass
@@ -79,20 +81,29 @@ def GetDiffFiles(dcmp, base_dir):
 
 def CheckFilesExpected(actual_files, expected_files):
   """ Check that the lists of actual and expected files are the same. """
-  file_set = set()
-  for file_name in actual_files:
-    base_name = os.path.basename(file_name)
-    if base_name not in expected_files:
-      raise ApkMergeFailure('Found unexpected file named %s.' %
-                            file_name)
-    if base_name in file_set:
-      raise ApkMergeFailure('Duplicate file %s to add to APK!' %
-                            file_name)
-    file_set.add(base_name)
+  actual_file_names = collections.defaultdict(int)
+  for f in actual_files:
+    actual_file_names[os.path.basename(f)] += 1
+  actual_file_set = set(actual_file_names.iterkeys())
+  expected_file_set = set(expected_files.iterkeys())
 
-  if len(file_set) != len(expected_files):
-    raise ApkMergeFailure('Missing expected files to add to APK!')
+  unexpected_file_set = actual_file_set.difference(expected_file_set)
+  missing_file_set = expected_file_set.difference(actual_file_set)
+  duplicate_file_set = set(
+      f for f, n in actual_file_names.iteritems() if n > 1)
 
+  errors = []
+  if unexpected_file_set:
+    errors.append(
+        '  unexpected files: %s' % pprint.pformat(unexpected_file_set))
+  if missing_file_set:
+    errors.append('  missing files: %s' % pprint.pformat(missing_file_set))
+  if duplicate_file_set:
+    errors.append('  duplicate files: %s' % pprint.pformat(duplicate_file_set))
+
+  if errors:
+    raise ApkMergeFailure(
+        "Files don't match expectations:\n%s" % '\n'.join(errors))
 
 def AddDiffFiles(diff_files, tmp_dir_32, tmp_apk, expected_files):
   """ Insert files only present in 32-bit APK into 64-bit APK (tmp_apk). """
@@ -103,8 +114,10 @@ def AddDiffFiles(diff_files, tmp_dir_32, tmp_apk, expected_files):
   try:
     for diff_file in diff_files:
       extra_flags = expected_files[os.path.basename(diff_file)]
-      build_utils.CheckOutput(['zip', '-r', '-X', '--no-dir-entries',
-                              tmp_apk, diff_file] + extra_flags)
+      build_utils.CheckOutput(
+          [
+              'zip', '-r', '-X', '--no-dir-entries', tmp_apk, diff_file
+          ] + extra_flags)
   except build_utils.CalledProcessError as e:
     raise ApkMergeFailure(
         'Failed to add file %s to APK: %s' % (diff_file, e.output))
@@ -126,11 +139,11 @@ def SignAndAlignApk(tmp_apk, signed_tmp_apk, new_apk, zipalign_path,
                     page_align_shared_libraries):
   try:
     finalize_apk.JarSigner(
-      keystore_path,
-      key_name,
-      key_password,
-      tmp_apk,
-      signed_tmp_apk)
+        keystore_path,
+        key_name,
+        key_password,
+        tmp_apk,
+        signed_tmp_apk)
   except build_utils.CalledProcessError as e:
     raise ApkMergeFailure('Failed to sign APK: ' + e.output)
 
@@ -171,25 +184,24 @@ def MergeBinaries(apk, out_apk, secondary_abi_out_dir, shared_library):
     build_utils.AddToZipHermetic(
         apk_zip,
         'lib/%s/%s' % (secondary_abi, shared_library),
-        src_path = os.path.join(secondary_abi_out_dir, shared_library),
-        compress = False)
+        src_path=os.path.join(secondary_abi_out_dir, shared_library),
+        compress=False)
     build_utils.AddToZipHermetic(
         apk_zip,
         'assets/%s' % 'snapshot_blob_64.bin',
-        src_path = os.path.join(secondary_abi_out_dir, 'snapshot_blob.bin'),
-        compress = False)
+        src_path=os.path.join(secondary_abi_out_dir, 'snapshot_blob.bin'),
+        compress=False)
     build_utils.AddToZipHermetic(
         apk_zip,
         'assets/%s' % 'natives_blob_64.bin',
-        src_path = os.path.join(secondary_abi_out_dir, 'natives_blob.bin'),
-        compress = False)
+        src_path=os.path.join(secondary_abi_out_dir, 'natives_blob.bin'),
+        compress=False)
 
 
 def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   # Expected files to copy from 32- to 64-bit APK together with an extra flag
   # setting the compression level of the file
   expected_files = {'snapshot_blob_32.bin': ['-0'],
-                    'natives_blob_32.bin': ['-0'],
                     args.shared_library: []}
 
   if args.debug:
@@ -249,7 +261,7 @@ def main():
     # Currently we only support merge 64-bit binaries to 32bit APK.
     if args.secondary_abi_out_dir:
       if not args.apk_32bit:
-        raise ExceptionApkMergeFailure('--apk_32bit should be specified')
+        raise ApkMergeFailure('--apk_32bit should be specified')
       MergeBinaries(args.apk_32bit,
                     tmp_apk,
                     args.secondary_abi_out_dir,
