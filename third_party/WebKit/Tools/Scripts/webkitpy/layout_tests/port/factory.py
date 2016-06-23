@@ -88,7 +88,8 @@ def _check_configuration_and_target(host, options):
     else:
         raise ValueError('Could not determine build configuration type.\n'
                          'Either switch to one of the default target directories,\n'
-                         'use args.gn, or specify --debug or --release explicitly.')
+                         'use args.gn, or specify --debug or --release explicitly.\n'
+                         'If the directory is out/<dir>, then pass -t <dir>.')
 
 
 def _read_configuration_from_gn(fs, options):
