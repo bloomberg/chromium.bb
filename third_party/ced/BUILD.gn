@@ -44,6 +44,7 @@ source_set("ced") {
     cflags = [
       "/wd4005",  # Macro defined twice.
       "/wd4006",  # #undef expected an identifier.
+      "/wd4018",  # '<': signed/unsigned mismatch
       "/wd4309",  # Truncation of constant value.
     ]
   } else {
