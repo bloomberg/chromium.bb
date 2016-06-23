@@ -569,9 +569,9 @@
     'chromium.webrtc': {
       'Linux Builder': 'gn_release_bot_chrome_with_codecs',
       'Linux Tester': 'none',
-      'Mac Builder': 'chrome_with_codecs_blink_logging_gyp_release_trybot',
+      'Mac Builder': 'chrome_with_codecs_blink_logging_gn_release_trybot',
       'Mac Tester': 'none',
-      'Win Builder': 'chrome_with_codecs_blink_logging_gyp_release_trybot_x86',
+      'Win Builder': 'chrome_with_codecs_blink_logging_gn_release_trybot_x86',
       'Win10 Tester': 'none',
       'Win7 Tester': 'none',
       'Win8 Tester': 'none',
@@ -587,11 +587,11 @@
       'Android Tests (dbg) (L Nexus9)': 'none',
       'Linux Builder': 'gn_release_bot_chrome_with_codecs',
       'Linux Tester': 'none',
-      'Mac Builder': 'chrome_with_codecs_blink_logging_gyp_release_trybot',
+      'Mac Builder': 'chrome_with_codecs_blink_logging_gn_release_trybot',
       'Mac GN (dbg)': 'gn_debug_static_bot_chrome_with_codecs',
       'Mac GN': 'gn_release_bot_chrome_with_codecs',
       'Mac Tester': 'none',
-      'Win Builder': 'chrome_with_codecs_blink_logging_gyp_release_trybot_x86',
+      'Win Builder': 'chrome_with_codecs_blink_logging_gn_release_trybot_x86',
       'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols_chrome_with_codecs',
       'Win x64 GN': 'gn_release_bot_minimal_symbols_chrome_with_codecs',
       'Win10 Tester': 'none',
@@ -1032,12 +1032,12 @@
       'cast', 'gn', 'release_trybot',
     ],
 
-    'chrome_with_codecs_blink_logging_gyp_release_trybot': [
-      'chrome_with_codecs', 'blink_logging', 'gyp', 'release_trybot',
+    'chrome_with_codecs_blink_logging_gn_release_trybot': [
+      'chrome_with_codecs', 'blink_logging', 'gn', 'release_trybot',
     ],
 
-    'chrome_with_codecs_blink_logging_gyp_release_trybot_x86': [
-      'chrome_with_codecs', 'blink_logging', 'gyp', 'release_trybot', 'x86',
+    'chrome_with_codecs_blink_logging_gn_release_trybot_x86': [
+      'chrome_with_codecs', 'blink_logging', 'gn', 'release_trybot', 'x86',
     ],
 
     'chromeos_gn_debug_bot': [
