@@ -541,6 +541,9 @@ if (is_ios) {
   set_defaults("ios_app_bundle") {
     configs = _executable_configs
   }
+  set_defaults("ios_appex_bundle") {
+    configs = _executable_configs
+  }
 }
 
 # Static library defaults.
