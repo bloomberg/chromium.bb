@@ -512,8 +512,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
      * .................................................................|                |         .
      * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |                |         .
      * .................................................................|                |         .
-     * . DESCRIPTIVE TEXT                                               |                |         .
-     * .................................................................|           LOGO | CHEVRON .
+     * . Descriptive text that spans all three columns because it can.  |                |         .
+     * . ! Warning text that displays a big scary warning and icon.     |           LOGO | CHEVRON .
      * . O Option 1                                              ICON 1 |                |         .
      * . O Option 2                                              ICON 2 |                |         .
      * . O Option 3                                              ICON 3 |                |         .
@@ -521,17 +521,34 @@ public abstract class PaymentRequestSection extends LinearLayout {
      * .............................................................................................
      */
     public static class OptionSection extends PaymentRequestSection implements OnClickListener {
-        /** Displays a row representing a selectable option. */
+
+        private static final int INVALID_OPTION_INDEX = -1;
+
+        /**
+         * Displays a row representing either a selectable option or some flavor text.
+         *
+         * + The "button" is on the left and shows either an icon or a radio button to represent th
+         *   row type.
+         * + The "label" is text describing the row.
+         * + The "icon" is a logo representing the option, like a credit card.
+         */
         private class OptionRow {
+            private static final int OPTION_ROW_TYPE_OPTION = 0;
+            private static final int OPTION_ROW_TYPE_ADD = 1;
+            private static final int OPTION_ROW_TYPE_DESCRIPTION = 2;
+            private static final int OPTION_ROW_TYPE_WARNING = 3;
+
+            private final int mRowType;
             private final PaymentOption mOption;
             private final View mButton;
             private final TextView mLabel;
             private final View mIcon;
 
-            public OptionRow(
-                    GridLayout parent, int rowIndex, PaymentOption item, boolean isSelected) {
+            public OptionRow(GridLayout parent, int rowIndex, int rowType, PaymentOption item,
+                    boolean isSelected) {
                 boolean iconExists = item != null && item.getDrawableIconId() != 0;
                 boolean isEnabled = item != null && item.isValid();
+                mRowType = rowType;
                 mOption = item;
                 mButton = createButton(parent, rowIndex, isSelected, isEnabled);
                 mLabel = createLabel(parent, rowIndex, iconExists, isEnabled);
@@ -549,9 +566,14 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 }
             }
 
-            /** Change the label for the option. */
+            /** Change the label for the row. */
             public void setLabel(int stringId) {
                 mLabel.setText(stringId);
+            }
+
+            /** Change the label for the row. */
+            public void setLabel(CharSequence string) {
+                mLabel.setText(string);
             }
 
             /** Set the button identifier for the option. */
@@ -561,23 +583,35 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
             private View createButton(
                     GridLayout parent, int rowIndex, boolean isSelected, boolean isEnabled) {
+                if (mRowType == OPTION_ROW_TYPE_DESCRIPTION) return null;
+
                 Context context = parent.getContext();
                 View view;
 
-                if (mOption == null) {
-                    // Show an add button.
-                    TintedDrawable tintedPlus = TintedDrawable.constructTintedDrawable(
-                            context.getResources(), R.drawable.plus, R.color.light_active_color);
-                    ImageButton button = new ImageButton(context);
-                    button.setBackground(null);
-                    button.setImageDrawable(tintedPlus);
-                    button.setPadding(0, 0, 0, 0);
-                    view = button;
-                } else {
+                if (mRowType == OPTION_ROW_TYPE_OPTION) {
                     // Show a radio button indicating whether the PaymentOption is selected.
                     RadioButton button = new RadioButton(context);
                     button.setChecked(isSelected && isEnabled);
                     button.setEnabled(isEnabled);
+                    view = button;
+                } else {
+                    // Show an icon representing the row type, defaulting to the add button.
+                    int drawableId;
+                    int drawableTint;
+                    if (mRowType == OPTION_ROW_TYPE_WARNING) {
+                        drawableId = R.drawable.ic_warning_white_24dp;
+                        drawableTint = R.color.error_text_color;
+                    } else {
+                        drawableId = R.drawable.plus;
+                        drawableTint = R.color.light_active_color;
+                    }
+
+                    TintedDrawable tintedDrawable = TintedDrawable.constructTintedDrawable(
+                            context.getResources(), drawableId, drawableTint);
+                    ImageButton button = new ImageButton(context);
+                    button.setBackground(null);
+                    button.setImageDrawable(tintedDrawable);
+                    button.setPadding(0, 0, 0, 0);
                     view = button;
                 }
 
@@ -598,8 +632,22 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 Context context = parent.getContext();
                 Resources resources = context.getResources();
 
+                // By default, the label appears to the right of the "button" in the second column.
+                // + If there is no button and no icon, the label spans the whole row.
+                // + If there is no icon, the label spans two columns.
+                // + Otherwise, the label occupies only its own column.
+                int columnStart = 1;
+                int columnSpan = iconExists ? 1 : 2;
+
                 TextView labelView = new TextView(context);
-                if (mOption == null) {
+                if (mRowType == OPTION_ROW_TYPE_OPTION) {
+                    // Show the string representing the PaymentOption.
+                    ApiCompatibilityUtils.setTextAppearance(labelView, isEnabled
+                            ? R.style.PaymentsUiSectionDefaultText
+                            : R.style.PaymentsUiSectionDisabledText);
+                    labelView.setText(convertOptionToString(mOption));
+                    labelView.setEnabled(isEnabled);
+                } else if (mRowType == OPTION_ROW_TYPE_ADD) {
                     // Shows string saying that the user can add a new option, e.g. credit card no.
                     String typeface = resources.getString(R.string.roboto_medium_typeface);
                     int textStyle = resources.getInteger(R.integer.roboto_medium_textstyle);
@@ -611,20 +659,25 @@ public abstract class PaymentRequestSection extends LinearLayout {
                     labelView.setMinimumHeight(buttonHeight);
                     labelView.setGravity(Gravity.CENTER_VERTICAL);
                     labelView.setTypeface(Typeface.create(typeface, textStyle));
-                } else {
-                    // Show the string representing the PaymentOption.
-                    ApiCompatibilityUtils.setTextAppearance(labelView, isEnabled
-                                    ? R.style.PaymentsUiSectionDefaultText
-                                    : R.style.PaymentsUiSectionDisabledText);
-                    labelView.setText(convertOptionToString(mOption));
-                    labelView.setEnabled(isEnabled);
+                } else if (mRowType == OPTION_ROW_TYPE_DESCRIPTION) {
+                    // The description spans all the columns.
+                    columnStart = 0;
+                    columnSpan = 3;
+
+                    ApiCompatibilityUtils.setTextAppearance(
+                            labelView, R.style.PaymentsUiSectionDescriptiveText);
+                } else if (mRowType == OPTION_ROW_TYPE_WARNING) {
+                    // Warnings use two columns.
+                    columnSpan = 2;
+                    ApiCompatibilityUtils.setTextAppearance(
+                            labelView, R.style.PaymentsUiSectionWarningText);
                 }
 
                 // The label spans two columns if no icon exists.  Setting the view width to 0
                 // forces it to stretch.
                 GridLayout.LayoutParams labelParams = new GridLayout.LayoutParams(
                         GridLayout.spec(rowIndex, 1, GridLayout.CENTER),
-                        GridLayout.spec(1, iconExists ? 1 : 2, GridLayout.FILL));
+                        GridLayout.spec(columnStart, columnSpan, GridLayout.FILL));
                 labelParams.topMargin = mVerticalMargin;
                 labelParams.width = 0;
                 parent.addView(labelView, labelParams);
@@ -663,9 +716,6 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         /** Width that the icon takes. */
         private final int mIconMaxWidth;
-
-        /** TextView for displaying additional text. */
-        private TextView mDescriptionView;
 
         /** Layout containing all the {@link OptionRow}s. */
         private GridLayout mOptionLayout;
@@ -728,9 +778,6 @@ public abstract class PaymentRequestSection extends LinearLayout {
         @Override
         protected void createMainSectionContent(LinearLayout mainSectionLayout) {
             Context context = mainSectionLayout.getContext();
-
-            mDescriptionView = new TextView(getContext());
-
             mCheckingProgress = createLoadingSpinner();
 
             mOptionLayout = new GridLayout(context);
@@ -787,17 +834,14 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 setIsSummaryAllowed(false);
                 mOptionLayout.setVisibility(VISIBLE);
                 setSpinnerVisibility(false);
-                setDescriptionVisibility(!TextUtils.isEmpty(mDescriptionView.getText()));
             } else if (displayMode == DISPLAY_MODE_CHECKING) {
                 setIsSummaryAllowed(false);
                 mOptionLayout.setVisibility(GONE);
                 setSpinnerVisibility(true);
-                setDescriptionVisibility(false);
             } else {
                 setIsSummaryAllowed(true);
                 mOptionLayout.setVisibility(GONE);
                 setSpinnerVisibility(false);
-                setDescriptionVisibility(false);
             }
         }
 
@@ -815,50 +859,42 @@ public abstract class PaymentRequestSection extends LinearLayout {
             }
         }
 
-        /**
-         * Shows or hides the description by adding or removing it from the layout.
-         * @param visible True if the description should be visible, false otherwise.
-         */
-        private void setDescriptionVisibility(boolean visible) {
-            if (visible && mDescriptionView.getParent() == null) {
-                // Put it right above the GridLayout with all the PaymentOptions.
-                ViewGroup mainSectionLayout = (ViewGroup) mOptionLayout.getParent();
-                int optionLayoutIndex = mainSectionLayout.indexOfChild(mOptionLayout);
-
-                LinearLayout.LayoutParams descriptionParams = new LinearLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-                descriptionParams.topMargin = mVerticalMargin;
-                descriptionParams.bottomMargin = mVerticalMargin;
-                mainSectionLayout.addView(
-                        mDescriptionView, optionLayoutIndex, descriptionParams);
-            } else if (!visible && mDescriptionView.getParent() != null) {
-                ((ViewGroup) mDescriptionView.getParent()).removeView(mDescriptionView);
-            }
-        }
-
         private void updateOptionList(SectionInformation information, PaymentOption selectedItem) {
-            mDescriptionView.setText(mDelegate.getAdditionalText(this));
-            setDescriptionVisibility(!TextUtils.isEmpty(mDescriptionView.getText()));
-            ApiCompatibilityUtils.setTextAppearance(
-                    mDescriptionView, mDelegate.isAdditionalTextDisplayingWarning(this)
-                            ? R.style.PaymentsUiSectionWarningText
-                            : R.style.PaymentsUiSectionDescriptiveText);
-
             mOptionLayout.removeAllViews();
             mOptionRows.clear();
 
+            // Show any additional text requested by the layout.
+            if (!TextUtils.isEmpty(mDelegate.getAdditionalText(this))) {
+                OptionRow descriptionRow = new OptionRow(mOptionLayout,
+                        mOptionLayout.getChildCount(),
+                        mDelegate.isAdditionalTextDisplayingWarning(this)
+                                ? OptionRow.OPTION_ROW_TYPE_WARNING
+                                : OptionRow.OPTION_ROW_TYPE_DESCRIPTION,
+                                null, false);
+                mOptionRows.add(descriptionRow);
+                descriptionRow.setLabel(mDelegate.getAdditionalText(this));
+            }
+
             // List out known payment options.
+            int firstOptionIndex = INVALID_OPTION_INDEX;
             for (int i = 0; i < information.getSize(); i++) {
+                int currentRow = mOptionLayout.getChildCount();
+                if (firstOptionIndex == INVALID_OPTION_INDEX) firstOptionIndex = currentRow;
+
                 PaymentOption item = information.getItem(i);
-                mOptionRows.add(new OptionRow(mOptionLayout, i, item, item == selectedItem));
+                mOptionRows.add(new OptionRow(mOptionLayout, currentRow,
+                        OptionRow.OPTION_ROW_TYPE_OPTION, item, item == selectedItem));
             }
 
             // For testing.
-            if (!mOptionRows.isEmpty()) mOptionRows.get(0).setId(R.id.payments_first_radio_button);
+            if (firstOptionIndex != INVALID_OPTION_INDEX) {
+                mOptionRows.get(firstOptionIndex).setId(R.id.payments_first_radio_button);
+            }
 
             // If the user is allowed to add new options, show the button for it.
             if (information.getAddStringId() != 0) {
-                OptionRow addRow = new OptionRow(mOptionLayout, information.getSize(), null, false);
+                OptionRow addRow = new OptionRow(mOptionLayout, mOptionLayout.getChildCount(),
+                        OptionRow.OPTION_ROW_TYPE_ADD, null, false);
                 addRow.setLabel(information.getAddStringId());
                 addRow.setId(R.id.payments_add_option_button);
                 mOptionRows.add(addRow);
