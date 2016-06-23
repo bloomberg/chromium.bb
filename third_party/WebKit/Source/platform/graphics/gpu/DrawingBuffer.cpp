@@ -393,13 +393,18 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
     if (m_recycledMailboxQueue.isEmpty())
         return PassRefPtr<MailboxInfo>();
 
+    // Creation of image backed mailboxes is very expensive, so be less
+    // aggressive about pruning them.
+    size_t cacheLimit = 1;
+    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
+        cacheLimit = 4;
+
     WebExternalTextureMailbox mailbox;
-    while (!m_recycledMailboxQueue.isEmpty()) {
+    while (m_recycledMailboxQueue.size() > cacheLimit) {
         mailbox = m_recycledMailboxQueue.takeLast();
-        // Never have more than one mailbox in the released state.
-        if (!m_recycledMailboxQueue.isEmpty())
-            deleteMailbox(mailbox);
+        deleteMailbox(mailbox);
     }
+    mailbox = m_recycledMailboxQueue.takeLast();
 
     RefPtr<MailboxInfo> mailboxInfo;
     for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
