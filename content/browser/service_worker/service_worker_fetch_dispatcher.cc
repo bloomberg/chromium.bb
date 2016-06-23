@@ -56,17 +56,19 @@ void ServiceWorkerFetchDispatcher::Run() {
 
   if (version_->status() == ServiceWorkerVersion::ACTIVATING) {
     version_->RegisterStatusChangeCallback(
-        base::Bind(&ServiceWorkerFetchDispatcher::DidWaitActivation,
+        base::Bind(&ServiceWorkerFetchDispatcher::StartWorker,
                    weak_factory_.GetWeakPtr()));
     return;
   }
-  DidWaitActivation();
+  StartWorker();
 }
 
-void ServiceWorkerFetchDispatcher::DidWaitActivation() {
+void ServiceWorkerFetchDispatcher::StartWorker() {
+  // We might be REDUNDANT if a new worker started activating and kicked us out
+  // before we could finish activation.
   if (version_->status() != ServiceWorkerVersion::ACTIVATED) {
-    DCHECK_EQ(ServiceWorkerVersion::INSTALLED, version_->status());
-    DidFailActivation();
+    DCHECK_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
+    DidFail(SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED);
     return;
   }
   version_->RunAfterStartWorker(
@@ -75,16 +77,6 @@ void ServiceWorkerFetchDispatcher::DidWaitActivation() {
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerFetchDispatcher::DidFail,
                  weak_factory_.GetWeakPtr()));
-}
-
-void ServiceWorkerFetchDispatcher::DidFailActivation() {
-  // The previous activation seems to have failed, abort the step
-  // with activate error. (The error should be separately reported
-  // to the associated documents and association must be dropped
-  // at this point)
-  DidFinish(SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED,
-            SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
-            ServiceWorkerResponse());
 }
 
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {

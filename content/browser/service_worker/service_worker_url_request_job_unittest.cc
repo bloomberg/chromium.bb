@@ -76,9 +76,12 @@ class MockHttpProtocolHandler
         resource_context_(resource_context),
         blob_storage_context_(blob_storage_context),
         job_(nullptr),
-        delegate_(delegate) {}
+        delegate_(delegate),
+        resource_type_(RESOURCE_TYPE_MAIN_FRAME) {}
 
   ~MockHttpProtocolHandler() override {}
+
+  void set_resource_type(ResourceType type) { resource_type_ = type; }
 
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
@@ -94,7 +97,7 @@ class MockHttpProtocolHandler
         request, network_delegate, provider_host_->client_uuid(),
         blob_storage_context_, resource_context_, FETCH_REQUEST_MODE_NO_CORS,
         FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
-        RESOURCE_TYPE_MAIN_FRAME, REQUEST_CONTEXT_TYPE_HYPERLINK,
+        resource_type_, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
         scoped_refptr<ResourceRequestBodyImpl>(), ServiceWorkerFetchType::FETCH,
         delegate_);
@@ -108,6 +111,7 @@ class MockHttpProtocolHandler
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   mutable ServiceWorkerURLRequestJob* job_;
   ServiceWorkerURLRequestJob::Delegate* delegate_;
+  ResourceType resource_type_;
 };
 
 // Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
@@ -194,11 +198,12 @@ class ServiceWorkerURLRequestJobTest
         chrome_blob_storage_context->context();
 
     url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
-    url_request_job_factory_->SetProtocolHandler(
-        "https",
-        base::WrapUnique(new MockHttpProtocolHandler(
-            provider_host->AsWeakPtr(), browser_context_->GetResourceContext(),
-            blob_storage_context->AsWeakPtr(), this)));
+    std::unique_ptr<MockHttpProtocolHandler> handler(
+        new MockHttpProtocolHandler(provider_host->AsWeakPtr(),
+                                    browser_context_->GetResourceContext(),
+                                    blob_storage_context->AsWeakPtr(), this));
+    http_protocol_handler_ = handler.get();
+    url_request_job_factory_->SetProtocolHandler("https", std::move(handler));
     url_request_job_factory_->SetProtocolHandler(
         "blob", CreateMockBlobProtocolHandler(blob_storage_context));
     url_request_context_.set_job_factory(url_request_job_factory_.get());
@@ -282,6 +287,31 @@ class ServiceWorkerURLRequestJobTest
     provider_host_->NotifyControllerLost();
   }
 
+  // Runs a request where the active worker starts a request in ACTIVATING state
+  // and fails to reach ACTIVATED.
+  void RunFailToActivateTest(ResourceType resource_type) {
+    http_protocol_handler_->set_resource_type(resource_type);
+
+    // Start a request with an activating worker.
+    version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
+    request_ = url_request_context_.CreateRequest(
+        GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+        &url_request_delegate_);
+    request_->set_method("GET");
+    request_->Start();
+
+    // Proceed until the job starts waiting for the worker to activate.
+    base::RunLoop().RunUntilIdle();
+
+    // Simulate another worker kicking out the incumbent worker.  PostTask since
+    // it might respond synchronously, and the MockURLRequestDelegate would
+    // complain that the message loop isn't being run.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&ServiceWorkerVersion::SetStatus, version_,
+                              ServiceWorkerVersion::REDUNDANT));
+    base::RunLoop().RunUntilIdle();
+  }
+
   TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<TestBrowserContext> browser_context_;
@@ -298,6 +328,8 @@ class ServiceWorkerURLRequestJobTest
 
   int times_prepare_to_restart_invoked_ = 0;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  // Not owned.
+  MockHttpProtocolHandler* http_protocol_handler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLRequestJobTest);
@@ -656,7 +688,6 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
   EXPECT_FALSE(HasInflightRequests());
 }
 
-
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
   const GURL stream_url("blob://stream");
   StreamContext* stream_context =
@@ -863,6 +894,39 @@ TEST_F(ServiceWorkerURLRequestJobTest, MainScriptHTTPResponseInfoNotSet) {
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_MainResource) {
+  RunFailToActivateTest(RESOURCE_TYPE_MAIN_FRAME);
+
+  // The load should fail and we should have fallen back to network because
+  // this is a main resource request.
+  EXPECT_TRUE(request_->status().is_success());
+  EXPECT_EQ(200, request_->GetResponseCode());
+  EXPECT_EQ("PASS", url_request_delegate_.response_data());
+
+  // The controller should be reset since the main resource request failed.
+  ServiceWorkerProviderHost* host = helper_->context()->GetProviderHost(
+      helper_->mock_render_process_id(), kProviderID);
+  ASSERT_TRUE(host);
+  EXPECT_EQ(host->controlling_version(), nullptr);
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_Subresource) {
+  RunFailToActivateTest(RESOURCE_TYPE_IMAGE);
+
+  // The load should fail and we should not fall back to network because
+  // this is a subresource request.
+  EXPECT_TRUE(request_->status().is_success());
+  EXPECT_EQ(500, request_->GetResponseCode());
+  EXPECT_EQ("Service Worker Response Error",
+            request_->response_headers()->GetStatusText());
+
+  // The controller should still be set after a subresource request fails.
+  ServiceWorkerProviderHost* host = helper_->context()->GetProviderHost(
+      helper_->mock_render_process_id(), kProviderID);
+  ASSERT_TRUE(host);
+  EXPECT_EQ(host->controlling_version(), version_);
 }
 
 // TODO(kinuko): Add more tests with different response data and also for

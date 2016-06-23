@@ -40,8 +40,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   void Run();
 
  private:
-  void DidWaitActivation();
-  void DidFailActivation();
+  void StartWorker();
   void DispatchFetchEvent();
   void DidPrepare();
   void DidFail(ServiceWorkerStatusCode status);
