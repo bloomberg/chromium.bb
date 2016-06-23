@@ -39,6 +39,17 @@ ChromeVoxState = function() {
  */
 ChromeVoxState.instance;
 
+/**
+ * Holds the un-composite tts object.
+ * @type {Object}
+ */
+ChromeVoxState.backgroundTts;
+
+/**
+ * @type {boolean}
+  */
+  ChromeVoxState.isReadingContinuously;
+
 ChromeVoxState.prototype = {
   /** @type {ChromeVoxMode} */
   get mode() {
@@ -52,20 +63,6 @@ ChromeVoxState.prototype = {
   getMode: function() {
     return ChromeVoxMode.NEXT;
   },
-
-  /**
-   * Sets the current ChromeVox mode.
-   * @param {ChromeVoxMode} mode
-   * @param {boolean=} opt_injectClassic Injects ChromeVox classic into tabs;
-   *                                     defaults to false.
-   */
-  setMode: goog.abstractMethod,
-
-  /**
-   * Refreshes the current mode based on a node.
-   * @param {!chrome.automation.AutomationNode} url
-   */
-  refreshMode: goog.abstractMethod,
 
   /** @type {cursors.Range} */
   get currentRange() {

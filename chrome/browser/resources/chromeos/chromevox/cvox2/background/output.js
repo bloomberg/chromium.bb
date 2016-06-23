@@ -406,7 +406,7 @@ Output.INPUT_TYPE_MESSAGE_IDS_ = {
 Output.RULES = {
   navigate: {
     'default': {
-      speak: '$name $value $role $description',
+      speak: '$name $value $state $role $description',
       braille: ''
     },
     abstractContainer: {
@@ -1068,7 +1068,9 @@ Output.prototype = {
         } else if (token == 'state') {
           options.annotation.push(token);
           Object.getOwnPropertyNames(node.state).forEach(function(s) {
-            this.append_(buff, s, options);
+            var stateInfo = Output.STATE_INFO_[s];
+            if (stateInfo && stateInfo.on)
+              this.append_(buff, Msgs.getMsg(stateInfo.on.msgId), options);
           }.bind(this));
         } else if (token == 'find') {
           // Find takes two arguments: JSON query string and format string.
@@ -1292,7 +1294,7 @@ Output.prototype = {
     if (!range.start.node || !range.end.node)
       return;
 
-    if (!prevRange)
+    if (!prevRange && range.start.node.root)
       prevRange = cursors.Range.fromNode(range.start.node.root);
     var cursor = cursors.Cursor.fromNode(range.start.node);
     var prevNode = prevRange.start.node;

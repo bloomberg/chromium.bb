@@ -210,6 +210,10 @@ automationInternal.onChildTreeID.addListener(function(treeID,
   var subroot = AutomationRootNode.get(childTreeID);
   if (!subroot) {
     automationUtil.storeTreeCallback(childTreeID, function(root) {
+      // Return early if the root has already been attached.
+      if (root.parent)
+        return;
+
       privates(root).impl.setHostNode(node);
 
       if (root.docLoaded)
@@ -333,4 +337,3 @@ forEach(schema, function(k, v) {
 });
 
 exports.$set('binding', binding);
-

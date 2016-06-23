@@ -22,7 +22,7 @@ LiveRegionsTest.prototype = {
 
   /** @override */
   setUp: function() {
-    global.backgroundObj.forceChromeVoxNextActive();
+    ChromeVoxState.instance.toggleNext(true);
     window.RoleType = chrome.automation.RoleType;
   },
 
@@ -43,7 +43,7 @@ LiveRegionsTest.prototype = {
    */
   doCmd: function(cmd) {
     return function() {
-      global.backgroundObj.onGotCommand(cmd);
+      ChromeVoxState.instance.onGotCommand(cmd);
     };
   },
 };

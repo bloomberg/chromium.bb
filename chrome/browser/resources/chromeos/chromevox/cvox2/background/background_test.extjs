@@ -22,7 +22,7 @@ BackgroundTest.prototype = {
 
   /** @override */
   setUp: function() {
-    global.backgroundObj.forceChromeVoxNextActive();
+    ChromeVoxState.instance.toggleNext(true);
     window.RoleType = chrome.automation.RoleType;
     window.doCmd = this.doCmd;
   },
@@ -44,7 +44,7 @@ BackgroundTest.prototype = {
    */
   doCmd: function(cmd) {
     return function() {
-      global.backgroundObj.onGotCommand(cmd);
+      ChromeVoxState.instance.onGotCommand(cmd);
     };
   },
 
@@ -251,9 +251,7 @@ TEST_F('BackgroundTest', 'InitialFocus', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<a href="a">a</a>',
     function(rootNode) {
-      mockFeedback.expectSpeech('data:text/html,<!doctype html>' +
-              '<a href="a">a</a>')
-          .expectSpeech('a')
+      mockFeedback.expectSpeech('a')
           .expectSpeech('Link');
       mockFeedback.replay();
     });
@@ -274,7 +272,7 @@ TEST_F('BackgroundTest', 'AriaLabel', function() {
 
 TEST_F('BackgroundTest', 'ShowContextMenu', function() {
   var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree('<a href="a">a</a>',
+  this.runWithLoadedTree('<p>before</p><a href="a">a</a>',
     function(rootNode) {
       mockFeedback.expectSpeech(/menu opened/)
           .call(function() {
@@ -296,7 +294,7 @@ TEST_F('BackgroundTest', 'ShowContextMenu', function() {
 TEST_F('BackgroundTest', 'BrailleRouting', function() {
   var mockFeedback = this.createMockFeedback();
   var route = function(position) {
-    assertTrue(global.backgroundObj.onBrailleKeyEvent(
+    assertTrue(ChromeVoxState.instance.onBrailleKeyEvent(
         {command: cvox.BrailleKeyCommand.ROUTING,
          displayPosition: position},
         mockFeedback.lastMatchedBraille));
@@ -369,11 +367,12 @@ TEST_F('BackgroundTest', 'UseEditableState', function() {
     function(rootNode) {
       var assertExists = this.newCallback(function (evt) {
         assertNotNullNorUndefined(
-            global.desktopAutomationHandler.textEditHandler_);
+            ChromeVoxState.desktopAutomationHandler.textEditHandler_);
         evt.stopPropagation();
       });
       var assertDoesntExist = this.newCallback(function (evt) {
-        assertTrue(!global.desktopAutomationHandler.editableTextHandler_);
+        assertTrue(
+            !ChromeVoxState.desktopAutomationHandler.editableTextHandler_);
         evt.stopPropagation();
       });
 
@@ -435,7 +434,7 @@ TEST_F('BackgroundTest', 'EarconsForControls', function() {
 TEST_F('BackgroundTest', 'ToggleChromeVoxVersion', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
-    var gotCmd = global.backgroundObj.onGotCommand;
+    var gotCmd = ChromeVoxState.instance.onGotCommand;
 
     // The command came from the background keyboard handler.
     var togglerFromBackground = gotCmd.bind(gotCmd, 'toggleChromeVoxVersion');
@@ -445,11 +444,11 @@ TEST_F('BackgroundTest', 'ToggleChromeVoxVersion', function() {
                                          true);
 
     mockFeedback.call(togglerFromBackground)
-        .expectSpeech('classic')   
+        .expectSpeech('Switched to Classic ChromeVox')   
         .call(togglerFromContent)
-        .expectSpeech('next')
+        .expectSpeech('Switched to ChromeVox Next')
         .call(togglerFromBackground)
-        .expectSpeech('classic');
+        .expectSpeech('Switched to Classic ChromeVox');
     mockFeedback.replay();
   });
 });
@@ -511,54 +510,55 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
     var fakeWebRoot = {};
     fakeWebRoot.root = fakeWebRoot;
     fakeWebRoot.parent = fakeDesktop;
-    fakeWebRoot.role = 'rootWebArea';
+    fakeWebRoot.role = RoleType.rootWebArea;
+    fakeWebRoot.makeVisible = function() {};
+    fakeWebRoot.location = {left: 1, top: 1, width: 1, height: 1};
     var fakeSubRoot = {};
     fakeSubRoot.root = fakeSubRoot;
     fakeSubRoot.parent = fakeWebRoot;
-    fakeSubRoot.role = 'rootWebArea';
+    fakeSubRoot.role = RoleType.rootWebArea;
+    fakeSubRoot.makeVisible = function() {};
+    fakeSubRoot.location = {left: 1, top: 1, width: 1, height: 1};
+    var bk = ChromeVoxState.instance;
 
     // Tests default to force next mode.
-    assertEquals('force_next', global.backgroundObj.mode);
+    assertEquals('force_next', bk.mode);
 
     // Force next mode stays set regardless of where the range lands.
     fakeWebRoot.docUrl = 'http://google.com';
-    global.backgroundObj.refreshMode(fakeWebRoot);
-    assertEquals('force_next', global.backgroundObj.mode);
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('force_next', bk.mode);
     // Empty urls occur before document load or when root is desktop.
     fakeWebRoot.docUrl = '';
-    global.backgroundObj.refreshMode(fakeWebRoot);
-    assertEquals('force_next', global.backgroundObj.mode);
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('force_next', bk.mode);
 
-    // Verify compat -> classic switching.
-    global.backgroundObj.setMode('compat');
+    // Verify force next -> compat switching.
+    localStorage['useNext'] = false;
+    fakeWebRoot.docUrl = 'chrome://foobar';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('compat', bk.mode);
+
+    // Compat -> classic.
     fakeWebRoot.docUrl = 'http://google.com';
-    global.backgroundObj.refreshMode(fakeWebRoot);
-    assertEquals('classic', global.backgroundObj.mode);
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('classic', bk.mode);
 
     // Ensure we switch to compat if our current range has focused
     // state set and is not in web content.
     assertTrue(root.parent.state.focused);
-    global.backgroundObj.setCurrentRange(cursors.Range.fromNode(root.parent));
-    global.backgroundObj.refreshMode(root.parent);
-    assertEquals('compat', global.backgroundObj.mode);
+    bk.setCurrentRange(cursors.Range.fromNode(root.parent));
+    assertEquals('compat', bk.mode);
 
     // And back to classic.
-    global.backgroundObj.setCurrentRange(cursors.Range.fromNode(root));
-    global.backgroundObj.refreshMode(fakeWebRoot);
-    assertEquals('classic', global.backgroundObj.mode);
+    bk.setCurrentRange(cursors.Range.fromNode(root));
+    assertEquals('classic', bk.mode);
 
-    // Now, try refreshing mode (which we call after tab switching) with a range
-    // that's not actually focused.
-    assertEquals(undefined, root.parent.parent.state.focused);
-    global.backgroundObj.setCurrentRange(cursors.Range.fromNode(root.parent.parent));
-    global.backgroundObj.refreshMode(root.parent.parent);
-    assertEquals('classic', global.backgroundObj.mode);
-
-    // Now, verify mode refreshes uses the top level root.
+    // Now, verify mode switching uses the top level root.
     fakeWebRoot.docUrl = 'http://google.com/#chromevox_next_test';
     fakeSubRoot.docUrl = 'http://chromevox.com';
-    global.backgroundObj.refreshMode(fakeSubRoot);
-    assertEquals('next', global.backgroundObj.mode);
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('next', bk.mode);
   }.bind(this));
 });
 
@@ -577,7 +577,7 @@ TEST_F('BackgroundTest', 'FocusIframe', function() {
     iframe.focus = function() {
       didFocus = true;
     };
-    var b = global.backgroundObj;
+    var b = ChromeVoxState.instance;
     b.currentRange_ = cursors.Range.fromNode(button);
     b.onGotCommand('previousElement');
     assertFalse(didFocus);
@@ -629,7 +629,12 @@ TEST_F('BackgroundTest', 'Checkbox', function() {
   */}, function(root) {
     var cbx = root.find({role: RoleType.checkBox});
     var click = cbx.doDefault.bind(cbx);
-    mockFeedback.call(click)
+    var focus = cbx.focus.bind(cbx);
+    mockFeedback.call(focus)
+        .expectSpeech('go')
+        .expectSpeech('Check box')
+        .expectSpeech('not checked')
+        .call(click)
         .expectSpeech('go')
         .expectSpeech('Check box')
         .expectSpeech('checked')
@@ -760,7 +765,7 @@ TEST_F('BackgroundTest', 'ToggleButton', function() {
     <div aria-pressed="false" role="button">cancel</div>
     <div aria-pressed role="button">close</div>
   */}, function(root) {
-    var b = global.backgroundObj;
+    var b = ChromeVoxState.instance;
     var move = b.onGotCommand.bind(b, 'nextObject');
     mockFeedback.call(move)
         .expectSpeech('ok')

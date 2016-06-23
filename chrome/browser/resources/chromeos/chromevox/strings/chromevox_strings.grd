@@ -2430,7 +2430,19 @@
         ChromeVox Updated
       </message>
       <message desc="Message text for a notification that ChromeVox has been updated for a new experience." name="IDS_CHROMEVOX_UPDATE_MESSAGE_NEXT">
-        Press ChromeVox o, n to learn more about the new ChromeVox experience.
+        Press ChromeVox o, n to learn more about ChromeVox Next.
+      </message>
+      <message desc="Options page description for the command to show ChromeVox's update page." name="IDS_CHROMEVOX_SHOW_NEXT_UPDATE_DESCRIPTION">
+        Show update notes
+      </message>
+      <message desc="Checkbox label for toggling on/off ChromeVox's new beta experience." name="IDS_CHROMEVOX_OPTIONS_USE_NEXT_LABEL">
+        Use ChromeVox Next (beta)
+      </message>
+      <message desc="Spoken when switching to the classic ChromeVox experience." name="IDS_CHROMEVOX_SWITCH_TO_CLASSIC">
+        Switched to Classic ChromeVox
+      </message>
+      <message desc="Spoken when switching to the new beta experience." name="IDS_CHROMEVOX_SWITCH_TO_NEXT">
+        Switched to ChromeVox Next
       </message>
     </messages>
   </release>
