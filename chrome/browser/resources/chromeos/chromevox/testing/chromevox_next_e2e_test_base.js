@@ -57,7 +57,7 @@ ChromeVoxNextE2ETest.prototype = {
 
         r.removeEventListener('focus', listener, true);
         r.removeEventListener('loadComplete', listener, true);
-        ChromeVoxState.instance.onGotCommand('nextObject');
+        global.backgroundObj.onGotCommand('nextObject');
         callback && callback(evt.target);
         callback = null;
       };

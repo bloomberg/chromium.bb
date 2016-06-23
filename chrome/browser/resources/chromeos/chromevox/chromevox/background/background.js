@@ -8,7 +8,6 @@
 
 goog.provide('cvox.ChromeVoxBackground');
 
-goog.require('ChromeVoxState');
 goog.require('Msgs');
 goog.require('cvox.AbstractEarcons');
 goog.require('cvox.BrailleBackground');
@@ -432,6 +431,9 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
         console.log(err);
       }
       break;
+    case 'next':
+      global.backgroundObj.onGotCommand(action, true);
+      break;
     }
   }, this));
 };
@@ -482,7 +484,7 @@ cvox.ChromeVoxBackground.prototype.getCurrentVoice = function() {
   var background = new cvox.ChromeVoxBackground();
   background.init();
   window['speak'] = goog.bind(background.tts.speak, background.tts);
-  ChromeVoxState.backgroundTts = background.backgroundTts_;
+  global.backgroundTts = background.backgroundTts_;
 
   // Export the prefs object for access by the options page.
   window['prefs'] = background.prefs;

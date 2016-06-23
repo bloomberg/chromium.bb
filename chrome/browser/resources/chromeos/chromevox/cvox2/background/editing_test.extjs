@@ -23,7 +23,7 @@ EditingTest.prototype = {
 
   /** @override */
   setUp: function() {
-    ChromeVoxState.instance.toggleNext(true);
+    global.backgroundObj.forceChromeVoxNextActive();
   },
 
   /**

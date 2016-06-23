@@ -114,7 +114,7 @@ ISearch.prototype = {
 ISearchUI = function(input) {
   /** @type {ChromeVoxState} */
   this.background_ =
-      chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
+      chrome.extension.getBackgroundPage()['global']['backgroundObj'];
   this.iSearch_ = new ISearch(this.background_.currentRange.start.node);
   this.input_ = input;
   this.dir_ = Dir.FORWARD;

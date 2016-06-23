@@ -314,7 +314,7 @@ cursors.Cursor.prototype = {
    * @return {boolean}
    */
   isValid: function() {
-    return this.node != null;
+    return !!this.node && !!this.node.root;
   }
 };
 
@@ -555,13 +555,10 @@ cursors.Range.prototype = {
     // Find the most common root.
     var uniqueAncestors = AutomationUtil.getUniqueAncestors(start, end);
     var mcr = start.root;
-    if (uniqueAncestors) {
-      var common = uniqueAncestors.pop().parent;
-      if (common)
-        mcr = common.root;
-    }
+    if (uniqueAncestors)
+      mcr = uniqueAncestors.pop().parent.root;
 
-    if (!mcr || mcr.role == RoleType.desktop)
+    if (mcr.role == RoleType.desktop)
       return;
 
     if (mcr === start.root && mcr === end.root) {

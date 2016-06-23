@@ -73,9 +73,7 @@ cvox.TabsApiHandler.prototype = {
           cvox.NavBraille.fromText(this.msg_('chrome_tab_created')));
     }
     cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_OPEN);
-    if (tab) {
-      this.refreshAutomationHandler_(tab.id);
-    }
+    this.refreshAutomationHandler_(tab.id);
   },
 
   /**
@@ -228,7 +226,7 @@ cvox.TabsApiHandler.prototype = {
       if (!tab)
         return;
 
-      ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(tab));
+      global.backgroundObj.refreshMode(tab);
     });
   },
 

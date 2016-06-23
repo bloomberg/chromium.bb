@@ -155,9 +155,7 @@ cvox.CommandStore.CMD_WHITELIST = {
                       msgId: 'toggle_chromevox_active',
                       category: 'modifier_keys'},
   'toggleChromeVoxVersion': {announce: false},
-  'showNextUpdatePage': {
-    msgId: 'show_next_update_description',
-    announce: false, 'category': 'help_commands'},
+  'showNextUpdatePage': {announce: false, 'category': 'help_commands'},
   'openChromeVoxMenus': {announce: false,
                          msgId: 'menus_title'},
   'decreaseTtsRate': {announce: false,

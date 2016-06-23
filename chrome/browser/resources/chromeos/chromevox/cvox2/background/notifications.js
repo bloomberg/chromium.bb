@@ -66,17 +66,3 @@ Notifications.onStartup = function() {
 
   new UpdateNotification().show();
 };
-
-/**
- * Runs notifications that should be shown for mode changes.
- */
-Notifications.onModeChange = function() {
-  // Only run on background page.
-  if (document.location.href.indexOf('background.html') == -1)
-    return;
-
-  if (ChromeVoxState.instance.mode !== ChromeVoxMode.FORCE_NEXT)
-    return;
-
-  new UpdateNotification().show();
-};
