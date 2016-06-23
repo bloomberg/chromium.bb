@@ -139,11 +139,15 @@ class MessagePipe {
 inline MessagePipe::MessagePipe() {
   MojoResult result = CreateMessagePipe(nullptr, &handle0, &handle1);
   DCHECK_EQ(MOJO_RESULT_OK, result);
+  DCHECK(handle0.is_valid());
+  DCHECK(handle1.is_valid());
 }
 
 inline MessagePipe::MessagePipe(const MojoCreateMessagePipeOptions& options) {
   MojoResult result = CreateMessagePipe(&options, &handle0, &handle1);
   DCHECK_EQ(MOJO_RESULT_OK, result);
+  DCHECK(handle0.is_valid());
+  DCHECK(handle1.is_valid());
 }
 
 inline MessagePipe::~MessagePipe() {
