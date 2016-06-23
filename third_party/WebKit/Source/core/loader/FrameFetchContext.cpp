@@ -80,7 +80,14 @@ namespace blink {
 
 namespace {
 
-bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, FetchRequest::DeferOption defer, const Document& document)
+void emitWarningForDocWriteScripts(const String& url, Document& document)
+{
+    String message = "A Parser-blocking, cross-origin script, " + url + ", is invoked via document.write. This may be blocked by the browser if the device has poor network connectivity.";
+    document.addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
+    WTFLogAlways("%s", message.utf8().data());
+}
+
+bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, FetchRequest::DeferOption defer, Document& document)
 {
     // Only scripts inserted via document.write are candidates for having their
     // fetch disallowed.
@@ -105,6 +112,8 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, Fetch
     // are likely to be third party content.
     if (request.url().host() == document.getSecurityOrigin()->domain())
         return false;
+
+    emitWarningForDocWriteScripts(request.url().getString(), document);
 
     // Do not block scripts if it is a page reload. This is to enable pages to
     // recover if blocking of a script is leading to a page break and the user
