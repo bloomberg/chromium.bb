@@ -96,9 +96,11 @@ config("compiler") {
     lib_dirs = [ "//third_party/llvm-build/Release+Asserts/lib/clang/$clang_version/lib/windows" ]
   }
 
-  if (is_syzyasan) {
-    # SyzyAsan needs /PROFILE turned on to produce appropriate pdbs.
-    assert(!is_win_fastlink, "/PROFILE and /DEBUG:FASTLINK are incompatible")
+  # Ensures that the PDB file contains FIXUP information (growing the PDB file
+  # by about 5%) but does not otherwise alter the output binary. This
+  # information is used by the Syzygy optimization tool when decomposing the
+  # release image.
+  if (!is_debug && !is_win_fastlink && !is_clang) {
     ldflags = [ "/PROFILE" ]
   }
 
