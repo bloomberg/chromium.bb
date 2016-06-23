@@ -255,10 +255,12 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
         bitmap->setSize(size());
 
         unsigned char* pixels = bitmap->pixels();
+        if (!pixels)
+            return false;
+
         bool needPremultiply = m_wantAlphaChannel && !m_premultipliedAlpha;
         WebGLImageConversion::AlphaOp op = needPremultiply ? WebGLImageConversion::AlphaDoPremultiply : WebGLImageConversion::AlphaDoNothing;
-        if (pixels)
-            readBackFramebuffer(pixels, size().width(), size().height(), ReadbackSkia, op);
+        readBackFramebuffer(pixels, size().width(), size().height(), ReadbackSkia, op);
     }
 
     // We must restore the texture binding since creating new textures,
