@@ -16,6 +16,21 @@ using testing::AtMost;
 
 namespace blink {
 
+namespace {
+
+// Called from WorkerThread::startRunningDebuggerTasksOnPauseOnWorkerThread as a
+// debugger task.
+void waitForTermination(WorkerThread* workerThread)
+{
+    EXPECT_TRUE(workerThread->isCurrentThread());
+
+    // Notify the main thread that the debugger task is waiting for termination.
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&testing::exitRunLoop));
+    workerThread->terminationEvent()->wait();
+}
+
+} // namespace
+
 class WorkerThreadTest : public ::testing::Test {
 public:
     void SetUp() override
@@ -144,6 +159,45 @@ TEST_F(WorkerThreadTest, StartAndTerminateImmediately_SyncTerminate)
     m_workerThread->terminateAndWait();
     WorkerThread::ExitCode exitCode = m_workerThread->getExitCode();
     EXPECT_TRUE(WorkerThread::ExitCode::GracefullyTerminated == exitCode || WorkerThread::ExitCode::SyncForciblyTerminated == exitCode);
+}
+
+TEST_F(WorkerThreadTest, StartAndTerminateOnInitialization_TerminateWhileDebuggerTaskIsRunning)
+{
+    EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(1);
+    EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
+    EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(1);
+    EXPECT_CALL(*m_mockWorkerThreadLifecycleObserver, contextDestroyed()).Times(1);
+
+    std::unique_ptr<Vector<CSPHeaderAndType>> headers = wrapUnique(new Vector<CSPHeaderAndType>());
+    CSPHeaderAndType headerAndType("contentSecurityPolicy", ContentSecurityPolicyHeaderTypeReport);
+    headers->append(headerAndType);
+
+    // Specify PauseWorkerGlobalScopeOnStart so that the worker thread can pause
+    // on initialziation to run debugger tasks.
+    std::unique_ptr<WorkerThreadStartupData> startupData =
+        WorkerThreadStartupData::create(
+            KURL(ParsedURLString, "http://fake.url/"),
+            "fake user agent",
+            "//fake source code",
+            nullptr, /* cachedMetaData */
+            PauseWorkerGlobalScopeOnStart,
+            headers.get(),
+            m_securityOrigin.get(),
+            nullptr, /* workerClients */
+            WebAddressSpaceLocal,
+            nullptr /* originTrialToken */,
+            V8CacheOptionsDefault);
+    m_workerThread->start(std::move(startupData));
+
+    m_workerThread->appendDebuggerTask(threadSafeBind(&waitForTermination, AllowCrossThreadAccess(m_workerThread.get())));
+
+    // Wait for the debugger task.
+    testing::enterRunLoop();
+
+    // Start termination while the debugger task is running.
+    EXPECT_TRUE(m_workerThread->m_runningDebuggerTask);
+    m_workerThread->terminateAndWait();
+    EXPECT_EQ(WorkerThread::ExitCode::GracefullyTerminated, m_workerThread->getExitCode());
 }
 
 TEST_F(WorkerThreadTest, StartAndTerminateOnScriptLoaded_SyncForciblyTerminate)

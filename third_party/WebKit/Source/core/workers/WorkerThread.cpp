@@ -487,8 +487,15 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         }
     }
 
-    if (startMode == PauseWorkerGlobalScopeOnStart)
+    if (startMode == PauseWorkerGlobalScopeOnStart) {
         startRunningDebuggerTasksOnPauseOnWorkerThread();
+
+        // WorkerThread may be ready to shut down at this point if termination
+        // is requested while the debugger task is running. Shutdown sequence
+        // will start soon.
+        if (m_readyToShutdown)
+            return;
+    }
 
     if (m_workerGlobalScope->scriptController()->isContextInitialized()) {
         m_workerReportingProxy.didInitializeWorkerContext();
