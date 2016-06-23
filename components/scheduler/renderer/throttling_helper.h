@@ -30,7 +30,7 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   void OnTimeDomainHasImmediateWork() override;
   void OnTimeDomainHasDelayedWork() override;
 
-  // The purpose of this method is to make sure thottling doesn't conflict with
+  // The purpose of this method is to make sure throttling doesn't conflict with
   // enabling/disabling the queue for policy reasons.
   // If |task_queue| is throttled then the ThrottlingHelper remembers the
   // |enabled| setting.  In addition if |enabled| is false then the queue is

@@ -2141,6 +2141,30 @@ TEST_F(RendererSchedulerImplTest, SuspendAndResumeTimerQueue) {
               testing::ElementsAre(std::string("T1"), std::string("T2")));
 }
 
+TEST_F(RendererSchedulerImplTest, SuspendAndThrottleTimerQueue) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+
+  scheduler_->SuspendTimerQueue();
+  RunUntilIdle();
+  scheduler_->throttling_helper()->IncreaseThrottleRefCount(
+      static_cast<TaskQueue*>(timer_task_runner_.get()));
+  RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+}
+
+TEST_F(RendererSchedulerImplTest, ThrottleAndSuspendTimerQueue) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+
+  scheduler_->throttling_helper()->IncreaseThrottleRefCount(
+      static_cast<TaskQueue*>(timer_task_runner_.get()));
+  RunUntilIdle();
+  scheduler_->SuspendTimerQueue();
+  RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+}
+
 TEST_F(RendererSchedulerImplTest, MultipleSuspendsNeedMultipleResumes) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");

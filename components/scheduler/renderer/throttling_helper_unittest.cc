@@ -428,4 +428,16 @@ TEST_F(ThrottlingHelperTest, TaskQueueDisabledTillPump_ThenManuallyDisabled) {
   EXPECT_FALSE(timer_queue_->IsQueueEnabled());
 }
 
+TEST_F(ThrottlingHelperTest, DoubleIncrementDoubleDecrement) {
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+  throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
+  throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+}
+
 }  // namespace scheduler
