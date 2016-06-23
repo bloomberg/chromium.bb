@@ -343,6 +343,7 @@ vs-chromium-project.txt
 /third_party/gperf
 /third_party/grpc
 /third_party/guava/lib/*.jar
+/third_party/hamcrest/lib/*.jar
 /third_party/httpcomponents-client
 /third_party/httpcomponents-core
 /third_party/hunspell_dictionaries

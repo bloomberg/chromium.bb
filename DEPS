@@ -597,6 +597,16 @@ hooks = [
     ],
   },
   {
+    'name': 'hamcrest',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/update_deps/update_third_party_deps.py',
+               'download',
+               '-b', 'chromium-hamcrest',
+               '-l', 'third_party/hamcrest'
+    ],
+  },
+  {
     'name': 'guava',
     'pattern': '.',
     'action': ['python',
