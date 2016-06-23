@@ -84,11 +84,11 @@ class SyncSetupService : public KeyedService {
   // Returns true if the user has gone through the initial sync configuration.
   // This method is guaranteed not to start the sync backend so it can be
   // called at start-up.
-  bool HasFinishedInitialSetup();
+  virtual bool HasFinishedInitialSetup();
 
   // Pauses sync allowing the user to configure what data to sync before
   // actually starting to sync data with the server.
-  void PrepareForFirstSyncSetup();
+  virtual void PrepareForFirstSyncSetup();
 
   // Commit the current state of the configuration to the sync backend.
   void CommitChanges();

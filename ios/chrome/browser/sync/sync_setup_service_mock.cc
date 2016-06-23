@@ -12,3 +12,7 @@ SyncSetupServiceMock::SyncSetupServiceMock(
 
 SyncSetupServiceMock::~SyncSetupServiceMock() {
 }
+
+bool SyncSetupServiceMock::SyncSetupServiceHasFinishedInitialSetup() {
+  return SyncSetupService::HasFinishedInitialSetup();
+}
