@@ -470,16 +470,20 @@ panel_resize_handler(struct widget *widget,
 {
 	struct panel_launcher *launcher;
 	struct panel *panel = data;
-	int x, y, w, h;
+	int by = height / 2;
+	int spacing = 10;
+	int x = spacing;
+	int y = spacing;
+	int w, h;
 
-	x = 10;
-	y = 16;
 	wl_list_for_each(launcher, &panel->launcher_list, link) {
 		w = cairo_image_surface_get_width(launcher->icon);
 		h = cairo_image_surface_get_height(launcher->icon);
+
+			y = by - h / 2;
 		widget_set_allocation(launcher->widget,
-				      x, y - h / 2, w + 1, h + 1);
-		x += w + 10;
+				      x, y, w + 1, h + 1);
+			x += w + spacing;
 	}
 
 	h = 20;
@@ -489,9 +493,12 @@ panel_resize_handler(struct widget *widget,
 	else /* CLOCK_FORMAT_MINUTES */
 		w = 170;
 
+		x = width - w - spacing;
+		y = by - h / 2;
+
 	if (panel->clock)
 		widget_set_allocation(panel->clock->widget,
-				      width - w - 8, y - h / 2, w + 1, h + 1);
+				      x, y, w + 1, h + 1);
 }
 
 static void
@@ -503,7 +510,8 @@ panel_configure(void *data,
 	struct surface *surface = window_get_user_data(window);
 	struct panel *panel = container_of(surface, struct panel, base);
 
-	window_schedule_resize(panel->window, width, 32);
+		height = 32;
+	window_schedule_resize(panel->window, width, height);
 }
 
 static void
