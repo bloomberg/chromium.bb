@@ -3621,6 +3621,7 @@ void HTMLMediaElement::setWebLayer(WebLayer* webLayer)
 
 void HTMLMediaElement::mediaSourceOpened(WebMediaSource* webMediaSource)
 {
+    setShouldDelayLoadEvent(false);
     m_mediaSource->setWebMediaSourceAndOpen(wrapUnique(webMediaSource));
 }
 
