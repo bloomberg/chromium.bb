@@ -31,9 +31,13 @@ Polymer({
     'sideNav.iron-activate': 'onIronActivate_',
   },
 
-  /** @private */
-  onIronActivate_: function() {
-    this.$$('app-drawer').close();
+  /**
+   * @param {Event} event
+   * @private
+   */
+  onIronActivate_: function(event) {
+    if (event.detail.item.id != 'advancedPage')
+      this.$$('app-drawer').close();
   },
 
   /** @private */
