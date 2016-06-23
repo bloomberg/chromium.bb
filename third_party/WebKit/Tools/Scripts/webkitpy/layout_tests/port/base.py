@@ -1266,15 +1266,6 @@ class Port(object):
     def warn_if_bug_missing_in_test_expectations(self):
         return True
 
-    def _port_specific_expectations_files(self):
-        paths = []
-        paths.append(self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'))
-        paths.append(self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'))
-        paths.append(self._filesystem.join(self.layout_tests_dir(), 'SlowTests'))
-        if self._is_wpt_enabled:
-            paths.append(self._filesystem.join(self.layout_tests_dir(), 'WPTServeExpectations'))
-        return paths
-
     def _flag_specific_expectations_files(self):
         return [self._filesystem.join(self.layout_tests_dir(), 'FlagExpectations', flag.lstrip('-'))
                 for flag in self.get_option('additional_driver_flag', [])]
@@ -1326,9 +1317,16 @@ class Port(object):
         return {}
 
     def expectations_files(self):
-        return ([self.path_to_generic_test_expectations_file()] +
-                self._port_specific_expectations_files() +
-                self._flag_specific_expectations_files())
+        paths = [
+            self.path_to_generic_test_expectations_file(),
+            self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'),
+            self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'),
+            self._filesystem.join(self.layout_tests_dir(), 'SlowTests'),
+        ]
+        if self._is_wpt_enabled:
+            paths.append(self._filesystem.join(self.layout_tests_dir(), 'WPTServeExpectations'))
+        paths.extend(self._flag_specific_expectations_files())
+        return paths
 
     def repository_path(self):
         """Returns the repository path for the chromium code base."""

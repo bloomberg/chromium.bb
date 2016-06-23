@@ -98,8 +98,9 @@ class PrintExpectationsTest(unittest.TestCase):
     def test_paths(self):
         self.run_test([],
                       ('/mock-checkout/LayoutTests/TestExpectations\n'
-                       'LayoutTests/platform/test/TestExpectations\n'
-                       'LayoutTests/platform/test-win-win7/TestExpectations\n'),
+                       'LayoutTests/NeverFixTests\n'
+                       'LayoutTests/StaleTestExpectations\n'
+                       'LayoutTests/SlowTests\n'),
                       paths=True)
 
 

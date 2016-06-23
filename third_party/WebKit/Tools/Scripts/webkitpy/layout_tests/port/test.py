@@ -523,9 +523,6 @@ class TestPort(Port):
     def path_to_generic_test_expectations_file(self):
         return self._generic_expectations_path
 
-    def _port_specific_expectations_files(self):
-        return [self._filesystem.join(self._webkit_baseline_path(d), 'TestExpectations') for d in ['test', 'test-win-win7']]
-
     def all_test_configurations(self):
         """Returns a sequence of the TestConfigurations the port supports."""
         # By default, we assume we want to test every graphics type in

@@ -308,34 +308,23 @@ class PortTestCase(unittest.TestCase):
         self.assertEqual(port._build_path(), expected_path)
 
     def test_expectations_files(self):
-        # FIXME: crbug.com/589709 - Delete this once the 10.11 failures have been rebaselined or triaged.
-        return
-
         port = self.make_port()
+        self.assertEqual(port.expectations_files(), [
+            port.path_to_generic_test_expectations_file(),
+            port._filesystem.join(port.layout_tests_dir(), 'NeverFixTests'),
+            port._filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations'),
+            port._filesystem.join(port.layout_tests_dir(), 'SlowTests'),
+        ])
 
-        generic_path = port.path_to_generic_test_expectations_file()
-        never_fix_tests_path = port._filesystem.join(port.layout_tests_dir(), 'NeverFixTests')
-        stale_tests_path = port._filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations')
-        slow_tests_path = port._filesystem.join(port.layout_tests_dir(), 'SlowTests')
-
-        port._filesystem.write_text_file(skia_overrides_path, 'dummy text')
-
-        port._options.builder_name = 'DUMMY_BUILDER_NAME'
-        self.assertEqual(port.expectations_files(),
-                         [generic_path, skia_overrides_path,
-                          never_fix_tests_path, stale_tests_path, slow_tests_path])
-
-        port._options.builder_name = 'builder (deps)'
-        self.assertEqual(port.expectations_files(),
-                         [generic_path, skia_overrides_path,
-                          never_fix_tests_path, stale_tests_path, slow_tests_path])
-
-        # A builder which does NOT observe the Chromium test_expectations,
-        # but still observes the Skia test_expectations...
-        port._options.builder_name = 'builder'
-        self.assertEqual(port.expectations_files(),
-                         [generic_path, skia_overrides_path,
-                          never_fix_tests_path, stale_tests_path, slow_tests_path])
+    def test_expectations_files_wptserve_enabled(self):
+        port = self.make_port(options=MockOptions(enable_wptserve=True))
+        self.assertEqual(port.expectations_files(), [
+            port.path_to_generic_test_expectations_file(),
+            port._filesystem.join(port.layout_tests_dir(), 'NeverFixTests'),
+            port._filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations'),
+            port._filesystem.join(port.layout_tests_dir(), 'SlowTests'),
+            port._filesystem.join(port.layout_tests_dir(), 'WPTServeExpectations'),
+        ])
 
     def test_check_sys_deps(self):
         port = self.make_port()
