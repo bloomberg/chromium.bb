@@ -38,6 +38,7 @@ public:
     // ImageBufferClient implementation
     void notifySurfaceInvalid() override { }
     bool isDirty() override { return m_isDirty; }
+    void didDisableAcceleration() override { }
     void didFinalizeFrame() override
     {
         if (m_isDirty) {

@@ -113,6 +113,7 @@ public:
     void flushGpu();
     void prepareSurfaceForPaintingIfNeeded();
     bool isHidden() { return m_isHidden; }
+    OpacityMode opacityMode() { return m_opacityMode; }
 
     void beginDestruction();
     void hibernate();
@@ -193,6 +194,8 @@ private:
     void unregisterTaskObserver();
     void reportSurfaceCreationFailure();
 
+    void disableAcceleration();
+
     // WebThread::TaskOberver implementation
     void willProcessTask() override;
     void didProcessTask() override;
@@ -257,6 +260,7 @@ private:
     bool m_hibernationScheduled = false;
 
     friend class Canvas2DLayerBridgeTest;
+    friend class CanvasRenderingContext2DTest;
 
     uint32_t m_lastImageId;
 

@@ -16,10 +16,13 @@
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
 #include "modules/webgl/WebGLRenderingContext.h"
+#include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/test/FakeGLES2Interface.h"
+#include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -88,6 +91,7 @@ protected:
     void createContext(OpacityMode);
     void TearDown();
     void unrefCanvas();
+    PassRefPtr<Canvas2DLayerBridge> makeBridge(std::unique_ptr<FakeWebGraphicsContext3DProvider>, const IntSize&, Canvas2DLayerBridge::AccelerationMode);
 
 private:
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
@@ -176,6 +180,11 @@ void CanvasRenderingContext2DTest::TearDown()
 {
     ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     replaceMemoryCacheForTesting(m_globalMemoryCache.release());
+}
+
+PassRefPtr<Canvas2DLayerBridge> CanvasRenderingContext2DTest::makeBridge(std::unique_ptr<FakeWebGraphicsContext3DProvider> provider, const IntSize& size, Canvas2DLayerBridge::AccelerationMode accelerationMode)
+{
+    return adoptRef(new Canvas2DLayerBridge(std::move(provider), size, 0, NonOpaque, accelerationMode));
 }
 
 //============================================================================
@@ -749,6 +758,35 @@ TEST_F(CanvasRenderingContext2DTest, ContextDisposedBeforeCanvas)
 
     canvasElement().detachContext();
     // Passes by not crashing later during teardown
+}
+
+TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration)
+{
+    bool savedFixedRenderingMode = RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled();
+    RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(false);
+
+    createContext(NonOpaque);
+    FakeGLES2Interface gl;
+    std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider(new FakeWebGraphicsContext3DProvider(&gl));
+    IntSize size(300, 300);
+    RefPtr<Canvas2DLayerBridge> bridge = makeBridge(std::move(contextProvider), size, Canvas2DLayerBridge::EnableAcceleration);
+    std::unique_ptr<Canvas2DImageBufferSurface> surface(new Canvas2DImageBufferSurface(bridge, size));
+    canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
+
+    EXPECT_TRUE(bridge->isAccelerated());
+    EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
+    EXPECT_EQ(720000, getGlobalGPUMemoryUsage());
+
+    TrackExceptionState exceptionState;
+    context2d()->getImageData(0, 0, 1, 1, exceptionState);
+
+    EXPECT_FALSE(exceptionState.hadException());
+    EXPECT_FALSE(bridge->isAccelerated());
+    EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
+    EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+
+    // Restore global state to prevent side-effects on other tests
+    RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(savedFixedRenderingMode);
 }
 
 } // namespace blink
