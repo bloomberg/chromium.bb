@@ -168,6 +168,10 @@ public:
 
     // If a PreventRelayoutScope object is alive, updateAfterLayout() will not
     // re-run box layout as a result of adding or removing scrollbars.
+    // Instead, it will mark the PLSA as needing relayout of its box.
+    // When the last PreventRelayoutScope object is popped off the stack,
+    // box().setNeedsLayout(), and box().scrollbarsChanged() for LayoutBlock's,
+    // will be called as appropriate for all marked PLSA's.
     class PreventRelayoutScope {
         STACK_ALLOCATED();
     public:
@@ -175,7 +179,7 @@ public:
         ~PreventRelayoutScope();
 
         static bool relayoutIsPrevented() { return s_count; }
-        static void setNeedsLayout(LayoutObject&);
+        static void setBoxNeedsLayout(PaintLayerScrollableArea&, bool hadHorizontalScrollbar, bool hadVerticalScrollbar);
         static bool relayoutNeeded() { return s_count == 0 && s_relayoutNeeded; }
         static void resetRelayoutNeeded();
 
@@ -183,7 +187,7 @@ public:
         static int s_count;
         static SubtreeLayoutScope* s_layoutScope;
         static bool s_relayoutNeeded;
-        static WTF::Vector<LayoutObject*>* s_needsRelayout;
+        static PersistentHeapVector<Member<PaintLayerScrollableArea>>* s_needsRelayout;
     };
 
     // If a FreezeScrollbarScope object is alive, updateAfterLayout() will not
@@ -408,8 +412,25 @@ public:
     bool shouldRebuildVerticalScrollbarLayer() const { return m_rebuildVerticalScrollbarLayer; }
     void resetRebuildScrollbarLayerFlags();
 
+    // Did DelayScrollPositionClampScope prevent us from running clampScrollPositionsAfterLayout()
+    // in updateAfterLayout()?
     bool needsScrollPositionClamp() const { return m_needsScrollPositionClamp; }
     void setNeedsScrollPositionClamp(bool val) { m_needsScrollPositionClamp = val; }
+
+    // Did PreventRelayoutScope prevent us from running re-layout due to adding/subtracting
+    // scrollbars in updateAfterLayout()?
+    bool needsRelayout() const { return m_needsRelayout; }
+    void setNeedsRelayout(bool val) { m_needsRelayout = val; }
+
+    // Were we laid out with a horizontal scrollbar at the time we were marked as
+    // needing relayout by PreventRelayoutScope?
+    bool hadHorizontalScrollbarBeforeRelayout() const { return m_hadHorizontalScrollbarBeforeRelayout; }
+    void setHadHorizontalScrollbarBeforeRelayout(bool val) { m_hadHorizontalScrollbarBeforeRelayout = val; }
+
+    // Were we laid out with a vertical scrollbar at the time we were marked as
+    // needing relayout by PreventRelayoutScope?
+    bool hadVerticalScrollbarBeforeRelayout() const { return m_hadVerticalScrollbarBeforeRelayout; }
+    void setHadVerticalScrollbarBeforeRelayout(bool val) { m_hadVerticalScrollbarBeforeRelayout = val; }
 
     StickyConstraintsMap& stickyConstraintsMap() { return ensureRareData().m_stickyConstraintsMap; }
     void invalidateAllStickyConstraints();
@@ -468,14 +489,14 @@ private:
 
     PaintLayer& m_layer;
 
+    PaintLayer* m_nextTopmostScrollChild;
+    PaintLayer* m_topmostScrollChild;
+
     // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
     unsigned m_inResizeMode : 1;
     unsigned m_scrollsOverflow : 1;
 
     unsigned m_inOverflowRelayout : 1;
-
-    PaintLayer* m_nextTopmostScrollChild;
-    PaintLayer* m_topmostScrollChild;
 
     // FIXME: once cc can handle composited scrolling with clip paths, we will
     // no longer need this bit.
@@ -488,6 +509,9 @@ private:
     unsigned m_rebuildVerticalScrollbarLayer : 1;
 
     unsigned m_needsScrollPositionClamp : 1;
+    unsigned m_needsRelayout : 1;
+    unsigned m_hadHorizontalScrollbarBeforeRelayout : 1;
+    unsigned m_hadVerticalScrollbarBeforeRelayout : 1;
 
     // The width/height of our scrolled area.
     // This is OverflowModel's layout overflow translated to physical

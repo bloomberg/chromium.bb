@@ -87,14 +87,18 @@ const int ResizerControlExpandRatioForTouch = 2;
 
 PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
     : m_layer(layer)
+    , m_nextTopmostScrollChild(0)
+    , m_topmostScrollChild(0)
     , m_inResizeMode(false)
     , m_scrollsOverflow(false)
     , m_inOverflowRelayout(false)
-    , m_nextTopmostScrollChild(0)
-    , m_topmostScrollChild(0)
     , m_needsCompositedScrolling(false)
     , m_rebuildHorizontalScrollbarLayer(false)
     , m_rebuildVerticalScrollbarLayer(false)
+    , m_needsScrollPositionClamp(false)
+    , m_needsRelayout(false)
+    , m_hadHorizontalScrollbarBeforeRelayout(false)
+    , m_hadVerticalScrollbarBeforeRelayout(false)
     , m_scrollbarManager(*this)
     , m_scrollCorner(nullptr)
     , m_resizer(nullptr)
@@ -655,6 +659,8 @@ void PaintLayerScrollableArea::updateAfterLayout()
         && (horizontalScrollbarShouldChange || verticalScrollbarShouldChange);
 
     if (scrollbarsWillChange) {
+        bool hadHorizontalScrollbar = hasHorizontalScrollbar();
+        bool hadVerticalScrollbar = hasVerticalScrollbar();
         if (box().hasAutoHorizontalScrollbar())
             setHasHorizontalScrollbar(shouldHaveAutoHorizontalScrollbar);
         else if (box().style()->overflowX() == OverflowScroll)
@@ -684,9 +690,7 @@ void PaintLayerScrollableArea::updateAfterLayout()
                 // We're not doing re-layout right now, but we still want to
                 // add the scrollbar to the logical width now, to facilitate parent layout.
                 box().updateLogicalWidth();
-                if (box().isLayoutBlock())
-                    toLayoutBlock(box()).scrollbarsChanged(horizontalScrollbarShouldChange, verticalScrollbarShouldChange);
-                PreventRelayoutScope::setNeedsLayout(box());
+                PreventRelayoutScope::setBoxNeedsLayout(*this, hadHorizontalScrollbar, hadVerticalScrollbar);
             } else {
                 m_inOverflowRelayout = true;
                 SubtreeLayoutScope layoutScope(box());
@@ -1646,7 +1650,7 @@ DEFINE_TRACE(PaintLayerScrollableArea::ScrollbarManager)
 int PaintLayerScrollableArea::PreventRelayoutScope::s_count = 0;
 SubtreeLayoutScope* PaintLayerScrollableArea::PreventRelayoutScope::s_layoutScope = nullptr;
 bool PaintLayerScrollableArea::PreventRelayoutScope::s_relayoutNeeded = false;
-WTF::Vector<LayoutObject*>* PaintLayerScrollableArea::PreventRelayoutScope::s_needsRelayout = nullptr;
+PersistentHeapVector<Member<PaintLayerScrollableArea>>* PaintLayerScrollableArea::PreventRelayoutScope::s_needsRelayout = nullptr;
 
 PaintLayerScrollableArea::PreventRelayoutScope::PreventRelayoutScope(SubtreeLayoutScope& layoutScope)
 {
@@ -1662,22 +1666,39 @@ PaintLayerScrollableArea::PreventRelayoutScope::~PreventRelayoutScope()
 {
     if (--s_count == 0) {
         if (s_relayoutNeeded) {
-            for (auto layoutObject : *s_needsRelayout)
-                s_layoutScope->setNeedsLayout(layoutObject, LayoutInvalidationReason::ScrollbarChanged);
+            for (auto scrollableArea: *s_needsRelayout) {
+                DCHECK(scrollableArea->needsRelayout());
+                LayoutBox& box = scrollableArea->box();
+                s_layoutScope->setNeedsLayout(&box, LayoutInvalidationReason::ScrollbarChanged);
+                if (box.isLayoutBlock()) {
+                    bool horizontalScrollbarChanged = scrollableArea->hasHorizontalScrollbar() != scrollableArea->hadHorizontalScrollbarBeforeRelayout();
+                    bool verticalScrollbarChanged = scrollableArea->hasVerticalScrollbar() != scrollableArea->hadVerticalScrollbarBeforeRelayout();
+                    if (horizontalScrollbarChanged || verticalScrollbarChanged)
+                        toLayoutBlock(box).scrollbarsChanged(horizontalScrollbarChanged, verticalScrollbarChanged);
+                }
+                scrollableArea->setNeedsRelayout(false);
+            }
+
             s_needsRelayout->clear();
         }
         s_layoutScope = nullptr;
     }
 }
 
-void PaintLayerScrollableArea::PreventRelayoutScope::setNeedsLayout(LayoutObject& layoutObject)
+void PaintLayerScrollableArea::PreventRelayoutScope::setBoxNeedsLayout(PaintLayerScrollableArea& scrollableArea, bool hadHorizontalScrollbar, bool hadVerticalScrollbar)
 {
     DCHECK(s_count);
     DCHECK(s_layoutScope);
+    if (scrollableArea.needsRelayout())
+        return;
+    scrollableArea.setNeedsRelayout(true);
+    scrollableArea.setHadHorizontalScrollbarBeforeRelayout(hadHorizontalScrollbar);
+    scrollableArea.setHadVerticalScrollbarBeforeRelayout(hadVerticalScrollbar);
+
     s_relayoutNeeded = true;
     if (!s_needsRelayout)
-        s_needsRelayout = new WTF::Vector<LayoutObject*>();
-    s_needsRelayout->append(&layoutObject);
+        s_needsRelayout = new PersistentHeapVector<Member<PaintLayerScrollableArea>>();
+    s_needsRelayout->append(&scrollableArea);
 }
 
 void PaintLayerScrollableArea::PreventRelayoutScope::resetRelayoutNeeded()
