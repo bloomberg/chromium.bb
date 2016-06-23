@@ -5025,7 +5025,7 @@ void SendTouchTapWithExpectedTarget(
 
 void SendGestureTapSequenceWithExpectedTarget(
     RenderWidgetHostViewBase* root_view,
-    const gfx::Point& gesture_point,
+    gfx::Point gesture_point,
     RenderWidgetHostViewBase*& router_gesture_target,
     const RenderWidgetHostViewBase* old_expected_target,
     const RenderWidgetHostViewBase* expected_target) {
@@ -5083,35 +5083,6 @@ void SendGestureTapSequenceWithExpectedTarget(
   EXPECT_EQ(expected_target, router_gesture_target);
 }
 
-void SendTouchpadPinchSequenceWithExpectedTarget(
-    RenderWidgetHostViewBase* root_view,
-    const gfx::Point& gesture_point,
-    RenderWidgetHostViewBase*& router_touchpad_gesture_target,
-    RenderWidgetHostViewBase* expected_target) {
-  auto root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
-
-  ui::GestureEventDetails pinch_begin_details(ui::ET_GESTURE_PINCH_BEGIN);
-  pinch_begin_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
-  ui::GestureEvent pinch_begin(gesture_point.x(), gesture_point.y(), 0,
-                               ui::EventTimeForNow(), pinch_begin_details);
-  root_view_aura->OnGestureEvent(&pinch_begin);
-  EXPECT_EQ(expected_target, router_touchpad_gesture_target);
-
-  ui::GestureEventDetails pinch_update_details(ui::ET_GESTURE_PINCH_UPDATE);
-  pinch_update_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
-  ui::GestureEvent pinch_update(gesture_point.x(), gesture_point.y(), 0,
-                                ui::EventTimeForNow(), pinch_update_details);
-  root_view_aura->OnGestureEvent(&pinch_update);
-  EXPECT_EQ(expected_target, router_touchpad_gesture_target);
-
-  ui::GestureEventDetails pinch_end_details(ui::ET_GESTURE_PINCH_END);
-  pinch_end_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
-  ui::GestureEvent pinch_end(gesture_point.x(), gesture_point.y(), 0,
-                             ui::EventTimeForNow(), pinch_end_details);
-  root_view_aura->OnGestureEvent(&pinch_end);
-  EXPECT_EQ(expected_target, router_touchpad_gesture_target);
-}
-
 }  // namespace anonymous
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
@@ -5143,106 +5114,58 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       contents->GetRenderWidgetHostView());
 
   RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
-  EXPECT_TRUE(router->touchscreen_gesture_target_queue_.empty());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+  EXPECT_TRUE(router->gesture_target_queue_.empty());
+  EXPECT_EQ(nullptr, router->gesture_target_);
 
   // Send touch sequence to main-frame.
   gfx::Point main_frame_point(25, 25);
   SendTouchTapWithExpectedTarget(rwhv_parent, main_frame_point,
-                                 router->touch_target_.target, rwhv_parent);
-  EXPECT_EQ(1LU, router->touchscreen_gesture_target_queue_.size());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+                                 router->touch_target_, rwhv_parent);
+  EXPECT_EQ(1LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(nullptr, router->gesture_target_);
+
 
   // Send touch sequence to child.
   gfx::Point child_center(150, 150);
   SendTouchTapWithExpectedTarget(rwhv_parent, child_center,
-                                 router->touch_target_.target, rwhv_child);
-  EXPECT_EQ(2LU, router->touchscreen_gesture_target_queue_.size());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+                                 router->touch_target_, rwhv_child);
+  EXPECT_EQ(2LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(nullptr, router->gesture_target_);
 
   // Send another touch sequence to main frame.
   SendTouchTapWithExpectedTarget(rwhv_parent, main_frame_point,
-                                 router->touch_target_.target, rwhv_parent);
-  EXPECT_EQ(3LU, router->touchscreen_gesture_target_queue_.size());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+                                 router->touch_target_, rwhv_parent);
+  EXPECT_EQ(3LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(nullptr, router->gesture_target_);
 
   // Send Gestures to clear GestureTargetQueue.
 
   // The first touch sequence should generate a GestureTapDown, sent to the
   // main frame.
-  SendGestureTapSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      nullptr, rwhv_parent);
-  EXPECT_EQ(2LU, router->touchscreen_gesture_target_queue_.size());
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, main_frame_point,
+                                           router->gesture_target_, nullptr,
+                                           rwhv_parent);
+  EXPECT_EQ(2LU, router->gesture_target_queue_.size());
   // Note: rwhv_parent is the target used for GestureFlingCancel sent by
   // RenderWidgetHostViewAura::OnGestureEvent() at the start of the next gesture
   // sequence; the sequence itself goes to rwhv_child.
-  EXPECT_EQ(rwhv_parent, router->touchscreen_gesture_target_.target);
+  EXPECT_EQ(rwhv_parent, router->gesture_target_);
 
   // The second touch sequence should generate a GestureTapDown, sent to the
   // child frame.
-  SendGestureTapSequenceWithExpectedTarget(
-      rwhv_parent, child_center, router->touchscreen_gesture_target_.target,
-      rwhv_parent, rwhv_child);
-  EXPECT_EQ(1LU, router->touchscreen_gesture_target_queue_.size());
-  EXPECT_EQ(rwhv_child, router->touchscreen_gesture_target_.target);
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, child_center,
+                                           router->gesture_target_, rwhv_parent,
+                                           rwhv_child);
+  EXPECT_EQ(1LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(rwhv_child, router->gesture_target_);
 
   // The third touch sequence should generate a GestureTapDown, sent to the
   // main frame.
-  SendGestureTapSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      rwhv_child, rwhv_parent);
-  EXPECT_EQ(0LU, router->touchscreen_gesture_target_queue_.size());
-  EXPECT_EQ(rwhv_parent, router->touchscreen_gesture_target_.target);
-}
-
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       InputEventRouterTouchpadGestureTargetTest) {
-  GURL main_url(embedded_test_server()->GetURL(
-      "/frame_tree/page_with_positioned_nested_frames.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-  WebContentsImpl* contents = web_contents();
-  FrameTreeNode* root = contents->GetFrameTree()->root();
-  ASSERT_EQ(1U, root->child_count());
-
-  GURL frame_url(
-      embedded_test_server()->GetURL("b.com", "/page_with_click_handler.html"));
-  NavigateFrameToURL(root->child_at(0), frame_url);
-  auto child_frame_host = root->child_at(0)->current_frame_host();
-
-  // Synchronize with the child and parent renderers to guarantee that the
-  // surface information required for event hit testing is ready.
-  auto rwhv_child =
-      static_cast<RenderWidgetHostViewBase*>(child_frame_host->GetView());
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
-  notifier.WaitForSurfaceReady();
-
-  // All touches & gestures are sent to the main frame's view, and should be
-  // routed appropriately from there.
-  auto rwhv_parent = static_cast<RenderWidgetHostViewBase*>(
-      contents->GetRenderWidgetHostView());
-
-  RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
-  EXPECT_EQ(nullptr, router->touchpad_gesture_target_.target);
-
-  // Send touchpad pinch sequence to main-frame.
-  gfx::Point main_frame_point(25, 25);
-  SendTouchpadPinchSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchpad_gesture_target_.target,
-      rwhv_parent);
-
-  // Send touchpad pinch sequence to child.
-  gfx::Point child_center(150, 150);
-  SendTouchpadPinchSequenceWithExpectedTarget(
-      rwhv_parent, child_center, router->touchpad_gesture_target_.target,
-      rwhv_child);
-
-  // Send another touchpad pinch sequence to main frame.
-  SendTouchpadPinchSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchpad_gesture_target_.target,
-      rwhv_parent);
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, main_frame_point,
+                                           router->gesture_target_, rwhv_child,
+                                           rwhv_parent);
+  EXPECT_EQ(0LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(rwhv_parent, router->gesture_target_);
 }
 #endif  // defined(USE_AURA)
 

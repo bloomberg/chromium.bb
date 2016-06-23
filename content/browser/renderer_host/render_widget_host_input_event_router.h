@@ -96,13 +96,14 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   using SurfaceIdNamespaceOwnerMap =
       base::hash_map<uint32_t, RenderWidgetHostViewBase*>;
-  struct TargetData {
+  struct GestureTargetData {
     RenderWidgetHostViewBase* target;
-    gfx::Vector2d delta;
+    const gfx::Vector2d delta;
 
-    TargetData() : target(nullptr) {}
+    GestureTargetData(RenderWidgetHostViewBase* target, gfx::Vector2d delta)
+        : target(target), delta(delta) {}
   };
-  using TargetQueue = std::deque<TargetData>;
+  using GestureTargetQueue = std::deque<GestureTargetData>;
 
   void ClearAllObserverRegistrations();
 
@@ -110,18 +111,12 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                             const gfx::Point& point,
                                             gfx::Point* transformed_point);
 
-  void RouteTouchscreenGestureEvent(RenderWidgetHostViewBase* root_view,
-                                    blink::WebGestureEvent* event,
-                                    const ui::LatencyInfo& latency);
-  void RouteTouchpadGestureEvent(RenderWidgetHostViewBase* root_view,
-                                 blink::WebGestureEvent* event,
-                                 const ui::LatencyInfo& latency);
-
   SurfaceIdNamespaceOwnerMap owner_map_;
-  TargetQueue touchscreen_gesture_target_queue_;
-  TargetData touch_target_;
-  TargetData touchscreen_gesture_target_;
-  TargetData touchpad_gesture_target_;
+  GestureTargetQueue gesture_target_queue_;
+  RenderWidgetHostViewBase* touch_target_;
+  RenderWidgetHostViewBase* gesture_target_;
+  gfx::Vector2d touch_delta_;
+  gfx::Vector2d gesture_delta_;
   int active_touches_;
   std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>
       hittest_data_;
@@ -129,8 +124,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            InputEventRouterGestureTargetQueueTest);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           InputEventRouterTouchpadGestureTargetTest);
 };
 
 }  // namespace content
