@@ -305,37 +305,29 @@ read_typeforms (yaml_parser_t *parser, int len) {
 
   while ((parse_error = yaml_parser_parse(parser, &event)) &&
 	 (event.type == YAML_SCALAR_EVENT)) {
-    if (!strcmp(event.data.scalar.value, "computer_braille")) {
+    if (strcmp(event.data.scalar.value, "computer_braille") == 0) {
       yaml_event_delete(&event);
       read_typeform_string(parser, typeform, computer_braille, len);
+    } else if (strcmp(event.data.scalar.value, "no_translate") == 0) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, no_translate, len);
+    } else if (strcmp(event.data.scalar.value, "no_contract") == 0) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, no_contract, len);
     } else {
       int i;
       typeforms kind = plain_text;
       for (i = 0; emph_classes[i]; i++) {
         if (strcmp(event.data.scalar.value, emph_classes[i]) == 0) {
           yaml_event_delete(&event);
-          switch (i) {
-          case 0: kind = italic; break;
-          case 1: kind = underline; break;
-          case 2: kind = bold; break;
-          case 3: kind = emph_4; break;
-          case 4: kind = emph_5; break;
-          case 5: kind = emph_6; break;
-          case 6: kind = emph_7; break;
-          case 7: kind = emph_8; break;
-          case 8: kind = emph_9; break;
-          case 9: kind = emph_10; break;
-          default:
-            fprintf(stderr, "CODING ERROR\n");
-            exit(1);
-          }
+          kind = italic << i;
+          if (kind > emph_10)
+            error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+                          "Typeform '%s' was not declared\n", event.data.scalar.value);
           read_typeform_string(parser, typeform, kind, len);
           break;
         }
       }
-      if (kind == plain_text)
-        error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
-                      "Typeform '%s' was not declared\n", event.data.scalar.value);
     }
   }
   if (!parse_error)
