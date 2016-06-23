@@ -40,6 +40,7 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       content::ProtocolHandlerMap* protocol_handlers,
+      ProtocolHandlerMap context_protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors,
       HeadlessBrowser::Options* options);
 

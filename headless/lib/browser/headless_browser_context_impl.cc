@@ -67,8 +67,11 @@ net::URLRequestContext* HeadlessResourceContext::GetRequestContext() {
 }
 
 HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
+    ProtocolHandlerMap protocol_handlers,
     HeadlessBrowser::Options* options)
-    : resource_context_(new HeadlessResourceContext), options_(options) {
+    : protocol_handlers_(std::move(protocol_handlers)),
+      options_(options),
+      resource_context_(new HeadlessResourceContext) {
   InitWhileIOAllowed();
 }
 
@@ -153,7 +156,8 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
               content::BrowserThread::IO),
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::FILE),
-          protocol_handlers, std::move(request_interceptors), options()));
+          protocol_handlers, std::move(protocol_handlers_),
+          std::move(request_interceptors), options()));
   resource_context_->set_url_request_context_getter(url_request_context_getter);
   return url_request_context_getter.get();
 }
@@ -191,9 +195,17 @@ HeadlessBrowserContext::Builder::~Builder() = default;
 
 HeadlessBrowserContext::Builder::Builder(Builder&&) = default;
 
+HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::SetProtocolHandlers(
+    ProtocolHandlerMap protocol_handlers) {
+  protocol_handlers_ = std::move(protocol_handlers);
+  return *this;
+}
+
 std::unique_ptr<HeadlessBrowserContext>
 HeadlessBrowserContext::Builder::Build() {
-  return base::WrapUnique(new HeadlessBrowserContextImpl(browser_->options()));
+  return base::WrapUnique(new HeadlessBrowserContextImpl(
+      std::move(protocol_handlers_), browser_->options()));
 }
 
 }  // namespace headless

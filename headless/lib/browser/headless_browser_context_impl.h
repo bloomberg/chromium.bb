@@ -21,7 +21,8 @@ class HeadlessResourceContext;
 class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
                                    public content::BrowserContext {
  public:
-  explicit HeadlessBrowserContextImpl(HeadlessBrowser::Options* options);
+  explicit HeadlessBrowserContextImpl(ProtocolHandlerMap protocol_handlers,
+                                      HeadlessBrowser::Options* options);
   ~HeadlessBrowserContextImpl() override;
 
   static HeadlessBrowserContextImpl* From(
@@ -61,9 +62,10 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
-  base::FilePath path_;
-  std::unique_ptr<HeadlessResourceContext> resource_context_;
+  ProtocolHandlerMap protocol_handlers_;
   HeadlessBrowser::Options* options_;  // Not owned.
+  std::unique_ptr<HeadlessResourceContext> resource_context_;
+  base::FilePath path_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextImpl);
 };

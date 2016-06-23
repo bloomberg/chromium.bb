@@ -319,11 +319,16 @@ action("client_api_generator_tests") {
 test("headless_browsertests") {
   sources = [
     "lib/headless_browser_browsertest.cc",
+    "lib/headless_browser_context_browsertest.cc",
     "lib/headless_devtools_client_browsertest.cc",
     "lib/headless_web_contents_browsertest.cc",
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
     "test/headless_test_launcher.cc",
+    "test/test_protocol_handler.cc",
+    "test/test_protocol_handler.h",
+    "test/test_url_request_job.cc",
+    "test/test_url_request_job.h",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

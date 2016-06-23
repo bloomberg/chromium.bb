@@ -18,7 +18,6 @@
 #include "headless/public/headless_web_contents.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
-#include "net/url_request/url_request_job_factory.h"
 
 namespace base {
 class MessagePump;
@@ -72,10 +71,6 @@ class HEADLESS_EXPORT HeadlessBrowser {
  private:
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowser);
 };
-
-using ProtocolHandlerMap = std::unordered_map<
-    std::string,
-    std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>>;
 
 // Embedding API overrides for the headless browser.
 struct HeadlessBrowser::Options {

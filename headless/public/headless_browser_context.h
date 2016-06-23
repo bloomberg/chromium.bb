@@ -6,9 +6,14 @@
 #define HEADLESS_PUBLIC_HEADLESS_BROWSER_CONTEXT_H_
 
 #include "headless/public/headless_export.h"
+#include "net/url_request/url_request_job_factory.h"
 
 namespace headless {
 class HeadlessBrowserImpl;
+
+using ProtocolHandlerMap = std::unordered_map<
+    std::string,
+    std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>>;
 
 // Represents an isolated session with a unique cache, cookies, and other
 // profile/session related data.
@@ -32,7 +37,9 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder(Builder&&);
   ~Builder();
 
-  // TODO(skyostil): Allow overriding protocol handlers.
+  // Set custom network protocol handlers. These can be used to override URL
+  // fetching for different network schemes.
+  Builder& SetProtocolHandlers(ProtocolHandlerMap protocol_handlers);
 
   std::unique_ptr<HeadlessBrowserContext> Build();
 
@@ -42,6 +49,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   explicit Builder(HeadlessBrowserImpl* browser);
 
   HeadlessBrowserImpl* browser_;
+  ProtocolHandlerMap protocol_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(Builder);
 };

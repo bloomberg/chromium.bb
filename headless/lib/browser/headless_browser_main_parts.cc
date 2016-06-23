@@ -32,7 +32,8 @@ HeadlessBrowserMainParts::HeadlessBrowserMainParts(HeadlessBrowserImpl* browser)
 HeadlessBrowserMainParts::~HeadlessBrowserMainParts() {}
 
 void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_.reset(new HeadlessBrowserContextImpl(browser_->options()));
+  browser_context_.reset(new HeadlessBrowserContextImpl(ProtocolHandlerMap(),
+                                                        browser_->options()));
   if (browser_->options()->devtools_endpoint.address().IsValid()) {
     devtools_http_handler_ =
         CreateLocalDevToolsHttpHandler(browser_context_.get());
