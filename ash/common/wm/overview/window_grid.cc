@@ -211,10 +211,8 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
   border_rect_f.Scale(scale);
-  if (border_thickness_ > 0) {
-    const float inset = border_thickness_ * scale - 0.5f;
-    border_rect_f.Inset(inset, inset);
-  }
+  const float inset = border_thickness_ * scale - 0.5f;
+  border_rect_f.Inset(inset, inset);
 
   SkPath path;
   const SkScalar scaled_corner_radius =
