@@ -6,7 +6,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS new IntersectionObserver(c => {}, { rootMargin: '1.4px' }) did not throw exception.
 PASS new IntersectionObserver(c => {}, { rootMargin: '1.4px 2px' }) did not throw exception.
 PASS new IntersectionObserver(c => {}, { rootMargin: '1.4px 2px 3%' }) did not throw exception.
-PASS new IntersectionObserver(c => {}, { rootMargin: '1.4px 2px 3% 40px junk junk junk' }) did not throw exception.
 PASS entries.length is 0
 PASS entries.length is 0
 PASS entries.length is 1

@@ -72,11 +72,13 @@ void parseRootMargin(String rootMarginParameter, Vector<Length>& rootMargin, Exc
     // "1px 2px" = top/bottom left/right
     // "1px 2px 3px" = top left/right bottom
     // "1px 2px 3px 4px" = top left right bottom
-    //
-    // Any extra stuff after the first four tokens is ignored.
     CSSTokenizer::Scope tokenizerScope(rootMarginParameter);
     CSSParserTokenRange tokenRange = tokenizerScope.tokenRange();
-    while (rootMargin.size() < 4 && tokenRange.peek().type() != EOFToken && !exceptionState.hadException()) {
+    while (tokenRange.peek().type() != EOFToken && !exceptionState.hadException()) {
+        if (rootMargin.size() == 4) {
+            exceptionState.throwDOMException(SyntaxError, "Extra text found at the end of rootMargin.");
+            break;
+        }
         const CSSParserToken& token = tokenRange.consumeIncludingWhitespace();
         switch (token.type()) {
         case PercentageToken:

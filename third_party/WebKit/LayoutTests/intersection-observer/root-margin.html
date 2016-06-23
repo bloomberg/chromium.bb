@@ -21,7 +21,6 @@ var observer = new IntersectionObserver(
 shouldNotThrow("new IntersectionObserver(c => {}, { rootMargin: '1.4px' })");
 shouldNotThrow("new IntersectionObserver(c => {}, { rootMargin: '1.4px 2px' })");
 shouldNotThrow("new IntersectionObserver(c => {}, { rootMargin: '1.4px 2px 3%' })");
-shouldNotThrow("new IntersectionObserver(c => {}, { rootMargin: '1.4px 2px 3% 40px junk junk junk' })");
 
 onload = function() {
   observer.observe(target);

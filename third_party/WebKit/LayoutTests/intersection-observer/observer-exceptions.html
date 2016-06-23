@@ -43,6 +43,15 @@
     shouldBe("exc.code", "DOMException.SYNTAX_ERR");
   }
 
+  try {
+    new IntersectionObserver(e => {}, {rootMargin: "1px 1px 1px 1px 1px"});
+    testFailed("IntersectionObserver constructor did not throw due to too many rootMargin value.");
+  } catch(e) {
+    exc = e;
+    shouldBeType("exc", "DOMException");
+    shouldBe("exc.code", "DOMException.SYNTAX_ERR");
+  }
+
   let observer = new IntersectionObserver(c => {}, {});
   try {
     observer.observe("foo");
