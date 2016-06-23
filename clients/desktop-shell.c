@@ -98,6 +98,7 @@ struct panel {
 	struct wl_list launcher_list;
 	struct panel_clock *clock;
 	int painted;
+	enum weston_desktop_shell_panel_position panel_position;
 	enum clock_format clock_format;
 	uint32_t color;
 };
@@ -470,20 +471,28 @@ panel_resize_handler(struct widget *widget,
 {
 	struct panel_launcher *launcher;
 	struct panel *panel = data;
+	int bx = width / 2;
 	int by = height / 2;
 	int spacing = 10;
 	int x = spacing;
 	int y = spacing;
 	int w, h;
+	int horizontal = panel->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP || panel->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM;
 
 	wl_list_for_each(launcher, &panel->launcher_list, link) {
 		w = cairo_image_surface_get_width(launcher->icon);
 		h = cairo_image_surface_get_height(launcher->icon);
 
+		if (horizontal)
 			y = by - h / 2;
+		else
+			x = bx - w / 2;
 		widget_set_allocation(launcher->widget,
 				      x, y, w + 1, h + 1);
+		if (horizontal)
 			x += w + spacing;
+		else
+			y += h + spacing;
 	}
 
 	h = 20;
@@ -493,8 +502,13 @@ panel_resize_handler(struct widget *widget,
 	else /* CLOCK_FORMAT_MINUTES */
 		w = 170;
 
+	if (horizontal) {
 		x = width - w - spacing;
 		y = by - h / 2;
+	} else {
+		x = bx - w / 2;
+		y = height - h - spacing;
+	}
 
 	if (panel->clock)
 		widget_set_allocation(panel->clock->widget,
@@ -507,10 +521,30 @@ panel_configure(void *data,
 		uint32_t edges, struct window *window,
 		int32_t width, int32_t height)
 {
+	struct desktop *desktop = data;
 	struct surface *surface = window_get_user_data(window);
 	struct panel *panel = container_of(surface, struct panel, base);
 
+	switch (desktop->panel_position) {
+	case WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP:
+	case WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM:
 		height = 32;
+		break;
+	case WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT:
+	case WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT:
+		switch (desktop->clock_format) {
+		case CLOCK_FORMAT_NONE:
+			width = 32;
+			break;
+		case CLOCK_FORMAT_MINUTES:
+			width = 170;
+			break;
+		case CLOCK_FORMAT_SECONDS:
+			width = 190;
+			break;
+		}
+		break;
+	}
 	window_schedule_resize(panel->window, width, height);
 }
 
@@ -568,6 +602,7 @@ panel_create(struct desktop *desktop)
 	widget_set_redraw_handler(panel->widget, panel_redraw_handler);
 	widget_set_resize_handler(panel->widget, panel_resize_handler);
 
+	panel->panel_position = desktop->panel_position;
 	panel->clock_format = desktop->clock_format;
 	if (panel->clock_format != CLOCK_FORMAT_NONE)
 		panel_add_clock(panel);
@@ -1343,11 +1378,10 @@ parse_panel_position(struct desktop *desktop, struct weston_config_section *s)
 	free(position);
 
 	if (desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP
-	    || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM) {
+	    || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM
+	    || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT
+	    || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT) {
 		desktop->want_panel = 1;
-	} else if (desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT
-		   || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT) {
-		fprintf(stderr, "Unsupported panel position\n");
 	}
 }
 
