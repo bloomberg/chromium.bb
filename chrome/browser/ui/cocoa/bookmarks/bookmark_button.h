@@ -28,8 +28,13 @@ class BookmarkNode;
 // Bookmark buttons pass mouseEntered: and mouseExited: events to
 // their delegate.  This allows the delegate to decide (for example)
 // which one, if any, should perform a hover-open.
-- (void)mouseEnteredButton:(id)button event:(NSEvent*)event;
-- (void)mouseExitedButton:(id)button event:(NSEvent*)event;
+//
+// mouseEnteredButton:event: is optimized to act only if the mouse is actually
+// within the button's bounds at the time of the call (with a fast moving mouse,
+// -isMouseReallyInside might return NO). Passing nil for |event| disables this
+// optimization, useful for unit testing.
+- (void)mouseEnteredButton:(BookmarkButton*)button event:(NSEvent*)event;
+- (void)mouseExitedButton:(BookmarkButton*)button event:(NSEvent*)event;
 
 // Returns YES if a drag operation should lock the fullscreen overlay bar
 // visibility before starting.  For example, dragging a bookmark button should

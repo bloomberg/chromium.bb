@@ -1373,7 +1373,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // Called from BookmarkButton.
 // Unlike bookmark_bar_controller's version, we DO default to being enabled.
-- (void)mouseEnteredButton:(id)sender event:(NSEvent*)event {
+- (void)mouseEnteredButton:(BookmarkButton*)button event:(NSEvent*)event {
   // Prevent unnecessary button selection change while scrolling due to the
   // size changing that happens in -performOneScroll:.
   if (isScrolling_)
@@ -1381,33 +1381,42 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   [[NSCursor arrowCursor] set];
 
-  buttonThatMouseIsIn_ = sender;
-  [self setSelectedButtonByIndex:[self indexOfButton:sender]];
+  // Make sure the mouse is still within the button's bounds (it might not be if
+  // the mouse is moving quickly). Skip this check if |event| is nil (as
+  // documented in the header).
+  if (event && ![[button cell] isMouseReallyInside]) {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    return;
+  }
+
+  buttonThatMouseIsIn_ = button;
+  [self setSelectedButtonByIndex:[self indexOfButton:button]];
 
   // Cancel a previous hover if needed.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
 
   // If already opened, then we exited but re-entered the button
   // (without entering another button open), do nothing.
-  if ([folderController_ parentButton] == sender)
+  if ([folderController_ parentButton] == button)
     return;
 
   // If right click was done immediately on entering a button, then open the
   // folder without delay so that context menu appears over the folder menu.
   if ([event type] == NSRightMouseDown)
-    [self openBookmarkFolderFromButtonAndCloseOldOne:sender];
+    [self openBookmarkFolderFromButtonAndCloseOldOne:button];
   else
     [self performSelector:@selector(openBookmarkFolderFromButtonAndCloseOldOne:)
-               withObject:sender
+               withObject:button
                afterDelay:bookmarks::kHoverOpenDelay
                   inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
 }
 
 // Called from the BookmarkButton
-- (void)mouseExitedButton:(id)sender event:(NSEvent*)event {
-  if (buttonThatMouseIsIn_ == sender)
+- (void)mouseExitedButton:(BookmarkButton*)button event:(NSEvent*)event {
+  if (buttonThatMouseIsIn_ == button) {
     buttonThatMouseIsIn_ = nil;
     [self setSelectedButtonByIndex:-1];
+  }
 
   // During scrolling -mouseExitedButton: stops scrolling, so update the
   // corresponding status field to reflect is has stopped.
