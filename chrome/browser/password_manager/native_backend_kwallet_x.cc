@@ -388,6 +388,9 @@ NativeBackendKWallet::InitResult NativeBackendKWallet::InitWallet() {
     case KWalletDBus::Error::SUCCESS:
       return INIT_SUCCESS;
   }
+
+  NOTREACHED();
+  return PERMANENT_FAIL;
 }
 
 password_manager::PasswordStoreChangeList NativeBackendKWallet::AddLogin(
