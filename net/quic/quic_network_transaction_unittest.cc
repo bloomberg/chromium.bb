@@ -1880,6 +1880,109 @@ TEST_P(QuicNetworkTransactionTest,
   EXPECT_EQ(QUIC_INVALID_STREAM_ID, details.quic_connection_error);
 }
 
+TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, kClientDataStreamId1, true, true,
+      GetRequestHeaders("GET", "https", "/")));
+  // Read the response headers, then a RST_STREAM frame.
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructServerRstPacket(
+      2, false, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(2, 1));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         nullptr, net_log_.bound());
+
+  CreateSession();
+  session_->quic_stream_factory()->set_require_confirmation(true);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  std::unique_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+  // Read the headers.
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != nullptr);
+  ASSERT_TRUE(response->headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3,
+            response->connection_info);
+
+  std::string response_data;
+  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+            ReadTransaction(trans.get(), &response_data));
+}
+
+TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, kClientDataStreamId1, true, true,
+      GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(ConstructServerRstPacket(
+      1, false, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         nullptr, net_log_.bound());
+
+  CreateSession();
+  session_->quic_stream_factory()->set_require_confirmation(true);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  std::unique_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+  // Read the headers.
+  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, callback.WaitForResult());
+}
+
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
   // Alternate-protocol job
   std::unique_ptr<QuicEncryptedPacket> close(

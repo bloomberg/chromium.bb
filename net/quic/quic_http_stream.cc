@@ -497,7 +497,8 @@ void QuicHttpStream::OnDataAvailable() {
 }
 
 void QuicHttpStream::OnClose(QuicErrorCode error) {
-  if (error != QUIC_NO_ERROR) {
+  if (error != QUIC_NO_ERROR ||
+      stream_->stream_error() != QUIC_STREAM_NO_ERROR) {
     response_status_ = was_handshake_confirmed_ ? ERR_QUIC_PROTOCOL_ERROR
                                                 : ERR_QUIC_HANDSHAKE_FAILED;
   } else if (!response_headers_received_) {
