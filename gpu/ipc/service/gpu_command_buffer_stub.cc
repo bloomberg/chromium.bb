@@ -909,7 +909,7 @@ void GpuCommandBufferStub::OnFenceSyncRelease(uint64_t release) {
 
 void GpuCommandBufferStub::OnDescheduleUntilFinished() {
   DCHECK(executor_->scheduled());
-  DCHECK(executor_->HasMoreIdleWork());
+  DCHECK(executor_->HasPollingWork());
 
   executor_->SetScheduled(false);
   channel_->OnStreamRescheduled(stream_id_, false);
