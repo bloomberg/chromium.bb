@@ -15,15 +15,62 @@
   !private static final java.lang.String *;
 }
 
-# Keep code annotated with the following annotations.
--keep class com.google.android.apps.chrome.**,org.chromium.** {
+# Fragments are loaded using reflection via Fragment.instantiate(Context,String)
+# This can be improved upon - see crbug.com/622023.
+-keep public class com.google.android.apps.chrome** extends android.app.Fragment
+-keep public class org.chromium** extends android.app.Fragment
+
+# Keeps for class level annotations.
+-keep @**.UsedByReflection class *
+-keep @**.VisibleForTesting class *
+
+# Keeps for method level annotations.
+-keepclasseswithmembers class com.google.android.apps.chrome.** {
   @**.AccessedByNative <fields>;
+}
+-keepclasseswithmembers class com.google.android.apps.chrome.** {
   @**.CalledByNative <methods>;
+}
+-keepclasseswithmembers class com.google.android.apps.chrome.** {
   @**.CalledByNativeUnchecked <methods>;
+}
+-keepclasseswithmembers class com.google.android.apps.chrome.** {
   @**.JavascriptInterface <methods>;
+}
+-keepclasseswithmembers class com.google.android.apps.chrome.** {
   @**.NativeCall <methods>;
+}
+-keepclasseswithmembers class com.google.android.apps.chrome.** {
   @**.UsedByReflection <methods>;
-  @**.VisibleForTesting *;
+}
+-keepclasseswithmembers class com.google.android.apps.chrome.** {
+  @**.VisibleForTesting <methods>;
+}
+-keepclasseswithmembers class com.google.android.apps.chrome.** {
+  native <methods>;
+}
+-keepclasseswithmembers class org.chromium.** {
+  @**.AccessedByNative <fields>;
+}
+-keepclasseswithmembers class org.chromium.** {
+  @**.CalledByNative <methods>;
+}
+-keepclasseswithmembers class org.chromium.** {
+  @**.CalledByNativeUnchecked <methods>;
+}
+-keepclasseswithmembers class org.chromium.** {
+  @**.JavascriptInterface <methods>;
+}
+-keepclasseswithmembers class org.chromium.** {
+  @**.NativeCall <methods>;
+}
+-keepclasseswithmembers class org.chromium.** {
+  @**.UsedByReflection <methods>;
+}
+-keepclasseswithmembers class org.chromium.** {
+  @**.VisibleForTesting <methods>;
+}
+-keepclasseswithmembers class org.chromium.** {
   native <methods>;
 }
 
@@ -172,3 +219,7 @@
 -keepnames class com.google.android.gms.common.GoogleApiAvailability {
   *;
 }
+
+# Needed for chrome_sync_shell_test_apk. Note - these do no affect chrome_apk's
+# size.
+-keep class org.chromium.sync.protocol.* { *; }

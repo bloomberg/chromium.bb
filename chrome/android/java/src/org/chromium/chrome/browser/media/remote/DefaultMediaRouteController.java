@@ -26,6 +26,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.RemovableInRelease;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 
 import java.net.URI;
@@ -55,6 +56,7 @@ import javax.annotation.Nullable;
  *  Casting the second video to the same target device only takes one ACTION_PLAY intent if
  * the session is still active. Otherwise, the scenario is the same as for the first video.
  */
+@UsedByReflection("RemoteMediaPlayerController.java")
 public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
     /**
