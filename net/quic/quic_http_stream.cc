@@ -707,14 +707,18 @@ int QuicHttpStream::DoReadRequestBody() {
 }
 
 int QuicHttpStream::DoReadRequestBodyComplete(int rv) {
-  // |rv| is the result of read from the request body from the last call to
-  // DoSendBody().
-  if (rv < 0)
-    return rv;
-
   // If the stream is already closed, don't continue.
   if (!stream_)
     return response_status_;
+
+  // |rv| is the result of read from the request body from the last call to
+  // DoSendBody().
+  if (rv < 0) {
+    stream_->SetDelegate(nullptr);
+    stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
+    ResetStream();
+    return rv;
+  }
 
   request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_.get(), rv);
   if (rv == 0) {  // Reached the end.

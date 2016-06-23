@@ -105,6 +105,40 @@ class AutoClosingStream : public QuicHttpStream {
   void OnDataAvailable() override { Close(false); }
 };
 
+// UploadDataStream that always returns errors on data read.
+class ReadErrorUploadDataStream : public UploadDataStream {
+ public:
+  enum class FailureMode { SYNC, ASYNC };
+
+  explicit ReadErrorUploadDataStream(FailureMode mode)
+      : UploadDataStream(true, 0), async_(mode), weak_factory_(this) {}
+  ~ReadErrorUploadDataStream() override {}
+
+ private:
+  void CompleteRead() { UploadDataStream::OnReadCompleted(ERR_FAILED); }
+
+  // UploadDataStream implementation:
+  int InitInternal() override { return OK; }
+
+  int ReadInternal(IOBuffer* buf, int buf_len) override {
+    if (async_ == FailureMode::ASYNC) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&ReadErrorUploadDataStream::CompleteRead,
+                                weak_factory_.GetWeakPtr()));
+      return ERR_IO_PENDING;
+    }
+    return ERR_FAILED;
+  }
+
+  void ResetInternal() override {}
+
+  const FailureMode async_;
+
+  base::WeakPtrFactory<ReadErrorUploadDataStream> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadErrorUploadDataStream);
+};
+
 }  // namespace
 
 class QuicHttpStreamPeer {
@@ -424,6 +458,14 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         packet_number, !kIncludeVersion, stream_id_, QUIC_STREAM_CANCELLED,
         largest_received, ack_least_unacked, stop_least_unacked,
         !kIncludeCongestionFeedback);
+  }
+
+  std::unique_ptr<QuicReceivedPacket> ConstructClientRstStreamErrorPacket(
+      QuicPacketNumber packet_number,
+      bool include_version) {
+    return client_maker_.MakeRstPacket(packet_number, include_version,
+                                       stream_id_,
+                                       QUIC_ERROR_PROCESSING_STREAM);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructAckAndRstStreamPacket(
@@ -1719,6 +1761,75 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
             promised_stream_->GetTotalSentBytes());
   EXPECT_EQ(static_cast<int64_t>(spdy_response_header_frame_length),
             promised_stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, DataReadErrorSynchronous) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY,
+                                         &spdy_request_headers_frame_length));
+  AddWrite(ConstructClientRstStreamErrorPacket(2, kIncludeVersion));
+
+  Initialize();
+
+  ReadErrorUploadDataStream upload_data_stream(
+      ReadErrorUploadDataStream::FailureMode::SYNC);
+  request_.method = "POST";
+  request_.url = GURL("http://www.example.org/");
+  request_.upload_data_stream = &upload_data_stream;
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(
+                    TestCompletionCallback().callback()));
+
+  EXPECT_EQ(OK,
+            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                      net_log_.bound(), callback_.callback()));
+
+  int result = stream_->SendRequest(headers_, &response_, callback_.callback());
+  EXPECT_EQ(ERR_FAILED, result);
+
+  EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes includes only headers.
+  EXPECT_EQ(static_cast<int64_t>(spdy_request_headers_frame_length),
+            stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, DataReadErrorAsynchronous) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY,
+                                         &spdy_request_headers_frame_length));
+  AddWrite(ConstructClientRstStreamErrorPacket(2, !kIncludeVersion));
+
+  Initialize();
+
+  ReadErrorUploadDataStream upload_data_stream(
+      ReadErrorUploadDataStream::FailureMode::ASYNC);
+  request_.method = "POST";
+  request_.url = GURL("http://www.example.org/");
+  request_.upload_data_stream = &upload_data_stream;
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(
+                    TestCompletionCallback().callback()));
+
+  EXPECT_EQ(OK,
+            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                      net_log_.bound(), callback_.callback()));
+
+  int result = stream_->SendRequest(headers_, &response_, callback_.callback());
+
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  SetResponse("200 OK", string());
+
+  EXPECT_EQ(ERR_IO_PENDING, result);
+  EXPECT_EQ(ERR_FAILED, callback_.GetResult(result));
+
+  EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes includes only headers.
+  EXPECT_EQ(static_cast<int64_t>(spdy_request_headers_frame_length),
+            stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
 }
 
 }  // namespace test
