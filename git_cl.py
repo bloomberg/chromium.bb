@@ -3725,6 +3725,8 @@ def CMDupload(parser, args):
   parser.add_option('-f', action='store_true', dest='force',
                     help="force yes to questions (don't prompt)")
   parser.add_option('-m', dest='message', help='message for patchset')
+  parser.add_option('--message-file', dest='message_file',
+                    help='file which contains message for patchset')
   parser.add_option('-t', dest='title',
                     help='title for patchset (Rietveld only)')
   parser.add_option('-r', '--reviewers',
@@ -3779,6 +3781,12 @@ def CMDupload(parser, args):
 
   options.reviewers = cleanup_list(options.reviewers)
   options.cc = cleanup_list(options.cc)
+
+  if options.message_file:
+    if options.message:
+      parser.error('only one of --message and --message-file allowed.')
+    options.message = gclient_utils.FileRead(options.message_file)
+    options.message_file = None
 
   # For sanity of test expectations, do this otherwise lazy-loading *now*.
   settings.GetIsGerrit()
