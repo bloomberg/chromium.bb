@@ -14,7 +14,7 @@ regression sheriff role is now entirely focused on performance.
  * [Follow up on Performance Regressions](#followup)
  * [Give Feedback on our Infrastructure](#feedback)
 
-##<a name="triage"></a> Triage Regressions on the Perf Dashboard
+## <a name="triage">Triage Regressions on the Perf Dashboard</a>
 
 Open the perf dashboard [alerts page](https://chromeperf.appspot.com/alerts).
 
@@ -42,7 +42,11 @@ below it the dashboard shows graphs of all the alerts checked in that table.
 
 1. **Look at the graph**.
     * If the alert appears to be **within the noise**, click on the red
-      exclamation point icon for it in the graph and hit the "Invalid" button.
+      exclamation point icon for it in the graph and hit the "Report Invalid
+      Alert" button.
+    * If the alert appears to be **reverting a recent improvement**, click on
+      the red exclamation point icon for it in the graph and hit the "Ignore
+      Valid Alert" button.
     * If the alert is **visibly to the left or the right of the
       actual regression**, click on it and use the "nudge" menu to move it into
       place.
@@ -50,7 +54,7 @@ below it the dashboard shows graphs of all the alerts checked in that table.
       It's an older version of Chrome, used to help us sort out whether a change
       to the bot or test might have caused the graph to jump, rather than a real
       performance regression. If **the ref build moved at the same time as the
-      alert**, click on the alert and hit the "Invalid" button.
+      alert**, click on the alert and hit the "Report Invalid Alert" button.
 2. **Look at the other alerts** in the table to see if any should be grouped together.
    Note that the bisect will automatically dupe bugs if it finds they have the
    same culprit, so you don't need to be too aggressive about grouping alerts
@@ -75,7 +79,7 @@ below it the dashboard shows graphs of all the alerts checked in that table.
    bisects as you feel are necessary to investigate; [give feedback](#feedback)
    below if you feel that is not the case.
 
-##<a name="datastoppage"></a> Triaging data stoppage alerts
+## <a name="datastoppage">Triaging Data Stoppage Alerts</a>
 
 Data stoppage alerts are listed on the
 [perf dashboard alerts page](https://chromeperf.appspot.com/alerts). Whenever
@@ -111,7 +115,7 @@ some diagnosis:
      sent to the perf dashboard. Are there null values? Sometimes it lists a
      reason as well. Please put your finding in the bug.
 
-##<a name="followup"></a> Follow up on Performance Regressions
+## <a name="followup">Follow up on Performance Regressions</a>
 
 During your shift, you should try to follow up on each of the bugs you filed.
 Once you've triaged all the alerts, check to see if the bisects have come back,
@@ -132,7 +136,7 @@ culprit follow up to ensure the CL author addresses the problem. If you are
 certain that a specific CL caused a performance regression, and the author does
 not have an immediate plan to address the problem, please revert the CL.
 
-##<a name="feedback"></a> Give Feedback on our Infrastructure
+## <a name="feedback">Give Feedback on our Infrastructure</a>
 
 Perf regression sheriffs have their eyes on the perf dashboard and bisects
 more than anyone else, and their feedback is invaluable for making sure these
