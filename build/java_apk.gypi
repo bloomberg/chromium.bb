@@ -286,14 +286,6 @@
         'resource_input_paths': [ '<!@(find <(resource_dir) -name "*")' ]
       },
     }],
-    ['R_package != ""', {
-      'variables': {
-        # We generate R.java in package R_package (in addition to the package
-        # listed in the AndroidManifest.xml, which is unavoidable).
-        'additional_res_packages': ['<(R_package)'],
-        'additional_R_text_files': ['<(intermediate_dir)/R.txt'],
-      },
-    }],
     ['native_lib_target != "" and android_must_copy_system_libraries == 1', {
       'dependencies': [
         '<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
