@@ -2309,6 +2309,8 @@
     'chrome_browser_permissions_sources': [
       'browser/permissions/chooser_context_base.cc',
       'browser/permissions/chooser_context_base.h',
+      'browser/permissions/delegation_tracker.cc',
+      'browser/permissions/delegation_tracker.h',
       'browser/permissions/permission_context_base.cc',
       'browser/permissions/permission_context_base.h',
       'browser/permissions/permission_infobar_delegate.cc',

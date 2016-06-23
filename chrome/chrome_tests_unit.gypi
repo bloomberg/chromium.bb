@@ -174,6 +174,7 @@
       'browser/password_manager/password_store_x_unittest.cc',
       'browser/password_manager/simple_password_store_mac_unittest.cc',
       'browser/permissions/chooser_context_base_unittest.cc',
+      'browser/permissions/delegation_tracker_unittest.cc',
       'browser/permissions/permission_context_base_unittest.cc',
       'browser/permissions/permission_manager_unittest.cc',
       'browser/permissions/permission_util_unittest.cc',

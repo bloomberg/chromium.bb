@@ -18,6 +18,10 @@ namespace content {
 enum class PermissionType;
 }  // namespace content
 
+struct PermissionTypeHash {
+  std::size_t operator()(const content::PermissionType& type) const;
+};
+
 // A utility class for permissions.
 class PermissionUtil {
  public:

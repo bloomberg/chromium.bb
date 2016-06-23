@@ -132,6 +132,7 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
   params.page_id = ComputeNextPageID();
   params.nav_entry_id = 0;
   params.url = url;
+  params.origin = url::Origin(url);
   if (!GetParent())
     params.transition = ui::PAGE_TRANSITION_LINK;
   else if (is_auto_subframe)

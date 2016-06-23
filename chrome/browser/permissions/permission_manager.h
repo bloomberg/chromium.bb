@@ -11,6 +11,7 @@
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -77,10 +78,6 @@ class PermissionManager : public KeyedService,
 
   struct Subscription;
   using SubscriptionsMap = IDMap<Subscription, IDMapOwnPointer>;
-
-  struct PermissionTypeHash {
-    std::size_t operator()(const content::PermissionType& type) const;
-  };
 
   PermissionContextBase* GetPermissionContext(content::PermissionType type);
 

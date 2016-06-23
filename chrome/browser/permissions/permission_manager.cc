@@ -317,11 +317,6 @@ int PermissionManager::RequestPermissions(
   return request_id;
 }
 
-std::size_t PermissionManager::PermissionTypeHash::operator()(
-    const content::PermissionType& type) const {
-  return static_cast<size_t>(type);
-}
-
 PermissionContextBase* PermissionManager::GetPermissionContext(
     PermissionType type) {
   const auto& it = permission_contexts_.find(type);

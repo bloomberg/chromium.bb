@@ -12,6 +12,11 @@
 
 using content::PermissionType;
 
+std::size_t PermissionTypeHash::operator()(
+    const content::PermissionType& type) const {
+  return static_cast<size_t>(type);
+}
+
 // The returned strings must match the RAPPOR metrics in rappor.xml,
 // and any Field Trial configs for the Permissions kill switch e.g.
 // Permissions.Action.Geolocation etc..
