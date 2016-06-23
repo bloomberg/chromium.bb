@@ -2290,7 +2290,7 @@ shell_surface_set_class(struct wl_client *client,
 static void
 restore_output_mode(struct weston_output *output)
 {
-	if (output->original_mode)
+	if (output && output->original_mode)
 		weston_output_mode_switch_to_native(output);
 }
 
