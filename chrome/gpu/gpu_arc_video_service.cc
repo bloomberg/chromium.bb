@@ -177,15 +177,6 @@ void GpuArcVideoService::Initialize(
       static_cast<::arc::mojom::VideoAcceleratorService::Result>(result));
 }
 
-void GpuArcVideoService::DeprecatedInitialize(
-    ::arc::mojom::ArcVideoAcceleratorConfigPtr config,
-    const DeprecatedInitializeCallback& callback) {
-  DVLOG(2) << "DeprecatedInitialize";
-  ArcVideoAccelerator::Result result =
-      accelerator_->Initialize(config.To<ArcVideoAccelerator::Config>(), this);
-  callback.Run(result == ArcVideoAccelerator::SUCCESS);
-}
-
 base::ScopedFD GpuArcVideoService::UnwrapFdFromMojoHandle(
     mojo::ScopedHandle handle) {
   if (!handle.is_valid()) {

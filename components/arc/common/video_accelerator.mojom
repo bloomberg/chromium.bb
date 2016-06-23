@@ -59,8 +59,6 @@ interface VideoAcceleratorService {
     INSUFFICIENT_RESOURCES = 5,
   };
 
-  DeprecatedInitialize@0(ArcVideoAcceleratorConfig config) => (bool result);
-
   [MinVersion=1]
   Initialize@7(ArcVideoAcceleratorConfig config) => (Result result);
 
