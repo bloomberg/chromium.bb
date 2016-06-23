@@ -296,6 +296,11 @@
             }
         }
     ],
+    "SafeBrowsingV4LocalDatabaseManagerEnabled": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "SchedulerExpensiveTaskBlocking": [
         {
             "group_name": "Enabled"
