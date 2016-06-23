@@ -80,7 +80,6 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
 
   void SetAllEstimatesTo(base::TimeDelta duration);
 
-  void SetBeginMainFrameToCommitDurationEstimate(base::TimeDelta duration);
   void SetBeginMainFrameQueueDurationCriticalEstimate(base::TimeDelta duration);
   void SetBeginMainFrameQueueDurationNotCriticalEstimate(
       base::TimeDelta duration);
@@ -90,7 +89,6 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   void SetActivateDurationEstimate(base::TimeDelta duration);
   void SetDrawDurationEstimate(base::TimeDelta duration);
 
-  base::TimeDelta BeginMainFrameToCommitDurationEstimate() const override;
   base::TimeDelta BeginMainFrameQueueDurationCriticalEstimate() const override;
   base::TimeDelta BeginMainFrameQueueDurationNotCriticalEstimate()
       const override;
@@ -108,7 +106,6 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   std::unique_ptr<RenderingStatsInstrumentation>
       rendering_stats_instrumentation_owned_;
 
-  base::TimeDelta begin_main_frame_to_commit_duration_;
   base::TimeDelta begin_main_frame_queue_duration_critical_;
   base::TimeDelta begin_main_frame_queue_duration_not_critical_;
   base::TimeDelta begin_main_frame_start_to_commit_duration_;

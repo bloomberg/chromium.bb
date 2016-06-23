@@ -106,16 +106,13 @@ void RenderingStatsInstrumentation::AddDrawDuration(
 }
 
 void RenderingStatsInstrumentation::AddBeginMainFrameToCommitDuration(
-    base::TimeDelta begin_main_frame_to_commit_duration,
-    base::TimeDelta begin_main_frame_to_commit_duration_estimate) {
+    base::TimeDelta begin_main_frame_to_commit_duration) {
   if (!record_rendering_stats_)
     return;
 
   base::AutoLock scoped_lock(lock_);
   impl_thread_rendering_stats_.begin_main_frame_to_commit_duration.Append(
       begin_main_frame_to_commit_duration);
-  impl_thread_rendering_stats_.begin_main_frame_to_commit_duration_estimate
-      .Append(begin_main_frame_to_commit_duration_estimate);
 }
 
 void RenderingStatsInstrumentation::AddCommitToActivateDuration(

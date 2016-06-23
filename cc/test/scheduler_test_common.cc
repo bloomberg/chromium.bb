@@ -60,7 +60,6 @@ FakeCompositorTimingHistory::~FakeCompositorTimingHistory() {
 }
 
 void FakeCompositorTimingHistory::SetAllEstimatesTo(base::TimeDelta duration) {
-  begin_main_frame_to_commit_duration_ = duration;
   begin_main_frame_queue_duration_critical_ = duration;
   begin_main_frame_queue_duration_not_critical_ = duration;
   begin_main_frame_start_to_commit_duration_ = duration;
@@ -68,11 +67,6 @@ void FakeCompositorTimingHistory::SetAllEstimatesTo(base::TimeDelta duration) {
   prepare_tiles_duration_ = duration;
   activate_duration_ = duration;
   draw_duration_ = duration;
-}
-
-void FakeCompositorTimingHistory::SetBeginMainFrameToCommitDurationEstimate(
-    base::TimeDelta duration) {
-  begin_main_frame_to_commit_duration_ = duration;
 }
 
 void FakeCompositorTimingHistory::
@@ -109,11 +103,6 @@ void FakeCompositorTimingHistory::SetActivateDurationEstimate(
 void FakeCompositorTimingHistory::SetDrawDurationEstimate(
     base::TimeDelta duration) {
   draw_duration_ = duration;
-}
-
-base::TimeDelta
-FakeCompositorTimingHistory::BeginMainFrameToCommitDurationEstimate() const {
-  return begin_main_frame_to_commit_duration_;
 }
 
 base::TimeDelta

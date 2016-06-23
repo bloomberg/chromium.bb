@@ -48678,6 +48678,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Scheduling.BeginMainFrameToCommitDuration"
     units="microseconds">
+  <obsolete>
+    Replaced by BeginMainFrameQueueDurationCritical,
+    BeginMainFrameQueueDurationNotCritical, and
+    BeginMainFrameStartToCommitDuration.
+  </obsolete>
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes for the blink main thread to respond to the compositor's

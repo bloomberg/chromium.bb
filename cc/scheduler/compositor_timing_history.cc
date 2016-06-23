@@ -26,7 +26,6 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddDrawInterval(base::TimeDelta interval) = 0;
 
   // Latency measurements
-  virtual void AddBeginMainFrameToCommitDuration(base::TimeDelta duration) = 0;
   virtual void AddBeginMainFrameQueueDurationCriticalDuration(
       base::TimeDelta duration) = 0;
   virtual void AddBeginMainFrameQueueDurationNotCriticalDuration(
@@ -50,7 +49,6 @@ namespace {
 // second.
 // TODO(brianderson): Fine tune the percentiles below.
 const size_t kDurationHistorySize = 60;
-const double kBeginMainFrameToCommitEstimationPercentile = 90.0;
 const double kBeginMainFrameQueueDurationEstimationPercentile = 90.0;
 const double kBeginMainFrameQueueDurationCriticalEstimationPercentile = 90.0;
 const double kBeginMainFrameQueueDurationNotCriticalEstimationPercentile = 90.0;
@@ -103,10 +101,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddDrawInterval(base::TimeDelta interval) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling.Renderer.DrawInterval",
                                       interval);
-  }
-
-  void AddBeginMainFrameToCommitDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "BeginMainFrameToCommit");
   }
 
   void AddBeginMainFrameQueueDurationCriticalDuration(
@@ -178,10 +172,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
                                       interval);
   }
 
-  void AddBeginMainFrameToCommitDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "BeginMainFrameToCommit");
-  }
-
   void AddBeginMainFrameQueueDurationCriticalDuration(
       base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
@@ -235,7 +225,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   }
   void AddCommitInterval(base::TimeDelta interval) override {}
   void AddDrawInterval(base::TimeDelta interval) override {}
-  void AddBeginMainFrameToCommitDuration(base::TimeDelta duration) override {}
   void AddBeginMainFrameQueueDurationCriticalDuration(
       base::TimeDelta duration) override {}
   void AddBeginMainFrameQueueDurationNotCriticalDuration(
@@ -263,7 +252,6 @@ CompositorTimingHistory::CompositorTimingHistory(
       begin_main_frame_needed_continuously_(false),
       begin_main_frame_committing_continuously_(false),
       compositor_drawing_continuously_(false),
-      begin_main_frame_sent_to_commit_duration_history_(kDurationHistorySize),
       begin_main_frame_queue_duration_history_(kDurationHistorySize),
       begin_main_frame_queue_duration_critical_history_(kDurationHistorySize),
       begin_main_frame_queue_duration_not_critical_history_(
@@ -299,8 +287,15 @@ CompositorTimingHistory::CreateUMAReporter(UMACategory category) {
 
 void CompositorTimingHistory::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->SetDouble("begin_main_frame_to_commit_estimate_ms",
-                   BeginMainFrameToCommitDurationEstimate().InMillisecondsF());
+  state->SetDouble(
+      "begin_main_frame_queue_critical_estimate_ms",
+      BeginMainFrameQueueDurationCriticalEstimate().InMillisecondsF());
+  state->SetDouble(
+      "begin_main_frame_queue_not_critical_estimate_ms",
+      BeginMainFrameQueueDurationNotCriticalEstimate().InMillisecondsF());
+  state->SetDouble(
+      "begin_main_frame_start_to_commit_estimate_ms",
+      BeginMainFrameStartToCommitDurationEstimate().InMillisecondsF());
   state->SetDouble("commit_to_ready_to_activate_estimate_ms",
                    CommitToReadyToActivateDurationEstimate().InMillisecondsF());
   state->SetDouble("prepare_tiles_estimate_ms",
@@ -339,12 +334,6 @@ void CompositorTimingHistory::SetCompositorDrawingContinuously(bool active) {
     return;
   draw_end_time_prev_ = base::TimeTicks();
   compositor_drawing_continuously_ = active;
-}
-
-base::TimeDelta
-CompositorTimingHistory::BeginMainFrameToCommitDurationEstimate() const {
-  return begin_main_frame_sent_to_commit_duration_history_.Percentile(
-      kBeginMainFrameToCommitEstimationPercentile);
 }
 
 base::TimeDelta
@@ -485,16 +474,8 @@ void CompositorTimingHistory::DidBeginMainFrame() {
   base::TimeDelta begin_main_frame_start_to_commit_duration =
       begin_main_frame_end_time_ - begin_main_frame_start_time_;
 
-  // Before adding the new data point to the timing history, see what we would
-  // have predicted for this frame. This allows us to keep track of the accuracy
-  // of our predictions.
-  base::TimeDelta begin_main_frame_sent_to_commit_estimate =
-      BeginMainFrameToCommitDurationEstimate();
-  uma_reporter_->AddBeginMainFrameToCommitDuration(
-      begin_main_frame_sent_to_commit_duration);
   rendering_stats_instrumentation_->AddBeginMainFrameToCommitDuration(
-      begin_main_frame_sent_to_commit_duration,
-      begin_main_frame_sent_to_commit_estimate);
+      begin_main_frame_sent_to_commit_duration);
 
   if (begin_main_frame_start_time_is_valid) {
     if (begin_main_frame_on_critical_path_) {
@@ -510,8 +491,6 @@ void CompositorTimingHistory::DidBeginMainFrame() {
       begin_main_frame_start_to_commit_duration);
 
   if (enabled_) {
-    begin_main_frame_sent_to_commit_duration_history_.InsertSample(
-        begin_main_frame_sent_to_commit_duration);
     begin_main_frame_queue_duration_history_.InsertSample(
         begin_main_frame_queue_duration);
     if (begin_main_frame_on_critical_path_) {

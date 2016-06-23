@@ -98,12 +98,6 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_Commit) {
   EXPECT_EQ(begin_main_frame_start_to_commit_duration,
             timing_history_.BeginMainFrameStartToCommitDurationEstimate());
 
-  base::TimeDelta begin_main_frame_to_commit_duration_expected_ =
-      begin_main_frame_queue_duration +
-      begin_main_frame_start_to_commit_duration;
-  EXPECT_EQ(begin_main_frame_to_commit_duration_expected_,
-            timing_history_.BeginMainFrameToCommitDurationEstimate());
-
   EXPECT_EQ(commit_to_ready_to_activate_duration,
             timing_history_.CommitToReadyToActivateDurationEstimate());
   EXPECT_EQ(prepare_tiles_duration,
@@ -157,12 +151,6 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_BeginMainFrameAborted) {
   EXPECT_EQ(begin_main_frame_start_to_commit_duration,
             timing_history_.BeginMainFrameStartToCommitDurationEstimate());
 
-  base::TimeDelta begin_main_frame_to_commit_duration_expected_ =
-      begin_main_frame_queue_duration +
-      begin_main_frame_start_to_commit_duration;
-  EXPECT_EQ(begin_main_frame_to_commit_duration_expected_,
-            timing_history_.BeginMainFrameToCommitDurationEstimate());
-
   EXPECT_EQ(commit_to_ready_to_activate_duration,
             timing_history_.CommitToReadyToActivateDurationEstimate());
   EXPECT_EQ(prepare_tiles_duration,
@@ -200,12 +188,6 @@ TEST_F(CompositorTimingHistoryTest, BeginMainFrame_CriticalFaster) {
             timing_history_.BeginMainFrameQueueDurationNotCriticalEstimate());
   EXPECT_EQ(begin_main_frame_start_to_commit_duration,
             timing_history_.BeginMainFrameStartToCommitDurationEstimate());
-
-  base::TimeDelta begin_main_frame_to_commit_duration_expected_ =
-      begin_main_frame_queue_duration_not_critical +
-      begin_main_frame_start_to_commit_duration;
-  EXPECT_EQ(begin_main_frame_to_commit_duration_expected_,
-            timing_history_.BeginMainFrameToCommitDurationEstimate());
 }
 
 TEST_F(CompositorTimingHistoryTest, BeginMainFrames_OldCriticalSlower) {
@@ -246,12 +228,6 @@ TEST_F(CompositorTimingHistoryTest, BeginMainFrames_OldCriticalSlower) {
 
   EXPECT_EQ(begin_main_frame_start_to_commit_duration,
             timing_history_.BeginMainFrameStartToCommitDurationEstimate());
-
-  base::TimeDelta begin_main_frame_to_commit_duration_expected_ =
-      begin_main_frame_queue_duration_not_critical +
-      begin_main_frame_start_to_commit_duration;
-  EXPECT_EQ(begin_main_frame_to_commit_duration_expected_,
-            timing_history_.BeginMainFrameToCommitDurationEstimate());
 }
 
 TEST_F(CompositorTimingHistoryTest, BeginMainFrames_NewCriticalSlower) {
@@ -290,12 +266,6 @@ TEST_F(CompositorTimingHistoryTest, BeginMainFrames_NewCriticalSlower) {
 
   EXPECT_EQ(begin_main_frame_start_to_commit_duration,
             timing_history_.BeginMainFrameStartToCommitDurationEstimate());
-
-  base::TimeDelta begin_main_frame_to_commit_duration_expected_ =
-      begin_main_frame_queue_duration_critical +
-      begin_main_frame_start_to_commit_duration;
-  EXPECT_EQ(begin_main_frame_to_commit_duration_expected_,
-            timing_history_.BeginMainFrameToCommitDurationEstimate());
 }
 
 }  // namespace

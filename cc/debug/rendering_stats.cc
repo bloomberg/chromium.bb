@@ -72,9 +72,6 @@ RenderingStats::AsTraceableData() const {
   begin_main_frame_to_commit_duration.AddToTracedValue(
       "begin_main_frame_to_commit_duration_ms", record_data.get());
 
-  begin_main_frame_to_commit_duration_estimate.AddToTracedValue(
-      "begin_main_frame_to_commit_duration_estimate_ms", record_data.get());
-
   commit_to_activate_duration.AddToTracedValue("commit_to_activate_duration_ms",
                                                record_data.get());
 
@@ -98,8 +95,6 @@ void RenderingStats::Add(const RenderingStats& other) {
   draw_duration_estimate.Add(other.draw_duration_estimate);
   begin_main_frame_to_commit_duration.Add(
       other.begin_main_frame_to_commit_duration);
-  begin_main_frame_to_commit_duration_estimate.Add(
-      other.begin_main_frame_to_commit_duration_estimate);
   commit_to_activate_duration.Add(other.commit_to_activate_duration);
   commit_to_activate_duration_estimate.Add(
       other.commit_to_activate_duration_estimate);

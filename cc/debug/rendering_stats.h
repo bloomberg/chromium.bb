@@ -55,7 +55,6 @@ struct CC_EXPORT RenderingStats {
   TimeDeltaList draw_duration;
   TimeDeltaList draw_duration_estimate;
   TimeDeltaList begin_main_frame_to_commit_duration;
-  TimeDeltaList begin_main_frame_to_commit_duration_estimate;
   TimeDeltaList commit_to_activate_duration;
   TimeDeltaList commit_to_activate_duration_estimate;
 
