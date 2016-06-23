@@ -1131,7 +1131,8 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableFullscreenAppList)},
     {"enable-storage-manager", IDS_FLAGS_STORAGE_MANAGER_NAME,
      IDS_FLAGS_STORAGE_MANAGER_DESCRIPTION, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableStorageManager)},
+     ENABLE_DISABLE_VALUE_TYPE(chromeos::switches::kEnableStorageManager,
+                               chromeos::switches::kDisableStorageManager)},
 #endif
     {"enable-simple-cache-backend", IDS_FLAGS_SIMPLE_CACHE_BACKEND_NAME,
      IDS_FLAGS_SIMPLE_CACHE_BACKEND_DESCRIPTION,

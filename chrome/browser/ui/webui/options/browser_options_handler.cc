@@ -745,8 +745,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("allowBluetooth", allow_bluetooth);
 
   values->SetBoolean("enableStorageManager",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableStorageManager));
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableStorageManager));
 #endif
 }
 

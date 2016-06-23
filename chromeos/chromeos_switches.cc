@@ -110,6 +110,9 @@ const char kDisableOfficeEditingComponentApp[] =
 // Disables rollback option on reset screen.
 const char kDisableRollbackOption[] = "disable-rollback-option";
 
+// Disables experimental storage manager to manage local storage.
+const char kDisableStorageManager[] = "disable-storage-manager";
+
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 
