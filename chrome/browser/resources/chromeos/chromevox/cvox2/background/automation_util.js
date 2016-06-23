@@ -291,4 +291,23 @@ AutomationUtil.hitTest = function(node, point) {
   return null;
 };
 
+/**
+ * Gets a top level root.
+ * @param {!AutomationNode} node
+ * @return {AutomationNode}
+ */
+AutomationUtil.getTopLevelRoot = function(node) {
+  var root = node.root;
+  if (!root || root.role == RoleType.desktop)
+    return null;
+
+  while (root &&
+      root.parent &&
+      root.parent.root &&
+      root.parent.root.role != RoleType.desktop) {
+    root = root.parent.root;
+  }
+  return root;
+};
+
 });  // goog.scope

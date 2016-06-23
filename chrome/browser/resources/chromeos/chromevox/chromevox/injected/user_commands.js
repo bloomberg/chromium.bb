@@ -561,7 +561,8 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
     case 'showNextUpdatePage':
       cvox.ChromeVox.host.sendToBackgroundPage({
         'target': 'next',
-        'action': cmd
+        'action': 'onCommand',
+        'command': cmd
       });
       break;
     case 'fullyDescribe':

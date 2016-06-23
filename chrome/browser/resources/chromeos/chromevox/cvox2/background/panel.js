@@ -296,7 +296,8 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
           binding.keySeq,
           function() {
             var bkgnd =
-                chrome.extension.getBackgroundPage()['global']['backgroundObj'];
+                chrome.extension.
+                getBackgroundPage()['ChromeVoxState']['instance'];
             bkgnd['onGotCommand'](binding.command);
           });
     }
@@ -544,7 +545,7 @@ Panel.onSearchInputBlur = function() {
  */
 Panel.onOptions = function() {
   var bkgnd =
-      chrome.extension.getBackgroundPage()['global']['backgroundObj'];
+      chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
   bkgnd['showOptionsPage']();
   window.location = '#';
 };
@@ -575,7 +576,7 @@ Panel.closeMenusAndRestoreFocus = function() {
   window.location = '#';
 
   var bkgnd =
-      chrome.extension.getBackgroundPage()['global']['backgroundObj'];
+      chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
   bkgnd['endExcursion'](Panel.pendingCallback_);
 };
 

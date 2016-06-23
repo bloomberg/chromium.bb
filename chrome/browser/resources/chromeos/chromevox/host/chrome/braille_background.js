@@ -8,12 +8,12 @@
 
 goog.provide('cvox.BrailleBackground');
 
+goog.require('ChromeVoxState');
 goog.require('cvox.BrailleDisplayManager');
 goog.require('cvox.BrailleInputHandler');
 goog.require('cvox.BrailleInterface');
 goog.require('cvox.BrailleKeyEvent');
 goog.require('cvox.BrailleTranslatorManager');
-goog.require('global');
 
 
 /**
@@ -118,8 +118,8 @@ cvox.BrailleBackground.prototype.onBrailleKeyEvent_ = function(
   if (this.inputHandler_.onBrailleKeyEvent(brailleEvt)) {
     return;
   }
-  if (global.backgroundObj &&
-      global.backgroundObj.onBrailleKeyEvent(brailleEvt, content)) {
+  if (ChromeVoxState.instance &&
+      ChromeVoxState.instance.onBrailleKeyEvent(brailleEvt, content)) {
     return;
   }
   this.sendCommand_(brailleEvt, content);

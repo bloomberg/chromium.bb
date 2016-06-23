@@ -98,13 +98,6 @@ DesktopAutomationHandler.prototype = {
 
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
 
-    // Check to see if we've crossed roots. Continue if we've crossed roots or
-    // are not within web content.
-    if (node.root.role == RoleType.desktop ||
-        !prevRange ||
-        prevRange.start.node.root != node.root)
-      ChromeVoxState.instance.refreshMode(node.root);
-
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (node.root.role != RoleType.desktop &&
         ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC) {
@@ -138,7 +131,7 @@ DesktopAutomationHandler.prototype = {
   onEventIfInRange: function(evt) {
     // TODO(dtseng): Consider the end of the current range as well.
     if (AutomationUtil.isDescendantOf(
-        global.backgroundObj.currentRange.start.node, evt.target) ||
+        ChromeVoxState.instance.currentRange.start.node, evt.target) ||
             evt.target.state.focused)
       this.onEventDefault(evt);
   },
@@ -232,8 +225,6 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onLoadComplete: function(evt) {
-    ChromeVoxState.instance.refreshMode(evt.target);
-
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (evt.target.root.role != RoleType.desktop &&
         ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC)
@@ -333,7 +324,7 @@ DesktopAutomationHandler.prototype = {
     if (t.state.focused ||
         t.root.role == RoleType.desktop ||
         AutomationUtil.isDescendantOf(
-            global.backgroundObj.currentRange.start.node, t)) {
+            ChromeVoxState.instance.currentRange.start.node, t)) {
       if (new Date() - this.lastValueChanged_ <=
           DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS)
         return;
@@ -379,7 +370,7 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onMenuStart: function(evt) {
-    global.backgroundObj.startExcursion();
+    ChromeVoxState.instance.startExcursion();
     this.onEventDefault(evt);
   },
 
@@ -389,7 +380,7 @@ DesktopAutomationHandler.prototype = {
    */
   onMenuEnd: function(evt) {
     this.onEventDefault(evt);
-    global.backgroundObj.endExcursion();
+    ChromeVoxState.instance.endExcursion();
   },
 
   /**
@@ -412,7 +403,8 @@ DesktopAutomationHandler.init_ = function() {
   if (cvox.ChromeVox.isMac)
     return;
   chrome.automation.getDesktop(function(desktop) {
-    global.desktopAutomationHandler = new DesktopAutomationHandler(desktop);
+    ChromeVoxState.desktopAutomationHandler =
+        new DesktopAutomationHandler(desktop);
   });
 };
 

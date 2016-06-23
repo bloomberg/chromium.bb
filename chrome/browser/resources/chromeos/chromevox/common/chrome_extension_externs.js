@@ -430,7 +430,7 @@ chrome.automation.AutomationNode.prototype.wordEnds;
 
 
 /**
- * @type {!chrome.automation.AutomationNode}
+ * @type {chrome.automation.AutomationNode}
  */
 chrome.automation.AutomationNode.prototype.root;
 
