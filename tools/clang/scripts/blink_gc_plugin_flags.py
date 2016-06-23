@@ -5,6 +5,9 @@
 
 # This script returns the flags that should be passed to clang.
 
+# TODO(sof): the script can be removed when/once gyp support is retired;
+# unused with gn.
+
 import os
 import sys
 

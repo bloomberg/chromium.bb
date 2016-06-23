@@ -13,10 +13,6 @@ if (current_cpu == "arm") {
 }
 
 declare_args() {
-  # Set to true to enable the clang plugin that checks the usage of the Blink
-  # garbage-collection infrastructure during compilation.
-  blink_gc_plugin = true
-
   # If true, doesn't compile debug symbols into webcore reducing the
   # size of the binary and increasing the speed of gdb.
   remove_webcore_debug_symbols = false

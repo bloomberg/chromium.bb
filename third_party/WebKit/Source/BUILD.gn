@@ -9,6 +9,23 @@ if (is_clang) {
 
 visibility = [ "//third_party/WebKit/*" ]
 
+# arguments --------------------------------------------------------------------
+
+declare_args() {
+  # Set to true to enable the clang plugin that checks the usage of the Blink
+  # garbage-collection infrastructure during compilation.
+  blink_gc_plugin = true
+
+  # Set to true to have the clang Blink GC plugin emit class graph (in JSON)
+  # with typed pointer edges; for debugging or other (internal) uses.
+  blink_gc_plugin_option_do_dump_graph = false
+
+  # Set to true to have the clang Blink GC plugin additionally check if
+  # a class has an empty destructor which would be unnecessarily invoked
+  # when finalized.
+  blink_gc_plugin_option_warn_unneeded_finalizer = false
+}
+
 # features ---------------------------------------------------------------------
 
 config("features") {
@@ -54,32 +71,46 @@ config("config") {
   }
 
   if (is_clang && blink_gc_plugin && clang_use_chrome_plugins) {
-    if (is_mac || is_ios) {
+    # On Windows, the plugin is built directly into clang, so there's
+    # no need to load it dynamically.
+    if (!is_win) {
+      _blink_gc_plugin_dll_extension = "so"
+      if (is_mac || is_ios) {
+        _blink_gc_plugin_dll_extension = "dylib"
+      }
       cflags += [
         "-Xclang",
         "-load",
         "-Xclang",
         rebase_path(
-            "//third_party/llvm-build/Release+Asserts/lib/libBlinkGCPlugin.dylib",
-            root_build_dir),
-      ]
-    } else if (is_linux) {
-      cflags += [
-        "-Xclang",
-        "-load",
-        "-Xclang",
-        rebase_path(
-            "//third_party/llvm-build/Release+Asserts/lib/libBlinkGCPlugin.so",
+            "${clang_base_path}/lib/libBlinkGCPlugin.${_blink_gc_plugin_dll_extension}",
             root_build_dir),
       ]
     }
-
     cflags += [
       "-Xclang",
       "-add-plugin",
       "-Xclang",
       "blink-gc-plugin",
     ]
+
+    # Add arguments for enabled GC plugin options:
+    if (blink_gc_plugin_option_do_dump_graph) {
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-blink-gc-plugin",
+        "-Xclang",
+        "dump-graph",
+      ]
+    }
+    if (blink_gc_plugin_option_warn_unneeded_finalizer) {
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-blink-gc-plugin",
+        "-Xclang",
+        "warn-unneeded-finalizer",
+      ]
+    }
   }
 }
 
