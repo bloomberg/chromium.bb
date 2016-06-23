@@ -300,15 +300,6 @@ class GPU_EXPORT FramebufferManager {
 
   ContextType context_type() const { return context_type_; }
 
-  // If framebuffer contains sRGB images, then enable FRAMEBUFFER_SRGB.
-  // Otherwise, disable FRAMEBUFFER_SRGB.
-  // In theory, we can just leave FRAMEBUFFER_SRGB on. However, many drivers
-  // behave incorrectly when all images are linear encoding, they still apply
-  // the sRGB conversion, but when at least one image is sRGB, then they behave
-  // correctly.
-  void UpdateFramebufferSRGBSetting(
-      const FeatureInfo* feature_info, Framebuffer* framebuffer);
-
  private:
   friend class Framebuffer;
 
@@ -336,8 +327,6 @@ class GPU_EXPORT FramebufferManager {
 
   uint32_t max_draw_buffers_;
   uint32_t max_color_attachments_;
-
-  bool framebuffer_srgb_;
 
   ContextType context_type_;
 

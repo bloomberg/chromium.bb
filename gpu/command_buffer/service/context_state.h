@@ -251,6 +251,8 @@ struct GPU_EXPORT ContextState {
   PixelStoreParams GetPackParams();
   PixelStoreParams GetUnpackParams(Dimension dimension);
 
+  void EnableDisableFramebufferSRGB(bool enable);
+
   #include "gpu/command_buffer/service/context_state_autogen.h"
 
   EnableFlags enable_flags;
@@ -317,6 +319,8 @@ struct GPU_EXPORT ContextState {
   void UpdateUnpackParameters() const;
 
   void InitStateManual(const ContextState* prev_state) const;
+
+  bool framebuffer_srgb_;
 
   FeatureInfo* feature_info_;
   std::unique_ptr<ErrorState> error_state_;

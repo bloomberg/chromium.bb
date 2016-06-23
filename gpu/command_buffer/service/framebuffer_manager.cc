@@ -317,7 +317,6 @@ FramebufferManager::FramebufferManager(
       have_context_(true),
       max_draw_buffers_(max_draw_buffers),
       max_color_attachments_(max_color_attachments),
-      framebuffer_srgb_(false),
       context_type_(context_type),
       framebuffer_combo_complete_cache_(framebuffer_combo_complete_cache) {
   DCHECK_GT(max_draw_buffers_, 0u);
@@ -337,32 +336,6 @@ void Framebuffer::MarkAsDeleted() {
     Attachment* attachment = attachments_.begin()->second.get();
     attachment->DetachFromFramebuffer(this);
     attachments_.erase(attachments_.begin());
-  }
-}
-
-void FramebufferManager::UpdateFramebufferSRGBSetting(
-    const FeatureInfo* feature_info, Framebuffer* framebuffer) {
-  if (!feature_info->feature_flags().desktop_srgb_support)
-    return;
-
-  if (framebuffer) {
-    DCHECK(IsComplete(framebuffer));
-
-    bool has_srgb_attachments = framebuffer->HasSRGBAttachments();
-    if (framebuffer_srgb_ == has_srgb_attachments)
-      return;
-    framebuffer_srgb_ = has_srgb_attachments;
-    if (framebuffer_srgb_)
-      glEnable(GL_FRAMEBUFFER_SRGB);
-    else
-      glDisable(GL_FRAMEBUFFER_SRGB);
-  } else {
-    // Default fbo, always disable FRAMEBUFFER_SRGB.
-    // TODO(zmo): is there a case where default fbo is sRGB image?
-    if (!framebuffer_srgb_)
-      return;
-    framebuffer_srgb_ = false;
-    glDisable(GL_FRAMEBUFFER_SRGB);
   }
 }
 

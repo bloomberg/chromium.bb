@@ -3985,9 +3985,17 @@ bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(
       GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
   if (valid && !features().chromium_framebuffer_multisample)
     OnUseFramebuffer();
-  if (valid) {
-    framebuffer_manager()->UpdateFramebufferSRGBSetting(
-        feature_info_.get(), framebuffer);
+  if (valid && feature_info_->feature_flags().desktop_srgb_support) {
+    // If framebuffer contains sRGB images, then enable FRAMEBUFFER_SRGB.
+    // Otherwise, disable FRAMEBUFFER_SRGB. Assume default fbo does not have
+    // sRGB image.
+    // In theory, we can just leave FRAMEBUFFER_SRGB on. However, many drivers
+    // behave incorrectly when all images are linear encoding, they still apply
+    // the sRGB conversion, but when at least one image is sRGB, then they
+    // behave correctly.
+    bool enable_framebuffer_srgb =
+        framebuffer && framebuffer->HasSRGBAttachments();
+    state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
   }
   return valid;
 }
