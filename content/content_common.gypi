@@ -428,7 +428,6 @@
       'common/media/webrtc_identity_messages.h',
       'common/memory_messages.h',
       'common/message_port_messages.h',
-      'common/mime_registry_messages.h',
       'common/mojo/embedded_application_runner.cc',
       'common/mojo/embedded_application_runner.h',
       'common/mojo/mojo_shell_connection_impl.cc',

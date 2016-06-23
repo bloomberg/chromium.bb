@@ -45,6 +45,8 @@ source_set("common") {
     "//components/mus/public/interfaces",
     "//components/tracing",
     "//components/tracing:startup_tracing",
+    "//content:resources",
+    "//content/app/resources",
     "//device/bluetooth",
     "//gpu",
     "//gpu/command_buffer/client:gles2_c_lib",
@@ -83,6 +85,7 @@ source_set("common") {
     "//ui/accessibility",
     "//ui/base",
     "//ui/base/ime",
+    "//ui/display",
     "//ui/events/ipc",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -158,7 +161,10 @@ source_set("common") {
   }
 
   if (enable_plugins) {
-    deps += [ "//ppapi/shared_impl" ]
+    deps += [
+      "//ppapi/proxy",
+      "//ppapi/shared_impl",
+    ]
   } else {
     sources -= [
       "pepper_file_util.cc",
@@ -201,6 +207,10 @@ source_set("common") {
         "sandbox_linux/android/sandbox_bpf_base_policy_android.h",
       ]
     }
+  }
+
+  if (is_mac) {
+    deps += [ "//media/gpu" ]
   }
 
   if (enable_ipc_fuzzer) {

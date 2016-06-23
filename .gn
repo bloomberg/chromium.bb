@@ -40,6 +40,7 @@ check_targets = [
   #"//content/*",  # A whole lot of errors.
   "//content/browser/*",
   "//content/child/*",
+  "//content/common/*",
   "//content/gpu/*",
   "//content/ppapi_plugin/*",
   "//content/public/*",

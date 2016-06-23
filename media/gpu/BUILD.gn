@@ -146,6 +146,12 @@ component("gpu") {
     ":*",
   ]
 
+  if (is_mac) {
+    # On Mac, content/common reaches into here to do some pre-sandbox
+    # initialization.
+    visibility += [ "//content/common" ]
+  }
+
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
 
   sources = [
