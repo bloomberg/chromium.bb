@@ -67,11 +67,12 @@ void WebDisplayItemListImpl::appendClipItem(
   for (size_t i = 0; i < rounded_clip_rects.size(); ++i) {
     rounded_rects.push_back(rounded_clip_rects[i]);
   }
+  bool antialias = true;
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::ClipDisplayItem>(
-        visual_rect, clip_rect, rounded_rects);
+        visual_rect, clip_rect, rounded_rects, antialias);
   } else {
-    cc::ClipDisplayItem item(clip_rect, rounded_rects);
+    cc::ClipDisplayItem item(clip_rect, rounded_rects, antialias);
     display_item_list_->RasterIntoCanvas(item);
   }
 }

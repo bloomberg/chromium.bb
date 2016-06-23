@@ -56,8 +56,8 @@ message DisplayItem {
 
 message ClipDisplayItem {
   optional cc.proto.Rect clip_rect = 1;
-
   repeated cc.proto.SkRRect rounded_rects = 2;
+  optional bool antialias = 3;
 }
 
 message ClipPathDisplayItem {

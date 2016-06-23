@@ -23,7 +23,8 @@ class ImageSerializationProcessor;
 class CC_EXPORT ClipDisplayItem : public DisplayItem {
  public:
   ClipDisplayItem(const gfx::Rect& clip_rect,
-                  const std::vector<SkRRect>& rounded_clip_rects);
+                  const std::vector<SkRRect>& rounded_clip_rects,
+                  bool antialias);
   explicit ClipDisplayItem(const proto::DisplayItem& proto);
   ~ClipDisplayItem() override;
 
@@ -41,10 +42,12 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
 
  private:
   void SetNew(const gfx::Rect& clip_rect,
-              const std::vector<SkRRect>& rounded_clip_rects);
+              const std::vector<SkRRect>& rounded_clip_rects,
+              bool antialias);
 
   gfx::Rect clip_rect_;
   std::vector<SkRRect> rounded_clip_rects_;
+  bool antialias_;
 };
 
 class CC_EXPORT EndClipDisplayItem : public DisplayItem {

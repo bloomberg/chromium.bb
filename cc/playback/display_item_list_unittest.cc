@@ -143,7 +143,8 @@ TEST(DisplayItemListTest, SerializeClipItem) {
   gfx::Rect clip_rect(6, 6, 1, 1);
   std::vector<SkRRect> rrects;
   rrects.push_back(SkRRect::MakeOval(SkRect::MakeXYWH(5.f, 5.f, 4.f, 4.f)));
-  list->CreateAndAppendItem<ClipDisplayItem>(kVisualRect, clip_rect, rrects);
+  list->CreateAndAppendItem<ClipDisplayItem>(kVisualRect, clip_rect, rrects,
+                                             true);
 
   // Build the second DrawingDisplayItem.
   AppendSecondSerializationTestPicture(list, layer_size);
@@ -319,7 +320,7 @@ TEST(DisplayItemListTest, ClipItem) {
 
   gfx::Rect clip_rect(60, 60, 10, 10);
   list->CreateAndAppendItem<ClipDisplayItem>(kVisualRect, clip_rect,
-                                             std::vector<SkRRect>());
+                                             std::vector<SkRRect>(), true);
 
   gfx::PointF second_offset(2.f, 3.f);
   gfx::RectF second_recording_rect(second_offset,
