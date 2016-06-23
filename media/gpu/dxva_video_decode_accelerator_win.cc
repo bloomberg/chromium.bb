@@ -597,6 +597,10 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
+
+  // Sharing NV12 textures can cause a shutdown hang in Windows 8 or earlier.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8_1)
+    share_nv12_textures_ = false;
 }
 
 DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
