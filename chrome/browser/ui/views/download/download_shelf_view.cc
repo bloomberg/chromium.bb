@@ -134,6 +134,7 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       shelf_animation_(this),
       arrow_image_(nullptr),
       show_all_view_(nullptr),
+      show_all_view_md_(nullptr),
       close_button_(nullptr),
       parent_(parent),
       mouse_watcher_(new views::MouseWatcherViewHost(this, gfx::Insets()),
@@ -167,10 +168,9 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     close_button_->SetImage(views::CustomButton::STATE_PRESSED,
                             rb.GetImageSkiaNamed(IDR_CLOSE_1_P));
   } else {
-    views::LabelButton* show_all_view =
-        views::MdTextButton::CreateStandardButton(
-            this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS_MD));
-    show_all_view_ = show_all_view;
+    show_all_view_md_ = views::MdTextButton::CreateMdButton(
+        this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS_MD));
+    show_all_view_ = show_all_view_md_;
 
     BarControlButton* close_button = new BarControlButton(this);
     close_button->SetIcon(gfx::VectorIconId::BAR_CLOSE,
@@ -392,7 +392,10 @@ void DownloadShelfView::UpdateColorsFromTheme() {
     set_background(views::Background::CreateSolidBackground(
         GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
 
-    if (!ui::MaterialDesignController::IsModeMaterial()) {
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      show_all_view_md_->SetEnabledTextColors(
+          GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
+    } else {
       views::Link* show_all_view = static_cast<views::Link*>(show_all_view_);
       show_all_view->SetBackgroundColor(background()->get_color());
       show_all_view->SetEnabledColor(

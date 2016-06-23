@@ -48,13 +48,14 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
       const override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowInkDropForFocus() const override;
+  void SetEnabledTextColors(SkColor color) override;
   void UpdateStyleToIndicateDefaultStatus() override;
 
  private:
   MdTextButton(ButtonListener* listener);
   ~MdTextButton() override;
 
-  void UpdateColorsFromNativeTheme();
+  void UpdateColors();
 
   // The MD-style focus ring. This is not done via a FocusPainter
   // because it needs to paint to a layer so it can extend beyond the bounds of

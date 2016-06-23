@@ -30,6 +30,7 @@ class PageNavigator;
 namespace views {
 class ImageButton;
 class ImageView;
+class MdTextButton;
 }
 
 // DownloadShelfView is a view that contains individual views for each download,
@@ -148,6 +149,9 @@ class DownloadShelfView : public views::AccessiblePaneView,
 
   // Link for showing all downloads. For MD this is a system style button.
   views::View* show_all_view_;
+
+  // This is the same as |show_all_view_|, but only valid in MD mode.
+  views::MdTextButton* show_all_view_md_;
 
   // Button for closing the downloads. This is contained as a child, and
   // deleted by View.

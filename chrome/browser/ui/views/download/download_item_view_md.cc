@@ -811,10 +811,16 @@ void DownloadItemViewMd::UpdateColorsFromTheme() {
   if (!GetThemeProvider())
     return;
 
-  if (dangerous_download_label_)
-    dangerous_download_label_->SetEnabledColor(GetTextColor());
   SetBorder(base::WrapUnique(new SeparatorBorder(GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR))));
+
+  SkColor text_color = GetTextColor();
+  if (dangerous_download_label_)
+    dangerous_download_label_->SetEnabledColor(text_color);
+  if (save_button_)
+    save_button_->SetEnabledTextColors(text_color);
+  if (discard_button_)
+    discard_button_->SetEnabledTextColors(text_color);
 }
 
 void DownloadItemViewMd::ShowContextMenuImpl(const gfx::Rect& rect,

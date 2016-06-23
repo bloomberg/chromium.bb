@@ -143,7 +143,7 @@ void MdTextButton::SetCallToAction(bool cta) {
   is_cta_ = cta;
   focus_ring_->set_thickness(cta ? kFocusBorderThicknessCta
                                  : kFocusBorderThickness);
-  UpdateColorsFromNativeTheme();
+  UpdateColors();
 }
 
 void MdTextButton::Layout() {
@@ -165,7 +165,7 @@ void MdTextButton::OnBlur() {
 
 void MdTextButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   LabelButton::OnNativeThemeChanged(theme);
-  UpdateColorsFromNativeTheme();
+  UpdateColors();
 }
 
 SkColor MdTextButton::GetInkDropBaseColor() const {
@@ -199,8 +199,13 @@ bool MdTextButton::ShouldShowInkDropForFocus() const {
   return false;
 }
 
+void MdTextButton::SetEnabledTextColors(SkColor color) {
+  LabelButton::SetEnabledTextColors(color);
+  UpdateColors();
+}
+
 void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
-  UpdateColorsFromNativeTheme();
+  UpdateColors();
 }
 
 MdTextButton::MdTextButton(ButtonListener* listener)
@@ -242,7 +247,7 @@ MdTextButton::MdTextButton(ButtonListener* listener)
 
 MdTextButton::~MdTextButton() {}
 
-void MdTextButton::UpdateColorsFromNativeTheme() {
+void MdTextButton::UpdateColors() {
   ui::NativeTheme::ColorId fg_color_id =
       is_cta_ ? ui::NativeTheme::kColorId_TextOnCallToActionColor
               : ui::NativeTheme::kColorId_ButtonEnabledColor;
@@ -252,7 +257,7 @@ void MdTextButton::UpdateColorsFromNativeTheme() {
   // specify a color.
   ui::NativeTheme* theme = GetNativeTheme();
   if (is_cta_ || !explicitly_set_normal_color())
-    SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
+    LabelButton::SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
 
   SkColor text_color = label()->enabled_color();
   SkColor bg_color =
@@ -261,7 +266,12 @@ void MdTextButton::UpdateColorsFromNativeTheme() {
           : is_default()
                 ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
                 : SK_ColorTRANSPARENT;
-  SkColor stroke_color = SkColorSetA(SK_ColorBLACK, 0x1A);
+
+  const SkAlpha kStrokeOpacity = 0x1A;
+  SkColor stroke_color = (is_cta_ || color_utils::IsDark(text_color))
+                             ? SkColorSetA(SK_ColorBLACK, kStrokeOpacity)
+                             : SkColorSetA(SK_ColorWHITE, 2 * kStrokeOpacity);
+
   set_background(Background::CreateBackgroundPainter(
       true, Painter::CreateRoundRectWith1PxBorderPainter(
                 bg_color, stroke_color, kInkDropSmallCornerRadius)));

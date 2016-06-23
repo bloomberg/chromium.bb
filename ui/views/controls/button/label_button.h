@@ -52,7 +52,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void SetTextColor(ButtonState for_state, SkColor color);
 
   // Sets the text colors shown for the non-disabled states to |color|.
-  void SetEnabledTextColors(SkColor color);
+  virtual void SetEnabledTextColors(SkColor color);
 
   // Sets drop shadows underneath the text.
   void SetTextShadows(const gfx::ShadowValues& shadows);

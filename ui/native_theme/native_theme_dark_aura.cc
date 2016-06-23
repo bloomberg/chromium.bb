@@ -18,6 +18,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
   if (!ui::MaterialDesignController::IsModeMaterial())
     return NativeThemeAura::GetSystemColor(color_id);
 
+  static const SkColor kButtonEnabledColor = SK_ColorWHITE;
   static const SkColor kLinkEnabledColor = gfx::kGoogleBlue300;
 
   static const SkColor kTextfieldDefaultColor = SK_ColorWHITE;
@@ -34,6 +35,8 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
 
   switch (color_id) {
     // Button
+    case kColorId_ButtonEnabledColor:
+      return kButtonEnabledColor;
     case kColorId_CallToActionColor:
       return kLinkEnabledColor;
 
@@ -68,7 +71,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
       return gfx::kGoogleBlue300;
 
     // Intentional pass-throughs to NativeThemeAura.
-    case kColorId_ButtonEnabledColor:
     case kColorId_TextOnCallToActionColor:
     case kColorId_ResultsTableHoveredBackground:
     case kColorId_ResultsTableSelectedBackground:
