@@ -61,6 +61,22 @@ const wchar_t kDaemonIpcSecurityDescriptor[] =
         SDDL_ACCESS_ALLOWED L";;" SDDL_GENERIC_ALL L";;;" SDDL_LOCAL_SYSTEM
     L")";
 
+// This security descriptor is used to give the network process, running in the
+// local service context, the PROCESS_QUERY_LIMITED_INFORMATION access right.
+// It also gives SYSTEM full control of the process and PROCESS_VM_READ,
+// PROCESS_QUERY_INFORMATION, PROCESS_TERMINATE, and READ_CONTROL rights to the
+// built-in administrators group.
+const wchar_t kDesktopProcessSecurityDescriptor[] =
+    SDDL_OWNER L":" SDDL_LOCAL_SYSTEM
+    SDDL_GROUP L":" SDDL_LOCAL_SYSTEM
+    SDDL_DACL L":"
+        SDDL_ACCESS_ALLOWED L";;" SDDL_GENERIC_ALL L";;;" SDDL_LOCAL_SYSTEM
+    L")("
+        SDDL_ACCESS_ALLOWED L";;0x21411;;;" SDDL_BUILTIN_ADMINISTRATORS
+    L")("
+        SDDL_ACCESS_ALLOWED L";;0x1000;;;" SDDL_LOCAL_SERVICE
+    L")";
+
 // The command line parameters that should be copied from the service's command
 // line to the desktop process.
 const char* kCopiedSwitchNames[] = { switches::kV, switches::kVModule };
@@ -642,7 +658,8 @@ void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
   std::unique_ptr<WtsSessionProcessDelegate> delegate(
       new WtsSessionProcessDelegate(
           io_task_runner_, std::move(target), launch_elevated,
-          base::WideToUTF8(kDaemonIpcSecurityDescriptor)));
+          base::WideToUTF8(kDaemonIpcSecurityDescriptor),
+          base::WideToUTF8(kDesktopProcessSecurityDescriptor)));
   if (!delegate->Initialize(session_id)) {
     TerminateSession();
     return;
