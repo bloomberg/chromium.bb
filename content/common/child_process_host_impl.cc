@@ -29,9 +29,9 @@
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/message_filter.h"
-#include "ipc/mojo/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
 
 #if defined(OS_LINUX)

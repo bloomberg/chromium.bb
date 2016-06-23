@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_MOJO_IPC_MOJO_MESSAGE_HELPER_H_
-#define IPC_MOJO_IPC_MOJO_MESSAGE_HELPER_H_
+#ifndef IPC_IPC_MOJO_MESSAGE_HELPER_H_
+#define IPC_IPC_MOJO_MESSAGE_HELPER_H_
 
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_message.h"
@@ -12,7 +12,7 @@
 namespace IPC {
 
 // Reads and writes |mojo::MessagePipe| from/to |Message|.
-class IPC_MOJO_EXPORT MojoMessageHelper {
+class IPC_EXPORT MojoMessageHelper {
  public:
   static bool WriteMessagePipeTo(base::Pickle* message,
                                  mojo::ScopedMessagePipeHandle handle);
@@ -26,4 +26,4 @@ class IPC_MOJO_EXPORT MojoMessageHelper {
 
 }  // namespace IPC
 
-#endif  // IPC_MOJO_IPC_MOJO_MESSAGE_HELPER_H_
+#endif  // IPC_IPC_MOJO_MESSAGE_HELPER_H_

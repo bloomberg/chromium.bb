@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/mojo/ipc_message_pipe_reader.h"
+#include "ipc/ipc_message_pipe_reader.h"
 
 #include <stdint.h>
 
@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ipc/mojo/ipc_channel_mojo.h"
+#include "ipc/ipc_channel_mojo.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace IPC {

@@ -12,7 +12,7 @@
       'type': 'executable',
       'dependencies': [
         '../message_lib/message_lib.gyp:ipc_message_lib',
-        '../../../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
+        '../../../ipc/ipc.gyp:ipc',
         '../../../mojo/mojo_edk.gyp:mojo_system_impl',
       ],
       'sources': [

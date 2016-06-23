@@ -61,7 +61,6 @@
         '../gpu/gpu.gyp:gpu_perftests',
         '../gpu/gpu.gyp:gpu_unittests',
         '../ipc/ipc.gyp:ipc_tests',
-        '../ipc/mojo/ipc_mojo.gyp:ipc_mojo_unittests',
         '../media/cast/cast.gyp:cast_unittests',
         '../media/media.gyp:media_perftests',
         '../media/media.gyp:media_unittests',
@@ -649,7 +648,6 @@
             }],
             ['OS!="android" and OS!="ios" and chromecast==0', {
               'dependencies': [
-                '../ipc/mojo/ipc_mojo.gyp:ipc_mojo_unittests_run',
                 '../mojo/mojo_edk_tests.gyp:mojo_js_unittests_run',
                 '../mojo/mojo_edk_tests.gyp:mojo_js_integration_tests_run',
                 '../mojo/mojo_edk_tests.gyp:mojo_system_unittests_run',

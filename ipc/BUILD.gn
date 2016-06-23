@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/nacl/config.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
@@ -38,6 +39,8 @@ component("ipc") {
     "ipc_channel_factory.cc",
     "ipc_channel_factory.h",
     "ipc_channel_handle.h",
+    "ipc_channel_mojo.cc",
+    "ipc_channel_mojo.h",
     "ipc_channel_nacl.cc",
     "ipc_channel_nacl.h",
     "ipc_channel_posix.cc",
@@ -66,11 +69,21 @@ component("ipc") {
     "ipc_message_generator.cc",
     "ipc_message_generator.h",
     "ipc_message_macros.h",
+    "ipc_message_pipe_reader.cc",
+    "ipc_message_pipe_reader.h",
     "ipc_message_start.h",
     "ipc_message_templates.h",
     "ipc_message_templates_impl.h",
     "ipc_message_utils.cc",
     "ipc_message_utils.h",
+    "ipc_mojo_bootstrap.cc",
+    "ipc_mojo_bootstrap.h",
+    "ipc_mojo_handle_attachment.cc",
+    "ipc_mojo_handle_attachment.h",
+    "ipc_mojo_message_helper.cc",
+    "ipc_mojo_message_helper.h",
+    "ipc_mojo_param_traits.cc",
+    "ipc_mojo_param_traits.h",
     "ipc_platform_file.cc",
     "ipc_platform_file.h",
     "ipc_platform_file_attachment_posix.cc",
@@ -132,6 +145,7 @@ component("ipc") {
     "//mojo/public/cpp/system",
   ]
   deps = [
+    ":mojom",
     "//base",
     "//mojo/public/cpp/bindings",
   ]
@@ -145,6 +159,12 @@ component("ipc") {
   if (enable_ipc_fuzzer) {
     public_configs = [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
   }
+}
+
+mojom("mojom") {
+  sources = [
+    "ipc.mojom",
+  ]
 }
 
 # This is provided as a separate target so other targets can provide param
@@ -167,6 +187,7 @@ if (!is_ios) {
       "//base",
       "//base/test:test_support",
       "//mojo/edk/system",
+      "//mojo/edk/test:test_support",
     ]
   }
 
@@ -175,6 +196,7 @@ if (!is_ios) {
       "attachment_broker_mac_unittest.cc",
       "attachment_broker_privileged_mac_unittest.cc",
       "attachment_broker_privileged_win_unittest.cc",
+      "ipc_channel_mojo_unittest.cc",
       "ipc_channel_posix_unittest.cc",
       "ipc_channel_proxy_unittest.cc",
       "ipc_channel_reader_unittest.cc",
@@ -182,6 +204,7 @@ if (!is_ios) {
       "ipc_message_attachment_set_posix_unittest.cc",
       "ipc_message_unittest.cc",
       "ipc_message_utils_unittest.cc",
+      "ipc_mojo_bootstrap_unittest.cc",
       "ipc_sync_channel_unittest.cc",
       "ipc_sync_message_unittest.cc",
       "ipc_sync_message_unittest.h",
@@ -210,12 +233,15 @@ if (!is_ios) {
 
     deps = [
       ":ipc",
+      ":mojom",
       ":run_all_unittests",
       ":test_support",
       "//base",
       "//base:i18n",
       "//base/test:test_support",
       "//crypto",
+      "//mojo/edk/system",
+      "//mojo/edk/test:test_support",
       "//testing/gtest",
     ]
 
@@ -226,7 +252,9 @@ if (!is_ios) {
 
   test("ipc_perftests") {
     sources = [
+      "ipc_mojo_perftest.cc",
       "ipc_perftests.cc",
+      "run_all_perftests.cc",
     ]
 
     # TODO(brettw) hook up Android testing.
@@ -240,7 +268,8 @@ if (!is_ios) {
       "//base",
       "//base:i18n",
       "//base/test:test_support",
-      "//base/test:test_support_perf",
+      "//mojo/edk/system",
+      "//mojo/edk/test:test_support",
       "//testing/gtest",
     ]
   }

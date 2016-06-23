@@ -340,21 +340,6 @@
         "test": "gpu_unittests"
       },
       {
-        "override_isolate_target": "ipc_mojo_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "4",
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ],
-          "hard_timeout": 60
-        },
-        "test": "ipc_mojo_unittests"
-      },
-      {
         "override_isolate_target": "ipc_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -719,9 +704,6 @@
       },
       {
         "test": "gpu_unittests"
-      },
-      {
-        "test": "ipc_mojo_unittests"
       },
       {
         "test": "ipc_tests"
@@ -1212,12 +1194,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ipc_mojo_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ipc_tests"
       },
       {
@@ -1702,12 +1678,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ipc_mojo_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ipc_tests"
       },
       {
@@ -2094,12 +2064,6 @@
           "shards": 3
         },
         "test": "interactive_ui_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "ipc_mojo_unittests"
       },
       {
         "swarming": {

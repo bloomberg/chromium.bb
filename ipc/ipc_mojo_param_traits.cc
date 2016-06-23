@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/mojo/ipc_mojo_param_traits.h"
+#include "ipc/ipc_mojo_param_traits.h"
 
 #include "ipc/ipc_message_utils.h"
-#include "ipc/mojo/ipc_mojo_message_helper.h"
+#include "ipc/ipc_mojo_message_helper.h"
 
 namespace IPC {
 

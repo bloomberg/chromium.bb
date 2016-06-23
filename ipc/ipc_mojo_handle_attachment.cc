@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/mojo/ipc_mojo_handle_attachment.h"
+#include "ipc/ipc_mojo_handle_attachment.h"
 
 #include <utility>
 

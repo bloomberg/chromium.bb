@@ -47,7 +47,6 @@ source_set("child") {
     "//content/public/common:common_sources",
     "//crypto:platform",
     "//gpu/command_buffer/client",
-    "//ipc/mojo",
     "//media",
     "//mojo/common",
     "//mojo/edk/system",

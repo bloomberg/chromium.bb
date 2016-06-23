@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/mojo/ipc_channel_mojo.h"
+#include "ipc/ipc_channel_mojo.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -23,12 +23,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_mojo_handle_attachment.h"
+#include "ipc/ipc_mojo_message_helper.h"
+#include "ipc/ipc_mojo_param_traits.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
-#include "ipc/mojo/ipc_channel_mojo.h"
-#include "ipc/mojo/ipc_mojo_handle_attachment.h"
-#include "ipc/mojo/ipc_mojo_message_helper.h"
-#include "ipc/mojo/ipc_mojo_param_traits.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -260,7 +260,6 @@ group("both_gn_and_gyp") {
       "//gpu:gpu_unittests",
       "//gpu/ipc/service:gpu_ipc_service_unittests",
       "//ipc:ipc_tests",
-      "//ipc/mojo:ipc_mojo_unittests",
       "//media:media_unittests",
       "//media/cast:cast_unittests",
       "//media/midi:midi_unittests",
@@ -833,7 +832,7 @@ group("gn_mojo_targets") {
     # TODO(GYP): Figure out if any of these should be in gn_all
     # and figure out how cross-platform they are
     deps = [
-      "//ipc/mojo:ipc_mojo_perftests",
+      "//ipc:ipc_tests",
       "//mojo:tests",
     ]
   }

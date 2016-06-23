@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_MOJO_IPC_MOJO_HANDLE_ATTACHMENT_H_
-#define IPC_MOJO_IPC_MOJO_HANDLE_ATTACHMENT_H_
+#ifndef IPC_IPC_MOJO_HANDLE_ATTACHMENT_H_
+#define IPC_IPC_MOJO_HANDLE_ATTACHMENT_H_
 
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -20,7 +20,7 @@ namespace internal {
 // This can hold any type of transferrable Mojo handle (i.e. message pipe, data
 // pipe, etc), but the receiver is expected to know what type of handle to
 // expect.
-class IPC_MOJO_EXPORT MojoHandleAttachment : public MessageAttachment {
+class IPC_EXPORT MojoHandleAttachment : public MessageAttachment {
  public:
   explicit MojoHandleAttachment(mojo::ScopedHandle handle);
 
@@ -44,4 +44,4 @@ class IPC_MOJO_EXPORT MojoHandleAttachment : public MessageAttachment {
 }  // namespace internal
 }  // namespace IPC
 
-#endif  // IPC_MOJO_IPC_MOJO_HANDLE_ATTACHMENT_H_
+#endif  // IPC_IPC_MOJO_HANDLE_ATTACHMENT_H_

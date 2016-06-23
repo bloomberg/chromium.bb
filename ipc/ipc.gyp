@@ -17,6 +17,7 @@
         'ipc_target': 1,
       },
       'dependencies': [
+        'ipc_interfaces',
         '../base/base.gyp:base',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../mojo/mojo_public.gyp:mojo_cpp_system',
@@ -37,11 +38,22 @@
       ],
     },
     {
+      'target_name': 'ipc_interfaces',
+      'type': 'none',
+      'variables': {
+        'mojom_files': [
+          'ipc.mojom',
+        ],
+      },
+      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
       'target_name': 'ipc_run_all_unittests',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../mojo/mojo_edk.gyp:mojo_common_test_support',
         '../mojo/mojo_edk.gyp:mojo_system_impl',
         '../testing/gtest.gyp:gtest',
       ],
@@ -63,6 +75,7 @@
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../crypto/crypto.gyp:crypto',
+        '../mojo/mojo_public.gyp:mojo_cpp_system',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
@@ -72,6 +85,7 @@
         'attachment_broker_mac_unittest.cc',
         'attachment_broker_privileged_mac_unittest.cc',
         'attachment_broker_privileged_win_unittest.cc',
+        'ipc_channel_mojo_unittest.cc',
         'ipc_channel_posix_unittest.cc',
         'ipc_channel_proxy_unittest.cc',
         'ipc_channel_reader_unittest.cc',
@@ -80,6 +94,7 @@
         'ipc_message_attachment_set_posix_unittest.cc',
         'ipc_message_unittest.cc',
         'ipc_message_utils_unittest.cc',
+        'ipc_mojo_bootstrap_unittest.cc',
         'ipc_send_fds_test.cc',
         'ipc_sync_channel_unittest.cc',
         'ipc_sync_message_unittest.cc',
@@ -122,16 +137,20 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
-        '../base/base.gyp:test_support_perf',
+        '../mojo/mojo_edk.gyp:mojo_common_test_support',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
         '..'
       ],
       'sources': [
+        'ipc_mojo_perftest.cc',
         'ipc_perftests.cc',
         'ipc_test_base.cc',
         'ipc_test_base.h',
+        'run_all_perftests.cc',
       ],
       'conditions': [
         ['OS == "android"', {
@@ -177,6 +196,7 @@
             'ipc_target': 1,
           },
           'dependencies': [
+            'ipc_interfaces',
             '../base/base.gyp:base_win64',
             '../crypto/crypto.gyp:crypto_nacl_win64',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings_win64',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/mojo/ipc_mojo_bootstrap.h"
+#include "ipc/ipc_mojo_bootstrap.h"
 
 #include <stdint.h>
 #include <memory>
@@ -12,8 +12,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_test_base.h"
-#include "ipc/mojo/ipc.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"

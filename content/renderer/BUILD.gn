@@ -56,7 +56,6 @@ source_set("renderer") {
     "//gin",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
-    "//ipc/mojo",
     "//jingle:jingle_glue",
     "//media",
     "//media/blink",

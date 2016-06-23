@@ -32,7 +32,6 @@
       "gpu_ipc_service_unittests",
       "gpu_unittests",
       "interactive_ui_tests",
-      "ipc_mojo_unittests",
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",

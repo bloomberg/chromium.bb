@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_MOJO_IPC_MOJO_BOOTSTRAP_H_
-#define IPC_MOJO_IPC_MOJO_BOOTSTRAP_H_
+#ifndef IPC_IPC_MOJO_BOOTSTRAP_H_
+#define IPC_IPC_MOJO_BOOTSTRAP_H_
 
 #include <stdint.h>
 
@@ -12,9 +12,9 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
+#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
-#include "ipc/mojo/ipc.mojom.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
@@ -27,7 +27,7 @@ namespace IPC {
 //
 // This lives on IO thread other than Create(), which can be called from
 // UI thread as Channel::Create() can be.
-class IPC_MOJO_EXPORT MojoBootstrap {
+class IPC_EXPORT MojoBootstrap {
  public:
   class Delegate {
    public:
@@ -81,4 +81,4 @@ class IPC_MOJO_EXPORT MojoBootstrap {
 
 }  // namespace IPC
 
-#endif  // IPC_MOJO_IPC_MOJO_BOOTSTRAP_H_
+#endif  // IPC_IPC_MOJO_BOOTSTRAP_H_

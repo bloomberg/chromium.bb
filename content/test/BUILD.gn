@@ -72,7 +72,6 @@ static_library("test_support") {
     "//content/utility:for_content_tests",
     "//device/nfc:mojo_bindings",
     "//ipc:test_support",
-    "//ipc/mojo",
     "//media",
     "//media/capture",
     "//mojo/edk/system",

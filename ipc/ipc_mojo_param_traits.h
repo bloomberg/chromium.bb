@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_MOJO_IPC_MOJO_PARAM_TRAITS_H_
-#define IPC_MOJO_IPC_MOJO_PARAM_TRAITS_H_
+#ifndef IPC_IPC_MOJO_PARAM_TRAITS_H_
+#define IPC_IPC_MOJO_PARAM_TRAITS_H_
 
 #include <string>
 
@@ -20,7 +20,7 @@ namespace IPC {
 class Message;
 
 template <>
-struct IPC_MOJO_EXPORT ParamTraits<mojo::MessagePipeHandle> {
+struct IPC_EXPORT ParamTraits<mojo::MessagePipeHandle> {
   typedef mojo::MessagePipeHandle param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
@@ -29,4 +29,4 @@ struct IPC_MOJO_EXPORT ParamTraits<mojo::MessagePipeHandle> {
 
 }  // namespace IPC
 
-#endif  // IPC_MOJO_IPC_MOJO_PARAM_TRAITS_H_
+#endif  // IPC_IPC_MOJO_PARAM_TRAITS_H_

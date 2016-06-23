@@ -20,8 +20,8 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_factory.h"
 #include "ipc/ipc_export.h"
-#include "ipc/mojo/ipc_message_pipe_reader.h"
-#include "ipc/mojo/ipc_mojo_bootstrap.h"
+#include "ipc/ipc_message_pipe_reader.h"
+#include "ipc/ipc_mojo_bootstrap.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace IPC {
@@ -35,7 +35,7 @@ namespace IPC {
 // TODO(morrita): Add APIs to create extra MessagePipes to let
 //                Mojo-based objects talk over this Channel.
 //
-class IPC_MOJO_EXPORT ChannelMojo
+class IPC_EXPORT ChannelMojo
     : public Channel,
       public MojoBootstrap::Delegate,
       public NON_EXPORTED_BASE(internal::MessagePipeReader::Delegate) {

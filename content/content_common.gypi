@@ -15,7 +15,6 @@
     '../gpu/gpu.gyp:gpu',
     '../gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
     '../ipc/ipc.gyp:ipc',
-    '../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
     '../media/base/ipc/media_base_ipc.gyp:media_base_ipc',
     '../media/capture/capture.gyp:capture',
     '../media/media.gyp:media',

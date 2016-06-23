@@ -346,10 +346,6 @@
     "label": "//chrome/test:interactive_ui_tests",
     "type": "windowed_test_launcher",
   },
-  "ipc_mojo_unittests": {
-    "label": "//ipc/mojo:ipc_mojo_unittests",
-    "type": "console_test_launcher",
-  },
   "ipc_tests": {
     "label": "//ipc:ipc_tests",
     "type": "console_test_launcher",

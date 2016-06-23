@@ -78,7 +78,6 @@ static_library("arc") {
     "//device/bluetooth",
     "//google_apis",
     "//ipc:ipc",
-    "//ipc/mojo:mojo",
     "//mojo/edk/system",
     "//skia",
     "//third_party/re2:re2",
@@ -173,7 +172,6 @@ source_set("unit_tests") {
     ":arc_test_support",
     "//base",
     "//chromeos",
-    "//ipc/mojo:mojo",
     "//mojo/public/cpp/system:system",
     "//testing/gtest",
     "//ui/aura",
@@ -207,7 +205,6 @@ static_library("arc_standalone") {
     ":arc_standalone_service",
     "//base",
     "//ipc:ipc",
-    "//ipc/mojo:mojo",
   ]
 }
 
@@ -233,7 +230,6 @@ executable("arc_standalone_bridge") {
     ":arc_standalone_service",
     "//base",
     "//ipc:ipc",
-    "//ipc/mojo:mojo",
     "//mojo/edk/system",
   ]
 }

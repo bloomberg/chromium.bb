@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/mojo/ipc_channel_mojo.h"
+#include "ipc/ipc_channel_mojo.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,8 +22,8 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/mojo/ipc_mojo_bootstrap.h"
-#include "ipc/mojo/ipc_mojo_handle_attachment.h"
+#include "ipc/ipc_mojo_bootstrap.h"
+#include "ipc/ipc_mojo_handle_attachment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 

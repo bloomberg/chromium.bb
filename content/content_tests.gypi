@@ -853,7 +853,6 @@
         '../components/scheduler/scheduler.gyp:scheduler_test_support',
         '../gpu/gpu.gyp:gpu_ipc_common',
         '../gpu/gpu.gyp:gpu_ipc_service_test_support',
-        '../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
         '../media/blink/media_blink.gyp:media_blink',
         '../media/capture/capture.gyp:capture',
         '../media/media.gyp:media',

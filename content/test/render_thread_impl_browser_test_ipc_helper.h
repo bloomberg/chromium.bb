@@ -7,8 +7,8 @@
 
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/mojo/mojo_application_host.h"
+#include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "ipc/mojo/ipc_channel_mojo.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
 
 namespace IPC {
