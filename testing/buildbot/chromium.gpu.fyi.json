@@ -2691,7 +2691,8 @@
               "gpu": "1002:6779",
               "os": "Linux"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -2908,10 +2909,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3101,7 +3102,8 @@
               "gpu": "8086:041a",
               "os": "Linux"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -3318,10 +3320,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3511,7 +3513,8 @@
               "gpu": "10de:0f02",
               "os": "Linux"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -3728,10 +3731,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3955,7 +3958,8 @@
               "gpu": "10de:104a",
               "os": "Linux"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -3978,7 +3982,8 @@
               "gpu": "10de:104a",
               "os": "Linux"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -4172,10 +4177,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_angle_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4197,10 +4202,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4390,7 +4395,8 @@
               "gpu": "8086:0412",
               "os": "Linux"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -4607,10 +4613,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_angle_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5504,7 +5510,8 @@
               "gpu": "1002:679e",
               "os": "Mac-10.10"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -5721,10 +5728,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5897,7 +5904,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.10"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -6114,10 +6122,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6666,7 +6674,8 @@
               "hidpi": "1",
               "os": "Mac-10.10"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -6891,10 +6900,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -7445,7 +7454,8 @@
               "hidpi": "1",
               "os": "Mac"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -7670,10 +7680,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -7707,7 +7717,8 @@
               "hidpi": "1",
               "os": "Mac"
             }
-          ]
+          ],
+          "shards": 12
         }
       }
     ]
@@ -7772,10 +7783,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -7784,7 +7795,8 @@
               "gpu": "10de:104a",
               "os": "Linux"
             }
-          ]
+          ],
+          "shards": 12
         }
       }
     ]
@@ -7835,10 +7847,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -7847,7 +7859,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.10"
             }
-          ]
+          ],
+          "shards": 12
         }
       }
     ]
@@ -7900,10 +7913,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -7913,7 +7926,8 @@
               "hidpi": "1",
               "os": "Mac-10.10"
             }
-          ]
+          ],
+          "shards": 12
         }
       }
     ]
@@ -7966,10 +7980,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -8067,10 +8081,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -8079,7 +8093,8 @@
               "gpu": "1002:6779",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -8217,10 +8232,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -8229,7 +8244,8 @@
               "gpu": "10de:104a",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -9712,7 +9728,8 @@
               "gpu": "1002:6779",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -9929,10 +9946,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -10159,7 +10176,8 @@
               "gpu": "8086:041a",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -10376,10 +10394,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -10606,7 +10624,8 @@
               "gpu": "10de:0f02",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -10823,10 +10842,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -11123,7 +11142,8 @@
               "gpu": "10de:104a",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -11340,10 +11360,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -11593,7 +11613,8 @@
               "gpu": "8086:0412",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -11810,10 +11831,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12508,7 +12529,8 @@
               "gpu": "10de:104a",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -12725,10 +12747,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13419,7 +13441,8 @@
               "gpu": "10de:104a",
               "os": "Windows-2012ServerR2-SP0"
             }
-          ]
+          ],
+          "shards": 12
         }
       },
       {
@@ -13636,10 +13659,10 @@
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
-        "isolate_name": "telemetry_gpu_test",
+        "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_test_run"
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

@@ -80,7 +80,6 @@ def main():
       rc = common.run_command([sys.executable] + rest_args + sharding_args + [
         '--write-abbreviated-json-results-to', args.isolated_script_test_output,
       ], env=env)
-      valid = bool(rc == 0)
     except Exception:
       traceback.print_exc()
       valid = False

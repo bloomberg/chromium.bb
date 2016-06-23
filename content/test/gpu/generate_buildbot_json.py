@@ -898,6 +898,12 @@ TELEMETRY_TESTS = {
       '--use-gl=angle',
     ],
   },
+}
+
+# These tests use Telemetry's new, simpler, browser_test_runner.
+# Eventually all of the Telemetry based tests above will be ported to
+# this harness, and the old harness will be deleted.
+TELEMETRY_GPU_INTEGRATION_TESTS = {
   'webgl2_conformance_tests': {
     'tester_configs': [
       {
@@ -926,6 +932,11 @@ TELEMETRY_TESTS = {
       '--webgl-conformance-version=2.0.0',
       '--webgl2-only=true',
     ],
+    'swarming': {
+      # These tests currently take about an hour to run. Split them
+      # into roughly 5-minute shards.
+      'shards': 12,
+    },
   },
   'webgl2_conformance_angle_tests': {
     'tester_configs': [
@@ -956,6 +967,11 @@ TELEMETRY_TESTS = {
       '--webgl-conformance-version=2.0.0',
       '--webgl2-only=true',
     ],
+    'swarming': {
+      # These tests currently take about an hour to run. Split them
+      # into roughly 5-minute shards.
+      'shards': 12,
+    },
   },
 }
 
@@ -1073,7 +1089,8 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
   return result
 
 def generate_telemetry_test(tester_name, tester_config,
-                            test, test_config, is_fyi):
+                            test, test_config, is_fyi,
+                            use_gpu_integration_test_harness):
   if not should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
     return None
   test_args = ['-v']
@@ -1104,21 +1121,27 @@ def generate_telemetry_test(tester_name, tester_config,
     '--show-stdout',
     '--browser=%s' % tester_config['build_config'].lower()
   ]
+  swarming = {
+    # Always say this is true regardless of whether the tester
+    # supports swarming. It doesn't hurt.
+    'can_use_on_swarming_builders': True,
+    'dimension_sets': [
+      tester_config['swarming_dimensions']
+    ]
+  }
+  if 'swarming' in test_config:
+    swarming.update(test_config['swarming'])
   result = {
     'args': prefix_args + test_args,
-    'isolate_name': 'telemetry_gpu_test',
+    'isolate_name': (
+      'telemetry_gpu_integration_test' if use_gpu_integration_test_harness
+      else 'telemetry_gpu_test'),
     'name': step_name,
     'override_compile_targets': [
-      'telemetry_gpu_test_run'
+      ('telemetry_gpu_integration_test_run' if use_gpu_integration_test_harness
+       else 'telemetry_gpu_test_run')
     ],
-    'swarming': {
-      # Always say this is true regardless of whether the tester
-      # supports swarming. It doesn't hurt.
-      'can_use_on_swarming_builders': True,
-      'dimension_sets': [
-        tester_config['swarming_dimensions']
-      ]
-    },
+    'swarming': swarming,
   }
   if 'non_precommit_args' in test_config:
     result['non_precommit_args'] = test_config['non_precommit_args']
@@ -1142,11 +1165,13 @@ def generate_gtests(tester_name, tester_config, test_dictionary, is_fyi):
   return gtests
 
 def generate_telemetry_tests(tester_name, tester_config,
-                             test_dictionary, is_fyi):
+                             test_dictionary, is_fyi,
+                             use_gpu_integration_test_harness):
   isolated_scripts = []
   for test_name, test_config in sorted(test_dictionary.iteritems()):
     test = generate_telemetry_test(
-        tester_name, tester_config, test_name, test_config, is_fyi)
+      tester_name, tester_config, test_name, test_config, is_fyi,
+      use_gpu_integration_test_harness)
     if test:
       isolated_scripts.append(test)
   return isolated_scripts
@@ -1158,7 +1183,9 @@ def generate_all_tests(waterfall, is_fyi):
   for name, config in waterfall['testers'].iteritems():
     gtests = generate_gtests(name, config, COMMON_GTESTS, is_fyi)
     isolated_scripts = \
-        generate_telemetry_tests(name, config, TELEMETRY_TESTS, is_fyi)
+      generate_telemetry_tests(name, config, TELEMETRY_TESTS, is_fyi, False) + \
+      generate_telemetry_tests(name, config, TELEMETRY_GPU_INTEGRATION_TESTS,
+                               is_fyi, True)
     tests[name] = {
       'gtest_tests': sorted(gtests, key=lambda x: x['test']),
       'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])

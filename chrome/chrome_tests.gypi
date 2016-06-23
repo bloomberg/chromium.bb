@@ -3475,6 +3475,18 @@
               ],
             },
             {
+              'target_name': 'telemetry_gpu_integration_test_run',
+              'type': 'none',
+              'dependencies': [
+                'chrome_run',
+                'gpu_tests_base',
+                'telemetry_chrome_test_base',
+              ],
+              'sources': [
+                'telemetry_gpu_integration_test.isolate',
+              ],
+            },
+            {
               'target_name': 'telemetry_gpu_test_run',
               'type': 'none',
               'dependencies': [

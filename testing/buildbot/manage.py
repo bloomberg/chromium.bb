@@ -141,14 +141,9 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'chromevox_tests',
   'nacl_helper_nonsfi_unittests',
 
-  # These targets are run on the bots but not listed in the
-  # buildbot JSON files.
-  # TODO(kbr): remove these before closing http://crbug.com/542370 .
-  'angle_end2end_tests',
-  'gl_tests',
-  'gl_unittests',
-  'gles2_conform_test',
-  'tab_capture_end2end_tests',
+  # TODO(kbr): teach this script about isolated_scripts tests.
+  # crbug.com/620531
+  'telemetry_gpu_integration_test',
   'telemetry_gpu_test',
   'telemetry_gpu_unittests',
   'telemetry_perf_unittests',

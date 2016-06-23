@@ -33,6 +33,7 @@ class GpuIntegrationTest(
     logging.warning('Restarting browser due to ' + reason)
     self.StopBrowser()
     self.StartBrowser(self._finder_options)
+    self.tab = self.browser.tabs[0]
 
   def _RunGpuTest(self, url, test_name, args):
     temp_page = _EmulatedPage(url, test_name)

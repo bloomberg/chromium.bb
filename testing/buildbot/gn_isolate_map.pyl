@@ -535,6 +535,14 @@
     "type": "gpu_browser_test",
     "gtest_filter": "CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
   },
+  "telemetry_gpu_integration_test": {
+    "label": "//chrome/test:telemetry_gpu_integration_test",
+    "type": "script",
+    "script": "//testing/scripts/run_gpu_integration_test_as_googletest.py",
+    "args": [
+      "../../content/test/gpu/run_gpu_integration_test.py",
+    ],
+  },
   "telemetry_gpu_test": {
     "label": "//chrome/test:telemetry_gpu_test",
     "type": "script",
