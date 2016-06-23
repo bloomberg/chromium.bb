@@ -5,6 +5,7 @@ try {
 	var worker = new SharedWorker('shared-worker.js', 'SharedWorker');
 	worker.port.onmessage = function(event) {
 		document.write(event.data);
+		document.close();
 		window.parent.postMessage(event.data, '*');
 	}
 	worker.port.start();
@@ -12,6 +13,7 @@ try {
 } catch (exception) {
 	window.parent.postMessage(exception.name, '*');
 	document.write(exception.name);
+	document.close();
 }
 </script>
 </head>

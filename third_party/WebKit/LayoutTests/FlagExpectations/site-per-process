@@ -87,9 +87,6 @@ http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 http/tests/history/cross-origin-redirect-on-back.html [ Timeout ]
 
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
-# Uninvestigated failures under http/tests/security:
-http/tests/security/cross-origin-shared-worker-allowed.html [ Failure Timeout ]
-http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Failure Timeout ]
 # Uninvestigated failures under http/tests (but outside of http/tests/security):
 http/tests/inspector-protocol/request-mixed-content-status-blockable.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-none.html [ Timeout ]
