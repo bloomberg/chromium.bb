@@ -11,70 +11,26 @@
 
 namespace ui {
 
+enum class TextEditCommand;
+
 // Represents a command that performs a specific operation on text.
 // Copy and assignment are explicitly allowed; these objects live in vectors.
 class UI_BASE_IME_EXPORT TextEditCommandAuraLinux {
  public:
-  enum CommandId {
-    COPY,
-    CUT,
-    DELETE_BACKWARD,
-    DELETE_FORWARD,
-    DELETE_TO_BEGINNING_OF_LINE,
-    DELETE_TO_BEGINNING_OF_PARAGRAPH,
-    DELETE_TO_END_OF_LINE,
-    DELETE_TO_END_OF_PARAGRAPH,
-    DELETE_WORD_BACKWARD,
-    DELETE_WORD_FORWARD,
-    INSERT_TEXT,
-    MOVE_BACKWARD,
-    MOVE_DOWN,
-    MOVE_FORWARD,
-    MOVE_LEFT,
-    MOVE_PAGE_DOWN,
-    MOVE_PAGE_UP,
-    MOVE_RIGHT,
-    MOVE_TO_BEGINNING_OF_DOCUMENT,
-    MOVE_TO_BEGINNING_OF_LINE,
-    MOVE_TO_BEGINNING_OF_PARAGRAPH,
-    MOVE_TO_END_OF_DOCUMENT,
-    MOVE_TO_END_OF_LINE,
-    MOVE_TO_END_OF_PARAGRAPH,
-    MOVE_UP,
-    MOVE_WORD_BACKWARD,
-    MOVE_WORD_FORWARD,
-    MOVE_WORD_LEFT,
-    MOVE_WORD_RIGHT,
-    PASTE,
-    SELECT_ALL,
-    SET_MARK,
-    UNSELECT,
-    INVALID_COMMAND
-  };
+  TextEditCommandAuraLinux(TextEditCommand command, const std::string& argument)
+      : command_(command), argument_(argument) {}
 
-  TextEditCommandAuraLinux(CommandId command_id,
-                           const std::string& argument,
-                           bool extend_selection)
-      : command_id_(command_id),
-        argument_(argument),
-        extend_selection_(extend_selection) {}
-
-  CommandId command_id() const { return command_id_; }
+  TextEditCommand command() const { return command_; }
   const std::string& argument() const { return argument_; }
-  bool extend_selection() const { return extend_selection_; }
 
   // We communicate these commands back to blink with a string representation.
-  // This will combine the base command name with "AndModifySelection" if we
-  // have |extend_selection_| set.
   std::string GetCommandString() const;
 
  private:
-  CommandId command_id_;
+  TextEditCommand command_;
 
+  // The text for TextEditCommand::INSERT_TEXT; otherwise empty and unused.
   std::string argument_;
-
-  // In addition to executing the command, modify the selection.
-  bool extend_selection_;
 };
 
 }  // namespace ui

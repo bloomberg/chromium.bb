@@ -5,120 +5,126 @@
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
 
 #include "base/logging.h"
+#include "ui/base/ime/text_edit_commands.h"
 
 namespace ui {
 
+// This is sent to the renderer. Keep the string representation in sync with
+// third_party/WebKit/public/platform/WebEditingCommandType.h.
 std::string TextEditCommandAuraLinux::GetCommandString() const {
-  std::string base_name;
-  switch (command_id_) {
-    case COPY:
-      base_name = "Copy";
-      break;
-    case CUT:
-      base_name = "Cut";
-      break;
-    case DELETE_BACKWARD:
-      base_name = "DeleteBackward";
-      break;
-    case DELETE_FORWARD:
-      base_name = "DeleteForward";
-      break;
-    case DELETE_TO_BEGINNING_OF_LINE:
-      base_name = "DeleteToBeginningOfLine";
-      break;
-    case DELETE_TO_BEGINNING_OF_PARAGRAPH:
-      base_name = "DeleteToBeginningOfParagraph";
-      break;
-    case DELETE_TO_END_OF_LINE:
-      base_name = "DeleteToEndOfLine";
-      break;
-    case DELETE_TO_END_OF_PARAGRAPH:
-      base_name = "DeleteToEndOfParagraph";
-      break;
-    case DELETE_WORD_BACKWARD:
-      base_name = "DeleteWordBackward";
-      break;
-    case DELETE_WORD_FORWARD:
-      base_name = "DeleteWordForward";
-      break;
-    case INSERT_TEXT:
-      base_name = "InsertText";
-      break;
-    case MOVE_BACKWARD:
-      base_name = "MoveBackward";
-      break;
-    case MOVE_DOWN:
-      base_name = "MoveDown";
-      break;
-    case MOVE_FORWARD:
-      base_name = "MoveForward";
-      break;
-    case MOVE_LEFT:
-      base_name = "MoveLeft";
-      break;
-    case MOVE_PAGE_DOWN:
-      base_name = "MovePageDown";
-      break;
-    case MOVE_PAGE_UP:
-      base_name = "MovePageUp";
-      break;
-    case MOVE_RIGHT:
-      base_name = "MoveRight";
-      break;
-    case MOVE_TO_BEGINNING_OF_DOCUMENT:
-      base_name = "MoveToBeginningOfDocument";
-      break;
-    case MOVE_TO_BEGINNING_OF_LINE:
-      base_name = "MoveToBeginningOfLine";
-      break;
-    case MOVE_TO_BEGINNING_OF_PARAGRAPH:
-      base_name = "MoveToBeginningOfParagraph";
-      break;
-    case MOVE_TO_END_OF_DOCUMENT:
-      base_name = "MoveToEndOfDocument";
-      break;
-    case MOVE_TO_END_OF_LINE:
-      base_name = "MoveToEndOfLine";
-      break;
-    case MOVE_TO_END_OF_PARAGRAPH:
-      base_name = "MoveToEndOfParagraph";
-      break;
-    case MOVE_UP:
-      base_name = "MoveUp";
-      break;
-    case MOVE_WORD_BACKWARD:
-      base_name = "MoveWordBackward";
-      break;
-    case MOVE_WORD_FORWARD:
-      base_name = "MoveWordForward";
-      break;
-    case MOVE_WORD_LEFT:
-      base_name = "MoveWordLeft";
-      break;
-    case MOVE_WORD_RIGHT:
-      base_name = "MoveWordRight";
-      break;
-    case PASTE:
-      base_name = "Paste";
-      break;
-    case SELECT_ALL:
-      base_name = "SelectAll";
-      break;
-    case SET_MARK:
-      base_name = "SetMark";
-      break;
-    case UNSELECT:
-      base_name = "Unselect";
-      break;
-    case INVALID_COMMAND:
+  switch (command_) {
+    case TextEditCommand::DELETE_BACKWARD:
+      return "DeleteBackward";
+    case TextEditCommand::DELETE_FORWARD:
+      return "DeleteForward";
+    case TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
+      return "DeleteToBeginningOfLine";
+    case TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH:
+      return "DeleteToBeginningOfParagraph";
+    case TextEditCommand::DELETE_TO_END_OF_LINE:
+      return "DeleteToEndOfLine";
+    case TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
+      return "DeleteToEndOfParagraph";
+    case TextEditCommand::DELETE_WORD_BACKWARD:
+      return "DeleteWordBackward";
+    case TextEditCommand::DELETE_WORD_FORWARD:
+      return "DeleteWordForward";
+    case TextEditCommand::MOVE_BACKWARD:
+      return "MoveBackward";
+    case TextEditCommand::MOVE_BACKWARD_AND_MODIFY_SELECTION:
+      return "MoveBackwardAndModifySelection";
+    case TextEditCommand::MOVE_DOWN:
+      return "MoveDown";
+    case TextEditCommand::MOVE_DOWN_AND_MODIFY_SELECTION:
+      return "MoveDownAndModifySelection";
+    case TextEditCommand::MOVE_FORWARD:
+      return "MoveForward";
+    case TextEditCommand::MOVE_FORWARD_AND_MODIFY_SELECTION:
+      return "MoveForwardAndModifySelection";
+    case TextEditCommand::MOVE_LEFT:
+      return "MoveLeft";
+    case TextEditCommand::MOVE_LEFT_AND_MODIFY_SELECTION:
+      return "MoveLeftAndModifySelection";
+    case TextEditCommand::MOVE_PAGE_DOWN:
+      return "MovePageDown";
+    case TextEditCommand::MOVE_PAGE_DOWN_AND_MODIFY_SELECTION:
+      return "MovePageDownAndModifySelection";
+    case TextEditCommand::MOVE_PAGE_UP:
+      return "MovePageUp";
+    case TextEditCommand::MOVE_PAGE_UP_AND_MODIFY_SELECTION:
+      return "MovePageUpAndModifySelection";
+    case TextEditCommand::MOVE_RIGHT:
+      return "MoveRight";
+    case TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION:
+      return "MoveRightAndModifySelection";
+    case TextEditCommand::MOVE_TO_BEGINNING_OF_DOCUMENT:
+      return "MoveToBeginningOfDocument";
+    case TextEditCommand::MOVE_TO_BEGINNING_OF_DOCUMENT_AND_MODIFY_SELECTION:
+      return "MoveToBeginningOfDocumentAndModifySelection";
+    case TextEditCommand::MOVE_TO_BEGINNING_OF_LINE:
+      return "MoveToBeginningOfLine";
+    case TextEditCommand::MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION:
+      return "MoveToBeginningOfLineAndModifySelection";
+    case TextEditCommand::MOVE_TO_BEGINNING_OF_PARAGRAPH:
+      return "MoveToBeginningOfParagraph";
+    case TextEditCommand::MOVE_TO_BEGINNING_OF_PARAGRAPH_AND_MODIFY_SELECTION:
+      return "MoveToBeginningOfParagraphAndModifySelection";
+    case TextEditCommand::MOVE_TO_END_OF_DOCUMENT:
+      return "MoveToEndOfDocument";
+    case TextEditCommand::MOVE_TO_END_OF_DOCUMENT_AND_MODIFY_SELECTION:
+      return "MoveToEndOfDocumentAndModifySelection";
+    case TextEditCommand::MOVE_TO_END_OF_LINE:
+      return "MoveToEndOfLine";
+    case TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION:
+      return "MoveToEndOfLineAndModifySelection";
+    case TextEditCommand::MOVE_TO_END_OF_PARAGRAPH:
+      return "MoveToEndOfParagraph";
+    case TextEditCommand::MOVE_TO_END_OF_PARAGRAPH_AND_MODIFY_SELECTION:
+      return "MoveToEndOfParagraphAndModifySelection";
+    case TextEditCommand::MOVE_UP:
+      return "MoveUp";
+    case TextEditCommand::MOVE_UP_AND_MODIFY_SELECTION:
+      return "MoveUpAndModifySelection";
+    case TextEditCommand::MOVE_WORD_BACKWARD:
+      return "MoveWordBackward";
+    case TextEditCommand::MOVE_WORD_BACKWARD_AND_MODIFY_SELECTION:
+      return "MoveWordBackwardAndModifySelection";
+    case TextEditCommand::MOVE_WORD_FORWARD:
+      return "MoveWordForward";
+    case TextEditCommand::MOVE_WORD_FORWARD_AND_MODIFY_SELECTION:
+      return "MoveWordForwardAndModifySelection";
+    case TextEditCommand::MOVE_WORD_LEFT:
+      return "MoveWordLeft";
+    case TextEditCommand::MOVE_WORD_LEFT_AND_MODIFY_SELECTION:
+      return "MoveWordLeftAndModifySelection";
+    case TextEditCommand::MOVE_WORD_RIGHT:
+      return "MoveWordRight";
+    case TextEditCommand::MOVE_WORD_RIGHT_AND_MODIFY_SELECTION:
+      return "MoveWordRightAndModifySelection";
+    case TextEditCommand::UNDO:
+      return "Undo";
+    case TextEditCommand::REDO:
+      return "Redo";
+    case TextEditCommand::CUT:
+      return "Cut";
+    case TextEditCommand::COPY:
+      return "Copy";
+    case TextEditCommand::PASTE:
+      return "Paste";
+    case TextEditCommand::SELECT_ALL:
+      return "SelectAll";
+    case TextEditCommand::INSERT_TEXT:
+      return "InsertText";
+    case TextEditCommand::SET_MARK:
+      return "SetMark";
+    case TextEditCommand::UNSELECT:
+      return "Unselect";
+    case TextEditCommand::INVALID_COMMAND:
       NOTREACHED();
       return std::string();
   }
-
-  if (extend_selection())
-    base_name += "AndModifySelection";
-
-  return base_name;
+  NOTREACHED();
+  return std::string();
 }
 
 }  // namespace ui

@@ -70,9 +70,8 @@ class Gtk2KeyBindingsHandler {
   GtkWidget* CreateNewHandler();
 
   // Adds an edit command to the key event.
-  void EditCommandMatched(ui::TextEditCommandAuraLinux::CommandId id,
-                          const std::string& value,
-                          bool extend_selection);
+  void EditCommandMatched(ui::TextEditCommand command,
+                          const std::string& value);
 
   // Builds a fake GdkEventKey from an XEvent.
   void BuildGdkEventKeyFromXEvent(const base::NativeEvent& xevent,

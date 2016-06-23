@@ -16,10 +16,11 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 
-using ui::TextEditCommandAuraLinux;
+using ui::TextEditCommand;
 
 // TODO(erg): Rewrite the old gtk_key_bindings_handler_unittest.cc and get them
 // in a state that links. This code was adapted from the content layer GTK
@@ -50,7 +51,7 @@ Gtk2KeyBindingsHandler::~Gtk2KeyBindingsHandler() {
 
 bool Gtk2KeyBindingsHandler::MatchEvent(
     const ui::Event& event,
-    std::vector<TextEditCommandAuraLinux>* edit_commands) {
+    std::vector<ui::TextEditCommandAuraLinux>* edit_commands) {
   CHECK(event.IsKeyEvent());
 
   const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
@@ -96,13 +97,9 @@ GtkWidget* Gtk2KeyBindingsHandler::CreateNewHandler() {
   return GTK_WIDGET(handler);
 }
 
-void Gtk2KeyBindingsHandler::EditCommandMatched(
-    TextEditCommandAuraLinux::CommandId id,
-    const std::string& value,
-    bool extend_selection) {
-  edit_commands_.push_back(TextEditCommandAuraLinux(id,
-                                                    value,
-                                                    extend_selection));
+void Gtk2KeyBindingsHandler::EditCommandMatched(TextEditCommand command,
+                                                const std::string& value) {
+  edit_commands_.push_back(ui::TextEditCommandAuraLinux(command, value));
 }
 
 void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
@@ -212,19 +209,18 @@ Gtk2KeyBindingsHandler* Gtk2KeyBindingsHandler::GetHandlerOwner(
 }
 
 void Gtk2KeyBindingsHandler::BackSpace(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)
-      ->EditCommandMatched(
-          TextEditCommandAuraLinux::DELETE_BACKWARD, std::string(), false);
+  GetHandlerOwner(text_view)->EditCommandMatched(
+      TextEditCommand::DELETE_BACKWARD, std::string());
 }
 
 void Gtk2KeyBindingsHandler::CopyClipboard(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)->EditCommandMatched(
-      TextEditCommandAuraLinux::COPY, std::string(), false);
+  GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::COPY,
+                                                 std::string());
 }
 
 void Gtk2KeyBindingsHandler::CutClipboard(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)->EditCommandMatched(
-      TextEditCommandAuraLinux::CUT, std::string(), false);
+  GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::CUT,
+                                                 std::string());
 }
 
 void Gtk2KeyBindingsHandler::DeleteFromCursor(
@@ -232,48 +228,43 @@ void Gtk2KeyBindingsHandler::DeleteFromCursor(
   if (!count)
     return;
 
-  TextEditCommandAuraLinux::CommandId commands[2] = {
-    TextEditCommandAuraLinux::INVALID_COMMAND,
-    TextEditCommandAuraLinux::INVALID_COMMAND,
+  TextEditCommand commands[2] = {
+      TextEditCommand::INVALID_COMMAND, TextEditCommand::INVALID_COMMAND,
   };
   switch (type) {
     case GTK_DELETE_CHARS:
-      commands[0] = (count > 0 ?
-          TextEditCommandAuraLinux::DELETE_FORWARD :
-          TextEditCommandAuraLinux::DELETE_BACKWARD);
+      commands[0] = (count > 0 ? TextEditCommand::DELETE_FORWARD
+                               : TextEditCommand::DELETE_BACKWARD);
       break;
     case GTK_DELETE_WORD_ENDS:
-      commands[0] = (count > 0 ?
-          TextEditCommandAuraLinux::DELETE_WORD_FORWARD :
-          TextEditCommandAuraLinux::DELETE_WORD_BACKWARD);
+      commands[0] = (count > 0 ? TextEditCommand::DELETE_WORD_FORWARD
+                               : TextEditCommand::DELETE_WORD_BACKWARD);
       break;
     case GTK_DELETE_WORDS:
       if (count > 0) {
-        commands[0] = TextEditCommandAuraLinux::MOVE_WORD_FORWARD;
-        commands[1] = TextEditCommandAuraLinux::DELETE_WORD_BACKWARD;
+        commands[0] = TextEditCommand::MOVE_WORD_FORWARD;
+        commands[1] = TextEditCommand::DELETE_WORD_BACKWARD;
       } else {
-        commands[0] = TextEditCommandAuraLinux::MOVE_WORD_BACKWARD;
-        commands[1] = TextEditCommandAuraLinux::DELETE_WORD_FORWARD;
+        commands[0] = TextEditCommand::MOVE_WORD_BACKWARD;
+        commands[1] = TextEditCommand::DELETE_WORD_FORWARD;
       }
       break;
     case GTK_DELETE_DISPLAY_LINES:
-      commands[0] = TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_LINE;
-      commands[1] = TextEditCommandAuraLinux::DELETE_TO_END_OF_LINE;
+      commands[0] = TextEditCommand::MOVE_TO_BEGINNING_OF_LINE;
+      commands[1] = TextEditCommand::DELETE_TO_END_OF_LINE;
       break;
     case GTK_DELETE_DISPLAY_LINE_ENDS:
-      commands[0] =
-          (count > 0 ? TextEditCommandAuraLinux::DELETE_TO_END_OF_LINE
-                     : TextEditCommandAuraLinux::DELETE_TO_BEGINNING_OF_LINE);
+      commands[0] = (count > 0 ? TextEditCommand::DELETE_TO_END_OF_LINE
+                               : TextEditCommand::DELETE_TO_BEGINNING_OF_LINE);
       break;
     case GTK_DELETE_PARAGRAPH_ENDS:
       commands[0] =
-          (count > 0
-               ? TextEditCommandAuraLinux::DELETE_TO_END_OF_PARAGRAPH
-               : TextEditCommandAuraLinux::DELETE_TO_BEGINNING_OF_PARAGRAPH);
+          (count > 0 ? TextEditCommand::DELETE_TO_END_OF_PARAGRAPH
+                     : TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH);
       break;
     case GTK_DELETE_PARAGRAPHS:
-      commands[0] = TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_PARAGRAPH;
-      commands[1] = TextEditCommandAuraLinux::DELETE_TO_END_OF_PARAGRAPH;
+      commands[0] = TextEditCommand::MOVE_TO_BEGINNING_OF_PARAGRAPH;
+      commands[1] = TextEditCommand::DELETE_TO_END_OF_PARAGRAPH;
       break;
     default:
       // GTK_DELETE_WHITESPACE has no corresponding editor command.
@@ -285,16 +276,17 @@ void Gtk2KeyBindingsHandler::DeleteFromCursor(
     count = -count;
   for (; count > 0; --count) {
     for (size_t i = 0; i < arraysize(commands); ++i)
-      if (commands[i] != TextEditCommandAuraLinux::INVALID_COMMAND)
-        owner->EditCommandMatched(commands[i], std::string(), false);
+      if (commands[i] != TextEditCommand::INVALID_COMMAND)
+        owner->EditCommandMatched(commands[i], std::string());
   }
 }
 
 void Gtk2KeyBindingsHandler::InsertAtCursor(GtkTextView* text_view,
                                             const gchar* str) {
-  if (str && *str)
-    GetHandlerOwner(text_view)->EditCommandMatched(
-        TextEditCommandAuraLinux::INSERT_TEXT, str, false);
+  if (str && *str) {
+    GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::INSERT_TEXT,
+                                                   str);
+  }
 }
 
 void Gtk2KeyBindingsHandler::MoveCursor(
@@ -303,47 +295,92 @@ void Gtk2KeyBindingsHandler::MoveCursor(
   if (!count)
     return;
 
-  TextEditCommandAuraLinux::CommandId command;
+  TextEditCommand command;
   switch (step) {
     case GTK_MOVEMENT_LOGICAL_POSITIONS:
-      command = (count > 0 ?
-                 TextEditCommandAuraLinux::MOVE_FORWARD :
-                 TextEditCommandAuraLinux::MOVE_BACKWARD);
+      if (extend_selection) {
+        command =
+            (count > 0 ? TextEditCommand::MOVE_FORWARD_AND_MODIFY_SELECTION
+                       : TextEditCommand::MOVE_BACKWARD_AND_MODIFY_SELECTION);
+      } else {
+        command = (count > 0 ? TextEditCommand::MOVE_FORWARD
+                             : TextEditCommand::MOVE_BACKWARD);
+      }
       break;
     case GTK_MOVEMENT_VISUAL_POSITIONS:
-      command = (count > 0 ?
-                 TextEditCommandAuraLinux::MOVE_RIGHT :
-                 TextEditCommandAuraLinux::MOVE_LEFT);
+      if (extend_selection) {
+        command = (count > 0 ? TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION
+                             : TextEditCommand::MOVE_LEFT_AND_MODIFY_SELECTION);
+      } else {
+        command = (count > 0 ? TextEditCommand::MOVE_RIGHT
+                             : TextEditCommand::MOVE_LEFT);
+      }
       break;
     case GTK_MOVEMENT_WORDS:
-      command = (count > 0 ?
-                 TextEditCommandAuraLinux::MOVE_WORD_RIGHT :
-                 TextEditCommandAuraLinux::MOVE_WORD_LEFT);
+      if (extend_selection) {
+        command =
+            (count > 0 ? TextEditCommand::MOVE_WORD_RIGHT_AND_MODIFY_SELECTION
+                       : TextEditCommand::MOVE_WORD_LEFT_AND_MODIFY_SELECTION);
+      } else {
+        command = (count > 0 ? TextEditCommand::MOVE_WORD_RIGHT
+                             : TextEditCommand::MOVE_WORD_LEFT);
+      }
       break;
     case GTK_MOVEMENT_DISPLAY_LINES:
-      command = (count > 0 ?
-                 TextEditCommandAuraLinux::MOVE_DOWN :
-                 TextEditCommandAuraLinux::MOVE_UP);
+      if (extend_selection) {
+        command = (count > 0 ? TextEditCommand::MOVE_DOWN_AND_MODIFY_SELECTION
+                             : TextEditCommand::MOVE_UP_AND_MODIFY_SELECTION);
+      } else {
+        command =
+            (count > 0 ? TextEditCommand::MOVE_DOWN : TextEditCommand::MOVE_UP);
+      }
       break;
     case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
-      command =
-          (count > 0 ? TextEditCommandAuraLinux::MOVE_TO_END_OF_LINE
-                     : TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_LINE);
+      if (extend_selection) {
+        command =
+            (count > 0
+                 ? TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+                 : TextEditCommand::
+                       MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION);
+      } else {
+        command = (count > 0 ? TextEditCommand::MOVE_TO_END_OF_LINE
+                             : TextEditCommand::MOVE_TO_BEGINNING_OF_LINE);
+      }
       break;
     case GTK_MOVEMENT_PARAGRAPH_ENDS:
-      command =
-          (count > 0
-               ? TextEditCommandAuraLinux::MOVE_TO_END_OF_PARAGRAPH
-               : TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_PARAGRAPH);
+      if (extend_selection) {
+        command =
+            (count > 0
+                 ? TextEditCommand::
+                       MOVE_TO_END_OF_PARAGRAPH_AND_MODIFY_SELECTION
+                 : TextEditCommand::
+                       MOVE_TO_BEGINNING_OF_PARAGRAPH_AND_MODIFY_SELECTION);
+      } else {
+        command = (count > 0 ? TextEditCommand::MOVE_TO_END_OF_PARAGRAPH
+                             : TextEditCommand::MOVE_TO_BEGINNING_OF_PARAGRAPH);
+      }
       break;
     case GTK_MOVEMENT_PAGES:
-      command = (count > 0 ? TextEditCommandAuraLinux::MOVE_PAGE_DOWN :
-                 TextEditCommandAuraLinux::MOVE_PAGE_UP);
+      if (extend_selection) {
+        command =
+            (count > 0 ? TextEditCommand::MOVE_PAGE_DOWN_AND_MODIFY_SELECTION
+                       : TextEditCommand::MOVE_PAGE_UP_AND_MODIFY_SELECTION);
+      } else {
+        command = (count > 0 ? TextEditCommand::MOVE_PAGE_DOWN
+                             : TextEditCommand::MOVE_PAGE_UP);
+      }
       break;
     case GTK_MOVEMENT_BUFFER_ENDS:
-      command =
-          (count > 0 ? TextEditCommandAuraLinux::MOVE_TO_END_OF_DOCUMENT
-                     : TextEditCommandAuraLinux::MOVE_TO_BEGINNING_OF_DOCUMENT);
+      if (extend_selection) {
+        command =
+            (count > 0
+                 ? TextEditCommand::MOVE_TO_END_OF_DOCUMENT_AND_MODIFY_SELECTION
+                 : TextEditCommand::
+                       MOVE_TO_BEGINNING_OF_DOCUMENT_AND_MODIFY_SELECTION);
+      } else {
+        command = (count > 0 ? TextEditCommand::MOVE_TO_END_OF_DOCUMENT
+                             : TextEditCommand::MOVE_TO_BEGINNING_OF_DOCUMENT);
+      }
       break;
     default:
       // GTK_MOVEMENT_PARAGRAPHS and GTK_MOVEMENT_HORIZONTAL_PAGES have
@@ -355,7 +392,7 @@ void Gtk2KeyBindingsHandler::MoveCursor(
   if (count < 0)
     count = -count;
   for (; count > 0; --count)
-    owner->EditCommandMatched(command, std::string(), extend_selection);
+    owner->EditCommandMatched(command, std::string());
 }
 
 void Gtk2KeyBindingsHandler::MoveViewport(
@@ -364,24 +401,20 @@ void Gtk2KeyBindingsHandler::MoveViewport(
 }
 
 void Gtk2KeyBindingsHandler::PasteClipboard(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)->EditCommandMatched(
-      TextEditCommandAuraLinux::PASTE, std::string(), false);
+  GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::PASTE,
+                                                 std::string());
 }
 
 void Gtk2KeyBindingsHandler::SelectAll(GtkTextView* text_view,
                                        gboolean select) {
-  if (select) {
-    GetHandlerOwner(text_view)->EditCommandMatched(
-        TextEditCommandAuraLinux::SELECT_ALL, std::string(), false);
-  } else {
-    GetHandlerOwner(text_view)->EditCommandMatched(
-        TextEditCommandAuraLinux::UNSELECT, std::string(), false);
-  }
+  GetHandlerOwner(text_view)->EditCommandMatched(
+      select ? TextEditCommand::SELECT_ALL : TextEditCommand::UNSELECT,
+      std::string());
 }
 
 void Gtk2KeyBindingsHandler::SetAnchor(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)->EditCommandMatched(
-      TextEditCommandAuraLinux::SET_MARK, std::string(), false);
+  GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::SET_MARK,
+                                                 std::string());
 }
 
 void Gtk2KeyBindingsHandler::ToggleCursorVisible(GtkTextView* text_view) {
