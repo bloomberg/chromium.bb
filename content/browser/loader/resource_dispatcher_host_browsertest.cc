@@ -755,10 +755,12 @@ namespace {
 struct RequestDataForDelegate {
   const GURL url;
   const GURL first_party;
+  const url::Origin initiator;
 
   RequestDataForDelegate(const GURL& url,
-                         const GURL& first_party)
-      : url(url), first_party(first_party) {}
+                         const GURL& first_party,
+                         const url::Origin initiator)
+      : url(url), first_party(first_party), initiator(initiator) {}
 };
 
 // Captures calls to 'RequestBeginning' and records the URL, first-party for
@@ -777,7 +779,8 @@ class RequestDataResourceDispatcherHostDelegate
                         ResourceType resource_type,
                         ScopedVector<ResourceThrottle>* throttles) override {
     requests_.push_back(new RequestDataForDelegate(
-        request->url(), request->first_party_for_cookies()));
+        request->url(), request->first_party_for_cookies(),
+        request->initiator()));
   }
 
   void SetDelegate() { ResourceDispatcherHost::Get()->SetDelegate(this); }
@@ -816,6 +819,7 @@ class RequestDataResourceDispatcherHostBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
   GURL top_url(embedded_test_server()->GetURL("/simple_page.html"));
+  url::Origin top_origin(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -825,6 +829,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
   // matches the URL to which they navigate.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
 }
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
@@ -832,6 +837,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
   GURL top_url(embedded_test_server()->GetURL("/page_with_iframe.html"));
   GURL image_url(embedded_test_server()->GetURL("/image.jpg"));
   GURL nested_url(embedded_test_server()->GetURL("/title1.html"));
+  url::Origin top_origin(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -841,22 +847,26 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
   // matches the URL to which they navigate.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
 
   // Subresource requests have a first-party and initiator that matches the
   // document in which they're embedded.
   EXPECT_EQ(image_url, delegate_->data()[1]->url);
   EXPECT_EQ(top_url, delegate_->data()[1]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[1]->initiator);
 
   // Same-origin nested frames have a first-party and initiator that matches
   // the document in which they're embedded.
   EXPECT_EQ(nested_url, delegate_->data()[2]->url);
   EXPECT_EQ(top_url, delegate_->data()[2]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[2]->initiator);
 }
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
                        SameOriginAuxiliary) {
   GURL top_url(embedded_test_server()->GetURL("/simple_links.html"));
   GURL auxiliary_url(embedded_test_server()->GetURL("/title2.html"));
+  url::Origin top_origin(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -876,17 +886,20 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
   // matches the URL to which they navigate, even if they fail to load.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
   EXPECT_EQ(auxiliary_url, delegate_->data()[1]->url);
   EXPECT_EQ(auxiliary_url, delegate_->data()[1]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[1]->initiator);
 }
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
                        CrossOriginAuxiliary) {
   GURL top_url(embedded_test_server()->GetURL("/simple_links.html"));
   GURL auxiliary_url(embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  url::Origin top_origin(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -914,11 +927,13 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
   // matches the URL to which they navigate, even if they fail to load.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
   EXPECT_EQ(auxiliary_url, delegate_->data()[1]->url);
   EXPECT_EQ(auxiliary_url, delegate_->data()[1]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[1]->initiator);
 }
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
@@ -926,6 +941,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
   // Navigating to this URL will fail, as we haven't taught the host resolver
   // about 'a.com'.
   GURL top_url(embedded_test_server()->GetURL("a.com", "/simple_page.html"));
+  url::Origin top_origin(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -935,6 +951,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
   // matches the URL to which they navigate, even if they fail to load.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
 }
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
@@ -948,6 +965,8 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
       "b.com", "/cross_site_iframe_factory.html?b()"));
   GURL nested_js_url(
       embedded_test_server()->GetURL("b.com", "/tree_parser_util.js"));
+  url::Origin top_origin(top_url);
+  url::Origin nested_origin(nested_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -957,19 +976,23 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
   // matches the URL to which they navigate.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
 
   EXPECT_EQ(top_js_url, delegate_->data()[1]->url);
   EXPECT_EQ(top_url, delegate_->data()[1]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[1]->initiator);
 
-  // Cross-origin frame requests have a first-party and initiator that matches
-  // the URL in which they're embedded.
+  // Cross-origin frames have a first-party and initiator that matches the URL
+  // in which they're embedded.
   EXPECT_EQ(nested_url, delegate_->data()[2]->url);
   EXPECT_EQ(top_url, delegate_->data()[2]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[2]->initiator);
 
   // Cross-origin subresource requests have a unique first-party, and an
   // initiator that matches the document in which they're embedded.
   EXPECT_EQ(nested_js_url, delegate_->data()[3]->url);
   EXPECT_EQ(kURLWithUniqueOrigin, delegate_->data()[3]->first_party);
+  EXPECT_EQ(nested_origin, delegate_->data()[3]->initiator);
 }
 
 }  // namespace content

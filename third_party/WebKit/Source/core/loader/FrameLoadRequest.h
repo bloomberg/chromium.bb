@@ -31,39 +31,21 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/fetch/SubstituteData.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "platform/network/ResourceRequest.h"
 
 namespace blink {
 
 class HTMLFormElement;
+class ResourceRequest;
+class SubstituteData;
 
-struct FrameLoadRequest {
+struct CORE_EXPORT FrameLoadRequest {
     STACK_ALLOCATED();
 public:
-    explicit FrameLoadRequest(Document* originDocument)
-        : FrameLoadRequest(originDocument, ResourceRequest())
-    {
-    }
-
-    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest)
-        : FrameLoadRequest(originDocument, resourceRequest, AtomicString())
-    {
-    }
-
-    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName)
-        : FrameLoadRequest(originDocument, resourceRequest, frameName, CheckContentSecurityPolicy)
-    {
-    }
-
-    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const SubstituteData& substituteData)
-        : FrameLoadRequest(originDocument, resourceRequest, AtomicString(), substituteData, CheckContentSecurityPolicy)
-    {
-    }
-
-    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy)
-        : FrameLoadRequest(originDocument, resourceRequest, frameName, SubstituteData(), shouldCheckMainWorldContentSecurityPolicy)
-    {
-    }
+    explicit FrameLoadRequest(Document* originDocument);
+    FrameLoadRequest(Document* originDocument, const ResourceRequest&);
+    FrameLoadRequest(Document* originDocument, const ResourceRequest&, const AtomicString& frameName);
+    FrameLoadRequest(Document* originDocument, const ResourceRequest&, const SubstituteData&);
+    FrameLoadRequest(Document* originDocument, const ResourceRequest&, const AtomicString& frameName, ContentSecurityPolicyDisposition);
 
     Document* originDocument() const { return m_originDocument.get(); }
 
@@ -96,28 +78,8 @@ public:
     ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy() const { return m_shouldCheckMainWorldContentSecurityPolicy; }
 
 private:
-    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName, const SubstituteData& substituteData, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy)
-        : m_originDocument(originDocument)
-        , m_resourceRequest(resourceRequest)
-        , m_frameName(frameName)
-        , m_substituteData(substituteData)
-        , m_replacesCurrentItem(false)
-        , m_clientRedirect(ClientRedirectPolicy::NotClientRedirect)
-        , m_shouldSendReferrer(MaybeSendReferrer)
-        , m_shouldSetOpener(MaybeSetOpener)
-        , m_shouldCheckMainWorldContentSecurityPolicy(shouldCheckMainWorldContentSecurityPolicy)
-    {
-        initializeFetchFlags();
-        if (originDocument)
-            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
-    }
-    void initializeFetchFlags()
-    {
-        // These flags are passed to a service worker which controls the page.
-        m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeNavigate);
-        m_resourceRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
-        m_resourceRequest.setFetchRedirectMode(WebURLRequest::FetchRedirectModeManual);
-    }
+    FrameLoadRequest(Document* originDocument, const ResourceRequest&, const AtomicString& frameName, const SubstituteData&, ContentSecurityPolicyDisposition);
+
     Member<Document> m_originDocument;
     ResourceRequest m_resourceRequest;
     AtomicString m_frameName;

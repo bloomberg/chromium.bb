@@ -3932,9 +3932,16 @@ void RenderFrameImpl::willSendRequest(
       request.setFirstPartyForCookies(request.url());
     else
       request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
+  }
 
-    // If we need to set the first party, then we need to set the request's
-    // initiator as well; it will not be updated during redirects.
+  // Set the requestor origin to the same origin as the frame's document if it
+  // hasn't yet been set.
+  //
+  // TODO(mkwst): It would be cleaner to adjust blink::ResourceRequest to
+  // initialize itself with a `nullptr` initiator so that this can be a simple
+  // `isNull()` check.
+  if (request.requestorOrigin().isUnique() &&
+      !frame->document().getSecurityOrigin().isUnique()) {
     request.setRequestorOrigin(frame->document().getSecurityOrigin());
   }
 
@@ -5474,6 +5481,9 @@ void RenderFrameImpl::NavigateInternal(
   WebURLRequest request =
       CreateURLRequestForNavigation(common_params, std::move(stream_params),
                                     frame_->isViewSourceModeEnabled());
+  request.setFrameType(IsTopLevelNavigation(frame_)
+                           ? blink::WebURLRequest::FrameTypeTopLevel
+                           : blink::WebURLRequest::FrameTypeNested);
 
   if (IsBrowserSideNavigationEnabled() && common_params.post_data)
     request.setHTTPBody(GetWebHTTPBodyForRequestBody(common_params.post_data));

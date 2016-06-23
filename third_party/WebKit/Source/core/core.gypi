@@ -1921,6 +1921,7 @@
             'loader/FormSubmission.cpp',
             'loader/FrameFetchContext.cpp',
             'loader/FrameFetchContext.h',
+            'loader/FrameLoadRequest.cpp',
             'loader/FrameLoadRequest.h',
             'loader/FrameLoader.cpp',
             'loader/FrameLoaderStateMachine.cpp',
