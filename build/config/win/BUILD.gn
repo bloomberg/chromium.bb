@@ -65,13 +65,6 @@ config("compiler") {
   # experimental. See crbug.com/82385.
   # Keep this in sync with the similar block in build/common.gypi
   if (is_clang) {
-    cflags += [
-      # Many files use intrinsics without including this header.
-      # TODO(hans): Fix those files, or move this to sub-GYPs,
-      # https://crbug.com/592745
-      "/FIintrin.h",
-    ]
-
     if (visual_studio_version == "2013") {
       cflags += [ "-fmsc-version=1800" ]
     } else if (visual_studio_version == "2015") {
