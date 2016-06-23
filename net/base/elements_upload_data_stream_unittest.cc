@@ -232,23 +232,24 @@ TEST_F(ElementsUploadDataStreamTest, FileSmallerThanLength) {
   EXPECT_FALSE(stream->IsInMemory());
   EXPECT_EQ(kFakeSize, stream->size());
   EXPECT_EQ(0U, stream->position());
-  EXPECT_FALSE(stream->IsEOF());
-  uint64_t read_counter = 0;
+
   scoped_refptr<IOBuffer> buf = new IOBuffer(kTestBufferSize);
-  while (!stream->IsEOF()) {
-    TestCompletionCallback read_callback;
-    ASSERT_EQ(
-        ERR_IO_PENDING,
-        stream->Read(buf.get(), kTestBufferSize, read_callback.callback()));
-    int bytes_read = read_callback.WaitForResult();
-    ASSERT_LE(0, bytes_read);  // Not an error.
-    read_counter += bytes_read;
-    EXPECT_EQ(read_counter, stream->position());
-  }
-  // UpdateDataStream will pad out the file with 0 bytes so that the HTTP
-  // transaction doesn't hang.  Therefore we expected the full size.
-  EXPECT_EQ(kFakeSize, read_counter);
-  EXPECT_EQ(read_counter, stream->position());
+  EXPECT_FALSE(stream->IsEOF());
+
+  TestCompletionCallback read_callback;
+  ASSERT_EQ(ERR_IO_PENDING,
+            stream->Read(buf.get(), kTestBufferSize, read_callback.callback()));
+  int bytes_read = read_callback.WaitForResult();
+
+  EXPECT_EQ(10, bytes_read);
+  EXPECT_EQ(10U, stream->position());
+
+  // UpdateDataStream will return error if there is something wrong.
+  EXPECT_EQ(ERR_UPLOAD_FILE_CHANGED,
+            stream->Read(buf.get(), kTestBufferSize, read_callback.callback()));
+  EXPECT_EQ(10U, stream->position());
+
+  EXPECT_FALSE(stream->IsEOF());
 }
 
 TEST_F(ElementsUploadDataStreamTest, ReadErrorSync) {
@@ -277,14 +278,13 @@ TEST_F(ElementsUploadDataStreamTest, ReadErrorSync) {
   std::fill_n(buf->data(), kTestBufferSize, -1);
 
   // Read() results in success even when the reader returns error.
-  EXPECT_EQ(static_cast<int>(kTestDataSize * 2),
+  EXPECT_EQ(ERR_FAILED,
             stream->Read(buf.get(), kTestBufferSize, CompletionCallback()));
-  EXPECT_EQ(kTestDataSize * 2, stream->position());
-  EXPECT_TRUE(stream->IsEOF());
+  EXPECT_EQ(0U, stream->position());
+  EXPECT_FALSE(stream->IsEOF());
 
   // The buffer is filled with zero.
-  EXPECT_EQ(static_cast<int>(kTestDataSize*2),
-            std::count(buf->data(), buf->data() + kTestBufferSize, 0));
+  EXPECT_EQ(0, std::count(buf->data(), buf->data() + kTestBufferSize, 0));
 }
 
 TEST_F(ElementsUploadDataStreamTest, ReadErrorAsync) {
@@ -318,13 +318,12 @@ TEST_F(ElementsUploadDataStreamTest, ReadErrorAsync) {
   TestCompletionCallback read_callback;
   ASSERT_EQ(ERR_IO_PENDING,
             stream->Read(buf.get(), kTestBufferSize, read_callback.callback()));
-  EXPECT_EQ(static_cast<int>(kTestDataSize * 2), read_callback.WaitForResult());
-  EXPECT_EQ(kTestDataSize*2, stream->position());
-  EXPECT_TRUE(stream->IsEOF());
+  EXPECT_EQ(ERR_FAILED, read_callback.WaitForResult());
+  EXPECT_EQ(0U, stream->position());
+  EXPECT_FALSE(stream->IsEOF());
 
-  // The buffer is filled with zero.
-  EXPECT_EQ(static_cast<int>(kTestDataSize*2),
-            std::count(buf->data(), buf->data() + kTestBufferSize, 0));
+  // The buffer is empty
+  EXPECT_EQ(0, std::count(buf->data(), buf->data() + kTestBufferSize, 0));
 }
 
 TEST_F(ElementsUploadDataStreamTest, FileAndBytes) {

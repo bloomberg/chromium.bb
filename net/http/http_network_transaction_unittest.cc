@@ -9684,18 +9684,12 @@ TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_EQ(ERR_UPLOAD_FILE_CHANGED, rv);
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
 
-  EXPECT_TRUE(response->headers);
-  EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
-
-  std::string response_data;
-  rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
-  EXPECT_EQ("hello world", response_data);
+  EXPECT_FALSE(response->headers);
 
   base::DeleteFile(temp_file_path, false);
 }
