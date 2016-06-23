@@ -13,7 +13,6 @@ import argparse
 import json
 import logging
 import os
-import shutil
 import sys
 from urlparse import urlparse
 
@@ -27,19 +26,13 @@ sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 from pylib import constants
 import devil_chromium
 
-import chrome_cache
-import common_util
 import csv_util
 import device_setup
-import emulation
 import options
-import sandwich_metrics
 import sandwich_prefetch
-import sandwich_runner
 import sandwich_swr
 import sandwich_utils
 import task_manager
-from trace_test.webserver_test import WebServer
 
 
 # Use options layer to access constants.
@@ -49,6 +42,8 @@ _SPEED_INDEX_MEASUREMENT = 'speed-index'
 _MEMORY_MEASUREMENT = 'memory'
 _TTFMP_MEASUREMENT = 'ttfmp'
 _CORPUS_DIR = 'sandwich_corpuses'
+
+_MAIN_TRANSFORMER_LIST_NAME = 'no-network-emulation'
 
 
 def ReadUrlsFromCorpus(corpus_path):
@@ -74,15 +69,39 @@ def ReadUrlsFromCorpus(corpus_path):
       'File {} does not define a list named "urls"'.format(json_file_name))
 
 
+def _GenerateUrlDirectoryNames(urls):
+  domain_times_encountered_per_domain = {}
+  for url in urls:
+    domain = '.'.join(urlparse(url).netloc.split('.')[-2:])
+    domain_times_encountered = domain_times_encountered_per_domain.get(
+        domain, 0)
+    output_subdirectory = '{}.{}'.format(domain, domain_times_encountered)
+    domain_times_encountered_per_domain[domain] = domain_times_encountered + 1
+    yield url, output_subdirectory
+
+
 def _ArgumentParser():
   """Build a command line argument's parser."""
   task_parser = task_manager.CommandLineParser()
 
-  # Command parser when dealing with SandwichRunner.
-  sandwich_runner_parser = argparse.ArgumentParser(add_help=False)
+  # Command parser when dealing with _RunBenchmarkMain.
+  sandwich_runner_parser = argparse.ArgumentParser(
+      add_help=False, parents=[task_parser])
   sandwich_runner_parser.add_argument('--android', default=None, type=str,
                                       dest='android_device_serial',
                                       help='Android device\'s serial to use.')
+  sandwich_runner_parser.add_argument('-c', '--corpus', required=True,
+      help='Path to a JSON file with a corpus such as in %s/.' % _CORPUS_DIR)
+  sandwich_runner_parser.add_argument('-m', '--measure', default=[], nargs='+',
+      choices=[_SPEED_INDEX_MEASUREMENT,
+               _MEMORY_MEASUREMENT,
+               _TTFMP_MEASUREMENT],
+      dest='optional_measures', help='Enable optional measurements.')
+  sandwich_runner_parser.add_argument('--wpr-archive', default=None, type=str,
+      dest='wpr_archive_path',
+      help='WebPageReplay archive to use, instead of generating one.')
+  sandwich_runner_parser.add_argument('-r', '--url-repeat', default=1, type=int,
+      help='How many times to repeat the urls.')
 
   # Plumbing parser to configure OPTIONS.
   plumbing_parser = OPTIONS.GetParentParser('plumbing options')
@@ -92,41 +111,18 @@ def _ArgumentParser():
       fromfile_prefix_chars=task_manager.FROMFILE_PREFIX_CHARS)
   subparsers = parser.add_subparsers(dest='subcommand', help='subcommand line')
 
-  # Record test trace subcommand.
-  record_trace_parser = subparsers.add_parser('record-test-trace',
-      parents=[sandwich_runner_parser],
-      help='Record a test trace using the trace_test.webserver_test.')
-  record_trace_parser.add_argument('--source-dir', type=str, required=True,
-                                   help='Base path where the files are opened '
-                                        'by the web server.')
-  record_trace_parser.add_argument('--page', type=str, required=True,
-                                   help='Source page in source-dir to navigate '
-                                        'to.')
-  record_trace_parser.add_argument('-o', '--output', type=str, required=True,
-                                   help='Output path of the generated trace.')
-
-  # Run subcommand.
+  # Run NoState-Prefetch benchmarks subcommand.
   run_parser = subparsers.add_parser('run',
-      parents=[sandwich_runner_parser, task_parser],
-      help='Run all steps using the task manager infrastructure.')
+      parents=[sandwich_runner_parser],
+      help='Run all NoState-Prefetch benchmarks steps using the task '
+           'manager infrastructure.')
   run_parser.add_argument('-g', '--gen-full', action='store_true',
-                          help='Generate the full graph with all possible '
-                               'benchmarks.')
-  run_parser.add_argument('-c', '--corpus', required=True,
-      help='Path to a JSON file with a corpus such as in %s/.' % _CORPUS_DIR)
-  run_parser.add_argument('-m', '--measure', default=[], nargs='+',
-      choices=[_SPEED_INDEX_MEASUREMENT,
-               _MEMORY_MEASUREMENT,
-               _TTFMP_MEASUREMENT],
-      dest='optional_measures', help='Enable optional measurements.')
-  run_parser.add_argument('--wpr-archive', default=None, type=str,
-                          dest='wpr_archive_path',
-                          help='WebPageReplay archive to use, instead of '
-                               'generating one.')
-  run_parser.add_argument('-r', '--url-repeat', default=1, type=int,
-                          help='How many times to repeat the urls.')
-  run_parser.add_argument('--swr-benchmark', action='store_true',
-                          help='Run the Stale-While-Revalidate benchmarks.')
+      help='Generate the full graph with all possible benchmarks.')
+
+  # Run Stale-While-Revalidate benchmarks subcommand.
+  subparsers.add_parser('run-swr', parents=[sandwich_runner_parser],
+      help='Run all Stale-While-Revalidate benchmarks steps using the task '
+           'manager infrastructure.')
 
   # Collect subcommand.
   collect_csv_parser = subparsers.add_parser('collect-csv',
@@ -140,42 +136,51 @@ def _ArgumentParser():
   return parser
 
 
-def _GetAndroidDeviceFromArgs(args):
+def _GenerateNoStatePrefetchBenchmarkTasks(
+    args, common_builder, main_transformer):
+  builder = sandwich_prefetch.PrefetchBenchmarkBuilder(common_builder)
+  builder.PopulateLoadBenchmark(sandwich_prefetch.EMPTY_CACHE_DISCOVERER,
+                                _MAIN_TRANSFORMER_LIST_NAME,
+                                transformer_list=[main_transformer])
+  builder.PopulateLoadBenchmark(sandwich_prefetch.FULL_CACHE_DISCOVERER,
+                                _MAIN_TRANSFORMER_LIST_NAME,
+                                transformer_list=[main_transformer])
+  if not args.gen_full:
+    return
+  for network_condition in ['Regular4G', 'Regular3G', 'Regular2G']:
+    transformer_list_name = network_condition.lower()
+    network_transformer = \
+        sandwich_utils.NetworkSimulationTransformer(network_condition)
+    transformer_list = [main_transformer, network_transformer]
+    for subresource_discoverer in sandwich_prefetch.SUBRESOURCE_DISCOVERERS:
+      if subresource_discoverer == sandwich_prefetch.FULL_CACHE_DISCOVERER:
+        continue
+      builder.PopulateLoadBenchmark(
+          subresource_discoverer, transformer_list_name, transformer_list)
+
+
+def _GenerateStaleWhileRevalidateBenchmarkTasks(
+    args, common_builder, main_transformer):
+  del args # unused.
+  builder = sandwich_swr.StaleWhileRevalidateBenchmarkBuilder(common_builder)
+  for enable_swr in [False, True]:
+    builder.PopulateBenchmark(enable_swr, _MAIN_TRANSFORMER_LIST_NAME,
+                              transformer_list=[main_transformer])
+    for network_condition in ['Regular3G', 'Regular2G']:
+      transformer_list_name = network_condition.lower()
+      network_transformer = \
+          sandwich_utils.NetworkSimulationTransformer(network_condition)
+      transformer_list = [main_transformer, network_transformer]
+      builder.PopulateBenchmark(
+          enable_swr, transformer_list_name, transformer_list)
+
+
+def _RunBenchmarkMain(args, task_generator):
+  urls = ReadUrlsFromCorpus(args.corpus)
+  android_device = None
   if args.android_device_serial:
-    return device_setup.GetDeviceFromSerial(args.android_device_serial)
-  return None
-
-
-def _RecordWebServerTestTrace(args):
-  with common_util.TemporaryDirectory() as out_path:
-    runner = sandwich_runner.SandwichRunner()
-    runner.android_device = _GetAndroidDeviceFromArgs(args)
-    # Reuse the WPR's forwarding to access the webpage from Android.
-    runner.wpr_record = True
-    runner.wpr_archive_path = os.path.join(out_path, 'wpr')
-    runner.output_dir = os.path.join(out_path, 'run')
-    with WebServer.Context(
-        source_dir=args.source_dir, communication_dir=out_path) as server:
-      address = server.Address()
-      runner.url = 'http://%s/%s' % (address, args.page)
-      runner.Run()
-    trace_path = os.path.join(
-        out_path, 'run', '0', sandwich_runner.TRACE_FILENAME)
-    shutil.copy(trace_path, args.output)
-  return 0
-
-
-def _GenerateBenchmarkTasks(args, android_device, url, output_subdirectory):
-  MAIN_TRANSFORMER_LIST_NAME = 'no-network-emulation'
-  common_builder = sandwich_utils.SandwichCommonBuilder(
-      android_device=android_device,
-      url=url,
-      output_directory=args.output,
-      output_subdirectory=output_subdirectory)
-  if args.wpr_archive_path:
-    common_builder.OverridePathToWprArchive(args.wpr_archive_path)
-  else:
-    common_builder.PopulateWprRecordingTask()
+    android_device = device_setup.GetDeviceFromSerial(
+        args.android_device_serial)
 
   def MainTransformer(runner):
     runner.record_video = _SPEED_INDEX_MEASUREMENT in args.optional_measures
@@ -184,55 +189,19 @@ def _GenerateBenchmarkTasks(args, android_device, url, output_subdirectory):
         _TTFMP_MEASUREMENT in args.optional_measures)
     runner.repeat = args.url_repeat
 
-  if not args.swr_benchmark:
-    builder = sandwich_prefetch.PrefetchBenchmarkBuilder(common_builder)
-    builder.PopulateLoadBenchmark(sandwich_prefetch.EMPTY_CACHE_DISCOVERER,
-                                  MAIN_TRANSFORMER_LIST_NAME,
-                                  transformer_list=[MainTransformer])
-    builder.PopulateLoadBenchmark(sandwich_prefetch.FULL_CACHE_DISCOVERER,
-                                  MAIN_TRANSFORMER_LIST_NAME,
-                                  transformer_list=[MainTransformer])
-    if args.gen_full:
-      for network_condition in ['Regular4G', 'Regular3G', 'Regular2G']:
-        transformer_list_name = network_condition.lower()
-        network_transformer = \
-            sandwich_utils.NetworkSimulationTransformer(
-                network_condition)
-        transformer_list = [MainTransformer, network_transformer]
-        for subresource_discoverer in sandwich_prefetch.SUBRESOURCE_DISCOVERERS:
-          if subresource_discoverer == sandwich_prefetch.FULL_CACHE_DISCOVERER:
-            continue
-          builder.PopulateLoadBenchmark(subresource_discoverer,
-              transformer_list_name, transformer_list)
-  else:
-    builder = sandwich_swr.StaleWhileRevalidateBenchmarkBuilder(common_builder)
-    for enable_swr in [False, True]:
-      builder.PopulateBenchmark(enable_swr, MAIN_TRANSFORMER_LIST_NAME,
-                                transformer_list=[MainTransformer])
-      for network_condition in ['Regular3G', 'Regular2G']:
-        transformer_list_name = network_condition.lower()
-        network_transformer = \
-            sandwich_utils.NetworkSimulationTransformer(
-                network_condition)
-        transformer_list = [MainTransformer, network_transformer]
-        builder.PopulateBenchmark(enable_swr, transformer_list_name,
-                                  transformer_list)
-  return common_builder.default_final_tasks
-
-
-def _RunAllMain(args):
-  urls = ReadUrlsFromCorpus(args.corpus)
-  domain_times_encountered_per_domain = {}
   default_final_tasks = []
-  android_device = _GetAndroidDeviceFromArgs(args)
-  for url in urls:
-    domain = '.'.join(urlparse(url).netloc.split('.')[-2:])
-    domain_times_encountered = domain_times_encountered_per_domain.get(
-        domain, 0)
-    output_subdirectory = '{}.{}'.format(domain, domain_times_encountered)
-    domain_times_encountered_per_domain[domain] = domain_times_encountered + 1
-    default_final_tasks.extend(
-        _GenerateBenchmarkTasks(args, android_device, url, output_subdirectory))
+  for url, output_subdirectory in _GenerateUrlDirectoryNames(urls):
+    common_builder = sandwich_utils.SandwichCommonBuilder(
+        android_device=android_device,
+        url=url,
+        output_directory=args.output,
+        output_subdirectory=output_subdirectory)
+    if args.wpr_archive_path:
+      common_builder.OverridePathToWprArchive(args.wpr_archive_path)
+    else:
+      common_builder.PopulateWprRecordingTask()
+    task_generator(args, common_builder, MainTransformer)
+    default_final_tasks.extend(common_builder.default_final_tasks)
   return task_manager.ExecuteWithCommandLine(args, default_final_tasks)
 
 
@@ -243,10 +212,10 @@ def main(command_line_args):
   args = _ArgumentParser().parse_args(command_line_args)
   OPTIONS.SetParsedArgs(args)
 
-  if args.subcommand == 'record-test-trace':
-    return _RecordWebServerTestTrace(args)
   if args.subcommand == 'run':
-    return _RunAllMain(args)
+    return _RunBenchmarkMain(args, _GenerateNoStatePrefetchBenchmarkTasks)
+  if args.subcommand == 'run-swr':
+    return _RunBenchmarkMain(args, _GenerateStaleWhileRevalidateBenchmarkTasks)
   if args.subcommand == 'collect-csv':
     with args.output_csv as output_file:
       if not csv_util.CollectCSVsFromDirectory(args.output_dir, output_file):
