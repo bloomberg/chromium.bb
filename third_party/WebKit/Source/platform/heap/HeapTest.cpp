@@ -470,7 +470,7 @@ protected:
         Vector<std::unique_ptr<WebThread>, numberOfThreads> m_threads;
         for (int i = 0; i < numberOfThreads; i++) {
             m_threads.append(wrapUnique(Platform::current()->createThread("blink gc testing thread")));
-            m_threads.last()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(threadFunc, AllowCrossThreadAccess(tester)));
+            m_threads.last()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(threadFunc, crossThreadUnretained(tester)));
         }
         while (tester->m_threadsToFinish) {
             SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
@@ -6681,7 +6681,7 @@ TEST(HeapTest, CrossThreadWeakPersistent)
     MutexLocker mainThreadMutexLocker(mainThreadMutex());
     std::unique_ptr<WebThread> workerThread = wrapUnique(Platform::current()->createThread("Test Worker Thread"));
     DestructorLockingObject* object = nullptr;
-    workerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(workerThreadMainForCrossThreadWeakPersistentTest, AllowCrossThreadAccess(&object)));
+    workerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(workerThreadMainForCrossThreadWeakPersistentTest, crossThreadUnretained(&object)));
     parkMainThread();
 
     // Step 3: Set up a CrossThreadWeakPersistent.

@@ -221,7 +221,7 @@ void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding(D
     if (arrayBuffer->byteLength() >= longTaskByteLengthThreshold)
         taskSize = BackgroundTaskRunner::TaskSizeLongRunningTask;
     WebTaskRunner* taskRunner = Platform::current()->currentThread()->getWebTaskRunner();
-    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, wrapCrossThreadPersistent(this), AllowCrossThreadAccess(taskRunner), wrapCrossThreadPersistent(arrayBuffer)), taskSize);
+    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, wrapCrossThreadPersistent(this), crossThreadUnretained(taskRunner), wrapCrossThreadPersistent(arrayBuffer)), taskSize);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTaskRunner* taskRunner, DOMArrayBuffer* arrayBuffer)

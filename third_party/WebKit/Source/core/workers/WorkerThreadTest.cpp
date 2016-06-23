@@ -189,7 +189,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnInitialization_TerminateWhileDebugge
             V8CacheOptionsDefault);
     m_workerThread->start(std::move(startupData));
 
-    m_workerThread->appendDebuggerTask(threadSafeBind(&waitForTermination, AllowCrossThreadAccess(m_workerThread.get())));
+    m_workerThread->appendDebuggerTask(threadSafeBind(&waitForTermination, crossThreadUnretained(m_workerThread.get())));
 
     // Wait for the debugger task.
     testing::enterRunLoop();

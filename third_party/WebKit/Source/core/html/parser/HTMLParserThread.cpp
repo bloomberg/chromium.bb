@@ -67,7 +67,7 @@ void HTMLParserThread::shutdown()
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (Platform::current()->currentThread() && s_sharedThread->m_thread) {
         WaitableEvent waitableEvent;
-        s_sharedThread->postTask(threadSafeBind(&HTMLParserThread::cleanupHTMLParserThread, AllowCrossThreadAccess(s_sharedThread), AllowCrossThreadAccess(&waitableEvent)));
+        s_sharedThread->postTask(threadSafeBind(&HTMLParserThread::cleanupHTMLParserThread, crossThreadUnretained(s_sharedThread), crossThreadUnretained(&waitableEvent)));
         SafePointScope scope(BlinkGC::HeapPointersOnStack);
         waitableEvent.wait();
     }
@@ -91,7 +91,7 @@ void HTMLParserThread::postTask(std::unique_ptr<CrossThreadClosure> closure)
     ASSERT(isMainThread());
     if (!m_thread) {
         m_thread = WebThreadSupportingGC::create("HTMLParserThread");
-        postTask(threadSafeBind(&HTMLParserThread::setupHTMLParserThread, AllowCrossThreadAccess(this)));
+        postTask(threadSafeBind(&HTMLParserThread::setupHTMLParserThread, crossThreadUnretained(this)));
     }
 
     m_thread->postTask(BLINK_FROM_HERE, std::move(closure));

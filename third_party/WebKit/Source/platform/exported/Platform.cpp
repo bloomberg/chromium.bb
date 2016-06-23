@@ -66,7 +66,7 @@ static void maxObservedSizeFunction(size_t sizeInMB)
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(function, AllowCrossThreadAccess(context)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(function, crossThreadUnretained(context)));
 }
 
 void Platform::initialize(Platform* platform)

@@ -15,13 +15,13 @@ DataConsumerHandleTestUtil::Thread::Thread(const char* name, InitializationPolic
     , m_initializationPolicy(initializationPolicy)
     , m_waitableEvent(wrapUnique(new WaitableEvent()))
 {
-    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&Thread::initialize, AllowCrossThreadAccess(this)));
+    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&Thread::initialize, crossThreadUnretained(this)));
     m_waitableEvent->wait();
 }
 
 DataConsumerHandleTestUtil::Thread::~Thread()
 {
-    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&Thread::shutdown, AllowCrossThreadAccess(this)));
+    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&Thread::shutdown, crossThreadUnretained(this)));
     m_waitableEvent->wait();
 }
 

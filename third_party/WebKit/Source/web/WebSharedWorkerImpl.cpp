@@ -231,7 +231,7 @@ void WebSharedWorkerImpl::reportConsoleMessage(ConsoleMessage*)
 
 void WebSharedWorkerImpl::postMessageToPageInspector(const String& message)
 {
-    m_mainFrame->frame()->document()->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread, AllowCrossThreadAccess(this), message));
+    m_mainFrame->frame()->document()->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread, crossThreadUnretained(this), message));
 }
 
 void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(const String& message)
@@ -241,7 +241,7 @@ void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(const String& m
 
 void WebSharedWorkerImpl::workerGlobalScopeClosed()
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread, AllowCrossThreadAccess(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread, crossThreadUnretained(this)));
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
@@ -257,7 +257,7 @@ void WebSharedWorkerImpl::workerGlobalScopeStarted(WorkerGlobalScope*)
 
 void WebSharedWorkerImpl::workerThreadTerminated()
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&WebSharedWorkerImpl::workerThreadTerminatedOnMainThread, AllowCrossThreadAccess(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&WebSharedWorkerImpl::workerThreadTerminatedOnMainThread, crossThreadUnretained(this)));
 }
 
 void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()

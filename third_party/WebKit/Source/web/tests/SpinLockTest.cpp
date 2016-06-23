@@ -80,8 +80,8 @@ TEST(SpinLockTest, Torture)
     std::unique_ptr<WebThread> thread1 = wrapUnique(Platform::current()->createThread("thread1"));
     std::unique_ptr<WebThread> thread2 = wrapUnique(Platform::current()->createThread("thread2"));
 
-    thread1->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&threadMain, AllowCrossThreadAccess(static_cast<char*>(sharedBuffer))));
-    thread2->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&threadMain, AllowCrossThreadAccess(static_cast<char*>(sharedBuffer))));
+    thread1->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&threadMain, crossThreadUnretained(static_cast<char*>(sharedBuffer))));
+    thread2->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&threadMain, crossThreadUnretained(static_cast<char*>(sharedBuffer))));
 
     thread1.reset();
     thread2.reset();

@@ -163,9 +163,9 @@ public:
         std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
         postTaskToWorkerGlobalScope(createCrossThreadTask(
             &WorkerThreadableLoaderTestHelper::workerCreateLoader,
-            AllowCrossThreadAccess(this),
-            AllowCrossThreadAccess(client),
-            AllowCrossThreadAccess(completionEvent.get()),
+            crossThreadUnretained(this),
+            crossThreadUnretained(client),
+            crossThreadUnretained(completionEvent.get()),
             crossOriginRequestPolicy));
         completionEvent->wait();
     }
@@ -175,8 +175,8 @@ public:
         std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
         postTaskToWorkerGlobalScope(createCrossThreadTask(
             &WorkerThreadableLoaderTestHelper::workerStartLoader,
-            AllowCrossThreadAccess(this),
-            AllowCrossThreadAccess(completionEvent.get()),
+            crossThreadUnretained(this),
+            crossThreadUnretained(completionEvent.get()),
             request));
         completionEvent->wait();
     }
@@ -209,8 +209,8 @@ public:
         std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
         postTaskToWorkerGlobalScope(createCrossThreadTask(
             &WorkerThreadableLoaderTestHelper::workerCallCheckpoint,
-            AllowCrossThreadAccess(this),
-            AllowCrossThreadAccess(completionEvent.get()),
+            crossThreadUnretained(this),
+            crossThreadUnretained(completionEvent.get()),
             n));
         completionEvent->wait();
     }
@@ -235,7 +235,7 @@ public:
 
     void onTearDown() override
     {
-        postTaskToWorkerGlobalScope(createCrossThreadTask(&WorkerThreadableLoaderTestHelper::clearLoader, AllowCrossThreadAccess(this)));
+        postTaskToWorkerGlobalScope(createCrossThreadTask(&WorkerThreadableLoaderTestHelper::clearLoader, crossThreadUnretained(this)));
         m_workerThread->terminateAndWait();
 
         // Needed to clean up the things on the main thread side and

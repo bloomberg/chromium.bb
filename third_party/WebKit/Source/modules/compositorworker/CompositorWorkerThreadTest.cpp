@@ -135,8 +135,8 @@ public:
     void checkWorkerCanExecuteScript(WorkerThread* worker)
     {
         std::unique_ptr<WaitableEvent> waitEvent = wrapUnique(new WaitableEvent());
-        worker->workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&CompositorWorkerThreadTest::executeScriptInWorker, AllowCrossThreadAccess(this),
-            AllowCrossThreadAccess(worker), AllowCrossThreadAccess(waitEvent.get())));
+        worker->workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&CompositorWorkerThreadTest::executeScriptInWorker, crossThreadUnretained(this),
+            crossThreadUnretained(worker), crossThreadUnretained(waitEvent.get())));
         waitEvent->wait();
     }
 

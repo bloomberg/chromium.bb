@@ -144,7 +144,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<Se
     if (m_askedToTerminate)
         return;
 
-    std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(&processMessageOnWorkerGlobalScope, message, passed(std::move(channels)), AllowCrossThreadAccess(&workerObjectProxy()));
+    std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(&processMessageOnWorkerGlobalScope, message, passed(std::move(channels)), crossThreadUnretained(&workerObjectProxy()));
     if (m_workerThread) {
         ++m_unconfirmedMessageCount;
         m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
@@ -221,7 +221,7 @@ void InProcessWorkerMessagingProxy::workerObjectDestroyed()
     // cleared before this method gets called.
     DCHECK(!m_workerObject);
 
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, AllowCrossThreadAccess(this)));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, crossThreadUnretained(this)));
 }
 
 void InProcessWorkerMessagingProxy::workerObjectDestroyedInternal()

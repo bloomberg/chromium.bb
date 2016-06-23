@@ -143,12 +143,12 @@ void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadStart(std::unique_p
 
 void WorkerThreadableLoader::MainThreadBridgeBase::createLoaderInMainThread(const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadCreateLoader, AllowCrossThreadAccess(this), options, resourceLoaderOptions));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadCreateLoader, crossThreadUnretained(this), options, resourceLoaderOptions));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::startInMainThread(const ResourceRequest& request, const WorkerGlobalScope& workerGlobalScope)
 {
-    loaderProxy()->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadStart, AllowCrossThreadAccess(this), request));
+    loaderProxy()->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadStart, crossThreadUnretained(this), request));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadDestroy(ExecutionContext* context)
@@ -164,7 +164,7 @@ void WorkerThreadableLoader::MainThreadBridgeBase::destroy()
     m_workerClientWrapper->clearClient();
 
     // "delete this" and m_mainThreadLoader::deref() on the worker object's thread.
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadDestroy, AllowCrossThreadAccess(this)));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadDestroy, crossThreadUnretained(this)));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadOverrideTimeout(unsigned long timeoutMilliseconds, ExecutionContext* context)
@@ -179,7 +179,7 @@ void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadOverrideTimeout(uns
 
 void WorkerThreadableLoader::MainThreadBridgeBase::overrideTimeout(unsigned long timeoutMilliseconds)
 {
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadOverrideTimeout, AllowCrossThreadAccess(this), timeoutMilliseconds));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadOverrideTimeout, crossThreadUnretained(this), timeoutMilliseconds));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadCancel(ExecutionContext* context)
@@ -195,7 +195,7 @@ void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadCancel(ExecutionCon
 
 void WorkerThreadableLoader::MainThreadBridgeBase::cancel()
 {
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadCancel, AllowCrossThreadAccess(this)));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadCancel, crossThreadUnretained(this)));
     RefPtr<ThreadableLoaderClientWrapper> clientWrapper = m_workerClientWrapper;
     if (!clientWrapper->done()) {
         // If the client hasn't reached a termination state, then transition it by sending a cancellation error.

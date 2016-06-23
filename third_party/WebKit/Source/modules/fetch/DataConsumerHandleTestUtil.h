@@ -499,7 +499,7 @@ public:
             , m_event(wrapUnique(new WaitableEvent()))
             , m_isDone(false)
         {
-            m_thread->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(&HandleReaderRunner::start, AllowCrossThreadAccess(this), passed(std::move(handle))));
+            m_thread->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(&HandleReaderRunner::start, crossThreadUnretained(this), passed(std::move(handle))));
         }
         ~HandleReaderRunner()
         {

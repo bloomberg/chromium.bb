@@ -59,7 +59,7 @@ public:
     {
         m_thread = wrapUnique(new Thread("src thread", Thread::WithExecutionContext));
         m_waitableEvent = wrapUnique(new WaitableEvent());
-        m_thread->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(&TeeCreationThread<Handle>::runInternal, AllowCrossThreadAccess(this), passed(std::move(src)), AllowCrossThreadAccess(dest1), AllowCrossThreadAccess(dest2)));
+        m_thread->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(&TeeCreationThread<Handle>::runInternal, crossThreadUnretained(this), passed(std::move(src)), crossThreadUnretained(dest1), crossThreadUnretained(dest2)));
         m_waitableEvent->wait();
     }
 
@@ -214,7 +214,7 @@ TEST(DataConsumerTeeTest, StopSource)
 
     // We can pass a raw pointer because the subsequent |wait| calls ensure
     // t->thread() is alive.
-    t->getThread()->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(postStop, AllowCrossThreadAccess(t->getThread())));
+    t->getThread()->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(postStop, crossThreadUnretained(t->getThread())));
 
     std::unique_ptr<HandleReadResult> res1 = r1.wait();
     std::unique_ptr<HandleReadResult> res2 = r2.wait();

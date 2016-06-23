@@ -555,7 +555,7 @@ static std::unique_ptr<WebGraphicsContext3DProvider> createContextProviderOnWork
     creationInfo.glInfo = glInfo;
     creationInfo.scriptState = scriptState;
     WebTaskRunner* taskRunner = Platform::current()->mainThread()->getWebTaskRunner();
-    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&createContextProviderOnMainThread, AllowCrossThreadAccess(&creationInfo), AllowCrossThreadAccess(&waitableEvent)));
+    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&createContextProviderOnMainThread, crossThreadUnretained(&creationInfo), crossThreadUnretained(&waitableEvent)));
     waitableEvent.wait();
     return std::move(creationInfo.createdContextProvider);
 }

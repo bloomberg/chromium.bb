@@ -172,7 +172,7 @@ void ReverbConvolver::process(const AudioChannel* sourceChannel, AudioChannel* d
 
     // Now that we've buffered more input, post another task to the background thread.
     if (m_backgroundThread)
-        m_backgroundThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&ReverbConvolver::processInBackground, AllowCrossThreadAccess(this)));
+        m_backgroundThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&ReverbConvolver::processInBackground, crossThreadUnretained(this)));
 }
 
 void ReverbConvolver::reset()

@@ -155,6 +155,11 @@ struct CrossThreadCopier<CrossThreadWeakPersistent<T>> : public CrossThreadCopie
 };
 
 template<typename T>
+struct CrossThreadCopier<WTF::UnretainedWrapper<T, WTF::CrossThreadAffinity>> : public CrossThreadCopierPassThrough<WTF::UnretainedWrapper<T, WTF::CrossThreadAffinity>> {
+    STATIC_ONLY(CrossThreadCopier);
+};
+
+template<typename T>
 struct CrossThreadCopier<WeakPtr<T>> : public CrossThreadCopierPassThrough<WeakPtr<T>> {
     STATIC_ONLY(CrossThreadCopier);
 };
@@ -216,42 +221,6 @@ struct CrossThreadCopier<Member<T>> {
         return ptr;
     }
 };
-
-// |T| is a pointer type.
-template <typename T>
-struct AllowCrossThreadAccessWrapper {
-    STACK_ALLOCATED();
-public:
-    T value() const { return m_value; }
-private:
-    // Only constructible from AllowCrossThreadAccess*().
-    explicit AllowCrossThreadAccessWrapper(T value) : m_value(value) { }
-    template <typename U>
-    friend AllowCrossThreadAccessWrapper<U*> AllowCrossThreadAccess(U*);
-
-    // This raw pointer is safe since AllowCrossThreadAccessWrapper is
-    // always stack-allocated. Ideally this should be Member<T> if T is
-    // garbage-collected and T* otherwise, but we don't want to introduce
-    // another template magic just for distinguishing Member<T> from T*.
-    // From the perspective of GC, T* always works correctly.
-    GC_PLUGIN_IGNORE("")
-    T m_value;
-};
-
-template <typename T>
-struct CrossThreadCopier<AllowCrossThreadAccessWrapper<T>> {
-    STATIC_ONLY(CrossThreadCopier);
-    typedef T Type;
-    static Type copy(const AllowCrossThreadAccessWrapper<T>& wrapper) { return wrapper.value(); }
-};
-
-template <typename T>
-AllowCrossThreadAccessWrapper<T*> AllowCrossThreadAccess(T* value)
-{
-    static_assert(!IsGarbageCollectedType<T>::value, "Use wrapCrossThreadPersistent() instead for garbage-collected pointers");
-    static_assert(!WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value, "Use PassRefPtr<T> instead for ThreadSafeRefCounted");
-    return AllowCrossThreadAccessWrapper<T*>(value);
-}
 
 } // namespace blink
 

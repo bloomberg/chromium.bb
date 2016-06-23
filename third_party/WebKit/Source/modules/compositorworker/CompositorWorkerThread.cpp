@@ -66,7 +66,7 @@ private:
         : m_thread(useBackingThread ? std::move(useBackingThread) : WorkerBackingThread::create(Platform::current()->compositorThread()))
     {
         DCHECK(isMainThread());
-        m_thread->backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&BackingThreadHolder::initializeOnThread, AllowCrossThreadAccess(this)));
+        m_thread->backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&BackingThreadHolder::initializeOnThread, crossThreadUnretained(this)));
     }
 
     static Mutex& holderInstanceMutex()
@@ -87,7 +87,7 @@ private:
     {
         DCHECK(isMainThread());
         WaitableEvent doneEvent;
-        m_thread->backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&BackingThreadHolder::shutdownOnThread, AllowCrossThreadAccess(this), AllowCrossThreadAccess(&doneEvent)));
+        m_thread->backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&BackingThreadHolder::shutdownOnThread, crossThreadUnretained(this), crossThreadUnretained(&doneEvent)));
         doneEvent.wait();
     }
 

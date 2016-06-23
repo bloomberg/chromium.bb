@@ -41,7 +41,7 @@ std::unique_ptr<CompositorMutatorClient> CompositorMutatorImpl::createClient()
     std::unique_ptr<CompositorMutatorClient> mutatorClient;
     WaitableEvent doneEvent;
     if (WebThread* compositorThread = Platform::current()->compositorThread()) {
-        compositorThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&createCompositorMutatorClient, AllowCrossThreadAccess(&mutatorClient), AllowCrossThreadAccess(&doneEvent)));
+        compositorThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&createCompositorMutatorClient, crossThreadUnretained(&mutatorClient), crossThreadUnretained(&doneEvent)));
     } else {
         createCompositorMutatorClient(&mutatorClient, &doneEvent);
     }

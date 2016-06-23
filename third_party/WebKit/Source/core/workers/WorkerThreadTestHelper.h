@@ -131,7 +131,7 @@ public:
     void waitForInit()
     {
         std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
-        workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WaitableEvent::signal, AllowCrossThreadAccess(completionEvent.get())));
+        workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WaitableEvent::signal, crossThreadUnretained(completionEvent.get())));
         completionEvent->wait();
     }
 

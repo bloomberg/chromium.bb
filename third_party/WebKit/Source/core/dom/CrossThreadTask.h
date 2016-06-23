@@ -80,7 +80,7 @@ namespace blink {
 //     CrossThreadCopier.
 //     You don't have to call manually e.g. isolatedCopy().
 //     To pass things that cannot be copied by CrossThreadCopier
-//     (e.g. pointers), use AllowCrossThreadAccess() explicitly.
+//     (e.g. pointers), use crossThreadUnretained() explicitly.
 
 // RETTYPE, PS, and MPS are added as template parameters to circumvent MSVC 18.00.21005.1 (VS 2013) issues.
 
