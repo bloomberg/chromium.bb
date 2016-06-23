@@ -494,11 +494,11 @@ template("chrome_public_apk_tmpl_shared") {
 chrome_public_apk_tmpl_shared("chrome_public_apk") {
   android_manifest = get_target_outputs(":chrome_public_apk_manifest")
   android_manifest = android_manifest[1]
+  android_manifest_dep = ":chrome_public_apk_manifest"
   apk_name = "ChromePublic"
   shared_libraries = [ ":chrome" ]
 
   deps = [
-    ":chrome_public_apk_manifest",
     ":chrome_public_apk_template_resources",
   ]
 }
@@ -507,11 +507,11 @@ chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
   testonly = true
   android_manifest = get_target_outputs(":chrome_sync_shell_apk_manifest")
   android_manifest = android_manifest[1]
+  android_manifest_dep = ":chrome_sync_shell_apk_manifest"
   apk_name = "ChromeSyncShell"
   shared_libraries = [ ":chrome_sync_shell" ]
 
   deps = [
-    ":chrome_sync_shell_apk_manifest",
     ":chrome_sync_shell_apk_template_resources",
 
     # This exists here because com.google.protobuf.nano is needed in tests,
@@ -545,9 +545,9 @@ instrumentation_test_apk("chrome_public_test_apk") {
   apk_name = "ChromePublicTest"
   apk_under_test = ":chrome_public_apk"
   android_manifest = chrome_public_test_apk_manifest
+  android_manifest_dep = ":chrome_public_test_apk_manifest"
 
   deps = [
-    ":chrome_public_test_apk_manifest",
     ":chrome_test_java",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
   ]
@@ -590,9 +590,9 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
   apk_name = "ChromeSyncShellTest"
   apk_under_test = ":chrome_sync_shell_apk"
   android_manifest = chrome_sync_shell_test_apk_manifest
+  android_manifest_dep = ":chrome_sync_shell_test_apk_manifest"
   deps = [
     ":chrome_sync_shell_test_apk_java",
-    ":chrome_sync_shell_test_apk_manifest",
   ]
   proguard_enabled = !is_java_debug
 }

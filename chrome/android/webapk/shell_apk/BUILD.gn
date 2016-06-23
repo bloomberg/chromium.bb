@@ -54,6 +54,7 @@ android_library("dex_loader_lib") {
 # - App icon is extracted from the website and added to the APK's resources.
 android_apk("webapk") {
   android_manifest = shell_apk_manifest
+  android_manifest_dep = ":shell_apk_manifest"
   apk_name = "WebApk.$webapk_manifest_package_origin"
   java_files = [
     "src/org/chromium/webapk/shell_apk/MainActivity.java",
@@ -61,7 +62,6 @@ android_apk("webapk") {
   ]
   deps = [
     ":dex_loader_lib",
-    ":shell_apk_manifest",
     ":shell_apk_resources",
     "//chrome/android/webapk/libs/common",
     "//chrome/android/webapk/libs/runtime_library",

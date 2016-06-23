@@ -10,9 +10,8 @@ template("remoting_apk_tmpl") {
     forward_variables_from(invoker, "*")
 
     android_manifest = "$root_gen_dir/remoting/android/AndroidManifest.xml"
+    android_manifest_dep = "//remoting/android:remoting_apk_manifest"
     shared_libraries = [ "//remoting/android:remoting_client_jni" ]
-
-    deps += [ "//remoting/android:remoting_apk_manifest" ]
 
     if (remoting_enable_cardboard && current_cpu == "arm") {
       deps += [ "//remoting/android:remoting_cardboard_extract_native_lib" ]

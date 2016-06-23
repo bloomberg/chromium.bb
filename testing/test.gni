@@ -161,6 +161,7 @@ template("test") {
       _apk_target = "${target_name}_apk"
       _apk_specific_vars = [
         "android_manifest",
+        "android_manifest_dep",
         "enable_multidex",
         "proguard_configs",
         "proguard_enabled",

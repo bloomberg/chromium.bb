@@ -516,7 +516,6 @@ if (is_android) {
 
   android_apk("blimp_apk") {
     deps = [
-      ":blimp_apk_manifest",
       ":blimp_java",
       "//base:base_java",
       "//blimp/client/core:core_java",
@@ -525,6 +524,7 @@ if (is_android) {
     ]
     apk_name = "Blimp"
     android_manifest = blimp_apk_manifest
+    android_manifest_dep = ":blimp_apk_manifest"
     shared_libraries = [ ":blimp_client_android" ]
   }
 
@@ -532,8 +532,8 @@ if (is_android) {
     apk_name = "BlimpTest"
     apk_under_test = ":blimp_apk"
     android_manifest = blimp_test_apk_manifest
+    android_manifest_dep = ":blimp_test_apk_manifest"
     deps = [
-      ":blimp_test_apk_manifest",
       ":blimp_test_java",
     ]
   }

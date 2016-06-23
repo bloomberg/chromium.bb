@@ -448,10 +448,10 @@ if (!is_ios) {
       ]
       use_default_launcher = false
       android_manifest = "${target_gen_dir}/components_browsertests_manifest/AndroidManifest.xml"
+      android_manifest_dep = ":components_browsertests_manifest"
       deps += [
         ":components_browsertests_assets",
         ":components_browsertests_java",
-        ":components_browsertests_manifest",
       ]
     }
 
