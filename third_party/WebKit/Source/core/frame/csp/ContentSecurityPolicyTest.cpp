@@ -164,7 +164,7 @@ TEST_F(ContentSecurityPolicyTest, MultipleReferrerPolicies)
     csp->didReceiveHeader("referrer unsafe-url;", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
     csp->bindToExecutionContext(document.get());
     EXPECT_EQ(ReferrerPolicyAlways, document->getReferrerPolicy());
-    document->processReferrerPolicy("origin");
+    document->parseAndSetReferrerPolicy("origin");
     EXPECT_EQ(ReferrerPolicyOrigin, document->getReferrerPolicy());
 }
 
@@ -173,8 +173,8 @@ TEST_F(ContentSecurityPolicyTest, UnknownReferrerDirective)
     csp->didReceiveHeader("referrer unsafe-url; referrer blahblahblah", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
     csp->bindToExecutionContext(document.get());
     EXPECT_EQ(ReferrerPolicyAlways, document->getReferrerPolicy());
-    document->processReferrerPolicy("origin");
-    document->processReferrerPolicy("blahblahblah");
+    document->parseAndSetReferrerPolicy("origin");
+    document->parseAndSetReferrerPolicy("blahblahblah");
     EXPECT_EQ(ReferrerPolicyOrigin, document->getReferrerPolicy());
 }
 

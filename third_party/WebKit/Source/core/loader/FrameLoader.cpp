@@ -85,6 +85,7 @@
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/Logging.h"
 #include "platform/PluginScriptForbiddenScope.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
@@ -513,6 +514,13 @@ void FrameLoader::didBeginDocument()
         }
 
         OriginTrialContext::addTokensFromHeader(m_frame->document(), m_documentLoader->response().httpHeaderField(HTTPNames::Origin_Trial));
+    }
+
+    if (m_documentLoader && RuntimeEnabledFeatures::referrerPolicyHeaderEnabled()) {
+        String referrerPolicyHeader = m_documentLoader->response().httpHeaderField(HTTPNames::Referrer_Policy);
+        if (!referrerPolicyHeader.isNull()) {
+            m_frame->document()->parseAndSetReferrerPolicy(referrerPolicyHeader);
+        }
     }
 
     client()->didCreateNewDocument();

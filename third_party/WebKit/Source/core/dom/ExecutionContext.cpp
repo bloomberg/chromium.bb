@@ -34,9 +34,11 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/PublicURLManager.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -250,6 +252,27 @@ bool ExecutionContext::isSecureContext(const SecureContextCheck privilegeContext
 String ExecutionContext::outgoingReferrer() const
 {
     return url().strippedForUseAsReferrer();
+}
+
+void ExecutionContext::parseAndSetReferrerPolicy(const String& policies)
+{
+    ReferrerPolicy referrerPolicy = ReferrerPolicyDefault;
+
+    Vector<String> tokens;
+    policies.split(',', true, tokens);
+    for (const auto& token : tokens) {
+        ReferrerPolicy currentResult;
+        if (SecurityPolicy::referrerPolicyFromString(token, &currentResult)) {
+            referrerPolicy = currentResult;
+        }
+    }
+
+    if (referrerPolicy == ReferrerPolicyDefault) {
+        addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "Failed to set referrer policy: The value '" + policies + "' is not one of 'always', 'default', 'never', 'no-referrer', 'no-referrer-when-downgrade', 'origin', 'origin-when-crossorigin', or 'unsafe-url'. The referrer policy has been left unchanged."));
+        return;
+    }
+
+    setReferrerPolicy(referrerPolicy);
 }
 
 void ExecutionContext::setReferrerPolicy(ReferrerPolicy referrerPolicy)

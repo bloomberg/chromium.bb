@@ -706,7 +706,6 @@ public:
     NodeIntersectionObserverData& ensureIntersectionObserverData();
 
     void updateViewportDescription();
-    void processReferrerPolicy(const String& policy);
 
     // Returns the owning element in the parent document. Returns nullptr if
     // this is the top level document or the owner is remote.

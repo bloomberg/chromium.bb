@@ -171,6 +171,7 @@ PromiseRejectionEvent status=stable
 PushMessaging status=stable
 QuotaPromise status=experimental
 ReducedReferrerGranularity
+ReferrerPolicyHeader status=experimental
 RemotePlayback status=experimental
 RenderingPipelineThrottling status=stable
 RequestIdleCallback status=stable

@@ -149,6 +149,11 @@ public:
     virtual bool isSecureContext(const SecureContextCheck = StandardSecureContextCheck) const;
 
     virtual String outgoingReferrer() const;
+    // Parses a comma-separated list of referrer policy tokens, and sets
+    // the context's referrer policy to the last one that is a valid
+    // policy. Logs a message to the console if none of the policy
+    // tokens are valid policies.
+    void parseAndSetReferrerPolicy(const String& policies);
     void setReferrerPolicy(ReferrerPolicy);
     ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
 

@@ -43,6 +43,7 @@ Pragma
 Purpose
 Range
 Referer
+Referrer-Policy
 Refresh
 Resource-Freshness
 SourceMap
