@@ -83,6 +83,10 @@ class CC_SURFACES_EXPORT SurfaceFactory
   bool needs_sync_points() const { return needs_sync_points_; }
   void set_needs_sync_points(bool needs) { needs_sync_points_ = needs; }
 
+  // SurfaceFactory's owner can call this when it finds out that SurfaceManager
+  // is no longer alive during destruction.
+  void didDestroySurfaceManager() { manager_ = nullptr; }
+
  private:
   SurfaceManager* manager_;
   SurfaceFactoryClient* client_;

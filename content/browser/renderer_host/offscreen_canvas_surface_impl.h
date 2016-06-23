@@ -41,6 +41,7 @@ class OffscreenCanvasSurfaceImpl : public blink::mojom::OffscreenCanvasSurface,
 
   // Surface-related state
   std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  cc::SurfaceId surface_id_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
 
   mojo::StrongBinding<blink::mojom::OffscreenCanvasSurface> binding_;

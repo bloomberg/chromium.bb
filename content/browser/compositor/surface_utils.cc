@@ -172,6 +172,8 @@ cc::SurfaceManager* GetSurfaceManager() {
   return CompositorImpl::GetSurfaceManager();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  if (factory == NULL)
+    return nullptr;
   return factory->GetSurfaceManager();
 #endif
 }

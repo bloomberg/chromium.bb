@@ -25,15 +25,22 @@ OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
       binding_(this, std::move(request)) {}
 
 OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
+  if (!GetSurfaceManager()) {
+    // Inform both members that SurfaceManager's no longer alive to
+    // avoid their destruction errors.
+    surface_factory_->didDestroySurfaceManager();
+    id_allocator_->didDestroySurfaceManager();
+  }
+  surface_factory_->Destroy(surface_id_);
 }
 
 void OffscreenCanvasSurfaceImpl::GetSurfaceId(
     const GetSurfaceIdCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  cc::SurfaceId surface_id = id_allocator_->GenerateId();
+  surface_id_ = id_allocator_->GenerateId();
 
-  callback.Run(surface_id);
+  callback.Run(surface_id_);
 }
 
 void OffscreenCanvasSurfaceImpl::RequestSurfaceCreation(
