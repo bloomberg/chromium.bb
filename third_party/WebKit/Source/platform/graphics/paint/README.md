@@ -234,3 +234,17 @@ to combine paint chunks into a smaller number of layers.
 
 The owner of the `PaintArtifactCompositor` (e.g. `WebView`) can then attach its
 root layer to the overall layer hierarchy to be displayed to the user.
+
+## Geometry routines
+
+The [`GeometryMapper`](GeometryMapper.h) is responsible for efficiently computing
+visual and transformed rects of display items in the coordinate space of ancestor
+[`PropertyTreeState`](PropertyTreeState.h)s.
+
+The transformed rect of a display item in an ancestor `PropertyTreeState` is that
+rect, multiplied by the transforms between the display item's `PropertyTreeState`
+and the ancestors, then flattened into 2D.
+
+The visual rect of a display item in an ancestor `PropertyTreeState` is the intersection
+of all of the intermediate clips (transformed in to the ancestor state), with
+the display item's transformed rect.

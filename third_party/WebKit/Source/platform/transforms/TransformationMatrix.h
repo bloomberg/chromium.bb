@@ -271,6 +271,7 @@ public:
     TransformationMatrix& scale3d(double sx, double sy, double sz);
 
     TransformationMatrix& rotate(double d) { return rotate3d(0, 0, d); }
+    // Angles are in degrees.
     TransformationMatrix& rotate3d(double rx, double ry, double rz);
     TransformationMatrix& rotate3d(const Rotation&);
 
