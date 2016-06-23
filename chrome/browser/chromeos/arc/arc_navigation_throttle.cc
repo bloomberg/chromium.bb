@@ -109,7 +109,8 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
           << "Chrome browser is selected as the preferred app for this URL: "
           << navigation_handle()->GetURL().spec();
     }
-    OnDisambigDialogClosed(std::move(handlers), i, false);
+    OnDisambigDialogClosed(std::move(handlers), i,
+                           CloseReason::REASON_PREFERRED_ACTIVITY_FOUND);
     return;
   }
 
@@ -157,7 +158,7 @@ void ArcNavigationThrottle::OnAppIconsReceived(
 void ArcNavigationThrottle::OnDisambigDialogClosed(
     mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
     size_t selected_app_index,
-    bool always) {
+    CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const GURL& url = navigation_handle()->GetURL();
   content::NavigationHandle* handle = navigation_handle();
@@ -166,7 +167,7 @@ void ArcNavigationThrottle::OnDisambigDialogClosed(
   // If the user fails to select an option from the list then resume the
   // navigation in Chrome. Otherwise check if the selected app was selected as
   // "ALWAYS" so we can record this decision.
-  if (selected_app_index >= handlers.size()) {
+  if (close_reason == CloseReason::REASON_DIALOG_DEACTIVATED) {
     DVLOG(1) << "User didn't select a valid option, resuming navigation.";
     handle->Resume();
     return;
@@ -176,7 +177,7 @@ void ArcNavigationThrottle::OnDisambigDialogClosed(
     handle->Resume();
     return;
   }
-  if (always) {
+  if (close_reason == CloseReason::REASON_ALWAYS_PRESSED) {
     bridge->AddPreferredPackage(handlers[selected_app_index]->package_name);
   }
   if (ArcIntentHelperBridge::IsIntentHelperPackage(

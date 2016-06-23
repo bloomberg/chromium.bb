@@ -22,6 +22,14 @@ class NavigationHandle;
 
 namespace arc {
 
+enum class CloseReason {
+  REASON_ALWAYS_PRESSED,
+  REASON_JUST_ONCE_PRESSED,
+  REASON_DIALOG_DEACTIVATED,
+  REASON_PREFERRED_ACTIVITY_FOUND,
+  REASON_ERROR
+};
+
 // A class that allow us to retrieve ARC app's information and handle URL
 // traffic initiated on Chrome browser, either on Chrome or an ARC's app.
 class ArcNavigationThrottle : public content::NavigationThrottle {
@@ -30,7 +38,7 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   using ShowDisambigDialogCallback =
       base::Callback<void(content::NavigationHandle* handle,
                           const std::vector<NameAndIcon>& app_info,
-                          const base::Callback<void(size_t, bool)>& cb)>;
+                          const base::Callback<void(size_t, CloseReason)>& cb)>;
   ArcNavigationThrottle(
       content::NavigationHandle* navigation_handle,
       const ShowDisambigDialogCallback& show_disambig_dialog_cb);
@@ -47,7 +55,7 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
       std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons);
   void OnDisambigDialogClosed(mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
                               size_t selected_app_index,
-                              bool always);
+                              CloseReason close_reason);
 
   // A callback object that allow us to display an IntentPicker when Run() is
   // executed, it also allow us to report the user's selection back to
