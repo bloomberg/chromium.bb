@@ -1599,6 +1599,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kJavaScriptHarmony,
       switches::kMessageLoopHistogrammer,
+      switches::kOriginTrialDisabledFeatures,
       switches::kOriginTrialPublicKey,
       switches::kPpapiFlashArgs,
       switches::kPpapiFlashPath,

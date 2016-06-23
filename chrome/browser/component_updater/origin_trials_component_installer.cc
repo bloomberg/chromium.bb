@@ -14,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 // The client-side configuration for the origin trial framework can be
 // overridden by an installed component named 'OriginTrials' (extension id
@@ -27,7 +28,7 @@
 //   "revoked-tokens": "<base64-encoded data>"
 // }
 //
-// TODO(iclelland): Implement support for revoked tokens and disabled features.
+// TODO(iclelland): Implement support for revoked tokens.
 //
 // If the component is not present in the user data directory, the default
 // configuration will be used.
@@ -76,6 +77,12 @@ void OriginTrialsComponentInstallerTraits::ComponentReady(
   if (manifest->GetString("origin-trials.public-key", &override_public_key)) {
     local_state->Set(prefs::kOriginTrialPublicKey,
                      base::StringValue(override_public_key));
+  }
+  base::ListValue* override_disabled_feature_list = nullptr;
+  if (manifest->GetList("origin-trials.disabled-features",
+                        &override_disabled_feature_list)) {
+    ListPrefUpdate update(local_state, prefs::kOriginTrialDisabledFeatures);
+    update->Swap(override_disabled_feature_list);
   }
 }
 

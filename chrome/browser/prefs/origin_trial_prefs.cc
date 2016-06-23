@@ -10,4 +10,5 @@
 // static
 void OriginTrialPrefs::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kOriginTrialPublicKey, "");
+  registry->RegisterListPref(prefs::kOriginTrialDisabledFeatures);
 }

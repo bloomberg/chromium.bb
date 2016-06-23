@@ -771,6 +771,10 @@ const char kOpenInNewWindow[]               = "new-window";
 // chrome process started. (See ProcessSingleton for more details.)
 const char kOriginalProcessStartTime[]      = "original-process-start-time";
 
+// Contains a list of feature names for which origin trial experiments should
+// be disabled. Names should be separated by "|" characters.
+const char kOriginTrialDisabledFeatures[] = "origin-trial-disabled-features";
+
 // Overrides the default public key for checking origin trial tokens.
 const char kOriginTrialPublicKey[] = "origin-trial-public-key";
 

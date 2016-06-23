@@ -832,6 +832,25 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine() {
           local_state_->GetString(prefs::kOriginTrialPublicKey));
     }
   }
+  if (!command_line->HasSwitch(switches::kOriginTrialDisabledFeatures)) {
+    const base::ListValue* override_disabled_feature_list =
+        local_state_->GetList(prefs::kOriginTrialDisabledFeatures);
+    if (override_disabled_feature_list) {
+      std::vector<std::string> disabled_features;
+      std::string disabled_feature;
+      for (const auto& item : *override_disabled_feature_list) {
+        if (item->GetAsString(&disabled_feature)) {
+          disabled_features.push_back(disabled_feature);
+        }
+      }
+      if (!disabled_features.empty()) {
+        const std::string override_disabled_features =
+            base::JoinString(disabled_features, "|");
+        command_line->AppendSwitchASCII(switches::kOriginTrialDisabledFeatures,
+                                        override_disabled_features);
+      }
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------

@@ -83626,6 +83626,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="InvalidSignature"/>
   <int value="8" label="Malformed"/>
   <int value="9" label="WrongVersion"/>
+  <int value="10" label="FeatureDisabled"/>
 </enum>
 
 <enum name="OriginTrialMessageGeneratedResult" type="int">

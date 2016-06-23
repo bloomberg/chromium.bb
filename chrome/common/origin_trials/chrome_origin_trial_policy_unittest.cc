@@ -28,6 +28,11 @@ const char kTooShortPublicKeyString[] =
 const char kTooLongPublicKeyString[] =
     "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNAA";
 
+const char kOneDisabledFeature[] = "A";
+const char kTwoDisabledFeatures[] = "A|B";
+const char kThreeDisabledFeatures[] = "A|B|C";
+const char kSpacesInDisabledFeatures[] = "A|B C";
+
 class ChromeOriginTrialPolicyTest : public testing::Test {
  protected:
   ChromeOriginTrialPolicyTest()
@@ -79,4 +84,38 @@ TEST_F(ChromeOriginTrialPolicyTest, OverrideKeyTooShort) {
 TEST_F(ChromeOriginTrialPolicyTest, OverrideKeyTooLong) {
   EXPECT_FALSE(manager()->SetPublicKeyFromASCIIString(kTooLongPublicKeyString));
   EXPECT_EQ(default_key(), manager()->GetPublicKey());
+}
+
+TEST_F(ChromeOriginTrialPolicyTest, NoDisabledFeatures) {
+  EXPECT_FALSE(manager()->IsFeatureDisabled("A"));
+  EXPECT_FALSE(manager()->IsFeatureDisabled("B"));
+  EXPECT_FALSE(manager()->IsFeatureDisabled("C"));
+}
+
+TEST_F(ChromeOriginTrialPolicyTest, DisableOneFeature) {
+  EXPECT_TRUE(manager()->SetDisabledFeatures(kOneDisabledFeature));
+  EXPECT_TRUE(manager()->IsFeatureDisabled("A"));
+  EXPECT_FALSE(manager()->IsFeatureDisabled("B"));
+}
+
+TEST_F(ChromeOriginTrialPolicyTest, DisableTwoFeatures) {
+  EXPECT_TRUE(manager()->SetDisabledFeatures(kTwoDisabledFeatures));
+  EXPECT_TRUE(manager()->IsFeatureDisabled("A"));
+  EXPECT_TRUE(manager()->IsFeatureDisabled("B"));
+  EXPECT_FALSE(manager()->IsFeatureDisabled("C"));
+}
+
+TEST_F(ChromeOriginTrialPolicyTest, DisableThreeFeatures) {
+  EXPECT_TRUE(manager()->SetDisabledFeatures(kThreeDisabledFeatures));
+  EXPECT_TRUE(manager()->IsFeatureDisabled("A"));
+  EXPECT_TRUE(manager()->IsFeatureDisabled("B"));
+  EXPECT_TRUE(manager()->IsFeatureDisabled("C"));
+}
+
+TEST_F(ChromeOriginTrialPolicyTest, DisableFeatureWithSpace) {
+  EXPECT_TRUE(manager()->SetDisabledFeatures(kSpacesInDisabledFeatures));
+  EXPECT_TRUE(manager()->IsFeatureDisabled("A"));
+  EXPECT_TRUE(manager()->IsFeatureDisabled("B C"));
+  EXPECT_FALSE(manager()->IsFeatureDisabled("B"));
+  EXPECT_FALSE(manager()->IsFeatureDisabled("C"));
 }

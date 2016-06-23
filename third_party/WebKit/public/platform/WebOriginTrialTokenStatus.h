@@ -21,7 +21,8 @@ enum class WebOriginTrialTokenStatus {
     InvalidSignature = 7,
     Malformed = 8,
     WrongVersion = 9,
-    Last = WrongVersion
+    FeatureDisabled = 10,
+    Last = FeatureDisabled
 };
 
 } // namespace blink

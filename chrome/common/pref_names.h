@@ -816,6 +816,7 @@ extern const char kMediaRouterFirstRunFlowAcknowledged[];
 #endif
 
 extern const char kOriginTrialPublicKey[];
+extern const char kOriginTrialDisabledFeatures[];
 
 }  // namespace prefs
 

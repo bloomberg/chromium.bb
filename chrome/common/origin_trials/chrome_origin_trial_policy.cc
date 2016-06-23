@@ -6,8 +6,11 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/strings/string_split.h"
 #include "chrome/common/chrome_switches.h"
 
 // This is the default public key used for validating signatures.
@@ -22,14 +25,19 @@ static const uint8_t kDefaultPublicKey[] = {
 ChromeOriginTrialPolicy::ChromeOriginTrialPolicy()
     : public_key_(std::string(reinterpret_cast<const char*>(kDefaultPublicKey),
                               arraysize(kDefaultPublicKey))) {
-  // Set the public key for the origin trial key manager, based on the command
-  // line flags which were passed to this process. If the flag is not present,
-  // or is incorrectly formatted, the default key will remain active.
+  // Set the public key and disabled feature list for the origin trial key
+  // manager, based on the command line flags which were passed to this process.
+  // If the flags are not present, or are incorrectly formatted, the defaults
+  // will remain active.
   if (base::CommandLine::InitializedForCurrentProcess()) {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kOriginTrialPublicKey)) {
       SetPublicKeyFromASCIIString(
         command_line->GetSwitchValueASCII(switches::kOriginTrialPublicKey));
+    }
+    if (command_line->HasSwitch(switches::kOriginTrialDisabledFeatures)) {
+      SetDisabledFeatures(command_line->GetSwitchValueASCII(
+          switches::kOriginTrialDisabledFeatures));
     }
   }
 }
@@ -38,6 +46,11 @@ ChromeOriginTrialPolicy::~ChromeOriginTrialPolicy() {}
 
 base::StringPiece ChromeOriginTrialPolicy::GetPublicKey() const {
   return base::StringPiece(public_key_);
+}
+
+bool ChromeOriginTrialPolicy::IsFeatureDisabled(
+    base::StringPiece feature) const {
+  return disabled_features_.count(feature.as_string()) > 0;
 }
 
 bool ChromeOriginTrialPolicy::SetPublicKeyFromASCIIString(
@@ -49,5 +62,17 @@ bool ChromeOriginTrialPolicy::SetPublicKeyFromASCIIString(
   if (new_public_key.size() != 32)
     return false;
   public_key_.swap(new_public_key);
+  return true;
+}
+
+bool ChromeOriginTrialPolicy::SetDisabledFeatures(
+    const std::string& disabled_feature_list) {
+  std::set<std::string> new_disabled_features;
+  const std::vector<std::string> features =
+      base::SplitString(disabled_feature_list, "|", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  for (const std::string& feature : features)
+    new_disabled_features.insert(feature);
+  disabled_features_.swap(new_disabled_features);
   return true;
 }

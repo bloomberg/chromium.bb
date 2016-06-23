@@ -87,6 +87,7 @@ int getTokenValidationResultPriority(
     switch (validationResult) {
     case WebOriginTrialTokenStatus::Success:
     case WebOriginTrialTokenStatus::Insecure:
+    case WebOriginTrialTokenStatus::FeatureDisabled:
         // This function should only be used for token validation failures
         NOTREACHED();
         return 99;
@@ -373,8 +374,10 @@ WebOriginTrialTokenStatus OriginTrialContext::checkFeatureEnabled(const String& 
         // Check with the validator service to verify the signature and that
         // the token is valid for the combination of origin and feature.
         WebOriginTrialTokenStatus tokenResult = m_trialTokenValidator->validateToken(token, origin, featureName);
-        if (tokenResult == WebOriginTrialTokenStatus::Success) {
-            return WebOriginTrialTokenStatus::Success;
+        // If the feature is disabled by policy, or if the token is valid, we
+        // can return immediately now.
+        if (tokenResult == WebOriginTrialTokenStatus::FeatureDisabled || tokenResult == WebOriginTrialTokenStatus::Success) {
+            return tokenResult;
         }
         failedValidationResult = UpdateResultFromValidationFailure(tokenResult, failedValidationResult);
     }

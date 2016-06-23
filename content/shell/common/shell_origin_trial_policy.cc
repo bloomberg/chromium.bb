@@ -30,4 +30,9 @@ base::StringPiece ShellOriginTrialPolicy::GetPublicKey() const {
   return public_key_;
 }
 
+bool ShellOriginTrialPolicy::IsFeatureDisabled(
+    base::StringPiece feature) const {
+  return false;
+}
+
 }  // namespace content

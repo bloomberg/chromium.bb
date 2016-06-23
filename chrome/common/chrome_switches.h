@@ -221,6 +221,7 @@ extern const char kNoSupervisedUserAcknowledgmentCheck[];
 extern const char kNumPacThreads[];
 extern const char kOpenInNewWindow[];
 extern const char kOriginalProcessStartTime[];
+extern const char kOriginTrialDisabledFeatures[];
 extern const char kOriginTrialPublicKey[];
 extern const char kPackExtension[];
 extern const char kPackExtensionKey[];

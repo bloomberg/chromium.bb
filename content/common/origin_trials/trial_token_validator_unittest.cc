@@ -5,6 +5,8 @@
 #include "content/common/origin_trials/trial_token_validator.h"
 
 #include <memory>
+#include <set>
+#include <string>
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -91,12 +93,19 @@ class TestOriginTrialPolicy : public OriginTrialPolicy {
     return base::StringPiece(reinterpret_cast<const char*>(key_),
                              arraysize(kTestPublicKey));
   }
+  bool IsFeatureDisabled(base::StringPiece feature) const override {
+    return disabled_features_.count(feature.as_string()) > 0;
+  }
 
   // Test setup methods
   void SetPublicKey(const uint8_t* key) { key_ = key; }
+  void DisableFeature(const std::string& feature) {
+    disabled_features_.insert(feature);
+  }
 
  private:
   const uint8_t* key_ = nullptr;
+  std::set<std::string> disabled_features_;
 };
 
 class TestContentClient : public ContentClient {
@@ -108,6 +117,9 @@ class TestContentClient : public ContentClient {
   // Test setup methods
   void SetOriginTrialPublicKey(const uint8_t* key) {
     origin_trial_policy_.SetPublicKey(key);
+  }
+  void DisableFeature(const std::string& feature) {
+    origin_trial_policy_.DisableFeature(feature);
   }
 
  private:
@@ -130,6 +142,10 @@ class TrialTokenValidatorTest : public testing::Test {
 
   void SetPublicKey(const uint8_t* key) {
     test_content_client_.SetOriginTrialPublicKey(key);
+  }
+
+  void DisableFeature(const std::string& feature) {
+    test_content_client_.DisableFeature(feature);
   }
 
   const url::Origin appropriate_origin_;
@@ -184,6 +200,19 @@ TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
   SetPublicKey(kTestPublicKey2);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature,
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, kAppropriateFeatureName));
+}
+
+TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledFeatures) {
+  // Disable an irrelevant feature; token should still validate
+  DisableFeature(kInappropriateFeatureName);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, kAppropriateFeatureName));
+  // Disable the token's feature; it should no longer be valid
+  DisableFeature(kAppropriateFeatureName);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::FeatureDisabled,
             TrialTokenValidator::ValidateToken(
                 kSampleToken, appropriate_origin_, kAppropriateFeatureName));
 }

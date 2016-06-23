@@ -22,6 +22,9 @@ blink::WebOriginTrialTokenStatus TrialTokenValidator::ValidateToken(
   if (!origin_trial_policy)
     return blink::WebOriginTrialTokenStatus::NotSupported;
 
+  if (origin_trial_policy->IsFeatureDisabled(feature_name))
+    return blink::WebOriginTrialTokenStatus::FeatureDisabled;
+
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220
   base::StringPiece public_key = origin_trial_policy->GetPublicKey();

@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_ORIGIN_TRIALS_CHROME_ORIGIN_TRIAL_POLICY_H_
 #define CHROME_COMMON_ORIGIN_TRIALS_CHROME_ORIGIN_TRIAL_POLICY_H_
 
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -20,11 +21,14 @@ class ChromeOriginTrialPolicy : public content::OriginTrialPolicy {
 
   // OriginTrialPolicy interface
   base::StringPiece GetPublicKey() const override;
+  bool IsFeatureDisabled(base::StringPiece feature) const override;
 
   bool SetPublicKeyFromASCIIString(const std::string& ascii_public_key);
+  bool SetDisabledFeatures(const std::string& disabled_feature_list);
 
  private:
   std::string public_key_;
+  std::set<std::string> disabled_features_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOriginTrialPolicy);
 };

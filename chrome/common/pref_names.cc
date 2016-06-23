@@ -2244,4 +2244,7 @@ const char kMediaRouterFirstRunFlowAcknowledged[] =
 // trial token signatures.
 const char kOriginTrialPublicKey[] = "origin_trials.public_key";
 
+// A list of origin trial features to disable by policy.
+const char kOriginTrialDisabledFeatures[] = "origin_trials.disabled_features";
+
 }  // namespace prefs
