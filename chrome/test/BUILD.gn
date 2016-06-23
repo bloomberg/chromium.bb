@@ -199,12 +199,6 @@ static_library("test_support") {
       "//components/crash/content/app",
       "//third_party/wtl",
     ]
-    if (use_aura) {
-      public_deps += [
-        "//win8:test_registrar_constants",
-        "//win8:test_support_win8",
-      ]
-    }
   }
   if (is_chromeos) {
     public_deps += [
