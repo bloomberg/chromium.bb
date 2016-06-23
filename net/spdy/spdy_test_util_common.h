@@ -526,7 +526,6 @@ class SpdyTestUtil {
   void UpdateWithStreamDestruction(int stream_id);
 
   // For versions below SPDY4, adds the version HTTP/1.1 header.
-  void MaybeAddVersionHeader(SpdyFrameWithHeaderBlockIR* frame_ir) const;
   void MaybeAddVersionHeader(SpdyHeaderBlock* block) const;
 
   // Maps |priority| to SPDY version priority, and sets it on |frame_ir|.

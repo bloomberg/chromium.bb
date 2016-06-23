@@ -924,27 +924,30 @@ SpdySerializedFrame* SpdyTestUtil::ConstructSpdyPush(
     int associated_stream_id,
     const char* url) {
   if (spdy_version() < HTTP2) {
-    SpdySynStreamIR syn_stream(stream_id);
+    SpdyHeaderBlock header_block;
+    header_block["hello"] = "bye";
+    header_block[GetStatusKey()] = "200";
+    header_block[GetVersionKey()] = "HTTP/1.1";
+    AddUrlToHeaderBlock(url, &header_block);
+    AppendToHeaderBlock(extra_headers, extra_header_count, &header_block);
+    SpdySynStreamIR syn_stream(stream_id, std::move(header_block));
     syn_stream.set_associated_to_stream_id(associated_stream_id);
-    syn_stream.SetHeader("hello", "bye");
-    syn_stream.SetHeader(GetStatusKey(), "200");
-    syn_stream.SetHeader(GetVersionKey(), "HTTP/1.1");
-    AddUrlToHeaderBlock(url, syn_stream.mutable_header_block());
-    AppendToHeaderBlock(extra_headers, extra_header_count,
-                        syn_stream.mutable_header_block());
     return new SpdySerializedFrame(
         response_spdy_framer_.SerializeFrame(syn_stream));
   } else {
-    SpdyPushPromiseIR push_promise(associated_stream_id, stream_id);
-    AddUrlToHeaderBlock(url, push_promise.mutable_header_block());
+    SpdyHeaderBlock push_promise_header_block;
+    AddUrlToHeaderBlock(url, &push_promise_header_block);
+    SpdyPushPromiseIR push_promise(associated_stream_id, stream_id,
+                                   std::move(push_promise_header_block));
     SpdySerializedFrame push_promise_frame(
         response_spdy_framer_.SerializeFrame(push_promise));
 
-    SpdyHeadersIR headers(stream_id);
-    headers.SetHeader(GetStatusKey(), "200");
-    headers.SetHeader("hello", "bye");
+    SpdyHeaderBlock headers_header_block;
+    headers_header_block[GetStatusKey()] = "200";
+    headers_header_block["hello"] = "bye";
     AppendToHeaderBlock(extra_headers, extra_header_count,
-                        headers.mutable_header_block());
+                        &headers_header_block);
+    SpdyHeadersIR headers(stream_id, std::move(headers_header_block));
     SpdySerializedFrame headers_frame(
         response_spdy_framer_.SerializeFrame(headers));
 
@@ -969,29 +972,32 @@ SpdySerializedFrame* SpdyTestUtil::ConstructSpdyPush(
     const char* status,
     const char* location) {
   if (spdy_version() < HTTP2) {
-    SpdySynStreamIR syn_stream(stream_id);
+    SpdyHeaderBlock header_block;
+    header_block["hello"] = "bye";
+    header_block[GetStatusKey()] = status;
+    header_block[GetVersionKey()] = "HTTP/1.1";
+    header_block["location"] = location;
+    AddUrlToHeaderBlock(url, &header_block);
+    AppendToHeaderBlock(extra_headers, extra_header_count, &header_block);
+    SpdySynStreamIR syn_stream(stream_id, std::move(header_block));
     syn_stream.set_associated_to_stream_id(associated_stream_id);
-    syn_stream.SetHeader("hello", "bye");
-    syn_stream.SetHeader(GetStatusKey(), status);
-    syn_stream.SetHeader(GetVersionKey(), "HTTP/1.1");
-    syn_stream.SetHeader("location", location);
-    AddUrlToHeaderBlock(url, syn_stream.mutable_header_block());
-    AppendToHeaderBlock(extra_headers, extra_header_count,
-                        syn_stream.mutable_header_block());
     return new SpdySerializedFrame(
         response_spdy_framer_.SerializeFrame(syn_stream));
   } else {
-    SpdyPushPromiseIR push_promise(associated_stream_id, stream_id);
-    AddUrlToHeaderBlock(url, push_promise.mutable_header_block());
+    SpdyHeaderBlock push_promise_header_block;
+    AddUrlToHeaderBlock(url, &push_promise_header_block);
+    SpdyPushPromiseIR push_promise(associated_stream_id, stream_id,
+                                   std::move(push_promise_header_block));
     SpdySerializedFrame push_promise_frame(
         response_spdy_framer_.SerializeFrame(push_promise));
 
-    SpdyHeadersIR headers(stream_id);
-    headers.SetHeader("hello", "bye");
-    headers.SetHeader(GetStatusKey(), status);
-    headers.SetHeader("location", location);
+    SpdyHeaderBlock headers_header_block;
+    headers_header_block["hello"] = "bye";
+    headers_header_block[GetStatusKey()] = status;
+    headers_header_block["location"] = location;
     AppendToHeaderBlock(extra_headers, extra_header_count,
-                        headers.mutable_header_block());
+                        &headers_header_block);
+    SpdyHeadersIR headers(stream_id, std::move(headers_header_block));
     SpdySerializedFrame headers_frame(
         response_spdy_framer_.SerializeFrame(headers));
 
@@ -1030,11 +1036,11 @@ SpdySerializedFrame* SpdyTestUtil::ConstructSpdyPushHeaders(
     int stream_id,
     const char* const extra_headers[],
     int extra_header_count) {
-  SpdyHeadersIR headers(stream_id);
-  headers.SetHeader(GetStatusKey(), "200");
-  MaybeAddVersionHeader(&headers);
-  AppendToHeaderBlock(extra_headers, extra_header_count,
-                      headers.mutable_header_block());
+  SpdyHeaderBlock header_block;
+  header_block[GetStatusKey()] = "200";
+  MaybeAddVersionHeader(&header_block);
+  AppendToHeaderBlock(extra_headers, extra_header_count, &header_block);
+  SpdyHeadersIR headers(stream_id, std::move(header_block));
   return new SpdySerializedFrame(response_spdy_framer_.SerializeFrame(headers));
 }
 
@@ -1284,13 +1290,6 @@ std::unique_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructHeaderBlock(
     (*headers)["content-length"] = length_str;
   }
   return headers;
-}
-
-void SpdyTestUtil::MaybeAddVersionHeader(
-    SpdyFrameWithHeaderBlockIR* frame_ir) const {
-  if (include_version_header()) {
-    frame_ir->SetHeader(GetVersionKey(), "HTTP/1.1");
-  }
 }
 
 void SpdyTestUtil::MaybeAddVersionHeader(SpdyHeaderBlock* block) const {
