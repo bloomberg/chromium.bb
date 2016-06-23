@@ -10,8 +10,6 @@ import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
-import org.chromium.chromoting.jni.Client;
-
 /**
  * This class receives local touch events and translates them into the appropriate mouse based
  * events for the remote host.  The net result is that the local input method feels like a touch
@@ -22,7 +20,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     private static final float DOUBLE_TAP_SLOP_SCALE_FACTOR = 0.25f;
 
     private final RenderData mRenderData;
-    private final Client mClient;
+    private final InputEventSender mInjector;
 
     /**
      * Stores the time of the most recent left button single tap processed.
@@ -47,11 +45,13 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     private final long mDoubleTapDurationInMs;
 
     /** Mouse-button currently held down, or BUTTON_UNDEFINED otherwise. */
-    private int mHeldButton = TouchInputHandlerInterface.BUTTON_UNDEFINED;
+    private int mHeldButton = InputStub.BUTTON_UNDEFINED;
 
-    public SimulatedTouchInputStrategy(RenderData renderData, Client client, Context context) {
+    public SimulatedTouchInputStrategy(
+            RenderData renderData, InputEventSender injector, Context context) {
+        Preconditions.notNull(injector);
         mRenderData = renderData;
-        mClient = client;
+        mInjector = injector;
 
         ViewConfiguration config = ViewConfiguration.get(context);
         mDoubleTapDurationInMs = config.getDoubleTapTimeout();
@@ -85,7 +85,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     @Override
     public boolean onTap(int button) {
         Point currentTapPoint = getCursorPosition();
-        if (button == TouchInputHandlerInterface.BUTTON_LEFT) {
+        if (button == InputStub.BUTTON_LEFT) {
             // Left clicks are handled a little differently than the events for other buttons.
             // This is needed because translating touch events to mouse events has a problem with
             // location consistency for double clicks.  If you take the center location of each tap
@@ -108,36 +108,34 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
             mLastTapTimeInMs = 0;
         }
 
-        injectMouseButtonEvent(button, true, currentTapPoint);
-        injectMouseButtonEvent(button, false, currentTapPoint);
-
+        mInjector.sendMouseClick(currentTapPoint, button);
         return true;
     }
 
     @Override
     public boolean onPressAndHold(int button) {
-        injectMouseButtonEvent(button, true, getCursorPosition());
+        mInjector.sendMouseDown(getCursorPosition(), button);
         mHeldButton = button;
         return true;
     }
 
     @Override
     public void onScroll(float distanceX, float distanceY) {
-        mClient.sendMouseWheelEvent((int) -distanceX, (int) -distanceY);
+        mInjector.sendReverseMouseWheelEvent(distanceX, distanceY);
     }
 
     @Override
     public void onMotionEvent(MotionEvent event) {
         if (event.getActionMasked() == MotionEvent.ACTION_UP
-                && mHeldButton != TouchInputHandlerInterface.BUTTON_UNDEFINED) {
-            injectMouseButtonEvent(mHeldButton, false, getCursorPosition());
-            mHeldButton = TouchInputHandlerInterface.BUTTON_UNDEFINED;
+                && mHeldButton != InputStub.BUTTON_UNDEFINED) {
+            mInjector.sendMouseUp(getCursorPosition(), mHeldButton);
+            mHeldButton = InputStub.BUTTON_UNDEFINED;
         }
     }
 
     @Override
     public void injectCursorMoveEvent(int x, int y) {
-        mClient.sendMouseEvent(x, y, TouchInputHandlerInterface.BUTTON_UNDEFINED, false);
+        mInjector.sendCursorMove(x, y);
     }
 
     @Override
@@ -179,9 +177,5 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
         int deltaX = (int) (currentValues[0] - previousValues[0]);
         int deltaY = (int) (currentValues[1] - previousValues[1]);
         return ((deltaX * deltaX + deltaY * deltaY) <= mDoubleTapSlopSquareInPx);
-    }
-
-    private void injectMouseButtonEvent(int button, boolean pressed, Point tapPoint) {
-        mClient.sendMouseEvent(tapPoint.x, tapPoint.y, button, pressed);
     }
 }

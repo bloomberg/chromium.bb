@@ -38,7 +38,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     private static final String TAG = "Chromoting";
 
     private final RenderData mRenderData;
-    private final TouchInputHandlerInterface mInputHandler;
+    private final TouchInputHandler mInputHandler;
 
     /** The parent Desktop activity. */
     private Desktop mDesktop;
@@ -94,7 +94,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         Preconditions.notNull(client);
         mDesktop = desktop;
         mClient = client;
-        mInputHandler.init(desktop, client);
+        mInputHandler.init(desktop, new InputEventSender(client));
     }
 
     public Event<PaintEventParameter> onPaint() {

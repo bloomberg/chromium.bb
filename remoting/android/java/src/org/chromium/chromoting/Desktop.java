@@ -17,7 +17,6 @@ import android.support.v7.app.ActionBar.OnMenuVisibilityListener;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,8 +32,6 @@ import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
 
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * A simple screen that does nothing except display a DesktopView and notify it of rotations.
@@ -72,9 +69,7 @@ public class Desktop
             new Event.Raisable<>();
 
     private Client mClient;
-
-    /** Set of pressed keys for which we've sent TextEvent. */
-    private Set<Integer> mPressedTextKeys = new TreeSet<Integer>();
+    private InputEventSender mInjector;
 
     private ActivityLifecycleListener mActivityLifecycleListener;
 
@@ -104,6 +99,7 @@ public class Desktop
         setContentView(R.layout.desktop);
 
         mClient = Client.getInstance();
+        mInjector = new InputEventSender(mClient);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -504,17 +500,7 @@ public class Desktop
             return true;
         }
         if (id == R.id.actionbar_send_ctrl_alt_del) {
-            int[] keys = {
-                KeyEvent.KEYCODE_CTRL_LEFT,
-                KeyEvent.KEYCODE_ALT_LEFT,
-                KeyEvent.KEYCODE_FORWARD_DEL,
-            };
-            for (int key : keys) {
-                mClient.sendKeyEvent(0, key, true);
-            }
-            for (int key : keys) {
-                mClient.sendKeyEvent(0, key, false);
-            }
+            mInjector.sendCtrlAltDel();
             return true;
         }
         if (id == R.id.actionbar_help) {
@@ -618,84 +604,11 @@ public class Desktop
      */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        int keyCode = event.getKeyCode();
-
-        // Dispatch the back button to the system to handle navigation
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
             mClient.destroy();
             return super.dispatchKeyEvent(event);
         }
 
-        boolean pressed = event.getAction() == KeyEvent.ACTION_DOWN;
-
-        // Physical keyboard must work as if it is connected to the remote host
-        // and so events coming from physical keyboard never generate text
-        // events. Also scan codes must be used instead of key code, so that
-        // the keyboard layout selected on the client doesn't affect the key
-        // codes sent to the host.
-        if (event.getDeviceId() != KeyCharacterMap.VIRTUAL_KEYBOARD) {
-            return mClient.sendKeyEvent(event.getScanCode(), 0, pressed);
-        }
-
-        // Events received from software keyboards generate TextEvent in two
-        // cases:
-        //   1. This is an ACTION_MULTIPLE event.
-        //   2. Ctrl, Alt and Meta are not pressed.
-        // This ensures that on-screen keyboard always injects input that
-        // correspond to what user sees on the screen, while physical keyboard
-        // acts as if it is connected to the remote host.
-        if (event.getAction() == KeyEvent.ACTION_MULTIPLE) {
-            mClient.sendTextEvent(event.getCharacters());
-            return true;
-        }
-
-        // For Enter getUnicodeChar() returns 10 (line feed), but we still
-        // want to send it as KeyEvent.
-        int unicode = keyCode != KeyEvent.KEYCODE_ENTER ? event.getUnicodeChar() : 0;
-
-        boolean no_modifiers = !event.isAltPressed()
-                && !event.isCtrlPressed() && !event.isMetaPressed();
-
-        if (pressed && unicode != 0 && no_modifiers) {
-            mPressedTextKeys.add(keyCode);
-            int[] codePoints = { unicode };
-            mClient.sendTextEvent(new String(codePoints, 0, 1));
-            return true;
-        }
-
-        if (!pressed && mPressedTextKeys.contains(keyCode)) {
-            mPressedTextKeys.remove(keyCode);
-            return true;
-        }
-
-        switch (keyCode) {
-            // KEYCODE_AT, KEYCODE_POUND, KEYCODE_STAR and KEYCODE_PLUS are
-            // deprecated, but they still need to be here for older devices and
-            // third-party keyboards that may still generate these events. See
-            // https://source.android.com/devices/input/keyboard-devices.html#legacy-unsupported-keys
-            case KeyEvent.KEYCODE_AT:
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_2, pressed);
-                return true;
-
-            case KeyEvent.KEYCODE_POUND:
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_3, pressed);
-                return true;
-
-            case KeyEvent.KEYCODE_STAR:
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_8, pressed);
-                return true;
-
-            case KeyEvent.KEYCODE_PLUS:
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_EQUALS, pressed);
-                return true;
-
-            default:
-                // We try to send all other key codes to the host directly.
-                return mClient.sendKeyEvent(0, keyCode, pressed);
-        }
+        return mInjector.sendKeyEvent(event);
     }
 }

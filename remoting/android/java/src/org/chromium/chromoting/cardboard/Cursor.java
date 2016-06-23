@@ -12,7 +12,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 
-import org.chromium.chromoting.TouchInputHandler;
+import org.chromium.chromoting.InputStub;
 import org.chromium.chromoting.jni.Client;
 
 import java.nio.FloatBuffer;
@@ -124,7 +124,7 @@ public class Cursor {
     public void moveTo(PointF position) {
         if (moveCursor(position)) {
             mClient.sendMouseEvent((int) position.x, (int) position.y,
-                    TouchInputHandler.BUTTON_UNDEFINED, false);
+                    InputStub.BUTTON_UNDEFINED, false);
         }
         mCursorPosition = position;
     }

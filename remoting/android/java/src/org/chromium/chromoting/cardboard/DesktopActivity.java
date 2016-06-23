@@ -14,8 +14,8 @@ import android.speech.SpeechRecognizer;
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
 
+import org.chromium.chromoting.InputStub;
 import org.chromium.chromoting.R;
-import org.chromium.chromoting.TouchInputHandler;
 import org.chromium.chromoting.jni.Client;
 
 import java.util.ArrayList;
@@ -80,9 +80,9 @@ public class DesktopActivity extends CardboardActivity {
             if (mRenderer.isLookingAtDesktop()) {
                 PointF coordinates = mRenderer.getMouseCoordinates();
                 mClient.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
-                        TouchInputHandler.BUTTON_LEFT, true);
+                        InputStub.BUTTON_LEFT, true);
                 mClient.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
-                        TouchInputHandler.BUTTON_LEFT, false);
+                        InputStub.BUTTON_LEFT, false);
             } else {
                 if (mRenderer.isLookingFarawayFromDesktop()) {
                     getCardboardView().resetHeadTracker();

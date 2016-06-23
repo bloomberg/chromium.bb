@@ -5,15 +5,10 @@
 package org.chromium.chromoting;
 
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.view.MotionEvent;
 
-import org.chromium.base.VisibleForTesting;
-import org.chromium.chromoting.jni.Client;
-import org.chromium.chromoting.jni.TouchEventData;
-
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 /**
@@ -26,29 +21,6 @@ import java.util.Queue;
  *       will be dropped/ignored.
  */
 public class TouchInputStrategy implements InputStrategyInterface {
-    /**
-     * This interface abstracts the injection mechanism to allow for unit testing.
-     */
-    public interface RemoteInputInjector {
-        public void injectMouseEvent(int x, int y, int button, boolean buttonDown);
-        public void injectTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data);
-    }
-
-    /**
-     * This class provides the default implementation for injecting remote events.
-     */
-    private class DefaultInputInjector implements RemoteInputInjector {
-        @Override
-        public void injectMouseEvent(int x, int y, int button, boolean buttonDown) {
-            mClient.sendMouseEvent(x, y, button, buttonDown);
-        }
-
-        @Override
-        public void injectTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data) {
-            mClient.sendTouchEvent(eventType, data);
-        }
-    }
-
     /**
      * Contains the maximum number of MotionEvents to store before cancelling the current gesture.
      * The size is ~3x the largest number of events seen during any remotable gesture sequence.
@@ -76,15 +48,12 @@ public class TouchInputStrategy implements InputStrategyInterface {
     private boolean mIgnoreTouchEvents = false;
 
     private final RenderData mRenderData;
+    private final InputEventSender mInjector;
 
-    private final Client mClient;
-
-    private RemoteInputInjector mRemoteInputInjector;
-
-    public TouchInputStrategy(RenderData renderData, Client client) {
+    public TouchInputStrategy(RenderData renderData, InputEventSender injector) {
+        Preconditions.notNull(injector);
         mRenderData = renderData;
-        mClient = client;
-        mRemoteInputInjector = new DefaultInputInjector();
+        mInjector = injector;
         mQueuedEvents = new LinkedList<MotionEvent>();
 
         synchronized (mRenderData) {
@@ -99,11 +68,11 @@ public class TouchInputStrategy implements InputStrategyInterface {
         }
 
         switch (button) {
-            case TouchInputHandlerInterface.BUTTON_LEFT:
+            case InputStub.BUTTON_LEFT:
                 injectQueuedEvents();
                 return true;
 
-            case TouchInputHandlerInterface.BUTTON_RIGHT:
+            case InputStub.BUTTON_RIGHT:
                 // Using the mouse for right-clicking is consistent across all host platforms.
                 // Right-click gestures are often platform specific and can be tricky to simulate.
 
@@ -111,12 +80,8 @@ public class TouchInputStrategy implements InputStrategyInterface {
                 MotionEvent downEvent = mQueuedEvents.peek();
                 assert downEvent.getActionMasked() == MotionEvent.ACTION_DOWN;
 
-                int x = (int) downEvent.getX();
-                int y = (int) downEvent.getY();
-                mRemoteInputInjector.injectMouseEvent(
-                        x, y, TouchInputHandlerInterface.BUTTON_RIGHT, true);
-                mRemoteInputInjector.injectMouseEvent(
-                        x, y, TouchInputHandlerInterface.BUTTON_RIGHT, false);
+                mInjector.sendMouseClick(new Point((int) downEvent.getX(), (int) downEvent.getY()),
+                        InputStub.BUTTON_RIGHT);
                 clearQueuedEvents();
                 return true;
 
@@ -128,7 +93,7 @@ public class TouchInputStrategy implements InputStrategyInterface {
 
     @Override
     public boolean onPressAndHold(int button) {
-        if (button != TouchInputHandlerInterface.BUTTON_LEFT || mQueuedEvents.isEmpty()
+        if (button != InputStub.BUTTON_LEFT || mQueuedEvents.isEmpty()
                 || mIgnoreTouchEvents) {
             return false;
         }
@@ -193,7 +158,7 @@ public class TouchInputStrategy implements InputStrategyInterface {
             case MotionEvent.ACTION_UP:
                 event = transformToRemoteCoordinates(event);
                 if (mInRemoteGesture) {
-                    injectTouchEventData(event);
+                    mInjector.sendTouchEvent(event);
                     event.recycle();
                 } else {
                     mQueuedEvents.add(event);
@@ -223,68 +188,10 @@ public class TouchInputStrategy implements InputStrategyInterface {
         return false;
     }
 
-    @VisibleForTesting
-    protected void setRemoteInputInjectorForTest(RemoteInputInjector injector) {
-        mRemoteInputInjector = injector;
-    }
-
-    /**
-     * Extracts the touch point data from a MotionEvent, converts each point into a marshallable
-     * object and passes the set of points to the JNI layer to be transmitted to the remote host.
-     *
-     * @param event The event to send to the remote host for injection.  NOTE: This object must be
-     *              updated to represent the remote machine's coordinate system before calling this
-     *              function.  This should be done via the transformToRemoteCoordinates() method.
-     */
-    private void injectTouchEventData(MotionEvent event) {
-        int action = event.getActionMasked();
-        TouchEventData.EventType touchEventType = TouchEventData.EventType.fromMaskedAction(action);
-        List<TouchEventData> touchEventList = new ArrayList<TouchEventData>();
-
-        if (action == MotionEvent.ACTION_MOVE) {
-            // In order to process all of the events associated with an ACTION_MOVE event, we need
-            // to walk the list of historical events in order and add each event to our list, then
-            // retrieve the current move event data.
-            int pointerCount = event.getPointerCount();
-            int historySize = event.getHistorySize();
-            for (int h = 0; h < historySize; ++h) {
-                for (int p = 0; p < pointerCount; ++p) {
-                    touchEventList.add(new TouchEventData(event.getPointerId(p),
-                            event.getHistoricalX(p, h), event.getHistoricalY(p, h),
-                            event.getHistoricalSize(p, h), event.getHistoricalSize(p, h),
-                            event.getHistoricalOrientation(p, h),
-                            event.getHistoricalPressure(p, h)));
-                }
-            }
-
-            for (int p = 0; p < pointerCount; p++) {
-                touchEventList.add(new TouchEventData(event.getPointerId(p), event.getX(p),
-                        event.getY(p), event.getSize(p), event.getSize(p), event.getOrientation(p),
-                        event.getPressure(p)));
-            }
-        } else {
-            // For all other events, we only want to grab the current/active pointer.  The event
-            // contains a list of every active pointer but passing all of of these to the host can
-            // cause confusion on the remote OS side and result in broken touch gestures.
-            int activePointerIndex = event.getActionIndex();
-            touchEventList.add(new TouchEventData(event.getPointerId(activePointerIndex),
-                    event.getX(activePointerIndex), event.getY(activePointerIndex),
-                    event.getSize(activePointerIndex), event.getSize(activePointerIndex),
-                    event.getOrientation(activePointerIndex),
-                    event.getPressure(activePointerIndex)));
-        }
-
-        if (!touchEventList.isEmpty()) {
-            TouchEventData[] touchEventArray = new TouchEventData[touchEventList.size()];
-            mRemoteInputInjector.injectTouchEvent(
-                    touchEventType, touchEventList.toArray(touchEventArray));
-        }
-    }
-
     private void injectQueuedEvents() {
         while (!mQueuedEvents.isEmpty()) {
             MotionEvent event = mQueuedEvents.remove();
-            injectTouchEventData(event);
+            mInjector.sendTouchEvent(event);
             event.recycle();
         }
     }

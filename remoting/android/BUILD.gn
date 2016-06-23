@@ -152,8 +152,10 @@ instrumentation_test_apk("remoting_test_apk") {
   apk_under_test = ":remoting_apk"
   java_files = [
     "javatests/src/org/chromium/chromoting/EventTest.java",
+    "javatests/src/org/chromium/chromoting/MockInputStub.java",
     "javatests/src/org/chromium/chromoting/SwipePinchDetectorTest.java",
     "javatests/src/org/chromium/chromoting/TapGestureDetectorTest.java",
+    "javatests/src/org/chromium/chromoting/TouchEventBuilder.java",
     "javatests/src/org/chromium/chromoting/TouchEventGenerator.java",
     "javatests/src/org/chromium/chromoting/TouchInputStrategyTest.java",
     "javatests/src/org/chromium/chromoting/test/util/MutableReference.java",

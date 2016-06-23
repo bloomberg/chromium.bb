@@ -14,14 +14,12 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ViewConfiguration;
 
-import org.chromium.chromoting.jni.Client;
-
 /**
  * This class is responsible for handling Touch input from the user.  Touch events which manipulate
  * the local canvas are handled in this class and any input which should be sent to the remote host
  * are passed to the InputStrategyInterface implementation set by the DesktopView.
  */
-public class TouchInputHandler implements TouchInputHandlerInterface {
+public class TouchInputHandler {
     private final DesktopViewInterface mViewer;
     private final Context mContext;
     private final RenderData mRenderData;
@@ -216,7 +214,6 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         attachViewEvents(viewer);
     }
 
-    @Override
     public void processAnimation() {
         boolean active = mCursorAnimationJob.processAnimation();
         active |= mScrollAnimationJob.processAnimation();
@@ -226,14 +223,13 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         }
     }
 
-    @Override
-    public void init(Desktop desktop, final Client client) {
-        Preconditions.notNull(client);
+    public void init(Desktop desktop, final InputEventSender injector) {
+        Preconditions.notNull(injector);
         desktop.onInputModeChanged().add(
                 new Event.ParameterRunnable<InputModeChangedEventParameter>() {
                     @Override
                     public void run(InputModeChangedEventParameter parameter) {
-                        handleInputModeChanged(parameter, client);
+                        handleInputModeChanged(parameter, injector);
                     }
                 });
 
@@ -267,8 +263,8 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         });
     }
 
-    private void handleInputModeChanged(InputModeChangedEventParameter parameter,
-                                        Client client) {
+    private void handleInputModeChanged(
+            InputModeChangedEventParameter parameter, InputEventSender injector) {
         final Desktop.InputMode inputMode = parameter.inputMode;
         final CapabilityManager.HostCapability hostTouchCapability =
                 parameter.hostCapability;
@@ -280,15 +276,15 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
         switch (inputMode) {
             case TRACKPAD:
-                setInputStrategy(new TrackpadInputStrategy(mRenderData, client));
+                setInputStrategy(new TrackpadInputStrategy(mRenderData, injector));
                 break;
 
             case TOUCH:
                 if (hostTouchCapability.isSupported()) {
-                    setInputStrategy(new TouchInputStrategy(mRenderData, client));
+                    setInputStrategy(new TouchInputStrategy(mRenderData, injector));
                 } else {
-                    setInputStrategy(new SimulatedTouchInputStrategy(
-                            mRenderData, client, mContext));
+                    setInputStrategy(
+                            new SimulatedTouchInputStrategy(mRenderData, injector, mContext));
                 }
                 break;
 
@@ -609,7 +605,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         @Override
         public boolean onTap(int pointerCount, float x, float y) {
             int button = mouseButtonFromPointerCount(pointerCount);
-            if (button == BUTTON_UNDEFINED) {
+            if (button == InputStub.BUTTON_UNDEFINED) {
                 return false;
             }
 
@@ -631,7 +627,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         @Override
         public void onLongPress(int pointerCount, float x, float y) {
             int button = mouseButtonFromPointerCount(pointerCount);
-            if (button == BUTTON_UNDEFINED) {
+            if (button == InputStub.BUTTON_UNDEFINED) {
                 return;
             }
 
@@ -654,13 +650,13 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         private int mouseButtonFromPointerCount(int pointerCount) {
             switch (pointerCount) {
                 case 1:
-                    return BUTTON_LEFT;
+                    return InputStub.BUTTON_LEFT;
                 case 2:
-                    return BUTTON_RIGHT;
+                    return InputStub.BUTTON_RIGHT;
                 case 3:
-                    return BUTTON_MIDDLE;
+                    return InputStub.BUTTON_MIDDLE;
                 default:
-                    return BUTTON_UNDEFINED;
+                    return InputStub.BUTTON_UNDEFINED;
             }
         }
     }

@@ -8,6 +8,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chromoting.CapabilityManager;
+import org.chromium.chromoting.InputStub;
 import org.chromium.chromoting.SessionAuthenticator;
 
 /**
@@ -18,7 +19,7 @@ import org.chromium.chromoting.SessionAuthenticator;
  * This class is used entirely on the UI thread.
  */
 @JNINamespace("remoting")
-public class Client {
+public class Client implements InputStub {
     // Pointer to the C++ object, cast to a |long|.
     private long mNativeJniClient;
 

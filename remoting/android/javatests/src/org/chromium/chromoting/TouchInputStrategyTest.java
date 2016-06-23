@@ -4,16 +4,13 @@
 
 package org.chromium.chromoting;
 
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.MotionEvent;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chromoting.jni.TouchEventData;
-
-import java.util.LinkedList;
-import java.util.Queue;
 
 /** Tests for {@link TouchInputStrategy}. */
 public class TouchInputStrategyTest extends InstrumentationTestCase {
@@ -24,152 +21,9 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
     private static final int REMOTE_DESKTOP_SIZE_PX = 300;
     private static final int TRANSLATE_OFFSET_PX = 100;
 
-    private static class MouseData {
-        MouseData(int xValue, int yValue, int buttonPressed, boolean buttonDown) {
-            x = xValue;
-            y = yValue;
-            button = buttonPressed;
-            isDown = buttonDown;
-        }
-
-        public int x;
-        public int y;
-        public int button;
-        public boolean isDown;
-    }
-
-    private static class TouchData {
-        TouchData(TouchEventData.EventType type, TouchEventData[] data) {
-            eventType = type;
-            eventData = data;
-        }
-
-        public TouchEventData.EventType eventType;
-        public TouchEventData[] eventData;
-    }
-
-    private static class MockRemoteInputInjector implements TouchInputStrategy.RemoteInputInjector {
-        private static final float COMPARISON_DELTA = 0.01f;
-
-        private Queue<MouseData> mInjectedMouseEvents;
-        private Queue<TouchData> mInjectedTouchEvents;
-
-        MockRemoteInputInjector() {
-            mInjectedMouseEvents = new LinkedList<MouseData>();
-            mInjectedTouchEvents = new LinkedList<TouchData>();
-        }
-
-        @Override
-        public void injectMouseEvent(int x, int y, int button, boolean buttonDown) {
-            mInjectedMouseEvents.add(new MouseData(x, y, button, buttonDown));
-        }
-
-        @Override
-        public void injectTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data) {
-            mInjectedTouchEvents.add(new TouchData(eventType, data));
-        }
-
-        public void assertTapInjected(int expectedX, int expectedY) {
-            assertEquals(2, mInjectedTouchEvents.size());
-            assertTrue(mInjectedMouseEvents.isEmpty());
-
-            TouchData downTouchData = mInjectedTouchEvents.remove();
-            assertEquals(TouchEventData.EventType.TOUCH_EVENT_START, downTouchData.eventType);
-            assertEquals(1, downTouchData.eventData.length);
-            assertEquals(expectedX, downTouchData.eventData[0].getTouchPointX(), COMPARISON_DELTA);
-            assertEquals(expectedY, downTouchData.eventData[0].getTouchPointY(), COMPARISON_DELTA);
-
-            TouchData upTouchData = mInjectedTouchEvents.remove();
-            assertEquals(TouchEventData.EventType.TOUCH_EVENT_END, upTouchData.eventType);
-            assertEquals(1, upTouchData.eventData.length);
-            assertEquals(expectedX, upTouchData.eventData[0].getTouchPointX(), COMPARISON_DELTA);
-            assertEquals(expectedY, upTouchData.eventData[0].getTouchPointY(), COMPARISON_DELTA);
-        }
-
-        public void assertRightClickInjected(int expectedX, int expectedY) {
-            assertEquals(2, mInjectedMouseEvents.size());
-            assertTrue(mInjectedTouchEvents.isEmpty());
-
-            MouseData downMouseData = mInjectedMouseEvents.remove();
-            assertEquals(expectedX, downMouseData.x);
-            assertEquals(expectedY, downMouseData.y);
-            assertEquals(TouchInputHandlerInterface.BUTTON_RIGHT, downMouseData.button);
-            assertTrue(downMouseData.isDown);
-
-            MouseData upMouseData = mInjectedMouseEvents.remove();
-            assertEquals(expectedX, upMouseData.x);
-            assertEquals(expectedY, upMouseData.y);
-            assertEquals(TouchInputHandlerInterface.BUTTON_RIGHT, upMouseData.button);
-            assertFalse(upMouseData.isDown);
-        }
-
-        public void assertTouchEventInjected(TouchEventData.EventType eventType) {
-            // This method is called to verify the correct event type was added, no verification is
-            // done for the position of each event.
-            assertTouchEventInjected(eventType, -1, -1);
-        }
-
-        public void assertTouchEventInjected(
-                TouchEventData.EventType eventType, int expectedX, int expectedY) {
-            assertEquals(1, mInjectedTouchEvents.size());
-
-            TouchData touchData = mInjectedTouchEvents.remove();
-            assertEquals(eventType, touchData.eventType);
-            if (expectedX >= 0) {
-                assertEquals(expectedX, touchData.eventData[0].getTouchPointX(), COMPARISON_DELTA);
-            }
-            if (expectedY >= 0) {
-                assertEquals(expectedY, touchData.eventData[0].getTouchPointY(), COMPARISON_DELTA);
-            }
-        }
-
-        public void assertTouchMoveEventInjected(int fingerNum, int stepSizeX, int stepSizeY,
-                int expectedMoveCount) {
-            TouchData touchData;
-            Point[] initialLocations = new Point[fingerNum];
-            // Verify the correct number of START events were injected.
-            for (int i = 0; i < fingerNum; i++) {
-                touchData = mInjectedTouchEvents.remove();
-                assertEquals(1, touchData.eventData.length);
-                assertEquals(TouchEventData.EventType.TOUCH_EVENT_START, touchData.eventType);
-                initialLocations[i] = new Point((int) touchData.eventData[0].getTouchPointX(),
-                        (int) touchData.eventData[0].getTouchPointY());
-            }
-
-            // Verify the correct number of MOVE events were injected.
-            for (int i = 0; i < expectedMoveCount; i++) {
-                touchData = mInjectedTouchEvents.remove();
-                assertEquals(fingerNum, touchData.eventData.length);
-                assertEquals(TouchEventData.EventType.TOUCH_EVENT_MOVE, touchData.eventType);
-
-                // These tests send a single event for each finger that is moved.  E.G. If we are
-                // injecting a pan event with two fingers, then every two TouchEvents represents one
-                // 'frame' of the motion sequence.  Here we determine which iteration this event
-                // represents so we can use that to accurately compare the locations with the
-                // expected values.
-                int eventSequenceNum = i / fingerNum;
-                for (int j = 0; j < fingerNum; j++) {
-                    // We inject one finger at a time which means that finger will have the correct
-                    // value but other fingers may still be stepSize behind it.  We add a little bit
-                    // of slop here to ensure that the position values are moving towards the target
-                    // value and to allow for simpler validation.
-                    assertEquals(initialLocations[j].x + (stepSizeX * eventSequenceNum),
-                            touchData.eventData[j].getTouchPointX(), stepSizeX + COMPARISON_DELTA);
-                    assertEquals(initialLocations[j].y + (stepSizeY * eventSequenceNum),
-                            touchData.eventData[j].getTouchPointY(), stepSizeY + COMPARISON_DELTA);
-                }
-            }
-        }
-
-        public void assertNothingInjected() {
-            assertTrue(mInjectedMouseEvents.isEmpty());
-            assertTrue(mInjectedTouchEvents.isEmpty());
-        }
-    }
-
     private RenderData mRenderData;
     private TouchInputStrategy mInputStrategy;
-    private MockRemoteInputInjector mRemoteInputInjector;
+    private MockInputStub mInputInjector;
     private TouchEventGenerator mEventGenerator;
 
     /** Injects movement of a single finger (keeping other fingers in place). */
@@ -196,14 +50,11 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
     @Override
     public void setUp() {
         mRenderData = new RenderData();
-        mRemoteInputInjector = new MockRemoteInputInjector();
+        mInputInjector = new MockInputStub();
 
-        // TODO(lambroslambrou): Provide a mock Client implementation that doesn't call out to JNI,
-        // and mock the Client methods instead of using MockRemoteInputInjector here.
-        mInputStrategy = new TouchInputStrategy(mRenderData, null);
-        mInputStrategy.setRemoteInputInjectorForTest(mRemoteInputInjector);
+        mInputStrategy =
+                new TouchInputStrategy(mRenderData, new InputEventSender(mInputInjector));
         mEventGenerator = new TouchEventGenerator();
-
         mRenderData.screenWidth = SCREEN_SIZE_PX;
         mRenderData.screenHeight = SCREEN_SIZE_PX;
         mRenderData.imageWidth = REMOTE_DESKTOP_SIZE_PX;
@@ -214,8 +65,8 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Chromoting"})
     public void testOnTapWithNoEvents() throws Exception {
-        assertFalse(mInputStrategy.onTap(TouchInputHandlerInterface.BUTTON_LEFT));
-        mRemoteInputInjector.assertNothingInjected();
+        assertFalse(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -223,11 +74,12 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
     public void testOneFingerTap() throws Exception {
         injectDownEvent(0, 0, 0);
         injectUpEvent(0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onTap(TouchInputHandlerInterface.BUTTON_LEFT));
+        assertTrue(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
 
-        mRemoteInputInjector.assertTapInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertTapInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -239,11 +91,12 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectDownEvent(1, 25, 25);
         injectUpEvent(1);
         injectUpEvent(0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onTap(TouchInputHandlerInterface.BUTTON_RIGHT));
+        assertTrue(mInputStrategy.onTap(InputStub.BUTTON_RIGHT));
 
-        mRemoteInputInjector.assertRightClickInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertRightClickInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -255,11 +108,12 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectDownEvent(1, 25, 25);
         injectUpEvent(0);
         injectUpEvent(1);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onTap(TouchInputHandlerInterface.BUTTON_RIGHT));
+        assertTrue(mInputStrategy.onTap(InputStub.BUTTON_RIGHT));
 
-        mRemoteInputInjector.assertRightClickInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertRightClickInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -271,10 +125,10 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectUpEvent(2);
         injectUpEvent(1);
         injectUpEvent(0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
-        assertFalse(mInputStrategy.onTap(TouchInputHandlerInterface.BUTTON_MIDDLE));
-        mRemoteInputInjector.assertNothingInjected();
+        assertFalse(mInputStrategy.onTap(InputStub.BUTTON_MIDDLE));
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -284,13 +138,14 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         for (int i = 0; i < tapSequenceCount; i++) {
             injectDownEvent(0, i, i);
             injectUpEvent(0);
-            mRemoteInputInjector.assertNothingInjected();
+            mInputInjector.assertEmpty();
 
-            assertTrue(mInputStrategy.onTap(TouchInputHandlerInterface.BUTTON_LEFT));
+            assertTrue(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
 
             int remoteOffsetPx = TRANSLATE_OFFSET_PX + i;
-            mRemoteInputInjector.assertTapInjected(remoteOffsetPx, remoteOffsetPx);
+            mInputInjector.assertTapInjected(remoteOffsetPx, remoteOffsetPx);
         }
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -303,63 +158,65 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectUpEvent(2);
         injectUpEvent(1);
         injectUpEvent(0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
-        assertFalse(mInputStrategy.onTap(TouchInputHandlerInterface.BUTTON_MIDDLE));
-        mRemoteInputInjector.assertNothingInjected();
+        assertFalse(mInputStrategy.onTap(InputStub.BUTTON_MIDDLE));
+        mInputInjector.assertEmpty();
 
         // Next a valid tap, verify it is handled.
         injectDownEvent(0, 0, 0);
         injectUpEvent(0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onTap(TouchInputHandlerInterface.BUTTON_LEFT));
+        assertTrue(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
 
-        mRemoteInputInjector.assertTapInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertTapInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
     @Feature({"Chromoting"})
     public void testOnPressAndHoldWithNoEvents() throws Exception {
-        assertFalse(mInputStrategy.onPressAndHold(TouchInputHandlerInterface.BUTTON_LEFT));
-        mRemoteInputInjector.assertNothingInjected();
+        assertFalse(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
     @Feature({"Chromoting"})
     public void testOneFingerLongPress() throws Exception {
         injectDownEvent(0, 0, 0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onPressAndHold(TouchInputHandlerInterface.BUTTON_LEFT));
-        mRemoteInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_START,
+        assertTrue(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_START,
                 TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
 
         injectUpEvent(0);
-        mRemoteInputInjector.assertTouchEventInjected(
+        mInputInjector.assertTouchEventInjected(
                 TouchEventData.EventType.TOUCH_EVENT_END, TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
     @Feature({"Chromoting"})
     public void testOneFingerLongPressThenPan() throws Exception {
         injectDownEvent(0, 0, 0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onPressAndHold(TouchInputHandlerInterface.BUTTON_LEFT));
-        mRemoteInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_START,
+        assertTrue(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_START,
                 TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
 
-        int panEventCount = 50;
-        for (int i = 0; i <= 50; i++) {
+        final int panEventCount = 50;
+        for (int i = 0; i <= panEventCount; i++) {
             injectMoveEvent(0, 0, i);
-            mRemoteInputInjector.assertTouchEventInjected(
-                    TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
         }
 
         injectUpEvent(0);
-        mRemoteInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END,
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END,
                 TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX + panEventCount);
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -367,14 +224,14 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
     public void testTwoFingerLongPress() throws Exception {
         injectDownEvent(0, 0, 0);
         injectDownEvent(1, 1, 1);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
-        assertFalse(mInputStrategy.onPressAndHold(TouchInputHandlerInterface.BUTTON_RIGHT));
-        mRemoteInputInjector.assertNothingInjected();
+        assertFalse(mInputStrategy.onPressAndHold(InputStub.BUTTON_RIGHT));
+        mInputInjector.assertEmpty();
 
         injectUpEvent(0);
         injectUpEvent(1);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -386,10 +243,10 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectMoveEvent(0, 1, 1);
         injectMoveEvent(0, 2, 2);
         injectMoveEvent(0, 3, 3);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
         injectUpEvent(0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -405,29 +262,31 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
             injectMoveEvent(0, fingerOnePosX, i);
             injectMoveEvent(1, fingerTwoPosX, i);
         }
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
         mInputStrategy.onScroll(0.0f, 0.0f);
-        mRemoteInputInjector.assertTouchMoveEventInjected(2, 0, 1, eventNum * 2);
+        mInputInjector.assertTouchMoveEventInjected(
+                new PointF[] {
+                        new PointF(fingerOnePosX + TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX),
+                        new PointF(fingerTwoPosX + TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX),
+                },
+                0, 1, eventNum);
 
         // Verify events are sent in realtime now.
         for (int i = eventNum; i < eventNum + 5; i++) {
             injectMoveEvent(0, fingerOnePosX, i);
-            mRemoteInputInjector.assertTouchEventInjected(
-                    TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
 
             injectMoveEvent(1, fingerTwoPosX, i);
-            mRemoteInputInjector.assertTouchEventInjected(
-                    TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
         }
 
         injectUpEvent(0);
-        mRemoteInputInjector.assertTouchEventInjected(
-                TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END);
 
         injectUpEvent(1);
-        mRemoteInputInjector.assertTouchEventInjected(
-                TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -443,29 +302,31 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
             injectMoveEvent(0, i, fingerOnePosY);
             injectMoveEvent(1, i, fingerTwoPosY);
         }
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
         mInputStrategy.onScroll(0.0f, 0.0f);
-        mRemoteInputInjector.assertTouchMoveEventInjected(2, 1, 0, eventNum * 2);
+        mInputInjector.assertTouchMoveEventInjected(
+                new PointF[] {
+                        new PointF(TRANSLATE_OFFSET_PX, fingerOnePosY + TRANSLATE_OFFSET_PX),
+                        new PointF(TRANSLATE_OFFSET_PX, fingerTwoPosY + TRANSLATE_OFFSET_PX),
+                },
+                1, 0, eventNum);
 
         // Verify events are sent in realtime now.
         for (int i = eventNum; i < eventNum + 5; i++) {
             injectMoveEvent(0, i, fingerOnePosY);
-            mRemoteInputInjector.assertTouchEventInjected(
-                    TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
 
             injectMoveEvent(1, i, fingerTwoPosY);
-            mRemoteInputInjector.assertTouchEventInjected(
-                    TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
         }
 
         injectUpEvent(0);
-        mRemoteInputInjector.assertTouchEventInjected(
-                TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END);
 
         injectUpEvent(1);
-        mRemoteInputInjector.assertTouchEventInjected(
-                TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -481,37 +342,40 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
             injectMoveEvent(0, fingerOnePosX, i);
             injectMoveEvent(1, fingerTwoPosX, i);
         }
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
         mInputStrategy.onScroll(0.0f, 0.0f);
-        mRemoteInputInjector.assertTouchMoveEventInjected(2, 0, 1, eventNum * 2);
+        mInputInjector.assertTouchMoveEventInjected(
+                new PointF[] {
+                        new PointF(fingerOnePosX + TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX),
+                        new PointF(fingerTwoPosX + TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX),
+                },
+                0, 1, eventNum);
 
         // Verify events are sent in realtime now.
         for (int i = eventNum; i < eventNum + 5; i++) {
             injectMoveEvent(0, fingerOnePosX, i);
-            mRemoteInputInjector.assertTouchEventInjected(
-                    TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
 
             injectMoveEvent(1, fingerTwoPosX, i);
-            mRemoteInputInjector.assertTouchEventInjected(
-                    TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
         }
 
         // Once a third finger goes down, no more events should be sent.
         injectDownEvent(2, 0, 0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
         injectMoveEvent(0, 0, 0);
         injectMoveEvent(1, 0, 0);
         injectMoveEvent(2, 0, 0);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
         injectUpEvent(2);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
         injectMoveEvent(0, 5, 5);
         injectMoveEvent(1, 5, 5);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
     }
 
     @SmallTest
@@ -526,9 +390,9 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
             injectMoveEvent(0, fingerOnePosX, i % 10);
             injectMoveEvent(1, fingerTwoPosX, i % 10);
         }
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
 
         mInputStrategy.onScroll(0.0f, 0.0f);
-        mRemoteInputInjector.assertNothingInjected();
+        mInputInjector.assertEmpty();
     }
 }
