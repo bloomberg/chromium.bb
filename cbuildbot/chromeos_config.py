@@ -2545,8 +2545,6 @@ def GetConfig():
           config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
                                   warn_only=True, num=1),
           config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
-                                  warn_only=True, num=1),
-          config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE, async=True,
                                   warn_only=True, num=1)],
   )
 
