@@ -119,12 +119,24 @@ test("exo_unittests") {
   sources = [
     "test/run_all_unittests.cc",
   ]
+
   deps = [
     ":unit_tests",
     "//ash:test_support",
     "//base",
     "//base/test:test_support",
   ]
+
+  data_deps = [
+    "//ash/resources:ash_test_resources_100_percent",
+    "//ash/resources:ash_test_resources_200_percent",
+    "//ash/strings:ash_test_strings",
+  ]
+
+  if (use_x11) {
+    deps += [ "//tools/xdisplaycheck" ]
+  }
+
   if (is_linux) {
     deps += [ "//components/exo/wayland:unit_tests" ]
   }

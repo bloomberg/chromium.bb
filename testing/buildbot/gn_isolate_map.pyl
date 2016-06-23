@@ -270,6 +270,10 @@
     "label": "//ui/events:events_unittests",
     "type": "windowed_test_launcher",
   },
+  "exo_unittests": {
+    "label": "//components/exo:exo_unittests",
+    "type": "windowed_test_launcher",
+  },
   "extensions_browsertests": {
     "label": "//extensions:extensions_browsertests",
     "type": "windowed_test_launcher",

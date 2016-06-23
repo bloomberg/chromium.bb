@@ -4,12 +4,15 @@
 
 #include "components/exo/wayland/server.h"
 
+#include <stdlib.h>
+
 #include <wayland-client-core.h>
 
 #include <memory>
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
@@ -27,7 +30,25 @@ std::string GetUniqueSocketName() {
                             g_next_socket_id.GetNext());
 }
 
-TEST(ServerTest, AddSocket) {
+class ServerTest : public testing::Test {
+ public:
+  ServerTest() {}
+  ~ServerTest() override {}
+
+  void SetUp() override {
+    ASSERT_TRUE(xdg_temp_dir_.CreateUniqueTempDir());
+    setenv("XDG_RUNTIME_DIR", xdg_temp_dir_.path().MaybeAsASCII().c_str(),
+           1 /* overwrite */);
+    testing::Test::SetUp();
+  }
+
+ private:
+  base::ScopedTempDir xdg_temp_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServerTest);
+};
+
+TEST_F(ServerTest, AddSocket) {
   std::unique_ptr<Display> display(new Display);
   std::unique_ptr<Server> server(new Server(display.get()));
 
@@ -36,7 +57,7 @@ TEST(ServerTest, AddSocket) {
   EXPECT_TRUE(rv);
 }
 
-TEST(ServerTest, GetFileDescriptor) {
+TEST_F(ServerTest, GetFileDescriptor) {
   std::unique_ptr<Display> display(new Display);
   std::unique_ptr<Server> server(new Server(display.get()));
 
@@ -57,7 +78,7 @@ void ConnectToServer(const std::string socket_name,
   wl_display_disconnect(display);
 }
 
-TEST(ServerTest, Dispatch) {
+TEST_F(ServerTest, Dispatch) {
   std::unique_ptr<Display> display(new Display);
   std::unique_ptr<Server> server(new Server(display.get()));
 
@@ -84,7 +105,7 @@ TEST(ServerTest, Dispatch) {
   EXPECT_TRUE(connected_to_server);
 }
 
-TEST(ServerTest, Flush) {
+TEST_F(ServerTest, Flush) {
   std::unique_ptr<Display> display(new Display);
   std::unique_ptr<Server> server(new Server(display.get()));
 

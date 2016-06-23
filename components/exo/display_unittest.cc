@@ -55,11 +55,11 @@ TEST_F(DisplayTest, CreateSharedMemory) {
 }
 
 #if defined(USE_OZONE)
-TEST_F(DisplayTest, CreateLinuxDMABufBuffer) {
+// The test crashes: crbug.com/622724
+TEST_F(DisplayTest, DISABLED_CreateLinuxDMABufBuffer) {
   const gfx::Size buffer_size(256, 256);
 
   std::unique_ptr<Display> display(new Display);
-
   // Creating a prime buffer from a native pixmap handle should succeed.
   scoped_refptr<ui::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
