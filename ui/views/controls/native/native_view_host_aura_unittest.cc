@@ -257,22 +257,31 @@ TEST_F(NativeViewHostAuraTest, InstallClip) {
 TEST_F(NativeViewHostAuraTest, ParentAfterDetach) {
   CreateHost();
   aura::Window* child_win = child()->GetNativeView();
+  aura::Window* root_window = child_win->GetRootWindow();
+  aura::WindowTreeHost* child_win_tree_host = child_win->GetHost();
 
   NativeViewHostWindowObserver test_observer;
   child_win->AddObserver(&test_observer);
 
   host()->Detach();
-  EXPECT_EQ(nullptr, child_win->GetRootWindow());
-  EXPECT_EQ(nullptr, child_win->GetHost());
+  EXPECT_EQ(root_window, child_win->GetRootWindow());
+  EXPECT_EQ(child_win_tree_host, child_win->GetHost());
 
   DestroyHost();
-
-  // The window is detached, so no longer associated with any Widget hierarchy.
-  // The root window still owns it, but the test harness checks for orphaned
-  // windows during TearDown().
   DestroyTopLevel();
-  EXPECT_EQ(0u, test_observer.events().size());
-  delete child_win;
+  if (!IsMus()) {
+    // The window is detached, so no longer associated with any Widget
+    // hierarchy. The root window still owns it, but the test harness checks
+    // for orphaned windows during TearDown().
+    EXPECT_EQ(0u, test_observer.events().size())
+        << (*test_observer.events().begin()).type;
+    delete child_win;
+  } else {
+    // In mus, the child window is still attached to the aura::WindowTreeHost
+    // for the Widget. So destroying the toplevel Widget takes down the child
+    // window with it.
+  }
+
   ASSERT_EQ(1u, test_observer.events().size());
   EXPECT_EQ(NativeViewHostWindowObserver::EVENT_DESTROYED,
             test_observer.events().back().type);
