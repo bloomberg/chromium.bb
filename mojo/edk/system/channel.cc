@@ -137,7 +137,8 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
     return nullptr;
   }
 
-  if (header->num_bytes < header->num_header_bytes) {
+  if (header->num_bytes < header->num_header_bytes ||
+      header->num_header_bytes < sizeof(Header)) {
     DLOG(ERROR) << "Decoding invalid message: " << header->num_bytes << " < "
                 << header->num_header_bytes;
     return nullptr;
@@ -147,10 +148,15 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
 #if defined(OS_WIN)
   uint32_t max_handles = extra_header_size / sizeof(HandleEntry);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
+  if (extra_header_size < sizeof(MachPortsExtraHeader)) {
+    DLOG(ERROR) << "Decoding invalid message: " << extra_header_size << " < "
+                << sizeof(MachPortsExtraHeader);
+    return nullptr;
+  }
   uint32_t max_handles = (extra_header_size - sizeof(MachPortsExtraHeader)) /
       sizeof(MachPortsEntry);
 #endif
-  if (header->num_handles > max_handles) {
+  if (header->num_handles > max_handles || max_handles > kMaxAttachedHandles) {
     DLOG(ERROR) << "Decoding invalid message:" << header->num_handles
                 << " > " << max_handles;
     return nullptr;
