@@ -27,8 +27,6 @@ var CrSearchFieldBehavior = {
       reflectToAttribute: true
     },
 
-    hasSearchText: Boolean,
-
     /** @private */
     lastValue_: {
       type: String,
@@ -78,7 +76,6 @@ var CrSearchFieldBehavior = {
     if (newValue == this.lastValue_)
       return;
 
-    this.hasSearchText = newValue != '';
     this.fire('search-changed', newValue);
     this.lastValue_ = newValue;
   },

@@ -86,6 +86,19 @@ cr.define('cr_toolbar_search_field', function() {
 
         assertTrue(field.showingSearch);
       });
+
+      test('opens when value is changed', function() {
+        // Change search value without explicity opening the field first.
+        // Similar to what happens when pasting or dragging into the input
+        // field.
+        simulateSearch('test');
+
+        assertFalse(field.$.clearSearch.hidden);
+        assertTrue(field.showingSearch);
+
+        MockInteractions.tap(field.$.clearSearch);
+        assertFalse(field.showingSearch);
+      });
     });
   }
 

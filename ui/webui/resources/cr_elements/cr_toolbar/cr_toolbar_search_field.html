@@ -107,14 +107,13 @@
         tabindex$="[[computeIconTabIndex_(narrow)]]">
     </paper-icon-button>
     <paper-input-container on-search="onSearchTermSearch"
-        on-keydown="onSearchTermKeydown" on-keypress="onSearchTermKeypress_"
-        no-label-float>
+        on-keydown="onSearchTermKeydown" no-label-float>
       <label id="prompt" for="searchInput">[[label]]</label>
       <input is="iron-input" id="searchInput" type="search"
           on-blur="onInputBlur_" incremental></input>
     </paper-input-container>
     <paper-icon-button icon="cr:cancel" id="clearSearch"
-        title="[[clearLabel]]" hidden$="[[!hasSearchText]]"
+        title="[[clearLabel]]" hidden$="[[!hasSearchText_]]"
         on-tap="hideSearch_">
     </paper-icon-button>
   </template>
