@@ -160,8 +160,13 @@ public:
                 }
 
                 m_resourceClipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
+                // When SVG applies the clip and the coordinate system is "user space on use", we must explicitly pass in
+                // the layer offset to have the clip paint in the correct location. When the coordinate system is
+                // "object bounding box" the offset is already accounted for in the rootRelativeBounds.
+                FloatPoint layerPositionOffset = m_resourceClipper->clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE ?
+                    FloatPoint(offsetFromRoot) : FloatPoint();
                 if (!SVGClipPainter(*m_resourceClipper).prepareEffect(*paintLayer.layoutObject(), FloatRect(rootRelativeBounds),
-                    FloatRect(rootRelativeBounds), context, m_clipperState)) {
+                    FloatRect(rootRelativeBounds), layerPositionOffset, context, m_clipperState)) {
                     // No need to post-apply the clipper if this failed.
                     m_resourceClipper = 0;
                 }

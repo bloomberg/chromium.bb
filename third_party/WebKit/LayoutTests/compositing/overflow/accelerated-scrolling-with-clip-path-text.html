@@ -39,13 +39,13 @@
 </head>
 
 <body>
-This tests that reference clip-path is applied with composited scrolling. If the content and
-scrollbars are properly clipped, this test passes.
+<!-- Do not remove the text. Having the div at some vertical offset verifies that we correctly offset the clip -->
+This tests that reference clip-path with text is correctly applied with composited scrolling.
 
 <svg width="0", height="0">
   <defs>
     <clipPath id="clipping">
-    <polygon points="61 237,9 313,115 386,621 356,280 339,505 187,414 61,164 143,84 42,2 189"></polygon>
+      <text x="100" y="120" style="font-size:60px;font-weight:bold;">CLIP</text>
     </clipPath>
   </defs>
 </svg>

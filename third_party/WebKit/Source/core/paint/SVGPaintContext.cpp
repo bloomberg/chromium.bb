@@ -126,7 +126,8 @@ bool SVGPaintContext::applyClipIfNecessary(SVGResources* resources)
     // m_object.style()->clipPath() corresponds to '-webkit-clip-path'.
     // FIXME: We should unify the clip-path and -webkit-clip-path codepaths.
     if (LayoutSVGResourceClipper* clipper = resources ? resources->clipper() : nullptr) {
-        if (!SVGClipPainter(*clipper).prepareEffect(m_object, m_object.objectBoundingBox(), m_object.paintInvalidationRectInLocalSVGCoordinates(), paintInfo().context, m_clipperState))
+        if (!SVGClipPainter(*clipper).prepareEffect(m_object, m_object.objectBoundingBox(),
+            m_object.paintInvalidationRectInLocalSVGCoordinates(), FloatPoint(), paintInfo().context, m_clipperState))
             return false;
         m_clipper = clipper;
     } else {

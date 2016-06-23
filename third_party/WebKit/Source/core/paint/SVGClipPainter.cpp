@@ -33,7 +33,7 @@ private:
 } // namespace
 
 bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& targetBoundingBox,
-    const FloatRect& paintInvalidationRect, GraphicsContext& context, ClipperState& clipperState)
+    const FloatRect& paintInvalidationRect, const FloatPoint& layerPositionOffset, GraphicsContext& context, ClipperState& clipperState)
 {
     ASSERT(clipperState == ClipperNotApplied);
     ASSERT_WITH_SECURITY_IMPLICATION(!m_clip.needsLayout());
@@ -57,6 +57,9 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     // First, try to apply the clip as a clipPath.
     Path clipPath;
     if (m_clip.asPath(animatedLocalTransform, targetBoundingBox, clipPath)) {
+        AffineTransform positionTransform;
+        positionTransform.translate(layerPositionOffset.x(), layerPositionOffset.y());
+        clipPath.transform(positionTransform);
         clipperState = ClipperAppliedPath;
         context.getPaintController().createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
         return true;
@@ -68,7 +71,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     // Begin compositing the clip mask.
     CompositingRecorder::beginCompositing(context, target, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
     {
-        if (!drawClipAsMask(context, target, targetBoundingBox, paintInvalidationRect, animatedLocalTransform)) {
+        if (!drawClipAsMask(context, target, targetBoundingBox, paintInvalidationRect, animatedLocalTransform, layerPositionOffset)) {
             // End the clip mask's compositor.
             CompositingRecorder::endCompositing(context, target);
             return false;
@@ -100,7 +103,8 @@ void SVGClipPainter::finishEffect(const LayoutObject& target, GraphicsContext& c
     }
 }
 
-bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect, const AffineTransform& localTransform)
+bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox,
+    const FloatRect& targetPaintInvalidationRect, const AffineTransform& localTransform, const FloatPoint& layerPositionOffset)
 {
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutObject, DisplayItem::SVGClip))
         return true;
@@ -114,7 +118,7 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject
         SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&m_clip);
         LayoutSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : nullptr;
         ClipperState clipPathClipperState = ClipperNotApplied;
-        if (clipPathClipper && !SVGClipPainter(*clipPathClipper).prepareEffect(m_clip, targetBoundingBox, targetPaintInvalidationRect, maskContext, clipPathClipperState))
+        if (clipPathClipper && !SVGClipPainter(*clipPathClipper).prepareEffect(m_clip, targetBoundingBox, targetPaintInvalidationRect, layerPositionOffset, maskContext, clipPathClipperState))
             return false;
 
         {
