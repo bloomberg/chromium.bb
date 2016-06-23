@@ -76,8 +76,9 @@ AudioRendererAlgorithm::AudioRendererAlgorithm()
       target_block_index_(0),
       ola_window_size_(0),
       ola_hop_size_(0),
-      num_complete_frames_(0) {
-}
+      num_complete_frames_(0),
+      initial_capacity_(0),
+      max_capacity_(0) {}
 
 AudioRendererAlgorithm::~AudioRendererAlgorithm() {}
 
@@ -86,7 +87,11 @@ void AudioRendererAlgorithm::Initialize(const AudioParameters& params) {
 
   channels_ = params.channels();
   samples_per_second_ = params.sample_rate();
-  capacity_ = ConvertMillisecondsToFrames(kStartingCapacityInMs);
+  initial_capacity_ = capacity_ =
+      std::max(params.frames_per_buffer() * 2,
+               ConvertMillisecondsToFrames(kStartingCapacityInMs));
+  max_capacity_ =
+      std::max(initial_capacity_, kMaxCapacityInSeconds * samples_per_second_);
   num_candidate_blocks_ = ConvertMillisecondsToFrames(kWsolaSearchIntervalMs);
   ola_window_size_ = ConvertMillisecondsToFrames(kOlaWindowSizeMs);
 
@@ -203,7 +208,7 @@ void AudioRendererAlgorithm::FlushBuffers() {
 
   // Reset |capacity_| so growth triggered by underflows doesn't penalize seek
   // time.
-  capacity_ = ConvertMillisecondsToFrames(kStartingCapacityInMs);
+  capacity_ = initial_capacity_;
 }
 
 void AudioRendererAlgorithm::EnqueueBuffer(
@@ -217,10 +222,8 @@ bool AudioRendererAlgorithm::IsQueueFull() {
 }
 
 void AudioRendererAlgorithm::IncreaseQueueCapacity() {
-  int max_capacity = kMaxCapacityInSeconds * samples_per_second_;
-  DCHECK_LE(capacity_, max_capacity);
-
-  capacity_ = std::min(2 * capacity_, max_capacity);
+  DCHECK_LE(capacity_, max_capacity_);
+  capacity_ = std::min(2 * capacity_, max_capacity_);
 }
 
 int64_t AudioRendererAlgorithm::GetMemoryUsage() const {

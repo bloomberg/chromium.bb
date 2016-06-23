@@ -19,6 +19,7 @@
 #include "media/audio/android/opensles_util.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/audio_timestamp_helper.h"
 
 namespace media {
 
@@ -106,6 +107,7 @@ class OpenSLESOutputStream : public AudioOutputStream {
   uint8_t* audio_data_[kMaxNumOfBuffersInQueue];
 
   int active_buffer_index_;
+  int bytes_per_frame_;
   size_t buffer_size_bytes_;
 
   bool started_;
@@ -118,6 +120,9 @@ class OpenSLESOutputStream : public AudioOutputStream {
 
   // Volume level from 0 to 1.
   float volume_;
+
+  // Used to calculate the delay value for each OnMoreData() call.
+  AudioTimestampHelper delay_calculator_;
 
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
   std::unique_ptr<AudioBus> audio_bus_;

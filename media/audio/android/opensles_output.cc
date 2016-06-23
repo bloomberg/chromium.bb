@@ -29,10 +29,12 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
       player_(NULL),
       simple_buffer_queue_(NULL),
       active_buffer_index_(0),
-      buffer_size_bytes_(0),
+      bytes_per_frame_(params.GetBytesPerFrame()),
+      buffer_size_bytes_(params.GetBytesPerBuffer()),
       started_(false),
       muted_(false),
-      volume_(1.0) {
+      volume_(1.0),
+      delay_calculator_(params.sample_rate()) {
   DVLOG(2) << "OpenSLESOutputStream::OpenSLESOutputStream("
            << "stream_type=" << stream_type << ")";
   format_.formatType = SL_DATAFORMAT_PCM;
@@ -43,8 +45,6 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
   format_.containerSize = params.bits_per_sample();
   format_.endianness = SL_BYTEORDER_LITTLEENDIAN;
   format_.channelMask = ChannelCountToSLESChannelMask(params.channels());
-
-  buffer_size_bytes_ = params.GetBytesPerBuffer();
   audio_bus_ = AudioBus::Create(params);
 
   memset(&audio_data_, 0, sizeof(audio_data_));
@@ -88,6 +88,7 @@ void OpenSLESOutputStream::Start(AudioSourceCallback* callback) {
   base::AutoLock lock(lock_);
   DCHECK(callback_ == NULL || callback_ == callback);
   callback_ = callback;
+  delay_calculator_.SetBaseTimestamp(base::TimeDelta());
 
   // Avoid start-up glitches by filling up one buffer queue before starting
   // the stream.
@@ -323,12 +324,19 @@ void OpenSLESOutputStream::FillBufferQueueNoLock() {
   // done in this method.
   lock_.AssertAcquired();
 
+  // Calculate the position relative to the number of frames written.
+  uint32_t position_in_ms = 0;
+  SLresult err = (*player_)->GetPosition(player_, &position_in_ms);
+  const int delay =
+      err == SL_RESULT_SUCCESS
+          ? -delay_calculator_.GetFramesToTarget(
+                base::TimeDelta::FromMilliseconds(position_in_ms)) *
+                bytes_per_frame_
+          : 0;
+  DCHECK_GE(delay, 0);
+
   // Read data from the registered client source.
-  // TODO(henrika): Investigate if it is possible to get a more accurate
-  // delay estimation.
-  const uint32_t hardware_delay = buffer_size_bytes_;
-  int frames_filled =
-      callback_->OnMoreData(audio_bus_.get(), hardware_delay, 0);
+  const int frames_filled = callback_->OnMoreData(audio_bus_.get(), delay, 0);
   if (frames_filled <= 0) {
     // Audio source is shutting down, or halted on error.
     return;
@@ -338,19 +346,17 @@ void OpenSLESOutputStream::FillBufferQueueNoLock() {
   // raw float, the data must be clipped and sanitized since it may come
   // from an untrusted source such as NaCl.
   audio_bus_->Scale(muted_ ? 0.0f : volume_);
-  audio_bus_->ToInterleaved(frames_filled,
-                            format_.bitsPerSample / 8,
+  audio_bus_->ToInterleaved(frames_filled, format_.bitsPerSample / 8,
                             audio_data_[active_buffer_index_]);
 
-  const int num_filled_bytes =
-      frames_filled * audio_bus_->channels() * format_.bitsPerSample / 8;
+  delay_calculator_.AddFrames(frames_filled);
+  const int num_filled_bytes = frames_filled * bytes_per_frame_;
   DCHECK_LE(static_cast<size_t>(num_filled_bytes), buffer_size_bytes_);
 
   // Enqueue the buffer for playback.
-  SLresult err =
-      (*simple_buffer_queue_)->Enqueue(simple_buffer_queue_,
-                                       audio_data_[active_buffer_index_],
-                                       num_filled_bytes);
+  err = (*simple_buffer_queue_)
+            ->Enqueue(simple_buffer_queue_, audio_data_[active_buffer_index_],
+                      num_filled_bytes);
   if (SL_RESULT_SUCCESS != err)
     HandleError(err);
 

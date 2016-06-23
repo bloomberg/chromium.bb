@@ -207,6 +207,10 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // |target_block_|.
   std::unique_ptr<AudioBus> target_block_;
 
+  // The initial and maximum capacity calculated by Initialize().
+  int initial_capacity_;
+  int max_capacity_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithm);
 };
 

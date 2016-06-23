@@ -83,22 +83,21 @@ class AudioRendererAlgorithmTest : public testing::Test {
   ~AudioRendererAlgorithmTest() override {}
 
   void Initialize() {
-    Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, 3000);
+    Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, 3000, 300);
   }
 
   void Initialize(ChannelLayout channel_layout,
                   SampleFormat sample_format,
-                  int samples_per_second) {
+                  int samples_per_second,
+                  int frames_per_buffer) {
     channels_ = ChannelLayoutToChannelCount(channel_layout);
     samples_per_second_ = samples_per_second;
     channel_layout_ = channel_layout;
     sample_format_ = sample_format;
     bytes_per_sample_ = SampleFormatToBytesPerChannel(sample_format);
     AudioParameters params(media::AudioParameters::AUDIO_PCM_LINEAR,
-                           channel_layout,
-                           samples_per_second,
-                           bytes_per_sample_ * 8,
-                           samples_per_second / 100);
+                           channel_layout, samples_per_second,
+                           bytes_per_sample_ * 8, frames_per_buffer);
     algorithm_.Initialize(params);
     FillAlgorithmQueue();
   }
@@ -320,6 +319,15 @@ class AudioRendererAlgorithmTest : public testing::Test {
   int bytes_per_sample_;
 };
 
+TEST_F(AudioRendererAlgorithmTest, InitializeWithLargeParameters) {
+  const int kBufferSize = 0.5 * kSamplesPerSecond;
+  Initialize(CHANNEL_LAYOUT_MONO, kSampleFormatU8, kSamplesPerSecond,
+             kBufferSize);
+  EXPECT_LT(kBufferSize, algorithm_.QueueCapacity());
+  algorithm_.FlushBuffers();
+  EXPECT_LT(kBufferSize, algorithm_.QueueCapacity());
+}
+
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_NormalRate) {
   Initialize();
   TestPlaybackRate(1.0);
@@ -414,21 +422,23 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_SmallBufferSize) {
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_LargeBufferSize) {
-  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, 44100);
+  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, 44100, 441);
   TestPlaybackRate(1.0);
   TestPlaybackRate(0.5);
   TestPlaybackRate(1.5);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_LowerQualityAudio) {
-  Initialize(CHANNEL_LAYOUT_MONO, kSampleFormatU8, kSamplesPerSecond);
+  Initialize(CHANNEL_LAYOUT_MONO, kSampleFormatU8, kSamplesPerSecond,
+             kSamplesPerSecond / 100);
   TestPlaybackRate(1.0);
   TestPlaybackRate(0.5);
   TestPlaybackRate(1.5);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_HigherQualityAudio) {
-  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS32, kSamplesPerSecond);
+  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS32, kSamplesPerSecond,
+             kSamplesPerSecond / 100);
   TestPlaybackRate(1.0);
   TestPlaybackRate(0.5);
   TestPlaybackRate(1.5);
