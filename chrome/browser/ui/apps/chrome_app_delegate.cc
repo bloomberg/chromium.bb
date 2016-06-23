@@ -80,7 +80,7 @@ content::WebContents* OpenURLFromTabInternal(
 }
 
 void OnCheckIsDefaultBrowserFinished(
-    content::WebContents* source,
+    std::unique_ptr<content::WebContents> source,
     const content::OpenURLParams& params,
     shell_integration::DefaultWebClientState state) {
   // Open a URL based on if this browser instance is the default system browser.
@@ -136,13 +136,21 @@ ChromeAppDelegate::NewWindowContentsDelegate::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   if (source) {
+    // This NewWindowContentsDelegate was given ownership of the incoming
+    // WebContents by being assigned as its delegate within
+    // ChromeAppDelegate::AddNewContents(), but this is the first time
+    // NewWindowContentsDelegate actually sees the WebContents. Here ownership
+    // is captured and passed to OnCheckIsDefaultBrowserFinished(), which
+    // destroys it after the default browser worker completes.
+    std::unique_ptr<content::WebContents> source_ptr(source);
     // Object lifetime notes: StartCheckIsDefault() takes lifetime ownership of
     // check_if_default_browser_worker and will clean up after the asynchronous
     // tasks.
     scoped_refptr<shell_integration::DefaultBrowserWorker>
         check_if_default_browser_worker =
-            new shell_integration::DefaultBrowserWorker(base::Bind(
-                &OnCheckIsDefaultBrowserFinished, base::Owned(source), params));
+            new shell_integration::DefaultBrowserWorker(
+                base::Bind(&OnCheckIsDefaultBrowserFinished,
+                           base::Passed(&source_ptr), params));
     check_if_default_browser_worker->StartCheckIsDefault();
   }
   return NULL;
