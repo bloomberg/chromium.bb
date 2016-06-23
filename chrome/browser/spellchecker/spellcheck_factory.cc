@@ -76,10 +76,13 @@ void SpellcheckServiceFactory::RegisterProfilePrefs(
       prefs::kSpellCheckDictionary,
       l10n_util::GetStringUTF8(IDS_SPELLCHECK_DICTIONARY));
   user_prefs->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService, false);
-  user_prefs->RegisterBooleanPref(
-      prefs::kEnableContinuousSpellcheck,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  uint32_t flags = PrefRegistry::NO_REGISTRATION_FLAGS;
+#else
+  uint32_t flags = user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
+#endif
+  user_prefs->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck, true,
+                                  flags);
 }
 
 content::BrowserContext* SpellcheckServiceFactory::GetBrowserContextToUse(
