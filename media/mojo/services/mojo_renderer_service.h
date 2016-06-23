@@ -6,10 +6,10 @@
 #define MEDIA_MOJO_SERVICES_MOJO_RENDERER_SERVICE_H_
 
 #include <stdint.h>
-
 #include <memory>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -30,8 +30,9 @@ class Renderer;
 
 // A mojom::Renderer implementation that use a media::Renderer to render
 // media streams.
-class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
-                                              public RendererClient {
+class MEDIA_MOJO_EXPORT MojoRendererService
+    : NON_EXPORTED_BASE(public mojom::Renderer),
+      public RendererClient {
  public:
   // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.
