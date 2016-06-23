@@ -74,6 +74,38 @@ void TestLoadTimingNotReused(const HttpStream& stream) {
   ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
 }
 
+class ReadErrorUploadDataStream : public UploadDataStream {
+ public:
+  enum class FailureMode { SYNC, ASYNC };
+
+  explicit ReadErrorUploadDataStream(FailureMode mode)
+      : UploadDataStream(true, 0), async_(mode), weak_factory_(this) {}
+
+ private:
+  void CompleteRead() { UploadDataStream::OnReadCompleted(ERR_FAILED); }
+
+  // UploadDataStream implementation:
+  int InitInternal() override { return OK; }
+
+  int ReadInternal(IOBuffer* buf, int buf_len) override {
+    if (async_ == FailureMode::ASYNC) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&ReadErrorUploadDataStream::CompleteRead,
+                                weak_factory_.GetWeakPtr()));
+      return ERR_IO_PENDING;
+    }
+    return ERR_FAILED;
+  }
+
+  void ResetInternal() override {}
+
+  const FailureMode async_;
+
+  base::WeakPtrFactory<ReadErrorUploadDataStream> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadErrorUploadDataStream);
+};
+
 }  // namespace
 
 class SpdyHttpStreamTest : public testing::Test,
@@ -98,7 +130,7 @@ class SpdyHttpStreamTest : public testing::Test,
   }
 
   void TearDown() override {
-    crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
+    crypto::ECSignatureCreator::SetFactoryForTesting(nullptr);
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sequenced_data_->AllReadDataConsumed());
     EXPECT_TRUE(sequenced_data_->AllWriteDataConsumed());
@@ -150,7 +182,7 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
   HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), NULL, 0, key);
+  InitSession(reads, arraysize(reads), nullptr, 0, key);
 
   SpdyHttpStream stream(session_, false);
   UploadProgress progress = stream.GetUploadProgress();
@@ -168,7 +200,7 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
       CreateMockWrite(*req.get(), 0),
   };
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
   MockRead reads[] = {
       CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
@@ -233,11 +265,11 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
     CreateMockWrite(*req2, 1),
   };
   std::unique_ptr<SpdySerializedFrame> resp1(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
   std::unique_ptr<SpdySerializedFrame> body1(
       spdy_util_.ConstructSpdyBodyFrame(1, "", 0, true));
   std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 3));
   std::unique_ptr<SpdySerializedFrame> body2(
       spdy_util_.ConstructSpdyBodyFrame(3, "", 0, true));
   MockRead reads[] = {
@@ -329,7 +361,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> body(
       framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_FIN));
   MockWrite writes[] = {
@@ -338,7 +370,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   };
 
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+      spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
   MockRead reads[] = {
       CreateMockRead(*resp, 2),
       CreateMockRead(*body, 3),
@@ -393,7 +425,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 // This unittest tests the request callback is properly called and handled.
 TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> chunk(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
   MockWrite writes[] = {
@@ -402,7 +434,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   };
 
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+      spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
   MockRead reads[] = {
       CreateMockRead(*resp, 2),
       CreateMockRead(*chunk, 3),
@@ -452,7 +484,7 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> body(
       framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_NONE));
   MockWrite writes[] = {
@@ -461,7 +493,7 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   };
 
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+      spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
   MockRead reads[] = {
       MockRead(ASYNC, ERR_CONNECTION_CLOSED, 2)  // Server hangs up early.
   };
@@ -523,7 +555,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   const char kUploadData1[] = "12345678";
   const int kUploadData1Size = arraysize(kUploadData1)-1;
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> chunk1(
       spdy_util_.ConstructSpdyBodyFrame(1, false));
   std::unique_ptr<SpdySerializedFrame> chunk2(spdy_util_.ConstructSpdyBodyFrame(
@@ -537,7 +569,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
     CreateMockWrite(*chunk3, 3),
   };
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+      spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
   MockRead reads[] = {
     CreateMockRead(*resp, 4),
     CreateMockRead(*chunk1, 5),
@@ -628,7 +660,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
 // frame when uploading a chunked data stream.
 TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> chunk1(
       spdy_util_.ConstructSpdyBodyFrame(1, false));
   std::unique_ptr<SpdySerializedFrame> chunk2(
@@ -639,7 +671,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
     CreateMockWrite(*chunk2, 2),
   };
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+      spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
   MockRead reads[] = {
     CreateMockRead(*resp, 3),
     CreateMockRead(*chunk1, 4),
@@ -686,7 +718,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   EXPECT_EQ(0, http_stream->GetTotalReceivedBytes());
 
   // Now end the stream with an empty data frame and the FIN set.
-  upload_stream.AppendData(NULL, 0, true);
+  upload_stream.AppendData(nullptr, 0, true);
 
   // Finish writing the final frame, and perform all reads.
   base::RunLoop().RunUntilIdle();
@@ -722,7 +754,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
 // payload. Unclear if this is a case worth supporting.
 TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> chunk(
       spdy_util_.ConstructSpdyBodyFrame(1, "", 0, true));
   MockWrite writes[] = {
@@ -730,7 +762,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
     CreateMockWrite(*chunk, 1),
   };
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+      spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
   MockRead reads[] = {
     CreateMockRead(*resp, 2),
     CreateMockRead(*chunk, 3),
@@ -800,7 +832,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
       CreateMockWrite(*req.get(), 0),
   };
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
   MockRead reads[] = {
       CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
@@ -844,7 +876,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
 // made available is handled correctly.
 TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> chunk1(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
@@ -852,7 +884,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
     CreateMockWrite(*chunk1, 1),
   };
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+      spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
   MockRead reads[] = {
@@ -907,7 +939,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   EXPECT_EQ(OK, callback.WaitForResult());
 
   // Verify that the window size has decreased.
-  ASSERT_TRUE(http_stream->stream() != NULL);
+  ASSERT_TRUE(http_stream->stream() != nullptr);
   EXPECT_NE(static_cast<int>(
                 SpdySession::GetDefaultInitialWindowSize(session_->protocol())),
             http_stream->stream()->send_window_size());
@@ -921,7 +953,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   EXPECT_EQ(0, http_stream->GetTotalReceivedBytes());
 
   // Verify the window update.
-  ASSERT_TRUE(http_stream->stream() != NULL);
+  ASSERT_TRUE(http_stream->stream() != nullptr);
   EXPECT_EQ(static_cast<int>(
                 SpdySession::GetDefaultInitialWindowSize(session_->protocol())),
             http_stream->stream()->send_window_size());
@@ -947,6 +979,113 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
 
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
+}
+
+TEST_P(SpdyHttpStreamTest, DataReadErrorSynchronous) {
+  std::unique_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
+
+  // Server receives RST_STREAM_INTERNAL_ERROR on client's internal failure.
+  // The failure is a reading error in this case caused by
+  // UploadDataStream::Read().
+  std::unique_ptr<SpdySerializedFrame> rst_frame(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_INTERNAL_ERROR));
+
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0, SYNCHRONOUS),       // Request
+      CreateMockWrite(*rst_frame, 1, SYNCHRONOUS)  // Reset frame
+  };
+
+  std::unique_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+
+  MockRead reads[] = {
+      CreateMockRead(*resp, 2), MockRead(SYNCHRONOUS, 0, 3),
+  };
+
+  HostPortPair host_port_pair("www.example.org", 80);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
+
+  ReadErrorUploadDataStream upload_data_stream(
+      ReadErrorUploadDataStream::FailureMode::SYNC);
+  ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.example.org/");
+  request.upload_data_stream = &upload_data_stream;
+
+  TestCompletionCallback callback;
+  HttpResponseInfo response;
+  HttpRequestHeaders headers;
+  BoundNetLog net_log;
+  SpdyHttpStream http_stream(session_, true);
+  ASSERT_EQ(OK, http_stream.InitializeStream(&request, DEFAULT_PRIORITY,
+                                             net_log, CompletionCallback()));
+
+  int result = http_stream.SendRequest(headers, &response, callback.callback());
+  EXPECT_EQ(ERR_FAILED, callback.GetResult(result));
+
+  // Because the server has not closed the connection yet, there shouldn't be
+  // a stream but a session in the pool
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+}
+
+TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
+  std::unique_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
+
+  // Server receives RST_STREAM_INTERNAL_ERROR on client's internal failure.
+  // The failure is a reading error in this case caused by
+  // UploadDataStream::Read().
+  std::unique_ptr<SpdySerializedFrame> rst_frame(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_INTERNAL_ERROR));
+
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0),       // Request
+      CreateMockWrite(*rst_frame, 1)  // Reset frame
+  };
+
+  std::unique_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+
+  MockRead reads[] = {
+      MockRead(ASYNC, 0, 2),
+  };
+
+  HostPortPair host_port_pair("www.example.org", 80);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
+
+  ReadErrorUploadDataStream upload_data_stream(
+      ReadErrorUploadDataStream::FailureMode::ASYNC);
+  ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.example.org/");
+  request.upload_data_stream = &upload_data_stream;
+
+  TestCompletionCallback callback;
+  HttpResponseInfo response;
+  HttpRequestHeaders headers;
+  BoundNetLog net_log;
+  SpdyHttpStream http_stream(session_, true);
+  ASSERT_EQ(OK, http_stream.InitializeStream(&request, DEFAULT_PRIORITY,
+                                             net_log, CompletionCallback()));
+
+  int result = http_stream.SendRequest(headers, &response, callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, result);
+  EXPECT_EQ(ERR_FAILED, callback.GetResult(result));
+
+  // Because the server has closed the connection, there shouldn't be a session
+  // in the pool anymore.
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
 }
 
 // TODO(willchan): Write a longer test for SpdyStream that exercises all

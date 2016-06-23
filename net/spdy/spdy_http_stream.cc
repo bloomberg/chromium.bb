@@ -453,14 +453,28 @@ void SpdyHttpStream::ReadAndSendRequestBodyData() {
              base::Bind(&SpdyHttpStream::OnRequestBodyReadCompleted,
                         weak_factory_.GetWeakPtr()));
 
-  if (rv != ERR_IO_PENDING) {
-    // ERR_IO_PENDING is the only possible error.
-    CHECK_GE(rv, 0);
+  if (rv != ERR_IO_PENDING)
     OnRequestBodyReadCompleted(rv);
-  }
+}
+
+void SpdyHttpStream::ResetStreamInternal() {
+  spdy_session_->ResetStream(stream()->stream_id(), RST_STREAM_INTERNAL_ERROR,
+                             std::string());
 }
 
 void SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
+  if (status < 0) {
+    DCHECK_NE(ERR_IO_PENDING, status);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SpdyHttpStream::ResetStreamInternal,
+                              weak_factory_.GetWeakPtr()));
+
+    // Call the |request_callback| with received error.
+    if (!request_callback_.is_null())
+      DoRequestCallback(status);
+    return;
+  }
+
   CHECK_GE(status, 0);
   request_body_buf_size_ = status;
   const bool eof = request_info_->upload_data_stream->IsEOF();
