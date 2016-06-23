@@ -6298,6 +6298,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // The blocked frame's origin should become unique.
     EXPECT_EQ("null", root->child_at(0)->current_origin().Serialize());
 
+    // Ensure that we don't use the blocked URL as the blocked frame's last
+    // committed URL (see https://crbug.com/622385).
+    EXPECT_NE(root->child_at(0)->current_frame_host()->GetLastCommittedURL(),
+              blocked_urls[i]);
+
     // The blocked frame should still fire a load event in its parent's process.
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 

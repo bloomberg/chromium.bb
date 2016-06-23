@@ -363,9 +363,18 @@ void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceRespo
 
     setWasBlockedAfterXFrameOptionsOrCSP();
 
-    // Pretend that this was an empty HTTP 200 response.
+    // Pretend that this was an empty HTTP 200 response.  Don't reuse the
+    // original URL for the empty page (https://crbug.com/622385).
+    //
+    // TODO(mkwst):  Remove this once XFO moves to the browser.
+    // https://crbug.com/555418.
     clearMainResourceHandle();
-    m_response = ResourceResponse(blankURL(), "text/html", 0, nullAtom, String());
+    KURL blockedURL = SecurityOrigin::urlWithUniqueSecurityOrigin();
+    m_originalRequest.setURL(blockedURL);
+    m_request.setURL(blockedURL);
+    m_redirectChain.removeLast();
+    appendRedirect(blockedURL);
+    m_response = ResourceResponse(blockedURL, "text/html", 0, nullAtom, String());
     finishedLoading(monotonicallyIncreasingTime());
 
     return;
