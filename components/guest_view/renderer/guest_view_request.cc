@@ -128,6 +128,7 @@ void GuestViewDetachRequest::PerformRequest() {
 }
 
 void GuestViewDetachRequest::HandleResponse(const IPC::Message& message) {
+  DCHECK(message.type() == GuestViewMsg_GuestDetached::ID);
   ExecuteCallbackIfAvailable(0 /* argc */, nullptr);
 }
 
