@@ -2368,8 +2368,6 @@
             'dom/AXObjectCache.cpp',
             'dom/AXObjectCache.h',
             'dom/ActiveDOMObject.cpp',
-            'dom/AddConsoleMessageTask.cpp',
-            'dom/AddConsoleMessageTask.h',
             'dom/Attr.cpp',
             'dom/AttributeCollection.h',
             'dom/CDATASection.cpp',

@@ -62,12 +62,12 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/AXObjectCache.h"
-#include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentParserTiming.h"
@@ -364,26 +364,15 @@ uint64_t Document::s_globalTreeVersion = 0;
 
 static bool s_threadedParsingEnabledForTesting = true;
 
-// This class doesn't work with non-Document ExecutionContext.
-class AutofocusTask final : public ExecutionContextTask {
-public:
-    static std::unique_ptr<AutofocusTask> create()
-    {
-        return wrapUnique(new AutofocusTask());
+// This doesn't work with non-Document ExecutionContext.
+static void runAutofocusTask(ExecutionContext* context)
+{
+    Document* document = toDocument(context);
+    if (Element* element = document->autofocusElement()) {
+        document->setAutofocusElement(0);
+        element->focus();
     }
-    ~AutofocusTask() override { }
-
-private:
-    AutofocusTask() { }
-    void performTask(ExecutionContext* context) override
-    {
-        Document* document = toDocument(context);
-        if (Element* element = document->autofocusElement()) {
-            document->setAutofocusElement(0);
-            element->focus();
-        }
-    }
-};
+}
 
 Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
@@ -5192,10 +5181,15 @@ void Document::reportBlockedScriptExecutionToInspector(const String& directiveTe
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
+static void runAddConsoleMessageTask(MessageSource source, MessageLevel level, const String& message, ExecutionContext* context)
+{
+    context->addConsoleMessage(ConsoleMessage::create(source, level, message));
+}
+
 void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
 {
     if (!isContextThread()) {
-        m_taskRunner->postTask(BLINK_FROM_HERE, AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
+        m_taskRunner->postTask(BLINK_FROM_HERE, createCrossThreadTask(&runAddConsoleMessageTask, consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
         return;
     }
 
@@ -5359,7 +5353,6 @@ bool Document::isDelayingLoadEvent()
     }
     return m_loadEventDelayCount;
 }
-
 
 void Document::loadEventDelayTimerFired(Timer<Document>*)
 {
@@ -5770,7 +5763,7 @@ void Document::setAutofocusElement(Element* element)
     m_hasAutofocused = true;
     DCHECK(!m_autofocusElement);
     m_autofocusElement = element;
-    m_taskRunner->postTask(BLINK_FROM_HERE, AutofocusTask::create());
+    m_taskRunner->postTask(BLINK_FROM_HERE, createSameThreadTask(&runAutofocusTask));
 }
 
 Element* Document::activeElement() const
