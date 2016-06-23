@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_CLEAR_BROWSING_DATA_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_CLEAR_BROWSING_DATA_HANDLER_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -62,6 +65,18 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // Called as an asynchronous response to |RefreshHistoryNotice()|. Shows or
   // hides the footer about other forms of history stored in user's account.
   void UpdateHistoryNotice(bool show);
+
+  // Adds a browsing data |counter|.
+  void AddCounter(std::unique_ptr<BrowsingDataCounter> counter);
+
+  // Updates a counter text according to the |result|.
+  void UpdateCounterText(std::unique_ptr<BrowsingDataCounter::Result> result);
+
+  // Cached profile corresponding to the WebUI of this handler.
+  Profile* profile_;
+
+  // Counters that calculate the data volume for individual data types.
+  std::vector<std::unique_ptr<BrowsingDataCounter>> counters_;
 
   // ProfileSyncService to observe sync state changes.
   ProfileSyncService* sync_service_;

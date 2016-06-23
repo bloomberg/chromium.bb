@@ -78,6 +78,12 @@
       .clear-browsing-data-footer a {
         text-decoration: none;
       }
+
+      :host {
+        --settings-secondary-unchecked: {
+          display: none;
+        };
+      }
     </style>
 
     <cr-dialog id="dialog">
@@ -92,35 +98,43 @@
         </div>
         <settings-checkbox id="browsingCheckbox"
             pref="{{prefs.browser.clear_data.browsing_history}}"
-            label="$i18n{clearBrowsingHistory}">
+            label="$i18n{clearBrowsingHistory}"
+            sub-label="[[counters_.browsing_history]]">
         </settings-checkbox>
         <settings-checkbox id="downloadCheckbox"
             pref="{{prefs.browser.clear_data.download_history}}"
-            label="$i18n{clearDownloadHistory}">
+            label="$i18n{clearDownloadHistory}"
+            sub-label="[[counters_.download_history]]">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.cache}}"
-            label="$i18n{clearCache}">
+            label="$i18n{clearCache}"
+            sub-label="[[counters_.cache]]">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.cookies}}"
-            label="$i18n{clearCookies}">
+            label="$i18n{clearCookies}"
+            sub-label="$i18n{clearCookiesCounter}">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.passwords}}"
-            label="$i18n{clearPasswords}">
+            label="$i18n{clearPasswords}"
+            sub-label="[[counters_.passwords]]">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.form_data}}"
-            label="$i18n{clearFormData}">
+            label="$i18n{clearFormData}"
+            sub-label="[[counters_.form_data]]">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.hosted_apps_data}}"
-            label="$i18n{clearHostedAppData}">
+            label="$i18n{clearHostedAppData}"
+            sub-label="[[counters_.hosted_apps_data]]">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.content_licenses}}"
-            label="$i18n{clearDeauthorizeContentLicenses}">
+            label="$i18n{clearDeauthorizeContentLicenses}"
+            sub-label="$i18n{clearDeauthorizeContentLicensesCounter}">
         </settings-checkbox>
       </div>
       <div class="button-container">

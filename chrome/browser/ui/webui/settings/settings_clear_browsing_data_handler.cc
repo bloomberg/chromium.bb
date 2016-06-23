@@ -7,10 +7,18 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "chrome/browser/browsing_data/autofill_counter.h"
+#include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/cache_counter.h"
+#include "chrome/browser/browsing_data/downloads_counter.h"
+#include "chrome/browser/browsing_data/history_counter.h"
+#include "chrome/browser/browsing_data/hosted_apps_counter.h"
+#include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -21,14 +29,12 @@
 namespace settings {
 
 ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
-    : sync_service_(nullptr),
+    : profile_(Profile::FromWebUI(webui)),
+      sync_service_(ProfileSyncServiceFactory::GetForProfile(profile_)),
       sync_service_observer_(this),
       remover_(nullptr),
       should_show_history_footer_(false),
-      weak_ptr_factory_(this) {
-  sync_service_ =
-        ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(webui));
-}
+      weak_ptr_factory_(this) {}
 
 ClearBrowsingDataHandler::~ClearBrowsingDataHandler() {
   if (remover_)
@@ -48,7 +54,7 @@ void ClearBrowsingDataHandler::RegisterMessages() {
 }
 
 void ClearBrowsingDataHandler::OnJavascriptAllowed() {
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   profile_pref_registrar_.Init(prefs);
   profile_pref_registrar_.Add(
       prefs::kAllowDeletingBrowserHistory,
@@ -72,8 +78,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   CHECK(webui_callback_id_.empty());
   CHECK(args->GetString(0, &webui_callback_id_));
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
 
   int site_data_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
   // Don't try to clear LSO data if it's not supported.
@@ -150,7 +155,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   }
 
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
-  remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile);
+  remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
   remover_->AddObserver(this);
   remover_->Remove(
       BrowsingDataRemover::Period(
@@ -172,12 +177,21 @@ void ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged() {
       "cr.webUIListenerCallback",
       base::StringValue("browsing-history-pref-changed"),
       base::FundamentalValue(
-          Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+          profile_->GetPrefs()->GetBoolean(
               prefs::kAllowDeletingBrowserHistory)));
 }
 
 void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   AllowJavascript();
+
+  // TODO(msramek): Simplify this using a factory.
+  AddCounter(base::WrapUnique(new AutofillCounter()));
+  AddCounter(base::WrapUnique(new CacheCounter()));
+  AddCounter(base::WrapUnique(new DownloadsCounter()));
+  AddCounter(base::WrapUnique(new HistoryCounter()));
+  AddCounter(base::WrapUnique(new HostedAppsCounter()));
+  AddCounter(base::WrapUnique(new PasswordsCounter()));
+
   OnStateChanged();
   RefreshHistoryNotice();
 }
@@ -193,7 +207,7 @@ void ClearBrowsingDataHandler::OnStateChanged() {
 void ClearBrowsingDataHandler::RefreshHistoryNotice() {
   browsing_data_ui::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
       sync_service_,
-      WebHistoryServiceFactory::GetForProfile(Profile::FromWebUI(web_ui())),
+      WebHistoryServiceFactory::GetForProfile(profile_),
       base::Bind(&ClearBrowsingDataHandler::UpdateHistoryNotice,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -205,6 +219,25 @@ void ClearBrowsingDataHandler::UpdateHistoryNotice(bool show) {
   UMA_HISTOGRAM_BOOLEAN(
       "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated",
       should_show_history_footer_);
+}
+
+void ClearBrowsingDataHandler::AddCounter(
+    std::unique_ptr<BrowsingDataCounter> counter) {
+  counter->Init(
+      profile_,
+      base::Bind(&ClearBrowsingDataHandler::UpdateCounterText,
+                 base::Unretained(this)));
+  counter->Restart();
+  counters_.push_back(std::move(counter));
+}
+
+void ClearBrowsingDataHandler::UpdateCounterText(
+    std::unique_ptr<BrowsingDataCounter::Result> result) {
+  CallJavascriptFunction(
+      "cr.webUIListenerCallback",
+      base::StringValue("update-counter-text"),
+      base::StringValue(result->source()->GetPrefName()),
+      base::StringValue(GetCounterTextFromResult(result.get())));
 }
 
 }  // namespace settings

@@ -21,6 +21,19 @@ Polymer({
     },
 
     /**
+     * Results of browsing data counters, keyed by the suffix of
+     * the corresponding data type deletion preference, as reported
+     * by the C++ side.
+     * @private {!Object<string>}
+     */
+    counters_: {
+      type: Object,
+      value: {
+        // Will be filled as results are reported.
+      }
+    },
+
+    /**
      * List of options for the dropdown menu.
      * @private {!DropdownMenuOptionList>}
      */
@@ -52,6 +65,9 @@ Polymer({
     this.addWebUIListener(
         'update-footer',
         this.updateFooter_.bind(this));
+    this.addWebUIListener(
+        'update-counter-text',
+        this.updateCounterText_.bind(this));
     this.browserProxy_ =
         settings.ClearBrowsingDataBrowserProxyImpl.getInstance();
     this.browserProxy_.initialize();
@@ -84,6 +100,20 @@ Polymer({
     this.$.syncedDataSentence.hidden = !syncing;
     this.$.dialog.notifyResize();
     this.$.dialog.classList.add('fully-rendered');
+  },
+
+  /**
+   * Updates the text of a browsing data counter corresponding to the given
+   * preference.
+   * @param {string} prefName Browsing data type deletion preference.
+   * @param {text} text The text with which to update the counter
+   * @private
+   */
+  updateCounterText_: function(prefName, text) {
+    // Data type deletion preferences are named "browser.clear_data.<datatype>".
+    // Strip the common prefix, i.e. use only "<datatype>".
+    var matches = prefName.match(/^browser\.clear_data\.(\w+)$/);
+    this.set('counters_.' + assert(matches[1]), text);
   },
 
   open: function() {

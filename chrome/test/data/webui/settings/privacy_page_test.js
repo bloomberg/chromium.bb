@@ -143,6 +143,38 @@ cr.define('settings_privacy_page', function() {
               assertFalse(spinner.active);
             });
       });
+
+      test('Counters', function() {
+        assertTrue(element.$.dialog.opened);
+
+        // Initialize the browsing history pref, which should belong to the
+        // first checkbox in the dialog.
+        element.set('prefs', {
+          browser: {
+            clear_data: {
+              browsing_history: {
+                key: 'browser.clear_data.browsing_history',
+                type: chrome.settingsPrivate.PrefType.BOOLEAN,
+                value: true,
+              }
+            }
+          }
+        });
+        var checkbox = element.$$('settings-checkbox');
+        assertEquals('browser.clear_data.browsing_history', checkbox.pref.key);
+
+        // Simulate a browsing data counter result for history. This checkbox's
+        // sublabel should be updated.
+        cr.webUIListenerCallback(
+            'update-counter-text', checkbox.pref.key, 'result');
+        assertEquals('result', checkbox.subLabel);
+
+        // Unchecking the checkbox will hide its sublabel.
+        var subLabelStyle = window.getComputedStyle(checkbox.$$('.secondary'));
+        assertNotEquals('none', subLabelStyle.display);
+        checkbox.checked = false;
+        assertEquals('none', subLabelStyle.display);
+      });
     });
   }
 

@@ -20,6 +20,10 @@
         @apply(--settings-secondary);
       }
 
+      paper-checkbox:not([checked]) .secondary {
+        @apply(--settings-secondary-unchecked);
+      }
+
       cr-policy-pref-indicator {
         -webkit-margin-start: var(--checkbox-spacing);
       }
