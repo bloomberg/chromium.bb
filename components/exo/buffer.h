@@ -62,6 +62,12 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
       bool secure_output_only,
       bool client_usage);
 
+  // This should be called when the buffer is attached to a Surface.
+  void OnAttach();
+
+  // This should be called when the buffer is detached from a surface.
+  void OnDetach();
+
   // Returns the size of the buffer.
   gfx::Size GetSize() const;
 
@@ -74,6 +80,9 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // Decrements the use count of buffer and notifies the client that buffer
   // as been released if it reached 0.
   void Release();
+
+  // Runs the release callback if the buffer isn't attached or in use.
+  void CheckReleaseCallback();
 
   // This is used by ProduceTextureMailbox() to produce a release callback
   // that releases a texture so it can be destroyed or reused.
@@ -103,6 +112,9 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // when a texture mailbox is released. It is used to determine when we should
   // notify the client that buffer has been released.
   unsigned use_count_;
+
+  // This keeps track of how many Surfaces the buffer is attached to.
+  unsigned attach_count_ = 0;
 
   // The last used texture. ProduceTextureMailbox() will use this
   // instead of creating a new texture when possible.

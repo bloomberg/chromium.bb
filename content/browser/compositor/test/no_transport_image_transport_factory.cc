@@ -26,8 +26,7 @@ NoTransportImageTransportFactory::NoTransportImageTransportFactory()
 NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {
   std::unique_ptr<display_compositor::GLHelper> lost_gl_helper =
       std::move(gl_helper_);
-  FOR_EACH_OBSERVER(
-      ImageTransportFactoryObserver, observer_list_, OnLostResources());
+  context_factory_->SendOnLostResources();
 }
 
 ui::ContextFactory* NoTransportImageTransportFactory::GetContextFactory() {
@@ -45,16 +44,6 @@ display_compositor::GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
         context_provider_->ContextGL(), context_provider_->ContextSupport()));
   }
   return gl_helper_.get();
-}
-
-void NoTransportImageTransportFactory::AddObserver(
-    ImageTransportFactoryObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void NoTransportImageTransportFactory::RemoveObserver(
-    ImageTransportFactoryObserver* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 }  // namespace content

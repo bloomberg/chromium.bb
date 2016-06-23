@@ -206,9 +206,11 @@ Surface::Surface()
       aura::Env::GetInstance()->context_factory()->CreateSurfaceIdAllocator();
   factory_owner_->surface_factory_.reset(
       new cc::SurfaceFactory(surface_manager_, factory_owner_.get()));
+  aura::Env::GetInstance()->context_factory()->AddObserver(this);
 }
 
 Surface::~Surface() {
+  aura::Env::GetInstance()->context_factory()->RemoveObserver(this);
   FOR_EACH_OBSERVER(SurfaceObserver, observers_, OnSurfaceDestroying(this));
 
   window_->layer()->SetShowSolidColorContent();
@@ -237,7 +239,7 @@ void Surface::Attach(Buffer* buffer) {
                buffer ? buffer->GetSize().ToString() : "null");
 
   has_pending_contents_ = true;
-  pending_buffer_ = buffer ? buffer->AsWeakPtr() : base::WeakPtr<Buffer>();
+  pending_buffer_.Reset(buffer ? buffer->AsWeakPtr() : base::WeakPtr<Buffer>());
 }
 
 void Surface::Damage(const gfx::Rect& damage) {
@@ -409,10 +411,10 @@ void Surface::Commit() {
     has_pending_layer_changes_ = true;
 
   if (has_pending_contents_) {
-    if (pending_buffer_ &&
-        (current_resource_.size != pending_buffer_->GetSize())) {
+    if (pending_buffer_.buffer() &&
+        (current_resource_.size != pending_buffer_.buffer()->GetSize())) {
       has_pending_layer_changes_ = true;
-    } else if (!pending_buffer_ && !current_resource_.size.IsEmpty()) {
+    } else if (!pending_buffer_.buffer() && !current_resource_.size.IsEmpty()) {
       has_pending_layer_changes_ = true;
     }
   }
@@ -425,6 +427,14 @@ void Surface::Commit() {
   }
 }
 
+void Surface::OnLostResources() {
+  if (surface_id_.is_null())
+    return;
+
+  UpdateResource(false);
+  UpdateSurface(false);
+}
+
 void Surface::CommitSurfaceHierarchy() {
   DCHECK(needs_commit_surface_hierarchy_);
   needs_commit_surface_hierarchy_ = false;
@@ -434,39 +444,12 @@ void Surface::CommitSurfaceHierarchy() {
   pending_state_.only_visible_on_secure_output = false;
 
   // We update contents if Attach() has been called since last commit.
-  // TODO(jbauman): Support producing a new texture mailbox after lost
-  // context.
   if (has_pending_contents_) {
     has_pending_contents_ = false;
-    current_buffer_ = pending_buffer_;
-    pending_buffer_.reset();
 
-    if (current_buffer_) {
-      std::unique_ptr<cc::SingleReleaseCallback>
-          texture_mailbox_release_callback;
+    current_buffer_ = std::move(pending_buffer_);
 
-      cc::TextureMailbox texture_mailbox;
-      texture_mailbox_release_callback = current_buffer_->ProduceTextureMailbox(
-          &texture_mailbox, state_.only_visible_on_secure_output,
-          true /* client_usage */);
-      cc::TransferableResource resource;
-      resource.id = next_resource_id_++;
-      resource.format = cc::RGBA_8888;
-      resource.filter =
-          texture_mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR;
-      resource.size = texture_mailbox.size_in_pixels();
-      resource.mailbox_holder = gpu::MailboxHolder(texture_mailbox.mailbox(),
-                                                   texture_mailbox.sync_token(),
-                                                   texture_mailbox.target());
-      resource.is_overlay_candidate = texture_mailbox.is_overlay_candidate();
-
-      factory_owner_->release_callbacks_[resource.id] = std::make_pair(
-          factory_owner_, std::move(texture_mailbox_release_callback));
-      current_resource_ = resource;
-    } else {
-      current_resource_.id = 0;
-      current_resource_.size = gfx::Size();
-    }
+    UpdateResource(true);
   }
 
   cc::SurfaceId old_surface_id = surface_id_;
@@ -476,90 +459,7 @@ void Surface::CommitSurfaceHierarchy() {
     factory_owner_->surface_factory_->Create(surface_id_);
   }
 
-  gfx::Size buffer_size = current_resource_.size;
-  gfx::SizeF scaled_buffer_size(
-      gfx::ScaleSize(gfx::SizeF(buffer_size), 1.0f / state_.buffer_scale));
-
-  gfx::Size layer_size;  // Size of the output layer, in DIP.
-  if (!state_.viewport.IsEmpty()) {
-    layer_size = state_.viewport;
-  } else if (!state_.crop.IsEmpty()) {
-    DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(state_.crop.width()) ||
-                         !gfx::IsExpressibleAsInt(state_.crop.height()))
-        << "Crop rectangle size (" << state_.crop.size().ToString()
-        << ") most be expressible using integers when viewport is not set";
-    layer_size = gfx::ToCeiledSize(state_.crop.size());
-  } else {
-    layer_size = gfx::ToCeiledSize(scaled_buffer_size);
-  }
-
-  // TODO(jbauman): Figure out how this interacts with the pixel size of
-  // CopyOutputRequests on the layer.
-  float contents_surface_to_layer_scale = 1.0;
-  gfx::Size contents_surface_size = layer_size;
-
-  gfx::PointF uv_top_left(0.f, 0.f);
-  gfx::PointF uv_bottom_right(1.f, 1.f);
-  if (!state_.crop.IsEmpty()) {
-    uv_top_left = state_.crop.origin();
-
-    uv_top_left.Scale(1.f / scaled_buffer_size.width(),
-                      1.f / scaled_buffer_size.height());
-    uv_bottom_right = state_.crop.bottom_right();
-    uv_bottom_right.Scale(1.f / scaled_buffer_size.width(),
-                          1.f / scaled_buffer_size.height());
-  }
-
-  // pending_damage_ is in Surface coordinates.
-  gfx::Rect damage_rect = gfx::SkIRectToRect(pending_damage_.getBounds());
-
-  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(contents_surface_size),
-                      damage_rect, gfx::Transform(), true);
-
-  gfx::Rect quad_rect = gfx::Rect(contents_surface_size);
-  cc::SharedQuadState* quad_state =
-      render_pass->CreateAndAppendSharedQuadState();
-  quad_state->quad_layer_bounds = contents_surface_size;
-  quad_state->visible_quad_layer_rect = quad_rect;
-  quad_state->opacity = state_.alpha;
-
-  bool frame_is_opaque = false;
-
-  std::unique_ptr<cc::DelegatedFrameData> delegated_frame(
-      new cc::DelegatedFrameData);
-  if (current_resource_.id) {
-    cc::TextureDrawQuad* texture_quad =
-        render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
-    float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
-    gfx::Rect opaque_rect;
-    frame_is_opaque =
-        state_.blend_mode == SkXfermode::kSrc_Mode ||
-        state_.opaque_region.contains(gfx::RectToSkIRect(quad_rect));
-    if (frame_is_opaque) {
-      opaque_rect = quad_rect;
-    } else if (state_.opaque_region.isRect()) {
-      opaque_rect = gfx::SkIRectToRect(state_.opaque_region.getBounds());
-    }
-
-    texture_quad->SetNew(quad_state, quad_rect, opaque_rect, quad_rect,
-                         current_resource_.id, true, uv_top_left,
-                         uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
-                         false, false, state_.only_visible_on_secure_output);
-    delegated_frame->resource_list.push_back(current_resource_);
-  } else {
-    cc::SolidColorDrawQuad* solid_quad =
-        render_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
-    solid_quad->SetNew(quad_state, quad_rect, quad_rect, SK_ColorBLACK, false);
-    frame_is_opaque = true;
-  }
-
-  delegated_frame->render_pass_list.push_back(std::move(render_pass));
-  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  frame->delegated_frame_data = std::move(delegated_frame);
-
-  factory_owner_->surface_factory_->SubmitCompositorFrame(
-      surface_id_, std::move(frame), cc::SurfaceFactory::DrawCallback());
+  UpdateSurface(true);
 
   if (!old_surface_id.is_null() && old_surface_id != surface_id_) {
     factory_owner_->surface_factory_->SetPreviousFrameSurface(surface_id_,
@@ -567,18 +467,20 @@ void Surface::CommitSurfaceHierarchy() {
     factory_owner_->surface_factory_->Destroy(old_surface_id);
   }
 
-  content_size_ = layer_size;
-
   if (old_surface_id != surface_id_) {
+    float contents_surface_to_layer_scale = 1.0;
     window_->layer()->SetShowSurface(
         surface_id_,
         base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
         base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
-        contents_surface_size, contents_surface_to_layer_scale, layer_size);
+        content_size_, contents_surface_to_layer_scale, content_size_);
     window_->layer()->SetBounds(
-        gfx::Rect(window_->layer()->bounds().origin(), layer_size));
-    window_->layer()->SetFillsBoundsOpaquely(state_.alpha == 1.0f &&
-                                             frame_is_opaque);
+        gfx::Rect(window_->layer()->bounds().origin(), content_size_));
+    window_->layer()->SetFillsBoundsOpaquely(
+        state_.alpha == 1.0f &&
+
+        state_.opaque_region.contains(
+            gfx::RectToSkIRect(gfx::Rect(content_size_))));
   }
 
   // Reset damage.
@@ -694,7 +596,7 @@ std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
 // ui::LayerOwnerDelegate overrides:
 
 void Surface::OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) {
-  if (!current_buffer_)
+  if (!current_buffer_.buffer())
     return;
 
   // TODO(reveman): Give the client a chance to provide new contents.
@@ -723,6 +625,38 @@ bool Surface::State::operator==(const State& other) {
           other.opaque_region == opaque_region &&
           other.buffer_scale == buffer_scale &&
           other.input_region == input_region);
+}
+
+Surface::BufferAttachment::BufferAttachment() {}
+
+Surface::BufferAttachment::~BufferAttachment() {
+  if (buffer_)
+    buffer_->OnDetach();
+}
+
+Surface::BufferAttachment& Surface::BufferAttachment::operator=(
+    BufferAttachment&& other) {
+  if (buffer_)
+    buffer_->OnDetach();
+  buffer_ = other.buffer_;
+  other.buffer_ = base::WeakPtr<Buffer>();
+  return *this;
+}
+
+base::WeakPtr<Buffer>& Surface::BufferAttachment::buffer() {
+  return buffer_;
+}
+
+const base::WeakPtr<Buffer>& Surface::BufferAttachment::buffer() const {
+  return buffer_;
+}
+
+void Surface::BufferAttachment::Reset(base::WeakPtr<Buffer> buffer) {
+  if (buffer)
+    buffer->OnAttach();
+  if (buffer_)
+    buffer_->OnDetach();
+  buffer_ = buffer;
 }
 
 bool Surface::HasLayerHierarchyChanged() const {
@@ -755,6 +689,122 @@ void Surface::SetSurfaceLayerContents(ui::Layer* layer) {
       base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
       base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
       layer_size, contents_surface_to_layer_scale, layer_size);
+}
+
+void Surface::UpdateResource(bool client_usage) {
+  std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
+
+  cc::TextureMailbox texture_mailbox;
+  if (current_buffer_.buffer()) {
+    texture_mailbox_release_callback =
+        current_buffer_.buffer()->ProduceTextureMailbox(
+            &texture_mailbox, state_.only_visible_on_secure_output,
+            client_usage);
+  }
+
+  if (texture_mailbox_release_callback) {
+    cc::TransferableResource resource;
+    resource.id = next_resource_id_++;
+    resource.format = cc::RGBA_8888;
+    resource.filter =
+        texture_mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR;
+    resource.size = texture_mailbox.size_in_pixels();
+    resource.mailbox_holder = gpu::MailboxHolder(texture_mailbox.mailbox(),
+                                                 texture_mailbox.sync_token(),
+                                                 texture_mailbox.target());
+    resource.is_overlay_candidate = texture_mailbox.is_overlay_candidate();
+
+    factory_owner_->release_callbacks_[resource.id] = std::make_pair(
+        factory_owner_, std::move(texture_mailbox_release_callback));
+    current_resource_ = resource;
+  } else {
+    current_resource_.id = 0;
+    current_resource_.size = gfx::Size();
+  }
+}
+
+void Surface::UpdateSurface(bool full_damage) {
+  gfx::Size buffer_size = current_resource_.size;
+  gfx::SizeF scaled_buffer_size(
+      gfx::ScaleSize(gfx::SizeF(buffer_size), 1.0f / state_.buffer_scale));
+
+  gfx::Size layer_size;  // Size of the output layer, in DIP.
+  if (!state_.viewport.IsEmpty()) {
+    layer_size = state_.viewport;
+  } else if (!state_.crop.IsEmpty()) {
+    DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(state_.crop.width()) ||
+                         !gfx::IsExpressibleAsInt(state_.crop.height()))
+        << "Crop rectangle size (" << state_.crop.size().ToString()
+        << ") most be expressible using integers when viewport is not set";
+    layer_size = gfx::ToCeiledSize(state_.crop.size());
+  } else {
+    layer_size = gfx::ToCeiledSize(scaled_buffer_size);
+  }
+
+  content_size_ = layer_size;
+  // TODO(jbauman): Figure out how this interacts with the pixel size of
+  // CopyOutputRequests on the layer.
+  gfx::Size contents_surface_size = layer_size;
+
+  gfx::PointF uv_top_left(0.f, 0.f);
+  gfx::PointF uv_bottom_right(1.f, 1.f);
+  if (!state_.crop.IsEmpty()) {
+    uv_top_left = state_.crop.origin();
+
+    uv_top_left.Scale(1.f / scaled_buffer_size.width(),
+                      1.f / scaled_buffer_size.height());
+    uv_bottom_right = state_.crop.bottom_right();
+    uv_bottom_right.Scale(1.f / scaled_buffer_size.width(),
+                          1.f / scaled_buffer_size.height());
+  }
+
+  // pending_damage_ is in Surface coordinates.
+  gfx::Rect damage_rect = full_damage
+                              ? gfx::Rect(contents_surface_size)
+                              : gfx::SkIRectToRect(pending_damage_.getBounds());
+
+  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(contents_surface_size),
+                      damage_rect, gfx::Transform(), true);
+
+  gfx::Rect quad_rect = gfx::Rect(contents_surface_size);
+  cc::SharedQuadState* quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
+  quad_state->quad_layer_bounds = contents_surface_size;
+  quad_state->visible_quad_layer_rect = quad_rect;
+  quad_state->opacity = state_.alpha;
+
+  std::unique_ptr<cc::DelegatedFrameData> delegated_frame(
+      new cc::DelegatedFrameData);
+  if (current_resource_.id) {
+    cc::TextureDrawQuad* texture_quad =
+        render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
+    float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
+    gfx::Rect opaque_rect;
+    if (state_.blend_mode == SkXfermode::kSrc_Mode ||
+        state_.opaque_region.contains(gfx::RectToSkIRect(quad_rect))) {
+      opaque_rect = quad_rect;
+    } else if (state_.opaque_region.isRect()) {
+      opaque_rect = gfx::SkIRectToRect(state_.opaque_region.getBounds());
+    }
+
+    texture_quad->SetNew(quad_state, quad_rect, opaque_rect, quad_rect,
+                         current_resource_.id, true, uv_top_left,
+                         uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
+                         false, false, state_.only_visible_on_secure_output);
+    delegated_frame->resource_list.push_back(current_resource_);
+  } else {
+    cc::SolidColorDrawQuad* solid_quad =
+        render_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+    solid_quad->SetNew(quad_state, quad_rect, quad_rect, SK_ColorBLACK, false);
+  }
+
+  delegated_frame->render_pass_list.push_back(std::move(render_pass));
+  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  frame->delegated_frame_data = std::move(delegated_frame);
+
+  factory_owner_->surface_factory_->SubmitCompositorFrame(
+      surface_id_, std::move(frame), cc::SurfaceFactory::DrawCallback());
 }
 
 int64_t Surface::SetPropertyInternal(const void* key,

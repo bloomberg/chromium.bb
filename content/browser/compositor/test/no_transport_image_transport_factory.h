@@ -8,12 +8,15 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/image_transport_factory.h"
 
 namespace cc {
 class ContextProvider;
+}
+
+namespace ui {
+class InProcessContextFactory;
 }
 
 namespace content {
@@ -28,8 +31,6 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   ui::ContextFactory* GetContextFactory() override;
   cc::SurfaceManager* GetSurfaceManager() override;
   display_compositor::GLHelper* GetGLHelper() override;
-  void AddObserver(ImageTransportFactoryObserver* observer) override;
-  void RemoveObserver(ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
   void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
                                         bool suspended) override {}
@@ -37,10 +38,9 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
 
  private:
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
-  std::unique_ptr<ui::ContextFactory> context_factory_;
+  std::unique_ptr<ui::InProcessContextFactory> context_factory_;
   scoped_refptr<cc::ContextProvider> context_provider_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
-  base::ObserverList<ImageTransportFactoryObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NoTransportImageTransportFactory);
 };

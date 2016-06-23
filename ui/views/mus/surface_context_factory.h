@@ -54,6 +54,8 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                      base::TimeDelta interval) override {}
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
+  void AddObserver(ui::ContextFactoryObserver* observer) override {}
+  void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
   SurfaceBinding surface_binding_;
   uint32_t next_surface_id_namespace_;

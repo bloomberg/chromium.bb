@@ -92,7 +92,7 @@ class CONTENT_EXPORT DelegatedFrameHost
     : public ui::CompositorObserver,
       public ui::CompositorVSyncManager::Observer,
       public ui::LayerOwnerDelegate,
-      public ImageTransportFactoryObserver,
+      public ui::ContextFactoryObserver,
       public DelegatedFrameEvictorClient,
       public cc::SurfaceFactoryClient,
       public base::SupportsWeakPtr<DelegatedFrameHost> {

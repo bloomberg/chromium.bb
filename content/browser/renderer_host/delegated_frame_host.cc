@@ -75,7 +75,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
       can_lock_compositor_(YES_CAN_LOCK),
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  factory->AddObserver(this);
+  factory->GetContextFactory()->AddObserver(this);
   id_allocator_ = factory->GetContextFactory()->CreateSurfaceIdAllocator();
   factory->GetSurfaceManager()->RegisterSurfaceFactoryClient(
       id_allocator_->id_namespace(), this);
@@ -809,7 +809,7 @@ void DelegatedFrameHost::OnLostResources() {
 DelegatedFrameHost::~DelegatedFrameHost() {
   DCHECK(!compositor_);
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  factory->RemoveObserver(this);
+  factory->GetContextFactory()->RemoveObserver(this);
 
   if (!surface_id_.is_null())
     surface_factory_->Destroy(surface_id_);

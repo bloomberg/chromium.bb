@@ -3,11 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "cc/output/compositor_frame.h"
+#include "cc/output/delegated_frame_data.h"
+#include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_manager.h"
 #include "components/exo/buffer.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/env.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/wm/core/window_util.h"
@@ -182,6 +187,15 @@ TEST_F(SurfaceTest, SetCrop) {
   EXPECT_EQ(crop_size.ToString(), surface->content_size().ToString());
 }
 
+const cc::DelegatedFrameData* GetFrameFromSurface(Surface* surface) {
+  cc::SurfaceId surface_id = surface->surface_id();
+  cc::SurfaceManager* surface_manager =
+      aura::Env::GetInstance()->context_factory()->GetSurfaceManager();
+  const cc::CompositorFrame* frame =
+      surface_manager->GetSurfaceForId(surface_id)->GetEligibleFrame();
+  return frame->delegated_frame_data.get();
+}
+
 TEST_F(SurfaceTest, SetBlendMode) {
   gfx::Size buffer_size(1, 1);
   std::unique_ptr<Buffer> buffer(
@@ -192,7 +206,14 @@ TEST_F(SurfaceTest, SetBlendMode) {
   surface->SetBlendMode(SkXfermode::kSrc_Mode);
   surface->Commit();
 
-  EXPECT_TRUE(surface->window()->layer()->fills_bounds_opaquely());
+  EXPECT_FALSE(surface->window()->layer()->fills_bounds_opaquely());
+
+  const cc::DelegatedFrameData* frame_data = GetFrameFromSurface(surface.get());
+  ASSERT_EQ(1u, frame_data->render_pass_list.size());
+  ASSERT_EQ(1u, frame_data->render_pass_list.back()->quad_list.size());
+  EXPECT_FALSE(frame_data->render_pass_list.back()
+                   ->quad_list.back()
+                   ->ShouldDrawWithBlending());
 }
 
 TEST_F(SurfaceTest, SetAlpha) {

@@ -37,6 +37,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   buffer->set_release_callback(
       base::Bind(&Release, base::Unretained(&release_call_count)));
 
+  buffer->OnAttach();
   // Produce a texture mailbox for the contents of the buffer.
   cc::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback =
@@ -45,6 +46,10 @@ TEST_F(BufferTest, ReleaseCallback) {
 
   // Release buffer.
   buffer_release_callback->Run(gpu::SyncToken(), false);
+
+  ASSERT_EQ(release_call_count, 0);
+
+  buffer->OnDetach();
 
   // Release() should have been called exactly once.
   ASSERT_EQ(release_call_count, 1);
@@ -55,6 +60,7 @@ TEST_F(BufferTest, IsLost) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
 
+  buffer->OnAttach();
   // Acquire a texture mailbox for the contents of the buffer.
   cc::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback =
@@ -71,14 +77,16 @@ TEST_F(BufferTest, IsLost) {
                                GL_INNOCENT_CONTEXT_RESET_ARB);
   }
 
-  // Producing a new texture mailbox for the contents of the buffer.
-  std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback2 =
-      buffer->ProduceTextureMailbox(&texture_mailbox, false, false);
-  ASSERT_TRUE(buffer_release_callback);
-
   // Release buffer.
   bool is_lost = true;
   buffer_release_callback->Run(gpu::SyncToken(), is_lost);
+
+  // Producing a new texture mailbox for the contents of the buffer.
+  std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback2 =
+      buffer->ProduceTextureMailbox(&texture_mailbox, false, false);
+  ASSERT_TRUE(buffer_release_callback2);
+  buffer->OnDetach();
+
   buffer_release_callback2->Run(gpu::SyncToken(), false);
 }
 

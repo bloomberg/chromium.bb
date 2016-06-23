@@ -116,6 +116,10 @@ InProcessContextFactory::~InProcessContextFactory() {
   DCHECK(per_compositor_data_.empty());
 }
 
+void InProcessContextFactory::SendOnLostResources() {
+  FOR_EACH_OBSERVER(ContextFactoryObserver, observer_list_, OnLostResources());
+}
+
 void InProcessContextFactory::CreateOutputSurface(
     base::WeakPtr<Compositor> compositor) {
   // Try to reuse existing shared worker context provider.
@@ -263,6 +267,14 @@ void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
   if (!per_compositor_data_.count(compositor))
     return;
   per_compositor_data_[compositor]->Resize(size);
+}
+
+void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void InProcessContextFactory::RemoveObserver(ContextFactoryObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 }  // namespace ui

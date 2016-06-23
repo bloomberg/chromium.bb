@@ -589,8 +589,8 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
 
     // If there are any observer left at this point, make sure they clean up
     // before we destroy the GLHelper.
-    FOR_EACH_OBSERVER(
-        ImageTransportFactoryObserver, observer_list_, OnLostResources());
+    FOR_EACH_OBSERVER(ui::ContextFactoryObserver, observer_list_,
+                      OnLostResources());
 
     helper.reset();
     DCHECK(!gl_helper_) << "Destroying the GLHelper should not cause a new "
@@ -671,6 +671,16 @@ void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
     data->display->SetOutputIsSecure(secure);
 }
 
+void GpuProcessTransportFactory::AddObserver(
+    ui::ContextFactoryObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void GpuProcessTransportFactory::RemoveObserver(
+    ui::ContextFactoryObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
   return surface_manager_.get();
 }
@@ -684,16 +694,6 @@ display_compositor::GLHelper* GpuProcessTransportFactory::GetGLHelper() {
           provider->ContextGL(), provider->ContextSupport()));
   }
   return gl_helper_.get();
-}
-
-void GpuProcessTransportFactory::AddObserver(
-    ImageTransportFactoryObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void GpuProcessTransportFactory::RemoveObserver(
-    ImageTransportFactoryObserver* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 #if defined(OS_MACOSX)
@@ -788,8 +788,7 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   std::unique_ptr<display_compositor::GLHelper> lost_gl_helper =
       std::move(gl_helper_);
 
-  FOR_EACH_OBSERVER(ImageTransportFactoryObserver,
-                    observer_list_,
+  FOR_EACH_OBSERVER(ui::ContextFactoryObserver, observer_list_,
                     OnLostResources());
 
   // Kill things that use the shared context before killing the shared context.

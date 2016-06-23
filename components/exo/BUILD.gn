@@ -95,6 +95,7 @@ source_set("unit_tests") {
     "//ash",
     "//base",
     "//cc",
+    "//cc/surfaces:surfaces",
     "//components/user_manager",
     "//gpu/command_buffer/client:gles2_interface",
     "//skia",

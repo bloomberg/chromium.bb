@@ -20,6 +20,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -86,7 +87,8 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
-class Surface : public ui::LayerOwnerDelegate {
+class Surface : public ui::LayerOwnerDelegate,
+                public ui::ContextFactoryObserver {
  public:
   typedef void (*PropertyDeallocator)(int64_t value);
 
@@ -97,6 +99,8 @@ class Surface : public ui::LayerOwnerDelegate {
   static Surface* AsSurface(const aura::Window* window);
 
   aura::Window* window() { return window_.get(); }
+
+  cc::SurfaceId surface_id() const { return surface_id_; }
 
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.
@@ -206,6 +210,9 @@ class Surface : public ui::LayerOwnerDelegate {
   // Overridden from ui::LayerOwnerDelegate:
   void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
 
+  // Overridden from ui::ContextFactoryObserver.
+  void OnLostResources() override;
+
   void WillDraw(cc::SurfaceId surface_id);
 
   // Check whether this Surface and its children need to create new cc::Surface
@@ -246,7 +253,22 @@ class Surface : public ui::LayerOwnerDelegate {
     bool only_visible_on_secure_output = false;
     SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
     float alpha = 1.0f;
-    ;
+  };
+  class BufferAttachment {
+   public:
+    BufferAttachment();
+    ~BufferAttachment();
+
+    BufferAttachment& operator=(BufferAttachment&& buffer);
+
+    base::WeakPtr<Buffer>& buffer();
+    const base::WeakPtr<Buffer>& buffer() const;
+    void Reset(base::WeakPtr<Buffer> buffer);
+
+   private:
+    base::WeakPtr<Buffer> buffer_;
+
+    DISALLOW_COPY_AND_ASSIGN(BufferAttachment);
   };
 
   friend class subtle::PropertyHelper;
@@ -265,6 +287,16 @@ class Surface : public ui::LayerOwnerDelegate {
   // Set SurfaceLayer contents to the current buffer.
   void SetSurfaceLayerContents(ui::Layer* layer);
 
+  // Updates current_resource_ with a new resource id corresponding to the
+  // contents of the attached buffer (or id 0, if no buffer is attached).
+  // UpdateSurface must be called afterwards to ensure the release callback
+  // will be called.
+  void UpdateResource(bool client_usage);
+
+  // Updates the current Surface with a new frame referring to the resource in
+  // current_resource_.
+  void UpdateSurface(bool full_damage);
+
   int64_t SetPropertyInternal(const void* key,
                               const char* name,
                               PropertyDeallocator deallocator,
@@ -273,7 +305,7 @@ class Surface : public ui::LayerOwnerDelegate {
   int64_t GetPropertyInternal(const void* key, int64_t default_value) const;
 
   // This returns true when the surface has some contents assigned to it.
-  bool has_contents() const { return !!current_buffer_; }
+  bool has_contents() const { return !!current_buffer_.buffer(); }
 
   // This window has the layer which contains the Surface contents.
   std::unique_ptr<aura::Window> window_;
@@ -296,7 +328,7 @@ class Surface : public ui::LayerOwnerDelegate {
   bool has_pending_contents_;
 
   // The buffer that will become the content of surface when Commit() is called.
-  base::WeakPtr<Buffer> pending_buffer_;
+  BufferAttachment pending_buffer_;
 
   cc::SurfaceManager* surface_manager_;
 
@@ -335,7 +367,7 @@ class Surface : public ui::LayerOwnerDelegate {
   SubSurfaceEntryList pending_sub_surfaces_;
 
   // The buffer that is currently set as content of surface.
-  base::WeakPtr<Buffer> current_buffer_;
+  BufferAttachment current_buffer_;
 
   // The last resource that was sent to a surface.
   cc::TransferableResource current_resource_;

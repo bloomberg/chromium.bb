@@ -372,12 +372,7 @@ std::unique_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
     cc::TextureMailbox* texture_mailbox,
     bool secure_output_only,
     bool client_usage) {
-  // Non-client usage can only be allowed when the client is not allowed to
-  // use the buffer. If the buffer has been released to the client then it
-  // can no longer be used as the client might be writing to it.
-  if (!client_usage && !use_count_)
-    return nullptr;
-
+  DCHECK(attach_count_);
   DLOG_IF(WARNING, use_count_ && client_usage)
       << "Producing a texture mailbox for a buffer that has not been released";
 
@@ -464,6 +459,18 @@ std::unique_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
                             base::Passed(&texture_))));
 }
 
+void Buffer::OnAttach() {
+  DLOG_IF(WARNING, attach_count_ > 0u)
+      << "Reattaching a buffer that is already attached to another surface.";
+  attach_count_++;
+}
+
+void Buffer::OnDetach() {
+  DCHECK_GT(attach_count_, 0u);
+  --attach_count_;
+  CheckReleaseCallback();
+}
+
 gfx::Size Buffer::GetSize() const {
   return gpu_memory_buffer_->GetSize();
 }
@@ -484,7 +491,12 @@ std::unique_ptr<base::trace_event::TracedValue> Buffer::AsTracedValue() const {
 
 void Buffer::Release() {
   DCHECK_GT(use_count_, 0u);
-  if (--use_count_)
+  --use_count_;
+  CheckReleaseCallback();
+}
+
+void Buffer::CheckReleaseCallback() {
+  if (attach_count_ || use_count_)
     return;
 
   // Run release callback to notify the client that buffer has been released.

@@ -69,6 +69,20 @@ class Texture;
 
 const int kCompositorLockTimeoutMs = 67;
 
+class COMPOSITOR_EXPORT ContextFactoryObserver {
+ public:
+  virtual ~ContextFactoryObserver() {}
+
+  // Notifies that the ContextProvider returned from
+  // ui::ContextFactory::SharedMainThreadContextProvider was lost.  When this
+  // is called, the old resources (e.g. shared context, GL helper) still
+  // exist, but are about to be destroyed. Getting a reference to those
+  // resources from the ContextFactory (e.g. through
+  // SharedMainThreadContextProvider()) will return newly recreated, valid
+  // resources.
+  virtual void OnLostResources() = 0;
+};
+
 // This class abstracts the creation of the 3D context for the compositor. It is
 // a global object.
 class COMPOSITOR_EXPORT ContextFactory {
@@ -128,6 +142,10 @@ class COMPOSITOR_EXPORT ContextFactory {
                                              base::TimeDelta interval) = 0;
 
   virtual void SetOutputIsSecure(Compositor* compositor, bool secure) = 0;
+
+  virtual void AddObserver(ContextFactoryObserver* observer) = 0;
+
+  virtual void RemoveObserver(ContextFactoryObserver* observer) = 0;
 };
 
 // This class represents a lock on the compositor, that can be used to prevent
