@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import functools
 import glob
 import os
 
@@ -35,6 +34,7 @@ class CleanUpStage(generic_stages.BuilderStage):
   option_name = 'clean'
 
   def _CleanChroot(self):
+    logging.info('Cleaning chroot.')
     commands.CleanupChromeKeywordsFile(self._boards,
                                        self._build_root)
     chroot_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
@@ -53,6 +53,7 @@ class CleanUpStage(generic_stages.BuilderStage):
       osutils.RmDir(d, ignore_missing=True, sudo=True)
 
   def _DeleteChroot(self):
+    logging.info('Deleting chroot.')
     chroot = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     if os.path.exists(chroot):
       # At this stage, it's not safe to run the cros_sdk inside the buildroot
@@ -63,29 +64,41 @@ class CleanUpStage(generic_stages.BuilderStage):
 
   def _DeleteArchivedTrybotImages(self):
     """Clear all previous archive images to save space."""
+    logging.info('Deleting archived trybot images.')
     for trybot in (False, True):
       archive_root = self._run.GetArchive().GetLocalArchiveRoot(trybot=trybot)
       osutils.RmDir(archive_root, ignore_missing=True)
 
   def _DeleteArchivedPerfResults(self):
     """Clear any previously stashed perf results from hw testing."""
+    logging.info('Deleting archived perf results.')
     for result in glob.glob(os.path.join(
         self._run.options.log_dir,
         '*.%s' % test_stages.HWTestStage.PERF_RESULTS_EXTENSION)):
       os.remove(result)
 
   def _DeleteChromeBuildOutput(self):
+    logging.info('Deleting Chrome build output.')
     chrome_src = os.path.join(self._run.options.chrome_root, 'src')
     for out_dir in glob.glob(os.path.join(chrome_src, 'out_*')):
       osutils.RmDir(out_dir)
 
+  def _BuildRootGitCleanup(self):
+    logging.info('Cleaning up buildroot git repositories.')
+    commands.BuildRootGitCleanup(self._build_root)
+
   def _DeleteAutotestSitePackages(self):
     """Clears any previously downloaded site-packages."""
+    logging.info('Deteing autotest site packages.')
     site_packages_dir = os.path.join(self._build_root, 'src', 'third_party',
                                      'autotest', 'files', 'site-packages')
     # Note that these shouldn't be recreated but might be around from stale
     # builders.
     osutils.RmDir(site_packages_dir, ignore_missing=True)
+
+  def _WipeOldOutput(self):
+    logging.info('Wiping old output.')
+    commands.WipeOldOutput(self._build_root)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -119,9 +132,8 @@ class CleanUpStage(generic_stages.BuilderStage):
       repository.ClearBuildRoot(self._build_root,
                                 self._run.options.preserve_paths)
     else:
-      tasks = [functools.partial(commands.BuildRootGitCleanup,
-                                 self._build_root),
-               functools.partial(commands.WipeOldOutput, self._build_root),
+      tasks = [self._BuildRootGitCleanup,
+               self._WipeOldOutput,
                self._DeleteArchivedTrybotImages,
                self._DeleteArchivedPerfResults,
                self._DeleteAutotestSitePackages]
