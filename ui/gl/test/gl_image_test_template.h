@@ -110,6 +110,12 @@ void DrawTextureQuad(GLenum target, const gfx::Size& size) {
   );
   // clang-format on
 
+  GLuint vao = 0;
+  if (GLHelper::ShouldTestsUseVAOs()) {
+    glGenVertexArraysOES(1, &vao);
+    glBindVertexArrayOES(vao);
+  }
+
   GLuint vertex_shader = GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
   GLuint fragment_shader = LoadFragmentShader(target, size);
   GLuint program = GLHelper::SetupProgram(vertex_shader, fragment_shader);
@@ -122,6 +128,10 @@ void DrawTextureQuad(GLenum target, const gfx::Size& size) {
 
   GLuint vertex_buffer = GLHelper::SetupQuadVertexBuffer();
   GLHelper::DrawQuad(vertex_buffer);
+
+  if (vao != 0) {
+    glDeleteVertexArraysOES(1, &vao);
+  }
 
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);

@@ -34,6 +34,10 @@ class GL_EXPORT GLHelper {
 
   // Draws a quad to the currently bound frame buffer.
   static void DrawQuad(GLuint vertex_buffer);
+
+  // When using the desktop core profile we have to bind a VAO before
+  // calling glVertexAttribPointer.
+  static bool ShouldTestsUseVAOs();
 };
 
 }  // namespace gl
