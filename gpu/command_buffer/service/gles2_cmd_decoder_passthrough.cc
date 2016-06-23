@@ -271,6 +271,12 @@ bool GLES2DecoderPassthroughImpl::HasMoreIdleWork() const {
 
 void GLES2DecoderPassthroughImpl::PerformIdleWork() {}
 
+bool GLES2DecoderPassthroughImpl::HasPollingWork() const {
+  return false;
+}
+
+void GLES2DecoderPassthroughImpl::PerformPollingWork() {}
+
 bool GLES2DecoderPassthroughImpl::GetServiceTextureId(
     uint32_t client_texture_id,
     uint32_t* service_texture_id) {

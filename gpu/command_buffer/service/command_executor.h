@@ -93,6 +93,10 @@ class GPU_EXPORT CommandExecutor
   // determine if there's more idle work do be done after this has been called.
   void PerformIdleWork();
 
+  // Whether there is state that needs to be regularly polled.
+  bool HasPollingWork() const;
+  void PerformPollingWork();
+
   CommandParser* parser() const { return parser_.get(); }
 
  private:

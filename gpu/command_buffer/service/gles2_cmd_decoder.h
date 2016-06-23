@@ -237,6 +237,12 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Perform any idle work that needs to be made.
   virtual void PerformIdleWork() = 0;
 
+  // Whether there is state that needs to be regularly polled.
+  virtual bool HasPollingWork() const = 0;
+
+  // Perform necessary polling.
+  virtual void PerformPollingWork() = 0;
+
   // Get the service texture ID corresponding to a client texture ID.
   // If no such record is found then return false.
   virtual bool GetServiceTextureId(uint32_t client_texture_id,

@@ -323,6 +323,7 @@ void GpuCommandBufferStub::PerformWork() {
     }
 
     executor_->ProcessPendingQueries();
+    executor_->PerformPollingWork();
   }
 
   ScheduleDelayedWork(
@@ -340,7 +341,8 @@ bool GpuCommandBufferStub::HasUnprocessedCommands() {
 
 void GpuCommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
   bool has_more_work = executor_.get() && (executor_->HasPendingQueries() ||
-                                           executor_->HasMoreIdleWork());
+                                           executor_->HasMoreIdleWork() ||
+                                           executor_->HasPollingWork());
   if (!has_more_work) {
     last_idle_time_ = base::TimeTicks();
     return;

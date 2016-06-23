@@ -71,6 +71,8 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD1(ProcessPendingQueries, void(bool));
   MOCK_CONST_METHOD0(HasMoreIdleWork, bool());
   MOCK_METHOD0(PerformIdleWork, void());
+  MOCK_CONST_METHOD0(HasPollingWork, bool());
+  MOCK_METHOD0(PerformPollingWork, void());
   MOCK_METHOD1(RestoreState, void(const ContextState* prev_state));
   MOCK_CONST_METHOD0(RestoreActiveTexture, void());
   MOCK_CONST_METHOD1(

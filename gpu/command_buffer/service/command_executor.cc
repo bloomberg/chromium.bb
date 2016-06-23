@@ -177,4 +177,14 @@ void CommandExecutor::PerformIdleWork() {
   decoder_->PerformIdleWork();
 }
 
+bool CommandExecutor::HasPollingWork() const {
+  return (decoder_ && decoder_->HasPollingWork());
+}
+
+void CommandExecutor::PerformPollingWork() {
+  if (!decoder_)
+    return;
+  decoder_->PerformPollingWork();
+}
+
 }  // namespace gpu

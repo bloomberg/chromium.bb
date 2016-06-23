@@ -626,6 +626,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool HasMoreIdleWork() const override;
   void PerformIdleWork() override;
 
+  bool HasPollingWork() const override;
+  void PerformPollingWork() override;
+
   void WaitForReadPixels(base::Closure callback) override;
 
   Logger* GetLogger() override;
@@ -13824,14 +13827,20 @@ void GLES2DecoderImpl::ProcessDescheduleUntilFinished() {
 }
 
 bool GLES2DecoderImpl::HasMoreIdleWork() const {
-  return deschedule_until_finished_fence_ ||
-         !pending_readpixel_fences_.empty() ||
+  return !pending_readpixel_fences_.empty() ||
          gpu_tracer_->HasTracesToProcess();
 }
 
 void GLES2DecoderImpl::PerformIdleWork() {
   gpu_tracer_->ProcessTraces();
   ProcessPendingReadPixels(false);
+}
+
+bool GLES2DecoderImpl::HasPollingWork() const {
+  return !!deschedule_until_finished_fence_.get();
+}
+
+void GLES2DecoderImpl::PerformPollingWork() {
   ProcessDescheduleUntilFinished();
 }
 
