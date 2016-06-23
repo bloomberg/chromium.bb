@@ -62,21 +62,66 @@ const int kUmaDurationMinMicros = 1;
 const int64_t kUmaDurationMaxMicros = base::Time::kMicrosecondsPerSecond / 5;
 const int kUmaDurationBucketCount = 100;
 
+// This macro is deprecated since its bucket count uses too much bandwidth.
+// It also has sub-optimal range and bucket distribution.
+// TODO(brianderson): Delete this macro and associated UMAs once there is
+// sufficient overlap with the re-bucketed UMAs.
 #define UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample)                     \
   UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample.InMicroseconds(),                \
                               kUmaDurationMinMicros, kUmaDurationMaxMicros, \
                               kUmaDurationBucketCount);
 
-#define REPORT_COMPOSITOR_TIMING_HISTORY_UMA(category, subcategory)            \
-  do {                                                                         \
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(                                         \
-        "Scheduling." category "." subcategory "Duration", duration);          \
+// ~90 VSync aligned UMA buckets.
+const int kUMAVSyncBuckets[] = {
+    // Powers of two from 0 to 2048 us @ 50% precision
+    1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
+    // Every 8 Hz from 256 Hz to 128 Hz @ 3-6% precision
+    3906, 4032, 4167, 4310, 4464, 4630, 4808, 5000, 5208, 5435, 5682, 5952,
+    6250, 6579, 6944, 7353,
+    // Every 4 Hz from 128 Hz to 64 Hz @ 3-6% precision
+    7813, 8065, 8333, 8621, 8929, 9259, 9615, 10000, 10417, 10870, 11364, 11905,
+    12500, 13158, 13889, 14706,
+    // Every 2 Hz from 64 Hz to 32 Hz @ 3-6% precision
+    15625, 16129, 16667, 17241, 17857, 18519, 19231, 20000, 20833, 21739, 22727,
+    23810, 25000, 26316, 27778, 29412,
+    // Every 1 Hz from 32 Hz to 1 Hz @ 3-33% precision
+    31250, 32258, 33333, 34483, 35714, 37037, 38462, 40000, 41667, 43478, 45455,
+    47619, 50000, 52632, 55556, 58824, 62500, 66667, 71429, 76923, 83333, 90909,
+    100000, 111111, 125000, 142857, 166667, 200000, 250000, 333333, 500000,
+    // Powers of two from 1s to 32s @ 50% precision
+    1000000, 2000000, 4000000, 8000000, 16000000, 32000000,
+};
+
+// ~50 UMA buckets with high precision from ~100 us to 1s.
+const int kUMADurationBuckets[] = {
+    // Powers of 2 from 1 us to 64 us @ 50% precision.
+    1, 2, 4, 8, 16, 32, 64,
+    // 1.25^20, 1.25^21, ..., 1.25^62 @ 20% precision.
+    87, 108, 136, 169, 212, 265, 331, 414, 517, 646, 808, 1010, 1262, 1578,
+    1972, 2465, 3081, 3852, 4815, 6019, 7523, 9404, 11755, 14694, 18367, 22959,
+    28699, 35873, 44842, 56052, 70065, 87581, 109476, 136846, 171057, 213821,
+    267276, 334096, 417619, 522024, 652530, 815663, 1019579,
+    // Powers of 2 from 2s to 32s @ 50% precision.
+    2000000, 4000000, 8000000, 16000000, 32000000,
+};
+
+#define UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(name, sample)             \
+  do {                                                                     \
+    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample);                       \
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(                                      \
+        name "2", sample.InMicroseconds(),                                 \
+        std::vector<int>(kUMAVSyncBuckets,                                 \
+                         kUMAVSyncBuckets + arraysize(kUMAVSyncBuckets))); \
   } while (false)
 
-#define REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(category, subcategory)           \
-  do {                                                                         \
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling." category "." subcategory,  \
-                                      duration);                               \
+#define UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(name, sample)           \
+  do {                                                              \
+    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample);                \
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(                               \
+        name "2", sample.InMicroseconds(),                          \
+        std::vector<int>(                                           \
+            kUMADurationBuckets,                                    \
+            kUMADurationBuckets + arraysize(kUMADurationBuckets))); \
   } while (false)
 
 class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -84,66 +129,70 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
   ~RendererUMAReporter() override {}
 
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Renderer.BeginMainFrameIntervalCritical", interval);
   }
 
   void AddBeginMainFrameIntervalNotCritical(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Renderer.BeginMainFrameIntervalNotCritical", interval);
   }
 
   void AddCommitInterval(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling.Renderer.CommitInterval",
-                                      interval);
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
+        "Scheduling.Renderer.CommitInterval", interval);
   }
 
   void AddDrawInterval(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling.Renderer.DrawInterval",
-                                      interval);
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED("Scheduling.Renderer.DrawInterval",
+                                             interval);
   }
 
   void AddBeginMainFrameQueueDurationCriticalDuration(
       base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
-        "Renderer", "BeginMainFrameQueueDurationCritical");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Renderer.BeginMainFrameQueueDurationCritical", duration);
   }
 
   void AddBeginMainFrameQueueDurationNotCriticalDuration(
       base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
-        "Renderer", "BeginMainFrameQueueDurationNotCritical");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Renderer.BeginMainFrameQueueDurationNotCritical", duration);
   }
 
   void AddBeginMainFrameStartToCommitDuration(
       base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
-        "Renderer", "BeginMainFrameStartToCommitDuration");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Renderer.BeginMainFrameStartToCommitDuration", duration);
   }
 
   void AddCommitToReadyToActivateDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "CommitToReadyToActivate");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Renderer.CommitToReadyToActivateDuration", duration);
   }
 
   void AddPrepareTilesDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "PrepareTiles");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Renderer.PrepareTilesDuration", duration);
   }
 
   void AddActivateDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "Activate");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Renderer.ActivateDuration",
+                                        duration);
   }
 
   void AddDrawDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "Draw");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Renderer.DrawDuration",
+                                        duration);
   }
 
   void AddSwapToAckLatency(base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling.Renderer.SwapToAckLatency",
-                                      duration);
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Renderer.SwapToAckLatency",
+                                        duration);
   }
 
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Renderer.MainAndImplFrameTimeDelta", delta);
   }
 };
@@ -153,66 +202,70 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   ~BrowserUMAReporter() override {}
 
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Browser.BeginMainFrameIntervalCritical", interval);
   }
 
   void AddBeginMainFrameIntervalNotCritical(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Browser.BeginMainFrameIntervalNotCritical", interval);
   }
 
   void AddCommitInterval(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling.Browser.CommitInterval",
-                                      interval);
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
+        "Scheduling.Browser.CommitInterval", interval);
   }
 
   void AddDrawInterval(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling.Browser.DrawInterval",
-                                      interval);
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED("Scheduling.Browser.DrawInterval",
+                                             interval);
   }
 
   void AddBeginMainFrameQueueDurationCriticalDuration(
       base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
-        "Browser", "BeginMainFrameQueueDurationCritical");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Browser.BeginMainFrameQueueDurationCritical", duration);
   }
 
   void AddBeginMainFrameQueueDurationNotCriticalDuration(
       base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
-        "Browser", "BeginMainFrameQueueDurationNotCritical");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Browser.BeginMainFrameQueueDurationNotCritical", duration);
   }
 
   void AddBeginMainFrameStartToCommitDuration(
       base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA2("Browser",
-                                          "BeginMainFrameStartToCommit");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Browser.BeginMainFrameStartToCommit", duration);
   }
 
   void AddCommitToReadyToActivateDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "CommitToReadyToActivate");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Browser.CommitToReadyToActivateDuration", duration);
   }
 
   void AddPrepareTilesDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "PrepareTiles");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Browser.PrepareTilesDuration", duration);
   }
 
   void AddActivateDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "Activate");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Browser.ActivateDuration",
+                                        duration);
   }
 
   void AddDrawDuration(base::TimeDelta duration) override {
-    REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "Draw");
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Browser.DrawDuration",
+                                        duration);
   }
 
   void AddSwapToAckLatency(base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling.Browser.SwapToAckLatency",
-                                      duration);
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Browser.SwapToAckLatency",
+                                        duration);
   }
 
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Browser.MainAndImplFrameTimeDelta", delta);
   }
 };

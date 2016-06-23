@@ -48630,6 +48630,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Scheduling.ActivateDuration" units="microseconds">
+  <obsolete>
+    Replaced by ActivateDuration2, due to inefficient bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes for the compositor to simply activate the pending tree.
+    Does not include any PrepareTiles or raster time.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.ActivateDuration2" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes for the compositor to simply activate the pending tree.
@@ -48638,6 +48649,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Scheduling.BeginMainFrameIntervalCritical"
+    units="microseconds">
+  <obsolete>
+    Replaced by BeginMainFrameIntervalCritical2, due to inefficient bucketing
+    scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    This is the time delta between back-to-back BeginMainFrames completions on
+    the compositor side when the on_critical_path flag is set, regardless of
+    whether they abort (have no updates) or commit (have updates).
+
+    The interval is only recorded when the BeginMainFrames are running
+    continuously; sepcifically when another BeginMainFrame is requested by the
+    next BeginImplFrame after a) an abort or b) activation.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.BeginMainFrameIntervalCritical2"
     units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
@@ -48653,6 +48682,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Scheduling.BeginMainFrameIntervalNotCritical"
     units="microseconds">
+  <obsolete>
+    Replaced by BeginMainFrameIntervalNotCritical2, due to inefficient bucketing
+    scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    This is the time delta between back-to-back BeginMainFrames completions on
+    the compositor side when the on_critical_path flag is not set, regardless of
+    whether they abort (have no updates) or commit (have updates).
+
+    The interval is only recorded when the BeginMainFrames are running
+    continuously; sepcifically when another BeginMainFrame is requested by the
+    next BeginImplFrame after a) an abort or b) activation.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.BeginMainFrameIntervalNotCritical2"
+    units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     This is the time delta between back-to-back BeginMainFrames completions on
@@ -48667,6 +48714,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Scheduling.BeginMainFrameQueueDurationCritical"
     units="microseconds">
+  <obsolete>
+    Replaced by BeginMainFrameQueueDurationCritical2, due to inefficient
+    bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes for the main side to start the BeginMainFrame in response
+    to the compositor's SendBeginMainFrame when the on_critical_path flag is
+    set.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.BeginMainFrameQueueDurationCritical2"
+    units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes for the main side to start the BeginMainFrame in response
@@ -48677,6 +48738,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Scheduling.BeginMainFrameQueueDurationNotCritical"
     units="microseconds">
+  <obsolete>
+    Replaced by BeginMainFrameQueueDurationNotCritical2, due to inefficient
+    bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes for the main side to start the BeginMainFrame in response
+    to the compositor's SendBeginMainFrame when the on_critical_path flag is not
+    set.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.BeginMainFrameQueueDurationNotCritical2"
+    units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes for the main side to start the BeginMainFrame in response
@@ -48686,6 +48761,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Scheduling.BeginMainFrameStartToCommitDuration"
+    units="microseconds">
+  <obsolete>
+    Replaced by BeginMainFrameStartToCommitDuration2, due to inefficient
+    bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    The time from when the main side actually starts the BeginMainFrame to when
+    the commit completes on the impl side.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.BeginMainFrameStartToCommitDuration2"
     units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
@@ -48709,6 +48797,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Scheduling.CommitInterval" units="microseconds">
+  <obsolete>
+    Replaced by CommitInterval2, due to inefficient bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    The time delta between the *draw* times of back-to-back BeginMainFrames that
+    result in a commit.
+
+    The interval is only recorded when the BeginMainFrames are running and
+    committing continuously, where continuously means when another
+    BeginMainFrame is requested by the next BeginImplFrame after activation.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.CommitInterval2" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     The time delta between the *draw* times of back-to-back BeginMainFrames that
@@ -48722,6 +48825,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Scheduling.CommitToReadyToActivateDuration"
     units="microseconds">
+  <obsolete>
+    Replaced by CommitToReadyToActivateDuration2, due to inefficient bucketing
+    scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes for the compositor to rasterize pending tree content after
+    a commit before it is ready for activation.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.CommitToReadyToActivateDuration2"
+    units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes for the compositor to rasterize pending tree content after
@@ -48730,11 +48846,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Scheduling.DrawDuration" units="microseconds">
+  <obsolete>
+    Replaced by DrawDuration2, due to inefficient bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>How long it takes the compositor to draw a frame.</summary>
+</histogram>
+
+<histogram name="Scheduling.DrawDuration2" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>How long it takes the compositor to draw a frame.</summary>
 </histogram>
 
 <histogram name="Scheduling.DrawInterval" units="microseconds">
+  <obsolete>
+    Replaced by DrawInterval2, due to inefficient bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    The time delta between the draw times of back-to-back BeginImplFrames,
+    regardless of whether or not they result in a swap.
+
+    The interval is only recorded when every BeginImplFrame wants to draw.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.DrawInterval2" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     The time delta between the draw times of back-to-back BeginImplFrames,
@@ -48745,6 +48882,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Scheduling.MainAndImplFrameTimeDelta" units="microseconds">
+  <obsolete>
+    Replaced by MainAndImplFrameTimeDelta2, due to inefficient bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    Recorded every time the compositor draws with a new active tree. A value of
+    0 indicates the main-side started and finished within the same frame
+    interval as the impl-side. Positive values correspond to how old any
+    main-side updates are compared to the impl-side updates. If there are no
+    mid-frame updates, this metric is a good proxy for how well the main and
+    impl threads are synchronized.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.MainAndImplFrameTimeDelta2" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     Recorded every time the compositor draws with a new active tree. A value of
@@ -48768,6 +48920,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Scheduling.PrepareTilesDuration" units="microseconds">
+  <obsolete>
+    Replaced by PrepareTIlesDuration2, due to inefficient bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes the compositor to PreapreTiles, which determines what
+    rasterization work to do.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.PrepareTilesDuration2" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes the compositor to PreapreTiles, which determines what
@@ -48776,6 +48939,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Scheduling.SwapToAckLatency" units="microseconds">
+  <obsolete>
+    Replaced by SwapToAckLatency2, due to inefficient bucketing scheme.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>How long it takes the swap ack to return after a swap.</summary>
+</histogram>
+
+<histogram name="Scheduling.SwapToAckLatency2" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>How long it takes the swap ack to return after a swap.</summary>
 </histogram>
@@ -93508,6 +93679,38 @@ To add a new entry, add it with any value and run test to compute valid value.
     ordering="prefix">
   <suffix name="Browser"/>
   <suffix name="Renderer"/>
+  <affected-histogram name="Scheduling.ActivateDuration2"/>
+  <affected-histogram name="Scheduling.BeginMainFrameIntervalCritical2"/>
+  <affected-histogram name="Scheduling.BeginMainFrameIntervalNotCritical2"/>
+  <affected-histogram name="Scheduling.BeginMainFrameQueueDurationCritical2"/>
+  <affected-histogram
+      name="Scheduling.BeginMainFrameQueueDurationNotCritical2"/>
+  <affected-histogram name="Scheduling.BeginMainFrameStartToCommitDuration2"/>
+  <affected-histogram name="Scheduling.CommitInterval2"/>
+  <affected-histogram name="Scheduling.CommitToReadyToActivateDuration2"/>
+  <affected-histogram name="Scheduling.DrawDuration2"/>
+  <affected-histogram name="Scheduling.DrawInterval2"/>
+  <affected-histogram name="Scheduling.MainAndImplFrameTimeDelta2"/>
+  <affected-histogram name="Scheduling.PrepareTilesDuration2"/>
+  <affected-histogram name="Scheduling.SwapToAckLatency2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CompositorTimingHistoryProcess2" separator="."
+    ordering="prefix">
+  <suffix name="Browser"/>
+  <suffix name="Renderer"/>
+  <affected-histogram name="Scheduling.PendingTreeDuration"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CompositorTimingHistoryProcessObsolete" separator="."
+    ordering="prefix">
+  <obsolete>
+    These used an old bucketing scheme that that had too many buckets and were
+    an inefficient usage of UMA bandwidth. They have been replaced by new
+    metrics of the same name with a &quot;2&quot; appended to them.
+  </obsolete>
+  <suffix name="Browser"/>
+  <suffix name="Renderer"/>
   <affected-histogram name="Scheduling.ActivateDuration"/>
   <affected-histogram name="Scheduling.BeginMainFrameIntervalCritical"/>
   <affected-histogram name="Scheduling.BeginMainFrameIntervalNotCritical"/>
@@ -93520,32 +93723,28 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Scheduling.DrawDuration"/>
   <affected-histogram name="Scheduling.DrawInterval"/>
   <affected-histogram name="Scheduling.MainAndImplFrameTimeDelta"/>
-  <affected-histogram name="Scheduling.PendingTreeDuration"/>
   <affected-histogram name="Scheduling.PrepareTilesDuration"/>
   <affected-histogram name="Scheduling.SwapToAckLatency"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CompositorTimingHistorySubcategory" separator=".">
+  <obsolete>
+    Estimates don't need long term monitoring.
+  </obsolete>
   <suffix name="NotUsedForEstimate"
       label="Samples that don't affect estimates. For example, because we are
              coming out of idle.">
-    <obsolete>
-      Estimates don't need long term monitoring.
-    </obsolete>
+
   </suffix>
   <suffix name="Overestimate"
       label="Tracks when the compositor's estimates were too high and by how
              much.">
-    <obsolete>
-      Estimates don't need long term monitoring.
-    </obsolete>
+
   </suffix>
   <suffix name="Underestimate"
       label="Tracks when the compositor's estimates were too low and by how
              much.">
-    <obsolete>
-      Estimates don't need long term monitoring.
-    </obsolete>
+
   </suffix>
   <affected-histogram name="Scheduling.Browser.ActivateDuration"/>
   <affected-histogram name="Scheduling.Browser.BeginMainFrameToCommitDuration"/>
@@ -93563,12 +93762,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="CompositorTimingHistorySubcategory2" separator=".">
+  <obsolete>
+    Estimates don't need long term monitoring.
+  </obsolete>
   <suffix name="NotUsedForEstimate"
       label="Samples that don't affect estimates. For example, because we are
              coming out of idle.">
-    <obsolete>
-      Estimates don't need long term monitoring.
-    </obsolete>
+
   </suffix>
   <affected-histogram
       name="Scheduling.Browser.BeginMainFrameQueueDurationCritical"/>
