@@ -29,6 +29,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/buffered_socket_writer.h"
+#include "remoting/base/logging.h"
 #include "remoting/signaling/xmpp_login_handler.h"
 #include "remoting/signaling/xmpp_stream_parser.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -248,6 +249,9 @@ bool XmppSignalStrategy::Core::SendStanza(
     return false;
   }
 
+  HOST_DLOG << "Sending outgoing stanza:\n"
+            << stanza->Str()
+            << "\n=========================================================";
   SendMessage(stanza->Str());
 
   // Return false if the SendMessage() call above resulted in the SignalStrategy
@@ -355,6 +359,11 @@ void XmppSignalStrategy::Core::OnMessageSent() {
 void XmppSignalStrategy::Core::OnStanza(
     const std::unique_ptr<buzz::XmlElement> stanza) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+
+  HOST_DLOG << "Received incoming stanza:\n"
+            << stanza->Str()
+            << "\n=========================================================";
 
   base::ObserverListBase<Listener>::Iterator it(&listeners_);
   for (Listener* listener = it.GetNext(); listener; listener = it.GetNext()) {

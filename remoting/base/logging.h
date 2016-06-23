@@ -15,6 +15,7 @@ namespace remoting {
 // In the future we may also consider writing to a log file instead of the
 // console.
 #define HOST_LOG LOG(INFO)
+#define HOST_DLOG DLOG(INFO)
 
 }  // namespace remoting
 
