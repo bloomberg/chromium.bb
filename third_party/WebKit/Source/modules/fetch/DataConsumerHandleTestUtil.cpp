@@ -252,7 +252,7 @@ void DataConsumerHandleTestUtil::HandleReader::didGetReadable()
     }
     std::unique_ptr<HandleReadResult> result = wrapUnique(new HandleReadResult(r, m_data));
     m_data.clear();
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&HandleReader::runOnFinishedReading, this, passed(std::move(result))));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&HandleReader::runOnFinishedReading, WTF::unretained(this), passed(std::move(result))));
     m_reader = nullptr;
 }
 
@@ -287,7 +287,7 @@ void DataConsumerHandleTestUtil::HandleTwoPhaseReader::didGetReadable()
     }
     std::unique_ptr<HandleReadResult> result = wrapUnique(new HandleReadResult(r, m_data));
     m_data.clear();
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&HandleTwoPhaseReader::runOnFinishedReading, this, passed(std::move(result))));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&HandleTwoPhaseReader::runOnFinishedReading, WTF::unretained(this), passed(std::move(result))));
     m_reader = nullptr;
 }
 

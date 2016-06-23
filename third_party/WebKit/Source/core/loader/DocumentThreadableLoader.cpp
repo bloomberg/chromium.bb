@@ -68,7 +68,7 @@ private:
     public:
         explicit EmptyDataReader(WebDataConsumerHandle::Client* client) : m_factory(this)
         {
-            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&EmptyDataReader::notify, m_factory.createWeakPtr(), client));
+            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&EmptyDataReader::notify, m_factory.createWeakPtr(), WTF::unretained(client)));
         }
     private:
         Result beginRead(const void** buffer, WebDataConsumerHandle::Flags, size_t *available) override

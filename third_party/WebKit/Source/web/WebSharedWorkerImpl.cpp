@@ -181,8 +181,8 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
         m_url,
         DenyCrossOriginRequests,
         m_creationAddressSpace,
-        bind(&WebSharedWorkerImpl::didReceiveScriptLoaderResponse, this),
-        bind(&WebSharedWorkerImpl::onScriptLoaderFinished, this));
+        bind(&WebSharedWorkerImpl::didReceiveScriptLoaderResponse, WTF::unretained(this)),
+        bind(&WebSharedWorkerImpl::onScriptLoaderFinished, WTF::unretained(this)));
     // Do nothing here since onScriptLoaderFinished() might have been already
     // invoked and |this| might have been deleted at this point.
 }

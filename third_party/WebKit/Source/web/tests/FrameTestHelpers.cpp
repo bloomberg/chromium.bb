@@ -81,7 +81,7 @@ void runServeAsyncRequestsTask(TestWebFrameClient* client)
 {
     Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     if (client->isLoading())
-        Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, client));
+        Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, WTF::unretained(client)));
     else
         testing::exitRunLoop();
 }
@@ -149,7 +149,7 @@ void reloadFrameIgnoringCache(WebFrame* frame)
 
 void pumpPendingRequestsForFrameToLoad(WebFrame* frame)
 {
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, testClientForFrame(frame)));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, WTF::unretained(testClientForFrame(frame))));
     testing::enterRunLoop();
 }
 

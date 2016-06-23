@@ -789,7 +789,7 @@ void ThreadState::scheduleIdleGC()
     if (!Platform::current()->currentThread()->scheduler())
         return;
 
-    Platform::current()->currentThread()->scheduler()->postNonNestableIdleTask(BLINK_FROM_HERE, WTF::bind(&ThreadState::performIdleGC, this));
+    Platform::current()->currentThread()->scheduler()->postNonNestableIdleTask(BLINK_FROM_HERE, WTF::bind(&ThreadState::performIdleGC, WTF::unretained(this)));
     setGCState(IdleGCScheduled);
 }
 
@@ -803,7 +803,7 @@ void ThreadState::scheduleIdleLazySweep()
     if (!Platform::current()->currentThread()->scheduler())
         return;
 
-    Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind(&ThreadState::performIdleLazySweep, this));
+    Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind(&ThreadState::performIdleLazySweep, WTF::unretained(this)));
 }
 
 void ThreadState::schedulePreciseGC()

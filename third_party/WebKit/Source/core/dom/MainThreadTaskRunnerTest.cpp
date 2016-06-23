@@ -48,7 +48,7 @@ TEST(MainThreadTaskRunnerTest, PostTask)
     std::unique_ptr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
     bool isMarked = false;
 
-    runner->postTask(BLINK_FROM_HERE, createSameThreadTask(&markBoolean, &isMarked));
+    runner->postTask(BLINK_FROM_HERE, createSameThreadTask(&markBoolean, WTF::unretained(&isMarked)));
     EXPECT_FALSE(isMarked);
     blink::testing::runPendingTasks();
     EXPECT_TRUE(isMarked);
@@ -61,7 +61,7 @@ TEST(MainThreadTaskRunnerTest, SuspendTask)
     bool isMarked = false;
 
     context->setTasksNeedSuspension(true);
-    runner->postTask(BLINK_FROM_HERE, createSameThreadTask(&markBoolean, &isMarked));
+    runner->postTask(BLINK_FROM_HERE, createSameThreadTask(&markBoolean, WTF::unretained(&isMarked)));
     runner->suspend();
     blink::testing::runPendingTasks();
     EXPECT_FALSE(isMarked);
@@ -79,7 +79,7 @@ TEST(MainThreadTaskRunnerTest, RemoveRunner)
     bool isMarked = false;
 
     context->setTasksNeedSuspension(true);
-    runner->postTask(BLINK_FROM_HERE, createSameThreadTask(&markBoolean, &isMarked));
+    runner->postTask(BLINK_FROM_HERE, createSameThreadTask(&markBoolean, WTF::unretained(&isMarked)));
     runner = nullptr;
     blink::testing::runPendingTasks();
     EXPECT_FALSE(isMarked);

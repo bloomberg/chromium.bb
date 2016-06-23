@@ -102,7 +102,7 @@ void AddOne(int* ptr)
 TEST_F(CancellableTaskFactoryTest, Run_ClosureIsExecuted)
 {
     int executionCount = 0;
-    TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
+    TestCancellableTaskFactory factory(WTF::bind(&AddOne, WTF::unretained(&executionCount)));
     std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(factory.cancelAndCreate());
     task->run();
 
@@ -112,7 +112,7 @@ TEST_F(CancellableTaskFactoryTest, Run_ClosureIsExecuted)
 TEST_F(CancellableTaskFactoryTest, Run_ClosureIsExecutedOnlyOnce)
 {
     int executionCount = 0;
-    TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
+    TestCancellableTaskFactory factory(WTF::bind(&AddOne, WTF::unretained(&executionCount)));
     std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(factory.cancelAndCreate());
     task->run();
     task->run();
@@ -127,7 +127,7 @@ TEST_F(CancellableTaskFactoryTest, Run_FactoryDestructionPreventsExecution)
     int executionCount = 0;
     std::unique_ptr<WebTaskRunner::Task> task;
     {
-        TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
+        TestCancellableTaskFactory factory(WTF::bind(&AddOne, WTF::unretained(&executionCount)));
         task = wrapUnique(factory.cancelAndCreate());
     }
     task->run();
@@ -138,7 +138,7 @@ TEST_F(CancellableTaskFactoryTest, Run_FactoryDestructionPreventsExecution)
 TEST_F(CancellableTaskFactoryTest, Run_TasksInSequence)
 {
     int executionCount = 0;
-    TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
+    TestCancellableTaskFactory factory(WTF::bind(&AddOne, WTF::unretained(&executionCount)));
 
     std::unique_ptr<WebTaskRunner::Task> taskA = wrapUnique(factory.cancelAndCreate());
     taskA->run();
@@ -156,7 +156,7 @@ TEST_F(CancellableTaskFactoryTest, Run_TasksInSequence)
 TEST_F(CancellableTaskFactoryTest, Cancel)
 {
     int executionCount = 0;
-    TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
+    TestCancellableTaskFactory factory(WTF::bind(&AddOne, WTF::unretained(&executionCount)));
     std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(factory.cancelAndCreate());
     factory.cancel();
     task->run();
@@ -167,7 +167,7 @@ TEST_F(CancellableTaskFactoryTest, Cancel)
 TEST_F(CancellableTaskFactoryTest, CreatingANewTaskCancelsPreviousOnes)
 {
     int executionCount = 0;
-    TestCancellableTaskFactory factory(WTF::bind(&AddOne, &executionCount));
+    TestCancellableTaskFactory factory(WTF::bind(&AddOne, WTF::unretained(&executionCount)));
 
     std::unique_ptr<WebTaskRunner::Task> taskA = wrapUnique(factory.cancelAndCreate());
     std::unique_ptr<WebTaskRunner::Task> taskB = wrapUnique(factory.cancelAndCreate());

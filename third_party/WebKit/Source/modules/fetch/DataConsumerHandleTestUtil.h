@@ -518,7 +518,7 @@ public:
     private:
         void start(std::unique_ptr<WebDataConsumerHandle> handle)
         {
-            m_handleReader = wrapUnique(new T(std::move(handle), WTF::bind(&HandleReaderRunner::onFinished, this)));
+            m_handleReader = wrapUnique(new T(std::move(handle), WTF::bind(&HandleReaderRunner::onFinished, WTF::unretained(this))));
         }
 
         void onFinished(std::unique_ptr<HandleReadResult> result)

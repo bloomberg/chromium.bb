@@ -45,7 +45,7 @@ public:
     template<typename T>
     static std::unique_ptr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<!IsGarbageCollectedType<T>::value>::type* = nullptr)
     {
-        return wrapUnique(new CancellableTaskFactory(WTF::bind(method, thisObject)));
+        return wrapUnique(new CancellableTaskFactory(WTF::bind(method, WTF::unretained(thisObject))));
     }
 
     bool isPending() const

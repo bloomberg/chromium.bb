@@ -42,8 +42,8 @@ ScriptPromise Worklet::import(ScriptState* scriptState, const String& url)
     m_scriptLoaders.append(WorkerScriptLoader::create());
     m_scriptLoaders.last()->loadAsynchronously(*getExecutionContext(), scriptURL, DenyCrossOriginRequests,
         getExecutionContext()->securityContext().addressSpace(),
-        bind(&Worklet::onResponse, wrapPersistent(this), m_scriptLoaders.last().get()),
-        bind(&Worklet::onFinished, wrapPersistent(this), m_scriptLoaders.last().get(), wrapPersistent(resolver)));
+        bind(&Worklet::onResponse, wrapPersistent(this), WTF::unretained(m_scriptLoaders.last().get())),
+        bind(&Worklet::onFinished, wrapPersistent(this), WTF::unretained(m_scriptLoaders.last().get()), wrapPersistent(resolver)));
 
     return promise;
 }

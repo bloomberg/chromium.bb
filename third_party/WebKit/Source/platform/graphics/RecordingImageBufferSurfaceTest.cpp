@@ -344,7 +344,7 @@ private:
 #define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                                                               \
     {                                                                                                     \
         CurrentThreadPlatformMock ctpm;                                                                   \
-        Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RecordingImageBufferSurfaceTest::TEST_METHOD, this)); \
+        Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RecordingImageBufferSurfaceTest::TEST_METHOD, WTF::unretained(this))); \
         ctpm.enterRunLoop();                                      \
     }
 

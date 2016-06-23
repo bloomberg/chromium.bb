@@ -338,7 +338,7 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
         DenyCrossOriginRequests,
         m_workerStartData.addressSpace,
         nullptr,
-        bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
+        bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, WTF::unretained(this)));
     // Do nothing here since onScriptLoaderFinished() might have been already
     // invoked and |this| might have been deleted at this point.
 }
