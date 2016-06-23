@@ -33,6 +33,8 @@ class TraceCrashServiceUploader : public content::TraceUploader,
 
   void SetUploadURL(const std::string& url);
 
+  void SetMaxUploadBytes(size_t max_upload_bytes);
+
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   void OnURLFetchUploadProgress(const net::URLFetcher* source,
@@ -81,6 +83,8 @@ class TraceCrashServiceUploader : public content::TraceUploader,
   net::URLRequestContextGetter* request_context_;
 
   std::string upload_url_;
+
+  size_t max_upload_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceCrashServiceUploader);
 };

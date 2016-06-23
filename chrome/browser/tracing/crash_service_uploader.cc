@@ -43,13 +43,13 @@ const char kMultipartBoundary[] =
 const int kHttpResponseOk = 200;
 
 // Allow up to 10MB for trace upload
-const int kMaxUploadBytes = 10000000;
+const size_t kMaxUploadBytes = 10000000;
 
 }  // namespace
 
 TraceCrashServiceUploader::TraceCrashServiceUploader(
     net::URLRequestContextGetter* request_context)
-    : request_context_(request_context) {
+    : request_context_(request_context), max_upload_bytes_(kMaxUploadBytes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -70,6 +70,11 @@ void TraceCrashServiceUploader::SetUploadURL(const std::string& url) {
 
   if (!GURL(upload_url_).is_valid())
     upload_url_.clear();
+}
+
+void TraceCrashServiceUploader::SetMaxUploadBytes(size_t max_upload_bytes) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  max_upload_bytes_ = max_upload_bytes;
 }
 
 void TraceCrashServiceUploader::OnURLFetchComplete(
@@ -174,9 +179,9 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
 
   std::string compressed_contents;
   if (upload_mode == COMPRESSED_UPLOAD) {
-    std::unique_ptr<char[]> compressed_buffer(new char[kMaxUploadBytes]);
+    std::unique_ptr<char[]> compressed_buffer(new char[max_upload_bytes_]);
     int compressed_bytes;
-    if (!Compress(file_contents, kMaxUploadBytes, compressed_buffer.get(),
+    if (!Compress(file_contents, max_upload_bytes_, compressed_buffer.get(),
                   &compressed_bytes)) {
       OnUploadError("Compressing file failed.");
       return;
@@ -184,11 +189,11 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
     compressed_contents =
         std::string(compressed_buffer.get(), compressed_bytes);
   } else {
-    if (file_contents.size() >= kMaxUploadBytes) {
-      OnUploadError("File is too large to upload.");
-      return;
-    }
     compressed_contents = file_contents;
+  }
+  if (compressed_contents.size() > max_upload_bytes_) {
+    OnUploadError("File is too large to upload.");
+    return;
   }
 
   std::string post_data;
