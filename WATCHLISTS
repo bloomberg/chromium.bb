@@ -29,6 +29,14 @@
       'filepath': 'chrome/browser/extensions/activity_log/' \
                   '|chrome/browser/extensions/api/activity_log_private/'
     },
+    'add_to_homescreen': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/webapps/|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/webapps/|'\
+                  'chrome/android/junit/src/org/chromium/chrome/browser/webapps/|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/banners/|'\
+                  'chrome/browser/android/shortcut_.*|'\
+                  'chrome/browser/android/webapps/',
+    },
     'android_crazy_linker': {
       'filepath': 'third_party/android_crazy_linker/'
     },
@@ -122,6 +130,16 @@
     },
     'automation': {
       'filepath': 'chrome/browser/automation/|chrome/test/automation/',
+    },
+    'banners': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/banners/|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/banners/|'\
+                  'chrome/browser/android/banners/|'\
+                  'chrome/browser/banners/|'\
+                  'chrome/browser/ui/android/infobars/app_banner_.*|'\
+                  'chrome/renderer/banners/|'\
+                  'third_party/WebKit/public/platform/modules/app_banner/|'\
+                  'third_party/WebKit/Source/modules/app_banner/',
     },
     'background_sync': {
       'filepath': 'background_sync',
@@ -749,6 +767,10 @@
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
     },
+    'site_engagement': {
+      'filepath': 'chrome/browser/engagement/|'\
+                  'chrome/browser/ui/webui/engagement/',
+    },
     'site_instance': {
       'filepath': 'content/browser/site_instance|'\
         'content/browser/browsing_instance',
@@ -1319,6 +1341,7 @@
                       'nektar+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
     'activity_log': ['felt@chromium.org'],
+    'add_to_homescreen': ['dominickn+watch@chromium.org'],
     'android_crazy_linker': ['johnmaguire+watch@google.com'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['jbudorick+watch@chromium.org',
@@ -1361,6 +1384,7 @@
     'background_sync': ['jkarlin+watch@chromium.org','peter@chromium.org',
                         'iclelland+watch@chromium.org',
                         'chasej+watch@chromium.org'],
+    'banners': ['dominickn+watch@chromium.org'],
     'base_allocator': ['dmikurube@chromium.org',
                        'wfh+watch@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
@@ -1374,7 +1398,7 @@
                'jessicag+watch-blimp@chromium.org',
                'kmarshall+watch-blimp@chromium.org',
                'khushalsagar+watch-blimp@chromium.org',
-	       'lethalantidote+watch-blimp@chromium.org',
+               'lethalantidote+watch-blimp@chromium.org',
                'maniscalco+watch-blimp@chromium.org',
                'marcinjb+watch-blimp@chromium.org',
                'nyquist+watch-blimp@chromium.org',
@@ -1555,7 +1579,7 @@
                       'fgorski+watch@chromium.org',
                       'petewil+watch@chromium.org',
                       'romax+watch@chromium.org',
-		      'chili+watch@chromium.org',
+                      'chili+watch@chromium.org',
                       'dewittj+watch@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'options': ['dbeam+watch-options@chromium.org',
@@ -1603,6 +1627,7 @@
                        'jsbell+serviceworker@chromium.org',
                        'michaeln@chromium.org',
                        'serviceworker-reviews@chromium.org'],
+    'site_engagement': ['dominickn+watch@chromium.org'],
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org',
                       'nasko+codewatch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
