@@ -30,6 +30,7 @@ from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
+from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
@@ -191,16 +192,23 @@ class BuilderStage(object):
       kwargs['build_id'] = build_id
       self._build_stage_id = db.InsertBuildStage(**kwargs)
 
-  def _FinishBuildStageInCIDB(self, status):
+  def _FinishBuildStageInCIDBAndMonarch(self, status, elapsed_time_seconds=0):
     """Mark the stage as finished in cidb.
 
     Args:
       status: The finish status of the build. Enum type
           constants.BUILDER_COMPLETED_STATUSES
+      elapsed_time_seconds: (optional) Elapsed time in stage, in seconds.
     """
     _, db = self._run.GetCIDBHandle()
     if self._build_stage_id is not None and db is not None:
       db.FinishBuildStage(self._build_stage_id, status)
+
+    metrics.CumulativeDistribution(constants.MON_STAGE_DURATION).add(
+        elapsed_time_seconds,
+        fields={'status': status,
+                'name': self.name,
+                'build_config': self._run.config.name})
 
   def _StartBuildStageInCIDB(self):
     """Mark the stage as inflight in cidb."""
@@ -465,7 +473,7 @@ class BuilderStage(object):
       self.HandleSkip()
       self._RecordResult(self.name, results_lib.Results.SKIPPED,
                          prefix=self._prefix)
-      self._FinishBuildStageInCIDB(constants.BUILDER_STATUS_SKIPPED)
+      self._FinishBuildStageInCIDBAndMonarch(constants.BUILDER_STATUS_SKIPPED)
       return
 
     record = results_lib.Results.PreviouslyCompletedRecord(self.name)
@@ -478,7 +486,7 @@ class BuilderStage(object):
       self._RecordResult(self.name, results_lib.Results.SUCCESS,
                          prefix=self._prefix, board=record.board,
                          time=float(record.time))
-      self._FinishBuildStageInCIDB(constants.BUILDER_STATUS_SKIPPED)
+      self._FinishBuildStageInCIDBAndMonarch(constants.BUILDER_STATUS_SKIPPED)
       return
 
     self._WaitBuildStageInCIDB()
@@ -494,7 +502,7 @@ class BuilderStage(object):
       self._RecordResult(self.name,
                          results_lib.Results.SKIPPED,
                          prefix=self._prefix)
-      self._FinishBuildStageInCIDB(constants.BUILDER_STATUS_SKIPPED)
+      self._FinishBuildStageInCIDBAndMonarch(constants.BUILDER_STATUS_SKIPPED)
       return
 
     #  Ready to start, mark buildStage as inflight in CIDB
@@ -540,7 +548,8 @@ class BuilderStage(object):
       elapsed_time = time.time() - start_time
       self._RecordResult(self.name, result, description, prefix=self._prefix,
                          time=elapsed_time)
-      self._FinishBuildStageInCIDB(self._TranslateResultToCIDBStatus(result))
+      self._FinishBuildStageInCIDBAndMonarch(
+          self._TranslateResultToCIDBStatus(result), elapsed_time)
       if isinstance(result, BaseException) and self._build_stage_id is not None:
         _, db = self._run.GetCIDBHandle()
         if db:

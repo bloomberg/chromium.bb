@@ -218,7 +218,7 @@ MON_CL_ACTION = 'chromeos/cbuildbot/cl_action/%s'
 MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
 MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'
 MON_PRECQ_TICK_COUNT = 'chromeos/cbuildbot/pre-cq/tick_count'
-
+MON_STAGE_DURATION = 'chromeos/cbuildbot/stage/durations'
 
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they
