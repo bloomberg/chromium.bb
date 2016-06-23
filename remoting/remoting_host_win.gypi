@@ -563,9 +563,7 @@
     # component build is used the produced installation will not work due to
     # missing DLLs. We build it anyway to make sure the GYP scripts are executed
     # by the bots.
-    # We do not release a 64 bits binary. So to avoid any potential
-    # misunderstanding, we only build 32 bits MSI file.
-    ['wix_exists == "True" and target_arch == "ia32"', {
+    ['wix_exists == "True"', {
       'targets': [
         {
           'target_name': 'remoting_host_installation',
