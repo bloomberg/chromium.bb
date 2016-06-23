@@ -996,13 +996,18 @@ void Gtk2UI::LoadGtkValues() {
 void Gtk2UI::UpdateMaterialDesignColors() {
   // TODO(varkha): This should be merged back into LoadGtkValues() once Material
   // Design is on unconditionally.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    NativeThemeGtk2* theme = NativeThemeGtk2::instance();
-    SkColor label_color =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
-    colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-        color_utils::BlendTowardOppositeLuma(label_color, 50);
+  // Early return when Material Design Controller is not initialized yet. This
+  // is harmless and the colors will get updated when this method is called
+  // again after the initialization. See http://crbug.com/622234.
+  if (!ui::MaterialDesignController::is_mode_initialized() ||
+      !ui::MaterialDesignController::IsModeMaterial()) {
+    return;
   }
+  NativeThemeGtk2* theme = NativeThemeGtk2::instance();
+  SkColor label_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+      color_utils::BlendTowardOppositeLuma(label_color, 50);
 }
 
 SkColor Gtk2UI::BuildFrameColors() {

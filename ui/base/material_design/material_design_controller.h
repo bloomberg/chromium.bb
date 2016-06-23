@@ -44,11 +44,14 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Returns the per-platform default material design variant.
   static Mode DefaultMode();
 
+  static bool is_mode_initialized() { return is_mode_initialized_; }
+
  private:
   friend class test::MaterialDesignControllerTestAPI;
 
-  // Tracks whether |mode_| has been initialized. This is necessary so tests can
-  // reset the state back to a clean state during tear down.
+  // Tracks whether |mode_| has been initialized. This is necessary to avoid
+  // checking the |mode_| early in initialization before a call to Initialize().
+  // Tests can use it to reset the state back to a clean state during tear down.
   static bool is_mode_initialized_;
 
   // The current Mode to be used by the system.
