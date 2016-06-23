@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "mojo/edk/system/request_context.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/functions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,6 +55,8 @@ class WatchHelper {
     watching_ = false;
   }
 
+  void ExpectSystemNotifications() { expect_system_notifications_ = true; }
+
  private:
   static void OnNotify(uintptr_t context,
                        MojoResult result,
@@ -63,13 +66,16 @@ class WatchHelper {
     CHECK(watcher->watching_);
     if (result == MOJO_RESULT_CANCELLED)
       watcher->watching_ = false;
-    CHECK_EQ(flags, MOJO_WATCH_NOTIFICATION_FLAG_NONE);
+    CHECK_EQ(flags, watcher->expect_system_notifications_?
+        MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM :
+        MOJO_WATCH_NOTIFICATION_FLAG_NONE);
     watcher->callback_(result, state);
   }
 
   bool watching_ = false;
   MojoHandle handle_;
   Callback callback_;
+  bool expect_system_notifications_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WatchHelper);
 };
@@ -402,6 +408,56 @@ TEST_F(WatchTest, WakeUpSelfWithinWatchCallback) {
 
   CloseHandle(a);
   CloseHandle(b);
+}
+
+TEST_F(WatchTest, NestedCancellation) {
+  // Verifies that cancellations in nested system request contexts preempt
+  // other notifications for the same watcher. This tests against the condition
+  // hit by http://crbug.com/622298.
+
+  MojoHandle a, b, c, d;
+  CreateMessagePipe(&a, &b);
+  CreateMessagePipe(&c, &d);
+
+  bool a_watcher_run = false;
+  WatchHelper a_watcher;
+  a_watcher.Watch(
+      a, MOJO_HANDLE_SIGNAL_READABLE,
+      [&](MojoResult result, MojoHandleSignalsState state) {
+        a_watcher_run = true;
+      });
+
+  WatchHelper c_watcher;
+  c_watcher.Watch(
+      c, MOJO_HANDLE_SIGNAL_READABLE,
+      [&](MojoResult result, MojoHandleSignalsState state) {
+        // This will trigger a notification on |a_watcher| above to be executed
+        // once this handler finishes running...
+        CloseHandle(b);
+
+        // ...but this should prevent that notification from dispatching because
+        // |a_watcher| is now cancelled.
+        a_watcher.Cancel();
+      });
+  c_watcher.ExpectSystemNotifications();
+
+  {
+    // Force "system" notifications for the synchronous behavior required to
+    // test this case.
+    mojo::edk::RequestContext request_context(
+        mojo::edk::RequestContext::Source::SYSTEM);
+
+    // Trigger the |c_watcher| callback above.
+    CloseHandle(d);
+  }
+
+  EXPECT_FALSE(a_watcher.is_watching());
+  EXPECT_FALSE(a_watcher_run);
+
+  c_watcher.Cancel();
+
+  CloseHandle(a);
+  CloseHandle(c);
 }
 
 }  // namespace

@@ -40,6 +40,16 @@ RequestContext::~RequestContext() {
     if (source_ == Source::SYSTEM)
       flags |= MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM;
 
+    // We run all cancellation finalizers first. This is necessary because it's
+    // possible that one of the cancelled watchers has other pending finalizers
+    // attached to this RequestContext.
+    //
+    // From the application's perspective the watch has already been cancelled,
+    // so we have to honor our contract which guarantees no more notifications.
+    for (const scoped_refptr<Watcher>& watcher :
+            watch_cancel_finalizers_.container())
+      watcher->Cancel();
+
     for (const WatchNotifyFinalizer& watch :
         watch_notify_finalizers_.container()) {
       // Establish a new request context for the extent of each callback to
@@ -48,10 +58,6 @@ RequestContext::~RequestContext() {
       RequestContext request_context(source_);
       watch.watcher->MaybeInvokeCallback(watch.result, watch.state, flags);
     }
-
-    for (const scoped_refptr<Watcher>& watcher :
-            watch_cancel_finalizers_.container())
-      watcher->Cancel();
   } else {
     // It should be impossible for nested contexts to have finalizers.
     DCHECK(watch_notify_finalizers_.container().empty());
