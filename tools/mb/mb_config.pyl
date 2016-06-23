@@ -253,6 +253,7 @@
       'Android Release (Nexus 6)': 'android_gn_release_trybot',
       'Android Release (Nexus 6P)': 'android_gn_release_trybot_arm64',
       'Android Release (Nexus 9)': 'android_gn_release_trybot_arm64',
+      'Android Release (Pixel C)': 'android_gn_release_trybot_arm64',
       'GPU Linux Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_trybot',
       'GPU Linux Builder': 'swarming_gpu_fyi_tests_gn_release_trybot',
       'GPU Mac Builder': 'swarming_gpu_fyi_tests_gn_release_trybot',
