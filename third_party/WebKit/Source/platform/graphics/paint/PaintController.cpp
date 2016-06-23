@@ -219,7 +219,7 @@ void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, 
         DCHECK(currentIt != m_currentPaintArtifact.getDisplayItemList().end());
         DCHECK(currentIt->hasValidClient());
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-        CHECK(clientCacheIsValid(currentIt->client()) || !currentIt->isCacheable());
+        CHECK(currentIt->client().isAlive());
 #endif
         updatedList.appendByMoving(*currentIt, currentList.visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()), gpuAnalyzer);
         ++currentIt;
