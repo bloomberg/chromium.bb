@@ -12,7 +12,11 @@
 #ifndef AV1_COMMON_ENTROPY_H_
 #define AV1_COMMON_ENTROPY_H_
 
+#include "./aom_config.h"
 #include "aom/aom_integer.h"
+#if CONFIG_RANS
+#include "aom_dsp/ans.h"
+#endif  // CONFIG_RANS
 #include "aom_dsp/prob.h"
 
 #include "av1/common/common.h"
@@ -172,6 +176,14 @@ typedef unsigned int av1_coeff_count_model
     [REF_TYPES][COEF_BANDS][COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1];
 
 void av1_model_to_full_probs(const aom_prob *model, aom_prob *full);
+
+#if CONFIG_RANS
+typedef rans_lut coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS];
+extern const AnsP10
+    av1_pareto8_token_probs[COEFF_PROB_MODELS][ENTROPY_TOKENS - 2];
+struct frame_contexts;
+void av1_coef_pareto_cdfs(struct frame_contexts *fc);
+#endif  // CONFIG_RANS
 
 typedef char ENTROPY_CONTEXT;
 

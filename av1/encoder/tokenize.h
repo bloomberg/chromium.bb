@@ -36,6 +36,9 @@ typedef struct {
 
 typedef struct {
   const aom_prob *context_tree;
+#if CONFIG_RANS
+  const rans_lut *token_cdf;
+#endif
   EXTRABIT extra;
   uint8_t token;
   uint8_t skip_eob_node;

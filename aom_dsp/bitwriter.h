@@ -100,7 +100,14 @@ static INLINE void aom_write_tree(aom_writer *w, const aom_tree_index *tree,
 
 static INLINE void aom_write_tree_cdf(aom_writer *w, int symb,
                                       const uint16_t *cdf, int nsymbs) {
-#if CONFIG_DAALA_EC
+#if CONFIG_RANS
+  (void)nsymbs;
+  struct rans_sym s;
+  assert(cdf);
+  s.cum_prob = cdf[symb];
+  s.prob = cdf[symb + 1] - s.cum_prob;
+  buf_rans_write(w, &s);
+#elif CONFIG_DAALA_EC
   daala_write_tree_cdf(w, symb, cdf, nsymbs);
 #else
   (void)w;

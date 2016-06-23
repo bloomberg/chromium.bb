@@ -262,6 +262,7 @@ EXPERIMENT_LIST="
     ext_compound
     supertx
     ans
+    rans
     daala_ec
     parallel_deblocking
 "
