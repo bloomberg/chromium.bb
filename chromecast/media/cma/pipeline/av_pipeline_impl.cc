@@ -161,6 +161,9 @@ void AvPipelineImpl::SetCdm(CastCdmContext* cast_cdm_context) {
   player_tracker_callback_id_ = cast_cdm_context_->RegisterPlayer(
       base::Bind(&AvPipelineImpl::OnCdmStateChanged, weak_this_),
       base::Bind(&AvPipelineImpl::OnCdmDestroyed, weak_this_));
+
+  // We could be waiting for CDM to provide key (see b/29564232).
+  OnCdmStateChanged();
 }
 
 void AvPipelineImpl::FetchBuffer() {
