@@ -62,6 +62,9 @@ struct desktop {
 	struct task unlock_task;
 	struct wl_list outputs;
 
+	int want_panel;
+	enum weston_desktop_shell_panel_position panel_position;
+
 	struct window *grab_window;
 	struct widget *grab_widget;
 
@@ -1207,31 +1210,12 @@ static const struct wl_output_listener output_listener = {
 	output_handle_scale
 };
 
-static int
-want_panel(struct desktop *desktop)
-{
-	struct weston_config_section *s;
-	char *location = NULL;
-	int ret = 1;
-
-	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
-	weston_config_section_get_string(s, "panel-location",
-					 &location, "top");
-
-	if (strcmp(location, "top") != 0)
-		ret = 0;
-
-	free(location);
-
-	return ret;
-}
-
 static void
 output_init(struct output *output, struct desktop *desktop)
 {
 	struct wl_surface *surface;
 
-	if (want_panel(desktop)) {
+	if (desktop->want_panel) {
 		output->panel = panel_create(desktop);
 		surface = window_get_wl_surface(output->panel->window);
 		weston_desktop_shell_set_panel(desktop->shell,
@@ -1339,6 +1323,33 @@ panel_add_launchers(struct panel *panel, struct desktop *desktop)
 	}
 }
 
+static void
+parse_panel_position(struct desktop *desktop, struct weston_config_section *s)
+{
+	char *position;
+
+	weston_config_section_get_string(s, "panel-position", &position, "top");
+	if (strcmp(position, "top") == 0)
+		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP;
+	else if (strcmp(position, "bottom") == 0)
+		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM;
+	else if (strcmp(position, "left") == 0)
+		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT;
+	else if (strcmp(position, "right") == 0)
+		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT;
+	else
+		fprintf(stderr, "Wrong panel position: %s\n", position);
+	free(position);
+
+	if (desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP
+	    || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM) {
+		desktop->want_panel = 1;
+	} else if (desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT
+		   || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT) {
+		fprintf(stderr, "Unsupported panel position\n");
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	struct desktop desktop = { 0 };
@@ -1353,6 +1364,7 @@ int main(int argc, char *argv[])
 	desktop.config = weston_config_parse(config_file);
 	s = weston_config_get_section(desktop.config, "shell", NULL, NULL);
 	weston_config_section_get_bool(s, "locking", &desktop.locking, 1);
+	parse_panel_position(&desktop, s);
 
 	desktop.display = display_create(&argc, argv);
 	if (desktop.display == NULL) {
@@ -1366,6 +1378,8 @@ int main(int argc, char *argv[])
 
 	/* Create panel and background for outputs processed before the shell
 	 * global interface was processed */
+	if (desktop.want_panel)
+		weston_desktop_shell_set_panel_position(desktop.shell, desktop.panel_position);
 	wl_list_for_each(output, &desktop.outputs, link)
 		if (!output->panel)
 			output_init(output, &desktop);
