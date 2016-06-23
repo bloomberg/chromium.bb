@@ -98,6 +98,11 @@ namespace WTF {
 // Obviously, if you create a functor this way, you shouldn't call the functor twice or more; after the second call,
 // the passed argument may be invalid.
 
+enum FunctionThreadAffinity {
+    CrossThreadAffinity,
+    SameThreadAffinity
+};
+
 template <typename T>
 class PassedWrapper final {
 public:
@@ -116,6 +121,30 @@ PassedWrapper<T> passed(T&& value)
         "You must pass an rvalue to passed() so it can be moved. Add std::move() if necessary.");
     static_assert(!std::is_const<T>::value, "|value| must not be const so it can be moved.");
     return PassedWrapper<T>(std::move(value));
+}
+
+template <typename T, FunctionThreadAffinity threadAffinity>
+class UnretainedWrapper final {
+public:
+    explicit UnretainedWrapper(T* ptr) : m_ptr(ptr) { }
+    T* value() const { return m_ptr; }
+
+private:
+    T* m_ptr;
+};
+
+template <typename T>
+UnretainedWrapper<T, SameThreadAffinity> unretained(T* value)
+{
+    static_assert(!WTF::IsGarbageCollectedType<T>::value, "unretained() + GCed type is forbidden");
+    return UnretainedWrapper<T, SameThreadAffinity>(value);
+}
+
+template <typename T>
+UnretainedWrapper<T, CrossThreadAffinity> crossThreadUnretained(T* value)
+{
+    static_assert(!WTF::IsGarbageCollectedType<T>::value, "crossThreadUnretained() + GCed type is forbidden");
+    return UnretainedWrapper<T, CrossThreadAffinity>(value);
 }
 
 // A FunctionWrapper is a class template that can wrap a function pointer or a member function pointer and
@@ -231,6 +260,14 @@ struct ParamStorageTraits<PassedWrapper<T>> {
     static T unwrap(StorageType& value) { return value.moveOut(); }
 };
 
+template <typename T, FunctionThreadAffinity threadAffinity>
+struct ParamStorageTraits<UnretainedWrapper<T, threadAffinity>> {
+    typedef UnretainedWrapper<T, threadAffinity> StorageType;
+
+    static StorageType wrap(const UnretainedWrapper<T, threadAffinity>& value) { return value; }
+    static T* unwrap(const StorageType& value) { return value.value(); }
+};
+
 template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
 
 template<typename T>
@@ -254,11 +291,6 @@ struct PointerParamStorageTraits<T*, true> {
 template<typename T>
 struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, IsGarbageCollectedType<T>::value> {
     STATIC_ONLY(ParamStorageTraits);
-};
-
-enum FunctionThreadAffinity {
-    CrossThreadAffinity,
-    SameThreadAffinity
 };
 
 template<typename, FunctionThreadAffinity threadAffinity = SameThreadAffinity>
@@ -373,9 +405,13 @@ typedef Function<void(), CrossThreadAffinity> CrossThreadClosure;
 
 } // namespace WTF
 
-using WTF::passed;
-using WTF::Function;
 using WTF::bind;
+
+using WTF::passed;
+using WTF::unretained;
+using WTF::crossThreadUnretained;
+
+using WTF::Function;
 using WTF::SameThreadClosure;
 using WTF::CrossThreadClosure;
 

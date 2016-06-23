@@ -192,17 +192,17 @@ TEST(FunctionalTest, MultiPartBind)
     assertArgs(a, b, c, 4, 4.5, 'e');
 
     std::unique_ptr<Function<void(double*, char*)>> fourBound =
-        bind(sixArgFunc, 5, 5.5, 'f', &a);
+        bind(sixArgFunc, 5, 5.5, 'f', unretained(&a));
     (*fourBound)(&b, &c);
     assertArgs(a, b, c, 5, 5.5, 'f');
 
     std::unique_ptr<Function<void(char*)>> fiveBound =
-        bind(sixArgFunc, 6, 6.5, 'g', &a, &b);
+        bind(sixArgFunc, 6, 6.5, 'g', unretained(&a), unretained(&b));
     (*fiveBound)(&c);
     assertArgs(a, b, c, 6, 6.5, 'g');
 
     std::unique_ptr<Function<void()>> sixBound =
-        bind(sixArgFunc, 7, 7.5, 'h', &a, &b, &c);
+        bind(sixArgFunc, 7, 7.5, 'h', unretained(&a), unretained(&b), unretained(&c));
     (*sixBound)();
     assertArgs(a, b, c, 7, 7.5, 'h');
 }
@@ -237,32 +237,32 @@ public:
 TEST(FunctionalTest, MemberFunctionBind)
 {
     A a(10);
-    std::unique_ptr<Function<int()>> function1 = bind(&A::f, &a);
+    std::unique_ptr<Function<int()>> function1 = bind(&A::f, unretained(&a));
     EXPECT_EQ(10, (*function1)());
 
-    std::unique_ptr<Function<int()>> function2 = bind(&A::addF, &a, 15);
+    std::unique_ptr<Function<int()>> function2 = bind(&A::addF, unretained(&a), 15);
     EXPECT_EQ(25, (*function2)());
 
-    std::unique_ptr<Function<int()>> function3 = bind(&A::overridden, &a);
+    std::unique_ptr<Function<int()>> function3 = bind(&A::overridden, unretained(&a));
     EXPECT_EQ(42, (*function3)());
 }
 
 TEST(FunctionalTest, MemberFunctionBindWithSubclassPointer)
 {
     B b(10);
-    std::unique_ptr<Function<int()>> function1 = bind(&A::f, &b);
+    std::unique_ptr<Function<int()>> function1 = bind(&A::f, unretained(&b));
     EXPECT_EQ(10, (*function1)());
 
-    std::unique_ptr<Function<int()>> function2 = bind(&A::addF, &b, 15);
+    std::unique_ptr<Function<int()>> function2 = bind(&A::addF, unretained(&b), 15);
     EXPECT_EQ(25, (*function2)());
 
-    std::unique_ptr<Function<int()>> function3 = bind(&A::overridden, &b);
+    std::unique_ptr<Function<int()>> function3 = bind(&A::overridden, unretained(&b));
     EXPECT_EQ(43, (*function3)());
 
-    std::unique_ptr<Function<int()>> function4 = bind(&B::f, &b);
+    std::unique_ptr<Function<int()>> function4 = bind(&B::f, unretained(&b));
     EXPECT_EQ(11, (*function4)());
 
-    std::unique_ptr<Function<int()>> function5 = bind(&B::addF, &b, 15);
+    std::unique_ptr<Function<int()>> function5 = bind(&B::addF, unretained(&b), 15);
     EXPECT_EQ(26, (*function5)());
 
 }
@@ -270,13 +270,13 @@ TEST(FunctionalTest, MemberFunctionBindWithSubclassPointer)
 TEST(FunctionalTest, MemberFunctionBindWithSubclassPointerWithCast)
 {
     B b(10);
-    std::unique_ptr<Function<int()>> function1 = bind(&A::f, static_cast<A*>(&b));
+    std::unique_ptr<Function<int()>> function1 = bind(&A::f, unretained(static_cast<A*>(&b)));
     EXPECT_EQ(10, (*function1)());
 
-    std::unique_ptr<Function<int()>> function2 = bind(&A::addF, static_cast<A*>(&b), 15);
+    std::unique_ptr<Function<int()>> function2 = bind(&A::addF, unretained(static_cast<A*>(&b)), 15);
     EXPECT_EQ(25, (*function2)());
 
-    std::unique_ptr<Function<int()>> function3 = bind(&A::overridden, static_cast<A*>(&b));
+    std::unique_ptr<Function<int()>> function3 = bind(&A::overridden, unretained(static_cast<A*>(&b)));
     EXPECT_EQ(43, (*function3)());
 }
 
@@ -290,7 +290,7 @@ TEST(FunctionalTest, MemberFunctionPartBind)
         bind(&A::addF);
     EXPECT_EQ(25, (*unboundFunction2)(&a, 15));
     std::unique_ptr<Function<int(int)>> objectBoundFunction2 =
-        bind(&A::addF, &a);
+        bind(&A::addF, unretained(&a));
     EXPECT_EQ(25, (*objectBoundFunction2)(15));
 }
 
@@ -337,8 +337,11 @@ int multiplyNumberByTwo(Number* number)
 TEST(FunctionalTest, RefCountedStorage)
 {
     RefPtr<Number> five = Number::create(5);
+    EXPECT_EQ(1, five->refCount());
     std::unique_ptr<Function<int()>> multiplyFiveByTwoFunction = bind(multiplyNumberByTwo, five);
+    EXPECT_EQ(2, five->refCount());
     EXPECT_EQ(10, (*multiplyFiveByTwoFunction)());
+    EXPECT_EQ(2, five->refCount());
 
     std::unique_ptr<Function<int()>> multiplyFourByTwoFunction = bind(multiplyNumberByTwo, Number::create(4));
     EXPECT_EQ(8, (*multiplyFourByTwoFunction)());
@@ -347,6 +350,16 @@ TEST(FunctionalTest, RefCountedStorage)
     std::unique_ptr<Function<int()>> multiplySixByTwoFunction = bind(multiplyNumberByTwo, six.release());
     EXPECT_FALSE(six);
     EXPECT_EQ(12, (*multiplySixByTwoFunction)());
+}
+
+TEST(FunctionalTest, UnretainedWithRefCounted)
+{
+    RefPtr<Number> five = Number::create(5);
+    EXPECT_EQ(1, five->refCount());
+    std::unique_ptr<Function<int()>> multiplyFiveByTwoFunction = bind(multiplyNumberByTwo, unretained(five.get()));
+    EXPECT_EQ(1, five->refCount());
+    EXPECT_EQ(10, (*multiplyFiveByTwoFunction)());
+    EXPECT_EQ(1, five->refCount());
 }
 
 int processUnwrappedClass(const UnwrappedClass& u, int v)
