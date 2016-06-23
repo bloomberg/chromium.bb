@@ -5,80 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "testing/libfuzzer/fuzzers/skia_path_common.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
-// We specifically don't want to include kDone_Verb.
-const int kLastVerb = SkPath::Verb::kClose_Verb;
-
-template <typename T>
-static bool read(const uint8_t** data, size_t* size, T* value) {
-  if (*size < sizeof(T))
-    return false;
-
-  *value = *reinterpret_cast<const T*>(*data);
-  *data += sizeof(T);
-  *size -= sizeof(T);
-  return true;
-}
-
-void BuildPath(const uint8_t* data, size_t size, SkPath* path) {
-  uint8_t operation;
-  SkScalar a, b, c, d, e, f;
-  while (read<uint8_t>(&data, &size, &operation)) {
-    switch (operation % (kLastVerb + 1)) {
-      case SkPath::Verb::kMove_Verb:
-        if (!read<SkScalar>(&data, &size, &a) ||
-            !read<SkScalar>(&data, &size, &b))
-          return;
-        path->moveTo(a, b);
-        break;
-
-      case SkPath::Verb::kLine_Verb:
-        if (!read<SkScalar>(&data, &size, &a) ||
-            !read<SkScalar>(&data, &size, &b))
-          return;
-        path->lineTo(a, b);
-        break;
-
-      case SkPath::Verb::kQuad_Verb:
-        if (!read<SkScalar>(&data, &size, &a) ||
-            !read<SkScalar>(&data, &size, &b) ||
-            !read<SkScalar>(&data, &size, &c) ||
-            !read<SkScalar>(&data, &size, &d))
-          return;
-        path->quadTo(a, b, c, d);
-        break;
-
-      case SkPath::Verb::kConic_Verb:
-        if (!read<SkScalar>(&data, &size, &a) ||
-            !read<SkScalar>(&data, &size, &b) ||
-            !read<SkScalar>(&data, &size, &c) ||
-            !read<SkScalar>(&data, &size, &d) ||
-            !read<SkScalar>(&data, &size, &e))
-          return;
-        path->conicTo(a, b, c, d, e);
-        break;
-
-      case SkPath::Verb::kCubic_Verb:
-        if (!read<SkScalar>(&data, &size, &a) ||
-            !read<SkScalar>(&data, &size, &b) ||
-            !read<SkScalar>(&data, &size, &c) ||
-            !read<SkScalar>(&data, &size, &d) ||
-            !read<SkScalar>(&data, &size, &e) ||
-            !read<SkScalar>(&data, &size, &f))
-          return;
-        path->cubicTo(a, b, c, d, e, f);
-        break;
-
-      case SkPath::Verb::kClose_Verb:
-        path->close();
-        break;
-    }
-  }
-}
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   uint8_t w, h, anti_alias;
@@ -99,9 +31,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (!read<SkScalar>(&data, &size, &d))
     return 0;
 
-  // SkPath::readFromMemory does not seem to be able to handle arbitrary input.
+  // In this case, we specifically don't want to include kDone_Verb.
   SkPath path;
-  BuildPath(data, size, &path);
+  BuildPath(&data, &size, &path, SkPath::Verb::kClose_Verb);
 
   // Try a few potentially interesting things with our path.
   path.contains(a, b);
