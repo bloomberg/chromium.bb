@@ -414,6 +414,8 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const int bit_fwd = (mbmi->ref_frame[0] == GOLDEN_FRAME ||
                            mbmi->ref_frame[0] == LAST3_FRAME);
       const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
+
+      // Write forward references.
       aom_write(w, bit_fwd, av1_get_pred_prob_comp_fwdref_p(cm, xd));
       if (!bit_fwd) {
         const int bit1_fwd = mbmi->ref_frame[0] == LAST_FRAME;
@@ -422,6 +424,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         const int bit2_fwd = mbmi->ref_frame[0] == GOLDEN_FRAME;
         aom_write(w, bit2_fwd, av1_get_pred_prob_comp_fwdref_p2(cm, xd));
       }
+      // Write forward references.
       aom_write(w, bit_bwd, av1_get_pred_prob_comp_bwdref_p(cm, xd));
 #else
       aom_write(w, mbmi->ref_frame[0] == GOLDEN_FRAME,
@@ -432,7 +435,6 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const int bit0 = (mbmi->ref_frame[0] == ALTREF_FRAME ||
                         mbmi->ref_frame[0] == BWDREF_FRAME);
       aom_write(w, bit0, av1_get_pred_prob_single_ref_p1(cm, xd));
-
       if (bit0) {
         const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
         aom_write(w, bit1, av1_get_pred_prob_single_ref_p2(cm, xd));
@@ -440,7 +442,6 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         const int bit2 = (mbmi->ref_frame[0] == LAST3_FRAME ||
                           mbmi->ref_frame[0] == GOLDEN_FRAME);
         aom_write(w, bit2, av1_get_pred_prob_single_ref_p3(cm, xd));
-
         if (!bit2) {
           const int bit3 = mbmi->ref_frame[0] != LAST_FRAME;
           aom_write(w, bit3, av1_get_pred_prob_single_ref_p4(cm, xd));
