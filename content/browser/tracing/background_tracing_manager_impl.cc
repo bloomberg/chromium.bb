@@ -52,10 +52,6 @@ void RecordBackgroundTracingMetric(BackgroundTracingMetrics metric) {
 // Tracing enabled callback for BENCHMARK_MEMORY_LIGHT category preset.
 void BenchmarkMemoryLight_TracingEnabledCallback() {
   auto dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
-  // Safety check to make sure the memory-infra restrictions are properly
-  // propagated via TraceConfig
-  CHECK(!dump_manager->IsDumpModeAllowed(
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED));
   dump_manager->RequestGlobalDump(
       base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);

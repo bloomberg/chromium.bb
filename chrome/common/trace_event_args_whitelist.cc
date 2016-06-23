@@ -8,6 +8,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/memory_dump_manager.h"
 
 namespace {
 
@@ -18,12 +19,15 @@ struct WhitelistEntry {
 };
 
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
+const char* const kMemoryDumpAllowedArgs[] = {"dumps", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
     {"toplevel", "*", nullptr},
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
+    {base::trace_event::MemoryDumpManager::kTraceCategory, "*",
+     kMemoryDumpAllowedArgs},
     {nullptr, nullptr, nullptr}};
 
 const char* kMetadataWhitelist[] = {
