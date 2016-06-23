@@ -29,13 +29,8 @@ ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {}
 ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {}
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
-  if (chrome::ShouldOpenAshOnStartup()) {
+  if (chrome::ShouldOpenAshOnStartup())
     chrome::OpenAsh(gfx::kNullAcceleratedWidget);
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    ash::Shell::GetInstance()->CreateShelf();
-    ash::Shell::GetInstance()->ShowShelf();
-#endif
-  }
 
 #if defined(OS_CHROMEOS)
   // For OS_CHROMEOS, virtual keyboard needs to be initialized before profile
