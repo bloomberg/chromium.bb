@@ -140,16 +140,20 @@ def CalculateHash(root, expected_hash):
       timestamps_data_files.append(f[0])
     missing_files = [f for f in timestamps_data_files if f not in file_list]
     if len(missing_files):
-      print ('Some files are missing from the %s version of the toolchain:' %
-             expected_hash)
-      for f in missing_files:
+      print ('%d files missing from the %s version of the toolchain:' %
+             (len(missing_files), expected_hash))
+      for f in missing_files[:10]:
         print '\t%s' % f
+      if len(missing_files) > 10:
+        print '\t...'
     extra_files = [f for f in file_list if f not in timestamps_data_files]
     if len(extra_files):
-      print ('There\'s some extra files in the %s version of the toolchain:' %
-             expected_hash)
-      for f in extra_files:
+      print ('%d extra files in the %s version of the toolchain:' %
+             (len(extra_files), expected_hash))
+      for f in extra_files[:10]:
         print '\t%s' % f
+      if len(extra_files) > 10:
+        print '\t...'
   if matches:
     return timestamps_data['sha1']
 
