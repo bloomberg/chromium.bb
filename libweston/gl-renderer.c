@@ -175,6 +175,8 @@ struct gl_renderer {
 	EGLContext egl_context;
 	EGLConfig egl_config;
 
+	EGLSurface dummy_surface;
+
 	struct wl_array vertices;
 	struct wl_array vtxcnt;
 
@@ -200,6 +202,8 @@ struct gl_renderer {
 	int has_egl_buffer_age;
 
 	int has_configless_context;
+
+	int has_surfaceless_context;
 
 	int has_dmabuf_import;
 	struct wl_list dmabuf_images;
@@ -2597,12 +2601,6 @@ gl_renderer_output_create(struct weston_output *output,
 		return -1;
 	}
 
-	if (gr->egl_context == NULL)
-		if (gl_renderer_setup(ec, go->egl_surface) < 0) {
-			free(go);
-			return -1;
-		}
-
 	for (i = 0; i < BUFFER_DAMAGE_COUNT; i++)
 		pixman_region32_init(&go->buffer_damage[i]);
 
@@ -2653,6 +2651,9 @@ gl_renderer_destroy(struct weston_compositor *ec)
 
 	wl_list_for_each_safe(image, next, &gr->dmabuf_images, link)
 		dmabuf_image_destroy(image);
+
+	if (gr->dummy_surface != EGL_NO_SURFACE)
+		eglDestroySurface(gr->egl_display, gr->dummy_surface);
 
 	eglTerminate(gr->egl_display);
 	eglReleaseThread();
@@ -2765,6 +2766,9 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 		gr->has_configless_context = 1;
 #endif
 
+	if (check_extension(extensions, "EGL_KHR_surfaceless_context"))
+		gr->has_surfaceless_context = 1;
+
 #ifdef EGL_EXT_image_dma_buf_import
 	if (check_extension(extensions, "EGL_EXT_image_dma_buf_import"))
 		gr->has_dmabuf_import = 1;
@@ -2794,6 +2798,7 @@ static const EGLint gl_renderer_alpha_attribs[] = {
 	EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 	EGL_NONE
 };
+
 
 /** Checks whether a platform EGL client extension is supported
  *
@@ -2870,6 +2875,43 @@ platform_to_extension(EGLenum platform)
 	default:
 		assert(0 && "bad EGL platform enum");
 	}
+}
+
+static int
+gl_renderer_create_pbuffer_surface(struct gl_renderer *gr) {
+	EGLConfig pbuffer_config;
+
+	static const EGLint pbuffer_config_attribs[] = {
+		EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+		EGL_RED_SIZE, 1,
+		EGL_GREEN_SIZE, 1,
+		EGL_BLUE_SIZE, 1,
+		EGL_ALPHA_SIZE, 0,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_NONE
+	};
+
+	static const EGLint pbuffer_attribs[] = {
+		EGL_WIDTH, 10,
+		EGL_HEIGHT, 10,
+		EGL_NONE
+	};
+
+	if (egl_choose_config(gr, pbuffer_config_attribs, NULL, 0, &pbuffer_config) < 0) {
+		weston_log("failed to choose EGL config for PbufferSurface");
+		return -1;
+	}
+
+	gr->dummy_surface = eglCreatePbufferSurface(gr->egl_display,
+						    pbuffer_config,
+						    pbuffer_attribs);
+
+	if (gr->dummy_surface == EGL_NO_SURFACE) {
+		weston_log("failed to create PbufferSurface\n");
+		return -1;
+	}
+
+	return 0;
 }
 
 static int
@@ -2956,9 +2998,26 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 	if (gr->has_dmabuf_import)
 		gr->base.import_dmabuf = gl_renderer_import_dmabuf;
 
+	if (gr->has_surfaceless_context) {
+		weston_log("EGL_KHR_surfaceless_context available\n");
+		gr->dummy_surface = EGL_NO_SURFACE;
+	} else {
+		weston_log("EGL_KHR_surfaceless_context unavailable. "
+			   "Trying PbufferSurface\n");
+
+		if (gl_renderer_create_pbuffer_surface(gr) < 0)
+			goto fail_with_error;
+	}
+
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_RGB565);
 
 	wl_signal_init(&gr->destroy_signal);
+
+	if (gl_renderer_setup(ec, gr->dummy_surface) < 0) {
+		if (gr->dummy_surface != EGL_NO_SURFACE)
+			eglDestroySurface(gr->egl_display, gr->dummy_surface);
+		goto fail_with_error;
+	}
 
 	return 0;
 
