@@ -12,6 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "components/exo/notification_surface.h"
+#include "components/exo/notification_surface_manager.h"
 #include "components/exo/shared_memory.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
@@ -32,7 +34,10 @@ namespace exo {
 ////////////////////////////////////////////////////////////////////////////////
 // Display, public:
 
-Display::Display() {}
+Display::Display() : notification_surface_manager_(nullptr) {}
+
+Display::Display(NotificationSurfaceManager* notification_surface_manager)
+    : notification_surface_manager_(notification_surface_manager) {}
 
 Display::~Display() {}
 
@@ -177,6 +182,22 @@ std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
   }
 
   return base::WrapUnique(new SubSurface(surface, parent));
+}
+
+std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
+    Surface* surface,
+    const std::string& notification_id) {
+  TRACE_EVENT2("exo", "Display::CreateNotificationSurface", "surface",
+               surface->AsTracedValue(), "notification_id", notification_id);
+
+  if (!notification_surface_manager_ ||
+      notification_surface_manager_->GetSurface(notification_id)) {
+    DLOG(ERROR) << "Invalid notification id, id=" << notification_id;
+    return nullptr;
+  }
+
+  return base::MakeUnique<NotificationSurface>(notification_surface_manager_,
+                                               surface, notification_id);
 }
 
 }  // namespace exo

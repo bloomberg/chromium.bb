@@ -43,6 +43,8 @@
 #include "components/exo/display.h"
 #include "components/exo/keyboard.h"
 #include "components/exo/keyboard_delegate.h"
+#include "components/exo/notification_surface.h"
+#include "components/exo/notification_surface_manager.h"
 #include "components/exo/pointer.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/shared_memory.h"
@@ -1512,6 +1514,16 @@ const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_top_inset};
 
 ////////////////////////////////////////////////////////////////////////////////
+// notification_surface_interface:
+
+void notification_surface_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zwp_notification_surface_v1_interface
+    notification_surface_implementation = {notification_surface_destroy};
+
+////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
 
 // Implements remote shell interface and monitors workspace state needed
@@ -1542,6 +1554,12 @@ class WaylandRemoteShell : public ash::ShellObserver,
   std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface,
                                                    int container) {
     return display_->CreateRemoteShellSurface(surface, container);
+  }
+
+  std::unique_ptr<NotificationSurface> CreateNotificationSurface(
+      Surface* surface,
+      const std::string& notification_id) {
+    return display_->CreateNotificationSurface(surface, notification_id);
   }
 
   // Overridden from display::DisplayObserver:
@@ -1719,10 +1737,40 @@ void remote_shell_get_remote_surface(wl_client* client,
                     std::move(shell_surface));
 }
 
-const struct zwp_remote_shell_v1_interface remote_shell_implementation = {
-    remote_shell_destroy, remote_shell_get_remote_surface};
+void remote_shell_get_notification_surface(wl_client* client,
+                                           wl_resource* resource,
+                                           uint32_t id,
+                                           wl_resource* surface,
+                                           const char* notification_id) {
+  if (GetUserDataAs<Surface>(surface)->HasSurfaceDelegate()) {
+    wl_resource_post_error(resource, ZWP_REMOTE_SHELL_V1_ERROR_ROLE,
+                           "surface has already been assigned a role");
+    return;
+  }
 
-const uint32_t remote_shell_version = 5;
+  std::unique_ptr<NotificationSurface> notification_surface =
+      GetUserDataAs<WaylandRemoteShell>(resource)->CreateNotificationSurface(
+          GetUserDataAs<Surface>(surface), std::string(notification_id));
+  if (!notification_surface) {
+    wl_resource_post_error(resource,
+                           ZWP_REMOTE_SHELL_V1_ERROR_INVALID_NOTIFICATION_ID,
+                           "invalid notification id");
+    return;
+  }
+
+  wl_resource* notification_surface_resource =
+      wl_resource_create(client, &zwp_notification_surface_v1_interface,
+                         wl_resource_get_version(resource), id);
+  SetImplementation(notification_surface_resource,
+                    &notification_surface_implementation,
+                    std::move(notification_surface));
+}
+
+const struct zwp_remote_shell_v1_interface remote_shell_implementation = {
+    remote_shell_destroy, remote_shell_get_remote_surface,
+    remote_shell_get_notification_surface};
+
+const uint32_t remote_shell_version = 6;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

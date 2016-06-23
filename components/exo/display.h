@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
@@ -23,6 +24,8 @@ class Point;
 }
 
 namespace exo {
+class NotificationSurface;
+class NotificationSurfaceManager;
 class SharedMemory;
 class ShellSurface;
 class SubSurface;
@@ -38,6 +41,7 @@ class Buffer;
 class Display {
  public:
   Display();
+  explicit Display(NotificationSurfaceManager* notification_surface_manager);
   ~Display();
 
   // Creates a new surface.
@@ -78,7 +82,14 @@ class Display {
   std::unique_ptr<SubSurface> CreateSubSurface(Surface* surface,
                                                Surface* parent);
 
+  // Creates a notification surface for a surface and notification id.
+  std::unique_ptr<NotificationSurface> CreateNotificationSurface(
+      Surface* surface,
+      const std::string& notification_id);
+
  private:
+  NotificationSurfaceManager* const notification_surface_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(Display);
 };
 
