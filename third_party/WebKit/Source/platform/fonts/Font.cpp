@@ -57,6 +57,8 @@ using namespace Unicode;
 namespace blink {
 
 Font::Font()
+    : m_canShapeWordByWord(0)
+    , m_shapeWordByWordComputed(0)
 {
 }
 
@@ -70,6 +72,9 @@ Font::Font(const FontDescription& fd)
 Font::Font(const Font& other)
     : m_fontDescription(other.m_fontDescription)
     , m_fontFallbackList(other.m_fontFallbackList)
+    // TODO(yosin): We should have a comment the reason why don't we copy
+    // |m_canShapeWordByWord| and |m_shapeWordByWordComputed| from |other|,
+    // since |operator=()| copies them from |other|.
     , m_canShapeWordByWord(0)
     , m_shapeWordByWordComputed(0)
 {
