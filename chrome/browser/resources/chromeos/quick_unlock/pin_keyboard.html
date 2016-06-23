@@ -98,6 +98,7 @@
       <div id="container-constrained-width">
         <div class="row horizontal-center">
           <input id="pin-input" type="number" placeholder="Enter PIN"
+                 value="{{value::input}}"
                  on-keydown="onInputKeyDown_"></input>
         </div>
 
@@ -141,7 +142,7 @@
           </paper-button>
           <div class="digit-button">
             <paper-icon-button class="digit-button submit-button"
-                               icon="icons:check" on-tap="onPinSubmit_">
+                               icon="icons:check" on-tap="firePinSubmitEvent_">
             </paper-icon-button>
           </div>
         </div>
