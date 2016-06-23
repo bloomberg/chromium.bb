@@ -7,6 +7,7 @@
     {
       'target_name': 'compiler_files',
       'type': 'static_library',
+      'toolsets': ['host'],
       'include_dirs': [
         'src/include',
       ],
@@ -29,7 +30,8 @@
     },
     {
       'target_name': 'flatbuffers',
-      'type': 'static_library',
+      'type': 'none',
+      'toolsets': ['host', 'target'],
       'include_dirs': [
         'src/include',
       ],
@@ -46,6 +48,7 @@
     {
       'target_name': 'flatc',
       'type': 'executable',
+      'toolsets': ['host'],
       'dependencies': [
         'compiler_files',
         'flatbuffers',
@@ -80,6 +83,7 @@
       # cd third_party/flatbuffers/ && ../../out/Debug/flatbuffers_unittest
       'target_name': 'flatbuffers_unittest',
       'type': 'executable',
+      'toolsets': ['host'],
       'dependencies': [
 	'compiler_files',
         'flatbuffers'
