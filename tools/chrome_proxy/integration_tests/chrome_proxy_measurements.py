@@ -661,3 +661,20 @@ class ChromeProxyInstrumentedVideoValidation(page_test.PageTest):
   def ValidateAndMeasurePage(self, page, tab, results):
     self._metrics.Stop(page, tab)
     self._metrics.AddResults(tab, results)
+
+class ChromeProxyPingback(ChromeProxyValidation):
+  """Chrome proxy pageload metrics pingback service validation."""
+
+  def __init__(self):
+    super(ChromeProxyPingback, self).__init__(
+        metrics=metrics.ChromeProxyMetric())
+
+  def CustomizeBrowserOptions(self, options):
+    super(ChromeProxyPingback, self).CustomizeBrowserOptions(options)
+    options.AppendExtraBrowserArgs(
+      '--enable-data-reduction-proxy-force-pingback')
+    options.AppendExtraBrowserArgs(
+      '--enable-stats-collection-bindings')
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForPingback(tab, results)

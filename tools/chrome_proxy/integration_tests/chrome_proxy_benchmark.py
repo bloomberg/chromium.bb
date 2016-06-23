@@ -307,3 +307,13 @@ class ChromeProxyVideoAudio(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'chrome_proxy_benchmark.video.audio'
+
+class ChromeProxyPingback(ChromeProxyBenchmark):
+  """Check that the pingback is sent and the server responds. """
+  tag = 'pingback'
+  test = measurements.ChromeProxyPingback
+  page_set = pagesets.PingbackStorySet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.pingback'

@@ -11,6 +11,7 @@ from common import network_metrics
 from common.chrome_proxy_metrics import ChromeProxyMetricException
 from telemetry.page import page_test
 from telemetry.value import scalar
+from telemetry.value import histogram_util
 from metrics import Metric
 
 class ChromeProxyMetric(network_metrics.NetworkMetric):
@@ -814,6 +815,58 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
         results.current_page, 'new_auth', 'count', resources_with_new_auth))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'old_auth', 'count', resources_with_old_auth))
+
+  def AddResultsForPingback(self, tab, results):
+    # Force the pingback by loading a new page.
+    tab.Navigate('http://check.googlezip.net/test.html')
+    histogram_type = histogram_util.BROWSER_HISTOGRAM
+    # This histogram should be synchronously created when the Navigate occurs.
+    attempted = histogram_util.GetHistogramSum(
+        histogram_type,
+        'DataReductionProxy.Pingback.Attempted',
+        tab)
+    # Verify that a pingback URLFetcher was created.
+    if attempted != 1:
+      raise ChromeProxyMetricException, (
+          'Expected one pingback attempt, but '
+          'received %d.' % attempted)
+    count = 0
+    seconds_slept = 0
+    # This test relies on the proxy server responding to the pingback after
+    # receiving it. This should very likely take under 10 seconds for the
+    # integration test.
+    max_seconds_to_sleep = 10
+    while count < 1 and seconds_slept < max_seconds_to_sleep:
+      # This histogram will be created when the URLRequest either fails or
+      # succeeds.
+      count = histogram_util.GetHistogramCount(
+        histogram_type,
+        'DataReductionProxy.Pingback.Succeeded',
+        tab)
+      if count < 1:
+        time.sleep(1)
+        seconds_slept += 1
+
+    # The pingback should always succeed. Successful pingbacks contribute to the
+    # sum of samples in the histogram, whereas failures only contribute to the
+    # count of samples. Since DataReductionProxy.Pingback.Succeeded is a boolean
+    # histogram, the sum of all samples in that histogram is equal to the
+    # number of successful pingbacks.
+    succeeded = histogram_util.GetHistogramSum(
+      histogram_type,
+      'DataReductionProxy.Pingback.Succeeded',
+      tab)
+    if succeeded != 1 or count != 1:
+      raise ChromeProxyMetricException, (
+          'Expected 1 pingback success and no failures, but '
+          'there were %d succesful pingbacks and %d failed pingback attempts'
+          % (succeeded, count - succeeded))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'attempted', 'count', attempted))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'succeeded_count', 'count', count))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'succeeded_sum', 'count', succeeded))
 
 PROXIED = 'proxied'
 DIRECT = 'direct'
