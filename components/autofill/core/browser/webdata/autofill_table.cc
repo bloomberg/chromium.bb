@@ -150,6 +150,7 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindInt64(index++, credit_card.use_date().ToTimeT());
   s->BindInt64(index++, modification_date.ToTimeT());
   s->BindString(index++, credit_card.origin());
+  s->BindString(index++, credit_card.billing_address_id());
 }
 
 base::string16 UnencryptedCardFromColumn(const sql::Statement& s,
@@ -183,6 +184,7 @@ std::unique_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
   credit_card->set_use_date(Time::FromTimeT(s.ColumnInt64(index++)));
   credit_card->set_modification_date(Time::FromTimeT(s.ColumnInt64(index++)));
   credit_card->set_origin(s.ColumnString(index++));
+  credit_card->set_billing_address_id(s.ColumnString(index++));
 
   return credit_card;
 }
@@ -454,6 +456,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 65:
       *update_compatible_version = false;
       return MigrateToVersion65AddServerMetadataTables();
+    case 66:
+      *update_compatible_version = false;
+      return MigrateToVersion66AddCardBillingAddress();
   }
   return true;
 }
@@ -1135,8 +1140,9 @@ bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO credit_cards"
       "(guid, name_on_card, expiration_month, expiration_year, "
-      " card_number_encrypted, use_count, use_date, date_modified, origin)"
-      "VALUES (?,?,?,?,?,?,?,?,?)"));
+      " card_number_encrypted, use_count, use_date, date_modified, origin,"
+      " billing_address_id)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?)"));
   BindCreditCardToStatement(credit_card, Time::Now(), &s);
 
   if (!s.Run())
@@ -1152,7 +1158,7 @@ std::unique_ptr<CreditCard> AutofillTable::GetCreditCard(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
              "card_number_encrypted, use_count, use_date, date_modified, "
-             "origin "
+             "origin, billing_address_id "
       "FROM credit_cards "
       "WHERE guid = ?"));
   s.BindString(0, guid);
@@ -1436,14 +1442,13 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
       "UPDATE credit_cards "
       "SET guid=?, name_on_card=?, expiration_month=?,"
           "expiration_year=?, card_number_encrypted=?, use_count=?, use_date=?,"
-          "date_modified=?, origin=?"
-      "WHERE guid=?"));
+          "date_modified=?, origin=?, billing_address_id=?"
+      "WHERE guid=?1"));
   BindCreditCardToStatement(
       credit_card,
       update_modification_date ? Time::Now() :
                                  old_credit_card->modification_date(),
       &s);
-  s.BindString(9, credit_card.guid());
 
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);
@@ -1680,7 +1685,8 @@ bool AutofillTable::InitCreditCardsTable() {
                       "date_modified INTEGER NOT NULL DEFAULT 0, "
                       "origin VARCHAR DEFAULT '', "
                       "use_count INTEGER NOT NULL DEFAULT 0, "
-                      "use_date INTEGER NOT NULL DEFAULT 0) ")) {
+                      "use_date INTEGER NOT NULL DEFAULT 0, "
+                      "billing_address_id VARCHAR) ")) {
       NOTREACHED();
       return false;
     }
@@ -2266,6 +2272,13 @@ bool AutofillTable::MigrateToVersion65AddServerMetadataTables() {
   }
 
   return transaction.Commit();
+}
+
+bool AutofillTable::MigrateToVersion66AddCardBillingAddress() {
+  // The default value for this column is null, but Connection::ColumnString()
+  // returns an empty string for that.
+  return db_->Execute(
+      "ALTER TABLE credit_cards ADD COLUMN billing_address_id VARCHAR");
 }
 
 }  // namespace autofill

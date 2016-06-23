@@ -21,11 +21,13 @@ import android.widget.Spinner;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.widget.FloatLabelLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -43,6 +45,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
     private EditText mNumberText;
     private Spinner mExpirationMonth;
     private Spinner mExpirationYear;
+    private Spinner mBillingAddress;
 
     private int mInitialExpirationMonthPos;
     private int mInitialExpirationYearPos;
@@ -66,10 +69,10 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         // Set text watcher to format credit card number
         mNumberText.addTextChangedListener(new CreditCardNumberFormattingTextWatcher());
 
-        mExpirationMonth = (Spinner) v.findViewById(
-                R.id.autofill_credit_card_editor_month_spinner);
-        mExpirationYear = (Spinner) v.findViewById(
-                R.id.autofill_credit_card_editor_year_spinner);
+        mExpirationMonth = (Spinner) v.findViewById(R.id.autofill_credit_card_editor_month_spinner);
+        mExpirationYear = (Spinner) v.findViewById(R.id.autofill_credit_card_editor_year_spinner);
+        mBillingAddress =
+                (Spinner) v.findViewById(R.id.autofill_credit_card_editor_billing_address_spinner);
 
         // We know which profile to edit based on the GUID stuffed in
         // our extras by AutofillPreferences.
@@ -137,6 +140,17 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         }
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mExpirationYear.setAdapter(adapter);
+
+        ArrayAdapter<AutofillProfile> profilesAdapter = new ArrayAdapter<AutofillProfile>(
+                getActivity(), android.R.layout.simple_spinner_item);
+        profilesAdapter.add(new AutofillProfile());  // Indicates no selection.
+        List<AutofillProfile> profiles = PersonalDataManager.getInstance().getProfilesForSettings();
+        for (int i = 0; i < profiles.size(); i++) {
+            AutofillProfile profile = profiles.get(i);
+            if (profile.getIsLocal()) profilesAdapter.add(profile);
+        }
+        mBillingAddress.setAdapter(profilesAdapter);
+        mBillingAddress.setSelection(0);
     }
 
     private void addCardDataToEditFields() {
@@ -181,6 +195,16 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
             mInitialExpirationYearPos = 0;
         }
         mExpirationYear.setSelection(mInitialExpirationYearPos);
+
+        if (!TextUtils.isEmpty(card.getBillingAddressId())) {
+            for (int i = 0; i < mBillingAddress.getAdapter().getCount(); i++) {
+                AutofillProfile profile = (AutofillProfile) mBillingAddress.getAdapter().getItem(i);
+                if (TextUtils.equals(profile.getGUID(), card.getBillingAddressId())) {
+                    mBillingAddress.setSelection(i);
+                    break;
+                }
+            }
+        }
     }
 
     // Read edited data; save in the associated Chrome profile.
@@ -193,7 +217,8 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
                 cardNumber, "" /* obfuscatedNumber */,
                 String.valueOf(mExpirationMonth.getSelectedItemPosition() + 1),
                 (String) mExpirationYear.getSelectedItem(), "" /* basicCardPaymentType */,
-                0 /* issuerIconDrawableId */);
+                0 /* issuerIconDrawableId */,
+                ((AutofillProfile) mBillingAddress.getSelectedItem()).getGUID() /* billing */);
 
         PersonalDataManager.getInstance().setCreditCard(card);
     }

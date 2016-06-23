@@ -301,6 +301,12 @@ public class PersonalDataManager {
         public void setLanguageCode(String languageCode) {
             mLanguageCode = languageCode;
         }
+
+        /** Used by ArrayAdapter in credit card settings. */
+        @Override
+        public String toString() {
+            return mLabel;
+        }
     }
 
     /**
@@ -320,19 +326,21 @@ public class PersonalDataManager {
         private String mYear;
         private String mBasicCardPaymentType;
         private int mIssuerIconDrawableId;
+        private String mBillingAddressId;
 
         @CalledByNative("CreditCard")
         public static CreditCard create(String guid, String origin, boolean isLocal,
                 boolean isCached, String name, String number, String obfuscatedNumber, String month,
-                String year, String basicCardPaymentType, int enumeratedIconId) {
+                String year, String basicCardPaymentType, int enumeratedIconId,
+                String billingAddressId) {
             return new CreditCard(guid, origin, isLocal, isCached, name, number, obfuscatedNumber,
-                    month, year, basicCardPaymentType,
-                    ResourceId.mapToDrawableId(enumeratedIconId));
+                    month, year, basicCardPaymentType, ResourceId.mapToDrawableId(enumeratedIconId),
+                    billingAddressId);
         }
 
         public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
                 String name, String number, String obfuscatedNumber, String month, String year,
-                String basicCardPaymentType, int issuerIconDrawableId) {
+                String basicCardPaymentType, int issuerIconDrawableId, String billingAddressId) {
             mGUID = guid;
             mOrigin = origin;
             mIsLocal = isLocal;
@@ -344,6 +352,7 @@ public class PersonalDataManager {
             mYear = year;
             mBasicCardPaymentType = basicCardPaymentType;
             mIssuerIconDrawableId = issuerIconDrawableId;
+            mBillingAddressId = billingAddressId;
         }
 
         /** TODO(estade): remove this constructor. */
@@ -359,6 +368,7 @@ public class PersonalDataManager {
             mObfuscatedNumber = obfuscatedNumber;
             mMonth = month;
             mYear = year;
+            mBillingAddressId = "";
         }
 
         @CalledByNative("CreditCard")
@@ -417,6 +427,11 @@ public class PersonalDataManager {
             return mIssuerIconDrawableId;
         }
 
+        @CalledByNative("CreditCard")
+        public String getBillingAddressId() {
+            return mBillingAddressId;
+        }
+
         @VisibleForTesting
         public void setGUID(String guid) {
             mGUID = guid;
@@ -446,6 +461,10 @@ public class PersonalDataManager {
 
         public void setYear(String year) {
             mYear = year;
+        }
+
+        public void setBillingAddressId(String id) {
+            mBillingAddressId = id;
         }
     }
 

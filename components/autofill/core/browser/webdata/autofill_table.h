@@ -122,7 +122,7 @@ struct FormFieldData;
 //                      with the Autofill dialog.  Most of the columns are
 //                      standard entries in a credit card form.
 //
-//   guid               A guid string to uniquely identify the profile.
+//   guid               A guid string to uniquely identify the credit card.
 //                      Added in version 31.
 //   name_on_card
 //   expiration_month
@@ -137,6 +137,10 @@ struct FormFieldData;
 //                      time_t. Added in version 30.
 //   origin             The domain of origin for this profile.
 //                      Added in version 50.
+//   billing_address_id The guid string that identifies the local profile which
+//                      is the billing address for this card. Can be null in the
+//                      database, but always returned as an empty string in
+//                      CreditCard. Added in version 66.
 //
 // masked_credit_cards
 //                      This table contains "masked" credit card information
@@ -408,6 +412,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion63AddServerRecipientName();
   bool MigrateToVersion64AddUnmaskDate();
   bool MigrateToVersion65AddServerMetadataTables();
+  bool MigrateToVersion66AddCardBillingAddress();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

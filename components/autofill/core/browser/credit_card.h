@@ -198,6 +198,11 @@ class CreditCard : public AutofillDataModel {
   // Whether the card expiration date should be updated.
   bool ShouldUpdateExpiration(const base::Time& current_time) const;
 
+  const std::string& billing_address_id() const { return billing_address_id_; }
+  void set_billing_address_id(const std::string& id) {
+    billing_address_id_ = id;
+  }
+
  private:
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
@@ -244,6 +249,9 @@ class CreditCard : public AutofillDataModel {
   // The status of the card, as reported by the server. Not valid for local
   // cards.
   ServerStatus server_status_;
+
+  // The identifier of the billing address for this card.
+  std::string billing_address_id_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().

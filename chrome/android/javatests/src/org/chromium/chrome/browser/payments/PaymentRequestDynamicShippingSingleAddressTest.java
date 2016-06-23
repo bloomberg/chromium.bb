@@ -32,7 +32,8 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
         helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "", "", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
-                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa));
+                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
+                "" /* billingAddressId */));
     }
 
     /** The shipping address should not be selected in UI by default. */

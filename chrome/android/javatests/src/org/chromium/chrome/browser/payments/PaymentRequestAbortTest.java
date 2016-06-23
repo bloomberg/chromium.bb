@@ -26,7 +26,8 @@ public class PaymentRequestAbortTest extends PaymentRequestTestBase {
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
         new AutofillTestHelper().setCreditCard(new CreditCard("", "https://example.com", true, true,
-                "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa));
+                "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
+                "" /* billingAddressId */));
     }
 
     /** If the user has not clicked "Pay" yet, then merchant's abort will succeed. */

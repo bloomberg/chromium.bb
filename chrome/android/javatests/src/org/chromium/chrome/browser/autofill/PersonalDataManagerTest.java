@@ -355,11 +355,11 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
         // Create a local card and an identical server card.
         CreditCard card1 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
                 true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
-                "2020", "Visa", 0 /* issuerIconDrawableId */);
+                "2020", "Visa", 0 /* issuerIconDrawableId */, "" /* billingAddressId */);
 
         CreditCard card2 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
                 false /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
-                "2020", "Visa", 0 /* issuerIconDrawableId */);
+                "2020", "Visa", 0 /* issuerIconDrawableId */, "" /* billingAddressId */);
 
         mHelper.setCreditCard(card1);
         mHelper.addServerCreditCard(card2);

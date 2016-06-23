@@ -33,7 +33,8 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "555-555-5555",
                 "jon.doe@google.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
-                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa));
+                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
+                "" /* billingAddressId */));
     }
 
     /** Provide the existing valid email address to the merchant. */

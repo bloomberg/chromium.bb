@@ -130,7 +130,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 65;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 66;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -982,5 +982,47 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion64ToCurrent) {
     ASSERT_TRUE(read_profiles.Step());
     EXPECT_FALSE(read_profiles.ColumnString(0).empty());
     EXPECT_EQ("90210", read_profiles.ColumnString(1));
+  }
+}
+
+// Tests addition of credit card billing address.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion65ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_65.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 65, 65));
+
+    EXPECT_FALSE(connection.DoesColumnExist("credit_cards",
+                                            "billing_address_id"));
+
+    EXPECT_TRUE(connection.Execute(
+        "INSERT INTO credit_cards(guid, name_on_card) VALUES ('', 'Alice')"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_TRUE(connection.DoesColumnExist("credit_cards",
+                                           "billing_address_id"));
+
+    sql::Statement read_credit_cards(connection.GetUniqueStatement(
+        "SELECT name_on_card, billing_address_id FROM credit_cards"));
+    ASSERT_TRUE(read_credit_cards.Step());
+    EXPECT_EQ("Alice", read_credit_cards.ColumnString(0));
+    EXPECT_TRUE(read_credit_cards.ColumnString(1).empty());
   }
 }

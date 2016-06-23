@@ -522,6 +522,7 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   expiration_year_ = credit_card.expiration_year_;
   server_id_ = credit_card.server_id_;
   server_status_ = credit_card.server_status_;
+  billing_address_id_ = credit_card.billing_address_id_;
 
   set_guid(credit_card.guid());
   set_origin(credit_card.origin());
@@ -582,6 +583,10 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   }
 
   int comparison = server_id_.compare(credit_card.server_id_);
+  if (comparison != 0)
+    return comparison;
+
+  comparison = billing_address_id_.compare(credit_card.billing_address_id_);
   if (comparison != 0)
     return comparison;
 
