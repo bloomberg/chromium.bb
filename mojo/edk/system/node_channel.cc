@@ -359,6 +359,15 @@ void NodeChannel::Introduce(const ports::NodeName& name,
   WriteChannelMessage(std::move(message));
 }
 
+void NodeChannel::Broadcast(Channel::MessagePtr message) {
+  DCHECK(!message->has_handles());
+  void* data;
+  Channel::MessagePtr broadcast_message = CreateMessage(
+      MessageType::BROADCAST, message->data_num_bytes(), 0, &data);
+  memcpy(data, message->data(), message->data_num_bytes());
+  WriteChannelMessage(std::move(broadcast_message));
+}
+
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 void NodeChannel::RelayPortsMessage(const ports::NodeName& destination,
                                     Channel::MessagePtr message) {
@@ -675,12 +684,20 @@ void NodeChannel::OnChannelMessage(const void* payload,
     }
 #endif
 
-    case MessageType::BROADCAST:
-      // This is here as a placeholder for now because nothing sends a BROADCAST
-      // message yet. This avoids breakage on version skew (namely for ARC) when
-      // we actually begin using the message.
-      DVLOG(1) << "Ignoring unhandled BROADCAST message.";
+    case MessageType::BROADCAST: {
+      if (payload_size <= sizeof(Header))
+        break;
+      const void* data = static_cast<const void*>(
+          reinterpret_cast<const Header*>(payload) + 1);
+      Channel::MessagePtr message =
+          Channel::Message::Deserialize(data, payload_size - sizeof(Header));
+      if (!message || message->has_handles()) {
+        DLOG(ERROR) << "Dropping invalid broadcast message.";
+        break;
+      }
+      delegate_->OnBroadcast(remote_node_name_, std::move(message));
       return;
+    }
 
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
     case MessageType::PORTS_MESSAGE_FROM_RELAY:

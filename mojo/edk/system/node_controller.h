@@ -165,6 +165,7 @@ class NodeController : public ports::NodeDelegate,
                     ports::ScopedMessage* message) override;
   void ForwardMessage(const ports::NodeName& node,
                       ports::ScopedMessage message) override;
+  void BroadcastMessage(ports::ScopedMessage message) override;
   void PortStatusChanged(const ports::PortRef& port) override;
 
   // NodeChannel::Delegate:
@@ -193,6 +194,8 @@ class NodeController : public ports::NodeDelegate,
   void OnIntroduce(const ports::NodeName& from_node,
                    const ports::NodeName& name,
                    ScopedPlatformHandle channel_handle) override;
+  void OnBroadcast(const ports::NodeName& from_node,
+                   Channel::MessagePtr message) override;
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   void OnRelayPortsMessage(const ports::NodeName& from_node,
                            base::ProcessHandle from_process,

@@ -182,6 +182,8 @@ class Node {
   void MaybeRemoveProxy_Locked(const LockedPort& port,
                                const PortName& port_name);
   void TryRemoveProxy(PortRef port_ref);
+  void DestroyAllPortsWithPeer(const NodeName& node_name,
+                               const PortName& port_name);
 
   ScopedMessage NewInternalMessage_Helper(const PortName& port_name,
                                           const EventType& type,

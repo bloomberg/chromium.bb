@@ -65,6 +65,8 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
     virtual void OnIntroduce(const ports::NodeName& from_node,
                              const ports::NodeName& name,
                              ScopedPlatformHandle channel_handle) = 0;
+    virtual void OnBroadcast(const ports::NodeName& from_node,
+                             Channel::MessagePtr message) = 0;
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
     virtual void OnRelayPortsMessage(const ports::NodeName& from_node,
                                      base::ProcessHandle from_process,
@@ -132,6 +134,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   void RequestIntroduction(const ports::NodeName& name);
   void Introduce(const ports::NodeName& name,
                  ScopedPlatformHandle channel_handle);
+  void Broadcast(Channel::MessagePtr message);
 
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   // Relay the message to the specified node via this channel.  This is used to
