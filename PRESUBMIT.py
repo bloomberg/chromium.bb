@@ -1447,7 +1447,7 @@ def _CheckIpcOwners(input_api, output_api):
   # directory would match that pattern. If a directory only contains *.mojom
   # files and no *_messages*.h files, we should only nag about rules for
   # *.mojom files.
-  for f in input_api.change.AffectedFiles():
+  for f in input_api.change.AffectedFiles(include_deletes=False):
     for pattern in file_patterns:
       if input_api.fnmatch.fnmatch(
           input_api.os_path.basename(f.LocalPath()), pattern):
