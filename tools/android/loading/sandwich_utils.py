@@ -54,15 +54,6 @@ class SandwichCommonBuilder(task_manager.Builder):
     runner.android_device = self._android_device
     return runner
 
-  def OverridePathToWprArchive(self, original_wpr_path):
-    """Sets the original WPR archive path's to be used.
-
-    Args:
-      original_wpr_path: Path of the original WPR archive to be used.
-    """
-    self.original_wpr_task = \
-        self.CreateStaticTask('common/webpages.wpr', original_wpr_path)
-
   def PopulateWprRecordingTask(self):
     """Records the original WPR archive."""
     @self.RegisterTask('common/webpages.wpr')
