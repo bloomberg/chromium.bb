@@ -120,8 +120,8 @@ java_strings_grd("chrome_strings_grd") {
 android_library("chrome_java") {
   deps = [
     "//base:base_java",
-    "//chrome/android/webapk/libs/client",
-    "//chrome/android/webapk/libs/common",
+    "//chrome/android/webapk/libs/client:client_java",
+    "//chrome/android/webapk/libs/common:common_java",
     "//components/safe_json/android:safe_json_java",
     "//components/variations/android:variations_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
@@ -323,7 +323,7 @@ android_library("chrome_test_java") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
-    "//chrome/android/webapk/libs/common",
+    "//chrome/android/webapk/libs/common:common_java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/dom_distiller/android:dom_distiller_core_java",

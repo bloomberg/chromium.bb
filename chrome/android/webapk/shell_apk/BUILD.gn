@@ -45,7 +45,7 @@ android_resources("shell_apk_resources") {
   custom_package = "org.chromium.webapk.shell_apk"
 }
 
-android_library("dex_loader_lib") {
+android_library("dex_loader_java") {
   java_files = [ "src/org/chromium/webapk/shell_apk/DexLoader.java" ]
 }
 
@@ -61,10 +61,10 @@ android_apk("webapk") {
     "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
   ]
   deps = [
-    ":dex_loader_lib",
+    ":dex_loader_java",
     ":shell_apk_resources",
-    "//chrome/android/webapk/libs/common",
-    "//chrome/android/webapk/libs/runtime_library",
+    "//chrome/android/webapk/libs/common:common_java",
+    "//chrome/android/webapk/libs/runtime_library:runtime_library_java",
   ]
   if (!is_java_debug) {
     proguard_enabled = true
@@ -77,10 +77,10 @@ android_library("shell_apk_javatests") {
   java_files =
       [ "javatests/src/org/chromium/webapk/shell_apk/DexLoaderTest.java" ]
   deps = [
-    ":dex_loader_lib",
+    ":dex_loader_java",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//chrome/android/webapk/libs/common",
+    "//chrome/android/webapk/libs/common:common_java",
     "//content/public/test/android:content_java_test_support",
   ]
   srcjar_deps = [ "javatests/dex_optimizer:dex_optimizer_service_aidl" ]

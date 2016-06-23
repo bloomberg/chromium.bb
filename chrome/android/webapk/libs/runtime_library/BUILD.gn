@@ -21,7 +21,7 @@ android_aidl("webapk_service_aidl") {
   ]
 }
 
-android_library("runtime_library") {
+android_library("runtime_library_java") {
   dex_path = "$target_gen_dir/$runtime_library_dex_asset_name"
   java_files =
       [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
@@ -38,14 +38,14 @@ android_assets("runtime_library_assets") {
   disable_compression = true
 
   deps = [
-    ":runtime_library",
+    ":runtime_library_java",
   ]
 }
 
 junit_binary("webapk_runtime_library_junit_tests") {
   java_files = [ "junit/src/org/chromium/webapk/lib/runtime_library/WebApkServiceImplTest.java" ]
   deps = [
-    ":runtime_library",
+    ":runtime_library_java",
     "//base:base_junit_test_support",
   ]
 }

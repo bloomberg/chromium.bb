@@ -5,7 +5,7 @@
 import("//build/config/android/rules.gni")
 import("//chrome/android/webapk/libs/runtime_library_version.gni")
 
-android_library("client") {
+android_library("client_java") {
   java_files = [
     "src/org/chromium/webapk/lib/client/DexOptimizer.java",
     "src/org/chromium/webapk/lib/client/NavigationClient.java",
@@ -13,7 +13,7 @@ android_library("client") {
     "src/org/chromium/webapk/lib/client/WebApkValidator.java",
   ]
   deps = [
-    "//chrome/android/webapk/libs/common",
+    "//chrome/android/webapk/libs/common:common_java",
   ]
   srcjar_deps = [
     ":runtime_library_version_java",
@@ -35,7 +35,7 @@ junit_binary("webapk_client_junit_tests") {
     "junit/src/org/chromium/webapk/lib/client/WebApkValidatorTest.java",
   ]
   deps = [
-    ":client",
+    ":client_java",
     "//base:base_junit_test_support",
   ]
 }
