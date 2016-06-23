@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -48,7 +49,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -143,7 +143,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             CollectionUtil.newHashSet("file", "javascript", "data");
 
     protected ImageView mNavigationButton;
-    protected ImageButton mSecurityButton;
+    protected TintedImageButton mSecurityButton;
     protected TextView mVerboseStatusTextView;
     protected TintedImageButton mDeleteButton;
     protected TintedImageButton mMicButton;
@@ -602,7 +602,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mNavigationButtonType = DeviceFormFactor.isTablet(context)
                 ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
 
-        mSecurityButton = (ImageButton) findViewById(R.id.security_button);
+        mSecurityButton = (TintedImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityLevel.NONE;
 
         mVerboseStatusTextView = (TextView) findViewById(R.id.location_bar_verbose_status);
@@ -1169,21 +1169,21 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     /**
      * Determines the icon that should be displayed for the current security level.
      * @param securityLevel The security level for which the resource will be returned.
-     * @param usingLightTheme Whether light themed security assets should be used.
+     * @param isSmallDevice Whether the device form factor is small (like a phone) or large
+     * (like a tablet).
      * @return The resource ID of the icon that should be displayed, 0 if no icon should show.
      */
-    public static int getSecurityIconResource(int securityLevel, boolean usingLightTheme) {
+    public static int getSecurityIconResource(int securityLevel, boolean isSmallDevice) {
         switch (securityLevel) {
             case ConnectionSecurityLevel.NONE:
-                return 0;
+                return isSmallDevice ? 0 : R.drawable.omnibox_info;
             case ConnectionSecurityLevel.SECURITY_WARNING:
-                return R.drawable.omnibox_https_warning;
+                return R.drawable.omnibox_info;
             case ConnectionSecurityLevel.SECURITY_ERROR:
                 return R.drawable.omnibox_https_invalid;
             case ConnectionSecurityLevel.SECURE:
             case ConnectionSecurityLevel.EV_SECURE:
-                return usingLightTheme
-                        ? R.drawable.omnibox_https_valid_light : R.drawable.omnibox_https_valid;
+                return R.drawable.omnibox_https_valid;
             default:
                 assert false;
         }
@@ -1191,16 +1191,46 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     /**
+     * @param securityLevel The security level for which the color will be returned.
+     * @param provider The {@link ToolbarDataProvider}.
+     * @param resources The Resources for the Context.
+     * @return The {@link ColorStateList} to use to tint the security state icon.
+     */
+    public static ColorStateList getColorStateList(
+            int securityLevel, ToolbarDataProvider provider, Resources resources) {
+        ColorStateList list = null;
+        int color = provider.getPrimaryColor();
+        boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
+        if (provider.isIncognito() || needLightIcon) {
+            list = ApiCompatibilityUtils.getColorStateList(resources, R.color.light_mode_tint);
+        } else {
+            if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR) {
+                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_red_700);
+            } else if (securityLevel == ConnectionSecurityLevel.SECURE
+                    || securityLevel == ConnectionSecurityLevel.EV_SECURE) {
+                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_green_700);
+            } else {
+                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
+            }
+        }
+        assert list != null : "Missing ColorStateList for Security Button.";
+        return list;
+    }
+
+    /**
      * Updates the security icon displayed in the LocationBar.
      */
     @Override
     public void updateSecurityIcon(int securityLevel) {
-        int id = getSecurityIconResource(securityLevel, !shouldEmphasizeHttpsScheme());
-        // ImageView#setImageResource is no-op if given resource is the current one.
+        boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
+        int id = getSecurityIconResource(securityLevel, isSmallDevice);
         if (id == 0) {
             mSecurityButton.setImageDrawable(null);
         } else {
+            // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(id);
+            mSecurityButton.setTint(
+                    getColorStateList(securityLevel, getToolbarDataProvider(), getResources()));
         }
 
         boolean shouldEmphasizeHttpsScheme = shouldEmphasizeHttpsScheme();
@@ -1210,11 +1240,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         }
         mSecurityIconType = securityLevel;
 
-        if (securityLevel == ConnectionSecurityLevel.NONE) {
-            updateSecurityButton(false);
-        } else {
-            updateSecurityButton(true);
-        }
+        updateSecurityButton(!(securityLevel == ConnectionSecurityLevel.NONE && isSmallDevice));
         // Since we emphasize the schema of the URL based on the security type, we need to
         // refresh the emphasis.
         mUrlBar.deEmphasizeUrl();

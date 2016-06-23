@@ -23,6 +23,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.net.URI;
 
@@ -147,7 +148,9 @@ public class WebappUrlBar extends FrameLayout implements View.OnLayoutChangeList
     }
 
     private void updateSecurityIcon(int securityLevel) {
-        mCurrentIconResource = LocationBarLayout.getSecurityIconResource(securityLevel, false);
+        boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
+        mCurrentIconResource =
+                LocationBarLayout.getSecurityIconResource(securityLevel, isSmallDevice);
 
         if (mCurrentIconResource != 0 && mIconResourceWidths.get(mCurrentIconResource, -1) == -1) {
             Drawable icon = ApiCompatibilityUtils.getDrawable(getResources(), mCurrentIconResource);

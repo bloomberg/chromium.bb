@@ -28,7 +28,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -52,9 +51,11 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.widget.Toast;
@@ -93,7 +94,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private View mTitleUrlContainer;
     private UrlBar mUrlBar;
     private TextView mTitleBar;
-    private ImageView mSecurityButton;
+    private TintedImageButton mSecurityButton;
     private ImageButton mCustomActionButton;
     private int mSecurityIconType;
     private ImageButton mCloseButton;
@@ -137,7 +138,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mLocationBarFrameLayout = findViewById(R.id.location_bar_frame_layout);
         mTitleUrlContainer = findViewById(R.id.title_url_container);
         mTitleUrlContainer.setOnLongClickListener(this);
-        mSecurityButton = (ImageButton) findViewById(R.id.security_button);
+        mSecurityButton = (TintedImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
         mCustomActionButton.setOnLongClickListener(this);
@@ -232,11 +233,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public boolean shouldEmphasizeHttpsScheme() {
         int securityLevel = getSecurityLevel();
-        if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
-                || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
-            return true;
-        }
-        return false;
+        return securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING;
     }
 
     @Override
@@ -482,13 +480,15 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         if (securityLevel == ConnectionSecurityLevel.NONE) {
             mAnimDelegate.hideSecurityButton();
         } else {
-            int id = LocationBarLayout.getSecurityIconResource(
-                    securityLevel, !shouldEmphasizeHttpsScheme());
-            // ImageView#setImageResource is no-op if given resource is the current one.
+            boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
+            int id = LocationBarLayout.getSecurityIconResource(securityLevel, isSmallDevice);
             if (id == 0) {
                 mSecurityButton.setImageDrawable(null);
             } else {
+                // ImageView#setImageResource is no-op if given resource is the current one.
                 mSecurityButton.setImageResource(id);
+                mSecurityButton.setTint(LocationBarLayout.getColorStateList(
+                        securityLevel, getToolbarDataProvider(), getResources()));
             }
             mAnimDelegate.showSecurityButton();
         }
