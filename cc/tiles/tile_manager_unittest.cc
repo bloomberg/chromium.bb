@@ -1811,15 +1811,6 @@ class VerifyResourceContentIdRasterBufferProvider
   uint64_t expected_resource_id_;
 };
 
-class VerifyResourceContentIdTileTaskManager : public FakeTileTaskManagerImpl {
- public:
-  explicit VerifyResourceContentIdTileTaskManager(uint64_t expected_resource_id)
-      : FakeTileTaskManagerImpl(base::WrapUnique<RasterBufferProvider>(
-            new VerifyResourceContentIdRasterBufferProvider(
-                expected_resource_id))) {}
-  ~VerifyResourceContentIdTileTaskManager() override {}
-};
-
 // Runs a test to ensure that partial raster is either enabled or disabled,
 // depending on |partial_raster_enabled|'s value. Takes ownership of host_impl
 // so that cleanup order can be controlled.
@@ -1833,9 +1824,13 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
 
   // Create a VerifyResourceContentIdTileTaskManager to ensure that the
   // raster task we see is created with |kExpectedId|.
-  VerifyResourceContentIdTileTaskManager verifying_task_manager(kExpectedId);
-  host_impl->tile_manager()->SetTileTaskManagerForTesting(
-      &verifying_task_manager);
+  FakeTileTaskManagerImpl tile_task_manager;
+  host_impl->tile_manager()->SetTileTaskManagerForTesting(&tile_task_manager);
+
+  VerifyResourceContentIdRasterBufferProvider raster_buffer_provider(
+      kExpectedId);
+  host_impl->tile_manager()->SetRasterBufferProviderForTesting(
+      &raster_buffer_provider);
 
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
   host_impl->resource_pool()->ReleaseResource(
