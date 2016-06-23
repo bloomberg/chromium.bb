@@ -92,6 +92,12 @@ void RecentTabHelper::StartSnapshot() {
   if (never_do_snapshots_)
     return;
 
+  // Ignores any non-normal pages, like error pages.
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry || entry->GetPageType() != content::PAGE_TYPE_NORMAL)
+    return;
+
   GURL url = web_contents()->GetLastCommittedURL();
   bool can_save = OfflinePageModel::CanSaveURL(url);
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);

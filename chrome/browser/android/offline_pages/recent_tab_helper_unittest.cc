@@ -20,6 +20,10 @@
 
 namespace offline_pages {
 
+namespace {
+const GURL kTestPageUrl("http://mystery.site/foo.html");
+}
+
 class TestArchiveFactoryImpl : public RecentTabHelper::TestArchiveFactory {
  public:
   explicit TestArchiveFactoryImpl(OfflinePageTestArchiver::Observer* observer);
@@ -43,6 +47,8 @@ class RecentTabHelperTest
   void SetUpTestArchiver(const GURL& url);
   void SetUpMockTaskRunner();
   const std::vector<OfflinePageItem>& GetAllPages();
+
+  void FailLoad(const GURL& url);
 
   // Runs default thread.
   void RunUntilIdle();
@@ -129,6 +135,16 @@ void RecentTabHelperTest::SetUp() {
   model_->AddObserver(this);
 }
 
+void RecentTabHelperTest::FailLoad(const GURL& url) {
+  controller().LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_TYPED,
+                       std::string());
+  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationStart(url);
+  content::RenderFrameHostTester::For(main_rfh())->
+      SimulateNavigationError(url, net::ERR_INTERNET_DISCONNECTED);
+  content::RenderFrameHostTester::For(main_rfh())->
+      SimulateNavigationErrorPageCommit();
+}
+
 const std::vector<OfflinePageItem>& RecentTabHelperTest::GetAllPages() {
   model()->GetAllPages(
       base::Bind(&RecentTabHelperTest::OnGetAllPagesDone,
@@ -156,19 +172,17 @@ TEST_F(RecentTabHelperTest, Basic) {
 }
 
 TEST_F(RecentTabHelperTest, SimpleCapture) {
-  const GURL url("http://mystery.site/foo.html");
-  NavigateAndCommit(url);
+  NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
-  EXPECT_EQ(url, all_pages()[0].url);
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 }
 
 TEST_F(RecentTabHelperTest, TwoCaptures) {
-  const GURL url("http://mystery.site/foo.html");
-  NavigateAndCommit(url);
+  NavigateAndCommit(kTestPageUrl);
   // Triggers snapshot after a time delay.
   recent_tab_helper()->DocumentAvailableInMainFrame();
   RunUntilIdle();
@@ -181,7 +195,7 @@ TEST_F(RecentTabHelperTest, TwoCaptures) {
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
-  EXPECT_EQ(url, all_pages()[0].url);
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 
   // Triggers snapshot immediately;
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
@@ -191,7 +205,16 @@ TEST_F(RecentTabHelperTest, TwoCaptures) {
   // the same page should be simply overridden.
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
-  EXPECT_EQ(url, all_pages()[0].url);
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+}
+
+TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
+  FailLoad(kTestPageUrl);
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  GetAllPages();
+  EXPECT_EQ(0U, all_pages().size());
 }
 
 }  // namespace offline_pages
