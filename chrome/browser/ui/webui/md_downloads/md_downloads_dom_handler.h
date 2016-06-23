@@ -96,9 +96,14 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   // Actually remove downloads with an ID in |removals_|. This cannot be undone.
   void FinalizeRemovals();
 
+  using DownloadVector = std::vector<content::DownloadItem*>;
+
+  // Remove all downloads in |to_remove|. Safe downloads can be revived,
+  // dangerous ones are immediately removed. Protected for testing.
+  void RemoveDownloads(const DownloadVector& to_remove);
+
  private:
   using IdSet = std::set<uint32_t>;
-  using DownloadVector = std::vector<content::DownloadItem*>;
 
   // Convenience method to call |main_notifier_->GetManager()| while
   // null-checking |main_notifier_|.
@@ -130,8 +135,8 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   // Returns the download with |id| or NULL if it doesn't exist.
   content::DownloadItem* GetDownloadById(uint32_t id);
 
-  // Remove all downloads in |to_remove| with the ability to undo removal later.
-  void RemoveDownloads(const DownloadVector& to_remove);
+  // Removes the download specified by an ID from JavaScript in |args|.
+  void RemoveDownloadInArgs(const base::ListValue* args);
 
   // Checks whether a download's file was removed from its original location.
   void CheckForRemovedFiles();
