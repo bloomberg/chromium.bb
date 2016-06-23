@@ -11,6 +11,7 @@
 
 #include "base/base_paths.h"
 #include "base/files/file.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
@@ -325,11 +326,8 @@ class HandleSendingHelper {
   }
 
 #if defined(OS_POSIX)
-  static base::FilePath GetSendingFilePath() {
-    base::FilePath path;
-    bool ok = PathService::Get(base::DIR_CACHE, &path);
-    EXPECT_TRUE(ok);
-    return path.Append("ListenerThatExpectsFile.txt");
+  static base::FilePath GetSendingFilePath(const base::FilePath& dir_path) {
+    return dir_path.Append("ListenerThatExpectsFile.txt");
   }
 
   static void WriteFile(IPC::Message* message, base::File& file) {
@@ -616,7 +614,9 @@ TEST_F(IPCChannelMojoTest, SendPlatformHandle) {
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
 
-  base::File file(HandleSendingHelper::GetSendingFilePath(),
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::File file(HandleSendingHelper::GetSendingFilePath(temp_dir.path()),
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
                       base::File::FLAG_READ);
   HandleSendingHelper::WriteFileThenSend(channel(), file);
@@ -670,7 +670,9 @@ TEST_F(IPCChannelMojoTest, SendPlatformHandleAndPipe) {
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
 
-  base::File file(HandleSendingHelper::GetSendingFilePath(),
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::File file(HandleSendingHelper::GetSendingFilePath(temp_dir.path()),
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
                       base::File::FLAG_READ);
   TestingMessagePipe pipe;
