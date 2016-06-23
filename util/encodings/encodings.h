@@ -259,6 +259,21 @@ const char* invalid_encoding_name();
 //
 bool EncodingFromName(const char* enc_name, Encoding *encoding);
 
+//
+// EncodingNameAliasToEncoding
+// ---------------------------
+//
+// If enc_name matches the standard name or an alias of an Encoding,
+// using a case-insensitive comparison, return that
+// Encoding. Otherwise, return UNKNOWN_ENCODING.
+//
+// Aliases include most mime-encoding names (e.g., "ISO-8859-7" for
+// GREEK), alternate names (e.g., "cyrillic" for ISO_8859_5) and
+// common variations with hyphens and underscores (e.g., "koi8-u" and
+// "koi8u" for RUSSIAN_KOI8_R).
+
+Encoding EncodingNameAliasToEncoding(const char *enc_name);
+
 // *************************************************************
 // Miscellany
 // *************************************************************

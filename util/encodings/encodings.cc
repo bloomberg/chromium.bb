@@ -17,10 +17,12 @@
 #include "util/encodings/encodings.h"
 
 #include <string.h>                     // for strcasecmp
+#include <unordered_map>
 #include <utility>                      // for pair
 
 #include "util/basictypes.h"
 #include "util/string_util.h"
+#include "util/case_insensitive_hash.h"
 
 struct EncodingInfo {
   // The standard name for this encoding.
@@ -522,6 +524,357 @@ bool EncodingFromName(const char* enc_name, Encoding *encoding) {
     }
   }
   return false;
+}
+
+// The encoding_map maps standard and non-standard encoding-names
+// (strings) to Encoding enums. It is used only by
+// EncodingNameAliasToEncoding. Note that the map uses
+// case-insensitive hash and comparison functions.
+
+typedef std::unordered_map<const char *, Encoding,
+           CStringAlnumCaseHash,
+           CStringAlnumCaseEqual> EncodingMap;
+
+static EncodingMap encoding_map;
+
+// Mutex for locking the code that initializes encoding_map.
+// static Mutex encodings_init_mutex(base::LINKER_INITIALIZED);
+
+void InitEncodings() {
+  // For thread safety, keep a mutex while initializing this map.
+  // Also allow this function to be called more than once and
+  // gracefully exiting if that occurs.
+  // MutexLock lock(&encodings_init_mutex);
+  if (!encoding_map.empty()) {
+    // Already initialized
+    return;
+  }
+
+  // Initialize the map with all the "standard" encoding names,
+  // i.e., the ones returned by EncodingName and MimeEncodingName.
+  //
+  // First, add internal encoding names returned by EncodingName().
+  for (int i = 0; i < NUM_ENCODINGS; ++i) {
+    Encoding e = static_cast<Encoding>(i);
+    // Internal encoding names must be unique.
+    // The internal names are guaranteed to be unique by the CHECK_EQ.
+    const char *encoding_name = EncodingName(e);
+    // CHECK_EQ(0, encoding_map.count(encoding_name))
+    //  << "Duplicate found for " << encoding_name;
+    encoding_map[encoding_name] = e;
+  }
+  // Then, add mime encoding names returned by MimeEncodingName().
+  // We don't override existing entries, to give precedence to entries
+  // added earlier.
+  for (int i = 0; i < NUM_ENCODINGS; ++i) {
+    Encoding e = static_cast<Encoding>(i);
+    // Note that MimeEncodingName() can return the same mime encoding
+    // name for different encoding enums like JAPANESE_SHIFT_JIS and
+    // KDDI_SHIFT_JIS.  In that case, the encoding enum first seen
+    // will be the value for the encoding name in the map.
+    const char *mime_encoding_name = MimeEncodingName(e);
+    if (encoding_map.count(mime_encoding_name) == 0) {
+      encoding_map[mime_encoding_name] = e;
+    }
+  }
+
+  // Add some non-standard names: alternate spellings, common typos,
+  // etc. (It does no harm to add names already in the map.) Note
+  // that although the map is case-insensitive, by convention the
+  // keys are written here in lower case. For ease of maintenance,
+  // they are listed in alphabetical order.
+  encoding_map["5601"] = KOREAN_EUC_KR;
+  encoding_map["646"] = ASCII_7BIT;
+  encoding_map["852"] = CZECH_CP852;
+  encoding_map["866"] = RUSSIAN_CP866;
+  encoding_map["8859-1"] = ISO_8859_1;
+  encoding_map["ansi-1251"] = RUSSIAN_CP1251;
+  encoding_map["ansi_x3.4-1968"] = ASCII_7BIT;
+  encoding_map["arabic"] = ISO_8859_6;
+  encoding_map["ascii"] = ISO_8859_1;
+  encoding_map["ascii-7-bit"] = ASCII_7BIT;  // not iana standard
+  encoding_map["asmo-708"] = ISO_8859_6;
+  encoding_map["bhaskar"] = BHASKAR;
+  encoding_map["big5"] = CHINESE_BIG5;
+  encoding_map["big5-cp950"] = CHINESE_BIG5_CP950;  // not iana standard
+  encoding_map["big5-hkscs"] = BIG5_HKSCS;
+  encoding_map["chinese"] = CHINESE_GB;
+  encoding_map["cns"] = CHINESE_CNS;  // not iana standard
+  encoding_map["cns11643"] = CHINESE_CNS;
+  encoding_map["cp1250"] = MSFT_CP1250;  // not iana standard
+  encoding_map["cp1251"] = RUSSIAN_CP1251;  // not iana standard
+  encoding_map["cp1252"] = MSFT_CP1252;  // not iana standard
+  encoding_map["cp1253"] = MSFT_CP1253;  // not iana standard
+  encoding_map["cp1254"] = MSFT_CP1254;  // not iana standard
+  encoding_map["cp1255"] = MSFT_CP1255;
+  encoding_map["cp1256"] = MSFT_CP1256;
+  encoding_map["cp1257"] = MSFT_CP1257;  // not iana standard
+  encoding_map["cp819"] = ISO_8859_1;
+  encoding_map["cp852"] = CZECH_CP852;
+  encoding_map["cp866"] = RUSSIAN_CP866;
+  encoding_map["cp-866"] = RUSSIAN_CP866;
+  encoding_map["cp874"] = MSFT_CP874;
+  encoding_map["cp932"] = JAPANESE_CP932;  // not iana standard
+  encoding_map["cp950"] = CHINESE_BIG5_CP950;   // not iana standard
+  encoding_map["csbig5"] = CHINESE_BIG5;
+  encoding_map["cseucjpkdfmtjapanese"] = JAPANESE_EUC_JP;
+  encoding_map["cseuckr"] = KOREAN_EUC_KR;
+  encoding_map["csgb2312"] = CHINESE_GB;
+  encoding_map["csibm852"] = CZECH_CP852;
+  encoding_map["csibm866"] = RUSSIAN_CP866;
+  encoding_map["csiso2022jp"] = JAPANESE_JIS;
+  encoding_map["csiso2022kr"] = ISO_2022_KR;
+  encoding_map["csiso58gb231280"] = CHINESE_GB;
+  encoding_map["csiso88598i"] = ISO_8859_8_I;
+  encoding_map["csisolatin1"] = ISO_8859_1;
+  encoding_map["csisolatin2"] = ISO_8859_2;
+  encoding_map["csisolatin3"] = ISO_8859_3;
+  encoding_map["csisolatin4"] = ISO_8859_4;
+  encoding_map["csisolatin5"] = ISO_8859_9;
+  encoding_map["csisolatin6"] = ISO_8859_10;
+  encoding_map["csisolatinarabic"] = ISO_8859_6;
+  encoding_map["csisolatincyrillic"] = ISO_8859_5;
+  encoding_map["csisolatingreek"] = ISO_8859_7;
+  encoding_map["csisolatinhebrew"] = ISO_8859_8;
+  encoding_map["csksc56011987"] = KOREAN_EUC_KR;
+  encoding_map["csmacintosh"] = MACINTOSH_ROMAN;
+  encoding_map["csn-369103"] = CZECH_CSN_369103;
+  encoding_map["csshiftjis"] = JAPANESE_SHIFT_JIS;
+  encoding_map["csunicode"] = UTF16BE;
+  encoding_map["csunicode11"] = UTF16BE;
+  encoding_map["csunicode11utf7"] = UTF7;
+  encoding_map["csunicodeascii"] = UTF16BE;
+  encoding_map["csunicodelatin1"] = UTF16BE;
+  encoding_map["cyrillic"] = ISO_8859_5;
+  encoding_map["ecma-114"] = ISO_8859_6;
+  encoding_map["ecma-118"] = ISO_8859_7;
+  encoding_map["elot_928"] = ISO_8859_7;
+  encoding_map["euc"] = CHINESE_EUC_DEC;  // not iana standard
+  encoding_map["euc-cn"] = CHINESE_EUC_CN;  // not iana standard
+  encoding_map["euc-dec"] = CHINESE_EUC_DEC;  // not iana standard
+  encoding_map["euc-jp"] = JAPANESE_EUC_JP;
+  encoding_map["euc-kr"] = KOREAN_EUC_KR;
+  encoding_map["eucgb2312_cn"] = CHINESE_GB;
+  encoding_map["gb"] = CHINESE_GB;  // not iana standard
+  encoding_map["gb18030"] = GB18030;
+  encoding_map["gb2132"] = CHINESE_GB;  // common typo
+  encoding_map["gb2312"] = CHINESE_GB;
+  encoding_map["gb_2312-80"] = CHINESE_GB;
+  encoding_map["gbk"] = GBK;
+  encoding_map["greek"] = ISO_8859_7;
+  encoding_map["greek8"] = ISO_8859_7;
+  encoding_map["hebrew"] = ISO_8859_8;
+  encoding_map["htchanakya"] = HTCHANAKYA;
+  encoding_map["hz-gb-2312"] = HZ_GB_2312;
+  encoding_map["ibm819"] = ISO_8859_1;
+  encoding_map["ibm852"] = CZECH_CP852;
+  encoding_map["ibm874"] = MSFT_CP874;
+  encoding_map["iso-10646"] = UTF16BE;
+  encoding_map["iso-10646-j-1"] = UTF16BE;
+  encoding_map["iso-10646-ucs-2"] = UNICODE;
+  encoding_map["iso-10646-ucs-4"] = UTF32BE;
+  encoding_map["iso-10646-ucs-basic"] = UTF16BE;
+  encoding_map["iso-10646-unicode-latin1"] = UTF16BE;
+  encoding_map["iso-2022-cn"] = ISO_2022_CN;
+  encoding_map["iso-2022-jp"] = JAPANESE_JIS;
+  encoding_map["iso-2022-kr"] = ISO_2022_KR;
+  encoding_map["iso-8559-1"] = ISO_8859_1;   // common typo
+  encoding_map["iso-874"] = MSFT_CP874;
+  encoding_map["iso-8858-1"] = ISO_8859_1;   // common typo
+  // iso-8859-0 was a temporary name, eventually renamed iso-8859-15
+  encoding_map["iso-8859-0"] = ISO_8859_15;
+  encoding_map["iso-8859-1"] = ISO_8859_1;
+  encoding_map["iso-8859-10"] = ISO_8859_10;
+  encoding_map["iso-8859-11"] = ISO_8859_11;
+  encoding_map["iso-8859-13"] = ISO_8859_13;
+  encoding_map["iso-8859-15"] = ISO_8859_15;
+  encoding_map["iso-8859-2"] = ISO_8859_2;
+  encoding_map["iso-8859-3"] = ISO_8859_3;
+  encoding_map["iso-8859-4"] = ISO_8859_4;
+  encoding_map["iso-8859-5"] = ISO_8859_5;
+  encoding_map["iso-8859-6"] = ISO_8859_6;
+  encoding_map["iso-8859-7"] = ISO_8859_7;
+  encoding_map["iso-8859-8"] = ISO_8859_8;
+  encoding_map["iso-8859-8-i"] = ISO_8859_8_I;
+  encoding_map["iso-8859-9"] = ISO_8859_9;
+  encoding_map["iso-9959-1"] = ISO_8859_1;   // common typo
+  encoding_map["iso-ir-100"] = ISO_8859_1;
+  encoding_map["iso-ir-101"] = ISO_8859_2;
+  encoding_map["iso-ir-109"] = ISO_8859_3;
+  encoding_map["iso-ir-110"] = ISO_8859_4;
+  encoding_map["iso-ir-126"] = ISO_8859_7;
+  encoding_map["iso-ir-127"] = ISO_8859_6;
+  encoding_map["iso-ir-138"] = ISO_8859_8;
+  encoding_map["iso-ir-144"] = ISO_8859_5;
+  encoding_map["iso-ir-148"] = ISO_8859_9;
+  encoding_map["iso-ir-149"] = KOREAN_EUC_KR;
+  encoding_map["iso-ir-157"] = ISO_8859_10;
+  encoding_map["iso-ir-58"] = CHINESE_GB;
+  encoding_map["iso-latin-1"] = ISO_8859_1;
+  encoding_map["iso_2022-cn"] = ISO_2022_CN;
+  encoding_map["iso_2022-kr"] = ISO_2022_KR;
+  encoding_map["iso_8859-1"] = ISO_8859_1;
+  encoding_map["iso_8859-10:1992"] = ISO_8859_10;
+  encoding_map["iso_8859-11"] = ISO_8859_11;
+  encoding_map["iso_8859-13"] = ISO_8859_13;
+  encoding_map["iso_8859-15"] = ISO_8859_15;
+  encoding_map["iso_8859-1:1987"] = ISO_8859_1;
+  encoding_map["iso_8859-2"] = ISO_8859_2;
+  encoding_map["iso_8859-2:1987"] = ISO_8859_2;
+  encoding_map["iso_8859-3"] = ISO_8859_3;
+  encoding_map["iso_8859-3:1988"] = ISO_8859_3;
+  encoding_map["iso_8859-4"] = ISO_8859_4;
+  encoding_map["iso_8859-4:1988"] = ISO_8859_4;
+  encoding_map["iso_8859-5"] = ISO_8859_5;
+  encoding_map["iso_8859-5:1988"] = ISO_8859_5;
+  encoding_map["iso_8859-6"] = ISO_8859_6;
+  encoding_map["iso_8859-6:1987"] = ISO_8859_6;
+  encoding_map["iso_8859-7"] = ISO_8859_7;
+  encoding_map["iso_8859-7:1987"] = ISO_8859_7;
+  encoding_map["iso_8859-8"] = ISO_8859_8;
+  encoding_map["iso_8859-8:1988:"] = ISO_8859_8;
+  encoding_map["iso_8859-9"] = ISO_8859_9;
+  encoding_map["iso_8859-9:1989"] = ISO_8859_9;
+  encoding_map["jagran"] = JAGRAN;
+  encoding_map["jis"] = JAPANESE_JIS;   // not iana standard
+  encoding_map["koi8-cs"] = CZECH_CSN_369103;
+  encoding_map["koi8-r"] = RUSSIAN_KOI8_R;
+  encoding_map["koi8-ru"] = RUSSIAN_KOI8_RU;  // not iana standard
+  encoding_map["koi8-u"] = RUSSIAN_KOI8_RU;
+  encoding_map["koi8r"] = RUSSIAN_KOI8_R;  // not iana standard
+  encoding_map["koi8u"] = RUSSIAN_KOI8_RU;  // not iana standard
+  encoding_map["korean"] = KOREAN_EUC_KR;  // i assume this is what is meant
+  encoding_map["ks-c-5601"] = KOREAN_EUC_KR;  // not iana standard
+  encoding_map["ks-c-5601-1987"] = KOREAN_EUC_KR;  // not iana standard
+  encoding_map["ks_c_5601-1989"] = KOREAN_EUC_KR;
+  encoding_map["ksc"] = KOREAN_EUC_KR;  // not iana standard
+  encoding_map["l1"] = ISO_8859_1;
+  encoding_map["l2"] = ISO_8859_2;
+  encoding_map["l3"] = ISO_8859_3;
+  encoding_map["l4"] = ISO_8859_4;
+  encoding_map["l5"] = ISO_8859_9;
+  encoding_map["l6"] = ISO_8859_10;
+  encoding_map["latin-1"] = ISO_8859_1;  // not iana standard
+  encoding_map["latin1"] = ISO_8859_1;
+  encoding_map["latin2"] = ISO_8859_2;
+  encoding_map["latin3"] = ISO_8859_3;
+  encoding_map["latin4"] = ISO_8859_4;
+  encoding_map["latin5"] = ISO_8859_9;
+  encoding_map["latin6"] = ISO_8859_10;
+  encoding_map["mac"] = MACINTOSH_ROMAN;
+  encoding_map["macintosh"] = MACINTOSH_ROMAN;
+  encoding_map["macintosh-roman"] = MACINTOSH_ROMAN;
+  encoding_map["ms932"] = JAPANESE_CP932;  // not iana standard
+  encoding_map["ms_kanji"] = JAPANESE_CP932;
+  encoding_map["shift-jis"] = JAPANESE_SHIFT_JIS;
+  encoding_map["shift_jis"] = JAPANESE_SHIFT_JIS;
+  encoding_map["sjis"] = JAPANESE_SHIFT_JIS;  // not iana standard
+  encoding_map["sjs"] = JAPANESE_SHIFT_JIS;  // not iana standard
+  encoding_map["sun_eu_greek"] = ISO_8859_7;
+  encoding_map["tab"] = TAMIL_BI;
+  encoding_map["tam"] = TAMIL_MONO;
+  encoding_map["tis-620"] = ISO_8859_11;
+  encoding_map["tscii"] = TSCII;
+  encoding_map["un"] = UNKNOWN_ENCODING;  // not iana standard
+  encoding_map["unicode"] = UNICODE;  // not iana standard
+  encoding_map["unicode-1-1-utf-7"] = UTF7;
+  encoding_map["unicode-1-1-utf-8"] = UTF8;
+  encoding_map["unicode-2-0-utf-7"] = UTF7;
+  encoding_map["unknown"] = UNKNOWN_ENCODING;   // not iana standard
+  encoding_map["us"] = ISO_8859_1;
+  encoding_map["us-ascii"] = ISO_8859_1;
+  encoding_map["utf-16be"] = UTF16BE;
+  encoding_map["utf-16le"] = UTF16LE;
+  encoding_map["utf-32be"] = UTF32BE;
+  encoding_map["utf-32le"] = UTF32LE;
+  encoding_map["utf-7"] = UTF7;
+  encoding_map["utf-8"] = UTF8;
+  encoding_map["utf7"] = UTF7;
+  encoding_map["utf8"] = UTF8;  // not iana standard
+  encoding_map["visual"] = HEBREW_VISUAL;
+  encoding_map["win-1250"] = MSFT_CP1250;  // not iana standard
+  encoding_map["win-1251"] = RUSSIAN_CP1251;  // not iana standard
+  encoding_map["window-874"] = MSFT_CP874;
+  encoding_map["windows-1250"] = MSFT_CP1250;
+  encoding_map["windows-1251"] = RUSSIAN_CP1251;
+  encoding_map["windows-1252"] = MSFT_CP1252;
+  encoding_map["windows-1253"] = MSFT_CP1253;
+  encoding_map["windows-1254"] = MSFT_CP1254;
+  encoding_map["windows-1255"] = MSFT_CP1255;
+  encoding_map["windows-1256"] = MSFT_CP1256;
+  encoding_map["windows-1257"] = MSFT_CP1257;
+  encoding_map["windows-31j"] = JAPANESE_CP932;
+  encoding_map["windows-874"] = MSFT_CP874;
+  encoding_map["windows-936"] = GBK;
+  encoding_map["x-big5"] = CHINESE_BIG5;
+  encoding_map["x-binaryenc"] = BINARYENC;  // not iana standard
+  encoding_map["x-cp1250"] = MSFT_CP1250;
+  encoding_map["x-cp1251"] = RUSSIAN_CP1251;
+  encoding_map["x-cp1252"] = MSFT_CP1252;
+  encoding_map["x-cp1253"] = MSFT_CP1253;
+  encoding_map["x-cp1254"] = MSFT_CP1254;
+  encoding_map["x-cp1255"] = MSFT_CP1255;
+  encoding_map["x-cp1256"] = MSFT_CP1256;
+  encoding_map["x-cp1257"] = MSFT_CP1257;
+  encoding_map["x-euc-jp"] = JAPANESE_EUC_JP;
+  encoding_map["x-euc-tw"] = CHINESE_CNS;
+  encoding_map["x-gbk"] = GBK;
+  encoding_map["x-iso-10646-ucs-2-be"] = UTF16BE;
+  encoding_map["x-iso-10646-ucs-2-le"] = UTF16LE;
+  encoding_map["x-iso-10646-ucs-4-be"] = UTF32BE;
+  encoding_map["x-iso-10646-ucs-4-le"] = UTF32LE;
+  encoding_map["x-jis"] = JAPANESE_JIS;  // not iana standard
+  encoding_map["x-mac-roman"] = MACINTOSH_ROMAN;
+  encoding_map["x-shift_jis"] = JAPANESE_SHIFT_JIS;  // not iana standard
+  encoding_map["x-sjis"] = JAPANESE_SHIFT_JIS;
+  encoding_map["x-unicode-2-0-utf-7"] = UTF7;
+  encoding_map["x-utf8utf8"] = UTF8UTF8;  // not iana standard
+  encoding_map["x-x-big5"] = CHINESE_BIG5;
+  encoding_map["zh_cn.euc"] = CHINESE_GB;
+  encoding_map["zh_tw-big5"] = CHINESE_BIG5;
+  encoding_map["zh_tw-euc"] = CHINESE_CNS;
+
+  // Remove they entry for the empty string, if any.
+  encoding_map.erase("");
+}
+
+// ----------------------------------------------------------------------
+// EncodingNameAliasToEncoding()
+//
+// This function takes an encoding name/alias and returns the Encoding
+// enum. The input is case insensitive. It is the union of the common
+// IANA standard names, the charset names used in Netscape Navigator,
+// and some common names we have been using.
+// See: http://www.iana.org/assignments/character-sets
+// http://physics.hallym.ac.kr/resource/relnotes/windows-2.0.html
+//
+// UNKNOWN_ENCODING is returned if none matches.
+//
+// TODO: Check if it is possible to remove the non-standard,
+// non-netscape-use names. It is because this routine is used for
+// encoding detections from html meta info. Non-standard names may
+// introduce noise on encoding detection.
+//
+// TODO: Unify EncodingNameAliasToEncoding and EncodingFromName,
+// or determine why such a unification is not possible.
+// ----------------------------------------------------------------------
+Encoding EncodingNameAliasToEncoding(const char *encoding_name) {
+  if (!encoding_name) {
+    return UNKNOWN_ENCODING;
+  }
+
+  // The map is initialized during InitGoogle() in a thread-safe manner.
+  // CHECK(!encoding_map.empty()) << ": Must call InitGoogle()";
+  if (encoding_map.empty()) {
+    InitEncodings();
+  }
+
+  EncodingMap::iterator emi = encoding_map.find(encoding_name);
+  if (emi != encoding_map.end()) {
+    return emi->second;
+  } else {
+    return UNKNOWN_ENCODING;
+  }
 }
 
 const char* default_encoding_name() {

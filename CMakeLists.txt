@@ -76,6 +76,7 @@ set(CED_UNITTEST_SOURCES
     compact_enc_det/compact_enc_det_unittest.cc
     compact_enc_det/compact_enc_det_fuzz_test.cc
     compact_enc_det/detail_head_string.inc
+    util/encodings/encodings_unittest.cc
     )
 
 add_executable(ced_unittest ${CED_UNITTEST_SOURCES})
