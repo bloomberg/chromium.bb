@@ -108,9 +108,7 @@ MaximizeModeController::MaximizeModeController()
 #endif
       lid_is_closed_(false) {
   WmShell::Get()->AddShellObserver(this);
-  Shell* shell = Shell::GetInstance();
-  shell->metrics()->RecordUserMetricsAction(
-      ash::UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
+  WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
 #if defined(OS_CHROMEOS)
   // TODO(jonross): Do not create MaximizeModeController if the flag is
@@ -120,7 +118,7 @@ MaximizeModeController::MaximizeModeController()
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableTouchView)) {
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
-    shell->window_tree_host_manager()->AddObserver(this);
+    Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   }
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->AddObserver(this);
@@ -168,11 +166,11 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     maximize_mode_window_manager_.reset(new MaximizeModeWindowManager());
     // TODO(jonross): Move the maximize mode notifications from ShellObserver
     // to MaximizeModeController::Observer
-    shell->metrics()->RecordUserMetricsAction(ash::UMA_MAXIMIZE_MODE_ENABLED);
+    WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
     shell->OnMaximizeModeStarted();
   } else {
     maximize_mode_window_manager_.reset();
-    shell->metrics()->RecordUserMetricsAction(ash::UMA_MAXIMIZE_MODE_DISABLED);
+    WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
     shell->OnMaximizeModeEnded();
   }
 }

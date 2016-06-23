@@ -4,7 +4,7 @@
 
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 
-#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -28,8 +28,7 @@ void DesktopTaskSwitchMetricRecorder::OnWindowActivated(
     if (last_active_task_window_ != gained_active &&
         reason == aura::client::ActivationChangeObserver::ActivationReason::
                       INPUT_EVENT) {
-      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-          UMA_DESKTOP_SWITCH_TASK);
+      WmShell::Get()->RecordUserMetricsAction(UMA_DESKTOP_SWITCH_TASK);
     }
     last_active_task_window_ = gained_active;
   }

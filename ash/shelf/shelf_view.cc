@@ -15,8 +15,8 @@
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm/root_window_finder.h"
+#include "ash/common/wm_shell.h"
 #include "ash/drag_drop/drag_image_view.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/scoped_target_root_window.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
@@ -585,7 +585,7 @@ void ShelfView::CreateDragIconProxy(
     const gfx::Vector2d& cursor_offset_from_center,
     float scale_factor) {
   drag_replaced_view_ = replaced_view;
-  drag_image_.reset(new ash::DragImageView(
+  drag_image_.reset(new DragImageView(
       drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow(),
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE));
   drag_image_->SetImage(icon);
@@ -1731,12 +1731,12 @@ void ShelfView::ButtonPressed(views::Button* sender,
       case TYPE_WINDOWED_APP:
       case TYPE_PLATFORM_APP:
       case TYPE_BROWSER_SHORTCUT:
-        Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        WmShell::Get()->RecordUserMetricsAction(
             UMA_LAUNCHER_CLICK_ON_APP);
         break;
 
       case TYPE_APP_LIST:
-        Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        WmShell::Get()->RecordUserMetricsAction(
             UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
         break;
 

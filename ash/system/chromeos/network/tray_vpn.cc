@@ -10,8 +10,6 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/chromeos/network/vpn_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -134,12 +132,11 @@ views::View* TrayVPN::CreateDefaultView(LoginStatus status) {
   if (!tray::VpnDefaultView::ShouldShow())
     return NULL;
 
-  bool userAddingRunning = ash::Shell::GetInstance()
-                               ->session_state_delegate()
-                               ->IsInSecondaryLoginScreen();
+  const bool is_in_secondary_login_screen =
+      WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 
   default_ = new tray::VpnDefaultView(
-      this, status != LoginStatus::LOCKED && !userAddingRunning);
+      this, status != LoginStatus::LOCKED && !is_in_secondary_login_screen);
 
   return default_;
 }
@@ -149,8 +146,7 @@ views::View* TrayVPN::CreateDetailedView(LoginStatus status) {
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
 
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      ash::UMA_STATUS_AREA_DETAILED_VPN_VIEW);
+  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_DETAILED_VPN_VIEW);
   detailed_ = new tray::NetworkStateListDetailedView(
       this, tray::NetworkStateListDetailedView::LIST_TYPE_VPN, status);
   detailed_->Init();

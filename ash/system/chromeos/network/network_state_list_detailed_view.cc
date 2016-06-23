@@ -21,7 +21,6 @@
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -132,9 +131,9 @@ class NetworkStateListDetailedView::InfoBubble
       : views::BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
         detailed_view_(detailed_view) {
     set_can_activate(false);
-    set_parent_window(ash::Shell::GetContainer(
+    set_parent_window(Shell::GetContainer(
         anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
-        ash::kShellWindowId_SettingBubbleContainer));
+        kShellWindowId_SettingBubbleContainer));
     SetLayoutManager(new views::FillLayout());
     AddChildView(content);
   }
@@ -213,7 +212,7 @@ class InfoIcon : public views::ImageButton {
 
   // views::View
   gfx::Size GetPreferredSize() const override {
-    return gfx::Size(ash::kTrayPopupItemHeight, ash::kTrayPopupItemHeight);
+    return gfx::Size(kTrayPopupItemHeight, kTrayPopupItemHeight);
   }
 
   void SetVisible(bool visible) override {
@@ -374,8 +373,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   ResetInfoBubble();
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  ash::SystemTrayDelegate* delegate =
-      ash::WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   if (sender == button_wifi_) {
     bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
     handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), !enabled,
@@ -386,18 +384,18 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   } else if (sender == button_mobile_) {
     ToggleMobile();
   } else if (sender == settings_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
-            ? ash::UMA_STATUS_AREA_VPN_SETTINGS_CLICKED
-            : ash::UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED);
+            ? UMA_STATUS_AREA_VPN_SETTINGS_CLICKED
+            : UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED);
     delegate->ShowNetworkSettingsForGuid("");
   } else if (sender == proxy_settings_) {
     delegate->ChangeProxySettings();
   } else if (sender == other_mobile_) {
     delegate->ShowOtherNetworkDialog(shill::kTypeCellular);
   } else if (sender == other_wifi_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        ash::UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
+    WmShell::Get()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
     delegate->ShowOtherNetworkDialog(shill::kTypeWifi);
   } else {
     NOTREACHED();
@@ -424,17 +422,17 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
       NetworkHandler::Get()->network_state_handler()->GetNetworkState(
           service_path);
   if (!network || network->IsConnectedState() || network->IsConnectingState()) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
-            ? ash::UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS
-            : ash::UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS);
+            ? UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS
+            : UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS);
     WmShell::Get()->system_tray_delegate()->ShowNetworkSettingsForGuid(
         network ? network->guid() : "");
   } else {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
-            ? ash::UMA_STATUS_AREA_CONNECT_TO_VPN
-            : ash::UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
+            ? UMA_STATUS_AREA_CONNECT_TO_VPN
+            : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
     ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
   }
 }
@@ -839,7 +837,7 @@ views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(
       WmShell::Get()->system_tray_delegate()->GetNetworkingConfigDelegate();
   if (!networking_config_delegate)
     return nullptr;
-  std::unique_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>
+  std::unique_ptr<const NetworkingConfigDelegate::ExtensionInfo>
       extension_info = networking_config_delegate->LookUpExtensionForNetwork(
           info.service_path);
   if (!extension_info)
@@ -911,8 +909,8 @@ void NetworkStateListDetailedView::UpdateViewForNetwork(
 views::Label* NetworkStateListDetailedView::CreateInfoLabel() {
   views::Label* label = new views::Label();
   label->SetBorder(views::Border::CreateEmptyBorder(
-      ash::kTrayPopupPaddingBetweenItems, ash::kTrayPopupPaddingHorizontal,
-      ash::kTrayPopupPaddingBetweenItems, 0));
+      kTrayPopupPaddingBetweenItems, kTrayPopupPaddingHorizontal,
+      kTrayPopupPaddingBetweenItems, 0));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
   return label;

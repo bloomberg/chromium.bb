@@ -13,8 +13,6 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
 #include "ash/system/chromeos/network/vpn_delegate.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -150,7 +148,7 @@ void VPNListNetworkEntry::NetworkIconChanged() {
 
 void VPNListNetworkEntry::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+  WmShell::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_VPN_DISCONNECT_CLICKED);
   chromeos::NetworkHandler::Get()
       ->network_connection_handler()
@@ -345,7 +343,7 @@ void VPNListView::OnViewClicked(views::View* sender) {
     // If the user clicks on a provider entry, request that the "add network"
     // dialog for this provider be shown.
     const VPNProvider::Key& key = provider->second;
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         key.third_party ? UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED
                         : UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
     WmShell::Get()->system_tray_delegate()->GetVPNDelegate()->ShowAddPage(key);

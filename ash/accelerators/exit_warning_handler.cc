@@ -5,7 +5,7 @@
 #include "ash/accelerators/exit_warning_handler.h"
 
 #include "ash/common/shell_window_ids.h"
-#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/strings/utf_string_conversions.h"
@@ -114,15 +114,13 @@ void ExitWarningHandler::HandleAccelerator() {
       state_ = WAIT_FOR_DOUBLE_PRESS;
       Show();
       StartTimer();
-      Shell::GetInstance()->
-          metrics()->RecordUserMetricsAction(UMA_ACCEL_EXIT_FIRST_Q);
+      WmShell::Get()->RecordUserMetricsAction(UMA_ACCEL_EXIT_FIRST_Q);
       break;
     case WAIT_FOR_DOUBLE_PRESS:
       state_ = EXITING;
       CancelTimer();
       Hide();
-      Shell::GetInstance()->
-          metrics()->RecordUserMetricsAction(UMA_ACCEL_EXIT_SECOND_Q);
+      WmShell::Get()->RecordUserMetricsAction(UMA_ACCEL_EXIT_SECOND_Q);
       shell_delegate->Exit();
       break;
     case EXITING:

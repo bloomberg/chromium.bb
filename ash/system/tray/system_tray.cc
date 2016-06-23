@@ -19,7 +19,6 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/status_area_widget.h"
@@ -163,11 +162,11 @@ void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
+  WmShell* wm_shell = WmShell::Get();
 #if !defined(OS_WIN)
   // Create user items for each possible user.
-  ash::Shell* shell = ash::Shell::GetInstance();
   int maximum_user_profiles =
-          shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers();
+      wm_shell->GetSessionStateDelegate()->GetMaximumNumberOfLoggedInUsers();
   for (int i = 0; i < maximum_user_profiles; i++)
     AddTrayItem(new TrayUser(this, i));
 
@@ -215,9 +214,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_date_);
 #endif
 
-  SetVisible(ash::WmShell::Get()
-                 ->system_tray_delegate()
-                 ->GetTrayVisibilityOnStartup());
+  SetVisible(wm_shell->system_tray_delegate()->GetTrayVisibilityOnStartup());
 }
 
 void SystemTray::AddTrayItem(SystemTrayItem* item) {
@@ -438,10 +435,8 @@ int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
 void SystemTray::ShowDefaultViewWithOffset(BubbleCreationType creation_type,
                                            int arrow_offset,
                                            bool persistent) {
-  if (creation_type != BUBBLE_USE_EXISTING) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        ash::UMA_STATUS_AREA_MENU_OPENED);
-  }
+  if (creation_type != BUBBLE_USE_EXISTING)
+    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
   ShowItems(items_.get(), false, true, creation_type, arrow_offset, persistent);
 }
 
@@ -609,7 +604,7 @@ void SystemTray::UpdateWebNotifications() {
 base::string16 SystemTray::GetAccessibleTimeString(
     const base::Time& now) const {
   base::HourClockType hour_type =
-      ash::WmShell::Get()->system_tray_delegate()->GetHourClockType();
+      WmShell::Get()->system_tray_delegate()->GetHourClockType();
   return base::TimeFormatTimeOfDayWithHourClockType(
       now, hour_type, base::kKeepAmPm);
 }

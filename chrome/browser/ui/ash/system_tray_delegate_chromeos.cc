@@ -27,7 +27,6 @@
 #include "ash/common/system/volume_control_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/chromeos/bluetooth/bluetooth_observer.h"
@@ -150,13 +149,13 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
 
 gfx::NativeWindow GetNativeWindowByStatus(ash::LoginStatus login_status,
                                           bool session_started) {
-  bool isUserAddingRunning = ash::Shell::GetInstance()
-                                 ->session_state_delegate()
-                                 ->IsInSecondaryLoginScreen();
+  ash::WmShell* wm_shell = ash::WmShell::Get();
+  const bool is_in_secondary_login_screen =
+      wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 
   int container_id =
       (!session_started || login_status == ash::LoginStatus::NOT_LOGGED_IN ||
-       login_status == ash::LoginStatus::LOCKED || isUserAddingRunning)
+       login_status == ash::LoginStatus::LOCKED || is_in_secondary_login_screen)
           ? ash::kShellWindowId_LockSystemModalContainer
           : ash::kShellWindowId_SystemModalContainer;
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
@@ -251,8 +250,7 @@ void SystemTrayDelegateChromeOS::Initialize() {
       base::Bind(&SystemTrayDelegateChromeOS::InitializeOnAdapterReady,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  ash::Shell::GetInstance()->session_state_delegate()->AddSessionStateObserver(
-      this);
+  ash::WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
 
   if (CrasAudioHandler::IsInitialized())
     CrasAudioHandler::Get()->AddAudioObserver(this);
@@ -309,9 +307,8 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   input_method::InputMethodManager::Get()->RemoveObserver(this);
   ui::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
   bluetooth_adapter_->RemoveObserver(this);
-  ash::Shell::GetInstance()
-      ->session_state_delegate()
-      ->RemoveSessionStateObserver(this);
+  ash::WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
+      this);
 
   if (CrasAudioHandler::IsInitialized())
     CrasAudioHandler::Get()->RemoveAudioObserver(this);
@@ -429,10 +426,9 @@ void SystemTrayDelegateChromeOS::ShowSettings() {
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
+  ash::WmShell* wm_shell = ash::WmShell::Get();
   return ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings() &&
-         !ash::Shell::GetInstance()
-              ->session_state_delegate()
-              ->IsInSecondaryLoginScreen();
+         !wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 }
 
 void SystemTrayDelegateChromeOS::ShowDateSettings() {
@@ -450,17 +446,15 @@ void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
 
 void SystemTrayDelegateChromeOS::ShowNetworkSettingsForGuid(
     const std::string& guid) {
-  bool userAddingRunning = ash::Shell::GetInstance()
-                               ->session_state_delegate()
-                               ->IsInSecondaryLoginScreen();
-
-  if (!LoginState::Get()->IsUserLoggedIn() || userAddingRunning)
-    return;
-  std::string page = chrome::kInternetOptionsSubPage;
-  if (!guid.empty())
-    page += "?guid=" + net::EscapeUrlEncodedData(guid, true);
-  content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
-  ShowSettingsSubPageForActiveUser(page);
+  ash::WmShell* wm_shell = ash::WmShell::Get();
+  if (LoginState::Get()->IsUserLoggedIn() &&
+      !wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
+    std::string page = chrome::kInternetOptionsSubPage;
+    if (!guid.empty())
+      page += "?guid=" + net::EscapeUrlEncodedData(guid, true);
+    content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
+    ShowSettingsSubPageForActiveUser(page);
+  }
 }
 
 void SystemTrayDelegateChromeOS::ShowDisplaySettings() {
@@ -541,12 +535,10 @@ void SystemTrayDelegateChromeOS::ShowSupervisedUserInfo() {
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
   ash::LoginStatus status = GetUserLoginStatus();
-  bool userAddingRunning = ash::Shell::GetInstance()
-                               ->session_state_delegate()
-                               ->IsInSecondaryLoginScreen();
-
+  ash::WmShell* wm_shell = ash::WmShell::Get();
   if (status == ash::LoginStatus::NOT_LOGGED_IN ||
-      status == ash::LoginStatus::LOCKED || userAddingRunning) {
+      status == ash::LoginStatus::LOCKED ||
+      wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
     scoped_refptr<chromeos::HelpAppLauncher> help_app(
         new chromeos::HelpAppLauncher(GetNativeWindow()));
     help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
@@ -560,6 +552,7 @@ void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
 
 void SystemTrayDelegateChromeOS::ShowUserLogin() {
   ash::Shell* shell = ash::Shell::GetInstance();
+  ash::WmShell* wm_shell = ash::WmShell::Get();
   if (!shell->delegate()->IsMultiProfilesEnabled())
     return;
 
@@ -571,8 +564,9 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
 
   if (static_cast<int>(
           user_manager::UserManager::Get()->GetLoggedInUsers().size()) >=
-      shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers())
+      wm_shell->GetSessionStateDelegate()->GetMaximumNumberOfLoggedInUsers()) {
     return;
+  }
 
   // Launch sign in screen to add another user to current session.
   if (user_manager::UserManager::Get()
@@ -672,13 +666,13 @@ void SystemTrayDelegateChromeOS::ConnectToBluetoothDevice(
   if (device->IsPaired() && !device->IsConnectable())
     return;
   if (device->IsPaired() || !device->IsPairable()) {
-    ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    ash::WmShell::Get()->RecordUserMetricsAction(
         ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_KNOWN_DEVICE);
     device->Connect(NULL,
                     base::Bind(&base::DoNothing),
                     base::Bind(&BluetoothDeviceConnectError));
   } else {  // Show paring dialog for the unpaired device.
-    ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    ash::WmShell::Get()->RecordUserMetricsAction(
         ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_UNKNOWN_DEVICE);
     BluetoothPairingDialog* dialog =
         new BluetoothPairingDialog(GetNativeWindow(), device);
@@ -1069,8 +1063,8 @@ void SystemTrayDelegateChromeOS::ScreenIsUnlocked() {
 }
 
 gfx::NativeWindow SystemTrayDelegateChromeOS::GetNativeWindow() const {
-  bool session_started = ash::Shell::GetInstance()
-                             ->session_state_delegate()
+  bool session_started = ash::WmShell::Get()
+                             ->GetSessionStateDelegate()
                              ->IsActiveUserSessionStarted();
   return GetNativeWindowByStatus(GetUserLoginStatus(), session_started);
 }

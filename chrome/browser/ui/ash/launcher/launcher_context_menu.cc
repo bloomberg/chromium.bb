@@ -8,8 +8,8 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "build/build_config.h"
@@ -130,7 +130,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
         // TODO(simonhong): Use ShelfItemDelegate::Close().
         controller_->Close(item_.id);
       }
-      ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+      ash::WmShell::Get()->RecordUserMetricsAction(
           ash::UMA_CLOSE_THROUGH_CONTEXT_MENU);
       break;
     case MENU_PIN:
@@ -188,7 +188,7 @@ void LauncherContextMenu::AddShelfOptionsMenu() {
                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   }
   if (ash::ShelfWidget::ShelfAlignmentAllowed() &&
-      !ash::Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
+      !ash::WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked()) {
     AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
                            IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
                            &shelf_alignment_menu_);

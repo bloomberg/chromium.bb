@@ -7,7 +7,6 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/wm/window_cycle_list.h"
 #include "base/metrics/histogram.h"
@@ -71,11 +70,10 @@ WindowCycleController::~WindowCycleController() {
 
 // static
 bool WindowCycleController::CanCycle() {
-  // Don't allow window cycling if the screen is locked or a modal dialog is
-  // open.
-  return !Shell::GetInstance()->session_state_delegate()->IsScreenLocked() &&
-         !WmShell::Get()->IsSystemModalWindowOpen() &&
-         !WmShell::Get()->IsPinned();
+  // Prevent window cycling if the screen is locked or a modal dialog is open.
+  WmShell* wm_shell = WmShell::Get();
+  return !wm_shell->GetSessionStateDelegate()->IsScreenLocked() &&
+         !wm_shell->IsSystemModalWindowOpen() && !wm_shell->IsPinned();
 }
 
 void WindowCycleController::HandleCycleWindow(Direction direction) {
@@ -97,7 +95,7 @@ void WindowCycleController::StartCycling() {
   window_cycle_list_.reset(new WindowCycleList(window_list));
   event_handler_.reset(new WindowCycleEventFilter());
   cycle_start_time_ = base::Time::Now();
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(UMA_WINDOW_CYCLE);
+  WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_CYCLE);
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -8,9 +8,9 @@
 #include <map>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/wm_shell.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -320,20 +320,19 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
   // Abort any animations of the button icons.
   SetButtonsToNormal(ANIMATE_NO);
 
-  ash::UserMetricsAction action =
-      ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MINIMIZE;
+  UserMetricsAction action = UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MINIMIZE;
   if (sender == minimize_button_) {
     frame_->Minimize();
   } else if (sender == size_button_) {
     if (frame_->IsFullscreen()) {  // Can be clicked in immersive fullscreen.
       frame_->Restore();
-      action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN;
+      action = UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN;
     } else if (frame_->IsMaximized()) {
       frame_->Restore();
-      action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE;
+      action = UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE;
     } else {
       frame_->Maximize();
-      action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE;
+      action = UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE;
     }
 
     if (event.IsGestureEvent()) {
@@ -342,11 +341,11 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
     }
   } else if (sender == close_button_) {
     frame_->Close();
-    action = ash::UMA_WINDOW_CLOSE_BUTTON_CLICK;
+    action = UMA_WINDOW_CLOSE_BUTTON_CLICK;
   } else {
     return;
   }
-  ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
+  WmShell::Get()->RecordUserMetricsAction(action);
 }
 
 bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {

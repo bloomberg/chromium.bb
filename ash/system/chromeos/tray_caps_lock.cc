@@ -9,8 +9,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/sys_info.h"
 #include "grit/ash_resources.h"
@@ -114,10 +112,10 @@ class CapsLockDefaultView : public ActionableView {
     chromeos::input_method::ImeKeyboard* keyboard =
         chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
     if (keyboard) {
-      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+      WmShell::Get()->RecordUserMetricsAction(
           keyboard->CapsLockIsEnabled() ?
-          ash::UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK :
-          ash::UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK);
+          UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK :
+          UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK);
       keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
     }
     return true;
@@ -159,8 +157,8 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled) {
   } else {
     if (caps_lock_enabled_) {
       if (!message_shown_) {
-        Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-            ash::UMA_STATUS_AREA_CAPS_LOCK_POPUP);
+        WmShell::Get()->RecordUserMetricsAction(
+            UMA_STATUS_AREA_CAPS_LOCK_POPUP);
         PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
         message_shown_ = true;
       }
@@ -206,8 +204,7 @@ views::View* TrayCapsLock::CreateDetailedView(LoginStatus status) {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   detailed_->AddChildView(label);
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      ash::UMA_STATUS_AREA_CAPS_LOCK_DETAILED);
+  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_CAPS_LOCK_DETAILED);
 
   return detailed_;
 }

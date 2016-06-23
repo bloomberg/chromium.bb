@@ -4,8 +4,7 @@
 
 #include "ash/touch/touch_uma.h"
 
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"
@@ -123,8 +122,7 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
       0, kBucketCountForLocation, kBucketCountForLocation + 1);
 
   if (event.type() == ui::ET_TOUCH_PRESSED) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        UMA_TOUCHSCREEN_TAP_DOWN);
+    WmShell::Get()->RecordUserMetricsAction(UMA_TOUCHSCREEN_TAP_DOWN);
 
     details->last_start_time_[event.touch_id()] = event.time_stamp();
     details->start_touch_position_[event.touch_id()] = event.root_location();

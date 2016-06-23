@@ -13,7 +13,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -222,8 +221,8 @@ views::View* TrayBrightness::CreateDefaultView(LoginStatus status) {
 
 views::View* TrayBrightness::CreateDetailedView(LoginStatus status) {
   CHECK(brightness_view_ == NULL);
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      ash::UMA_STATUS_AREA_DETAILED_BRIGHTNESS_VIEW);
+  WmShell::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DETAILED_BRIGHTNESS_VIEW);
   brightness_view_ = new tray::BrightnessView(false, current_percent_);
   return brightness_view_;
 }
@@ -252,8 +251,7 @@ bool TrayBrightness::ShouldShowShelf() const {
 }
 
 void TrayBrightness::BrightnessChanged(int level, bool user_initiated) {
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      ash::UMA_STATUS_AREA_BRIGHTNESS_CHANGED);
+  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_BRIGHTNESS_CHANGED);
   double percent = static_cast<double>(level);
   HandleBrightnessChanged(percent, user_initiated);
 }

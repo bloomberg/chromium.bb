@@ -12,7 +12,7 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/session_state_animator.h"
@@ -195,7 +195,7 @@ void LockStateController::RequestShutdown() {
 
   shutting_down_ = true;
 
-  Shell* shell = ash::Shell::GetInstance();
+  Shell* shell = Shell::GetInstance();
   shell->cursor_manager()->HideCursor();
   shell->cursor_manager()->LockCursor();
 
@@ -233,7 +233,7 @@ void LockStateController::OnAppTerminating() {
   // This is also the case when the user signs off.
   if (!shutting_down_) {
     shutting_down_ = true;
-    Shell* shell = ash::Shell::GetInstance();
+    Shell* shell = Shell::GetInstance();
     shell->cursor_manager()->HideCursor();
     shell->cursor_manager()->LockCursor();
     animator_->StartAnimation(SessionStateAnimator::kAllNonRootContainersMask,
@@ -306,7 +306,7 @@ void LockStateController::OnPreShutdownAnimationTimeout() {
   VLOG(1) << "OnPreShutdownAnimationTimeout";
   shutting_down_ = true;
 
-  Shell* shell = ash::Shell::GetInstance();
+  Shell* shell = Shell::GetInstance();
   shell->cursor_manager()->HideCursor();
 
   StartRealShutdownTimer(false);
@@ -347,13 +347,12 @@ void LockStateController::OnRealPowerTimeout() {
     }
   }
 #endif
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
+  WmShell::Get()->RecordUserMetricsAction(UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
   delegate_->RequestShutdown();
 }
 
 void LockStateController::StartCancellableShutdownAnimation() {
-  Shell* shell = ash::Shell::GetInstance();
+  Shell* shell = Shell::GetInstance();
   // Hide cursor, but let it reappear if the mouse moves.
   shell->cursor_manager()->HideCursor();
 
@@ -518,10 +517,9 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
   }
 
   if (request_lock) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        shutdown_after_lock_ ?
-        UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON :
-        UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON);
+    WmShell::Get()->RecordUserMetricsAction(
+        shutdown_after_lock_ ? UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON
+                             : UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON);
     delegate_->RequestLockScreen();
   }
 

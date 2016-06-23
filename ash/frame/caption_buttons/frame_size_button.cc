@@ -9,14 +9,16 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace/phantom_window_controller.h"
-#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/common/wm_shell.h"
 #include "ash/screen_util.h"
-#include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget.h"
+
+namespace ash {
 
 namespace {
 
@@ -32,7 +34,7 @@ const int kMaxOvershootY = 50;
 
 // Returns true if a mouse drag while in "snap mode" at |location_in_screen|
 // would hover/press |button| or keep it hovered/pressed.
-bool HitTestButton(const ash::FrameCaptionButton* button,
+bool HitTestButton(const FrameCaptionButton* button,
                    const gfx::Point& location_in_screen) {
   gfx::Rect expanded_bounds_in_screen = button->GetBoundsInScreen();
   if (button->state() == views::Button::STATE_HOVERED ||
@@ -43,8 +45,6 @@ bool HitTestButton(const ash::FrameCaptionButton* button,
 }
 
 }  // namespace
-
-namespace ash {
 
 FrameSizeButton::FrameSizeButton(
     views::ButtonListener* listener,
@@ -260,12 +260,11 @@ bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
       (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
     wm::WindowState* window_state =
         wm::GetWindowState(frame_->GetNativeWindow());
-    UserMetricsRecorder* metrics = Shell::GetInstance()->metrics();
     const wm::WMEvent snap_event(
         snap_type_ == SNAP_LEFT ?
         wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
     window_state->OnWMEvent(&snap_event);
-    metrics->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         snap_type_ == SNAP_LEFT ?
         UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
         UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);

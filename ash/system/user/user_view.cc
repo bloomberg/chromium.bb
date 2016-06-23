@@ -70,25 +70,21 @@ const int kTrayUserTileHoverBorderInset = 10;
 const int kPopupMessageOffset = 25;
 
 // Switch to a user with the given |user_index|.
-void SwitchUser(ash::UserIndex user_index) {
+void SwitchUser(UserIndex user_index) {
   // Do not switch users when the log screen is presented.
-  if (ash::Shell::GetInstance()
-          ->session_state_delegate()
-          ->IsUserSessionBlocked())
+  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
+  if (delegate->IsUserSessionBlocked())
     return;
 
   DCHECK(user_index > 0);
-  ash::SessionStateDelegate* delegate =
-      ash::Shell::GetInstance()->session_state_delegate();
-  ash::MultiProfileUMA::RecordSwitchActiveUser(
-      ash::MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
+  MultiProfileUMA::RecordSwitchActiveUser(
+      MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
   delegate->SwitchActiveUser(delegate->GetUserInfo(user_index)->GetAccountId());
 }
 
 bool IsMultiProfileSupportedAndUserActive() {
-  auto* shell = Shell::GetInstance();
-  return shell->delegate()->IsMultiProfilesEnabled() &&
-         !shell->session_state_delegate()->IsUserSessionBlocked();
+  return Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
+         !WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked();
 }
 
 class UserViewMouseWatcherHost : public views::MouseWatcherHost {
@@ -296,8 +292,7 @@ void UserView::Layout() {
 
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        ash::UMA_STATUS_AREA_SIGN_OUT);
+    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
     RemoveAddUserMenuOption();
     WmShell::Get()->system_tray_delegate()->SignOut();
   } else if (sender == user_card_view_ &&
@@ -457,7 +452,7 @@ void UserView::ToggleAddUserMenuOption() {
       new AddUserView(static_cast<ButtonFromView*>(user_card_view_));
 
   const SessionStateDelegate* delegate =
-      Shell::GetInstance()->session_state_delegate();
+      WmShell::Get()->GetSessionStateDelegate();
 
   SessionStateDelegate::AddUserError add_user_error;
   add_user_enabled_ = delegate->CanAddUserToMultiProfile(&add_user_error);

@@ -57,13 +57,12 @@ OverviewButtonTray::OverviewButtonTray(StatusAreaWidget* status_area_widget)
   tray_container()->AddChildView(icon_);
 
   WmShell::Get()->AddShellObserver(this);
-  Shell::GetInstance()->session_state_delegate()->AddSessionStateObserver(this);
+  WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
 }
 
 OverviewButtonTray::~OverviewButtonTray() {
   WmShell::Get()->RemoveShellObserver(this);
-  Shell::GetInstance()->session_state_delegate()->RemoveSessionStateObserver(
-      this);
+  WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
 }
 
 void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
@@ -75,7 +74,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       WmShell::Get()->window_selector_controller();
   controller->ToggleOverview();
   SetDrawBackgroundAsActive(controller->IsSelecting());
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
+  WmShell::Get()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
   return true;
 }
 
@@ -138,7 +137,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
   // a modal dialog is present.
   Shell* shell = Shell::GetInstance();
   SessionStateDelegate* session_state_delegate =
-      shell->session_state_delegate();
+      WmShell::Get()->GetSessionStateDelegate();
 
   SetVisible(
       shell->maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled() &&

@@ -20,7 +20,6 @@
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -45,7 +44,7 @@ const size_t kMaximumStatusStringLength = 100;
 const int kStopButtonRightPadding = 18;
 
 // Returns the active CastConfigDelegate instance.
-ash::CastConfigDelegate* GetCastConfigDelegate() {
+CastConfigDelegate* GetCastConfigDelegate() {
   return WmShell::Get()->system_tray_delegate()->GetCastConfigDelegate();
 }
 
@@ -198,8 +197,7 @@ void CastCastView::Layout() {
 
 void CastCastView::StopCasting() {
   GetCastConfigDelegate()->StopCasting(displayed_activity_id_);
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      ash::UMA_STATUS_AREA_CAST_STOP_CAST);
+  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_CAST_STOP_CAST);
 }
 
 void CastCastView::UpdateLabel(
@@ -502,13 +500,10 @@ views::View* CastDetailedView::AddToReceiverList(
 
 void CastDetailedView::AppendSettingsEntries() {
   // Settings requires a browser window, hide it for non logged in user.
-  const bool userAddingRunning = Shell::GetInstance()
-                                     ->session_state_delegate()
-                                     ->IsInSecondaryLoginScreen();
-
   if (login_ == LoginStatus::NOT_LOGGED_IN || login_ == LoginStatus::LOCKED ||
-      userAddingRunning)
+      WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
     return;
+  }
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   HoverHighlightView* container = new HoverHighlightView(this);
@@ -524,7 +519,7 @@ void CastDetailedView::AppendHeaderEntry() {
 }
 
 void CastDetailedView::OnViewClicked(views::View* sender) {
-  ash::CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
+  CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
 
   if (sender == footer()->content()) {
     TransitionToDefaultView();
@@ -535,8 +530,8 @@ void CastDetailedView::OnViewClicked(views::View* sender) {
     auto it = receiver_activity_map_.find(sender);
     if (it != receiver_activity_map_.end()) {
       cast_config_delegate->CastToReceiver(it->second);
-      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-          ash::UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
+      WmShell::Get()->RecordUserMetricsAction(
+          UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
     }
   }
 }
@@ -581,7 +576,7 @@ views::View* TrayCast::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == nullptr);
 
   if (HasCastExtension()) {
-    ash::CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
+    CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
 
     // Add the cast observer here instead of the ctor for two reasons:
     // - The ctor gets called too early in the initialization cycle (at least
@@ -611,8 +606,7 @@ views::View* TrayCast::CreateDefaultView(LoginStatus status) {
 }
 
 views::View* TrayCast::CreateDetailedView(LoginStatus status) {
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      ash::UMA_STATUS_AREA_DETAILED_CAST_VIEW);
+  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_DETAILED_CAST_VIEW);
   CHECK(detailed_ == nullptr);
   detailed_ =
       new tray::CastDetailedView(this, status, receivers_and_activities_);
@@ -632,7 +626,7 @@ void TrayCast::DestroyDetailedView() {
 }
 
 bool TrayCast::HasCastExtension() {
-  ash::CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
+  CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
   return cast_config_delegate != nullptr &&
          cast_config_delegate->HasCastExtension();
 }
