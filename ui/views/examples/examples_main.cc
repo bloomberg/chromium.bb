@@ -14,6 +14,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
+#include "base/test/test_discardable_memory_allocator.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -43,6 +44,9 @@
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_connection.h"  // nogncheck
 #endif
+
+base::LazyInstance<base::TestDiscardableMemoryAllocator>
+    g_discardable_memory_allocator = LAZY_INSTANCE_INITIALIZER;
 
 int main(int argc, char** argv) {
 #if defined(OS_WIN)
@@ -77,11 +81,14 @@ int main(int argc, char** argv) {
   CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
+  base::DiscardableMemoryAllocator::SetInstance(
+      g_discardable_memory_allocator.Pointer());
+
   base::PowerMonitor power_monitor(
       base::WrapUnique(new base::PowerMonitorDeviceSource));
 
 #if defined(OS_WIN)
-    gfx::win::MaybeInitializeDirectWrite();
+  gfx::win::MaybeInitializeDirectWrite();
 #endif
 
 #if defined(USE_AURA)

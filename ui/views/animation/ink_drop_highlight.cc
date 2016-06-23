@@ -9,15 +9,13 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/animation/ink_drop_highlight_observer.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 
 namespace views {
 
 namespace {
-
-// The opacity of the highlight when it is visible.
-const float kHighlightVisibleOpacity = 0.128f;
 
 // The opacity of the highlight when it is not visible.
 const float kHiddenOpacity = 0.0f;
@@ -36,25 +34,36 @@ std::string ToString(InkDropHighlight::AnimationType animation_type) {
   return std::string("UNKNOWN");
 }
 
+InkDropHighlight::InkDropHighlight(
+    const gfx::Point& center_point,
+    std::unique_ptr<BasePaintedLayerDelegate> layer_delegate)
+    : center_point_(center_point),
+      visible_opacity_(1.f),
+      last_animation_initiated_was_fade_in_(false),
+      layer_delegate_(std::move(layer_delegate)),
+      layer_(new ui::Layer()),
+      observer_(nullptr) {
+  const gfx::Rect layer_bounds = layer_delegate_->GetPaintedBounds();
+  size_ = explode_size_ = layer_bounds.size();
+
+  layer_->SetBounds(layer_bounds);
+  layer_->SetFillsBoundsOpaquely(false);
+  layer_->set_delegate(layer_delegate_.get());
+  layer_->SetVisible(false);
+  layer_->SetMasksToBounds(false);
+  layer_->set_name("InkDropHighlight:layer");
+}
+
 InkDropHighlight::InkDropHighlight(const gfx::Size& size,
                                    int corner_radius,
                                    const gfx::Point& center_point,
                                    SkColor color)
-    : size_(size),
-      explode_size_(size),
-      center_point_(center_point),
-      last_animation_initiated_was_fade_in_(false),
-      layer_delegate_(
-          new RoundedRectangleLayerDelegate(color, size, corner_radius)),
-      layer_(new ui::Layer()),
-      observer_(nullptr) {
-  layer_->SetBounds(gfx::Rect(size));
-  layer_->SetFillsBoundsOpaquely(false);
-  layer_->set_delegate(layer_delegate_.get());
-  layer_->SetVisible(false);
-  layer_->SetOpacity(kHighlightVisibleOpacity);
-  layer_->SetMasksToBounds(false);
-  layer_->set_name("InkDropHighlight:layer");
+    : InkDropHighlight(
+          center_point,
+          std::unique_ptr<BasePaintedLayerDelegate>(
+              new RoundedRectangleLayerDelegate(color, size, corner_radius))) {
+  visible_opacity_ = 0.128f;
+  layer_->SetOpacity(visible_opacity_);
 }
 
 InkDropHighlight::~InkDropHighlight() {}
@@ -102,7 +111,7 @@ void InkDropHighlight::AnimateFade(AnimationType animation_type,
 
   ui::LayerAnimationElement* opacity_element =
       ui::LayerAnimationElement::CreateOpacityElement(
-          animation_type == FADE_IN ? kHighlightVisibleOpacity : kHiddenOpacity,
+          animation_type == FADE_IN ? visible_opacity_ : kHiddenOpacity,
           duration);
   ui::LayerAnimationSequence* opacity_sequence =
       new ui::LayerAnimationSequence(opacity_element);
@@ -127,8 +136,8 @@ gfx::Transform InkDropHighlight::CalculateTransform(
   gfx::Transform transform;
   transform.Translate(center_point_.x(), center_point_.y());
   transform.Scale(size.width() / size_.width(), size.height() / size_.height());
-  transform.Translate(-layer_delegate_->GetCenterPoint().x(),
-                      -layer_delegate_->GetCenterPoint().y());
+  gfx::Vector2dF layer_offset = layer_delegate_->GetCenteringOffset();
+  transform.Translate(-layer_offset.x(), -layer_offset.y());
   return transform;
 }
 

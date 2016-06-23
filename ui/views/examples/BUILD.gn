@@ -104,6 +104,7 @@ executable("views_examples_exe") {
     ":views_examples_lib",
     "//base",
     "//base:i18n",
+    "//base/test:test_support",
     "//build/config/sanitizers:deps",
     "//build/win:default_exe_manifest",
     "//ui/base",

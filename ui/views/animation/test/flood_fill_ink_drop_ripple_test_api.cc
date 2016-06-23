@@ -28,8 +28,8 @@ void FloodFillInkDropRippleTestApi::TransformPoint(float radius,
 }
 
 gfx::Point FloodFillInkDropRippleTestApi::GetDrawnCenterPoint() const {
-  return ToRoundedPoint(
-      ink_drop_ripple()->circle_layer_delegate_.GetCenterPoint());
+  return ToRoundedPoint(PointAtOffsetFromOrigin(
+      ink_drop_ripple()->circle_layer_delegate_.GetCenteringOffset()));
 }
 
 float FloodFillInkDropRippleTestApi::MaxDistanceToCorners(

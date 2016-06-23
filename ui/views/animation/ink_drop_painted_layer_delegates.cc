@@ -4,11 +4,18 @@
 
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 
+#include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/skia_util.h"
 
 namespace views {
 
@@ -21,6 +28,10 @@ BasePaintedLayerDelegate::BasePaintedLayerDelegate(SkColor color)
     : color_(color) {}
 
 BasePaintedLayerDelegate::~BasePaintedLayerDelegate() {}
+
+gfx::Vector2dF BasePaintedLayerDelegate::GetCenteringOffset() const {
+  return gfx::RectF(GetPaintedBounds()).CenterPoint().OffsetFromOrigin();
+}
 
 void BasePaintedLayerDelegate::OnDelegatedFrameDamage(
     const gfx::Rect& damage_rect_in_dip) {}
@@ -42,8 +53,9 @@ CircleLayerDelegate::CircleLayerDelegate(SkColor color, int radius)
 
 CircleLayerDelegate::~CircleLayerDelegate() {}
 
-gfx::PointF CircleLayerDelegate::GetCenterPoint() const {
-  return gfx::PointF(radius_, radius_);
+gfx::Rect CircleLayerDelegate::GetPaintedBounds() const {
+  const int diameter = radius_ * 2;
+  return gfx::Rect(0, 0, diameter, diameter);
 }
 
 void CircleLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
@@ -52,10 +64,10 @@ void CircleLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setStyle(SkPaint::kFill_Style);
 
-  ui::PaintRecorder recorder(context, gfx::Size(2 * radius_, 2 * radius_));
+  ui::PaintRecorder recorder(context, GetPaintedBounds().size());
   gfx::Canvas* canvas = recorder.canvas();
 
-  canvas->DrawCircle(ToRoundedPoint(GetCenterPoint()), radius_, paint);
+  canvas->DrawCircle(GetPaintedBounds().CenterPoint(), radius_, paint);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,8 +80,8 @@ RectangleLayerDelegate::RectangleLayerDelegate(SkColor color, gfx::Size size)
 
 RectangleLayerDelegate::~RectangleLayerDelegate() {}
 
-gfx::PointF RectangleLayerDelegate::GetCenterPoint() const {
-  return gfx::PointF(size_.width() / 2.0f, size_.height() / 2.0f);
+gfx::Rect RectangleLayerDelegate::GetPaintedBounds() const {
+  return gfx::Rect(size_);
 }
 
 void RectangleLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
@@ -80,7 +92,7 @@ void RectangleLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
 
   ui::PaintRecorder recorder(context, size_);
   gfx::Canvas* canvas = recorder.canvas();
-  canvas->DrawRect(gfx::Rect(size_), paint);
+  canvas->DrawRect(GetPaintedBounds(), paint);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -88,17 +100,18 @@ void RectangleLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
 // RoundedRectangleLayerDelegate
 //
 
-RoundedRectangleLayerDelegate::RoundedRectangleLayerDelegate(SkColor color,
-                                                             gfx::Size size,
-                                                             int corner_radius)
+RoundedRectangleLayerDelegate::RoundedRectangleLayerDelegate(
+    SkColor color,
+    const gfx::Size& size,
+    int corner_radius)
     : BasePaintedLayerDelegate(color),
       size_(size),
       corner_radius_(corner_radius) {}
 
 RoundedRectangleLayerDelegate::~RoundedRectangleLayerDelegate() {}
 
-gfx::PointF RoundedRectangleLayerDelegate::GetCenterPoint() const {
-  return gfx::RectF(gfx::SizeF(size_)).CenterPoint();
+gfx::Rect RoundedRectangleLayerDelegate::GetPaintedBounds() const {
+  return gfx::Rect(size_);
 }
 
 void RoundedRectangleLayerDelegate::OnPaintLayer(
@@ -109,8 +122,59 @@ void RoundedRectangleLayerDelegate::OnPaintLayer(
   paint.setStyle(SkPaint::kFill_Style);
 
   ui::PaintRecorder recorder(context, size_);
-  gfx::Canvas* canvas = recorder.canvas();
-  canvas->DrawRoundRect(gfx::Rect(size_), corner_radius_, paint);
+  recorder.canvas()->DrawRoundRect(GetPaintedBounds(), corner_radius_, paint);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// BorderShadowLayerDelegate
+//
+
+BorderShadowLayerDelegate::BorderShadowLayerDelegate(
+    const std::vector<gfx::ShadowValue>& shadows,
+    const gfx::Rect& shadowed_area_bounds,
+    int corner_radius)
+    : BasePaintedLayerDelegate(gfx::kPlaceholderColor),
+      shadows_(shadows),
+      bounds_(shadowed_area_bounds),
+      corner_radius_(corner_radius) {}
+
+BorderShadowLayerDelegate::~BorderShadowLayerDelegate() {}
+
+gfx::Rect BorderShadowLayerDelegate::GetPaintedBounds() const {
+  gfx::Rect total_rect(bounds_);
+  total_rect.Inset(gfx::ShadowValue::GetMargin(shadows_));
+  return total_rect;
+}
+
+gfx::Vector2dF BorderShadowLayerDelegate::GetCenteringOffset() const {
+  return gfx::RectF(bounds_).CenterPoint().OffsetFromOrigin();
+}
+
+void BorderShadowLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
+  SkPaint paint;
+  paint.setLooper(gfx::CreateShadowDrawLooper(shadows_));
+  paint.setStyle(SkPaint::kStrokeAndFill_Style);
+  paint.setAntiAlias(true);
+  paint.setColor(SK_ColorTRANSPARENT);
+  paint.setStrokeJoin(SkPaint::kRound_Join);
+  gfx::RectF bounds(bounds_);
+  bounds -= GetPaintedBounds().OffsetFromOrigin();
+  gfx::RectF stroke_bounds = bounds;
+  stroke_bounds.Inset(-gfx::InsetsF(0.5f));
+
+  ui::PaintRecorder recorder(context, GetPaintedBounds().size());
+  const SkScalar corner = SkFloatToScalar(corner_radius_);
+  SkPath path;
+  path.addRoundRect(gfx::RectFToSkRect(stroke_bounds), corner, corner,
+                    SkPath::kCCW_Direction);
+  recorder.canvas()->DrawPath(path, paint);
+
+  SkPaint clear_paint;
+  clear_paint.setAntiAlias(true);
+  clear_paint.setXfermodeMode(SkXfermode::kClear_Mode);
+  recorder.canvas()->sk_canvas()->drawRoundRect(gfx::RectFToSkRect(bounds),
+                                                corner, corner, clear_paint);
 }
 
 }  // namespace views

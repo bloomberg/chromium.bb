@@ -9,6 +9,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -24,30 +26,12 @@ const int kHorizontalPadding = 16;
 // Minimum size to reserve for the button contents.
 const int kMinWidth = 48;
 
-// The amount to enlarge the focus border in all directions relative to the
-// button.
-const int kFocusBorderOutset = -1;
+// The stroke width of the focus border in normal and call to action mode.
+const int kFocusBorderThickness = 1;
+const int kFocusBorderThicknessCta = 2;
 
 // The corner radius of the focus border roundrect.
 const int kFocusBorderCornerRadius = 3;
-
-class MdFocusRing : public views::View {
- public:
-  MdFocusRing() {
-    SetPaintToLayer(true);
-    layer()->SetFillsBoundsOpaquely(false);
-  }
-  ~MdFocusRing() override {}
-
-  bool CanProcessEventsWithinSubtree() const override { return false; }
-
-  void OnPaint(gfx::Canvas* canvas) override {
-    MdTextButton::PaintMdFocusRing(canvas, this);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MdFocusRing);
-};
 
 LabelButton* CreateButton(ButtonListener* listener,
                           const base::string16& text,
@@ -70,6 +54,34 @@ const gfx::FontList& GetMdFontList() {
 }
 
 }  // namespace
+
+namespace internal {
+
+class MdFocusRing : public View {
+ public:
+  MdFocusRing() : thickness_(kFocusBorderThickness) {
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+  ~MdFocusRing() override {}
+
+  int thickness() const { return thickness_; }
+  void set_thickness(int thickness) { thickness_ = thickness; }
+
+  // View:
+  bool CanProcessEventsWithinSubtree() const override { return false; }
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    MdTextButton::PaintMdFocusRing(canvas, this, thickness_, 0x33);
+  }
+
+ private:
+  int thickness_;
+
+  DISALLOW_COPY_AND_ASSIGN(MdFocusRing);
+};
+
+}  // namespace internal
 
 // static
 LabelButton* MdTextButton::CreateStandardButton(ButtonListener* listener,
@@ -108,30 +120,36 @@ MdTextButton* MdTextButton::CreateMdButton(ButtonListener* listener,
 }
 
 // static
-void MdTextButton::PaintMdFocusRing(gfx::Canvas* canvas, views::View* view) {
+void MdTextButton::PaintMdFocusRing(gfx::Canvas* canvas,
+                                    views::View* view,
+                                    int thickness,
+                                    SkAlpha alpha) {
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setColor(SkColorSetA(view->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_CallToActionColor), 0x33));
+                                 ui::NativeTheme::kColorId_CallToActionColor),
+                             alpha));
   paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(1);
+  paint.setStrokeWidth(thickness);
   gfx::RectF rect(view->GetLocalBounds());
-  rect.Inset(gfx::InsetsF(0.5));
+  rect.Inset(gfx::InsetsF(thickness / 2.f));
   canvas->DrawRoundRect(rect, kFocusBorderCornerRadius, paint);
 }
 
 void MdTextButton::SetCallToAction(bool cta) {
-  if (cta_ == cta)
+  if (is_cta_ == cta)
     return;
 
-  cta_ = cta;
+  is_cta_ = cta;
+  focus_ring_->set_thickness(cta ? kFocusBorderThicknessCta
+                                 : kFocusBorderThickness);
   UpdateColorsFromNativeTheme();
 }
 
 void MdTextButton::Layout() {
   LabelButton::Layout();
   gfx::Rect focus_bounds = GetLocalBounds();
-  focus_bounds.Inset(gfx::Insets(kFocusBorderOutset));
+  focus_bounds.Inset(gfx::Insets(-focus_ring_->thickness()));
   focus_ring_->SetBoundsRect(focus_bounds);
 }
 
@@ -154,6 +172,28 @@ SkColor MdTextButton::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(label()->enabled_color());
 }
 
+std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
+    const {
+  if (!ShouldShowInkDropHighlight())
+    return nullptr;
+  if (!is_cta_)
+    return LabelButton::CreateInkDropHighlight();
+
+  // The call to action hover effect is a shadow.
+  const int kYOffset = 2;
+  const int kSkiaBlurRadius = 2;
+  std::vector<gfx::ShadowValue> shadows;
+  // The notion of blur that gfx::ShadowValue uses is twice the skia value,
+  // which is a number of pixels outside of the shadowed area.
+  shadows.push_back(gfx::ShadowValue(gfx::Vector2d(0, kYOffset),
+                                     2 * kSkiaBlurRadius,
+                                     SkColorSetA(SK_ColorBLACK, 0x3D)));
+  return base::WrapUnique(new InkDropHighlight(
+      GetLocalBounds().CenterPoint(),
+      base::WrapUnique(new BorderShadowLayerDelegate(
+          shadows, GetLocalBounds(), kInkDropSmallCornerRadius))));
+}
+
 bool MdTextButton::ShouldShowInkDropForFocus() const {
   // These types of button use |focus_ring_|.
   return false;
@@ -165,8 +205,8 @@ void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
 
 MdTextButton::MdTextButton(ButtonListener* listener)
     : LabelButton(listener, base::string16()),
-      focus_ring_(new MdFocusRing()),
-      cta_(false) {
+      focus_ring_(new internal::MdFocusRing()),
+      is_cta_(false) {
   SetHasInkDrop(true);
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -204,22 +244,23 @@ MdTextButton::~MdTextButton() {}
 
 void MdTextButton::UpdateColorsFromNativeTheme() {
   ui::NativeTheme::ColorId fg_color_id =
-      cta_ ? ui::NativeTheme::kColorId_TextOnCallToActionColor
-           : ui::NativeTheme::kColorId_ButtonEnabledColor;
+      is_cta_ ? ui::NativeTheme::kColorId_TextOnCallToActionColor
+              : ui::NativeTheme::kColorId_ButtonEnabledColor;
 
   // When there's no call to action, respect a color override if one has
   // been set. For call to action styling, don't let individual buttons
   // specify a color.
   ui::NativeTheme* theme = GetNativeTheme();
-  if (cta_ || !explicitly_set_normal_color())
+  if (is_cta_ || !explicitly_set_normal_color())
     SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
 
   SkColor text_color = label()->enabled_color();
   SkColor bg_color =
-      cta_ ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
-           : is_default()
-                 ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
-                 : SK_ColorTRANSPARENT;
+      is_cta_
+          ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
+          : is_default()
+                ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
+                : SK_ColorTRANSPARENT;
   SkColor stroke_color = SkColorSetA(SK_ColorBLACK, 0x1A);
   set_background(Background::CreateBackgroundPainter(
       true, Painter::CreateRoundRectWith1PxBorderPainter(

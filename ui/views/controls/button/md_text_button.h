@@ -11,6 +11,10 @@
 
 namespace views {
 
+namespace internal {
+class MdFocusRing;
+}  // namespace internal
+
 // A button class that implements the Material Design text button spec.
 class VIEWS_EXPORT MdTextButton : public LabelButton {
  public:
@@ -28,7 +32,10 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
                                       const base::string16& text);
 
   // Paint an MD-style focus ring on the given canvas at the given bounds.
-  static void PaintMdFocusRing(gfx::Canvas* canvas, View* view);
+  static void PaintMdFocusRing(gfx::Canvas* canvas,
+                               View* view,
+                               int thickness,
+                               SkAlpha alpha);
 
   void SetCallToAction(bool cta);
 
@@ -37,6 +44,8 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void OnFocus() override;
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowInkDropForFocus() const override;
   void UpdateStyleToIndicateDefaultStatus() override;
@@ -50,10 +59,10 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   // The MD-style focus ring. This is not done via a FocusPainter
   // because it needs to paint to a layer so it can extend beyond the bounds of
   // |this|.
-  views::View* focus_ring_;
+  internal::MdFocusRing* focus_ring_;
 
-  // The call to action style for this button.
-  bool cta_;
+  // True if this button uses call-to-action styling.
+  bool is_cta_;
 
   DISALLOW_COPY_AND_ASSIGN(MdTextButton);
 };

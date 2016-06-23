@@ -213,7 +213,7 @@ void LabelButton::SetMaxSize(const gfx::Size& max_size) {
 }
 
 void LabelButton::SetIsDefault(bool is_default) {
-  DCHECK_EQ(STYLE_BUTTON, style_);
+  // TODO(estade): move this to MdTextButton once |style_| is removed.
   if (is_default == is_default_)
     return;
 

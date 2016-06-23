@@ -306,14 +306,15 @@ void FloodFillInkDropRipple::AnimateToOpacity(
 gfx::Transform FloodFillInkDropRipple::CalculateTransform(
     float target_radius) const {
   const float target_scale = target_radius / circle_layer_delegate_.radius();
-  const gfx::Point drawn_center_point =
-      ToRoundedPoint(circle_layer_delegate_.GetCenterPoint());
 
   gfx::Transform transform = gfx::Transform();
   transform.Translate(center_point_.x() - root_layer_.bounds().x(),
                       center_point_.y() - root_layer_.bounds().y());
   transform.Scale(target_scale, target_scale);
-  transform.Translate(-drawn_center_point.x(), -drawn_center_point.y());
+
+  const gfx::Vector2dF drawn_center_offset =
+      circle_layer_delegate_.GetCenteringOffset();
+  transform.Translate(-drawn_center_offset.x(), -drawn_center_offset.y());
 
   return transform;
 }

@@ -134,28 +134,28 @@ base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
 }
 
 // Calculates a Transform for a circle layer. The transform will be set up to
-// translate the |drawn_center_point| to the origin, scale, and then translate
-// to the target point defined by |target_center_x| and |target_center_y|.
-gfx::Transform CalculateCircleTransform(const gfx::Point& drawn_center_point,
+// translate by -|center_offset|, scale, and then translate to the target point
+// defined by |target_center_x| and |target_center_y|.
+gfx::Transform CalculateCircleTransform(const gfx::Vector2dF& center_offset,
                                         float scale,
                                         float target_center_x,
                                         float target_center_y) {
   gfx::Transform transform;
   transform.Translate(target_center_x, target_center_y);
   transform.Scale(scale, scale);
-  transform.Translate(-drawn_center_point.x(), -drawn_center_point.y());
+  transform.Translate(-center_offset.x(), -center_offset.y());
   return transform;
 }
 
 // Calculates a Transform for a rectangle layer. The transform will be set up to
-// translate the |drawn_center_point| to the origin and then scale by the
-// |x_scale| and |y_scale| factors.
-gfx::Transform CalculateRectTransform(const gfx::Point& drawn_center_point,
+// translate by -|center_offset| and then scale by the |x_scale| and |y_scale|
+// factors.
+gfx::Transform CalculateRectTransform(const gfx::Vector2dF& center_offset,
                                       float x_scale,
                                       float y_scale) {
   gfx::Transform transform;
   transform.Scale(x_scale, y_scale);
-  transform.Translate(-drawn_center_point.x(), -drawn_center_point.y());
+  transform.Translate(-center_offset.x(), -center_offset.y());
   return transform;
 }
 
@@ -477,35 +477,39 @@ void SquareInkDropRipple::CalculateRectTransforms(
   const float circle_target_x_offset = size.width() / 2.0f - corner_radius;
   const float circle_target_y_offset = size.height() / 2.0f - corner_radius;
 
+  const gfx::Vector2dF circle_center_offset =
+      circle_layer_delegate_->GetCenteringOffset();
   (*transforms_out)[TOP_LEFT_CIRCLE] = CalculateCircleTransform(
-      ToRoundedPoint(circle_layer_delegate_->GetCenterPoint()), circle_scale,
-      -circle_target_x_offset, -circle_target_y_offset);
+      circle_center_offset, circle_scale, -circle_target_x_offset,
+      -circle_target_y_offset);
 
-  (*transforms_out)[TOP_RIGHT_CIRCLE] = CalculateCircleTransform(
-      ToRoundedPoint(circle_layer_delegate_->GetCenterPoint()), circle_scale,
-      circle_target_x_offset, -circle_target_y_offset);
+  (*transforms_out)[TOP_RIGHT_CIRCLE] =
+      CalculateCircleTransform(circle_center_offset, circle_scale,
+                               circle_target_x_offset, -circle_target_y_offset);
 
-  (*transforms_out)[BOTTOM_RIGHT_CIRCLE] = CalculateCircleTransform(
-      ToRoundedPoint(circle_layer_delegate_->GetCenterPoint()), circle_scale,
-      circle_target_x_offset, circle_target_y_offset);
+  (*transforms_out)[BOTTOM_RIGHT_CIRCLE] =
+      CalculateCircleTransform(circle_center_offset, circle_scale,
+                               circle_target_x_offset, circle_target_y_offset);
 
-  (*transforms_out)[BOTTOM_LEFT_CIRCLE] = CalculateCircleTransform(
-      ToRoundedPoint(circle_layer_delegate_->GetCenterPoint()), circle_scale,
-      -circle_target_x_offset, circle_target_y_offset);
+  (*transforms_out)[BOTTOM_LEFT_CIRCLE] =
+      CalculateCircleTransform(circle_center_offset, circle_scale,
+                               -circle_target_x_offset, circle_target_y_offset);
 
   const float rect_delegate_width =
       static_cast<float>(rect_layer_delegate_->size().width());
   const float rect_delegate_height =
       static_cast<float>(rect_layer_delegate_->size().height());
 
+  const gfx::Vector2dF rect_center_offset =
+      rect_layer_delegate_->GetCenteringOffset();
   (*transforms_out)[HORIZONTAL_RECT] = CalculateRectTransform(
-      ToRoundedPoint(rect_layer_delegate_->GetCenterPoint()),
+      rect_center_offset,
       std::max(kMinimumRectScale, size.width() / rect_delegate_width),
       std::max(kMinimumRectScale,
                (size.height() - 2.0f * corner_radius) / rect_delegate_height));
 
   (*transforms_out)[VERTICAL_RECT] = CalculateRectTransform(
-      ToRoundedPoint(rect_layer_delegate_->GetCenterPoint()),
+      rect_center_offset,
       std::max(kMinimumRectScale,
                (size.width() - 2.0f * corner_radius) / rect_delegate_width),
       std::max(kMinimumRectScale, size.height() / rect_delegate_height));

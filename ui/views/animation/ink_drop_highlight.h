@@ -17,6 +17,10 @@
 #include "ui/gfx/transform.h"
 #include "ui/views/views_export.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ui {
 class Layer;
 class CallbackLayerAnimationObserver;
@@ -27,7 +31,7 @@ namespace test {
 class InkDropHighlightTestApi;
 }  // namespace test
 
-class RoundedRectangleLayerDelegate;
+class BasePaintedLayerDelegate;
 class InkDropHighlightObserver;
 
 // Manages fade in/out animations for a painted Layer that is used to provide
@@ -37,6 +41,12 @@ class VIEWS_EXPORT InkDropHighlight {
  public:
   enum AnimationType { FADE_IN, FADE_OUT };
 
+  // Creates a highlight with a specified painter.
+  InkDropHighlight(const gfx::Point& center_point,
+                   std::unique_ptr<BasePaintedLayerDelegate> layer_delegate);
+
+  // Creates a highlight that paints a partially transparent roundrect with
+  // color |color|.
   InkDropHighlight(const gfx::Size& size,
                    int corner_radius,
                    const gfx::Point& center_point,
@@ -104,12 +114,15 @@ class VIEWS_EXPORT InkDropHighlight {
   // space.
   gfx::PointF center_point_;
 
+  // The opacity for the fully visible state of the highlight.
+  float visible_opacity_;
+
   // True if the last animation to be initiated was a FADE_IN, and false
   // otherwise.
   bool last_animation_initiated_was_fade_in_;
 
   // The LayerDelegate that paints the highlight |layer_|.
-  std::unique_ptr<RoundedRectangleLayerDelegate> layer_delegate_;
+  std::unique_ptr<BasePaintedLayerDelegate> layer_delegate_;
 
   // The visual highlight layer that is painted by |layer_delegate_|.
   std::unique_ptr<ui::Layer> layer_;
