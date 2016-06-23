@@ -64,8 +64,11 @@ class MultiBrowserSharedState(story_module.SharedState):
     self._platform = None
     self._story_set = story_set
     self._possible_browsers = {}
-    # We use an ordered dict to request memory dumps in a deterministic order.
-    self._browsers = collections.OrderedDict()
+    # We use an ordered dict to record the order in which browsers appear on
+    # the story set. However, browsers are not created yet.
+    self._browsers_created = False
+    self._browsers = collections.OrderedDict(
+        (s.browser_type, None) for s in story_set)
     self._current_story = None
     self._current_browser = None
     self._current_tab = None
@@ -138,19 +141,31 @@ class MultiBrowserSharedState(story_module.SharedState):
     self._possible_browsers[browser_type] = (possible_browser, options)
     return possible_browser
 
-  def _SetCurrentBrowser(self, browser_type):
-    """Select a browser of the given type and bring it to the foreground.
+  def _CreateAllBrowsersIfNeeeded(self):
+    """Launch all browsers needed for the story set, if not already done.
 
-    This launches the browser if it does not exist already or, otherwise, moves
-    the existing browser to the foreground.
+    This ensures that all browsers are alive during the whole duration of the
+    benchmark and, therefore, e.g. memory dumps are always provided for all
+    of them.
     """
-    if not browser_type in self._browsers:
+    if self._browsers_created:
+      return
+    for browser_type in self._browsers:
       possible_browser, options = self._possible_browsers[browser_type]
-      self._current_browser = possible_browser.Create(options)
-      self._browsers[browser_type] = self._current_browser
-    else:
-      self._current_browser = self._browsers[browser_type]
-      self._current_browser.Foreground()
+      self._browsers[browser_type] = possible_browser.Create(options)
+    self._browsers_created = True
+
+  def _CloseAllBrowsers(self):
+    """Close all of the browsers that were launched for this benchmark."""
+    if not self._browsers_created:
+      return
+    for browser_type, browser in self._browsers.iteritems():
+      try:
+        browser.Close()
+      except Exception:
+        logging.exception('Error while closing %s browser', browser_type)
+      self._browsers[browser_type] = None
+    self._browsers_created = False
 
   def CanRunStory(self, _):
     return True
@@ -162,7 +177,10 @@ class MultiBrowserSharedState(story_module.SharedState):
         self._story_set.WprFilePathForStory(story),
         story.make_javascript_deterministic)
 
-    self._SetCurrentBrowser(self._current_story.browser_type)
+    # Note: browsers need to be created after replay has been started.
+    self._CreateAllBrowsersIfNeeeded()
+    self._current_browser = self._browsers[story.browser_type]
+    self._current_browser.Foreground()
     self._current_tab = self._current_browser.foreground_tab
 
   def RunStory(self, _):
@@ -182,13 +200,7 @@ class MultiBrowserSharedState(story_module.SharedState):
 
   def TearDownState(self):
     self.platform.network_controller.Close()
-
-    for browser_type, browser in self._browsers.iteritems():
-      try:
-        browser.Close()
-      except Exception:
-        logging.exception('Error while closing browser: %s', browser_type)
-    self._browsers = None  # Not usable after tearing down.
+    self._CloseAllBrowsers()
 
   def DumpStateUponFailure(self, unused_story, unused_results):
     if self._browsers:
