@@ -167,6 +167,10 @@
       "--test-launcher-bot-mode",
     ],
   },
+  "capture_unittests": {
+    "label": "//media/capture:capture_unittests",
+    "type": "windowed_test_launcher",
+  },
   "cast_alsa_cma_backend_unittests": {
     "label": "//chromecast/media/cma/backend/alsa:cast_alsa_cma_backend_unittests",
     "type": "unknown",

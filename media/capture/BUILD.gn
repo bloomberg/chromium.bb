@@ -143,10 +143,7 @@ component("capture") {
   }
 }
 
-# TODO(mcasas): Make this a test target, https://crbug.com/618718.
-source_set("unittests") {
-  testonly = true
-
+test("capture_unittests") {
   sources = [
     "content/animated_content_sampler_unittest.cc",
     "content/capture_resolution_chooser_unittest.cc",
@@ -161,9 +158,17 @@ source_set("unittests") {
 
   deps = [
     ":capture",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/gfx:test_support",
   ]
+
+  if (is_android) {
+    deps += [ "//media/capture/video/android:capture_java" ]
+  }
 
   if (is_win) {
     # TODO(jschuh): https://crbug.com/167187 fix size_t to int truncations.

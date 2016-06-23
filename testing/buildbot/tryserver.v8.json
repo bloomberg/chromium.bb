@@ -14,6 +14,7 @@
       "cast_unittests",
       "cc_unittests",
       "chromedriver_unittests",
+      "capture_unittests",
       "components_browsertests",
       "components_unittests",
       "content_browsertests",

@@ -594,9 +594,6 @@ test("media_unittests") {
     "//media/audio:unittests",
     "//media/base:test_support",
     "//media/base:unittests",
-
-    # TODO(mcasas): Remove the capture sources after https://crbug.com/618718.
-    "//media/capture:unittests",
     "//media/test:pipeline_integration_tests",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
@@ -618,7 +615,6 @@ test("media_unittests") {
     deps += [
       "//media/base/android:media_java",
       "//media/base/android:unittests",
-      "//media/capture/video/android:capture_java",
       "//ui/android:ui_java",
     ]
   }

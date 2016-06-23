@@ -2,6 +2,7 @@
   "Linux Builder": {
     "additional_compile_targets": [
       "browser_tests",
+      "capture_unittests",
       "content_browsertests",
       "content_unittests",
       "frame_analyzer",
@@ -18,6 +19,7 @@
   "Mac Builder": {
     "additional_compile_targets": [
       "browser_tests",
+      "capture_unittests",
       "content_browsertests",
       "content_unittests",
       "frame_analyzer",
@@ -34,6 +36,7 @@
   "Win Builder": {
     "additional_compile_targets": [
       "browser_tests",
+      "capture_unittests",
       "content_browsertests",
       "content_unittests",
       "frame_analyzer",

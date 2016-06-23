@@ -98,6 +98,19 @@
         "test": "breakpad_unittests"
       },
       {
+        "override_isolate_target": "capture_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ]
+        },
+        "test": "capture_unittests"
+      },
+      {
         "override_isolate_target": "cc_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -512,6 +525,19 @@
           ]
         },
         "test": "breakpad_unittests"
+      },
+      {
+        "override_isolate_target": "capture_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ]
+        },
+        "test": "capture_unittests"
       },
       {
         "override_isolate_target": "cc_unittests",
@@ -981,6 +1007,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "test": "capture_unittests"
+      },
+      {
         "test": "cc_unittests"
       },
       {
@@ -1083,6 +1112,9 @@
           "breakpad_unittests_deps"
         ],
         "test": "breakpad_unittests"
+      },
+      {
+        "test": "capture_unittests"
       },
       {
         "test": "cc_unittests"
@@ -1192,6 +1224,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "test": "capture_unittests"
+      },
+      {
         "test": "cc_unittests"
       },
       {
@@ -1297,6 +1332,9 @@
           "breakpad_unittests_deps"
         ],
         "test": "breakpad_unittests"
+      },
+      {
+        "test": "capture_unittests"
       },
       {
         "test": "cc_unittests"
@@ -1417,6 +1455,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "test": "capture_unittests"
+      },
+      {
         "test": "cc_unittests"
       },
       {
@@ -1522,6 +1563,9 @@
           "breakpad_unittests_deps"
         ],
         "test": "breakpad_unittests"
+      },
+      {
+        "test": "capture_unittests"
       },
       {
         "test": "cc_unittests"
@@ -1637,6 +1681,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "test": "capture_unittests"
+      },
+      {
         "test": "cc_unittests"
       },
       {
@@ -1742,6 +1789,9 @@
           "breakpad_unittests_deps"
         ],
         "test": "breakpad_unittests"
+      },
+      {
+        "test": "capture_unittests"
       },
       {
         "test": "cc_unittests"
