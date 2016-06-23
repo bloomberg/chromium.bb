@@ -525,23 +525,19 @@ std::string DownloadRequestCore::DebugString() const {
 DownloadInterruptReason DownloadRequestCore::HandleRequestStatus(
     const net::URLRequestStatus& status) {
   net::Error error_code = net::OK;
-  if (status.status() == net::URLRequestStatus::FAILED ||
-      // Note cancels as failures too.
-      status.status() == net::URLRequestStatus::CANCELED) {
+  if (!status.is_success()) {
     error_code = static_cast<net::Error>(status.error());  // Normal case.
     // Make sure that at least the fact of failure comes through.
     if (error_code == net::OK)
       error_code = net::ERR_FAILED;
   }
 
-  // ERR_CONTENT_LENGTH_MISMATCH and ERR_INCOMPLETE_CHUNKED_ENCODING are
-  // allowed since a number of servers in the wild close the connection too
-  // early by mistake. Other browsers - IE9, Firefox 11.0, and Safari 5.1.4 -
-  // treat downloads as complete in both cases, so we follow their lead.
-  if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH ||
-      error_code == net::ERR_INCOMPLETE_CHUNKED_ENCODING) {
+  // ERR_CONTENT_LENGTH_MISMATCH is allowed since a number of servers in the
+  // wild close the connection too early by mistake. Other browsers - IE9,
+  // Firefox 11.0, and Safari 5.1.4 - treat downloads as complete in both cases,
+  // so we follow their lead.
+  if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH)
     error_code = net::OK;
-  }
   DownloadInterruptReason reason = ConvertNetErrorToInterruptReason(
       error_code, DOWNLOAD_INTERRUPT_FROM_NETWORK);
 
