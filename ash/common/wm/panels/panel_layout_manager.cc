@@ -11,6 +11,7 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_state.h"
@@ -578,9 +579,11 @@ void PanelLayoutManager::Relayout() {
   // interfered with overview mode animations. However, layouts need to be done
   // when the WindowSelectorController is restoring minimized windows so that
   // they actually become visible.
-  WmShell* shell = panel_container_->GetShell();
-  if (in_layout_ || (shell->IsOverviewModeSelecting() &&
-                     !shell->IsOverviewModeRestoringMinimizedWindows())) {
+  WindowSelectorController* window_selector_controller =
+      WmShell::Get()->window_selector_controller();
+  if (in_layout_ ||
+      (window_selector_controller->IsSelecting() &&
+       !window_selector_controller->IsRestoringMinimizedWindows())) {
     return;
   }
 

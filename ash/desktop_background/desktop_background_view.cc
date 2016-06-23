@@ -10,6 +10,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -92,7 +93,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
   void OnMouseEvent(ui::MouseEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     WindowSelectorController* controller =
-        Shell::GetInstance()->window_selector_controller();
+        WmShell::Get()->window_selector_controller();
     if (event->type() == ui::ET_MOUSE_RELEASED && controller->IsSelecting()) {
       controller->ToggleOverview();
       event->StopPropagation();
@@ -102,7 +103,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     WindowSelectorController* controller =
-        Shell::GetInstance()->window_selector_controller();
+        WmShell::Get()->window_selector_controller();
     if (event->type() == ui::ET_GESTURE_TAP && controller->IsSelecting()) {
       controller->ToggleOverview();
       event->StopPropagation();

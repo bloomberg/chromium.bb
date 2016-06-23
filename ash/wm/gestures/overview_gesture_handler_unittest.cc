@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/common/wm/overview/window_selector_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -25,8 +26,7 @@ class OverviewGestureHandlerTest : public test::AshTestBase {
   }
 
   bool IsSelecting() {
-    return ash::Shell::GetInstance()->window_selector_controller()->
-        IsSelecting();
+    return WmShell::Get()->window_selector_controller()->IsSelecting();
   }
 
  private:

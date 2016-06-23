@@ -1127,7 +1127,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitsOverview) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
 
   WindowSelectorController* window_selector_controller =
-      Shell::GetInstance()->window_selector_controller();
+      WmShell::Get()->window_selector_controller();
   window_selector_controller->ToggleOverview();
   ASSERT_TRUE(window_selector_controller->IsSelecting());
   ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();

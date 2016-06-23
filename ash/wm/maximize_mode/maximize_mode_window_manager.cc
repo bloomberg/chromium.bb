@@ -36,8 +36,8 @@ const int kLeaveFullScreenAreaHeightInPixel = 2;
 // Exits overview mode if it is currently active.
 void CancelOverview() {
   WindowSelectorController* controller =
-      Shell::GetInstance()->window_selector_controller();
-  if (controller && controller->IsSelecting())
+      WmShell::Get()->window_selector_controller();
+  if (controller->IsSelecting())
     controller->OnSelectionEnded();
 }
 

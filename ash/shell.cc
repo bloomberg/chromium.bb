@@ -25,7 +25,6 @@
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
-#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm_shell.h"
@@ -729,7 +728,7 @@ Shell::~Shell() {
   resize_shadow_controller_.reset();
 
   window_cycle_controller_.reset();
-  window_selector_controller_.reset();
+  wm_shell_->DeleteWindowSelectorController();
 
   // |shelf_window_watcher_| has a weak pointer to |shelf_Model_|
   // and has window observers.
@@ -1030,7 +1029,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
-  window_selector_controller_.reset(new WindowSelectorController());
   window_cycle_controller_.reset(new WindowCycleController());
 
   tooltip_controller_.reset(new views::corewm::TooltipController(

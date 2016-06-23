@@ -5,8 +5,7 @@
 #include "ash/wm/gestures/overview_gesture_handler.h"
 
 #include "ash/common/wm/overview/window_selector_controller.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
@@ -43,8 +42,9 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
 
   // Only allow swipe up to enter overview, down to exit. Ignore extra swiping
   // in the wrong direction.
-  Shell* shell = Shell::GetInstance();
-  if (shell->window_selector_controller()->IsSelecting()) {
+  WindowSelectorController* window_selector_controller =
+      WmShell::Get()->window_selector_controller();
+  if (window_selector_controller->IsSelecting()) {
     if (scroll_y_ < 0)
       scroll_x_ = scroll_y_ = 0;
     if (scroll_y_ < kSwipeThresholdPixels)
@@ -58,8 +58,8 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
 
   // Reset scroll amount on toggling.
   scroll_x_ = scroll_y_ = 0;
-  shell->metrics()->RecordUserMetricsAction(UMA_TOUCHPAD_GESTURE_OVERVIEW);
-  shell->window_selector_controller()->ToggleOverview();
+  WmShell::Get()->RecordUserMetricsAction(UMA_TOUCHPAD_GESTURE_OVERVIEW);
+  window_selector_controller->ToggleOverview();
   return true;
 }
 

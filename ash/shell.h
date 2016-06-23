@@ -159,7 +159,6 @@ class VideoDetector;
 class WebNotificationTray;
 class WindowCycleController;
 class WindowPositioner;
-class WindowSelectorController;
 class WmShellAura;
 class WmWindow;
 
@@ -364,9 +363,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
-  }
-  WindowSelectorController* window_selector_controller() {
-    return window_selector_controller_.get();
   }
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
@@ -673,7 +669,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<VideoDetector> video_detector_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
-  std::unique_ptr<WindowSelectorController> window_selector_controller_;
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;
   std::unique_ptr<MagnificationController> magnification_controller_;

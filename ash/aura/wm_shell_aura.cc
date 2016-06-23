@@ -138,20 +138,6 @@ void WmShellAura::OnOverviewModeEnded() {
                     OnOverviewModeEnded());
 }
 
-bool WmShellAura::IsOverviewModeSelecting() {
-  WindowSelectorController* window_selector_controller =
-      Shell::GetInstance()->window_selector_controller();
-  return window_selector_controller &&
-         window_selector_controller->IsSelecting();
-}
-
-bool WmShellAura::IsOverviewModeRestoringMinimizedWindows() {
-  WindowSelectorController* window_selector_controller =
-      Shell::GetInstance()->window_selector_controller();
-  return window_selector_controller &&
-         window_selector_controller->IsRestoringMinimizedWindows();
-}
-
 AccessibilityDelegate* WmShellAura::GetAccessibilityDelegate() {
   return Shell::GetInstance()->accessibility_delegate();
 }

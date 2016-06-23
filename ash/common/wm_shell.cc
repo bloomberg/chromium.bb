@@ -8,6 +8,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_window.h"
 #include "base/logging.h"
 
@@ -28,7 +29,8 @@ WmShell* WmShell::Get() {
 
 WmShell::WmShell()
     : focus_cycler_(new FocusCycler),
-      system_tray_notifier_(new WmSystemTrayNotifier) {}
+      system_tray_notifier_(new WmSystemTrayNotifier),
+      window_selector_controller_(new WindowSelectorController()) {}
 
 WmShell::~WmShell() {}
 
@@ -64,6 +66,10 @@ void WmShell::SetSystemTrayDelegate(
     system_tray_delegate_->Shutdown();
     system_tray_delegate_.reset();
   }
+}
+
+void WmShell::DeleteWindowSelectorController() {
+  window_selector_controller_.reset();
 }
 
 }  // namespace ash

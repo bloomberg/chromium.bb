@@ -105,6 +105,7 @@ WmShellMus::WmShellMus(::mus::WindowTreeClient* client)
 
 WmShellMus::~WmShellMus() {
   SetSystemTrayDelegate(nullptr);
+  DeleteWindowSelectorController();
   wm_shell_common_->DeleteMruWindowTracker();
   RemoveClientObserver();
   WmShell::Set(nullptr);
@@ -237,16 +238,6 @@ void WmShellMus::OnOverviewModeStarting() {
 void WmShellMus::OnOverviewModeEnded() {
   FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
                     OnOverviewModeEnded());
-}
-
-bool WmShellMus::IsOverviewModeSelecting() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool WmShellMus::IsOverviewModeRestoringMinimizedWindows() {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 AccessibilityDelegate* WmShellMus::GetAccessibilityDelegate() {

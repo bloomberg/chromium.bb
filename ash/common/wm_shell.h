@@ -31,6 +31,7 @@ class SessionStateDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
 class WindowResizer;
+class WindowSelectorController;
 class WmActivationObserver;
 class WmDisplayObserver;
 class WmSystemTrayNotifier;
@@ -57,6 +58,10 @@ class ASH_EXPORT WmShell {
 
   SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
+  }
+
+  WindowSelectorController* window_selector_controller() {
+    return window_selector_controller_.get();
   }
 
   virtual MruWindowTracker* GetMruWindowTracker() = 0;
@@ -135,11 +140,6 @@ class ASH_EXPORT WmShell {
   // Called after overview mode has ended.
   virtual void OnOverviewModeEnded() = 0;
 
-  // TODO(sky): if WindowSelectorController can't be moved over, move these
-  // onto their own local class.
-  virtual bool IsOverviewModeSelecting() = 0;
-  virtual bool IsOverviewModeRestoringMinimizedWindows() = 0;
-
   virtual AccessibilityDelegate* GetAccessibilityDelegate() = 0;
 
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
@@ -169,6 +169,8 @@ class ASH_EXPORT WmShell {
   // is null, shuts down and destroys the delegate.
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
 
+  void DeleteWindowSelectorController();
+
  private:
   friend class Shell;
 
@@ -177,6 +179,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<WmSystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
+  std::unique_ptr<WindowSelectorController> window_selector_controller_;
 
   bool simulate_modal_window_open_for_testing_ = false;
 };

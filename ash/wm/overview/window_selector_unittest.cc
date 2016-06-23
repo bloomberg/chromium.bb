@@ -19,6 +19,7 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_shell.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -173,9 +174,15 @@ class WindowSelectorTest
     return window1_bounds.Intersects(window2_bounds);
   }
 
-  void ToggleOverview() {
-    ash::Shell::GetInstance()->window_selector_controller()->ToggleOverview();
+  WindowSelectorController* window_selector_controller() {
+    return WmShell::Get()->window_selector_controller();
   }
+
+  WindowSelector* window_selector() {
+    return window_selector_controller()->window_selector_.get();
+  }
+
+  void ToggleOverview() { window_selector_controller()->ToggleOverview(); }
 
   gfx::RectF GetTransformedBounds(aura::Window* window) {
     gfx::RectF bounds(ScreenUtil::ConvertRectToScreen(
@@ -222,10 +229,7 @@ class WindowSelectorTest
       event_generator.ReleaseKey(key, 0);
   }
 
-  bool IsSelecting() {
-    return ash::Shell::GetInstance()->window_selector_controller()->
-        IsSelecting();
-  }
+  bool IsSelecting() { return window_selector_controller()->IsSelecting(); }
 
   aura::Window* GetFocusedWindow() {
     return aura::client::GetFocusClient(
@@ -233,8 +237,7 @@ class WindowSelectorTest
     }
 
   const std::vector<WindowSelectorItem*>& GetWindowItemsForRoot(int index) {
-    return ash::Shell::GetInstance()->window_selector_controller()->
-        window_selector_->grid_list_[index]->window_list_.get();
+    return window_selector()->grid_list_[index]->window_list_.get();
   }
 
   WindowSelectorItem* GetWindowItemForWindow(int grid_index,
@@ -267,8 +270,7 @@ class WindowSelectorTest
   }
 
   const aura::Window* GetSelectedWindow() {
-    WindowSelector* ws = ash::Shell::GetInstance()->
-        window_selector_controller()->window_selector_.get();
+    WindowSelector* ws = window_selector();
     WindowSelectorItem* item =
         ws->grid_list_[ws->selected_grid_index_]->SelectedWindow();
     if (!item)
@@ -277,16 +279,16 @@ class WindowSelectorTest
   }
 
   bool selection_widget_active() {
-    WindowSelector* ws = ash::Shell::GetInstance()->
-        window_selector_controller()->window_selector_.get();
+    WindowSelector* ws = window_selector();
     return ws->grid_list_[ws->selected_grid_index_]->is_selecting();
   }
 
   bool showing_filter_widget() {
-    WindowSelector* ws = ash::Shell::GetInstance()->
-        window_selector_controller()->window_selector_.get();
-    return ws->text_filter_widget_->GetNativeWindow()->layer()->
-        GetTargetTransform().IsIdentity();
+    return window_selector()
+        ->text_filter_widget_->GetNativeWindow()
+        ->layer()
+        ->GetTargetTransform()
+        .IsIdentity();
   }
 
   views::Widget* GetCloseButton(ash::WindowSelectorItem* window) {
@@ -313,9 +315,7 @@ class WindowSelectorTest
   }
 
   void FilterItems(const base::StringPiece& pattern) {
-    ash::Shell::GetInstance()->
-        window_selector_controller()->window_selector_.get()->
-            ContentsChanged(nullptr, base::UTF8ToUTF16(pattern));
+    window_selector()->ContentsChanged(nullptr, base::UTF8ToUTF16(pattern));
   }
 
   test::ShelfViewTestAPI* shelf_view_test() {
@@ -323,9 +323,7 @@ class WindowSelectorTest
   }
 
   views::Widget* text_filter_widget() {
-    return ash::Shell::GetInstance()->
-        window_selector_controller()->window_selector_.get()->
-            text_filter_widget_.get();
+    return window_selector()->text_filter_widget_.get();
   }
 
  private:
@@ -618,8 +616,7 @@ TEST_P(WindowSelectorTest, BasicWithDocked) {
   // Docked window can still be activated, which will exit the overview mode.
   ClickWindow(docked1.get());
   EXPECT_TRUE(wm::IsActiveWindow(docked1.get()));
-  EXPECT_FALSE(
-      ash::Shell::GetInstance()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
 }
 
 // Tests selecting a window by tapping on it.

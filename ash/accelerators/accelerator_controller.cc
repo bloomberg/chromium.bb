@@ -509,7 +509,7 @@ void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
 
 void HandleToggleOverview() {
   base::RecordAction(base::UserMetricsAction("Accel_Overview_F5"));
-  Shell::GetInstance()->window_selector_controller()->ToggleOverview();
+  WmShell::Get()->window_selector_controller()->ToggleOverview();
 }
 
 bool CanHandleWindowSnapOrDock() {
