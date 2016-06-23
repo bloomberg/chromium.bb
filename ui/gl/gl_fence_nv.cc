@@ -49,8 +49,14 @@ void GLFenceNV::ServerWait() {
 }
 
 GLFenceNV::~GLFenceNV() {
-  DCHECK(glIsFenceNV(fence_));
-  glDeleteFencesNV(1, &fence_);
+  if (fence_) {
+    DCHECK(glIsFenceNV(fence_));
+    glDeleteFencesNV(1, &fence_);
+  }
+}
+
+void GLFenceNV::Invalidate() {
+  fence_ = 0;
 }
 
 }  // namespace gl

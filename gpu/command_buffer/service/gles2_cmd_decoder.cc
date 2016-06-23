@@ -4369,7 +4369,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
       offscreen_resolved_frame_buffer_->Invalidate();
     if (offscreen_resolved_color_texture_.get())
       offscreen_resolved_color_texture_->Invalidate();
+    for (auto& fence : deschedule_until_finished_fences_) {
+      fence->Invalidate();
+    }
   }
+  deschedule_until_finished_fences_.clear();
 
   // Current program must be cleared after calling ProgramManager::UnuseProgram.
   // Otherwise, we can leak objects. http://crbug.com/258772.

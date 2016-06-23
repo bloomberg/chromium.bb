@@ -31,6 +31,9 @@ class GL_EXPORT GLFence {
   // Resets the fence to the original state.
   virtual void ResetState();
 
+  // Loses the reference to the fence. Useful if the context is lost.
+  virtual void Invalidate();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GLFence);
 };

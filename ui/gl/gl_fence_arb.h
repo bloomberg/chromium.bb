@@ -21,9 +21,10 @@ class GL_EXPORT GLFenceARB : public GLFence {
   bool HasCompleted() override;
   void ClientWait() override;
   void ServerWait() override;
+  void Invalidate() override;
 
  private:
-  GLsync sync_;
+  GLsync sync_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GLFenceARB);
 };

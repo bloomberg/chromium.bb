@@ -79,4 +79,8 @@ void GLFence::ResetState() {
   NOTIMPLEMENTED();
 }
 
+void GLFence::Invalidate() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace gl

@@ -21,9 +21,10 @@ class GL_EXPORT GLFenceAPPLE : public GLFence {
   bool HasCompleted() override;
   void ClientWait() override;
   void ServerWait() override;
+  void Invalidate() override;
 
  private:
-  GLuint fence_;
+  GLuint fence_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GLFenceAPPLE);
 };

@@ -31,8 +31,14 @@ void GLFenceAPPLE::ServerWait() {
 }
 
 GLFenceAPPLE::~GLFenceAPPLE() {
-  DCHECK(glIsFenceAPPLE(fence_));
-  glDeleteFencesAPPLE(1, &fence_);
+  if (fence_) {
+    DCHECK(glIsFenceAPPLE(fence_));
+    glDeleteFencesAPPLE(1, &fence_);
+  }
+}
+
+void GLFenceAPPLE::Invalidate() {
+  fence_ = 0;
 }
 
 }  // namespace gl
