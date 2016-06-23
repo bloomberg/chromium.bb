@@ -528,6 +528,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageTabObserver.java",
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java",
   "java/src/org/chromium/chrome/browser/offlinepages/TaskExtrasPacker.java",
+  "java/src/org/chromium/chrome/browser/offlinepages/TriggerConditions.java",
   "java/src/org/chromium/chrome/browser/offlinepages/interfaces/BackgroundSchedulerProcessor.java",
   "java/src/org/chromium/chrome/browser/omaha/ExponentialBackoffScheduler.java",
   "java/src/org/chromium/chrome/browser/omaha/MarketURLGetter.java",

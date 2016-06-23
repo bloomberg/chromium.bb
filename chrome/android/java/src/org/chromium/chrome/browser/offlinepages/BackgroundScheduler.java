@@ -22,7 +22,8 @@ public class BackgroundScheduler {
     /**
      * For the given Triggering conditions, start a new GCM Network Manager request.
      */
-    public static void schedule(Context context) {
+    public static void schedule(Context context, TriggerConditions triggerConditions) {
+        // TODO(dougarnett): Use trigger conditions in task builder config.
         schedule(context, 0 /* delayStartSecs */);
     }
 

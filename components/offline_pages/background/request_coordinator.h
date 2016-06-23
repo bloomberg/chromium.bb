@@ -14,6 +14,7 @@
 #include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/request_queue.h"
+#include "components/offline_pages/background/scheduler.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -56,6 +57,9 @@ class RequestCoordinator : public KeyedService {
   // its own. In either case, the callback will be called when processing
   // is stopped or complete.
   void StopProcessing();
+
+  // TODO(dougarnett): Move to OfflinerPolicy in some form.
+  Scheduler::TriggerConditions const& GetTriggerConditionsForUserRequest();
 
   // A way for tests to set the callback in use when an operation is over.
   void SetProcessingCallbackForTest(const base::Callback<void(bool)> callback) {

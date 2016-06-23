@@ -21,8 +21,15 @@ namespace android {
 class BackgroundSchedulerBridge : public Scheduler {
  public:
   // Scheduler implementation.
-  void Schedule(const TriggerCondition& trigger_condition) override;
+  void Schedule(const TriggerConditions& trigger_conditions) override;
   void Unschedule() override;
+
+ private:
+  base::android::ScopedJavaLocalRef<jobject> CreateTriggerConditions(
+      JNIEnv* env,
+      bool require_power_connected,
+      int minimum_battery_percentage,
+      bool require_unmetered_network) const;
 };
 
 bool RegisterBackgroundSchedulerBridge(JNIEnv* env);

@@ -13,10 +13,18 @@
 #include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/request_picker.h"
 #include "components/offline_pages/background/save_page_request.h"
-#include "components/offline_pages/background/scheduler.h"
 #include "components/offline_pages/offline_page_item.h"
 
 namespace offline_pages {
+
+namespace {
+// TODO(dougarnett/petewil): Move to Policy object. Also consider lower minimum
+// battery percentage once there is some processing time limits in place.
+const Scheduler::TriggerConditions kUserRequestTriggerConditions(
+    false /* require_power_connected */,
+    50 /* minimum_battery_percentage */,
+    false /* require_unmetered_network */);
+}  // namespace
 
 RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                                        std::unique_ptr<OfflinerFactory> factory,
@@ -59,9 +67,8 @@ void RequestCoordinator::AddRequestResultCallback(
     const SavePageRequest& request) {
 
   // Inform the scheduler that we have an outstanding task.
-  // TODO(petewil): Define proper TriggerConditions and set them.
-  Scheduler::TriggerCondition conditions;
-  scheduler_->Schedule(conditions);
+  // TODO(petewil): Determine trigger conditions from policy.
+  scheduler_->Schedule(GetTriggerConditionsForUserRequest());
 }
 
 // Called in response to updating a request in the request queue.
@@ -108,6 +115,11 @@ void RequestCoordinator::TryNextRequest() {
 }
 
 void RequestCoordinator::StopProcessing() {
+}
+
+Scheduler::TriggerConditions const&
+RequestCoordinator::GetTriggerConditionsForUserRequest() {
+  return kUserRequestTriggerConditions;
 }
 
 void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {

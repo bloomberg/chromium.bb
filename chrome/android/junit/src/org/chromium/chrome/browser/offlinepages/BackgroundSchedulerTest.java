@@ -31,6 +31,8 @@ import org.robolectric.annotation.Config;
         shadows = {ShadowGcmNetworkManager.class})
 public class BackgroundSchedulerTest {
     private Context mContext;
+    private TriggerConditions mConditions1 = new TriggerConditions(
+            true /* power */, 10 /* battery percentage */, false /* unmetered */);
 
     @Before
     public void setUp() throws Exception {
@@ -43,7 +45,7 @@ public class BackgroundSchedulerTest {
     public void testSchedule() {
         BackgroundScheduler scheduler = new BackgroundScheduler();
         assertNull(ShadowGcmNetworkManager.getScheduledTask());
-        scheduler.schedule(mContext);
+        scheduler.schedule(mContext, mConditions1);
         // Check with gcmNetworkManagerShadow that schedule got called.
         assertNotNull(ShadowGcmNetworkManager.getScheduledTask());
 
@@ -59,7 +61,7 @@ public class BackgroundSchedulerTest {
     public void testUnschedule() {
         BackgroundScheduler scheduler = new BackgroundScheduler();
         assertNull(ShadowGcmNetworkManager.getScheduledTask());
-        scheduler.schedule(mContext);
+        scheduler.schedule(mContext, mConditions1);
         assertNotNull(ShadowGcmNetworkManager.getScheduledTask());
 
         assertNull(ShadowGcmNetworkManager.getCanceledTask());

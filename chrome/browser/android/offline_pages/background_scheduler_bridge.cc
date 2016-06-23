@@ -54,15 +54,28 @@ static jboolean StartProcessing(JNIEnv* env,
 }
 
 void BackgroundSchedulerBridge::Schedule(
-    const TriggerCondition& trigger_condition) {
+    const TriggerConditions& trigger_conditions) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  // TODO(dougarnett): pass trigger_condition.
-  Java_BackgroundSchedulerBridge_schedule(env);
+  ScopedJavaLocalRef<jobject> j_conditions =
+      CreateTriggerConditions(env, trigger_conditions.require_power_connected,
+                              trigger_conditions.minimum_battery_percentage,
+                              trigger_conditions.require_unmetered_network);
+  Java_BackgroundSchedulerBridge_schedule(env, j_conditions.obj());
 }
 
 void BackgroundSchedulerBridge::Unschedule() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BackgroundSchedulerBridge_unschedule(env);
+}
+
+ScopedJavaLocalRef<jobject> BackgroundSchedulerBridge::CreateTriggerConditions(
+    JNIEnv* env,
+    bool require_power_connected,
+    int minimum_battery_percentage,
+    bool require_unmetered_network) const {
+  return Java_BackgroundSchedulerBridge_createTriggerConditions(
+      env, require_power_connected, minimum_battery_percentage,
+      require_unmetered_network);
 }
 
 bool RegisterBackgroundSchedulerBridge(JNIEnv* env) {

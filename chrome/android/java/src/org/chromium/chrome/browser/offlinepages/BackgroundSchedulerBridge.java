@@ -32,8 +32,8 @@ public class BackgroundSchedulerBridge {
     }
 
     @CalledByNative
-    private static void schedule() {
-        BackgroundScheduler.schedule(ContextUtils.getApplicationContext());
+    private static void schedule(TriggerConditions triggerConditions) {
+        BackgroundScheduler.schedule(ContextUtils.getApplicationContext(), triggerConditions);
     }
 
     @CalledByNative
@@ -41,6 +41,18 @@ public class BackgroundSchedulerBridge {
         BackgroundScheduler.unschedule(ContextUtils.getApplicationContext());
     }
 
+    /**
+     * Used by native code to create and pass up Java object encapsulating the
+     * trigger conditions.
+     */
+    @CalledByNative
+    private static TriggerConditions createTriggerConditions(boolean requirePowerConnected,
+            int minimumBatteryPercentage, boolean requireUnmeteredNetwork) {
+        return new TriggerConditions(
+                requirePowerConnected, minimumBatteryPercentage, requireUnmeteredNetwork);
+    }
+
+    /** Instructs the native RequestCoordinator to start processing. */
     private static native boolean nativeStartProcessing(boolean powerConnected,
             int batteryPercentage, int netConnectionType, Callback<Boolean> callback);
 }

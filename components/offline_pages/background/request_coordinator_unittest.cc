@@ -34,10 +34,14 @@ const int kRequestId(1);
 
 class SchedulerStub : public Scheduler {
  public:
-  SchedulerStub() : schedule_called_(false), unschedule_called_(false) {}
+  SchedulerStub()
+      : schedule_called_(false),
+        unschedule_called_(false),
+        conditions_(false, 0, false) {}
 
-  void Schedule(const TriggerCondition& trigger_condition) override {
+  void Schedule(const TriggerConditions& trigger_conditions) override {
     schedule_called_ = true;
+    conditions_ = trigger_conditions;
   }
 
   // Unschedules the currently scheduled task, if any.
@@ -49,9 +53,12 @@ class SchedulerStub : public Scheduler {
 
   bool unschedule_called() const { return unschedule_called_; }
 
+  TriggerConditions const* conditions() const { return &conditions_; }
+
  private:
   bool schedule_called_;
   bool unschedule_called_;
+  TriggerConditions conditions_;
 };
 
 class OfflinerStub : public Offliner {
@@ -250,6 +257,10 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   SchedulerStub* scheduler_stub = reinterpret_cast<SchedulerStub*>(
       coordinator()->scheduler());
   EXPECT_TRUE(scheduler_stub->schedule_called());
+  EXPECT_EQ(coordinator()
+                ->GetTriggerConditionsForUserRequest()
+                .minimum_battery_percentage,
+            scheduler_stub->conditions()->minimum_battery_percentage);
 }
 
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {

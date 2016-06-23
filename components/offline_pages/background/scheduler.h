@@ -13,8 +13,14 @@ namespace offline_pages {
 class Scheduler {
  public:
   // Defines a set of system conditions to trigger background processing.
-  struct TriggerCondition {
-    // TODO(dougarnett): define network, battery, power conditions.
+  struct TriggerConditions {
+    TriggerConditions(bool power, int battery, bool unmetered)
+        : require_power_connected(power),
+          minimum_battery_percentage(battery),
+          require_unmetered_network(unmetered) {}
+    bool require_power_connected;
+    int minimum_battery_percentage;
+    bool require_unmetered_network;
   };
 
   Scheduler() {}
@@ -24,7 +30,7 @@ class Scheduler {
   // This may overwrite any previous scheduled task with a new one for
   // these conditions. That is, only one set of triggering conditions
   // is scheduled at a time.
-  virtual void Schedule(const TriggerCondition& trigger_condition) = 0;
+  virtual void Schedule(const TriggerConditions& trigger_condition) = 0;
 
   // Unschedules the currently scheduled task, if any.
   virtual void Unschedule() = 0;
