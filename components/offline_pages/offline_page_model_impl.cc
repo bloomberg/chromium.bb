@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/offline_pages/archive_manager.h"
+#include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_storage_manager.h"
@@ -438,7 +439,10 @@ void OfflinePageModelImpl::CheckPagesExistOfflineAfterLoadDone(
   DCHECK(is_loaded_);
   CheckPagesExistOfflineResult result;
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.IsExpired())
+    // TODO(dewittj): Remove the "Last N" restriction in favor of a better query
+    // interface.  See https://crbug.com/622763 for information.
+    if (id_page_pair.second.IsExpired() ||
+        id_page_pair.second.client_id.name_space == kLastNNamespace)
       continue;
     auto iter = urls.find(id_page_pair.second.url);
     if (iter != urls.end())

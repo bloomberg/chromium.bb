@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
@@ -26,7 +27,6 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::RecentTabHelper);
 
 namespace {
-const char* kClientNamespace = "last_n";
 
 // Max number of pages to keep. The oldest pages that are over this count are
 // deleted before the next one is saved.
@@ -198,7 +198,7 @@ bool RecentTabHelper::IsSamePage() const {
 }
 
 ClientId RecentTabHelper::client_id() const {
-  return ClientId(kClientNamespace, "");
+  return ClientId(kLastNNamespace, "");
 }
 
 void RecentTabHelper::SetArchiveFactoryForTest(

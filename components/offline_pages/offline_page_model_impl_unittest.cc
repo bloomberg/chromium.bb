@@ -20,6 +20,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_client_policy.h"
 #include "components/offline_pages/offline_page_feature.h"
@@ -38,6 +39,7 @@ const char kTestClientNamespace[] = "CLIENT_NAMESPACE";
 const GURL kTestUrl("http://example.com");
 const GURL kTestUrl2("http://other.page.com");
 const GURL kTestUrl3("http://test.xyz");
+const GURL kTestUrl4("http://page.net");
 const GURL kFileUrl("file:///foo");
 const ClientId kTestClientId1(kTestClientNamespace, "1234");
 const ClientId kTestClientId2(kTestClientNamespace, "5678");
@@ -888,16 +890,23 @@ TEST_F(OfflinePageModelImplTest, CheckPagesExistOffline) {
   SavePage(kTestUrl, kTestClientId1);
   SavePage(kTestUrl2, kTestClientId2);
 
+  // TODO(dewittj): Remove the "Last N" restriction in favor of a better query
+  // interface.  See https://crbug.com/622763 for information.
+  const ClientId last_n_client_id(kLastNNamespace, "1234");
+  SavePage(kTestUrl3, last_n_client_id);
+
   std::set<GURL> input;
   input.insert(kTestUrl);
   input.insert(kTestUrl2);
   input.insert(kTestUrl3);
+  input.insert(kTestUrl4);
 
   CheckPagesExistOfflineResult existing_pages = CheckPagesExistOffline(input);
   EXPECT_EQ(2U, existing_pages.size());
   EXPECT_NE(existing_pages.end(), existing_pages.find(kTestUrl));
   EXPECT_NE(existing_pages.end(), existing_pages.find(kTestUrl2));
   EXPECT_EQ(existing_pages.end(), existing_pages.find(kTestUrl3));
+  EXPECT_EQ(existing_pages.end(), existing_pages.find(kTestUrl4));
 }
 
 TEST_F(OfflinePageModelImplTest, CanSaveURL) {
