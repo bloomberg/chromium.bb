@@ -284,6 +284,23 @@ shell_grab_start(struct shell_grab *grab,
 }
 
 static void
+get_panel_size(struct desktop_shell *shell,
+	       struct weston_view *view,
+	       int *width,
+	       int *height)
+{
+	float x1, y1;
+	float x2, y2;
+	weston_view_to_global_float(view, 0, 0, &x1, &y1);
+	weston_view_to_global_float(view,
+				    view->surface->width,
+				    view->surface->height,
+				    &x2, &y2);
+	*width = (int)(x2 - x1);
+	*height = (int)(y2 - y1);
+}
+
+static void
 get_output_panel_size(struct desktop_shell *shell,
 		      struct weston_output *output,
 		      int *width,
@@ -298,36 +315,9 @@ get_output_panel_size(struct desktop_shell *shell,
 		return;
 
 	wl_list_for_each(view, &shell->panel_layer.view_list.link, layer_link.link) {
-		float x, y;
-
-		if (view->surface->output != output)
-			continue;
-
-		switch (shell->panel_position) {
-		case WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP:
-		case WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM:
-			weston_view_to_global_float(view,
-						    view->surface->width, 0,
-						    &x, &y);
-
-			*width = (int)x - output->x;
-			*height = view->surface->height + (int) y - output->y;
+		if (view->surface->output == output) {
+			get_panel_size(shell, view, width, height);
 			return;
-
-		case WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT:
-		case WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT:
-			weston_view_to_global_float(view,
-						    0, view->surface->height,
-						    &x, &y);
-
-			*width = view->surface->width + (int)x - output->x;
-			*height = (int)y - output->y;
-			return;
-
-		default:
-			/* we've already set width and height to
-			 * fallback values. */
-			break;
 		}
 	}
 
