@@ -31,6 +31,8 @@
 namespace net {
 class AddressList;
 class CertVerifier;
+class CTPolicyEnforcer;
+class CTVerifier;
 class SSLClientSocket;
 class StreamSocket;
 class TCPClientSocket;
@@ -306,6 +308,8 @@ class CastSocketImpl : public CastSocket {
   // to cancel a cert verification request.
   std::unique_ptr<net::CertVerifier> cert_verifier_;
   std::unique_ptr<net::TransportSecurityState> transport_security_state_;
+  std::unique_ptr<net::CTVerifier> cert_transparency_verifier_;
+  std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer_;
 
   // Owned ptr to the underlying TCP socket.
   std::unique_ptr<net::TCPClientSocket> tcp_socket_;

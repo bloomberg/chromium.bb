@@ -34,6 +34,8 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
@@ -186,11 +188,15 @@ std::unique_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
   net::SSLConfig ssl_config;
   cert_verifier_ = base::WrapUnique(new FakeCertVerifier);
   transport_security_state_.reset(new net::TransportSecurityState);
+  cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
+  ct_policy_enforcer_.reset(new net::CTPolicyEnforcer());
+
+  // Note that |context| fields remain owned by CastSocketImpl.
   net::SSLClientSocketContext context;
-  // CertVerifier and TransportSecurityState are owned by us, not the
-  // context object.
   context.cert_verifier = cert_verifier_.get();
   context.transport_security_state = transport_security_state_.get();
+  context.cert_transparency_verifier = cert_transparency_verifier_.get();
+  context.ct_policy_enforcer = ct_policy_enforcer_.get();
 
   std::unique_ptr<net::ClientSocketHandle> connection(
       new net::ClientSocketHandle);
