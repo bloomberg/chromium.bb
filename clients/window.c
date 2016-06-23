@@ -5845,6 +5845,9 @@ display_get_cairo_device(struct display *display)
 struct output *
 display_get_output(struct display *display)
 {
+	if (wl_list_empty(&display->output_list))
+		return NULL;
+
 	return container_of(display->output_list.next, struct output, link);
 }
 
