@@ -37,11 +37,15 @@ style this element.
       :host {
         display: block;
       }
+
+      :host([hidden]) {
+        display: none !important;
+      }
     </style>
 
     <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
-      <label hidden$="[[!label]]">[[label]]</label>
+      <label hidden$="[[!label]]" aria-hidden="true">[[label]]</label>
 
       <iron-autogrow-textarea id="input" class="paper-input-input" bind-value="{{value}}" disabled$="[[disabled]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" maxlength$="[[maxlength]]" autocapitalize$="[[autocapitalize]]" rows$="[[rows]]" max-rows$="[[maxRows]]" on-change="_onChange"></iron-autogrow-textarea>
 

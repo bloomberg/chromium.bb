@@ -1,5 +1,13 @@
 <!DOCTYPE html><html dir="$i18n{textdirection}" lang="$i18n{language}"><head><!--
 @license
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><!--
+@license
 Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
@@ -470,8 +478,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </dom-module>
 <dom-module id="paper-ripple" assetpath="chrome://resources/polymer/v1_0/paper-ripple/">
 
-  
-
   <template>
     <style>
       :host {
@@ -720,7 +726,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         position: relative;
         cursor: pointer;
+
+        /* NOTE: Both values are needed, since some phones require the value to be `transparent`. */
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-tap-highlight-color: transparent;
       }
 
       :host([disabled]) {
@@ -2071,7 +2080,6 @@ paper-button {
         position: relative;
         padding: 8px;
         outline: none;
-        -webkit-tap-highlight-color: rgba(0,0,0,0);
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
@@ -2082,6 +2090,10 @@ paper-button {
 
         width: 40px;
         height: 40px;
+
+        /* NOTE: Both values are needed, since some phones require the value to be `transparent`. */
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-tap-highlight-color: transparent;
 
         /* Because of polymer/2558, this style has lower specificity than * */
         box-sizing: border-box !important;
@@ -2183,6 +2195,10 @@ paper-button {
         opacity: 0.33;
 
         @apply(--paper-input-container-disabled);
+      }
+
+      :host([hidden]) {
+        display: none !important;
       }
 
       .floated-label-placeholder {
@@ -2374,7 +2390,7 @@ paper-button {
     </style>
 
     <template is="dom-if" if="[[!noLabelFloat]]">
-      <div class="floated-label-placeholder">&nbsp;</div>
+      <div class="floated-label-placeholder" aria-hidden="true">&nbsp;</div>
     </template>
 
     <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">

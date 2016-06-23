@@ -1933,7 +1933,9 @@ function quoteString(str) {
     Polymer.IronA11yKeysBehavior = {
       properties: {
         /**
-         * The HTMLElement that will be firing relevant KeyboardEvents.
+         * The EventTarget that will be firing relevant KeyboardEvents. Set it to
+         * `null` to disable the listeners.
+         * @type {?EventTarget}
          */
         keyEventTarget: {
           type: Object,
@@ -2073,7 +2075,7 @@ function quoteString(str) {
       _resetKeyEventListeners: function() {
         this._unlistenKeyEventListeners();
 
-        if (this.isAttached) {
+        if (this.isAttached && this.keyEventTarget) {
           this._listenKeyEventListeners();
         }
       },
@@ -2368,6 +2370,7 @@ function quoteString(str) {
   var DEFAULT_PHYSICAL_COUNT = 3;
   var HIDDEN_Y = '-10000px';
   var DEFAULT_GRID_SIZE = 200;
+  var SECRET_TABINDEX = -100;
 
   Polymer({
 
@@ -3199,14 +3202,24 @@ function quoteString(str) {
       if (!el || el._templateInstance.__key__ !== key) {
         return;
       }
-      
       if (dot >= 0) {
         path = this.as + '.' + path.substring(dot+1);
         el._templateInstance.notifyPath(path, value, true);
       } else {
+        // Update selection if needed
+        var currentItem = el._templateInstance[this.as];
+        if (Array.isArray(this.selectedItems)) {
+          for (var i = 0; i < this.selectedItems.length; i++) {
+            if (this.selectedItems[i] === currentItem) {
+              this.set('selectedItems.' + i, value);
+              break;
+            }
+          }
+        } else if (this.selectedItem === currentItem) {
+          this.set('selectedItem', value);
+        }
         el._templateInstance[this.as] = value;
       }
-
     },
 
     /**
@@ -3394,9 +3407,9 @@ function quoteString(str) {
     },
 
     _updateGridMetrics: function() {
-      this._viewportWidth = this._scrollTargetWidth;
+      this._viewportWidth = this.$.items.offsetWidth;
       // Set item width to the value of the _physicalItems offsetWidth
-      this._itemWidth = this._physicalCount > 0 ? this._physicalItems[0].offsetWidth : DEFAULT_GRID_SIZE;
+      this._itemWidth = this._physicalCount > 0 ? this._physicalItems[0].getBoundingClientRect().width : DEFAULT_GRID_SIZE;
       // Set row height to the value of the _physicalItems offsetHeight
       this._rowHeight = this._physicalCount > 0 ? this._physicalItems[0].offsetHeight : DEFAULT_GRID_SIZE;
       // If in grid mode compute how many items with exist in each row
@@ -3723,12 +3736,32 @@ function quoteString(str) {
      * Select an item from an event object.
      */
     _selectionHandler: function(e) {
-      if (this.selectionEnabled) {
-        var model = this.modelForElement(e.target);
-        if (model) {
-          this.toggleSelectionForItem(model[this.as]);
-        }
+      var model = this.modelForElement(e.target);
+      if (!model) {
+        return;
       }
+      var modelTabIndex, activeElTabIndex;
+      var target = Polymer.dom(e).path[0];
+      var activeEl = Polymer.dom(this.domHost ? this.domHost.root : document).activeElement;
+      var physicalItem = this._physicalItems[this._getPhysicalIndex(model[this.indexAs])];
+      // Safari does not focus certain form controls via mouse
+      // https://bugs.webkit.org/show_bug.cgi?id=118043
+      if (target.localName === 'input' ||
+          target.localName === 'button' ||
+          target.localName === 'select') {
+        return;
+      }
+      // Set a temporary tabindex
+      modelTabIndex = model.tabIndex;
+      model.tabIndex = SECRET_TABINDEX;
+      activeElTabIndex = activeEl ? activeEl.tabIndex : -1;
+      model.tabIndex = modelTabIndex;
+      // Only select the item if the tap wasn't on a focusable child
+      // or the element bound to `tabIndex`
+      if (activeEl && physicalItem.contains(activeEl) && activeElTabIndex !== SECRET_TABINDEX) {
+        return;
+      }
+      this.toggleSelectionForItem(model[this.as]);
     },
 
     _multiSelectionChanged: function(multiSelection) {
@@ -3801,19 +3834,18 @@ function quoteString(str) {
       }
 
       var physicalItem = this._physicalItems[this._getPhysicalIndex(idx)];
-      var SECRET = ~(Math.random() * 100);
       var model = physicalItem._templateInstance;
       var focusable;
 
       // set a secret tab index
-      model.tabIndex = SECRET;
+      model.tabIndex = SECRET_TABINDEX;
       // check if focusable element is the physical item
-      if (physicalItem.tabIndex === SECRET) {
+      if (physicalItem.tabIndex === SECRET_TABINDEX) {
        focusable = physicalItem;
       }
       // search for the element which tabindex is bound to the secret tab index
       if (!focusable) {
-        focusable = Polymer.dom(physicalItem).querySelector('[tabindex="' + SECRET + '"]');
+        focusable = Polymer.dom(physicalItem).querySelector('[tabindex="' + SECRET_TABINDEX + '"]');
       }
       // restore the tab index
       model.tabIndex = 0;
@@ -5290,16 +5322,7 @@ Polymer({
       },
 
       get target () {
-        var ownerRoot = Polymer.dom(this).getOwnerRoot();
-        var target;
-
-        if (this.parentNode.nodeType == 11) { // DOCUMENT_FRAGMENT_NODE
-          target = ownerRoot.host;
-        } else {
-          target = this.parentNode;
-        }
-
-        return target;
+        return this.keyEventTarget;
       },
 
       keyBindings: {
@@ -5312,14 +5335,20 @@ Polymer({
         // Set up a11yKeysBehavior to listen to key events on the target,
         // so that space and enter activate the ripple even if the target doesn't
         // handle key events. The key handlers deal with `noink` themselves.
-        this.keyEventTarget = this.target;
-        this.listen(this.target, 'up', 'uiUpAction');
-        this.listen(this.target, 'down', 'uiDownAction');
+        if (this.parentNode.nodeType == 11) { // DOCUMENT_FRAGMENT_NODE
+          this.keyEventTarget = Polymer.dom(this).getOwnerRoot().host;
+        } else {
+          this.keyEventTarget = this.parentNode;
+        }
+        var keyEventTarget = /** @type {!EventTarget} */ (this.keyEventTarget);
+        this.listen(keyEventTarget, 'up', 'uiUpAction');
+        this.listen(keyEventTarget, 'down', 'uiDownAction');
       },
 
       detached: function() {
-        this.unlisten(this.target, 'up', 'uiUpAction');
-        this.unlisten(this.target, 'down', 'uiDownAction');
+        this.unlisten(this.keyEventTarget, 'up', 'uiUpAction');
+        this.unlisten(this.keyEventTarget, 'down', 'uiDownAction');
+        this.keyEventTarget = null;
       },
 
       get shouldKeepAnimating () {
@@ -5367,6 +5396,7 @@ Polymer({
         ripple.downAction(event);
 
         if (!this._animating) {
+          this._animating = true;
           this.animate();
         }
       },
@@ -5396,6 +5426,7 @@ Polymer({
           ripple.upAction(event);
         });
 
+        this._animating = true;
         this.animate();
       },
 
@@ -5434,10 +5465,11 @@ Polymer({
       },
 
       animate: function() {
+        if (!this._animating) {
+          return;
+        }
         var index;
         var ripple;
-
-        this._animating = true;
 
         for (index = 0; index < this.ripples.length; ++index) {
           ripple = this.ripples[index];
@@ -5483,6 +5515,15 @@ Polymer({
           this.upAction();
         }
       }
+
+      /**
+      Fired when the animation finishes.
+      This is useful if you want to wait until
+      the ripple animation finishes to perform some action.
+
+      @event transitionend
+      @param {{node: Object}} detail Contains the animated node.
+      */
     });
   })();
 /**
@@ -7665,6 +7706,7 @@ Use `noOverlap` to position the element around another element without overlappi
 
     /**
      * Memoize information needed to position and size the target element.
+     * @suppress {deprecated}
      */
     _discoverInfo: function() {
       if (this._fitInfo) {
@@ -8434,6 +8476,7 @@ Use `noOverlap` to position the element around another element without overlappi
      * Returns the deepest overlay in the path.
      * @param {Array<Element>=} path
      * @return {Element|undefined}
+     * @suppress {missingProperties}
      * @private
      */
     _overlayInPath: function(path) {
@@ -8491,12 +8534,11 @@ Use `noOverlap` to position the element around another element without overlappi
      * @param {!Element} overlay1
      * @param {!Element} overlay2
      * @return {boolean}
+     * @suppress {missingProperties}
      * @private
      */
     _shouldBeBehindOverlay: function(overlay1, overlay2) {
-      var o1 = /** @type {?} */ (overlay1);
-      var o2 = /** @type {?} */ (overlay2);
-      return !o1.alwaysOnTop && o2.alwaysOnTop;
+      return !overlay1.alwaysOnTop && overlay2.alwaysOnTop;
     }
   };
 
