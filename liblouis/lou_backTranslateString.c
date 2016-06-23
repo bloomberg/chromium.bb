@@ -320,7 +320,7 @@ backTranslateWithTracing (const char *tableList, const widechar * inbuf,
   return goodTrans;
 }
 
-static char currentTypeform = plain_text;
+static formtype currentTypeform = plain_text;
 static int nextUpper = 0;
 static int allUpper = 0;
 static int allUpperPhrase = 0;

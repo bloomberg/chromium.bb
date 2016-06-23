@@ -46,14 +46,6 @@ tests:
   - ',,.p.b.f'
 - - DipTP
   - ',dip,,tp'
-- - NEW YORK
-  - ',,new ,,york'
-  - typeform:
-      word_reset: "   +    "
-- - TVOntario
-  - ',,tv,ont>io'
-  - typeform:
-      word_reset: "  +      "
 - - '"GO quickly and TAKE CARE!"'
   - 8,,g qkly & ,,take ,,c>e60
 - - ANGLO-SAXON
@@ -105,16 +97,6 @@ tests:
 - - SWIFT & CO.
   - ',,swift `& ,,co4'
   - xfail: true
-- - FREEform
-  - ',,free~1=m'
-  - typeform:
-      word_reset: "    +   "
-      bold:       "    ++++"
-- - EXAMINE
-  - ',e.2,,xam9e'
-  - typeform:
-      word_reset: " +     "
-      italic:     " +     "
 
 # 8.5.3 page 83
 
@@ -213,29 +195,10 @@ tests:
   - ;,,cd ,,cd,'s
 - - 'RV: Recreational Vehicle–Let''s go RVing.'
   - ',,rv3 ,recr1;nal ,vehicle,-,let''s g ,,rv,''+4'
-- - www.BLASTSoundMachine.com
-  - www4,,bla/,s.d,ma*9e4com
-  - typeform:
-      word_reset: "         +               "
 - - www.BLASTsoundmachine.com
   - www4,,bla/,'s.dma*9e4com
 
 # 8.8.2 page 88
-
-- - KBr (potassium bromide)
-  - ',k,br "<potassium bromide">'
-  - typeform:
-      word_reset: " +                     "
-
-- - BSc (Bachelor of Science)
-  - ',b,sc "<,ba*elor ( ,sci;e">'
-  - typeform:
-      word_reset: " +                       "
-
-- - TVOntario
-  - ',,tv,ont>io'
-  - typeform:
-      word_reset: "  +      "
 
 - - preSENT
   - pre,,s5t
@@ -245,11 +208,3 @@ tests:
 
 - - WoooooooOOOOOOOOooooooo (a ghostly sound)
   - ',wooooooo,,oooooooo,''ooooooo "<a <o/ly s.d">'
-
-- - MHz
-  - ',m,hz'
-  - typeform: {word_reset: " + "}
-
-- - ATandT
-  - ',a,t&,t'
-  - typeform: {word_reset: " +    "}

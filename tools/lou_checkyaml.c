@@ -308,9 +308,6 @@ read_typeforms (yaml_parser_t *parser, int len) {
     if (!strcmp(event.data.scalar.value, "computer_braille")) {
       yaml_event_delete(&event);
       read_typeform_string(parser, typeform, computer_braille, len);
-    } else if (!strcmp(event.data.scalar.value, "word_reset")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, word_reset, len);
     } else {
       int i;
       typeforms kind = plain_text;

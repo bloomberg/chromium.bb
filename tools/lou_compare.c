@@ -344,12 +344,6 @@ int main(int argn, char **args)
 		else
 			return 1;
 		
-		if(!strncmp("~word_reset", inputLine, 11))
-		if(inputEmphasis(word_reset, resetLine, resetText, &resetLen))
-			continue;
-		else
-			return 1;
-		
 		if(!strncmp("~trans_note_1", inputLine, 13))
 		if(inputEmphasis(emph_6, tnote1Line, tnote1Text, &tnote1Len))
 			continue;
@@ -471,8 +465,6 @@ int main(int argn, char **args)
 				outputEmphasis(outFile, 0, "~italic", italicText, italicLen);
 			if(scriptLen)
 				outputEmphasis(outFile, 0, "~script", scriptText, scriptLen);
-			if(resetLen)
-				outputEmphasis(outFile, 0, "~word_reset", resetText, resetLen);
 			if(tnoteLen)
 				outputEmphasis(outFile, 0, "~trans_note", tnoteText, tnoteLen);
 				

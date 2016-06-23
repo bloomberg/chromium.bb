@@ -3261,9 +3261,6 @@ markEmphases()
 			caps_cnt = 0;
 		}
 			
-		if(typebuf[i] & word_reset)
-			wordBuffer[i] |= WORD_RESET;
-	
 		if(checkAttr(currentInput[i], CTC_UpperCase, 0))
 		{
 			if(caps_start < 0)

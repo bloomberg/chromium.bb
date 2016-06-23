@@ -309,20 +309,19 @@ def compileString(tableList, inString):
 
 #{ Typeforms
 plain_text = 0x0000
-italic = 0x0001
-underline = 0x0002
-bold = 0x0004
-computer_braille = 0x0008
-no_translate = 0x0010
-word_reset = 0x0020
-emph_4 = 0x0040
-emph_5 = 0x0080
-emph_6 = 0x0100
-emph_7 = 0x0200
-emph_8 = 0x0400
-emph_9 = 0x0800
-emph_10 = 0x1000
-no_contract = 0x2000
+italic = 0x0001       # emph_1
+underline = 0x0002    # emph_2
+bold = 0x0004         # emph_3
+emph_4 = 0x0008
+emph_5 = 0x0010
+emph_6 = 0x0020
+emph_7 = 0x0040
+emph_8 = 0x0080
+emph_9 = 0x0100
+emph_10 = 0x0200
+computer_braille = 0x0400
+no_translate = 0x0800
+no_contract = 0x1000
 #}
 
 #{ Translation modes

@@ -35,9 +35,8 @@ extern "C"
 #define UNICODEBITS 16
 #endif
 
-#define widechar WIDECHAR_TYPE
-#define formtype unsigned char
-
+typedef WIDECHAR_TYPE widechar;
+typedef unsigned short formtype;
 
 #ifdef _WIN32
 #define EXPORT_CALL __stdcall
@@ -52,17 +51,16 @@ char * EXPORT_CALL lou_getProgramPath (void);
 	italic = 0x0001,       // emph_1
 	underline = 0x0002,    // emph_2
 	bold = 0x0004,         // emph_3
-	computer_braille = 0x0008,
-	no_translate = 0x0010,
-	word_reset = 0x0020,
-	emph_4 = 0x0040,
-	emph_5 = 0x0080,
-	emph_6 = 0x0100,
-	emph_7 = 0x0200,
-	emph_8 = 0x0400,
-	emph_9 = 0x0800,
-	emph_10 = 0x1000,
-	no_contract = 0x2000,
+	emph_4 = 0x0008,
+	emph_5 = 0x0010,
+	emph_6 = 0x0020,
+	emph_7 = 0x0040,
+	emph_8 = 0x0080,
+	emph_9 = 0x0100,
+	emph_10 = 0x0200,
+	computer_braille = 0x0400,
+	no_translate = 0x0800,
+	no_contract = 0x1000,
 	//  used by syllable   0x4000,
 	//  used by syllable   0x8000,
   } typeforms;
