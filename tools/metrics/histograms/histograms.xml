@@ -75456,6 +75456,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1414" label="CrossOriginWindowPrint"/>
   <int value="1415" label="MediaStreamOnActive"/>
   <int value="1416" label="MediaStreamOnInactive"/>
+  <int value="1417" label="AddEventListenerPassiveTrue"/>
+  <int value="1418" label="AddEventListenerPassiveFalse"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

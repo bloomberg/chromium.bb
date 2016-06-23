@@ -193,6 +193,12 @@ void EventTarget::setDefaultAddEventListenerOptions(const AtomicString& eventTyp
         return;
     }
 
+    if (LocalDOMWindow* executingWindow = this->executingWindow()) {
+        if (options.hasPassive()) {
+            UseCounter::count(executingWindow->document(), options.passive() ? UseCounter::AddEventListenerPassiveTrue : UseCounter::AddEventListenerPassiveFalse);
+        }
+    }
+
     if (Settings* settings = windowSettings(executingWindow())) {
         switch (settings->passiveListenerDefault()) {
         case PassiveListenerDefault::False:

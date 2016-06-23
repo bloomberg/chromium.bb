@@ -1221,6 +1221,8 @@ public:
         CrossOriginWindowPrint = 1414,
         MediaStreamOnActive = 1415,
         MediaStreamOnInactive = 1416,
+        AddEventListenerPassiveTrue = 1417,
+        AddEventListenerPassiveFalse = 1418,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
