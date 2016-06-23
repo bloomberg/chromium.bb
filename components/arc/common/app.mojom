@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 10
+// Next MinVersion: 11
 
 module arc.mojom;
 
@@ -33,6 +33,16 @@ struct ShortcutInfo {
   string package_name;
   string icon_resource_id;
   string intent_uri;
+};
+
+// Page for ShowPackageInfoOnPage.
+[Extensible]
+enum ShowPackageInfoPage {
+  // The main package info page.
+  MAIN = 0,
+
+  // Page for managing links assigned to the app.
+  MANAGE_LINKS = 1,
 };
 
 // Next method ID: 12
@@ -88,7 +98,8 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 15
+// Next method ID: 16
+// Deprecated method ID: 9
 interface AppInstance {
   Init@0(AppHost host_ptr);
 
@@ -144,8 +155,14 @@ interface AppInstance {
   [MinVersion=4] SetTaskActive@7(int32 task_id);
 
   // Sends a request to ARC to show package info for given package.
-  [MinVersion=5] ShowPackageInfo@9(string package_name,
-                                   ScreenRect dimension_on_screen);
+  [MinVersion=5] ShowPackageInfoDeprecated@9(string package_name,
+                                             ScreenRect dimension_on_screen);
+
+  // Sends a request to ARC to show package info for given package on the
+  // specified page.
+  [MinVersion=10] ShowPackageInfoOnPage@15(string package_name,
+                                           ShowPackageInfoPage page,
+                                           ScreenRect dimension_on_screen);
 
   // Sets notification setting for the package.
   [MinVersion=6] SetNotificationsEnabled@10(string package_name, bool enabled);

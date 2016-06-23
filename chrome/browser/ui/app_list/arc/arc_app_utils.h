@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "components/arc/common/app.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -57,7 +58,12 @@ void UninstallPackage(const std::string& package_name);
 void RemoveCachedIcon(const std::string& icon_resource_id);
 
 // Show package info for ARC package.
+// Deprecated. Use ShowPackageInfoOnPage.
 bool ShowPackageInfo(const std::string& package_name);
+
+// Show package info for ARC package at the specified page.
+bool ShowPackageInfoOnPage(const std::string& package_name,
+                           mojom::ShowPackageInfoPage page);
 
 }  // namespace arc
 

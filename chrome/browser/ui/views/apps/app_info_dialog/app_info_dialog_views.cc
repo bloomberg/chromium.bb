@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -31,6 +32,11 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/arc_app_info_links_panel.h"
+#endif
 
 namespace {
 
@@ -152,6 +158,13 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
                            views::kUnrelatedControlVerticalSpacing));
   dialog_body_contents->AddChildView(new AppInfoSummaryPanel(profile, app));
   dialog_body_contents->AddChildView(new AppInfoPermissionsPanel(profile, app));
+
+#if defined(OS_CHROMEOS)
+  // When ARC is enabled, show the "Manage supported links" link for Chrome.
+  if (arc::ArcAuthService::Get()->IsArcEnabled() &&
+      app->id() == extension_misc::kChromeAppId)
+    dialog_body_contents->AddChildView(new ArcAppInfoLinksPanel(profile, app));
+#endif
 
   // Clip the scrollable view so that the scrollbar appears. As long as this
   // is larger than the height of the dialog, it will be resized to the dialog's

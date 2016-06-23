@@ -27,6 +27,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
 #endif
 
@@ -139,6 +140,11 @@ class AppListControllerAppInfoDialogBrowserTest : public ExtensionBrowserTest {
  protected:
   // content::BrowserTestBase:
   void SetUpOnMainThread() override {
+#if defined(OS_CHROMEOS)
+    arc::ArcAuthService::DisableUIForTesting();
+    arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(
+        browser()->profile());
+#endif
     // Install a test extension.
     base::FilePath test_extension_path;
     EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));

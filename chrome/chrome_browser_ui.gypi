@@ -2197,6 +2197,11 @@
       'browser/ui/views/website_settings/website_settings_popup_view.cc',
       'browser/ui/views/website_settings/website_settings_popup_view.h',
     ],
+    # Views files for ChromeOS.
+    'chrome_browser_ui_views_chromeos_sources': [
+      'browser/ui/views/apps/app_info_dialog/arc_app_info_links_panel.cc',
+      'browser/ui/views/apps/app_info_dialog/arc_app_info_links_panel.h',
+    ],
     # Views files for everywhere but ChromeOS.
     'chrome_browser_ui_views_non_chromeos_sources': [
       'browser/ui/external_protocol_dialog_delegate.cc',
@@ -3045,6 +3050,9 @@
           'conditions': [
             ['chromeos == 0 and (OS!="mac" or mac_views_browser==1)', {
               'sources': [ '<@(chrome_browser_ui_views_non_chromeos_sources)' ],
+            }],
+            ['chromeos == 1', {
+              'sources': [ '<@(chrome_browser_ui_views_chromeos_sources)' ],
             }],
             ['use_ash == 1', {
               'sources': [ '<@(chrome_browser_ui_ash_views_sources)' ],

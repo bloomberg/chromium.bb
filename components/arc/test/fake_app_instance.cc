@@ -211,9 +211,14 @@ void FakeAppInstance::SetTaskActive(int32_t task_id) {
 void FakeAppInstance::CloseTask(int32_t task_id) {
 }
 
-void FakeAppInstance::ShowPackageInfo(const mojo::String& package_name,
-                                      const gfx::Rect& dimension_on_screen) {
-}
+void FakeAppInstance::ShowPackageInfoDeprecated(
+    const mojo::String& package_name,
+    const gfx::Rect& dimension_on_screen) {}
+
+void FakeAppInstance::ShowPackageInfoOnPage(
+    const mojo::String& package_name,
+    mojom::ShowPackageInfoPage page,
+    const gfx::Rect& dimension_on_screen) {}
 
 void FakeAppInstance::SetNotificationsEnabled(const mojo::String& package_name,
                                               bool enabled) {

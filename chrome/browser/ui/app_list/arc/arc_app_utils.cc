@@ -30,9 +30,10 @@ constexpr int kNexus5Height = 690;
 // Minimum required versions.
 constexpr int kMinVersion = 0;
 constexpr int kCanHandleResolutionMinVersion = 1;
-constexpr int kShowPackageInfoMinVersion = 5;
 constexpr int kUninstallPackageMinVersion = 2;
+constexpr int kShowPackageInfoMinVersion = 5;
 constexpr int kRemoveIconMinVersion = 9;
+constexpr int kShowPackageInfoOnPageMinVersion = 11;
 
 // Service name strings.
 constexpr char kCanHandleResolutionStr[] = "get resolution capability";
@@ -274,6 +275,7 @@ void RemoveCachedIcon(const std::string& icon_resource_id) {
   app_instance->RemoveCachedIcon(icon_resource_id);
 }
 
+// Deprecated.
 bool ShowPackageInfo(const std::string& package_name) {
   VLOG(2) << "Showing package info for " << package_name;
 
@@ -282,8 +284,23 @@ bool ShowPackageInfo(const std::string& package_name) {
   if (!app_instance)
     return false;
 
-  app_instance->ShowPackageInfo(
+  app_instance->ShowPackageInfoDeprecated(
       package_name, GetTargetRect(gfx::Size(kNexus7Width, kNexus7Height)));
+  return true;
+}
+
+bool ShowPackageInfoOnPage(const std::string& package_name,
+                           mojom::ShowPackageInfoPage page) {
+  VLOG(2) << "Showing package info for " << package_name;
+
+  arc::mojom::AppInstance* app_instance =
+      GetAppInstance(kShowPackageInfoOnPageMinVersion, kShowPackageInfoStr);
+  if (!app_instance)
+    return false;
+
+  app_instance->ShowPackageInfoOnPage(
+      package_name, page,
+      GetTargetRect(gfx::Size(kNexus7Width, kNexus7Height)));
   return true;
 }
 

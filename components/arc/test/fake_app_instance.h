@@ -108,8 +108,11 @@ class FakeAppInstance : public mojom::AppInstance {
                    const GetTaskInfoCallback& callback) override;
   void SetTaskActive(int32_t task_id) override;
   void CloseTask(int32_t task_id) override;
-  void ShowPackageInfo(const mojo::String& package_name,
-                       const gfx::Rect& dimension_on_screen) override;
+  void ShowPackageInfoDeprecated(const mojo::String& package_name,
+                                 const gfx::Rect& dimension_on_screen) override;
+  void ShowPackageInfoOnPage(const mojo::String& package_name,
+                             mojom::ShowPackageInfoPage page,
+                             const gfx::Rect& dimension_on_screen) override;
   void SetNotificationsEnabled(const mojo::String& package_name,
                                bool enabled) override;
   void InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) override;
