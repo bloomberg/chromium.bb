@@ -51,7 +51,6 @@ def SmokeTestGenerator(benchmark):
         # pylint: disable=super-on-old-class
         story_set = super(SinglePageBenchmark, self).CreateStorySet(options)
         for story in story_set.stories:
-          story.skip_waits = True
           story_set.stories = [story]
           break
         return story_set
