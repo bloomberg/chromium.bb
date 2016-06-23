@@ -164,6 +164,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AboutFlags_enable-experimental-web-platform-features">
+  <owner>rbyers@chromium.org</owner>
+  <description>
+    User flag to enable web APIs marked as status=experimental
+    RuntimeEnabledFeatures.
+  </description>
+</action>
+
 <action name="AboutFlags_enable-nacl">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
