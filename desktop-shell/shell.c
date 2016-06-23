@@ -2804,7 +2804,7 @@ static void
 shell_fade(struct desktop_shell *shell, enum fade_type type);
 
 static void
-configure_static_view(struct weston_view *ev, struct weston_layer *layer)
+configure_static_view(struct weston_view *ev, struct weston_layer *layer, int x, int y)
 {
 	struct weston_view *v, *next;
 
@@ -2816,7 +2816,7 @@ configure_static_view(struct weston_view *ev, struct weston_layer *layer)
 		}
 	}
 
-	weston_view_set_position(ev, ev->output->x, ev->output->y);
+	weston_view_set_position(ev, ev->output->x + x, ev->output->y + y);
 	ev->surface->is_mapped = true;
 	ev->is_mapped = true;
 
@@ -2856,7 +2856,7 @@ background_committed(struct weston_surface *es, int32_t sx, int32_t sy)
 
 	view = container_of(es->views.next, struct weston_view, surface_link);
 
-	configure_static_view(view, &shell->background_layer);
+	configure_static_view(view, &shell->background_layer, 0, 0);
 }
 
 static void
@@ -2921,10 +2921,26 @@ panel_committed(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 	struct desktop_shell *shell = es->committed_private;
 	struct weston_view *view;
+	int width, height;
+	int x = 0, y = 0;
 
 	view = container_of(es->views.next, struct weston_view, surface_link);
 
-	configure_static_view(view, &shell->panel_layer);
+	get_panel_size(shell, view, &width, &height);
+	switch (shell->panel_position) {
+	case WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP:
+		break;
+	case WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM:
+		y = view->output->height - height;
+		break;
+	case WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT:
+		break;
+	case WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT:
+		x = view->output->width - width;
+		break;
+	}
+
+	configure_static_view(view, &shell->panel_layer, x, y);
 }
 
 static void
