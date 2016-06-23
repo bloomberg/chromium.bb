@@ -42,7 +42,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     virtual void OnDataAvailable() = 0;
 
     // Called when the stream is closed by the peer.
-    virtual void OnClose(QuicErrorCode error) = 0;
+    virtual void OnClose() = 0;
 
     // Called when the stream is closed because of an error.
     virtual void OnError(int error) = 0;

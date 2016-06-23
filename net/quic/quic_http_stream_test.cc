@@ -835,7 +835,10 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
   EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
 
   EXPECT_TRUE(QuicHttpStreamPeer::WasHandshakeConfirmed(stream_.get()));
-  stream_->OnClose(QUIC_PEER_GOING_AWAY);
+
+  QuicConnectionCloseFrame frame;
+  frame.error_code = QUIC_PEER_GOING_AWAY;
+  session_->connection()->OnConnectionCloseFrame(frame);
 
   NetErrorDetails details;
   EXPECT_EQ(QUIC_NO_ERROR, details.quic_connection_error);
@@ -871,7 +874,9 @@ TEST_P(QuicHttpStreamTest, DoNotLogGranularQuicErrorIfHandshakeNotConfirmed) {
   QuicHttpStreamPeer::SetHandshakeConfirmed(stream_.get(), false);
 
   EXPECT_FALSE(QuicHttpStreamPeer::WasHandshakeConfirmed(stream_.get()));
-  stream_->OnClose(QUIC_PEER_GOING_AWAY);
+  QuicConnectionCloseFrame frame;
+  frame.error_code = QUIC_PEER_GOING_AWAY;
+  session_->connection()->OnConnectionCloseFrame(frame);
 
   NetErrorDetails details;
   EXPECT_EQ(QUIC_NO_ERROR, details.quic_connection_error);

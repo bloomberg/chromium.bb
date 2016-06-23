@@ -260,10 +260,10 @@ void BidirectionalStreamQuicImpl::OnDataAvailable() {
     delegate_->OnDataRead(rv);
 }
 
-void BidirectionalStreamQuicImpl::OnClose(QuicErrorCode error) {
+void BidirectionalStreamQuicImpl::OnClose() {
   DCHECK(stream_);
 
-  if (error == QUIC_NO_ERROR &&
+  if (stream_->connection_error() == QUIC_NO_ERROR &&
       stream_->stream_error() == QUIC_STREAM_NO_ERROR) {
     ResetStream();
     return;

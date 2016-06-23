@@ -31,7 +31,7 @@ QuicChromiumClientStream::QuicChromiumClientStream(
 
 QuicChromiumClientStream::~QuicChromiumClientStream() {
   if (delegate_)
-    delegate_->OnClose(connection_error());
+    delegate_->OnClose();
 }
 
 void QuicChromiumClientStream::OnStreamHeadersComplete(bool fin,
@@ -120,7 +120,7 @@ void QuicChromiumClientStream::OnDataAvailable() {
 
 void QuicChromiumClientStream::OnClose() {
   if (delegate_) {
-    delegate_->OnClose(connection_error());
+    delegate_->OnClose();
     delegate_ = nullptr;
     delegate_tasks_.clear();
   }

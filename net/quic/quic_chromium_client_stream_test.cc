@@ -43,7 +43,7 @@ class MockDelegate : public QuicChromiumClientStream::Delegate {
                void(const SpdyHeaderBlock& headers, size_t frame_len));
   MOCK_METHOD2(OnDataReceived, int(const char*, int));
   MOCK_METHOD0(OnDataAvailable, void());
-  MOCK_METHOD1(OnClose, void(QuicErrorCode));
+  MOCK_METHOD0(OnClose, void());
   MOCK_METHOD1(OnError, void(int));
   MOCK_METHOD0(HasSendHeadersComplete, bool());
 
@@ -223,12 +223,12 @@ TEST_P(QuicChromiumClientStreamTest, OnFinRead) {
   EXPECT_TRUE(stream_->decompressed_headers().empty());
 
   QuicStreamFrame frame2(kTestStreamId, true, offset, StringPiece());
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
   stream_->OnStreamFrame(frame2);
 }
 
 TEST_P(QuicChromiumClientStreamTest, OnDataAvailableBeforeHeaders) {
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 
   EXPECT_CALL(delegate_, OnDataAvailable()).Times(0);
   stream_->OnDataAvailable();
@@ -257,7 +257,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
                         StringPiece(data, arraysize(data) - 1))));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 }
 
 TEST_P(QuicChromiumClientStreamTest, ProcessHeadersWithError) {
@@ -270,7 +270,7 @@ TEST_P(QuicChromiumClientStreamTest, ProcessHeadersWithError) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 }
 
 TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
@@ -294,7 +294,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
           base::Unretained(stream_), QUIC_STREAM_CANCELLED)));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 }
 
 TEST_P(QuicChromiumClientStreamTest, OnError) {
@@ -347,7 +347,7 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, actual_trailers);
   base::RunLoop().RunUntilIdle();
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 }
 
 // Tests that trailers are marked as consumed only before delegate is to be
@@ -426,11 +426,11 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
   EXPECT_EQ(trailers, actual_trailers);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 }
 
 TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 
   const char kData1[] = "hello world";
   const size_t kDataLen = arraysize(kData1);
@@ -445,7 +445,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
 
 TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
   EXPECT_CALL(delegate_, HasSendHeadersComplete()).Times(AnyNumber());
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 
   const char kData1[] = "hello world";
   const size_t kDataLen = arraysize(kData1);
@@ -468,7 +468,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
 }
 
 TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 
   scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer("hello world!"));
   scoped_refptr<StringIOBuffer> buf2(
@@ -486,7 +486,7 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
 
 TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
   EXPECT_CALL(delegate_, HasSendHeadersComplete()).Times(AnyNumber());
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+  EXPECT_CALL(delegate_, OnClose());
 
   scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer("hello world!"));
   scoped_refptr<StringIOBuffer> buf2(
@@ -533,7 +533,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersBeforeDelegate) {
   base::RunLoop().RunUntilIdle();
 
   // Times(2) because OnClose will be called for stream and stream_.
-  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR)).Times(2);
+  EXPECT_CALL(delegate_, OnClose()).Times(2);
 }
 
 }  // namespace

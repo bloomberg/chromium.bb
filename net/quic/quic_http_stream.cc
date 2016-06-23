@@ -496,8 +496,8 @@ void QuicHttpStream::OnDataAvailable() {
   DoCallback(rv);
 }
 
-void QuicHttpStream::OnClose(QuicErrorCode error) {
-  if (error != QUIC_NO_ERROR ||
+void QuicHttpStream::OnClose() {
+  if (stream_->connection_error() != QUIC_NO_ERROR ||
       stream_->stream_error() != QUIC_STREAM_NO_ERROR) {
     response_status_ = was_handshake_confirmed_ ? ERR_QUIC_PROTOCOL_ERROR
                                                 : ERR_QUIC_HANDSHAKE_FAILED;
@@ -505,9 +505,9 @@ void QuicHttpStream::OnClose(QuicErrorCode error) {
     response_status_ = ERR_ABORTED;
   }
 
+  quic_connection_error_ = stream_->connection_error();
   ResetStream();
   if (!callback_.is_null()) {
-    quic_connection_error_ = error;
     DoCallback(response_status_);
   }
 }

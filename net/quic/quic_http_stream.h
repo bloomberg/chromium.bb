@@ -75,7 +75,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void OnHeadersAvailable(const SpdyHeaderBlock& headers,
                           size_t frame_len) override;
   void OnDataAvailable() override;
-  void OnClose(QuicErrorCode error) override;
+  void OnClose() override;
   void OnError(int error) override;
   bool HasSendHeadersComplete() override;
 
