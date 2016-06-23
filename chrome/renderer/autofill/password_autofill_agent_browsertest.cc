@@ -942,7 +942,7 @@ TEST_F(PasswordAutofillAgentTest,
   // set directly.
   SimulateElementClick(kUsernameName);
 
-  // Simulate the user entering the first letter of her username and selecting
+  // Simulate the user entering the first letter of their username and selecting
   // the matching autofill from the dropdown.
   SimulateUsernameChange("a");
   SimulateSuggestionChoice(username_element_);
@@ -1454,7 +1454,7 @@ TEST_F(PasswordAutofillAgentTest,
   // the ones which can be filled as a result of TextFieldDidEndEditing.
   fill_data_.wait_for_username = true;
   SimulateOnFillPasswordForm(fill_data_);
-  // Simulate that the user typed her name to make the autofill work.
+  // Simulate that the user typed their name to make the autofill work.
   SimulateUsernameChange(kAliceUsername);
   SimulateDidEndEditing(GetMainFrame(), username_element_);
   const std::string old_username(username_element_.value().utf8());
