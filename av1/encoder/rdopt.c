@@ -37,6 +37,7 @@
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
+#include "av1/encoder/hybrid_fwd_txfm.h"
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/quantize.h"
 #include "av1/encoder/ratectrl.h"

@@ -112,7 +112,8 @@ typedef enum {
   V_FLIPADST = 14,
   H_FLIPADST = 15,
 #endif  // CONFIG_EXT_TX
-  TX_TYPES,
+  // TODO(sarahparker) this is temporary until EXT_TX is fully implemented
+  TX_TYPES = 4,
 } TX_TYPE;
 
 #define EXT_TX_SIZES 3  // number of sizes that use extended transforms
