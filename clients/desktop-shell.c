@@ -40,6 +40,7 @@
 #include <libgen.h>
 #include <ctype.h>
 #include <time.h>
+#include <assert.h>
 
 #include <wayland-client.h>
 #include "window.h"
@@ -54,6 +55,12 @@
 #define DEFAULT_CLOCK_FORMAT CLOCK_FORMAT_MINUTES
 
 extern char **environ; /* defined by libc */
+
+enum clock_format {
+	CLOCK_FORMAT_MINUTES,
+	CLOCK_FORMAT_SECONDS,
+	CLOCK_FORMAT_NONE
+};
 
 struct desktop {
 	struct display *display;
@@ -90,7 +97,7 @@ struct panel {
 	struct wl_list launcher_list;
 	struct panel_clock *clock;
 	int painted;
-	int clock_format;
+	enum clock_format clock_format;
 	uint32_t color;
 };
 
@@ -417,12 +424,6 @@ panel_destroy_clock(struct panel_clock *clock)
 	free(clock);
 }
 
-enum {
-	CLOCK_FORMAT_MINUTES,
-	CLOCK_FORMAT_SECONDS,
-	CLOCK_FORMAT_NONE
-};
-
 static void
 panel_add_clock(struct panel *panel)
 {
@@ -449,6 +450,8 @@ panel_add_clock(struct panel *panel)
 		clock->format_string = "%a %b %d, %I:%M:%S %p";
 		clock->refresh_timer = 1;
 		break;
+	case CLOCK_FORMAT_NONE:
+		assert(!"not reached");
 	}
 
 	clock->clock_task.run = clock_func;
