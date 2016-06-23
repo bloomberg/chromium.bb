@@ -212,7 +212,6 @@ DEFINE_TRACE(FrameView)
 void FrameView::reset()
 {
     m_hasPendingLayout = false;
-    m_doFullPaintInvalidation = false;
     m_layoutSchedulingEnabled = true;
     m_inSynchronousPostLayout = false;
     m_layoutCount = 0;
@@ -1008,7 +1007,6 @@ void FrameView::layout()
             if (m_firstLayout) {
                 setScrollbarsSuppressed(true);
 
-                m_doFullPaintInvalidation = true;
                 m_firstLayout = false;
                 m_lastViewportSize = layoutSize(IncludeScrollbars);
                 m_lastZoomFactor = layoutViewItem().style()->zoom();
@@ -1040,10 +1038,6 @@ void FrameView::layout()
                 else if (rootLayoutObject && rootLayoutObject->stretchesToViewport())
                     rootLayoutObject->setChildNeedsLayout();
             }
-
-            // We need to set m_doFullPaintInvalidation before triggering layout as LayoutObject::checkForPaintInvalidation
-            // checks the boolean to disable local paint invalidations.
-            m_doFullPaintInvalidation |= layoutViewItem().shouldDoFullPaintInvalidationForNextLayout();
         }
 
         TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"), "LayoutTree",
@@ -1131,8 +1125,6 @@ void FrameView::invalidatePaintIfNeeded(const PaintInvalidationState& paintInval
 
     if (m_frame->selection().isCaretBoundsDirty())
         m_frame->selection().invalidateCaretRect();
-
-    m_doFullPaintInvalidation = false;
 
     // Temporary callback for crbug.com/487345,402044
     // TODO(ojan): Make this more general to be used by PositionObserver

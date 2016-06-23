@@ -113,11 +113,6 @@ public:
         toView()->invalidatePaintForViewAndCompositedLayers();
     }
 
-    bool shouldDoFullPaintInvalidationForNextLayout() const
-    {
-        return toView()->shouldDoFullPaintInvalidationForNextLayout();
-    }
-
     void sendMediaPositionChangeNotifications(const IntRect& visibleRect)
     {
         toView()->sendMediaPositionChangeNotifications(visibleRect);

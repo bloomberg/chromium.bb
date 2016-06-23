@@ -130,9 +130,6 @@ public:
     LayoutRect viewRect() const override;
     LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
 
-    bool shouldDoFullPaintInvalidationForNextLayout() const;
-    bool doingFullPaintInvalidation() const;
-
     LayoutState* layoutState() const { return m_layoutState; }
 
     void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
@@ -182,7 +179,6 @@ public:
 
     void pushLayoutState(LayoutState& layoutState) { m_layoutState = &layoutState; }
     void popLayoutState() { ASSERT(m_layoutState); m_layoutState = m_layoutState->next(); }
-    void invalidateTreeIfNeeded(const PaintInvalidationState&) final;
 
     LayoutRect visualOverflowRect() const override;
     LayoutRect localOverflowRectForPaintInvalidation() const override;
@@ -220,6 +216,8 @@ private:
 #if ENABLE(ASSERT)
     void checkLayoutState();
 #endif
+
+    void setShouldDoFullPaintInvalidationOnResizeIfNeeded();
 
     void updateFromStyle() override;
     bool allowsOverflowClip() const override;

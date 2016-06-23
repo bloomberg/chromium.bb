@@ -1556,7 +1556,7 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidati
 
     PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState);
 
-    if (!view()->doingFullPaintInvalidation() && !isFullPaintInvalidationReason(reason))
+    if (!isFullPaintInvalidationReason(reason))
         invalidatePaintForOverflowIfNeeded();
 
     if (PaintLayerScrollableArea* area = getScrollableArea())
@@ -4670,7 +4670,46 @@ void LayoutBox::logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& newLogi
     setMarginRight(oldMarginRight);
 }
 
-inline bool LayoutBox::mustInvalidateFillLayersPaintOnWidthChange(const FillLayer& layer) const
+bool LayoutBox::mustInvalidateFillLayersPaintOnHeightChange(const FillLayer& layer) const
+{
+    // Nobody will use multiple layers without wanting fancy positioning.
+    if (layer.next())
+        return true;
+
+    // Make sure we have a valid image.
+    StyleImage* img = layer.image();
+    if (!img || !img->canRender())
+        return false;
+
+    if (layer.repeatY() != RepeatFill && layer.repeatY() != NoRepeatFill)
+        return true;
+
+    // TODO(alancutter): Make this work correctly for calc lengths.
+    if (layer.yPosition().hasPercent() && !layer.yPosition().isZero())
+        return true;
+
+    if (layer.backgroundYOrigin() != TopEdge)
+        return true;
+
+    EFillSizeType sizeType = layer.sizeType();
+
+    if (sizeType == Contain || sizeType == Cover)
+        return true;
+
+    if (sizeType == SizeLength) {
+        // TODO(alancutter): Make this work correctly for calc lengths.
+        if (layer.sizeLength().height().hasPercent() && !layer.sizeLength().height().isZero())
+            return true;
+        if (img->isGeneratedImage() && layer.sizeLength().height().isAuto())
+            return true;
+    } else if (img->usesImageContainerSize()) {
+        return true;
+    }
+
+    return false;
+}
+
+bool LayoutBox::mustInvalidateFillLayersPaintOnWidthChange(const FillLayer& layer) const
 {
     // Nobody will use multiple layers without wanting fancy positioning.
     if (layer.next())

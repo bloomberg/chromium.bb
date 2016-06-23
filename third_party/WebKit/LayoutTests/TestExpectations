@@ -42,12 +42,30 @@ crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 
-# TODO(wangxianzhu): Restore these after rebaseline.
-# crbug.com/600008 [ Win ] fast/repaint/window-resize-centered-inline-under-fixed-pos.html [ Failure Pass ]
-# crbug.com/600008 [ Win ] fast/repaint/window-resize-vertical-writing-mode.html [ Failure Pass ]
-crbug.com/600008 fast/repaint/window-resize-background-image-fixed-centered.html [ Failure Pass ]
-crbug.com/600008 fast/repaint/window-resize-background-image-fixed-centered-composited.html [ Failure Pass ]
-# crbug.com/600008 [ Mac Win ] fast/repaint/window-resize-background-image-non-fixed.html [ Failure Pass ]
+crbug.com/600008 fast/repaint/scrolled-iframe-scrollbar-change.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/shift-relative-positioned-container-with-image-addition.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-percent-width-height.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-percent-html.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-background-image-generated.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-centered-inline-under-fixed-pos.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-no-layout-change1.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-positioned-bottom.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-background-image-fixed-centered-composited.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-media-query.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-viewport-percent.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-positioned-percent-top.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-no-layout-change2.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-background-image-non-fixed.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-vertical-writing-mode.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-background-image-fixed-centered.html [ NeedsRebaseline ]
+crbug.com/600008 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
+crbug.com/600008 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ NeedsRebaseline ]
+crbug.com/600008 fast/dom/shadow/focus-controller-recursion-crash.html [ NeedsManualRebaseline ]
+crbug.com/600008 fast/repaint/resize-scrollable-iframe.html [ NeedsRebaseline ]
+crbug.com/600008 compositing/squashing/iframe-inside-squashed-layer.html [ NeedsRebaseline ]
+crbug.com/600008 svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
 
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
@@ -1185,7 +1203,8 @@ crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Fail
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
 # Slow expected on debug builds
-crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Skip ]
+# TODO(wangxianzhu): Restore this after rebaseline
+# crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Skip ]
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 
 # Mac10.10-specific failures that still need triaging.
@@ -1364,8 +1383,6 @@ crbug.com/592185 fast/repaint/fixed-right-in-page-scale.html [ Failure Pass ]
 
 crbug.com/594595 [ Linux ] http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Timeout Pass ]
 
-crbug.com/619630 fast/repaint/window-resize-centered-inline-under-fixed-pos.html [ NeedsManualRebaseline ]
-crbug.com/619630 fast/repaint/window-resize-vertical-writing-mode.html [ NeedsManualRebaseline ]
 crbug.com/619630 svg/text/text-viewbox-rescale.html [ NeedsManualRebaseline ]
 
 crbug.com/453002 [ Win ] fast/text/international/text-combine-image-test.html [ Failure Pass ]
@@ -1452,7 +1469,6 @@ crbug.com/609067 [ Mac ] bluetooth/writeValue/write-updates-value.html [ Skip ]
 crbug.com/617799 paint/invalidation/animated-gif.html [ NeedsManualRebaseline ]
 crbug.com/617799 paint/invalidation/animated-gif-background.html [ NeedsManualRebaseline ]
 crbug.com/617799 paint/invalidation/animated-gif-background-offscreen.html [ NeedsManualRebaseline ]
-crbug.com/617799 fast/repaint/window-resize-background-image-non-fixed.html [ NeedsManualRebaseline ]
 
 crbug.com/487344 compositing/video/video-controls-layer-creation.html [ Failure ]
 crbug.com/487344 fast/hidpi/video-controls-in-hidpi.html [ Failure ]

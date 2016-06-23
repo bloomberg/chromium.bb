@@ -960,6 +960,9 @@ public:
 
     bool hitTestClippedOutByRoundedBorder(const HitTestLocation& locationInContainer, const LayoutPoint& borderBoxLocation) const;
 
+    bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&) const;
+    bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
+
 protected:
     void willBeDestroyed() override;
 
@@ -1014,7 +1017,6 @@ protected:
 private:
     bool mustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
     bool mustInvalidateBackgroundOrBorderPaintOnWidthChange() const;
-    inline bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&) const;
 
     void invalidatePaintRectClippedByOldAndNewBounds(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 

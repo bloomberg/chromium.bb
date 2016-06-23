@@ -196,50 +196,26 @@ void LayoutView::checkLayoutState()
 }
 #endif
 
-bool LayoutView::shouldDoFullPaintInvalidationForNextLayout() const
+void LayoutView::setShouldDoFullPaintInvalidationOnResizeIfNeeded()
 {
-    // It's hard to predict here which of full paint invalidation or per-descendant paint invalidation costs less.
-    // For vertical writing mode or width change it's more likely that per-descendant paint invalidation
-    // eventually turns out to be full paint invalidation but with the cost to handle more layout states
-    // and discrete paint invalidation rects, so marking full paint invalidation here is more likely to cost less.
-    // Otherwise, per-descendant paint invalidation is more likely to avoid unnecessary full paint invalidation.
-
-    if (shouldUsePrintingLayout())
-        return true;
-
-    if (!style()->isHorizontalWritingMode())
-        return true;
-
-    // The width/height checks below assume horizontal writing mode.
-    ASSERT(style()->isHorizontalWritingMode());
-
-    if (size().width() != viewLogicalWidthForBoxSizing())
-        return true;
-
-    if (size().height() != viewLogicalHeightForBoxSizing()) {
-        // When background-attachment is 'fixed', we treat the viewport (instead of the 'root'
-        // i.e. html or body) as the background positioning area, and we should full paint invalidation
-        // viewport resize if the background image is not composited and needs full paint invalidation on
-        // background positioning area resize.
-        if (!m_compositor || !m_compositor->needsFixedRootBackgroundLayer(layer())) {
-            if (style()->hasFixedBackgroundImage()
-                && mustInvalidateFillLayersPaintOnHeightChange(style()->backgroundLayers()))
-                return true;
-        }
+    // When background-attachment is 'fixed', we treat the viewport (instead of the 'root'
+    // i.e. html or body) as the background positioning area, and we should fully invalidate
+    // on viewport resize if the background image is not composited and needs full paint
+    // invalidation on background positioning area resize.
+    if (style()->hasFixedBackgroundImage() && (!m_compositor || !m_compositor->needsFixedRootBackgroundLayer(layer()))) {
+        IncludeScrollbarsInRect includeScrollbars = document().settings() && document().settings()->rootLayerScrolls() ? IncludeScrollbars : ExcludeScrollbars;
+        if ((offsetWidth() != viewWidth(includeScrollbars) && mustInvalidateFillLayersPaintOnWidthChange(style()->backgroundLayers()))
+            || (offsetHeight() != viewHeight(includeScrollbars) && mustInvalidateFillLayersPaintOnHeightChange(style()->backgroundLayers())))
+            setShouldDoFullPaintInvalidation(PaintInvalidationBoundsChange);
     }
-
-    return false;
-}
-
-bool LayoutView::doingFullPaintInvalidation() const
-{
-    return m_frameView->needsFullPaintInvalidation();
 }
 
 void LayoutView::layout()
 {
     if (!document().paginated())
         setPageLogicalHeight(LayoutUnit());
+
+    setShouldDoFullPaintInvalidationOnResizeIfNeeded();
 
     if (pageLogicalHeight() && shouldUsePrintingLayout()) {
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();
@@ -439,22 +415,6 @@ void LayoutView::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffse
 void LayoutView::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint&) const
 {
     ViewPainter(*this).paintBoxDecorationBackground(paintInfo);
-}
-
-void LayoutView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
-{
-    ASSERT(!needsLayout());
-
-    // We specifically need to issue paint invalidations for the viewRect since other layoutObjects
-    // short-circuit on full-paint invalidation.
-    LayoutRect dirtyRect = viewRect();
-    if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
-        const LayoutBoxModelObject& paintInvalidationContainer = paintInvalidationState.paintInvalidationContainer();
-        paintInvalidationState.mapLocalRectToPaintInvalidationBacking(dirtyRect);
-        invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
-        invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationState, PaintInvalidationFull);
-    }
-    LayoutBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 static void setShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(LayoutObject* object)

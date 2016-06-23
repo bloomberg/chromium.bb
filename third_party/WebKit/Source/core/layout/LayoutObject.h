@@ -689,7 +689,6 @@ public:
     };
     bool hasBoxDecorationBackground() const { return m_bitfields.getBoxDecorationBackgroundState() != NoBoxDecorationBackground; }
     bool boxDecorationBackgroundIsKnownToBeObscured() const;
-    bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
 
     bool needsLayoutBecauseOfChildren() const { return needsLayout() && !selfNeedsLayout() && !needsPositionedMovementLayout() && !needsSimplifiedNormalFlowLayout(); }
