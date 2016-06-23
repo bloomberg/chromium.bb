@@ -402,6 +402,11 @@ public class OfflinePageBridge {
         });
     }
 
+    @VisibleForTesting
+    static void setOfflineBookmarksEnabledForTesting(boolean enabled) {
+        sOfflineBookmarksEnabled = enabled;
+    }
+
     @CalledByNative
     void offlinePageModelLoaded() {
         mIsNativeOfflinePageModelLoaded = true;

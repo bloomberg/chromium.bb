@@ -11,10 +11,12 @@ import android.os.BatteryManager;
 import android.os.Environment;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -40,6 +42,15 @@ public class OfflinePageUtils {
     private static final int SNACKBAR_DURATION = 6 * 1000; // 6 second
 
     private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20); // 10M
+
+    private static OfflinePageUtils sInstance;
+
+    private static OfflinePageUtils getInstance() {
+        if (sInstance == null) {
+            sInstance = new OfflinePageUtils();
+        }
+        return sInstance;
+    }
 
     /**
      * Returns the number of free bytes on the storage.
@@ -79,7 +90,7 @@ public class OfflinePageUtils {
         // Making sure tab is worth keeping.
         if (shouldSkipSavingTabOffline(tab)) return;
 
-        OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(tab.getProfile());
+        OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
         if (offlinePageBridge == null) return;
 
         WebContents webContents = tab.getWebContents();
@@ -263,5 +274,14 @@ public class OfflinePageUtils {
         int percentage = Math.round(100 * level / (float) scale);
         Log.d(TAG, "Battery Percentage is " + percentage);
         return percentage;
+    }
+
+    protected OfflinePageBridge getOfflinePageBridge(Profile profile) {
+        return OfflinePageBridge.getForProfile(profile);
+    }
+
+    @VisibleForTesting
+    static void setInstanceForTesting(OfflinePageUtils instance) {
+        sInstance = instance;
     }
 }
