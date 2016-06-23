@@ -7,3 +7,7 @@ tsepez@chromium.org
 # new sandbox escapes.
 per-file ipc_message_start.h=set noparent
 per-file ipc_message_start.h=file://ipc/SECURITY_OWNERS
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS
+per-file *_param_traits*.*=set noparent
+per-file *_param_traits*.*=file://ipc/SECURITY_OWNERS
