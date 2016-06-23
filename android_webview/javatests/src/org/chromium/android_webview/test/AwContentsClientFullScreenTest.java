@@ -274,8 +274,11 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         VideoSurfaceViewUtils.waitAndAssertContainsOneVideoHoleSurfaceView(this, customView);
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    */
+    @DisabledTest(message = "crbug.com/618749")
     public void testOnShowCustomViewRemovesHolePunchingSurfaceForVideo()
             throws Throwable {
         getInstrumentation().runOnMainSync(new Runnable() {
