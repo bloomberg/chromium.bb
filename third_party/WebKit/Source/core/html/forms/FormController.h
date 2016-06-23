@@ -104,6 +104,9 @@ public:
     DocumentState* formElementsState() const;
     // This should be callled only by Document::setStateForNewFormElements().
     void setStateForNewFormElements(const Vector<String>&);
+    // Returns true if saved state is set to this object and there are entries
+    // which are not consumed yet.
+    bool hasFormStates() const;
     void willDeleteForm(HTMLFormElement*);
     void restoreControlStateFor(HTMLFormControlElementWithState&);
     void restoreControlStateIn(HTMLFormElement&);

@@ -465,6 +465,11 @@ void FormController::setStateForNewFormElements(const Vector<String>& stateVecto
     formStatesFromStateVector(stateVector, m_savedFormStateMap);
 }
 
+bool FormController::hasFormStates() const
+{
+    return !m_savedFormStateMap.isEmpty();
+}
+
 FormControlState FormController::takeStateForFormElement(const HTMLFormControlElementWithState& control)
 {
     if (m_savedFormStateMap.isEmpty())

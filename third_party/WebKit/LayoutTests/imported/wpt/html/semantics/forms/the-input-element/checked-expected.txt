@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL input@checked is immediately reflected to 'checked' IDL attribute assert_true: Examining "checked" IDL attribute value: expected true got false
-Harness: the test ran to completion.
-
