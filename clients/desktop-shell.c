@@ -71,6 +71,7 @@ struct desktop {
 
 	int want_panel;
 	enum weston_desktop_shell_panel_position panel_position;
+	enum clock_format clock_format;
 
 	struct window *grab_window;
 	struct widget *grab_widget;
@@ -559,18 +560,7 @@ panel_create(struct desktop *desktop)
 	widget_set_redraw_handler(panel->widget, panel_redraw_handler);
 	widget_set_resize_handler(panel->widget, panel_resize_handler);
 
-	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
-	weston_config_section_get_string(s, "clock-format", &clock_format_option, "");
-
-	if (strcmp(clock_format_option, "minutes") == 0)
-		panel->clock_format = CLOCK_FORMAT_MINUTES;
-	else if (strcmp(clock_format_option, "seconds") == 0)
-		panel->clock_format = CLOCK_FORMAT_SECONDS;
-	else if (strcmp(clock_format_option, "none") == 0)
-		panel->clock_format = CLOCK_FORMAT_NONE;
-	else
-		panel->clock_format = DEFAULT_CLOCK_FORMAT;
-
+	panel->clock_format = desktop->clock_format;
 	if (panel->clock_format != CLOCK_FORMAT_NONE)
 		panel_add_clock(panel);
 
@@ -1353,6 +1343,23 @@ parse_panel_position(struct desktop *desktop, struct weston_config_section *s)
 	}
 }
 
+static void
+parse_clock_format(struct desktop *desktop, struct weston_config_section *s)
+{
+	char *clock_format;
+
+	weston_config_section_get_string(s, "clock-format", &clock_format, "");
+	if (strcmp(clock_format, "minutes") == 0)
+		desktop->clock_format = CLOCK_FORMAT_MINUTES;
+	else if (strcmp(clock_format, "seconds") == 0)
+		desktop->clock_format = CLOCK_FORMAT_SECONDS;
+	else if (strcmp(clock_format, "none") == 0)
+		desktop->clock_format = CLOCK_FORMAT_NONE;
+	else
+		desktop->clock_format = DEFAULT_CLOCK_FORMAT;
+	free(clock_format);
+}
+
 int main(int argc, char *argv[])
 {
 	struct desktop desktop = { 0 };
@@ -1368,6 +1375,7 @@ int main(int argc, char *argv[])
 	s = weston_config_get_section(desktop.config, "shell", NULL, NULL);
 	weston_config_section_get_bool(s, "locking", &desktop.locking, 1);
 	parse_panel_position(&desktop, s);
+	parse_clock_format(&desktop, s);
 
 	desktop.display = display_create(&argc, argv);
 	if (desktop.display == NULL) {
