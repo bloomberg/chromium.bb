@@ -20,6 +20,7 @@
 #include "chrome/grit/settings_chromium_strings.h"
 #include "chrome/grit/settings_google_chrome_strings.h"
 #include "chrome/grit/settings_strings.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
@@ -675,6 +676,7 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"passwordsAndAutofillPageTitle",
        IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE},
       {"autofill", IDS_SETTINGS_AUTOFILL},
+      {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
       {"addresses", IDS_SETTINGS_AUTOFILL_ADDRESSES_HEADING},
       {"addAddress", IDS_SETTINGS_AUTOFILL_ADD_ADDRESS_BUTTON},
       {"editAddress", IDS_SETTINGS_ADDRESS_EDIT},
@@ -704,12 +706,20 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"editPasswordUsernameLabel", IDS_SETTINGS_PASSWORDS_USERNAME},
       {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
   };
+
   html_source->AddString(
       "managePasswordsLabel",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS,
           base::ASCIIToUTF16(
               password_manager::kPasswordManagerAccountDashboardURL)));
+  html_source->AddString(
+      "manageAddressesUrl",
+      autofill::payments::GetManageAddressesUrl(0).spec());
+  html_source->AddString(
+      "manageCreditCardsUrl",
+      autofill::payments::GetManageInstrumentsUrl(0).spec());
+
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 }

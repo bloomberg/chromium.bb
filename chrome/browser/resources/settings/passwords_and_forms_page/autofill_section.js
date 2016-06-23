@@ -12,6 +12,8 @@
   Polymer({
     is: 'settings-autofill-section',
 
+    behaviors: [I18nBehavior],
+
     properties: {
       /**
        * An array of saved addresses.
@@ -62,6 +64,7 @@
       var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
       var address = /** @type {!chrome.autofillPrivate.AddressEntry} */(
           menuEvent.model.item);
+      this.$.menuRemoveAddress.hidden = !address.metadata.isLocal;
       this.$.addressSharedMenu.toggleMenu(Polymer.dom(e).localTarget, address);
       e.stopPropagation();  // Prevent the tap event from closing the menu.
     },
@@ -81,8 +84,16 @@
      * @private
      */
     onMenuEditAddressTap_: function() {
-      // TODO(hcarmona): implement editing an address.
-      this.$.addressSharedMenu.closeMenu();
+      var menu = this.$.addressSharedMenu;
+      /** @type {chrome.autofillPrivate.AddressEntry} */
+      var address = menu.itemData;
+
+      // TODO(hcarmona): implement editing a local address.
+
+      if (!address.metadata.isLocal)
+        window.open(this.i18n('manageAddressesUrl'));
+
+      menu.closeMenu();
     },
 
     /**
@@ -107,6 +118,7 @@
       var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
       var creditCard = /** @type {!chrome.autofillPrivate.CreditCardEntry} */(
           menuEvent.model.item);
+      this.$.menuRemoveCreditCard.hidden = !creditCard.metadata.isLocal;
       this.$.creditCardSharedMenu.toggleMenu(
           Polymer.dom(e).localTarget, creditCard);
       e.stopPropagation();  // Prevent the tap event from closing the menu.
@@ -134,8 +146,14 @@
      */
     onMenuEditCreditCardTap_: function() {
       var menu = this.$.creditCardSharedMenu;
-      this.$.editCreditCardDialog.open(
-          /** @type {chrome.autofillPrivate.CreditCardEntry} */(menu.itemData));
+      /** @type {chrome.autofillPrivate.CreditCardEntry} */
+      var creditCard = menu.itemData;
+
+      if (creditCard.metadata.isLocal)
+        this.$.editCreditCardDialog.open(creditCard);
+      else
+        window.open(this.i18n('manageCreditCardsUrl'));
+
       menu.closeMenu();
     },
 

@@ -28,6 +28,11 @@
       .expiration-date {
         flex: 1;
       }
+
+      .payments-label {
+        -webkit-margin-start: 16px;
+        color: var(--paper-grey-600);
+      }
     </style>
     <div class="heading">$i18n{addresses}</div>
     <div class="item-list">
@@ -35,7 +40,13 @@
           class="vertical-list list-section">
         <template>
           <div class="list-item two-line">
-            <div id="addressSummary" class="start">[[address_(item)]]</div>
+            <div class="start">
+              <span id="addressSummary">[[address_(item)]]</span>
+              <span class="payments-label"
+                  hidden$="[[item.metadata.isLocal]]">
+                $i18n{googlePayments}
+              </span>
+            </div>
             <paper-icon-button id="addressMenu" icon="cr:more-vert"
                 tabindex$="[[tabIndex]]" alt="$i18n{overflowMenu}"
                 on-tap="onAddressMenuTap_">
@@ -63,8 +74,13 @@
           class="vertical-list list-section list-with-header">
         <template>
           <div class="list-item two-line">
-            <div id="creditCardLabel"
-                class="type-column">[[item.metadata.summaryLabel]]</div>
+            <div class="type-column">
+              <span id="creditCardLabel">[[item.metadata.summaryLabel]]</span>
+              <span class="payments-label"
+                  hidden$="[[item.metadata.isLocal]]">
+                $i18n{googlePayments}
+              </span>
+            </div>
             <div class="expiration-column">
               <div id="creditCardExpiration"
                   class="expiration-date">[[expiration_(item)]]</div>
