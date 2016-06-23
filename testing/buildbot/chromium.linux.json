@@ -606,7 +606,7 @@
             }
           ],
           "hard_timeout": 960,
-          "shards": 12
+          "shards": 1
         }
       }
     ],
