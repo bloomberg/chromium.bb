@@ -174,6 +174,9 @@ class MEDIA_EXPORT MediaCodecBridge {
                                         void* dst,
                                         size_t num);
 
+  // Returns true if and only if this is a software codec.
+  virtual bool IsSoftwareCodec() = 0;
+
  protected:
   MediaCodecBridge();
 

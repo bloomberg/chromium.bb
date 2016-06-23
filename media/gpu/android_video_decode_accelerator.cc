@@ -115,6 +115,10 @@ enum FormatChangedValue {
   MissingFormatChanged = true
 };
 
+// Maximum number of concurrent, incomplete codec creations that we'll allow
+// before turning off autodection of codec type.
+enum { kMaxConcurrentCodecAutodetections = 4 };
+
 static inline void RecordFormatChangedMetric(FormatChangedValue value) {
   UMA_HISTOGRAM_BOOLEAN("Media.AVDA.MissingFormatChanged", !!value);
 }
@@ -185,7 +189,10 @@ class AVDATimerManager {
   bool StartThread(AndroidVideoDecodeAccelerator* avda_instance) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    if (thread_avda_instances_.empty()) {
+    // If we chose not to shut it down due to pending codec constructions, then
+    // the thread might already be started even if there are no avda instances.
+    // Plus, sometimes we just fail to start the thread.
+    if (!construction_thread_.IsRunning()) {
       if (!construction_thread_.Start()) {
         LOG(ERROR) << "Failed to start construction thread.";
         return false;
@@ -202,8 +209,17 @@ class AVDATimerManager {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     thread_avda_instances_.erase(avda_instance);
-    if (thread_avda_instances_.empty())
-      construction_thread_.Stop();
+    if (!thread_avda_instances_.empty())
+      return;
+
+    // Don't stop the thread if there are outstanding requests, since they
+    // might be hung.  They also might simply be incomplete, and the thread
+    // will stay running until we try to shut it down again.
+    base::AutoLock auto_lock(autodetection_info_.lock_);
+    if (autodetection_info_.outstanding_)
+      return;
+
+    construction_thread_.Stop();
   }
 
   // Request periodic callback of |avda_instance|->DoIOTask(). Does nothing if
@@ -247,6 +263,29 @@ class AVDATimerManager {
   scoped_refptr<base::SingleThreadTaskRunner> ConstructionTaskRunner() {
     DCHECK(thread_checker_.CalledOnValidThread());
     return construction_thread_.task_runner();
+  }
+
+  // Called on the main thread when codec autodetection starts.  There may be
+  // several calls to this before any call to OnAsyncCodecAutodetectionComplete.
+  void OnAsyncCodecAutodetectionStarted() {
+    base::AutoLock auto_lock(autodetection_info_.lock_);
+    ++autodetection_info_.outstanding_;
+  }
+
+  // Called on any thread when a codec is constructed with autodetection.  This
+  // assumes that requests are ordered, so please don't mix sync and async codec
+  // construction here.  This may be called on any thread.
+  void OnAsyncCodecAutodetectionComplete() {
+    base::AutoLock auto_lock_l(autodetection_info_.lock_);
+    DCHECK_GT(autodetection_info_.outstanding_, 0);
+    --autodetection_info_.outstanding_;
+  }
+
+  // Return a hint about whether autodetecting the codec type is safe or not.
+  bool IsCodecAutodetectionProbablySafe() {
+    base::AutoLock auto_lock_l(autodetection_info_.lock_);
+
+    return autodetection_info_.outstanding_ < kMaxConcurrentCodecAutodetections;
   }
 
   // |avda| would like to use |surface_id|.  If it is not busy, then mark it
@@ -353,6 +392,15 @@ class AVDATimerManager {
 
   // Repeating timer responsible for draining pending IO to the codecs.
   base::RepeatingTimer io_timer_;
+
+  // Data for determining if codec creation is hanging.
+  struct {
+    // Lock that protects other members of this struct.
+    base::Lock lock_;
+
+    // Number of currently pending autodetection requests.
+    int outstanding_ = 0;
+  } autodetection_info_;
 
   base::Thread construction_thread_;
 
@@ -1047,8 +1095,19 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
     strategy_->CodecChanged(nullptr);
   }
 
+  // Choose whether to autodetect the codec type.
+  codec_config_->allow_autodetection_ =
+      g_avda_timer.Pointer()->IsCodecAutodetectionProbablySafe();
+  codec_config_->notify_completion_ = codec_config_->allow_autodetection_;
+  if (codec_config_->allow_autodetection_)
+    g_avda_timer.Pointer()->OnAsyncCodecAutodetectionStarted();
+
+  // If we're not trying autodetection, then use the main thread.  The original
+  // might be blocked.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      g_avda_timer.Pointer()->ConstructionTaskRunner();
+      codec_config_->allow_autodetection_
+          ? g_avda_timer.Pointer()->ConstructionTaskRunner()
+          : base::ThreadTaskRunnerHandle::Get();
   CHECK(task_runner);
 
   base::PostTaskAndReplyWithResult(
@@ -1061,6 +1120,15 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
 
 bool AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
   state_ = WAITING_FOR_CODEC;
+
+  // Decide whether to allow autodetection or not.  Since we're on the main
+  // thread, and this request is unordered with respect to pending async config
+  // attempts, don't record it.  It may break book-keeping, and there's not
+  // much we can do anyway.
+  codec_config_->allow_autodetection_ =
+      g_avda_timer.Pointer()->IsCodecAutodetectionProbablySafe();
+  codec_config_->notify_completion_ = false;
+
   std::unique_ptr<VideoCodecBridge> media_codec =
       ConfigureMediaCodecOnAnyThread(codec_config_);
   OnCodecConfigured(std::move(media_codec));
@@ -1079,10 +1147,20 @@ AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
   // |needs_protected_surface_| implies encrypted stream.
   DCHECK(!codec_config->needs_protected_surface_ || media_crypto);
 
-  return std::unique_ptr<VideoCodecBridge>(VideoCodecBridge::CreateDecoder(
+  const bool require_software_codec = !codec_config->allow_autodetection_;
+
+  std::unique_ptr<VideoCodecBridge> codec(VideoCodecBridge::CreateDecoder(
       codec_config->codec_, codec_config->needs_protected_surface_,
       codec_config->initial_expected_coded_size_,
-      codec_config->surface_.j_surface().obj(), media_crypto, true));
+      codec_config->surface_.j_surface().obj(), media_crypto, true,
+      require_software_codec));
+
+  // If we successfully completed after an autodetect, then let the other
+  // instances know that we didn't get stuck.
+  if (codec_config->notify_completion_)
+    g_avda_timer.Pointer()->OnAsyncCodecAutodetectionComplete();
+
+  return codec;
 }
 
 void AndroidVideoDecodeAccelerator::OnCodecConfigured(
@@ -1322,17 +1400,28 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
         on_destroying_surface_cb_);
   }
 
+  AVDATimerManager* manager = g_avda_timer.Pointer();
+
   // We no longer care about |surface_id|, in case we did before.  It's okay
   // if we have no surface and/or weren't the owner or a waiter.
-  g_avda_timer.Pointer()->DeallocateSurface(config_.surface_id, this);
+  manager->DeallocateSurface(config_.surface_id, this);
 
   // Note that async codec construction might still be in progress.  In that
   // case, the codec will be deleted when it completes once we invalidate all
   // our weak refs.
   weak_this_factory_.InvalidateWeakPtrs();
   if (media_codec_) {
-    g_avda_timer.Pointer()->StopTimer(this);
-    media_codec_.reset();
+    manager->StopTimer(this);
+    // If codec construction is broken, then we can't release this codec if it's
+    // backed by hardware, else it may hang too.  Post it to the construction
+    // thread, and it'll get freed if things start working.  If things are
+    // already working, then it'll be freed soon.
+    if (media_codec_->IsSoftwareCodec()) {
+      media_codec_.reset();
+    } else {
+      manager->ConstructionTaskRunner()->DeleteSoon(FROM_HERE,
+                                                    media_codec_.release());
+    }
   }
   delete this;
 }

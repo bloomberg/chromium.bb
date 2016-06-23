@@ -80,13 +80,28 @@ class MediaCodecUtil {
     }
 
     /**
+     * Return true if and only if name is a software codec.
+     * @param name The codec name, e.g. from MediaCodecInfo.getName().
+     */
+    public static boolean isSoftwareCodec(String name) {
+        // This is structured identically to libstagefright/OMXCodec.cpp .
+        if (name.startsWith("OMX.google.")) return true;
+
+        if (name.startsWith("OMX.")) return false;
+
+        return true;
+    }
+
+    /**
      * Get a name of default android codec.
      * @param mime MIME type of the media.
      * @param direction Whether this is encoder or decoder.
+     * @param requireSoftwareCodec Whether we require a software codec.
      * @return name of the codec.
      */
     @CalledByNative
-    private static String getDefaultCodecName(String mime, int direction) {
+    private static String getDefaultCodecName(
+            String mime, int direction, boolean requireSoftwareCodec) {
         MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
         int codecCount = codecListHelper.getCodecCount();
         for (int i = 0; i < codecCount; ++i) {
@@ -94,6 +109,8 @@ class MediaCodecUtil {
 
             int codecDirection = info.isEncoder() ? MEDIA_CODEC_ENCODER : MEDIA_CODEC_DECODER;
             if (codecDirection != direction) continue;
+
+            if (requireSoftwareCodec && !isSoftwareCodec(info.getName())) continue;
 
             String[] supportedTypes = info.getSupportedTypes();
             for (int j = 0; j < supportedTypes.length; ++j) {
@@ -136,7 +153,8 @@ class MediaCodecUtil {
       */
     @CalledByNative
     private static boolean canDecode(String mime, boolean isSecure) {
-        CodecCreationInfo info = createDecoder(mime, isSecure);
+        // TODO(liberato): Should we insist on software here?
+        CodecCreationInfo info = createDecoder(mime, isSecure, false);
         if (info.mediaCodec == null) return false;
 
         try {
@@ -151,9 +169,11 @@ class MediaCodecUtil {
      * Creates MediaCodec decoder.
      * @param mime MIME type of the media.
      * @param secure Whether secure decoder is required.
+     * @param requireSoftwareCodec Whether a software decoder is required.
      * @return CodecCreationInfo object
      */
-    static CodecCreationInfo createDecoder(String mime, boolean isSecure) {
+    static CodecCreationInfo createDecoder(
+            String mime, boolean isSecure, boolean requireSoftwareCodec) {
         // Always return a valid CodecCreationInfo, its |mediaCodec| field will be null
         // if we cannot create the codec.
         CodecCreationInfo result = new CodecCreationInfo();
@@ -173,7 +193,8 @@ class MediaCodecUtil {
         try {
             // |isSecure| only applies to video decoders.
             if (mime.startsWith("video") && isSecure) {
-                String decoderName = getDefaultCodecName(mime, MEDIA_CODEC_DECODER);
+                String decoderName =
+                        getDefaultCodecName(mime, MEDIA_CODEC_DECODER, requireSoftwareCodec);
                 if (decoderName.equals("")) return null;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     // To work around an issue that we cannot get the codec info from the secure
@@ -188,12 +209,19 @@ class MediaCodecUtil {
                 }
                 result.mediaCodec = MediaCodec.createByCodecName(decoderName + ".secure");
             } else {
-                result.mediaCodec = MediaCodec.createDecoderByType(mime);
+                if (requireSoftwareCodec) {
+                    String decoderName =
+                            getDefaultCodecName(mime, MEDIA_CODEC_DECODER, requireSoftwareCodec);
+                    result.mediaCodec = MediaCodec.createByCodecName(decoderName);
+                } else {
+                    result.mediaCodec = MediaCodec.createDecoderByType(mime);
+                }
                 result.supportsAdaptivePlayback =
                         codecSupportsAdaptivePlayback(result.mediaCodec, mime);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to create MediaCodec: %s, isSecure: %s", mime, isSecure, e);
+            Log.e(TAG, "Failed to create MediaCodec: %s, isSecure: %s, requireSoftwareCodec: %d",
+                    mime, isSecure, requireSoftwareCodec, e);
             result.mediaCodec = null;
         }
         return result;

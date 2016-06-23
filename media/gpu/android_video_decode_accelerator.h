@@ -203,6 +203,14 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     // is only a hint.
     gfx::Size initial_expected_coded_size_;
 
+    // Should we allow MediaCodec to autodetect the codec type (true), or
+    // select a software decoder manually (false).  This is because fallback to
+    // software when autodetecting can sometimes hang mediaserver.
+    bool allow_autodetection_ = false;
+
+    // Should we notify AVDATimerManager when codec configuration completes?
+    bool notify_completion_ = false;
+
    protected:
     friend class base::RefCountedThreadSafe<CodecConfig>;
     virtual ~CodecConfig();
