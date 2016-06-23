@@ -472,7 +472,6 @@ extern const char kLaunchPathAndURLAreExclusive[];
 extern const char kLaunchURLRequired[];
 extern const char kLocalesInvalidLocale[];
 extern const char kLocalesMessagesFileMissing[];
-extern const char kLocalesNoDefaultLocaleSpecified[];
 extern const char kLocalesNoDefaultMessages[];
 extern const char kLocalesNoValidLocaleNamesListed[];
 extern const char kLocalesTreeMissing[];

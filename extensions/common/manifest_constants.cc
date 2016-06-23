@@ -701,8 +701,6 @@ const char kLocalesInvalidLocale[] =
     "Invalid locale file '*': *";
 const char kLocalesMessagesFileMissing[] =
     "Messages file is missing for locale.";
-const char kLocalesNoDefaultLocaleSpecified[] =
-    "Localization used, but default_locale wasn't specified in the manifest.";
 const char kLocalesNoDefaultMessages[] =
     "Default locale is defined but default data couldn't be loaded.";
 const char kLocalesNoValidLocaleNamesListed[] =
