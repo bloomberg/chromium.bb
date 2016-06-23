@@ -43,6 +43,10 @@ class PepperPlatformAudioOutput
   // is created or after the stream is closed.
   bool StopPlayback();
 
+  // Sets the volume. Returns false on error or if called before the stream
+  // is created or after the stream is closed.
+  bool SetVolume(double volume);
+
   // Closes the stream. Make sure to call this before the object is
   // destructed.
   void ShutDown();
@@ -74,6 +78,7 @@ class PepperPlatformAudioOutput
   void InitializeOnIOThread(const media::AudioParameters& params);
   void StartPlaybackOnIOThread();
   void StopPlaybackOnIOThread();
+  void SetVolumeOnIOThread(double volume);
   void ShutDownOnIOThread();
 
   // The client to notify when the stream is created. THIS MUST ONLY BE

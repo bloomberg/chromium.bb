@@ -962,6 +962,12 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SaveImageAt,
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
                     std::set<url::Origin> /* origin_whitelist */)
+
+// This message notifies that the frame that the volume of the Pepper instance
+// for |pp_instance| should be changed to |volume|.
+IPC_MESSAGE_ROUTED2(FrameMsg_SetPepperVolume,
+                    int32_t /* pp_instance */,
+                    double /* volume */)
 #endif  // defined(ENABLE_PLUGINS)
 
 // Used to instruct the RenderFrame to go into "view source" mode. This should

@@ -117,6 +117,7 @@
 #include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/notification_permission_dispatcher.h"
+#include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
 #include "content/renderer/push_messaging/push_messaging_dispatcher.h"
@@ -1492,6 +1493,9 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
+#if defined(ENABLE_PLUGINS)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetPepperVolume, OnSetPepperVolume)
+#endif  //defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(InputMsg_Undo, OnUndo)
     IPC_MESSAGE_HANDLER(InputMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(InputMsg_Cut, OnCut)
@@ -6269,6 +6273,22 @@ void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
   GetRenderWidget()->UpdateSelectionBounds();
 }
 
+void RenderFrameImpl::PepperStartsPlayback(PepperPluginInstanceImpl* instance) {
+  // TODO(zqzhang): send PepperStartsPlayback message to the browser.
+  // See https://crbug.com/619084
+}
+
+void RenderFrameImpl::PepperStopsPlayback(PepperPluginInstanceImpl* instance) {
+  // TODO(zqzhang): send PepperStopsPlayback message to the browser.
+  // See https://crbug.com/619084
+}
+
+void RenderFrameImpl::OnSetPepperVolume(int32_t pp_instance, double volume) {
+  PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
+      PepperPluginInstance::Get(pp_instance));
+  if (instance)
+    instance->audio_controller().SetVolume(volume);
+}
 #endif  // ENABLE_PLUGINS
 
 void RenderFrameImpl::RenderWidgetSetFocus(bool enable) {

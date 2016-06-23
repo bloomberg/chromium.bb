@@ -50,6 +50,8 @@ class PPB_Audio_Impl : public ppapi::Resource,
   int32_t GetSharedMemory(base::SharedMemory** shm,
                           uint32_t* shm_size) override;
 
+  void SetVolume(double volume);
+
  private:
   ~PPB_Audio_Impl() override;
 

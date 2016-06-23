@@ -516,6 +516,8 @@
       'renderer/pepper/host_var_tracker.h',
       'renderer/pepper/message_channel.cc',
       'renderer/pepper/message_channel.h',
+      'renderer/pepper/pepper_audio_controller.cc',
+      'renderer/pepper/pepper_audio_controller.h',
       'renderer/pepper/pepper_audio_encoder_host.cc',
       'renderer/pepper/pepper_audio_encoder_host.h',
       'renderer/pepper/pepper_audio_input_host.cc',

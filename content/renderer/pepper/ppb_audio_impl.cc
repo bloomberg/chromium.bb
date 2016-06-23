@@ -5,11 +5,11 @@
 #include "content/renderer/pepper/ppb_audio_impl.h"
 
 #include "base/logging.h"
+#include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/pepper_platform_audio_output.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_controller.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"
@@ -44,8 +44,11 @@ PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)
 PPB_Audio_Impl::~PPB_Audio_Impl() {
   PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
       PepperPluginInstance::Get(pp_instance()));
-  if (instance && instance->throttler()) {
-    instance->throttler()->RemoveObserver(this);
+  if (instance) {
+    if (instance->throttler()) {
+      instance->throttler()->RemoveObserver(this);
+    }
+    instance->audio_controller().RemoveInstance(this);
   }
 
   // Calling ShutDown() makes sure StreamCreated cannot be called anymore and
@@ -83,6 +86,9 @@ PP_Bool PPB_Audio_Impl::StartPlayback() {
     return PP_TRUE;
   }
 
+  if (instance)
+    instance->audio_controller().AddInstance(this);
+
   SetStartPlaybackState();
   return PP_FromBool(audio_->StartPlayback());
 }
@@ -96,6 +102,11 @@ PP_Bool PPB_Audio_Impl::StopPlayback() {
     // to shut down the audio thread correctly.
     StartDeferredPlayback();
   }
+
+  PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
+      PepperPluginInstance::Get(pp_instance()));
+  if (instance)
+    instance->audio_controller().RemoveInstance(this);
 
   if (!playing())
     return PP_TRUE;
@@ -173,8 +184,17 @@ void PPB_Audio_Impl::StartDeferredPlayback() {
   DCHECK(playback_throttled_);
   playback_throttled_ = false;
 
+  PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
+      PepperPluginInstance::Get(pp_instance()));
+  if (instance)
+    instance->audio_controller().AddInstance(this);
+
   SetStartPlaybackState();
   audio_->StartPlayback();
 }
 
+void PPB_Audio_Impl::SetVolume(double volume) {
+  if (audio_)
+    audio_->SetVolume(volume);
+}
 }  // namespace content

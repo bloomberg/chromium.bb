@@ -35,6 +35,7 @@
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/message_channel.h"
+#include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_compositor_host.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
@@ -529,6 +530,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
       initialized_(false),
+      audio_controller_(new PepperAudioController(this)),
       view_change_weak_ptr_factory_(this),
       weak_factory_(this) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -584,6 +586,8 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
 
   if (TrackedCallback::IsPending(lock_mouse_callback_))
     lock_mouse_callback_->Abort();
+
+  audio_controller_->OnPepperInstanceDeleted();
 
   if (render_frame_)
     render_frame_->PepperInstanceDeleted(this);

@@ -686,6 +686,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Notification that the given plugin is focused or unfocused.
   void PepperFocusChanged(PepperPluginInstanceImpl* instance, bool focused);
+
+  void PepperStartsPlayback(PepperPluginInstanceImpl* instance);
+  void PepperStopsPlayback(PepperPluginInstanceImpl* instance);
+  void OnSetPepperVolume(int32_t pp_instance, double volume);
 #endif  // ENABLE_PLUGINS
 
  protected:
