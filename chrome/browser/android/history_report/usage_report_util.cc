@@ -25,9 +25,8 @@ std::string ReportToKey(const history_report::UsageReport& report) {
 }
 
 bool IsTypedVisit(ui::PageTransition visit_transition) {
-  ui::PageTransition transition_type =
-      ui::PageTransitionStripQualifier(visit_transition);
-  return transition_type == ui::PAGE_TRANSITION_TYPED &&
+  return ui::PageTransitionCoreTypeIs(visit_transition,
+                                      ui::PAGE_TRANSITION_TYPED) &&
          !ui::PageTransitionIsRedirect(visit_transition);
 }
 

@@ -51,7 +51,8 @@ void SerializedNavigationEntryTestHelper::ExpectNavigationEquals(
   EXPECT_EQ(expected.virtual_url_, actual.virtual_url_);
   EXPECT_EQ(expected.title_, actual.title_);
   EXPECT_EQ(expected.encoded_page_state_, actual.encoded_page_state_);
-  EXPECT_EQ(expected.transition_type_, actual.transition_type_);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      actual.transition_type_, expected.transition_type_));
   EXPECT_EQ(expected.has_post_data_, actual.has_post_data_);
   EXPECT_EQ(expected.original_request_url_, actual.original_request_url_);
   EXPECT_EQ(expected.is_overriding_user_agent_,

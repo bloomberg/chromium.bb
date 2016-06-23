@@ -395,14 +395,16 @@ void ExpireHistoryBackend::ExpireURLsForVisits(const VisitVector& visits,
   for (size_t i = 0; i < visits.size(); i++) {
     ChangedURL& cur = changed_urls[visits[i].url_id];
     // NOTE: This code must stay in sync with HistoryBackend::AddPageVisit().
-    ui::PageTransition transition =
-        ui::PageTransitionStripQualifier(visits[i].transition);
-    if (transition != ui::PAGE_TRANSITION_RELOAD)
+    if (!ui::PageTransitionCoreTypeIs(visits[i].transition,
+                                      ui::PAGE_TRANSITION_RELOAD)) {
       cur.visit_count++;
+    }
     if (ui::PageTransitionIsNewNavigation(visits[i].transition) &&
-        ((transition == ui::PAGE_TRANSITION_TYPED &&
+        ((ui::PageTransitionCoreTypeIs(visits[i].transition,
+                                       ui::PAGE_TRANSITION_TYPED) &&
           !ui::PageTransitionIsRedirect(visits[i].transition)) ||
-         transition == ui::PAGE_TRANSITION_KEYWORD_GENERATED))
+         ui::PageTransitionCoreTypeIs(visits[i].transition,
+                                      ui::PAGE_TRANSITION_KEYWORD_GENERATED)))
       cur.typed_count++;
   }
 

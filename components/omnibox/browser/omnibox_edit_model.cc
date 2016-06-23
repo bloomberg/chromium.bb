@@ -105,7 +105,8 @@ void RecordPercentageMatchHistogram(const base::string16& old_text,
 
   std::string histogram_name;
   if (url_replacement_active) {
-    if (transition == ui::PAGE_TRANSITION_TYPED) {
+    if (ui::PageTransitionTypeIncludingQualifiersIs(
+            transition, ui::PAGE_TRANSITION_TYPED)) {
       histogram_name = "InstantExtended.PercentageMatchV2_QuerytoURL";
       UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
     } else {
@@ -113,7 +114,8 @@ void RecordPercentageMatchHistogram(const base::string16& old_text,
       UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
     }
   } else {
-    if (transition == ui::PAGE_TRANSITION_TYPED) {
+    if (ui::PageTransitionTypeIncludingQualifiersIs(
+            transition, ui::PAGE_TRANSITION_TYPED)) {
       histogram_name = "InstantExtended.PercentageMatchV2_URLtoURL";
       UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
     } else {
@@ -598,7 +600,8 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
   if (!match.destination_url.is_valid())
     return;
 
-  if ((match.transition == ui::PAGE_TRANSITION_TYPED) &&
+  if (ui::PageTransitionTypeIncludingQualifiersIs(match.transition,
+                                                  ui::PAGE_TRANSITION_TYPED) &&
       (match.destination_url == PermanentURL())) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
@@ -735,7 +738,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   TemplateURLService* service = client_->GetTemplateURLService();
   TemplateURL* template_url = match.GetTemplateURL(service, false);
   if (template_url) {
-    if (match.transition == ui::PAGE_TRANSITION_KEYWORD) {
+    if (ui::PageTransitionTypeIncludingQualifiersIs(
+            match.transition, ui::PAGE_TRANSITION_KEYWORD)) {
       // The user is using a non-substituting keyword or is explicitly in
       // keyword mode.
 
@@ -750,7 +754,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       base::RecordAction(base::UserMetricsAction("AcceptedKeyword"));
       client_->GetTemplateURLService()->IncrementUsageCount(template_url);
     } else {
-      DCHECK_EQ(ui::PAGE_TRANSITION_GENERATED, match.transition);
+      DCHECK(ui::PageTransitionTypeIncludingQualifiersIs(
+          match.transition, ui::PAGE_TRANSITION_GENERATED));
       // NOTE: We purposefully don't increment the usage count of the default
       // search engine here like we do for explicit keywords above; see comments
       // in template_url.h.

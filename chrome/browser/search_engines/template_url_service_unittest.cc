@@ -1031,8 +1031,8 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   EXPECT_TRUE(callback.success);
   EXPECT_NE(0, callback.row.id());
   ASSERT_EQ(1U, callback.visits.size());
-  EXPECT_EQ(ui::PAGE_TRANSITION_KEYWORD_GENERATED,
-      ui::PageTransitionStripQualifier(callback.visits[0].transition));
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      callback.visits[0].transition, ui::PAGE_TRANSITION_KEYWORD_GENERATED));
 }
 
 // Make sure that the load routine deletes prepopulated engines that no longer

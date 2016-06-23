@@ -51,7 +51,8 @@ TEST(IOSSerializedNavigationBuilderTest, FromNavigationItem) {
   EXPECT_EQ(test_data::kReferrerPolicy, navigation.referrer_policy());
   EXPECT_EQ(test_data::kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(test_data::kTitle, navigation.title());
-  EXPECT_EQ(test_data::kTransitionType, navigation.transition_type());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      navigation.transition_type(), test_data::kTransitionType));
   EXPECT_EQ(test_data::kTimestamp, navigation.timestamp());
   EXPECT_EQ(test_data::kFaviconURL, navigation.favicon_url());
 
@@ -95,8 +96,9 @@ TEST(IOSSerializedNavigationBuilderTest, ToNavigationItem) {
             new_navigation_item->GetVirtualURL());
   EXPECT_EQ(old_navigation_item->GetTitle(),
             new_navigation_item->GetTitle());
-  EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
-            new_navigation_item->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+                  new_navigation_item->GetTransitionType(),
+                  ui::PAGE_TRANSITION_RELOAD));
   EXPECT_EQ(old_navigation_item->GetTimestamp(),
             new_navigation_item->GetTimestamp());
 }

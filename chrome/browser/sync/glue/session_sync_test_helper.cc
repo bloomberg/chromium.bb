@@ -87,8 +87,8 @@ void SessionSyncTestHelper::VerifySyncedSession(
       ASSERT_EQ(tab->navigations[0].referrer_url(), GURL(kReferrer));
       ASSERT_EQ(tab->navigations[0].title(),
                 base::ASCIIToUTF16(kTitle));
-      ASSERT_EQ(tab->navigations[0].transition_type(),
-                ui::PAGE_TRANSITION_TYPED);
+      ASSERT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+          tab->navigations[0].transition_type(), ui::PAGE_TRANSITION_TYPED));
     }
   }
 }

@@ -872,14 +872,16 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
     // Walk the passed-in visit vector and count the # of typed visits.
     for (VisitVector::const_iterator visit = visits.begin();
          visit != visits.end(); ++visit) {
-      ui::PageTransition transition = ui::PageTransitionFromInt(
-          visit->transition & ui::PAGE_TRANSITION_CORE_MASK);
       // We ignore reload visits.
-      if (transition == ui::PAGE_TRANSITION_RELOAD)
+      if (PageTransitionCoreTypeIs(visit->transition,
+                                   ui::PAGE_TRANSITION_RELOAD)) {
         continue;
+      }
       ++total;
-      if (transition == ui::PAGE_TRANSITION_TYPED)
+      if (PageTransitionCoreTypeIs(visit->transition,
+                                   ui::PAGE_TRANSITION_TYPED)) {
         ++typed_count;
+      }
     }
     // We should have at least one typed visit. This can sometimes happen if
     // the history DB has an inaccurate count for some reason (there's been
@@ -897,20 +899,23 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
 
   for (VisitVector::const_iterator visit = visits.begin();
        visit != visits.end(); ++visit) {
-    ui::PageTransition transition =
-        ui::PageTransitionStripQualifier(visit->transition);
     // Skip reload visits.
-    if (transition == ui::PAGE_TRANSITION_RELOAD)
+    if (PageTransitionCoreTypeIs(visit->transition, ui::PAGE_TRANSITION_RELOAD))
       continue;
 
     // If we only have room for typed visits, then only add typed visits.
-    if (only_typed && transition != ui::PAGE_TRANSITION_TYPED)
+    if (only_typed &&
+        !PageTransitionCoreTypeIs(visit->transition,
+                                  ui::PAGE_TRANSITION_TYPED)) {
       continue;
+    }
 
     if (skip_count > 0) {
       // We have too many entries to fit, so we need to skip the oldest ones.
       // Only skip typed URLs if there are too many typed URLs to fit.
-      if (only_typed || transition != ui::PAGE_TRANSITION_TYPED) {
+      if (only_typed ||
+          !PageTransitionCoreTypeIs(visit->transition,
+                                    ui::PAGE_TRANSITION_TYPED)) {
         --skip_count;
         continue;
       }

@@ -159,7 +159,8 @@ ShortcutsDatabase::Shortcut::MatchCore ShortcutsBackend::MatchToMatchCore(
       AutocompleteMatch::IsSpecializedSearchType(match.type)
           ? BaseSearchProvider::CreateSearchSuggestion(
                 match.search_terms_args->search_terms, match_type,
-                (match.transition == ui::PAGE_TRANSITION_KEYWORD),
+                ui::PageTransitionCoreTypeIs(match.transition,
+                                             ui::PAGE_TRANSITION_KEYWORD),
                 match.GetTemplateURL(template_url_service, false),
                 *search_terms_data)
           : match;

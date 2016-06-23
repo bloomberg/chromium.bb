@@ -133,7 +133,9 @@ void OfflinePageTabHelper::DidFinishNavigation(
   // Otherwise, get the offline URL for this url, and attempt a redirect if
   // necessary.
   RedirectReason reason =
-      navigation_handle->GetPageTransition() == ui::PAGE_TRANSITION_FORWARD_BACK
+      ui::PageTransitionTypeIncludingQualifiersIs(
+          navigation_handle->GetPageTransition(),
+          ui::PAGE_TRANSITION_FORWARD_BACK)
           ? RedirectReason::FLAKY_NETWORK_FORWARD_BACK
           : RedirectReason::FLAKY_NETWORK;
   offline_page_model->GetBestPageForOnlineURL(

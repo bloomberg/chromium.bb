@@ -99,9 +99,8 @@ void InfoBarService::DidStartNavigationToPendingEntry(
 void InfoBarService::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
   const bool ignore = ignore_next_reload_ &&
-      (ui::PageTransitionStripQualifier(
-          load_details.entry->GetTransitionType()) ==
-          ui::PAGE_TRANSITION_RELOAD);
+      ui::PageTransitionCoreTypeIs(load_details.entry->GetTransitionType(),
+                                   ui::PAGE_TRANSITION_RELOAD);
   ignore_next_reload_ = false;
   if (!ignore)
     OnNavigation(NavigationDetailsFromLoadCommittedDetails(load_details));

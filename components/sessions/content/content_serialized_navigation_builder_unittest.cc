@@ -67,7 +67,8 @@ TEST(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
   EXPECT_EQ(test_data::kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(test_data::kTitle, navigation.title());
   EXPECT_EQ(test_data::kEncodedPageState, navigation.encoded_page_state());
-  EXPECT_EQ(test_data::kTransitionType, navigation.transition_type());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      navigation.transition_type(), test_data::kTransitionType));
   EXPECT_EQ(test_data::kHasPostData, navigation.has_post_data());
   EXPECT_EQ(test_data::kPostID, navigation.post_id());
   EXPECT_EQ(test_data::kOriginalRequestURL, navigation.original_request_url());
@@ -106,8 +107,8 @@ TEST(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
   EXPECT_EQ(test_data::kEncodedPageState,
             new_navigation_entry->GetPageState().ToEncodedData());
   EXPECT_EQ(test_data::kPageID, new_navigation_entry->GetPageID());
-  EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
-            new_navigation_entry->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      new_navigation_entry->GetTransitionType(), ui::PAGE_TRANSITION_RELOAD));
   EXPECT_EQ(test_data::kHasPostData, new_navigation_entry->GetHasPostData());
   EXPECT_EQ(test_data::kPostID, new_navigation_entry->GetPostID());
   EXPECT_EQ(test_data::kOriginalRequestURL,

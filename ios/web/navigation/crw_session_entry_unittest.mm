@@ -90,7 +90,8 @@ void CRWSessionEntryTest::expectEqualSessionEntries(
             navItem2->IsOverridingUserAgent());
   EXPECT_TRUE((!navItem1->HasPostData() && !navItem2->HasPostData()) ||
               [navItem1->GetPostData() isEqualToData:navItem2->GetPostData()]);
-  EXPECT_EQ(navItem2->GetTransitionType(), transition);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      navItem2->GetTransitionType(), transition));
   EXPECT_NSEQ(navItem1->GetHttpRequestHeaders(),
               navItem2->GetHttpRequestHeaders());
 }

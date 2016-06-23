@@ -88,8 +88,7 @@ void PermissionRequestHandler::NavigationEntryCommitted(
     const content::LoadCommittedDetails& details) {
   const ui::PageTransition transition = details.entry->GetTransitionType();
   if (details.is_navigation_to_different_page() ||
-      ui::PageTransitionStripQualifier(transition) ==
-      ui::PAGE_TRANSITION_RELOAD ||
+      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD) ||
       contents_unique_id_ != details.entry->GetUniqueID()) {
     CancelAllRequests();
     contents_unique_id_ = details.entry->GetUniqueID();

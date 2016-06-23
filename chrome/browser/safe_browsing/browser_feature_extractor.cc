@@ -356,11 +356,11 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
     if (it->visit_time < threshold) {
       ++num_visits_24h_ago;
     }
-    ui::PageTransition transition = ui::PageTransitionStripQualifier(
-        it->transition);
-    if (transition == ui::PAGE_TRANSITION_TYPED) {
+    if (ui::PageTransitionCoreTypeIs(it->transition,
+                                     ui::PAGE_TRANSITION_TYPED)) {
       ++num_visits_typed;
-    } else if (transition == ui::PAGE_TRANSITION_LINK) {
+    } else if (ui::PageTransitionCoreTypeIs(it->transition,
+                                            ui::PAGE_TRANSITION_LINK)) {
       ++num_visits_link;
     }
   }

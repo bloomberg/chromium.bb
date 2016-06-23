@@ -375,7 +375,8 @@ bool AreVisitsEqual(const history::VisitVector& visit1,
   if (visit1.size() != visit2.size())
     return false;
   for (size_t i = 0; i < visit1.size(); ++i) {
-    if (visit1[i].transition != visit2[i].transition)
+    if (!ui::PageTransitionTypeIncludingQualifiersIs(visit1[i].transition,
+                                                     visit2[i].transition))
       return false;
     if (visit1[i].visit_time != visit2[i].visit_time)
       return false;

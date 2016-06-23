@@ -288,7 +288,8 @@ void MediaRouterDialogControllerImpl::OnDialogNavigated(
 
   // New |media_router_dialog| is created.
   DCHECK(media_router_dialog_pending_);
-  DCHECK(transition_type == ui::PAGE_TRANSITION_AUTO_TOPLEVEL &&
+  DCHECK(ui::PageTransitionCoreTypeIs(transition_type,
+                                      ui::PAGE_TRANSITION_AUTO_TOPLEVEL) &&
       nav_type == content::NAVIGATION_TYPE_NEW_PAGE)
       << "transition_type: " << transition_type << ", "
       << "nav_type: " << nav_type;

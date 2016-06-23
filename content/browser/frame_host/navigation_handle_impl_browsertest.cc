@@ -296,7 +296,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyPageTransition) {
     EXPECT_TRUE(observer.has_committed());
     EXPECT_FALSE(observer.is_error());
     EXPECT_EQ(url, observer.last_committed_url());
-    EXPECT_EQ(expected_transition, observer.page_transition());
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        observer.page_transition(), expected_transition));
   }
 
   {
@@ -316,7 +317,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyPageTransition) {
     EXPECT_FALSE(observer.is_error());
     EXPECT_EQ(embedded_test_server()->GetURL("baz.com", "/title1.html"),
               observer.last_committed_url());
-    EXPECT_EQ(expected_transition, observer.page_transition());
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        observer.page_transition(), expected_transition));
     EXPECT_FALSE(observer.is_main_frame());
   }
 }

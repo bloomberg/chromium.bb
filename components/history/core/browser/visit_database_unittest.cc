@@ -30,7 +30,8 @@ bool IsVisitInfoEqual(const VisitRow& a,
          a.url_id == b.url_id &&
          a.visit_time == b.visit_time &&
          a.referring_visit == b.referring_visit &&
-         a.transition == b.transition;
+         ui::PageTransitionTypeIncludingQualifiersIs(a.transition,
+                                                     b.transition);
 }
 
 }  // namespace

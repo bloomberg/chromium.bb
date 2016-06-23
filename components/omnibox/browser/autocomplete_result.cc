@@ -279,7 +279,8 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
     const AutocompleteMatch& match) {
   return ((input.type() == metrics::OmniboxInputType::UNKNOWN) &&
           (AutocompleteMatch::IsSearchType(match.type)) &&
-          (match.transition != ui::PAGE_TRANSITION_KEYWORD) &&
+          !ui::PageTransitionCoreTypeIs(match.transition,
+                                        ui::PAGE_TRANSITION_KEYWORD) &&
           (input.canonicalized_url() != match.destination_url)) ?
       input.canonicalized_url() : GURL();
 }

@@ -551,7 +551,7 @@ void AutocompleteMatch::GetKeywordUIState(
 
 base::string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
     TemplateURLService* template_url_service) const {
-  if (transition != ui::PAGE_TRANSITION_KEYWORD ||
+  if (!ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_KEYWORD) ||
       template_url_service == NULL) {
     return base::string16();
   }

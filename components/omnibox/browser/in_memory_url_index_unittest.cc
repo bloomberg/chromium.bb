@@ -431,7 +431,8 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
     for (size_t i = 0;
          i < std::min(expected_visits.size(), actual_visits.size()); ++i) {
       EXPECT_EQ(expected_visits[i].first, actual_visits[i].first);
-      EXPECT_EQ(expected_visits[i].second, actual_visits[i].second);
+      EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+          actual_visits[i].second, expected_visits[i].second));
     }
   }
 
@@ -1004,9 +1005,9 @@ TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
   {
     const VisitInfoVector& visits = entry->second.visits;
     ASSERT_EQ(3u, visits.size());
-    EXPECT_EQ(static_cast<ui::PageTransition>(0u), visits[0].second);
-    EXPECT_EQ(static_cast<ui::PageTransition>(1u), visits[1].second);
-    EXPECT_EQ(static_cast<ui::PageTransition>(0u), visits[2].second);
+    EXPECT_EQ(0, static_cast<int32_t>(visits[0].second));
+    EXPECT_EQ(1, static_cast<int32_t>(visits[1].second));
+    EXPECT_EQ(0, static_cast<int32_t>(visits[2].second));
   }
 
   // Ditto but for URL with id 35.
@@ -1014,9 +1015,9 @@ TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
   ASSERT_TRUE(entry != history_info_map.end());
   {
     const VisitInfoVector& visits = entry->second.visits;
-    ASSERT_EQ(2u, visits.size());
-    EXPECT_EQ(static_cast<ui::PageTransition>(1u), visits[0].second);
-    EXPECT_EQ(static_cast<ui::PageTransition>(1u), visits[1].second);
+    ASSERT_EQ(2, static_cast<int32_t>(visits.size()));
+    EXPECT_EQ(1, static_cast<int32_t>(visits[0].second));
+    EXPECT_EQ(1, static_cast<int32_t>(visits[1].second));
   }
 
   // The URL with id 32 has many visits listed in the database, but we
@@ -1027,7 +1028,7 @@ TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
     const VisitInfoVector& visits = entry->second.visits;
     EXPECT_EQ(10u, visits.size());
     for (size_t i = 0; i < visits.size(); ++i)
-      EXPECT_EQ(static_cast<ui::PageTransition>(0u), visits[i].second);
+      EXPECT_EQ(0, static_cast<int32_t>(visits[i].second));
   }
 }
 

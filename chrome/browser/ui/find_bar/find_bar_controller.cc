@@ -157,8 +157,8 @@ void FindBarController::Observe(int type,
           commit_details->entry->GetTransitionType();
       // Hide the find bar on reload or navigation.
       if (find_bar_->IsFindBarVisible() &&
-          (ui::PageTransitionStripQualifier(transition_type) ==
-               ui::PAGE_TRANSITION_RELOAD ||
+          (ui::PageTransitionCoreTypeIs(transition_type,
+                                        ui::PAGE_TRANSITION_RELOAD) ||
            commit_details->is_navigation_to_different_page()))
         EndFindSession(kKeepSelectionOnPage, kClearResultsInFindBox);
     }

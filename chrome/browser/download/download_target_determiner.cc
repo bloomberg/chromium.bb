@@ -889,8 +889,12 @@ DownloadFileType::DangerLevel DownloadTargetDeterminer::GetDangerLevel(
   // going to downgrade the danger_level to NOT_DANGEROUS. This prevents
   // spurious prompting for moderately dangerous files that are downloaded from
   // familiar sites.
+  // TODO(asanka): Check PAGE_TRANSITION_FROM_ADDRESS_BAR bit instead of
+  // comparing all bits with PageTransitionTypeIncludingQualifiersIs().
   if (danger_level == DownloadFileType::ALLOW_ON_USER_GESTURE &&
-      (download_->GetTransitionType() == ui::PAGE_TRANSITION_FROM_ADDRESS_BAR ||
+      (ui::PageTransitionTypeIncludingQualifiersIs(
+          download_->GetTransitionType(),
+          ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
        (download_->HasUserGesture() && visits == VISITED_REFERRER)))
     return DownloadFileType::NOT_DANGEROUS;
   return danger_level;

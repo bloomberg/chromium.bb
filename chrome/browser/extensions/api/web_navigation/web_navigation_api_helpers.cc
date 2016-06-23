@@ -116,8 +116,8 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
       ui::PageTransitionGetCoreTransitionString(transition_type);
   // For webNavigation API backward compatibility, keep "start_page" even after
   // renamed to "auto_toplevel".
-  if (ui::PageTransitionStripQualifier(transition_type) ==
-          ui::PAGE_TRANSITION_AUTO_TOPLEVEL)
+  if (ui::PageTransitionCoreTypeIs(transition_type,
+                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL))
     transition_type_string = "start_page";
   dict->SetString(keys::kTransitionTypeKey, transition_type_string);
   base::ListValue* qualifiers = new base::ListValue();

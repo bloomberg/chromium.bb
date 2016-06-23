@@ -259,8 +259,9 @@ TEST(ShortcutsDatabaseMigrationTest, MigrateTableAddFillIntoEdit) {
     EXPECT_EQ(statement.ColumnString(1), statement.ColumnString(0));
 
     // The other three columns have default values.
-    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
-              ui::PageTransitionFromInt(statement.ColumnInt(2)));
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        ui::PageTransitionFromInt(statement.ColumnInt(2)),
+        ui::PAGE_TRANSITION_TYPED));
     EXPECT_EQ(AutocompleteMatchType::HISTORY_TITLE,
               static_cast<AutocompleteMatchType::Type>(statement.ColumnInt(3)));
     EXPECT_TRUE(statement.ColumnString(4).empty());

@@ -33,8 +33,8 @@ namespace {
 
 // Returns true if the entry's transition type is FORM_SUBMIT.
 bool IsFormSubmit(const NavigationEntry* entry) {
-  return (ui::PageTransitionStripQualifier(entry->GetTransitionType()) ==
-          ui::PAGE_TRANSITION_FORM_SUBMIT);
+  return ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
+                                      ui::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
 base::string16 GenerateKeywordFromNavigationEntry(

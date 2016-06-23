@@ -1679,7 +1679,8 @@ int NavigationControllerImpl::GetPendingEntryIndex() const {
 void NavigationControllerImpl::InsertOrReplaceEntry(
     std::unique_ptr<NavigationEntryImpl> entry,
     bool replace) {
-  DCHECK(entry->GetTransitionType() != ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  DCHECK(!ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
+                                       ui::PAGE_TRANSITION_AUTO_SUBFRAME));
 
   // If the pending_entry_index_ is -1, the navigation was to a new page, and we
   // need to keep continuity with the pending entry, so copy the pending entry's

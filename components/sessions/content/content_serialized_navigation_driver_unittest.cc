@@ -9,6 +9,7 @@
 #include "content/public/common/page_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "ui/base/page_transition_types.h"
 
 namespace sessions {
 
@@ -63,7 +64,8 @@ TEST(ContentSerializedNavigationDriverTest, SanitizeWithReferrerPolicyAlways) {
   EXPECT_EQ(test_data::kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(test_data::kTitle, navigation.title());
   EXPECT_EQ(page_state.ToEncodedData(), navigation.encoded_page_state());
-  EXPECT_EQ(test_data::kTransitionType, navigation.transition_type());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      navigation.transition_type(), test_data::kTransitionType));
   EXPECT_EQ(test_data::kHasPostData, navigation.has_post_data());
   EXPECT_EQ(test_data::kPostID, navigation.post_id());
   EXPECT_EQ(test_data::kOriginalRequestURL, navigation.original_request_url());
@@ -97,7 +99,8 @@ TEST(ContentSerializedNavigationDriverTest, SanitizeWithReferrerPolicyNever) {
   EXPECT_EQ(test_data::kUniqueID, navigation.unique_id());
   EXPECT_EQ(test_data::kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(test_data::kTitle, navigation.title());
-  EXPECT_EQ(test_data::kTransitionType, navigation.transition_type());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      navigation.transition_type(), test_data::kTransitionType));
   EXPECT_EQ(test_data::kHasPostData, navigation.has_post_data());
   EXPECT_EQ(test_data::kPostID, navigation.post_id());
   EXPECT_EQ(test_data::kOriginalRequestURL, navigation.original_request_url());

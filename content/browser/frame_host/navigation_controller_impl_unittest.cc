@@ -668,7 +668,8 @@ void CheckNavigationEntryMatchLoadParams(
   EXPECT_EQ(load_params.url, entry->GetURL());
   EXPECT_EQ(load_params.referrer.url, entry->GetReferrer().url);
   EXPECT_EQ(load_params.referrer.policy, entry->GetReferrer().policy);
-  EXPECT_EQ(load_params.transition_type, entry->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      entry->GetTransitionType(), load_params.transition_type));
   EXPECT_EQ(load_params.extra_headers, entry->extra_headers());
 
   EXPECT_EQ(load_params.is_renderer_initiated, entry->is_renderer_initiated());
@@ -4002,21 +4003,24 @@ TEST_F(NavigationControllerTest, LazyReload) {
   const GURL url("http://foo");
   NavigateAndCommit(url);
   ASSERT_FALSE(controller.NeedsReload());
-  EXPECT_NE(ui::PAGE_TRANSITION_RELOAD,
-            controller.GetLastCommittedEntry()->GetTransitionType());
+  EXPECT_FALSE(ui::PageTransitionTypeIncludingQualifiersIs(
+      controller.GetLastCommittedEntry()->GetTransitionType(),
+      ui::PAGE_TRANSITION_RELOAD));
 
   // Request a reload to happen when the controller becomes active (e.g. after
   // the renderer gets killed in background on Android).
   controller.SetNeedsReload();
   ASSERT_TRUE(controller.NeedsReload());
-  EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
-            controller.GetLastCommittedEntry()->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      controller.GetLastCommittedEntry()->GetTransitionType(),
+      ui::PAGE_TRANSITION_RELOAD));
 
   // Set the controller as active, triggering the requested reload.
   controller.SetActive(true);
   ASSERT_FALSE(controller.NeedsReload());
-  EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
-            controller.GetPendingEntry()->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      controller.GetPendingEntry()->GetTransitionType(),
+      ui::PAGE_TRANSITION_RELOAD));
 }
 
 // Test requesting and triggering a lazy reload without any committed entry nor
@@ -4040,21 +4044,24 @@ TEST_F(NavigationControllerTest, LazyReloadWithOnlyPendingEntry) {
   const GURL url("http://foo");
   controller.LoadURL(url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   ASSERT_FALSE(controller.NeedsReload());
-  EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
-            controller.GetPendingEntry()->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      controller.GetPendingEntry()->GetTransitionType(),
+      ui::PAGE_TRANSITION_TYPED));
 
   // Request a reload to happen when the controller becomes active (e.g. after
   // the renderer gets killed in background on Android).
   controller.SetNeedsReload();
   ASSERT_TRUE(controller.NeedsReload());
-  EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
-            controller.GetPendingEntry()->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      controller.GetPendingEntry()->GetTransitionType(),
+      ui::PAGE_TRANSITION_TYPED));
 
   // Set the controller as active, triggering the requested reload.
   controller.SetActive(true);
   ASSERT_FALSE(controller.NeedsReload());
-  EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
-            controller.GetPendingEntry()->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      controller.GetPendingEntry()->GetTransitionType(),
+      ui::PAGE_TRANSITION_TYPED));
 }
 
 // Tests a subframe navigation while a toplevel navigation is pending.

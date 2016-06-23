@@ -39,12 +39,16 @@ namespace {
 // forgotten. This is generally any navigation that isn't a link click (i.e.
 // any navigation that can be considered to be the start of a new task distinct
 // from what had previously occurred in that tab).
-bool ShouldForgetOpenersForBaseTransition(ui::PageTransition transition) {
-  return transition == ui::PAGE_TRANSITION_TYPED ||
-      transition == ui::PAGE_TRANSITION_AUTO_BOOKMARK ||
-      transition == ui::PAGE_TRANSITION_GENERATED ||
-      transition == ui::PAGE_TRANSITION_KEYWORD ||
-      transition == ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
+bool ShouldForgetOpenersForTransition(ui::PageTransition transition) {
+  return ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
+         ui::PageTransitionCoreTypeIs(transition,
+                                      ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
+         ui::PageTransitionCoreTypeIs(transition,
+                                      ui::PAGE_TRANSITION_GENERATED) ||
+         ui::PageTransitionCoreTypeIs(transition,
+                                      ui::PAGE_TRANSITION_KEYWORD) ||
+         ui::PageTransitionCoreTypeIs(transition,
+                                      ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 }
 
 // CloseTracker is used when closing a set of WebContents. It listens for
@@ -585,8 +589,7 @@ int TabStripModel::GetIndexOfLastWebContentsOpenedBy(const WebContents* opener,
 
 void TabStripModel::TabNavigating(WebContents* contents,
                                   ui::PageTransition transition) {
-  if (ShouldForgetOpenersForBaseTransition(
-          ui::PageTransitionStripQualifier(transition))) {
+  if (ShouldForgetOpenersForTransition(transition)) {
     // Don't forget the openers if this tab is a New Tab page opened at the
     // end of the TabStrip (e.g. by pressing Ctrl+T). Give the user one
     // navigation of one of these transition types before resetting the
@@ -740,7 +743,8 @@ void TabStripModel::AddWebContents(WebContents* contents,
   // closed we'll jump back to the parent tab.
   bool inherit_group = (add_types & ADD_INHERIT_GROUP) == ADD_INHERIT_GROUP;
 
-  if (transition == ui::PAGE_TRANSITION_LINK &&
+  if (ui::PageTransitionTypeIncludingQualifiersIs(transition,
+                                                  ui::PAGE_TRANSITION_LINK) &&
       (add_types & ADD_FORCE_INDEX) == 0) {
     // We assume tabs opened via link clicks are part of the same task as their
     // parent.  Note that when |force_index| is true (e.g. when the user
@@ -757,7 +761,9 @@ void TabStripModel::AddWebContents(WebContents* contents,
       index = count();
   }
 
-  if (transition == ui::PAGE_TRANSITION_TYPED && index == count()) {
+  if (ui::PageTransitionTypeIncludingQualifiersIs(transition,
+                                                  ui::PAGE_TRANSITION_TYPED) &&
+      index == count()) {
     // Also, any tab opened at the end of the TabStrip with a "TYPED"
     // transition inherit group as well. This covers the cases where the user
     // creates a New Tab (e.g. Ctrl+T, or clicks the New Tab button), or types
@@ -771,7 +777,8 @@ void TabStripModel::AddWebContents(WebContents* contents,
   // Reset the index, just in case insert ended up moving it on us.
   index = GetIndexOfWebContents(contents);
 
-  if (inherit_group && transition == ui::PAGE_TRANSITION_TYPED)
+  if (inherit_group && ui::PageTransitionTypeIncludingQualifiersIs(
+                           transition, ui::PAGE_TRANSITION_TYPED))
     contents_data_[index]->set_reset_group_on_select(true);
 
   // TODO(sky): figure out why this is here and not in InsertWebContentsAt. When

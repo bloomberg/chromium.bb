@@ -323,7 +323,6 @@ SegmentID HistoryBackend::UpdateSegments(const GURL& url,
     return 0;
 
   SegmentID segment_id = 0;
-  ui::PageTransition t = ui::PageTransitionStripQualifier(transition_type);
 
   // Are we at the beginning of a new segment?
   // Note that navigating to an existing entry (with back/forward) reuses the
@@ -338,8 +337,10 @@ SegmentID HistoryBackend::UpdateSegments(const GURL& url,
   // Note also that we should still be updating the visit count for that segment
   // which we are not doing now. It should be addressed when
   // http://crbug.com/96860 is fixed.
-  if ((t == ui::PAGE_TRANSITION_TYPED ||
-       t == ui::PAGE_TRANSITION_AUTO_BOOKMARK) &&
+  if ((ui::PageTransitionCoreTypeIs(transition_type,
+                                    ui::PAGE_TRANSITION_TYPED) ||
+       ui::PageTransitionCoreTypeIs(transition_type,
+                                    ui::PAGE_TRANSITION_AUTO_BOOKMARK)) &&
       (transition_type & ui::PAGE_TRANSITION_FORWARD_BACK) == 0) {
     // If so, create or get the segment.
     std::string segment_name = db_->ComputeSegmentName(url);
@@ -475,17 +476,16 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
     first_recorded_time_ = request.time;
 
   ui::PageTransition request_transition = request.transition;
-  ui::PageTransition stripped_transition =
-      ui::PageTransitionStripQualifier(request_transition);
-  bool is_keyword_generated =
-      (stripped_transition == ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  bool is_keyword_generated = ui::PageTransitionCoreTypeIs(
+      request_transition, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   // If the user is navigating to a not-previously-typed intranet hostname,
   // change the transition to TYPED so that the omnibox will learn that this is
   // a known host.
   bool has_redirects = request.redirects.size() > 1;
   if (ui::PageTransitionIsMainFrame(request_transition) &&
-      (stripped_transition != ui::PAGE_TRANSITION_TYPED) &&
+      !ui::PageTransitionCoreTypeIs(request_transition,
+                                    ui::PAGE_TRANSITION_TYPED) &&
       !is_keyword_generated) {
     const GURL& origin_url(has_redirects ? request.redirects[0] : request.url);
     if (origin_url.SchemeIs(url::kHttpScheme) ||
@@ -498,9 +498,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
               net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
               net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
       if (registry_length == 0 && !db_->IsTypedHost(host)) {
-        stripped_transition = ui::PAGE_TRANSITION_TYPED;
         request_transition = ui::PageTransitionFromInt(
-            stripped_transition |
+            ui::PAGE_TRANSITION_TYPED |
             ui::PageTransitionGetQualifier(request_transition));
       }
     }
@@ -575,8 +574,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
 
     for (size_t redirect_index = 0; redirect_index < redirects.size();
          redirect_index++) {
-      ui::PageTransition t =
-          ui::PageTransitionFromInt(stripped_transition | redirect_info);
+      ui::PageTransition t = ui::PageTransitionFromInt(
+          ui::PageTransitionStripQualifier(request_transition) | redirect_info);
 
       // If this is the last transition, add a CHAIN_END marker
       if (redirect_index == (redirects.size() - 1)) {
@@ -614,8 +613,10 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
   // TODO(evanm): Due to http://b/1194536 we lose the referrers of a subframe
   // navigation anyway, so last_visit_id is always zero for them.  But adding
   // them here confuses main frame history, so we skip them for now.
-  if (stripped_transition != ui::PAGE_TRANSITION_AUTO_SUBFRAME &&
-      stripped_transition != ui::PAGE_TRANSITION_MANUAL_SUBFRAME &&
+  if (!ui::PageTransitionCoreTypeIs(request_transition,
+                                    ui::PAGE_TRANSITION_AUTO_SUBFRAME) &&
+      !ui::PageTransitionCoreTypeIs(request_transition,
+                                    ui::PAGE_TRANSITION_MANUAL_SUBFRAME) &&
       !is_keyword_generated) {
     tracker_.AddVisit(request.context_id, request.nav_entry_id, request.url,
                       last_ids.second);
@@ -777,12 +778,11 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   // NOTE: This code must stay in sync with
   // ExpireHistoryBackend::ExpireURLsForVisits().
   int typed_increment = 0;
-  ui::PageTransition transition_type =
-      ui::PageTransitionStripQualifier(transition);
   if (ui::PageTransitionIsNewNavigation(transition) &&
-      ((transition_type == ui::PAGE_TRANSITION_TYPED &&
+      ((ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
         !ui::PageTransitionIsRedirect(transition)) ||
-       transition_type == ui::PAGE_TRANSITION_KEYWORD_GENERATED))
+       ui::PageTransitionCoreTypeIs(transition,
+                                    ui::PAGE_TRANSITION_KEYWORD_GENERATED)))
     typed_increment = 1;
 
   if (!host_ranks_.empty() && visit_source == SOURCE_BROWSED &&
@@ -795,8 +795,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   URLID url_id = db_->GetRowForURL(url, &url_info);
   if (url_id) {
     // Update of an existing row.
-    if (ui::PageTransitionStripQualifier(transition) !=
-        ui::PAGE_TRANSITION_RELOAD)
+    if (!ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD))
       url_info.set_visit_count(url_info.visit_count() + 1);
     if (typed_increment)
       url_info.set_typed_count(url_info.typed_count() + typed_increment);

@@ -225,8 +225,10 @@ TEST_F(HistoryServiceTest, AddRedirect) {
   EXPECT_EQ(1, query_url_row_.visit_count());
   ASSERT_EQ(1U, query_url_visits_.size());
   int64_t first_visit = query_url_visits_[0].visit_id;
-  EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START,
-            query_url_visits_[0].transition);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      query_url_visits_[0].transition,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_CHAIN_START)));
   EXPECT_EQ(0, query_url_visits_[0].referring_visit);  // No referrer.
 
   // The second page should be a server redirect type with a referrer of the
@@ -235,8 +237,10 @@ TEST_F(HistoryServiceTest, AddRedirect) {
   EXPECT_EQ(1, query_url_row_.visit_count());
   ASSERT_EQ(1U, query_url_visits_.size());
   int64_t second_visit = query_url_visits_[0].visit_id;
-  EXPECT_EQ(ui::PAGE_TRANSITION_SERVER_REDIRECT | ui::PAGE_TRANSITION_CHAIN_END,
-            query_url_visits_[0].transition);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      query_url_visits_[0].transition,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_SERVER_REDIRECT |
+                                ui::PAGE_TRANSITION_CHAIN_END)));
   EXPECT_EQ(first_visit, query_url_visits_[0].referring_visit);
 
   // Check that the redirect finding function successfully reports it.
@@ -269,8 +273,10 @@ TEST_F(HistoryServiceTest, AddRedirect) {
   EXPECT_TRUE(QueryURL(history_service_.get(), second_redirects[1]));
   EXPECT_EQ(1, query_url_row_.visit_count());
   ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_EQ(ui::PAGE_TRANSITION_CLIENT_REDIRECT | ui::PAGE_TRANSITION_CHAIN_END,
-            query_url_visits_[0].transition);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      query_url_visits_[0].transition,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_CLIENT_REDIRECT |
+                                ui::PAGE_TRANSITION_CHAIN_END)));
   EXPECT_EQ(second_visit, query_url_visits_[0].referring_visit);
 }
 
@@ -288,8 +294,8 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(1, query_url_row_.typed_count());
   ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
-            ui::PageTransitionStripQualifier(query_url_visits_[0].transition));
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
+                                           ui::PAGE_TRANSITION_TYPED));
 
   // Add more visits on the same host.  None of these should be promoted since
   // there is already a typed visit.
@@ -304,8 +310,8 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
   ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
-            ui::PageTransitionStripQualifier(query_url_visits_[0].transition));
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
+                                           ui::PAGE_TRANSITION_LINK));
 
   // No path.
   const GURL test_url3("http://intranet_host/");
@@ -317,8 +323,8 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
   ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
-            ui::PageTransitionStripQualifier(query_url_visits_[0].transition));
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
+                                           ui::PAGE_TRANSITION_LINK));
 
   // Different scheme.
   const GURL test_url4("https://intranet_host/");
@@ -330,8 +336,8 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
   ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
-            ui::PageTransitionStripQualifier(query_url_visits_[0].transition));
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
+                                           ui::PAGE_TRANSITION_LINK));
 
   // Different transition.
   const GURL test_url5("http://intranet_host/another_path");
@@ -344,8 +350,8 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
   ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-            ui::PageTransitionStripQualifier(query_url_visits_[0].transition));
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
+                                           ui::PAGE_TRANSITION_AUTO_BOOKMARK));
 
   // Original URL.
   history_service_->AddPage(
@@ -356,8 +362,8 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   EXPECT_EQ(2, query_url_row_.visit_count());
   EXPECT_EQ(1, query_url_row_.typed_count());
   ASSERT_EQ(2U, query_url_visits_.size());
-  EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
-            ui::PageTransitionStripQualifier(query_url_visits_[1].transition));
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[1].transition,
+                                           ui::PAGE_TRANSITION_LINK));
 }
 
 TEST_F(HistoryServiceTest, Typed) {

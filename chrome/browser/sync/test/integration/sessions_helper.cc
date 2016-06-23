@@ -308,7 +308,8 @@ bool NavigationEquals(const sessions::SerializedNavigationEntry& expected,
                << ", actual " << actual.title();
     return false;
   }
-  if (expected.transition_type() != actual.transition_type()) {
+  if (!ui::PageTransitionTypeIncludingQualifiersIs(expected.transition_type(),
+                                                   actual.transition_type())) {
     LOG(ERROR) << "Expected transition "
                << expected.transition_type()
                << ", actual "

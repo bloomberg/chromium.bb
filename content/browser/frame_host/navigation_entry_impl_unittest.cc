@@ -173,10 +173,13 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(2, entry2_->GetPageID());
 
   // Transition type
-  EXPECT_EQ(ui::PAGE_TRANSITION_LINK, entry1_->GetTransitionType());
-  EXPECT_EQ(ui::PAGE_TRANSITION_TYPED, entry2_->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      entry1_->GetTransitionType(), ui::PAGE_TRANSITION_LINK));
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      entry2_->GetTransitionType(), ui::PAGE_TRANSITION_TYPED));
   entry2_->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
-  EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD, entry2_->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      entry2_->GetTransitionType(), ui::PAGE_TRANSITION_RELOAD));
 
   // Is renderer initiated
   EXPECT_FALSE(entry1_->is_renderer_initiated());
@@ -239,7 +242,8 @@ TEST_F(NavigationEntryTest, NavigationEntryClone) {
   EXPECT_EQ(entry2_->GetTitle(), clone->GetTitle());
 
   // Value set after constructor.
-  EXPECT_EQ(entry2_->GetTransitionType(), clone->GetTransitionType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      clone->GetTransitionType(), entry2_->GetTransitionType()));
 
   // Value not copied due to ResetForCommit.
   EXPECT_NE(entry2_->should_replace_entry(), clone->should_replace_entry());
