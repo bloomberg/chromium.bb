@@ -495,6 +495,8 @@ class CC_EXPORT LayerTreeImpl {
   void UpdateScrollbars(int scroll_layer_id, int clip_layer_id);
   void DidUpdatePageScale();
   void PushTopControls(const float* top_controls_shown_ratio);
+  bool ClampTopControlsShownRatio();
+
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
   int is_first_frame_after_commit_tracker_;

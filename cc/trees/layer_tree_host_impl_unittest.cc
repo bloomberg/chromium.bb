@@ -4236,6 +4236,32 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
   host_impl_->top_controls_manager()->ScrollEnd();
 }
 
+// Push a top controls ratio from the main thread that we didn't send as a delta
+// and make sure that the ratio is clamped to the [0, 1] range.
+TEST_F(LayerTreeHostImplTopControlsTest, TopControlsPushUnsentRatio) {
+  SetupTopControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(10, 50), gfx::Size(10, 50), gfx::Size(10, 100));
+  DrawFrame();
+
+  // Need SetDrawsContent so ScrollBegin's hit test finds an actual layer.
+  LayerImpl* inner_scroll =
+      host_impl_->active_tree()->InnerViewportScrollLayer();
+  inner_scroll->SetDrawsContent(true);
+  LayerImpl* outer_scroll =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  outer_scroll->SetDrawsContent(true);
+
+  host_impl_->active_tree()->PushTopControlsFromMainThread(1);
+  ASSERT_EQ(1.0f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+
+  host_impl_->active_tree()->SetCurrentTopControlsShownRatio(0.5f);
+  ASSERT_EQ(0.5f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+
+  host_impl_->active_tree()->PushTopControlsFromMainThread(0);
+
+  ASSERT_EQ(0, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+}
+
 // Test that if only the top controls are scrolled, we shouldn't request a
 // commit.
 TEST_F(LayerTreeHostImplTopControlsTest, TopControlsDontTriggerCommit) {

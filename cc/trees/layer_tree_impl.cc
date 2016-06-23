@@ -722,10 +722,17 @@ void LayerTreeImpl::set_top_controls_height(float top_controls_height) {
     layer_tree_host_impl_->UpdateViewportContainerSizes();
 }
 
-bool LayerTreeImpl::SetCurrentTopControlsShownRatio(float ratio) {
+bool LayerTreeImpl::ClampTopControlsShownRatio() {
+  float ratio = top_controls_shown_ratio_->Current(true);
   ratio = std::max(ratio, 0.f);
   ratio = std::min(ratio, 1.f);
   return top_controls_shown_ratio_->SetCurrent(ratio);
+}
+
+bool LayerTreeImpl::SetCurrentTopControlsShownRatio(float ratio) {
+  bool changed = top_controls_shown_ratio_->SetCurrent(ratio);
+  changed |= ClampTopControlsShownRatio();
+  return changed;
 }
 
 void LayerTreeImpl::PushTopControlsFromMainThread(
@@ -741,7 +748,9 @@ void LayerTreeImpl::PushTopControls(const float* top_controls_shown_ratio) {
     top_controls_shown_ratio_->PushFromMainThread(*top_controls_shown_ratio);
   }
   if (IsActiveTree()) {
-    if (top_controls_shown_ratio_->PushPendingToActive())
+    bool changed_active = top_controls_shown_ratio_->PushPendingToActive();
+    changed_active |= ClampTopControlsShownRatio();
+    if (changed_active)
       layer_tree_host_impl_->DidChangeTopControlsPosition();
   }
 }
