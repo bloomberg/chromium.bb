@@ -430,10 +430,13 @@
      * Forward focus to inputElement. Overriden from IronControlState.
      */
     _focusBlurHandler: function(event) {
+      if (this._shiftTabPressed)
+        return;
+
       Polymer.IronControlState._focusBlurHandler.call(this, event);
 
       // Forward the focus to the nested input.
-      if (this.focused && !this._shiftTabPressed)
+      if (this.focused)
         this._focusableElement.focus();
     },
 

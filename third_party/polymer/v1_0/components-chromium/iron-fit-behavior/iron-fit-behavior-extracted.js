@@ -230,7 +230,6 @@ Use `noOverlap` to position the element around another element without overlappi
 
     /**
      * Memoize information needed to position and size the target element.
-     * @suppress {deprecated}
      */
     _discoverInfo: function() {
       if (this._fitInfo) {

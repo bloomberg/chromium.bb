@@ -400,7 +400,16 @@
       },
 
       get target () {
-        return this.keyEventTarget;
+        var ownerRoot = Polymer.dom(this).getOwnerRoot();
+        var target;
+
+        if (this.parentNode.nodeType == 11) { // DOCUMENT_FRAGMENT_NODE
+          target = ownerRoot.host;
+        } else {
+          target = this.parentNode;
+        }
+
+        return target;
       },
 
       keyBindings: {
@@ -413,20 +422,14 @@
         // Set up a11yKeysBehavior to listen to key events on the target,
         // so that space and enter activate the ripple even if the target doesn't
         // handle key events. The key handlers deal with `noink` themselves.
-        if (this.parentNode.nodeType == 11) { // DOCUMENT_FRAGMENT_NODE
-          this.keyEventTarget = Polymer.dom(this).getOwnerRoot().host;
-        } else {
-          this.keyEventTarget = this.parentNode;
-        }
-        var keyEventTarget = /** @type {!EventTarget} */ (this.keyEventTarget);
-        this.listen(keyEventTarget, 'up', 'uiUpAction');
-        this.listen(keyEventTarget, 'down', 'uiDownAction');
+        this.keyEventTarget = this.target;
+        this.listen(this.target, 'up', 'uiUpAction');
+        this.listen(this.target, 'down', 'uiDownAction');
       },
 
       detached: function() {
-        this.unlisten(this.keyEventTarget, 'up', 'uiUpAction');
-        this.unlisten(this.keyEventTarget, 'down', 'uiDownAction');
-        this.keyEventTarget = null;
+        this.unlisten(this.target, 'up', 'uiUpAction');
+        this.unlisten(this.target, 'down', 'uiDownAction');
       },
 
       get shouldKeepAnimating () {
@@ -474,7 +477,6 @@
         ripple.downAction(event);
 
         if (!this._animating) {
-          this._animating = true;
           this.animate();
         }
       },
@@ -504,7 +506,6 @@
           ripple.upAction(event);
         });
 
-        this._animating = true;
         this.animate();
       },
 
@@ -543,11 +544,10 @@
       },
 
       animate: function() {
-        if (!this._animating) {
-          return;
-        }
         var index;
         var ripple;
+
+        this._animating = true;
 
         for (index = 0; index < this.ripples.length; ++index) {
           ripple = this.ripples[index];
@@ -593,14 +593,5 @@
           this.upAction();
         }
       }
-
-      /**
-      Fired when the animation finishes.
-      This is useful if you want to wait until
-      the ripple animation finishes to perform some action.
-
-      @event transitionend
-      @param {{node: Object}} detail Contains the animated node.
-      */
     });
   })();

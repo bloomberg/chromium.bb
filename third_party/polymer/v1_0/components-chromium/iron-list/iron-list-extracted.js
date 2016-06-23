@@ -5,7 +5,6 @@
   var DEFAULT_PHYSICAL_COUNT = 3;
   var HIDDEN_Y = '-10000px';
   var DEFAULT_GRID_SIZE = 200;
-  var SECRET_TABINDEX = -100;
 
   Polymer({
 
@@ -837,24 +836,14 @@
       if (!el || el._templateInstance.__key__ !== key) {
         return;
       }
+      
       if (dot >= 0) {
         path = this.as + '.' + path.substring(dot+1);
         el._templateInstance.notifyPath(path, value, true);
       } else {
-        // Update selection if needed
-        var currentItem = el._templateInstance[this.as];
-        if (Array.isArray(this.selectedItems)) {
-          for (var i = 0; i < this.selectedItems.length; i++) {
-            if (this.selectedItems[i] === currentItem) {
-              this.set('selectedItems.' + i, value);
-              break;
-            }
-          }
-        } else if (this.selectedItem === currentItem) {
-          this.set('selectedItem', value);
-        }
         el._templateInstance[this.as] = value;
       }
+
     },
 
     /**
@@ -1042,9 +1031,9 @@
     },
 
     _updateGridMetrics: function() {
-      this._viewportWidth = this.$.items.offsetWidth;
+      this._viewportWidth = this._scrollTargetWidth;
       // Set item width to the value of the _physicalItems offsetWidth
-      this._itemWidth = this._physicalCount > 0 ? this._physicalItems[0].getBoundingClientRect().width : DEFAULT_GRID_SIZE;
+      this._itemWidth = this._physicalCount > 0 ? this._physicalItems[0].offsetWidth : DEFAULT_GRID_SIZE;
       // Set row height to the value of the _physicalItems offsetHeight
       this._rowHeight = this._physicalCount > 0 ? this._physicalItems[0].offsetHeight : DEFAULT_GRID_SIZE;
       // If in grid mode compute how many items with exist in each row
@@ -1371,32 +1360,12 @@
      * Select an item from an event object.
      */
     _selectionHandler: function(e) {
-      var model = this.modelForElement(e.target);
-      if (!model) {
-        return;
+      if (this.selectionEnabled) {
+        var model = this.modelForElement(e.target);
+        if (model) {
+          this.toggleSelectionForItem(model[this.as]);
+        }
       }
-      var modelTabIndex, activeElTabIndex;
-      var target = Polymer.dom(e).path[0];
-      var activeEl = Polymer.dom(this.domHost ? this.domHost.root : document).activeElement;
-      var physicalItem = this._physicalItems[this._getPhysicalIndex(model[this.indexAs])];
-      // Safari does not focus certain form controls via mouse
-      // https://bugs.webkit.org/show_bug.cgi?id=118043
-      if (target.localName === 'input' ||
-          target.localName === 'button' ||
-          target.localName === 'select') {
-        return;
-      }
-      // Set a temporary tabindex
-      modelTabIndex = model.tabIndex;
-      model.tabIndex = SECRET_TABINDEX;
-      activeElTabIndex = activeEl ? activeEl.tabIndex : -1;
-      model.tabIndex = modelTabIndex;
-      // Only select the item if the tap wasn't on a focusable child
-      // or the element bound to `tabIndex`
-      if (activeEl && physicalItem.contains(activeEl) && activeElTabIndex !== SECRET_TABINDEX) {
-        return;
-      }
-      this.toggleSelectionForItem(model[this.as]);
     },
 
     _multiSelectionChanged: function(multiSelection) {
@@ -1469,18 +1438,19 @@
       }
 
       var physicalItem = this._physicalItems[this._getPhysicalIndex(idx)];
+      var SECRET = ~(Math.random() * 100);
       var model = physicalItem._templateInstance;
       var focusable;
 
       // set a secret tab index
-      model.tabIndex = SECRET_TABINDEX;
+      model.tabIndex = SECRET;
       // check if focusable element is the physical item
-      if (physicalItem.tabIndex === SECRET_TABINDEX) {
+      if (physicalItem.tabIndex === SECRET) {
        focusable = physicalItem;
       }
       // search for the element which tabindex is bound to the secret tab index
       if (!focusable) {
-        focusable = Polymer.dom(physicalItem).querySelector('[tabindex="' + SECRET_TABINDEX + '"]');
+        focusable = Polymer.dom(physicalItem).querySelector('[tabindex="' + SECRET + '"]');
       }
       // restore the tab index
       model.tabIndex = 0;

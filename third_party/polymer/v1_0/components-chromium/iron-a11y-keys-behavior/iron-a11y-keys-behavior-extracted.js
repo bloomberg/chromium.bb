@@ -236,9 +236,7 @@
     Polymer.IronA11yKeysBehavior = {
       properties: {
         /**
-         * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-         * `null` to disable the listeners.
-         * @type {?EventTarget}
+         * The HTMLElement that will be firing relevant KeyboardEvents.
          */
         keyEventTarget: {
           type: Object,
@@ -378,7 +376,7 @@
       _resetKeyEventListeners: function() {
         this._unlistenKeyEventListeners();
 
-        if (this.isAttached && this.keyEventTarget) {
+        if (this.isAttached) {
           this._listenKeyEventListeners();
         }
       },
