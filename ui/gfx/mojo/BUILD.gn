@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojo") {
   sources = [
+    "accelerated_widget.mojom",
     "selection_bound.mojom",
     "transform.mojom",
   ]

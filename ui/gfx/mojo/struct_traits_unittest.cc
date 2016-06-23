@@ -6,12 +6,21 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/mojo/traits_test_service.mojom.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
 
 namespace {
+
+gfx::AcceleratedWidget castToAcceleratedWidget(int i) {
+#if defined(USE_OZONE) || defined(USE_X11)
+  return static_cast<gfx::AcceleratedWidget>(i);
+#else
+  return reinterpret_cast<gfx::AcceleratedWidget>(i);
+#endif
+}
 
 class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
  public:
@@ -31,6 +40,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
   void EchoTransform(const Transform& t,
                      const EchoTransformCallback& callback) override {
+    callback.Run(t);
+  }
+
+  void EchoAcceleratedWidget(
+      const AcceleratedWidget& t,
+      const EchoAcceleratedWidgetCallback& callback) override {
     callback.Run(t);
   }
 
@@ -102,6 +117,21 @@ TEST_F(StructTraitsTest, Transform) {
   EXPECT_EQ(col2row4, output.matrix().get(3, 1));
   EXPECT_EQ(col3row4, output.matrix().get(3, 2));
   EXPECT_EQ(col4row4, output.matrix().get(3, 3));
+}
+
+// AcceleratedWidgets can only be sent between processes on X11, Ozone, Win
+#if defined(OS_WIN) || defined(USE_OZONE) || defined(USE_X11)
+#define MAYBE_AcceleratedWidget AcceleratedWidget
+#else
+#define MAYBE_AcceleratedWidget DISABLED_AcceleratedWidget
+#endif
+
+TEST_F(StructTraitsTest, MAYBE_AcceleratedWidget) {
+  gfx::AcceleratedWidget input(castToAcceleratedWidget(1001));
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gfx::AcceleratedWidget output;
+  proxy->EchoAcceleratedWidget(input, &output);
+  EXPECT_EQ(input, output);
 }
 
 }  // namespace gfx
