@@ -800,6 +800,9 @@
       'subresource_filter/core/browser/ruleset_service_unittest.cc',
       'subresource_filter/core/browser/subresource_filter_features_unittest.cc',
     ],
+    'subresource_filter_core_common_unittest_sources': [
+      'subresource_filter/core/common/closed_hash_map_unittest.cc',
+    ],
     'suggestions_unittest_sources': [
       'suggestions/blacklist_store_unittest.cc',
       'suggestions/image_manager_unittest.cc',
@@ -1072,6 +1075,7 @@
         '<@(ssl_config_unittest_sources)',
         '<@(ssl_errors_unittest_sources)',
         '<@(subresource_filter_core_browser_unittest_sources)',
+        '<@(subresource_filter_core_common_unittest_sources)',
         '<@(suggestions_unittest_sources)',
         '<@(supervised_user_error_page_unittest_sources)',
         '<@(sync_bookmarks_unittest_sources)',
@@ -1209,6 +1213,7 @@
         'components.gyp:ssl_errors',
         'components.gyp:subresource_filter_core_browser_test_support',
         'components.gyp:subresource_filter_core_browser',
+        'components.gyp:subresource_filter_core_common',
         'components.gyp:suggestions',
         'components.gyp:supervised_user_error_page',
         'components.gyp:sync_bookmarks',

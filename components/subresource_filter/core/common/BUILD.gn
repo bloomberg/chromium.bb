@@ -6,10 +6,23 @@ source_set("common") {
   sources = [
     "activation_state.cc",
     "activation_state.h",
+    "closed_hash_map.h",
     "memory_mapped_ruleset.cc",
     "memory_mapped_ruleset.h",
+    "uint64_hasher.h",
   ]
   deps = [
     "//base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "closed_hash_map_unittest.cc",
+  ]
+  deps = [
+    ":common",
+    "//testing/gtest",
   ]
 }
