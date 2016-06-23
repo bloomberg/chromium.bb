@@ -75,6 +75,7 @@
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../crypto/crypto.gyp:crypto',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../mojo/mojo_public.gyp:mojo_cpp_system',
         '../testing/gtest.gyp:gtest',
       ],
