@@ -92,7 +92,8 @@ getInput (void)
 {
   int inputLength;
   inputBuffer[0] = 0;
-  fgets (inputBuffer, sizeof (inputBuffer), stdin);
+  if(!fgets (inputBuffer, sizeof (inputBuffer), stdin))
+    exit(EXIT_FAILURE);
   inputLength = strlen (inputBuffer) - 1;
   if (inputLength < 0)		/*EOF on script */
     {

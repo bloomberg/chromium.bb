@@ -31,6 +31,9 @@ EXPORTS
 	extParseChars
 	extParseDots
 	getLastTableList
-lou_readCharFromFile
-lou_registerTableResolver
-lou_translatePrehyphenated
+	lou_readCharFromFile
+	lou_registerTableResolver
+	lou_translatePrehyphenated
+	lou_log
+	lou_indexTables
+	lou_findTable
