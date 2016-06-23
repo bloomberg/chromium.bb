@@ -101,6 +101,7 @@ TEST_F(ManifestParserTest, EmptyStringNull) {
   ASSERT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
   ASSERT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
   ASSERT_TRUE(manifest.gcm_sender_id.is_null());
+  ASSERT_TRUE(manifest.scope.is_empty());
 }
 
 TEST_F(ManifestParserTest, ValidNoContentParses) {
@@ -119,6 +120,7 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
   ASSERT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
   ASSERT_TRUE(manifest.gcm_sender_id.is_null());
+  ASSERT_TRUE(manifest.scope.is_empty());
 }
 
 TEST_F(ManifestParserTest, MultipleErrorsReporting) {
@@ -253,6 +255,14 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
               errors()[0]);
   }
 
+  // Don't parse if property isn't a valid URL.
+  {
+    Manifest manifest = ParseManifest("{ \"start_url\": \"http://www.google.ca:a\" }");
+    ASSERT_TRUE(manifest.start_url.is_empty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'start_url' ignored, URL is invalid.", errors()[0]);
+  }
+
   // Absolute start_url, same origin with document.
   {
     Manifest manifest =
@@ -283,6 +293,151 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
                               GURL("http://foo.com/landing/manifest.json"),
                               GURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest.start_url.spec(), "http://foo.com/landing/land.html");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+}
+
+TEST_F(ManifestParserTest, ScopeParseRules) {
+  // Smoke test.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"scope\": \"land\", \"start_url\": \"land/landing.html\" }");
+    ASSERT_EQ(manifest.scope.spec(),
+              default_document_url.Resolve("land").spec());
+    ASSERT_FALSE(manifest.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Whitespaces.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"scope\": \"  land  \", \"start_url\": \"land/landing.html\" }");
+    ASSERT_EQ(manifest.scope.spec(),
+              default_document_url.Resolve("land").spec());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Don't parse if property isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"scope\": {} }");
+    ASSERT_TRUE(manifest.scope.is_empty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'scope' ignored, type string expected.", errors()[0]);
+  }
+
+  // Don't parse if property isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"scope\": 42 }");
+    ASSERT_TRUE(manifest.scope.is_empty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'scope' ignored, type string expected.", errors()[0]);
+  }
+
+  // Absolute scope, start URL is in scope.
+  {
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"scope\": \"http://foo.com/land\", "
+        "\"start_url\": \"http://foo.com/land/landing.html\" }",
+        GURL("http://foo.com/manifest.json"),
+        GURL("http://foo.com/index.html"));
+    ASSERT_EQ(manifest.scope.spec(), "http://foo.com/land");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Absolute scope, start URL is not in scope.
+  {
+    Manifest manifest =
+        ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\", "
+                              "\"start_url\": \"http://foo.com/index.html\" }",
+                              GURL("http://foo.com/manifest.json"),
+                              GURL("http://foo.com/index.html"));
+    ASSERT_TRUE(manifest.scope.is_empty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'scope' ignored. Start url should be within scope "
+              "of scope URL.",
+              errors()[0]);
+  }
+
+  // Absolute scope, start URL has different origin than scope URL.
+  {
+    Manifest manifest =
+        ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\", "
+                              "\"start_url\": \"http://bar.com/land/landing.html\" }",
+                              GURL("http://foo.com/manifest.json"),
+                              GURL("http://foo.com/index.html"));
+    ASSERT_TRUE(manifest.scope.is_empty());
+    ASSERT_EQ(2u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'start_url' ignored, should be same origin as document.",
+        errors()[0]);
+    EXPECT_EQ("property 'scope' ignored. Start url should be within scope "
+              "of scope URL.",
+              errors()[1]);
+  }
+
+  // scope and start URL have diferent origin than document URL.
+  {
+    Manifest manifest =
+        ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\", "
+                              "\"start_url\": \"http://foo.com/land/landing.html\" }",
+                              GURL("http://foo.com/manifest.json"),
+                              GURL("http://bar.com/index.html"));
+    ASSERT_TRUE(manifest.scope.is_empty());
+    ASSERT_EQ(2u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'start_url' ignored, should be same origin as document.",
+        errors()[0]);
+    EXPECT_EQ("property 'scope' ignored, should be same origin as document.",
+              errors()[1]);
+  }
+
+  // No start URL. Document URL is in scope.
+  {
+    Manifest manifest = ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\" }",
+                                              GURL("http://foo.com/manifest.json"),
+                                              GURL("http://foo.com/land/index.html"));
+    ASSERT_EQ(manifest.scope.spec(), "http://foo.com/land");
+    ASSERT_EQ(0u, GetErrorCount());
+  }
+
+  // No start URL. Document is out of scope.
+  {
+    Manifest manifest = ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\" }",
+                                              GURL("http://foo.com/manifest.json"),
+                                              GURL("http://foo.com/index.html"));
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'scope' ignored. Start url should be within scope "
+              "of scope URL.",
+              errors()[0]);
+  }
+
+  // Resolving has to happen based on the manifest_url.
+  {
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"scope\": \"treasure\" }",
+        GURL("http://foo.com/map/manifest.json"),
+        GURL("http://foo.com/map/treasure/island/index.html"));
+    ASSERT_EQ(manifest.scope.spec(), "http://foo.com/map/treasure");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Scope is parent directory.
+  {
+    Manifest manifest =
+        ParseManifestWithURLs("{ \"scope\": \"..\" }",
+                              GURL("http://foo.com/map/manifest.json"),
+                              GURL("http://foo.com/index.html"));
+    ASSERT_EQ(manifest.scope.spec(), "http://foo.com/");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Scope tries to go up past domain.
+  {
+    Manifest manifest =
+        ParseManifestWithURLs("{ \"scope\": \"../..\" }",
+                              GURL("http://foo.com/map/manifest.json"),
+                              GURL("http://foo.com/index.html"));
+    ASSERT_EQ(manifest.scope.spec(), "http://foo.com/");
     EXPECT_EQ(0u, GetErrorCount());
   }
 }

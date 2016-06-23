@@ -123,6 +123,9 @@ struct CONTENT_EXPORT Manifest {
   // Null if parsing failed or the field was not present.
   base::NullableString16 gcm_sender_id;
 
+  // Empty if the parsing failed or the field was not present.
+  GURL scope;
+
   // Maximum length for all the strings inside the Manifest when it is sent over
   // IPC. The renderer process should truncate the strings before sending the
   // Manifest and the browser process must do the same when receiving it.

@@ -51,7 +51,8 @@ bool Manifest::IsEmpty() const {
          !prefer_related_applications &&
          theme_color == Manifest::kInvalidOrMissingColor &&
          background_color == Manifest::kInvalidOrMissingColor &&
-         gcm_sender_id.is_null();
+         gcm_sender_id.is_null() &&
+         scope.is_empty();
 }
 
 } // namespace content

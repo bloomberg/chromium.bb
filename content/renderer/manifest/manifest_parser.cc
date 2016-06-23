@@ -64,6 +64,7 @@ void ManifestParser::Parse() {
   manifest_.name = ParseName(*dictionary);
   manifest_.short_name = ParseShortName(*dictionary);
   manifest_.start_url = ParseStartURL(*dictionary);
+  manifest_.scope = ParseScope(*dictionary, manifest_.start_url);
   manifest_.display = ParseDisplay(*dictionary);
   manifest_.orientation = ParseOrientation(*dictionary);
   manifest_.icons = ParseIcons(*dictionary);
@@ -156,7 +157,10 @@ GURL ManifestParser::ParseURL(const base::DictionaryValue& dictionary,
   if (url_str.is_null())
     return GURL();
 
-  return base_url.Resolve(url_str.string());
+  GURL resolved = base_url.Resolve(url_str.string());
+  if (!resolved.is_valid())
+    AddErrorInfo("property '" + key + "' ignored, URL is invalid.");
+  return resolved;
 }
 
 base::NullableString16 ManifestParser::ParseName(
@@ -181,6 +185,34 @@ GURL ManifestParser::ParseStartURL(const base::DictionaryValue& dictionary) {
   }
 
   return start_url;
+}
+
+GURL ManifestParser::ParseScope(const base::DictionaryValue& dictionary,
+                                const GURL& start_url) {
+  GURL scope = ParseURL(dictionary, "scope", manifest_url_);
+  if (!scope.is_valid()) {
+    return GURL();
+  }
+
+  if (scope.GetOrigin() != document_url_.GetOrigin()) {
+    AddErrorInfo("property 'scope' ignored, should be "
+                 "same origin as document.");
+    return GURL();
+  }
+
+  // According to the spec, if the start_url cannot be parsed, the document URL
+  // should be used as the start URL. If the start_url could not be parsed,
+  // check that the document URL is within scope.
+  GURL check_in_scope = start_url.is_empty() ? document_url_ : start_url;
+  if (check_in_scope.GetOrigin() != scope.GetOrigin() ||
+      !base::StartsWith(check_in_scope.path(), scope.path(),
+                        base::CompareCase::SENSITIVE)) {
+    AddErrorInfo(
+        "property 'scope' ignored. Start url should be within scope "
+        "of scope URL.");
+    return GURL();
+  }
+  return scope;
 }
 
 blink::WebDisplayMode ManifestParser::ParseDisplay(

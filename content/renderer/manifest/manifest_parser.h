@@ -90,6 +90,12 @@ class CONTENT_EXPORT ManifestParser {
   base::NullableString16 ParseShortName(
       const base::DictionaryValue& dictionary);
 
+  // Parses the 'scope' field of the manifest, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-scope-member
+  // Returns the parsed GURL if any, an empty GURL if the parsing failed.
+  GURL ParseScope(const base::DictionaryValue& dictionary,
+                  const GURL& start_url);
+
   // Parses the 'start_url' field of the manifest, as defined in:
   // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-start_url-member
   // Returns the parsed GURL if any, an empty GURL if the parsing failed.
