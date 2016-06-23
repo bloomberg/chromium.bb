@@ -64,10 +64,8 @@ class LocalFrame;
 class CORE_EXPORT VisualViewport final
     : public GarbageCollectedFinalized<VisualViewport>
     , public GraphicsLayerClient
-    , public ScriptWrappable
     , public ScrollableArea {
     USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
-    DEFINE_WRAPPERTYPEINFO();
 public:
     static VisualViewport* create(FrameHost& host)
     {

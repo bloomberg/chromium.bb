@@ -1,6 +1,6 @@
-CONSOLE WARNING: line 104: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 104: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
-CONSOLE WARNING: line 104: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
+CONSOLE WARNING: line 98: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 98: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
+CONSOLE WARNING: line 98: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
 Tests property access on a cached DOMWindow after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -214,6 +214,11 @@ PASS childWindow.status is ''
 PASS childWindow.statusbar.visible is false
 PASS childWindow.styleMedia.type is ''
 PASS childWindow.toolbar.visible is false
+FAIL childWindow.visualViewport.clientHeight should be 0. Threw exception TypeError: Cannot read property 'clientHeight' of null
+FAIL childWindow.visualViewport.clientWidth should be 0. Threw exception TypeError: Cannot read property 'clientWidth' of null
+FAIL childWindow.visualViewport.pageScale should be 0. Threw exception TypeError: Cannot read property 'pageScale' of null
+FAIL childWindow.visualViewport.scrollLeft should be 0. Threw exception TypeError: Cannot read property 'scrollLeft' of null
+FAIL childWindow.visualViewport.scrollTop should be 0. Threw exception TypeError: Cannot read property 'scrollTop' of null
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<style>
+  body {
+    height: 2000px;
+    width: 2000px;
+  }
+  #frame {
+    height: 500px;
+    width: 200px;
+  }
+</style>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+  var scrollbarWidth = 15;
+  var scrollbarHeight = 15;
+
+  function frameViewport() {
+    return frame.contentWindow.visualViewport;
+  }
+
+  async_test(function(t) {
+    window.onload = t.step_func(function() {
+      internals.setPageScaleFactor(2);
+
+      // The page scale on the root frame shouldn't affect the viewport/scale
+      // values in the iframe.
+      var frame = document.getElementById("frame");
+      frame.contentWindow.scrollTo(10, 15);
+      assert_equals(frameViewport().clientWidth, 200 - scrollbarWidth);
+      assert_equals(frameViewport().clientHeight, 500 - scrollbarHeight);
+      assert_equals(frameViewport().scrollLeft, 0);
+      assert_equals(frameViewport().scrollTop, 0);
+      assert_equals(frameViewport().pageScale, 1);
+
+      t.done();
+    });
+  }, 'Verify viewport dimensions for iframe.');
+</script>
+<iframe id="frame" srcdoc="
+<style>
+  body {
+    width: 2000px;
+    height: 2000px;
+  }
+</style>
+"></iframe>

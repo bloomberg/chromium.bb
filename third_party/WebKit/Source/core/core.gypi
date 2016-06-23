@@ -1720,6 +1720,8 @@
             'frame/DOMTimer.h',
             'frame/DOMTimerCoordinator.cpp',
             'frame/DOMTimerCoordinator.h',
+            'frame/DOMVisualViewport.cpp',
+            'frame/DOMVisualViewport.h',
             'frame/DOMWindow.cpp',
             'frame/DOMWindow.h',
             'frame/DOMWindowBase64.cpp',

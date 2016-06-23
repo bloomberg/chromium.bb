@@ -28,6 +28,7 @@
 
 [
     RuntimeEnabled=VisualViewportAPI,
+    ImplementedAs=DOMVisualViewport,
 ] interface VisualViewport {
     attribute double scrollTop;
     attribute double scrollLeft;

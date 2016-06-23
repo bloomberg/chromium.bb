@@ -22,6 +22,7 @@ class CSSRuleList;
 class CSSStyleDeclaration;
 class CustomElementsRegistry;
 class DOMSelection;
+class DOMVisualViewport;
 class DOMWindowCSS;
 class Document;
 class Element;
@@ -41,7 +42,6 @@ class ScrollToOptions;
 class SerializedScriptValue;
 class Storage;
 class StyleMedia;
-class VisualViewport;
 
 class CORE_EXPORT DOMWindow : public EventTargetWithInlineData, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
@@ -92,7 +92,7 @@ public:
     double pageXOffset() const { return scrollX(); }
     double pageYOffset() const { return scrollY(); }
 
-    virtual VisualViewport* visualViewport() { return nullptr; }
+    virtual DOMVisualViewport* visualViewport() { return nullptr; }
 
     bool closed() const;
 

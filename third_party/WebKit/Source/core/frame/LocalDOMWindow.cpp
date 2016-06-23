@@ -48,6 +48,7 @@
 #include "core/events/PopStateEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/BarProp.h"
+#include "core/frame/DOMVisualViewport.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
@@ -302,6 +303,7 @@ bool LocalDOMWindow::allowPopUp()
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : m_frameObserver(WindowFrameObserver::create(this, frame))
+    , m_visualViewport(DOMVisualViewport::create(this))
     , m_shouldPrintWhenFinishedLoading(false)
 {
     ThreadState::current()->registerPreFinalizer(this);
@@ -928,13 +930,16 @@ int LocalDOMWindow::outerWidth() const
     return chromeClient.windowRect().width();
 }
 
-static FloatSize getViewportSize(LocalFrame* frame)
+FloatSize LocalDOMWindow::getViewportSize(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    FrameView* view = frame->view();
+    if (!frame())
+        return FloatSize();
+
+    FrameView* view = frame()->view();
     if (!view)
         return FloatSize();
 
-    FrameHost* host = frame->host();
+    FrameHost* host = frame()->host();
     if (!host)
         return FloatSize();
 
@@ -942,18 +947,18 @@ static FloatSize getViewportSize(LocalFrame* frame)
     // initial page scale depends on the content width and is set after a
     // layout, perform one now so queries during page load will use the up to
     // date viewport.
-    if (host->settings().viewportEnabled() && frame->isMainFrame())
-        frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    if (host->settings().viewportEnabled() && frame()->isMainFrame())
+        frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's layoutObject.
-    if (Frame* parent = frame->tree().parent()) {
+    if (Frame* parent = frame()->tree().parent()) {
         if (parent && parent->isLocalFrame())
             toLocalFrame(parent)->document()->updateStyleAndLayoutIgnorePendingStylesheets();
     }
 
-    return frame->isMainFrame() && !host->settings().inertVisualViewport()
+    return frame()->isMainFrame() && !host->settings().inertVisualViewport()
         ? FloatSize(host->visualViewport().visibleRect().size())
-        : FloatSize(view->visibleContentRect(IncludeScrollbars).size());
+        : FloatSize(view->visibleContentRect(scrollbarInclusion).size());
 }
 
 int LocalDOMWindow::innerHeight() const
@@ -961,7 +966,7 @@ int LocalDOMWindow::innerHeight() const
     if (!frame())
         return 0;
 
-    FloatSize viewportSize = getViewportSize(frame());
+    FloatSize viewportSize = getViewportSize(IncludeScrollbars);
     return adjustForAbsoluteZoom(expandedIntSize(viewportSize).height(), frame()->pageZoomFactor());
 }
 
@@ -970,7 +975,7 @@ int LocalDOMWindow::innerWidth() const
     if (!frame())
         return 0;
 
-    FloatSize viewportSize = getViewportSize(frame());
+    FloatSize viewportSize = getViewportSize(IncludeScrollbars);
     return adjustForAbsoluteZoom(expandedIntSize(viewportSize).width(), frame()->pageZoomFactor());
 }
 
@@ -1044,16 +1049,12 @@ double LocalDOMWindow::scrollY() const
     return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
 }
 
-VisualViewport* LocalDOMWindow::visualViewport()
+DOMVisualViewport* LocalDOMWindow::visualViewport()
 {
     if (!frame())
         return nullptr;
 
-    FrameHost* host = frame()->host();
-    if (!host)
-        return nullptr;
-
-    return &host->visualViewport();
+    return m_visualViewport;
 }
 
 const AtomicString& LocalDOMWindow::name() const
@@ -1557,6 +1558,7 @@ DEFINE_TRACE(LocalDOMWindow)
     visitor->trace(m_applicationCache);
     visitor->trace(m_eventQueue);
     visitor->trace(m_postMessageTimers);
+    visitor->trace(m_visualViewport);
     DOMWindow::trace(visitor);
     Supplementable<LocalDOMWindow>::trace(visitor);
     DOMWindowLifecycleNotifier::trace(visitor);

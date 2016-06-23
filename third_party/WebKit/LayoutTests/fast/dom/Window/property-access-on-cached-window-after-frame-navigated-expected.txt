@@ -1,6 +1,6 @@
-CONSOLE WARNING: line 104: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 104: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
-CONSOLE WARNING: line 104: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
+CONSOLE WARNING: line 98: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 98: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
+CONSOLE WARNING: line 98: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
 Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -215,6 +215,11 @@ PASS oldChildWindow.status is newChildWindow.status
 PASS oldChildWindow.statusbar.visible is newChildWindow.statusbar.visible
 PASS oldChildWindow.styleMedia.type is newChildWindow.styleMedia.type
 PASS oldChildWindow.toolbar.visible is newChildWindow.toolbar.visible
+PASS oldChildWindow.visualViewport.clientHeight is newChildWindow.visualViewport.clientHeight
+PASS oldChildWindow.visualViewport.clientWidth is newChildWindow.visualViewport.clientWidth
+PASS oldChildWindow.visualViewport.pageScale is newChildWindow.visualViewport.pageScale
+PASS oldChildWindow.visualViewport.scrollLeft is newChildWindow.visualViewport.scrollLeft
+PASS oldChildWindow.visualViewport.scrollTop is newChildWindow.visualViewport.scrollTop
 PASS oldChildWindow.wasPostTestScriptParsed is newChildWindow.wasPostTestScriptParsed
 PASS successfullyParsed is true
 

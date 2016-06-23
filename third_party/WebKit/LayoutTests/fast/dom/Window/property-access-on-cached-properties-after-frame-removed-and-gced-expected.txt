@@ -1,6 +1,6 @@
-CONSOLE WARNING: line 104: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 104: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
-CONSOLE WARNING: line 104: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
+CONSOLE WARNING: line 98: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 98: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
+CONSOLE WARNING: line 98: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
 Tests access of cached DOMWindow properties after the associated frame is removed from a web page and garbage collected. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -102,6 +102,11 @@ PASS window.cached_speechSynthesis.speaking is false
 PASS window.cached_statusbar.visible is false
 PASS window.cached_styleMedia.type is ''
 PASS window.cached_toolbar.visible is false
+PASS window.cached_visualViewport.clientHeight is 0
+PASS window.cached_visualViewport.clientWidth is 0
+PASS window.cached_visualViewport.pageScale is 0
+PASS window.cached_visualViewport.scrollLeft is 0
+PASS window.cached_visualViewport.scrollTop is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

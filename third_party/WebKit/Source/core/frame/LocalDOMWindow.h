@@ -56,7 +56,7 @@ class Page;
 class PostMessageTimer;
 class SecurityOrigin;
 class SourceLocation;
-class VisualViewport;
+class DOMVisualViewport;
 
 enum PageshowEventPersistence {
     PageshowEventNotPersisted = 0,
@@ -106,7 +106,7 @@ public:
     int screenY() const override;
     double scrollX() const override;
     double scrollY() const override;
-    VisualViewport* visualViewport() override;
+    DOMVisualViewport* visualViewport() override;
     const AtomicString& name() const override;
     void setName(const AtomicString&) override;
     String status() const override;
@@ -202,6 +202,8 @@ public:
 
     void acceptLanguagesChanged();
 
+    FloatSize getViewportSize(IncludeScrollbarsInRect) const;
+
 protected:
     // EventTarget overrides.
     void addedEventListener(const AtomicString& eventType, RegisteredEventListener&) override;
@@ -230,6 +232,7 @@ private:
 
     Member<WindowFrameObserver> m_frameObserver;
     Member<Document> m_document;
+    Member<DOMVisualViewport> m_visualViewport;
 
     bool m_shouldPrintWhenFinishedLoading;
 
