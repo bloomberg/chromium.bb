@@ -52,6 +52,11 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "extensions/browser/api/vpn_provider/vpn_service.h"
+#include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
+#endif  // defined(OS_CHROMEOS)
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -502,7 +507,15 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
 std::unique_ptr<content::VpnServiceProxy>
 ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
     content::BrowserContext* browser_context) {
+#if defined(OS_CHROMEOS)
+  chromeos::VpnService* vpn_service =
+      chromeos::VpnServiceFactory::GetForBrowserContext(browser_context);
+  if (!vpn_service)
+    return nullptr;
+  return vpn_service->GetVpnServiceProxy();
+#else
   return nullptr;
+#endif
 }
 
 void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(

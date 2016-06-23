@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,6 +29,8 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
+#include "content/public/browser/pepper_vpn_provider_resource_host_proxy.h"
+#include "content/public/browser/vpn_service_proxy.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -62,6 +65,11 @@ class VpnService::VpnConfiguration : public ShillThirdPartyVpnObserver {
     service_path_ = service_path;
   }
   const std::string& object_path() const { return object_path_; }
+  void set_pepper_proxy(
+      std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
+          pepper_vpn_provider_proxy) {
+    pepper_vpn_provider_proxy_ = std::move(pepper_vpn_provider_proxy);
+  }
 
   // ShillThirdPartyVpnObserver:
   void OnPacketReceived(const std::vector<char>& data) override;
@@ -72,6 +80,9 @@ class VpnService::VpnConfiguration : public ShillThirdPartyVpnObserver {
   const std::string configuration_name_;
   const std::string key_;
   const std::string object_path_;
+
+  std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
+      pepper_vpn_provider_proxy_;
 
   std::string service_path_;
 
@@ -100,11 +111,16 @@ void VpnService::VpnConfiguration::OnPacketReceived(
   if (!vpn_service_) {
     return;
   }
-  std::unique_ptr<base::ListValue> event_args =
-      api_vpn::OnPacketReceived::Create(data);
-  vpn_service_->SendSignalToExtension(
-      extension_id_, extensions::events::VPN_PROVIDER_ON_PACKET_RECEIVED,
-      api_vpn::OnPacketReceived::kEventName, std::move(event_args));
+  // Pass packet to the Pepper API if the connection is bound to it.
+  if (pepper_vpn_provider_proxy_) {
+    pepper_vpn_provider_proxy_->SendOnPacketReceived(data);
+  } else {
+    std::unique_ptr<base::ListValue> event_args =
+        api_vpn::OnPacketReceived::Create(data);
+    vpn_service_->SendSignalToExtension(
+        extension_id_, extensions::events::VPN_PROVIDER_ON_PACKET_RECEIVED,
+        api_vpn::OnPacketReceived::kEventName, std::move(event_args));
+  }
 }
 
 void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
@@ -121,6 +137,12 @@ void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
   } else if (platform_message == api_vpn::PLATFORM_MESSAGE_DISCONNECTED ||
              platform_message == api_vpn::PLATFORM_MESSAGE_ERROR) {
     vpn_service_->SetActiveConfiguration(nullptr);
+
+    // Disconnect Pepper-bound configuration.
+    if (pepper_vpn_provider_proxy_) {
+      pepper_vpn_provider_proxy_->SendOnUnbind();
+      pepper_vpn_provider_proxy_.reset();
+    }
   }
 
   // TODO(kaliamoorthi): Update the lower layers to get the error message and
@@ -132,6 +154,62 @@ void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
   vpn_service_->SendSignalToExtension(
       extension_id_, extensions::events::VPN_PROVIDER_ON_PLATFORM_MESSAGE,
       api_vpn::OnPlatformMessage::kEventName, std::move(event_args));
+}
+
+class VpnService::VpnServiceProxyImpl : public content::VpnServiceProxy {
+ public:
+  VpnServiceProxyImpl(base::WeakPtr<VpnService> vpn_service);
+
+  void Bind(const std::string& extension_id,
+            const std::string& configuration_id,
+            const std::string& configuration_name,
+            const SuccessCallback& success,
+            const FailureCallback& failure,
+            std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
+                pepper_vpn_provider_proxy) override;
+  void SendPacket(const std::string& extension_id,
+                  const std::vector<char>& data,
+                  const SuccessCallback& success,
+                  const FailureCallback& failure) override;
+
+ private:
+  base::WeakPtr<VpnService> vpn_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(VpnServiceProxyImpl);
+};
+
+VpnService::VpnServiceProxyImpl::VpnServiceProxyImpl(
+    base::WeakPtr<VpnService> vpn_service)
+    : vpn_service_(vpn_service) {}
+
+void VpnService::VpnServiceProxyImpl::Bind(
+    const std::string& extension_id,
+    const std::string& configuration_id,
+    const std::string& configuration_name,
+    const SuccessCallback& success,
+    const FailureCallback& failure,
+    std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
+        pepper_vpn_provider_proxy) {
+  if (!vpn_service_) {
+    NOTREACHED();
+    return;
+  }
+
+  vpn_service_->Bind(extension_id, configuration_id, configuration_name,
+                     success, failure, std::move(pepper_vpn_provider_proxy));
+}
+
+void VpnService::VpnServiceProxyImpl::SendPacket(
+    const std::string& extension_id,
+    const std::vector<char>& data,
+    const SuccessCallback& success,
+    const FailureCallback& failure) {
+  if (!vpn_service_) {
+    NOTREACHED();
+    return;
+  }
+
+  vpn_service_->SendPacket(extension_id, data, success, failure);
 }
 
 VpnService::VpnService(
@@ -574,6 +652,54 @@ bool VpnService::DoesActiveConfigurationExistAndIsAccessAuthorized(
     const std::string& extension_id) {
   return active_configuration_ &&
          active_configuration_->extension_id() == extension_id;
+}
+
+void VpnService::Bind(
+    const std::string& extension_id,
+    const std::string& configuration_id,
+    const std::string& configuration_name,
+    const SuccessCallback& success,
+    const FailureCallback& failure,
+    std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
+        pepper_vpn_provider_proxy) {
+  // The ID is the configuration name for now. This may change in the future.
+  const std::string key = GetKey(extension_id, configuration_id);
+  if (!ContainsKey(key_to_configuration_map_, key)) {
+    failure.Run(std::string(),
+                std::string("Unauthorized access. "
+                            "The configuration does not exist."));
+    return;
+  }
+
+  VpnConfiguration* configuration = key_to_configuration_map_[key];
+  if (active_configuration_ != configuration) {
+    failure.Run(std::string(), std::string("Unauthorized access. "
+                                           "The configuration is not active."));
+    return;
+  }
+
+  if (configuration->extension_id() != extension_id ||
+      configuration->configuration_name() != configuration_name) {
+    failure.Run(std::string(),
+                std::string("Unauthorized access. "
+                            "Configuration name or extension ID mismatch."));
+    return;
+  }
+
+  const std::string service_path = configuration->service_path();
+  if (service_path.empty()) {
+    failure.Run(std::string(), std::string("Pending create."));
+    return;
+  }
+
+  // Connection authorized. All packets will be routed through the Pepper API.
+  configuration->set_pepper_proxy(std::move(pepper_vpn_provider_proxy));
+
+  success.Run();
+}
+
+std::unique_ptr<content::VpnServiceProxy> VpnService::GetVpnServiceProxy() {
+  return base::WrapUnique(new VpnServiceProxyImpl(weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos

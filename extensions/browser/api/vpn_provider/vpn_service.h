@@ -30,6 +30,8 @@ class ListValue;
 namespace content {
 
 class BrowserContext;
+class PepperVpnProviderResourceHostProxy;
+class VpnServiceProxy;
 
 }  // namespace content
 
@@ -162,8 +164,13 @@ class VpnService : public KeyedService,
   static std::string GetKey(const std::string& extension_id,
                             const std::string& configuration_name);
 
+  // Creates a new VpnServiceProxy. The caller owns the returned value. It's
+  // valid to return nullptr.
+  std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy();
+
  private:
   class VpnConfiguration;
+  class VpnServiceProxyImpl;
 
   using StringToConfigurationMap = std::map<std::string, VpnConfiguration*>;
 
@@ -225,6 +232,14 @@ class VpnService : public KeyedService,
 
   // Set the active configuration.
   void SetActiveConfiguration(VpnConfiguration* configuration);
+
+  void Bind(const std::string& extension_id,
+            const std::string& configuration_id,
+            const std::string& configuration_name,
+            const SuccessCallback& success,
+            const FailureCallback& failure,
+            std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
+                pepper_vpn_provider_proxy);
 
   content::BrowserContext* browser_context_;
   std::string userid_hash_;
