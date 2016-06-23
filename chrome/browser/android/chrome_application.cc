@@ -42,12 +42,12 @@ void CommitPendingWritesForProfile(Profile* profile) {
   // These calls are asynchronous. They may not finish (and may not even
   // start!) before the Android OS kills our process. But we can't wait for them
   // to finish because blocking the UI thread is illegal.
+  profile->GetNetworkPredictor()->SaveStateForNextStartup();
   profile->GetPrefs()->CommitPendingWrite();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&FlushCookiesOnIOThread,
                  make_scoped_refptr(profile->GetRequestContext())));
-  profile->GetNetworkPredictor()->SaveStateForNextStartupAndTrim();
   content::BrowserContext::ForEachStoragePartition(
       profile, base::Bind(FlushStoragePartition));
 }

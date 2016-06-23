@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -26,8 +27,8 @@
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -93,8 +94,8 @@ static void AddToSerializedList(const GURL& motivation,
                                 double use_rate,
                                 base::ListValue* referral_list) {
   // Find the motivation if it is already used.
-  base::ListValue* motivation_list = FindSerializationMotivation(motivation,
-                                                           referral_list);
+  base::ListValue* motivation_list =
+      FindSerializationMotivation(motivation, referral_list);
   if (!motivation_list) {
     // This is the first mention of this motivation, so build a list.
     motivation_list = new base::ListValue;
@@ -188,72 +189,24 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
   predictor.Shutdown();
 }
 
-// Check that GetHtmlReferrerLists() doesn't crash when given duplicated
-// domains for referring URL, and that it sorts the results in the
-// correct order.
+// Test that the referrers are sorted in MRU order in the HTML UI.
 TEST_F(PredictorTest, GetHtmlReferrerLists) {
-  Predictor predictor(true, true);
-  const double kUseRate = 23.4;
-  std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
+  SimplePredictor predictor(true, true);
 
-  AddToSerializedList(
-      GURL("http://d.google.com/x1"),
-      GURL("http://foo.com/"),
-      kUseRate, referral_list.get());
-
-  // Duplicated hostname (d.google.com). This should not cause any crashes
-  // (i.e. crbug.com/116345)
-  AddToSerializedList(
-      GURL("http://d.google.com/x2"),
-      GURL("http://foo.com/"),
-      kUseRate, referral_list.get());
-
-  AddToSerializedList(
-      GURL("http://a.yahoo.com/y"),
-      GURL("http://foo1.com/"),
-      kUseRate, referral_list.get());
-
-  AddToSerializedList(
-      GURL("http://b.google.com/x3"),
-      GURL("http://foo2.com/"),
-      kUseRate, referral_list.get());
-
-  AddToSerializedList(
-      GURL("http://d.yahoo.com/x5"),
-      GURL("http://i.like.turtles/"),
-      kUseRate, referral_list.get());
-
-  AddToSerializedList(
-      GURL("http://c.yahoo.com/x4"),
-      GURL("http://foo3.com/"),
-      kUseRate, referral_list.get());
-
-  predictor.DeserializeReferrers(*referral_list.get());
+  predictor.LearnFromNavigation(GURL("http://www.source_b.test"),
+                                GURL("http://www.target_b.test"));
+  predictor.LearnFromNavigation(GURL("http://www.source_a.test"),
+                                GURL("http://www.target_a.test"));
+  predictor.LearnFromNavigation(GURL("http://www.source_c.test"),
+                                GURL("http://www.target_c.test"));
 
   std::string html;
   predictor.GetHtmlReferrerLists(&html);
 
-  // The lexicographic sorting of hostnames would be:
-  //   a.yahoo.com
-  //   b.google.com
-  //   c.yahoo.com
-  //   d.google.com
-  //   d.yahoo.com
-  //
-  // However we expect to sort them by domain in the output:
-  //   b.google.com
-  //   d.google.com
-  //   a.yahoo.com
-  //   c.yahoo.com
-  //   d.yahoo.com
-
   size_t pos[] = {
-      html.find("<td rowspan=1>http://b.google.com/x3"),
-      html.find("<td rowspan=1>http://d.google.com/x1"),
-      html.find("<td rowspan=1>http://d.google.com/x2"),
-      html.find("<td rowspan=1>http://a.yahoo.com/y"),
-      html.find("<td rowspan=1>http://c.yahoo.com/x4"),
-      html.find("<td rowspan=1>http://d.yahoo.com/x5"),
+      html.find("<td rowspan=1>http://www.source_c.test"),
+      html.find("<td rowspan=1>http://www.source_a.test"),
+      html.find("<td rowspan=1>http://www.source_b.test"),
   };
 
   // Make sure things appeared in the expected order.
@@ -264,97 +217,56 @@ TEST_F(PredictorTest, GetHtmlReferrerLists) {
   predictor.Shutdown();
 }
 
-// Verify that two floats are within 1% of each other in value.
-#define EXPECT_SIMILAR(a, b) do { \
-    double espilon_ratio = 1.01;  \
-    if ((a) < 0.)  \
-      espilon_ratio = 1 / espilon_ratio;  \
-    EXPECT_LT(a, espilon_ratio * (b));   \
-    EXPECT_GT((a) * espilon_ratio, b);   \
-    } while (0)
+// Expect the exact same HTML when the predictor's referrers are serialized and
+// deserialized (implies ordering remains the same).
+TEST_F(PredictorTest, SerializeAndDeserialize) {
+  SimplePredictor predictor(true, true);
 
+  for (int i = 0; i < Predictor::kMaxReferrers * 2; ++i) {
+    predictor.LearnFromNavigation(
+        GURL(base::StringPrintf("http://www.source_%d.test", i)),
+        GURL(base::StringPrintf("http://www.target_%d.test", i)));
+  }
+  std::string html;
+  predictor.GetHtmlReferrerLists(&html);
 
-// Make sure the Trim() functionality works as expected.
-TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
-  Predictor predictor(true, true);
-  GURL motivation_url("http://www.google.com:110");
+  base::ListValue referral_list;
+  predictor.SerializeReferrers(&referral_list);
+  predictor.DeserializeReferrers(referral_list);
 
-  GURL icon_subresource_url("http://icons.google.com:111");
-  const double kRateIcon = 16.0 * Predictor::kDiscardableExpectedValue;
-  GURL img_subresource_url("http://img.google.com:118");
-  const double kRateImg = 8.0 * Predictor::kDiscardableExpectedValue;
+  std::string html2;
+  predictor.GetHtmlReferrerLists(&html2);
 
-  std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
-  AddToSerializedList(
-      motivation_url, icon_subresource_url, kRateIcon, referral_list.get());
-  AddToSerializedList(
-      motivation_url, img_subresource_url, kRateImg, referral_list.get());
-
-  predictor.DeserializeReferrers(*referral_list.get());
-
-  base::ListValue recovered_referral_list;
-  predictor.SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(2U, recovered_referral_list.GetSize());
-  double rate;
-  EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, icon_subresource_url, recovered_referral_list,
-      &rate));
-  EXPECT_SIMILAR(rate, kRateIcon);
-
-  EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list, &rate));
-  EXPECT_SIMILAR(rate, kRateImg);
-
-  // Each time we Trim 24 times, the user_rate figures should reduce by a factor
-  // of two,  until they are small, and then a trim will delete the whole entry.
-  for (int i = 0; i < 24; ++i)
-    predictor.TrimReferrersNow();
-  predictor.SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(2U, recovered_referral_list.GetSize());
-  EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, icon_subresource_url, recovered_referral_list, &rate));
-  EXPECT_SIMILAR(rate, kRateIcon / 2);
-
-  EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list, &rate));
-  EXPECT_SIMILAR(rate, kRateImg / 2);
-
-  for (int i = 0; i < 24; ++i)
-    predictor.TrimReferrersNow();
-  predictor.SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(2U, recovered_referral_list.GetSize());
-  EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, icon_subresource_url, recovered_referral_list, &rate));
-  EXPECT_SIMILAR(rate, kRateIcon / 4);
-  EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list, &rate));
-  EXPECT_SIMILAR(rate, kRateImg / 4);
-
-  for (int i = 0; i < 24; ++i)
-    predictor.TrimReferrersNow();
-  predictor.SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(2U, recovered_referral_list.GetSize());
-  EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, icon_subresource_url, recovered_referral_list, &rate));
-  EXPECT_SIMILAR(rate, kRateIcon / 8);
-
-  // Img is below threshold, and so it gets deleted.
-  EXPECT_FALSE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list, &rate));
-
-  for (int i = 0; i < 24; ++i)
-    predictor.TrimReferrersNow();
-  predictor.SerializeReferrers(&recovered_referral_list);
-  // Icon is also trimmed away, so entire set gets discarded.
-  EXPECT_EQ(1U, recovered_referral_list.GetSize());
-  EXPECT_FALSE(GetDataFromSerialization(
-      motivation_url, icon_subresource_url, recovered_referral_list, &rate));
-  EXPECT_FALSE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list, &rate));
+  EXPECT_EQ(html, html2);
 
   predictor.Shutdown();
 }
 
+// Filling the MRU cache should evict entries that were used less recently.
+TEST_F(PredictorTest, FillMRUCache) {
+  SimplePredictor predictor(true, true);
+
+  for (int i = 0; i < Predictor::kMaxReferrers * 2; ++i) {
+    predictor.LearnFromNavigation(
+        GURL(base::StringPrintf("http://www.source_%d.test", i)),
+        GURL(base::StringPrintf("http://www.target_%d.test", i)));
+  }
+
+  std::string html;
+  predictor.GetHtmlReferrerLists(&html);
+
+  for (int i = 0; i < Predictor::kMaxReferrers; ++i) {
+    EXPECT_EQ(html.find(base::StringPrintf("http://www.source_%d.test", i)),
+              std::string::npos);
+  }
+  for (int i = Predictor::kMaxReferrers; i < Predictor::kMaxReferrers * 2;
+       ++i) {
+    EXPECT_NE(html.find(base::StringPrintf("http://www.source_%d.test", i)),
+              std::string::npos);
+  }
+
+  predictor.Shutdown();
+}
 
 TEST_F(PredictorTest, PriorityQueuePushPopTest) {
   Predictor::HostNameQueue queue;

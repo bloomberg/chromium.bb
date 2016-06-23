@@ -62,10 +62,6 @@ class ReferrerValue {
   int64_t preresolution_count() const { return preresolution_count_; }
   void preresolution_increment() { ++preresolution_count_; }
 
-  // Reduce the subresource_use_rate_ by the supplied factor, and return true
-  // if the result is still greater than the given threshold.
-  bool Trim(double reduce_rate, double threshold);
-
  private:
   const base::Time birth_time_;
 
@@ -110,11 +106,6 @@ class Referrer : public SubresourceMap {
   // navigates to this referrer.  Note that if the list is long, an entry may be
   // discarded to make room for this insertion.
   void SuggestHost(const GURL& url);
-
-  // Trim the Referrer, by first diminishing (scaling down) the subresource
-  // use expectation for each ReferredValue.
-  // Returns true if expected use rate is greater than the threshold.
-  bool Trim(double reduce_rate, double threshold);
 
   // Provide methods for persisting, and restoring contents into a Value class.
   base::Value* Serialize() const;

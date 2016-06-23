@@ -107,23 +107,6 @@ void Referrer::DeleteLeastUseful() {
     erase(least_useful_url);
 }
 
-bool Referrer::Trim(double reduce_rate, double threshold) {
-  std::vector<GURL> discarded_urls;
-  for (SubresourceMap::iterator it = begin(); it != end(); ++it) {
-    if (!it->second.Trim(reduce_rate, threshold))
-      discarded_urls.push_back(it->first);
-  }
-  for (size_t i = 0; i < discarded_urls.size(); ++i)
-    erase(discarded_urls[i]);
-  return size() > 0;
-}
-
-bool ReferrerValue::Trim(double reduce_rate, double threshold) {
-  subresource_use_rate_ *= reduce_rate;
-  return subresource_use_rate_ > threshold;
-}
-
-
 void Referrer::Deserialize(const base::Value& value) {
   if (value.GetType() != base::Value::TYPE_LIST)
     return;

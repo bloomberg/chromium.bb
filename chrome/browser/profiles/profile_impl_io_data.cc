@@ -124,7 +124,7 @@ ProfileImplIOData::Handle::~Handle() {
     save_prefs = !chromeos::ProfileHelper::IsSigninProfile(profile_);
 #endif
     if (save_prefs)
-      io_data_->predictor_->SaveStateForNextStartupAndTrim();
+      io_data_->predictor_->SaveStateForNextStartup();
     io_data_->predictor_->ShutdownOnUIThread();
   }
 

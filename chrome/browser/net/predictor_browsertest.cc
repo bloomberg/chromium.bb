@@ -1386,6 +1386,31 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCyclePreresolve) {
   EXPECT_FALSE(observer()->HostFound(target_url_));
 }
 
+// The predictor should not evict recently used (navigated to) referrers.
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DoNotEvictRecentlyUsed) {
+  observer()->SetStrict(false);
+  for (int i = 0; i < Predictor::kMaxReferrers; ++i) {
+    LearnFromNavigation(
+        GURL(base::StringPrintf("http://www.source%d.test", i)),
+        GURL(base::StringPrintf("http://www.target%d.test", i)));
+  }
+  ui_test_utils::NavigateToURL(browser(), GURL("http://source0.test"));
+
+  // This will evict http://source1.test.
+  LearnFromNavigation(GURL("http://new_source"), GURL("http://new_target"));
+
+  std::string html;
+  base::RunLoop run_loop;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&Predictor::PredictorGetHtmlInfo, predictor(), &html),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_NE(html.find("http://source0.test"), std::string::npos);
+  EXPECT_EQ(html.find("http://source1.test"), std::string::npos);
+}
+
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DnsPrefetch) {
   // Navigate once to make sure all initial hostnames are requested.
   ui_test_utils::NavigateToURL(browser(),

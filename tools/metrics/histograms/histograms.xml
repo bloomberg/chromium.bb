@@ -28467,6 +28467,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="Net.Predictor.MRUIndex">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The index into the predictor's MRU on navigation. This is the size the MRU
+    had to be in order to effectively predict subresources for this navigation.
+  </summary>
+</histogram>
+
 <histogram name="Net.Predictor.Startup.DBSize" units="bytes">
   <owner>csharrison@chromium.org</owner>
   <summary>

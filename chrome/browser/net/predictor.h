@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/mru_cache.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -121,6 +122,9 @@ class Predictor {
   // TODO(jar): We should do a persistent field trial to validate/optimize this.
   static const int kMaxUnusedSocketLifetimeSecondsWithoutAGet;
 
+  // The maximum size of the MRU cache of referrers.
+  static const int kMaxReferrers;
+
   // |max_concurrent| specifies how many concurrent (parallel) prefetches will
   // be performed. Host lookups will be issued through |host_resolver|.
   explicit Predictor(bool preconnect_enabled, bool predictor_enabled);
@@ -196,14 +200,6 @@ class Predictor {
   // domains for about:dns.
   void GetHtmlInfo(std::string* output);
 
-  // Discards any referrer for which all the suggested host names are currently
-  // annotated with negligible expected-use.  Scales down (diminishes) the
-  // expected-use of those that remain, so that their use will go down by a
-  // factor each time we trim (moving the referrer closer to being discarded in
-  // a future call).
-  // The task is performed synchronously and completes before returing.
-  void TrimReferrersNow();
-
   // Construct a ListValue object that contains all the data in the referrers_
   // so that it can be persisted in a pref.
   void SerializeReferrers(base::ListValue* referral_list);
@@ -238,12 +234,11 @@ class Predictor {
 
   // May be called from either the IO or UI thread and will PostTask
   // to the IO thread if necessary.
-  void SaveStateForNextStartupAndTrim();
+  void SaveStateForNextStartup();
 
-  void SaveDnsPrefetchStateForNextStartupAndTrim(
-      base::ListValue* startup_list,
-      base::ListValue* referral_list,
-      base::WaitableEvent* completion);
+  void SaveDnsPrefetchStateForNextStartup(base::ListValue* startup_list,
+                                          base::ListValue* referral_list,
+                                          base::WaitableEvent* completion);
 
   // May be called from either the IO or UI thread and will PostTask
   // to the IO thread if necessary.
@@ -390,30 +385,14 @@ class Predictor {
   // A map that is keyed with the host/port that we've learned were the cause
   // of loading additional URLs.  The list of additional targets is held
   // in a Referrer instance, which is a value in this map.
-  typedef std::map<GURL, Referrer> Referrers;
+  typedef base::MRUCache<GURL, Referrer> Referrers;
 
   // Depending on the expected_subresource_use_, we may either make a TCP/IP
   // preconnection, or merely pre-resolve the hostname via DNS (or even do
   // nothing).  The following are the threasholds for taking those actions.
   static const double kPreconnectWorthyExpectedValue;
   static const double kDNSPreresolutionWorthyExpectedValue;
-  // Referred hosts with a subresource_use_rate_ that are less than the
-  // following threshold will be discarded when we Trim() the list.
   static const double kDiscardableExpectedValue;
-  // During trimming operation to discard hosts for which we don't have likely
-  // subresources, we multiply the expected_subresource_use_ value by the
-  // following ratio until that value is less than kDiscardableExpectedValue.
-  // This number should always be less than 1, an more than 0.
-  static const double kReferrerTrimRatio;
-
-  // Interval between periodic trimming of our whole referrer list.
-  // We only do a major trimming about once an hour, and then only when the user
-  // is actively browsing.
-  static const int64_t kDurationBetweenTrimmingsHours;
-  // Interval between incremental trimmings (to avoid inducing Jank).
-  static const int64_t kDurationBetweenTrimmingIncrementsSeconds;
-  // Number of referring URLs processed in an incremental trimming.
-  static const size_t kUrlsTrimmedPerIncrement;
 
   // These two members call the appropriate global functions in
   // prediction_options.cc depending on which thread they are called on.
@@ -458,21 +437,6 @@ class Predictor {
   // Take lookup requests from work_queue_ and tell HostResolver to look them up
   // asynchronously, provided we don't exceed concurrent resolution limit.
   void StartSomeQueuedResolutions();
-
-  // Performs trimming similar to TrimReferrersNow(), except it does it as a
-  // series of short tasks by posting continuations again an again until done.
-  void TrimReferrers();
-
-  // Loads urls_being_trimmed_ from keys of current referrers_.
-  void LoadUrlsForTrimming();
-
-  // Posts a task to do additional incremental trimming of referrers_.
-  void PostIncrementalTrimTask();
-
-  // Calls Trim() on some or all of urls_being_trimmed_.
-  // If it does not process all the URLs in that vector, it posts a task to
-  // continue with them shortly (i.e., it yeilds and continues).
-  void IncrementalTrimReferrers(bool trim_all_now);
 
   // If we can determine immediately (i.e. synchronously) that requests to this
   // URL would likely go through a proxy, then return true.  Otherwise, return
@@ -564,13 +528,6 @@ class Predictor {
   // need to pre-resolve or pre-connect to when there is a navigation to the
   // orginial hostname.
   Referrers referrers_;
-
-  // List of URLs in referrers_ currently being trimmed (scaled down to
-  // eventually be aged out of use).
-  std::vector<GURL> urls_being_trimmed_;
-
-  // A time after which we need to do more trimming of referrers.
-  base::TimeTicks next_trim_time_;
 
   // An observer for testing.
   PredictorObserver* observer_;
