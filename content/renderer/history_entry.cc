@@ -69,8 +69,10 @@ HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::CloneAndReplace(
   // the frame.  See https://crbug.com/612713#c12.
   const WebHistoryItem& current_item = current_frame->current_history_item();
   if (is_target_frame && clone_children_of_target && !current_item.isNull()) {
-    new_history_node->item().setDocumentSequenceNumber(
-        current_item.documentSequenceNumber());
+    // TODO(creis): Setting the document sequence number here appears to be
+    // unnecessary.  Remove this block if this DCHECK never fires.
+    DCHECK_EQ(current_item.documentSequenceNumber(),
+              new_history_node->item().documentSequenceNumber());
   }
 
   // TODO(creis): This needs to be updated to handle HistoryEntry in

@@ -605,6 +605,13 @@ void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   blink::WebHistoryItem item;
   item.initialize();
+
+  // Set the document sequence number to be the same as the current page.
+  const blink::WebHistoryItem& current_item =
+      impl->GetMainRenderFrame()->current_history_item();
+  DCHECK(!current_item.isNull());
+  item.setDocumentSequenceNumber(current_item.documentSequenceNumber());
+
   impl->GetMainRenderFrame()->didNavigateWithinPage(
       frame, item, is_new_navigation ? blink::WebStandardCommit
                                      : blink::WebHistoryInertCommit,
