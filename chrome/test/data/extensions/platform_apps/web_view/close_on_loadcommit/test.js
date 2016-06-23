@@ -11,7 +11,11 @@ var launchWindow = function() {
       win.close();
       launchWindow();
     } else {
-      chrome.test.sendMessage('done-close-on-loadcommit');
+      // Due to https://crbug.com/620194, we cannot sendMessage() synchronously
+      // from this callback. Let |win.onload| run before sendMessage is run.
+      setTimeout(function() {
+        chrome.test.sendMessage('done-close-on-loadcommit');
+      }, 0);
     }
   });
 };
