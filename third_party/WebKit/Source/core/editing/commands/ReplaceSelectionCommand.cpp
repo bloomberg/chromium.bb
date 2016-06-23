@@ -799,18 +799,27 @@ static void removeHeadContents(ReplacementFragment& fragment)
 static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const Position& insertionPos)
 {
     Node* topNode = fragment.firstChild();
+    if (!isHTMLSpanElement(topNode))
+        return false;
 
     // Handling the case where we are doing Paste as Quotation or pasting into quoted content is more complicated (see handleStyleSpans)
     // and doesn't receive the optimization.
     if (isMailPasteAsQuotationHTMLBlockQuoteElement(topNode) || enclosingNodeOfType(firstPositionInOrBeforeNode(topNode), isMailHTMLBlockquoteElement, CanCrossEditingBoundary))
         return false;
 
+    // Remove style spans to follow the styles of list item when |fragment| becomes a list item.
+    // See bug http://crbug.com/335955.
+    HTMLSpanElement* wrappingStyleSpan = toHTMLSpanElement(topNode);
+    if (isListItem(enclosingBlock(insertionPos.anchorNode()))) {
+        fragment.removeNodePreservingChildren(wrappingStyleSpan);
+        return true;
+    }
+
     // Either there are no style spans in the fragment or a WebKit client has added content to the fragment
     // before inserting it.  Look for and handle style spans after insertion.
     if (!isLegacyAppleHTMLSpanElement(topNode))
         return false;
 
-    HTMLSpanElement* wrappingStyleSpan = toHTMLSpanElement(topNode);
     EditingStyle* styleAtInsertionPos = EditingStyle::create(insertionPos.parentAnchoredEquivalent());
     String styleText = styleAtInsertionPos->style()->asText();
 

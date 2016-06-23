@@ -1,4 +1,5 @@
-CONSOLE WARNING: line 46: We don't execute document.execCommand() this time, because it is called recursively.
-CONSOLE WARNING: line 60: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
-a:ce#@:a:ce#@::l:l
+CONSOLE ERROR: line 24: Uncaught TypeError: oElement.insertAdjacentHTML is not a function
+CONSOLE ERROR: line 60: Uncaught TypeError: Cannot read property 'parentNode' of null
+a:ce#@::l
+
 Test passes if it does not CRASH.
