@@ -8,20 +8,22 @@ package org.chromium.chrome.browser.contextualsearch;
  * A set of {@link ContextualSearchHeuristic}s that support experimentation and logging.
  */
 public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
+
     /**
      * Gets all the heuristics needed for Tap suppression.
-     * @param selectionController The {@link ContextualSearchSelectionController}
+     * @param selectionController The {@link ContextualSearchSelectionController}.
+     * @param previousTapState The state of the previous tap, or {@code null}.
      * @param x The x position of the Tap.
      * @param y The y position of the Tap.
      */
-    TapSuppressionHeuristics(
-            ContextualSearchSelectionController selectionController, int x, int y) {
+    TapSuppressionHeuristics(ContextualSearchSelectionController selectionController,
+                             ContextualSearchTapState previousTapState, int x, int y) {
         super();
         RecentScrollTapSuppression scrollTapExperiment =
                 new RecentScrollTapSuppression(selectionController);
         mHeuristics.add(scrollTapExperiment);
         TapFarFromPreviousSuppression farFromPreviousHeuristic =
-                new TapFarFromPreviousSuppression(selectionController, x, y);
+                new TapFarFromPreviousSuppression(selectionController, previousTapState, x, y);
         mHeuristics.add(farFromPreviousHeuristic);
         NearTopTapSuppression tapNearTopSuppression =
                 new NearTopTapSuppression(selectionController, y);

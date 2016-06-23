@@ -13,7 +13,7 @@ abstract class ContextualSearchHeuristic {
 
     /**
      * Gets whether this heuristic's condition was satisfied or not.
-     * This heuristic may called in logResultsSeen regardless of whether the condition was
+     * This heuristic may be called in logResultsSeen regardless of whether the condition was
      * satisfied.
      * @return Whether this heuristic's condition was satisfied or not.
      */

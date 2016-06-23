@@ -190,6 +190,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 if (!mIsPromotingToTab && tab.getId() != lastId
                         || mActivity.getTabModelSelector().isIncognitoSelected()) {
                     hideContextualSearch(StateChangeReason.UNKNOWN);
+                    mSelectionController.onTabSelected();
                 }
             }
 

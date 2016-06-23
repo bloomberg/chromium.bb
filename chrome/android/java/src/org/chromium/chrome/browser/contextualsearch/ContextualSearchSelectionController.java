@@ -67,12 +67,13 @@ public class ContextualSearchSelectionController {
     private SelectionType mSelectionType;
     private boolean mWasTapGestureDetected;
     // Reflects whether the last tap was valid and whether we still have a tap-based selection.
-    private boolean mWasLastTapValid;
+    private ContextualSearchTapState mLastTapState;
     private boolean mIsWaitingForInvalidTapDetection;
     private boolean mIsSelectionEstablished;
     private boolean mShouldHandleSelectionModification;
     private boolean mDidExpandSelection;
 
+    // Position of the selection.
     private float mX;
     private float mY;
 
@@ -191,27 +192,6 @@ public class ContextualSearchSelectionController {
      */
     String getSelectedText() {
         return mSelectedText;
-    }
-
-    /**
-     * @return Whether the last Tap was valid (and the tap-selection still in place).
-     */
-    boolean getWasLastTapValid() {
-        return mWasLastTapValid;
-    }
-
-    /**
-     * @return The last X coordinate;
-     */
-    float getLastX() {
-        return mX;
-    }
-
-    /**
-     * @return The last Y coordinate;
-     */
-    float getLastY() {
-        return mY;
     }
 
     /**
@@ -339,7 +319,7 @@ public class ContextualSearchSelectionController {
      */
     private void resetAllStates() {
         resetSelectionStates();
-        mWasLastTapValid = false;
+        mLastTapState = null;
         mLastScrollTimeNs = 0;
     }
 
@@ -354,6 +334,14 @@ public class ContextualSearchSelectionController {
     }
 
     /**
+     * Should be called when a new Tab is selected.
+     * Resets all of the internal state of this class.
+     */
+    void onTabSelected() {
+        resetAllStates();
+    }
+
+    /**
      * Handles an unhandled tap gesture.
      */
     void handleShowUnhandledTapUIIfNeeded(int x, int y) {
@@ -362,7 +350,8 @@ public class ContextualSearchSelectionController {
         // TODO(donnd): refactor to avoid needing a new handler API method as suggested by Pedro.
         if (mSelectionType != SelectionType.LONG_PRESS) {
             mWasTapGestureDetected = true;
-            TapSuppressionHeuristics tapHeuristics = new TapSuppressionHeuristics(this, x, y);
+            TapSuppressionHeuristics tapHeuristics =
+                    new TapSuppressionHeuristics(this, mLastTapState, x, y);
             // TODO(donnd): Move to be called when the panel closes to work with states that change.
             tapHeuristics.logConditionState();
             // Tell the manager what it needs in order to log metrics on whether the tap would have
@@ -370,11 +359,12 @@ public class ContextualSearchSelectionController {
             mHandler.handleMetricsForWouldSuppressTap(tapHeuristics);
             mX = x;
             mY = y;
-            if (tapHeuristics.shouldSuppressTap()) {
-                mWasLastTapValid = false;
+            boolean shouldSuppressTap = tapHeuristics.shouldSuppressTap();
+            // Remember the tap state for subsequent tap evaluation.
+            mLastTapState = new ContextualSearchTapState(x, y, shouldSuppressTap);
+            if (shouldSuppressTap) {
                 mHandler.handleSuppressedTap();
             } else {
-                mWasLastTapValid = true;
                 // TODO(donnd): Find a better way to determine that a navigation will be triggered
                 // by the tap, or merge with other time-consuming actions like gathering surrounding
                 // text or detecting page mutations.
@@ -386,7 +376,7 @@ public class ContextualSearchSelectionController {
                 }, TAP_NAVIGATION_DETECTION_DELAY);
             }
         } else {
-            mWasLastTapValid = false;
+            mLastTapState = null;
             mHandler.handleInvalidTap();
         }
     }
