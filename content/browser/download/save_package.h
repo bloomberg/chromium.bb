@@ -208,7 +208,7 @@ class CONTENT_EXPORT SavePackage
   //
   // Returns true if |base_name| could be successfully adjusted to fit the
   // aforementioned constraints, or false otherwise.
-  // TODO(asanka): This funciton is wrong. |base_name| cannot be truncated
+  // TODO(asanka): This function is wrong. |base_name| cannot be truncated
   //   without knowing its encoding and truncation has to be performed on
   //   character boundaries. Also the implementation doesn't look up the actual
   //   path constraints and instead uses hard coded constants. crbug.com/618737

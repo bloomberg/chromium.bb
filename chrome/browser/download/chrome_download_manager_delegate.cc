@@ -42,6 +42,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -51,6 +53,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/download/chrome_download_manager_overwrite_infobar_delegate.h"
@@ -430,6 +433,20 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
       can_save_as_complete,
       download_prefs_.get(),
       callback);
+}
+
+void ChromeDownloadManagerDelegate::SanitizeSavePackageResourceName(
+    base::FilePath* filename) {
+  safe_browsing::FileTypePolicies* file_type_policies =
+      safe_browsing::FileTypePolicies::GetInstance();
+
+  if (file_type_policies->GetFileDangerLevel(*filename) ==
+      safe_browsing::DownloadFileType::NOT_DANGEROUS)
+    return;
+
+  base::FilePath default_filename = base::FilePath::FromUTF8Unsafe(
+      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
+  *filename = filename->AddExtension(default_filename.BaseName().value());
 }
 
 void ChromeDownloadManagerDelegate::OpenDownloadUsingPlatformHandler(

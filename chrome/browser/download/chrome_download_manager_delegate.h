@@ -80,6 +80,7 @@ class ChromeDownloadManagerDelegate
       const base::FilePath::StringType& default_extension,
       bool can_save_as_complete,
       const content::SavePackagePathPickedCallback& callback) override;
+  void SanitizeSavePackageResourceName(base::FilePath* filename) override;
   void OpenDownload(content::DownloadItem* download) override;
   void ShowDownloadInShell(content::DownloadItem* download) override;
   void CheckForFileExistence(

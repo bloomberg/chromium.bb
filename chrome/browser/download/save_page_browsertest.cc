@@ -762,6 +762,23 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
   EXPECT_EQ("foo", contents);
 }
 
+// If a save-page-complete operation results in creating subresources that would
+// otherwise be considered dangerous, such files should get a .download
+// extension appended so that they won't be accidentally executed by the user.
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DangerousSubresources) {
+  GURL url =
+      URLRequestMockHTTPJob::GetMockUrl("/save_page/dubious-subresources.html");
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::FilePath full_file_name, dir;
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+                 "dubious-subresources", 2, &dir, &full_file_name);
+  ASSERT_FALSE(HasFailure());
+
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_TRUE(base::PathExists(dir.AppendASCII("not-a-crx.crx.download")));
+}
+
 // Test that we don't crash when the page contains an iframe that
 // was handled as a download (http://crbug.com/42212).
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {

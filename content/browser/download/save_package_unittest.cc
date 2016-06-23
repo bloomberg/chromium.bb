@@ -44,13 +44,6 @@ const uint32_t kMaxFilePathLength = PATH_MAX - 1;
 const uint32_t kMaxFileNameLength = NAME_MAX;
 #endif
 
-// Used to make long filenames.
-std::string long_file_name(
-    "EFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz01234567"
-    "89ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz012345"
-    "6789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123"
-    "456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789a");
-
 bool HasOrdinalNumber(const base::FilePath::StringType& filename) {
   base::FilePath::StringType::size_type r_paren_index =
       filename.rfind(FPL(')'));
@@ -112,17 +105,11 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
                         temp_dir_.path().AppendASCII("testfile" HTML_EXTENSION),
                         temp_dir_.path().AppendASCII("testfile_files"));
 
-    // We need to construct a path that is *almost* kMaxFilePathLength long
-    long_file_name.reserve(kMaxFilePathLength + long_file_name.length());
-    while (long_file_name.length() < kMaxFilePathLength)
-      long_file_name += long_file_name;
-    long_file_name.resize(
-        kMaxFilePathLength - 9 - temp_dir_.path().value().length());
-
+    base::FilePath::StringType long_file_name = GetLongFileName();
     save_package_fail_ = new SavePackage(
         contents(), SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-        temp_dir_.path().AppendASCII(long_file_name + HTML_EXTENSION),
-        temp_dir_.path().AppendASCII(long_file_name + "_files"));
+        temp_dir_.path().Append(long_file_name + FPL_HTML_EXTENSION),
+        temp_dir_.path().Append(long_file_name + FPL("_files")));
   }
 
   BrowserContext* CreateBrowserContext() override {
@@ -143,6 +130,13 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
     rdh_.reset();
 
     RenderViewHostImplTestHarness::TearDown();
+  }
+
+  // Returns a path that is *almost* kMaxFilePathLength long
+  base::FilePath::StringType GetLongFileName() const {
+    size_t target_length =
+        kMaxFilePathLength - 9 - temp_dir_.path().value().length();
+    return base::FilePath::StringType(target_length, FPL('a'));
   }
 
  private:
@@ -237,19 +231,21 @@ TEST_F(SavePackageTest, TestUnSuccessfullyGenerateSavePackageFilename) {
 #endif
 TEST_F(SavePackageTest, MAYBE_TestLongSavePackageFilename) {
   const std::string base_url("http://www.google.com/");
-  const std::string long_file = long_file_name + ".css";
-  const std::string url = base_url + long_file;
+  const base::FilePath::StringType long_file_name =
+      GetLongFileName() + FPL(".css");
+  const std::string url =
+      base_url + base::FilePath(long_file_name).AsUTF8Unsafe();
 
   base::FilePath::StringType filename;
   // Test that the filename is successfully shortened to fit.
   ASSERT_TRUE(GetGeneratedFilename(true, std::string(), url, false, &filename));
-  EXPECT_TRUE(filename.length() < long_file.length());
+  EXPECT_TRUE(filename.length() < long_file_name.length());
   EXPECT_FALSE(HasOrdinalNumber(filename));
 
   // Test that the filename is successfully shortened to fit, and gets an
   // an ordinal appended.
   ASSERT_TRUE(GetGeneratedFilename(true, std::string(), url, false, &filename));
-  EXPECT_TRUE(filename.length() < long_file.length());
+  EXPECT_TRUE(filename.length() < long_file_name.length());
   EXPECT_TRUE(HasOrdinalNumber(filename));
 
   // Test that the filename is successfully shortened to fit, and gets a
@@ -257,7 +253,7 @@ TEST_F(SavePackageTest, MAYBE_TestLongSavePackageFilename) {
   base::FilePath::StringType filename2;
   ASSERT_TRUE(
       GetGeneratedFilename(true, std::string(), url, false, &filename2));
-  EXPECT_TRUE(filename2.length() < long_file.length());
+  EXPECT_TRUE(filename2.length() < long_file_name.length());
   EXPECT_TRUE(HasOrdinalNumber(filename2));
   EXPECT_NE(filename, filename2);
 }
@@ -271,12 +267,7 @@ TEST_F(SavePackageTest, MAYBE_TestLongSavePackageFilename) {
 TEST_F(SavePackageTest, MAYBE_TestLongSafePureFilename) {
   const base::FilePath save_dir(FPL("test_dir"));
   const base::FilePath::StringType ext(FPL_HTML_EXTENSION);
-  base::FilePath::StringType filename =
-#if defined(OS_WIN)
-      base::ASCIIToUTF16(long_file_name);
-#else
-      long_file_name;
-#endif
+  base::FilePath::StringType filename = GetLongFileName();
 
   // Test that the filename + extension doesn't exceed kMaxFileNameLength
   uint32_t max_path = SavePackage::GetMaxPathLengthForDirectory(save_dir);

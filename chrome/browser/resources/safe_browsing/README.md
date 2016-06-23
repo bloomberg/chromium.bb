@@ -77,6 +77,12 @@ See `download_file_types.proto` for all fields.
     `DANGEROUS_HOST`, or `DANGEROUS`, Chrome will show that more severe warning
     regardless of this setting.
 
+    This policy also affects also how subresources are handled for *"Save As
+    ..."* downloads of complete web pages. If any subresource ends up with a
+    file type that is considered `DANGEROUS` or `ALLOW_ON_USER_GESTURE`, then
+    the filename will be changed to end in `.download`. This is done to prevent
+    the file from being opened accidentally.
+
     * `NOT_DANGEROUS`: Safe to download and open, even if the download
        was accidental. No additional warnings are necessary.
     * `DANGEROUS`: Always warn the user that this file may harm their

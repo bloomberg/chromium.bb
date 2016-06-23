@@ -401,15 +401,19 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
                                                    kDefaultSaveName);
 
   DCHECK(!file_path.empty());
+  if (need_html_ext)
+    file_path = file_path.ReplaceExtension(kDefaultHtmlExtension);
+
+  DownloadManagerDelegate* delegate = download_manager_->GetDelegate();
+  if (delegate)
+    delegate->SanitizeSavePackageResourceName(&file_path);
+
+  DCHECK_EQ(file_path.value(), file_path.BaseName().value())
+      << "SanitizeSavePackageResourceName should only return a basename.";
+
   base::FilePath::StringType base_name =
       file_path.RemoveExtension().BaseName().value();
   base::FilePath::StringType file_name_ext = file_path.Extension();
-
-  // If it is HTML resource, use ".html" as its extension.
-  if (need_html_ext) {
-    file_name_ext = FILE_PATH_LITERAL(".");
-    file_name_ext.append(kDefaultHtmlExtension);
-  }
 
   // Need to make sure the suggested file name is not too long.
   uint32_t max_path = GetMaxPathLengthForDirectory(saved_main_directory_path_);

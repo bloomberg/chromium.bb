@@ -119,6 +119,18 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       const SavePackagePathPickedCallback& callback) {
   }
 
+  // Sanitize a filename that's going to be used for saving a subresource of a
+  // SavePackage.
+  //
+  // If the delegate does nothing, the default filename already populated in
+  // |filename| will be used. Otherwise, the delegate can update |filename| to
+  // the desired filename.
+  //
+  // |filename| contains a basename with an extension, but without a path. This
+  // should be the case on return as well. I.e. |filename| cannot specify a
+  // relative path.
+  virtual void SanitizeSavePackageResourceName(base::FilePath* filename) {}
+
   // Opens the file associated with this download.
   virtual void OpenDownload(DownloadItem* download) {}
 
