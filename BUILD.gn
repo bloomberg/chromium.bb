@@ -102,11 +102,8 @@ if (is_win) {
     deps = [
       "//chrome/installer/gcapi",
       "//chrome/installer/mini_installer",
+      "//components/policy:pack_policy_templates",
       "//courgette",
-
-      # TODO(GYP): crbug.com/621575 do we need to port this?
-      # "//chrome:pack_policy_templates",
-
       "//remoting/webapp",
     ]
     if (target_cpu == "x86") {

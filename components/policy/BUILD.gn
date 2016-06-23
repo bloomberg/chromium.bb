@@ -133,8 +133,9 @@ if (enable_configuration_policy) {
     ]
   }
 
+  policy_templates_grd_file = "resources/policy_templates.grd"
   grit("policy_templates") {
-    source = "resources/policy_templates.grd"
+    source = policy_templates_grd_file
     use_qualified_include = true
     output_dir = "$root_gen_dir/chrome"
     outputs = policy_templates_doc_outputs
@@ -372,6 +373,52 @@ if (enable_configuration_policy) {
       deps = [
         ":manifest_bundle_data",
         ":manifest_strings_bundle_data",
+      ]
+    }
+  }
+
+  if (is_win) {
+    version_file = "VERSION"
+    version_path = "$policy_templates_base_dir/$version_file"
+
+    copy("add_version") {
+      sources = [
+        "//chrome/VERSION",
+      ]
+      outputs = [
+        version_path,
+      ]
+    }
+
+    action("pack_policy_templates") {
+      output_zip_file = "$root_out_dir/policy_templates.zip"
+      script = "tools/make_policy_zip.py"
+      inputs =
+          [
+            version_path,
+            policy_templates_grd_file,
+            grit_info_script,
+          ] + policy_templates_windows_outputs + policy_templates_doc_outputs
+      outputs = [
+        output_zip_file,
+      ]
+      args = [
+               "--output",
+               rebase_path(output_zip_file, root_build_dir),
+               "--basedir",
+               rebase_path(policy_templates_base_dir, root_build_dir),
+               "--grd_input",
+               rebase_path(policy_templates_grd_file, root_build_dir),
+               "--grd_strip_path_prefix",
+               "app/policy",
+               "--extra_input",
+               version_file,
+               "--grit_info",
+               rebase_path(grit_info_script, root_build_dir),
+             ] + grit_defines
+      deps = [
+        ":add_version",
+        ":policy_templates",
       ]
     }
   }
