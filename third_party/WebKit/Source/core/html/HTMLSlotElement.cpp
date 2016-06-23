@@ -139,9 +139,16 @@ void HTMLSlotElement::appendDistributedNodesFrom(const HTMLSlotElement& other)
 
 void HTMLSlotElement::clearDistribution()
 {
+    // TODO(hayato): Figure out when to call lazyReattachDistributedNodesIfNeeded()
     m_assignedNodes.clear();
     m_distributedNodes.clear();
     m_distributedIndices.clear();
+}
+
+void HTMLSlotElement::saveAndClearDistribution()
+{
+    m_oldDistributedNodes.swap(m_distributedNodes);
+    clearDistribution();
 }
 
 void HTMLSlotElement::dispatchSlotChangeEvent()
@@ -291,6 +298,18 @@ void HTMLSlotElement::updateDistributedNodesWithFallback()
     }
 }
 
+void HTMLSlotElement::lazyReattachDistributedNodesIfNeeded()
+{
+    // TODO(hayato): Figure out an exact condition where reattach is required
+    if (m_oldDistributedNodes != m_distributedNodes) {
+        for (auto& node : m_oldDistributedNodes)
+            node->lazyReattachIfAttached();
+        for (auto& node : m_distributedNodes)
+            node->lazyReattachIfAttached();
+    }
+    m_oldDistributedNodes.clear();
+}
+
 void HTMLSlotElement::enqueueSlotChangeEvent()
 {
     if (!m_slotchangeEventEnqueued) {
@@ -338,6 +357,7 @@ DEFINE_TRACE(HTMLSlotElement)
 {
     visitor->trace(m_assignedNodes);
     visitor->trace(m_distributedNodes);
+    visitor->trace(m_oldDistributedNodes);
     visitor->trace(m_distributedIndices);
     HTMLElement::trace(visitor);
 }

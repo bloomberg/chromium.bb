@@ -116,7 +116,7 @@ static void detachNotAssignedNode(Node& node)
 void SlotAssignment::resolveAssignment()
 {
     for (Member<HTMLSlotElement> slot : slots())
-        slot->clearDistribution();
+        slot->saveAndClearDistribution();
 
     for (Node& child : NodeTraversal::childrenOf(m_owner->host())) {
         if (!child.isSlotable()) {
@@ -140,8 +140,10 @@ void SlotAssignment::resolveDistribution()
         slot->resolveDistributedNodes();
 
     // Update each slot's distribution in reverse tree order so that a child slot is visited before its parent slot.
-    for (auto slot = slots.rbegin(); slot != slots.rend(); ++slot)
+    for (auto slot = slots.rbegin(); slot != slots.rend(); ++slot) {
         (*slot)->updateDistributedNodesWithFallback();
+        (*slot)->lazyReattachDistributedNodesIfNeeded();
+    }
 }
 
 const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::slots()

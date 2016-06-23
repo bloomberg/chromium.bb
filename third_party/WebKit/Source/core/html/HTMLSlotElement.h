@@ -61,6 +61,8 @@ public:
 
     void updateDistributedNodesWithFallback();
 
+    void lazyReattachDistributedNodesIfNeeded();
+
     void attach(const AttachContext& = AttachContext()) final;
     void detach(const AttachContext& = AttachContext()) final;
 
@@ -78,6 +80,7 @@ public:
     void enqueueSlotChangeEvent();
 
     void clearDistribution();
+    void saveAndClearDistribution();
 
     static AtomicString normalizeSlotName(const AtomicString&);
 
@@ -94,6 +97,7 @@ private:
 
     HeapVector<Member<Node>> m_assignedNodes;
     HeapVector<Member<Node>> m_distributedNodes;
+    HeapVector<Member<Node>> m_oldDistributedNodes;
     HeapHashMap<Member<const Node>, size_t> m_distributedIndices;
     bool m_slotchangeEventEnqueued = false;
 };
