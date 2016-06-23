@@ -28,14 +28,11 @@ void RequestQueueInMemoryStore::AddOrUpdateRequest(
     const SavePageRequest& request,
     const UpdateCallback& callback) {
   RequestsMap::iterator iter = requests_.find(request.request_id());
-  UpdateStatus status = UpdateStatus::ADDED;
-  if (iter != requests_.end()) {
+  if (iter != requests_.end())
     requests_.erase(iter);
-    status = UpdateStatus::UPDATED;
-  }
   requests_.insert(std::make_pair(request.request_id(), request));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, UpdateStatus::UPDATED));
 }
 
 void RequestQueueInMemoryStore::RemoveRequests(
@@ -43,7 +40,6 @@ void RequestQueueInMemoryStore::RemoveRequests(
     const RemoveCallback& callback) {
   // In case the |request_ids| is empty, the result will be true, but the count
   // of deleted pages will be empty.
-  bool result = true;
   int count = 0;
   RequestsMap::iterator iter;
   for (auto request_id : request_ids) {
@@ -51,13 +47,11 @@ void RequestQueueInMemoryStore::RemoveRequests(
     if (iter != requests_.end()) {
       requests_.erase(iter);
       ++count;
-    } else {
-      result = false;
     }
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, result, count));
+      FROM_HERE, base::Bind(callback, true, count));
 }
 
 void RequestQueueInMemoryStore::Reset(const ResetCallback& callback) {

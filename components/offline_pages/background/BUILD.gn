@@ -22,6 +22,8 @@ static_library("background_offliner") {
     "request_queue_in_memory_store.cc",
     "request_queue_in_memory_store.h",
     "request_queue_store.h",
+    "request_queue_store_sql.cc",
+    "request_queue_store_sql.h",
     "save_page_request.cc",
     "save_page_request.h",
     "scheduler.h",
@@ -32,6 +34,7 @@ static_library("background_offliner") {
     "//components/keyed_service/core",
     "//components/offline_pages:offline_pages",
     "//net",
+    "//sql:sql",
     "//url",
   ]
 }

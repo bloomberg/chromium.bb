@@ -90,10 +90,9 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   ASSERT_EQ(creation_time, request.creation_time());
   ASSERT_EQ(activation_time, request.activation_time());
 
-  // Last attempt time and status will. Attempt count also unchanged.
+  // Last attempt time, status and attempt count are updated.
   ASSERT_EQ(base::Time(), request.last_attempt_time());
   ASSERT_EQ(1, request.attempt_count());
-
   ASSERT_EQ(SavePageRequest::Status::PENDING, request.GetStatus(start_time));
 }
 

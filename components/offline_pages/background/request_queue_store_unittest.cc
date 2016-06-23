@@ -7,9 +7,12 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/background/request_queue_store_sql.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,6 +25,12 @@ const int64_t kRequestId = 42;
 const GURL kUrl("http://example.com");
 const ClientId kClientId("bookmark", "1234");
 
+enum class LastResult {
+  kNone,
+  kFalse,
+  kTrue,
+};
+
 bool operator==(const SavePageRequest& lhs, const SavePageRequest& rhs) {
   return lhs.request_id() == rhs.request_id() && lhs.url() == rhs.url() &&
          lhs.client_id() == rhs.client_id() &&
@@ -33,23 +42,18 @@ bool operator==(const SavePageRequest& lhs, const SavePageRequest& rhs) {
 
 }  // namespace
 
-class RequestQueueInMemoryStoreTest : public testing::Test {
+// Class that serves as a base for testing different implementations of the
+// |RequestQueueStore|. Specific implementations extend the templatized version
+// of this class and provide appropriate store factory.
+class RequestQueueStoreTestBase : public testing::Test {
  public:
-  enum class LastResult {
-    RESULT_NONE,
-    RESULT_FALSE,
-    RESULT_TRUE,
-  };
-
-  RequestQueueInMemoryStoreTest();
+  RequestQueueStoreTestBase();
 
   // Test overrides.
-  void SetUp() override;
-
-  RequestQueueStore* store() { return store_.get(); }
+  void TearDown() override;
 
   void PumpLoop();
-  void ResetResults();
+  void ClearResults();
 
   // Callback used for get requests.
   void GetRequestsDone(bool result,
@@ -62,181 +66,249 @@ class RequestQueueInMemoryStoreTest : public testing::Test {
   void ResetDone(bool result);
 
   LastResult last_result() const { return last_result_; }
-
   UpdateStatus last_update_status() const { return last_update_status_; }
-
   int last_remove_count() const { return last_remove_count_; }
-
   const std::vector<SavePageRequest>& last_requests() const {
     return last_requests_;
   }
 
+ protected:
+  base::ScopedTempDir temp_directory_;
+
  private:
-  std::unique_ptr<RequestQueueInMemoryStore> store_;
   LastResult last_result_;
   UpdateStatus last_update_status_;
   int last_remove_count_;
   std::vector<SavePageRequest> last_requests_;
+
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
-RequestQueueInMemoryStoreTest::RequestQueueInMemoryStoreTest()
-    : last_result_(LastResult::RESULT_NONE),
+RequestQueueStoreTestBase::RequestQueueStoreTestBase()
+    : last_result_(LastResult::kNone),
       last_update_status_(UpdateStatus::FAILED),
       last_remove_count_(0),
       task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {}
-
-void RequestQueueInMemoryStoreTest::SetUp() {
-  store_.reset(new RequestQueueInMemoryStore());
+      task_runner_handle_(task_runner_) {
+  EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
 }
 
-void RequestQueueInMemoryStoreTest::PumpLoop() {
+void RequestQueueStoreTestBase::TearDown() {
+  // Wait for all the pieces of the store to delete itself properly.
+  PumpLoop();
+}
+
+void RequestQueueStoreTestBase::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
-void RequestQueueInMemoryStoreTest::ResetResults() {
-  last_result_ = LastResult::RESULT_NONE;
+void RequestQueueStoreTestBase::ClearResults() {
+  last_result_ = LastResult::kNone;
   last_update_status_ = UpdateStatus::FAILED;
   last_remove_count_ = 0;
   last_requests_.clear();
 }
 
-void RequestQueueInMemoryStoreTest::GetRequestsDone(
+void RequestQueueStoreTestBase::GetRequestsDone(
     bool result,
     const std::vector<SavePageRequest>& requests) {
-  last_result_ = result ? LastResult::RESULT_TRUE : LastResult::RESULT_FALSE;
+  last_result_ = result ? LastResult::kTrue : LastResult::kFalse;
   last_requests_ = requests;
 }
 
-void RequestQueueInMemoryStoreTest::AddOrUpdateDone(UpdateStatus status) {
+void RequestQueueStoreTestBase::AddOrUpdateDone(UpdateStatus status) {
   last_update_status_ = status;
 }
 
-void RequestQueueInMemoryStoreTest::RemoveDone(bool result, int count) {
-  last_result_ = result ? LastResult::RESULT_TRUE : LastResult::RESULT_FALSE;
+void RequestQueueStoreTestBase::RemoveDone(bool result, int count) {
+  last_result_ = result ? LastResult::kTrue : LastResult::kFalse;
   last_remove_count_ = count;
 }
 
-void RequestQueueInMemoryStoreTest::ResetDone(bool result) {
-  last_result_ = result ? LastResult::RESULT_TRUE : LastResult::RESULT_FALSE;
+void RequestQueueStoreTestBase::ResetDone(bool result) {
+  last_result_ = result ? LastResult::kTrue : LastResult::kFalse;
 }
 
-TEST_F(RequestQueueInMemoryStoreTest, GetRequestsEmpty) {
-  store()->GetRequests(base::Bind(
-      &RequestQueueInMemoryStoreTest::GetRequestsDone, base::Unretained(this)));
-  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
-  PumpLoop();
-  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
-  ASSERT_TRUE(last_requests().empty());
+// Defines interface for the store factory.
+class RequestQueueStoreFactory {
+ public:
+  virtual RequestQueueStore* BuildStore(const base::FilePath& path) = 0;
+};
+
+// Implements a store factory for in memory store.
+class RequestQueueInMemoryStoreFactory : public RequestQueueStoreFactory {
+ public:
+  RequestQueueStore* BuildStore(const base::FilePath& path) override {
+    RequestQueueStore* store = new RequestQueueInMemoryStore();
+    return store;
+  }
+};
+
+// Implements a store factory for SQLite based implementation of the store.
+class RequestQueueStoreSQLFactory : public RequestQueueStoreFactory {
+ public:
+  RequestQueueStore* BuildStore(const base::FilePath& path) override {
+    RequestQueueStore* store =
+        new RequestQueueStoreSQL(base::ThreadTaskRunnerHandle::Get(), path);
+    return store;
+  }
+};
+
+// Defines a store test fixture templatized by the store factory.
+template <typename T>
+class RequestQueueStoreTest : public RequestQueueStoreTestBase {
+ public:
+  std::unique_ptr<RequestQueueStore> BuildStore();
+
+ protected:
+  T factory_;
+};
+
+template <typename T>
+std::unique_ptr<RequestQueueStore> RequestQueueStoreTest<T>::BuildStore() {
+  std::unique_ptr<RequestQueueStore> store(
+      factory_.BuildStore(temp_directory_.path()));
+  return store;
 }
 
-TEST_F(RequestQueueInMemoryStoreTest, AddRequest) {
+// |StoreTypes| lists all factories, based on which the tests will be created.
+typedef testing::Types<RequestQueueInMemoryStoreFactory,
+                       RequestQueueStoreSQLFactory>
+    StoreTypes;
+
+// This portion causes test fixtures to be defined.
+// Notice that in the store we are using "this->" to refer to the methods
+// defined on the |RequestQuieueStoreBaseTest| class. That's by design.
+TYPED_TEST_CASE(RequestQueueStoreTest, StoreTypes);
+
+TYPED_TEST(RequestQueueStoreTest, GetRequestsEmpty) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  ASSERT_EQ(LastResult::kNone, this->last_result());
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  ASSERT_TRUE(this->last_requests().empty());
+}
+
+TYPED_TEST(RequestQueueStoreTest, AddRequest) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time);
 
-  store()->AddOrUpdateRequest(
-      request, base::Bind(&RequestQueueInMemoryStoreTest::AddOrUpdateDone,
+  store->AddOrUpdateRequest(
+      request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
                           base::Unretained(this)));
-  ASSERT_EQ(UpdateStatus::FAILED, last_update_status());
-  PumpLoop();
-  ASSERT_EQ(UpdateStatus::ADDED, last_update_status());
+  ASSERT_EQ(UpdateStatus::FAILED, this->last_update_status());
+  this->PumpLoop();
+  ASSERT_EQ(UpdateStatus::UPDATED, this->last_update_status());
 
   // Verifying get reqeust results after a request was added.
-  ResetResults();
-  store()->GetRequests(base::Bind(
-      &RequestQueueInMemoryStoreTest::GetRequestsDone, base::Unretained(this)));
-  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
-  PumpLoop();
-  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
-  ASSERT_EQ(1ul, last_requests().size());
-  ASSERT_TRUE(request == last_requests()[0]);
+  this->ClearResults();
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  ASSERT_EQ(LastResult::kNone, this->last_result());
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  ASSERT_EQ(1ul, this->last_requests().size());
+  ASSERT_TRUE(request == this->last_requests()[0]);
 }
 
-TEST_F(RequestQueueInMemoryStoreTest, UpdateRequest) {
+TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time);
-  store()->AddOrUpdateRequest(
-      original_request,
-      base::Bind(&RequestQueueInMemoryStoreTest::AddOrUpdateDone,
-                 base::Unretained(this)));
-  PumpLoop();
-  ResetResults();
+  store->AddOrUpdateRequest(
+      original_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+                                   base::Unretained(this)));
+  this->PumpLoop();
+  this->ClearResults();
 
   base::Time new_creation_time =
       creation_time + base::TimeDelta::FromMinutes(1);
   base::Time activation_time = creation_time + base::TimeDelta::FromHours(6);
   SavePageRequest updated_request(kRequestId, kUrl, kClientId,
                                   new_creation_time, activation_time);
-  store()->AddOrUpdateRequest(
-      updated_request,
-      base::Bind(&RequestQueueInMemoryStoreTest::AddOrUpdateDone,
-                 base::Unretained(this)));
-  ASSERT_EQ(UpdateStatus::FAILED, last_update_status());
-  PumpLoop();
-  ASSERT_EQ(UpdateStatus::UPDATED, last_update_status());
+  store->AddOrUpdateRequest(
+      updated_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+                                  base::Unretained(this)));
+  ASSERT_EQ(UpdateStatus::FAILED, this->last_update_status());
+  this->PumpLoop();
+  ASSERT_EQ(UpdateStatus::UPDATED, this->last_update_status());
 
   // Verifying get reqeust results after a request was updated.
-  ResetResults();
-  store()->GetRequests(base::Bind(
-      &RequestQueueInMemoryStoreTest::GetRequestsDone, base::Unretained(this)));
-  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
-  PumpLoop();
-  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
-  ASSERT_EQ(1ul, last_requests().size());
-  ASSERT_TRUE(updated_request == last_requests()[0]);
+  this->ClearResults();
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  ASSERT_EQ(LastResult::kNone, this->last_result());
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  ASSERT_EQ(1ul, this->last_requests().size());
+  ASSERT_TRUE(updated_request == this->last_requests()[0]);
 }
 
-TEST_F(RequestQueueInMemoryStoreTest, RemoveRequest) {
+TYPED_TEST(RequestQueueStoreTest, RemoveRequest) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time);
-  store()->AddOrUpdateRequest(
-      original_request,
-      base::Bind(&RequestQueueInMemoryStoreTest::AddOrUpdateDone,
-                 base::Unretained(this)));
-  PumpLoop();
-  ResetResults();
+  store->AddOrUpdateRequest(
+      original_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+                                   base::Unretained(this)));
+  this->PumpLoop();
+  this->ClearResults();
 
   std::vector<int64_t> request_ids{kRequestId};
-  store()->RemoveRequests(request_ids,
-                          base::Bind(&RequestQueueInMemoryStoreTest::RemoveDone,
-                                     base::Unretained(this)));
-  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
-  ASSERT_EQ(0, last_remove_count());
-  PumpLoop();
-  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
-  ASSERT_EQ(1, last_remove_count());
-  ASSERT_EQ(0ul, last_requests().size());
-  ResetResults();
+  store->RemoveRequests(request_ids,
+                        base::Bind(&RequestQueueStoreTestBase::RemoveDone,
+                                   base::Unretained(this)));
+  ASSERT_EQ(LastResult::kNone, this->last_result());
+  ASSERT_EQ(0, this->last_remove_count());
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  ASSERT_EQ(1, this->last_remove_count());
+  this->ClearResults();
+
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  ASSERT_TRUE(this->last_requests().empty());
+  this->ClearResults();
 
   // Removing a request that is missing fails.
-  store()->RemoveRequests(request_ids,
-                          base::Bind(&RequestQueueInMemoryStoreTest::RemoveDone,
-                                     base::Unretained(this)));
-  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
-  ASSERT_EQ(0, last_remove_count());
-  PumpLoop();
-  ASSERT_EQ(LastResult::RESULT_FALSE, last_result());
-  ASSERT_EQ(0, last_remove_count());
+  store->RemoveRequests(request_ids,
+                        base::Bind(&RequestQueueStoreTestBase::RemoveDone,
+                                   base::Unretained(this)));
+  ASSERT_EQ(LastResult::kNone, this->last_result());
+  ASSERT_EQ(0, this->last_remove_count());
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  ASSERT_EQ(0, this->last_remove_count());
 }
 
-TEST_F(RequestQueueInMemoryStoreTest, ResetStore) {
+TYPED_TEST(RequestQueueStoreTest, ResetStore) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time);
-  store()->AddOrUpdateRequest(
-      original_request,
-      base::Bind(&RequestQueueInMemoryStoreTest::AddOrUpdateDone,
-                 base::Unretained(this)));
-  PumpLoop();
-  ResetResults();
+  store->AddOrUpdateRequest(
+      original_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+                                   base::Unretained(this)));
+  this->PumpLoop();
+  this->ClearResults();
 
-  store()->Reset(base::Bind(&RequestQueueInMemoryStoreTest::ResetDone,
-                            base::Unretained(this)));
-  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
-  PumpLoop();
-  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
-  ASSERT_EQ(0ul, last_requests().size());
+  store->Reset(base::Bind(&RequestQueueStoreTestBase::ResetDone,
+                          base::Unretained(this)));
+  ASSERT_EQ(LastResult::kNone, this->last_result());
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  this->ClearResults();
+
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  ASSERT_TRUE(this->last_requests().empty());
 }
 
 }  // offline_pages

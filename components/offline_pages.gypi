@@ -57,6 +57,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../sql/sql.gyp:sql',
         '../url/url.gyp:url_lib',
         'keyed_service_core',
       ],
@@ -74,6 +75,8 @@
         'offline_pages/background/request_queue_in_memory_store.cc',
         'offline_pages/background/request_queue_in_memory_store.h',
         'offline_pages/background/request_queue_store.h',
+        'offline_pages/background/request_queue_store_sql.cc',
+        'offline_pages/background/request_queue_store_sql.h',
         'offline_pages/background/save_page_request.cc',
         'offline_pages/background/save_page_request.h',
         'offline_pages/background/scheduler.h',

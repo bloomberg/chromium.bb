@@ -32,7 +32,7 @@ void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
                     const SavePageRequest& request,
                     RequestQueueStore::UpdateStatus status) {
   RequestQueue::AddRequestResult result =
-      (status == RequestQueueStore::UpdateStatus::ADDED)
+      (status == RequestQueueStore::UpdateStatus::UPDATED)
           ? RequestQueue::AddRequestResult::SUCCESS
           : RequestQueue::AddRequestResult::STORE_FAILURE;
   callback.Run(result, request);

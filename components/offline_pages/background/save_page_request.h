@@ -59,8 +59,14 @@ class SavePageRequest {
   const base::Time& activation_time() const { return activation_time_; }
 
   int64_t attempt_count() const { return attempt_count_; }
+  void set_attempt_count(int64_t attempt_count) {
+    attempt_count_ = attempt_count;
+  }
 
   const base::Time& last_attempt_time() const { return last_attempt_time_; }
+  void set_last_attempt_time(const base::Time& last_attempt_time) {
+    last_attempt_time_ = last_attempt_time;
+  }
 
  private:
   // ID of this request.
