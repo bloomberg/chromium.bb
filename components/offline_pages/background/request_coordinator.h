@@ -81,6 +81,12 @@ class RequestCoordinator : public KeyedService {
     return is_busy_;
   }
 
+  // Tracks whether the last offlining attempt got canceled.  This is reset by
+  // the next StartProcessing() call.
+  bool is_canceled() {
+    return is_canceled_;
+  }
+
  private:
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
@@ -102,12 +108,20 @@ class RequestCoordinator : public KeyedService {
 
   void TryNextRequest();
 
+  // Returns the appropriate offliner to use, getting a new one from the factory
+  // if needed.
+  void GetOffliner();
+
   friend class RequestCoordinatorTest;
 
   // The offliner can only handle one request at a time - if the offliner is
   // busy, prevent other requests.  This flag marks whether the offliner is in
   // use.
   bool is_busy_;
+  // True if the current request has been canceled.
+  bool is_canceled_;
+  // Unowned pointer to the current offliner, if any.
+  Offliner* offliner_;
   // RequestCoordinator takes over ownership of the policy
   std::unique_ptr<OfflinerPolicy> policy_;
   // OfflinerFactory.  Used to create offline pages. Owned.

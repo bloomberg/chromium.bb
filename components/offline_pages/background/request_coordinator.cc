@@ -31,6 +31,8 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                                        std::unique_ptr<RequestQueue> queue,
                                        std::unique_ptr<Scheduler> scheduler)
     : is_busy_(false),
+      is_canceled_(false),
+      offliner_(nullptr),
       policy_(std::move(policy)),
       factory_(std::move(factory)),
       queue_(std::move(queue)),
@@ -95,6 +97,7 @@ bool RequestCoordinator::StartProcessing(
     const base::Callback<void(bool)>& callback) {
   if (is_busy_) return false;
 
+  is_canceled_ = false;
   scheduler_callback_ = callback;
   // TODO(petewil): Check existing conditions (should be passed down from
   // BackgroundTask)
@@ -115,6 +118,9 @@ void RequestCoordinator::TryNextRequest() {
 }
 
 void RequestCoordinator::StopProcessing() {
+  is_canceled_ = true;
+  if (offliner_ && is_busy_)
+    offliner_->Cancel();
 }
 
 Scheduler::TriggerConditions const&
@@ -123,9 +129,13 @@ RequestCoordinator::GetTriggerConditionsForUserRequest() {
 }
 
 void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
-  // TODO(petewil): When we have multiple offliners, we need to pick one.
-  Offliner* offliner = factory_->GetOffliner(policy_.get());
-  if (!offliner) {
+  // Check that offlining didn't get cancelled while performing some async
+  // steps.
+  if (is_canceled_)
+    return;
+
+  GetOffliner();
+  if (!offliner_) {
     DVLOG(0) << "Unable to create Offliner. "
              << "Cannot background offline page.";
     return;
@@ -135,16 +145,16 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   is_busy_ = true;
 
   // Start the load and save process in the offliner (Async).
-  offliner->LoadAndSave(request,
-                        base::Bind(&RequestCoordinator::OfflinerDoneCallback,
-                                   weak_ptr_factory_.GetWeakPtr()));
+  offliner_->LoadAndSave(request,
+                         base::Bind(&RequestCoordinator::OfflinerDoneCallback,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                                               Offliner::RequestStatus status) {
   DVLOG(2) << "offliner finished, saved: "
-           << (status == Offliner::RequestStatus::SAVED) << ", "
-           << __FUNCTION__;
+           << (status == Offliner::RequestStatus::SAVED) << ", status: "
+           << (int) status << ", " << __FUNCTION__;
   last_offlining_status_ = status;
 
   is_busy_ = false;
@@ -161,6 +171,12 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     // Start another request if we have time.
     TryNextRequest();
   }
+}
+
+void RequestCoordinator::GetOffliner() {
+    if (!offliner_) {
+      offliner_ = factory_->GetOffliner(policy_.get());
+    }
 }
 
 }  // namespace offline_pages
