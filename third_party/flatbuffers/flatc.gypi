@@ -47,7 +47,7 @@
     }
   ],
   'dependencies': [
-    '<(DEPTH)/third_party/flatbuffers/flatbuffers.gyp:flatc',
+    '<(DEPTH)/third_party/flatbuffers/flatbuffers.gyp:flatc#host',
   ],
   'include_dirs': [
      '<(SHARED_INTERMEDIATE_DIR)/flatc_out',
