@@ -72,8 +72,11 @@ class NativeInitializationController {
     /**
      * Start loading the native library in the background. This kicks off the native initialization
      * process.
+     *
+     * @param allocateChildConnection Whether a spare child connection should be allocated. Set to
+     *                                false if you know that no new renderer is needed.
      */
-    public void startBackgroundTasks() {
+    public void startBackgroundTasks(final boolean allocateChildConnection) {
         // TODO(yusufo) : Investigate using an AsyncTask for this.
         new Thread() {
             @Override
@@ -98,7 +101,7 @@ class NativeInitializationController {
                     mActivityDelegate.onStartupFailure();
                     return;
                 }
-                ChildProcessLauncher.warmUp(mContext);
+                if (allocateChildConnection) ChildProcessLauncher.warmUp(mContext);
                 ThreadUtils.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

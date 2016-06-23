@@ -93,6 +93,7 @@ public class CustomTabActivity extends ChromeActivity {
     private boolean mRecordedStartupUma;
     private boolean mHasCreatedTabEarly;
     private boolean mIsInitialStart = true;
+    private boolean mHasPrerender;
     private CustomTabObserver mTabObserver;
 
     private String mPrerenderedUrl;
@@ -212,14 +213,19 @@ public class CustomTabActivity extends ChromeActivity {
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
         mSession = mIntentDataProvider.getSession();
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
-        boolean prerendered = !TextUtils.isEmpty(
+        mHasPrerender = !TextUtils.isEmpty(
                 CustomTabsConnection.getInstance(getApplication()).getPrerenderedUrl(mSession));
-        if (CustomTabsConnection.hasWarmUpBeenFinished(getApplication()) && !prerendered) {
+        if (CustomTabsConnection.hasWarmUpBeenFinished(getApplication()) && !mHasPrerender) {
             mMainTab = createMainTab();
             loadUrlInTab(mMainTab, new LoadUrlParams(getUrlToLoad()),
                     IntentHandler.getTimestampFromIntent(getIntent()));
             mHasCreatedTabEarly = true;
         }
+    }
+
+    @Override
+    public boolean shouldAllocateChildConnection() {
+        return !mHasCreatedTabEarly && !mHasPrerender;
     }
 
     @Override

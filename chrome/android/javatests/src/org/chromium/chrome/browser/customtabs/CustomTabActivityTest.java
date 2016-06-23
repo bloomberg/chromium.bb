@@ -1054,6 +1054,72 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
+     * Tests that the activity knows there is already a child process when warmup() has been called.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testAllocateChildConnectionWithWarmup() throws Exception {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        final CustomTabsConnection connection = warmUpAndWait();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
+        connection.newSession(token);
+        try {
+            startCustomTabActivityWithIntent(
+                    CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage));
+        } catch (InterruptedException e) {
+            fail();
+        }
+        assertFalse(
+                "Warmup() should have allocated a child connection",
+                mActivity.shouldAllocateChildConnection());
+    }
+
+    /**
+     * Tests that the activity knows there is no child process.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testAllocateChildConnectionNoWarmup() throws Exception {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        final CustomTabsConnection connection =
+                CustomTabsConnection.getInstance((Application) context);
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
+        connection.newSession(token);
+
+        try {
+            startCustomTabActivityWithIntent(
+                    CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage2));
+        } catch (InterruptedException e) {
+            fail();
+        }
+        assertTrue(
+                "No spare renderer available, should allocate a child connection.",
+                mActivity.shouldAllocateChildConnection());
+    }
+
+    /**
+     * Tests that the activity knows there is already a child process when prerendering.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testAllocateChildConnectionWithPrerender() throws Exception {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        final CustomTabsConnection connection = warmUpAndWait();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
+        connection.newSession(token);
+        assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
+        try {
+            startCustomTabActivityWithIntent(
+                    CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage));
+        } catch (InterruptedException e) {
+            fail();
+        }
+        assertFalse(
+                "Prerendering should have allocated a child connection",
+                mActivity.shouldAllocateChildConnection());
+    }
+
+    /**
      * Tests that prerendering accepts a referrer, and that this is not lost when launching the
      * Custom Tab.
      */

@@ -24,6 +24,7 @@ import android.view.WindowManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -106,7 +107,13 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         // Kick off long running IO tasks that can be done in parallel.
         mNativeInitializationController = new NativeInitializationController(this, this);
         initializeChildProcessCreationParams();
-        mNativeInitializationController.startBackgroundTasks();
+        mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
+    }
+
+    /** Controls the parameter of {@link NativeInitializationController#startBackgroundTasks()}.*/
+    @VisibleForTesting
+    public boolean shouldAllocateChildConnection() {
+        return true;
     }
 
     /**
