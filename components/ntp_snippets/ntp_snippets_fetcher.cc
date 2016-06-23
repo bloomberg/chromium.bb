@@ -333,6 +333,9 @@ void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
   headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
   url_fetcher_->SetExtraRequestHeaders(headers.ToString());
   url_fetcher_->SetUploadData("application/json", request);
+  // Log the request for debugging network issues.
+  VLOG(1) << "Sending a NTP snippets request to " << url << ":" << std::endl
+          << headers.ToString() << std::endl << request;
   // Fetchers are sometimes cancelled because a network change was detected.
   url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
   // Try to make fetching the files bit more robust even with poor connection.
