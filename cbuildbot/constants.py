@@ -212,6 +212,14 @@ EXCEPTION_CATEGORY_ALL_CATEGORIES = (
 FINAL_STATUS_PASSED = 'passed'
 FINAL_STATUS_FAILED = 'failed'
 
+
+# Monarch metric names
+MON_CL_ACTION = 'chromeos/cbuildbot/cl_action/%s'
+MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
+MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'
+MON_PRECQ_TICK_COUNT = 'chromeos/cbuildbot/pre-cq/tick_count'
+
+
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they
 # can pass to the target cbuildbot (since it may not have that

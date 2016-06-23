@@ -81,3 +81,9 @@ def Boolean(name):
 def Float(name):
   """Returns a metric handle for a float named |name|."""
   return _GetOrConstructMetric(name, metrics.FloatMetric)
+
+
+@_ImportSafe
+def CumulativeDistribution(name):
+  """Returns a metric handle for a cumulative distribution named |name|."""
+  return _GetOrConstructMetric(name, metrics.CumulativeDistributionMetric)

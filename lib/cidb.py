@@ -699,7 +699,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       statsd_name = 'cl_actions.%s' % cl_action.action
       stats.Counter(statsd_name).increment(r.replace(':', '_'))
 
-      monarch_name = 'chromeos/cbuildbot/cl_action/' + cl_action.action
+      monarch_name = constants.MON_CL_ACTION % cl_action.action
       counter = metrics.Counter(monarch_name)
       counter.increment(fields={'reason': r})
 

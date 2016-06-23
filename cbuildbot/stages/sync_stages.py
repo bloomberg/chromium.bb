@@ -1629,18 +1629,11 @@ class PreCQLauncherStage(SyncStage):
         launch_count += len(configs)
         cl_launch_count += len(configs) * len(plan)
 
-    metrics.Counter('chromeos/cbuildbot/pre-cq/launch_count').increment_by(
+    metrics.Counter(constants.MON_PRECQ_LAUNCH_COUNT).increment_by(
         launch_count)
-    metrics.Counter('chromeos/cbuildbot/pre-cq/cl_launch_count').increment_by(
+    metrics.Counter(constants.MON_PRECQ_CL_LAUNCH_COUNT).increment_by(
         cl_launch_count)
-    metrics.Counter('chromeos/cbuildbot/pre-cq/tick_count').increment()
-
-    graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
-        'launch_count', launch_count)
-    graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
-        'cl_launch_count', cl_launch_count)
-    graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
-        'tick_count')
+    metrics.Counter(constants.MON_PRECQ_TICK_COUNT).increment()
 
     self.last_cycle_launch_count = launch_count
 
