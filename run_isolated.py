@@ -579,13 +579,13 @@ def run_tha_test(
 
 
 def install_packages(
-    run_dir, package_list_file, service_url, client_package_name,
+    run_dir, packages, service_url, client_package_name,
     client_version, cache_dir=None, timeout=None):
   """Installs packages. Returns stats.
 
   Args:
     run_dir (str): root of installation.
-    package_list_file (str): path to a file with a list of packages to install.
+    packages: packages to install, dict {path: [(package_name, version)].
     service_url (str): CIPD server url, e.g.
       "https://chrome-infra-packages.appspot.com."
     client_package_name (str): CIPD package name of CIPD client.
@@ -594,7 +594,7 @@ def install_packages(
     timeout: max duration in seconds that this function can take.
   """
   assert cache_dir
-  if not package_list_file:
+  if not packages:
     return None
 
   timeoutfn = tools.sliding_timeout(timeout)
@@ -602,7 +602,6 @@ def install_packages(
   cache_dir = os.path.abspath(cache_dir)
 
   run_dir = os.path.abspath(run_dir)
-  package_list = cipd.parse_package_list_file(package_list_file)
 
   get_client_start = time.time()
   client_manager = cipd.get_client(
@@ -610,7 +609,7 @@ def install_packages(
       timeout=timeoutfn())
   with client_manager as client:
     get_client_duration = time.time() - get_client_start
-    for path, packages in package_list.iteritems():
+    for path, packages in sorted(packages.iteritems()):
       site_root = os.path.abspath(os.path.join(run_dir, path))
       if not site_root.startswith(run_dir):
         raise cipd.Error('Invalid CIPD package path "%s"' % path)
@@ -721,9 +720,9 @@ def main(args):
   cipd.validate_cipd_options(parser, options)
 
   install_packages_fn = lambda run_dir: install_packages(
-      run_dir, options.cipd_package_list, options.cipd_server,
-      options.cipd_client_package, options.cipd_client_version,
-      cache_dir=options.cipd_cache)
+      run_dir, cipd.parse_package_args(options.cipd_packages),
+      options.cipd_server, options.cipd_client_package,
+      options.cipd_client_version, cache_dir=options.cipd_cache)
 
   try:
     command = [] if options.isolated else args

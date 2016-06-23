@@ -335,76 +335,52 @@ class RunIsolatedTest(RunIsolatedTestBase):
         self.popen_calls)
 
   def test_main_naked_with_packages(self):
-    packages_fd, packages_path = tempfile.mkstemp(prefix=u'packages')
-    try:
-      try:
-        os.write(packages_fd, json.dumps({
-          'packages': [
-            {
-              'path': 'bin',
-              'package_name': 'infra/tools/echo/${platform}',
-              'version': 'latest',
-            },
-            {
-              'path': '.',
-              'package_name': 'infra/data/x',
-              'version': 'latest',
-            },
-            {
-              'package_name': 'infra/data/y',
-              'version': 'canary',
-            },
-          ]
-        }))
-      finally:
-        os.close(packages_fd)
+    cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
+    cmd = [
+      '--no-log',
+      '--cache', os.path.join(self.tempdir, 'cache'),
+      '--cipd-package', 'bin:infra/tools/echo/${platform}:latest',
+      '--cipd-package', '.:infra/data/x:latest',
+      '--cipd-package', '.:infra/data/y:canary',
+      '--cipd-server', self.cipd_server.url,
+      '--cipd-cache', cipd_cache,
+      'bin/echo${EXECUTABLE_SUFFIX}',
+      'hello',
+      'world',
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(0, ret)
 
-      cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
-      cmd = [
-        '--no-log',
-        '--cache', os.path.join(self.tempdir, 'cache'),
-        '--cipd-package-list', packages_path,
-        '--cipd-server', self.cipd_server.url,
-        '--cipd-cache', cipd_cache,
-        'bin/echo${EXECUTABLE_SUFFIX}',
-        'hello',
-        'world',
-      ]
-      ret = run_isolated.main(cmd)
-      self.assertEqual(0, ret)
+    print self.popen_calls
+    self.assertEqual(3, len(self.popen_calls))
 
-      print self.popen_calls
-      self.assertEqual(3, len(self.popen_calls))
+    # Test cipd-ensure command for installing packages.
+    for cipd_ensure_cmd, _ in self.popen_calls[0:2]:
+      self.assertEqual(cipd_ensure_cmd[:2], [
+        os.path.join(cipd_cache, 'cipd' + cipd.EXECUTABLE_SUFFIX),
+        'ensure',
+      ])
+      cache_dir_index = cipd_ensure_cmd.index('-cache-dir')
+      self.assertEqual(
+          cipd_ensure_cmd[cache_dir_index+1],
+          os.path.join(cipd_cache, 'cipd_internal'))
 
-      # Test cipd-ensure command for installing packages.
-      for cipd_ensure_cmd, _ in self.popen_calls[0:2]:
-        self.assertEqual(cipd_ensure_cmd[:2], [
-          os.path.join(cipd_cache, 'cipd' + cipd.EXECUTABLE_SUFFIX),
-          'ensure',
-        ])
-        cache_dir_index = cipd_ensure_cmd.index('-cache-dir')
-        self.assertEqual(
-            cipd_ensure_cmd[cache_dir_index+1],
-            os.path.join(cipd_cache, 'cipd_internal'))
+    # Test cipd cache.
+    version_file = unicode(os.path.join(
+        cipd_cache, 'versions', '1481d0a0ceb16ea4672fed76a0710306eb9f3a33'))
+    self.assertTrue(fs.isfile(version_file))
+    with open(version_file) as f:
+      self.assertEqual(f.read(), 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-      # Test cipd cache.
-      version_file = unicode(os.path.join(
-          cipd_cache, 'versions', '1481d0a0ceb16ea4672fed76a0710306eb9f3a33'))
-      self.assertTrue(fs.isfile(version_file))
-      with open(version_file) as f:
-        self.assertEqual(f.read(), 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    client_binary_file = unicode(os.path.join(
+        cipd_cache, 'clients', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
+    self.assertTrue(fs.isfile(client_binary_file))
 
-      client_binary_file = unicode(os.path.join(
-          cipd_cache, 'clients', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
-      self.assertTrue(fs.isfile(client_binary_file))
-
-      # Test echo call.
-      echo_cmd, _ = self.popen_calls[2]
-      self.assertTrue(echo_cmd[0].endswith(
-          '/bin/echo' + cipd.EXECUTABLE_SUFFIX))
-      self.assertEqual(echo_cmd[1:], ['hello', 'world'])
-    finally:
-      os.remove(packages_path)
+    # Test echo call.
+    echo_cmd, _ = self.popen_calls[2]
+    self.assertTrue(echo_cmd[0].endswith(
+        '/bin/echo' + cipd.EXECUTABLE_SUFFIX))
+    self.assertEqual(echo_cmd[1:], ['hello', 'world'])
 
   def test_modified_cwd(self):
     isolated = json_dumps({
