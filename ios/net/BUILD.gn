@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/build/config.gni")
 import("//testing/test.gni")
 
 source_set("net") {
@@ -77,4 +78,6 @@ test("ios_net_unittests") {
     "protocol_handler_util_unittest.mm",
     "url_scheme_util_unittest.mm",
   ]
+
+  assert_no_deps = ios_assert_no_deps
 }

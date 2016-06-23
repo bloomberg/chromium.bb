@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/build/config.gni")
 import("//ios/web/js_compile.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
@@ -483,6 +484,8 @@ test("ios_web_unittests") {
     "webui/mojo_facade_unittest.mm",
     "webui/url_fetcher_block_adapter_unittest.mm",
   ]
+
+  assert_no_deps = ios_assert_no_deps
 }
 
 test("ios_web_inttests") {
@@ -506,6 +509,8 @@ test("ios_web_inttests") {
     "test/run_all_unittests.cc",
     "webui/web_ui_mojo_inttest.mm",
   ]
+
+  assert_no_deps = ios_assert_no_deps
 }
 
 js_compile_bundle("web_ui_bundle") {

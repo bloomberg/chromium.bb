@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ios/rules.gni")
+import("//ios/build/config.gni")
 
 ios_app_bundle("ios_web_shell") {
   info_plist = "Info.plist"
@@ -27,6 +28,8 @@ ios_app_bundle("ios_web_shell") {
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
+
+  assert_no_deps = ios_assert_no_deps
 }
 
 bundle_data_xib("main_view_bundle_data") {

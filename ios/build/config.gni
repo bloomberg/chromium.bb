@@ -8,16 +8,18 @@ _ios_conceptually_bad_dependencies = [
   "//cc/*",
   "//content/*",
   "//dbus/*",
-  "//ipc/*",
-  "//jingle/*",
+  "//jingle:jingle",
   "//media/*",
-  "//third_party/webrtc/*",
+  "//third_party/ffmpeg/*",
+  "//third_party/hunspell_dictionaries/*",
+  "//third_party/webgl/*",
   "//third_party/WebKit/*",
+  "//third_party/webrtc:webrtc",
 ]
 
 # Global list of conceptually fine dependencies but currently unsupported
-# on iOS. exclusions will be removed when the dependencies are fixed.
-_ios_transient_bad_dependencies = [ "//mojo/edk/*" ]
+# on iOS. Exclusions will be removed when the dependencies are fixed.
+_ios_transient_bad_dependencies = []
 
 ios_assert_no_deps =
     _ios_conceptually_bad_dependencies + _ios_transient_bad_dependencies
