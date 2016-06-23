@@ -96,16 +96,8 @@ class UsbDeviceImpl : public UsbDevice {
   PlatformUsbDevice platform_device_;
   bool visited_ = false;
 
-  // The current device configuration descriptor. May be null if the device is
-  // in an unconfigured state; if not null, it is a pointer to one of the
-  // items at UsbDevice::configurations_.
-  const UsbConfigDescriptor* active_configuration_ = nullptr;
-
   // Retain the context so that it will not be released before UsbDevice.
   scoped_refptr<UsbContext> context_;
-
-  // Opened handles.
-  std::list<UsbDeviceHandle*> handles_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
