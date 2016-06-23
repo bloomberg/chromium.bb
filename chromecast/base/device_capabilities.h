@@ -31,6 +31,15 @@ namespace chromecast {
 // are stored and then forwarded to app servers that use them to determine how
 // to interact with the device.
 //
+// Capabilities can be classified as either "public" or "private". Capabilities
+// of both types can be used by the Chromecast platform to control internal
+// behaviors, but only public capabilities will be advertised to app servers.
+// Once a capability is set, it retains its privacy classification permanently;
+// attempting to change the privacy of a capability results in an error.
+// Private capabilities can only be added by Validators. Calling SetCapability()
+// on a path without a Validator will default to setting the capability as
+// public.
+//
 // Thread Safety:
 // Observers can be added from any thread. Each Observer is guaranteed to be
 // notified on same thread that it was added on and must be removed on the same
@@ -73,7 +82,7 @@ class DeviceCapabilities {
     // value being proposed for |path|. Determines if |proposed_value| is valid
     // change for |path|. This method may be asynchronous, but multiple calls
     // to it must be handled serially. Returns response through
-    // SetValidatedValue().
+    // SetPublicValidatedValue() or SetPrivateValidatedValue().
     virtual void Validate(const std::string& path,
                           std::unique_ptr<base::Value> proposed_value) = 0;
 
@@ -87,8 +96,12 @@ class DeviceCapabilities {
     // capability. |new_value| is new validated value to be used in
     // DeviceCapabilities. This method passes these parameters to
     // DeviceCapabilities, where |path| is updated internally to |new_value|.
-    void SetValidatedValue(const std::string& path,
-                           std::unique_ptr<base::Value> new_value) const;
+    // TODO(seantopping): Change this interface so that Validators are not the
+    // only means of accessing private capabilities.
+    void SetPublicValidatedValue(const std::string& path,
+                                 std::unique_ptr<base::Value> new_value) const;
+    void SetPrivateValidatedValue(const std::string& path,
+                                  std::unique_ptr<base::Value> new_value) const;
 
    private:
     DeviceCapabilities* const capabilities_;
@@ -128,6 +141,7 @@ class DeviceCapabilities {
   };
 
   // Default Capability keys
+  static const char kKeyAssistantSupported[];
   static const char kKeyBluetoothSupported[];
   static const char kKeyDisplaySupported[];
   static const char kKeyHiResAudioSupported[];
@@ -156,8 +170,9 @@ class DeviceCapabilities {
   // Validate() method for "foo"'s Validator will be called, with a |path| of
   // "foo.bar". Note that this method does not add or modify the capability.
   // To do this, SetCapability() should be called, or Validators can call
-  // SetValidatedValue(). This method is synchronous to ensure Validators know
-  // exactly when they may start receiving validation requests.
+  // SetPublicValidatedValue() or SetPrivateValidatedValue(). This method is
+  // synchronous to ensure Validators know exactly when they may start receiving
+  // validation requests.
   virtual void Register(const std::string& key,
                         Validator* validator) = 0;
   // Unregisters Validator for |key|. |validator| argument must match
@@ -172,8 +187,9 @@ class DeviceCapabilities {
   virtual Validator* GetValidator(const std::string& key) const = 0;
 
   // Accessors for default capabilities. Note that the capability must be added
-  // through SetCapability() or SetValidatedValue() (for Validators) before
-  // accessors are called.
+  // through SetCapability() (or Set[Private]ValidatedValue() for Validators)
+  // before accessors are called.
+  virtual bool AssistantSupported() const = 0;
   virtual bool BluetoothSupported() const = 0;
   virtual bool DisplaySupported() const = 0;
   virtual bool HiResAudioSupported() const = 0;
@@ -185,10 +201,14 @@ class DeviceCapabilities {
 
   // Use this method to access dictionary and JSON string. No deep copying is
   // performed, so this method is inexpensive. Note that any capability updates
-  // that occur after GetData() has been called will not be reflected in the
+  // that occur after GetAllData() has been called will not be reflected in the
   // returned scoped_refptr. You can think of this method as taking a snapshot
-  // of the capabilities when it gets called.
-  virtual scoped_refptr<Data> GetData() const = 0;
+  // of the capabilities when it gets called. All capabilities (those set by
+  // SetPrivateValidatedValue() and SetPublicValidatedValue()) will be present
+  // in the returned Data object.
+  virtual scoped_refptr<Data> GetAllData() const = 0;
+  // Similar to GetAllData(), but this only returns public capabilities.
+  virtual scoped_refptr<Data> GetPublicData() const = 0;
 
   // Updates the value at |path| to |proposed_value| if |path| already exists
   // and adds new capability if |path| doesn't. Note that if a key has been
@@ -197,9 +217,14 @@ class DeviceCapabilities {
   // Ex: If "foo" has a Validator registered, a |path| of "foo.bar"
   // will cause |proposed_value| to go through the Validator's Validate()
   // method. Client code may use the Observer interface to determine the
-  // ultimate value used. This method is asynchronous.
+  // ultimate value used.
+  // This method is asynchronous. By default, this method will classify the new
+  // value at |path| as a public capability; if a Validator is present, it may
+  // classify the value as public or private via SetPublicValidatedValue() or
+  // SetPrivateValidatedValue() respectively.
   virtual void SetCapability(const std::string& path,
                              std::unique_ptr<base::Value> proposed_value) = 0;
+
   // Iterates through entries in |dict_value| and calls SetCapability() for
   // each one. This method is asynchronous.
   virtual void MergeDictionary(const base::DictionaryValue& dict_value) = 0;
@@ -220,9 +245,16 @@ class DeviceCapabilities {
       std::unique_ptr<const base::DictionaryValue> dictionary);
 
  private:
-  // Does actual internal update of |path| to |new_value|.
-  virtual void SetValidatedValue(const std::string& path,
-                                 std::unique_ptr<base::Value> new_value) = 0;
+  // Internally update the capability residing at |path| to |new_value|. This
+  // capability will be visible in GetAllData() and GetPublicData().
+  virtual void SetPublicValidatedValue(
+      const std::string& path,
+      std::unique_ptr<base::Value> new_value) = 0;
+  // Similar to SetPublicValidatedValue(), but this capability will only be
+  // visible in GetAllData().
+  virtual void SetPrivateValidatedValue(
+      const std::string& path,
+      std::unique_ptr<base::Value> new_value) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCapabilities);
 };
