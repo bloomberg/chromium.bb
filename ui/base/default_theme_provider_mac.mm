@@ -44,4 +44,8 @@ NSGradient* DefaultThemeProvider::GetNSGradient(int id) const {
   return nil;
 }
 
+bool DefaultThemeProvider::ShouldIncreaseContrast() const {
+  return false;
+}
+
 }  // namespace ui

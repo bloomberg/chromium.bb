@@ -101,6 +101,9 @@ class UI_BASE_EXPORT ThemeProvider {
 
   // Gets the NSGradient with the specified |id|.
   virtual NSGradient* GetNSGradient(int id) const = 0;
+
+  // Whether the "increase contrast" accessibility setting is enabled.
+  virtual bool ShouldIncreaseContrast() const = 0;
 #endif
 };
 

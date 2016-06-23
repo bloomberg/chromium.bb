@@ -31,6 +31,7 @@ class BackgroundTheme : public ui::ThemeProvider {
   NSColor* GetNSColor(int id) const override;
   NSColor* GetNSColorTint(int id) const override;
   NSGradient* GetNSGradient(int id) const override;
+  bool ShouldIncreaseContrast() const override;
 
  private:
   const ui::ThemeProvider* provider_;

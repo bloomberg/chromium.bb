@@ -96,3 +96,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
       return provider_->GetNSGradient(id);
   }
 }
+
+bool BackgroundTheme::ShouldIncreaseContrast() const {
+  return false;
+}

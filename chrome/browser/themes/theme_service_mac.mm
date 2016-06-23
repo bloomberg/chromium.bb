@@ -17,6 +17,12 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 
+@interface NSWorkspace (Redeclarations)
+
+@property(readonly) BOOL accessibilityDisplayShouldIncreaseContrast;
+
+@end
+
 NSString* const kBrowserThemeDidChangeNotification =
     @"BrowserThemeDidChangeNotification";
 
@@ -404,4 +410,14 @@ NSColor* ThemeService::BrowserThemeProvider::GetNSColorTint(int id) const {
 
 NSGradient* ThemeService::BrowserThemeProvider::GetNSGradient(int id) const {
   return theme_service_.GetNSGradient(id);
+}
+
+bool ThemeService::BrowserThemeProvider::ShouldIncreaseContrast() const {
+  NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
+  if ([workspace
+          respondsToSelector:@selector(
+                                 accessibilityDisplayShouldIncreaseContrast)]) {
+    return workspace.accessibilityDisplayShouldIncreaseContrast == YES;
+  }
+  return false;
 }

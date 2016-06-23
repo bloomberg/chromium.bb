@@ -83,6 +83,7 @@
     return;
   }
 
+  NSColor* strokeColor;
   if (themeProvider->HasCustomImage(IDR_THEME_TOOLBAR) ||
       themeProvider->HasCustomColor(ThemeProperties::COLOR_TOOLBAR)) {
     // First draw the toolbar bitmap, so that theme colors can shine through.
@@ -96,15 +97,21 @@
     // which helped dark toolbars stand out from dark frames. Lay down a thin
     // highlight in MD also.
     if ([window isMainWindow]) {
-      [themeProvider->GetNSColor(
-          ThemeProperties::COLOR_TOOLBAR_STROKE_THEME) set];
+      strokeColor = themeProvider->GetNSColor(
+          ThemeProperties::COLOR_TOOLBAR_STROKE_THEME);
     } else {
-      [themeProvider->GetNSColor(
-          ThemeProperties::COLOR_TOOLBAR_STROKE_THEME_INACTIVE) set];
+      strokeColor = themeProvider->GetNSColor(
+          ThemeProperties::COLOR_TOOLBAR_STROKE_THEME_INACTIVE);
     }
   } else {
-    [themeProvider->GetNSColor(ThemeProperties::COLOR_TOOLBAR_STROKE) set];
+    strokeColor =
+        themeProvider->GetNSColor(ThemeProperties::COLOR_TOOLBAR_STROKE);
   }
+
+  if (themeProvider->ShouldIncreaseContrast())
+    strokeColor = [strokeColor colorWithAlphaComponent:100];
+  [strokeColor set];
+
   NSRect borderRect = NSMakeRect(0.0, 0.0, self.bounds.size.width,
       [self cr_lineWidth]);
   NSRectFillUsingOperation(NSIntersectionRect(dirtyRect, borderRect),

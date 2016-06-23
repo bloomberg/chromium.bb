@@ -235,6 +235,7 @@ class FakeTheme : public ui::ThemeProvider {
   NSColor* GetNSColor(int id) const override { return color_.get(); }
   NSColor* GetNSColorTint(int id) const override { return nil; }
   NSGradient* GetNSGradient(int id) const override { return nil; }
+  bool ShouldIncreaseContrast() const override { return false; }
 };
 
 

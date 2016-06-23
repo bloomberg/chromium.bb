@@ -45,12 +45,20 @@ const NSTimeInterval kGlowUpdateInterval = 0.025;
 // has moved less than the threshold, we want to close the tab.
 const CGFloat kRapidCloseDist = 2.5;
 
-@interface TabView(MaterialDesign)
+// This class contains the logic for drawing Material Design tab images. The
+// |setTabEdgeStrokeColor| method is overridden by |TabHeavyImageMaker| to draw
+// high-contrast tabs.
+@interface TabImageMaker : NSObject
 + (void)drawTabLeftMaskImage;
 + (void)drawTabRightMaskImage;
 + (void)drawTabLeftEdgeImage;
 + (void)drawTabMiddleEdgeImage;
 + (void)drawTabRightEdgeImage;
++ (void)setTabEdgeStrokeColor;
+@end
+
+@interface TabHeavyImageMaker : TabImageMaker
++ (void)setTabEdgeStrokeColor;
 @end
 
 @interface TabController(Private)
@@ -58,9 +66,16 @@ const CGFloat kRapidCloseDist = 2.5;
 - (HoverCloseButton*)closeButton;
 @end
 
+extern NSString* const _Nonnull NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification;
+
 namespace {
 
-NSImage* imageForResourceID(int resource_id) {
+enum StrokeType {
+  STROKE_NORMAL,
+  STROKE_HEAVY,
+};
+
+NSImage* imageForResourceID(int resource_id, StrokeType stroke_type) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     return [rb.GetNativeImageNamed(resource_id).CopyNSImage() autorelease];
@@ -91,9 +106,11 @@ NSImage* imageForResourceID(int resource_id) {
   }
   DCHECK(theSelector);
 
+  Class makerClass = stroke_type == STROKE_HEAVY ? [TabHeavyImageMaker class]
+                                                 : [TabImageMaker class];
   base::scoped_nsobject<NSCustomImageRep> imageRep([[NSCustomImageRep alloc]
       initWithDrawSelector:theSelector
-                  delegate:[TabView class]]);
+                  delegate:makerClass]);
 
   NSImage* newTabButtonImage =
       [[[NSImage alloc] initWithSize:NSMakeSize(imageWidth, 29)] autorelease];
@@ -104,29 +121,35 @@ NSImage* imageForResourceID(int resource_id) {
 }
 
 ui::ThreePartImage& GetMaskImage() {
-  CR_DEFINE_STATIC_LOCAL(ui::ThreePartImage, mask,
-      (imageForResourceID(IDR_TAB_ALPHA_LEFT), nullptr,
-          imageForResourceID(IDR_TAB_ALPHA_RIGHT)));
+  CR_DEFINE_STATIC_LOCAL(
+      ui::ThreePartImage, mask,
+      (imageForResourceID(IDR_TAB_ALPHA_LEFT, STROKE_NORMAL), nullptr,
+       imageForResourceID(IDR_TAB_ALPHA_RIGHT, STROKE_NORMAL)));
 
   return mask;
 }
 
-ui::ThreePartImage& GetStrokeImage(bool active) {
+ui::ThreePartImage& GetStrokeImage(bool active, StrokeType stroke_type) {
   if (!ui::MaterialDesignController::IsModeMaterial() && !active) {
     CR_DEFINE_STATIC_LOCAL(
         ui::ThreePartImage, inactiveStroke,
-            (imageForResourceID(IDR_TAB_INACTIVE_LEFT),
-             imageForResourceID(IDR_TAB_INACTIVE_CENTER),
-             imageForResourceID(IDR_TAB_INACTIVE_RIGHT)));
+        (imageForResourceID(IDR_TAB_INACTIVE_LEFT, STROKE_NORMAL),
+         imageForResourceID(IDR_TAB_INACTIVE_CENTER, STROKE_NORMAL),
+         imageForResourceID(IDR_TAB_INACTIVE_RIGHT, STROKE_NORMAL)));
     return inactiveStroke;
   }
   CR_DEFINE_STATIC_LOCAL(
       ui::ThreePartImage, stroke,
-          (imageForResourceID(IDR_TAB_ACTIVE_LEFT),
-           imageForResourceID(IDR_TAB_ACTIVE_CENTER),
-           imageForResourceID(IDR_TAB_ACTIVE_RIGHT)));
+      (imageForResourceID(IDR_TAB_ACTIVE_LEFT, STROKE_NORMAL),
+       imageForResourceID(IDR_TAB_ACTIVE_CENTER, STROKE_NORMAL),
+       imageForResourceID(IDR_TAB_ACTIVE_RIGHT, STROKE_NORMAL)));
+  CR_DEFINE_STATIC_LOCAL(
+      ui::ThreePartImage, heavyStroke,
+      (imageForResourceID(IDR_TAB_ACTIVE_LEFT, STROKE_HEAVY),
+       imageForResourceID(IDR_TAB_ACTIVE_CENTER, STROKE_HEAVY),
+       imageForResourceID(IDR_TAB_ACTIVE_RIGHT, STROKE_HEAVY)));
 
-  return stroke;
+  return stroke_type == STROKE_HEAVY ? heavyStroke : stroke;
 }
 
 CGFloat LineWidthFromContext(CGContextRef context) {
@@ -178,11 +201,21 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     if (!ui::MaterialDesignController::IsModeMaterial()) {
       fontSize = [NSFont systemFontSizeForControlSize:NSSmallControlSize];
     }
-    [labelCell setFont:[NSFont systemFontOfSize:fontSize]];
     [titleView_ setCell:labelCell];
     titleViewCell_ = labelCell;
 
     [self setWantsLayer:YES];  // -drawFill: needs a layer.
+
+    if (&NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification) {
+      NSNotificationCenter* center =
+          [[NSWorkspace sharedWorkspace] notificationCenter];
+      [center
+          addObserver:self
+             selector:@selector(accessibilityOptionsDidChange:)
+                 name:
+                     NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+               object:nil];
+    }
   }
   return self;
 }
@@ -190,6 +223,11 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 - (void)dealloc {
   // Cancel any delayed requests that may still be pending (drags or hover).
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
+  if (&NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification) {
+    NSNotificationCenter* center =
+        [[NSWorkspace sharedWorkspace] notificationCenter];
+    [center removeObserver:self];
+  }
   [super dealloc];
 }
 
@@ -484,7 +522,11 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     // In MD, the tab stroke is always opaque.
     alpha = 1;
   }
-  GetStrokeImage(state_ == NSOnState)
+  const ui::ThemeProvider* provider = [[self window] themeProvider];
+  GetStrokeImage(state_ == NSOnState,
+                 provider && provider->ShouldIncreaseContrast()
+                     ? STROKE_HEAVY
+                     : STROKE_NORMAL)
       .DrawInRect(bounds, NSCompositeSourceOver, alpha);
 }
 
@@ -593,10 +635,26 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   return [[controller_ closeButton] iconColor];
 }
 
+- (void)accessibilityOptionsDidChange:(id)ignored {
+  [self updateLabelFont];
+  [self setNeedsDisplay:YES];
+}
+
+- (void)updateLabelFont {
+  CGFloat fontSize = [titleViewCell_ font].pointSize;
+  const ui::ThemeProvider* provider = [[self window] themeProvider];
+  if (provider && provider->ShouldIncreaseContrast() && state_ == NSOnState) {
+    [titleViewCell_ setFont:[NSFont boldSystemFontOfSize:fontSize]];
+  } else {
+    [titleViewCell_ setFont:[NSFont systemFontOfSize:fontSize]];
+  }
+}
+
 - (void)setState:(NSCellStateValue)state {
   if (state_ == state)
     return;
   state_ = state;
+  [self updateLabelFont];
   [self setNeedsDisplay:YES];
   [closeButton_ setNeedsDisplay:YES];
 }
@@ -817,8 +875,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
 @end  // @implementation TabView(Private)
 
-
-@implementation TabView(MaterialDesign)
+@implementation TabImageMaker
 
 + (NSBezierPath*)tabLeftEdgeBezierPathForContext:(CGContextRef)context {
   NSBezierPath* bezierPath = [NSBezierPath bezierPath];
@@ -870,7 +927,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   CGContextRef context = static_cast<CGContextRef>(
       [[NSGraphicsContext currentContext] graphicsPort]);
 
-  [TabView setTabEdgeStrokeColor];
+  [self setTabEdgeStrokeColor];
   [[self tabLeftEdgeBezierPathForContext:context] stroke];
 }
 
@@ -892,7 +949,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   [translationTransform translateXBy:0 yBy:-1 + lineWidth / 2.];
   [middleEdgePath transformUsingAffineTransform:translationTransform];
 
-  [TabView setTabEdgeStrokeColor];
+  [self setTabEdgeStrokeColor];
   [middleEdgePath stroke];
 }
 
@@ -908,7 +965,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   [transform translateXBy:-18 yBy:0];
   [leftEdgePath transformUsingAffineTransform:transform];
 
-  [TabView setTabEdgeStrokeColor];
+  [self setTabEdgeStrokeColor];
   [leftEdgePath stroke];
 }
 
@@ -947,4 +1004,16 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   [bezierPath fill];
 }
 
-@end  // @implementation TabView(MaterialDesign)
+@end
+
+@implementation TabHeavyImageMaker
+
+// For "Increase Contrast" mode, use flat black instead of semitransparent black
+// for the tab edge stroke.
++ (void)setTabEdgeStrokeColor {
+  static NSColor* heavyStrokeColor =
+      [skia::SkColorToSRGBNSColor(SK_ColorBLACK) retain];
+  [heavyStrokeColor set];
+}
+
+@end

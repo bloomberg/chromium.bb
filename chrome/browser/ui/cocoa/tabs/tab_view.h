@@ -124,6 +124,13 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 // Returns the Material Design color of the "x".
 - (SkColor)closeButtonColor;
 
+// Updates the label font after changes to either state or the system "Increase
+// Contrast" setting.
+- (void)updateLabelFont;
+
+// Called when systemwide accessibility options change.
+- (void)accessibilityOptionsDidChange:(id)ignored;
+
 @end
 
 // The TabController |controller_| is not the only owner of this view. If the

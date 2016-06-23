@@ -204,6 +204,7 @@ class ThemeService : public base::NonThreadSafe,
     NSColor* GetNSColor(int id) const override;
     NSColor* GetNSColorTint(int id) const override;
     NSGradient* GetNSGradient(int id) const override;
+    bool ShouldIncreaseContrast() const override;
 #endif
 
    private:

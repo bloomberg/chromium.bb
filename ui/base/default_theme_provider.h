@@ -42,6 +42,7 @@ class UI_BASE_EXPORT DefaultThemeProvider : public ThemeProvider {
   NSColor* GetNSColor(int id) const override;
   NSColor* GetNSColorTint(int id) const override;
   NSGradient* GetNSGradient(int id) const override;
+  bool ShouldIncreaseContrast() const override;
 #endif
 
  private:
