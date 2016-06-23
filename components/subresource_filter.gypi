@@ -1,10 +1,10 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 {
   'targets': [
-    {
+   {
       # GN version: //components/subresource_filter/core/browser
       'target_name': 'subresource_filter_core_browser',
       'type': 'static_library',
@@ -53,8 +53,6 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        'subresource_filter_core_common_ruleset_flatbuffer',
-        'subresource_filter_core_common_ruleset_proto',
       ],
       'include_dirs': [
         '..',
@@ -66,40 +64,6 @@
         'subresource_filter/core/common/memory_mapped_ruleset.cc',
         'subresource_filter/core/common/memory_mapped_ruleset.h',
       ],
-      'export_dependent_settings': [
-        'subresource_filter_core_common_ruleset_flatbuffer',
-        'subresource_filter_core_common_ruleset_proto',
-      ],
-    },
-    {
-      # GN version: //components/subresource_filter/core/common/flat:flatbuffer
-      'target_name': 'subresource_filter_core_common_ruleset_flatbuffer',
-      'type': 'none',
-      'sources': [
-        # Note: sources list duplicated in GN build.
-        'subresource_filter/core/common/flat/rules.fbs',
-      ],
-      'variables': {
-        'flatc_out_dir': 'components/subresource_filter/core/common/flat'
-      },
-      'includes': ['../third_party/flatbuffers/flatc.gypi'],
-      'dependencies': [
-        '<(DEPTH)/third_party/flatbuffers/flatbuffers.gyp:flatbuffers',
-      ]
-    },
-    {
-      # GN version: //components/subresource_filter/core/common/proto:proto
-      'target_name': 'subresource_filter_core_common_ruleset_proto',
-      'type': 'static_library',
-      'sources': [
-        # Note: sources list duplicated in GN build.
-        'subresource_filter/core/common/proto/rules.proto',
-      ],
-      'variables': {
-        'proto_in_dir': 'subresource_filter/core/common/proto',
-        'proto_out_dir': 'components/subresource_filter/core/common/proto',
-      },
-      'includes': [ '../build/protoc.gypi' ],
     },
   ],
   'conditions': [
