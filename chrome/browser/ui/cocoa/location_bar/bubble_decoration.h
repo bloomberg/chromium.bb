@@ -28,7 +28,7 @@ class BubbleDecoration : public LocationBarDecoration {
   void SetLabel(NSString* label);
   void SetTextColor(NSColor* text_color);
   void SetFont(NSFont* font);
-  void SetBaselineOffset(CGFloat offset);
+  void SetRetinaBaselineOffset(CGFloat offset);
   virtual ui::NinePartImageIds GetBubbleImageIds() = 0;
 
   // Implement |LocationBarDecoration|.
@@ -62,8 +62,8 @@ class BubbleDecoration : public LocationBarDecoration {
   // Contains attribute for drawing |label_|.
   base::scoped_nsobject<NSMutableDictionary> attributes_;
 
-  // Contains any baseline adjustment for the text.
-  CGFloat baseline_offset_;
+  // Contains any Retina-only baseline adjustment for |label_|.
+  CGFloat retina_baseline_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleDecoration);
 };

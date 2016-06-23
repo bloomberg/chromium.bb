@@ -57,7 +57,12 @@ NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
 
 EVBubbleDecoration::EVBubbleDecoration(LocationIconDecoration* location_icon)
     : location_icon_(location_icon) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // On Retina the text label is 1px above the Omnibox textfield's text
+    // baseline. If the Omnibox textfield also drew the label the baselines
+    // would align.
+    SetRetinaBaselineOffset(0.5);
+  } else {
     // Color tuples stolen from location_bar_view_gtk.cc.
     SetTextColor(ColorWithRGBBytes(0x07, 0x95, 0x00));
   }

@@ -12,6 +12,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
 
@@ -38,7 +39,7 @@ const CGFloat kBackgroundYInset = 4.0;
 
 }  // namespace
 
-BubbleDecoration::BubbleDecoration() : baseline_offset_(0) {
+BubbleDecoration::BubbleDecoration() : retina_baseline_offset_(0) {
   attributes_.reset([[NSMutableDictionary alloc] init]);
   [attributes_ setObject:LocationBarDecoration::GetFont()
                   forKey:NSFontAttributeName];
@@ -132,8 +133,16 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   if (label_) {
     NSRect textRect = frame;
     textRect.origin.x = textOffset;
-    textRect.origin.y += baseline_offset_;
     textRect.size.width = NSMaxX(decoration_frame) - NSMinX(textRect);
+    // Transform the coordinate system to adjust the baseline on Retina. This is
+    // the only way to get fractional adjustments.
+    gfx::ScopedNSGraphicsContextSaveGState saveGraphicsState;
+    CGFloat lineWidth = [control_view cr_lineWidth];
+    if (lineWidth < 1) {
+      NSAffineTransform* transform = [NSAffineTransform transform];
+      [transform translateXBy:0 yBy:retina_baseline_offset_];
+      [transform concat];
+    }
     DrawLabel(label_, attributes_, textRect);
   }
 }
@@ -179,6 +188,6 @@ void BubbleDecoration::SetFont(NSFont* font) {
   [attributes_ setObject:font forKey:NSFontAttributeName];
 }
 
-void BubbleDecoration::SetBaselineOffset(CGFloat offset) {
-  baseline_offset_ = offset;
+void BubbleDecoration::SetRetinaBaselineOffset(CGFloat offset) {
+  retina_baseline_offset_ = offset;
 }

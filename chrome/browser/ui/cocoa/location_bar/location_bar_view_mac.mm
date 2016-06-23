@@ -174,13 +174,25 @@ const SkColor kMaterialDarkVectorIconColor = SK_ColorWHITE;
 }
 
 + (void)drawLocationBarIconHTTPForScale:(int)scaleFactor {
-  NSBezierPath* circlePath =
-      [NSBezierPath bezierPathWithOvalInRect:NSMakeRect(2, 2, 12, 12)];
-  [circlePath setLineWidth:1.5];
-  [circlePath stroke];
+  if (scaleFactor > 1) {
+    NSRect ovalRect = NSMakeRect(2.25, 1.75, 12, 12);
+    NSBezierPath* circlePath =
+        [NSBezierPath bezierPathWithOvalInRect:ovalRect];
+    [circlePath setLineWidth:1.5];
+    [circlePath stroke];
 
-  NSRectFill(NSMakeRect(7, 4, 2, 5));
-  NSRectFill(NSMakeRect(7, 10, 2, 2));
+    NSRectFill(NSMakeRect(7.5, 4.5, 1.5, 4));
+    NSRectFill(NSMakeRect(7.5, 9.5, 1.5, 1.5));
+  } else {
+    NSRect ovalRect = NSMakeRect(2, 2, 12, 12);
+    NSBezierPath* circlePath =
+        [NSBezierPath bezierPathWithOvalInRect:ovalRect];
+    [circlePath setLineWidth:1.5];
+    [circlePath stroke];
+
+    NSRectFill(NSMakeRect(7, 4, 2, 5));
+    NSRectFill(NSMakeRect(7, 10, 2, 2));
+  }
 }
 
 + (void)drawLocationBarIconHTTPSInvalidForScale:(int)scaleFactor {
@@ -223,10 +235,17 @@ const SkColor kMaterialDarkVectorIconColor = SK_ColorWHITE;
 }
 
 + (void)drawLocationBarIconHTTPSValidForScale:(int)scaleFactor {
+  NSAffineTransform* transform = [NSAffineTransform transform];
+  // Adjust down 1px in Retina, so that the lock sits on the text baseline.
+  if (scaleFactor > 1) {
+    [transform translateXBy:0 yBy:-0.5];
+  }
+
   NSBezierPath* rectPath =
       [NSBezierPath bezierPathWithRoundedRect:NSMakeRect(4, 3, 8, 7)
                                       xRadius:1
                                       yRadius:1];
+  [rectPath transformUsingAffineTransform:transform];
   [rectPath fill];
 
   NSBezierPath* curvePath = [NSBezierPath bezierPath];
@@ -240,6 +259,7 @@ const SkColor kMaterialDarkVectorIconColor = SK_ColorWHITE;
             controlPoint2:NSMakePoint(10.5, 13)];
   [curvePath lineToPoint:NSMakePoint(10.5, 9.75)];
   [curvePath setLineWidth:1.25];
+  [curvePath transformUsingAffineTransform:transform];
   [curvePath stroke];
 }
 
