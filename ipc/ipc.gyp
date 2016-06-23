@@ -38,7 +38,7 @@
       ],
     },
     {
-      'target_name': 'ipc_interfaces',
+      'target_name': 'ipc_interfaces_mojom',
       'type': 'none',
       'variables': {
         'mojom_files': [
@@ -46,6 +46,16 @@
         ],
       },
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
+      'target_name': 'ipc_interfaces',
+      'type': 'static_library',
+      'dependencies': [
+        'ipc_interfaces_mojom'
+      ],
+      'include_dirs': [
+        '..',
+      ],
     },
     {
       'target_name': 'ipc_run_all_unittests',
@@ -191,13 +201,28 @@
     ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
+          'target_name': 'ipc_interfaces_win64',
+          'type': 'static_library',
+          'dependencies': [
+            'ipc_interfaces_mojom'
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+        {
           'target_name': 'ipc_win64',
           'type': '<(component)',
           'variables': {
             'ipc_target': 1,
           },
           'dependencies': [
-            'ipc_interfaces',
+            'ipc_interfaces_win64',
             '../base/base.gyp:base_win64',
             '../crypto/crypto.gyp:crypto_nacl_win64',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings_win64',
