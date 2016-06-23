@@ -35,6 +35,7 @@ struct wl_resource;
  * @section page_ifaces_remote_shell_unstable_v1 Interfaces
  * - @subpage page_iface_zwp_remote_shell_v1 - remote_shell
  * - @subpage page_iface_zwp_remote_surface_v1 - A desktop window
+ * - @subpage page_iface_zwp_notification_surface_v1 - A notification window
  * @section page_copyright_remote_shell_unstable_v1 Copyright
  * <pre>
  *
@@ -61,6 +62,7 @@ struct wl_resource;
  * </pre>
  */
 struct wl_surface;
+struct zwp_notification_surface_v1;
 struct zwp_remote_shell_v1;
 struct zwp_remote_surface_v1;
 
@@ -118,6 +120,22 @@ extern const struct wl_interface zwp_remote_shell_v1_interface;
  * committed both an remote_surface state and a buffer.
  */
 extern const struct wl_interface zwp_remote_surface_v1_interface;
+/**
+ * @page page_iface_zwp_notification_surface_v1 zwp_notification_surface_v1
+ * @section page_iface_zwp_notification_surface_v1_desc Description
+ *
+ * An interface that may be implemented by a wl_surface to host
+ * notification contents.
+ * @section page_iface_zwp_notification_surface_v1_api API
+ * See @ref iface_zwp_notification_surface_v1.
+ */
+/**
+ * @defgroup iface_zwp_notification_surface_v1 The zwp_notification_surface_v1 interface
+ *
+ * An interface that may be implemented by a wl_surface to host
+ * notification contents.
+ */
+extern const struct wl_interface zwp_notification_surface_v1_interface;
 
 #ifndef ZWP_REMOTE_SHELL_V1_CONTAINER_ENUM
 #define ZWP_REMOTE_SHELL_V1_CONTAINER_ENUM
@@ -147,6 +165,10 @@ enum zwp_remote_shell_v1_error {
 	 * given wl_surface has another role
 	 */
 	ZWP_REMOTE_SHELL_V1_ERROR_ROLE = 0,
+	/**
+	 * invalid notification id
+	 */
+	ZWP_REMOTE_SHELL_V1_ERROR_INVALID_NOTIFICATION_ID = 1,
 };
 #endif /* ZWP_REMOTE_SHELL_V1_ERROR_ENUM */
 
@@ -183,6 +205,19 @@ struct zwp_remote_shell_v1_interface {
 				   uint32_t id,
 				   struct wl_resource *surface,
 				   uint32_t container);
+	/**
+	 * create a notification surface from a surface
+	 *
+	 * Creates a notification_surface for the given surface, gives it
+	 * the notification_surface role and associated it with a
+	 * notification id.
+	 * @since 6
+	 */
+	void (*get_notification_surface)(struct wl_client *client,
+					 struct wl_resource *resource,
+					 uint32_t id,
+					 struct wl_resource *surface,
+					 const char *notification_id);
 };
 
 #define ZWP_REMOTE_SHELL_V1_CONFIGURE	0
@@ -571,6 +606,21 @@ zwp_remote_surface_v1_send_unset_pinned(struct wl_resource *resource_)
 {
 	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_UNSET_PINNED);
 }
+
+/**
+ * @ingroup iface_zwp_notification_surface_v1
+ * @struct zwp_notification_surface_v1_interface
+ */
+struct zwp_notification_surface_v1_interface {
+	/**
+	 * Destroy the notification_surface
+	 *
+	 * Unmap and destroy the notification surface.
+	 */
+	void (*destroy)(struct wl_client *client,
+			struct wl_resource *resource);
+};
+
 
 #ifdef  __cplusplus
 }

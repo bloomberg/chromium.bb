@@ -28,6 +28,7 @@
 #include "wayland-util.h"
 
 extern const struct wl_interface wl_surface_interface;
+extern const struct wl_interface zwp_notification_surface_v1_interface;
 extern const struct wl_interface zwp_remote_surface_v1_interface;
 
 static const struct wl_interface *types[] = {
@@ -40,6 +41,9 @@ static const struct wl_interface *types[] = {
 	&zwp_remote_surface_v1_interface,
 	&wl_surface_interface,
 	NULL,
+	&zwp_notification_surface_v1_interface,
+	&wl_surface_interface,
+	NULL,
 	&wl_surface_interface,
 	&wl_surface_interface,
 };
@@ -47,16 +51,17 @@ static const struct wl_interface *types[] = {
 static const struct wl_message zwp_remote_shell_v1_requests[] = {
 	{ "destroy", "", types + 0 },
 	{ "get_remote_surface", "nou", types + 6 },
+	{ "get_notification_surface", "6nos", types + 9 },
 };
 
 static const struct wl_message zwp_remote_shell_v1_events[] = {
 	{ "configure", "iiiiii", types + 0 },
-	{ "activated", "?o?o", types + 9 },
+	{ "activated", "?o?o", types + 12 },
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_shell_v1_interface = {
-	"zwp_remote_shell_v1", 5,
-	2, zwp_remote_shell_v1_requests,
+	"zwp_remote_shell_v1", 6,
+	3, zwp_remote_shell_v1_requests,
 	2, zwp_remote_shell_v1_events,
 };
 
@@ -90,8 +95,18 @@ static const struct wl_message zwp_remote_surface_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_surface_v1_interface = {
-	"zwp_remote_surface_v1", 5,
+	"zwp_remote_surface_v1", 6,
 	14, zwp_remote_surface_v1_requests,
 	9, zwp_remote_surface_v1_events,
+};
+
+static const struct wl_message zwp_notification_surface_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zwp_notification_surface_v1_interface = {
+	"zwp_notification_surface_v1", 6,
+	1, zwp_notification_surface_v1_requests,
+	0, NULL,
 };
 

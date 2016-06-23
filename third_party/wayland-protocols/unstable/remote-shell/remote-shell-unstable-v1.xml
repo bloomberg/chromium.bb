@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zwp_remote_shell_v1" version="5">
+  <interface name="zwp_remote_shell_v1" version="6">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -56,6 +56,8 @@
 
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
+      <entry name="invalid_notification_id" value="1"
+       summary="invalid notification id"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -103,9 +105,21 @@
       <arg name="gained_active" type="object" interface="wl_surface" allow-null="true"/>
       <arg name="lost_active" type="object" interface="wl_surface" allow-null="true"/>
     </event>
+
+    <!-- Version 6 additions -->
+
+    <request name="get_notification_surface" since="6">
+      <description summary="create a notification surface from a surface">
+        Creates a notification_surface for the given surface, gives it the
+        notification_surface role and associated it with a notification id.
+      </description>
+      <arg name="id" type="new_id" interface="zwp_notification_surface_v1"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="notification_id" type="string" />
+    </request>
   </interface>
 
-  <interface name="zwp_remote_surface_v1" version="5">
+  <interface name="zwp_remote_surface_v1" version="6">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -394,6 +408,21 @@
 	This distance typically represents the size of the window caption.
       </description>
       <arg name="height" type="int"/>
+    </request>
+  </interface>
+
+  <!-- Version 6 additions -->
+
+  <interface name="zwp_notification_surface_v1" version="6">
+    <description summary="A notification window">
+      An interface that may be implemented by a wl_surface to host
+      notification contents.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="Destroy the notification_surface">
+        Unmap and destroy the notification surface.
+      </description>
     </request>
   </interface>
 
