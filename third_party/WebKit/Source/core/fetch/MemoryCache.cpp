@@ -79,11 +79,19 @@ MemoryCacheEntry::MemoryCacheEntry(Resource* resource)
 DEFINE_TRACE(MemoryCacheEntry)
 {
     visitor->trace(m_resource);
-    visitor->trace(m_resourceWeak);
+    visitor->template registerWeakMembers<MemoryCacheEntry, &MemoryCacheEntry::clearResourceWeak>(this);
     visitor->trace(m_previousInLiveResourcesList);
     visitor->trace(m_nextInLiveResourcesList);
     visitor->trace(m_previousInAllResourcesList);
     visitor->trace(m_nextInAllResourcesList);
+}
+
+void MemoryCacheEntry::clearResourceWeak(Visitor* visitor)
+{
+    if (!m_resourceWeak || ThreadHeap::isHeapObjectAlive(m_resourceWeak))
+        return;
+    memoryCache()->remove(m_resourceWeak.get());
+    m_resourceWeak.clear();
 }
 
 void MemoryCacheEntry::dispose()
