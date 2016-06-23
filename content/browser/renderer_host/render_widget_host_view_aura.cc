@@ -2763,9 +2763,6 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
     // RenderWidgetHosts for OOPIF.  See https://crbug.com/549334.
     target_host->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
         target_host->GetRoutingID(), edit_commands));
-
-    NativeWebKeyboardEvent copy_event(event);
-    copy_event.match_edit_command = true;
     target_host->ForwardKeyboardEvent(event);
     return;
   }

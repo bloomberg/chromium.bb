@@ -27,8 +27,7 @@ namespace content {
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent()
     : os_event(NULL),
-      skip_in_browser(false),
-      match_edit_command(false) {
+      skip_in_browser(false) {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
@@ -38,24 +37,21 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const ui::KeyEvent& key_event)
     : WebKeyboardEvent(MakeWebKeyboardEvent(key_event)),
       os_event(CopyEvent(&key_event)),
-      skip_in_browser(false),
-      match_edit_command(false) {
+      skip_in_browser(false) {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     const NativeWebKeyboardEvent& other)
     : WebKeyboardEvent(other),
       os_event(CopyEvent(other.os_event)),
-      skip_in_browser(other.skip_in_browser),
-      match_edit_command(false) {
+      skip_in_browser(other.skip_in_browser) {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const ui::KeyEvent& key_event,
                                                base::char16 character)
     : WebKeyboardEvent(MakeWebKeyboardEvent(key_event)),
       os_event(NULL),
-      skip_in_browser(false),
-      match_edit_command(false) {
+      skip_in_browser(false) {
   type = blink::WebInputEvent::Char;
   windowsKeyCode = character;
   text[0] = character;
@@ -69,7 +65,6 @@ NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
   delete os_event;
   os_event = CopyEvent(other.os_event);
   skip_in_browser = other.skip_in_browser;
-  match_edit_command = other.match_edit_command;
   return *this;
 }
 
