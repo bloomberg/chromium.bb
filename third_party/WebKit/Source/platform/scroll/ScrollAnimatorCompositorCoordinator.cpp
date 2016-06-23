@@ -261,9 +261,9 @@ bool ScrollAnimatorCompositorCoordinator::hasImplOnlyAnimationUpdate() const
     return !m_implOnlyAnimationAdjustment.isZero() || m_implOnlyAnimationTakeover;
 }
 
-void ScrollAnimatorCompositorCoordinator::updateCompositorAnimations()
+void ScrollAnimatorCompositorCoordinator::updateImplOnlyCompositorAnimations()
 {
-    if (!getScrollableArea()->scrollAnimatorEnabled() || !hasImplOnlyAnimationUpdate())
+    if (!hasImplOnlyAnimationUpdate())
         return;
 
     GraphicsLayer* layer = getScrollableArea()->layerForScrolling();
@@ -281,6 +281,14 @@ void ScrollAnimatorCompositorCoordinator::updateCompositorAnimations()
     }
     m_implOnlyAnimationAdjustment = IntSize();
     m_implOnlyAnimationTakeover = false;
+}
+
+void ScrollAnimatorCompositorCoordinator::updateCompositorAnimations()
+{
+    if (!getScrollableArea()->scrollAnimatorEnabled())
+        return;
+
+    updateImplOnlyCompositorAnimations();
 }
 
 void ScrollAnimatorCompositorCoordinator::adjustAnimationAndSetScrollPosition(
@@ -307,6 +315,11 @@ void ScrollAnimatorCompositorCoordinator::takeOverImplOnlyScrollOffsetAnimation(
         return;
 
     m_implOnlyAnimationTakeover = true;
+
+    // Update compositor animations right away to avoid skipping a frame.
+    // This imposes the constraint that this function should only be called
+    // from or after DocumentLifecycle::LifecycleState::CompositingClean state.
+    updateImplOnlyCompositorAnimations();
 
     getScrollableArea()->registerForAnimation();
 }

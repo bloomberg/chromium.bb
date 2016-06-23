@@ -156,6 +156,9 @@ protected:
 
 private:
     bool hasImplOnlyAnimationUpdate() const;
+    void updateImplOnlyCompositorAnimations();
+    // Accesses compositing state and should only be called when in or after
+    // DocumentLifecycle::LifecycleState::CompositingClean.
     void takeOverImplOnlyScrollOffsetAnimation();
 };
 

@@ -586,8 +586,6 @@ TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared)
 
     // Verify that the takeover update is cleared.
     animator->takeOverImplOnlyScrollOffsetAnimation();
-    EXPECT_TRUE(animator->hasAnimationThatRequiresService());
-    animator->updateCompositorAnimations();
     EXPECT_FALSE(animator->hasAnimationThatRequiresService());
 
     // Forced GC in order to finalize objects depending on the mock object.
