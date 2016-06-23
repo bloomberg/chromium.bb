@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/win/visual_studio_version.gni")
@@ -93,7 +94,7 @@ config("compiler") {
     }
 
     # Clang runtime libraries, such as the sanitizer runtimes, live here.
-    lib_dirs = [ "//third_party/llvm-build/Release+Asserts/lib/clang/$clang_version/lib/windows" ]
+    lib_dirs = [ "$clang_base_path/lib/clang/$clang_version/lib/windows" ]
   }
 
   # Ensures that the PDB file contains FIXUP information (growing the PDB file

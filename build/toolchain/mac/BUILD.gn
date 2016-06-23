@@ -7,6 +7,7 @@
 # Linux.
 
 import("../goma.gni")
+import("//build/config/clang/clang.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/mac_sdk.gni")
 import("//build/config/mac/symbols.gni")
@@ -28,9 +29,8 @@ if (use_goma) {
 }
 
 if (!use_xcode_clang) {
-  compiler_prefix = compiler_prefix +
-                    rebase_path("//third_party/llvm-build/Release+Asserts/bin/",
-                                root_build_dir)
+  compiler_prefix =
+      compiler_prefix + rebase_path("$clang_base_path/bin/", root_build_dir)
 }
 
 if (current_toolchain == default_toolchain) {

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/clang/clang.gni")
 import("//build/config/sysroot.gni")  # Imports android/config.gni.
 import("//build/toolchain/gcc_toolchain.gni")
 
@@ -42,8 +43,7 @@ template("android_gcc_toolchain") {
     _tool_prefix = rebase_path("$_android_tool_prefix", root_build_dir)
 
     if (is_clang) {
-      _prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                            root_build_dir)
+      _prefix = rebase_path("$clang_base_path/bin", root_build_dir)
       cc = "$_prefix/clang"
       cxx = "$_prefix/clang++"
     } else {
