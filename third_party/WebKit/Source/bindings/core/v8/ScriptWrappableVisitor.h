@@ -23,6 +23,7 @@ template<typename T> class Member;
 class WrapperMarkingData {
 public:
     friend class ScriptWrappableVisitor;
+
     WrapperMarkingData(
         void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
         HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
@@ -41,6 +42,15 @@ public:
         if (m_object) {
             m_traceWrappersCallback(visitor, m_object);
         }
+    }
+
+    /**
+     * Returns true when object was marked. Ignores (returns true) invalidated
+     * objects.
+     */
+    inline bool isWrapperHeaderMarked()
+    {
+        return !m_object || heapObjectHeader()->isWrapperHeaderMarked();
     }
 
 private:
@@ -117,6 +127,14 @@ public:
             traceWrappersCallback,
             heapObjectHeaderCallback,
             object));
+#if DCHECK_IS_ON()
+        if (!m_advancingTracing) {
+            m_verifierDeque.append(WrapperMarkingData(
+                traceWrappersCallback,
+                heapObjectHeaderCallback,
+                object));
+        }
+#endif
     }
 
     bool markWrapperHeader(HeapObjectHeader*) const;
@@ -127,7 +145,17 @@ public:
     void markWrappersInAllWorlds(const ScriptWrappable*) const override;
     void markWrappersInAllWorlds(const void*) const override {}
 private:
+    /**
+     * Is wrapper tracing currently in progress? True if TracePrologue has been
+     * called, and TraceEpilogue has not yet been called.
+     */
     bool m_tracingInProgress = false;
+    /**
+     * Is AdvanceTracing currently running? If not, we know that all calls of
+     * pushToMarkingDeque are from V8 or new wrapper associations. And this
+     * information is used by the verifier feature.
+     */
+    bool m_advancingTracing = false;
     void performCleanup();
     /**
      * Collection of objects we need to trace from. We assume it is safe to hold
@@ -137,6 +165,18 @@ private:
      *       all obsolete objects
      */
     mutable WTF::Deque<WrapperMarkingData> m_markingDeque;
+    /**
+     * Collection of objects we started tracing from. We assume it is safe to hold
+     * on to the raw pointers because:
+     *     * oilpan object cannot move
+     *     * oilpan gc will call invalidateDeadObjectsInMarkingDeque to delete
+     *       all obsolete objects
+     *
+     * These objects are used when TraceWrappablesVerifier feature is enabled to
+     * verify that all objects reachable in the atomic pause were marked
+     * incrementally. If not, there is one or multiple write barriers missing.
+     */
+    mutable WTF::Deque<WrapperMarkingData> m_verifierDeque;
     /**
      * Collection of headers we need to unmark after the tracing finished. We
      * assume it is safe to hold on to the headers because:

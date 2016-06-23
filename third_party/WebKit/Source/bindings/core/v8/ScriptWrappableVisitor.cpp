@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/ScriptWrappableVisitorVerifier.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
@@ -27,6 +28,7 @@ void ScriptWrappableVisitor::TracePrologue()
 {
     DCHECK(m_headersToUnmark.isEmpty());
     DCHECK(m_markingDeque.isEmpty());
+    DCHECK(m_verifierDeque.isEmpty());
     m_tracingInProgress = true;
 }
 
@@ -38,6 +40,12 @@ void ScriptWrappableVisitor::EnterFinalPause()
 void ScriptWrappableVisitor::TraceEpilogue()
 {
     DCHECK(m_markingDeque.isEmpty());
+#if DCHECK_IS_ON()
+    ScriptWrappableVisitorVerifier verifier;
+    for (auto& markingData : m_verifierDeque) {
+        markingData.traceWrappers(&verifier);
+    }
+#endif
     performCleanup();
 }
 
@@ -54,6 +62,7 @@ void ScriptWrappableVisitor::performCleanup()
 
     m_headersToUnmark.clear();
     m_markingDeque.clear();
+    m_verifierDeque.clear();
     m_tracingInProgress = false;
 }
 
@@ -87,6 +96,7 @@ void ScriptWrappableVisitor::RegisterV8References(const std::vector<std::pair<vo
 bool ScriptWrappableVisitor::AdvanceTracing(double deadlineInMs, v8::EmbedderHeapTracer::AdvanceTracingActions actions)
 {
     DCHECK(m_tracingInProgress);
+    WTF::TemporaryChange<bool>(m_advancingTracing, true);
     while (actions.force_completion == v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION
         || WTF::monotonicallyIncreasingTimeMS() < deadlineInMs) {
         if (m_markingDeque.isEmpty()) {
@@ -151,6 +161,12 @@ WRAPPER_VISITOR_SPECIAL_CLASSES(DEFINE_DISPATCH_TRACE_WRAPPERS);
 void ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque()
 {
     for (auto it = m_markingDeque.begin(); it != m_markingDeque.end(); ++it) {
+        auto& markingData = *it;
+        if (markingData.shouldBeInvalidated()) {
+            markingData.invalidate();
+        }
+    }
+    for (auto it = m_verifierDeque.begin(); it != m_verifierDeque.end(); ++it) {
         auto& markingData = *it;
         if (markingData.shouldBeInvalidated()) {
             markingData.invalidate();

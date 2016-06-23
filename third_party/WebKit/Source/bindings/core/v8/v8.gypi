@@ -133,6 +133,7 @@
             'V8GCController.h',
             'ScriptWrappableVisitor.cpp',
             'ScriptWrappableVisitor.h',
+            'ScriptWrappableVisitorVerifier.h',
             'V8GCForContextDispose.cpp',
             'V8GCForContextDispose.h',
             'V8GlobalValueMap.h',
