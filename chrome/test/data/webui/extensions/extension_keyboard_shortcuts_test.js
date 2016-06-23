@@ -7,10 +7,13 @@ cr.define('extension_keyboard_shortcut_tests', function() {
   /** @enum {string} */
   var TestNames = {
     Layout: 'Layout',
+    // The ShortcutUtil test suite is all js-based (no UI), so we can execute
+    // multiple in a single browser test without worrying about timing out.
+    ShortcutUtil: 'ExtensionShortcutUtilTest',
   };
 
   function registerTests() {
-    suite('ExtensionItemTest', function() {
+    suite('ExtensionKeyboardShortcutTest', function() {
       /** @type {extensions.KeyboardShortcuts} */
       var keyboardShortcuts;
       /** @type {chrome.developerPrivate.ExtensionInfo} */
@@ -95,6 +98,34 @@ cr.define('extension_keyboard_shortcut_tests', function() {
         expectEquals(
             0,
             keyboardShortcuts.computeSelectedScope_(twoCommands.commands[1]));
+      });
+    });
+    suite(assert(TestNames.ShortcutUtil), function() {
+      test('isValidKeyCode test', function() {
+        expectTrue(extensions.isValidKeyCode('A'.charCodeAt(0)));
+        expectTrue(extensions.isValidKeyCode('F'.charCodeAt(0)));
+        expectTrue(extensions.isValidKeyCode('Z'.charCodeAt(0)));
+        expectTrue(extensions.isValidKeyCode('4'.charCodeAt(0)));
+        expectTrue(extensions.isValidKeyCode(extensions.Key.PageUp));
+        expectTrue(extensions.isValidKeyCode(extensions.Key.MediaPlayPause));
+        expectTrue(extensions.isValidKeyCode(extensions.Key.Down));
+        expectFalse(extensions.isValidKeyCode(16));  // Shift
+        expectFalse(extensions.isValidKeyCode(17));  // Ctrl
+        expectFalse(extensions.isValidKeyCode(18));  // Alt
+        expectFalse(extensions.isValidKeyCode(113));  // F2
+        expectFalse(extensions.isValidKeyCode(144));  // Num Lock
+        expectFalse(extensions.isValidKeyCode(43));  // +
+        expectFalse(extensions.isValidKeyCode(27));  // Escape
+      });
+
+      test('keystrokeToString test', function() {
+        // Creating an event with the KeyboardEvent ctor doesn't work. Fake it.
+        var e = {keyCode: 'A'.charCodeAt(0)};
+        expectEquals('A', extensions.keystrokeToString(e));
+        e.ctrlKey = true;
+        expectEquals('Ctrl+A', extensions.keystrokeToString(e));
+        e.shiftKey = true;
+        expectEquals('Ctrl+Shift+A', extensions.keystrokeToString(e));
       });
     });
   }

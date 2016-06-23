@@ -2,169 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="shortcut_util.js">
+
 cr.define('extensions', function() {
   'use strict';
-
-  /** @const */ var keyComma = 188;
-  /** @const */ var keyDel = 46;
-  /** @const */ var keyDown = 40;
-  /** @const */ var keyEnd = 35;
-  /** @const */ var keyEscape = 27;
-  /** @const */ var keyHome = 36;
-  /** @const */ var keyIns = 45;
-  /** @const */ var keyLeft = 37;
-  /** @const */ var keyMediaNextTrack = 176;
-  /** @const */ var keyMediaPlayPause = 179;
-  /** @const */ var keyMediaPrevTrack = 177;
-  /** @const */ var keyMediaStop = 178;
-  /** @const */ var keyPageDown = 34;
-  /** @const */ var keyPageUp = 33;
-  /** @const */ var keyPeriod = 190;
-  /** @const */ var keyRight = 39;
-  /** @const */ var keySpace = 32;
-  /** @const */ var keyTab = 9;
-  /** @const */ var keyUp = 38;
-
-  /**
-   * Enum for whether we require modifiers of a keycode.
-   * @enum {number}
-   */
-  var Modifiers = {
-    ARE_NOT_ALLOWED: 0,
-    ARE_REQUIRED: 1
-  };
-
-  /**
-   * Returns whether the passed in |keyCode| is a valid extension command
-   * char or not. This is restricted to A-Z and 0-9 (ignoring modifiers) at
-   * the moment.
-   * @param {number} keyCode The keycode to consider.
-   * @return {boolean} Returns whether the char is valid.
-   */
-  function validChar(keyCode) {
-    return keyCode == keyComma ||
-           keyCode == keyDel ||
-           keyCode == keyDown ||
-           keyCode == keyEnd ||
-           keyCode == keyHome ||
-           keyCode == keyIns ||
-           keyCode == keyLeft ||
-           keyCode == keyMediaNextTrack ||
-           keyCode == keyMediaPlayPause ||
-           keyCode == keyMediaPrevTrack ||
-           keyCode == keyMediaStop ||
-           keyCode == keyPageDown ||
-           keyCode == keyPageUp ||
-           keyCode == keyPeriod ||
-           keyCode == keyRight ||
-           keyCode == keySpace ||
-           keyCode == keyTab ||
-           keyCode == keyUp ||
-           (keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
-           (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0));
-  }
-
-  /**
-   * Convert a keystroke event to string form, while taking into account
-   * (ignoring) invalid extension commands.
-   * @param {Event} event The keyboard event to convert.
-   * @return {string} The keystroke as a string.
-   */
-  function keystrokeToString(event) {
-    var output = [];
-    if (cr.isMac && event.metaKey)
-      output.push('Command');
-    if (cr.isChromeOS && event.metaKey)
-      output.push('Search');
-    if (event.ctrlKey)
-      output.push('Ctrl');
-    if (!event.ctrlKey && event.altKey)
-      output.push('Alt');
-    if (event.shiftKey)
-      output.push('Shift');
-
-    var keyCode = event.keyCode;
-    if (validChar(keyCode)) {
-      if ((keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
-          (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0))) {
-        output.push(String.fromCharCode('A'.charCodeAt(0) + keyCode - 65));
-      } else {
-        switch (keyCode) {
-          case keyComma:
-            output.push('Comma'); break;
-          case keyDel:
-            output.push('Delete'); break;
-          case keyDown:
-            output.push('Down'); break;
-          case keyEnd:
-            output.push('End'); break;
-          case keyHome:
-            output.push('Home'); break;
-          case keyIns:
-            output.push('Insert'); break;
-          case keyLeft:
-            output.push('Left'); break;
-          case keyMediaNextTrack:
-            output.push('MediaNextTrack'); break;
-          case keyMediaPlayPause:
-            output.push('MediaPlayPause'); break;
-          case keyMediaPrevTrack:
-            output.push('MediaPrevTrack'); break;
-          case keyMediaStop:
-            output.push('MediaStop'); break;
-          case keyPageDown:
-            output.push('PageDown'); break;
-          case keyPageUp:
-            output.push('PageUp'); break;
-          case keyPeriod:
-            output.push('Period'); break;
-          case keyRight:
-            output.push('Right'); break;
-          case keySpace:
-            output.push('Space'); break;
-          case keyTab:
-            output.push('Tab'); break;
-          case keyUp:
-            output.push('Up'); break;
-        }
-      }
-    }
-
-    return output.join('+');
-  }
-
-  /**
-   * Returns whether the passed in |keyCode| require modifiers. Currently only
-   * "MediaNextTrack", "MediaPrevTrack", "MediaStop", "MediaPlayPause" are
-   * required to be used without any modifier.
-   * @param {number} keyCode The keycode to consider.
-   * @return {Modifiers} Returns whether the keycode require modifiers.
-   */
-  function modifiers(keyCode) {
-    switch (keyCode) {
-      case keyMediaNextTrack:
-      case keyMediaPlayPause:
-      case keyMediaPrevTrack:
-      case keyMediaStop:
-        return Modifiers.ARE_NOT_ALLOWED;
-      default:
-        return Modifiers.ARE_REQUIRED;
-    }
-  }
-
-  /**
-   * Return true if the specified keyboard event has any one of following
-   * modifiers: "Ctrl", "Alt", "Cmd" on Mac, and "Shift" when the
-   * countShiftAsModifier is true.
-   * @param {Event} event The keyboard event to consider.
-   * @param {boolean} countShiftAsModifier Whether the 'ShiftKey' should be
-   *     counted as modifier.
-   */
-  function hasModifier(event, countShiftAsModifier) {
-    return event.ctrlKey || event.altKey || (cr.isMac && event.metaKey) ||
-           (cr.isChromeOS && event.metaKey) ||
-           (countShiftAsModifier && event.shiftKey);
-  }
 
   /**
    * Creates a new list of extension commands.
@@ -365,7 +206,8 @@ cr.define('extensions', function() {
       // If no valid selection was made, however, revert back to what the
       // textbox had before to indicate that the shortcut registration was
       // canceled.
-      if (!this.currentKeyEvent_ || !validChar(this.currentKeyEvent_.keyCode))
+      if (!this.currentKeyEvent_ ||
+          !extensions.isValidKeyCode(this.currentKeyEvent_.keyCode))
         shortcutNode.textContent = this.oldValue_;
 
       var commandClear = commandShortcut.querySelector('.command-clear');
@@ -411,7 +253,7 @@ cr.define('extensions', function() {
      */
     handleKeyDown_: function(event) {
       event = /** @type {KeyboardEvent} */(event);
-      if (event.keyCode == keyEscape) {
+      if (event.keyCode == extensions.Key.Escape) {
         if (!this.capturingElement_) {
           // If we're not currently capturing, allow escape to propagate (so it
           // can close the overflow).
@@ -430,7 +272,7 @@ cr.define('extensions', function() {
         event.stopPropagation();
         return;
       }
-      if (event.keyCode == keyTab) {
+      if (event.keyCode == extensions.Key.Tab) {
         // Allow tab propagation for keyboard navigation.
         return;
       }
@@ -448,7 +290,8 @@ cr.define('extensions', function() {
      */
     handleKeyUp_: function(event) {
       event = /** @type {KeyboardEvent} */(event);
-      if (event.keyCode == keyTab || event.keyCode == keyEscape) {
+      if (event.keyCode == extensions.Key.Tab ||
+          event.keyCode == extensions.Key.Escape) {
         // We need to allow tab propagation for keyboard navigation, and escapes
         // are fully handled in handleKeyDown.
         return;
@@ -461,7 +304,8 @@ cr.define('extensions', function() {
       // have a valid combination and then stop processing it (meaning that once
       // you have a valid combination, we won't change it until the next
       // KeyDown message arrives).
-      if (!this.currentKeyEvent_ || !validChar(this.currentKeyEvent_.keyCode)) {
+      if (!this.currentKeyEvent_ ||
+          !extensions.isValidKeyCode(this.currentKeyEvent_.keyCode)) {
         if (!event.ctrlKey && !event.altKey ||
             ((cr.isMac || cr.isChromeOS) && !event.metaKey)) {
           // If neither Ctrl nor Alt is pressed then it is not a valid shortcut.
@@ -487,24 +331,16 @@ cr.define('extensions', function() {
       event.preventDefault();
       event.stopPropagation();
 
-      if (modifiers(event.keyCode) == Modifiers.ARE_REQUIRED &&
-          !hasModifier(event, false)) {
-        // Ctrl or Alt (or Cmd on Mac) is a must for most shortcuts.
+      if (!extensions.hasValidModifiers(event))
         return;
-      }
-
-      if (modifiers(event.keyCode) == Modifiers.ARE_NOT_ALLOWED &&
-          hasModifier(event, true)) {
-        return;
-      }
 
       var shortcutNode = this.capturingElement_;
-      var keystroke = keystrokeToString(event);
+      var keystroke = extensions.keystrokeToString(event);
       shortcutNode.textContent = keystroke;
       event.target.classList.add('contains-chars');
       this.currentKeyEvent_ = event;
 
-      if (validChar(event.keyCode)) {
+      if (extensions.isValidKeyCode(event.keyCode)) {
         var node = event.target;
         while (node && !node.id)
           node = node.parentElement;

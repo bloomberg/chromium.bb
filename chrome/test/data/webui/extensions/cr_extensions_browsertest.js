@@ -222,6 +222,12 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionKeyboardShortcutsLayoutTest',
   mocha.grep(assert(extension_keyboard_shortcut_tests.TestNames.Layout)).run();
 });
 
+TEST_F('CrExtensionsBrowserTest', 'ExtensionShortcutUtilTest', function() {
+  extension_keyboard_shortcut_tests.registerTests();
+  mocha.grep(
+      assert(extension_keyboard_shortcut_tests.TestNames.ShortcutUtil)).run();
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Pack Dialog Tests
 
