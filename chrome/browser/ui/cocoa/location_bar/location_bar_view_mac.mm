@@ -89,7 +89,7 @@ const int kDefaultIconSize = 16;
 
 // Color of the vector graphic icons when the location bar is dark.
 // SkColorSetARGB(0xCC, 0xFF, 0xFF 0xFF);
-const SkColor kMaterialDarkVectorIconColor = 0xCCFFFFFF;
+const SkColor kMaterialDarkVectorIconColor = SK_ColorWHITE;
 
 }  // namespace
 
@@ -722,27 +722,26 @@ void LocationBarViewMac::UpdateLocationIcon() {
   gfx::VectorIconId vector_icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
   if (ShouldShowEVBubble()) {
     vector_icon_id = gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID;
-    vector_icon_color = in_dark_mode
-                            ? LocationBarDecoration::kMaterialDarkModeTextColor
-                            : gfx::kGoogleGreen700;
+    vector_icon_color = gfx::kGoogleGreen700;
   } else {
     vector_icon_id = omnibox_view_->GetVectorIcon();
-    if (in_dark_mode) {
-      vector_icon_color = LocationBarDecoration::kMaterialDarkModeTextColor;
+    security_state::SecurityStateModel::SecurityLevel security_level =
+        GetToolbarModel()->GetSecurityLevel(false);
+    if (security_level == security_state::SecurityStateModel::NONE) {
+      vector_icon_color = gfx::kChromeIconGrey;
     } else {
-      security_state::SecurityStateModel::SecurityLevel security_level =
-          GetToolbarModel()->GetSecurityLevel(false);
-      if (security_level == security_state::SecurityStateModel::NONE) {
-        vector_icon_color = OmniboxViewMac::BaseTextColorSkia(in_dark_mode);
-      } else {
-        NSColor* sRGBColor =
-            OmniboxViewMac::GetSecureTextColor(security_level, in_dark_mode);
-        NSColor* deviceColor =
-            [sRGBColor colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
-        vector_icon_color = skia::NSDeviceColorToSkColor(deviceColor);
-      }
+      NSColor* sRGBColor =
+          OmniboxViewMac::GetSecureTextColor(security_level, in_dark_mode);
+      NSColor* deviceColor =
+          [sRGBColor colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
+      vector_icon_color = skia::NSDeviceColorToSkColor(deviceColor);
     }
   }
+
+  // If the theme is dark, then the color should always be
+  // kMaterialDarkVectorIconColor.
+  if (in_dark_mode)
+    vector_icon_color = kMaterialDarkVectorIconColor;
 
   DCHECK(vector_icon_id != gfx::VectorIconId::VECTOR_ICON_NONE);
   NSImage* image =
