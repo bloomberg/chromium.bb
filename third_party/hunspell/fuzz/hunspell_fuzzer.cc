@@ -7,16 +7,15 @@
 #include <string>
 
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
-#include "third_party/hunspell/fuzz/hunspell_fuzzer_dictionary.h"
+#include "third_party/hunspell/fuzz/hunspell_fuzzer_hunspell_dictionary.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (!size)
     return 0;
   
-  static Hunspell* hunspell = new Hunspell(
-      reinterpret_cast<const unsigned char*>(kHunspellDictionary),
-      sizeof(kHunspellDictionary));
+  static Hunspell* hunspell = new Hunspell(kHunspellDictionary,
+                                           sizeof(kHunspellDictionary));
 
   std::string data_string(reinterpret_cast<const char*>(data), size);
   hunspell->spell(data_string.c_str());

@@ -115,7 +115,7 @@ source_set("hunspell") {
 fuzzer_test("hunspell_fuzzer") {
   sources = [
     "fuzz/hunspell_fuzzer.cc",
-    "fuzz/hunspell_fuzzer_dictionary.h",
+    "fuzz/hunspell_fuzzer_hunspell_dictionary.h",
   ]
   deps = [
     ":hunspell",
