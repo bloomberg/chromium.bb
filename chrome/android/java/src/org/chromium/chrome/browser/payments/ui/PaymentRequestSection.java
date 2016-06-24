@@ -568,7 +568,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
             /** Change the label for the row. */
             public void setLabel(int stringId) {
-                mLabel.setText(stringId);
+                setLabel(getContext().getString(stringId));
             }
 
             /** Change the label for the row. */
@@ -623,6 +623,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 ApiCompatibilityUtils.setMarginEnd(buttonParams, mLargeSpacing);
                 parent.addView(view, buttonParams);
 
+                view.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
                 view.setOnClickListener(OptionSection.this);
                 return view;
             }
@@ -689,6 +690,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
             private View createIcon(GridLayout parent, int rowIndex) {
                 // The icon has a pre-defined width.
                 ImageView icon = new ImageView(parent.getContext());
+                icon.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
                 icon.setBackgroundResource(R.drawable.payments_ui_logo_bg);
                 icon.setImageResource(mOption.getDrawableIconId());
                 icon.setMaxWidth(mIconMaxWidth);
