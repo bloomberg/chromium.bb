@@ -43,12 +43,6 @@ scoped_refptr<ui::NativePixmap> CreateYVU420Pixmap(const gfx::Size& size,
   base::ScopedFD drm_fd(
       HANDLE_EINTR(open("/dev/dri/card0", O_RDWR | O_CLOEXEC)));
   DCHECK(drm_fd.is_valid()) << "Couldn't open '/dev/dri/card0'";
-  {  // Check we have permissions
-    drm_magic_t magic{};
-    bool ret = !drmGetMagic(drm_fd.get(), &magic) &&
-               !drmAuthMagic(drm_fd.get(), magic);
-    DCHECK(ret);
-  }
 
   std::vector<int> pitches{RoundTo64(size.width()), RoundTo64(size.width() / 2),
                            RoundTo64(size.width() / 2)};

@@ -142,8 +142,8 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     const std::vector<int>& offsets) {
   TRACE_EVENT2("drm", "GbmBuffer::CreateBufferFromFD", "device",
                gbm->device_path().value(), "size", size.ToString());
-  DCHECK_EQ(fds.size(), strides.size());
-  DCHECK_EQ(fds.size(), 1u);
+  DCHECK_LE(fds.size(), strides.size());
+  DCHECK_EQ(strides.size(), offsets.size());
   DCHECK_EQ(offsets[0], 0);
 
   uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
