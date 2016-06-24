@@ -30,7 +30,6 @@ namespace gfx {
 class Animation;
 class AnimationContainer;
 class LinearAnimation;
-class MultiAnimation;
 class ThrobAnimation;
 }
 namespace views {
@@ -97,9 +96,9 @@ class Tab : public gfx::AnimationDelegate,
   void StartPulse();
   void StopPulse();
 
-  // Start/stop the pinned tab title animation.
-  void StartPinnedTabTitleAnimation();
-  void StopPinnedTabTitleAnimation();
+  // Sets the visibility of the indicator shown when the tab title changes of
+  // an inactive pinned tab.
+  void SetPinnedTabTitleChangedIndicatorVisible(bool value);
 
   // Set the background offset used to match the image in the inactive tab
   // to the frame image.
@@ -246,7 +245,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // Paint various portions of the Tab.
   void PaintTabBackground(gfx::Canvas* canvas);
-  void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
                                      bool is_active,
@@ -258,6 +256,14 @@ class Tab : public gfx::AnimationDelegate,
                     int x_offset,
                     int y_offset,
                     bool is_active);
+
+  // Paints the pinned tab title changed indicator and favicon. |favicon| may
+  // be null. |favicon_draw_bounds| is |favicon_bounds_| adjusted for rtl and
+  // clipped to the bounds of the tab.
+  void PaintPinnedTabTitleChangedIndicatorAndIcon(
+      gfx::Canvas* canvas,
+      const gfx::ImageSkia& favicon,
+      const gfx::Rect& favicon_draw_bounds);
 
   // Paints the favicon, mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas);
@@ -345,10 +351,10 @@ class Tab : public gfx::AnimationDelegate,
 
   bool should_display_crashed_favicon_;
 
+  bool showing_pinned_tab_title_changed_indicator_ = false;
+
   // Whole-tab throbbing "pulse" animation.
   std::unique_ptr<gfx::ThrobAnimation> pulse_animation_;
-
-  std::unique_ptr<gfx::MultiAnimation> pinned_title_change_animation_;
 
   // Crash icon animation (in place of favicon).
   std::unique_ptr<gfx::LinearAnimation> crash_icon_animation_;
