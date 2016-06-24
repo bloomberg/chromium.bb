@@ -346,9 +346,13 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
         Scrollbar& scrollbar = orientation == HorizontalScrollbar ? *scrollableArea->horizontalScrollbar() : *scrollableArea->verticalScrollbar();
         if (scrollbar.isCustomScrollbar()) {
             detachScrollbarLayer(scrollbarGraphicsLayer);
+            scrollbarGraphicsLayer->platformLayer()->addMainThreadScrollingReasons(MainThreadScrollingReason::kCustomScrollbarScrolling);
             return;
         }
 
+        // Invalidate custom scrollbar scrolling reason in case a custom
+        // scrollbar becomes a non-custom one.
+        scrollbarGraphicsLayer->platformLayer()->clearMainThreadScrollingReasons(MainThreadScrollingReason::kCustomScrollbarScrolling);
         WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, orientation);
         if (!scrollbarLayer) {
             Settings* settings = m_page->mainFrame()->settings();

@@ -24,6 +24,8 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/StyleSheetList.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -633,6 +635,40 @@ TEST_F(ScrollingCoordinatorTest, FixedPositionLosingBackingShouldTriggerMainThre
 
     EXPECT_FALSE(static_cast<LayoutBoxModelObject*>(fixedPos->layoutObject())->layer()->hasCompositedLayerMapping());
     EXPECT_TRUE(scrollLayer->shouldScrollOnMainThread());
+}
+
+TEST_F(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll)
+{
+    webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(true);
+    webViewImpl()->setDeviceScaleFactor(2.f);
+    registerMockedHttpURLLoad("custom_scrollbar.html");
+    navigateTo(m_baseURL + "custom_scrollbar.html");
+    forceFullCompositingUpdate();
+
+    Document* document = frame()->document();
+    Element* container = document->getElementById("container");
+    Element* content = document->getElementById("content");
+    DCHECK_EQ(container->getAttribute(HTMLNames::classAttr), "custom_scrollbar");
+    DCHECK(container);
+    DCHECK(content);
+
+    LayoutObject* layoutObject = container->layoutObject();
+    ASSERT_TRUE(layoutObject->isBox());
+    LayoutBox* box = toLayoutBox(layoutObject);
+    ASSERT_TRUE(box->usesCompositedScrolling());
+    CompositedLayerMapping* compositedLayerMapping = box->layer()->compositedLayerMapping();
+    GraphicsLayer* scrollbarGraphicsLayer = compositedLayerMapping->layerForVerticalScrollbar();
+    ASSERT_TRUE(scrollbarGraphicsLayer);
+    ASSERT_TRUE(scrollbarGraphicsLayer->platformLayer()->shouldScrollOnMainThread());
+    ASSERT_TRUE(scrollbarGraphicsLayer->platformLayer()->mainThreadScrollingReasons() & MainThreadScrollingReason::kCustomScrollbarScrolling);
+
+    // remove custom scrollbar class, the scrollbar is expected to scroll on
+    // impl thread as it is an overlay scrollbar.
+    container->removeAttribute("class");
+    forceFullCompositingUpdate();
+    scrollbarGraphicsLayer = compositedLayerMapping->layerForVerticalScrollbar();
+    ASSERT_FALSE(scrollbarGraphicsLayer->platformLayer()->shouldScrollOnMainThread());
+    ASSERT_FALSE(scrollbarGraphicsLayer->platformLayer()->mainThreadScrollingReasons() & MainThreadScrollingReason::kCustomScrollbarScrolling);
 }
 
 } // namespace blink
