@@ -1697,13 +1697,6 @@ content.dll!content::RenderFrameImpl::OnExtendSelectionAndDelete
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
 
 UNINITIALIZED READ
-name=bug_398547
-system call NtWriteFile parameter #5
-KERNELBASE.dll!WriteFile
-KERNEL32.dll!WriteFile
-mojo_system_impl.dll!mojo::edk::`anonymous namespace'::ChannelWin::WriteNoLock
-
-UNINITIALIZED READ
 name=bug_399842
 skia.dll!S32A_Opaque_BlitRow32_SSE4
 
