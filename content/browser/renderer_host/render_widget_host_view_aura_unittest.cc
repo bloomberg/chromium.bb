@@ -42,10 +42,12 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/resize_lock.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
+#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
@@ -55,6 +57,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -162,6 +165,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   const NativeWebKeyboardEvent* last_event() const { return last_event_.get(); }
   void set_widget_host(RenderWidgetHostImpl* rwh) { rwh_ = rwh; }
   void set_is_fullscreen(bool is_fullscreen) { is_fullscreen_ = is_fullscreen; }
+  TextInputManager* GetTextInputManager() override {
+    return &text_input_manager_;
+  }
 
  protected:
   // RenderWidgetHostDelegate:
@@ -184,6 +190,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   std::unique_ptr<NativeWebKeyboardEvent> last_event_;
   RenderWidgetHostImpl* rwh_;
   bool is_fullscreen_;
+  TextInputManager text_input_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
@@ -543,6 +550,30 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   }
 
  protected:
+  BrowserContext* browser_context() { return browser_context_.get(); }
+
+  // Sets the |view| active in TextInputManager with the given |type|. |type|
+  // cannot be ui::TEXT_INPUT_TYPE_NONE.
+  void ActivateViewForTextInputManager(RenderWidgetHostViewBase* view,
+                                       ui::TextInputType type) {
+    DCHECK_NE(ui::TEXT_INPUT_TYPE_NONE, type);
+    TextInputManager* manager =
+        static_cast<RenderWidgetHostImpl*>(view->GetRenderWidgetHost())
+            ->delegate()
+            ->GetTextInputManager();
+    if (manager->GetActiveWidget()) {
+      manager->active_view_for_testing()->TextInputStateChanged(
+          TextInputState());
+    }
+
+    if (!view)
+      return;
+
+    TextInputState state_with_type_text;
+    state_with_type_text.type = type;
+    view->TextInputStateChanged(state_with_type_text);
+  }
+
   // If true, then calls RWH::Shutdown() instead of deleting RWH.
   bool widget_host_uses_shutdown_to_destroy_;
 
@@ -1065,6 +1096,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupClosesWhenParentLosesFocus) {
 TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
   view_->InitAsChild(NULL);
   view_->Show();
+  ActivateViewForTextInputManager(view_, ui::TEXT_INPUT_TYPE_TEXT);
 
   ui::CompositionText composition_text;
   composition_text.text = base::ASCIIToUTF16("|a|b");
@@ -1119,6 +1151,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
 TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
   view_->InitAsChild(NULL);
   view_->Show();
+  ActivateViewForTextInputManager(view_, ui::TEXT_INPUT_TYPE_TEXT);
 
   ui::CompositionText composition_text;
   composition_text.text = base::ASCIIToUTF16("|a|b");
@@ -3992,6 +4025,195 @@ TEST_F(RenderWidgetHostViewAuraWithViewHarnessTest,
 #endif
 
   RenderViewHostFactory::set_is_real_render_view_host(false);
+}
+
+// ----------------------------------------------------------------------------
+// TextInputManager and IME-Related Tests
+
+// A group of tests which verify that the IME method results are routed to the
+// right RenderWidget in the OOPIF structure.
+// In each test, 3 views are created where one is in process with main frame and
+// the other two are in distinct processes (this makes a total of 4 RWHVs). Then
+// each test will verify the correctness of routing for one of the IME result
+// methods. The method is called on ui::TextInputClient (i.e., RWHV for the tab
+// in aura) and then the test verifies that the IPC is routed to the
+// RenderWidget corresponding to the active view (i.e., the RenderWidget
+// with focused <input>).
+class InputMethodResultAuraTest : public RenderWidgetHostViewAuraTest {
+ public:
+  InputMethodResultAuraTest() {}
+  ~InputMethodResultAuraTest() override {}
+
+  void SetUp() override {
+    RenderWidgetHostViewAuraTest::SetUp();
+    InitializeAura();
+
+    view_for_first_process_ = CreateViewForProcess(tab_process());
+
+    second_process_host_ = CreateNewProcessHost();
+    view_for_second_process_ = CreateViewForProcess(second_process_host_);
+
+    third_process_host_ = CreateNewProcessHost();
+    view_for_third_process_ = CreateViewForProcess(third_process_host_);
+
+    views_.insert(views_.begin(),
+                  {tab_view(), view_for_first_process_,
+                   view_for_second_process_, view_for_third_process_});
+    processes_.insert(processes_.begin(),
+                      {tab_process(), tab_process(), second_process_host_,
+                       third_process_host_});
+    active_view_sequence_.insert(active_view_sequence_.begin(),
+                                 {0, 1, 2, 1, 1, 3, 0, 3, 1});
+  }
+
+  void TearDown() override {
+    RenderWidgetHost* widget_for_first_process =
+        view_for_first_process_->GetRenderWidgetHost();
+    view_for_first_process_->Destroy();
+    delete widget_for_first_process;
+
+    RenderWidgetHost* widget_for_second_process =
+        view_for_second_process_->GetRenderWidgetHost();
+    view_for_second_process_->Destroy();
+    delete widget_for_second_process;
+
+    RenderWidgetHost* widget_for_third_process =
+        view_for_third_process_->GetRenderWidgetHost();
+    view_for_third_process_->Destroy();
+    delete widget_for_third_process;
+
+    RenderWidgetHostViewAuraTest::TearDown();
+  }
+
+ protected:
+  const IPC::Message* RunAndReturnIPCSent(const base::Closure closure,
+                                          MockRenderProcessHost* process,
+                                          int32_t message_id) {
+    process->sink().ClearMessages();
+    closure.Run();
+    return process->sink().GetFirstMessageMatching(message_id);
+  }
+
+  MockRenderWidgetHostDelegate* render_widget_host_delegate() const {
+    return delegates_.back().get();
+  }
+
+  ui::TextInputClient* text_input_client() const { return view_; }
+
+  bool has_composition_text() const {
+    return tab_view()->has_composition_text_;
+  }
+
+  MockRenderProcessHost* CreateNewProcessHost() {
+    MockRenderProcessHost* process_host =
+        new MockRenderProcessHost(browser_context());
+    return process_host;
+  }
+
+  RenderWidgetHostImpl* CreateRenderWidgetHostForProcess(
+      MockRenderProcessHost* process_host) {
+    return new RenderWidgetHostImpl(render_widget_host_delegate(), process_host,
+                                    process_host->GetNextRoutingID(), false);
+  }
+
+  TestRenderWidgetHostView* CreateViewForProcess(
+      MockRenderProcessHost* process_host) {
+    RenderWidgetHostImpl* host = CreateRenderWidgetHostForProcess(process_host);
+    TestRenderWidgetHostView* view = new TestRenderWidgetHostView(host);
+    host->SetView(view);
+    return view;
+  }
+
+  void SetHasCompositionTextToTrue() {
+    ui::CompositionText composition_text;
+    composition_text.text = base::ASCIIToUTF16("text");
+    tab_view()->SetCompositionText(composition_text);
+    EXPECT_TRUE(has_composition_text());
+  }
+
+  MockRenderProcessHost* tab_process() const { return process_host_; }
+
+  RenderWidgetHostViewAura* tab_view() const { return view_; }
+
+  std::vector<RenderWidgetHostViewBase*> views_;
+  std::vector<MockRenderProcessHost*> processes_;
+  // A sequence of indices in [0, 3] which determines the index of a RWHV in
+  // |views_|. This sequence is used in the tests to sequentially make a RWHV
+  // active for a subsequent IME result method call.
+  std::vector<size_t> active_view_sequence_;
+
+ private:
+  // This will initialize |window_| in RenderWidgetHostViewAura. It is needed
+  // for RenderWidgetHostViewAura::GetInputMethod() to work.
+  void InitializeAura() {
+    view_->InitAsChild(nullptr);
+    view_->Show();
+  }
+
+  TestRenderWidgetHostView* view_for_first_process_;
+  MockRenderProcessHost* second_process_host_;
+  TestRenderWidgetHostView* view_for_second_process_;
+  MockRenderProcessHost* third_process_host_;
+  TestRenderWidgetHostView* view_for_third_process_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputMethodResultAuraTest);
+};
+
+// This test verifies that ui::TextInputClient::SetCompositionText call leads to
+// IPC message InputMsg_ImeSetComposition being sent to the right renderer
+// process.
+TEST_F(InputMethodResultAuraTest, SetCompositionText) {
+  base::Closure ime_call =
+      base::Bind(&ui::TextInputClient::SetCompositionText,
+                 base::Unretained(text_input_client()), ui::CompositionText());
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    EXPECT_TRUE(!!RunAndReturnIPCSent(ime_call, processes_[index],
+                                      InputMsg_ImeSetComposition::ID));
+  }
+}
+
+// This test verifies that ui::TextInputClient::ConfirmCompositionText call
+// leads to IPC message InputMsg_ImeConfirmComposition being sent to the right
+// renderer process.
+TEST_F(InputMethodResultAuraTest, ConfirmCompositionText) {
+  base::Closure ime_call =
+      base::Bind(&ui::TextInputClient::ConfirmCompositionText,
+                 base::Unretained(text_input_client()));
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    SetHasCompositionTextToTrue();
+    EXPECT_TRUE(!!RunAndReturnIPCSent(ime_call, processes_[index],
+                                      InputMsg_ImeConfirmComposition::ID));
+  }
+}
+
+// This test verifies that ui::TextInputClient::ConfirmCompositionText call
+// leads to IPC message InputMsg_ImeSetComposition being sent to the right
+// renderer process.
+TEST_F(InputMethodResultAuraTest, ClearCompositionText) {
+  base::Closure ime_call =
+      base::Bind(&ui::TextInputClient::ClearCompositionText,
+                 base::Unretained(text_input_client()));
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    SetHasCompositionTextToTrue();
+    EXPECT_TRUE(!!RunAndReturnIPCSent(ime_call, processes_[index],
+                                      InputMsg_ImeSetComposition::ID));
+  }
+}
+
+// This test verifies that ui::TextInputClient::InsertText call leads to IPC
+// message InputMsg_ImeSetComposition being sent to the right renderer process.
+TEST_F(InputMethodResultAuraTest, InsertText) {
+  base::Closure ime_call =
+      base::Bind(&ui::TextInputClient::InsertText,
+                 base::Unretained(text_input_client()), base::string16());
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    EXPECT_TRUE(!!RunAndReturnIPCSent(ime_call, processes_[index],
+                                      InputMsg_ImeConfirmComposition::ID));
+  }
 }
 
 }  // namespace content

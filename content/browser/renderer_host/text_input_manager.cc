@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/text_input_manager.h"
 
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
 namespace content {
@@ -47,8 +48,10 @@ const TextInputState* TextInputManager::GetTextInputState() {
   return !!active_view_ ? &text_input_state_map_[active_view_] : nullptr;
 }
 
-RenderWidgetHostViewBase* TextInputManager::GetActiveView() const {
-  return active_view_;
+RenderWidgetHostImpl* TextInputManager::GetActiveWidget() const {
+  return !!active_view_ ? static_cast<RenderWidgetHostImpl*>(
+                              active_view_->GetRenderWidgetHost())
+                        : nullptr;
 }
 
 void TextInputManager::UpdateTextInputState(
