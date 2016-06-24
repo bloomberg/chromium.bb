@@ -15,7 +15,6 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/fuzzed_socket.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/ssl/ssl_failure_state.h"
 #include "net/udp/fuzzed_datagram_client_socket.h"
 
 namespace net {
@@ -118,10 +117,6 @@ class FailingSSLClientSocket : public SSLClientSocket {
   crypto::ECPrivateKey* GetChannelIDKey() const override {
     NOTREACHED();
     return nullptr;
-  }
-
-  SSLFailureState GetSSLFailureState() const override {
-    return SSL_FAILURE_UNKNOWN;
   }
 
  private:

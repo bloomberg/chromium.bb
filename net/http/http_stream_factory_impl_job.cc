@@ -51,7 +51,6 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "net/ssl/ssl_failure_state.h"
 
 namespace net {
 
@@ -473,11 +472,7 @@ void HttpStreamFactoryImpl::Job::OnStreamFailedCallback(int result) {
 
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
-  SSLFailureState ssl_failure_state =
-      connection_ ? connection_->ssl_failure_state() : SSL_FAILURE_NONE;
-
-  delegate_->OnStreamFailed(this, result, server_ssl_config_,
-                            ssl_failure_state);
+  delegate_->OnStreamFailed(this, result, server_ssl_config_);
   // |this| may be deleted after this call.
 }
 

@@ -319,8 +319,7 @@ void BidirectionalStream::OnWebSocketHandshakeStreamReady(
 }
 
 void BidirectionalStream::OnStreamFailed(int result,
-                                         const SSLConfig& used_ssl_config,
-                                         SSLFailureState ssl_failure_state) {
+                                         const SSLConfig& used_ssl_config) {
   DCHECK_LT(result, 0);
   DCHECK_NE(result, ERR_IO_PENDING);
   DCHECK(stream_request_);

@@ -15,7 +15,6 @@
 #include "net/base/net_errors.h"
 #include "net/socket/ssl_socket.h"
 #include "net/socket/stream_socket.h"
-#include "net/ssl/ssl_failure_state.h"
 
 namespace base {
 class FilePath;
@@ -151,11 +150,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // that bug is closed. This returns the channel ID key that was used when
   // establishing the connection (or NULL if no channel ID was used).
   virtual crypto::ECPrivateKey* GetChannelIDKey() const = 0;
-
-  // Returns the state of the handshake when it failed, or |SSL_FAILURE_NONE| if
-  // the handshake succeeded. This is used to classify causes of the TLS version
-  // fallback.
-  virtual SSLFailureState GetSSLFailureState() const = 0;
 
  protected:
   void set_negotiation_extension(

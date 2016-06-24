@@ -14,7 +14,6 @@
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/ssl/ssl_failure_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -56,10 +55,9 @@ TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
   request->SetPriority(MEDIUM);
   EXPECT_EQ(MEDIUM, job_controller->main_job()->priority());
 
-  EXPECT_CALL(request_delegate, OnStreamFailed(_, _, SSL_FAILURE_NONE))
-      .Times(1);
+  EXPECT_CALL(request_delegate, OnStreamFailed(_, _)).Times(1);
   job_controller->OnStreamFailed(job_factory.main_job(), ERR_FAILED,
-                                 SSLConfig(), SSL_FAILURE_NONE);
+                                 SSLConfig());
 
   request->SetPriority(IDLE);
   EXPECT_EQ(IDLE, job_controller->main_job()->priority());

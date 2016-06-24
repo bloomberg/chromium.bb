@@ -56,10 +56,8 @@ class MockHttpStreamRequestDelegate : public HttpStreamRequest::Delegate {
                     const ProxyInfo& used_proxy_info,
                     WebSocketHandshakeStreamBase* stream));
 
-  MOCK_METHOD3(OnStreamFailed,
-               void(int status,
-                    const SSLConfig& used_ssl_config,
-                    SSLFailureState ssl_failure_state));
+  MOCK_METHOD2(OnStreamFailed,
+               void(int status, const SSLConfig& used_ssl_config));
 
   MOCK_METHOD3(OnCertificateError,
                void(int status,

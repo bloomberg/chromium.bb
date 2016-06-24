@@ -27,7 +27,6 @@
 #include "net/socket/connection_attempts.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config_service.h"
-#include "net/ssl/ssl_failure_state.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 
 namespace crypto {
@@ -104,9 +103,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
       WebSocketHandshakeStreamBase* stream) override;
-  void OnStreamFailed(int status,
-                      const SSLConfig& used_ssl_config,
-                      SSLFailureState ssl_failure_state) override;
+  void OnStreamFailed(int status, const SSLConfig& used_ssl_config) override;
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,
                           const SSLInfo& ssl_info) override;
@@ -333,16 +330,12 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   SSLConfig server_ssl_config_;
   SSLConfig proxy_ssl_config_;
-  // The SSLFailureState of the most recent failed stream.
-  SSLFailureState server_ssl_failure_state_;
   // fallback_error_code contains the error code that caused the last TLS
   // fallback. If the fallback connection results in
   // ERR_SSL_INAPPROPRIATE_FALLBACK (i.e. the server indicated that the
   // fallback should not have been needed) then we use this value to return the
   // original error that triggered the fallback.
   int fallback_error_code_;
-  // The SSLFailureState which caused the last TLS version fallback.
-  SSLFailureState fallback_failure_state_;
 
   // Keys to use for signing message in Token Binding header.
   std::unique_ptr<crypto::ECPrivateKey> provided_token_binding_key_;

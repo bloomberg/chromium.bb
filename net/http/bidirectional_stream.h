@@ -199,9 +199,7 @@ class NET_EXPORT BidirectionalStream
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
       WebSocketHandshakeStreamBase* stream) override;
-  void OnStreamFailed(int status,
-                      const SSLConfig& used_ssl_config,
-                      SSLFailureState ssl_failure_state) override;
+  void OnStreamFailed(int status, const SSLConfig& used_ssl_config) override;
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,
                           const SSLInfo& ssl_info) override;

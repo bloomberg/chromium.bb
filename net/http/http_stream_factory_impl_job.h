@@ -67,8 +67,7 @@ class HttpStreamFactoryImpl::Job {
     // Invoked when |job| fails to create a stream.
     virtual void OnStreamFailed(Job* job,
                                 int status,
-                                const SSLConfig& used_ssl_config,
-                                SSLFailureState ssl_failure_state) = 0;
+                                const SSLConfig& used_ssl_config) = 0;
 
     // Invoked when |job| has a certificate error for the Request.
     virtual void OnCertificateError(Job* job,

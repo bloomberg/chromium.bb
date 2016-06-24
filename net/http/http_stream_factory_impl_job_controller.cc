@@ -221,8 +221,7 @@ void HttpStreamFactoryImpl::JobController::OnWebSocketHandshakeStreamReady(
 void HttpStreamFactoryImpl::JobController::OnStreamFailed(
     Job* job,
     int status,
-    const SSLConfig& used_ssl_config,
-    SSLFailureState ssl_failure_state) {
+    const SSLConfig& used_ssl_config) {
   if (job_bound_ && bound_job_ != job) {
     // We have bound a job to the associated Request, |job| has been orphaned.
     OnOrphanedJobComplete(job);
@@ -254,7 +253,7 @@ void HttpStreamFactoryImpl::JobController::OnStreamFailed(
     }
   }
 
-  request_->OnStreamFailed(status, used_ssl_config, ssl_failure_state);
+  request_->OnStreamFailed(status, used_ssl_config);
 }
 
 void HttpStreamFactoryImpl::JobController::OnCertificateError(

@@ -26374,6 +26374,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.ConnectionUsedSSLVersionFallback2"
     enum="FallbackSSLVersion">
+  <obsolete>
+    Removed June 2016.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     For each successful HTTPS request, whether it used the SSL version fallback.
@@ -27573,6 +27576,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.GoogleConnectionInappropriateFallback"
     enum="BooleanInappropriateFallback">
+  <obsolete>
+    Removed June 2016.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     Records a sample for each HTTPS request to a Google server that either
@@ -27598,6 +27604,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.GoogleConnectionUsedSSLVersionFallback2"
     enum="FallbackSSLVersion">
+  <obsolete>
+    Removed June 2016.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     For each successful HTTPS request to a Google server, whether it used the
@@ -30977,6 +30986,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLFallbackErrorCode" enum="NetErrorCodes">
+  <obsolete>
+    Removed June 2016.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     For each successful HTTPS request which used the TLS version fallback, the
@@ -30985,6 +30997,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLFallbackFailureState" enum="SSLFailureState">
+  <obsolete>
+    Removed June 2016.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     For each successful HTTPS request which used the TLS version fallback, the
@@ -90300,6 +90315,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SSLFailureState" type="int">
+  <obsolete>
+    Removed June 2016.
+  </obsolete>
   <int value="0" label="No failure"/>
   <int value="1" label="Unknown failure"/>
   <int value="2" label="Failed to process ClientHello"/>

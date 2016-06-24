@@ -15,7 +15,6 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_key.h"
-#include "net/ssl/ssl_failure_state.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -99,9 +98,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   void OnWebSocketHandshakeStreamReady(const SSLConfig& used_ssl_config,
                                        const ProxyInfo& used_proxy_info,
                                        WebSocketHandshakeStreamBase* stream);
-  void OnStreamFailed(int status,
-                      const SSLConfig& used_ssl_config,
-                      SSLFailureState ssl_failure_state);
+  void OnStreamFailed(int status, const SSLConfig& used_ssl_config);
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,
                           const SSLInfo& ssl_info);

@@ -12,7 +12,6 @@
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/ssl/ssl_failure_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -86,11 +85,9 @@ TEST_P(HttpStreamFactoryImplJobControllerTest,
 
   // There's no other alternative job. Thus when stream failed, it should
   // notify Request of the stream failure.
-  EXPECT_CALL(request_delegate_,
-              OnStreamFailed(ERR_FAILED, _, SSL_FAILURE_NONE))
-      .Times(1);
+  EXPECT_CALL(request_delegate_, OnStreamFailed(ERR_FAILED, _)).Times(1);
   job_controller_->OnStreamFailed(job_factory_.main_job(), ERR_FAILED,
-                                  SSLConfig(), SSL_FAILURE_NONE);
+                                  SSLConfig());
 }
 
 TEST_P(HttpStreamFactoryImplJobControllerTest,
@@ -161,19 +158,18 @@ TEST_P(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
   // We have the main job with unknown status when the alternative job is failed
   // thus should not notify Request of the alternative job's failure. But should
   // notify the main job to mark the alternative job failed.
-  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _, _)).Times(0);
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
   EXPECT_CALL(*job_factory_.main_job(), MarkOtherJobComplete(_)).Times(1);
   job_controller_->OnStreamFailed(job_factory_.alternative_job(), ERR_FAILED,
-                                  SSLConfig(), SSL_FAILURE_NONE);
+                                  SSLConfig());
   EXPECT_TRUE(!job_controller_->alternative_job());
   EXPECT_TRUE(job_controller_->main_job());
 
   // The failure of second Job should be reported to Request as there's no more
   // pending Job to serve the Request.
-  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _, SSL_FAILURE_UNKNOWN))
-      .Times(1);
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(1);
   job_controller_->OnStreamFailed(job_factory_.main_job(), ERR_FAILED,
-                                  SSLConfig(), SSL_FAILURE_UNKNOWN);
+                                  SSLConfig());
 }
 
 TEST_P(HttpStreamFactoryImplJobControllerTest,
@@ -209,9 +205,9 @@ TEST_P(HttpStreamFactoryImplJobControllerTest,
 
   // JobController shouldn't report the status of second job as request
   // is already successfully served.
-  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _, _)).Times(0);
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
   job_controller_->OnStreamFailed(job_factory_.alternative_job(), ERR_FAILED,
-                                  SSLConfig(), SSL_FAILURE_NONE);
+                                  SSLConfig());
 
   // Reset the request as it's been successfully served.
   request_.reset();
@@ -237,12 +233,12 @@ TEST_P(HttpStreamFactoryImplJobControllerTest,
 
   // |main_job| fails but should not report status to Request.
   // The alternative job will mark the main job complete.
-  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _, _)).Times(0);
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
   EXPECT_CALL(*job_factory_.alternative_job(), MarkOtherJobComplete(_))
       .Times(1);
 
   job_controller_->OnStreamFailed(job_factory_.main_job(), ERR_FAILED,
-                                  SSLConfig(), SSL_FAILURE_NONE);
+                                  SSLConfig());
 
   // |alternative_job| succeeds and should report status to Request.
   HttpStream* http_stream =
@@ -275,12 +271,12 @@ TEST_P(HttpStreamFactoryImplJobControllerTest, GetLoadStateAfterMainJobFailed) {
 
   // |main_job| fails but should not report status to Request.
   // The alternative job will mark the main job complete.
-  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _, _)).Times(0);
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
   EXPECT_CALL(*job_factory_.alternative_job(), MarkOtherJobComplete(_))
       .Times(1);
 
   job_controller_->OnStreamFailed(job_factory_.main_job(), ERR_FAILED,
-                                  SSLConfig(), SSL_FAILURE_NONE);
+                                  SSLConfig());
 
   // Controller should use alternative job to get load state.
   job_controller_->GetLoadState();

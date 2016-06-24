@@ -75,7 +75,6 @@ class MockSSLClientSocket : public net::SSLClientSocket {
   MOCK_METHOD2(GetSignedEKMForTokenBinding,
                net::Error(crypto::ECPrivateKey*, std::vector<uint8_t>*));
   MOCK_CONST_METHOD0(GetChannelIDKey, crypto::ECPrivateKey*());
-  MOCK_CONST_METHOD0(GetSSLFailureState, net::SSLFailureState());
   bool IsConnected() const override { return true; }
 
  private:

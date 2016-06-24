@@ -86,9 +86,8 @@ void HttpStreamFactoryImpl::Request::OnWebSocketHandshakeStreamReady(
 
 void HttpStreamFactoryImpl::Request::OnStreamFailed(
     int status,
-    const SSLConfig& used_ssl_config,
-    SSLFailureState ssl_failure_state) {
-  delegate_->OnStreamFailed(status, used_ssl_config, ssl_failure_state);
+    const SSLConfig& used_ssl_config) {
+  delegate_->OnStreamFailed(status, used_ssl_config);
 }
 
 void HttpStreamFactoryImpl::Request::OnCertificateError(
