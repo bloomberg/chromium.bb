@@ -4,7 +4,9 @@
 
 [
     Constructor(double angle),
-    Constructor(double angle, double x, double y, double z),
+    Constructor(CSSAngleValue angleValue),
+    Constructor(double x, double y, double z, double angle),
+    Constructor(double x, double y, double z, CSSAngleValue angle),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSRotation : TransformComponent {
