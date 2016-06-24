@@ -31,35 +31,6 @@ namespace remoting {
 
 namespace {
 
-// This class wraps a VideoDecoder and byte-swaps the pixels for compatibility
-// with the android.graphics.Bitmap class.
-// TODO(lambroslambrou): Refactor so that the VideoDecoder produces data
-// in the right byte-order, instead of swapping it here.
-class RgbToBgrVideoDecoderFilter : public VideoDecoder {
- public:
-  RgbToBgrVideoDecoderFilter(std::unique_ptr<VideoDecoder> parent)
-      : parent_(std::move(parent)) {}
-
-  bool DecodePacket(const VideoPacket& packet,
-                    webrtc::DesktopFrame* frame) override {
-    if (!parent_->DecodePacket(packet, frame))
-      return false;
-    for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
-         !i.IsAtEnd(); i.Advance()) {
-      webrtc::DesktopRect rect = i.rect();
-      uint8_t* pixels = frame->data() + (rect.top() * frame->stride()) +
-                        (rect.left() * webrtc::DesktopFrame::kBytesPerPixel);
-      libyuv::ABGRToARGB(pixels, frame->stride(), pixels, frame->stride(),
-                         rect.width(), rect.height());
-    }
-
-    return true;
-  }
-
- private:
-  std::unique_ptr<VideoDecoder> parent_;
-};
-
 std::unique_ptr<webrtc::DesktopFrame> DoDecodeFrame(
     VideoDecoder* decoder,
     std::unique_ptr<VideoPacket> packet,
@@ -101,10 +72,10 @@ void SoftwareVideoRenderer::OnSessionConfig(
     NOTREACHED() << "Invalid Encoding found: " << codec;
   }
 
-  if (consumer_->GetPixelFormat() == protocol::FrameConsumer::FORMAT_RGBA) {
-    decoder_ =
-        base::WrapUnique(new RgbToBgrVideoDecoderFilter(std::move(decoder_)));
-  }
+  decoder_->SetPixelFormat(
+      (consumer_->GetPixelFormat() == protocol::FrameConsumer::FORMAT_BGRA)
+          ? VideoDecoder::PixelFormat::BGRA
+          : VideoDecoder::PixelFormat::RGBA);
 }
 
 protocol::VideoStub* SoftwareVideoRenderer::GetVideoStub() {

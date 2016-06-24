@@ -28,35 +28,32 @@ namespace {
 
 void RenderRect(vpx_image_t* image,
                 webrtc::DesktopRect rect,
+                VideoDecoder::PixelFormat pixel_format,
                 webrtc::DesktopFrame* frame) {
+  auto yuv_to_rgb_function = libyuv::I420ToARGB;
+  int u_offset;
+  int v_offset;
+
   switch (image->fmt) {
     case VPX_IMG_FMT_I420: {
       // Align position of the top left corner so that its coordinates are
       // always even.
       rect = webrtc::DesktopRect::MakeLTRB(rect.left() & ~1, rect.top() & ~1,
                                            rect.right(), rect.bottom());
-      uint8_t* image_data_ptr = frame->GetFrameDataAtPos(rect.top_left());
-      int y_offset = rect.top() * image->stride[0] + rect.left();
-      int u_offset = rect.top() / 2 * image->stride[1] + rect.left() / 2;
-      int v_offset = rect.top() / 2 * image->stride[2] + rect.left() / 2;
-      libyuv::I420ToARGB(image->planes[0] + y_offset, image->stride[0],
-                         image->planes[1] + u_offset, image->stride[1],
-                         image->planes[2] + v_offset, image->stride[2],
-                         image_data_ptr, frame->stride(),
-                         rect.width(), rect.height());
+      u_offset = rect.top() / 2 * image->stride[1] + rect.left() / 2;
+      v_offset = rect.top() / 2 * image->stride[2] + rect.left() / 2;
+      yuv_to_rgb_function = (pixel_format == VideoDecoder::PixelFormat::BGRA)
+                                ? libyuv::I420ToARGB
+                                : libyuv::I420ToABGR;
       break;
     }
     // VP8 only outputs I420 frames, but VP9 can also produce I444.
     case VPX_IMG_FMT_I444: {
-      uint8_t* image_data_ptr = frame->GetFrameDataAtPos(rect.top_left());
-      int y_offset = rect.top() * image->stride[0] + rect.left();
-      int u_offset = rect.top() * image->stride[1] + rect.left();
-      int v_offset = rect.top() * image->stride[2] + rect.left();
-      libyuv::I444ToARGB(image->planes[0] + y_offset, image->stride[0],
-                         image->planes[1] + u_offset, image->stride[1],
-                         image->planes[2] + v_offset, image->stride[2],
-                         image_data_ptr, frame->stride(),
-                         rect.width(), rect.height());
+      u_offset = rect.top() * image->stride[1] + rect.left();
+      v_offset = rect.top() * image->stride[2] + rect.left();
+      yuv_to_rgb_function = (pixel_format == VideoDecoder::PixelFormat::BGRA)
+                                ? libyuv::I444ToARGB
+                                : libyuv::I444ToABGR;
       break;
     }
     default: {
@@ -64,6 +61,14 @@ void RenderRect(vpx_image_t* image,
       return;
     }
   }
+
+  int y_offset = rect.top() * image->stride[0] + rect.left();
+  uint8_t* image_data_ptr = frame->GetFrameDataAtPos(rect.top_left());
+  yuv_to_rgb_function(image->planes[0] + y_offset, image->stride[0],
+                      image->planes[1] + u_offset, image->stride[1],
+                      image->planes[2] + v_offset, image->stride[2],
+                      image_data_ptr, frame->stride(), rect.width(),
+                      rect.height());
 }
 
 }  // namespace
@@ -79,6 +84,10 @@ std::unique_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP9() {
 }
 
 VideoDecoderVpx::~VideoDecoderVpx() {}
+
+void VideoDecoderVpx::SetPixelFormat(PixelFormat pixel_format) {
+  pixel_format_ = pixel_format;
+}
 
 bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet,
                                    webrtc::DesktopFrame* frame) {
@@ -115,7 +124,7 @@ bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet,
         webrtc::DesktopRect::MakeXYWH(proto_rect.x(), proto_rect.y(),
                                       proto_rect.width(), proto_rect.height());
     region->AddRect(rect);
-    RenderRect(image, rect, frame);
+    RenderRect(image, rect, pixel_format_, frame);
   }
 
   return true;

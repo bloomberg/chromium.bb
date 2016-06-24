@@ -20,6 +20,11 @@ static const int kBytesPerPixel = 4;
 VideoDecoderVerbatim::VideoDecoderVerbatim() {}
 VideoDecoderVerbatim::~VideoDecoderVerbatim() {}
 
+void VideoDecoderVerbatim::SetPixelFormat(
+    VideoDecoder::PixelFormat pixel_format) {
+  NOTIMPLEMENTED();
+}
+
 bool VideoDecoderVerbatim::DecodePacket(const VideoPacket& packet,
                                         webrtc::DesktopFrame* frame) {
   webrtc::DesktopRegion* region = frame->mutable_updated_region();

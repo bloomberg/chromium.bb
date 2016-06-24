@@ -24,6 +24,7 @@ class VideoDecoderVerbatim : public VideoDecoder {
   ~VideoDecoderVerbatim() override;
 
   // VideoDecoder implementation.
+  void SetPixelFormat(PixelFormat pixel_format) override;
   bool DecodePacket(const VideoPacket& packet,
                     webrtc::DesktopFrame* frame) override;
 

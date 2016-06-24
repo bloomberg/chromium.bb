@@ -26,6 +26,7 @@ class VideoDecoderVpx : public VideoDecoder {
   ~VideoDecoderVpx() override;
 
   // VideoDecoder interface.
+  void SetPixelFormat(PixelFormat pixel_format) override;
   bool DecodePacket(const VideoPacket& packet,
                     webrtc::DesktopFrame* frame) override;
 
@@ -33,6 +34,7 @@ class VideoDecoderVpx : public VideoDecoder {
   explicit VideoDecoderVpx(vpx_codec_iface_t* codec);
 
   ScopedVpxCodec codec_;
+  PixelFormat pixel_format_ = PixelFormat::BGRA;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderVpx);
 };
