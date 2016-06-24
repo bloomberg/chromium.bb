@@ -105,13 +105,19 @@ public class EditorFieldModel {
         mValue = value;
     }
 
+    /** @return Whether or not the field is required. */
+    public boolean isRequired() {
+        return !TextUtils.isEmpty(mRequiredErrorMessage);
+    }
+
     /**
      * Returns true if the field value is valid. Also updates the error message.
      *
      * @return Whether the field value is valid.
      */
     public boolean isValid() {
-        if (TextUtils.isEmpty(mValue) || TextUtils.getTrimmedLength(mValue) == 0) {
+        if (isRequired()
+                && (TextUtils.isEmpty(mValue) || TextUtils.getTrimmedLength(mValue) == 0)) {
             mErrorMessage = mRequiredErrorMessage;
             return false;
         }

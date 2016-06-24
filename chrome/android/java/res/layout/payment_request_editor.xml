@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!-- PaymentRequestUI editor dialog. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" >
+
+    <!-- Toolbar and shadow. -->
+    <org.chromium.chrome.browser.payments.ui.EditorDialogToolbar
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/dark_action_bar_color" />
+    <org.chromium.chrome.browser.widget.FadingShadowView
+        android:id="@+id/shadow"
+        android:layout_width="match_parent"
+        android:layout_height="10dp" />
+    
+    <!-- All the page content in scrollable form. -->
+    <org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView
+        android:id="@+id/scroll_view"
+        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_weight="1" >
+
+        <LinearLayout
+            android:id="@+id/contents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/payments_section_large_spacing"
+            android:paddingEnd="@dimen/payments_section_large_spacing"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:textColor="@color/descriptive_text_color"
+                android:textSize="12sp"
+                android:text="@string/payments_required_field_message" />
+
+        </LinearLayout>
+
+    </org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
+
+    <!-- CANCEL and DONE buttons. -->
+    <org.chromium.chrome.browser.widget.DualControlLayout
+        android:id="@+id/button_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/payments_section_large_spacing"
+        android:background="@android:color/white" />
+
+</LinearLayout>

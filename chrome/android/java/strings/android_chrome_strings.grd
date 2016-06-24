@@ -186,6 +186,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_UNDO" desc="Generic label for a button to undo the previous action.">
         Undo
       </message>
+      <message name="IDS_HELP" desc="Generic label for a button that displays help for the current screen.">
+        Help
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -2579,7 +2582,7 @@ You can control the Physical Web in Chrome Settings.
         There was an error processing your order.  Please check your account and try again.
       </message>
       <message name="IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE" desc="The text that informs the user that '*' character indicates an input field that is required. The '*' character should not be changed.">
-        * denotes required field
+        * indicates required field
       </message>
       <message name="IDS_PAYMENTS_PHONE_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that phone number is required.">
         Phone number required

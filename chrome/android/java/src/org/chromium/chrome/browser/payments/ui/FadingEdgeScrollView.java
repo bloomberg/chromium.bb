@@ -19,6 +19,8 @@ public class FadingEdgeScrollView extends ScrollView {
     private static final int SHADOW_COLOR = 0x11000000;
 
     private final FadingShadow mFadingShadow;
+    private boolean mDrawTopShadow = true;
+    private boolean mDrawBottomShadow = true;
 
     public FadingEdgeScrollView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -36,9 +38,24 @@ public class FadingEdgeScrollView extends ScrollView {
         float shadowHeight = getVerticalFadingEdgeLength();
         setVerticalFadingEdgeEnabled(false);
 
-        mFadingShadow.drawShadow(this, canvas, FadingShadow.POSITION_TOP,
-                shadowHeight, topShadowStrength);
-        mFadingShadow.drawShadow(this, canvas, FadingShadow.POSITION_BOTTOM,
-                shadowHeight, bottomShadowStrength);
+        if (mDrawTopShadow) {
+            mFadingShadow.drawShadow(this, canvas, FadingShadow.POSITION_TOP,
+                    shadowHeight, topShadowStrength);
+        }
+
+        if (mDrawBottomShadow) {
+            mFadingShadow.drawShadow(this, canvas, FadingShadow.POSITION_BOTTOM,
+                    shadowHeight, bottomShadowStrength);
+        }
+    }
+
+    /**
+     * Sets which shadows should be drawn.
+     * @param drawTopShadow    Whether to draw the shadow on the top part of the view.
+     * @param drawBottomShadow Whether to draw the shadow on the bottom part of the view.
+     */
+    public void setShadowVisibility(boolean drawTopShadow, boolean drawBottomShadow) {
+        mDrawTopShadow = drawTopShadow;
+        mDrawBottomShadow = drawBottomShadow;
     }
 }
