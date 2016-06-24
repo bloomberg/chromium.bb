@@ -220,8 +220,8 @@ class MediaCodecUtil {
                         codecSupportsAdaptivePlayback(result.mediaCodec, mime);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to create MediaCodec: %s, isSecure: %s, requireSoftwareCodec: %d",
-                    mime, isSecure, requireSoftwareCodec, e);
+            Log.e(TAG, "Failed to create MediaCodec: %s, isSecure: %s, requireSoftwareCodec: %s",
+                    mime, isSecure, requireSoftwareCodec ? "yes" : "no", e);
             result.mediaCodec = null;
         }
         return result;
