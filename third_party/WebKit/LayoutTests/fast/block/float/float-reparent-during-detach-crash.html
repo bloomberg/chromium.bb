@@ -1,0 +1,21 @@
+<!doctype HTML>
+Passes if it does not crash.
+<ruby>
+  test
+    <rt>
+      <rtc>
+      <a style="display:list-item">
+        <input style="float:right"></input>
+      </rtc>
+      </a>
+    </rt>
+  </ruby>
+<script>
+if (window.testRunner)
+  window.testRunner.dumpAsText();
+onload = function() {
+  var mySelection=window.getSelection();
+  document.execCommand("SelectAll");
+  mySelection.deleteFromDocument();
+}
+</script>
