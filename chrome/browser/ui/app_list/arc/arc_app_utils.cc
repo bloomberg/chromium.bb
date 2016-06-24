@@ -33,7 +33,7 @@ constexpr int kCanHandleResolutionMinVersion = 1;
 constexpr int kUninstallPackageMinVersion = 2;
 constexpr int kShowPackageInfoMinVersion = 5;
 constexpr int kRemoveIconMinVersion = 9;
-constexpr int kShowPackageInfoOnPageMinVersion = 11;
+constexpr int kShowPackageInfoOnPageMinVersion = 10;
 
 // Service name strings.
 constexpr char kCanHandleResolutionStr[] = "get resolution capability";
