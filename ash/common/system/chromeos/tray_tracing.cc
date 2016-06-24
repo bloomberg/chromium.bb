@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/tray_tracing.h"
+#include "ash/common/system/chromeos/tray_tracing.h"
 
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -67,13 +66,12 @@ class DefaultTracingView : public ActionableView {
 TrayTracing::TrayTracing(SystemTray* system_tray)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_TRACING),
       default_(NULL) {
-  DCHECK(Shell::GetInstance()->delegate());
   DCHECK(system_tray);
-  Shell::GetInstance()->system_tray_notifier()->AddTracingObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddTracingObserver(this);
 }
 
 TrayTracing::~TrayTracing() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveTracingObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveTracingObserver(this);
 }
 
 void TrayTracing::SetTrayIconVisible(bool visible) {

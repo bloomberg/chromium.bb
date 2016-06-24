@@ -1131,7 +1131,7 @@ void SystemTrayDelegateChromeOS::UpdatePerformanceTracing() {
     return;
   bool value = user_pref_registrar_->prefs()->GetBoolean(
       prefs::kPerformanceTracingEnabled);
-  GetSystemTrayNotifier()->NotifyTracingModeChanged(value);
+  GetWmSystemTrayNotifier()->NotifyTracingModeChanged(value);
 }
 
 // Overridden from InputMethodManager::Observer.

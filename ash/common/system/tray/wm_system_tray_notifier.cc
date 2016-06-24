@@ -11,6 +11,7 @@
 #include "ash/common/system/update/update_observer.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/tray_tracing.h"
 #include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #endif
 
@@ -146,6 +147,19 @@ void WmSystemTrayNotifier::NotifyUpdateRecommended(const UpdateInfo& info) {
 }
 
 #if defined(OS_CHROMEOS)
+
+void WmSystemTrayNotifier::AddTracingObserver(TracingObserver* observer) {
+  tracing_observers_.AddObserver(observer);
+}
+
+void WmSystemTrayNotifier::RemoveTracingObserver(TracingObserver* observer) {
+  tracing_observers_.RemoveObserver(observer);
+}
+
+void WmSystemTrayNotifier::NotifyTracingModeChanged(bool value) {
+  FOR_EACH_OBSERVER(TracingObserver, tracing_observers_,
+                    OnTracingModeChanged(value));
+}
 
 void WmSystemTrayNotifier::AddVirtualKeyboardObserver(
     VirtualKeyboardObserver* observer) {

@@ -49,6 +49,7 @@
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/tray_power.h"
 #include "ash/common/system/chromeos/settings/tray_settings.h"
+#include "ash/common/system/chromeos/tray_tracing.h"
 #include "ash/common/system/ime/tray_ime_chromeos.h"
 #include "ash/system/chromeos/audio/tray_audio_chromeos.h"
 #include "ash/system/chromeos/bluetooth/tray_bluetooth.h"
@@ -64,7 +65,6 @@
 #include "ash/system/chromeos/supervised/tray_supervised_user.h"
 #include "ash/system/chromeos/tray_caps_lock.h"
 #include "ash/system/chromeos/tray_display.h"
-#include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/tray/media_security/multi_profile_media_tray_item.h"
 #include "ui/message_center/message_center.h"
 #endif

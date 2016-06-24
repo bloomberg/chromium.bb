@@ -12,14 +12,6 @@ SystemTrayNotifier::SystemTrayNotifier() {
 SystemTrayNotifier::~SystemTrayNotifier() {
 }
 
-void SystemTrayNotifier::AddTracingObserver(TracingObserver* observer) {
-  tracing_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveTracingObserver(TracingObserver* observer) {
-  tracing_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddUserObserver(UserObserver* observer) {
   user_observers_.AddObserver(observer);
 }
@@ -127,13 +119,6 @@ void SystemTrayNotifier::RemoveLastWindowClosedObserver(
 }
 
 #endif  // defined(OS_CHROMEOS)
-
-void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
-  FOR_EACH_OBSERVER(
-      TracingObserver,
-      tracing_observers_,
-      OnTracingModeChanged(value));
-}
 
 void SystemTrayNotifier::NotifyUserUpdate() {
   FOR_EACH_OBSERVER(UserObserver,

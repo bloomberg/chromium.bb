@@ -21,6 +21,7 @@ struct UpdateInfo;
 class UpdateObserver;
 
 #if defined(OS_CHROMEOS)
+class TracingObserver;
 class VirtualKeyboardObserver;
 #endif
 
@@ -77,6 +78,11 @@ class ASH_EXPORT WmSystemTrayNotifier {
   void NotifyUpdateRecommended(const UpdateInfo& info);
 
 #if defined(OS_CHROMEOS)
+  // Tracing.
+  void AddTracingObserver(TracingObserver* observer);
+  void RemoveTracingObserver(TracingObserver* observer);
+  void NotifyTracingModeChanged(bool value);
+
   // Virtual keyboard.
   void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
   void RemoveVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
@@ -92,6 +98,7 @@ class ASH_EXPORT WmSystemTrayNotifier {
   base::ObserverList<UpdateObserver> update_observers_;
 
 #if defined(OS_CHROMEOS)
+  base::ObserverList<TracingObserver> tracing_observers_;
   base::ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 #endif
 

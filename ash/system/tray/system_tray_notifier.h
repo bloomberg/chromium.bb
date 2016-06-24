@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/user/user_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -40,9 +39,6 @@ class ASH_EXPORT SystemTrayNotifier {
  public:
   SystemTrayNotifier();
   ~SystemTrayNotifier();
-
-  void AddTracingObserver(TracingObserver* observer);
-  void RemoveTracingObserver(TracingObserver* observer);
 
   void AddUserObserver(UserObserver* observer);
   void RemoveUserObserver(UserObserver* observer);
@@ -81,7 +77,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveLastWindowClosedObserver(LastWindowClosedObserver* observer);
 #endif
 
-  void NotifyTracingModeChanged(bool value);
   void NotifyUserUpdate();
   void NotifyUserAddedToSession();
 #if defined(OS_CHROMEOS)
@@ -105,7 +100,6 @@ class ASH_EXPORT SystemTrayNotifier {
 #endif
 
  private:
-  base::ObserverList<TracingObserver> tracing_observers_;
   base::ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)
   base::ObserverList<BluetoothObserver> bluetooth_observers_;
