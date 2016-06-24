@@ -803,6 +803,8 @@
     ],
     'subresource_filter_core_common_unittest_sources': [
       'subresource_filter/core/common/closed_hash_map_unittest.cc',
+      'subresource_filter/core/common/ngram_extractor_unittest.cc',
+      'subresource_filter/core/common/string_splitter_unittest.cc',
     ],
     'suggestions_unittest_sources': [
       'suggestions/blacklist_store_unittest.cc',

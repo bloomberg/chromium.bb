@@ -64,6 +64,8 @@
         'subresource_filter/core/common/closed_hash_map.h',
         'subresource_filter/core/common/memory_mapped_ruleset.cc',
         'subresource_filter/core/common/memory_mapped_ruleset.h',
+        'subresource_filter/core/common/ngram_extractor.h',
+        'subresource_filter/core/common/string_splitter.h',
         'subresource_filter/core/common/uint64_hasher.h',
       ],
     },
