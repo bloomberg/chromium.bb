@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromecast/base/init_command_line_shlib.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
@@ -88,8 +89,7 @@ std::unique_ptr<base::ThreadTaskRunnerHandle> g_thread_task_runner_handle;
 }  // namespace
 
 void CastMediaShlib::Initialize(const std::vector<std::string>& argv) {
-  base::CommandLine::Init(0, nullptr);
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(argv);
+  chromecast::InitCommandLineShlib(argv);
 
   g_video_plane = new DefaultVideoPlane();
 
@@ -98,8 +98,6 @@ void CastMediaShlib::Initialize(const std::vector<std::string>& argv) {
 }
 
 void CastMediaShlib::Finalize() {
-  base::CommandLine::Reset();
-
   if (g_hardware_controls)
     snd_hctl_close(g_hardware_controls);
   snd_ctl_elem_value_free(g_rate_offset_ppm);
