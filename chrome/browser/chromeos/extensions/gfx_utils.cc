@@ -46,17 +46,18 @@ bool MaybeApplyChromeBadge(content::BrowserContext* context,
   if (!extension || !extension->is_hosted_app())
     return false;
 
-  gfx::ImageSkia* badge_image =
+  const gfx::ImageSkia* badge_image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_ARC_DUAL_ICON_BADGE);
   DCHECK(badge_image);
 
+  gfx::ImageSkia resized_badge_image = *badge_image;
   if (badge_image->size() != icon_out->size()) {
-    *badge_image = gfx::ImageSkiaOperations::CreateResizedImage(
+    resized_badge_image = gfx::ImageSkiaOperations::CreateResizedImage(
         *badge_image, skia::ImageOperations::RESIZE_BEST, icon_out->size());
   }
-  *icon_out = gfx::ImageSkiaOperations::CreateSuperimposedImage(*icon_out,
-                                                                *badge_image);
+  *icon_out = gfx::ImageSkiaOperations::CreateSuperimposedImage(
+      *icon_out, resized_badge_image);
   return true;
 }
 
