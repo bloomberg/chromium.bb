@@ -9,7 +9,7 @@ from telemetry import story
 URL_LIST = [
     # Why: #1 (Alexa) most visited page worldwide, picked a reasonable
     # search term
-    'https://www.google.com/#hl=en&q=science',
+    'https://www.google.ca/#hl=en&q=science',
     # Why: #2 (Alexa) most visited page worldwide, picked the most liked
     # page
     'https://m.facebook.com/rihanna',
