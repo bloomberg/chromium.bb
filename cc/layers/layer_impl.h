@@ -534,8 +534,6 @@ class CC_EXPORT LayerImpl {
   bool draws_content_ : 1;
   bool is_drawn_render_surface_layer_list_member_ : 1;
 
-  bool is_affected_by_page_scale_ : 1;
-
   // This is true if and only if the layer was ever ready since it last animated
   // (all content was complete).
   bool was_ever_ready_since_last_transform_animation_ : 1;
