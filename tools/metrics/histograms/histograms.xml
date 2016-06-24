@@ -75673,6 +75673,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1416" label="MediaStreamOnInactive"/>
   <int value="1417" label="AddEventListenerPassiveTrue"/>
   <int value="1418" label="AddEventListenerPassiveFalse"/>
+  <int value="1419" label="CSPReferrerDirective"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

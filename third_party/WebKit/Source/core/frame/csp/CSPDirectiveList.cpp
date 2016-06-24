@@ -727,6 +727,8 @@ void CSPDirectiveList::parseReferrer(const String& name, const String& value)
 {
     m_didSetReferrerPolicy = true;
 
+    UseCounter::count(m_policy->document(), UseCounter::CSPReferrerDirective);
+
     if (value.isEmpty()) {
         m_policy->reportInvalidReferrer(value);
         m_referrerPolicy = ReferrerPolicyNever;

@@ -1223,6 +1223,7 @@ public:
         MediaStreamOnInactive = 1416,
         AddEventListenerPassiveTrue = 1417,
         AddEventListenerPassiveFalse = 1418,
+        CSPReferrerDirective = 1419,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
