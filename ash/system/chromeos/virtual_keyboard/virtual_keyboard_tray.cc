@@ -44,7 +44,6 @@ VirtualKeyboardTray::VirtualKeyboardTray(StatusAreaWidget* status_area_widget)
                              views::ImageButton::ALIGN_MIDDLE);
 
   tray_container()->AddChildView(button_);
-  button_->SetFocusBehavior(FocusBehavior::NEVER);
   SetContentsBackground();
   // The Shell may not exist in some unit tests.
   if (Shell::HasInstance())
