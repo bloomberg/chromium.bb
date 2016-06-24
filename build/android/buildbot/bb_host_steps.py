@@ -70,7 +70,6 @@ def Compile(options):
     RunHooks(options.target)
 
   cmd = [os.path.join(SLAVE_SCRIPTS_DIR, 'compile.py'),
-         '--build-tool=ninja',
          '--compiler=goma',
          '--target=%s' % options.target,
          '--goma-dir=%s' % bb_utils.GOMA_DIR]
