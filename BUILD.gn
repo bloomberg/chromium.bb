@@ -261,6 +261,7 @@ group("both_gn_and_gyp") {
       "//gpu/ipc/service:gpu_ipc_service_unittests",
       "//ipc:ipc_tests",
       "//media:media_unittests",
+      "//media/capture:capture_unittests",
       "//media/cast:cast_unittests",
       "//media/midi:midi_unittests",
       "//mojo",

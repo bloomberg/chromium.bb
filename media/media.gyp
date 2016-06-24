@@ -1077,8 +1077,6 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         'audio_test_config',
-        # TODO(mcasas): Remove this entry after https://crbug.com/618718.
-        'capture/capture.gyp:unittests',
         'cdm_paths',
         'media',
         'media_features',
@@ -1503,8 +1501,6 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         'audio_test_config',
-        # TODO(mcasas): Remove this entry after https://crbug.com/618718.
-        'capture/capture.gyp:unittests',
         'media_test_support',
         '../base/base.gyp:test_support_base',
         '../testing/gmock.gyp:gmock',
@@ -1514,6 +1510,17 @@
       ],
       'sources': [
         'base/run_all_unittests.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'link_settings':  {
+            'libraries': [
+              '-ldxguid.lib',
+              '-lsetupapi.lib',
+              '-lwinmm.lib',
+            ],
+          },
+        }],
       ],
     },
     {
@@ -1860,8 +1867,6 @@
             'base/android/video_decoder_job.h',
             'base/android/video_media_codec_decoder.cc',
             'base/android/video_media_codec_decoder.h',
-            'capture/video/android/capture_jni_registrar.cc',
-            'capture/video/android/capture_jni_registrar.h',
           ],
           'conditions': [
             # Only 64 bit builds are using android-21 NDK library, check common.gypi
