@@ -30,8 +30,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # ========================
 
     # All platforms.
-    self.Skip('deqp/functional/gles3/builtinprecision/atan2.html', bug=619403)
-    self.Skip('deqp/functional/gles3/builtinprecision/tanh.html', bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/atan2.html', bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/tanh.html', bug=619403)
     self.Skip('deqp/functional/gles3/fboinvalidate/*.html', bug=483282)
     self.Skip('deqp/functional/gles3/fborender.html', bug=483282)
     self.Skip('deqp/functional/gles3/framebufferblit/*.html', bug=483282)
@@ -232,8 +232,20 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
         ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/textureshadow/cube*.html',
-        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/builtinprecision/cos.html',
+        ['win', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/fract.html',
+        ['win', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/matrixcompmult.html',
+        ['win', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/mix.html',
+        ['win', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/reflect.html',
+        ['win', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/sin.html',
+        ['win', 'intel'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
+        ['win', 'intel'], bug=619403)
 
     # Mac only.
     self.Flaky('deqp/functional/gles3/shaderindexing/varying.html',
@@ -398,6 +410,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=619403)
     self.Fail('deqp/functional/gles3/builtinprecision/fract.html',
         ['mac', 'amd'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
+        ['mac', 'amd'], bug=619403)
 
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
@@ -493,6 +507,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['mac', 'intel'], bug=483282)
 
+    self.Fail('deqp/functional/gles3/textureshadow/cube*.html',
+        ['mac', 'intel'], bug=483282)
+
     self.Fail('deqp/functional/gles3/texturefiltering/cube_formats_*',
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_*',
@@ -558,6 +575,23 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
     self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['linux', 'intel'], bug=610800)
+
+    self.Fail('deqp/functional/gles3/builtinprecision/acos.html',
+        ['linux', 'intel', 'opengl'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/cos.html',
+        ['linux', 'intel', 'opengl'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/fract.html',
+        ['linux', 'intel', 'opengl'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/matrixcompmult.html',
+        ['linux', 'intel', 'opengl'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/mix.html',
+        ['linux', 'intel', 'opengl'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/reflect.html',
+        ['linux', 'intel', 'opengl'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/sin.html',
+        ['linux', 'intel', 'opengl'], bug=619403)
+    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
+        ['linux', 'intel', 'opengl'], bug=619403)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
@@ -702,6 +736,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/vertexarrays/' +
         'single_attribute.output_type.unsigned_int.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/builtinprecision/*.html',
+        ['linux', 'amd'], bug=619403)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.

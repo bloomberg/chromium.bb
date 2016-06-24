@@ -412,6 +412,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
               ['win7', 'intel'])
+    self.Fail('deqp/data/gles2/shaders/functions.html',
+        ['win7', 'intel'], bug=478572)
 
     # Win / AMD flakiness seen on new tryservers.
     # It's unfortunate that this suppression needs to be so broad, but
