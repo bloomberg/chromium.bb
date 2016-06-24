@@ -5,11 +5,13 @@
 <link rel="import" href="/advanced_page/advanced_page.html">
 <link rel="import" href="/basic_page/basic_page.html">
 <link rel="import" href="/settings_page/main_page_behavior.html">
+<link rel="import" href="/settings_root_css.html">
 
 <dom-module id="settings-main">
   <template>
     <style>
       #advancedToggle {
+        @apply(--settings-actionable);
         align-items: center;
         display: flex;
         margin-bottom: 24px;

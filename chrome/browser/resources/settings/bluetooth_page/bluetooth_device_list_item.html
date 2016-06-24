@@ -28,7 +28,7 @@
   </style>
   <template>
     <div class="flex layout horizontal center" dropdown$="[[dropdownOpened]]"
-        on-tap="itemTapped_">
+        on-tap="itemTapped_" actionable>
       <span class="name" connected$="[[device.connected]]">
         [[getDeviceName_(device)]]
       </span>
@@ -36,11 +36,16 @@
       </iron-icon>
       <span class="flex"></span>
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
+      <!-- This <div on-tap> is not [actionable] because its effect is not user
+           visible. -->
       <div hidden$="[[!device.paired]]" on-tap="doNothing_">
         <paper-icon-button icon="cr:more-vert" toggles
             active="{{dropdownOpened}}">
         </paper-icon-button>
-        <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_">
+        <!-- TODO(dbeam): does this need [actionable] if all the controls are
+             paper-items. Conversely, should the on-tap be at this level? -->
+        <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_"
+            actionable>
           <div class="dropdown-content">
             <paper-item id="connect" hidden$="[[device.connected]]">
               $i18n{bluetoothConnect}

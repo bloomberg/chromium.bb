@@ -30,7 +30,7 @@
       <neon-animatable id="main">
 <if expr="chromeos">
         <div class="settings-box first two-line" id="wallpaperButton"
-            on-tap="openWallpaperManager_">
+            on-tap="openWallpaperManager_" actionable>
           <iron-icon icon="settings:wallpaper"></iron-icon>
           <div class="start">
             <div>$i18n{setWallpaper}</div>
@@ -43,7 +43,7 @@
         <div class="settings-box two-line first">
 </if>
           <div class="layout horizontal center flex"
-              on-tap="openThemesGallery_">
+              on-tap="openThemesGallery_" actionable>
             <iron-icon icon="settings:palette"></iron-icon>
             <div>
               <div>$i18n{getThemes}</div>
@@ -92,7 +92,8 @@
               menu-options="[[fontSizeOptions_]]" no-label-float>
           </settings-dropdown-menu>
         </div>
-        <div class="settings-box two-line" on-tap="onCustomizeFontsTap_">
+        <div class="settings-box two-line" on-tap="onCustomizeFontsTap_"
+            actionable>
           <div class="start">
             <div>$i18n{customizeFonts}</div>
           <div class="secondary">$i18n{chooseFontsAndEncoding}</div>

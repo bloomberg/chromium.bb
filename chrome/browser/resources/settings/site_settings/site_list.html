@@ -35,7 +35,7 @@
     </style>
     <paper-submenu id="category" hidden
         on-paper-submenu-open="onToggle_" on-paper-submenu-close="onToggle_">
-      <div class="menu-trigger settings-box" hidden$="[[allSites]]">
+      <div class="menu-trigger settings-box" hidden$="[[allSites]]" actionable>
         <div class="flex" id="header">
           [[computeSiteListHeader_(sites, categoryEnabled)]]
         </div>
@@ -46,8 +46,8 @@
         <template is="dom-repeat" items="[[sites]]">
           <div class="list-item underscore">
             <div class="favicon-image" style$="[[computeSiteIcon(item)]]"
-                on-tap="onOriginTap_"></div>
-            <div class="middle" on-tap="onOriginTap_">
+                on-tap="onOriginTap_" actionable></div>
+            <div class="middle" on-tap="onOriginTap_" actionable>
               <div>[[item.originForDisplay]]</div>
               <div class="secondary">[[item.embeddingOriginForDisplay]]</div>
             </div>

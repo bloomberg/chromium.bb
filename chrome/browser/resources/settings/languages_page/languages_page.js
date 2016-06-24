@@ -228,15 +228,24 @@ Polymer({
    * selected on Chrome OS and Windows.
    * @param {string} languageCode The language code identifying a language.
    * @param {string} prospectiveUILanguage The prospective UI language.
+   * @param {boolean} supportsUI Whether Chrome's UI can be shown in this
+   *     language.
    * @return {string} The class name for the language item.
    * @private
    */
-  getLanguageItemClass_: function(languageCode, prospectiveUILanguage) {
-    if ((cr.isChromeOS || cr.isWindows) &&
-        this.isProspectiveUILanguage_(languageCode, prospectiveUILanguage)) {
-      return 'selected';
+  getLanguageItemClass_: function(languageCode, prospectiveUILanguage,
+      supportsUI) {
+    var classes = [];
+
+    if (cr.isChromeOS || cr.isWindows) {
+      if (supportsUI)
+        classes.push('list-button');  // Makes the item look "actionable".
+
+      if (this.isProspectiveUILanguage_(languageCode, prospectiveUILanguage))
+        classes.push('selected');
     }
-    return '';
+
+    return classes.join(' ');
   },
 
   /**
