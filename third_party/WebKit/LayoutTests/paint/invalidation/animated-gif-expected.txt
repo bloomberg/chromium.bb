@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [2008, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -12,6 +14,12 @@
           "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutImage IMG id='targetImage'",
+      "reason": "full"
     }
   ]
 }
