@@ -182,11 +182,15 @@ def main(args):
   native_libs = sorted(options.native_libs)
 
   input_paths = [options.resource_apk, __file__] + native_libs
+  # Include native libs in the depfile_deps since GN doesn't know about the
+  # dependencies when is_component_build=true.
+  depfile_deps = list(native_libs)
 
   secondary_native_libs = []
   if options.secondary_native_libs:
     secondary_native_libs = sorted(options.secondary_native_libs)
     input_paths += secondary_native_libs
+    depfile_deps += secondary_native_libs
 
   if options.dex_file:
     input_paths.append(options.dex_file)
@@ -299,7 +303,8 @@ def main(args):
       options,
       input_paths=input_paths,
       input_strings=input_strings,
-      output_paths=[options.output_apk])
+      output_paths=[options.output_apk],
+      depfile_deps=depfile_deps)
 
 
 if __name__ == '__main__':
