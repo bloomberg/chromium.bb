@@ -169,6 +169,8 @@ public:
     FloatSize elementSize(const FloatSize&) const override;
     bool isCanvasElement() const override { return true; }
     bool isOpaque() const override;
+    int sourceWidth() override { return m_size.width(); }
+    int sourceHeight() override { return m_size.height(); }
 
     // ImageBufferClient implementation
     void notifySurfaceInvalid() override;

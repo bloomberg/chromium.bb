@@ -461,7 +461,7 @@ bool WebGL2RenderingContextBase::checkAndTranslateAttachments(const char* functi
     return true;
 }
 
-bool WebGL2RenderingContextBase::canUseTexImageCanvasByGPU(GLint internalformat, GLenum type)
+bool WebGL2RenderingContextBase::canUseTexImageByGPU(TexImageFunctionID functionID, GLint internalformat, GLenum type)
 {
     switch (internalformat) {
     case GL_RGB565:
@@ -473,7 +473,7 @@ bool WebGL2RenderingContextBase::canUseTexImageCanvasByGPU(GLint internalformat,
     default:
         break;
     }
-    return WebGLRenderingContextBase::canUseTexImageCanvasByGPU(internalformat, type);
+    return WebGLRenderingContextBase::canUseTexImageByGPU(functionID, internalformat, type);
 }
 
 void WebGL2RenderingContextBase::invalidateFramebuffer(GLenum target, const Vector<GLenum>& attachments)

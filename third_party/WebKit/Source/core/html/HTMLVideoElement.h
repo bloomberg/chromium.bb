@@ -84,8 +84,9 @@ public:
     bool wouldTaintOrigin(SecurityOrigin*) const override;
     FloatSize elementSize(const FloatSize&) const override;
     const KURL& sourceURL() const override { return currentSrc(); }
-
     bool isHTMLVideoElement() const override { return true; }
+    int sourceWidth() override { return videoWidth(); }
+    int sourceHeight() override { return videoHeight(); }
 
     // ImageBitmapSource implementation
     IntSize bitmapSourceSize() const override;

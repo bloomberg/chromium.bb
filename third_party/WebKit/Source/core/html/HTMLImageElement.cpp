@@ -806,6 +806,22 @@ bool HTMLImageElement::isOpaque() const
     return image && image->currentFrameKnownToBeOpaque();
 }
 
+int HTMLImageElement::sourceWidth()
+{
+    SourceImageStatus status;
+    FloatSize defaultObjectSize(width(), height());
+    RefPtr<Image> image = getSourceImageForCanvas(&status, PreferNoAcceleration, SnapshotReasonCopyToWebGLTexture, defaultObjectSize);
+    return image->width();
+}
+
+int HTMLImageElement::sourceHeight()
+{
+    SourceImageStatus status;
+    FloatSize defaultObjectSize(width(), height());
+    RefPtr<Image> image = getSourceImageForCanvas(&status, PreferNoAcceleration, SnapshotReasonCopyToWebGLTexture, defaultObjectSize);
+    return image->height();
+}
+
 IntSize HTMLImageElement::bitmapSourceSize() const
 {
     ImageResource* image = cachedImage();

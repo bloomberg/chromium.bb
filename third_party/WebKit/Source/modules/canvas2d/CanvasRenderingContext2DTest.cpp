@@ -47,6 +47,8 @@ public:
     bool wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const override { return false; }
     FloatSize elementSize(const FloatSize&) const override { return FloatSize(m_size); }
     bool isOpaque() const override { return m_isOpaque; }
+    int sourceWidth() override { return m_size.width(); }
+    int sourceHeight() override { return m_size.height(); }
 
     ~FakeImageSource() override { }
 

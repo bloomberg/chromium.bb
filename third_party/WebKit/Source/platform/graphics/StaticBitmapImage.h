@@ -7,8 +7,11 @@
 
 #include "platform/graphics/Image.h"
 #include "public/platform/WebExternalTextureMailbox.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
+
+class WebGraphicsContext3DProvider;
 
 class PLATFORM_EXPORT StaticBitmapImage final : public Image {
 public:
@@ -29,9 +32,18 @@ public:
     void setOriginClean(bool flag) { m_isOriginClean = flag; }
     bool isPremultiplied() const { return m_isPremultiplied; }
     void setPremultiplied(bool flag) { m_isPremultiplied = flag; }
+    void copyToTexture(WebGraphicsContext3DProvider*, GLuint, GLenum, GLenum, bool);
+    bool isTextureBacked() override;
+    bool hasMailbox() { return m_mailbox.textureSize.width != 0 && m_mailbox.textureSize.height != 0; }
+
 protected:
     StaticBitmapImage(PassRefPtr<SkImage>);
     StaticBitmapImage(WebExternalTextureMailbox&);
+
+private:
+    GLuint switchStorageToSkImage(WebGraphicsContext3DProvider*);
+    bool switchStorageToMailbox(WebGraphicsContext3DProvider*);
+    GLuint textureIdForWebGL(WebGraphicsContext3DProvider*);
 
     RefPtr<SkImage> m_image;
     WebExternalTextureMailbox m_mailbox;

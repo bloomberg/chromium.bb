@@ -793,10 +793,11 @@ protected:
     void texImageImpl(TexImageFunctionID, GLenum target, GLint level, GLint internalformat, GLint xoffset, GLint yoffset, GLint zoffset,
         GLenum format, GLenum type, Image*, WebGLImageConversion::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha);
 
-    // Copy from the canvas element directly to the texture via the GPU, without a read-back to system memory.
-    void texImageCanvasByGPU(TexImageByGPUType, WebGLTexture*, GLenum target, GLint level,
-        GLint internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement*);
-    virtual bool canUseTexImageCanvasByGPU(GLint internalformat, GLenum type);
+    // Copy from the source directly to the texture via the gpu, without a read-back to system memory.
+    // Souce could be canvas or imageBitmap.
+    void texImageByGPU(TexImageByGPUType, WebGLTexture*, GLenum target, GLint level, GLint internalformat,
+        GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, CanvasImageSource*);
+    virtual bool canUseTexImageByGPU(TexImageFunctionID, GLint internalformat, GLenum type);
 
     virtual WebGLImageConversion::PixelStoreParams getPackPixelStoreParams();
     virtual WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams(TexImageDimension);
@@ -1103,6 +1104,8 @@ protected:
 private:
     WebGLRenderingContextBase(HTMLCanvasElement*, OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
     static std::unique_ptr<WebGraphicsContext3DProvider> createContextProviderInternal(HTMLCanvasElement*, ScriptState*, WebGLContextAttributes, unsigned);
+    void texImageCanvasByGPU(HTMLCanvasElement*, GLuint, GLenum, GLenum, GLint);
+    void texImageBitmapByGPU(ImageBitmap*, GLuint, GLenum, GLenum, GLint, bool);
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());

@@ -59,6 +59,7 @@ public:
     bool isPremultiplied() const { return m_image->isPremultiplied(); }
     PassRefPtr<StaticBitmapImage> transfer();
     void close();
+    bool isTextureBacked() const;
 
     ~ImageBitmap() override;
 
@@ -68,6 +69,8 @@ public:
     void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const override;
     FloatSize elementSize(const FloatSize&) const override;
     bool isImageBitmap() const override { return true; }
+    int sourceWidth() override { return m_image ? m_image->width() : 0; }
+    int sourceHeight() override { return m_image ? m_image->height() : 0; }
 
     // ImageBitmapSource implementation
     IntSize bitmapSourceSize() const override { return size(); }

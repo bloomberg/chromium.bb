@@ -104,6 +104,8 @@ public:
     FloatSize defaultDestinationSize(const FloatSize&) const override;
     const KURL& sourceURL() const override;
     bool isOpaque() const override;
+    int sourceWidth() override;
+    int sourceHeight() override;
 
     // public so that HTMLPictureElement can call this as well.
     void selectSourceURL(ImageLoader::UpdateFromElementBehavior);

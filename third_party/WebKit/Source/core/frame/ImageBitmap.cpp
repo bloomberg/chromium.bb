@@ -468,6 +468,11 @@ unsigned long ImageBitmap::height() const
     return m_image->height();
 }
 
+bool ImageBitmap::isTextureBacked() const
+{
+    return m_image && (m_image->isTextureBacked() || m_image->hasMailbox());
+}
+
 IntSize ImageBitmap::size() const
 {
     if (!m_image)

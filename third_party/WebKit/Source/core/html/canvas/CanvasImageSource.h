@@ -68,6 +68,9 @@ public:
     virtual const KURL& sourceURL() const { return blankURL(); }
     virtual bool isOpaque() const { return false; }
 
+    virtual int sourceWidth() = 0;
+    virtual int sourceHeight() = 0;
+
 protected:
     virtual ~CanvasImageSource() { }
 };
