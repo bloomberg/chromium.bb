@@ -217,15 +217,13 @@ void CacheStorageDispatcherHost::OnCacheMatch(
     const ServiceWorkerFetchRequest& request,
     const CacheStorageCacheQueryParams& match_params) {
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
-  if (it == id_to_cache_map_.end()) {
+  if (it == id_to_cache_map_.end() || !it->second->value()) {
     Send(new CacheStorageMsg_CacheMatchError(
         thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
 
   CacheStorageCache* cache = it->second->value();
-  DCHECK(cache);
-
   std::unique_ptr<ServiceWorkerFetchRequest> scoped_request(
       new ServiceWorkerFetchRequest(request.url, request.method,
                                     request.headers, request.referrer,
@@ -243,14 +241,13 @@ void CacheStorageDispatcherHost::OnCacheMatchAll(
     const ServiceWorkerFetchRequest& request,
     const CacheStorageCacheQueryParams& match_params) {
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
-  if (it == id_to_cache_map_.end()) {
+  if (it == id_to_cache_map_.end() || !it->second->value()) {
     Send(new CacheStorageMsg_CacheMatchError(
         thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
 
   CacheStorageCache* cache = it->second->value();
-  DCHECK(cache);
   if (request.url.is_empty()) {
     cache->MatchAll(
         std::unique_ptr<ServiceWorkerFetchRequest>(), match_params,
@@ -284,15 +281,13 @@ void CacheStorageDispatcherHost::OnCacheKeys(
     const ServiceWorkerFetchRequest& request,
     const CacheStorageCacheQueryParams& match_params) {
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
-  if (it == id_to_cache_map_.end()) {
+  if (it == id_to_cache_map_.end() || !it->second->value()) {
     Send(new CacheStorageMsg_CacheKeysError(
         thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
 
   CacheStorageCache* cache = it->second->value();
-  DCHECK(cache);
-
   cache->Keys(base::Bind(&CacheStorageDispatcherHost::OnCacheKeysCallback, this,
                          thread_id, request_id,
                          base::Passed(it->second->Clone())));
@@ -304,14 +299,13 @@ void CacheStorageDispatcherHost::OnCacheBatch(
     int cache_id,
     const std::vector<CacheStorageBatchOperation>& operations) {
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
-  if (it == id_to_cache_map_.end()) {
+  if (it == id_to_cache_map_.end() || !it->second->value()) {
     Send(new CacheStorageMsg_CacheBatchError(
         thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
 
   CacheStorageCache* cache = it->second->value();
-  DCHECK(cache);
   cache->BatchOperation(
       operations,
       base::Bind(&CacheStorageDispatcherHost::OnCacheBatchCallback, this,
