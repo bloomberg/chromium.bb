@@ -77,17 +77,10 @@ void RequestCoordinator::AddRequestResultCallback(
 void RequestCoordinator::UpdateRequestCallback(
     RequestQueue::UpdateRequestResult result) {}
 
-// Called by the request picker when a request has been picked.
-void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
-  // Send the request on to the offliner.
-  SendRequestToOffliner(request);
-}
-
-void RequestCoordinator::RequestQueueEmpty() {
-  // Clear the outstanding "safety" task in the scheduler.
-  scheduler_->Unschedule();
-  // Return control to the scheduler when there is no more to do.
-  scheduler_callback_.Run(true);
+void RequestCoordinator::StopProcessing() {
+  is_canceled_ = true;
+  if (offliner_ && is_busy_)
+    offliner_->Cancel();
 }
 
 // Returns true if the caller should expect a callback, false otherwise. For
@@ -117,15 +110,17 @@ void RequestCoordinator::TryNextRequest() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void RequestCoordinator::StopProcessing() {
-  is_canceled_ = true;
-  if (offliner_ && is_busy_)
-    offliner_->Cancel();
+// Called by the request picker when a request has been picked.
+void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
+  // Send the request on to the offliner.
+  SendRequestToOffliner(request);
 }
 
-Scheduler::TriggerConditions const&
-RequestCoordinator::GetTriggerConditionsForUserRequest() {
-  return kUserRequestTriggerConditions;
+void RequestCoordinator::RequestQueueEmpty() {
+  // Clear the outstanding "safety" task in the scheduler.
+  scheduler_->Unschedule();
+  // Return control to the scheduler when there is no more to do.
+  scheduler_callback_.Run(true);
 }
 
 void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
@@ -171,6 +166,11 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     // Start another request if we have time.
     TryNextRequest();
   }
+}
+
+Scheduler::TriggerConditions const&
+RequestCoordinator::GetTriggerConditionsForUserRequest() {
+  return kUserRequestTriggerConditions;
 }
 
 void RequestCoordinator::GetOffliner() {
