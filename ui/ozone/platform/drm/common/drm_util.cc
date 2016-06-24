@@ -30,6 +30,10 @@
 // TODO(dshwang): after most linux and libdrm has this definition, remove it.
 #define DRM_FORMAT_R8 fourcc_code('R', '8', ' ', ' ')
 #endif
+#if !defined(DRM_FORMAT_YV12)
+// TODO(dcastagna): after libdrm has this definition, remove it.
+#define DRM_FORMAT_YV12 fourcc_code('Y', 'V', '1', '2')
+#endif
 
 namespace ui {
 
@@ -335,6 +339,8 @@ int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
       return DRM_FORMAT_XRGB8888;
     case gfx::BufferFormat::UYVY_422:
       return DRM_FORMAT_UYVY;
+    case gfx::BufferFormat::YVU_420:
+      return DRM_FORMAT_YV12;
     default:
       NOTREACHED();
       return 0;
@@ -355,6 +361,8 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::BGRX_8888;
     case DRM_FORMAT_UYVY:
       return gfx::BufferFormat::UYVY_422;
+    case DRM_FORMAT_YV12:
+      return gfx::BufferFormat::YVU_420;
     default:
       NOTREACHED();
       return gfx::BufferFormat::BGRA_8888;
