@@ -9,18 +9,22 @@ promise_test(function() {
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}],
       optionalServices: ['generic_access']}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => Promise.all([
-      gattServer.getPrimaryService(generic_access.alias),
-      gattServer.getPrimaryService(generic_access.name),
-      gattServer.getPrimaryService(generic_access.uuid)]))
-    .then(services => {
-      services.forEach(service => {
-        assert_equals(service.uuid, generic_access.uuid,
-                      'Service UUID should be the same as requested UUID.');
-        assert_true(service.isPrimary,
-                    'getPrimaryService should return a primary service.');
-      });
+    .then(device => {
+      return device.gatt.connect()
+        .then(gattServer => Promise.all([
+          gattServer.getPrimaryService(generic_access.alias),
+          gattServer.getPrimaryService(generic_access.name),
+          gattServer.getPrimaryService(generic_access.uuid)]))
+        .then(services => {
+          services.forEach(service => {
+            assert_equals(service.uuid, generic_access.uuid,
+                          'Service UUID should be the same as requested UUID.');
+            assert_true(service.isPrimary,
+                        'getPrimaryService should return a primary service.');
+            assert_equals(service.device, device,
+                          'Service device should be the same as device.');
+          });
+        });
     });
 }, 'Request for service. Should return right service');
 </script>

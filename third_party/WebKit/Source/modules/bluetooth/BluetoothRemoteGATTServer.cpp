@@ -85,9 +85,10 @@ void BluetoothRemoteGATTServer::disconnect(ScriptState* scriptState)
 // with a vector owning the services.
 class GetPrimaryServicesCallback : public WebBluetoothGetPrimaryServicesCallbacks {
 public:
-    GetPrimaryServicesCallback(mojom::WebBluetoothGATTQueryQuantity quantity, ScriptPromiseResolver* resolver)
-        : m_resolver(resolver)
-        , m_quantity(quantity) {}
+    GetPrimaryServicesCallback(BluetoothDevice* device, mojom::WebBluetoothGATTQueryQuantity quantity, ScriptPromiseResolver* resolver)
+        : m_device(device)
+        , m_quantity(quantity)
+        , m_resolver(resolver) {}
 
     void onSuccess(const WebVector<WebBluetoothRemoteGATTService*>& webServices) override
     {
@@ -96,14 +97,14 @@ public:
 
         if (m_quantity == mojom::WebBluetoothGATTQueryQuantity::SINGLE) {
             DCHECK_EQ(1u, webServices.size());
-            m_resolver->resolve(BluetoothRemoteGATTService::take(m_resolver, wrapUnique(webServices[0])));
+            m_resolver->resolve(BluetoothRemoteGATTService::take(m_resolver, wrapUnique(webServices[0]), m_device));
             return;
         }
 
         HeapVector<Member<BluetoothRemoteGATTService>> services;
         services.reserveInitialCapacity(webServices.size());
         for (WebBluetoothRemoteGATTService* webService : webServices) {
-            services.append(BluetoothRemoteGATTService::take(m_resolver, wrapUnique(webService)));
+            services.append(BluetoothRemoteGATTService::take(m_resolver, wrapUnique(webService), m_device));
         }
         m_resolver->resolve(services);
     }
@@ -115,8 +116,9 @@ public:
         m_resolver->reject(BluetoothError::take(m_resolver, e));
     }
 private:
-    Persistent<ScriptPromiseResolver> m_resolver;
+    Persistent<BluetoothDevice> m_device;
     mojom::WebBluetoothGATTQueryQuantity m_quantity;
+    Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 ScriptPromise BluetoothRemoteGATTServer::getPrimaryService(ScriptState* scriptState, const StringOrUnsignedLong& service, ExceptionState& exceptionState)
@@ -148,7 +150,7 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryServicesImpl(ScriptState* scr
     ScriptPromise promise = resolver->promise();
 
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
-    webbluetooth->getPrimaryServices(device()->id(), quantity, servicesUUID, new GetPrimaryServicesCallback(quantity, resolver));
+    webbluetooth->getPrimaryServices(device()->id(), quantity, servicesUUID, new GetPrimaryServicesCallback(device(), quantity, resolver));
 
     return promise;
 }

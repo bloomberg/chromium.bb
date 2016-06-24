@@ -373,6 +373,7 @@ interface BluetoothRemoteGATTServer
     method getPrimaryServices
 interface BluetoothRemoteGATTService
     attribute @@toStringTag
+    getter device
     getter isPrimary
     getter uuid
     method constructor

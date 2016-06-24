@@ -20,17 +20,23 @@
 
 namespace blink {
 
-BluetoothRemoteGATTService::BluetoothRemoteGATTService(std::unique_ptr<WebBluetoothRemoteGATTService> webService)
+BluetoothRemoteGATTService::BluetoothRemoteGATTService(std::unique_ptr<WebBluetoothRemoteGATTService> webService, BluetoothDevice* device)
     : m_webService(std::move(webService))
+    , m_device(device)
 {
 }
 
-BluetoothRemoteGATTService* BluetoothRemoteGATTService::take(ScriptPromiseResolver*, std::unique_ptr<WebBluetoothRemoteGATTService> webService)
+BluetoothRemoteGATTService* BluetoothRemoteGATTService::take(ScriptPromiseResolver*, std::unique_ptr<WebBluetoothRemoteGATTService> webService, BluetoothDevice* device)
 {
     if (!webService) {
         return nullptr;
     }
-    return new BluetoothRemoteGATTService(std::move(webService));
+    return new BluetoothRemoteGATTService(std::move(webService), device);
+}
+
+DEFINE_TRACE(BluetoothRemoteGATTService)
+{
+    visitor->trace(m_device);
 }
 
 // Class that allows us to resolve the promise with a single Characteristic or
