@@ -15,6 +15,7 @@
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/audio_sample_types.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/opus/src/include/opus.h"
 
@@ -74,19 +75,6 @@ bool DoEncode(OpusEncoder* opus_encoder,
   // Otherwise, we have an error.
   DLOG_IF(ERROR, result < 0) << " encode failed: " << opus_strerror(result);
   return false;
-}
-
-// Interleaves |audio_bus| channels() of floats into a single output linear
-// |buffer|.
-// TODO(mcasas) https://crbug.com/580391 use AudioBus::ToInterleavedFloat().
-void ToInterleaved(media::AudioBus* audio_bus, float* buffer) {
-  for (int ch = 0; ch < audio_bus->channels(); ++ch) {
-    const float* src = audio_bus->channel(ch);
-    const float* const src_end = src + audio_bus->frames();
-    float* dest = buffer + ch;
-    for (; src < src_end; ++src, dest += audio_bus->channels())
-      *dest = *src;
-  }
 }
 
 }  // anonymous namespace
@@ -259,7 +247,8 @@ void AudioTrackRecorder::AudioEncoder::EncodeAudio(
     std::unique_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
         output_params_.channels(), kOpusPreferredFramesPerBuffer);
     converter_->Convert(audio_bus.get());
-    ToInterleaved(audio_bus.get(), buffer_.get());
+    audio_bus->ToInterleaved<media::Float32SampleTypeTraits>(
+        audio_bus->frames(), buffer_.get());
 
     std::unique_ptr<std::string> encoded_data(new std::string());
     if (DoEncode(opus_encoder_, buffer_.get(), kOpusPreferredFramesPerBuffer,

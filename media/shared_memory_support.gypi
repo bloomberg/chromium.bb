@@ -14,6 +14,7 @@
       'base/audio_parameters.h',
       'base/audio_point.cc',
       'base/audio_point.h',
+      'base/audio_sample_types.h',
       'base/channel_layout.cc',
       'base/channel_layout.h',
       'base/limits.h',

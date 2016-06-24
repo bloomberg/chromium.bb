@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "media/base/audio_sample_types.h"
 #include "media/cast/common/rtp_time.h"
 #include "media/cast/constants.h"
 
@@ -281,14 +282,10 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
                                  int source_offset,
                                  int buffer_fill_offset,
                                  int num_samples) final {
-    // Opus requires channel-interleaved samples in a single array.
-    for (int ch = 0; ch < audio_bus->channels(); ++ch) {
-      const float* src = audio_bus->channel(ch) + source_offset;
-      const float* const src_end = src + num_samples;
-      float* dest = buffer_.get() + buffer_fill_offset * num_channels_ + ch;
-      for (; src < src_end; ++src, dest += num_channels_)
-        *dest = *src;
-    }
+    DCHECK_EQ(audio_bus->channels(), num_channels_);
+    float* dest = buffer_.get() + (buffer_fill_offset * num_channels_);
+    audio_bus->ToInterleavedPartial<Float32SampleTypeTraits>(source_offset,
+                                                             num_samples, dest);
   }
 
   bool EncodeFromFilledBuffer(std::string* out) final {

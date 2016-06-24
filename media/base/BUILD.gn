@@ -430,6 +430,7 @@ source_set("unittests") {
     "audio_push_fifo_unittest.cc",
     "audio_renderer_mixer_input_unittest.cc",
     "audio_renderer_mixer_unittest.cc",
+    "audio_sample_types_unittest.cc",
     "audio_shifter_unittest.cc",
     "audio_splicer_unittest.cc",
     "audio_timestamp_helper_unittest.cc",

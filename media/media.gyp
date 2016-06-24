@@ -1124,6 +1124,7 @@
         'base/audio_push_fifo_unittest.cc',
         'base/audio_renderer_mixer_input_unittest.cc',
         'base/audio_renderer_mixer_unittest.cc',
+        'base/audio_sample_types_unittest.cc',
         'base/audio_shifter_unittest.cc',
         'base/audio_splicer_unittest.cc',
         'base/audio_timestamp_helper_unittest.cc',

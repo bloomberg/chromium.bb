@@ -13,24 +13,29 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/audio_sample_types.h"
 #include "media/base/limits.h"
 #include "media/base/vector_math.h"
 
 namespace media {
-
-static const uint8_t kUint8Bias = 128;
 
 static bool IsAligned(void* ptr) {
   return (reinterpret_cast<uintptr_t>(ptr) &
           (AudioBus::kChannelAlignment - 1)) == 0U;
 }
 
-// Calculates the required size for an AudioBus with the given params, sets
-// |aligned_frames| to the actual frame length of each channel array.
-static int CalculateMemorySizeInternal(int channels, int frames,
+// In order to guarantee that the memory block for each channel starts at an
+// aligned address when splitting a contiguous block of memory into one block
+// per channel, we may have to make these blocks larger than otherwise needed.
+// We do this by allocating space for potentially more frames than requested.
+// This method returns the required size for the contiguous memory block
+// in bytes and outputs the adjusted number of frames via |out_aligned_frames|.
+static int CalculateMemorySizeInternal(int channels,
+                                       int frames,
                                        int* out_aligned_frames) {
-  // Choose a size such that each channel will be aligned by
-  // kChannelAlignment when stored in a contiguous block.
+  // Since our internal sample format is float, we can guarantee the alignment
+  // by making the number of frames an integer multiple of
+  // AudioBus::kChannelAlignment / sizeof(float).
   int aligned_frames =
       ((frames * sizeof(float) + AudioBus::kChannelAlignment - 1) &
        ~(AudioBus::kChannelAlignment - 1)) / sizeof(float);
@@ -41,61 +46,13 @@ static int CalculateMemorySizeInternal(int channels, int frames,
   return sizeof(float) * channels * aligned_frames;
 }
 
-// |Format| is the destination type.  If a bias is present, |Fixed| must be a
-// type larger than |Format| such that operations can be made without
-// overflowing.  Without a bias |Fixed| must be the same as |Format|.
-template<class Format, class Fixed, Format Bias>
-static void FromInterleavedInternal(const void* src, int start_frame,
-                                    int frames, AudioBus* dest,
-                                    float min, float max) {
-  static_assert((Bias == 0 && sizeof(Fixed) == sizeof(Format)) ||
-                sizeof(Fixed) > sizeof(Format), "invalid deinterleave types");
-  const Format* source = static_cast<const Format*>(src);
-  const int channels = dest->channels();
-  for (int ch = 0; ch < channels; ++ch) {
-    float* channel_data = dest->channel(ch);
-    for (int i = start_frame, offset = ch; i < start_frame + frames;
-         ++i, offset += channels) {
-      const Fixed v = static_cast<Fixed>(source[offset]) - Bias;
-      channel_data[i] = v * (v < 0 ? -min : max);
-    }
-  }
-}
-
-// |Format| is the destination type.  If a bias is present, |Fixed| must be a
-// type larger than |Format| such that operations can be made without
-// overflowing.  Without a bias |Fixed| must be the same as |Format|.
-template<class Format, class Fixed, Format Bias>
-static void ToInterleavedInternal(const AudioBus* source, int start_frame,
-                                  int frames, void* dst, Fixed min, Fixed max) {
-  static_assert((Bias == 0 && sizeof(Fixed) == sizeof(Format)) ||
-                sizeof(Fixed) > sizeof(Format), "invalid interleave types");
-  Format* dest = static_cast<Format*>(dst);
-  const int channels = source->channels();
-  for (int ch = 0; ch < channels; ++ch) {
-    const float* channel_data = source->channel(ch);
-    for (int i = start_frame, offset = ch; i < start_frame + frames;
-         ++i, offset += channels) {
-      const float v = channel_data[i];
-
-      Fixed sample;
-      if (v < 0)
-        sample = v <= -1 ? min : static_cast<Fixed>(-v * min);
-      else
-        sample = v >= 1 ? max : static_cast<Fixed>(v * max);
-
-      dest[offset] = static_cast<Format>(sample) + Bias;
-    }
-  }
-}
-
 static void ValidateConfig(int channels, int frames) {
   CHECK_GT(frames, 0);
   CHECK_GT(channels, 0);
   CHECK_LE(channels, static_cast<int>(limits::kMaxChannels));
 }
 
-static void CheckOverflow(int start_frame, int frames, int total_frames) {
+void AudioBus::CheckOverflow(int start_frame, int frames, int total_frames) {
   CHECK_GE(start_frame, 0);
   CHECK_GE(frames, 0);
   CHECK_GT(total_frames, 0);
@@ -248,82 +205,105 @@ int AudioBus::CalculateMemorySize(int channels, int frames) {
 void AudioBus::BuildChannelData(int channels, int aligned_frames, float* data) {
   DCHECK(IsAligned(data));
   DCHECK_EQ(channel_data_.size(), 0U);
-  // Separate audio data out into channels for easy lookup later.  Figure out
+  // Initialize |channel_data_| with pointers into |data|.
   channel_data_.reserve(channels);
   for (int i = 0; i < channels; ++i)
     channel_data_.push_back(data + i * aligned_frames);
 }
 
-// TODO(dalecurtis): See if intrinsic optimizations help any here.
-void AudioBus::FromInterleavedPartial(const void* source, int start_frame,
-                                      int frames, int bytes_per_sample) {
-  CheckOverflow(start_frame, frames, frames_);
-  switch (bytes_per_sample) {
-    case 1:
-      FromInterleavedInternal<uint8_t, int16_t, kUint8Bias>(
-          source, start_frame, frames, this,
-          1.0f / std::numeric_limits<int8_t>::min(),
-          1.0f / std::numeric_limits<int8_t>::max());
-      break;
-    case 2:
-      FromInterleavedInternal<int16_t, int16_t, 0>(
-          source, start_frame, frames, this,
-          1.0f / std::numeric_limits<int16_t>::min(),
-          1.0f / std::numeric_limits<int16_t>::max());
-      break;
-    case 4:
-      FromInterleavedInternal<int32_t, int32_t, 0>(
-          source, start_frame, frames, this,
-          1.0f / std::numeric_limits<int32_t>::min(),
-          1.0f / std::numeric_limits<int32_t>::max());
-      break;
-    default:
-      NOTREACHED() << "Unsupported bytes per sample encountered.";
-      ZeroFramesPartial(start_frame, frames);
-      return;
-  }
-
-  // Don't clear remaining frames if this is a partial deinterleave.
-  if (!start_frame) {
-    // Zero any remaining frames.
-    ZeroFramesPartial(frames, frames_ - frames);
-  }
-}
-
-void AudioBus::FromInterleaved(const void* source, int frames,
+// Forwards to non-deprecated version.
+void AudioBus::FromInterleaved(const void* source,
+                               int frames,
                                int bytes_per_sample) {
-  FromInterleavedPartial(source, 0, frames, bytes_per_sample);
-}
-
-void AudioBus::ToInterleaved(int frames, int bytes_per_sample,
-                             void* dest) const {
-  ToInterleavedPartial(0, frames, bytes_per_sample, dest);
-}
-
-// TODO(dalecurtis): See if intrinsic optimizations help any here.
-void AudioBus::ToInterleavedPartial(int start_frame, int frames,
-                                    int bytes_per_sample, void* dest) const {
-  CheckOverflow(start_frame, frames, frames_);
   switch (bytes_per_sample) {
     case 1:
-      ToInterleavedInternal<uint8_t, int16_t, kUint8Bias>(
-          this, start_frame, frames, dest, std::numeric_limits<int8_t>::min(),
-          std::numeric_limits<int8_t>::max());
+      FromInterleaved<UnsignedInt8SampleTypeTraits>(
+          reinterpret_cast<const uint8_t*>(source), frames);
       break;
     case 2:
-      ToInterleavedInternal<int16_t, int16_t, 0>(
-          this, start_frame, frames, dest, std::numeric_limits<int16_t>::min(),
-          std::numeric_limits<int16_t>::max());
+      FromInterleaved<SignedInt16SampleTypeTraits>(
+          reinterpret_cast<const int16_t*>(source), frames);
       break;
     case 4:
-      ToInterleavedInternal<int32_t, int32_t, 0>(
-          this, start_frame, frames, dest, std::numeric_limits<int32_t>::min(),
-          std::numeric_limits<int32_t>::max());
+      FromInterleaved<SignedInt32SampleTypeTraits>(
+          reinterpret_cast<const int32_t*>(source), frames);
       break;
     default:
-      NOTREACHED() << "Unsupported bytes per sample encountered.";
-      memset(dest, 0, frames * bytes_per_sample);
-      return;
+      NOTREACHED() << "Unsupported bytes per sample encountered: "
+                   << bytes_per_sample;
+      ZeroFrames(frames);
+  }
+}
+
+// Forwards to non-deprecated version.
+void AudioBus::FromInterleavedPartial(const void* source,
+                                      int start_frame,
+                                      int frames,
+                                      int bytes_per_sample) {
+  switch (bytes_per_sample) {
+    case 1:
+      FromInterleavedPartial<UnsignedInt8SampleTypeTraits>(
+          reinterpret_cast<const uint8_t*>(source), start_frame, frames);
+      break;
+    case 2:
+      FromInterleavedPartial<SignedInt16SampleTypeTraits>(
+          reinterpret_cast<const int16_t*>(source), start_frame, frames);
+      break;
+    case 4:
+      FromInterleavedPartial<SignedInt32SampleTypeTraits>(
+          reinterpret_cast<const int32_t*>(source), start_frame, frames);
+      break;
+    default:
+      NOTREACHED() << "Unsupported bytes per sample encountered: "
+                   << bytes_per_sample;
+      ZeroFramesPartial(start_frame, frames);
+  }
+}
+
+// Forwards to non-deprecated version.
+void AudioBus::ToInterleaved(int frames,
+                             int bytes_per_sample,
+                             void* dest) const {
+  switch (bytes_per_sample) {
+    case 1:
+      ToInterleaved<UnsignedInt8SampleTypeTraits>(
+          frames, reinterpret_cast<uint8_t*>(dest));
+      break;
+    case 2:
+      ToInterleaved<SignedInt16SampleTypeTraits>(
+          frames, reinterpret_cast<int16_t*>(dest));
+      break;
+    case 4:
+      ToInterleaved<SignedInt32SampleTypeTraits>(
+          frames, reinterpret_cast<int32_t*>(dest));
+      break;
+    default:
+      NOTREACHED() << "Unsupported bytes per sample encountered: "
+                   << bytes_per_sample;
+  }
+}
+
+// Forwards to non-deprecated version.
+void AudioBus::ToInterleavedPartial(int start_frame,
+                                    int frames,
+                                    int bytes_per_sample,
+                                    void* dest) const {
+  switch (bytes_per_sample) {
+    case 1:
+      ToInterleavedPartial<UnsignedInt8SampleTypeTraits>(
+          start_frame, frames, reinterpret_cast<uint8_t*>(dest));
+      break;
+    case 2:
+      ToInterleavedPartial<SignedInt16SampleTypeTraits>(
+          start_frame, frames, reinterpret_cast<int16_t*>(dest));
+      break;
+    case 4:
+      ToInterleavedPartial<SignedInt32SampleTypeTraits>(
+          start_frame, frames, reinterpret_cast<int32_t*>(dest));
+      break;
+    default:
+      NOTREACHED() << "Unsupported bytes per sample encountered: "
+                   << bytes_per_sample;
   }
 }
 
