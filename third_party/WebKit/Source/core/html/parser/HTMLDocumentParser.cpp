@@ -158,6 +158,13 @@ DEFINE_TRACE(HTMLDocumentParser)
 
 void HTMLDocumentParser::detach()
 {
+    if (!isParsingFragment() && m_parsedChunkQueue.get() && m_parsedChunkQueue->peakPendingChunkCount()) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, peakPendingChunkHistogram, ("Parser.PeakPendingChunkCount", 1, 1000, 50));
+        peakPendingChunkHistogram.count(m_parsedChunkQueue->peakPendingChunkCount());
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, peakPendingTokenHistogram, ("Parser.PeakPendingTokenCount", 1, 100000, 50));
+        peakPendingTokenHistogram.count(m_parsedChunkQueue->peakPendingTokenCount());
+    }
+
     if (m_haveBackgroundParser)
         stopBackgroundParser();
     DocumentParser::detach();
@@ -385,6 +392,14 @@ void HTMLDocumentParser::validateSpeculations(std::unique_ptr<ParsedChunk> chunk
 void HTMLDocumentParser::discardSpeculationsAndResumeFrom(std::unique_ptr<ParsedChunk> lastChunkBeforeScript, std::unique_ptr<HTMLToken> token, std::unique_ptr<HTMLTokenizer> tokenizer)
 {
     m_weakFactory.revokeAll();
+
+    size_t discardedTokenCount = 0;
+    for (const auto& speculation : m_speculations) {
+        discardedTokenCount += speculation->tokens->size();
+    }
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, discardedTokenCountHistogram, ("Parser.DiscardedTokenCount", 1, 100000, 50));
+    discardedTokenCountHistogram.count(discardedTokenCount);
+
     m_speculations.clear();
 
     std::unique_ptr<BackgroundHTMLParser::Checkpoint> checkpoint = wrapUnique(new BackgroundHTMLParser::Checkpoint);

@@ -36,12 +36,17 @@ public:
     void clear();
 
     void takeAll(Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>>&);
+    size_t peakPendingChunkCount();
+    size_t peakPendingTokenCount();
 
 private:
     ParsedChunkQueue();
 
     Mutex m_mutex;
     Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>> m_pendingChunks;
+    size_t m_peakPendingChunkCount = 0;
+    size_t m_peakPendingTokenCount = 0;
+    size_t m_pendingTokenCount = 0;
 };
 
 } // namespace blink

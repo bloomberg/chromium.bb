@@ -37294,6 +37294,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Parser.ChunkEnqueueTime" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The time it takes to enqueue a ParsedChunk onto the shared parser queue.
+  </summary>
+</histogram>
+
+<histogram name="Parser.DiscardedTokenCount" units="tokens">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The number of speculative tokens discarded by the parser when a rewind is
+    needed.
+  </summary>
+</histogram>
+
+<histogram name="Parser.PeakPendingChunkCount" units="chunks">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The maximum number of pending Chunks in the ParsedChunkQueue after the
+    parser is detached.
+  </summary>
+</histogram>
+
+<histogram name="Parser.PeakPendingTokenCount" units="tokens">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The maximum number of pending tokens in the ParsedChunkQueue after the
+    parser is detached.
+  </summary>
+</histogram>
+
 <histogram name="PartitionAlloc.CommittedSize" units="MB">
   <owner>haraken@chromium.org</owner>
   <summary>

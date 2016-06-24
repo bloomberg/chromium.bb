@@ -29,10 +29,12 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
+#include "platform/Histogram.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/TextPosition.h"
 #include <memory>
@@ -289,8 +291,10 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     checkThatXSSInfosAreSafeToSendToAnotherThread(m_pendingXSSInfos);
 #endif
 
+    double chunkStartTime = monotonicallyIncreasingTimeMS();
     std::unique_ptr<HTMLDocumentParser::ParsedChunk> chunk = wrapUnique(new HTMLDocumentParser::ParsedChunk);
     TRACE_EVENT_WITH_FLOW0("blink,loading", "BackgroundHTMLParser::sendTokensToMainThread", chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
+
     chunk->preloads.swap(m_pendingPreloads);
     if (m_viewportDescription.set)
         chunk->viewport = m_viewportDescription;
@@ -305,6 +309,10 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     m_startingScript = false;
 
     bool isEmpty = m_parsedChunkQueue->enqueue(std::move(chunk));
+
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, chunkEnqueueTime, ("Parser.ChunkEnqueueTime", 1, 10000, 50));
+    chunkEnqueueTime.count(monotonicallyIncreasingTimeMS() - chunkStartTime);
+
     if (isEmpty) {
         m_loadingTaskRunner->postTask(
             BLINK_FROM_HERE,
