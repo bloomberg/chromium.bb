@@ -20,7 +20,6 @@ function buy() {  // eslint-disable-line no-unused-vars
           resp.complete('success')
               .then(function() {
                 print(
-                    JSON.stringify(resp.totalAmount, undefined, 2) + '<br>' +
                     resp.payerPhone + '<br>' + resp.methodName + '<br>' +
                     JSON.stringify(resp.details, undefined, 2));
               })

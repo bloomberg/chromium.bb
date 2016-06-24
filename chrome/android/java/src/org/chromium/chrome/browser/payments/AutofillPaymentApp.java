@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.payments;
 
 import android.os.Handler;
+import android.text.TextUtils;
 
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojom.payments.PaymentItem;
@@ -34,11 +36,17 @@ public class AutofillPaymentApp implements PaymentApp {
     @Override
     public void getInstruments(PaymentItem unusedTotal, List<PaymentItem> unusedCart,
             final InstrumentsCallback callback) {
-        List<CreditCard> cards = PersonalDataManager.getInstance().getCreditCardsToSuggest();
+        PersonalDataManager pdm = PersonalDataManager.getInstance();
+        List<CreditCard> cards = pdm.getCreditCardsToSuggest();
         final List<PaymentInstrument> instruments = new ArrayList<>(cards.size());
+
         for (int i = 0; i < cards.size(); i++) {
-            instruments.add(new AutofillPaymentInstrument(mWebContents, cards.get(i)));
+            CreditCard card = cards.get(i);
+            AutofillProfile billingAddress = TextUtils.isEmpty(card.getBillingAddressId())
+                    ? null : pdm.getProfile(card.getBillingAddressId());
+            instruments.add(new AutofillPaymentInstrument(mWebContents, card, billingAddress));
         }
+
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -49,7 +57,7 @@ public class AutofillPaymentApp implements PaymentApp {
 
     @Override
     public Set<String> getSupportedMethodNames() {
-        // https://w3c.github.io/browser-payment-api/specs/basic-card-payment.html#method-id
+        // https://w3c.github.io/webpayments-methods-card/#method-id
         // The spec also includes more detailed card types, e.g., "visa/credit" and "visa/debit".
         // Autofill does not distinguish between these types of cards, so they are not in the list
         // of supported method names.

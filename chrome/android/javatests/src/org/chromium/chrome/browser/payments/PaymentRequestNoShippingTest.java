@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 
 import java.util.concurrent.ExecutionException;
@@ -25,9 +26,13 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Override
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
-        new AutofillTestHelper().setCreditCard(new CreditCard("", "https://example.com", true, true,
-                "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                "" /* billingAddressId */));
+        AutofillTestHelper helper = new AutofillTestHelper();
+        String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
+                true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
+                "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
+        helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
+                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
+                billingAddressId));
     }
 
     @MediumTest

@@ -30,12 +30,12 @@ public class PaymentRequestIncompleteEmailTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has an invalid email address on disk.
-        helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
-                "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "555-555-5555",
-                "jon.doe" /* invalid email address */, "en-US"));
+        String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
+                true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
+                "US", "555-555-5555", "jon.doe" /* invalid email address */, "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                "" /* billingAddressId */));
+                billingAddressId));
     }
 
     /** Attempt to update the email with invalid data and cancel the transaction. */
