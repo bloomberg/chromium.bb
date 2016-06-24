@@ -1138,6 +1138,20 @@ if (enable_me2me_host) {
                "OFFICIAL_BUILD=$_official_build",
              ]
     }
+  } else if (is_mac && is_chrome_branded) {
+    zip("remoting_me2me_host_archive") {
+      # TODO(crbug.com/622415) - This list of inputs is totally wrong
+      # and we need the real installer ported over from
+      # remoting/remoting_host_mac.gypi but for now this creates at
+      # least a placeholder .zip file.
+      inputs = [
+        "$root_build_dir/remoting_me2me_host",
+      ]
+      output = "$root_build_dir/remoting-me2me-host-mac.zip"
+      deps = [
+        ":remoting_me2me_host",
+      ]
+    }
   } else {
     group("remoting_me2me_host_archive") {
     }
