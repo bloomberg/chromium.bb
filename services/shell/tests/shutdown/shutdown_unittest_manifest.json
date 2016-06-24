@@ -1,0 +1,16 @@
+{
+  "manifest_version":  1,
+  "name": "mojo:shutdown_unittest",
+  "display_name": "Shutdown Unittest",
+  "capabilities": {
+    "required": {
+      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] },
+      "mojo:shutdown_client": {
+        "interfaces": [ "shell::mojom::ShutdownTestClientController" ]
+      },
+      "mojo:shutdown_service": {
+        "interfaces": [ "shell::mojom::ShutdownTestService" ]
+      }
+    }
+  }
+}

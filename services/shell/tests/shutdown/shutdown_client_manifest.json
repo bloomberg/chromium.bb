@@ -1,0 +1,13 @@
+{
+  "manifest_version":  1,
+  "name": "mojo:shutdown_client",
+  "display_name": "Shutdown Client",
+  "capabilities": {
+    "required": {
+      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] },
+      "mojo:shutdown_service": {
+        "interfaces": [ "shell::mojom::ShutdownTestService" ]
+      }
+    }
+  }
+}

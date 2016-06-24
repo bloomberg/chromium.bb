@@ -31,6 +31,7 @@ test("mojo_shell_unittests") {
     "//services/shell/tests/connect",
     "//services/shell/tests/lifecycle",
     "//services/shell/tests/shell",
+    "//services/shell/tests/shutdown",
     "//testing/gtest",
   ]
 }

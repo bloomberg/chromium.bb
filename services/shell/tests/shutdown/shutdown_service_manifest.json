@@ -1,0 +1,10 @@
+{
+  "manifest_version":  1,
+  "name": "mojo:shutdown_service",
+  "display_name": "Shutdown Service",
+  "capabilities": {
+    "required": {
+      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] }
+    }
+  }
+}

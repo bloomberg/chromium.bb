@@ -165,8 +165,11 @@ class Shell::Instance : public mojom::Connector,
     child->parent_ = nullptr;
   }
 
-  void ConnectToClient(std::unique_ptr<ConnectParams> params) {
-    CHECK(shell_client_.is_bound());
+  bool ConnectToClient(std::unique_ptr<ConnectParams>* connect_params) {
+    if (!shell_client_.is_bound())
+      return false;
+
+    std::unique_ptr<ConnectParams> params(std::move(*connect_params));
     if (!params->connect_callback().is_null()) {
         params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
                                        identity_.user_id(), id_);
@@ -192,6 +195,8 @@ class Shell::Instance : public mojom::Connector,
         mojom::Identity::From(params->source()), source_id,
         params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
         mojom::CapabilityRequest::From(request), params->target().name());
+
+    return true;
   }
 
   void StartWithClient(mojom::ShellClientPtr client) {
@@ -646,9 +651,7 @@ void Shell::NotifyPIDAvailable(uint32_t id, base::ProcessId pid) {
 
 bool Shell::ConnectToExistingInstance(std::unique_ptr<ConnectParams>* params) {
   Instance* instance = GetExistingInstance((*params)->target());
-  if (instance)
-    instance->ConnectToClient(std::move(*params));
-  return !!instance;
+  return !!instance && instance->ConnectToClient(params);
 }
 
 Shell::Instance* Shell::CreateInstance(const Identity& source,
@@ -784,7 +787,8 @@ void Shell::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   }
 
   // Now that the instance has a ShellClient, we can connect to it.
-  instance->ConnectToClient(std::move(params));
+  bool connected = instance->ConnectToClient(&params);
+  DCHECK(connected);
 }
 
 base::WeakPtr<Shell> Shell::GetWeakPtr() {
