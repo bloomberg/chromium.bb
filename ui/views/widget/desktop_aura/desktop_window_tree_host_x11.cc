@@ -784,7 +784,7 @@ bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {
 }
 
 bool DesktopWindowTreeHostX11::ShouldWindowContentsBeTransparent() const {
-  return IsTranslucentWindowOpacitySupported();
+  return false;
 }
 
 void DesktopWindowTreeHostX11::FrameTypeChanged() {
@@ -940,7 +940,7 @@ bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
 }
 
 bool DesktopWindowTreeHostX11::IsTranslucentWindowOpacitySupported() const {
-  return use_argb_visual_;
+  return false;
 }
 
 void DesktopWindowTreeHostX11::SizeConstraintsChanged() {
@@ -1148,10 +1148,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
     attribute_mask |= CWBorderPixel;
     swa.border_pixel = 0;
 
-    // A compositing manager is required to support transparency.
-    use_argb_visual_ =
-        XGetSelectionOwner(xdisplay_, atom_cache_.GetAtom("_NET_WM_CM_S0")) !=
-        None;
+    use_argb_visual_ = true;
   }
 
   bounds_in_pixels_ = ToPixelRect(params.bounds);

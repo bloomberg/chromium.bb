@@ -89,10 +89,5 @@ ui::internal::InputMethodDelegate* WidgetTest::GetInputMethodDelegateForWidget(
   return NativeWidgetMac::GetBridgeForNativeWindow(widget->GetNativeWindow());
 }
 
-// static
-bool WidgetTest::IsNativeWindowTransparent(gfx::NativeWindow window) {
-  return ![window isOpaque];
-}
-
 }  // namespace test
 }  // namespace views
