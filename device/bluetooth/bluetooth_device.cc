@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
@@ -23,7 +24,8 @@ namespace device {
 BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
     : adapter_(adapter),
       gatt_services_discovery_complete_(false),
-      services_data_(new base::DictionaryValue()) {}
+      services_data_(new base::DictionaryValue()),
+      last_update_time_(base::Time()) {}
 
 BluetoothDevice::~BluetoothDevice() {
   for (BluetoothGattConnection* connection : gatt_connections_) {
@@ -385,10 +387,20 @@ void BluetoothDevice::SetServiceData(BluetoothUUID serviceUUID,
                       base::BinaryValue::CreateWithCopiedBuffer(buffer, size));
 }
 
+void BluetoothDevice::SetAsExpiredForTesting() {
+  last_update_time_ =
+      base::Time::NowFromSystemTime() -
+      (BluetoothAdapter::timeoutSec + base::TimeDelta::FromSeconds(1));
+}
+
 void BluetoothDevice::Pair(PairingDelegate* pairing_delegate,
                            const base::Closure& callback,
                            const ConnectErrorCallback& error_callback) {
   NOTREACHED();
+}
+
+void BluetoothDevice::UpdateTimestamp() {
+  last_update_time_ = base::Time::NowFromSystemTime();
 }
 
 }  // namespace device

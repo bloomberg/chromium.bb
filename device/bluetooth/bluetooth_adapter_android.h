@@ -128,8 +128,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
+  void PurgeTimedOutDevices();
+
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+
   // Java object org.chromium.device.bluetooth.ChromeBluetoothAdapter.
   base::android::ScopedJavaGlobalRef<jobject> j_adapter_;
+
+ private:
+  size_t num_discovery_sessions_ = 0;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

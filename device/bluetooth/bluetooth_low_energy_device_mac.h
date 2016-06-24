@@ -83,9 +83,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
 
-  // BluetoothDeviceMac override.
-  NSDate* GetLastUpdateTime() const override;
-
  protected:
   // BluetoothDevice override.
   std::string GetDeviceName() const override;
@@ -147,9 +144,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // A local address for the device created by hashing the peripheral
   // identifier.
   std::string hash_address_;
-
-  // Stores the time of the most recent call to Update().
-  base::scoped_nsobject<NSDate> last_update_time_;
 
   // The services (identified by UUIDs) that this device provides.
   std::set<BluetoothUUID> advertised_uuids_;

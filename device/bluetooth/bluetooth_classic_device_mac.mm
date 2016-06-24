@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -252,8 +253,9 @@ void BluetoothClassicDeviceMac::CreateGattConnection(
   error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
 }
 
-NSDate* BluetoothClassicDeviceMac::GetLastUpdateTime() const {
-  return [device_ getLastInquiryUpdate];
+base::Time BluetoothClassicDeviceMac::GetLastUpdateTime() const {
+  return base::Time::FromDoubleT(
+      [[device_ getLastInquiryUpdate] timeIntervalSince1970]);
 }
 
 int BluetoothClassicDeviceMac::GetHostTransmitPower(

@@ -8,6 +8,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -19,6 +21,17 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+
+namespace {
+// The poll interval in ms when there is no active discovery. This
+// matches the max allowed advertisting interval for connectable
+// devices.
+enum { kPassivePollInterval = 11000 };
+// The poll interval in ms when there is an active discovery.
+enum { kActivePollInterval = 1000 };
+// The delay in ms to wait before purging devices when a scan starts.
+enum { kPurgeDelay = 500 };
+}
 
 namespace device {
 
@@ -37,6 +50,8 @@ base::WeakPtr<BluetoothAdapterAndroid> BluetoothAdapterAndroid::Create(
   adapter->j_adapter_.Reset(Java_ChromeBluetoothAdapter_create(
       AttachCurrentThread(), reinterpret_cast<intptr_t>(adapter),
       bluetooth_adapter_wrapper));
+
+  adapter->ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   return adapter->weak_ptr_factory_.GetWeakPtr();
 }
@@ -156,6 +171,7 @@ void BluetoothAdapterAndroid::OnAdapterStateChanged(
 void BluetoothAdapterAndroid::OnScanFailed(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
+  num_discovery_sessions_ = 0;
   MarkDiscoverySessionsAsInactive();
 }
 
@@ -175,6 +191,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     BluetoothDeviceAndroid* device_android =
         BluetoothDeviceAndroid::Create(this, bluetooth_device_wrapper);
     device_android->UpdateAdvertisedUUIDs(advertised_uuids);
+    device_android->UpdateTimestamp();
     devices_.add(device_address,
                  std::unique_ptr<BluetoothDevice>(device_android));
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
@@ -183,6 +200,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     // Existing device.
     BluetoothDeviceAndroid* device_android =
         static_cast<BluetoothDeviceAndroid*>(iter->second);
+    device_android->UpdateTimestamp();
     if (device_android->UpdateAdvertisedUUIDs(advertised_uuids)) {
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                         DeviceChanged(this, device_android));
@@ -198,13 +216,49 @@ BluetoothAdapterAndroid::~BluetoothAdapterAndroid() {
       AttachCurrentThread(), j_adapter_.obj());
 }
 
+void BluetoothAdapterAndroid::PurgeTimedOutDevices() {
+  RemoveTimedOutDevices();
+  if (IsDiscovering()) {
+    ui_task_runner_->PostDelayedTask(
+        FROM_HERE, base::Bind(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
+                              weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kActivePollInterval));
+  } else {
+    ui_task_runner_->PostDelayedTask(
+        FROM_HERE, base::Bind(&BluetoothAdapterAndroid::RemoveTimedOutDevices,
+                              weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kPassivePollInterval));
+  }
+}
+
 void BluetoothAdapterAndroid::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
   // TODO(scheib): Support filters crbug.com/490401
-  if (Java_ChromeBluetoothAdapter_addDiscoverySession(AttachCurrentThread(),
-                                                      j_adapter_.obj())) {
+  bool session_added = false;
+  if (IsPowered()) {
+    if (num_discovery_sessions_ > 0) {
+      session_added = true;
+    } else if (Java_ChromeBluetoothAdapter_startScan(AttachCurrentThread(),
+                                                     j_adapter_.obj())) {
+      session_added = true;
+
+      // Using a delayed task in order to give the adapter some time
+      // to settle before purging devices.
+      ui_task_runner_->PostDelayedTask(
+          FROM_HERE, base::Bind(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
+                                weak_ptr_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kPurgeDelay));
+    }
+  } else {
+    VLOG(1) << "AddDiscoverySession: Fails: !isPowered";
+  }
+
+  if (session_added) {
+    num_discovery_sessions_++;
+    VLOG(1) << "AddDiscoverySession: Now " << unsigned(num_discovery_sessions_)
+            << " sessions.";
     callback.Run();
   } else {
     // TODO(scheib): Eventually wire the SCAN_FAILED result through to here.
@@ -216,8 +270,24 @@ void BluetoothAdapterAndroid::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
-  if (Java_ChromeBluetoothAdapter_removeDiscoverySession(AttachCurrentThread(),
-                                                         j_adapter_.obj())) {
+  bool session_removed = false;
+  if (num_discovery_sessions_ == 0) {
+    VLOG(1) << "RemoveDiscoverySession: No scan in progress.";
+    NOTREACHED();
+  } else {
+    --num_discovery_sessions_;
+    session_removed = true;
+    if (num_discovery_sessions_ == 0) {
+      VLOG(1) << "RemoveDiscoverySession: Now 0 sessions. Stopping scan.";
+      session_removed = Java_ChromeBluetoothAdapter_stopScan(
+          AttachCurrentThread(), j_adapter_.obj());
+    } else {
+      VLOG(1) << "RemoveDiscoverySession: Now "
+              << unsigned(num_discovery_sessions_) << " sessions.";
+    }
+  }
+
+  if (session_removed) {
     callback.Run();
   } else {
     // TODO(scheib): Eventually wire the SCAN_FAILED result through to here.

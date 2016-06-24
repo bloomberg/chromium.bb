@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -475,6 +476,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // empty string.
   static std::string CanonicalizeAddress(const std::string& address);
 
+  // Return the timestamp for when this device was last seen.
+  base::Time GetLastUpdateTime() const { return last_update_time_; }
+
+  // Update the last time this device was seen.
+  void UpdateTimestamp();
+
   // Return associated BluetoothAdapter.
   BluetoothAdapter* GetAdapter() { return adapter_; }
 
@@ -492,6 +499,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   FRIEND_TEST_ALL_PREFIXES(BluetoothTest,
                            BluetoothGattConnection_DisconnectGatt_Cleanup);
   FRIEND_TEST_ALL_PREFIXES(BluetoothTest, GetDeviceName_NullName);
+  FRIEND_TEST_ALL_PREFIXES(BluetoothTest, RemoveOutdatedDevices);
+  FRIEND_TEST_ALL_PREFIXES(BluetoothTest, RemoveOutdatedDeviceGattConnect);
 
   BluetoothDevice(BluetoothAdapter* adapter);
 
@@ -534,6 +543,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   void SetServiceData(BluetoothUUID serviceUUID, const char* buffer,
                       size_t size);
 
+  // Update last_update_time_ so that the device appears as expired.
+  void SetAsExpiredForTesting();
+
   // Raw pointer to adapter owning this device object. Subclasses use platform
   // specific pointers via adapter_.
   BluetoothAdapter* adapter_;
@@ -557,6 +569,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // service to
   // the specific data. The data is stored as BinaryValue.
   std::unique_ptr<base::DictionaryValue> services_data_;
+
+  // Timestamp for when an advertisement was last seen.
+  base::Time last_update_time_;
 
  private:
   // Returns a localized string containing the device's bluetooth address and

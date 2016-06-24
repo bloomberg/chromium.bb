@@ -41,10 +41,6 @@ const int kPollIntervalMs = 500;
 namespace device {
 
 // static
-const NSTimeInterval BluetoothAdapterMac::kDiscoveryTimeoutSec =
-    180;  // 3 minutes
-
-// static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
     const InitCallback& init_callback) {
   return BluetoothAdapterMac::CreateAdapter();
@@ -526,34 +522,6 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
 
 // TODO(krstnmnlsn): Implement. crbug.com/511025
 void BluetoothAdapterMac::LowEnergyCentralManagerUpdatedState() {}
-
-void BluetoothAdapterMac::RemoveTimedOutDevices() {
-  // Notify observers if any previously seen devices are no longer available,
-  // i.e. if they are no longer paired, connected, nor recently discovered via
-  // an inquiry.
-  std::set<std::string> removed_devices;
-  for (DevicesMap::const_iterator it = devices_.begin(); it != devices_.end();
-       ++it) {
-    BluetoothDevice* device = it->second;
-    if (device->IsPaired() || device->IsConnected())
-      continue;
-
-    NSDate* last_update_time =
-        static_cast<BluetoothDeviceMac*>(device)->GetLastUpdateTime();
-    if (last_update_time &&
-        -[last_update_time timeIntervalSinceNow] < kDiscoveryTimeoutSec)
-      continue;
-
-    FOR_EACH_OBSERVER(
-        BluetoothAdapter::Observer, observers_, DeviceRemoved(this, device));
-    removed_devices.insert(it->first);
-    // The device will be erased from the map in the loop immediately below.
-  }
-  for (const std::string& device_address : removed_devices) {
-    size_t num_removed = devices_.erase(device_address);
-    DCHECK_EQ(num_removed, 1U);
-  }
-}
 
 void BluetoothAdapterMac::AddPairedDevices() {
   // Add any new paired devices.

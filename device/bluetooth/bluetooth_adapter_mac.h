@@ -177,10 +177,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // Updates |devices_| when there is a change to the CBCentralManager's state.
   void LowEnergyCentralManagerUpdatedState();
 
-  // Removes from |devices_| any previously paired, connected or seen devices
-  // which are no longer present. Notifies observers.
-  void RemoveTimedOutDevices();
-
   // Updates |devices_| to include the currently paired devices and notifies
   // observers.
   void AddPairedDevices();

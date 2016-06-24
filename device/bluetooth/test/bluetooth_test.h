@@ -371,6 +371,8 @@ class BluetoothTestBase : public testing::Test {
   // Reset all event count members to 0.
   void ResetEventCounts();
 
+  void RemoveTimedOutDevices();
+
   // A Message loop is required by some implementations that will PostTasks and
   // by base::RunLoop().RunUntilIdle() use in this fixture.
   base::MessageLoop message_loop_;

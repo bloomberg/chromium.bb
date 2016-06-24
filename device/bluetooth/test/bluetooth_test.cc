@@ -326,4 +326,8 @@ void BluetoothTestBase::ResetEventCounts() {
   gatt_write_descriptor_attempts_ = 0;
 }
 
+void BluetoothTestBase::RemoveTimedOutDevices() {
+  adapter_->RemoveTimedOutDevices();
+}
+
 }  // namespace device

@@ -763,4 +763,91 @@ TEST_F(BluetoothTest, RegisterLocalGattServices) {
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
+// This test should only be enabled for platforms that uses the
+// BluetoothAdapter#RemoveOutdatedDevices function to purge outdated
+// devices.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+TEST_F(BluetoothTest, EnsureUpdatedTimestamps) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Test that the timestamp of a device is updated during multiple
+  // discovery sessions.
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+
+  EXPECT_EQ(1, observer.device_added_count());
+  EXPECT_EQ(1u, adapter_->GetDevices().size());
+  base::Time first_timestamp = device->GetLastUpdateTime();
+
+  // Do a new discovery and check that the timestamp is updated.
+  observer.Reset();
+  StartLowEnergyDiscoverySession();
+  SimulateLowEnergyDevice(1);
+  EXPECT_EQ(0, observer.device_added_count());
+  EXPECT_EQ(1u, adapter_->GetDevices().size());
+  base::Time second_timestamp = device->GetLastUpdateTime();
+  EXPECT_TRUE(second_timestamp > first_timestamp);
+
+  // Check that timestamp doesn't change when there is no discovery.
+  base::Time third_timestamp = device->GetLastUpdateTime();
+  EXPECT_TRUE(second_timestamp == third_timestamp);
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+
+// This test should only be enabled for platforms that uses the
+// BluetoothAdapter#RemoveOutdatedDevices function to purge outdated
+// devices.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+TEST_F(BluetoothTest, RemoveOutdatedDevices) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device1 = SimulateLowEnergyDevice(1);
+  BluetoothDevice* device2 = SimulateLowEnergyDevice(4);
+
+  EXPECT_EQ(2u, adapter_->GetDevices().size());
+  device1->SetAsExpiredForTesting();
+
+  // Check that the outdated device is removed.
+  RemoveTimedOutDevices();
+  EXPECT_EQ(1, observer.device_removed_count());
+  EXPECT_EQ(1u, adapter_->GetDevices().size());
+  EXPECT_EQ(adapter_->GetDevices()[0]->GetAddress(), device2->GetAddress());
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+
+// This test should only be enabled for platforms that uses the
+// BluetoothAdapter#RemoveOutdatedDevices function to purge outdated
+// devices.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+TEST_F(BluetoothTest, RemoveOutdatedDeviceGattConnect) {
+  // Test that a device with GATT connection isn't removed.
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+  device->SetAsExpiredForTesting();
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  EXPECT_EQ(1u, adapter_->GetDevices().size());
+  RemoveTimedOutDevices();
+  EXPECT_EQ(0, observer.device_removed_count());
+  EXPECT_EQ(1u, adapter_->GetDevices().size());
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+
 }  // namespace device

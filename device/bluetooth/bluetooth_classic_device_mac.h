@@ -13,6 +13,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 
 @class IOBluetoothDevice;
@@ -71,8 +72,7 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
 
-  // BluetoothDeviceMac override.
-  NSDate* GetLastUpdateTime() const override;
+  base::Time GetLastUpdateTime() const;
 
   // Returns the Bluetooth address for the |device|. The returned address has a
   // normalized format (see below).
