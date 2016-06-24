@@ -82,18 +82,8 @@ namespace blink {
 //     To pass things that cannot be copied by CrossThreadCopier
 //     (e.g. pointers), use crossThreadUnretained() explicitly.
 
-// RETTYPE, PS, and MPS are added as template parameters to circumvent MSVC 18.00.21005.1 (VS 2013) issues.
-
-template<typename FunctionType, typename... P,
-    typename RETTYPE = std::unique_ptr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = WTF::FunctionWrapper<FunctionType>::numberOfArguments>
-typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(FunctionType function, P&&... parameters)
-{
-    return internal::createCallClosureTask(threadSafeBind(function, std::forward<P>(parameters)...));
-}
-
-template<typename FunctionType, typename... P,
-    typename RETTYPE = std::unique_ptr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = WTF::FunctionWrapper<FunctionType>::numberOfArguments>
-typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(FunctionType function, P&&... parameters)
+template<typename FunctionType, typename... P>
+std::unique_ptr<ExecutionContextTask> createCrossThreadTask(FunctionType function, P&&... parameters)
 {
     return internal::createCallClosureTask(threadSafeBind(function, std::forward<P>(parameters)...));
 }
