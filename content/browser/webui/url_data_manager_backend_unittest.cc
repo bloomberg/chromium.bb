@@ -43,7 +43,8 @@ class CancelAfterFirstReadURLRequestDelegate : public net::TestDelegate {
 
 class UrlDataManagerBackendTest : public testing::Test {
  public:
-  UrlDataManagerBackendTest() {
+  UrlDataManagerBackendTest()
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     // URLRequestJobFactory takes ownership of the passed in ProtocolHandler.
     url_request_job_factory_.SetProtocolHandler(
         "chrome", URLDataManagerBackend::CreateProtocolHandler(
