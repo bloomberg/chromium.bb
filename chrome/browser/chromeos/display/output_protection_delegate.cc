@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "build/build_config.h"
-#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -133,18 +132,7 @@ void OutputProtectionDelegate::QueryStatusComplete(
     return;
   }
 
-  uint32_t link_mask = response.link_mask;
-  // If we successfully retrieved the device level status, check for capturers.
-  if (response.success) {
-    const bool insecure_capture_detected =
-        MediaCaptureDevicesDispatcher::GetInstance()
-            ->IsInsecureCapturingInProgress(render_process_id_,
-                                            render_frame_id_);
-    if (insecure_capture_detected)
-      link_mask |= ui::DISPLAY_CONNECTION_TYPE_NETWORK;
-  }
-
-  callback.Run(response.success, link_mask, response.protection_mask);
+  callback.Run(response.success, response.link_mask, response.protection_mask);
 }
 
 void OutputProtectionDelegate::EnableProtectionComplete(

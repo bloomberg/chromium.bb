@@ -7,8 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/browser_thread.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/resource_message_filter.h"
@@ -23,13 +26,9 @@ struct HostMessageContext;
 }  // namespace host
 }  // namespace ppapi
 
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class OutputProtectionDelegate;
-}
-#endif
-
 namespace chrome {
+
+class OutputProtectionProxy;
 
 class PepperOutputProtectionMessageFilter
     : public ppapi::host::ResourceMessageFilter {
@@ -60,10 +59,9 @@ class PepperOutputProtectionMessageFilter
       ppapi::host::ReplyMessageContext reply_context,
       bool success);
 
-#if defined(OS_CHROMEOS)
-  // Delegate. Should be deleted in UI thread.
-  chromeos::OutputProtectionDelegate* delegate_;
-#endif
+  std::unique_ptr<OutputProtectionProxy,
+                  content::BrowserThread::DeleteOnUIThread>
+      proxy_;
 
   base::WeakPtrFactory<PepperOutputProtectionMessageFilter> weak_ptr_factory_;
 

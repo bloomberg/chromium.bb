@@ -388,6 +388,8 @@
       'browser/media/midi_permission_context.h',
       'browser/media/native_desktop_media_list.cc',
       'browser/media/native_desktop_media_list.h',
+      'browser/media/output_protection_proxy.cc',
+      'browser/media/output_protection_proxy.h',
       'browser/media/permission_bubble_media_access_handler.cc',
       'browser/media/permission_bubble_media_access_handler.h',
       'browser/media/router/media_router_feature.cc',
