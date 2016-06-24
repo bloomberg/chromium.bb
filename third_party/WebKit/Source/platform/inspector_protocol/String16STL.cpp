@@ -562,20 +562,14 @@ std::string String16::utf8() const
     char* buffer = bufferVector.data();
     const UChar* characters = m_impl.data();
 
-    bool strict = false;
-    ConversionResult result = convertUTF16ToUTF8(&characters, characters + length, &buffer, buffer + bufferVector.size(), strict);
+    ConversionResult result = convertUTF16ToUTF8(&characters, characters + length, &buffer, buffer + bufferVector.size(), false);
     DCHECK(result != targetExhausted); // (length * 3) should be sufficient for any conversion
 
     // Only produced from strict conversion.
-    if (result == sourceIllegal) {
-        DCHECK(strict);
-        return std::string();
-    }
+    DCHECK(result != sourceIllegal);
 
     // Check for an unconverted high surrogate.
     if (result == sourceExhausted) {
-        if (strict)
-            return std::string();
         // This should be one unpaired high surrogate. Treat it the same
         // was as an unpaired high surrogate would have been handled in
         // the middle of a string with non-strict conversion - which is

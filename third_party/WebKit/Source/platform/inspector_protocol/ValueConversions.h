@@ -112,8 +112,10 @@ struct FromValue<Value> {
     static std::unique_ptr<Value> parse(protocol::Value* value, ErrorSupport* errors)
     {
         bool success = !!value;
-        if (!success)
+        if (!success) {
             errors->addError("value expected");
+            return nullptr;
+        }
         return value->clone();
     }
 };

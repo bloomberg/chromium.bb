@@ -136,7 +136,7 @@ private:
     // presubmit: allow wstring
     wstring m_impl;
     mutable bool has_hash = false;
-    mutable std::size_t hash_code;
+    mutable std::size_t hash_code = 0;
 };
 
 static inline bool isSpaceOrNewline(UChar c)
