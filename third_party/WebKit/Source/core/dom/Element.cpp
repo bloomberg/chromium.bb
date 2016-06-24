@@ -525,7 +525,15 @@ void Element::nativeDistributeScroll(ScrollState& scrollState)
 void Element::callDistributeScroll(ScrollState& scrollState)
 {
     ScrollStateCallback* callback = scrollCustomizationCallbacks().getDistributeScroll(this);
-    if (!callback) {
+
+    // TODO(bokan): Need to add tests before we allow calling custom callbacks
+    // for non-touch modalities. For now, just call into the native callback but
+    // allow the viewport scroll callback so we don't disable overscroll.
+    // crbug.com/623079.
+    bool disableCustomCallbacks = !scrollState.isDirectManipulation()
+        && !document().isViewportScrollCallback(callback);
+
+    if (!callback || disableCustomCallbacks) {
         nativeDistributeScroll(scrollState);
         return;
     }
@@ -539,8 +547,6 @@ void Element::callDistributeScroll(ScrollState& scrollState)
 
 void Element::nativeApplyScroll(ScrollState& scrollState)
 {
-    DCHECK(RuntimeEnabledFeatures::scrollCustomizationEnabled());
-
     // All elements in the scroll chain should be boxes.
     DCHECK(!layoutObject() || layoutObject()->isBox());
 
@@ -557,8 +563,9 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
 
     LayoutBox* boxToScroll = nullptr;
 
-    // Handle the scrollingElement separately, as it should scroll the viewport.
-    if (this == document().scrollingElement())
+    // We should only ever scroll the effective root scroller this way when the
+    // page removes the default applyScroll (ViewportScrollCallback).
+    if (document().effectiveRootScroller() == this)
         boxToScroll = document().layoutView();
     else if (layoutObject())
         boxToScroll = toLayoutBox(layoutObject());
@@ -568,7 +575,7 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
 
     ScrollResult result =
         LayoutBoxItem(boxToScroll).enclosingBox().scroll(
-            ScrollByPrecisePixel,
+            ScrollGranularity(static_cast<int>(scrollState.deltaGranularity())),
             delta);
 
     if (!result.didScroll())
@@ -592,7 +599,15 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
 void Element::callApplyScroll(ScrollState& scrollState)
 {
     ScrollStateCallback* callback = scrollCustomizationCallbacks().getApplyScroll(this);
-    if (!callback) {
+
+    // TODO(bokan): Need to add tests before we allow calling custom callbacks
+    // for non-touch modalities. For now, just call into the native callback but
+    // allow the viewport scroll callback so we don't disable overscroll.
+    // crbug.com/623079.
+    bool disableCustomCallbacks = !scrollState.isDirectManipulation()
+        && !document().isViewportScrollCallback(callback);
+
+    if (!callback || disableCustomCallbacks) {
         nativeApplyScroll(scrollState);
         return;
     }

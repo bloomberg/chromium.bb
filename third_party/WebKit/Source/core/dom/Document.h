@@ -150,6 +150,7 @@ class ScriptRunner;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
 class ScriptedIdleTaskController;
+class ScrollStateCallback;
 class SecurityOrigin;
 class SegmentedString;
 class SelectorQueryCache;
@@ -1083,7 +1084,11 @@ public:
 
     Element* rootScroller() const;
     void setRootScroller(Element*, ExceptionState&);
-    bool isEffectiveRootScroller(const Element&) const;
+    const Element* effectiveRootScroller() const;
+
+    // TODO(bokan): Temporarily added to allow ScrollCustomization to properly
+    // opt out for wheel scrolls. crbug.com/623079.
+    bool isViewportScrollCallback(const ScrollStateCallback*);
 
     bool isInMainFrame() const;
 

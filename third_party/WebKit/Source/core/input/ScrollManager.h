@@ -47,31 +47,6 @@ public:
     AutoscrollController* autoscrollController() const;
     void stopAutoscroll();
 
-    // Performs a chaining scroll, within a *single* frame, starting from a
-    // given node and optionally stopping on a given node.
-    // granularity - The units that the  scroll delta parameter is in.
-    // delta - The delta to scroll by, in the units of the granularity param
-    //         (e.g. pixels, lines, pages, etc.). These are in a physical
-    //         direction. i.e. Positive is down and right.
-    // position - Where the scroll originated from (e.g. touch location).
-    // velocity - The velocity of the scroll in the case of fling gestures.
-    // startNode - The node to start the scroll chaining from.
-    // stopNode - On input, if non-null, the node at which we should stop
-    //            chaining. On output, if provided and a node was scrolled,
-    //            stopNode will point to that node.
-    // consumed - [OUT] Whether the scroll was consumed. This is different than
-    //            ScrollResult.didScroll since we might not have scrolled but
-    //            have reached the stopNode and thus don't want to continue
-    //            chaining the scroll.
-    ScrollResult physicalScroll(
-        ScrollGranularity,
-        const FloatSize& delta,
-        const FloatPoint& position,
-        const FloatSize& velocity,
-        Node* startNode,
-        Node** stopNode,
-        bool* consumed);
-
     // Performs a chaining logical scroll, within a *single* frame, starting
     // from either a provided starting node or a default based on the focused or
     // most recently clicked node, falling back to the frame.
@@ -123,19 +98,14 @@ private:
 
     void customizedScroll(const Node& startNode, ScrollState&);
 
-    ScrollResult scrollBox(
-        LayoutBox*,
-        ScrollGranularity,
-        const FloatSize& delta,
-        const FloatPoint& position,
-        const FloatSize& velocity,
-        bool* wasRootScroller);
-
     FrameHost* frameHost() const;
 
-    bool isRootScroller(const Node&) const;
+    bool isEffectiveRootScroller(const Node&) const;
 
     bool handleScrollGestureOnResizer(Node*, const PlatformGestureEvent&);
+
+    void recomputeScrollChain(const Node& startNode,
+        std::deque<int>& scrollChain);
 
 
     // NOTE: If adding a new field to this class please ensure that it is

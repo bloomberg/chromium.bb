@@ -195,6 +195,7 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/scrolling/RootScrollerController.h"
+#include "core/page/scrolling/ScrollStateCallback.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/SnapCoordinator.h"
 #include "core/page/scrolling/ViewportScrollCallback.h"
@@ -461,8 +462,12 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     ViewportScrollCallback* applyScroll = nullptr;
     if (isInMainFrame()) {
         applyScroll = RootScrollerController::createViewportApplyScroll(
-            frameHost()->topControls(), frameHost()->overscrollController());
+            &frameHost()->topControls(), &frameHost()->overscrollController());
+    } else {
+        applyScroll =
+            RootScrollerController::createViewportApplyScroll(nullptr, nullptr);
     }
+
     m_rootScrollerController =
         RootScrollerController::create(*this, applyScroll);
 
@@ -599,9 +604,17 @@ Element* Document::rootScroller() const
     return m_rootScrollerController->get();
 }
 
-bool Document::isEffectiveRootScroller(const Element& element) const
+const Element* Document::effectiveRootScroller() const
 {
-    return m_rootScrollerController->effectiveRootScroller() == element;
+    return m_rootScrollerController->effectiveRootScroller();
+}
+
+bool Document::isViewportScrollCallback(const ScrollStateCallback* callback)
+{
+    if (!callback)
+        return false;
+
+    return callback == m_rootScrollerController->viewportScrollCallback();
 }
 
 bool Document::isInMainFrame() const

@@ -228,7 +228,7 @@ public:
     void normalize();
 
     bool isEqualNode(Node*) const;
-    bool isSameNode(Node* other) const { return this == other; }
+    bool isSameNode(const Node* other) const { return this == other; }
     bool isDefaultNamespace(const AtomicString& namespaceURI) const;
     const AtomicString& lookupPrefix(const AtomicString& namespaceURI) const;
     const AtomicString& lookupNamespaceURI(const String& prefix) const;

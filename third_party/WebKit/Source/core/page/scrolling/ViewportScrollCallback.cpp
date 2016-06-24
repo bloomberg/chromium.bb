@@ -16,9 +16,9 @@
 namespace blink {
 
 ViewportScrollCallback::ViewportScrollCallback(
-    TopControls& topControls, OverscrollController& overscrollController)
-    : m_topControls(&topControls)
-    , m_overscrollController(&overscrollController)
+    TopControls* topControls, OverscrollController* overscrollController)
+    : m_topControls(topControls)
+    , m_overscrollController(overscrollController)
 {
 }
 

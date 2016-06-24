@@ -25,51 +25,6 @@
 
 namespace blink {
 
-namespace {
-
-// TODO(bokan): This method can go away once all scrolls happen through the
-// scroll customization path.
-void computeScrollChainForSingleNode(Node& node, std::deque<int>& scrollChain)
-{
-    scrollChain.clear();
-
-    DCHECK(node.layoutObject());
-    Element* element = toElement(&node);
-
-    scrollChain.push_front(DOMNodeIds::idForNode(element));
-}
-
-void recomputeScrollChain(const LocalFrame& frame, const Node& startNode,
-    std::deque<int>& scrollChain)
-{
-    scrollChain.clear();
-
-    DCHECK(startNode.layoutObject());
-    LayoutBox* curBox = startNode.layoutObject()->enclosingBox();
-
-    // Scrolling propagates along the containing block chain.
-    while (curBox && !curBox->isLayoutView()) {
-        Node* curNode = curBox->node();
-        // FIXME: this should reject more elements, as part of crbug.com/410974.
-        if (curNode && curNode->isElementNode()) {
-            Element* curElement = toElement(curNode);
-            if (curElement == frame.document()->scrollingElement())
-                break;
-            scrollChain.push_front(DOMNodeIds::idForNode(curElement));
-        }
-        curBox = curBox->containingBlock();
-    }
-    // TODO(tdresser): this should sometimes be excluded, as part of crbug.com/410974.
-    // We need to ensure that the scrollingElement is always part of
-    // the scroll chain. In quirks mode, when the scrollingElement is
-    // the body, some elements may use the documentElement as their
-    // containingBlock, so we ensure the scrollingElement is added
-    // here.
-    scrollChain.push_front(DOMNodeIds::idForNode(frame.document()->scrollingElement()));
-}
-
-} // namespace
-
 ScrollManager::ScrollManager(LocalFrame* frame)
 : m_frame(frame)
 {
@@ -121,57 +76,40 @@ AutoscrollController* ScrollManager::autoscrollController() const
     return nullptr;
 }
 
-ScrollResult ScrollManager::physicalScroll(ScrollGranularity granularity,
-    const FloatSize& delta, const FloatPoint& position,
-    const FloatSize& velocity, Node* startNode, Node** stopNode, bool* consumed)
+void ScrollManager::recomputeScrollChain(const Node& startNode,
+    std::deque<int>& scrollChain)
 {
-    if (consumed)
-        *consumed = false;
-    if (delta.isZero())
-        return ScrollResult();
+    scrollChain.clear();
 
-    Node* node = startNode;
-    DCHECK(node && node->layoutObject());
+    DCHECK(startNode.layoutObject());
+    LayoutBox* curBox = startNode.layoutObject()->enclosingBox();
 
-    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-    ScrollResult result;
-
-    LayoutBox* curBox = node->layoutObject()->enclosingBox();
+    // Scrolling propagates along the containing block chain and ends at the
+    // RootScroller element. The RootScroller element will have a custom
+    // applyScroll callback that scrolls the frame or element.
     while (curBox) {
-        // If we're at the stopNode, we should try to scroll it but we shouldn't
-        // chain past it.
-        bool shouldStopChaining =
-            stopNode && *stopNode && curBox->node() == *stopNode;
-        bool wasRootScroller = false;
+        Node* curNode = curBox->node();
+        Element* curElement = nullptr;
 
-        result = scrollBox(
-            curBox,
-            granularity,
-            delta,
-            position,
-            velocity,
-            &wasRootScroller);
-
-        if (result.didScroll() && stopNode)
-            *stopNode = curBox->node();
-
-        if (result.didScroll() || shouldStopChaining) {
-            setFrameWasScrolledByUser();
-            if (consumed)
-                *consumed = true;
-            return result;
+        // FIXME: this should reject more elements, as part of crbug.com/410974.
+        if (curNode && curNode->isElementNode()) {
+            curElement = toElement(curNode);
+        } else if (curNode && curNode->isDocumentNode()) {
+            // In normal circumastances, the documentElement will be the root
+            // scroller but the documentElement itself isn't a containing block,
+            // that'll be the document node rather than the element.
+            curElement = m_frame->document()->documentElement();
+            DCHECK(!curElement || isEffectiveRootScroller(*curElement));
         }
-        if (wasRootScroller) {
-            // Don't try to chain past the root scroller, even if there's
-            // eligible ancestors.
-            break;
+
+        if (curElement) {
+            scrollChain.push_front(DOMNodeIds::idForNode(curElement));
+            if (isEffectiveRootScroller(*curElement))
+                break;
         }
 
         curBox = curBox->containingBlock();
     }
-
-    return result;
 }
 
 bool ScrollManager::logicalScroll(ScrollDirection direction, ScrollGranularity granularity, Node* startNode, Node* mousePressNode)
@@ -228,59 +166,6 @@ bool ScrollManager::bubblingScroll(ScrollDirection direction, ScrollGranularity 
     return toLocalFrame(parentFrame)->eventHandler().bubblingScroll(direction, granularity, m_frame->deprecatedLocalOwner());
 }
 
-ScrollResult ScrollManager::scrollBox(LayoutBox* box,
-    ScrollGranularity granularity, const FloatSize& delta,
-    const FloatPoint& position, const FloatSize& velocity,
-    bool* wasRootScroller)
-{
-    DCHECK(box);
-    Node* node = box->node();
-
-    // If there's no ApplyScroll callback on the element, scroll as usuall in
-    // the non-scroll-customization case.
-    if (!node || !node->isElementNode() || !toElement(node)->getApplyScroll()) {
-        *wasRootScroller = false;
-        return box->scroll(granularity, delta);
-    }
-
-    // If there is an ApplyScroll callback, its because we placed one on the
-    // root scroller to control top controls and overscroll. Invoke a scroll
-    // using parts of the scroll customization framework on just this element.
-    computeScrollChainForSingleNode(*node, m_currentScrollChain);
-
-    std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
-    scrollStateData->delta_x = delta.width();
-    scrollStateData->delta_y = delta.height();
-    scrollStateData->position_x = position.x();
-    scrollStateData->position_y = position.y();
-    // TODO(bokan): delta_granularity is meant to be the number of pixels per
-    // unit of delta but we can't determine that until we get to the area we'll
-    // scroll. This is a hack, we stuff the enum into the double value for
-    // now.
-    scrollStateData->delta_granularity = static_cast<double>(granularity);
-    scrollStateData->velocity_x = velocity.width();
-    scrollStateData->velocity_y = velocity.height();
-    scrollStateData->should_propagate = false;
-    scrollStateData->is_in_inertial_phase = false;
-    scrollStateData->from_user_input = true;
-    scrollStateData->delta_consumed_for_scroll_sequence = false;
-    ScrollState* scrollState =
-        ScrollState::create(std::move(scrollStateData));
-
-    customizedScroll(*node, *scrollState);
-
-    ScrollResult result(
-        scrollState->deltaX() != delta.width(),
-        scrollState->deltaY() != delta.height(),
-        scrollState->deltaX(),
-        scrollState->deltaY());
-
-    *wasRootScroller = true;
-    m_currentScrollChain.clear();
-
-    return result;
-}
-
 void ScrollManager::setFrameWasScrolledByUser()
 {
     if (DocumentLoader* documentLoader = m_frame->loader().documentLoader())
@@ -296,7 +181,7 @@ void ScrollManager::customizedScroll(const Node& startNode, ScrollState& scrollS
         m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (m_currentScrollChain.empty())
-        recomputeScrollChain(*m_frame, startNode, m_currentScrollChain);
+        recomputeScrollChain(startNode, m_currentScrollChain);
     scrollState.setScrollChain(m_currentScrollChain);
 
     scrollState.distributeToScrollChainDescendant();
@@ -305,6 +190,7 @@ void ScrollManager::customizedScroll(const Node& startNode, ScrollState& scrollS
 WebInputEventResult ScrollManager::handleGestureScrollBegin(const PlatformGestureEvent& gestureEvent)
 {
     Document* document = m_frame->document();
+
     if (document->layoutViewItem().isNull())
         return WebInputEventResult::NotHandled;
 
@@ -317,29 +203,23 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(const PlatformGestur
     while (m_scrollGestureHandlingNode && !m_scrollGestureHandlingNode->layoutObject())
         m_scrollGestureHandlingNode = m_scrollGestureHandlingNode->parentOrShadowHostNode();
 
-    if (!m_scrollGestureHandlingNode) {
-        if (RuntimeEnabledFeatures::scrollCustomizationEnabled())
-            m_scrollGestureHandlingNode = m_frame->document()->documentElement();
-        else
-            return WebInputEventResult::NotHandled;
-    }
+    if (!m_scrollGestureHandlingNode)
+        m_scrollGestureHandlingNode = m_frame->document()->documentElement();
+
     DCHECK(m_scrollGestureHandlingNode);
 
     passScrollGestureEventToWidget(gestureEvent, m_scrollGestureHandlingNode->layoutObject());
-    if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
-        m_currentScrollChain.clear();
-        std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
-        scrollStateData->position_x = gestureEvent.position().x();
-        scrollStateData->position_y = gestureEvent.position().y();
-        scrollStateData->is_beginning = true;
-        scrollStateData->from_user_input = true;
-        scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
-        ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
-        customizedScroll(*m_scrollGestureHandlingNode.get(), *scrollState);
-    } else {
-        if (m_frame->isMainFrame())
-            m_frame->host()->topControls().scrollBegin();
-    }
+
+    m_currentScrollChain.clear();
+    std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
+    scrollStateData->position_x = gestureEvent.position().x();
+    scrollStateData->position_y = gestureEvent.position().y();
+    scrollStateData->is_beginning = true;
+    scrollStateData->from_user_input = true;
+    scrollStateData->is_direct_manipulation = gestureEvent.source() == PlatformGestureSourceTouchscreen;
+    scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
+    ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
+    customizedScroll(*m_scrollGestureHandlingNode.get(), *scrollState);
     return WebInputEventResult::HandledSystem;
 }
 
@@ -353,88 +233,64 @@ WebInputEventResult ScrollManager::handleGestureScrollUpdate(const PlatformGestu
     // page to scroll down causing positive scroll delta.
     FloatSize delta(-gestureEvent.deltaX(), -gestureEvent.deltaY());
     FloatSize velocity(-gestureEvent.velocityX(), -gestureEvent.velocityY());
+    FloatPoint position(gestureEvent.position());
+
     if (delta.isZero())
         return WebInputEventResult::NotHandled;
 
-    ScrollGranularity granularity = gestureEvent.deltaUnits();
     Node* node = m_scrollGestureHandlingNode.get();
 
-    // Scroll customization is only available for touch.
-    bool handleScrollCustomization = RuntimeEnabledFeatures::scrollCustomizationEnabled() && gestureEvent.source() == PlatformGestureSourceTouchscreen;
-    if (node) {
-        LayoutObject* layoutObject = node->layoutObject();
-        if (!layoutObject)
-            return WebInputEventResult::NotHandled;
+    if (!node)
+        return WebInputEventResult::NotHandled;
 
-        // Try to send the event to the correct view.
-        WebInputEventResult result = passScrollGestureEventToWidget(gestureEvent, layoutObject);
-        if (result != WebInputEventResult::NotHandled) {
-            if (gestureEvent.preventPropagation()
-                && !RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
-                // This is an optimization which doesn't apply with
-                // scroll customization enabled.
-                m_previousGestureScrolledNode = m_scrollGestureHandlingNode;
-            }
-            // FIXME: we should allow simultaneous scrolling of nested
-            // iframes along perpendicular axes. See crbug.com/466991.
-            m_deltaConsumedForScrollSequence = true;
-            return result;
-        }
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject)
+        return WebInputEventResult::NotHandled;
 
-        if (handleScrollCustomization) {
-            std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
-            scrollStateData->delta_x = delta.width();
-            scrollStateData->delta_y = delta.height();
-            scrollStateData->delta_granularity = ScrollByPrecisePixel;
-            scrollStateData->velocity_x = velocity.width();
-            scrollStateData->velocity_y = velocity.height();
-            scrollStateData->should_propagate = !gestureEvent.preventPropagation();
-            scrollStateData->is_in_inertial_phase = gestureEvent.inertialPhase() == ScrollInertialPhaseMomentum;
-            scrollStateData->from_user_input = true;
-            scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
-            ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
-            if (m_previousGestureScrolledNode) {
-                // The ScrollState needs to know what the current
-                // native scrolling element is, so that for an
-                // inertial scroll that shouldn't propagate, only the
-                // currently scrolling element responds.
-                DCHECK(m_previousGestureScrolledNode->isElementNode());
-                scrollState->setCurrentNativeScrollingElement(toElement(m_previousGestureScrolledNode.get()));
-            }
-            customizedScroll(*node, *scrollState);
-            m_previousGestureScrolledNode = scrollState->currentNativeScrollingElement();
-            m_deltaConsumedForScrollSequence = scrollState->deltaConsumedForScrollSequence();
-            if (scrollState->deltaX() != delta.width()
-                || scrollState->deltaY() != delta.height()) {
-                setFrameWasScrolledByUser();
-                return WebInputEventResult::HandledSystem;
-            }
-        } else {
-            Node* stopNode = nullptr;
-            if (gestureEvent.preventPropagation())
-                stopNode = m_previousGestureScrolledNode.get();
+    // Try to send the event to the correct view.
+    WebInputEventResult result = passScrollGestureEventToWidget(gestureEvent, layoutObject);
+    if (result != WebInputEventResult::NotHandled) {
+        // FIXME: we should allow simultaneous scrolling of nested
+        // iframes along perpendicular axes. See crbug.com/466991.
+        m_deltaConsumedForScrollSequence = true;
+        return result;
+    }
 
-            bool consumed = false;
-            ScrollResult result = physicalScroll(
-                granularity,
-                delta,
-                FloatPoint(gestureEvent.position()),
-                velocity,
-                node,
-                &stopNode,
-                &consumed);
+    std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
+    scrollStateData->delta_x = delta.width();
+    scrollStateData->delta_y = delta.height();
+    scrollStateData->delta_granularity = static_cast<double>(gestureEvent.deltaUnits());
+    scrollStateData->velocity_x = velocity.width();
+    scrollStateData->velocity_y = velocity.height();
+    scrollStateData->position_x = position.x();
+    scrollStateData->position_y = position.y();
+    scrollStateData->should_propagate = !gestureEvent.preventPropagation();
+    scrollStateData->is_in_inertial_phase = gestureEvent.inertialPhase() == ScrollInertialPhaseMomentum;
+    scrollStateData->is_direct_manipulation = gestureEvent.source() == PlatformGestureSourceTouchscreen;
+    scrollStateData->from_user_input = true;
+    scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
+    ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
+    if (m_previousGestureScrolledNode) {
+        // The ScrollState needs to know what the current
+        // native scrolling element is, so that for an
+        // inertial scroll that shouldn't propagate, only the
+        // currently scrolling element responds.
+        DCHECK(m_previousGestureScrolledNode->isElementNode());
+        scrollState->setCurrentNativeScrollingElement(toElement(m_previousGestureScrolledNode.get()));
+    }
+    customizedScroll(*node, *scrollState);
+    m_previousGestureScrolledNode = scrollState->currentNativeScrollingElement();
+    m_deltaConsumedForScrollSequence = scrollState->deltaConsumedForScrollSequence();
 
-            if (gestureEvent.preventPropagation())
-                m_previousGestureScrolledNode = stopNode;
+    bool didScrollX = scrollState->deltaX() != delta.width();
+    bool didScrollY = scrollState->deltaY() != delta.height();
 
-            if ((!stopNode || !isRootScroller(*stopNode)) && frameHost()) {
-                frameHost()->overscrollController().resetAccumulated(
-                    result.didScrollX, result.didScrollY);
-            }
+    if ((!m_previousGestureScrolledNode || !isEffectiveRootScroller(*m_previousGestureScrolledNode)) && frameHost())
+        frameHost()->overscrollController().resetAccumulated(didScrollX, didScrollY);
 
-            if (consumed)
-                return WebInputEventResult::HandledSystem;
-        }
+    if (didScrollX || didScrollY) {
+        setFrameWasScrolledByUser();
+        return WebInputEventResult::HandledSystem;
     }
 
     return WebInputEventResult::NotHandled;
@@ -446,16 +302,14 @@ WebInputEventResult ScrollManager::handleGestureScrollEnd(const PlatformGestureE
 
     if (node) {
         passScrollGestureEventToWidget(gestureEvent, node->layoutObject());
-        if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
-            std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
-            scrollStateData->is_ending = true;
-            scrollStateData->is_in_inertial_phase = gestureEvent.inertialPhase() == ScrollInertialPhaseMomentum;
-            scrollStateData->from_user_input = true;
-            scrollStateData->is_direct_manipulation = true;
-            scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
-            ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
-            customizedScroll(*node, *scrollState);
-        }
+        std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
+        scrollStateData->is_ending = true;
+        scrollStateData->is_in_inertial_phase = gestureEvent.inertialPhase() == ScrollInertialPhaseMomentum;
+        scrollStateData->from_user_input = true;
+        scrollStateData->is_direct_manipulation = gestureEvent.source() == PlatformGestureSourceTouchscreen;
+        scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
+        ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
+        customizedScroll(*node, *scrollState);
     }
 
     clearGestureScrollState();
@@ -485,7 +339,7 @@ WebInputEventResult ScrollManager::passScrollGestureEventToWidget(const Platform
     return toFrameView(widget)->frame().eventHandler().handleGestureScrollEvent(gestureEvent);
 }
 
-bool ScrollManager::isRootScroller(const Node& node) const
+bool ScrollManager::isEffectiveRootScroller(const Node& node) const
 {
     // The root scroller is the one Element on the page designated to perform
     // "viewport actions" like top controls movement and overscroll glow.
@@ -495,7 +349,7 @@ bool ScrollManager::isRootScroller(const Node& node) const
     if (!node.isElementNode())
         return false;
 
-    return m_frame->document()->topDocument().isEffectiveRootScroller(toElement(node));
+    return node.isSameNode(m_frame->document()->effectiveRootScroller());
 }
 
 
@@ -524,6 +378,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEvent(const PlatformGestur
         m_lastGestureScrollOverWidget = result.isOverWidget();
         m_scrollGestureHandlingNode = eventTarget;
         m_previousGestureScrolledNode = nullptr;
+        m_deltaConsumedForScrollSequence = false;
 
         if (!scrollbar)
             scrollbar = result.scrollbar();

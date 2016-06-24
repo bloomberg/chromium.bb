@@ -997,11 +997,11 @@ bool LayoutView::allowsOverflowClip() const
 
 ScrollResult LayoutView::scroll(ScrollGranularity granularity, const FloatSize& delta)
 {
-    // TODO(bokan): This should never get called on the main frame but it
-    // currently does via the Windows pan scrolling path. That should go through
-    // a more normalized EventHandler-like scrolling path and we should
-    // ASSERT(!frame()->isMainFrame()) here. All main frame scrolling should
-    // be handled by the ViewportScrollCallback.
+    // TODO(bokan): We shouldn't need this specialization but we currently do
+    // because of the Windows pan scrolling path. That should go through a more
+    // normalized ScrollManager-like scrolling path and we should get rid of
+    // of this override. All frame scrolling should be handled by
+    // ViewportScrollCallback.
 
     if (!frameView())
         return ScrollResult(false, false, delta.width(), delta.height());

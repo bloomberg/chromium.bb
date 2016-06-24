@@ -50,9 +50,11 @@ public:
     }
 
     // Creates an apply scroll callback that handles viewport actions like
-    // TopControls movement and Overscroll.
+    // TopControls movement and Overscroll. The TopControls and
+    // OverscrollController are given to the ViewportScrollCallback but are not
+    // owned or kept alive by it.
     static ViewportScrollCallback* createViewportApplyScroll(
-        TopControls&, OverscrollController&);
+        TopControls*, OverscrollController*);
 
     DECLARE_TRACE();
 
@@ -78,6 +80,14 @@ public:
     // determine if the current root scroller is still valid or if it must be
     // replaced by the defualt root scroller.
     void didUpdateLayout();
+
+    // TODO(bokan): Temporarily exposed to allow ScrollCustomization to
+    // differentiate between real custom callback and the built-in viewport
+    // apply scroll.
+    const ViewportScrollCallback* viewportScrollCallback()
+    {
+        return m_viewportApplyScroll;
+    }
 
 private:
     RootScrollerController(Document&, ViewportScrollCallback*);
