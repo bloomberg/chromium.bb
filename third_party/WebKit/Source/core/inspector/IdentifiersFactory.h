@@ -50,7 +50,6 @@ public:
     static DocumentLoader* loaderById(InspectedFrames*, const String&);
 
 private:
-    static void initialize();
     static String addProcessIdPrefixTo(int id);
     static int removeProcessIdPrefixFrom(const String&, bool* ok);
 };
