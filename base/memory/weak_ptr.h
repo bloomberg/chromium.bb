@@ -109,9 +109,13 @@ class BASE_EXPORT WeakReference {
   };
 
   WeakReference();
-  WeakReference(const WeakReference& other);
   explicit WeakReference(const Flag* flag);
   ~WeakReference();
+
+  WeakReference(WeakReference&& other);
+  WeakReference(const WeakReference& other);
+  WeakReference& operator=(WeakReference&& other) = default;
+  WeakReference& operator=(const WeakReference& other) = default;
 
   bool is_valid() const;
 
@@ -144,6 +148,11 @@ class BASE_EXPORT WeakPtrBase {
  public:
   WeakPtrBase();
   ~WeakPtrBase();
+
+  WeakPtrBase(const WeakPtrBase& other) = default;
+  WeakPtrBase(WeakPtrBase&& other) = default;
+  WeakPtrBase& operator=(const WeakPtrBase& other) = default;
+  WeakPtrBase& operator=(WeakPtrBase&& other) = default;
 
  protected:
   explicit WeakPtrBase(const WeakReference& ref);
@@ -205,10 +214,13 @@ class WeakPtr : public internal::WeakPtrBase {
   WeakPtr(std::nullptr_t) : ptr_(nullptr) {}
 
   // Allow conversion from U to T provided U "is a" T. Note that this
-  // is separate from the (implicit) copy constructor.
+  // is separate from the (implicit) copy and move constructors.
   template <typename U>
   WeakPtr(const WeakPtr<U>& other) : WeakPtrBase(other), ptr_(other.ptr_) {
   }
+  template <typename U>
+  WeakPtr(WeakPtr<U>&& other)
+      : WeakPtrBase(std::move(other)), ptr_(other.ptr_) {}
 
   T* get() const { return ref_.is_valid() ? ptr_ : nullptr; }
 
