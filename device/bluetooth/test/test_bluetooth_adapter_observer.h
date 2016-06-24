@@ -112,7 +112,7 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   int gatt_characteristic_removed_count() {
     return gatt_characteristic_removed_count_;
   }
-  int gatt_characteristic_value_changed_count() {
+  int gatt_characteristic_value_changed_count() const {
     return gatt_characteristic_value_changed_count_;
   }
   int gatt_descriptor_added_count() { return gatt_descriptor_added_count_; }

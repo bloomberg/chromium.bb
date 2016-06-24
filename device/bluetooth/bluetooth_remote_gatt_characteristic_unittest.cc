@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -383,8 +384,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ReadRemoteCharacteristic) {
       GetReadValueCallback(Call::EXPECTED),
       GetGattErrorCallback(Call::NOT_EXPECTED));
 
-  uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
-  std::vector<uint8_t> test_vector(values, values + arraysize(values));
+  std::vector<uint8_t> test_vector = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
   SimulateGattCharacteristicRead(characteristic1_, test_vector);
 
   // Duplicate read reported from OS shouldn't cause a problem:
@@ -394,6 +394,46 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ReadRemoteCharacteristic) {
   EXPECT_EQ(1, gatt_read_characteristic_attempts_);
   EXPECT_EQ(test_vector, last_read_value_);
   EXPECT_EQ(test_vector, characteristic1_->GetValue());
+}
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+
+#if defined(OS_ANDROID) || defined(OS_WIN)
+// Tests that ReadRemoteCharacteristic results in a
+// GattCharacteristicValueChanged call.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       ReadRemoteCharacteristic_GattCharacteristicValueChanged) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_READ));
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Callback that make sure GattCharacteristicValueChanged has been called
+  // before the callback runs.
+  auto test_callback = [](
+      BluetoothRemoteGattCharacteristic::ValueCallback callback,
+      const TestBluetoothAdapterObserver& callback_observer,
+      const std::vector<uint8_t>& value) {
+    EXPECT_EQ(1, callback_observer.gatt_characteristic_value_changed_count());
+    callback.Run(value);
+  };
+
+  characteristic1_->ReadRemoteCharacteristic(
+      base::Bind((void (*)(BluetoothRemoteGattCharacteristic::ValueCallback,
+                           const TestBluetoothAdapterObserver&,
+                           const std::vector<uint8_t>&))test_callback,
+                 GetReadValueCallback(Call::EXPECTED),
+                 base::ConstRef(observer)),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  std::vector<uint8_t> test_vector = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
+  SimulateGattCharacteristicRead(characteristic1_, test_vector);
+
+  EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count());
+  EXPECT_EQ(characteristic1_->GetIdentifier(),
+            observer.last_gatt_characteristic_id());
+  EXPECT_EQ(characteristic1_->GetUUID(),
+            observer.last_gatt_characteristic_uuid());
+  EXPECT_EQ(test_vector, observer.last_changed_characteristic_value());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
