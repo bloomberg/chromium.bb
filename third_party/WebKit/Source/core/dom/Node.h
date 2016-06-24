@@ -90,7 +90,7 @@ class TagCollection;
 class Text;
 class TouchEvent;
 
-const int nodeStyleChangeShift = 20;
+const int nodeStyleChangeShift = 19;
 
 enum StyleChangeType {
     NoStyleChange = 0,
@@ -519,22 +519,13 @@ public:
 
     // As layoutObject() includes a branch you should avoid calling it repeatedly in hot code paths.
     // Note that if a Node has a layoutObject, it's parentNode is guaranteed to have one as well.
-    LayoutObject* layoutObject() const
-    {
-        if (hasRareData())
-            return m_data.m_rareData->layoutObject();
-        return hasLayoutObject() ? m_data.m_layoutObject : nullptr;
-    }
+    LayoutObject* layoutObject() const { return hasRareData() ? m_data.m_rareData->layoutObject() : m_data.m_layoutObject; }
     void setLayoutObject(LayoutObject* layoutObject)
     {
         if (hasRareData())
             m_data.m_rareData->setLayoutObject(layoutObject);
         else
             m_data.m_layoutObject = layoutObject;
-        if (layoutObject)
-            setFlag(HasLayoutObjectFlag);
-        else
-            clearFlag(HasLayoutObjectFlag);
     }
 
     // Use these two methods with caution.
@@ -702,58 +693,57 @@ public:
 
 private:
     enum NodeFlags {
-        HasLayoutObjectFlag = 1,
-        HasRareDataFlag = 1 << 1,
+        HasRareDataFlag = 1,
 
         // Node type flags. These never change once created.
-        IsTextFlag = 1 << 2,
-        IsContainerFlag = 1 << 3,
-        IsElementFlag = 1 << 4,
-        IsHTMLFlag = 1 << 5,
-        IsSVGFlag = 1 << 6,
-        IsDocumentFragmentFlag = 1 << 7,
-        IsInsertionPointFlag = 1 << 8,
+        IsTextFlag = 1 << 1,
+        IsContainerFlag = 1 << 2,
+        IsElementFlag = 1 << 3,
+        IsHTMLFlag = 1 << 4,
+        IsSVGFlag = 1 << 5,
+        IsDocumentFragmentFlag = 1 << 6,
+        IsInsertionPointFlag = 1 << 7,
 
         // Changes based on if the element should be treated like a link,
         // ex. When setting the href attribute on an <a>.
-        IsLinkFlag = 1 << 9,
+        IsLinkFlag = 1 << 8,
 
         // Changes based on :hover, :active and :focus state.
-        IsUserActionElementFlag = 1 << 10,
+        IsUserActionElementFlag = 1 << 9,
 
         // Tree state flags. These change when the element is added/removed
         // from a DOM tree.
-        InDocumentFlag = 1 << 11,
-        IsInShadowTreeFlag = 1 << 12,
+        InDocumentFlag = 1 << 10,
+        IsInShadowTreeFlag = 1 << 11,
 
         // Set by the parser when the children are done parsing.
-        IsFinishedParsingChildrenFlag = 1 << 13,
+        IsFinishedParsingChildrenFlag = 1 << 12,
 
         // Flags related to recalcStyle.
-        SVGFilterNeedsLayerUpdateFlag = 1 << 14,
-        HasCustomStyleCallbacksFlag = 1 << 15,
-        ChildNeedsStyleInvalidationFlag = 1 << 16,
-        NeedsStyleInvalidationFlag = 1 << 17,
-        ChildNeedsDistributionRecalcFlag = 1 << 18,
-        ChildNeedsStyleRecalcFlag = 1 << 19,
+        SVGFilterNeedsLayerUpdateFlag = 1 << 13,
+        HasCustomStyleCallbacksFlag = 1 << 14,
+        ChildNeedsStyleInvalidationFlag = 1 << 15,
+        NeedsStyleInvalidationFlag = 1 << 16,
+        ChildNeedsDistributionRecalcFlag = 1 << 17,
+        ChildNeedsStyleRecalcFlag = 1 << 18,
         StyleChangeMask = 1 << nodeStyleChangeShift | 1 << (nodeStyleChangeShift + 1),
 
-        CustomElementFlag = 1 << 22,
-        CustomElementCustomFlag = 1 << 23,
+        CustomElementFlag = 1 << 21,
+        CustomElementCustomFlag = 1 << 22,
 
-        HasNameOrIsEditingTextFlag = 1 << 24,
-        HasWeakReferencesFlag = 1 << 25,
-        V8CollectableDuringMinorGCFlag = 1 << 26,
-        HasEventTargetDataFlag = 1 << 27,
-        AlreadySpellCheckedFlag = 1 << 28,
+        HasNameOrIsEditingTextFlag = 1 << 23,
+        HasWeakReferencesFlag = 1 << 24,
+        V8CollectableDuringMinorGCFlag = 1 << 25,
+        HasEventTargetDataFlag = 1 << 26,
+        AlreadySpellCheckedFlag = 1 << 27,
 
-        V0CustomElementFlag = 1 << 29,
-        V0CustomElementUpgradedFlag = 1 << 30,
+        V0CustomElementFlag = 1 << 28,
+        V0CustomElementUpgradedFlag = 1 << 29,
 
         DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
     };
 
-    // 1 bit remaining.
+    // 3 bits remaining.
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }
@@ -785,7 +775,6 @@ protected:
 
     static void reattachWhitespaceSiblingsIfNeeded(Text* start);
 
-    bool hasLayoutObject() const { return getFlag(HasLayoutObjectFlag); }
     bool hasRareData() const { return getFlag(HasRareDataFlag); }
 
     NodeRareData* rareData() const;
@@ -844,7 +833,6 @@ private:
     // When a node has rare data we move the layoutObject into the rare data.
     union DataUnion {
         DataUnion() : m_layoutObject(nullptr) { }
-        ComputedStyle* m_computedStyle;
         // LayoutObjects are fully owned by their DOM node. See LayoutObject's
         // LIFETIME documentation section.
         LayoutObject* m_layoutObject;

@@ -263,8 +263,6 @@ Node::~Node()
     // this condition (we cannot directly access it here.)
     RELEASE_ASSERT(hasRareData() || !layoutObject());
     InstanceCounters::decrementCounter(InstanceCounters::NodeCounter);
-    if (!hasRareData() && !hasLayoutObject() && m_data.m_computedStyle)
-        m_data.m_computedStyle->deref();
 }
 
 NodeRareData* Node::rareData() const

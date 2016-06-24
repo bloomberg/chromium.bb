@@ -58,7 +58,7 @@ DEFINE_TRACE_AFTER_DISPATCH(NodeRareData)
 
 DEFINE_TRACE(NodeRareData)
 {
-    if (isElementRareData())
+    if (m_isElementRareData)
         static_cast<ElementRareData*>(this)->traceAfterDispatch(visitor);
     else
         traceAfterDispatch(visitor);
@@ -66,7 +66,7 @@ DEFINE_TRACE(NodeRareData)
 
 DEFINE_TRACE_WRAPPERS(NodeRareData)
 {
-    if (isElementRareData())
+    if (m_isElementRareData)
         static_cast<const ElementRareData*>(this)->traceWrappersAfterDispatch(visitor);
     else
         traceWrappersAfterDispatch(visitor);
@@ -81,7 +81,7 @@ DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(NodeRareData)
 void NodeRareData::finalizeGarbageCollectedObject()
 {
     RELEASE_ASSERT(!layoutObject());
-    if (isElementRareData())
+    if (m_isElementRareData)
         static_cast<ElementRareData*>(this)->~ElementRareData();
     else
         this->~NodeRareData();
