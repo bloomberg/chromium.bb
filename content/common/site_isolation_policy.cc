@@ -39,7 +39,10 @@ bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
 
 // static
 bool SiteIsolationPolicy::UseSubframeNavigationEntries() {
-  return true;
+  // Enable the new navigation history behavior if any manner of site isolation
+  // is active.
+  // PlzNavigate: also enable the new navigation history behavior.
+  return AreCrossProcessFramesPossible() || IsBrowserSideNavigationEnabled();
 }
 
 }  // namespace content
