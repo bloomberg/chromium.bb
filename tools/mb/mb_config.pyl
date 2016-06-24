@@ -220,7 +220,7 @@
       'UBSanVptr Linux': 'gn_ubsan_vptr_release_bot',
       'WebKit Linux - WPTServe': 'swarming_gn_release_bot',
       'WebKit Mac - WPTServe': 'swarming_gn_release_bot',
-      'WebKit Win - WPTServe': 'swarming_gn_release_bot_minimal_symbols_x64',
+      'WebKit Win - WPTServe': 'swarming_gn_release_bot_minimal_symbols_x86',
       'WebKit Linux - TraceWrappables': 'swarming_gn_release_bot_x64',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
