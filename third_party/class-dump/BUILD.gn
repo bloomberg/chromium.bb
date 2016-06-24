@@ -181,6 +181,7 @@ executable("class-dump") {
     "src/class-dump.m",
   ]
 
+  configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":config",
     "//build/config/compiler:enable_arc",
