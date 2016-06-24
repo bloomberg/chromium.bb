@@ -205,52 +205,36 @@ class GClientSmoke(GClientSmokeBase):
 
     test(['config', self.svn_base + 'trunk/src/'],
          ('solutions = [\n'
-          '  { "name"        : "src",\n'
+          '  {\n'
+          '    "name"        : "src",\n'
           '    "url"         : "%strunk/src",\n'
           '    "deps_file"   : "DEPS",\n'
           '    "managed"     : True,\n'
-          '    "custom_deps" : {\n'
-          '    },\n'
-          '    "safesync_url": "",\n'
+          '    "custom_deps" : {},\n'
           '  },\n'
           ']\n'
           'cache_dir = None\n') % self.svn_base)
 
     test(['config', self.git_base + 'repo_1', '--name', 'src'],
          ('solutions = [\n'
-          '  { "name"        : "src",\n'
+          '  {\n'
+          '    "name"        : "src",\n'
           '    "url"         : "%srepo_1",\n'
           '    "deps_file"   : "DEPS",\n'
           '    "managed"     : True,\n'
-          '    "custom_deps" : {\n'
-          '    },\n'
-          '    "safesync_url": "",\n'
+          '    "custom_deps" : {},\n'
           '  },\n'
           ']\n'
           'cache_dir = None\n') % self.git_base)
 
-    test(['config', 'foo', 'faa'],
-         'solutions = [\n'
-         '  { "name"        : "foo",\n'
-         '    "url"         : "foo",\n'
-         '    "deps_file"   : "DEPS",\n'
-          '    "managed"     : True,\n'
-         '    "custom_deps" : {\n'
-         '    },\n'
-         '    "safesync_url": "faa",\n'
-         '  },\n'
-         ']\n'
-         'cache_dir = None\n')
-
     test(['config', 'foo', '--deps', 'blah'],
          'solutions = [\n'
-         '  { "name"        : "foo",\n'
+         '  {\n'
+         '    "name"        : "foo",\n'
          '    "url"         : "foo",\n'
          '    "deps_file"   : "blah",\n'
          '    "managed"     : True,\n'
-         '    "custom_deps" : {\n'
-         '    },\n'
-          '    "safesync_url": "",\n'
+         '    "custom_deps" : {},\n'
          '  },\n'
          ']\n'
          'cache_dir = None\n')
@@ -259,7 +243,7 @@ class GClientSmoke(GClientSmokeBase):
 
     os.remove(p)
     results = self.gclient(['config', 'foo', 'faa', 'fuu'])
-    err = ('Usage: gclient.py config [options] [url] [safesync url]\n\n'
+    err = ('Usage: gclient.py config [options] [url]\n\n'
            'gclient.py: error: Inconsistent arguments. Use either --spec or one'
            ' or 2 args\n')
     self.check(('', err, 2), results)
@@ -306,7 +290,6 @@ class GClientSmokeGIT(GClientSmokeBase):
   def testSync(self):
     if not self.enabled:
       return
-    # TODO(maruel): safesync.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
     self.parseGclient(
@@ -386,7 +369,6 @@ class GClientSmokeGIT(GClientSmokeBase):
   def testSyncJobs(self):
     if not self.enabled:
       return
-    # TODO(maruel): safesync.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
     self.parseGclient(

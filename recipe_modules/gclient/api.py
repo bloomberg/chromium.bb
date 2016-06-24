@@ -150,8 +150,6 @@ class GclientApi(recipe_api.RecipeApi):
     revisions = []
     self.set_patch_project_revision(self.m.properties.get('patch_project'), cfg)
     for i, s in enumerate(cfg.solutions):
-      if s.safesync_url:  # prefer safesync_url in gclient mode
-        continue
       if i == 0 and s.revision is None:
         s.revision = RevisionFallbackChain()
 
