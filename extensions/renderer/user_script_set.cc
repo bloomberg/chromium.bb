@@ -70,12 +70,13 @@ void UserScriptSet::GetInjections(
     std::vector<std::unique_ptr<ScriptInjection>>* injections,
     content::RenderFrame* render_frame,
     int tab_id,
-    UserScript::RunLocation run_location) {
+    UserScript::RunLocation run_location,
+    bool log_activity) {
   GURL document_url = GetDocumentUrlForFrame(render_frame->GetWebFrame());
   for (const UserScript* script : scripts_) {
-    std::unique_ptr<ScriptInjection> injection =
-        GetInjectionForScript(script, render_frame, tab_id, run_location,
-                              document_url, false /* is_declarative */);
+    std::unique_ptr<ScriptInjection> injection = GetInjectionForScript(
+        script, render_frame, tab_id, run_location, document_url,
+        false /* is_declarative */, log_activity);
     if (injection.get())
       injections->push_back(std::move(injection));
   }
@@ -160,15 +161,13 @@ std::unique_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
     content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location,
-    const GURL& document_url) {
+    const GURL& document_url,
+    bool log_activity) {
   for (const UserScript* script : scripts_) {
     if (script->id() == script_id) {
-      return GetInjectionForScript(script,
-                                   render_frame,
-                                   tab_id,
-                                   run_location,
-                                   document_url,
-                                   true /* is_declarative */);
+      return GetInjectionForScript(script, render_frame, tab_id, run_location,
+                                   document_url, true /* is_declarative */,
+                                   log_activity);
     }
   }
   return std::unique_ptr<ScriptInjection>();
@@ -180,7 +179,8 @@ std::unique_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
     int tab_id,
     UserScript::RunLocation run_location,
     const GURL& document_url,
-    bool is_declarative) {
+    bool is_declarative,
+    bool log_activity) {
   std::unique_ptr<ScriptInjection> injection;
   std::unique_ptr<const InjectionHost> injection_host;
   blink::WebLocalFrame* web_frame = render_frame->GetWebFrame();
@@ -221,8 +221,8 @@ std::unique_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
       !script->js_scripts().empty() && script->run_location() == run_location;
   if (inject_css || inject_js) {
     injection.reset(new ScriptInjection(std::move(injector), render_frame,
-                                        std::move(injection_host),
-                                        run_location));
+                                        std::move(injection_host), run_location,
+                                        log_activity));
   }
   return injection;
 }

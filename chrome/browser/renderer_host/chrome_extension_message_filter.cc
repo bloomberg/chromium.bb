@@ -341,8 +341,9 @@ void ChromeExtensionMessageFilter::Observe(
 
 bool ChromeExtensionMessageFilter::ShouldLogExtensionAction(
     const std::string& extension_id) const {
-  // TODO(devlin): Ideally, we'd be able to determine this in the renderer so
-  // that we don't even send the IPC.
+  // We only send these IPCs if activity logging is enabled, but due to race
+  // conditions (e.g. logging gets disabled but the renderer sends the message
+  // before it gets updated), we still need this check here.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return profile_ &&
          g_browser_process->profile_manager()->IsValidProfile(profile_) &&

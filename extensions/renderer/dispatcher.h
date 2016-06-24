@@ -85,6 +85,8 @@ class Dispatcher : public content::RenderThreadObserver,
 
   const std::string& webview_partition_id() { return webview_partition_id_; }
 
+  bool activity_logging_enabled() const { return activity_logging_enabled_; }
+
   void OnRenderFrameCreated(content::RenderFrame* render_frame);
 
   bool IsExtensionActive(const std::string& extension_id) const;
@@ -198,6 +200,7 @@ class Dispatcher : public content::RenderThreadObserver,
       bool update_origin_whitelist,
       int tab_id);
   void OnUsingWebRequestAPI(bool webrequest_used);
+  void OnSetActivityLoggingEnabled(bool enabled);
 
   // UserScriptSetManager::Observer implementation.
   void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
@@ -307,6 +310,9 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // Status of webrequest usage.
   bool webrequest_used_;
+
+  // Whether or not extension activity is enabled.
+  bool activity_logging_enabled_;
 
   // The WebView partition ID associated with this process's storage partition,
   // if this renderer is a WebView guest render process. Otherwise, this will be

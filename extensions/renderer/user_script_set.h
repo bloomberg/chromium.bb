@@ -54,14 +54,16 @@ class UserScriptSet {
   void GetInjections(std::vector<std::unique_ptr<ScriptInjection>>* injections,
                      content::RenderFrame* render_frame,
                      int tab_id,
-                     UserScript::RunLocation run_location);
+                     UserScript::RunLocation run_location,
+                     bool log_activity);
 
   std::unique_ptr<ScriptInjection> GetDeclarativeScriptInjection(
       int script_id,
       content::RenderFrame* render_frame,
       int tab_id,
       UserScript::RunLocation run_location,
-      const GURL& document_url);
+      const GURL& document_url,
+      bool log_activity);
 
   // Updates scripts given the shared memory region containing user scripts.
   // Returns true if the scripts were successfully updated.
@@ -80,7 +82,8 @@ class UserScriptSet {
       int tab_id,
       UserScript::RunLocation run_location,
       const GURL& document_url,
-      bool is_declarative);
+      bool is_declarative,
+      bool log_activity);
 
   // Shared memory containing raw script data.
   std::unique_ptr<base::SharedMemory> shared_memory_;

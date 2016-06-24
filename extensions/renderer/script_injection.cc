@@ -119,7 +119,8 @@ ScriptInjection::ScriptInjection(
     std::unique_ptr<ScriptInjector> injector,
     content::RenderFrame* render_frame,
     std::unique_ptr<const InjectionHost> injection_host,
-    UserScript::RunLocation run_location)
+    UserScript::RunLocation run_location,
+    bool log_activity)
     : injector_(std::move(injector)),
       render_frame_(render_frame),
       injection_host_(std::move(injection_host)),
@@ -127,6 +128,7 @@ ScriptInjection::ScriptInjection(
       request_id_(kInvalidRequestId),
       complete_(false),
       did_inject_js_(false),
+      log_activity_(log_activity),
       frame_watcher_(new FrameWatcher(render_frame, this)),
       weak_ptr_factory_(this) {
   CHECK(injection_host_.get());
@@ -253,7 +255,7 @@ void ScriptInjection::InjectJs() {
                      weak_ptr_factory_.GetWeakPtr())));
 
   base::ElapsedTimer exec_timer;
-  if (injection_host_->id().type() == HostID::EXTENSIONS)
+  if (injection_host_->id().type() == HostID::EXTENSIONS && log_activity_)
     DOMActivityLogger::AttachToWorld(world_id, injection_host_->id().id());
   if (in_main_world) {
     // We only inject in the main world for javascript: urls.

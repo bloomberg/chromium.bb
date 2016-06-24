@@ -15,7 +15,8 @@
 
 namespace extensions {
 
-UserScriptSetManager::UserScriptSetManager() {
+UserScriptSetManager::UserScriptSetManager()
+    : activity_logging_enabled_(false) {
   content::RenderThread::Get()->AddObserver(this);
 }
 
@@ -43,11 +44,8 @@ UserScriptSetManager::GetInjectionForDeclarativeScript(
     return std::unique_ptr<ScriptInjection>();
 
   return user_script_set->GetDeclarativeScriptInjection(
-      script_id,
-      render_frame,
-      tab_id,
-      UserScript::BROWSER_DRIVEN,
-      url);
+      script_id, render_frame, tab_id, UserScript::BROWSER_DRIVEN, url,
+      activity_logging_enabled_);
 }
 
 bool UserScriptSetManager::OnControlMessageReceived(
@@ -65,11 +63,13 @@ void UserScriptSetManager::GetAllInjections(
     content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location) {
-  static_scripts_.GetInjections(injections, render_frame, tab_id, run_location);
+  static_scripts_.GetInjections(injections, render_frame, tab_id, run_location,
+                                activity_logging_enabled_);
   for (UserScriptSetMap::iterator it = programmatic_scripts_.begin();
        it != programmatic_scripts_.end();
        ++it) {
-    it->second->GetInjections(injections, render_frame, tab_id, run_location);
+    it->second->GetInjections(injections, render_frame, tab_id, run_location,
+                              activity_logging_enabled_);
   }
 }
 

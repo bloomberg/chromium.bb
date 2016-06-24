@@ -35,6 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/extension_registry.h"
@@ -43,6 +44,7 @@
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/one_shot_event.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
@@ -839,6 +841,8 @@ void ActivityLog::CheckActive() {
   content::BrowserContext* off_the_record =
       profile_->HasOffTheRecordProfile() ? profile_->GetOffTheRecordProfile()
                                          : nullptr;
+
+  bool old_is_active = is_active_;
   if (has_db || IsWatchdogAppActive()) {
     if (is_active_)
       return;  // Already enabled.
@@ -856,6 +860,18 @@ void ActivityLog::CheckActive() {
       state.RemoveActiveContext(off_the_record);
     registrar_.RemoveAll();
     is_active_ = false;
+  }
+
+  if (old_is_active != is_active_) {
+    for (content::RenderProcessHost::iterator iter(
+             content::RenderProcessHost::AllHostsIterator());
+         !iter.IsAtEnd(); iter.Advance()) {
+      content::RenderProcessHost* host = iter.GetCurrentValue();
+      if (profile_->IsSameProfile(
+              Profile::FromBrowserContext(host->GetBrowserContext()))) {
+        host->Send(new ExtensionMsg_SetActivityLoggingEnabled(is_active_));
+      }
+    }
   }
 }
 

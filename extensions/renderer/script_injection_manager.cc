@@ -407,7 +407,7 @@ void ScriptInjectionManager::InjectScripts(
   // We are done running in the frame.
   active_injection_frames_.erase(frame);
 
-  scripts_run_info.LogRun();
+  scripts_run_info.LogRun(activity_logging_enabled_);
 }
 
 void ScriptInjectionManager::TryToInject(
@@ -452,7 +452,8 @@ void ScriptInjectionManager::HandleExecuteCode(
       std::unique_ptr<ScriptInjector>(
           new ProgrammaticScriptInjector(params, render_frame)),
       render_frame, std::move(injection_host),
-      static_cast<UserScript::RunLocation>(params.run_at)));
+      static_cast<UserScript::RunLocation>(params.run_at),
+      activity_logging_enabled_));
 
   FrameStatusMap::const_iterator iter = frame_statuses_.find(render_frame);
   UserScript::RunLocation run_location =
@@ -477,7 +478,7 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
     TryToInject(std::move(injection), UserScript::BROWSER_DRIVEN,
                 &scripts_run_info);
 
-    scripts_run_info.LogRun();
+    scripts_run_info.LogRun(activity_logging_enabled_);
   }
 }
 
@@ -505,7 +506,7 @@ void ScriptInjectionManager::HandlePermitScriptInjection(int64_t request_id) {
       &scripts_run_info);
   if (res == ScriptInjection::INJECTION_BLOCKED)
     running_injections_.push_back(std::move(injection));
-  scripts_run_info.LogRun();
+  scripts_run_info.LogRun(activity_logging_enabled_);
 }
 
 }  // namespace extensions

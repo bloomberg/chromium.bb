@@ -118,6 +118,8 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // Deletes the database associated with the policy that's currently in use.
   void DeleteDatabase();
 
+  bool is_active() const { return is_active_; }
+
   // If we're in a browser test, we need to pretend that the watchdog app is
   // active.
   void SetWatchdogAppActiveForTesting(bool active);
@@ -203,7 +205,10 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // extension IDs, this needs to be an int to count how many are installed.
   int watchdog_apps_active_;
 
-  // True if the activity log is currently active.
+  // True if the activity log is currently active, meaning that the user has
+  // either added the commandline switch or has loaded a compatible extension.
+  // While inactive, the activity log will not store any actions for performance
+  // reasons.
   bool is_active_;
 
   content::NotificationRegistrar registrar_;

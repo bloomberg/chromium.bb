@@ -81,6 +81,10 @@ class UserScriptSetManager : public content::RenderThreadObserver {
 
   const UserScriptSet* static_scripts() const { return &static_scripts_; }
 
+  void set_activity_logging_enabled(bool enabled) {
+    activity_logging_enabled_ = enabled;
+  }
+
  private:
   // Map for per-extension sets that may be defined programmatically.
   typedef std::map<HostID, linked_ptr<UserScriptSet> > UserScriptSetMap;
@@ -102,6 +106,9 @@ class UserScriptSetManager : public content::RenderThreadObserver {
   // Scripts programmatically-defined through API calls (initialized and stored
   // per-extension).
   UserScriptSetMap programmatic_scripts_;
+
+  // Whether or not dom activity should be logged for injected scripts.
+  bool activity_logging_enabled_;
 
   // The associated observers.
   base::ObserverList<Observer> observers_;

@@ -252,6 +252,9 @@ class ExtensionsBrowserClient {
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler);
 
+  // Returns true if activity logging is enabled for the given |context|.
+  virtual bool IsActivityLoggingEnabled(content::BrowserContext* context);
+
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();
 

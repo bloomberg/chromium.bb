@@ -44,6 +44,10 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   // Removes pending injections of the unloaded extension.
   void OnExtensionUnloaded(const std::string& extension_id);
 
+  void set_activity_logging_enabled(bool enabled) {
+    activity_logging_enabled_ = enabled;
+  }
+
  private:
   // A RenderFrameObserver implementation which watches the various render
   // frames in order to notify the ScriptInjectionManager of different
@@ -114,6 +118,9 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
 
   // Running injections which are waiting for async callbacks from blink.
   ScriptInjectionVector running_injections_;
+
+  // Whether or not dom activity should be logged for scripts injected.
+  bool activity_logging_enabled_;
 
   ScopedObserver<UserScriptSetManager, UserScriptSetManager::Observer>
       user_script_set_manager_observer_;

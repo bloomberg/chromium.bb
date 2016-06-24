@@ -13,13 +13,15 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
+class Dispatcher;
 
 // Used to log extension API calls and events that are implemented with custom
 // bindings.The actions are sent via IPC to extensions::ActivityLog for
 // recording and display.
 class APIActivityLogger : public ObjectBackedNativeHandler {
  public:
-  explicit APIActivityLogger(ScriptContext* context);
+  APIActivityLogger(ScriptContext* context, Dispatcher* dispatcher);
+  ~APIActivityLogger() override;
 
  private:
   // Used to distinguish API calls & events from each other in LogInternal.
@@ -30,19 +32,21 @@ class APIActivityLogger : public ObjectBackedNativeHandler {
   //    arg1 - API call name as a string
   //    arg2 - arguments to the API call
   //    arg3 - any extra logging info as a string (optional)
-  static void LogAPICall(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void LogAPICall(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // This is ultimately invoked in bindings.js with JavaScript arguments.
   //    arg0 - extension ID as a string
   //    arg1 - Event name as a string
   //    arg2 - Event arguments
   //    arg3 - any extra logging info as a string (optional)
-  static void LogEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void LogEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // LogAPICall and LogEvent are really the same underneath except for
   // how they are ultimately dispatched to the log.
-  static void LogInternal(const CallType call_type,
-                          const v8::FunctionCallbackInfo<v8::Value>& args);
+  void LogInternal(const CallType call_type,
+                   const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  Dispatcher* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(APIActivityLogger);
 };

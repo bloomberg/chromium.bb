@@ -42,6 +42,11 @@ void ExtensionsBrowserClient::ReportError(
   LOG(ERROR) << error->GetDebugString();
 }
 
+bool ExtensionsBrowserClient::IsActivityLoggingEnabled(
+    content::BrowserContext* context) {
+  return false;
+}
+
 ExtensionsBrowserClient* ExtensionsBrowserClient::Get() {
   return g_client;
 }

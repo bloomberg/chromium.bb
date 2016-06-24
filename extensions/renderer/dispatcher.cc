@@ -211,7 +211,8 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
       user_script_set_manager_observer_(this),
-      webrequest_used_(false) {
+      webrequest_used_(false),
+      activity_logging_enabled_(false) {
   const base::CommandLine& command_line =
       *(base::CommandLine::ForCurrentProcess());
   set_idle_notifications_ =
@@ -890,8 +891,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler(
       "setIcon", std::unique_ptr<NativeHandler>(new SetIconNatives(context)));
   module_system->RegisterNativeHandler(
-      "activityLogger",
-      std::unique_ptr<NativeHandler>(new APIActivityLogger(context)));
+      "activityLogger", std::unique_ptr<NativeHandler>(
+                            new APIActivityLogger(context, dispatcher)));
   module_system->RegisterNativeHandler(
       "renderFrameObserverNatives",
       std::unique_ptr<NativeHandler>(new RenderFrameObserverNatives(context)));
@@ -954,6 +955,8 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_ClearTabSpecificPermissions,
                       OnClearTabSpecificPermissions)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_SetActivityLoggingEnabled,
+                      OnSetActivityLoggingEnabled)
   IPC_MESSAGE_FORWARD(ExtensionMsg_WatchPages,
                       content_watcher_.get(),
                       ContentWatcher::OnWatchPages)
@@ -1015,8 +1018,10 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   // handler ticking.
   RenderThread::Get()->ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayMs);
 
-  DOMActivityLogger::AttachToWorld(
-      DOMActivityLogger::kMainWorldId, extension_id);
+  if (activity_logging_enabled_) {
+    DOMActivityLogger::AttachToWorld(DOMActivityLogger::kMainWorldId,
+                                     extension_id);
+  }
 
   InitOriginPermissions(extension);
 
@@ -1253,6 +1258,16 @@ void Dispatcher::OnClearTabSpecificPermissions(
 
 void Dispatcher::OnUsingWebRequestAPI(bool webrequest_used) {
   webrequest_used_ = webrequest_used;
+}
+
+void Dispatcher::OnSetActivityLoggingEnabled(bool enabled) {
+  activity_logging_enabled_ = enabled;
+  if (enabled) {
+    for (const std::string& id : active_extension_ids_)
+      DOMActivityLogger::AttachToWorld(DOMActivityLogger::kMainWorldId, id);
+  }
+  script_injection_manager_->set_activity_logging_enabled(enabled);
+  user_script_set_manager_->set_activity_logging_enabled(enabled);
 }
 
 void Dispatcher::OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,

@@ -27,9 +27,9 @@ ScriptsRunInfo::ScriptsRunInfo(content::RenderFrame* render_frame,
 ScriptsRunInfo::~ScriptsRunInfo() {
 }
 
-void ScriptsRunInfo::LogRun() {
+void ScriptsRunInfo::LogRun(bool send_script_activity) {
   // Notify the browser if any extensions are now executing scripts.
-  if (!executing_scripts.empty()) {
+  if (!executing_scripts.empty() && send_script_activity) {
     content::RenderThread::Get()->Send(
         new ExtensionHostMsg_ContentScriptsExecuting(
             routing_id_, executing_scripts, frame_url_));

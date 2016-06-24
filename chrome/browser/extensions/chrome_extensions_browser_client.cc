@@ -411,4 +411,10 @@ ChromeExtensionsBrowserClient::CreateBluetoothChooser(
       new ChromeExtensionBluetoothChooser(frame, event_handler));
 }
 
+bool ChromeExtensionsBrowserClient::IsActivityLoggingEnabled(
+    content::BrowserContext* context) {
+  ActivityLog* activity_log = ActivityLog::GetInstance(context);
+  return activity_log && activity_log->is_active();
+}
+
 }  // namespace extensions

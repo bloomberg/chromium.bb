@@ -55,7 +55,8 @@ class ScriptInjection {
   ScriptInjection(std::unique_ptr<ScriptInjector> injector,
                   content::RenderFrame* render_frame,
                   std::unique_ptr<const InjectionHost> injection_host,
-                  UserScript::RunLocation run_location);
+                  UserScript::RunLocation run_location,
+                  bool log_activity);
   ~ScriptInjection();
 
   // Try to inject the script at the |current_location|. This returns
@@ -131,6 +132,9 @@ class ScriptInjection {
 
   // Whether or not the injection successfully injected JS.
   bool did_inject_js_;
+
+  // Whether or not we should log dom activity for this injection.
+  bool log_activity_;
 
   // Results storage.
   std::unique_ptr<base::Value> execution_result_;

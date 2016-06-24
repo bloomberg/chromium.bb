@@ -38,9 +38,18 @@ void RendererStartupHelper::Observe(
   DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
   content::RenderProcessHost* process =
       content::Source<content::RenderProcessHost>(source).ptr();
-  if (!ExtensionsBrowserClient::Get()->IsSameContext(
-          browser_context_, process->GetBrowserContext()))
+  ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
+  if (!client->IsSameContext(browser_context_, process->GetBrowserContext()))
     return;
+
+  bool activity_logging_enabled =
+      client->IsActivityLoggingEnabled(process->GetBrowserContext());
+  // We only send the ActivityLoggingEnabled message if it is enabled; otherwise
+  // the default (not enabled) is correct.
+  if (activity_logging_enabled) {
+    process->Send(
+        new ExtensionMsg_SetActivityLoggingEnabled(activity_logging_enabled));
+  }
 
   // Platform apps need to know the system font.
   // TODO(dbeam): this is not the system font in all cases.

@@ -41,8 +41,9 @@ struct ScriptsRunInfo {
   // The elapsed time since the ScriptsRunInfo was constructed.
   base::ElapsedTimer timer;
 
-  // Log information about a given script run.
-  void LogRun();
+  // Log information about a given script run. If |send_script_activity| is
+  // true, this also informs the browser of the script run.
+  void LogRun(bool send_script_activity);
 
  private:
   // The routinig id to use to notify the browser of any injections. Since the

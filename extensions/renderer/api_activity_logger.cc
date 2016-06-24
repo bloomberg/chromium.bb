@@ -12,17 +12,23 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/activity_log_converter_strategy.h"
 #include "extensions/renderer/api_activity_logger.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
 
 using content::V8ValueConverter;
 
 namespace extensions {
 
-APIActivityLogger::APIActivityLogger(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("LogEvent", base::Bind(&APIActivityLogger::LogEvent));
-  RouteFunction("LogAPICall", base::Bind(&APIActivityLogger::LogAPICall));
+APIActivityLogger::APIActivityLogger(ScriptContext* context,
+                                     Dispatcher* dispatcher)
+    : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
+  RouteFunction("LogEvent", base::Bind(&APIActivityLogger::LogEvent,
+                                       base::Unretained(this)));
+  RouteFunction("LogAPICall", base::Bind(&APIActivityLogger::LogAPICall,
+                                         base::Unretained(this)));
 }
+
+APIActivityLogger::~APIActivityLogger() {}
 
 // static
 void APIActivityLogger::LogAPICall(
@@ -44,6 +50,9 @@ void APIActivityLogger::LogInternal(
   CHECK(args[0]->IsString());
   CHECK(args[1]->IsString());
   CHECK(args[2]->IsArray());
+
+  if (!dispatcher_->activity_logging_enabled())
+    return;
 
   std::string ext_id = *v8::String::Utf8Value(args[0]);
   ExtensionHostMsg_APIActionOrEvent_Params params;
