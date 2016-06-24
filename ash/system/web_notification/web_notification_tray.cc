@@ -216,7 +216,6 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
   button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
   tray_container()->AddChildView(button_);
-  button_->SetFocusBehavior(FocusBehavior::NEVER);
   SetContentsBackground();
   tray_container()->SetBorder(views::Border::NullBorder());
   message_center_tray_.reset(new message_center::MessageCenterTray(
@@ -506,8 +505,6 @@ void WebNotificationTray::UpdateTrayContent() {
   SetVisible(IsLoggedIn());
   Layout();
   SchedulePaint();
-  if (IsLoggedIn())
-    status_area_widget()->system_tray()->SetNextFocusableView(this);
 }
 
 void WebNotificationTray::ClickedOutsideBubble() {
