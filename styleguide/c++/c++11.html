@@ -454,7 +454,8 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 <td>All C++11 features in <code>&lt;tuple&gt;</code>, e.g. <code>std::tie</code> and <code>std::tuple</code>.</td>
 <td>A fixed-size ordered collection of values of mixed types</td>
 <td><a href="http://en.cppreference.com/w/cpp/header/tuple">&lt;tuple&gt;</a></td>
-<td>Prefer <code>std::tuple</code> over <a href="https://crbug.com/554987"><code>base::Tuple</code></a>.</td>
+<td>Use <code>base::get</code> instead of <code>std::get</code> in case the <code>std::tuple</code> may be a rvalue-reference.
+<code>std::get</code> in &lt;=libstdc++-4.6 misses an overload for rvalue-reference of a tuple, and <code>base::get</code> complements it. </td>
 </tr>
 
 <tr>
