@@ -122,6 +122,7 @@
       'variables': {
         'mojom_typemaps': [
           'arc/common/app.typemap',
+          'arc/common/bluetooth.typemap',
         ],
       },
       'sources': [

@@ -1,0 +1,7 @@
+mojom = "//components/arc/common/bluetooth.mojom"
+public_headers = [ "//device/bluetooth/bluetooth_common.h" ]
+traits_headers = [ "//components/arc/bluetooth/bluetooth_struct_traits.h" ]
+deps = [
+  "//device/bluetooth",
+]
+type_mappings = [ "arc.mojom.BluetoothDeviceType=device::BluetoothTransport" ]

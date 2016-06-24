@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//components/arc/common/app.typemap" ]
+typemaps = [
+  "//components/arc/common/app.typemap",
+  "//components/arc/common/bluetooth.typemap",
+]

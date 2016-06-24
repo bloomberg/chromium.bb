@@ -1091,9 +1091,8 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::TYPE_OF_DEVICE) {
-    // TODO(smbarber): This needs to be populated with the actual device type
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
-    btp->set_device_type(mojom::BluetoothDeviceType::DUAL);
+    btp->set_device_type(device->GetType());
     properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
@@ -1147,9 +1146,9 @@ ArcBluetoothBridge::GetAdapterProperties(
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::TYPE_OF_DEVICE) {
-    // TODO(smbarber): Populate with the actual device type
+    // TODO(smbarber): Populate with the actual adapter type
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
-    btp->set_device_type(mojom::BluetoothDeviceType::DUAL);
+    btp->set_device_type(device::BLUETOOTH_TRANSPORT_DUAL);
     properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
