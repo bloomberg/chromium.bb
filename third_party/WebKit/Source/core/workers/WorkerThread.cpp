@@ -581,7 +581,11 @@ void WorkerThread::performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTas
     }
 
     InspectorInstrumentation::AsyncTask asyncTask(globalScope, task.get(), isInstrumented);
-    task->performTask(globalScope);
+    {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounter, new CustomCountHistogram("WorkerThread.Task.Time", 0, 10000000, 50));
+        ScopedUsHistogramTimer timer(scopedUsCounter);
+        task->performTask(globalScope);
+    }
 }
 
 void WorkerThread::performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure> task)
@@ -594,7 +598,11 @@ void WorkerThread::performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThread
         m_runningDebuggerTask = true;
     }
     ThreadDebugger::idleFinished(isolate());
-    (*task)();
+    {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounter, new CustomCountHistogram("WorkerThread.DebuggerTask.Time", 0, 10000000, 50));
+        ScopedUsHistogramTimer timer(scopedUsCounter);
+        (*task)();
+    }
     ThreadDebugger::idleStarted(isolate());
     {
         MutexLocker lock(m_threadStateMutex);

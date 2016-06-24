@@ -64468,9 +64468,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WorkerThread.DebuggerTask.Time" units="ms">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>The time taken for running a debugger task on WorkerThread.</summary>
+</histogram>
+
 <histogram name="WorkerThread.ExitCode" enum="WorkerThreadExitCode">
   <owner>nhiroki@chromium.org</owner>
   <summary>Records the exit code of WorkerThread.</summary>
+</histogram>
+
+<histogram name="WorkerThread.Task.Time" units="ms">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>The time taken for running a worker task on WorkerThread.</summary>
 </histogram>
 
 <histogram name="WrenchMenu.MenuAction" enum="WrenchMenuAction">
