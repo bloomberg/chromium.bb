@@ -2290,7 +2290,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self optOutScrollsToTopForSubviews];
 
   // Ensure the URL is as expected (and already reported to the delegate).
-  DCHECK(currentURL == _lastRegisteredRequestURL)
+  // If |_lastRegisteredRequestURL| is invalid then |currentURL| will be
+  // "about:blank".
+  DCHECK((currentURL == _lastRegisteredRequestURL) ||
+         (!_lastRegisteredRequestURL.is_valid() &&
+          _documentURL.spec() == url::kAboutBlankURL))
       << std::endl
       << "currentURL = [" << currentURL << "]" << std::endl
       << "_lastRegisteredRequestURL = [" << _lastRegisteredRequestURL << "]";
@@ -5095,7 +5099,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // This is the point where the document's URL has actually changed, and
   // pending navigation information should be applied to state information.
   [self setDocumentURL:net::GURLWithNSURL([_webView URL])];
-  DCHECK(_documentURL == _lastRegisteredRequestURL);
+
+  if (!_lastRegisteredRequestURL.is_valid() &&
+      _documentURL != _lastRegisteredRequestURL) {
+    // if |_lastRegisteredRequestURL| is an invalid URL, then |_documentURL|
+    // will be "about:blank".
+    [[self sessionController] updatePendingEntry:_documentURL];
+  }
+  DCHECK(_documentURL == _lastRegisteredRequestURL ||
+         (!_lastRegisteredRequestURL.is_valid() &&
+          _documentURL.spec() == url::kAboutBlankURL));
+
   self.webStateImpl->OnNavigationCommitted(_documentURL);
   [self commitPendingNavigationInfo];
   if ([self currentBackForwardListItemHolder]->navigation_type() ==
