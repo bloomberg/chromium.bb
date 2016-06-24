@@ -571,7 +571,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     // Add padding between the text and the link.
     cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
   }
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+  cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, 0);
 
