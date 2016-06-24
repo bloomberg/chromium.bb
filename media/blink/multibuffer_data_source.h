@@ -101,6 +101,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
 
   int64_t GetMemoryUsage() const override;
 
+  GURL GetUrlAfterRedirects() const override;
+
   // DataSource implementation.
   // Called from demuxer thread.
   void Stop() override;

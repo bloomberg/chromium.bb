@@ -4,10 +4,12 @@
 
 #include "content/browser/media/media_browsertest.h"
 
+#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -20,6 +22,11 @@ namespace content {
 const char MediaBrowserTest::kEnded[] = "ENDED";
 const char MediaBrowserTest::kError[] = "ERROR";
 const char MediaBrowserTest::kFailed[] = "FAILED";
+
+void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
+  command_line->AppendSwitch(
+      switches::kDisableGestureRequirementForMediaPlayback);
+}
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
                                         const base::StringPairs& query_params,

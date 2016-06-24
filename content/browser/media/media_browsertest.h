@@ -24,6 +24,9 @@ class MediaBrowserTest : public ContentBrowserTest {
   static const char kError[];
   static const char kFailed[];
 
+  // ContentBrowserTest implementation.
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
   // Runs a html page with a list of URL query parameters.
   // If http is true, the test starts a local http test server to load the test
   // page, otherwise a local file URL is loaded inside the content shell.

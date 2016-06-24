@@ -114,6 +114,10 @@ class BufferedDataSourceInterface : public DataSource {
 
   // Returns an estimate of the number of bytes held by the data source.
   virtual int64_t GetMemoryUsage() const = 0;
+
+  // Returns the post-Initialize() URL after redirects have been followed; this
+  // value may change at a later time.
+  virtual GURL GetUrlAfterRedirects() const = 0;
 };
 
 // A data source capable of loading URLs and buffering the data using an
@@ -189,6 +193,8 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
 
   // Returns an estimate of the number of bytes held by the data source.
   int64_t GetMemoryUsage() const override;
+
+  GURL GetUrlAfterRedirects() const override;
 
   // DataSource implementation.
   // Called from demuxer thread.

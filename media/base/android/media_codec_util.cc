@@ -181,23 +181,15 @@ bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& android_mime_type,
 
 // static
 bool MediaCodecUtil::IsHLSPath(const GURL& url) {
-  if (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile())
-    return false;
-
-  std::string path = url.path();
-  return base::EndsWith(path, ".m3u8", base::CompareCase::INSENSITIVE_ASCII);
+  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile()) &&
+         base::EndsWith(url.path(), ".m3u8",
+                        base::CompareCase::INSENSITIVE_ASCII);
 }
 
 // static
 bool MediaCodecUtil::IsHLSURL(const GURL& url) {
-  if (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile())
-    return false;
-
-  std::string spec = url.spec();
-  if (base::EndsWith(spec, ".m3u8", base::CompareCase::INSENSITIVE_ASCII))
-    return true;
-
-  return (spec.find("m3u8") != std::string::npos);
+  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile()) &&
+         url.spec().find("m3u8") != std::string::npos;
 }
 
 // static

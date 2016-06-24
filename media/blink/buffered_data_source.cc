@@ -268,6 +268,10 @@ int64_t BufferedDataSource::GetMemoryUsage() const {
   return loader_ ? loader_->GetMemoryUsage() : 0;
 }
 
+GURL BufferedDataSource::GetUrlAfterRedirects() const {
+  return response_original_url_;
+}
+
 void BufferedDataSource::Read(int64_t position,
                               int size,
                               uint8_t* data,

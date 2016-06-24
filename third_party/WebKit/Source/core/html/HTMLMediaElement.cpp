@@ -944,8 +944,7 @@ void HTMLMediaElement::loadSourceFromObject()
 
     // No type is available when the resource comes from the 'srcObject'
     // attribute.
-    ContentType contentType((String()));
-    loadResource(WebMediaPlayerSource(WebMediaStream(m_srcObject)), contentType);
+    loadResource(WebMediaPlayerSource(WebMediaStream(m_srcObject)), ContentType((String())));
 }
 
 void HTMLMediaElement::loadSourceFromAttribute()
@@ -968,8 +967,7 @@ void HTMLMediaElement::loadSourceFromAttribute()
 
     // No type is available when the url comes from the 'src' attribute so
     // MediaPlayer will have to pick a media engine based on the file extension.
-    ContentType contentType((String()));
-    loadResource(WebMediaPlayerSource(WebURL(mediaURL)), contentType);
+    loadResource(WebMediaPlayerSource(WebURL(mediaURL)), ContentType((String())));
 }
 
 void HTMLMediaElement::loadNextSourceChild()
@@ -988,7 +986,7 @@ void HTMLMediaElement::loadNextSourceChild()
     loadResource(WebMediaPlayerSource(WebURL(mediaURL)), contentType);
 }
 
-void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentType& contentType)
+void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, const ContentType& contentType)
 {
     DCHECK(isMainThread());
     KURL url;
@@ -1077,7 +1075,7 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentT
         layoutObject()->updateFromElement();
 }
 
-void HTMLMediaElement::startPlayerLoad()
+void HTMLMediaElement::startPlayerLoad(const KURL& playerProvidedUrl)
 {
     DCHECK(!m_webMediaPlayer);
 
@@ -1098,7 +1096,7 @@ void HTMLMediaElement::startPlayerLoad()
         // 'authentication flag' to control how user:pass embedded in a
         // media resource URL should be treated, then update the handling
         // here to match.
-        KURL requestURL = m_currentSrc;
+        KURL requestURL = playerProvidedUrl.isNull() ? KURL(m_currentSrc) : playerProvidedUrl;
         if (!requestURL.user().isEmpty())
             requestURL.setUser(String());
         if (!requestURL.pass().isEmpty())
@@ -2997,6 +2995,16 @@ void HTMLMediaElement::cancelledRemotePlaybackRequest()
 {
     if (remotePlaybackClient())
         remotePlaybackClient()->connectCancelled();
+}
+
+void HTMLMediaElement::requestReload(const WebURL& newUrl)
+{
+    DCHECK(webMediaPlayer());
+    DCHECK(!m_srcObject);
+    DCHECK(newUrl.isValid());
+    DCHECK(isSafeToLoadURL(newUrl, Complain));
+    resetMediaPlayerAndMediaSource();
+    startPlayerLoad(newUrl);
 }
 
 // MediaPlayerPresentation methods

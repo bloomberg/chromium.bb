@@ -349,6 +349,7 @@ private:
     void connectedToRemoteDevice() final;
     void disconnectedFromRemoteDevice() final;
     void cancelledRemotePlaybackRequest() final;
+    void requestReload(const WebURL&) final;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);
@@ -369,8 +370,8 @@ private:
     void invokeResourceSelectionAlgorithm();
     void loadInternal();
     void selectMediaResource();
-    void loadResource(const WebMediaPlayerSource&, ContentType&);
-    void startPlayerLoad();
+    void loadResource(const WebMediaPlayerSource&, const ContentType&);
+    void startPlayerLoad(const KURL& playerProvidedUrl = KURL());
     void setPlayerPreload();
     WebMediaPlayer::LoadType loadType() const;
     void scheduleNextSourceChild();

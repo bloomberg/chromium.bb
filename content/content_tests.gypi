@@ -247,6 +247,7 @@
       'browser/media/media_browsertest.cc',
       'browser/media/media_browsertest.h',
       'browser/media/media_canplaytype_browsertest.cc',
+      'browser/media/media_redirect_browsertest.cc',
       'browser/media/media_source_browsertest.cc',
       'browser/media/midi_browsertest.cc',
       'browser/media/session/media_session_browsertest.cc',

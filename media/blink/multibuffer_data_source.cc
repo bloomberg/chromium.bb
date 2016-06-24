@@ -328,6 +328,10 @@ int64_t MultibufferDataSource::GetMemoryUsage() const {
          << url_data_->multibuffer()->block_size_shift();
 }
 
+GURL MultibufferDataSource::GetUrlAfterRedirects() const {
+  return url_data_->url();
+}
+
 void MultibufferDataSource::Read(int64_t position,
                                  int size,
                                  uint8_t* data,
