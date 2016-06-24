@@ -124,7 +124,11 @@ struct DrawQuad {
 
   // Index into the containing pass' shared quad state array which has state
   // (transforms etc) shared by multiple quads.
-  uint32 shared_quad_state_index;
+  // TODO(fsamuel): This is not currently used because we store the
+  // indicies to SharedQuadStates in a separate array. This is more expensive
+  // than storing them inline here, but we need support for context propagation
+  // in Mojo StructTraits in order to store the sqs index here.
+  //uint32 shared_quad_state_index;
 
   // Only one of the following will be set, depending on the material.
   DebugBorderQuadState? debug_border_quad_state;

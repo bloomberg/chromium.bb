@@ -146,6 +146,7 @@ bool StructTraits<cc::mojom::RenderPassQuadState, cc::DrawQuad>::Read(
   cc::RenderPassDrawQuad* quad = static_cast<cc::RenderPassDrawQuad*>(out);
   quad->resources.ids[cc::RenderPassDrawQuad::kMaskResourceIdIndex] =
       data.mask_resource_id();
+  quad->resources.count = data.mask_resource_id() ? 1 : 0;
   return data.ReadRenderPassId(&quad->render_pass_id) &&
          data.ReadMaskUvScale(&quad->mask_uv_scale) &&
          data.ReadMaskTextureSize(&quad->mask_texture_size) &&
@@ -179,6 +180,7 @@ bool StructTraits<cc::mojom::TextureQuadState, cc::DrawQuad>::Read(
   cc::TextureDrawQuad* quad = static_cast<cc::TextureDrawQuad*>(out);
   quad->resources.ids[cc::TextureDrawQuad::kResourceIdIndex] =
       data.resource_id();
+  quad->resources.count = 1;
   quad->premultiplied_alpha = data.premultiplied_alpha();
   if (!data.ReadUvTopLeft(&quad->uv_top_left) ||
       !data.ReadUvBottomRight(&quad->uv_bottom_right)) {
@@ -208,6 +210,7 @@ bool StructTraits<cc::mojom::TileQuadState, cc::DrawQuad>::Read(
   quad->swizzle_contents = data.swizzle_contents();
   quad->nearest_neighbor = data.nearest_neighbor();
   quad->resources.ids[cc::TileDrawQuad::kResourceIdIndex] = data.resource_id();
+  quad->resources.count = 1;
   return true;
 }
 
@@ -263,6 +266,11 @@ bool StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad>::Read(
       data.v_plane_resource_id();
   quad->resources.ids[cc::YUVVideoDrawQuad::kAPlaneResourceIdIndex] =
       data.a_plane_resource_id();
+  static_assert(cc::YUVVideoDrawQuad::kAPlaneResourceIdIndex ==
+                    cc::DrawQuad::Resources::kMaxResourceIdCount - 1,
+                "The A plane resource should be the last resource ID.");
+  quad->resources.count = data.a_plane_resource_id() ? 4 : 3;
+
   if (!data.ReadColorSpace(&quad->color_space))
     return false;
   quad->resource_offset = data.resource_offset();

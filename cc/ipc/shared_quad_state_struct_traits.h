@@ -17,15 +17,16 @@ struct StructTraits<cc::mojom::SharedQuadState, cc::SharedQuadState> {
     return sqs.quad_to_target_transform;
   }
 
-  static gfx::Size quad_layer_bounds(const cc::SharedQuadState& sqs) {
+  static const gfx::Size& quad_layer_bounds(const cc::SharedQuadState& sqs) {
     return sqs.quad_layer_bounds;
   }
 
-  static gfx::Rect visible_quad_layer_rect(const cc::SharedQuadState& sqs) {
+  static const gfx::Rect& visible_quad_layer_rect(
+      const cc::SharedQuadState& sqs) {
     return sqs.visible_quad_layer_rect;
   }
 
-  static gfx::Rect clip_rect(const cc::SharedQuadState& sqs) {
+  static const gfx::Rect& clip_rect(const cc::SharedQuadState& sqs) {
     return sqs.clip_rect;
   }
 

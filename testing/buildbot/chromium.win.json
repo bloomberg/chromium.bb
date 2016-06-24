@@ -307,12 +307,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_surfaces_lib_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "mojo_system_unittests"
       },
       {
@@ -1247,12 +1241,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_shell_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_surfaces_lib_unittests"
       },
       {
         "swarming": {

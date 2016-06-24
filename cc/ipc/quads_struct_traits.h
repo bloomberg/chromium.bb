@@ -375,11 +375,6 @@ struct StructTraits<cc::mojom::DrawQuad, cc::DrawQuad> {
     return quad.needs_blending;
   }
 
-  static uint32_t shared_quad_state_index(const cc::DrawQuad& quad) {
-    // TODO(fsamuel): Add shared_quad_state_index field to cc::DrawQuad.
-    return 0;
-  }
-
   static const cc::DrawQuad& debug_border_quad_state(const cc::DrawQuad& quad) {
     return quad;
   }

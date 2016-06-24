@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "components/mus/public/cpp/context_provider.h"
 #include "components/mus/public/cpp/output_surface.h"
-#include "components/mus/public/cpp/surfaces/surfaces_utils.h"
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "components/mus/public/interfaces/surface.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"

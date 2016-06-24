@@ -12,11 +12,12 @@ import "ui/gfx/mojo/transform.mojom";
 
 // See cc/quads/render_pass.h.
 struct RenderPass {
-  cc.mojom.RenderPassId id;
+  RenderPassId id;
   gfx.mojom.Rect output_rect;
   gfx.mojom.Rect damage_rect;
   gfx.mojom.Transform transform_to_root_target;
   bool has_transparent_background;
-  array<DrawQuad> quads;
-  cc.mojom.SharedQuadStateList shared_quad_states;
+  QuadList quad_list;
+  array<uint32> shared_quad_state_references;
+  SharedQuadStateList shared_quad_state_list;
 };

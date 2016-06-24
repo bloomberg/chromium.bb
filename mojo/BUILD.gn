@@ -29,7 +29,6 @@ group("mojo") {
 group("tests") {
   testonly = true
   deps = [
-    "//components/mus/public/cpp/surfaces/tests:mojo_surfaces_lib_unittests",
     "//ipc:ipc_tests",
     "//mojo/common:mojo_common_unittests",
     "//mojo/converters/blink:blink_converters_unittests",

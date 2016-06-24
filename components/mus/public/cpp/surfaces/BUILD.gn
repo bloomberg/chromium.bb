@@ -9,8 +9,6 @@ component("surfaces") {
     "mojo_surfaces_export.h",
     "surfaces_type_converters.cc",
     "surfaces_type_converters.h",
-    "surfaces_utils.cc",
-    "surfaces_utils.h",
   ]
 
   defines = [ "MOJO_SURFACES_IMPLEMENTATION" ]

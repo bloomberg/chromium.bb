@@ -428,10 +428,6 @@
     "label": "//services/shell/tests:mojo_shell_unittests",
     "type": "console_test_launcher",
   },
-  "mojo_surfaces_lib_unittests": {
-    "label": "//components/mus/public/cpp/surfaces/tests:mojo_surfaces_lib_unittests",
-    "type": "windowed_test_launcher",
-  },
   "mojo_system_unittests": {
     "label": "//mojo/edk/system:mojo_system_unittests",
     "type": "console_test_launcher",

@@ -29,28 +29,9 @@ class SharedQuadState;
 namespace mojo {
 
 // Types from quads.mojom
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<cc::mojom::DrawQuadPtr, cc::DrawQuad> {
-  static cc::mojom::DrawQuadPtr Convert(const cc::DrawQuad& input);
-};
-
 std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     const cc::mojom::RenderPassPtr& input,
     const cc::CompositorFrameMetadata& metadata);
-
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<cc::mojom::RenderPassPtr, cc::RenderPass> {
-  static cc::mojom::RenderPassPtr Convert(const cc::RenderPass& input);
-};
-
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<std::unique_ptr<cc::RenderPass>, cc::mojom::RenderPassPtr> {
-  static std::unique_ptr<cc::RenderPass> Convert(
-      const cc::mojom::RenderPassPtr& input);
-};
 
 // Types from compositor_frame.mojom
 MOJO_SURFACES_EXPORT std::unique_ptr<cc::CompositorFrame>

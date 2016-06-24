@@ -443,21 +443,6 @@
         "test": "mojo_runner_host_unittests"
       },
       {
-        "override_isolate_target": "mojo_surfaces_lib_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "4",
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ],
-          "hard_timeout": 60
-        },
-        "test": "mojo_surfaces_lib_unittests"
-      },
-      {
         "override_isolate_target": "mojo_system_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -725,9 +710,6 @@
       },
       {
         "test": "mojo_runner_host_unittests"
-      },
-      {
-        "test": "mojo_surfaces_lib_unittests"
       },
       {
         "test": "mojo_system_unittests"
@@ -1285,12 +1267,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_shell_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_surfaces_lib_unittests"
       },
       {
         "swarming": {
