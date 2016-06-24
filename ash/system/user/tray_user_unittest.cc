@@ -5,13 +5,13 @@
 #include <vector>
 
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/user/tray_user_separator.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/user/tray_user.h"
-#include "ash/system/user/tray_user_separator.h"
 #include "ash/system/user/user_view.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"

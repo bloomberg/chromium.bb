@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/login_status.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_window_ids.h"
@@ -24,6 +25,7 @@
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/update/update_observer.h"
+#include "ash/common/system/user/user_observer.h"
 #include "ash/common/system/volume_control_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -33,8 +35,6 @@
 #include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/user/login_status.h"
-#include "ash/system/user/user_observer.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_USER_TRAY_USER_SEPARATOR_H_
-#define ASH_SYSTEM_USER_TRAY_USER_SEPARATOR_H_
+#ifndef ASH_COMMON_SYSTEM_USER_TRAY_USER_SEPARATOR_H_
+#define ASH_COMMON_SYSTEM_USER_TRAY_USER_SEPARATOR_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/system/tray/system_tray_item.h"
@@ -41,4 +41,4 @@ class ASH_EXPORT TrayUserSeparator : public SystemTrayItem {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_USER_TRAY_USER_SEPARATOR_H_
+#endif  // ASH_COMMON_SYSTEM_USER_TRAY_USER_SEPARATOR_H_

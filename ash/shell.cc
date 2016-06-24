@@ -17,6 +17,7 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/keyboard/keyboard_ui.h"
+#include "ash/common/login_status.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"

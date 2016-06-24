@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_observer.h"
-#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -55,6 +54,7 @@ class AlwaysOnTopController;
 class AnimatingDesktopController;
 class DesktopBackgroundWidgetController;
 class DockedWindowLayoutManager;
+enum class LoginStatus;
 class PanelLayoutManager;
 class RootWindowControllerCommon;
 class Shelf;

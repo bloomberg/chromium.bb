@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <string>
 
+#include "ash/common/login_status.h"
 #include "ash/shell.h"
-#include "ash/system/user/login_status.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

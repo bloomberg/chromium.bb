@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/user/button_from_view.h"
+#include "ash/common/system/user/button_from_view.h"
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/system/tray/tray_constants.h"

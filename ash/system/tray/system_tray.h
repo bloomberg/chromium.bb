@@ -13,13 +13,14 @@
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/tray_background_view.h"
 #include "ash/system/cast/tray_cast.h"
-#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/view.h"
 
 namespace ash {
+
+enum class LoginStatus;
 class ScreenTrayItem;
 class StatusAreaWidget;
 class SystemBubbleWrapper;

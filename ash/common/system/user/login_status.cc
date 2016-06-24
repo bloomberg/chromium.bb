@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/user/login_status.h"
+#include "ash/common/system/user/login_status.h"
 
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -25,12 +25,10 @@ base::string16 GetLocalizedSignOutStringForStatus(LoginStatus status,
       message_id = IDS_ASH_STATUS_TRAY_EXIT_PUBLIC;
       break;
     default:
-      if (ash::Shell::GetInstance()->session_state_delegate()->
-              NumberOfLoggedInUsers() > 1) {
-        message_id = IDS_ASH_STATUS_TRAY_SIGN_OUT_ALL;
-      } else {
-        message_id = IDS_ASH_STATUS_TRAY_SIGN_OUT;
-      }
+      message_id =
+          WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers() > 1
+              ? IDS_ASH_STATUS_TRAY_SIGN_OUT_ALL
+              : IDS_ASH_STATUS_TRAY_SIGN_OUT;
       break;
   }
   base::string16 message =

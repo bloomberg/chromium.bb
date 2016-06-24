@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/supervised/tray_supervised_user.h"
 
-#include "ash/system/user/login_status.h"
+#include "ash/common/login_status.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ui/message_center/message_center.h"

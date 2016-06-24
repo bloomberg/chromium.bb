@@ -5,11 +5,11 @@
 #ifndef ASH_SYSTEM_STATUS_AREA_WIDGET_TEST_HELPER_H_
 #define ASH_SYSTEM_STATUS_AREA_WIDGET_TEST_HELPER_H_
 
-#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 
 namespace ash {
 
+enum class LoginStatus;
 class StatusAreaWidget;
 
 class StatusAreaWidgetTestHelper {

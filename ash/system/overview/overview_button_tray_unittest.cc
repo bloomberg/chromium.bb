@@ -5,6 +5,7 @@
 #include "ash/system/overview/overview_button_tray.h"
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/login_status.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
@@ -13,7 +14,6 @@
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/status_area_widget_test_helper.h"

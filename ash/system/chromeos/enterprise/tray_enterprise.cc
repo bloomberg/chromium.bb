@@ -4,12 +4,12 @@
 
 #include "ash/system/chromeos/enterprise/tray_enterprise.h"
 
+#include "ash/common/login_status.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/user/login_status.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "grit/ash_resources.h"

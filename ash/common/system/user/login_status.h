@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_USER_LOGIN_STATUS_H_
-#define ASH_SYSTEM_USER_LOGIN_STATUS_H_
+#ifndef ASH_COMMON_SYSTEM_USER_LOGIN_STATUS_H_
+#define ASH_COMMON_SYSTEM_USER_LOGIN_STATUS_H_
 
 #include "ash/common/login_status.h"
 #include "base/strings/string16.h"
@@ -17,4 +17,4 @@ base::string16 GetLocalizedSignOutStringForStatus(LoginStatus status,
 }  // namespace user
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_USER_LOGIN_STATUS_H_
+#endif  // ASH_COMMON_SYSTEM_USER_LOGIN_STATUS_H_

@@ -5,11 +5,13 @@
 #ifndef ASH_SYSTEM_USER_USER_CARD_VIEW_H_
 #define ASH_SYSTEM_USER_USER_CARD_VIEW_H_
 
-#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace ash {
+
+enum class LoginStatus;
+
 namespace tray {
 
 // The view displaying information about the user, such as user's avatar, email

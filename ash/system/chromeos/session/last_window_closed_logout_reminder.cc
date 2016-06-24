@@ -4,12 +4,12 @@
 
 #include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
 
+#include "ash/common/login_status.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/user/login_status.h"
 #include "base/time/time.h"
 
 namespace ash {

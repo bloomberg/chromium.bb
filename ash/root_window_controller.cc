@@ -13,6 +13,7 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
+#include "ash/common/login_status.h"
 #include "ash/common/root_window_controller_common.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_types.h"

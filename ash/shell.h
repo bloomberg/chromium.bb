@@ -13,7 +13,6 @@
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/wm_shell_common.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/system/user/login_status.h"
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/compiler_specific.h"
@@ -109,6 +108,7 @@ class LastWindowClosedLogoutReminder;
 class LinkHandlerModelFactory;
 class LocaleNotificationController;
 class LockStateController;
+enum class LoginStatus;
 class LogoutConfirmationController;
 class MagnificationController;
 class MaximizeModeController;

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/user/tray_user_separator.h"
+#include "ash/common/system/user/tray_user_separator.h"
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -25,7 +24,7 @@ views::View* TrayUserSeparator::CreateDefaultView(LoginStatus status) {
     return NULL;
 
   const SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
+      WmShell::Get()->GetSessionStateDelegate();
 
   // If the screen is locked, a system modal dialog or a single user is shown,
   // show nothing.

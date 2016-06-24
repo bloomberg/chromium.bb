@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/system/user/user_observer.h"
+#include "ash/common/system/user/user_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 

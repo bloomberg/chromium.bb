@@ -7,7 +7,6 @@
 
 #include "ash/common/keyboard/keyboard_ui_observer.h"
 #include "ash/common/system/tray/tray_background_view.h"
-#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 

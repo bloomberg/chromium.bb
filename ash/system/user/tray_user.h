@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/common/session/session_types.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/system/user/user_observer.h"
+#include "ash/common/system/user/user_observer.h"
 #include "base/macros.h"
 
 namespace gfx {
