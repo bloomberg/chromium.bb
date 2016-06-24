@@ -36,6 +36,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutEmbeddedObject.h"
@@ -799,7 +800,6 @@ void CompositedLayerMapping::updateMainGraphicsLayerGeometry(const IntRect& rela
     // descendants. So, the visibility flag for m_graphicsLayer should be true if there are any
     // non-compositing visible layers.
     bool contentsVisible = m_owningLayer.hasVisibleContent() || hasVisibleNonCompositingDescendant(&m_owningLayer);
-
     m_graphicsLayer->setContentsVisible(contentsVisible);
 
     m_graphicsLayer->setBackfaceVisibility(layoutObject()->style()->backfaceVisibility() == BackfaceVisibilityVisible);
@@ -1224,7 +1224,13 @@ void CompositedLayerMapping::updateContentsOffsetInCompositingLayer(const IntPoi
 
 void CompositedLayerMapping::updateDrawsContent()
 {
-    bool hasPaintedContent = containsPaintedContent();
+    bool inOverlayFullscreenVideo = false;
+    if (layoutObject()->isVideo()) {
+        HTMLVideoElement* videoElement = toHTMLVideoElement(layoutObject()->node());
+        if (videoElement->isFullscreen() && videoElement->usesOverlayFullscreenVideo())
+            inOverlayFullscreenVideo = true;
+    }
+    bool hasPaintedContent = inOverlayFullscreenVideo ? false : containsPaintedContent();
     m_graphicsLayer->setDrawsContent(hasPaintedContent);
 
     if (m_scrollingLayer) {
