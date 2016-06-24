@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.multiwindow;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ActivityState;
@@ -89,6 +91,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature("MultiWindow")
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivityForIntentOnlyActivity1IsRunning()
             throws InterruptedException {
         ChromeTabbedActivity activity1 = getActivity();
@@ -107,6 +110,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature("MultiWindow")
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivityForIntentOnlyActivity2IsRunning()
             throws InterruptedException {
         ChromeTabbedActivity activity1 = getActivity();
@@ -126,6 +130,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature("MultiWindow")
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivityForIntentNoActivitiesAlive() {
         ChromeTabbedActivity activity1 = getActivity();
         activity1.finishAndRemoveTask();
@@ -141,6 +146,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature("MultiWindow")
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivity2TaskRunning() throws InterruptedException {
         ChromeTabbedActivity activity2 = createSecondChromeTabbedActivity();
         assertTrue(MultiWindowUtils.getInstance().getTabbedActivity2TaskRunning());

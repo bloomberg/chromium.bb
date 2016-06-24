@@ -8,7 +8,9 @@ import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_APART;
 import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_END;
 import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_START;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.test.InstrumentationTestCase;
 import android.test.MoreAsserts;
 import android.test.UiThreadTest;
@@ -47,6 +49,7 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
 
     @SmallTest
     @UiThreadTest
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void testAlignSideBySide() {
         runLayoutTest(ALIGN_START, false, false, false);
         runLayoutTest(ALIGN_START, false, true, false);
@@ -81,6 +84,7 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
     }
 
     /** Lays out two controls that fit on the same line. */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void runLayoutTest(
             int alignment, boolean isRtl, boolean addSecondView, boolean addPadding) {
         DualControlLayout layout = new DualControlLayout(mContext, null);
@@ -179,6 +183,7 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
 
     @SmallTest
     @UiThreadTest
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void testStacked() {
         runStackedLayoutTest(ALIGN_START, false, false);
         runStackedLayoutTest(ALIGN_START, true, false);
@@ -198,6 +203,7 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
 
     /** Runs a test where the controls don't fit on the same line.
      * @param addPadding TODO(dfalcantara):*/
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void runStackedLayoutTest(int alignment, boolean isRtl, boolean addPadding) {
         DualControlLayout layout = new DualControlLayout(mContext, null);
         if (addPadding) layout.setPadding(PADDING_LEFT, PADDING_TOP, PADDING_RIGHT, PADDING_BOTTOM);
