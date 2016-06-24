@@ -392,6 +392,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSSLVersionFallbackMin,
     ssl_config::prefs::kSSLVersionFallbackMin,
     base::Value::TYPE_STRING },
+  { key::kDHEEnabled,
+    ssl_config::prefs::kDHEEnabled,
+    base::Value::TYPE_BOOLEAN },
 #if defined(ENABLE_MEDIA_ROUTER)
   { key::kEnableMediaRouter,
     prefs::kEnableMediaRouter,

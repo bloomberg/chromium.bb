@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -81,6 +82,10 @@ uint16_t SSLProtocolVersionFromString(const std::string& version_str) {
   }
   return version;
 }
+
+const base::Feature kDHECiphersFeature{
+    "DHECiphers", base::FEATURE_DISABLED_BY_DEFAULT,
+};
 
 }  // namespace
 
@@ -168,6 +173,7 @@ class SSLConfigServiceManagerPref : public ssl_config::SSLConfigServiceManager {
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
   StringPrefMember ssl_version_fallback_min_;
+  BooleanPrefMember dhe_enabled_;
 
   // The cached list of disabled SSL cipher suites.
   std::vector<uint16_t> disabled_cipher_suites_;
@@ -186,6 +192,14 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
       io_task_runner_(io_task_runner) {
   DCHECK(local_state);
 
+  // Restore DHE-based ciphers if enabled via features.
+  // TODO(davidben): Remove this when the removal has succeeded.
+  // https://crbug.com/619194.
+  if (base::FeatureList::IsEnabled(kDHECiphersFeature)) {
+    local_state->SetDefaultPrefValue(ssl_config::prefs::kDHEEnabled,
+                                     new base::FundamentalValue(true));
+  }
+
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =
       base::Bind(&SSLConfigServiceManagerPref::OnPreferenceChanged,
                  base::Unretained(this), local_state);
@@ -201,6 +215,8 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
                         local_state_callback);
   ssl_version_fallback_min_.Init(ssl_config::prefs::kSSLVersionFallbackMin,
                                  local_state, local_state_callback);
+  dhe_enabled_.Init(ssl_config::prefs::kDHEEnabled, local_state,
+                    local_state_callback);
 
   local_state_change_registrar_.Init(local_state);
   local_state_change_registrar_.Add(ssl_config::prefs::kCipherSuiteBlacklist,
@@ -229,6 +245,8 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionFallbackMin,
                                std::string());
   registry->RegisterListPref(ssl_config::prefs::kCipherSuiteBlacklist);
+  registry->RegisterBooleanPref(ssl_config::prefs::kDHEEnabled,
+                                default_config.dhe_enabled);
 }
 
 net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
@@ -285,6 +303,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     config->version_fallback_min = version_fallback_min;
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;
+  config->dhe_enabled = dhe_enabled_.GetValue();
 }
 
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(

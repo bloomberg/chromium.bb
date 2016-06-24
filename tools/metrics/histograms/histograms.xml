@@ -68057,6 +68057,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-202" label="CERT_AUTHORITY_INVALID"/>
   <int value="-201" label="CERT_DATE_INVALID"/>
   <int value="-200" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="-172" label="SSL_OBSOLETE_CIPHER"/>
   <int value="-171" label="CT_CONSISTENCY_PROOF_PARSING_FAILED"/>
   <int value="-170" label="UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH"/>
   <int value="-169" label="CT_STH_INCOMPLETE"/>
@@ -71239,7 +71240,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="14" label="Enable Safe Browsing"/>
   <int value="15" label="Enable reporting of usage and crash-related data"/>
   <int value="16" label="Enable saving passwords to the password manager"/>
-  <int value="17" label="Allow users to show passwords in Password Manager"/>
+  <int value="17"
+      label="Allow users to show passwords in Password Manager (deprecated)"/>
   <int value="18" label="Enable AutoFill"/>
   <int value="19" label="Specify a list of disabled plugins"/>
   <int value="20" label="Disable synchronization of data with Google"/>
@@ -71632,27 +71634,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="315" label="Block key generation on these sites"/>
   <int value="316"
       label="Configure the required domain name for remote access clients"/>
-  <int value="317" label="ARC Enabled"/>
+  <int value="317" label="Enable ARC"/>
   <int value="318" label="Configure ARC"/>
   <int value="319"
       label="Allow the auto launched with zero delay kiosk app to control
-             ChromeOS version"/>
+             Google Chrome OS version"/>
   <int value="320" label="Control use of the Web Bluetooth API"/>
   <int value="321" label="Configure the login authentication behavior"/>
   <int value="322" label="Whitelist of USB detachable devices"/>
   <int value="323" label="Allow bluetooth on device"/>
   <int value="324" label="Suppress the unsupported OS warning"/>
-  <int value="325" label="Enable queries to Quirks Server"/>
+  <int value="325"
+      label="Enable queries to Quirks Server for hardware profiles"/>
   <int value="326" label="Configure the automatic timezone detection method"/>
-  <int value="327" label="Enable ending processes in Task Manager"/>
+  <int value="327" label="Enables ending processes in Task Manager"/>
   <int value="328"
       label="URLs that will be granted access to video capture devices on
              SAML login pages"/>
   <int value="329" label="Permit locking the screen"/>
   <int value="330" label="Set certificate availability for ARC-apps"/>
   <int value="331" label="Define domains allowed to access Google Apps"/>
-  <int value="332" label="Enable PAC https:// URL stripping"/>
+  <int value="332" label="Enable PAC URL stripping (for https://)"/>
   <int value="333" label="Enables cast"/>
+  <int value="334" label="Whether DHE cipher suites in TLS are enabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
@@ -82750,6 +82754,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="169" label="CT_STH_INCOMPLETE"/>
   <int value="170" label="UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH"/>
   <int value="171" label="CT_CONSISTENCY_PROOF_PARSING_FAILED"/>
+  <int value="172" label="SSL_OBSOLETE_CIPHER"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>

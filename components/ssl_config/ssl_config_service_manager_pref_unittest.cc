@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -197,4 +198,27 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoTLS1Fallback) {
   config_service->GetSSLConfig(&ssl_config);
   // The command-line option must not have been honored.
   EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2, ssl_config.version_fallback_min);
+}
+
+// Tests that DHE may be re-enabled via features.
+TEST_F(SSLConfigServiceManagerPrefTest, DHEFeature) {
+  // Toggle the feature.
+  base::FeatureList::ClearInstanceForTesting();
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine("DHECiphers", std::string());
+  base::FeatureList::SetInstance(std::move(feature_list));
+
+  TestingPrefServiceSimple local_state;
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
+      SSLConfigServiceManager::CreateDefaultManager(
+          &local_state, base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
+  ASSERT_TRUE(config_service.get());
+
+  // The feature should have switched the default version_fallback_min value.
+  SSLConfig ssl_config;
+  config_service->GetSSLConfig(&ssl_config);
+  EXPECT_TRUE(ssl_config.dhe_enabled);
 }

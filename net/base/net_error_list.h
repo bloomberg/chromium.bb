@@ -371,6 +371,12 @@ NET_ERROR(UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH, -170)
 // Certificate Transparency: Failed to parse the received consistency proof.
 NET_ERROR(CT_CONSISTENCY_PROOF_PARSING_FAILED, -171)
 
+// The SSL server required an unsupported cipher suite that has since been
+// removed. This error will temporarily be signaled on a fallback for one or two
+// releases immediately following a cipher suite's removal, after which the
+// fallback will be removed.
+NET_ERROR(SSL_OBSOLETE_CIPHER, -172)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

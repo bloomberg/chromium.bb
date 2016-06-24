@@ -1870,6 +1870,16 @@
   "RC4Enabled": {
   },
 
+  "DHEEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DHEEnabled": true },
+    "pref_mappings": [
+      { "pref": "ssl.dhe_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "WelcomePageOnOSUpgradeEnabled": {
     "os": ["win"],
     "test_policy": { "WelcomePageOnOSUpgradeEnabled": false },

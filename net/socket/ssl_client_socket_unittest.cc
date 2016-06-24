@@ -2640,21 +2640,32 @@ TEST_F(SSLClientSocketTest, FallbackShardSessionCache) {
             SSLConnectionStatusToVersion(ssl_info.connection_status));
 }
 
-// Test that DHE is only enabled if deprecated_cipher_suites_enabled is set.
-TEST_F(SSLClientSocketTest, DHEDeprecated) {
+// Test that DHE is removed but gives a dedicated error. Also test that the
+// dhe_enabled option can restore it.
+TEST_F(SSLClientSocketTest, DHE) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  // Normal handshakes with DHE do not work.
+  // Normal handshakes with DHE do not work, with or without DHE enabled.
   SSLConfig ssl_config;
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
 
-  // Enabling deprecated ciphers works fine.
+  ssl_config.dhe_enabled = true;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
+
+  // Enabling deprecated ciphers gives DHE a dedicated error code.
+  ssl_config.dhe_enabled = false;
   ssl_config.deprecated_cipher_suites_enabled = true;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  EXPECT_EQ(ERR_SSL_OBSOLETE_CIPHER, rv);
+
+  // Enabling both deprecated ciphers and DHE restores it.
+  ssl_config.dhe_enabled = true;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   EXPECT_EQ(OK, rv);
 }

@@ -1177,6 +1177,16 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     return ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION;
   }
 
+  // DHE is offered on the deprecated cipher fallback and then rejected
+  // afterwards. This is to aid in diagnosing connection failures because a
+  // server requires DHE ciphers.
+  //
+  // TODO(davidben): A few releases after DHE's removal, remove this logic.
+  if (!ssl_config_.dhe_enabled &&
+      SSL_CIPHER_is_DHE(SSL_get_current_cipher(ssl_))) {
+    return ERR_SSL_OBSOLETE_CIPHER;
+  }
+
   // Check that if token binding was negotiated, then extended master secret
   // must also be negotiated.
   if (tb_was_negotiated_ && !SSL_get_extms_support(ssl_))
