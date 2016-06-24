@@ -561,6 +561,7 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
     }
   }
   if (pending_memory_dump_ack_count_ > 0) {
+    DCHECK(!queued_memory_dump_requests_.empty());
     TraceMessageFilterSet::const_iterator it =
         pending_memory_dump_filters_.find(trace_message_filter);
     if (it != pending_memory_dump_filters_.end()) {
@@ -569,7 +570,8 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
           base::Bind(&TracingControllerImpl::OnProcessMemoryDumpResponse,
                      base::Unretained(this),
                      base::RetainedRef(trace_message_filter),
-                     pending_memory_dump_guid_, false /* success */));
+                     queued_memory_dump_requests_.front().args.dump_guid,
+                     false /* success */));
     }
   }
   trace_message_filters_.erase(trace_message_filter);
@@ -920,22 +922,50 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
                    base::Unretained(this), args, callback));
     return;
   }
-  // Abort if another dump is already in progress.
-  if (pending_memory_dump_guid_) {
-    VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix
-            << " (" << args.dump_guid << ") aborted because another dump ("
-            << pending_memory_dump_guid_ << ") is in progress";
-    if (!callback.is_null())
-      callback.Run(args.dump_guid, false /* success */);
-    return;
+
+  bool another_dump_already_in_progress = !queued_memory_dump_requests_.empty();
+
+  // If this is a periodic memory dump request and there already is another
+  // request in the queue with the same level of detail, there's no point in
+  // enqueuing this request.
+  if (another_dump_already_in_progress &&
+      args.dump_type == base::trace_event::MemoryDumpType::PERIODIC_INTERVAL) {
+    for (const auto& request : queued_memory_dump_requests_) {
+      if (request.args.level_of_detail == args.level_of_detail) {
+        VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix << " ("
+                << base::trace_event::MemoryDumpTypeToString(args.dump_type)
+                << ") skipped because another dump request with the same "
+                   "level of detail ("
+                << base::trace_event::MemoryDumpLevelOfDetailToString(
+                       args.level_of_detail)
+                << ") is already in the queue";
+        if (!callback.is_null())
+          callback.Run(args.dump_guid, false /* success */);
+        return;
+      }
+    }
   }
+
+  queued_memory_dump_requests_.emplace_back(args, callback);
+
+  // If another dump is already in progress, this dump will automatically be
+  // scheduled when the other dump finishes.
+  if (another_dump_already_in_progress)
+    return;
+
+  PerformNextQueuedGlobalMemoryDump();
+}
+
+void TracingControllerImpl::PerformNextQueuedGlobalMemoryDump() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!queued_memory_dump_requests_.empty());
+  const base::trace_event::MemoryDumpRequestArgs& args =
+      queued_memory_dump_requests_.front().args;
 
   // Count myself (local trace) in pending_memory_dump_ack_count_, acked by
   // OnBrowserProcessMemoryDumpDone().
   pending_memory_dump_ack_count_ = trace_message_filters_.size() + 1;
   pending_memory_dump_filters_.clear();
-  pending_memory_dump_guid_ = args.dump_guid;
-  pending_memory_dump_callback_ = callback;
   failed_memory_dump_count_ = 0;
 
   MemoryDumpManagerDelegate::CreateProcessDump(
@@ -951,6 +981,13 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
   for (const scoped_refptr<TraceMessageFilter>& tmf : trace_message_filters_)
     tmf->SendProcessMemoryDumpRequest(args);
 }
+
+TracingControllerImpl::QueuedMemoryDumpRequest::QueuedMemoryDumpRequest(
+    const base::trace_event::MemoryDumpRequestArgs& args,
+    const base::trace_event::MemoryDumpCallback& callback)
+    : args(args), callback(callback) {}
+
+TracingControllerImpl::QueuedMemoryDumpRequest::~QueuedMemoryDumpRequest() {}
 
 uint64_t TracingControllerImpl::GetTracingProcessId() const {
   return ChildProcessHost::kBrowserTracingProcessId;
@@ -991,7 +1028,8 @@ void TracingControllerImpl::OnProcessMemoryDumpResponse(
   TraceMessageFilterSet::iterator it =
       pending_memory_dump_filters_.find(trace_message_filter);
 
-  if (pending_memory_dump_guid_ != dump_guid ||
+  DCHECK(!queued_memory_dump_requests_.empty());
+  if (queued_memory_dump_requests_.front().args.dump_guid != dump_guid ||
       it == pending_memory_dump_filters_.end()) {
     DLOG(WARNING) << "Received unexpected memory dump response: " << dump_guid;
     return;
@@ -1025,14 +1063,24 @@ void TracingControllerImpl::FinalizeGlobalMemoryDumpIfAllProcessesReplied() {
   if (pending_memory_dump_ack_count_ > 0)
     return;
 
-  DCHECK_NE(0u, pending_memory_dump_guid_);
-  const bool global_success = failed_memory_dump_count_ == 0;
-  if (!pending_memory_dump_callback_.is_null()) {
-    pending_memory_dump_callback_.Run(pending_memory_dump_guid_,
-                                      global_success);
-    pending_memory_dump_callback_.Reset();
+  DCHECK(!queued_memory_dump_requests_.empty());
+  {
+    const auto& callback = queued_memory_dump_requests_.front().callback;
+    if (!callback.is_null()) {
+      const bool global_success = failed_memory_dump_count_ == 0;
+      callback.Run(queued_memory_dump_requests_.front().args.dump_guid,
+                   global_success);
+    }
   }
-  pending_memory_dump_guid_ = 0;
+  queued_memory_dump_requests_.pop_front();
+
+  // Schedule the next queued dump (if applicable).
+  if (!queued_memory_dump_requests_.empty()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TracingControllerImpl::PerformNextQueuedGlobalMemoryDump,
+                   base::Unretained(this)));
+  }
 }
 
 }  // namespace content

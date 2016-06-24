@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -21,6 +22,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::trace_event::MemoryDumpArgs;
+using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::MemoryDumpManager;
 using base::trace_event::MemoryDumpType;
 using base::trace_event::ProcessMemoryDump;
@@ -39,16 +41,18 @@ class MockDumpProvider : public base::trace_event::MemoryDumpProvider {
 
 class MemoryTracingTest : public ContentBrowserTest {
  public:
-  void DoRequestGlobalDump(const base::trace_event::MemoryDumpCallback& cb) {
-    MemoryDumpManager::GetInstance()->RequestGlobalDump(
-        MemoryDumpType::EXPLICITLY_TRIGGERED,
-        base::trace_event::MemoryDumpLevelOfDetail::DETAILED, cb);
+  void DoRequestGlobalDump(const MemoryDumpType& dump_type,
+                           const MemoryDumpLevelOfDetail& level_of_detail,
+                           const base::trace_event::MemoryDumpCallback& cb) {
+    MemoryDumpManager::GetInstance()->RequestGlobalDump(dump_type,
+                                                        level_of_detail, cb);
   }
 
   // Used as callback argument for MemoryDumpManager::RequestGlobalDump():
   void OnGlobalMemoryDumpDone(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::Closure closure,
+      uint32_t request_index,
       uint64_t dump_guid,
       bool success) {
     // Make sure we run the RunLoop closure on the same thread that originated
@@ -57,20 +61,37 @@ class MemoryTracingTest : public ContentBrowserTest {
       task_runner->PostTask(
           FROM_HERE, base::Bind(&MemoryTracingTest::OnGlobalMemoryDumpDone,
                                 base::Unretained(this), task_runner, closure,
-                                dump_guid, success));
+                                request_index, dump_guid, success));
       return;
     }
-    ++callback_call_count_;
-    last_callback_dump_guid_ = dump_guid;
-    last_callback_success_ = success;
-    closure.Run();
+    if (success)
+      EXPECT_NE(0u, dump_guid);
+    OnMemoryDumpDone(request_index, success);
+    if (!closure.is_null())
+      closure.Run();
+  }
+
+  void RequestGlobalDumpWithClosure(
+      bool from_renderer_thread,
+      const MemoryDumpType& dump_type,
+      const MemoryDumpLevelOfDetail& level_of_detail,
+      const base::Closure& closure) {
+    uint32_t request_index = next_request_index_++;
+    base::trace_event::MemoryDumpCallback callback = base::Bind(
+        &MemoryTracingTest::OnGlobalMemoryDumpDone, base::Unretained(this),
+        base::ThreadTaskRunnerHandle::Get(), closure, request_index);
+    if (from_renderer_thread) {
+      PostTaskToInProcessRendererAndWait(base::Bind(
+          &MemoryTracingTest::DoRequestGlobalDump, base::Unretained(this),
+          dump_type, level_of_detail, callback));
+    } else {
+      DoRequestGlobalDump(dump_type, level_of_detail, callback);
+    }
   }
 
  protected:
   void SetUp() override {
-    callback_call_count_ = 0;
-    last_callback_dump_guid_ = 0;
-    last_callback_success_ = false;
+    next_request_index_ = 0;
 
     mock_dump_provider_.reset(new MockDumpProvider());
     MemoryDumpManager::GetInstance()->RegisterDumpProvider(
@@ -106,29 +127,32 @@ class MemoryTracingTest : public ContentBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void RequestGlobalDumpAndWait(bool from_renderer_thread) {
+  void RequestGlobalDumpAndWait(
+      bool from_renderer_thread,
+      const MemoryDumpType& dump_type,
+      const MemoryDumpLevelOfDetail& level_of_detail) {
     base::RunLoop run_loop;
-    base::trace_event::MemoryDumpCallback callback = base::Bind(
-        &MemoryTracingTest::OnGlobalMemoryDumpDone, base::Unretained(this),
-        base::ThreadTaskRunnerHandle::Get(), run_loop.QuitClosure());
-    if (from_renderer_thread) {
-      PostTaskToInProcessRendererAndWait(
-          base::Bind(&MemoryTracingTest::DoRequestGlobalDump,
-                     base::Unretained(this), callback));
-    } else {
-      DoRequestGlobalDump(callback);
-    }
+    RequestGlobalDumpWithClosure(from_renderer_thread, dump_type,
+                                 level_of_detail, run_loop.QuitClosure());
     run_loop.Run();
+  }
+
+  void RequestGlobalDump(bool from_renderer_thread,
+                         const MemoryDumpType& dump_type,
+                         const MemoryDumpLevelOfDetail& level_of_detail) {
+    RequestGlobalDumpWithClosure(from_renderer_thread, dump_type,
+                                 level_of_detail, base::Closure());
   }
 
   void Navigate(Shell* shell) {
     NavigateToURL(shell, GetTestUrl("", "title.html"));
   }
 
+  MOCK_METHOD2(OnMemoryDumpDone, void(uint32_t request_index, bool successful));
+
   base::Closure on_memory_dump_complete_closure_;
   std::unique_ptr<MockDumpProvider> mock_dump_provider_;
-  uint32_t callback_call_count_;
-  uint64_t last_callback_dump_guid_;
+  uint32_t next_request_index_;
   bool last_callback_success_;
 };
 
@@ -152,12 +176,12 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_)).WillOnce(Return(true));
+  EXPECT_CALL(*this, OnMemoryDumpDone(_, true /* success */));
 
   EnableMemoryTracing();
-  RequestGlobalDumpAndWait(false /* from_renderer_thread */);
-  EXPECT_EQ(1u, callback_call_count_);
-  EXPECT_NE(0u, last_callback_dump_guid_);
-  EXPECT_TRUE(last_callback_success_);
+  RequestGlobalDumpAndWait(false /* from_renderer_thread */,
+                           MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 }
 
@@ -168,12 +192,12 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_)).WillOnce(Return(true));
+  EXPECT_CALL(*this, OnMemoryDumpDone(_, true /* success */));
 
   EnableMemoryTracing();
-  RequestGlobalDumpAndWait(true /* from_renderer_thread */);
-  EXPECT_EQ(1u, callback_call_count_);
-  EXPECT_NE(0u, last_callback_dump_guid_);
-  EXPECT_TRUE(last_callback_success_);
+  RequestGlobalDumpAndWait(true /* from_renderer_thread */,
+                           MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 }
 
@@ -183,25 +207,87 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, ManyInterleavedDumps) {
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_))
       .Times(4)
       .WillRepeatedly(Return(true));
+  EXPECT_CALL(*this, OnMemoryDumpDone(_, true /* success */)).Times(4);
+
+  EnableMemoryTracing();
+  RequestGlobalDumpAndWait(true /* from_renderer_thread */,
+                           MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
+  RequestGlobalDumpAndWait(false /* from_renderer_thread */,
+                           MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
+  RequestGlobalDumpAndWait(false /* from_renderer_thread */,
+                           MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
+  RequestGlobalDumpAndWait(true /* from_renderer_thread */,
+                           MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
+  DisableTracing();
+}
+
+// Checks that, if there already is a memory dump in progress, subsequent memory
+// dump requests are queued and carried out after it's finished. Also checks
+// that periodic dump requests fail in case there is already a request in the
+// queue with the same level of detail.
+IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, QueuedDumps) {
+  Navigate(shell());
 
   EnableMemoryTracing();
 
-  RequestGlobalDumpAndWait(true /* from_renderer_thread */);
-  EXPECT_NE(0u, last_callback_dump_guid_);
-  EXPECT_TRUE(last_callback_success_);
+  // Issue the following 6 global memory dump requests:
+  //
+  //   0 (ED)  req-------------------------------------->ok
+  //   1 (PD)      req->fail(0)
+  //   2 (PL)                   req------------------------>ok
+  //   3 (PL)                       req->fail(2)
+  //   4 (EL)                                    req---------->ok
+  //   5 (ED)                                        req--------->ok
+  //   6 (PL)                                                        req->ok
+  //
+  // where P=PERIODIC_INTERVAL, E=EXPLICITLY_TRIGGERED, D=DETAILED and L=LIGHT.
 
-  RequestGlobalDumpAndWait(false /* from_renderer_thread */);
-  EXPECT_NE(0u, last_callback_dump_guid_);
-  EXPECT_TRUE(last_callback_success_);
+  EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_, _))
+      .Times(5)
+      .WillRepeatedly(Return(true));
 
-  RequestGlobalDumpAndWait(false /* from_renderer_thread */);
-  EXPECT_NE(0u, last_callback_dump_guid_);
-  EXPECT_TRUE(last_callback_success_);
+  EXPECT_CALL(*this, OnMemoryDumpDone(0, true /* success */));
+  RequestGlobalDump(true /* from_renderer_thread */,
+                    MemoryDumpType::EXPLICITLY_TRIGGERED,
+                    MemoryDumpLevelOfDetail::DETAILED);
 
-  RequestGlobalDumpAndWait(true /* from_renderer_thread */);
-  EXPECT_EQ(4u, callback_call_count_);
-  EXPECT_NE(0u, last_callback_dump_guid_);
-  EXPECT_TRUE(last_callback_success_);
+  // This dump should fail immediately because there's already a detailed dump
+  // request in the queue.
+  EXPECT_CALL(*this, OnMemoryDumpDone(1, false /* success */));
+  RequestGlobalDump(true /* from_renderer_thread */,
+                    MemoryDumpType::PERIODIC_INTERVAL,
+                    MemoryDumpLevelOfDetail::DETAILED);
+
+  EXPECT_CALL(*this, OnMemoryDumpDone(2, true /* success */));
+  RequestGlobalDump(true /* from_renderer_thread */,
+                    MemoryDumpType::PERIODIC_INTERVAL,
+                    MemoryDumpLevelOfDetail::LIGHT);
+
+  // This dump should fail immediately because there's already a light dump
+  // request in the queue.
+  EXPECT_CALL(*this, OnMemoryDumpDone(3, false /* success */));
+  RequestGlobalDump(true /* from_renderer_thread */,
+                    MemoryDumpType::PERIODIC_INTERVAL,
+                    MemoryDumpLevelOfDetail::LIGHT);
+
+  EXPECT_CALL(*this, OnMemoryDumpDone(4, true /* success */));
+  RequestGlobalDump(true /* from_renderer_thread */,
+                    MemoryDumpType::EXPLICITLY_TRIGGERED,
+                    MemoryDumpLevelOfDetail::LIGHT);
+
+  EXPECT_CALL(*this, OnMemoryDumpDone(5, true /* success */));
+  RequestGlobalDumpAndWait(true /* from_renderer_thread */,
+                           MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
+
+  EXPECT_CALL(*this, OnMemoryDumpDone(6, true /* success */));
+  RequestGlobalDumpAndWait(true /* from_renderer_thread */,
+                           MemoryDumpType::PERIODIC_INTERVAL,
+                           MemoryDumpLevelOfDetail::LIGHT);
 
   DisableTracing();
 }
@@ -220,12 +306,12 @@ IN_PROC_BROWSER_TEST_F(MemoryTracingTest, MAYBE_BrowserInitiatedDump) {
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_)).WillOnce(Return(true));
+  EXPECT_CALL(*this, OnMemoryDumpDone(_, true /* success */));
 
   EnableMemoryTracing();
-  RequestGlobalDumpAndWait(false /* from_renderer_thread */);
-  EXPECT_EQ(1u, callback_call_count_);
-  EXPECT_NE(0u, last_callback_dump_guid_);
-  EXPECT_TRUE(last_callback_success_);
+  RequestGlobalDumpAndWait(false /* from_renderer_thread */,
+                           MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 }
 
