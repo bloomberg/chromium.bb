@@ -68,9 +68,26 @@ void RecentTabHelper::DidFinishNavigation(
       navigation_handle->HasCommitted()) {
     // Cancel tasks in flight that relate to the previous page.
     weak_ptr_factory_.InvalidateWeakPtrs();
+
     // New navigation, new snapshot session.
+    snapshot_url_ = GURL();
+    GURL last_committed_url = web_contents()->GetLastCommittedURL();
+
+    // Check for conditions that would cause us not to snapshot.
+    bool can_save = !navigation_handle->IsErrorPage() &&
+                    OfflinePageModel::CanSaveURL(last_committed_url);
+
+    // We only want to record UMA if the page is not Off The Record.
+    if (!never_do_snapshots_)
+      UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
+
+    // Always reset so that posted tasks get cancelled.
     snapshot_controller_->Reset();
-    snapshot_url_ = GURL::EmptyGURL();
+
+    if (never_do_snapshots_ || !can_save)
+      snapshot_controller_->Stop();
+    else
+      snapshot_url_ = last_committed_url;
   }
 }
 
@@ -89,23 +106,6 @@ void RecentTabHelper::DocumentOnLoadCompletedInMainFrame() {
 // Along the chain, the original URL is passed and compared, to detect
 // possible navigation and cancel snapshot in that case.
 void RecentTabHelper::StartSnapshot() {
-  if (never_do_snapshots_)
-    return;
-
-  // Ignores any non-normal pages, like error pages.
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry || entry->GetPageType() != content::PAGE_TYPE_NORMAL)
-    return;
-
-  GURL url = web_contents()->GetLastCommittedURL();
-  bool can_save = OfflinePageModel::CanSaveURL(url);
-  UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
-  if (!can_save)
-    return;
-
-  snapshot_url_ = url;
-
   // TODO(dimich): Implement automatic cleanup as per design doc, based on
   // storage limits and page age.
   // This algorithm (remove pages before making sure the save was successful)
