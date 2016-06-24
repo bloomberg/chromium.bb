@@ -74,7 +74,7 @@ public:
     virtual String extraDefaultStyleSheet();
     virtual String extraQuirksStyleSheet() { return String(); }
     virtual String extraMediaControlsStyleSheet() { return String(); }
-    virtual String extraFullScreenStyleSheet() { return String(); }
+    virtual String extraFullscreenStyleSheet() { return String(); }
 
     // A method to obtain the baseline position for a "leaf" control.  This will only be used if a baseline
     // position cannot be determined by examining child content. Checkboxes and radio buttons are examples of

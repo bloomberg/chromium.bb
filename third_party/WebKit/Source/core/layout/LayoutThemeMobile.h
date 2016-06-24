@@ -38,6 +38,7 @@ public:
     void adjustInnerSpinButtonStyle(ComputedStyle&) const override;
 
     String extraMediaControlsStyleSheet() override;
+    String extraFullscreenStyleSheet() override;
 
     Color platformTapHighlightColor() const override
     {

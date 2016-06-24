@@ -158,7 +158,7 @@ public:
 
 protected:
     void adjustMediaSliderThumbSize(ComputedStyle&) const;
-    String extraFullScreenStyleSheet() override;
+    String extraFullscreenStyleSheet() override;
 
     // Controls color values returned from platformFocusRingColor(). systemColor() will be used when false.
     bool usesTestModeFocusRingColor() const;

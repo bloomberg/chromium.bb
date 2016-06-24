@@ -186,7 +186,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetForFullscreen()
     if (m_fullscreenStyleSheet)
         return;
 
-    String fullscreenRules = loadResourceAsASCIIString("fullscreen.css") + LayoutTheme::theme().extraFullScreenStyleSheet();
+    String fullscreenRules = loadResourceAsASCIIString("fullscreen.css") + LayoutTheme::theme().extraFullscreenStyleSheet();
     m_fullscreenStyleSheet = parseUASheet(fullscreenRules);
     m_defaultStyle->addRulesFromSheet(fullscreenStyleSheet(), screenEval());
     m_defaultQuirksStyle->addRulesFromSheet(fullscreenStyleSheet(), screenEval());

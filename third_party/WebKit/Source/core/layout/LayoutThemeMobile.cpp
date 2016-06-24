@@ -43,6 +43,14 @@ LayoutThemeMobile::~LayoutThemeMobile()
 {
 }
 
+String LayoutThemeMobile::extraDefaultStyleSheet()
+{
+    return LayoutThemeDefault::extraDefaultStyleSheet() +
+        loadResourceAsASCIIString("themeChromiumLinux.css") +
+        loadResourceAsASCIIString("themeChromiumAndroid.css");
+
+}
+
 String LayoutThemeMobile::extraMediaControlsStyleSheet()
 {
     return loadResourceAsASCIIString(
@@ -50,12 +58,9 @@ String LayoutThemeMobile::extraMediaControlsStyleSheet()
         "mediaControlsAndroidNew.css" : "mediaControlsAndroid.css");
 }
 
-String LayoutThemeMobile::extraDefaultStyleSheet()
+String LayoutThemeMobile::extraFullscreenStyleSheet()
 {
-    return LayoutThemeDefault::extraDefaultStyleSheet() +
-        loadResourceAsASCIIString("themeChromiumLinux.css") +
-        loadResourceAsASCIIString("themeChromiumAndroid.css");
-
+    return loadResourceAsASCIIString("fullscreenAndroid.css");
 }
 
 void LayoutThemeMobile::adjustInnerSpinButtonStyle(ComputedStyle& style) const

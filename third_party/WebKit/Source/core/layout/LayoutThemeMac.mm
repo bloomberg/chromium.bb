@@ -1034,7 +1034,7 @@ void LayoutThemeMac::adjustMediaSliderThumbSize(ComputedStyle& style) const
     MediaControlsPainter::adjustMediaSliderThumbSize(style);
 }
 
-String LayoutThemeMac::extraFullScreenStyleSheet()
+String LayoutThemeMac::extraFullscreenStyleSheet()
 {
     // FIXME: Chromium may wish to style its default media controls differently in fullscreen.
     return String();
