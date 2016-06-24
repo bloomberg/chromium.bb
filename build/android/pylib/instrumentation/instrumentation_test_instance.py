@@ -588,10 +588,20 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       return not any_annotation_matches(self._excluded_annotations,
                                         all_annotations)
 
-    def any_annotation_matches(annotations, all_annotations):
+    def any_annotation_matches(filter_annotations, all_annotations):
       return any(
-          ak in all_annotations and (av is None or av == all_annotations[ak])
-          for ak, av in annotations.iteritems())
+          ak in all_annotations
+          and annotation_value_matches(av, all_annotations[ak])
+          for ak, av in filter_annotations.iteritems())
+
+    def annotation_value_matches(filter_av, av):
+      if filter_av is None:
+        return True
+      elif isinstance(av, dict):
+        return filter_av in av['value']
+      elif isinstance(av, list):
+        return filter_av in av
+      return filter_av == av
 
     filtered_classes = []
     for c in tests:

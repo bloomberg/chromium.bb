@@ -3,8 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unit tests for instrumentation_test_instance."""
 
-"""Unit tests for instrumentation.TestRunner."""
+# pylint: disable=protected-access
 
 import unittest
 
@@ -21,6 +22,420 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
   def setUp(self):
     options = mock.Mock()
     options.tool = ''
+
+  @staticmethod
+  def createTestInstance():
+    c = ('pylib.instrumentation.instrumentation_test_instance.'
+         'InstrumentationTestInstance')
+    with mock.patch('%s._initializeApkAttributes' % c), (
+         mock.patch('%s._initializeDataDependencyAttributes' % c)), (
+         mock.patch('%s._initializeTestFilterAttributes' % c)), (
+         mock.patch('%s._initializeFlagAttributes' % c)), (
+         mock.patch('%s._initializeDriverAttributes' % c)), (
+         mock.patch('%s._initializeTestControlAttributes' % c)), (
+         mock.patch('%s._initializeTestCoverageAttributes' % c)):
+      return instrumentation_test_instance.InstrumentationTestInstance(
+          mock.MagicMock(), mock.MagicMock(), lambda s: None)
+
+  def testGetTests_noFilter(self):
+    o = self.createTestInstance()
+    raw_tests = [
+      {
+        'annotations': {'Feature': {'value': ['Foo']}},
+        'class': 'org.chromium.test.SampleTest',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+          {
+            'annotations': {'MediumTest': None},
+            'method': 'testMethod2',
+          },
+        ],
+      },
+      {
+        'annotations': {'Feature': {'value': ['Bar']}},
+        'class': 'org.chromium.test.SampleTest2',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+        ],
+      }
+    ]
+
+    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
+
+    expected_tests = [
+      {
+        'annotations': {
+          'Feature': {'value': ['Foo']},
+          'SmallTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest',
+        'method': 'testMethod1',
+      },
+      {
+        'annotations': {
+          'Feature': {'value': ['Foo']},
+          'MediumTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest',
+        'method': 'testMethod2',
+      },
+      {
+        'annotations': {
+          'Feature': {'value': ['Bar']},
+          'SmallTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest2',
+        'method': 'testMethod1',
+      },
+    ]
+
+    actual_tests = o.GetTests()
+    self.assertEquals(actual_tests, expected_tests)
+
+  def testGetTests_simpleGtestFilter(self):
+    o = self.createTestInstance()
+    raw_tests = [
+      {
+        'annotations': {'Feature': {'value': ['Foo']}},
+        'class': 'org.chromium.test.SampleTest',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+          {
+            'annotations': {'MediumTest': None},
+            'method': 'testMethod2',
+          },
+        ],
+      }
+    ]
+
+    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
+    o._test_filter = 'org.chromium.test.SampleTest.testMethod1'
+
+    expected_tests = [
+      {
+        'annotations': {
+          'Feature': {'value': ['Foo']},
+          'SmallTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest',
+        'method': 'testMethod1',
+      },
+    ]
+
+    actual_tests = o.GetTests()
+    self.assertEquals(actual_tests, expected_tests)
+
+  def testGetTests_wildcardGtestFilter(self):
+    o = self.createTestInstance()
+    raw_tests = [
+      {
+        'annotations': {'Feature': {'value': ['Foo']}},
+        'class': 'org.chromium.test.SampleTest',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+          {
+            'annotations': {'MediumTest': None},
+            'method': 'testMethod2',
+          },
+        ],
+      },
+      {
+        'annotations': {'Feature': {'value': ['Bar']}},
+        'class': 'org.chromium.test.SampleTest2',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+        ],
+      }
+    ]
+
+    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
+    o._test_filter = 'org.chromium.test.SampleTest2.*'
+
+    expected_tests = [
+      {
+        'annotations': {
+          'Feature': {'value': ['Bar']},
+          'SmallTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest2',
+        'method': 'testMethod1',
+      },
+    ]
+
+    actual_tests = o.GetTests()
+    self.assertEquals(actual_tests, expected_tests)
+
+  @unittest.skip('crbug.com/623047')
+  def testGetTests_negativeGtestFilter(self):
+    o = self.createTestInstance()
+    raw_tests = [
+      {
+        'annotations': {'Feature': {'value': ['Foo']}},
+        'class': 'org.chromium.test.SampleTest',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+          {
+            'annotations': {'MediumTest': None},
+            'method': 'testMethod2',
+          },
+        ],
+      },
+      {
+        'annotations': {'Feature': {'value': ['Bar']}},
+        'class': 'org.chromium.test.SampleTest2',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+        ],
+      }
+    ]
+
+    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
+    o._test_filter = '*-org.chromium.test.SampleTest.testMethod1'
+
+    expected_tests = [
+      {
+        'annotations': {
+          'Feature': {'value': ['Foo']},
+          'MediumTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest',
+        'method': 'testMethod2',
+      },
+      {
+        'annotations': {
+          'Feature': {'value': ['Bar']},
+          'SmallTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest2',
+        'method': 'testMethod1',
+      },
+    ]
+
+    actual_tests = o.GetTests()
+    self.assertEquals(actual_tests, expected_tests)
+
+  def testGetTests_annotationFilter(self):
+    o = self.createTestInstance()
+    raw_tests = [
+      {
+        'annotations': {'Feature': {'value': ['Foo']}},
+        'class': 'org.chromium.test.SampleTest',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+          {
+            'annotations': {'MediumTest': None},
+            'method': 'testMethod2',
+          },
+        ],
+      },
+      {
+        'annotations': {'Feature': {'value': ['Bar']}},
+        'class': 'org.chromium.test.SampleTest2',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+        ],
+      }
+    ]
+
+    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
+    o._annotations = {'SmallTest': None}
+
+    expected_tests = [
+      {
+        'annotations': {
+          'Feature': {'value': ['Foo']},
+          'SmallTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest',
+        'method': 'testMethod1',
+      },
+      {
+        'annotations': {
+          'Feature': {'value': ['Bar']},
+          'SmallTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest2',
+        'method': 'testMethod1',
+      },
+    ]
+
+    actual_tests = o.GetTests()
+    self.assertEquals(actual_tests, expected_tests)
+
+  def testGetTests_excludedAnnotationFilter(self):
+    o = self.createTestInstance()
+    raw_tests = [
+      {
+        'annotations': {'Feature': {'value': ['Foo']}},
+        'class': 'org.chromium.test.SampleTest',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+          {
+            'annotations': {'MediumTest': None},
+            'method': 'testMethod2',
+          },
+        ],
+      },
+      {
+        'annotations': {'Feature': {'value': ['Bar']}},
+        'class': 'org.chromium.test.SampleTest2',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+        ],
+      }
+    ]
+
+    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
+    o._excluded_annotations = {'SmallTest': None}
+
+    expected_tests = [
+      {
+        'annotations': {
+          'Feature': {'value': ['Foo']},
+          'MediumTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest',
+        'method': 'testMethod2',
+      },
+    ]
+
+    actual_tests = o.GetTests()
+    self.assertEquals(actual_tests, expected_tests)
+
+  def testGetTests_annotationSimpleValueFilter(self):
+    o = self.createTestInstance()
+    raw_tests = [
+      {
+        'annotations': {'Feature': {'value': ['Foo']}},
+        'class': 'org.chromium.test.SampleTest',
+        'methods': [
+          {
+            'annotations': {
+              'SmallTest': None,
+              'TestValue': '1',
+            },
+            'method': 'testMethod1',
+          },
+          {
+            'annotations': {
+              'MediumTest': None,
+              'TestValue': '2',
+            },
+            'method': 'testMethod2',
+          },
+        ],
+      },
+      {
+        'annotations': {'Feature': {'value': ['Bar']}},
+        'class': 'org.chromium.test.SampleTest2',
+        'methods': [
+          {
+            'annotations': {
+              'SmallTest': None,
+              'TestValue': '3',
+            },
+            'method': 'testMethod1',
+          },
+        ],
+      }
+    ]
+
+    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
+    o._annotations = {'TestValue': '1'}
+
+    expected_tests = [
+      {
+        'annotations': {
+          'Feature': {'value': ['Foo']},
+          'SmallTest': None,
+          'TestValue': '1',
+        },
+        'class': 'org.chromium.test.SampleTest',
+        'method': 'testMethod1',
+      },
+    ]
+
+    actual_tests = o.GetTests()
+    self.assertEquals(actual_tests, expected_tests)
+
+  def testGetTests_annotationDictValueFilter(self):
+    o = self.createTestInstance()
+    raw_tests = [
+      {
+        'annotations': {'Feature': {'value': ['Foo']}},
+        'class': 'org.chromium.test.SampleTest',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+          {
+            'annotations': {'MediumTest': None},
+            'method': 'testMethod2',
+          },
+        ],
+      },
+      {
+        'annotations': {'Feature': {'value': ['Bar']}},
+        'class': 'org.chromium.test.SampleTest2',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+        ],
+      }
+    ]
+
+    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
+    o._annotations = {'Feature': 'Bar'}
+
+    expected_tests = [
+      {
+        'annotations': {
+          'Feature': {'value': ['Bar']},
+          'SmallTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest2',
+        'method': 'testMethod1',
+      },
+    ]
+
+    actual_tests = o.GetTests()
+    self.assertEquals(actual_tests, expected_tests)
 
   def testGenerateTestResults_noStatus(self):
     results = instrumentation_test_instance.GenerateTestResults(
