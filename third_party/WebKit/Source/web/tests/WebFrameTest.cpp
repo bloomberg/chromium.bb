@@ -8800,4 +8800,22 @@ TEST_F(WebFrameTest, CopyImageWithImageMap)
     helper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
 
+TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame)
+{
+    FrameTestHelpers::WebViewHelper helper;
+    helper.initialize(true);
+
+    WebURLRequest request;
+    std::string redirectURL = m_baseURL + "foo.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(redirectURL), "foo.html");
+    request.initialize();
+    request.setURL(toKURL("javascript:location='" + redirectURL + "'"));
+    helper.webViewImpl()->mainFrame()->toWebLocalFrame()->loadRequest(request);
+
+    // Normally, the result of the JS url replaces the existing contents on the
+    // Document. However, if the JS triggers a navigation, the contents should
+    // not be replaced.
+    EXPECT_EQ("", toLocalFrame(helper.webViewImpl()->page()->mainFrame())->document()->documentElement()->innerText());
+}
+
 } // namespace blink

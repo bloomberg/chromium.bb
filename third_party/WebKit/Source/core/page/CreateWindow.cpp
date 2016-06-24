@@ -178,10 +178,22 @@ DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, 
     Frame* newFrame = createWindowHelper(openerFrame, *activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, created);
     if (!newFrame)
         return nullptr;
+    if (newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
+        return newFrame->domWindow();
 
-    if (!newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL)) {
-        if (!urlString.isEmpty() || created)
-            newFrame->navigate(*callingWindow.document(), completedURL, false, hasUserGesture ? UserGestureStatus::Active : UserGestureStatus::None);
+    // TODO(dcheng): Special case for window.open("about:blank") to ensure it loads synchronously into
+    // a new window. This is our historical behavior, and it's consistent with the creation of
+    // a new iframe with src="about:blank". Perhaps we could get rid of this if we started reporting
+    // the initial empty document's url as about:blank? See crbug.com/471239.
+    // TODO(japhet): This special case is also necessary for behavior asserted by some extensions tests.
+    // Using NavigationScheduler::scheduleNavigationChange causes the navigation to be flagged as a
+    // client redirect, which is observable via the webNavigation extension api.
+    if (created) {
+        FrameLoadRequest request(callingWindow.document(), completedURL);
+        request.resourceRequest().setHasUserGesture(hasUserGesture);
+        newFrame->navigate(request);
+    } else if (!urlString.isEmpty()) {
+        newFrame->navigate(*callingWindow.document(), completedURL, false, hasUserGesture ? UserGestureStatus::Active : UserGestureStatus::None);
     }
     return newFrame->domWindow();
 }

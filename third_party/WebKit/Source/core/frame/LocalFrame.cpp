@@ -274,20 +274,7 @@ WindowProxy* LocalFrame::windowProxy(DOMWrapperWorld& world)
 
 void LocalFrame::navigate(Document& originDocument, const KURL& url, bool replaceCurrentItem, UserGestureStatus userGestureStatus)
 {
-    // TODO(dcheng): Special case for window.open("about:blank") to ensure it loads synchronously into
-    // a new window. This is our historical behavior, and it's consistent with the creation of
-    // a new iframe with src="about:blank". Perhaps we could get rid of this if we started reporting
-    // the initial empty document's url as about:blank? See crbug.com/471239.
-    // TODO(japhet): This special case is also necessary for behavior asserted by some extensions tests.
-    // Using NavigationScheduler::scheduleNavigationChange causes the navigation to be flagged as a
-    // client redirect, which is observable via the webNavigation extension api.
-    if (isMainFrame() && !m_loader.stateMachine()->committedFirstRealDocumentLoad()) {
-        FrameLoadRequest request(&originDocument, url);
-        request.resourceRequest().setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
-        navigate(request);
-    } else {
-        m_navigationScheduler->scheduleLocationChange(&originDocument, url.getString(), replaceCurrentItem);
-    }
+    m_navigationScheduler->scheduleLocationChange(&originDocument, url.getString(), replaceCurrentItem);
 }
 
 void LocalFrame::navigate(const FrameLoadRequest& request)
