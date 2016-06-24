@@ -54,9 +54,10 @@ void GracefulShutdownHandler(int signal) {
   action.sa_handler = SIG_DFL;
   RAW_CHECK(sigaction(signal, &action, NULL) == 0);
 
-  RAW_CHECK(g_pipe_pid == getpid());
+  RAW_CHECK(g_pipe_pid != -1);
   RAW_CHECK(g_shutdown_pipe_write_fd != -1);
   RAW_CHECK(g_shutdown_pipe_read_fd != -1);
+  RAW_CHECK(g_pipe_pid == getpid());
   size_t bytes_written = 0;
   do {
     int rv = HANDLE_EINTR(
@@ -289,28 +290,31 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
             new ShutdownDetector(g_shutdown_pipe_read_fd))) {
       LOG(DFATAL) << "Failed to create shutdown detector task.";
     }
+
+    // Setup signal handlers for shutdown AFTER shutdown pipe is setup because
+    // it may be called right away after handler is set.
+
+    // If adding to this list of signal handlers, note the new signal probably
+    // needs to be reset in child processes. See
+    // base/process_util_posix.cc:LaunchProcess.
+
+    // We need to handle SIGTERM, because that is how many POSIX-based distros
+    // ask processes to quit gracefully at shutdown time.
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = SIGTERMHandler;
+    CHECK(sigaction(SIGTERM, &action, NULL) == 0);
+
+    // Also handle SIGINT - when the user terminates the browser via Ctrl+C. If
+    // the browser process is being debugged, GDB will catch the SIGINT first.
+    action.sa_handler = SIGINTHandler;
+    CHECK(sigaction(SIGINT, &action, NULL) == 0);
+
+    // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
+    // distros send SIGHUP, SIGTERM, and then SIGKILL.
+    action.sa_handler = SIGHUPHandler;
+    CHECK(sigaction(SIGHUP, &action, NULL) == 0);
   }
-  // Setup signal handlers for shutdown AFTER shutdown pipe is setup because
-  // it may be called right away after handler is set.
-
-  // If adding to this list of signal handlers, note the new signal probably
-  // needs to be reset in child processes. See
-  // base/process_util_posix.cc:LaunchProcess.
-
-  // We need to handle SIGTERM, because that is how many POSIX-based distros ask
-  // processes to quit gracefully at shutdown time.
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = SIGTERMHandler;
-  CHECK(sigaction(SIGTERM, &action, NULL) == 0);
-  // Also handle SIGINT - when the user terminates the browser via Ctrl+C. If
-  // the browser process is being debugged, GDB will catch the SIGINT first.
-  action.sa_handler = SIGINTHandler;
-  CHECK(sigaction(SIGINT, &action, NULL) == 0);
-  // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
-  // distros send SIGHUP, SIGTERM, and then SIGKILL.
-  action.sa_handler = SIGHUPHandler;
-  CHECK(sigaction(SIGHUP, &action, NULL) == 0);
 }
 
 void ChromeBrowserMainPartsPosix::ShowMissingLocaleMessageBox() {
