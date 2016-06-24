@@ -70,10 +70,7 @@ public:
     ALWAYS_INLINE T* operator->() const { return m_ptr; }
 
     bool operator!() const { return !m_ptr; }
-
-    // TODO(jbroman): Simplifying this in the obvious way causes a massive
-    // regression in a perf test on ARM. http://crbug.com/607208
-    explicit operator bool() const { return m_ptr ? &RefPtr::m_ptr : 0; }
+    explicit operator bool() const { return m_ptr != nullptr; }
 
     RefPtr& operator=(RefPtr o) { swap(o); return *this; }
     RefPtr& operator=(std::nullptr_t) { clear(); return *this; }
