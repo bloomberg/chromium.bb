@@ -18,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
+#include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/custom_menu_commands.h"
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
@@ -420,6 +421,10 @@ void ChromePluginPlaceholder::OnLoadedRectUpdate(
   // block tiny cross-origin - simply by not continuing the load chain.
   if (status ==
       content::RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY) {
+    ContentSettingsObserver* observer =
+        ContentSettingsObserver::Get(render_frame());
+    observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, title_);
+    AllowLoading();
     ignore_updates_ = true;
     return;
   }

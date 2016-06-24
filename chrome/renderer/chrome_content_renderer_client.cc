@@ -785,8 +785,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         std::unique_ptr<content::PluginInstanceThrottler> throttler;
 
         // Small content filter requires routing through a placeholder.
-        // TODO(groby): Verify this actually only triggers if PPS on.
-        if (ChromePluginPlaceholder::IsSmallContentFilterEnabled()) {
+        if (ChromePluginPlaceholder::IsSmallContentFilterEnabled() &&
+            power_saver_info.power_saver_enabled) {
           // The feature only applies to flash plugins.
           if (power_saver_info.is_eligible) {
             placeholder = ChromePluginPlaceholder::CreateDelayedPlugin(
