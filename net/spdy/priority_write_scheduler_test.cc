@@ -126,11 +126,11 @@ TEST_F(PriorityWriteSchedulerTest, GetStreamPrecedence) {
                   "Stream 1 not registered");
 }
 
-TEST_F(PriorityWriteSchedulerTest, PopNextReadyStreamAndPriority) {
+TEST_F(PriorityWriteSchedulerTest, PopNextReadyStreamAndPrecedence) {
   scheduler_.RegisterStream(1, SpdyStreamPrecedence(3));
   scheduler_.MarkStreamReady(1, true);
-  EXPECT_EQ(std::make_tuple(1u, 3u),
-            scheduler_.PopNextReadyStreamAndPriority());
+  EXPECT_EQ(std::make_tuple(1u, SpdyStreamPrecedence(3)),
+            scheduler_.PopNextReadyStreamAndPrecedence());
   scheduler_.UnregisterStream(1);
 }
 

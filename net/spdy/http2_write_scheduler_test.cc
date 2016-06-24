@@ -617,6 +617,40 @@ TEST_F(Http2PriorityWriteSchedulerTest, MarkReadyFrontAndBack) {
   EXPECT_EQ(5u, scheduler_.PopNextReadyStream());
 }
 
+// Add ready streams at front and back and pop them with
+// PopNextReadyStreamAndPrecedence.
+TEST_F(Http2PriorityWriteSchedulerTest, PopNextReadyStreamAndPrecedence) {
+  scheduler_.RegisterStream(1, SpdyStreamPrecedence(0, 10, false));
+  scheduler_.RegisterStream(2, SpdyStreamPrecedence(0, 20, false));
+  scheduler_.RegisterStream(3, SpdyStreamPrecedence(0, 20, false));
+  scheduler_.RegisterStream(4, SpdyStreamPrecedence(0, 20, false));
+  scheduler_.RegisterStream(5, SpdyStreamPrecedence(0, 30, false));
+
+  for (int i = 1; i < 6; ++i) {
+    scheduler_.MarkStreamReady(i, false);
+  }
+  EXPECT_EQ(std::make_tuple(5u, SpdyStreamPrecedence(0, 30, false)),
+            scheduler_.PopNextReadyStreamAndPrecedence());
+  EXPECT_EQ(std::make_tuple(2u, SpdyStreamPrecedence(0, 20, false)),
+            scheduler_.PopNextReadyStreamAndPrecedence());
+  scheduler_.MarkStreamReady(2, false);
+  EXPECT_EQ(std::make_tuple(3u, SpdyStreamPrecedence(0, 20, false)),
+            scheduler_.PopNextReadyStreamAndPrecedence());
+  scheduler_.MarkStreamReady(3, false);
+  EXPECT_EQ(std::make_tuple(4u, SpdyStreamPrecedence(0, 20, false)),
+            scheduler_.PopNextReadyStreamAndPrecedence());
+  scheduler_.MarkStreamReady(4, false);
+  EXPECT_EQ(std::make_tuple(2u, SpdyStreamPrecedence(0, 20, false)),
+            scheduler_.PopNextReadyStreamAndPrecedence());
+  scheduler_.MarkStreamReady(2, true);
+  EXPECT_EQ(std::make_tuple(2u, SpdyStreamPrecedence(0, 20, false)),
+            scheduler_.PopNextReadyStreamAndPrecedence());
+  scheduler_.MarkStreamReady(5, false);
+  scheduler_.MarkStreamReady(2, true);
+  EXPECT_EQ(std::make_tuple(5u, SpdyStreamPrecedence(0, 30, false)),
+            scheduler_.PopNextReadyStreamAndPrecedence());
+}
+
 class PopNextReadyStreamTest : public Http2PriorityWriteSchedulerTest {
  protected:
   void SetUp() override {

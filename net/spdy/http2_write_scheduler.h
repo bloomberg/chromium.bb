@@ -14,6 +14,7 @@
 #include <memory>
 #include <queue>
 #include <set>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -68,6 +69,8 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   void MarkStreamNotReady(StreamIdType stream_id) override;
   bool HasReadyStreams() const override;
   StreamIdType PopNextReadyStream() override;
+  std::tuple<StreamIdType, StreamPrecedenceType>
+  PopNextReadyStreamAndPrecedence() override;
   size_t NumReadyStreams() const override;
 
   // Return the number of streams currently in the tree.
@@ -110,6 +113,14 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
     bool SchedulesBefore(const StreamInfo& other) const {
       return (priority != other.priority) ? priority > other.priority
                                           : ordinal < other.ordinal;
+    }
+
+    // Returns the StreamPrecedenceType for this StreamInfo.
+    StreamPrecedenceType ToStreamPrecedence() const {
+      StreamIdType parent_id =
+          parent == nullptr ? kHttp2RootStreamId : parent->id;
+      bool exclusive = parent != nullptr && parent->children.size() == 1;
+      return StreamPrecedenceType(parent_id, weight, exclusive);
     }
   };
 
@@ -302,12 +313,7 @@ Http2PriorityWriteScheduler<StreamIdType>::GetStreamPrecedence(
     return StreamPrecedenceType(kHttp2RootStreamId, kHttp2MinStreamWeight,
                                 false);
   }
-  StreamIdType parent_id = (stream_info->parent == nullptr)
-                               ? kHttp2RootStreamId
-                               : stream_info->parent->id;
-  bool exclusive = stream_info->parent != nullptr &&
-                   stream_info->parent->children.size() == 1;
-  return StreamPrecedenceType(parent_id, stream_info->weight, exclusive);
+  return stream_info->ToStreamPrecedence();
 }
 
 template <typename StreamIdType>
@@ -634,16 +640,27 @@ bool Http2PriorityWriteScheduler<StreamIdType>::HasReadyStreams() const {
 
 template <typename StreamIdType>
 StreamIdType Http2PriorityWriteScheduler<StreamIdType>::PopNextReadyStream() {
+  return std::get<0>(PopNextReadyStreamAndPrecedence());
+}
+
+template <typename StreamIdType>
+std::tuple<
+    StreamIdType,
+    typename Http2PriorityWriteScheduler<StreamIdType>::StreamPrecedenceType>
+Http2PriorityWriteScheduler<StreamIdType>::PopNextReadyStreamAndPrecedence() {
   for (base::LinkNode<StreamInfo>* s = scheduling_queue_.head();
        s != scheduling_queue_.end(); s = s->next()) {
     StreamInfo* stream_info = s->value();
     if (!HasReadyAncestor(*stream_info)) {
       Unschedule(stream_info);
-      return stream_info->id;
+      return std::make_tuple(stream_info->id,
+                             stream_info->ToStreamPrecedence());
     }
   }
   SPDY_BUG << "No ready streams";
-  return kHttp2RootStreamId;
+  return std::make_tuple(
+      kHttp2RootStreamId,
+      StreamPrecedenceType(kHttp2RootStreamId, kHttp2MinStreamWeight, false));
 }
 
 template <typename StreamIdType>
