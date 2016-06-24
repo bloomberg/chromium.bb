@@ -1034,6 +1034,7 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleUnpin();
 #if defined(OS_CHROMEOS)
     case DEBUG_ADD_REMOVE_DISPLAY:
+    case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
     case DEBUG_TOGGLE_TOUCH_VIEW:
@@ -1297,6 +1298,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleBrightnessUp(brightness_control_delegate_.get(), accelerator);
       break;
     case DEBUG_ADD_REMOVE_DISPLAY:
+    case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
     case DEBUG_TOGGLE_TOUCH_VIEW:

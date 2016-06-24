@@ -14,6 +14,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/toast/toast_data.h"
+#include "ash/system/toast/toast_manager.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -174,6 +176,10 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
 #if defined(OS_CHROMEOS)
     case DEBUG_ADD_REMOVE_DISPLAY:
       Shell::GetInstance()->display_manager()->AddRemoveDisplay();
+      break;
+    case DEBUG_SHOW_TOAST:
+      Shell::GetInstance()->toast_manager()->Show(
+          ToastData("id", "Toast", 5000 /* duration_ms */, "Dismiss"));
       break;
     case DEBUG_TOGGLE_TOUCH_PAD:
       HandleToggleTouchpad();

@@ -257,6 +257,7 @@ const AcceleratorData kDebugAcceleratorData[] = {
     {false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED},
     {true, ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
      DEBUG_ADD_REMOVE_DISPLAY},
+    {true, ui::VKEY_O, kDebugModifier, DEBUG_SHOW_TOAST},
     {true, ui::VKEY_J, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
      DEBUG_TOGGLE_UNIFIED_DESKTOP},
     {true, ui::VKEY_M, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
