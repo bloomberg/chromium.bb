@@ -312,7 +312,11 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   verify_details_->ct_verify_result.ct_policies_applied = result == OK;
   verify_details_->ct_verify_result.ev_policy_compliance =
       ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
-  if (result == OK) {
+
+  // If the connection was good, check HPKP and CT status simultaneously,
+  // but prefer to treat the HPKP error as more serious, if there was one.
+  if ((result == OK ||
+       (IsCertificateError(result) && IsCertStatusMinorError(cert_status)))) {
     if ((cert_verify_result.cert_status & CERT_STATUS_IS_EV)) {
       ct::EVPolicyCompliance ev_policy_compliance =
           policy_enforcer_->DoesConformToCTEVPolicy(
@@ -337,11 +341,18 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
         policy_enforcer_->DoesConformToCertPolicy(
             cert_verify_result.verified_cert.get(),
             verify_details_->ct_verify_result.verified_scts, net_log_);
-  }
 
-  if (transport_security_state_ &&
-      (result == OK ||
-       (IsCertificateError(result) && IsCertStatusMinorError(cert_status)))) {
+    int ct_result = OK;
+    if (verify_details_->ct_verify_result.cert_policy_compliance !=
+            ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS &&
+        transport_security_state_->ShouldRequireCT(
+            hostname_, cert_verify_result.verified_cert.get(),
+            cert_verify_result.public_key_hashes)) {
+      verify_details_->cert_verify_result.cert_status |=
+          CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED;
+      ct_result = ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
+    }
+
     TransportSecurityState::PKPStatus pin_validity =
         transport_security_state_->CheckPublicKeyPins(
             HostPortPair(hostname_, port_),
@@ -363,6 +374,8 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
         // Do nothing.
         break;
     }
+    if (result != ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN && ct_result != OK)
+      result = ct_result;
   }
 
   if (result != OK) {

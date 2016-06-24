@@ -356,8 +356,10 @@ NET_ERROR(ICANN_NAME_COLLISION, -166)
 // not a certificate error code as no X509Certificate object is available. This
 // error is fatal.
 NET_ERROR(SSL_SERVER_CERT_BAD_FORMAT, -167)
+
 // Certificate Transparency: Received a signed tree head that failed to parse.
 NET_ERROR(CT_STH_PARSING_FAILED, -168)
+
 // Certificate Transparency: Received a signed tree head whose JSON parsing was
 // OK but was missing some of the fields.
 NET_ERROR(CT_STH_INCOMPLETE, -169)
@@ -480,13 +482,17 @@ NET_ERROR(CERT_NAME_CONSTRAINT_VIOLATION, -212)
 // The certificate's validity period is too long.
 NET_ERROR(CERT_VALIDITY_TOO_LONG, -213)
 
+// Certificate Transparency was required for this connection, but the server
+// did not provide CT information that complied with the policy.
+NET_ERROR(CERTIFICATE_TRANSPARENCY_REQUIRED, -214)
+
 // Add new certificate error codes here.
 //
 // Update the value of CERT_END whenever you add a new certificate error
 // code.
 
 // The value immediately past the last certificate error code.
-NET_ERROR(CERT_END, -214)
+NET_ERROR(CERT_END, -215)
 
 // The URL is invalid.
 NET_ERROR(INVALID_URL, -300)

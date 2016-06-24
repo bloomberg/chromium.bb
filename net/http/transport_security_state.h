@@ -49,6 +49,38 @@ class NET_EXPORT TransportSecurityState
     virtual ~Delegate() {}
   };
 
+  class NET_EXPORT RequireCTDelegate {
+   public:
+    // Provides a capability for altering the default handling of Certificate
+    // Transparency information, allowing it to be always required for some
+    // hosts, for some hosts to be opted out of the default policy, or
+    // allowing the TransportSecurityState to apply the default security
+    // policies.
+    enum class CTRequirementLevel {
+      // The host is required to always supply Certificate Transparency
+      // information that complies with the CT policy.
+      REQUIRED,
+
+      // The host is explicitly not required to supply Certificate
+      // Transparency information that complies with the CT policy.
+      NOT_REQUIRED,
+
+      // The delegate makes no statements, positive or negative, about
+      // requiring the host to supply Certificate Transparency information,
+      // allowing the default behaviour to happen.
+      DEFAULT,
+    };
+
+    // Called by the TransportSecurityState, allows the Delegate to override
+    // the default handling of Certificate Transparency requirements, if
+    // desired.
+    virtual CTRequirementLevel IsCTRequiredForHost(
+        const std::string& hostname) = 0;
+
+   protected:
+    virtual ~RequireCTDelegate() = default;
+  };
+
   // A STSState describes the strict transport security state (required
   // upgrade to HTTPS).
   class NET_EXPORT STSState {
@@ -271,6 +303,17 @@ class NET_EXPORT TransportSecurityState
       std::string* failure_log);
   bool HasPublicKeyPins(const std::string& host);
 
+  // Returns true if connections to |host|, using the validated certificate
+  // |validated_certificate_chain|, are expected to be accompanied with
+  // valid Certificate Transparency information that complies with the
+  // connection's CTPolicyEnforcer.
+  //
+  // The behavior may be further be altered by setting a RequireCTDelegate
+  // via |SetRequireCTDelegate()|.
+  bool ShouldRequireCT(const std::string& host,
+                       const X509Certificate* validated_certificate_chain,
+                       const HashValueVector& hashes);
+
   // Assign a |Delegate| for persisting the transport security state. If
   // |NULL|, state will not be persisted. The caller retains
   // ownership of |delegate|.
@@ -281,6 +324,16 @@ class NET_EXPORT TransportSecurityState
   void SetReportSender(ReportSenderInterface* report_sender);
 
   void SetExpectCTReporter(ExpectCTReporter* expect_ct_reporter);
+
+  // Assigns a delegate responsible for determining whether or not a
+  // connection to a given host should require Certificate Transparency
+  // information that complies with the CT policy provided by a
+  // CTPolicyEnforcer.
+  // If nullptr, no delegate will be consulted.
+  // The caller retains ownership of the |delegate|, and must persist for
+  // the lifetime of this object or until called with nullptr, whichever
+  // occurs first.
+  void SetRequireCTDelegate(RequireCTDelegate* delegate);
 
   // Clears all dynamic data (e.g. HSTS and HPKP data).
   //
@@ -486,9 +539,9 @@ class NET_EXPORT TransportSecurityState
   STSStateMap enabled_sts_hosts_;
   PKPStateMap enabled_pkp_hosts_;
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
-  ReportSenderInterface* report_sender_;
+  ReportSenderInterface* report_sender_ = nullptr;
 
   // True if static pins should be used.
   bool enable_static_pins_;
@@ -499,7 +552,9 @@ class NET_EXPORT TransportSecurityState
   // True if static expect-staple state should be used.
   bool enable_static_expect_staple_;
 
-  ExpectCTReporter* expect_ct_reporter_;
+  ExpectCTReporter* expect_ct_reporter_ = nullptr;
+
+  RequireCTDelegate* require_ct_delegate_ = nullptr;
 
   // Keeps track of reports that have been sent recently for
   // rate-limiting.

@@ -19,6 +19,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/test_data_stream.h"
 #include "net/base/test_proxy_delegate.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -35,6 +36,7 @@
 #include "net/spdy/spdy_test_utils.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
 namespace net {
@@ -77,6 +79,12 @@ base::TimeTicks SlowReads() {
 base::TimeTicks InstantaneousReads() {
   return g_time_now;
 }
+
+class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
+ public:
+  MOCK_METHOD1(IsCTRequiredForHost,
+               CTRequirementLevel(const std::string& host));
+};
 
 }  // namespace
 
@@ -5739,6 +5747,84 @@ TEST(CanPoolTest, CanNotPoolWithBadPins) {
 
   EXPECT_FALSE(SpdySession::CanPool(
       &tss, ssl_info, "www.example.org", "mail.example.org"));
+}
+
+TEST(CanPoolTest, CanNotPoolWithBadCTWhenCTRequired) {
+  using testing::Return;
+  using CTRequirementLevel =
+      TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
+
+  SSLInfo ssl_info;
+  ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ssl_info.is_issued_by_known_root = true;
+  ssl_info.public_key_hashes.push_back(test::GetTestHashValue(1));
+  ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+
+  MockRequireCTDelegate require_ct_delegate;
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org"))
+      .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("mail.example.org"))
+      .WillRepeatedly(Return(CTRequirementLevel::REQUIRED));
+
+  TransportSecurityState tss;
+  tss.SetRequireCTDelegate(&require_ct_delegate);
+
+  EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, "www.example.org",
+                                    "mail.example.org"));
+}
+
+TEST(CanPoolTest, CanPoolWithBadCTWhenCTNotRequired) {
+  using testing::Return;
+  using CTRequirementLevel =
+      TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
+
+  SSLInfo ssl_info;
+  ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ssl_info.is_issued_by_known_root = true;
+  ssl_info.public_key_hashes.push_back(test::GetTestHashValue(1));
+  ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+
+  MockRequireCTDelegate require_ct_delegate;
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org"))
+      .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("mail.example.org"))
+      .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
+
+  TransportSecurityState tss;
+  tss.SetRequireCTDelegate(&require_ct_delegate);
+
+  EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, "www.example.org",
+                                   "mail.example.org"));
+}
+
+TEST(CanPoolTest, CanPoolWithGoodCTWhenCTRequired) {
+  using testing::Return;
+  using CTRequirementLevel =
+      TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
+
+  SSLInfo ssl_info;
+  ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ssl_info.is_issued_by_known_root = true;
+  ssl_info.public_key_hashes.push_back(test::GetTestHashValue(1));
+  ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+
+  MockRequireCTDelegate require_ct_delegate;
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org"))
+      .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("mail.example.org"))
+      .WillRepeatedly(Return(CTRequirementLevel::REQUIRED));
+
+  TransportSecurityState tss;
+  tss.SetRequireCTDelegate(&require_ct_delegate);
+
+  EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, "www.example.org",
+                                   "mail.example.org"));
 }
 
 TEST(CanPoolTest, CanPoolWithAcceptablePins) {

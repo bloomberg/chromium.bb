@@ -31,6 +31,7 @@
 #include "net/base/proxy_delegate.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
@@ -664,6 +665,13 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
           ssl_info.cert.get(), TransportSecurityState::DISABLE_PIN_REPORTS,
           &pinning_failure_log) ==
       TransportSecurityState::PKPStatus::VIOLATED) {
+    return false;
+  }
+
+  if (ssl_info.ct_cert_policy_compliance !=
+          ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS &&
+      transport_security_state->ShouldRequireCT(
+          new_hostname, ssl_info.cert.get(), ssl_info.public_key_hashes)) {
     return false;
   }
 

@@ -33,6 +33,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -158,6 +159,12 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
   GURL report_uri_;
   SSLInfo ssl_info_;
   uint32_t num_failures_;
+};
+
+class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
+ public:
+  MOCK_METHOD1(IsCTRequiredForHost,
+               CTRequirementLevel(const std::string& hostname));
 };
 
 void CompareCertificateChainWithList(
@@ -1881,6 +1888,73 @@ TEST_F(TransportSecurityStateTest, ExpectCTReporter) {
   EXPECT_EQ(host_port.host(), reporter.host_port_pair().host());
   EXPECT_EQ(host_port.port(), reporter.host_port_pair().port());
   EXPECT_EQ(GURL(kExpectCTStaticReportURI), reporter.report_uri());
+}
+
+// Tests that TransportSecurityState always consults the RequireCTDelegate,
+// if supplied.
+TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
+  using ::testing::_;
+  using ::testing::Return;
+  using CTRequirementLevel =
+      TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
+
+  // Dummy cert to use as the validate chain. The contents do not matter.
+  scoped_refptr<X509Certificate> cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert);
+
+  HashValueVector hashes;
+  hashes.push_back(HashValue(
+      X509Certificate::CalculateFingerprint256(cert->os_cert_handle())));
+
+  {
+    TransportSecurityState state;
+    bool original_status =
+        state.ShouldRequireCT("www.example.com", cert.get(), hashes);
+
+    MockRequireCTDelegate always_require_delegate;
+    EXPECT_CALL(always_require_delegate, IsCTRequiredForHost(_))
+        .WillRepeatedly(Return(CTRequirementLevel::REQUIRED));
+    state.SetRequireCTDelegate(&always_require_delegate);
+    EXPECT_TRUE(state.ShouldRequireCT("www.example.com", cert.get(), hashes));
+
+    state.SetRequireCTDelegate(nullptr);
+    EXPECT_EQ(original_status,
+              state.ShouldRequireCT("www.example.com", cert.get(), hashes));
+  }
+
+  {
+    TransportSecurityState state;
+    bool original_status =
+        state.ShouldRequireCT("www.example.com", cert.get(), hashes);
+
+    MockRequireCTDelegate never_require_delegate;
+    EXPECT_CALL(never_require_delegate, IsCTRequiredForHost(_))
+        .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
+    state.SetRequireCTDelegate(&never_require_delegate);
+    EXPECT_FALSE(state.ShouldRequireCT("www.example.com", cert.get(), hashes));
+
+    state.SetRequireCTDelegate(nullptr);
+    EXPECT_EQ(original_status,
+              state.ShouldRequireCT("www.example.com", cert.get(), hashes));
+  }
+
+  {
+    TransportSecurityState state;
+    bool original_status =
+        state.ShouldRequireCT("www.example.com", cert.get(), hashes);
+
+    MockRequireCTDelegate default_require_ct_delegate;
+    EXPECT_CALL(default_require_ct_delegate, IsCTRequiredForHost(_))
+        .WillRepeatedly(Return(CTRequirementLevel::DEFAULT));
+    state.SetRequireCTDelegate(&default_require_ct_delegate);
+    EXPECT_EQ(original_status,
+              state.ShouldRequireCT("www.example.com", cert.get(), hashes));
+
+    state.SetRequireCTDelegate(nullptr);
+    EXPECT_EQ(original_status,
+              state.ShouldRequireCT("www.example.com", cert.get(), hashes));
+  }
 }
 
 }  // namespace net

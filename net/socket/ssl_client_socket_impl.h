@@ -133,7 +133,6 @@ class SSLClientSocketImpl : public SSLClientSocket {
   int DoVerifyCertComplete(int result);
   void DoConnectCallback(int result);
   void UpdateServerCert();
-  void VerifyCT();
 
   void OnHandshakeIOComplete(int result);
   void OnSendComplete(int result);
@@ -156,6 +155,7 @@ class SSLClientSocketImpl : public SSLClientSocket {
   void BufferRecvComplete(int result);
   void TransportWriteComplete(int result);
   int TransportReadComplete(int result);
+  int VerifyCT();
 
   // Callback from the SSL layer that indicates the remote server is requesting
   // a certificate for this client.

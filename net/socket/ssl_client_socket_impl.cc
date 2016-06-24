@@ -1338,10 +1338,12 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
     }
   }
 
+  // If the connection was good, check HPKP and CT status simultaneously,
+  // but prefer to treat the HPKP error as more serious, if there was one.
   const CertStatus cert_status = server_cert_verify_result_.cert_status;
-  if (transport_security_state_ &&
-      (result == OK ||
+  if ((result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status)))) {
+    int ct_result = VerifyCT();
     TransportSecurityState::PKPStatus pin_validity =
         transport_security_state_->CheckPublicKeyPins(
             host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
@@ -1361,13 +1363,11 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
         // Do nothing.
         break;
     }
+    if (result != ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN && ct_result != OK)
+      result = ct_result;
   }
 
   if (result == OK) {
-    // Only check Certificate Transparency if there were no other errors with
-    // the connection.
-    VerifyCT();
-
     DCHECK(!certificate_verified_);
     certificate_verified_ = true;
     MaybeCacheSession();
@@ -1395,58 +1395,6 @@ void SSLClientSocketImpl::UpdateServerCert() {
                       base::Bind(&NetLogX509CertificateCallback,
                                  base::Unretained(server_cert_.get())));
   }
-}
-
-void SSLClientSocketImpl::VerifyCT() {
-  const uint8_t* ocsp_response_raw;
-  size_t ocsp_response_len;
-  SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
-  std::string ocsp_response;
-  if (ocsp_response_len > 0) {
-    ocsp_response.assign(reinterpret_cast<const char*>(ocsp_response_raw),
-                         ocsp_response_len);
-  }
-
-  const uint8_t* sct_list_raw;
-  size_t sct_list_len;
-  SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list_raw, &sct_list_len);
-  std::string sct_list;
-  if (sct_list_len > 0)
-    sct_list.assign(reinterpret_cast<const char*>(sct_list_raw), sct_list_len);
-
-  // Note that this is a completely synchronous operation: The CT Log Verifier
-  // gets all the data it needs for SCT verification and does not do any
-  // external communication.
-  cert_transparency_verifier_->Verify(
-      server_cert_verify_result_.verified_cert.get(), ocsp_response, sct_list,
-      &ct_verify_result_, net_log_);
-
-  ct_verify_result_.ct_policies_applied = true;
-  ct_verify_result_.ev_policy_compliance =
-      ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
-  if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
-    scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
-        SSLConfigService::GetEVCertsWhitelist();
-    ct::EVPolicyCompliance ev_policy_compliance =
-        policy_enforcer_->DoesConformToCTEVPolicy(
-            server_cert_verify_result_.verified_cert.get(), ev_whitelist.get(),
-            ct_verify_result_.verified_scts, net_log_);
-    ct_verify_result_.ev_policy_compliance = ev_policy_compliance;
-    if (ev_policy_compliance !=
-            ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
-        ev_policy_compliance !=
-            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
-        ev_policy_compliance !=
-            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
-      server_cert_verify_result_.cert_status |=
-          CERT_STATUS_CT_COMPLIANCE_FAILED;
-      server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
-    }
-  }
-  ct_verify_result_.cert_policy_compliance =
-      policy_enforcer_->DoesConformToCertPolicy(
-          server_cert_verify_result_.verified_cert.get(),
-          ct_verify_result_.verified_scts, net_log_);
 }
 
 void SSLClientSocketImpl::OnHandshakeIOComplete(int result) {
@@ -1835,6 +1783,70 @@ int SSLClientSocketImpl::TransportReadComplete(int result) {
   DCHECK_EQ(1, ret);
   transport_recv_busy_ = false;
   return result;
+}
+
+int SSLClientSocketImpl::VerifyCT() {
+  const uint8_t* ocsp_response_raw;
+  size_t ocsp_response_len;
+  SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
+  std::string ocsp_response;
+  if (ocsp_response_len > 0) {
+    ocsp_response.assign(reinterpret_cast<const char*>(ocsp_response_raw),
+                         ocsp_response_len);
+  }
+
+  const uint8_t* sct_list_raw;
+  size_t sct_list_len;
+  SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list_raw, &sct_list_len);
+  std::string sct_list;
+  if (sct_list_len > 0)
+    sct_list.assign(reinterpret_cast<const char*>(sct_list_raw), sct_list_len);
+
+  // Note that this is a completely synchronous operation: The CT Log Verifier
+  // gets all the data it needs for SCT verification and does not do any
+  // external communication.
+  cert_transparency_verifier_->Verify(
+      server_cert_verify_result_.verified_cert.get(), ocsp_response, sct_list,
+      &ct_verify_result_, net_log_);
+
+  ct_verify_result_.ct_policies_applied = true;
+  ct_verify_result_.ev_policy_compliance =
+      ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
+  if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
+    scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
+        SSLConfigService::GetEVCertsWhitelist();
+    ct::EVPolicyCompliance ev_policy_compliance =
+        policy_enforcer_->DoesConformToCTEVPolicy(
+            server_cert_verify_result_.verified_cert.get(), ev_whitelist.get(),
+            ct_verify_result_.verified_scts, net_log_);
+    ct_verify_result_.ev_policy_compliance = ev_policy_compliance;
+    if (ev_policy_compliance !=
+            ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
+        ev_policy_compliance !=
+            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
+        ev_policy_compliance !=
+            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
+      server_cert_verify_result_.cert_status |=
+          CERT_STATUS_CT_COMPLIANCE_FAILED;
+      server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
+    }
+  }
+  ct_verify_result_.cert_policy_compliance =
+      policy_enforcer_->DoesConformToCertPolicy(
+          server_cert_verify_result_.verified_cert.get(),
+          ct_verify_result_.verified_scts, net_log_);
+
+  if (ct_verify_result_.cert_policy_compliance !=
+          ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS &&
+      transport_security_state_->ShouldRequireCT(
+          host_and_port_.host(), server_cert_verify_result_.verified_cert.get(),
+          server_cert_verify_result_.public_key_hashes)) {
+    server_cert_verify_result_.cert_status |=
+        CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED;
+    return ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
+  }
+
+  return OK;
 }
 
 int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {

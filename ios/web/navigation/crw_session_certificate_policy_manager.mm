@@ -18,7 +18,7 @@
 
 // Break if we detect that CertStatus values changed, because we persist them on
 // disk and thus require them to be consistent.
-static_assert(net::CERT_STATUS_ALL_ERRORS == 0xFFFF,
+static_assert(net::CERT_STATUS_ALL_ERRORS == 0xFF00FFFF,
               "The value of CERT_STATUS_ALL_ERRORS changed!");
 static_assert(net::CERT_STATUS_COMMON_NAME_INVALID == 1 << 0,
               "The value of CERT_STATUS_COMMON_NAME_INVALID changed!");

@@ -613,12 +613,9 @@ bool DecodeHSTSPreload(const std::string& hostname, PreloadResult* out) {
 }  // namespace
 
 TransportSecurityState::TransportSecurityState()
-    : delegate_(nullptr),
-      report_sender_(nullptr),
-      enable_static_pins_(true),
+    : enable_static_pins_(true),
       enable_static_expect_ct_(true),
       enable_static_expect_staple_(false),
-      expect_ct_reporter_(nullptr),
       sent_reports_cache_(kMaxHPKPReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
@@ -703,6 +700,21 @@ bool TransportSecurityState::HasPublicKeyPins(const std::string& host) {
   return false;
 }
 
+bool TransportSecurityState::ShouldRequireCT(
+    const std::string& hostname,
+    const X509Certificate* validated_certificate_chain,
+    const HashValueVector& public_key_hashes) {
+  using CTRequirementLevel = RequireCTDelegate::CTRequirementLevel;
+
+  CTRequirementLevel ct_required = CTRequirementLevel::DEFAULT;
+  if (require_ct_delegate_)
+    ct_required = require_ct_delegate_->IsCTRequiredForHost(hostname);
+  if (ct_required != CTRequirementLevel::DEFAULT)
+    return ct_required == CTRequirementLevel::REQUIRED;
+
+  return false;
+}
+
 void TransportSecurityState::SetDelegate(
     TransportSecurityState::Delegate* delegate) {
   DCHECK(CalledOnValidThread());
@@ -721,6 +733,11 @@ void TransportSecurityState::SetExpectCTReporter(
     ExpectCTReporter* expect_ct_reporter) {
   DCHECK(CalledOnValidThread());
   expect_ct_reporter_ = expect_ct_reporter;
+}
+
+void TransportSecurityState::SetRequireCTDelegate(RequireCTDelegate* delegate) {
+  DCHECK(CalledOnValidThread());
+  require_ct_delegate_ = delegate;
 }
 
 void TransportSecurityState::AddHSTSInternal(
