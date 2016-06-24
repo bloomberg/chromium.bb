@@ -507,6 +507,7 @@
         'public/test/test_web_view_content_view.mm',
         'public/test/web_test.h',
         'public/test/web_test.mm',
+        'public/test/web_test_suite.h',
         'public/test/web_test_with_web_state.h',
         'public/test/web_test_with_web_state.mm',
         'test/crw_fake_web_controller_observer.h',

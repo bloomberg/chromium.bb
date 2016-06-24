@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/test/web_test_suite.h"
+#include "ios/web/public/test/web_test_suite.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
