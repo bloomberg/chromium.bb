@@ -151,11 +151,11 @@ ProofVerifierChromium::Job::Job(
       next_state_(STATE_NONE),
       start_time_(base::TimeTicks::Now()),
       net_log_(net_log) {
-  DCHECK(proof_verifier_);
-  DCHECK(verifier_);
-  DCHECK(policy_enforcer_);
-  DCHECK(transport_security_state_);
-  DCHECK(cert_transparency_verifier_);
+  CHECK(proof_verifier_);
+  CHECK(verifier_);
+  CHECK(policy_enforcer_);
+  CHECK(transport_security_state_);
+  CHECK(cert_transparency_verifier_);
 }
 
 ProofVerifierChromium::Job::~Job() {

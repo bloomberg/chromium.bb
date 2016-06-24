@@ -518,9 +518,10 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       pkp_bypassed_(false),
       net_log_(transport_->socket()->NetLog()),
       weak_factory_(this) {
-  DCHECK(cert_verifier_);
-  DCHECK(transport_security_state_);
-  DCHECK(policy_enforcer_);
+  CHECK(cert_verifier_);
+  CHECK(transport_security_state_);
+  CHECK(cert_transparency_verifier_);
+  CHECK(policy_enforcer_);
 }
 
 SSLClientSocketImpl::~SSLClientSocketImpl() {
