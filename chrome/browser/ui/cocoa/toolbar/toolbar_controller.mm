@@ -450,6 +450,20 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   locationBarView_.reset(new LocationBarViewMac(locationBar_, commands_,
                                                 profile_, browser_));
   [locationBar_ setFont:[NSFont systemFontOfSize:14]];
+
+  // Add the location bar's accessibility views as direct subviews of the
+  // toolbar. They are logical children of the location bar, but the location
+  // bar's actual Cocoa control is an NSCell, so it cannot have child views.
+  // The |locationBarView_| is responsible for positioning the accessibility
+  // views.
+  std::vector<NSView*> accessibility_views =
+      locationBarView_->GetDecorationAccessibilityViews();
+  for (const auto& view : accessibility_views) {
+    [[self toolbarView] addSubview:view
+                        positioned:NSWindowAbove
+                        relativeTo:locationBar_];
+  }
+
   if (!isModeMaterial) {
     [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
   }

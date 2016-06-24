@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -23,10 +24,8 @@
 
 class LocationBarDecoration {
  public:
-  LocationBarDecoration()
-      : visible_(false) {
-  }
-  virtual ~LocationBarDecoration() {}
+  LocationBarDecoration();
+  virtual ~LocationBarDecoration();
 
   // Determines whether the decoration is visible.
   virtual bool IsVisible() const;
@@ -85,6 +84,11 @@ class LocationBarDecoration {
   // Gets the font used to draw text in the decoration.
   virtual NSFont* GetFont() const;
 
+  // Gets the accessibility NSView for this decoration. This NSView is
+  // a transparent button that is positioned over this decoration to allow it to
+  // accept keyboard focus and keyboard activations.
+  virtual NSView* GetAccessibilityView();
+
   // Helper to get where the bubble point should land. |frame| specifies the
   // decorations' image rectangle. Defaults to |frame.origin| if not overriden.
   // The return value is in the same coordinate system as |frame|.
@@ -100,6 +104,11 @@ class LocationBarDecoration {
                                    const NSRect& frame);
   static NSSize GetLabelSize(NSString* label,
                              NSDictionary* attributes);
+
+  // Called when the accessibility view receives an action via a keyboard button
+  // press or VoiceOver activation. This method is public so it can be exposed
+  // to the private DecorationAccessibilityView helper class.
+  void OnAccessibilityViewAction();
 
   // Width returned by |GetWidthForSpace()| when the item should be
   // omitted for this width;
@@ -123,7 +132,8 @@ class LocationBarDecoration {
   NSColor* GetDividerColor(bool location_bar_is_dark) const;
 
  private:
-  bool visible_;
+  bool visible_ = false;
+  base::scoped_nsobject<NSView> accessibility_view_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarDecoration);
 };

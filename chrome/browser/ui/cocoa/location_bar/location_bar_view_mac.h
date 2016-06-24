@@ -201,6 +201,11 @@ class LocationBarViewMac : public LocationBar,
   // Updates the view for the zoom icon when default zoom levels change.
   void OnDefaultZoomLevelChanged() override;
 
+  // Returns the decoration accessibility views for all of this
+  // LocationBarViewMac's decorations. The returned NSViews may not have been
+  // positioned yet.
+  std::vector<NSView*> GetDecorationAccessibilityViews();
+
  private:
   friend ZoomDecorationTest;
 
@@ -237,6 +242,15 @@ class LocationBarViewMac : public LocationBar,
   // Updates the zoom decoration in the omnibox with the current zoom level.
   // Returns whether any updates were made.
   bool UpdateZoomDecoration(bool default_zoom_changed);
+
+  // Returns pointers to all of the LocationBarDecorations owned by this
+  // LocationBarViewMac. This helper function is used for positioning and
+  // re-positioning accessibility views.
+  std::vector<LocationBarDecoration*> GetDecorations();
+
+  // Updates |decoration|'s accessibility view's position to match the computed
+  // position the decoration will be drawn at.
+  void UpdateAccessibilityViewPosition(LocationBarDecoration* decoration);
 
   std::unique_ptr<OmniboxViewMac> omnibox_view_;
 

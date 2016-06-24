@@ -21,8 +21,77 @@ const CGFloat kMaterialDividerIncognitoGrayScale = 1.0;
 
 }  // namespace
 
+// A DecorationAccessibilityView is a focusable, pressable button that is fully
+// transparent and cannot be hit by mouse clicks. This is overlaid over a drawn
+// decoration, to fake keyboard focus on the decoration and make it visible to
+// VoiceOver.
+@interface DecorationAccessibilityView : NSButton {
+  LocationBarDecoration* owner_;  // weak
+}
+
+// NSView:
+- (id)initWithOwner:(LocationBarDecoration*)owner;
+- (BOOL)acceptsFirstResponder;
+- (void)drawRect:(NSRect)dirtyRect;
+- (NSView*)hitTest:(NSPoint)aPoint;
+
+// This method is called when this DecorationAccessibilityView is activated.
+- (void)actionDidHappen;
+@end
+
+@implementation DecorationAccessibilityView
+
+- (id)initWithOwner:(LocationBarDecoration*)owner {
+  if ((self = [super initWithFrame:NSZeroRect])) {
+    self.bordered = NO;
+    self.focusRingType = NSFocusRingTypeExterior;
+    self->owner_ = owner;
+    [self setAction:@selector(actionDidHappen)];
+    [self setTarget:self];
+  }
+  return self;
+}
+
+- (BOOL)acceptsFirstResponder {
+  // This NSView is only focusable if the owning LocationBarDecoration can
+  // accept mouse presses.
+  return owner_->AcceptsMousePress() ? YES : NO;
+}
+
+- (void)drawRect:(NSRect)dirtyRect {
+  // Draw nothing. This NSView is fully transparent.
+}
+
+- (NSView*)hitTest:(NSPoint)aPoint {
+  // Mouse clicks cannot hit this NSView.
+  return nil;
+}
+
+- (void)actionDidHappen {
+  owner_->OnAccessibilityViewAction();
+}
+
+@end
+
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
 const SkColor LocationBarDecoration::kMaterialDarkModeTextColor = 0xCCFFFFFF;
+
+LocationBarDecoration::LocationBarDecoration() {
+  accessibility_view_.reset(
+      [[DecorationAccessibilityView alloc] initWithOwner:this]);
+  [accessibility_view_.get() setHidden:YES];
+}
+
+void LocationBarDecoration::OnAccessibilityViewAction() {
+  // Turn the action into a synthesized mouse click at the center of |this|.
+  NSRect frame = [accessibility_view_.get() frame];
+  NSPoint mousePoint = NSMakePoint(NSMidX(frame), NSMidY(frame));
+  OnMousePressed(frame, mousePoint);
+}
+
+LocationBarDecoration::~LocationBarDecoration() {
+  [accessibility_view_.get() removeFromSuperview];
+}
 
 bool LocationBarDecoration::IsVisible() const {
   return visible_;
@@ -30,6 +99,7 @@ bool LocationBarDecoration::IsVisible() const {
 
 void LocationBarDecoration::SetVisible(bool visible) {
   visible_ = visible;
+  [accessibility_view_.get() setHidden:visible ? NO : YES];
 }
 
 
@@ -83,6 +153,10 @@ NSMenu* LocationBarDecoration::GetMenu() {
 
 NSFont* LocationBarDecoration::GetFont() const {
   return OmniboxViewMac::GetNormalFieldFont();
+}
+
+NSView* LocationBarDecoration::GetAccessibilityView() {
+  return accessibility_view_.get();
 }
 
 NSPoint LocationBarDecoration::GetBubblePointInFrame(NSRect frame) {

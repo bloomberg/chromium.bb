@@ -574,6 +574,9 @@ NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
 void LocationBarViewMac::OnDecorationsChanged() {
   // TODO(shess): The field-editor frame and cursor rects should not
   // change, here.
+  std::vector<LocationBarDecoration*> decorations = GetDecorations();
+  for (const auto& decoration : decorations)
+    UpdateAccessibilityViewPosition(decoration);
   [field_ updateMouseTracking];
   [field_ resetFieldEditorFrameIfNeeded];
   [field_ setNeedsDisplay:YES];
@@ -991,7 +994,40 @@ bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
       IsLocationBarDark());
 }
 
+void LocationBarViewMac::UpdateAccessibilityViewPosition(
+    LocationBarDecoration* decoration) {
+  if (!decoration->IsVisible())
+    return;
+  NSRect r =
+      [[field_ cell] frameForDecoration:decoration inFrame:[field_ frame]];
+  [decoration->GetAccessibilityView() setFrame:r];
+  [decoration->GetAccessibilityView() setNeedsDisplayInRect:r];
+}
+
+std::vector<LocationBarDecoration*> LocationBarViewMac::GetDecorations() {
+  std::vector<LocationBarDecoration*> decorations;
+  // TODO(ellyjones): content setting decorations aren't included right now, nor
+  // are page actions and the keyword hint.
+  decorations.push_back(location_icon_decoration_.get());
+  decorations.push_back(selected_keyword_decoration_.get());
+  decorations.push_back(ev_bubble_decoration_.get());
+  decorations.push_back(save_credit_card_decoration_.get());
+  decorations.push_back(star_decoration_.get());
+  decorations.push_back(translate_decoration_.get());
+  decorations.push_back(zoom_decoration_.get());
+  decorations.push_back(manage_passwords_decoration_.get());
+  return decorations;
+}
+
 void LocationBarViewMac::OnDefaultZoomLevelChanged() {
   if (UpdateZoomDecoration(/*default_zoom_changed=*/true))
     OnDecorationsChanged();
+}
+
+std::vector<NSView*> LocationBarViewMac::GetDecorationAccessibilityViews() {
+  std::vector<LocationBarDecoration*> decorations = GetDecorations();
+  std::vector<NSView*> views;
+  for (const auto& decoration : decorations)
+    views.push_back(decoration->GetAccessibilityView());
+  return views;
 }
