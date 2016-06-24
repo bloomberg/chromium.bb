@@ -4053,7 +4053,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // TODO(creis): This actually goes to frame_url in some cases when subframe
   // FrameNavigationEntries are enabled, due to a mismatch between PageState and
   // the entry's URL.  That should be fixed in https://crbug.com/617239.
-  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
     EXPECT_EQ(blank_url, frame->current_url());
 }
 
@@ -4183,7 +4183,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // TODO(creis): This actually goes to frame_url_2 in some cases when subframe
   // FrameNavigationEntries are enabled, due to a mismatch between PageState and
   // the entry's URL.  That should be fixed in https://crbug.com/617239.
-  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
     EXPECT_EQ(frame_url_1, frame->current_url());
 }
 
@@ -4306,7 +4306,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // TODO(creis): This actually goes to frame_url_2 in some cases when subframe
   // FrameNavigationEntries are enabled, due to a mismatch between PageState and
   // the entry's URL.  That should be fixed in https://crbug.com/617239.
-  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
     EXPECT_EQ(frame_url_1, frame->current_url());
 }
 
