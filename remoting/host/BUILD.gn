@@ -1138,7 +1138,7 @@ if (enable_me2me_host) {
                "OFFICIAL_BUILD=$_official_build",
              ]
     }
-  } else if (is_mac && is_chrome_branded) {
+  } else if (is_mac) {
     import("//build/config/zip.gni")
     zip("remoting_me2me_host_archive") {
       # TODO(crbug.com/622415) - This list of inputs is totally wrong
