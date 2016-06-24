@@ -24,7 +24,6 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -55,17 +54,13 @@ class SnackbarView {
     private Snackbar mSnackbar;
 
     // Variables used to calculate the virtual keyboard's height.
-    private int[] mTempDecorPosition = new int[2];
     private Rect mCurrentVisibleRect = new Rect();
     private Rect mPreviousVisibleRect = new Rect();
 
-    private OnGlobalLayoutListener mLayoutListener = new OnGlobalLayoutListener() {
+    private OnLayoutChangeListener mLayoutListener = new OnLayoutChangeListener() {
         @Override
-        public void onGlobalLayout() {
-            // Why adjust layout params in onGlobalLayout, not in onMeasure()?
-            // View#onMeasure() does not work well with getWindowVisibleDisplayFrame(). Especially
-            // when device orientation changes, onMeasure is called before
-            // getWindowVisibleDisplayFrame's value is updated.
+        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
+                int oldTop, int oldRight, int oldBottom) {
             adjustViewPosition();
         }
     };
@@ -136,13 +131,12 @@ class SnackbarView {
     void dismiss() {
         // Disable action button during animation.
         mActionButtonView.setEnabled(false);
-        mView.getViewTreeObserver().removeOnGlobalLayoutListener(mLayoutListener);
-
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.setDuration(mAnimationDuration);
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                mParent.removeOnLayoutChangeListener(mLayoutListener);
                 mParent.removeView(mView);
             }
         });
@@ -162,11 +156,8 @@ class SnackbarView {
         if (!mCurrentVisibleRect.equals(mPreviousVisibleRect)) {
             mPreviousVisibleRect.set(mCurrentVisibleRect);
 
-            mParent.getLocationInWindow(mTempDecorPosition);
-            int activityHeight = mTempDecorPosition[1] + mParent.getHeight();
-            int visibleHeight = Math.min(mCurrentVisibleRect.bottom, activityHeight);
-            int keyboardHeight = activityHeight - visibleHeight;
-
+            int keyboardHeight = mParent.getHeight() - mCurrentVisibleRect.bottom
+                    + mCurrentVisibleRect.top;
             MarginLayoutParams lp = getLayoutParams();
             lp.bottomMargin = keyboardHeight;
             if (mIsTablet) {
@@ -186,9 +177,9 @@ class SnackbarView {
      * @see SnackbarManager#overrideParent(ViewGroup)
      */
     void overrideParent(ViewGroup overridingParent) {
+        mParent.removeOnLayoutChangeListener(mLayoutListener);
         mParent = overridingParent == null ? mOriginalParent : overridingParent;
         if (isShowing()) {
-            mView.getViewTreeObserver().removeOnGlobalLayoutListener(mLayoutListener);
             ((ViewGroup) mView.getParent()).removeView(mView);
         }
         addToParent();
@@ -232,7 +223,12 @@ class SnackbarView {
         } else {
             assert false : "Only FrameLayout and CoordinatorLayout are supported to show snackbars";
         }
-        mView.getViewTreeObserver().addOnGlobalLayoutListener(mLayoutListener);
+
+        // Why setting listener on parent? It turns out that if we force a relayout in the layout
+        // change listener of the view itself, the force layout flag will be reset to 0 when
+        // layout() returns. Therefore we have to do request layout on one level above the requested
+        // view.
+        mParent.addOnLayoutChangeListener(mLayoutListener);
     }
 
     private boolean updateInternal(Snackbar snackbar, boolean animate) {
