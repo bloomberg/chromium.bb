@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/ports/node_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -114,6 +115,24 @@ void PumpTasks() {
   }
 }
 
+void PumpUntilTask(EventType type) {
+  while (!task_queue.empty()) {
+    Task* task = task_queue.top();
+
+    const EventHeader* header = GetEventHeader(*task->message);
+    if (header->type == type)
+      return;
+
+    task_queue.pop();
+
+    Node* node = GetNode(task->node_name);
+    if (node)
+      node->AcceptMessage(std::move(task->message));
+
+    delete task;
+  }
+}
+
 void DiscardPendingTasks() {
   while (!task_queue.empty()) {
     Task* task = task_queue.top();
@@ -200,7 +219,8 @@ class TestNodeDelegate : public NodeDelegate {
   void BroadcastMessage(ScopedMessage message) override {
     for (size_t i = 0; i < kMaxNodes; ++i) {
       Node* node = node_map[i];
-      if (node) {
+      // Broadcast doesn't deliver to the local node.
+      if (node && node != GetNode(node_name_)) {
         // NOTE: We only need to support broadcast of events, which have no
         // payload or ports bytes.
         ScopedMessage new_message(
@@ -544,6 +564,62 @@ TEST_F(PortsTest, LostConnectionToNodeWithSecondaryProxy) {
   EXPECT_EQ(OK, node1.ClosePort(B));
   EXPECT_EQ(OK, node1.ClosePort(C));
   EXPECT_EQ(OK, node0.ClosePort(E));
+
+  EXPECT_TRUE(node0.CanShutdownCleanly(false));
+  EXPECT_TRUE(node1.CanShutdownCleanly(false));
+}
+
+TEST_F(PortsTest, LostConnectionToNodeWithLocalProxy) {
+  // Tests that a proxy gets cleaned up when its direct peer lives on a lost
+  // node and it's predecessor lives on the same node.
+
+  NodeName node0_name(0, 1);
+  TestNodeDelegate node0_delegate(node0_name);
+  Node node0(node0_name, &node0_delegate);
+  node_map[0] = &node0;
+
+  NodeName node1_name(1, 1);
+  TestNodeDelegate node1_delegate(node1_name);
+  Node node1(node1_name, &node1_delegate);
+  node_map[1] = &node1;
+
+  node1_delegate.set_save_messages(true);
+
+  // Create A-B spanning nodes 0 and 1.
+  PortRef A, B;
+  EXPECT_EQ(OK, node0.CreateUninitializedPort(&A));
+  EXPECT_EQ(OK, node1.CreateUninitializedPort(&B));
+  EXPECT_EQ(OK, node0.InitializePort(A, node1_name, B.name()));
+  EXPECT_EQ(OK, node1.InitializePort(B, node0_name, A.name()));
+
+  // Create C-D and send D over A to node 1.
+  PortRef C, D;
+  EXPECT_EQ(OK, node0.CreatePortPair(&C, &D));
+  EXPECT_EQ(OK, SendStringMessageWithPort(&node0, A, ".", D));
+
+  // Pump tasks until the start of port collapse for port D, which should become
+  // a proxy.
+  PumpUntilTask(EventType::kObserveProxy);
+
+  ScopedMessage message;
+  ASSERT_TRUE(node1_delegate.GetSavedMessage(&message));
+  ASSERT_EQ(1u, message->num_ports());
+
+  PortRef E;
+  EXPECT_EQ(OK, node1.GetPort(message->ports()[0], &E));
+
+  EXPECT_EQ(OK, node0.LostConnectionToNode(node1_name));
+  PumpTasks();
+
+  // Port C should have detected peer closure.
+  PortStatus status;
+  EXPECT_EQ(OK, node0.GetStatus(C, &status));
+  EXPECT_TRUE(status.peer_closed);
+
+  EXPECT_EQ(OK, node0.ClosePort(A));
+  EXPECT_EQ(OK, node1.ClosePort(B));
+  EXPECT_EQ(OK, node0.ClosePort(C));
+  EXPECT_EQ(OK, node1.ClosePort(E));
 
   EXPECT_TRUE(node0.CanShutdownCleanly(false));
   EXPECT_TRUE(node1.CanShutdownCleanly(false));

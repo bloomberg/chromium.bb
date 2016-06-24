@@ -1355,6 +1355,12 @@ void Node::DestroyAllPortsWithPeer(const NodeName& node_name,
     event.proxy_to_port_name = kInvalidPortName;
     delegate_->BroadcastMessage(NewInternalMessage(
         kInvalidPortName, EventType::kObserveProxy, event));
+
+    // Also process death locally since the port that points this closed one
+    // could be on the current node.
+    // Note: Although this is recursive, only a single port is involved which
+    // limits the expected branching to 1.
+    DestroyAllPortsWithPeer(name_, proxy_name);
   }
 
   // Close any ports referenced by the closed proxies.
