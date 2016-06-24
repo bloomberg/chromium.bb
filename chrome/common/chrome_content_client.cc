@@ -13,6 +13,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
