@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.widget;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,6 +96,8 @@ public final class DualControlLayout extends ViewGroup {
         Resources resources = getContext().getResources();
         mHorizontalMarginBetweenViews =
                 resources.getDimensionPixelSize(R.dimen.infobar_control_margin_between_items);
+
+        if (attrs != null) parseAttributes(attrs);
     }
 
     /**
@@ -220,6 +224,35 @@ public final class DualControlLayout extends ViewGroup {
 
             mSecondaryView.layout(
                     secondaryLeft, secondaryTop, secondaryRight, secondaryBottom);
+        }
+    }
+
+    private void parseAttributes(AttributeSet attrs) {
+        TypedArray a =
+                getContext().obtainStyledAttributes(attrs, R.styleable.DualControlLayout, 0, 0);
+
+        // Set the stacked margin.
+        if (a.hasValue(R.styleable.DualControlLayout_stackedMargin)) {
+            setStackedMargin(
+                    a.getDimensionPixelSize(R.styleable.DualControlLayout_stackedMargin, 0));
+        }
+
+        // Create the primary button, if necessary.
+        String primaryButtonText = null;
+        if (a.hasValue(R.styleable.DualControlLayout_primaryButtonText)) {
+            primaryButtonText = a.getString(R.styleable.DualControlLayout_primaryButtonText);
+        }
+        if (!TextUtils.isEmpty(primaryButtonText)) {
+            addView(createButtonForLayout(getContext(), true, primaryButtonText, null));
+        }
+
+        // Build the secondary button, but only if there's a primary button set.
+        String secondaryButtonText = null;
+        if (a.hasValue(R.styleable.DualControlLayout_secondaryButtonText)) {
+            secondaryButtonText = a.getString(R.styleable.DualControlLayout_secondaryButtonText);
+        }
+        if (!TextUtils.isEmpty(primaryButtonText) && !TextUtils.isEmpty(secondaryButtonText)) {
+            addView(createButtonForLayout(getContext(), false, secondaryButtonText, null));
         }
     }
 }

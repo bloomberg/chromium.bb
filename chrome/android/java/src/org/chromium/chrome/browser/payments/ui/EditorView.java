@@ -285,21 +285,16 @@ public class EditorView extends AlwaysDismissedDialog
     }
 
     private void prepareButtons() {
-        mDoneButton = DualControlLayout.createButtonForLayout(
-                mContext, true, mContext.getString(R.string.done), this);
+        mDoneButton = (Button) mLayout.findViewById(R.id.button_primary);
         mDoneButton.setId(R.id.payments_edit_done_button);
+        mDoneButton.setOnClickListener(this);
 
-        Button cancelButton = DualControlLayout.createButtonForLayout(
-                mContext, false, mContext.getString(R.string.cancel), this);
+        Button cancelButton = (Button) mLayout.findViewById(R.id.button_secondary);
         cancelButton.setId(R.id.payments_edit_cancel_button);
+        cancelButton.setOnClickListener(this);
 
-        DualControlLayout buttonBar =
-                (DualControlLayout) mLayout.findViewById(R.id.button_bar);
+        DualControlLayout buttonBar = (DualControlLayout) mLayout.findViewById(R.id.button_bar);
         buttonBar.setAlignment(DualControlLayout.ALIGN_END);
-        buttonBar.setStackedMargin(mContext.getResources().getDimensionPixelSize(
-                R.dimen.infobar_margin_between_stacked_buttons));
-        buttonBar.addView(mDoneButton);
-        buttonBar.addView(cancelButton);
     }
 
     /** Create the visual representation of the EditorModel. */
