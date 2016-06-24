@@ -57,6 +57,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkletGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
@@ -818,7 +819,20 @@ InstallOriginTrialsFunction s_installOriginTrialsFunction = &installOriginTrials
 
 void installOriginTrials(ScriptState* scriptState)
 {
+    v8::Local<v8::Context> context = scriptState->context();
+    ExecutionContext* executionContext = toExecutionContext(context);
+    OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext, OriginTrialContext::DontCreateIfNotExists);
+    if (!originTrialContext)
+        return;
+
+    ScriptState::Scope scope(scriptState);
+
     (*s_installOriginTrialsFunction)(scriptState);
+
+    // Mark each enabled feature as having been installed.
+    if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage", nullptr))) {
+        originTrialContext->setFeatureBindingsInstalled("DurableStorage");
+    }
 }
 
 InstallOriginTrialsFunction setInstallOriginTrialsFunction(InstallOriginTrialsFunction newInstallOriginTrialsFunction)

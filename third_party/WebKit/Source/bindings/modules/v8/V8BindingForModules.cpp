@@ -564,7 +564,6 @@ void installOriginTrialsForModules(ScriptState* scriptState)
             V8ServiceWorkerGlobalScope::installDurableStorage(scriptState, global);
             V8WorkerNavigatorPartial::installDurableStorage(scriptState, navigator);
         }
-        originTrialContext->setFeatureBindingsInstalled("DurableStorage");
     }
 }
 
