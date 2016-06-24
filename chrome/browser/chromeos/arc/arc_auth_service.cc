@@ -14,12 +14,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/arc/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -41,7 +39,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -335,7 +332,7 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   // In case UI is disabled we assume that ARC is opted-in.
   if (!IsOptInVerificationDisabled()) {
     if (!disable_ui_for_testing || enable_check_android_management_for_testing)
-      StartAndroidManagementClient();
+      ArcAndroidManagementChecker::StartClient();
     pref_change_registrar_.Init(profile_->GetPrefs());
     pref_change_registrar_.Add(
         prefs::kArcEnabled,
@@ -414,7 +411,7 @@ void ArcAuthService::OnMergeSessionSuccess(const std::string& data) {
 
   DCHECK(!initial_opt_in_);
   context_prepared_ = true;
-  CheckAndroidManagement();
+  CheckAndroidManagement(false);
 }
 
 void ArcAuthService::OnMergeSessionFailure(
@@ -478,7 +475,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
     // Ready to start Arc, but check Android management first.
     if (!disable_ui_for_testing ||
         enable_check_android_management_for_testing) {
-      CheckAndroidManagement();
+      CheckAndroidManagement(true);
     } else {
       StartArc();
     }
@@ -492,6 +489,7 @@ void ArcAuthService::ShutdownBridge() {
   auth_callback_.Reset();
   ubertoken_fetcher_.reset();
   merger_fetcher_.reset();
+  android_management_checker_.reset();
   arc_bridge_service()->Shutdown();
   if (state_ != State::NOT_INITIALIZED)
     SetState(State::STOPPED);
@@ -623,7 +621,7 @@ void ArcAuthService::StartUI() {
     initial_opt_in_ = false;
     ShowUI(UIPage::START, base::string16());
   } else if (context_prepared_) {
-    CheckAndroidManagement();
+    CheckAndroidManagement(false);
   } else {
     PrepareContext();
   }
@@ -638,18 +636,7 @@ void ArcAuthService::OnPrepareContextFailed() {
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 
-void ArcAuthService::StartAndroidManagementClient() {
-  policy::BrowserPolicyConnectorChromeOS* const connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy::DeviceManagementService* const service =
-      connector->device_management_service();
-  service->ScheduleInitialization(0);
-  android_management_client_.reset(new policy::AndroidManagementClient(
-      service, g_browser_process->system_request_context(), account_id_,
-      token_service_));
-}
-
-void ArcAuthService::CheckAndroidManagement() {
+void ArcAuthService::CheckAndroidManagement(bool backround_mode) {
   // Do not send requests for Chrome OS managed users.
   if (IsAccountManaged(profile_)) {
     StartArcIfSignedIn();
@@ -663,9 +650,10 @@ void ArcAuthService::CheckAndroidManagement() {
     return;
   }
 
-  android_management_client_->StartCheckAndroidManagement(
-      base::Bind(&ArcAuthService::OnAndroidManagementChecked,
-                 weak_ptr_factory_.GetWeakPtr()));
+  android_management_checker_.reset(new ArcAndroidManagementChecker(
+      this, token_service_, account_id_, backround_mode));
+  if (backround_mode)
+    StartArcIfSignedIn();
 }
 
 void ArcAuthService::OnAndroidManagementChecked(
@@ -675,6 +663,10 @@ void ArcAuthService::OnAndroidManagementChecked(
       StartArcIfSignedIn();
       break;
     case policy::AndroidManagementClient::Result::RESULT_MANAGED:
+      if (android_management_checker_->background_mode()) {
+        DisableArc();
+        return;
+      }
       ShutdownBridgeAndShowUI(
           UIPage::ERROR,
           l10n_util::GetStringUTF16(IDS_ARC_ANDROID_MANAGEMENT_REQUIRED_ERROR));
@@ -692,6 +684,8 @@ void ArcAuthService::OnAndroidManagementChecked(
 }
 
 void ArcAuthService::StartArcIfSignedIn() {
+  if (state_ == State::ACTIVE)
+    return;
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) ||
       IsOptInVerificationDisabled()) {
     StartArc();

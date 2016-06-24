@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/policy/android_management_client.h"
+#include "chrome/browser/chromeos/arc/arc_android_management_checker_delegate.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/auth.mojom.h"
@@ -22,6 +22,7 @@
 #include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+class ArcAndroidManagementChecker;
 class ArcAppLauncher;
 class GaiaAuthFetcher;
 class Profile;
@@ -46,6 +47,7 @@ namespace arc {
 class ArcAuthService : public ArcService,
                        public mojom::AuthHost,
                        public ArcBridgeService::Observer,
+                       public ArcAndroidManagementCheckerDelegate,
                        public UbertokenConsumer,
                        public GaiaAuthConsumer,
                        public syncable_prefs::PrefServiceSyncableObserver,
@@ -165,6 +167,10 @@ class ArcAuthService : public ArcService,
   // syncable_prefs::SyncedPrefObserver
   void OnSyncedPrefChanged(const std::string& path, bool from_sync) override;
 
+  // ArcAndroidManagementCheckerDelegate:
+  void OnAndroidManagementChecked(
+      policy::AndroidManagementClient::Result result) override;
+
   // Returns current page that has to be shown in OptIn UI.
   UIPage ui_page() const { return ui_page_; }
 
@@ -185,9 +191,7 @@ class ArcAuthService : public ArcService,
   void StartUI();
   void OnPrepareContextFailed();
   void StartAndroidManagementClient();
-  void CheckAndroidManagement();
-  void OnAndroidManagementChecked(
-      policy::AndroidManagementClient::Result result);
+  void CheckAndroidManagement(bool background_mode);
   void StartArcIfSignedIn();
 
   // Unowned pointer. Keeps current profile.
@@ -215,7 +219,7 @@ class ArcAuthService : public ArcService,
 
   ProfileOAuth2TokenService* token_service_;
   std::string account_id_;
-  std::unique_ptr<policy::AndroidManagementClient> android_management_client_;
+  std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
 
   base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_;
 

@@ -220,8 +220,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ConsumerAccount) {
   prefs->SetBoolean(prefs::kArcEnabled, true);
   token_service()->IssueTokenForAllPendingRequests(kUnmanagedAuthToken,
                                                    base::Time::Max());
-  ArcAuthServiceStateObserver observer;
-  observer.Wait();
   ASSERT_EQ(ArcAuthService::State::ACTIVE, ArcAuthService::Get()->state());
 }
 
