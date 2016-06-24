@@ -178,7 +178,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
 }
 
 ServiceWorkerRequestHandler* ServiceWorkerRequestHandler::GetHandler(
-    net::URLRequest* request) {
+    const net::URLRequest* request) {
   return static_cast<ServiceWorkerRequestHandler*>(
       request->GetUserData(&kUserDataKey));
 }
@@ -191,12 +191,18 @@ ServiceWorkerRequestHandler::CreateInterceptor(
 }
 
 bool ServiceWorkerRequestHandler::IsControlledByServiceWorker(
-    net::URLRequest* request) {
+    const net::URLRequest* request) {
   ServiceWorkerRequestHandler* handler = GetHandler(request);
   if (!handler || !handler->provider_host_)
     return false;
   return handler->provider_host_->associated_registration() ||
          handler->provider_host_->running_hosted_version();
+}
+
+ServiceWorkerProviderHost* ServiceWorkerRequestHandler::GetProviderHost(
+    const net::URLRequest* request) {
+  ServiceWorkerRequestHandler* handler = GetHandler(request);
+  return handler ? handler->provider_host_.get() : nullptr;
 }
 
 void ServiceWorkerRequestHandler::PrepareForCrossSiteTransfer(

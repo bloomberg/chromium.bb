@@ -68,7 +68,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool is_async,
       bool is_using_lofi,
       const std::string& original_headers,
-      const scoped_refptr<ResourceRequestBodyImpl> body);
+      const scoped_refptr<ResourceRequestBodyImpl> body,
+      bool initiated_in_secure_context);
   ~ResourceRequestInfoImpl() override;
 
   // ResourceRequestInfo implementation:
@@ -189,6 +190,13 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   const scoped_refptr<ResourceRequestBodyImpl>& body() const { return body_; }
   void ResetBody();
 
+  bool initiated_in_secure_context() const {
+    return initiated_in_secure_context_;
+  }
+  void set_initiated_in_secure_context_for_testing(bool secure) {
+    initiated_in_secure_context_ = secure;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -231,6 +239,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool is_using_lofi_;
   const std::string original_headers_;
   scoped_refptr<ResourceRequestBodyImpl> body_;
+  bool initiated_in_secure_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestInfoImpl);
 };

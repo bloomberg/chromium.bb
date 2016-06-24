@@ -11,6 +11,7 @@
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -55,14 +56,19 @@ void HandleServiceWorkerLink(
   if (!service_worker_context)
     return;
 
-  // TODO(mek): serviceworker links should only be supported on requests from
-  // secure contexts. For now just check the initiator origin, even though that
-  // is not correct: 1) the initiator isn't the origin that matters in case of
-  // navigations, and 2) more than just a secure origin this needs to be a
-  // secure context.
-  if (!request->initiator().unique() &&
-      !IsOriginSecure(GURL(request->initiator().Serialize())))
-    return;
+  if (ServiceWorkerUtils::IsMainResourceType(request_info->GetResourceType())) {
+    // In case of navigations, make sure the navigation will actually result in
+    // a secure context.
+    ServiceWorkerProviderHost* provider_host =
+        ServiceWorkerRequestHandler::GetProviderHost(request);
+    if (!provider_host || !provider_host->IsContextSecureForServiceWorker())
+      return;
+  } else {
+    // If this is not a navigation, make sure the request was initiated from a
+    // secure context.
+    if (!request_info->initiated_in_secure_context())
+      return;
+  }
 
   // TODO(mek): support for a serviceworker link on a request that wouldn't ever
   // be able to be intercepted by a serviceworker isn't very useful, so this

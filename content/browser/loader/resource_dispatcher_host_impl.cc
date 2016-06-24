@@ -1551,7 +1551,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
                   resource_context,
                   request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME),
       support_async_revalidation ? request_data.headers : std::string(),
-      request_data.request_body);
+      request_data.request_body, request_data.initiated_in_secure_context);
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
@@ -1851,7 +1851,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       true,                                    // is_async
       false,                                   // is_using_lofi
       std::string(),                           // original_headers
-      nullptr);                                // body
+      nullptr,                                 // body
+      false);                                  // initiated_in_secure_context
 }
 
 void ResourceDispatcherHostImpl::OnRenderFrameDeleted(
@@ -2266,7 +2267,12 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // TODO(ricea): Make the feature work with stale-while-revalidate
       // and clean this up.
       std::string(),  // original_headers
-      info.common_params.post_data);
+      info.common_params.post_data,
+      // TODO(mek): Currently initiated_in_secure_context is only used for
+      // subresource requests, so it doesn't matter what value it gets here.
+      // If in the future this changes this should be updated to somehow get a
+      // meaningful value.
+      false);  // initiated_in_secure_context
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 

@@ -89,7 +89,8 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
       is_async,                                // is_async
       is_using_lofi,                           // is_using_lofi
       std::string(),                           // original_headers
-      nullptr);                                // body
+      nullptr,                                 // body
+      false);                                  // initiated_in_secure_context
   info->AssociateWithRequest(request);
 }
 
@@ -157,7 +158,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool is_async,
     bool is_using_lofi,
     const std::string& original_headers,
-    const scoped_refptr<ResourceRequestBodyImpl> body)
+    const scoped_refptr<ResourceRequestBodyImpl> body,
+    bool initiated_in_secure_context)
     : cross_site_handler_(NULL),
       detachable_handler_(NULL),
       process_type_(process_type),
@@ -190,7 +192,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       is_async_(is_async),
       is_using_lofi_(is_using_lofi),
       original_headers_(original_headers),
-      body_(body) {}
+      body_(body),
+      initiated_in_secure_context_(initiated_in_secure_context) {}
 
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
 }

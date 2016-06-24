@@ -81,7 +81,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   // Returns the handler attached to |request|. This may return NULL
   // if no handler is attached.
   static ServiceWorkerRequestHandler* GetHandler(
-      net::URLRequest* request);
+      const net::URLRequest* request);
 
   // Creates a protocol interceptor for ServiceWorker.
   static std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor(
@@ -91,7 +91,12 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   // It's only reliable after the ServiceWorkerRequestHandler MaybeCreateJob
   // method runs to completion for this request. The AppCache handler uses
   // this to avoid colliding with ServiceWorkers.
-  static bool IsControlledByServiceWorker(net::URLRequest* request);
+  static bool IsControlledByServiceWorker(const net::URLRequest* request);
+
+  // Returns the ServiceWorkerProviderHost the request is associated with.
+  // Only valid after InitializeHandler has been called. Can return null.
+  static ServiceWorkerProviderHost* GetProviderHost(
+      const net::URLRequest* request);
 
   ~ServiceWorkerRequestHandler() override;
 
