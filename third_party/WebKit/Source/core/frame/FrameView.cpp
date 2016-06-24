@@ -166,6 +166,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_suppressAdjustViewSize(false)
     , m_inPluginUpdate(false)
     , m_inForcedLayoutByChildEmbeddedReplacedContent(false)
+    , m_allowsLayoutInvalidationAfterLayoutClean(false)
 {
     ASSERT(m_frame);
     init();
@@ -938,11 +939,15 @@ void FrameView::layout()
 
     ScriptForbiddenScope forbidScript;
 
-    if (isInPerformLayout() || !m_frame->document()->isActive() || shouldThrottleRendering())
+    CHECK(m_frame->document()->isActive());
+
+    if (isInPerformLayout() || shouldThrottleRendering())
         return;
 
     TRACE_EVENT0("blink,benchmark", "FrameView::layout");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "Layout");
+
+    TemporaryChange<bool> allowsLayoutInvalidation(m_allowsLayoutInvalidationAfterLayoutClean, true);
 
     if (m_autoSizeInfo)
         m_autoSizeInfo->autoSizeIfNeeded();
@@ -1829,7 +1834,10 @@ void FrameView::checkLayoutInvalidationIsAllowed() const
     CHECK(lifecycle().stateAllowsLayoutInvalidation());
     if (m_isUpdatingAllLifecyclePhases) {
         // If we are updating all lifecycle phases, we don't expect dirty layout after layout has been clean.
-        CHECK(lifecycle().state() <= DocumentLifecycle::LayoutClean);
+        if (m_allowsLayoutInvalidationAfterLayoutClean)
+            CHECK(lifecycle().state() <= DocumentLifecycle::LayoutClean);
+        else
+            CHECK(lifecycle().state() < DocumentLifecycle::LayoutClean);
     }
 }
 
@@ -2670,8 +2678,12 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
 
     m_frame->document()->updateStyleAndLayoutTree();
 
+    CHECK(!shouldThrottleRendering());
+
     if (needsLayout())
         layout();
+
+    checkDoesNotNeedLayout();
 
     // WebView plugins need to update regardless of whether the LayoutEmbeddedObject
     // that owns them needed layout.
