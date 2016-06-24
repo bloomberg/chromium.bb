@@ -7,6 +7,9 @@ source_set("common") {
     "activation_state.cc",
     "activation_state.h",
     "closed_hash_map.h",
+    "fuzzy_pattern_matching.cc",
+    "fuzzy_pattern_matching.h",
+    "knuth_morris_pratt.h",
     "memory_mapped_ruleset.cc",
     "memory_mapped_ruleset.h",
     "ngram_extractor.h",
@@ -22,6 +25,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "closed_hash_map_unittest.cc",
+    "fuzzy_pattern_matching_unittest.cc",
+    "knuth_morris_pratt_unittest.cc",
     "ngram_extractor_unittest.cc",
     "string_splitter_unittest.cc",
   ]
