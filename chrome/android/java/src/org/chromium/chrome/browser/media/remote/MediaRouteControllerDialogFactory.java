@@ -46,22 +46,31 @@ public class MediaRouteControllerDialogFactory extends MediaRouteDialogFactory {
         }
     }
 
+    /**
+     * A dialog fragment for controlling a media route that saves system visibility for
+     * handling fullscreen state of Chrome correctly. Needs to be a named public static class,
+     * see https://crbug.com/618993.
+     */
+    public static final class Fragment extends MediaRouteControllerDialogFragment {
+        final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
+
+        public Fragment() {}
+
+        @Override
+        public Dialog onCreateDialog(Bundle saved) {
+            mVisibilitySaver.saveSystemVisibility(getActivity());
+            return new MediaRouteControllerDialog(getActivity());
+        }
+
+        @Override
+        public void onStop() {
+            super.onStop();
+            mVisibilitySaver.restoreSystemVisibility(getActivity());
+        }
+    }
+
     @Override
     public MediaRouteControllerDialogFragment onCreateControllerDialogFragment() {
-        return new MediaRouteControllerDialogFragment() {
-            final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
-
-            @Override
-            public Dialog onCreateDialog(Bundle saved) {
-                mVisibilitySaver.saveSystemVisibility(getActivity());
-                return new MediaRouteControllerDialog(getActivity());
-            }
-
-            @Override
-            public void onStop() {
-                super.onStop();
-                mVisibilitySaver.restoreSystemVisibility(getActivity());
-            }
-        };
+        return new MediaRouteControllerDialogFragment();
     }
 }

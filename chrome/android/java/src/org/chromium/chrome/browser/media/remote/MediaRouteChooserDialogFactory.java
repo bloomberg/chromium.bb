@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.MediaRouteChooserDialog;
 import android.support.v7.app.MediaRouteChooserDialogFragment;
 import android.support.v7.app.MediaRouteDialogFactory;
@@ -61,44 +62,77 @@ public class MediaRouteChooserDialogFactory extends MediaRouteDialogFactory {
         }
     }
 
-    @Override
-    public MediaRouteChooserDialogFragment onCreateChooserDialogFragment() {
-        return new MediaRouteChooserDialogFragment() {
-            final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
-            boolean mCancelled = false;
+    /**
+     * A dialog fragment for choosing a media route that saves system visibility for handling
+     * fullscreen state of Chrome correctly. Needs to be a named public static class, see
+     * https://crbug.com/618993.
+     */
+    public static final class Fragment extends MediaRouteChooserDialogFragment {
+        final Handler mHandler = new Handler();
+        final MediaRouteController mController;
+        final MediaStateListener mPlayer;
+        final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
+        boolean mCancelled = false;
+        Context mContext = null;
 
-            @Override
-            public MediaRouteChooserDialog onCreateChooserDialog(
-                    Context context, Bundle savedInstanceState) {
-                mVisibilitySaver.saveSystemVisibility(getActivity());
-                return new MediaRouteChooserDialog(context);
-            }
-
-            @Override
-            public void onStop() {
-                super.onStop();
-                mVisibilitySaver.restoreSystemVisibility(getActivity());
-            }
-
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                mCancelled = true;
-
-                super.onCancel(dialog);
-            }
-
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                super.onDismiss(dialog);
-
-                if (mCancelled) {
-                    mPlayer.onRouteDialogCancelled();
-                    return;
+        // The class has to be a public static class with a zero-argument constructor.
+        // Since we can't pass any callbacks to the fragment easily, just close the dialog.
+        // See https://crbug.com/618993.
+        public Fragment() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Fragment.this.dismiss();
                 }
+            });
+            mController = null;
+            mPlayer = null;
+        }
 
+        Fragment(MediaRouteController controller, MediaStateListener player) {
+            mController = controller;
+            mPlayer = player;
+        }
+
+        @Override
+        public MediaRouteChooserDialog onCreateChooserDialog(
+                Context context, Bundle savedInstanceState) {
+            mVisibilitySaver.saveSystemVisibility(getActivity());
+            mContext = context;
+            return new MediaRouteChooserDialog(context);
+        }
+
+        @Override
+        public void onStop() {
+            super.onStop();
+            mVisibilitySaver.restoreSystemVisibility(getActivity());
+        }
+
+        @Override
+        public void onCancel(DialogInterface dialog) {
+            mCancelled = true;
+
+            super.onCancel(dialog);
+        }
+
+        @Override
+        public void onDismiss(DialogInterface dialog) {
+            super.onDismiss(dialog);
+
+            if (mCancelled) {
+                if (mPlayer != null) mPlayer.onRouteDialogCancelled();
+                return;
+            }
+
+            if (mController != null) {
                 MediaRouter router = MediaRouter.getInstance(mContext);
                 mController.onRouteSelected(mPlayer, router, router.getSelectedRoute());
             }
-        };
+        }
+    }
+
+    @Override
+    public MediaRouteChooserDialogFragment onCreateChooserDialogFragment() {
+        return new Fragment(mController, mPlayer);
     }
 }
