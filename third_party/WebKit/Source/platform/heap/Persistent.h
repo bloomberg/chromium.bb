@@ -184,11 +184,10 @@ private:
     {
         static_assert(sizeof(T), "T must be fully defined");
         static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
-        if (weaknessConfiguration == WeakPersistentConfiguration) {
-            visitor->registerWeakCell(&m_raw);
-        } else {
+        if (weaknessConfiguration == WeakPersistentConfiguration)
+            visitor->registerWeakMembers(this, m_raw, handleWeakPersistent);
+        else
             visitor->mark(m_raw);
-        }
     }
 
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
@@ -198,7 +197,7 @@ private:
         if (!m_raw || isHashTableDeletedValue())
             return;
 
-        TraceCallback traceCallback = TraceMethodDelegate<PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>, &PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>::tracePersistent>::trampoline;
+        TraceCallback traceCallback = TraceMethodDelegate<PersistentBase, &PersistentBase::tracePersistent>::trampoline;
         if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
             ProcessHeap::crossThreadPersistentRegion().allocatePersistentNode(m_persistentNode, this, traceCallback);
             return;
@@ -245,6 +244,14 @@ private:
         // header->checkHeader().
         ThreadHeap::isHeapObjectAlive(m_raw);
 #endif
+    }
+
+    static void handleWeakPersistent(Visitor* self, void* object)
+    {
+        using Base = PersistentBase<typename std::remove_const<T>::type, weaknessConfiguration, crossThreadnessConfiguration>;
+        Base* persistent = reinterpret_cast<Base*>(object);
+        if (persistent->get() && !ObjectAliveTrait<T>::isHeapObjectAlive(persistent->get()))
+            persistent->clear();
     }
 
     // m_raw is accessed most, so put it at the first field.
