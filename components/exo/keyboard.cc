@@ -49,9 +49,23 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
     const base::char16 ch = event->GetCharacter();
     const bool is_control_char =
         (0x00 <= ch && ch <= 0x1f) || (0x7f <= ch && ch <= 0x9f);
-    // TODO(kinaba, crbug,com/604615): Filter out [Enter] key events as well.
     if (!is_control_char && !ui::IsSystemKeyModifier(event->flags()))
       return true;
+  }
+
+  // Case 3:
+  // Workaround for apps that doesn't handle hardware keyboard events well.
+  // Keys typically on software keyboard and lack of them are fatal, namely,
+  // unmodified enter and backspace keys, are sent through IME.
+  constexpr int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
+                                ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN;
+  // Same condition as components/arc/ime/arc_ime_service.cc#InsertChar.
+  if ((event->flags() & kModifierMask) == 0) {
+    if (event->key_code() == ui::VKEY_RETURN ||
+        event->key_code() == ui::VKEY_BACK) {
+      return true;
+    }
   }
 
   return false;

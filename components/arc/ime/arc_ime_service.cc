@@ -5,6 +5,7 @@
 #include "components/arc/ime/arc_ime_service.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/arc/ime/arc_ime_bridge_impl.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
@@ -15,6 +16,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace arc {
 
@@ -223,6 +225,25 @@ void ArcImeService::InsertChar(const ui::KeyEvent& event) {
   // ARC we are only interested in the event as a method of text input.
   if (ime_type_ == ui::TEXT_INPUT_TYPE_NONE)
     return;
+
+  // For apps that doesn't handle hardware keyboard events well, keys that are
+  // typically on software keyboard and lack of them are fatal, namely,
+  // unmodified enter and backspace keys are sent through IME.
+  constexpr int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
+                                ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN;
+  if ((event.flags() & kModifierMask) == 0) {
+    if (event.key_code() ==  ui::VKEY_RETURN) {
+      has_composition_text_ = false;
+      ime_bridge_->SendInsertText(base::ASCIIToUTF16("\n"));
+      return;
+    }
+    if (event.key_code() ==  ui::VKEY_BACK) {
+      has_composition_text_ = false;
+      ime_bridge_->SendInsertText(base::ASCIIToUTF16("\b"));
+      return;
+    }
+  }
 
   // Drop 0x00-0x1f (C0 controls), 0x7f (DEL), and 0x80-0x9f (C1 controls).
   // See: https://en.wikipedia.org/wiki/Unicode_control_characters
