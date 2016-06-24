@@ -14,20 +14,6 @@
         display: flex;
       }
 
-      /* TODO(jdufault): Remove this CSS once we inline the PIN element with the
-       * user-pod. */
-      #container-constrained-width {
-        -webkit-tap-highlight-color: transparent;
-        background: white;
-        border-radius: 2px;
-        box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
-                    0 2px 6px rgba(0, 0, 0, 0.15),
-                    0 3px 0 rgba(0, 0, 0, 0.08);
-        cursor: pointer;
-        flex-direction: column;
-        outline: none;
-      }
-
       .row {
         display: flex;
       }
@@ -40,12 +26,45 @@
         align-items: center;
         background: none;
         border-radius: 50px;
+        box-sizing: border-box;
         display: flex;
+        flex-direction: column;
         font-size: 30px;
+        height: 70px;
         justify-content: center;
-        margin: 5px;
-        min-width: 94px;
-        width: 94px;
+        margin: 0;
+        min-height: 70px;
+        min-width: 85px;
+        padding: 15px 20px;
+        width: 85px;
+      }
+
+      .digit-button.clear-button {
+        display: block;
+      }
+
+      .digit-button .icon-container {
+        background: var(--paper-grey-500);
+        border-radius: 100px;
+        height: 24px;
+        margin: auto;
+        width: 24px;
+      }
+
+      .digit-button .icon-container .icon {
+        color: white;
+        display: block;
+        height: 16px;
+        left: 4px;
+        top: 4px;
+        width: 16px;
+      }
+
+      .digit-button .icon-subheading {
+        color: var(--paper-grey-500);
+        font-size: 10px;
+        padding: 10px;
+        text-transform: capitalize;
       }
 
       .digit-button inner-text {
@@ -54,31 +73,18 @@
         height: 52px;
       }
 
-      .digit-button inner-text subhead {
-        color: var(--paper-grey-500);
-        font-size: 16px;
-      }
-
-      .digit-button .submit-button {
-        background: var(--paper-blue-a400);
-        color: white;
-        font-size: 20px;
-        height: 60px;
-        min-width: 0;
-        width: 60px;
+      .first-row {
+        height: 54px;
+        min-height: 54px;
       }
 
       #pin-input {
         -webkit-text-security: disc;
-        border-bottom-color: lightgray;
-        border-left: none;
-        border-right: none;
-        border-top: none;
+        border: 0;
         font-size: 20px;
-        height: 30px;
-        margin-top: 10px;
+        height: 54px;
         text-align: center;
-        width: 95%;
+        width: 171px;
       }
 
       #pin-input[type=number]::-webkit-inner-spin-button,
@@ -100,6 +106,14 @@
           <input id="pin-input" type="number" placeholder="Enter PIN"
                  value="{{value::input}}"
                  on-keydown="onInputKeyDown_"></input>
+          <div class="digit-button first-row">
+            <paper-button class="digit-button submit-button"
+                          on-tap="firePinSubmitEvent_">
+              <div class="icon-container">
+                  <iron-icon class="icon" icon="icons:forward"><iron-icon>
+              </div>
+            </paper-button>
+          </div>
         </div>
 
         <div class="row keyboard">
@@ -107,32 +121,32 @@
             <inner-text>1</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="2">
-            <inner-text>2<subhead>ABC</subhead></inner-text>
+            <inner-text>2</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="3">
-            <inner-text>3<subhead>DEF</subhead></inner-text>
+            <inner-text>3</inner-text>
           </paper-button>
         </div>
         <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="4">
-            <inner-text>4<subhead>GHI</subhead></inner-text>
+            <inner-text>4</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="5">
-            <inner-text>5<subhead>JKL</subhead></inner-text>
+            <inner-text>5</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="6">
-            <inner-text>6<subhead>MNO</subhead></inner-text>
+            <inner-text>6</inner-text>
           </paper-button>
         </div>
         <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="7">
-            <inner-text>7<subhead>PQRS</subhead></inner-text>
+            <inner-text>7</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="8">
-            <inner-text>8<subhead>TUV</subhead></inner-text>
+            <inner-text>8</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="9">
-            <inner-text>9<subhead>WXYZ</subhead></inner-text>
+            <inner-text>9</inner-text>
           </paper-button>
         </div>
         <div class="row keyboard">
@@ -140,11 +154,12 @@
           <paper-button class="digit-button" on-tap="onNumberTap_" value="0">
             <inner-text>0</inner-text>
           </paper-button>
-          <div class="digit-button">
-            <paper-icon-button class="digit-button submit-button"
-                               icon="icons:check" on-tap="firePinSubmitEvent_">
-            </paper-icon-button>
-          </div>
+          <paper-button class="digit-button clear-button" on-tap="onPinClear_">
+            <div class="icon-container">
+              <iron-icon class="icon" icon="icons:clear"><iron-icon>
+            </div>
+            <inner-text class="icon-subheading">Clear</inner-text>
+          </paper-button>
         </div>
       </div>
     </div>

@@ -62,6 +62,13 @@ Polymer({
       this.fire('pin-change', { pin: value });
   },
 
+  /** Called when the user wants to erase the last character of the entered
+   *  PIN value.
+   */
+  onPinClear_: function() {
+    this.value = this.value.substring(0, this.value.length - 1);
+  },
+
   /** Called when a key event is pressed while the input element has focus. */
   onInputKeyDown_: function(event) {
     // Up/down pressed, swallow the event to prevent the input value from
