@@ -11,14 +11,14 @@
   <template>
     <style include="settings-shared"></style>
     <div class="settings-box first two-line" id="resetProfile"
-        on-tap="onShowResetProfileDialog_" actionable>
+        on-tap="onShowResetProfileDialog_">
       <div>
         <div>$i18n{resetPageTitle}</div>
         <div class="secondary">$i18n{resetPageDescription}</div>
       </div>
     </div>
 <if expr="chromeos">
-    <div class="settings-box two-line" id="powerwash" actionable
+    <div class="settings-box two-line" id="powerwash"
         on-tap="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
       <div>
         <div>$i18n{powerwashTitle}</div>

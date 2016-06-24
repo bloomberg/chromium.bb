@@ -47,7 +47,7 @@
       }
     </style>
     <div class="settings-box two-line" hidden$="[[isHidden]]">
-      <div id="details" class="start" on-tap="onDetailsTap_" actionable>
+      <div id="details" class="start" on-tap="onDetailsTap_">
         <cr-network-list-item id="detailsItem" network-state="[[networkState]]">
         </cr-network-list-item>
         <paper-spinner active="[[showScanning_(deviceState, expanded)]]">

@@ -26,8 +26,8 @@
     <style include="settings-shared settings-page-styles">
       .product-title {
         font-size: 20px;
-        margin-bottom: auto;
         margin-top: auto;
+        margin-bottom: auto;
       }
 
       img {
@@ -38,11 +38,11 @@
         -webkit-margin-end: var(--iron-icon-spacing);
       }
 
-      iron-icon[icon='settings:check-circle'] {
+      iron-icon[icon="settings:check-circle"] {
         fill: var(--paper-blue-600);
       }
 
-      iron-icon[icon='settings:error'] {
+      iron-icon[icon="settings:error"] {
         fill: var(--paper-red-600);
       }
 
@@ -121,19 +121,17 @@
               </paper-button>
 </if>
             </div>
-            <div id="help" class="settings-box two-line" on-tap="onHelpTap_"
-                actionable>
+            <div id="help" class="settings-box two-line" on-tap="onHelpTap_">
               $i18n{aboutGetHelpUsingChrome}
             </div>
 <if expr="_google_chrome">
-            <div id="reportIssue" class="settings-box" actionable
+            <div id="reportIssue" class="settings-box"
                 on-tap="onReportIssueTap_">
               $i18n{aboutReportAnIssue}
             </div>
 </if>
 <if expr="chromeos">
-            <div class="settings-box" on-tap="onDetailedBuildInfoTap_"
-                actionable>
+            <div class="settings-box" on-tap="onDetailedBuildInfoTap_">
               <!-- TODO(dpapad): Localize string. -->
               Detailed build info
             </div>

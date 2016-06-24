@@ -26,11 +26,7 @@
 
 <dom-module id="settings-languages-page">
   <template>
-    <style include="settings-shared">
-      .list-button {
-        @apply(--settings-actionable);
-      }
-    </style>
+    <style include="settings-shared"></style>
     <settings-languages languages="{{languages}}"></settings-languages>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="languages">
@@ -50,8 +46,7 @@
           <div class="list-frame vertical-list">
             <template is="dom-repeat" items="[[languages.enabled]]">
               <div class$="list-item [[getLanguageItemClass_(
-                  item.language.code, prefs.intl.app_locale.value,
-                  item.language.supportsUI)]]"
+                      item.language.code, prefs.intl.app_locale.value)]]"
                   on-tap="onLanguageTap_">
 <if expr="not chromeos and not is_win">
                 <div class="start" title="[[item.language.nativeDisplayName]]">
@@ -96,7 +91,7 @@
                 items="[[languages.inputMethods.enabled]]">
               <div class$="list-item [[getInputMethodItemClass_(
                       item.id, languages.inputMethods.currentId)]]"
-                  on-tap="onInputMethodTap_" actionable>
+                  on-tap="onInputMethodTap_">
                 <div>[[item.displayName]]</div>
                 <div class="middle">
                   <iron-icon icon="settings:done"
