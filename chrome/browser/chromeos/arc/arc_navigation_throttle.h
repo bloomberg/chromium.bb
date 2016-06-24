@@ -22,18 +22,18 @@ class NavigationHandle;
 
 namespace arc {
 
-enum class CloseReason {
-  REASON_ALWAYS_PRESSED,
-  REASON_JUST_ONCE_PRESSED,
-  REASON_DIALOG_DEACTIVATED,
-  REASON_PREFERRED_ACTIVITY_FOUND,
-  REASON_ERROR
-};
-
 // A class that allow us to retrieve ARC app's information and handle URL
 // traffic initiated on Chrome browser, either on Chrome or an ARC's app.
 class ArcNavigationThrottle : public content::NavigationThrottle {
  public:
+  enum class CloseReason {
+    REASON_ALWAYS_PRESSED,
+    REASON_JUST_ONCE_PRESSED,
+    REASON_DIALOG_DEACTIVATED,
+    REASON_PREFERRED_ACTIVITY_FOUND,
+    REASON_ERROR
+  };
+
   using NameAndIcon = std::pair<std::string, gfx::Image>;
   using ShowDisambigDialogCallback =
       base::Callback<void(content::NavigationHandle* handle,

@@ -164,10 +164,13 @@ void ArcNavigationThrottle::OnDisambigDialogClosed(
   content::NavigationHandle* handle = navigation_handle();
 
   // TODO(djacobo): Record UMA
-  // If the user fails to select an option from the list then resume the
-  // navigation in Chrome. Otherwise check if the selected app was selected as
-  // "ALWAYS" so we can record this decision.
-  if (close_reason == CloseReason::REASON_DIALOG_DEACTIVATED) {
+  // If the user fails to select an option from the list, or the UI returned an
+  // error or if |selected_app_index| is not a valid index, then resume the
+  // navigation in Chrome. Otherwise store the preferred app (if any) and start
+  // the selected app, either Chrome Browser or ARC app.
+  if (close_reason == CloseReason::REASON_DIALOG_DEACTIVATED ||
+      close_reason == CloseReason::REASON_ERROR ||
+      selected_app_index >= handlers.size()) {
     DVLOG(1) << "User didn't select a valid option, resuming navigation.";
     handle->Resume();
     return;
