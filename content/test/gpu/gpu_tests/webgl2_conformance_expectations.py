@@ -30,14 +30,17 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # ========================
 
     # All platforms.
-    self.Fail('deqp/functional/gles3/builtinprecision/atan2.html', bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/tanh.html', bug=619403)
-    self.Skip('deqp/functional/gles3/fboinvalidate/*.html', bug=483282)
-    self.Skip('deqp/functional/gles3/fborender.html', bug=483282)
-    self.Skip('deqp/functional/gles3/framebufferblit/*.html', bug=483282)
-    self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
+
+    # Too slow (take about one hour to run)
+    self.Fail('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
+
+    self.Fail('deqp/functional/gles3/fboinvalidate/*.html', bug=483282)
+    self.Fail('deqp/functional/gles3/fborender/*.html', bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/*.html', bug=483282)
+    self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
+    self.Fail('deqp/functional/gles3/shaderoperator/*.html', bug=483282)
+
     self.Flaky('deqp/functional/gles3/negativefragmentapi.html', bug=604794)
-    self.Skip('deqp/functional/gles3/shaderoperator/*.html', bug=483282)
 
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
 
@@ -52,23 +55,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['d3d9', 'd3d11', 'opengl'], bug=483282)
 
     # All platforms with AMD GPU.
-    self.Fail('deqp/functional/gles3/builtinprecision/reflect.html',
-        ['amd'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/min.html',
-        ['amd'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/max.html',
-        ['amd'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/clamp.html',
-        ['amd'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/dot.html',
-        ['amd'], bug=619403)
-
     self.Fail('deqp/functional/gles3/multisample.html',
         ['amd'], bug=617290)
-
-    # All platforms with NVIDIA GPU.
-    self.Fail('deqp/functional/gles3/builtinprecision/log.html',
-        ['nvidia'], bug=619403)
 
     # Windows only.
     self.Fail('deqp/functional/gles3/texturespecification/' +
@@ -147,13 +135,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'debug'], bug=542901)
 
     # Win / NVidia
-    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
-        ['win', 'nvidia'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/reflect.html',
-        ['win', 'nvidia'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/matrixcompmult.html',
-        ['win', 'nvidia'], bug=619403)
-
     self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
         ['win', 'nvidia'], bug=614573)
 
@@ -164,10 +145,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
 
-    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
-        ['win', 'amd'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/matrixcompmult.html',
-        ['win', 'amd'], bug=619403)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage2d_format_depth_stencil.html',
         ['win', ('amd', 0x6779)], bug=614178)
@@ -185,7 +162,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['win', ('amd', 0x6779)], bug=621201)
-    self.Fail('deqp/functional/gles3/fragmentoutput.html',
+    self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
         ['win', 'amd'], bug=483282)
 
     # Win / Intel
@@ -232,20 +209,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
         ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/builtinprecision/cos.html',
-        ['win', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/fract.html',
-        ['win', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/matrixcompmult.html',
-        ['win', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/mix.html',
-        ['win', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/reflect.html',
-        ['win', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/sin.html',
-        ['win', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
-        ['win', 'intel'], bug=619403)
 
     # Mac only.
     self.Flaky('deqp/functional/gles3/shaderindexing/varying.html',
@@ -255,7 +218,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
         ['mac'], bug=620067)
-    self.Fail('deqp/functional/gles3/fragmentoutput.html',
+    self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
         ['mac'], bug=483282)
     # This one's flaky on AMD, NVIDIA and Intel GPUs, but the
     # GPU-specific expectations aren't working properly.
@@ -402,17 +365,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     # Mac AMD
-    self.Fail('deqp/functional/gles3/builtinprecision/acosh.html',
-        ['mac', 'amd'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/abs.html',
-        ['mac', 'amd'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/ceil.html',
-        ['mac', 'amd'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/fract.html',
-        ['mac', 'amd'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
-        ['mac', 'amd'], bug=619403)
-
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/primitiverestart/00.html',
@@ -443,19 +395,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac Intel
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['mac', 'intel', 'no_angle'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/builtinprecision/sin.html',
-        ['mac', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/cos.html',
-        ['mac', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/acos.html',
-        ['mac', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/atan.html',
-        ['mac', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/fract.html',
-        ['mac', 'intel'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/mix.html',
-        ['mac', 'intel'], bug=619403)
 
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['mac', 'intel'], bug=483282)
@@ -575,23 +514,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
     self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['linux', 'intel'], bug=610800)
-
-    self.Fail('deqp/functional/gles3/builtinprecision/acos.html',
-        ['linux', 'intel', 'opengl'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/cos.html',
-        ['linux', 'intel', 'opengl'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/fract.html',
-        ['linux', 'intel', 'opengl'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/matrixcompmult.html',
-        ['linux', 'intel', 'opengl'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/mix.html',
-        ['linux', 'intel', 'opengl'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/reflect.html',
-        ['linux', 'intel', 'opengl'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/sin.html',
-        ['linux', 'intel', 'opengl'], bug=619403)
-    self.Fail('deqp/functional/gles3/builtinprecision/smoothstep.html',
-        ['linux', 'intel', 'opengl'], bug=619403)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
@@ -736,8 +658,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/vertexarrays/' +
         'single_attribute.output_type.unsigned_int.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/builtinprecision/*.html',
-        ['linux', 'amd'], bug=619403)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
