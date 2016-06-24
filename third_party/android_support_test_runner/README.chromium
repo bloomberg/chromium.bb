@@ -1,0 +1,16 @@
+Name: Android Testing Support Library Test Runner
+Short Name: runner
+URL: https://github.com/googlesamples/android-testing/tree/master/ui/espresso/BasicSampleBundled
+Version: 0.3
+License: Apache 2.0
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+This static jar is part of Android Testing Support Library. It was needed for 
+Instrumentation Test Runner to be able to run Espresso test, in which the
+activity lifecycler monitoring provided by this jar file is needed by Espresso.
+IMPORTANT: There should only be one version of espresso library
+(crbug.com/622057)
+
+Local Modifications: None

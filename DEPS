@@ -617,6 +617,16 @@ hooks = [
     ],
   },
   {
+    'name': 'android_support_test_runner',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/update_deps/update_third_party_deps.py',
+               'download',
+               '-b', 'chromium-android-support-test-runner',
+               '-l', 'third_party/android_support_test_runner'
+    ],
+  },
+  {
     # Downloads the current stable linux sysroot to build/linux/ if needed.
     # This sysroot updates at about the same rate that the chrome build deps
     # change. This script is a no-op except for linux users who are doing
