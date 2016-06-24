@@ -699,6 +699,14 @@
     "extension_types": ["platform_app"],
     "contexts": ["blessed_extension"]
   },
+  "quickUnlockPrivate": {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*"
+    ],
+    "platforms": ["chromeos"]
+  },
   "resourcesPrivate": [{
     "dependencies": ["permission:resourcesPrivate"],
     "contexts": ["blessed_extension"]

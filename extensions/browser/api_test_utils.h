@@ -65,25 +65,31 @@ scoped_refptr<extensions::Extension> CreateEmptyExtensionWithLocation(
 // Run |function| with |args| and return the result. Adds an error to the
 // current test if |function| returns an error. Takes ownership of
 // |function|. The caller takes ownership of the result.
-base::Value* RunFunctionWithDelegateAndReturnSingleResult(
-    UIThreadExtensionFunction* function,
+std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
+    scoped_refptr<UIThreadExtensionFunction> function,
     const std::string& args,
     content::BrowserContext* context,
     std::unique_ptr<ExtensionFunctionDispatcher> dispatcher);
-base::Value* RunFunctionWithDelegateAndReturnSingleResult(
-    UIThreadExtensionFunction* function,
+std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
+    scoped_refptr<UIThreadExtensionFunction> function,
     const std::string& args,
+    content::BrowserContext* context,
+    std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
+    RunFunctionFlags flags);
+std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
+    scoped_refptr<UIThreadExtensionFunction> function,
+    std::unique_ptr<base::ListValue> args,
     content::BrowserContext* context,
     std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags);
 
 // RunFunctionWithDelegateAndReturnSingleResult, except with a NULL
 // implementation of the Delegate.
-base::Value* RunFunctionAndReturnSingleResult(
+std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context);
-base::Value* RunFunctionAndReturnSingleResult(
+std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context,

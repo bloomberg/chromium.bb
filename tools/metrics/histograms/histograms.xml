@@ -72421,6 +72421,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="399" label="BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_READ_REQUEST"/>
   <int value="400" label="BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_WRITE_REQUEST"/>
   <int value="401" label="ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE"/>
+  <int value="402" label="QUICK_UNLOCK_PRIVATE_ON_ACTIVE_MODES_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
@@ -73610,6 +73611,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1137" label="RUNTIME_RESTARTAFTERDELAY"/>
   <int value="1138" label="SYSTEM_DISPLAY_SETDISPLAYLAYOUT"/>
   <int value="1139" label="SYSTEM_DISPLAY_GETDISPLAYLAYOUT"/>
+  <int value="1140" label="QUICKUNLOCKPRIVATE_SETMODES"/>
+  <int value="1141" label="QUICKUNLOCKPRIVATE_GETACTIVEMODES"/>
+  <int value="1142" label="QUICKUNLOCKPRIVATE_GETAVAILABLEMODES"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

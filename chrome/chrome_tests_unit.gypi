@@ -978,6 +978,7 @@
       'browser/chromeos/extensions/external_cache_unittest.cc',
       'browser/chromeos/extensions/file_manager/device_event_router_unittest.cc',
       'browser/chromeos/extensions/file_manager/job_event_router_unittest.cc',
+      'browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api_unittest.cc',
       'browser/chromeos/extensions/wallpaper_private_api_unittest.cc',
       'browser/chromeos/external_metrics_unittest.cc',
       'browser/chromeos/file_manager/file_tasks_unittest.cc',

@@ -64,6 +64,7 @@
       'passwords_private.idl',
       'permissions.json',
       'preferences_private.json',
+      'quick_unlock_private.idl',
       'resources_private.idl',
       'screenlock_private.idl',
       'sessions.json',

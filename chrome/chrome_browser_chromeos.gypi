@@ -1131,6 +1131,8 @@
         'browser/chromeos/extensions/input_method_api.h',
         'browser/chromeos/extensions/media_player_api.cc',
         'browser/chromeos/extensions/media_player_api.h',
+        'browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.cc',
+        'browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h',
         'browser/chromeos/extensions/users_private/users_private_api.cc',
         'browser/chromeos/extensions/users_private/users_private_api.h',
         'browser/chromeos/extensions/users_private/users_private_delegate.cc',

@@ -9,6 +9,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
@@ -130,8 +131,8 @@ scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
   return CreateExtension(location, test_extension_value.get(), std::string());
 }
 
-base::Value* RunFunctionWithDelegateAndReturnSingleResult(
-    UIThreadExtensionFunction* function,
+std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
+    scoped_refptr<UIThreadExtensionFunction> function,
     const std::string& args,
     content::BrowserContext* context,
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher) {
@@ -139,34 +140,48 @@ base::Value* RunFunctionWithDelegateAndReturnSingleResult(
       function, args, context, std::move(dispatcher), NONE);
 }
 
-base::Value* RunFunctionWithDelegateAndReturnSingleResult(
-    UIThreadExtensionFunction* function,
+std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
+    scoped_refptr<UIThreadExtensionFunction> function,
     const std::string& args,
     content::BrowserContext* context,
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags) {
-  scoped_refptr<ExtensionFunction> function_owner(function);
+  std::unique_ptr<base::ListValue> parsed_args = ParseList(args);
+  EXPECT_TRUE(parsed_args.get())
+      << "Could not parse extension function arguments: " << args;
+
+  return RunFunctionWithDelegateAndReturnSingleResult(
+      function, std::move(parsed_args), context, std::move(dispatcher), flags);
+}
+
+std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
+    scoped_refptr<UIThreadExtensionFunction> function,
+    std::unique_ptr<base::ListValue> args,
+    content::BrowserContext* context,
+    std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
+    RunFunctionFlags flags) {
   // Without a callback the function will not generate a result.
   function->set_has_callback(true);
-  RunFunction(function, args, context, std::move(dispatcher), flags);
-  EXPECT_TRUE(function->GetError().empty())
-      << "Unexpected error: " << function->GetError();
+  RunFunction(function.get(), std::move(args), context, std::move(dispatcher),
+              flags);
+  EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
+                                            << function->GetError();
   const base::Value* single_result = NULL;
   if (function->GetResultList() != NULL &&
       function->GetResultList()->Get(0, &single_result)) {
-    return single_result->DeepCopy();
+    return single_result->CreateDeepCopy();
   }
   return NULL;
 }
 
-base::Value* RunFunctionAndReturnSingleResult(
+std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context) {
   return RunFunctionAndReturnSingleResult(function, args, context, NONE);
 }
 
-base::Value* RunFunctionAndReturnSingleResult(
+std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context,
