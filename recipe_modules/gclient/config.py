@@ -564,7 +564,9 @@ def infra(c):
 
   p = c.patch_projects
   p['luci-py'] = ('infra/luci', 'HEAD')
+  # TODO(phajdan.jr): remove recipes-py when it's not used for project name.
   p['recipes-py'] = ('infra/recipes-py', 'HEAD')
+  p['recipe_engine'] = ('infra/recipes-py', 'HEAD')
 
 @config_ctx(config_vars={'GIT_MODE': True})
 def infra_internal(c):  # pragma: no cover
