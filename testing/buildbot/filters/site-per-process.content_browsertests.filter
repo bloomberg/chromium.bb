@@ -1,5 +1,2 @@
 # crbug.com/417518: Get tests working with --site-per-process
 -NavigationControllerBrowserTest.ReloadOriginalRequest
-
-# crbug.com/612713: Fix in-page renderer kills.
--NavigationControllerBrowserTest.BackTwiceToIframeWithContent
