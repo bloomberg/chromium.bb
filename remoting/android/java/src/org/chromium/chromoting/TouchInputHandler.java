@@ -109,7 +109,7 @@ public class TouchInputHandler {
                 canvasToImage.mapVectors(delta);
             }
 
-            moveViewportWithOffset(-deltaX, -deltaY);
+            moveViewportWithOffset(-delta[0], -delta[1]);
         }
     }
 
