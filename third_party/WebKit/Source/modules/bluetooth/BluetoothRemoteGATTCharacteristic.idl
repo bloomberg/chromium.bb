@@ -10,12 +10,10 @@
     DependentLifetime,
     RuntimeEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {
-    // TODO(ortuno): Add test to make sure service matches the service
-    // used to call getCharacteristic.
-    // readonly    attribute BluetoothRemoteGATTService     service;
-    readonly    attribute UUID                  uuid;
-    readonly    attribute BluetoothCharacteristicProperties properties;
-    readonly    attribute DataView?             value;
+    readonly attribute BluetoothRemoteGATTService        service;
+    readonly attribute UUID                              uuid;
+    readonly attribute BluetoothCharacteristicProperties properties;
+    readonly attribute DataView?                         value;
     // Promise<BluetoothRemoteGATTDescriptor>           getDescriptor(BluetoothDescriptorUUID descriptor);
     // Promise<sequence<BluetoothRemoteGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
     [CallWith=ScriptState] Promise<DataView>    readValue();

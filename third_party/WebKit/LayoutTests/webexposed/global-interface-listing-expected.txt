@@ -353,6 +353,7 @@ interface BluetoothRemoteGATTCharacteristic : EventTarget
     attribute @@toStringTag
     getter oncharacteristicvaluechanged
     getter properties
+    getter service
     getter uuid
     getter value
     method constructor

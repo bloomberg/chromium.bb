@@ -14,6 +14,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/bluetooth/BluetoothCharacteristicProperties.h"
 #include "modules/bluetooth/BluetoothError.h"
+#include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include <memory>
@@ -31,9 +32,10 @@ DOMDataView* ConvertWebVectorToDataView(const WebVector<uint8_t>& webVector)
 
 } // anonymous namespace
 
-BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(ExecutionContext* context, std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic)
+BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(ExecutionContext* context, std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic, BluetoothRemoteGATTService* service)
     : ActiveDOMObject(context)
     , m_webCharacteristic(std::move(webCharacteristic))
+    , m_service(service)
     , m_stopped(false)
 {
     m_properties = BluetoothCharacteristicProperties::create(m_webCharacteristic->characteristicProperties);
@@ -41,12 +43,12 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(ExecutionCo
     ThreadState::current()->registerPreFinalizer(this);
 }
 
-BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::take(ScriptPromiseResolver* resolver, std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic)
+BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::take(ScriptPromiseResolver* resolver, std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic, BluetoothRemoteGATTService* service)
 {
     if (!webCharacteristic) {
         return nullptr;
     }
-    BluetoothRemoteGATTCharacteristic* characteristic = new BluetoothRemoteGATTCharacteristic(resolver->getExecutionContext(), std::move(webCharacteristic));
+    BluetoothRemoteGATTCharacteristic* characteristic = new BluetoothRemoteGATTCharacteristic(resolver->getExecutionContext(), std::move(webCharacteristic), service);
     // See note in ActiveDOMObject about suspendIfNeeded.
     characteristic->suspendIfNeeded();
     return characteristic;
@@ -242,6 +244,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(ScriptState* 
 
 DEFINE_TRACE(BluetoothRemoteGATTCharacteristic)
 {
+    visitor->trace(m_service);
     visitor->trace(m_properties);
     visitor->trace(m_value);
     EventTargetWithInlineData::trace(visitor);

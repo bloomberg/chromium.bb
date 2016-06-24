@@ -37,9 +37,10 @@ BluetoothRemoteGATTService* BluetoothRemoteGATTService::take(ScriptPromiseResolv
 // with a vector owning the characteristics.
 class GetCharacteristicsCallback : public WebBluetoothGetCharacteristicsCallbacks {
 public:
-    GetCharacteristicsCallback(mojom::WebBluetoothGATTQueryQuantity quantity, ScriptPromiseResolver* resolver)
-        : m_resolver(resolver)
-        , m_quantity(quantity) {}
+    GetCharacteristicsCallback(BluetoothRemoteGATTService* service, mojom::WebBluetoothGATTQueryQuantity quantity, ScriptPromiseResolver* resolver)
+        : m_service(service)
+        , m_quantity(quantity)
+        , m_resolver(resolver) {}
 
     void onSuccess(const WebVector<WebBluetoothRemoteGATTCharacteristicInit*>& webCharacteristics) override
     {
@@ -48,14 +49,14 @@ public:
 
         if (m_quantity == mojom::WebBluetoothGATTQueryQuantity::SINGLE) {
             DCHECK_EQ(1u, webCharacteristics.size());
-            m_resolver->resolve(BluetoothRemoteGATTCharacteristic::take(m_resolver, wrapUnique(webCharacteristics[0])));
+            m_resolver->resolve(BluetoothRemoteGATTCharacteristic::take(m_resolver, wrapUnique(webCharacteristics[0]), m_service));
             return;
         }
 
         HeapVector<Member<BluetoothRemoteGATTCharacteristic>> characteristics;
         characteristics.reserveInitialCapacity(webCharacteristics.size());
         for (WebBluetoothRemoteGATTCharacteristicInit* webCharacteristic : webCharacteristics) {
-            characteristics.append(BluetoothRemoteGATTCharacteristic::take(m_resolver, wrapUnique(webCharacteristic)));
+            characteristics.append(BluetoothRemoteGATTCharacteristic::take(m_resolver, wrapUnique(webCharacteristic), m_service));
         }
         m_resolver->resolve(characteristics);
     }
@@ -67,8 +68,9 @@ public:
         m_resolver->reject(BluetoothError::take(m_resolver, e));
     }
 private:
-    Persistent<ScriptPromiseResolver> m_resolver;
+    Persistent<BluetoothRemoteGATTService> m_service;
     mojom::WebBluetoothGATTQueryQuantity m_quantity;
+    Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 ScriptPromise BluetoothRemoteGATTService::getCharacteristic(ScriptState* scriptState, const StringOrUnsignedLong& characteristic, ExceptionState& exceptionState)
@@ -100,7 +102,7 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(ScriptState* sc
     ScriptPromise promise = resolver->promise();
 
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
-    webbluetooth->getCharacteristics(m_webService->serviceInstanceID, quantity, characteristicsUUID, new GetCharacteristicsCallback(quantity, resolver));
+    webbluetooth->getCharacteristics(m_webService->serviceInstanceID, quantity, characteristicsUUID, new GetCharacteristicsCallback(this, quantity, resolver));
 
     return promise;
 }
