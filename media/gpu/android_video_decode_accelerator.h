@@ -348,8 +348,13 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // this.
   void OnDestroyingSurface(int surface_id);
 
-  // Return true if and only if we should use deferred rendering.
+  // Returns true if and only if we should use deferred rendering.
   static bool UseDeferredRenderingStrategy(
+      const gpu::GpuPreferences& gpu_preferences);
+
+  // Returns true if frame's COPY_REQUIRED flag needs to be set when using
+  // deferred strategy.
+  static bool UseTextureCopyForDeferredStrategy(
       const gpu::GpuPreferences& gpu_preferences);
 
   // Used to DCHECK that we are called on the correct thread.

@@ -88,6 +88,7 @@ GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
       available_pictures_(0),
       needs_all_picture_buffers_to_decode_(false),
       supports_deferred_initialization_(false),
+      requires_texture_copy_(false),
       weak_factory_(this) {
   DCHECK(factories_);
 }
@@ -219,6 +220,9 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
       capabilities.flags &
       VideoDecodeAccelerator::Capabilities::NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
+  requires_texture_copy_ =
+      !!(capabilities.flags &
+         VideoDecodeAccelerator::Capabilities::REQUIRES_TEXTURE_COPY);
   supports_deferred_initialization_ = !!(
       capabilities.flags &
       VideoDecodeAccelerator::Capabilities::SUPPORTS_DEFERRED_INITIALIZATION);
@@ -606,6 +610,10 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   frame->metadata()->SetBoolean(VideoFrameMetadata::DECODER_OWNS_FRAME, true);
 #endif
+
+  if (requires_texture_copy_)
+    frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);
+
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
 

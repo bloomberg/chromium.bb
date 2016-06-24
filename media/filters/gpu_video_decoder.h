@@ -235,6 +235,9 @@ class MEDIA_EXPORT GpuVideoDecoder
   // status synchronously from VDA::Initialize.
   bool supports_deferred_initialization_;
 
+  // This flag translates to COPY_REQUIRED flag for each frame.
+  bool requires_texture_copy_;
+
   // Bound to factories_->GetMessageLoop().
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<GpuVideoDecoder> weak_factory_;

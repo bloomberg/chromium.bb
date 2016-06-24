@@ -75,6 +75,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
       // indicates that the client supports it as well.  Refer to
       // NotifyInitializationComplete for more details.
       SUPPORTS_DEFERRED_INITIALIZATION = 1 << 2,
+
+      // If set, video frames will have COPY_REQUIRED flag which will cause
+      // an extra texture copy during composition.
+      REQUIRES_TEXTURE_COPY = 1 << 3,
     };
 
     SupportedProfiles supported_profiles;

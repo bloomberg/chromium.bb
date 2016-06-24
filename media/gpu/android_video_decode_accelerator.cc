@@ -530,9 +530,6 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
       gles_decoder->GetContextGroup()->gpu_preferences();
 
   if (UseDeferredRenderingStrategy(gpu_preferences)) {
-    // TODO(liberato, watk): Figure out what we want to do about zero copy for
-    // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
-    DCHECK(!gles_decoder->GetContextGroup()->mailbox_manager()->UsesSync());
     DVLOG(1) << __FUNCTION__ << ", using deferred rendering strategy.";
     strategy_.reset(new AndroidDeferredRenderingBackingStrategy(this));
   } else {
@@ -1668,9 +1665,14 @@ void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
 // static
 bool AndroidVideoDecodeAccelerator::UseDeferredRenderingStrategy(
     const gpu::GpuPreferences& gpu_preferences) {
-  // TODO(liberato, watk): Figure out what we want to do about zero copy for
-  // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
-  return !gpu_preferences.enable_threaded_texture_mailboxes;
+  return true;
+}
+
+// static
+bool AndroidVideoDecodeAccelerator::UseTextureCopyForDeferredStrategy(
+    const gpu::GpuPreferences& gpu_preferences) {
+  // http://crbug.com/582170
+  return gpu_preferences.enable_threaded_texture_mailboxes;
 }
 
 // static
@@ -1737,8 +1739,13 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   if (UseDeferredRenderingStrategy(gpu_preferences)) {
     capabilities.flags |= VideoDecodeAccelerator::Capabilities::
         NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
-    if (MediaCodecUtil::IsSurfaceViewOutputSupported()) {
-      capabilities.flags |= VideoDecodeAccelerator::Capabilities::
+    if (UseTextureCopyForDeferredStrategy(gpu_preferences)) {
+      capabilities.flags |=
+          media::VideoDecodeAccelerator::Capabilities::REQUIRES_TEXTURE_COPY;
+    } else if (media::MediaCodecUtil::IsSurfaceViewOutputSupported()) {
+      // Fullscreen external SurfaceView is disabled for WebView.
+      // http://crbug.com/582170
+      capabilities.flags |= media::VideoDecodeAccelerator::Capabilities::
           SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
     }
   }
