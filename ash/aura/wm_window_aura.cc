@@ -427,7 +427,8 @@ void WmWindowAura::SetRestoreBoundsInScreen(const gfx::Rect& bounds) {
 }
 
 gfx::Rect WmWindowAura::GetRestoreBoundsInScreen() const {
-  return *window_->GetProperty(aura::client::kRestoreBoundsKey);
+  gfx::Rect* bounds = window_->GetProperty(aura::client::kRestoreBoundsKey);
+  return bounds ? *bounds : gfx::Rect();
 }
 
 bool WmWindowAura::Contains(const WmWindow* other) const {

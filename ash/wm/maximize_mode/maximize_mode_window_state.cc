@@ -79,6 +79,27 @@ gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
   return GetCenteredBounds(bounds_in_parent, state_object);
 }
 
+gfx::Rect GetRestoreBounds(wm::WindowState* window_state) {
+  if (window_state->IsMinimized() || window_state->IsMaximized() ||
+      window_state->IsFullscreen()) {
+    gfx::Rect restore_bounds = window_state->GetRestoreBoundsInScreen();
+    if (!restore_bounds.IsEmpty())
+      return restore_bounds;
+  }
+  gfx::Rect bounds = window_state->window()->GetBoundsInScreen();
+  if (window_state->IsDocked()) {
+    gfx::Rect restore_bounds = window_state->GetRestoreBoundsInScreen();
+    // Use current window horizontal offset origin in order to preserve docked
+    // alignment but preserve restored size and vertical offset for the time
+    // when the window gets undocked.
+    if (!restore_bounds.IsEmpty()) {
+      bounds.set_size(restore_bounds.size());
+      bounds.set_y(restore_bounds.y());
+    }
+  }
+  return bounds;
+}
+
 }  // namespace
 
 // static
@@ -211,17 +232,14 @@ void MaximizeModeWindowState::AttachState(
 
   aura::Window* window =
       ash::WmWindowAura::GetAuraWindow(window_state->window());
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  if (widget) {
-    gfx::Rect bounds = widget->GetRestoredBounds();
-    if (!bounds.IsEmpty()) {
-      // We do not want to do a session restore to our window states. Therefore
-      // we tell the window to use the current default states instead.
-      window->SetProperty(ash::kRestoreShowStateOverrideKey,
-                          window_state->GetShowState());
-      window->SetProperty(ash::kRestoreBoundsOverrideKey,
-                          new gfx::Rect(widget->GetRestoredBounds()));
-    }
+  gfx::Rect restore_bounds = GetRestoreBounds(window_state);
+  if (!restore_bounds.IsEmpty()) {
+    // We do not want to do a session restore to our window states. Therefore
+    // we tell the window to use the current default states instead.
+    window->SetProperty(ash::kRestoreShowStateOverrideKey,
+                        window_state->GetShowState());
+    window->SetProperty(ash::kRestoreBoundsOverrideKey,
+                        new gfx::Rect(restore_bounds));
   }
 
   // Initialize the state to a good preset.
