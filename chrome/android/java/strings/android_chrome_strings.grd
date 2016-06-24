@@ -512,7 +512,7 @@ Your Google account may have other forms of browsing history like searches and a
         beginning of time
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_IMPORTANT_DIALOG_TEXT" desc="The text of the dialog presenting the user with 'important' sites that they can exclude from clearing.">
-        This will clear cookies and cache for all sites, including:
+        This will clear data for all sites, including:
       </message>
 
       <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE" desc="Title for 'Usage and crash reports' preference">
