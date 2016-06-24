@@ -127,6 +127,7 @@ if (!is_android && !is_mac) {
         ":chrome_dll",
         ":chrome_exe_version",
         ":file_pre_reader",
+        ":visual_elements_resources",
         "//base",
         "//breakpad:breakpad_handler",
         "//breakpad:breakpad_sender",
@@ -149,7 +150,6 @@ if (!is_android && !is_mac) {
         "//crypto",
         "//sandbox",
         "//ui/gfx",
-        "//win8:visual_elements_resources",
       ]
       data_deps = [
         "//chrome/app/version_assembly:version_assembly_manifest",
@@ -1200,6 +1200,20 @@ if (is_win) {
       "//components/startup_metric_utils/common",
     ]
   }
+}
+
+# GYP version: chrome/chrome_exe.gypi:visual_elements_resources
+copy("visual_elements_resources") {
+  sources = [
+    "app/visual_elements_resources/Logo.png",
+    "app/visual_elements_resources/SecondaryTile.png",
+    "app/visual_elements_resources/SmallLogo.png",
+    "app/visual_elements_resources/chrome.VisualElementsManifest.xml",
+  ]
+
+  outputs = [
+    "$root_out_dir/{{source_file_part}}",
+  ]
 }
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources

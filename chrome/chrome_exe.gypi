@@ -399,6 +399,7 @@
             'installer_util',
             'install_static_util',
             'metrics_constants_util_win',
+            'visual_elements_resources',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
@@ -413,7 +414,6 @@
             '../crypto/crypto.gyp:crypto',
             '../sandbox/sandbox.gyp:sandbox',
             '../ui/gfx/gfx.gyp:gfx',
-            '../win8/win8.gyp:visual_elements_resources',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_exe_version.rc',
@@ -504,6 +504,22 @@
           'dependencies': [
              '../base/base.gyp:base',
              '../components/components.gyp:startup_metric_utils_win',
+          ],
+        },
+        {
+          'target_name': 'visual_elements_resources',
+          'type': 'none',
+          'copies': [
+            {
+              # GN version: //chrome/visual_elements_resources
+              'destination': '<(PRODUCT_DIR)',
+              'files': [
+                'app/visual_elements_resources/Logo.png',
+                'app/visual_elements_resources/SecondaryTile.png',
+                'app/visual_elements_resources/SmallLogo.png',
+                'app/visual_elements_resources/chrome.VisualElementsManifest.xml',
+              ],
+            },
           ],
         },
       ],
