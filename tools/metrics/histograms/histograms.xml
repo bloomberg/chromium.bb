@@ -38487,6 +38487,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.Cast.MeminfoMemAvailable">
+  <owner>halliwell@chromium.org</owner>
+  <summary>
+    /proc/meminfo's 'MemAvailable' in Mbytes. Collected on Cast devices with
+    kernel version 3.14 and above and capped at 500.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Cast.MeminfoMemFreeDerived">
+  <owner>halliwell@chromium.org</owner>
+  <summary>
+    free + buffers + cache memory in Mbytes on Cast devices, capped at 500.
+  </summary>
+</histogram>
+
 <histogram name="Platform.CompressedSwapSize" units="MB">
   <owner>sonnyrao@chromium.org</owner>
   <summary>

@@ -92,9 +92,15 @@ void CastMemoryPressureMonitor::PollPressureLevel() {
 
   UMA_HISTOGRAM_PERCENTAGE("Platform.MeminfoMemFree",
                            (info.free * 100.0) / info.total);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Platform.MeminfoMemFreeDerived",
-                              info.free + info.buffers + info.cached, 1,
-                              info.total, 100);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Platform.Cast.MeminfoMemFreeDerived",
+                              (info.free + info.buffers + info.cached) / 1024,
+                              1, 500, 100);
+  if (info.available != 0) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Platform.Cast.MeminfoMemAvailable",
+        info.available / 1024,
+        1, 500, 100);
+  }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&CastMemoryPressureMonitor::PollPressureLevel,
