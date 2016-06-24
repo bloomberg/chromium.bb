@@ -82,6 +82,8 @@ public:
     ContentSecurityPolicy* contentSecurityPolicy() { return m_contentSecurityPolicy.get(); }
     ContentSecurityPolicy* releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
+    String referrerPolicy() { return m_referrerPolicy; }
+
     WebAddressSpace responseAddressSpace() const { return m_responseAddressSpace; }
 
     const Vector<String>* originTrialTokens() const { return m_originTrialTokens.get(); }
@@ -127,6 +129,7 @@ private:
     Persistent<ContentSecurityPolicy> m_contentSecurityPolicy;
     WebAddressSpace m_responseAddressSpace;
     std::unique_ptr<Vector<String>> m_originTrialTokens;
+    String m_referrerPolicy;
 };
 
 } // namespace blink

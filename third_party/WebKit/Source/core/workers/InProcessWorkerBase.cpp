@@ -89,6 +89,13 @@ ContentSecurityPolicy* InProcessWorkerBase::contentSecurityPolicy()
     return m_contentSecurityPolicy.get();
 }
 
+String InProcessWorkerBase::referrerPolicy()
+{
+    if (m_scriptLoader)
+        return m_scriptLoader->referrerPolicy();
+    return m_referrerPolicy;
+}
+
 void InProcessWorkerBase::onResponse()
 {
     InspectorInstrumentation::didReceiveScriptResponse(getExecutionContext(), m_scriptLoader->identifier());
@@ -104,6 +111,7 @@ void InProcessWorkerBase::onFinished()
         InspectorInstrumentation::scriptImported(getExecutionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
     }
     m_contentSecurityPolicy = m_scriptLoader->releaseContentSecurityPolicy();
+    m_referrerPolicy = m_scriptLoader->referrerPolicy();
     m_scriptLoader = nullptr;
 }
 

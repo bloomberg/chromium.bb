@@ -412,6 +412,8 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
 
     // We need to set the CSP to both the shadow page's document and the ServiceWorkerGlobalScope.
     document->initContentSecurityPolicy(m_mainScriptLoader->releaseContentSecurityPolicy());
+    if (!m_mainScriptLoader->referrerPolicy().isNull())
+        document->parseAndSetReferrerPolicy(m_mainScriptLoader->referrerPolicy());
 
     KURL scriptURL = m_mainScriptLoader->url();
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
@@ -423,6 +425,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
         m_mainScriptLoader->releaseCachedMetadata(),
         startMode,
         document->contentSecurityPolicy()->headers().get(),
+        m_mainScriptLoader->referrerPolicy(),
         starterOrigin,
         workerClients,
         m_mainScriptLoader->responseAddressSpace(),

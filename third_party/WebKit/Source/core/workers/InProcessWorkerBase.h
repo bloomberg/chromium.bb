@@ -42,6 +42,8 @@ public:
 
     ContentSecurityPolicy* contentSecurityPolicy();
 
+    String referrerPolicy();
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
     DECLARE_VIRTUAL_TRACE();
@@ -61,6 +63,7 @@ private:
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     Member<ContentSecurityPolicy> m_contentSecurityPolicy;
+    String m_referrerPolicy;
     InProcessWorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
 };
 

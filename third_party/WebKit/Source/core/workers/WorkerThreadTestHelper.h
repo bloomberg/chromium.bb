@@ -121,6 +121,7 @@ public:
             nullptr,
             DontPauseWorkerGlobalScopeOnStart,
             headers.get(),
+            "",
             securityOrigin,
             clients,
             WebAddressSpaceLocal,

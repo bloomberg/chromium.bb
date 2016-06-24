@@ -174,19 +174,19 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnInitialization_TerminateWhileDebugge
 
     // Specify PauseWorkerGlobalScopeOnStart so that the worker thread can pause
     // on initialziation to run debugger tasks.
-    std::unique_ptr<WorkerThreadStartupData> startupData =
-        WorkerThreadStartupData::create(
-            KURL(ParsedURLString, "http://fake.url/"),
-            "fake user agent",
-            "//fake source code",
-            nullptr, /* cachedMetaData */
-            PauseWorkerGlobalScopeOnStart,
-            headers.get(),
-            m_securityOrigin.get(),
-            nullptr, /* workerClients */
-            WebAddressSpaceLocal,
-            nullptr /* originTrialToken */,
-            V8CacheOptionsDefault);
+    std::unique_ptr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
+        KURL(ParsedURLString, "http://fake.url/"),
+        "fake user agent",
+        "//fake source code",
+        nullptr, /* cachedMetaData */
+        PauseWorkerGlobalScopeOnStart,
+        headers.get(),
+        "",
+        m_securityOrigin.get(),
+        nullptr, /* workerClients */
+        WebAddressSpaceLocal,
+        nullptr /* originTrialToken */,
+        V8CacheOptionsDefault);
     m_workerThread->start(std::move(startupData));
 
     m_workerThread->appendDebuggerTask(threadSafeBind(&waitForTermination, crossThreadUnretained(m_workerThread.get())));

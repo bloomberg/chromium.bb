@@ -123,6 +123,7 @@ public:
             nullptr,
             DontPauseWorkerGlobalScopeOnStart,
             nullptr,
+            "",
             m_securityOrigin.get(),
             clients,
             WebAddressSpaceLocal,
