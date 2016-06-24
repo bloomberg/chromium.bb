@@ -74,8 +74,9 @@
       'WrapperVisitor.h',
     ],
     'platform_heap_test_files': [
-      'HeapTest.cpp',
       'BlinkGCMemoryDumpProviderTest.cpp',
+      'HeapTest.cpp',
+      'PersistentTest.cpp',
     ],
     'conditions': [
       ['target_arch == "arm"', {

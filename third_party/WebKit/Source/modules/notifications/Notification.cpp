@@ -152,7 +152,7 @@ void Notification::prepareShow()
         return;
     }
 
-    m_loader = new NotificationResourcesLoader(bind(&Notification::didLoadResources, WeakPersistentThisPointer<Notification>(this)));
+    m_loader = new NotificationResourcesLoader(bind(&Notification::didLoadResources, wrapWeakPersistent(this)));
     m_loader->start(getExecutionContext(), m_data);
 }
 

@@ -5,8 +5,10 @@
 #ifndef Persistent_h
 #define Persistent_h
 
+#include "platform/heap/Heap.h"
 #include "platform/heap/Member.h"
 #include "platform/heap/PersistentNode.h"
+#include "platform/heap/Visitor.h"
 #include "wtf/Allocator.h"
 #include "wtf/Atomics.h"
 
@@ -640,32 +642,6 @@ public:
     }
 };
 
-// Only a very reduced form of weak heap object references can currently be held
-// by WTF::Closure<>s. i.e., bound as a 'this' pointer only.
-//
-// TODO(sof): once wtf/Functional.h is able to work over platform/heap/ types
-// (like CrossThreadWeakPersistent<>), drop the restriction on weak persistent
-// use by function closures (and rename this ad-hoc type.)
-template<typename T>
-class WeakPersistentThisPointer {
-    STACK_ALLOCATED();
-public:
-    explicit WeakPersistentThisPointer(T* value) : m_value(value) { }
-    WeakPersistent<T> value() const { return m_value; }
-private:
-    WeakPersistent<T> m_value;
-};
-
-template<typename T>
-class CrossThreadWeakPersistentThisPointer {
-    STACK_ALLOCATED();
-public:
-    explicit CrossThreadWeakPersistentThisPointer(T* value) : m_value(value) { }
-    CrossThreadWeakPersistent<T> value() const { return m_value; }
-private:
-    CrossThreadWeakPersistent<T> m_value;
-};
-
 template <typename T>
 Persistent<T> wrapPersistent(T* value)
 {
@@ -673,9 +649,21 @@ Persistent<T> wrapPersistent(T* value)
 }
 
 template <typename T>
+WeakPersistent<T> wrapWeakPersistent(T* value)
+{
+    return WeakPersistent<T>(value);
+}
+
+template <typename T>
 CrossThreadPersistent<T> wrapCrossThreadPersistent(T* value)
 {
     return CrossThreadPersistent<T>(value);
+}
+
+template <typename T>
+CrossThreadWeakPersistent<T> wrapCrossThreadWeakPersistent(T* value)
+{
+    return CrossThreadWeakPersistent<T>(value);
 }
 
 // Comparison operators between (Weak)Members, Persistents, and UntracedMembers.
@@ -717,38 +705,16 @@ struct DefaultHash<blink::CrossThreadWeakPersistent<T>> {
     using Hash = MemberHash<T>;
 };
 
-template<typename T>
-struct ParamStorageTraits<blink::WeakPersistentThisPointer<T>> {
-    STATIC_ONLY(ParamStorageTraits);
-    static_assert(sizeof(T), "T must be fully defined");
-    using StorageType = blink::WeakPersistent<T>;
-
-    static StorageType wrap(const blink::WeakPersistentThisPointer<T>& value) { return value.value(); }
-
-    // WTF::FunctionWrapper<> handles WeakPtr<>, so recast this weak persistent
-    // into it.
-    //
-    // TODO(sof): remove this hack once wtf/Functional.h can also work with a type like
-    // WeakPersistent<>.
-    static WeakPtr<T> unwrap(const StorageType& value) { return WeakPtr<T>(WeakReference<T>::create(value.get())); }
-};
-
-template<typename T>
-struct ParamStorageTraits<blink::CrossThreadWeakPersistentThisPointer<T>> {
-    STATIC_ONLY(ParamStorageTraits);
-    static_assert(sizeof(T), "T must be fully defined");
-    using StorageType = blink::CrossThreadWeakPersistent<T>;
-
-    static StorageType wrap(const blink::CrossThreadWeakPersistentThisPointer<T>& value) { return value.value(); }
-
-    // WTF::FunctionWrapper<> handles WeakPtr<>, so recast this weak persistent
-    // into it.
-    //
-    // TODO(sof): remove this hack once wtf/Functional.h can also work with a type like
-    // CrossThreadWeakPersistent<>.
-    static WeakPtr<T> unwrap(const StorageType& value) { return WeakPtr<T>(WeakReference<T>::create(value.get())); }
-};
-
 } // namespace WTF
+
+namespace base {
+
+template <typename T>
+struct IsWeakReceiver<blink::WeakPersistent<T>> : std::true_type {};
+
+template <typename T>
+struct IsWeakReceiver<blink::CrossThreadWeakPersistent<T>> : std::true_type {};
+
+}
 
 #endif // Persistent_h

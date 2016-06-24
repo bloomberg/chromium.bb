@@ -1089,8 +1089,6 @@ protected:
     static WebGLRenderingContextBase* oldestContext();
     static WebGLRenderingContextBase* oldestEvictedContext();
 
-    CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase> createWeakThisPointer() { return CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase>(this); }
-
     ImageBitmap* transferToImageBitmapBase();
 
     // Helper functions for tex(Sub)Image2D && texSubImage3D

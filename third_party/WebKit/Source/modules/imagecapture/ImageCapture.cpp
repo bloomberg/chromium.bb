@@ -184,7 +184,7 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
 
     Platform::current()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
 
-    m_service.set_connection_error_handler(createBaseCallback(bind(&ImageCapture::onServiceConnectionError, WeakPersistentThisPointer<ImageCapture>(this))));
+    m_service.set_connection_error_handler(createBaseCallback(bind(&ImageCapture::onServiceConnectionError, wrapWeakPersistent(this))));
 
 }
 

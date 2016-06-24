@@ -444,7 +444,7 @@ NFC::NFC(LocalFrame* frame)
 {
     ThreadState::current()->registerPreFinalizer(this);
     frame->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_nfc));
-    m_nfc.set_connection_error_handler(createBaseCallback(bind(&NFC::OnConnectionError, WeakPersistentThisPointer<NFC>(this))));
+    m_nfc.set_connection_error_handler(createBaseCallback(bind(&NFC::OnConnectionError, wrapWeakPersistent(this))));
     m_nfc->SetClient(m_client.CreateInterfacePtrAndBind());
 }
 

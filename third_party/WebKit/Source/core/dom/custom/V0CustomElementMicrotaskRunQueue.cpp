@@ -36,7 +36,7 @@ void V0CustomElementMicrotaskRunQueue::requestDispatchIfNeeded()
 {
     if (m_dispatchIsPending || isEmpty())
         return;
-    Microtask::enqueueMicrotask(WTF::bind(&V0CustomElementMicrotaskRunQueue::dispatch, WeakPersistentThisPointer<V0CustomElementMicrotaskRunQueue>(this)));
+    Microtask::enqueueMicrotask(WTF::bind(&V0CustomElementMicrotaskRunQueue::dispatch, wrapWeakPersistent(this)));
     m_dispatchIsPending = true;
 }
 

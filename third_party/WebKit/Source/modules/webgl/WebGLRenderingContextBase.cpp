@@ -921,7 +921,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     }
 
     m_drawingBuffer = buffer.release();
-    m_drawingBuffer->addNewMailboxCallback(WTF::bind(&WebGLRenderingContextBase::notifyCanvasContextChanged, createWeakThisPointer()));
+    m_drawingBuffer->addNewMailboxCallback(WTF::bind(&WebGLRenderingContextBase::notifyCanvasContextChanged, wrapWeakPersistent(this)));
     drawingBuffer()->bind(GL_FRAMEBUFFER);
     setupFlags();
 
@@ -1041,13 +1041,13 @@ void WebGLRenderingContextBase::initializeNewContext()
     drawingBuffer()->contextProvider()->setLostContextCallback(
         WebClosure(bind(
             &WebGLRenderingContextBase::forceLostContext,
-            createWeakThisPointer(),
+            wrapWeakPersistent(this),
             WebGLRenderingContextBase::RealLostContext,
             WebGLRenderingContextBase::Auto)));
     drawingBuffer()->contextProvider()->setErrorMessageCallback(
         WebFunction<void(const char*, int32_t)>(bind(
             &WebGLRenderingContextBase::onErrorMessage,
-            createWeakThisPointer())));
+            wrapWeakPersistent(this))));
 
     // If WebGL 2, the PRIMITIVE_RESTART_FIXED_INDEX should be always enabled.
     // See the section <Primitive Restart is Always Enabled> in WebGL 2 spec:
@@ -1158,6 +1158,7 @@ void WebGLRenderingContextBase::destroyContext()
 
     drawingBuffer()->contextProvider()->setLostContextCallback(WebClosure());
     drawingBuffer()->contextProvider()->setErrorMessageCallback(WebFunction<void(const char*, int32_t)>());
+    drawingBuffer()->addNewMailboxCallback(nullptr);
 
     ASSERT(drawingBuffer());
     m_drawingBuffer->beginDestruction();
@@ -6109,7 +6110,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     }
 
     m_drawingBuffer = buffer.release();
-    m_drawingBuffer->addNewMailboxCallback(WTF::bind(&WebGLRenderingContextBase::notifyCanvasContextChanged, createWeakThisPointer()));
+    m_drawingBuffer->addNewMailboxCallback(WTF::bind(&WebGLRenderingContextBase::notifyCanvasContextChanged, wrapWeakPersistent(this)));
 
     drawingBuffer()->bind(GL_FRAMEBUFFER);
     m_lostContextErrors.clear();

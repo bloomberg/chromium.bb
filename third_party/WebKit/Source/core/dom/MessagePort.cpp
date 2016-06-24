@@ -126,7 +126,7 @@ WebMessagePortChannelUniquePtr MessagePort::disentangle()
 void MessagePort::messageAvailable()
 {
     DCHECK(getExecutionContext());
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&MessagePort::dispatchMessages, CrossThreadWeakPersistentThisPointer<MessagePort>(this)));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&MessagePort::dispatchMessages, wrapCrossThreadWeakPersistent(this)));
 }
 
 void MessagePort::start()

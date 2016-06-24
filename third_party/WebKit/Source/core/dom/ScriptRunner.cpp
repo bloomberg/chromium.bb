@@ -66,7 +66,7 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, Execution
 
 void ScriptRunner::postTask(const WebTraceLocation& webTraceLocation)
 {
-    m_taskRunner->postTask(webTraceLocation, bind(&ScriptRunner::executeTask, WeakPersistentThisPointer<ScriptRunner>(this)));
+    m_taskRunner->postTask(webTraceLocation, bind(&ScriptRunner::executeTask, wrapWeakPersistent(this)));
 }
 
 void ScriptRunner::suspend()

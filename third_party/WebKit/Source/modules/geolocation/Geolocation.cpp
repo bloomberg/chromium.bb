@@ -423,7 +423,7 @@ void Geolocation::requestPermission()
     m_geolocationPermission = PermissionRequested;
     frame->serviceRegistry()->connectToRemoteService(
         mojo::GetProxy(&m_permissionService));
-    m_permissionService.set_connection_error_handler(createBaseCallback(bind(&Geolocation::onPermissionConnectionError, WeakPersistentThisPointer<Geolocation>(this))));
+    m_permissionService.set_connection_error_handler(createBaseCallback(bind(&Geolocation::onPermissionConnectionError, wrapWeakPersistent(this))));
 
     // Ask the embedder: it maintains the geolocation challenge policy itself.
     m_permissionService->RequestPermission(
@@ -495,7 +495,7 @@ void Geolocation::updateGeolocationServiceConnection()
         return;
 
     frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_geolocationService));
-    m_geolocationService.set_connection_error_handler(createBaseCallback(bind(&Geolocation::onGeolocationConnectionError, WeakPersistentThisPointer<Geolocation>(this))));
+    m_geolocationService.set_connection_error_handler(createBaseCallback(bind(&Geolocation::onGeolocationConnectionError, wrapWeakPersistent(this))));
     if (m_enableHighAccuracy)
         m_geolocationService->SetHighAccuracy(true);
     queryNextPosition();

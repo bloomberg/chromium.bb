@@ -171,11 +171,6 @@ struct CrossThreadCopier<WTF::PassedWrapper<T>> {
     static Type copy(WTF::PassedWrapper<T>&& value) { return passed(CrossThreadCopier<T>::copy(value.moveOut())); }
 };
 
-template<typename T>
-struct CrossThreadCopier<CrossThreadWeakPersistentThisPointer<T>> : public CrossThreadCopierPassThrough<CrossThreadWeakPersistentThisPointer<T>> {
-    STATIC_ONLY(CrossThreadCopier);
-};
-
 template <>
 struct CrossThreadCopier<KURL> {
     STATIC_ONLY(CrossThreadCopier);

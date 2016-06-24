@@ -130,7 +130,7 @@ ServiceWorkerRegistrationNotifications& ServiceWorkerRegistrationNotifications::
 void ServiceWorkerRegistrationNotifications::prepareShow(const WebNotificationData& data, std::unique_ptr<WebNotificationShowCallbacks> callbacks)
 {
     RefPtr<SecurityOrigin> origin = getExecutionContext()->getSecurityOrigin();
-    NotificationResourcesLoader* loader = new NotificationResourcesLoader(WTF::bind(&ServiceWorkerRegistrationNotifications::didLoadResources, WeakPersistentThisPointer<ServiceWorkerRegistrationNotifications>(this), origin.release(), data, passed(std::move(callbacks))));
+    NotificationResourcesLoader* loader = new NotificationResourcesLoader(WTF::bind(&ServiceWorkerRegistrationNotifications::didLoadResources, wrapWeakPersistent(this), origin.release(), data, passed(std::move(callbacks))));
     m_loaders.add(loader);
     loader->start(getExecutionContext(), data);
 }

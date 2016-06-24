@@ -56,7 +56,7 @@ USB::USB(LocalFrame& frame)
 {
     ThreadState::current()->registerPreFinalizer(this);
     frame.serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_deviceManager));
-    m_deviceManager.set_connection_error_handler(createBaseCallback(bind(&USB::onDeviceManagerConnectionError, WeakPersistentThisPointer<USB>(this))));
+    m_deviceManager.set_connection_error_handler(createBaseCallback(bind(&USB::onDeviceManagerConnectionError, wrapWeakPersistent(this))));
     m_deviceManager->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
 }
 
@@ -106,7 +106,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
             return promise;
         }
         frame->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_chooserService));
-        m_chooserService.set_connection_error_handler(createBaseCallback(bind(&USB::onChooserServiceConnectionError, WeakPersistentThisPointer<USB>(this))));
+        m_chooserService.set_connection_error_handler(createBaseCallback(bind(&USB::onChooserServiceConnectionError, wrapWeakPersistent(this))));
     }
 
     String errorMessage;

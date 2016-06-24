@@ -217,7 +217,7 @@ void ImageResource::allClientsAndObserversRemoved()
         // Doing so after a conservative GC prevents resetAnimation() from
         // upsetting ongoing animation updates (crbug.com/613709)
         if (!ThreadHeap::willObjectBeLazilySwept(this))
-            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&ImageResource::doResetAnimation, WeakPersistentThisPointer<ImageResource>(this)));
+            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&ImageResource::doResetAnimation, wrapWeakPersistent(this)));
         else
             m_image->resetAnimation();
     }

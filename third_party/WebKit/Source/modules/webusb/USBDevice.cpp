@@ -94,7 +94,7 @@ USBDevice::USBDevice(usb::DeviceInfoPtr deviceInfo, usb::DevicePtr device, Execu
     , m_configurationIndex(-1)
 {
     if (m_device)
-        m_device.set_connection_error_handler(createBaseCallback(bind(&USBDevice::onConnectionError, WeakPersistentThisPointer<USBDevice>(this))));
+        m_device.set_connection_error_handler(createBaseCallback(bind(&USBDevice::onConnectionError, wrapWeakPersistent(this))));
     int configurationIndex = findConfigurationIndex(info().active_configuration);
     if (configurationIndex != -1)
         onConfigurationSelected(true /* success */, configurationIndex);

@@ -7,6 +7,7 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/HashFunctions.h"
+#include "wtf/HashTraits.h"
 
 namespace blink {
 
@@ -321,4 +322,3 @@ struct IsTraceable<blink::WeakMember<T>> {
 } // namespace WTF
 
 #endif // Member_h
-

@@ -43,6 +43,13 @@ namespace blink {
 template<typename T> class CrossThreadPersistent;
 }
 
+namespace base {
+
+template <typename T>
+struct IsWeakReceiver<WTF::WeakPtr<T>> : std::true_type {};
+
+}
+
 namespace WTF {
 
 // Functional.h provides a very simple way to bind a function pointer and arguments together into a function object
@@ -190,25 +197,15 @@ public:
     {
     }
 
-    template <typename... IncomingParameters>
-    R operator()(C* c, IncomingParameters&&... parameters)
+    template <typename Receiver, typename... IncomingParameters>
+    R operator()(Receiver&& receiver, IncomingParameters&&... parameters)
     {
-        return (c->*m_function)(std::forward<IncomingParameters>(parameters)...);
-    }
-
-    template <typename... IncomingParameters>
-    R operator()(const std::unique_ptr<C>& c, IncomingParameters&&... parameters)
-    {
-        return (c.get()->*m_function)(std::forward<IncomingParameters>(parameters)...);
-    }
-
-    template <typename... IncomingParameters>
-    R operator()(const WeakPtr<C>& c, IncomingParameters&&... parameters)
-    {
-        C* obj = c.get();
-        if (!obj)
+        if (base::IsWeakReceiver<typename std::decay<Receiver>::type>::value && !receiver) {
             return R();
-        return (obj->*m_function)(std::forward<IncomingParameters>(parameters)...);
+        }
+
+        C& c = *receiver;
+        return (c.*m_function)(std::forward<IncomingParameters>(parameters)...);
     }
 
 private:

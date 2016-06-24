@@ -27,6 +27,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefCounted.h"
+#include "wtf/WeakPtr.h"
 #include <utility>
 
 namespace WTF {
@@ -76,6 +77,28 @@ template<> struct ParamStorageTraits<ClassToBeWrapped> {
     using StorageType = WrappedClass;
     static StorageType wrap(const ClassToBeWrapped& value) { return value.wrap(); }
     static UnwrappedClass unwrap(const StorageType& value) { return value.unwrap(); }
+};
+
+class HasWeakPtrSupport {
+public:
+    HasWeakPtrSupport() : m_weakPtrFactory(this) {}
+
+    WTF::WeakPtr<HasWeakPtrSupport> createWeakPtr() {
+        return m_weakPtrFactory.createWeakPtr();
+    }
+
+    void revokeAll()
+    {
+        m_weakPtrFactory.revokeAll();
+    }
+
+    void increment(int* counter)
+    {
+        ++*counter;
+    }
+
+private:
+    WTF::WeakPtrFactory<HasWeakPtrSupport> m_weakPtrFactory;
 };
 
 namespace {
@@ -539,6 +562,20 @@ TEST(FunctionalTest, CountCopiesOfUnboundArguments)
     std::unique_ptr<Function<int(CountCopy)>> bound2 = bind(takeCountCopyAsValue);
     EXPECT_EQ(2, (*bound2)(lvalue)); // At PartBoundFunctionImpl::operator() and at the destination function.
     EXPECT_LE((*bound2)(CountCopy()), 2); // Compiler is allowed to optimize one copy away if the argument is rvalue.
+}
+
+TEST(FunctionalTest, WeakPtr)
+{
+    HasWeakPtrSupport obj;
+    int counter = 0;
+    std::unique_ptr<WTF::SameThreadClosure> bound = WTF::bind(&HasWeakPtrSupport::increment, obj.createWeakPtr(), WTF::unretained(&counter));
+
+    (*bound)();
+    EXPECT_EQ(1, counter);
+
+    obj.revokeAll();
+    (*bound)();
+    EXPECT_EQ(1, counter);
 }
 
 } // anonymous namespace
