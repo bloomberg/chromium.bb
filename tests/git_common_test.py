@@ -872,6 +872,17 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
 
     self.repo.run(inner)
 
+  def testAddError(self):
+    def inner():
+      self.repo.git('checkout', '-b', 'unreadable_file_branch')
+      with open('bad_file', 'w') as f:
+        f.write('some text')
+      os.chmod('bad_file', 0111)
+      ret = self.repo.run(self.gc.freeze)
+      self.assertIn('Failed to index some unindexed files.', ret)
+
+    self.repo.run(inner)
+
 
 class GitMakeWorkdir(git_test_utils.GitRepoReadOnlyTestBase, GitCommonTestBase):
   def setUp(self):

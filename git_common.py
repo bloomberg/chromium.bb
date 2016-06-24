@@ -431,15 +431,24 @@ def freeze():
   except subprocess2.CalledProcessError:
     pass
 
+  add_errors = False
   try:
-    run('add', '-A')
+    run('add', '-A', '--ignore-errors')
+  except subprocess2.CalledProcessError:
+    add_errors = True
+
+  try:
     run('commit', '--no-verify', '-m', FREEZE + '.unindexed')
     took_action = True
   except subprocess2.CalledProcessError:
     pass
 
+  ret = []
+  if add_errors:
+    ret.append('Failed to index some unindexed files.')
   if not took_action:
-    return 'Nothing to freeze.'
+    ret.append('Nothing to freeze.')
+  return ' '.join(ret) or None
 
 
 def get_branch_tree():
