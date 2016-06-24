@@ -77,6 +77,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       base::Callback<void(const std::string& error_message)>;
   using ProfileRegisteredCallback =
       base::Callback<void(BluetoothAdapterProfileBlueZ* profile)>;
+  using ServiceRecordCallback = base::Callback<void(uint32_t)>;
   using ServiceRecordErrorCallback =
       base::Callback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
 
@@ -134,13 +135,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // only creates the record, it does not create a listening socket for the
   // service.
   void CreateServiceRecord(const BluetoothServiceRecordBlueZ& record,
-                           const base::Closure& callback,
+                           const ServiceRecordCallback& callback,
                            const ServiceRecordErrorCallback& error_callback);
 
   // Removes a service record from the SDP server. This would result in the
   // service not being discoverable in any further scans of the adapter. Any
   // sockets listening on this service will need to be closed separately.
-  void RemoveServiceRecord(const device::BluetoothUUID& uuid,
+  void RemoveServiceRecord(uint32_t handle,
                            const base::Closure& callback,
                            const ServiceRecordErrorCallback& error_callback);
 
@@ -418,6 +419,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void RegisterApplicationOnError(
       const base::Closure& callback,
       const device::BluetoothGattService::ErrorCallback& error_callback,
+      const std::string& error_name,
+      const std::string& error_message);
+
+  // Called by dbus:: on an error while trying to create or remove a service
+  // record. Translates the error name/message into a
+  // BluetoothServiceRecordBlueZ::ErrorCode value.
+  void ServiceRecordErrorConnector(
+      const ServiceRecordErrorCallback& error_callback,
       const std::string& error_name,
       const std::string& error_message);
 

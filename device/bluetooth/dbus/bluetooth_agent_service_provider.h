@@ -5,11 +5,10 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"

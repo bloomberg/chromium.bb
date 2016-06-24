@@ -5,15 +5,43 @@
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/values.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
 #include "dbus/object_proxy.h"
+#include "dbus/values_util.h"
+#include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_service_record_bluez.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace bluez {
+
+namespace {
+
+void WriteAttribute(dbus::MessageWriter* writer,
+                    const BluetoothServiceAttributeValueBlueZ& attribute) {
+  dbus::MessageWriter struct_writer(nullptr);
+  writer->OpenStruct(&struct_writer);
+  struct_writer.AppendByte(attribute.type());
+  struct_writer.AppendUint32(attribute.size());
+
+  if (attribute.type() != BluetoothServiceAttributeValueBlueZ::SEQUENCE) {
+    dbus::AppendValueDataAsVariant(&struct_writer, attribute.value());
+  } else {
+    dbus::MessageWriter array_writer(nullptr);
+    struct_writer.OpenArray("v", &array_writer);
+    for (const auto& v : attribute.sequence())
+      WriteAttribute(&array_writer, v);
+    struct_writer.CloseContainer(&array_writer);
+  }
+  writer->CloseContainer(&struct_writer);
+}
+}
 
 BluetoothAdapterClient::DiscoveryFilter::DiscoveryFilter() {}
 
@@ -267,6 +295,64 @@ class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
+  // BluetoothAdapterClient override.
+  void CreateServiceRecord(const dbus::ObjectPath& object_path,
+                           const bluez::BluetoothServiceRecordBlueZ& record,
+                           const ServiceRecordCallback& callback,
+                           const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(bluetooth_adapter::kBluetoothAdapterInterface,
+                                 bluetooth_adapter::kCreateServiceRecord);
+
+    dbus::MessageWriter writer(&method_call);
+    dbus::MessageWriter dict_entry_writer(nullptr);
+    for (auto attribute_id : record.GetAttributeIds()) {
+      writer.OpenDictEntry(&dict_entry_writer);
+      dict_entry_writer.AppendUint16(attribute_id);
+      const BluetoothServiceAttributeValueBlueZ& attribute_value =
+          record.GetAttributeValue(attribute_id);
+      WriteAttribute(&dict_entry_writer, attribute_value);
+    }
+
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(object_path);
+    if (!object_proxy) {
+      error_callback.Run(kUnknownAdapterError, "");
+      return;
+    }
+
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothAdapterClientImpl::OnCreateServiceRecord,
+                   weak_ptr_factory_.GetWeakPtr(), callback),
+        base::Bind(&BluetoothAdapterClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+  }
+
+  // BluetoothAdapterClient override.
+  void RemoveServiceRecord(const dbus::ObjectPath& object_path,
+                           uint32_t handle,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(bluetooth_adapter::kBluetoothAdapterInterface,
+                                 bluetooth_adapter::kRemoveServiceRecord);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint32(handle);
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(object_path);
+    if (!object_proxy) {
+      error_callback.Run(kUnknownAdapterError, "");
+      return;
+    }
+
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothAdapterClientImpl::OnSuccess,
+                   weak_ptr_factory_.GetWeakPtr(), callback),
+        base::Bind(&BluetoothAdapterClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     object_manager_ = bus->GetObjectManager(
@@ -301,6 +387,17 @@ class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
                          const std::string& property_name) {
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       AdapterPropertyChanged(object_path, property_name));
+  }
+
+  // Called when a response for successful method call is received.
+  void OnCreateServiceRecord(const ServiceRecordCallback& callback,
+                             dbus::Response* response) {
+    DCHECK(response);
+    dbus::MessageReader reader(response);
+    uint32_t handle = 0;
+    if (!reader.PopUint32(&handle))
+      LOG(ERROR) << "Invalid response from CreateServiceRecord.";
+    callback.Run(handle);
   }
 
   // Called when a response for successful method call is received.

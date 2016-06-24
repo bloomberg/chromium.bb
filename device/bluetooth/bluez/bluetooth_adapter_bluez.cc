@@ -814,18 +814,26 @@ void BluetoothAdapterBlueZ::OnRegisterAudioSink(
 
 void BluetoothAdapterBlueZ::CreateServiceRecord(
     const BluetoothServiceRecordBlueZ& record,
-    const base::Closure& callback,
+    const ServiceRecordCallback& callback,
     const ServiceRecordErrorCallback& error_callback) {
-  // TODO(rkc): Implement this.
-  callback.Run();
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothAdapterClient()
+      ->CreateServiceRecord(
+          object_path_, record, callback,
+          base::Bind(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothAdapterBlueZ::RemoveServiceRecord(
-    const device::BluetoothUUID& uuid,
+    uint32_t handle,
     const base::Closure& callback,
     const ServiceRecordErrorCallback& error_callback) {
-  // TODO(rkc): Implement this.
-  callback.Run();
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothAdapterClient()
+      ->RemoveServiceRecord(
+          object_path_, handle, callback,
+          base::Bind(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 BluetoothDeviceBlueZ* BluetoothAdapterBlueZ::GetDeviceWithPath(
@@ -1646,6 +1654,28 @@ void BluetoothAdapterBlueZ::RegisterApplicationOnError(
     const std::string& /* error_name */,
     const std::string& /* error_message */) {
   RegisterApplication(callback, error_callback);
+}
+
+void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(
+    const ServiceRecordErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  VLOG(1) << "Creating service record failed: error: " << error_name << " - "
+          << error_message;
+
+  BluetoothServiceRecordBlueZ::ErrorCode code =
+      BluetoothServiceRecordBlueZ::ErrorCode::UNKNOWN;
+  if (error_name == bluetooth_adapter::kErrorInvalidArguments) {
+    code = BluetoothServiceRecordBlueZ::ErrorCode::ERROR_INVALID_ARGUMENTS;
+  } else if (error_name == bluetooth_adapter::kErrorDoesNotExist) {
+    code = BluetoothServiceRecordBlueZ::ErrorCode::ERROR_RECORD_DOES_NOT_EXIST;
+  } else if (error_name == bluetooth_adapter::kErrorAlreadyExists) {
+    code = BluetoothServiceRecordBlueZ::ErrorCode::ERROR_RECORD_ALREADY_EXISTS;
+  } else if (error_name == bluetooth_adapter::kErrorNotReady) {
+    code = BluetoothServiceRecordBlueZ::ErrorCode::ERROR_ADAPTER_NOT_READY;
+  }
+
+  error_callback.Run(code);
 }
 
 }  // namespace bluez

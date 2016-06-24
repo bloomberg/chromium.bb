@@ -60,6 +60,14 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
                           const DiscoveryFilter& discovery_filter,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) override;
+  void CreateServiceRecord(const dbus::ObjectPath& object_path,
+                           const bluez::BluetoothServiceRecordBlueZ& record,
+                           const ServiceRecordCallback& callback,
+                           const ErrorCallback& error_callback) override;
+  void RemoveServiceRecord(const dbus::ObjectPath& object_path,
+                           uint32_t handle,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) override;
 
   // Sets the current simulation timeout interval.
   void SetSimulationIntervalMs(int interval_ms);
@@ -117,6 +125,12 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
 
   // Current timeout interval used when posting delayed tasks.
   int simulation_interval_ms_;
+
+  // Last used handle value issued for a service record.
+  uint32_t last_handle_;
+
+  // Service records manually registered with this adapter by handle.
+  std::map<uint32_t, BluetoothServiceRecordBlueZ> records_;
 };
 
 }  // namespace bluez

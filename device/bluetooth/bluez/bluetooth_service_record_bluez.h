@@ -5,11 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_BLUEZ_BLUETOOTH_SERVICE_RECORD_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUEZ_BLUETOOTH_SERVICE_RECORD_BLUEZ_H_
 
-#include <stdint.h>
+#include <cstdint>
+#include <map>
 #include <vector>
 
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
 
 namespace base {
 class Value;
@@ -23,22 +25,27 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothServiceRecordBlueZ {
   // records.
   enum ErrorCode {
     ERROR_ADAPTER_NOT_READY,
-    ERROR_RECORD_EXISTS,
+    ERROR_RECORD_ALREADY_EXISTS,
     ERROR_RECORD_DOES_NOT_EXIST,
     ERROR_DEVICE_DISCONNECTED,
+    ERROR_INVALID_ARGUMENTS,
     UNKNOWN
   };
 
-  BluetoothServiceRecordBlueZ();
+  explicit BluetoothServiceRecordBlueZ(
+      const std::map<uint16_t, BluetoothServiceAttributeValueBlueZ>&
+          attributes);
+  BluetoothServiceRecordBlueZ(const BluetoothServiceRecordBlueZ& record);
   ~BluetoothServiceRecordBlueZ();
 
   // Returns a list of Attribute IDs that exist within this service record.
-  std::vector<uint16_t> GetAttributeIds();
-  // Returns the value associated with a given attribute ID.
-  base::Value* GetAttributeValue(uint16_t attribute_id);
+  const std::vector<uint16_t> GetAttributeIds() const;
+  // Returns the value associated with a given attribute ID in |value|.
+  const BluetoothServiceAttributeValueBlueZ& GetAttributeValue(
+      uint16_t attribute_id) const;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothServiceRecordBlueZ);
+  std::map<uint16_t, BluetoothServiceAttributeValueBlueZ> attributes_;
 };
 
 }  // namespace bluez
