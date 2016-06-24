@@ -104,18 +104,6 @@ gfx::GpuMemoryBufferHandle GpuServiceMus::CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle);
 }
 
-gfx::GpuMemoryBufferHandle GpuServiceMus::CreateGpuMemoryBufferFromeHandle(
-    gfx::GpuMemoryBufferHandle buffer_handle,
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    int client_id) {
-  DCHECK(CalledOnValidThread());
-
-  return gpu_memory_buffer_factory_->CreateGpuMemoryBufferFromHandle(
-      buffer_handle, id, size, format, client_id);
-}
-
 void GpuServiceMus::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                            int client_id,
                                            const gpu::SyncToken& sync_token) {

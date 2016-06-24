@@ -26,14 +26,6 @@ interface GpuService {
                         uint64 surface_id)
       => (GpuMemoryBufferHandle buffer_handle);
 
-  // Tells the GPU service to create a new GPU memory buffer from an existing
-  // handle.
-  CreateGpuMemoryBufferFromHandle(
-      GpuMemoryBufferHandle buffer_handle,
-      GpuMemoryBufferId id,
-      gfx.mojom.Size size,
-      BufferFormat format) => (GpuMemoryBufferHandle buffer_handle);
-
   // Tells the GPU process to destroy GPU memory buffer.
   DestroyGpuMemoryBuffer(GpuMemoryBufferId id,
                          gpu.mojom.SyncToken sync_token);

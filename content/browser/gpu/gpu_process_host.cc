@@ -754,30 +754,6 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
   }
 }
 
-void GpuProcessHost::CreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    int client_id,
-    const CreateGpuMemoryBufferCallback& callback) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBufferFromHandle");
-
-  DCHECK(CalledOnValidThread());
-
-  GpuMsg_CreateGpuMemoryBufferFromHandle_Params params;
-  params.handle = handle;
-  params.id = id;
-  params.size = size;
-  params.format = format;
-  params.client_id = client_id;
-  if (Send(new GpuMsg_CreateGpuMemoryBufferFromHandle(params))) {
-    create_gpu_memory_buffer_requests_.push(callback);
-  } else {
-    callback.Run(gfx::GpuMemoryBufferHandle());
-  }
-}
-
 void GpuProcessHost::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                             int client_id,
                                             const gpu::SyncToken& sync_token) {

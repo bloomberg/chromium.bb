@@ -51,17 +51,6 @@ GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
   return handle;
 }
 
-gfx::GpuMemoryBufferHandle
-GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    int client_id) {
-  NOTIMPLEMENTED();
-  return gfx::GpuMemoryBufferHandle();
-}
-
 void GpuMemoryBufferFactorySurfaceTexture::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {

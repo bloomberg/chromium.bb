@@ -42,19 +42,6 @@ void HostCreateGpuMemoryBuffer(
                               surface_handle, callback);
 }
 
-void HostCreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    GpuProcessHost* host,
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage,
-    int client_id,
-    const BrowserGpuMemoryBufferManager::CreateCallback& callback) {
-  host->CreateGpuMemoryBufferFromHandle(handle, id, size, format, client_id,
-                                        callback);
-}
-
 void GpuMemoryBufferDeleted(
     scoped_refptr<base::SingleThreadTaskRunner> destruction_task_runner,
     const gpu::GpuMemoryBufferImpl::DestructionCallback& destruction_callback,
@@ -487,47 +474,18 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferFromHandleOnIO(
 
   gfx::GpuMemoryBufferId new_id = content::GetNextGenericSharedMemoryId();
 
-  // Use service side allocation for native types.
-  if (request->handle.type != gfx::SHARED_MEMORY_BUFFER) {
-    // Early out if service side allocation is not supported.
-    if (request->handle.type != gpu::GetNativeGpuMemoryBufferType() ||
-        !IsNativeGpuMemoryBufferConfiguration(request->format,
-                                              request->usage)) {
-      request->event.Signal();
-      return;
-    }
-    // Note: Unretained is safe as this is only used for synchronous allocation
-    // from a non-IO thread.
-    CreateGpuMemoryBufferOnIO(
-        base::Bind(&HostCreateGpuMemoryBufferFromHandle, request->handle),
-        new_id, request->size, request->format, request->usage,
-        request->client_id, false,
-        base::Bind(
-            &BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO,
-            base::Unretained(this), base::Unretained(request)));
-    return;
-  }
-
-  DCHECK(gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(request->usage))
-      << static_cast<int>(request->usage);
-
   BufferMap& buffers = clients_[request->client_id];
-
-  // Allocate shared memory buffer.
   auto insert_result = buffers.insert(std::make_pair(
-      new_id, BufferInfo(request->size, gfx::SHARED_MEMORY_BUFFER,
+      new_id, BufferInfo(request->size, request->handle.type,
                          request->format, request->usage, 0)));
   DCHECK(insert_result.second);
 
-  gfx::GpuMemoryBufferHandle handle;
+  gfx::GpuMemoryBufferHandle handle = request->handle;
   handle.id = new_id;
-  handle.handle = request->handle.handle;
-  handle.offset = request->handle.offset;
-  handle.stride = request->handle.stride;
 
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
-  request->result = gpu::GpuMemoryBufferImplSharedMemory::CreateFromHandle(
+  request->result = gpu::GpuMemoryBufferImpl::CreateFromHandle(
       handle, request->size, request->format, request->usage,
       base::Bind(
           &GpuMemoryBufferDeleted,

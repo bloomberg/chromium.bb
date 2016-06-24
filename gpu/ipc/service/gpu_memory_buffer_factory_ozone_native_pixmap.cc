@@ -45,22 +45,6 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
   return new_handle;
 }
 
-gfx::GpuMemoryBufferHandle
-GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    int client_id) {
-  // TODO(reveman): Remove implementation of this function when GMB import
-  // is handled client side.
-  gfx::GpuMemoryBufferHandle new_handle;
-  new_handle.type = gfx::OZONE_NATIVE_PIXMAP;
-  new_handle.id = id;
-  new_handle.native_pixmap_handle = handle.native_pixmap_handle;
-  return new_handle;
-}
-
 ImageFactory* GpuMemoryBufferFactoryOzoneNativePixmap::AsImageFactory() {
   return this;
 }

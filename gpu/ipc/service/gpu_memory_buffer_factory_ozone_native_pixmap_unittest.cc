@@ -12,9 +12,5 @@ INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferFactoryOzoneNativePixmap,
                               GpuMemoryBufferFactoryTest,
                               GpuMemoryBufferFactoryOzoneNativePixmap);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferFactoryOzoneNativePixmap,
-                              GpuMemoryBufferFactoryImportTest,
-                              GpuMemoryBufferFactoryOzoneNativePixmap);
-
 }  // namespace
 }  // namespace gpu

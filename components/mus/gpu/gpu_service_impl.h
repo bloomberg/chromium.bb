@@ -35,14 +35,6 @@ class GpuServiceImpl : public mojom::GpuService {
       const mojom::GpuService::CreateGpuMemoryBufferCallback& callback)
       override;
 
-  void CreateGpuMemoryBufferFromHandle(
-      mojom::GpuMemoryBufferHandlePtr buffer_handle,
-      mojom::GpuMemoryBufferIdPtr id,
-      const gfx::Size& size,
-      mojom::BufferFormat format,
-      const mojom::GpuService::CreateGpuMemoryBufferFromHandleCallback&
-          callback) override;
-
   void DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
                               const gpu::SyncToken& sync_token) override;
 

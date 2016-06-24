@@ -33,12 +33,6 @@ class GPU_EXPORT GpuMemoryBufferFactoryOzoneNativePixmap
       gfx::BufferUsage usage,
       int client_id,
       SurfaceHandle surface_handle) override;
-  gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromHandle(
-      const gfx::GpuMemoryBufferHandle& handle,
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      int client_id) override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id) override {}
   ImageFactory* AsImageFactory() override;

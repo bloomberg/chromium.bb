@@ -55,16 +55,6 @@ void GpuServiceImpl::CreateGpuMemoryBuffer(
   NOTIMPLEMENTED();
 }
 
-void GpuServiceImpl::CreateGpuMemoryBufferFromHandle(
-    mojom::GpuMemoryBufferHandlePtr buffer_handle,
-    mojom::GpuMemoryBufferIdPtr id,
-    const gfx::Size& size,
-    mojom::BufferFormat format,
-    const mojom::GpuService::CreateGpuMemoryBufferFromHandleCallback&
-        callback) {
-  NOTIMPLEMENTED();
-}
-
 void GpuServiceImpl::DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
                                             const gpu::SyncToken& sync_token) {
   NOTIMPLEMENTED();

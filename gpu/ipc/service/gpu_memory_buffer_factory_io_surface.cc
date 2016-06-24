@@ -47,17 +47,6 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   return handle;
 }
 
-gfx::GpuMemoryBufferHandle
-GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    int client_id) {
-  NOTIMPLEMENTED();
-  return gfx::GpuMemoryBufferHandle();
-}
-
 void GpuMemoryBufferFactoryIOSurface::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {

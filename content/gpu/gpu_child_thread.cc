@@ -97,8 +97,6 @@ class GpuMemoryBufferMessageFilter : public IPC::MessageFilter {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(GpuMemoryBufferMessageFilter, message)
       IPC_MESSAGE_HANDLER(GpuMsg_CreateGpuMemoryBuffer, OnCreateGpuMemoryBuffer)
-      IPC_MESSAGE_HANDLER(GpuMsg_CreateGpuMemoryBufferFromHandle,
-                          OnCreateGpuMemoryBufferFromHandle)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
@@ -117,18 +115,6 @@ class GpuMemoryBufferMessageFilter : public IPC::MessageFilter {
         gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
             params.id, params.size, params.format, params.usage,
             params.client_id, params.surface_handle)));
-  }
-
-  void OnCreateGpuMemoryBufferFromHandle(
-      const GpuMsg_CreateGpuMemoryBufferFromHandle_Params& params) {
-    TRACE_EVENT2(
-        "gpu",
-        "GpuMemoryBufferMessageFilter::OnCreateGpuMemoryBufferFromHandle", "id",
-        params.id.id, "client_id", params.client_id);
-    sender_->Send(new GpuHostMsg_GpuMemoryBufferCreated(
-        gpu_memory_buffer_factory_->CreateGpuMemoryBufferFromHandle(
-            params.handle, params.id, params.size, params.format,
-            params.client_id)));
   }
 
   gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;

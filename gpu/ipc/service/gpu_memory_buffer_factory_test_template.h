@@ -65,48 +65,6 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
 // from a GpuMemoryBuffer factory in order to be conformant.
 REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer);
 
-template <typename GpuMemoryBufferFactoryType>
-class GpuMemoryBufferFactoryImportTest
-    : public GpuMemoryBufferFactoryTest<GpuMemoryBufferFactoryType> {};
-
-TYPED_TEST_CASE_P(GpuMemoryBufferFactoryImportTest);
-
-TYPED_TEST_P(GpuMemoryBufferFactoryImportTest,
-             CreateGpuMemoryBufferFromHandle) {
-  const int kClientId = 1;
-
-  gfx::Size buffer_size(2, 2);
-
-  for (auto format : gfx::GetBufferFormatsForTesting()) {
-    if (!IsNativeGpuMemoryBufferConfigurationSupported(
-            format, gfx::BufferUsage::GPU_READ)) {
-      continue;
-    }
-
-    const gfx::GpuMemoryBufferId kBufferId1(1);
-    gfx::GpuMemoryBufferHandle handle1 =
-        TestFixture::factory_.CreateGpuMemoryBuffer(
-            kBufferId1, buffer_size, format, gfx::BufferUsage::GPU_READ,
-            kClientId, gpu::kNullSurfaceHandle);
-    EXPECT_NE(handle1.type, gfx::EMPTY_BUFFER);
-
-    // Create new buffer from |handle1|.
-    const gfx::GpuMemoryBufferId kBufferId2(2);
-    gfx::GpuMemoryBufferHandle handle2 =
-        TestFixture::factory_.CreateGpuMemoryBufferFromHandle(
-            handle1, kBufferId2, buffer_size, format, kClientId);
-    EXPECT_NE(handle2.type, gfx::EMPTY_BUFFER);
-
-    TestFixture::factory_.DestroyGpuMemoryBuffer(kBufferId1, kClientId);
-    TestFixture::factory_.DestroyGpuMemoryBuffer(kBufferId2, kClientId);
-  }
-}
-
-// The GpuMemoryBufferFactoryImportTest test case verifies that the
-// GpuMemoryBufferFactory implementation handles import of buffers correctly.
-REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferFactoryImportTest,
-                           CreateGpuMemoryBufferFromHandle);
-
 }  // namespace gpu
 
 #endif  // GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_TEST_TEMPLATE_H_
