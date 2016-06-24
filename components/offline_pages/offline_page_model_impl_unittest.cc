@@ -950,7 +950,7 @@ TEST_F(OfflinePageModelImplTest, SaveRetrieveMultipleClientIds) {
   int64_t offline1 = last_save_offline_id();
   EXPECT_TRUE(HasPages(kTestClientNamespace));
 
-  SavePage(kTestUrl, kTestClientId1);
+  SavePage(kTestUrl2, kTestClientId1);
   int64_t offline2 = last_save_offline_id();
 
   EXPECT_NE(offline1, offline2);
@@ -965,6 +965,29 @@ TEST_F(OfflinePageModelImplTest, SaveRetrieveMultipleClientIds) {
   }
 
   EXPECT_TRUE(id_set.find(offline1) != id_set.end());
+  EXPECT_TRUE(id_set.find(offline2) != id_set.end());
+}
+
+TEST_F(OfflinePageModelImplTest, SaveMultiplePagesWithSameURLBySameClientId) {
+  EXPECT_FALSE(HasPages(kTestClientNamespace));
+  SavePage(kTestUrl, kTestClientId1);
+  int64_t offline1 = last_save_offline_id();
+  EXPECT_TRUE(HasPages(kTestClientNamespace));
+
+  SavePage(kTestUrl, kTestClientId1);
+  int64_t offline2 = last_save_offline_id();
+
+  EXPECT_NE(offline1, offline2);
+
+  const std::vector<int64_t> ids = GetOfflineIdsForClientId(kTestClientId1);
+
+  EXPECT_EQ(1UL, ids.size());
+
+  std::set<int64_t> id_set;
+  for (size_t i = 0; i < ids.size(); i++) {
+    id_set.insert(ids[i]);
+  }
+
   EXPECT_TRUE(id_set.find(offline2) != id_set.end());
 }
 

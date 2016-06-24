@@ -19,14 +19,15 @@ ClientPolicyController::ClientPolicyController() {
   policies_.insert(std::make_pair(
       kBookmarkNamespace,
       MakePolicy(kBookmarkNamespace, LifetimeType::TEMPORARY,
-                 base::TimeDelta::FromDays(7), kUnlimitedPages)));
+                 base::TimeDelta::FromDays(7), kUnlimitedPages, 1)));
   policies_.insert(std::make_pair(
-      kLastNNamespace, MakePolicy(kLastNNamespace, LifetimeType::TEMPORARY,
-                                  base::TimeDelta::FromDays(2), 20)));
+      kLastNNamespace,
+      MakePolicy(kLastNNamespace, LifetimeType::TEMPORARY,
+                 base::TimeDelta::FromDays(2), kUnlimitedPages, 1)));
   // Fallback policy.
   policies_.insert(std::make_pair(
       kDefaultNamespace, MakePolicy(kDefaultNamespace, LifetimeType::TEMPORARY,
-                                    base::TimeDelta::FromDays(1), 10)));
+                                    base::TimeDelta::FromDays(1), 10, 1)));
 }
 
 ClientPolicyController::~ClientPolicyController() {}
@@ -36,9 +37,11 @@ const OfflinePageClientPolicy ClientPolicyController::MakePolicy(
     const std::string& name_space,
     LifetimeType lifetime_type,
     const base::TimeDelta& expire_period,
-    size_t page_limit) {
-  OfflinePageClientPolicy policy(
-      {name_space, {lifetime_type, expire_period, page_limit}});
+    size_t page_limit,
+    size_t pages_allowed_per_url) {
+  OfflinePageClientPolicy policy({name_space,
+                                  {lifetime_type, expire_period, page_limit},
+                                  pages_allowed_per_url});
   return policy;
 }
 

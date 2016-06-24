@@ -27,7 +27,8 @@ class ClientPolicyController {
       const std::string& name_space,
       LifetimePolicy::LifetimeType lifetime_type,
       const base::TimeDelta& expiration_period,
-      size_t page_limit);
+      size_t page_limit,
+      size_t pages_allowed_per_url);
 
   // Get the client policy for |name_space|.
   const OfflinePageClientPolicy& GetPolicy(const std::string& name_space) const;

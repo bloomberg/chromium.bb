@@ -208,6 +208,13 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void OnDeleteOrphanedArchivesDone(const std::vector<base::FilePath>& archives,
                                     bool success);
 
+  // Callbacks for deleting pages with same URL when saving pages.
+  void OnPagesFoundWithSameURL(const ClientId& client_id,
+                               int64_t offline_id,
+                               size_t pages_allowed,
+                               const MultipleOfflinePageItemResult& items);
+  void OnDeleteOldPagesWithSameURL(DeletePageResult result);
+
   // Steps for clearing all.
   void OnRemoveAllFilesDoneForClearAll(const base::Closure& callback,
                                        DeletePageResult result);
@@ -240,6 +247,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   // Callback completing storage clearing.
   void OnStorageCleared(size_t expired_page_count,
                         OfflinePageStorageManager::ClearStorageResult result);
+
+  // Post task to clear storage.
+  void PostClearStorageIfNeededTask();
 
   void RunWhenLoaded(const base::Closure& job);
 
