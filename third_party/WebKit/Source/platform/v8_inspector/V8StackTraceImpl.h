@@ -12,7 +12,7 @@
 namespace blink {
 
 class TracedValue;
-class V8DebuggerAgentImpl;
+class V8DebuggerImpl;
 
 // Note: async stack trace may have empty top stack with non-empty tail to indicate
 // that current native-only state had some async story.
@@ -45,14 +45,14 @@ public:
         int m_columnNumber;
     };
 
-    static std::unique_ptr<V8StackTraceImpl> create(V8DebuggerAgentImpl*, v8::Local<v8::StackTrace>, size_t maxStackSize, const String16& description = String16());
-    static std::unique_ptr<V8StackTraceImpl> capture(V8DebuggerAgentImpl*, size_t maxStackSize, const String16& description = String16());
+    static std::unique_ptr<V8StackTraceImpl> create(V8DebuggerImpl*, int contextGroupId, v8::Local<v8::StackTrace>, size_t maxStackSize, const String16& description = String16());
+    static std::unique_ptr<V8StackTraceImpl> capture(V8DebuggerImpl*, int contextGroupId, size_t maxStackSize, const String16& description = String16());
 
     std::unique_ptr<V8StackTrace> clone() override;
     std::unique_ptr<V8StackTraceImpl> cloneImpl();
     std::unique_ptr<V8StackTrace> isolatedCopy() override;
     std::unique_ptr<V8StackTraceImpl> isolatedCopyImpl();
-    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectForTail(V8DebuggerAgentImpl*) const;
+    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectForTail(V8DebuggerImpl*) const;
     ~V8StackTraceImpl() override;
 
     // V8StackTrace implementation.
@@ -66,8 +66,9 @@ public:
     String16 toString() const override;
 
 private:
-    V8StackTraceImpl(const String16& description, protocol::Vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent);
+    V8StackTraceImpl(int contextGroupId, const String16& description, protocol::Vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent);
 
+    int m_contextGroupId;
     String16 m_description;
     protocol::Vector<Frame> m_frames;
     std::unique_ptr<V8StackTraceImpl> m_parent;

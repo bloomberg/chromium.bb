@@ -302,29 +302,4 @@ void V8InspectorSessionImpl::stepOver()
     m_debuggerAgent->stepOver(&errorString);
 }
 
-void V8InspectorSessionImpl::asyncTaskScheduled(const String16& taskName, void* task, bool recurring)
-{
-    m_debuggerAgent->asyncTaskScheduled(taskName, task, recurring);
-}
-
-void V8InspectorSessionImpl::asyncTaskCanceled(void* task)
-{
-    m_debuggerAgent->asyncTaskCanceled(task);
-}
-
-void V8InspectorSessionImpl::asyncTaskStarted(void* task)
-{
-    m_debuggerAgent->asyncTaskStarted(task);
-}
-
-void V8InspectorSessionImpl::asyncTaskFinished(void* task)
-{
-    m_debuggerAgent->asyncTaskFinished(task);
-}
-
-void V8InspectorSessionImpl::allAsyncTasksCanceled()
-{
-    m_debuggerAgent->allAsyncTasksCanceled();
-}
-
 } // namespace blink

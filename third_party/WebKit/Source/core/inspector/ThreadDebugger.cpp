@@ -30,6 +30,7 @@ namespace blink {
 ThreadDebugger::ThreadDebugger(v8::Isolate* isolate)
     : m_isolate(isolate)
     , m_debugger(V8Debugger::create(isolate, this))
+    , m_asyncInstrumentationEnabled(false)
 {
 }
 
@@ -37,32 +38,67 @@ ThreadDebugger::~ThreadDebugger()
 {
 }
 
+// static
+ThreadDebugger* ThreadDebugger::from(v8::Isolate* isolate)
+{
+    if (!isolate)
+        return nullptr;
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    return data ? data->threadDebugger() : nullptr;
+}
+
 void ThreadDebugger::willExecuteScript(v8::Isolate* isolate, int scriptId)
 {
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    if (data && data->threadDebugger())
-        data->threadDebugger()->debugger()->willExecuteScript(isolate->GetCurrentContext(), scriptId);
+    if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
+        debugger->debugger()->willExecuteScript(isolate->GetCurrentContext(), scriptId);
 }
 
 void ThreadDebugger::didExecuteScript(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    if (data && data->threadDebugger())
-        data->threadDebugger()->debugger()->didExecuteScript(isolate->GetCurrentContext());
+    if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
+        debugger->debugger()->didExecuteScript(isolate->GetCurrentContext());
 }
 
 void ThreadDebugger::idleStarted(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    if (data && data->threadDebugger())
-        data->threadDebugger()->debugger()->idleStarted();
+    if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
+        debugger->debugger()->idleStarted();
 }
 
 void ThreadDebugger::idleFinished(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    if (data && data->threadDebugger())
-        data->threadDebugger()->debugger()->idleFinished();
+    if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
+        debugger->debugger()->idleFinished();
+}
+
+void ThreadDebugger::asyncTaskScheduled(const String& operationName, void* task, bool recurring)
+{
+    if (m_asyncInstrumentationEnabled)
+        m_debugger->asyncTaskScheduled(operationName, task, recurring);
+}
+
+void ThreadDebugger::asyncTaskCanceled(void* task)
+{
+    if (m_asyncInstrumentationEnabled)
+        m_debugger->asyncTaskCanceled(task);
+}
+
+void ThreadDebugger::allAsyncTasksCanceled()
+{
+    if (m_asyncInstrumentationEnabled)
+        m_debugger->allAsyncTasksCanceled();
+}
+
+void ThreadDebugger::asyncTaskStarted(void* task)
+{
+    if (m_asyncInstrumentationEnabled)
+        m_debugger->asyncTaskStarted(task);
+}
+
+void ThreadDebugger::asyncTaskFinished(void* task)
+{
+    if (m_asyncInstrumentationEnabled)
+        m_debugger->asyncTaskFinished(task);
 }
 
 void ThreadDebugger::beginUserGesture()
@@ -115,6 +151,18 @@ bool ThreadDebugger::isInspectableHeapObject(v8::Local<v8::Object> object)
     if (!wrapper.IsEmpty() && wrapper->IsUndefined())
         return false;
     return true;
+}
+
+void ThreadDebugger::enableAsyncInstrumentation()
+{
+    DCHECK(!m_asyncInstrumentationEnabled);
+    m_asyncInstrumentationEnabled = true;
+}
+
+void ThreadDebugger::disableAsyncInstrumentation()
+{
+    DCHECK(m_asyncInstrumentationEnabled);
+    m_asyncInstrumentationEnabled = false;
 }
 
 static void returnDataCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

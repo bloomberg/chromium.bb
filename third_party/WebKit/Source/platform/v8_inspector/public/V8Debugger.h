@@ -45,6 +45,13 @@ public:
 
     virtual std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) = 0;
     virtual std::unique_ptr<V8StackTrace> captureStackTrace(size_t maxStackSize) = 0;
+
+    // API to report async call stacks.
+    virtual void asyncTaskScheduled(const String16& taskName, void* task, bool recurring) = 0;
+    virtual void asyncTaskCanceled(void* task) = 0;
+    virtual void asyncTaskStarted(void* task) = 0;
+    virtual void asyncTaskFinished(void* task) = 0;
+    virtual void allAsyncTasksCanceled() = 0;
 };
 
 } // namespace blink

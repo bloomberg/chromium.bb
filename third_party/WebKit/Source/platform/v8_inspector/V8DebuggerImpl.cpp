@@ -50,6 +50,9 @@ namespace {
 const char stepIntoV8MethodName[] = "stepIntoStatement";
 const char stepOutV8MethodName[] = "stepOutOfFunction";
 volatile int s_lastContextId = 0;
+static const char v8AsyncTaskEventEnqueue[] = "enqueue";
+static const char v8AsyncTaskEventWillHandle[] = "willHandle";
+static const char v8AsyncTaskEventDidHandle[] = "didHandle";
 
 inline v8::Local<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
 {
@@ -80,6 +83,7 @@ V8DebuggerImpl::V8DebuggerImpl(v8::Isolate* isolate, V8DebuggerClient* client)
     , m_enabledAgentsCount(0)
     , m_breakpointsActivated(true)
     , m_runningNestedMessageLoop(false)
+    , m_maxAsyncCallStackDepth(0)
 {
 }
 
@@ -102,6 +106,7 @@ void V8DebuggerImpl::disable()
     clearBreakpoints();
     m_debuggerScript.Reset();
     m_debuggerContext.Reset();
+    allAsyncTasksCanceled();
     v8::Debug::SetDebugEventListener(m_isolate, nullptr);
 }
 
@@ -539,6 +544,12 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
     v8::Local<v8::Context> eventContext = eventDetails.GetEventContext();
     DCHECK(!eventContext.IsEmpty());
 
+    if (event == v8::AsyncTaskEvent) {
+        v8::HandleScope scope(m_isolate);
+        handleV8AsyncTaskEvent(eventContext, eventDetails.GetExecutionState(), eventDetails.GetEventData());
+        return;
+    }
+
     V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(eventContext);
     if (agent) {
         v8::HandleScope scope(m_isolate);
@@ -560,19 +571,35 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
             v8::Local<v8::Value> hitBreakpoints = callDebuggerMethod("getBreakpointNumbers", 1, argv).ToLocalChecked();
             DCHECK(hitBreakpoints->IsArray());
             handleProgramBreak(eventContext, eventDetails.GetExecutionState(), v8::Local<v8::Value>(), hitBreakpoints.As<v8::Array>());
-        } else if (event == v8::AsyncTaskEvent) {
-            if (agent->v8AsyncTaskEventsEnabled())
-                handleV8AsyncTaskEvent(agent, eventContext, eventDetails.GetExecutionState(), eventDetails.GetEventData());
         }
     }
 }
 
-void V8DebuggerImpl::handleV8AsyncTaskEvent(V8DebuggerAgentImpl* agent, v8::Local<v8::Context> context, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
+void V8DebuggerImpl::handleV8AsyncTaskEvent(v8::Local<v8::Context> context, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
 {
+    if (!m_maxAsyncCallStackDepth)
+        return;
+
     String16 type = toProtocolStringWithTypeCheck(callInternalGetterFunction(eventData, "type"));
     String16 name = toProtocolStringWithTypeCheck(callInternalGetterFunction(eventData, "name"));
     int id = callInternalGetterFunction(eventData, "id")->ToInteger(m_isolate)->Value();
-    agent->didReceiveV8AsyncTaskEvent(context, type, name, id);
+    // The scopes for the ids are defined by the eventData.name namespaces. There are currently two namespaces: "Object." and "Promise.".
+    void* ptr = reinterpret_cast<void*>(id * 4 + (name[0] == 'P' ? 2 : 0) + 1);
+    if (type == v8AsyncTaskEventEnqueue)
+        asyncTaskScheduled(name, ptr, false);
+    else if (type == v8AsyncTaskEventWillHandle)
+        asyncTaskStarted(ptr);
+    else if (type == v8AsyncTaskEventDidHandle)
+        asyncTaskFinished(ptr);
+    else
+        NOTREACHED();
+}
+
+V8StackTraceImpl* V8DebuggerImpl::currentAsyncCallChain()
+{
+    if (!m_currentStacks.size())
+        return nullptr;
+    return m_currentStacks.last();
 }
 
 V8DebuggerParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8::Object> object, bool success)
@@ -727,8 +754,8 @@ v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Contex
 
 std::unique_ptr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTrace> stackTrace)
 {
-    V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(m_isolate->GetCurrentContext());
-    return V8StackTraceImpl::create(agent, stackTrace, V8StackTrace::maxCallStackSizeToCapture);
+    int contextGroupId = m_isolate->InContext() ? getGroupId(m_isolate->GetCurrentContext()) : 0;
+    return V8StackTraceImpl::create(this, contextGroupId, stackTrace, V8StackTrace::maxCallStackSizeToCapture);
 }
 
 std::unique_ptr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
@@ -790,6 +817,96 @@ void V8DebuggerImpl::resetContextGroup(int contextGroupId)
     m_contexts.remove(contextGroupId);
 }
 
+void V8DebuggerImpl::setAsyncCallStackDepth(V8DebuggerAgentImpl* agent, int depth)
+{
+    if (depth <= 0)
+        m_maxAsyncCallStackDepthMap.remove(agent);
+    else
+        m_maxAsyncCallStackDepthMap.set(agent, depth);
+
+    int maxAsyncCallStackDepth = 0;
+    for (const auto& pair : m_maxAsyncCallStackDepthMap) {
+        if (*pair.second > maxAsyncCallStackDepth)
+            maxAsyncCallStackDepth = *pair.second;
+    }
+
+    if (m_maxAsyncCallStackDepth == maxAsyncCallStackDepth)
+        return;
+
+    if (maxAsyncCallStackDepth && !m_maxAsyncCallStackDepth)
+        m_client->enableAsyncInstrumentation();
+    else if (!maxAsyncCallStackDepth && m_maxAsyncCallStackDepth)
+        m_client->disableAsyncInstrumentation();
+
+    m_maxAsyncCallStackDepth = maxAsyncCallStackDepth;
+    if (!maxAsyncCallStackDepth)
+        allAsyncTasksCanceled();
+}
+
+void V8DebuggerImpl::asyncTaskScheduled(const String16& taskName, void* task, bool recurring)
+{
+    if (!m_maxAsyncCallStackDepth)
+        return;
+    v8::HandleScope scope(m_isolate);
+    int contextGroupId = m_isolate->InContext() ? getGroupId(m_isolate->GetCurrentContext()) : 0;
+    std::unique_ptr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, contextGroupId, V8StackTrace::maxCallStackSizeToCapture, taskName);
+    if (chain) {
+        m_asyncTaskStacks.set(task, std::move(chain));
+        if (recurring)
+            m_recurringTasks.add(task);
+    }
+}
+
+void V8DebuggerImpl::asyncTaskCanceled(void* task)
+{
+    if (!m_maxAsyncCallStackDepth)
+        return;
+    m_asyncTaskStacks.remove(task);
+    m_recurringTasks.remove(task);
+}
+
+void V8DebuggerImpl::asyncTaskStarted(void* task)
+{
+    // Not enabled, return.
+    if (!m_maxAsyncCallStackDepth)
+        return;
+
+    m_currentTasks.append(task);
+    V8StackTraceImpl* stack = m_asyncTaskStacks.get(task);
+    // Needs to support following order of events:
+    // - asyncTaskScheduled
+    //   <-- attached here -->
+    // - asyncTaskStarted
+    // - asyncTaskCanceled <-- canceled before finished
+    //   <-- async stack requested here -->
+    // - asyncTaskFinished
+    m_currentStacks.append(stack ? stack->cloneImpl() : nullptr);
+}
+
+void V8DebuggerImpl::asyncTaskFinished(void* task)
+{
+    if (!m_maxAsyncCallStackDepth)
+        return;
+    // We could start instrumenting half way and the stack is empty.
+    if (!m_currentStacks.size())
+        return;
+
+    DCHECK(m_currentTasks.last() == task);
+    m_currentTasks.removeLast();
+
+    m_currentStacks.removeLast();
+    if (!m_recurringTasks.contains(task))
+        m_asyncTaskStacks.remove(task);
+}
+
+void V8DebuggerImpl::allAsyncTasksCanceled()
+{
+    m_asyncTaskStacks.clear();
+    m_recurringTasks.clear();
+    m_currentStacks.clear();
+    m_currentTasks.clear();
+}
+
 void V8DebuggerImpl::willExecuteScript(v8::Local<v8::Context> context, int scriptId)
 {
     if (V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(context))
@@ -814,8 +931,8 @@ void V8DebuggerImpl::idleFinished()
 
 std::unique_ptr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
 {
-    V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(m_isolate->GetCurrentContext());
-    return V8StackTraceImpl::capture(agent, maxStackSize);
+    int contextGroupId = m_isolate->InContext() ? getGroupId(m_isolate->GetCurrentContext()) : 0;
+    return V8StackTraceImpl::capture(this, contextGroupId, maxStackSize);
 }
 
 v8::Local<v8::Context> V8DebuggerImpl::regexContext()

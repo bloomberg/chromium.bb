@@ -54,12 +54,6 @@ public:
 
     // Instrumentation methods marked by [V8]
     void scriptExecutionBlockedByCSP(const String& directiveText);
-    void asyncTaskScheduled(const String& taskName, void* task);
-    void asyncTaskScheduled(const String& taskName, void* task, bool recurring);
-    void asyncTaskCanceled(void* task);
-    void allAsyncTasksCanceled();
-    void asyncTaskStarted(void* task);
-    void asyncTaskFinished(void* task);
     void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);
 

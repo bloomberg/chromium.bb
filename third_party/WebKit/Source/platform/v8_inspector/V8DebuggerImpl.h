@@ -50,6 +50,7 @@ class InspectedContext;
 class V8DebuggerAgentImpl;
 class V8InspectorSessionImpl;
 class V8RuntimeAgentImpl;
+class V8StackTraceImpl;
 
 class V8DebuggerImpl : public V8Debugger {
     PROTOCOL_DISALLOW_COPY(V8DebuggerImpl);
@@ -92,6 +93,9 @@ public:
 
     bool isPaused() override;
     v8::Local<v8::Context> pausedContext() { return m_pausedContext; }
+    int maxAsyncCallChainDepth() { return m_maxAsyncCallStackDepth; }
+    V8StackTraceImpl* currentAsyncCallChain();
+    void setAsyncCallStackDepth(V8DebuggerAgentImpl*, int);
 
     v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Function>);
     v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&);
@@ -117,6 +121,11 @@ public:
     void idleFinished() override;
     std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) override;
     std::unique_ptr<V8StackTrace> captureStackTrace(size_t maxStackSize) override;
+    void asyncTaskScheduled(const String16& taskName, void* task, bool recurring) override;
+    void asyncTaskCanceled(void* task) override;
+    void asyncTaskStarted(void* task) override;
+    void asyncTaskFinished(void* task) override;
+    void allAsyncTasksCanceled() override;
 
     using ContextByIdMap = protocol::HashMap<int, std::unique_ptr<InspectedContext>>;
     void discardInspectedContext(int contextGroupId, int contextId);
@@ -145,7 +154,7 @@ private:
 
     v8::Local<v8::String> v8InternalizedString(const char*) const;
 
-    void handleV8AsyncTaskEvent(V8DebuggerAgentImpl*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
+    void handleV8AsyncTaskEvent(v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 
     v8::Isolate* m_isolate;
     V8DebuggerClient* m_client;
@@ -161,6 +170,14 @@ private:
     v8::Local<v8::Context> m_pausedContext;
     bool m_runningNestedMessageLoop;
     v8::Global<v8::Context> m_regexContext;
+
+    using AsyncTaskToStackTrace = protocol::HashMap<void*, std::unique_ptr<V8StackTraceImpl>>;
+    AsyncTaskToStackTrace m_asyncTaskStacks;
+    protocol::HashSet<void*> m_recurringTasks;
+    int m_maxAsyncCallStackDepth;
+    protocol::Vector<void*> m_currentTasks;
+    protocol::Vector<std::unique_ptr<V8StackTraceImpl>> m_currentStacks;
+    protocol::HashMap<V8DebuggerAgentImpl*, int> m_maxAsyncCallStackDepthMap;
 };
 
 } // namespace blink

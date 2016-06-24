@@ -40,6 +40,7 @@
 namespace blink {
 
 class InstrumentingAgents;
+class ThreadDebugger;
 class WorkerGlobalScope;
 
 namespace InspectorInstrumentation {
@@ -52,7 +53,7 @@ public:
     ~AsyncTask();
 
 private:
-    Member<InstrumentingAgents> m_instrumentingAgents;
+    ThreadDebugger* m_debugger;
     void* m_task;
 };
 

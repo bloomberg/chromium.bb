@@ -138,27 +138,16 @@ public:
     void breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data);
     void breakProgramOnException(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data);
 
-    // Async call stacks implementation.
-    void asyncTaskScheduled(const String16& taskName, void* task, bool recurring);
-    void asyncTaskCanceled(void* task);
-    void asyncTaskStarted(void* task);
-    void asyncTaskFinished(void* task);
-    void allAsyncTasksCanceled();
-
     void reset();
 
     // Interface for V8DebuggerImpl
     SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Value> exception, const protocol::Vector<String16>& hitBreakpoints, bool isPromiseRejection);
     void didContinue();
     void didParseSource(const V8DebuggerParsedScript&);
-    bool v8AsyncTaskEventsEnabled() const;
-    void didReceiveV8AsyncTaskEvent(v8::Local<v8::Context>, const String16& eventType, const String16& eventName, int id);
     void willExecuteScript(int scriptId);
     void didExecuteScript();
 
     v8::Isolate* isolate() { return m_isolate; }
-    int maxAsyncCallChainDepth() { return m_maxAsyncCallStackDepth; }
-    V8StackTraceImpl* currentAsyncCallChain();
 
 private:
     bool checkEnabled(ErrorString*);
@@ -227,12 +216,6 @@ private:
     int m_recursionLevelForStepFrame;
     bool m_skipAllPauses;
 
-    using AsyncTaskToStackTrace = protocol::HashMap<void*, std::unique_ptr<V8StackTraceImpl>>;
-    AsyncTaskToStackTrace m_asyncTaskStacks;
-    protocol::HashSet<void*> m_recurringTasks;
-    int m_maxAsyncCallStackDepth;
-    protocol::Vector<void*> m_currentTasks;
-    protocol::Vector<std::unique_ptr<V8StackTraceImpl>> m_currentStacks;
     std::unique_ptr<V8Regex> m_blackboxPattern;
     protocol::HashMap<String16, protocol::Vector<std::pair<int, int>>> m_blackboxedPositions;
 };

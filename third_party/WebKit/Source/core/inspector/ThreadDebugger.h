@@ -25,11 +25,18 @@ class CORE_EXPORT ThreadDebugger : public V8DebuggerClient {
 public:
     explicit ThreadDebugger(v8::Isolate*);
     ~ThreadDebugger() override;
+    static ThreadDebugger* from(v8::Isolate*);
 
     static void willExecuteScript(v8::Isolate*, int scriptId);
     static void didExecuteScript(v8::Isolate*);
     static void idleStarted(v8::Isolate*);
     static void idleFinished(v8::Isolate*);
+
+    void asyncTaskScheduled(const String& taskName, void* task, bool recurring);
+    void asyncTaskCanceled(void* task);
+    void allAsyncTasksCanceled();
+    void asyncTaskStarted(void* task);
+    void asyncTaskFinished(void* task);
 
     // V8DebuggerClient implementation.
     void beginUserGesture() override;
@@ -39,6 +46,8 @@ public:
     bool isExecutionAllowed() override;
     double currentTimeMS() override;
     bool isInspectableHeapObject(v8::Local<v8::Object>) override;
+    void enableAsyncInstrumentation() override;
+    void disableAsyncInstrumentation() override;
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
     void reportMessageToConsole(v8::Local<v8::Context>, MessageType, MessageLevel, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount) final;
     void consoleTime(const String16& title) override;
@@ -67,6 +76,7 @@ private:
 
     static void getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
+    bool m_asyncInstrumentationEnabled;
     Vector<std::unique_ptr<Timer<ThreadDebugger>>> m_timers;
     Vector<V8DebuggerClient::TimerCallback> m_timerCallbacks;
     Vector<void*> m_timerData;

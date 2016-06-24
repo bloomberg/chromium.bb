@@ -286,18 +286,6 @@ class XMLHttpRequest;
     [DOM]
     void pseudoElementDestroyed([Keep] PseudoElement*);
 
-    [V8]
-    void asyncTaskScheduled(ExecutionContext*, const String& name, void*);
-
-    [V8]
-    void asyncTaskScheduled(ExecutionContext*, const String& name, void*, bool recurring);
-
-    [V8]
-    void asyncTaskCanceled(ExecutionContext*, void*);
-
-    [V8]
-    void allAsyncTasksCanceled(ExecutionContext*);
-
     [Animation]
     void didCreateAnimation(Document*, unsigned);
 

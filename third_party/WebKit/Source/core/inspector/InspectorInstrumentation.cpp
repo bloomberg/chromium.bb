@@ -42,10 +42,12 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/MainThreadDebugger.h"
+#include "core/inspector/ThreadDebugger.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/page/Page.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/v8_inspector/public/V8Debugger.h"
 
 namespace blink {
 
@@ -56,21 +58,41 @@ AsyncTask::AsyncTask(ExecutionContext* context, void* task) : AsyncTask(context,
 }
 
 AsyncTask::AsyncTask(ExecutionContext* context, void* task, bool enabled)
-    : m_instrumentingAgents(enabled ? instrumentingAgentsFor(context) : nullptr)
+    : m_debugger(enabled ? ThreadDebugger::from(toIsolate(context)) : nullptr)
     , m_task(task)
 {
-    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorSessions())
-        return;
-    for (InspectorSession* session : m_instrumentingAgents->inspectorSessions())
-        session->asyncTaskStarted(m_task);
+    if (m_debugger)
+        m_debugger->asyncTaskStarted(m_task);
 }
 
 AsyncTask::~AsyncTask()
 {
-    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorSessions())
-        return;
-    for (InspectorSession* session : m_instrumentingAgents->inspectorSessions())
-        session->asyncTaskFinished(m_task);
+    if (m_debugger)
+        m_debugger->asyncTaskFinished(m_task);
+}
+
+void asyncTaskScheduled(ExecutionContext* context, const String& name, void* task)
+{
+    if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
+        debugger->asyncTaskScheduled(name, task, false);
+}
+
+void asyncTaskScheduled(ExecutionContext* context, const String& name, void* task, bool recurring)
+{
+    if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
+        debugger->asyncTaskScheduled(name, task, recurring);
+}
+
+void asyncTaskCanceled(ExecutionContext* context, void* task)
+{
+    if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
+        debugger->asyncTaskCanceled(task);
+}
+
+void allAsyncTasksCanceled(ExecutionContext* context)
+{
+    if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
+        debugger->allAsyncTasksCanceled();
 }
 
 NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, const char* name, bool sync)

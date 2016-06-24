@@ -137,42 +137,6 @@ void InspectorSession::scriptExecutionBlockedByCSP(const String& directiveText)
     m_v8Session->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, std::move(directive));
 }
 
-void InspectorSession::asyncTaskScheduled(const String& taskName, void* task)
-{
-    DCHECK(isInstrumenting());
-    m_v8Session->asyncTaskScheduled(taskName, task, false);
-}
-
-void InspectorSession::asyncTaskScheduled(const String& operationName, void* task, bool recurring)
-{
-    DCHECK(isInstrumenting());
-    m_v8Session->asyncTaskScheduled(operationName, task, recurring);
-}
-
-void InspectorSession::asyncTaskCanceled(void* task)
-{
-    DCHECK(isInstrumenting());
-    m_v8Session->asyncTaskCanceled(task);
-}
-
-void InspectorSession::allAsyncTasksCanceled()
-{
-    DCHECK(isInstrumenting());
-    m_v8Session->allAsyncTasksCanceled();
-}
-
-void InspectorSession::asyncTaskStarted(void* task)
-{
-    DCHECK(isInstrumenting());
-    m_v8Session->asyncTaskStarted(task);
-}
-
-void InspectorSession::asyncTaskFinished(void* task)
-{
-    DCHECK(isInstrumenting());
-    m_v8Session->asyncTaskFinished(task);
-}
-
 void InspectorSession::didStartProvisionalLoad(LocalFrame* frame)
 {
     DCHECK(isInstrumenting());

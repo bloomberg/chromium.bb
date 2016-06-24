@@ -6,7 +6,6 @@
 
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 
@@ -90,7 +89,7 @@ V8StackTraceImpl::Frame V8StackTraceImpl::Frame::isolatedCopy() const
     return Frame(m_functionName.isolatedCopy(), m_scriptId.isolatedCopy(), m_scriptName.isolatedCopy(), m_lineNumber, m_columnNumber);
 }
 
-std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize, const String16& description)
+std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerImpl* debugger, int contextGroupId, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize, const String16& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -100,9 +99,15 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* 
 
     int maxAsyncCallChainDepth = 1;
     V8StackTraceImpl* asyncCallChain = nullptr;
-    if (agent && maxStackSize > 1) {
-        asyncCallChain = agent->currentAsyncCallChain();
-        maxAsyncCallChainDepth = agent->maxAsyncCallChainDepth();
+    if (debugger && maxStackSize > 1) {
+        asyncCallChain = debugger->currentAsyncCallChain();
+        maxAsyncCallChainDepth = debugger->maxAsyncCallChainDepth();
+    }
+    // Do not accidentally append async call chain from another group. This should not
+    // happen if we have proper instrumentation, but let's double-check to be safe.
+    if (contextGroupId && asyncCallChain && asyncCallChain->m_contextGroupId && asyncCallChain->m_contextGroupId != contextGroupId) {
+        asyncCallChain = nullptr;
+        maxAsyncCallChainDepth = 1;
     }
 
     // Only the top stack in the chain may be empty, so ensure that second stack is non-empty (it's the top of appended chain).
@@ -112,7 +117,7 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* 
     if (stackTrace.IsEmpty() && !asyncCallChain)
         return nullptr;
 
-    std::unique_ptr<V8StackTraceImpl> result(new V8StackTraceImpl(description, frames, asyncCallChain ? asyncCallChain->cloneImpl() : nullptr));
+    std::unique_ptr<V8StackTraceImpl> result(new V8StackTraceImpl(contextGroupId, description, frames, asyncCallChain ? asyncCallChain->cloneImpl() : nullptr));
 
     // Crop to not exceed maxAsyncCallChainDepth.
     V8StackTraceImpl* deepest = result.get();
@@ -126,7 +131,7 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* 
     return result;
 }
 
-std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agent, size_t maxStackSize, const String16& description)
+std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerImpl* debugger, int contextGroupId, size_t maxStackSize, const String16& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
@@ -137,7 +142,7 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl*
 #endif
         stackTrace = v8::StackTrace::CurrentStackTrace(isolate, maxStackSize, stackTraceOptions);
     }
-    return V8StackTraceImpl::create(agent, stackTrace, maxStackSize, description);
+    return V8StackTraceImpl::create(debugger, contextGroupId, stackTrace, maxStackSize, description);
 }
 
 std::unique_ptr<V8StackTrace> V8StackTraceImpl::clone()
@@ -148,7 +153,7 @@ std::unique_ptr<V8StackTrace> V8StackTraceImpl::clone()
 std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::cloneImpl()
 {
     protocol::Vector<Frame> framesCopy(m_frames);
-    return wrapUnique(new V8StackTraceImpl(m_description, framesCopy, m_parent ? m_parent->cloneImpl() : nullptr));
+    return wrapUnique(new V8StackTraceImpl(m_contextGroupId, m_description, framesCopy, m_parent ? m_parent->cloneImpl() : nullptr));
 }
 
 std::unique_ptr<V8StackTrace> V8StackTraceImpl::isolatedCopy()
@@ -161,11 +166,12 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::isolatedCopyImpl()
     protocol::Vector<Frame> frames;
     for (size_t i = 0; i < m_frames.size(); i++)
         frames.append(m_frames.at(i).isolatedCopy());
-    return wrapUnique(new V8StackTraceImpl(m_description.isolatedCopy(), frames, m_parent ? m_parent->isolatedCopyImpl() : nullptr));
+    return wrapUnique(new V8StackTraceImpl(m_contextGroupId, m_description.isolatedCopy(), frames, m_parent ? m_parent->isolatedCopyImpl() : nullptr));
 }
 
-V8StackTraceImpl::V8StackTraceImpl(const String16& description, protocol::Vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent)
-    : m_description(description)
+V8StackTraceImpl::V8StackTraceImpl(int contextGroupId, const String16& description, protocol::Vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent)
+    : m_contextGroupId(contextGroupId)
+    , m_description(description)
     , m_parent(std::move(parent))
 {
     m_frames.swap(frames);
@@ -220,11 +226,11 @@ std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorO
     return stackTrace;
 }
 
-std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObjectForTail(V8DebuggerAgentImpl* agent) const
+std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObjectForTail(V8DebuggerImpl* debugger) const
 {
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     // Next call collapses possible empty stack and ensures maxAsyncCallChainDepth.
-    std::unique_ptr<V8StackTraceImpl> fullChain = V8StackTraceImpl::create(agent, v8::Local<v8::StackTrace>(), V8StackTrace::maxCallStackSizeToCapture);
+    std::unique_ptr<V8StackTraceImpl> fullChain = V8StackTraceImpl::create(debugger, m_contextGroupId, v8::Local<v8::StackTrace>(), V8StackTrace::maxCallStackSizeToCapture);
     if (!fullChain || !fullChain->m_parent)
         return nullptr;
     return fullChain->m_parent->buildInspectorObject();
