@@ -20,12 +20,12 @@
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/private/content_decryptor_private.h"
-#include "ppapi/cpp/private/output_protection_private.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 #if defined(OS_CHROMEOS)
+#include "ppapi/cpp/private/output_protection_private.h"
 #include "ppapi/cpp/private/platform_verification.h"
 #endif
 
@@ -238,14 +238,11 @@ class PpapiCdmAdapter : public pp::Instance,
   void LogToConsole(const pp::Var& value);
 #endif  // !defined(NDEBUG)
 
+#if defined(OS_CHROMEOS)
   void ReportOutputProtectionUMA(OutputProtectionStatus status);
   void ReportOutputProtectionQuery();
   void ReportOutputProtectionQueryResult();
 
-  void EnableProtectionDone(int32_t result);
-  void QueryOutputProtectionStatusDone(int32_t result);
-
-#if defined(OS_CHROMEOS)
   struct PepperPlatformChallengeResponse {
     pp::Var signed_data;
     pp::Var signed_data_signature;
@@ -255,9 +252,11 @@ class PpapiCdmAdapter : public pp::Instance,
   void SendPlatformChallengeDone(
       int32_t result,
       const linked_ptr<PepperPlatformChallengeResponse>& response);
-#endif
+  void EnableProtectionDone(int32_t result);
+  void QueryOutputProtectionStatusDone(int32_t result);
 
   pp::OutputProtection_Private output_protection_;
+  pp::PlatformVerification platform_verification_;
 
   // Same as above, these are only read by QueryOutputProtectionStatusDone().
   uint32_t output_link_mask_;
@@ -268,9 +267,6 @@ class PpapiCdmAdapter : public pp::Instance,
   // unprotected external link) have been reported to UMA.
   bool uma_for_output_protection_query_reported_;
   bool uma_for_output_protection_positive_result_reported_;
-
-#if defined(OS_CHROMEOS)
-  pp::PlatformVerification platform_verification_;
 #endif
 
   PpbBufferAllocator allocator_;

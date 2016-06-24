@@ -20,7 +20,7 @@ var DEFAULT_MEDIA_FILE = 'http://shadi.kir/alcatraz/Chrome_44-enc_av.webm';
 var KEY_ID = '0123456789012345';
 
 // Unique strings to identify test result expectations.
-var UNIT_TEST_SUCCESS = 'UNIT_TEST_SUCCESS';
+var FILE_IO_TEST_SUCCESS = 'FILE_IO_TEST_SUCCESS';
 var NOTSUPPORTEDERROR = 'NOTSUPPORTEDERROR';
 var EME_GENERATEREQUEST_FAILED = 'EME_GENERATEREQUEST_FAILED';
 var EME_SESSION_NOT_FOUND = 'EME_SESSION_NOT_FOUND';
@@ -30,16 +30,14 @@ var EME_ERROR_EVENT = 'EME_ERROR_EVENT';
 var EME_MESSAGE_UNEXPECTED_TYPE = 'EME_MESSAGE_UNEXPECTED_TYPE';
 var EME_RENEWAL_MISSING_HEADER = 'EME_RENEWAL_MISSING_HEADER';
 
-// Headers used when running some specific unittests in the external CDM.
-var UNIT_TEST_RESULT_HEADER = 'UNIT_TEST_RESULT';
+// Headers used when testing file I/O.
+var FILE_IO_TEST_RESULT_HEADER = 'FILEIOTESTRESULT';
 
 // Available EME key systems to use.
 var CLEARKEY = 'org.w3.clearkey';
 var EXTERNAL_CLEARKEY = 'org.chromium.externalclearkey';
 var WIDEVINE_KEYSYSTEM = 'com.widevine.alpha';
 var FILE_IO_TEST_KEYSYSTEM = 'org.chromium.externalclearkey.fileiotest';
-var OUTPUT_PROTECTION_TEST_KEYSYSTEM =
-    'org.chromium.externalclearkey.outputprotectiontest';
 
 // Key system name:value map to show on the document page.
 var KEY_SYSTEMS = {

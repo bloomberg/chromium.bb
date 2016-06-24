@@ -5,7 +5,6 @@
 #include "chrome/browser/renderer_host/pepper/pepper_output_protection_message_filter.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/media/output_protection_proxy.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -15,14 +14,19 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/display/output_protection_delegate.h"
 #include "ui/display/types/display_constants.h"
+#endif
 
 namespace chrome {
 
 namespace {
 
+#if defined(OS_CHROMEOS)
 static_assert(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NONE) ==
-                  static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_NONE),
+                   static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_NONE),
               "PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NONE value mismatch");
 static_assert(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_UNKNOWN) ==
@@ -33,14 +37,14 @@ static_assert(
         static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_INTERNAL),
     "PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_INTERNAL value mismatch");
 static_assert(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_VGA) ==
-                  static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_VGA),
-              "PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_VGA value mismatch");
+                   static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_VGA),
+               "PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_VGA value mismatch");
 static_assert(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_HDMI) ==
-                  static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_HDMI),
-              "PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_HDMI value mismatch");
+                   static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_HDMI),
+               "PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_HDMI value mismatch");
 static_assert(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DVI) ==
-                  static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_DVI),
-              "PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DVI value mismatch");
+                   static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_DVI),
+               "PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DVI value mismatch");
 static_assert(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DISPLAYPORT) ==
         static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_DISPLAYPORT),
@@ -50,11 +54,12 @@ static_assert(
         static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_NETWORK),
     "PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NETWORK value mismatch");
 static_assert(static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE) ==
-                  static_cast<int>(ui::CONTENT_PROTECTION_METHOD_NONE),
-              "PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE value mismatch");
+                   static_cast<int>(ui::CONTENT_PROTECTION_METHOD_NONE),
+               "PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE value mismatch");
 static_assert(static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP) ==
-                  static_cast<int>(ui::CONTENT_PROTECTION_METHOD_HDCP),
-              "PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP value mismatch");
+                   static_cast<int>(ui::CONTENT_PROTECTION_METHOD_HDCP),
+               "PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP value mismatch");
+#endif
 
 }  // namespace
 
@@ -62,15 +67,26 @@ PepperOutputProtectionMessageFilter::PepperOutputProtectionMessageFilter(
     content::BrowserPpapiHost* host,
     PP_Instance instance)
     : weak_ptr_factory_(this) {
+#if defined(OS_CHROMEOS)
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   int render_process_id = 0;
   int render_frame_id = 0;
   host->GetRenderFrameIDsForInstance(
       instance, &render_process_id, &render_frame_id);
-  proxy_.reset(new OutputProtectionProxy(render_process_id, render_frame_id));
+  delegate_ = new chromeos::OutputProtectionDelegate(render_process_id,
+                                                     render_frame_id);
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
-PepperOutputProtectionMessageFilter::~PepperOutputProtectionMessageFilter() {}
+PepperOutputProtectionMessageFilter::~PepperOutputProtectionMessageFilter() {
+#if defined(OS_CHROMEOS)
+  content::BrowserThread::DeleteSoon(
+      content::BrowserThread::UI, FROM_HERE, delegate_);
+  delegate_ = NULL;
+#endif
+}
 
 scoped_refptr<base::TaskRunner>
 PepperOutputProtectionMessageFilter::OverrideTaskRunnerForMessage(
@@ -93,25 +109,35 @@ int32_t PepperOutputProtectionMessageFilter::OnResourceMessageReceived(
 
 int32_t PepperOutputProtectionMessageFilter::OnQueryStatus(
     ppapi::host::HostMessageContext* context) {
+#if defined(OS_CHROMEOS)
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
-  proxy_->QueryStatus(
+  delegate_->QueryStatus(
       base::Bind(&PepperOutputProtectionMessageFilter::OnQueryStatusComplete,
                  weak_ptr_factory_.GetWeakPtr(), reply_context));
   return PP_OK_COMPLETIONPENDING;
+#else
+  NOTIMPLEMENTED();
+  return PP_ERROR_NOTSUPPORTED;
+#endif
 }
 
 int32_t PepperOutputProtectionMessageFilter::OnEnableProtection(
     ppapi::host::HostMessageContext* context,
     uint32_t desired_method_mask) {
+#if defined(OS_CHROMEOS)
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
-  proxy_->EnableProtection(
+  delegate_->EnableProtection(
       desired_method_mask,
       base::Bind(
           &PepperOutputProtectionMessageFilter::OnEnableProtectionComplete,
           weak_ptr_factory_.GetWeakPtr(), reply_context));
   return PP_OK_COMPLETIONPENDING;
+#else
+  NOTIMPLEMENTED();
+  return PP_ERROR_NOTSUPPORTED;
+#endif
 }
 
 void PepperOutputProtectionMessageFilter::OnQueryStatusComplete(

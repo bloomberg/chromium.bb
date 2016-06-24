@@ -148,8 +148,7 @@ PlayerUtils.createPlayer = function(video, testConfig) {
       case CLEARKEY:
         return ClearKeyPlayer;
       case FILE_IO_TEST_KEYSYSTEM:
-      case OUTPUT_PROTECTION_TEST_KEYSYSTEM:
-        return UnitTestPlayer;
+        return FileIOTestPlayer;
       default:
         Utils.timeLog(keySystem + ' is not a known key system');
         return ClearKeyPlayer;

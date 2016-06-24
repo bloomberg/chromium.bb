@@ -60,6 +60,7 @@ ChromeBrowserPepperHostFactory::CreateResourceHost(
             host_->GetPpapiHost(), instance, resource, pv_filter));
       }
 #endif
+#if defined(OS_CHROMEOS)
       case PpapiHostMsg_OutputProtection_Create::ID: {
         scoped_refptr<ResourceMessageFilter> output_protection_filter(
             new chrome::PepperOutputProtectionMessageFilter(host_, instance));
@@ -67,6 +68,7 @@ ChromeBrowserPepperHostFactory::CreateResourceHost(
             new MessageFilterHost(host_->GetPpapiHost(), instance, resource,
                                   output_protection_filter));
       }
+#endif
     }
   }
 

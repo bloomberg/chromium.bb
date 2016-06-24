@@ -140,14 +140,10 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
                                       cdm::AudioFrames* audio_frames);
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
-  void OnUnitTestComplete(bool success);
-
   void StartFileIOTest();
 
   // Callback for CDM File IO test.
   void OnFileIOTestComplete(bool success);
-
-  void StartOutputProtectionTest();
 
   // Keep track of the last session created.
   void SetSessionId(const std::string& session_id);
@@ -212,8 +208,6 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   std::unique_ptr<CdmVideoDecoder> video_decoder_;
 
   std::unique_ptr<FileIOTestRunner> file_io_test_runner_;
-
-  bool is_running_output_protection_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearKeyCdm);
 };
