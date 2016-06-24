@@ -4,6 +4,8 @@
 
 #include "net/spdy/buffered_spdy_framer.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "testing/platform_test.h"
@@ -242,7 +244,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
       framer.CreateSynStream(1,  // stream_id
                              0,  // associated_stream_id
                              1,  // priority
-                             CONTROL_FLAG_NONE, &headers));
+                             CONTROL_FLAG_NONE, headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
@@ -266,7 +268,7 @@ TEST_P(BufferedSpdyFramerTest, HeaderListTooLarge) {
       framer.CreateHeaders(1,  // stream_id
                            CONTROL_FLAG_NONE,
                            255,  // weight
-                           &headers));
+                           std::move(headers)));
   EXPECT_TRUE(control_frame);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
@@ -293,7 +295,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
   BufferedSpdyFramer framer(spdy_version());
   std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreateSynReply(1,  // stream_id
-                            CONTROL_FLAG_NONE, &headers));
+                            CONTROL_FLAG_NONE, headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
@@ -322,7 +324,7 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
       framer.CreateHeaders(1,  // stream_id
                            CONTROL_FLAG_NONE,
                            255,  // weight
-                           &headers));
+                           headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
@@ -345,7 +347,7 @@ TEST_P(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(spdy_version());
   std::unique_ptr<SpdySerializedFrame> control_frame(
-      framer.CreatePushPromise(1, 2, &headers));
+      framer.CreatePushPromise(1, 2, headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());

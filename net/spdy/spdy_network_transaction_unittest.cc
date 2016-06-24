@@ -1672,10 +1672,10 @@ TEST_P(SpdyNetworkTransactionTest, Put) {
   request.method = "PUT";
   request.url = GURL(GetDefaultUrl());
 
-  std::unique_ptr<SpdyHeaderBlock> put_headers(
+  SpdyHeaderBlock put_headers(
       spdy_util_.ConstructPutHeaderBlock(GetDefaultUrl(), 0));
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdySyn(1, *put_headers, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(put_headers), LOWEST, true));
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),
   };
@@ -1707,10 +1707,10 @@ TEST_P(SpdyNetworkTransactionTest, Head) {
   request.method = "HEAD";
   request.url = GURL(GetDefaultUrl());
 
-  std::unique_ptr<SpdyHeaderBlock> head_headers(
+  SpdyHeaderBlock head_headers(
       spdy_util_.ConstructHeadHeaderBlock(GetDefaultUrl(), 0));
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdySyn(1, *head_headers, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(head_headers), LOWEST, true));
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),
   };
@@ -1947,10 +1947,10 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
 
   // When request.upload_data_stream is NULL for post, content-length is
   // expected to be 0.
-  std::unique_ptr<SpdyHeaderBlock> req_block(
+  SpdyHeaderBlock req_block(
       spdy_util_.ConstructPostHeaderBlock(GetDefaultUrl(), 0));
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdySyn(1, *req_block, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(req_block), LOWEST, true));
 
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),
@@ -1992,10 +1992,10 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
 
   const uint64_t kContentLength = 0;
 
-  std::unique_ptr<SpdyHeaderBlock> req_block(
+  SpdyHeaderBlock req_block(
       spdy_util_.ConstructPostHeaderBlock(GetDefaultUrl(), kContentLength));
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdySyn(1, *req_block, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(req_block), LOWEST, true));
 
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),
@@ -2449,20 +2449,13 @@ TEST_P(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
 
 // Send a spdy request to www.example.org that gets redirected to www.foo.com.
 TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
-  std::unique_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
-  (*headers)["user-agent"] = "";
-  (*headers)["accept-encoding"] = "gzip, deflate";
-  std::unique_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructGetHeaderBlock("http://www.foo.com/index.php"));
-  (*headers2)["user-agent"] = "";
-  (*headers2)["accept-encoding"] = "gzip, deflate";
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  headers["user-agent"] = "";
+  headers["accept-encoding"] = "gzip, deflate";
 
   // Setup writes/reads to www.example.org
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> req2(
-      spdy_util_.ConstructSpdySyn(1, *headers2, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReplyRedirect(1));
   MockWrite writes[] = {
@@ -2472,21 +2465,29 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
     CreateMockRead(*resp, 2),
     MockRead(ASYNC, 0, 0, 3)  // EOF
   };
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
 
   // Setup writes/reads to www.foo.com
+  SpdyHeaderBlock headers2(
+      spdy_util_.ConstructGetHeaderBlock("http://www.foo.com/index.php"));
+  headers2["user-agent"] = "";
+  headers2["accept-encoding"] = "gzip, deflate";
+  std::unique_ptr<SpdySerializedFrame> req2(
+      spdy_util_.ConstructSpdySyn(1, std::move(headers2), LOWEST, true));
+  MockWrite writes2[] = {
+      CreateMockWrite(*req2, 1),
+  };
+
   std::unique_ptr<SpdySerializedFrame> resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   std::unique_ptr<SpdySerializedFrame> body2(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
-  MockWrite writes2[] = {
-    CreateMockWrite(*req2, 1),
-  };
   MockRead reads2[] = {
     CreateMockRead(*resp2, 2),
     CreateMockRead(*body2, 3),
     MockRead(ASYNC, 0, 0, 4)  // EOF
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
   SequencedSocketData data2(reads2, arraysize(reads2), writes2,
                             arraysize(writes2));
 
@@ -2524,14 +2525,13 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
 // Send a spdy request to www.example.org. Get a pushed stream that redirects to
 // www.foo.com.
 TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
-  std::unique_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
-  (*headers)["user-agent"] = "";
-  (*headers)["accept-encoding"] = "gzip, deflate";
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  headers["user-agent"] = "";
+  headers["accept-encoding"] = "gzip, deflate";
 
   // Setup writes/reads to www.example.org
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   std::unique_ptr<SpdySerializedFrame> rep(spdy_util_.ConstructSpdyPush(
@@ -2554,12 +2554,12 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
   };
 
   // Setup writes/reads to www.foo.com
-  std::unique_ptr<SpdyHeaderBlock> headers2(
+  SpdyHeaderBlock headers2(
       spdy_util_.ConstructGetHeaderBlock("http://www.foo.com/index.php"));
-  (*headers2)["user-agent"] = "";
-  (*headers2)["accept-encoding"] = "gzip, deflate";
+  headers2["user-agent"] = "";
+  headers2["accept-encoding"] = "gzip, deflate";
   std::unique_ptr<SpdySerializedFrame> req2(
-      spdy_util_.ConstructSpdySyn(1, *headers2, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(headers2), LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   std::unique_ptr<SpdySerializedFrame> body2(
@@ -3064,10 +3064,10 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
 
   std::unique_ptr<SpdySerializedFrame> stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdyHeaderBlock> incomplete_headers(new SpdyHeaderBlock());
-  (*incomplete_headers)[spdy_util_.GetStatusKey()] = "200 OK";
-  (*incomplete_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
-  (*incomplete_headers)["hello"] = "bye";
+  SpdyHeaderBlock incomplete_headers;
+  incomplete_headers[spdy_util_.GetStatusKey()] = "200 OK";
+  incomplete_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
+  incomplete_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream2_syn(
       spdy_util_.ConstructInitialSpdyPushFrame(std::move(incomplete_headers), 2,
                                                1));
@@ -3397,8 +3397,12 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
     AppendToHeaderBlock(test_cases[i].extra_headers[1],
                         test_cases[i].num_headers[1],
                         &reply_headers);
+    // Construct the expected header reply string before moving |reply_headers|.
+    std::string expected_reply =
+        spdy_test_util.ConstructSpdyReplyString(reply_headers);
+
     std::unique_ptr<SpdySerializedFrame> frame_reply(
-        spdy_test_util.ConstructSpdyReply(1, reply_headers));
+        spdy_test_util.ConstructSpdyReply(1, std::move(reply_headers)));
 
     std::unique_ptr<SpdySerializedFrame> body(
         spdy_test_util.ConstructSpdyBodyFrame(1, true));
@@ -3445,9 +3449,6 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
       lines.append("\n");
     }
 
-    // Construct the expected header reply string.
-    std::string expected_reply =
-        spdy_test_util.ConstructSpdyReplyString(reply_headers);
     EXPECT_EQ(expected_reply, lines) << i;
   }
 }
@@ -3492,7 +3493,7 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
     AppendToHeaderBlock(
         test_cases[i].headers, test_cases[i].num_headers, &reply_headers);
     std::unique_ptr<SpdySerializedFrame> resp(
-        spdy_test_util.ConstructSpdyReply(1, reply_headers));
+        spdy_test_util.ConstructSpdyReply(1, std::move(reply_headers)));
     MockRead reads[] = {
         CreateMockRead(*resp, 1), MockRead(ASYNC, 0, 3)  // EOF
     };
@@ -4252,9 +4253,9 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
   MockWrite writes[] = {CreateMockWrite(*req, 0)};
 
   // Construct the reply.
-  std::unique_ptr<SpdyHeaderBlock> reply_headers(new SpdyHeaderBlock());
-  (*reply_headers)[spdy_util_.GetStatusKey()] = "200";
-  (*reply_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
+  SpdyHeaderBlock reply_headers;
+  reply_headers[spdy_util_.GetStatusKey()] = "200";
+  reply_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   std::unique_ptr<SpdySerializedFrame> reply(
       spdy_util_.ConstructSpdyFrame(kSynReplyInfo, std::move(reply_headers)));
 
@@ -4400,9 +4401,9 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   };
 
   // Construct the reply.
-  std::unique_ptr<SpdyHeaderBlock> reply_headers(new SpdyHeaderBlock());
-  (*reply_headers)[spdy_util_.GetStatusKey()] = "200";
-  (*reply_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
+  SpdyHeaderBlock reply_headers;
+  reply_headers[spdy_util_.GetStatusKey()] = "200";
+  reply_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   std::unique_ptr<SpdySerializedFrame> reply(
       spdy_util_.ConstructSpdyFrame(kSynReplyInfo, std::move(reply_headers)));
 
@@ -4547,10 +4548,9 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 
   // First socket: HTTP/2 request rejected with HTTP_1_1_REQUIRED.
   const char* url = request.url.spec().c_str();
-  std::unique_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url));
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(url));
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   MockWrite writes0[] = {CreateMockWrite(*req, 0)};
   std::unique_ptr<SpdySerializedFrame> go_away(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
@@ -5169,9 +5169,9 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
   std::unique_ptr<SpdySerializedFrame> stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
 
-  std::unique_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
+  SpdyHeaderBlock initial_headers;
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
-                                 initial_headers.get());
+                                 &initial_headers);
   std::unique_ptr<SpdySerializedFrame> stream2_syn(
       spdy_util_.ConstructInitialSpdyPushFrame(std::move(initial_headers), 2,
                                                1));
@@ -5181,7 +5181,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
   late_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   late_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream2_headers(
-      spdy_util_.ConstructSpdyResponseHeaders(2, late_headers, false));
+      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(late_headers),
+                                              false));
 
   std::unique_ptr<SpdySerializedFrame> stream1_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
@@ -5228,9 +5229,9 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
 
   std::unique_ptr<SpdySerializedFrame> stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  std::unique_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
+  SpdyHeaderBlock initial_headers;
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
-                                 initial_headers.get());
+                                 &initial_headers);
   std::unique_ptr<SpdySerializedFrame> stream2_syn(
       spdy_util_.ConstructInitialSpdyPushFrame(std::move(initial_headers), 2,
                                                1));
@@ -5241,7 +5242,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   late_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   late_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream2_headers(
-      spdy_util_.ConstructSpdyResponseHeaders(2, late_headers, false));
+      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(late_headers),
+                                              false));
   const char kPushedData[] = "pushed";
   std::unique_ptr<SpdySerializedFrame> stream2_body(
       spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
@@ -5337,13 +5339,13 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   std::unique_ptr<SpdySerializedFrame> stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
 
-  std::unique_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
+  SpdyHeaderBlock initial_headers;
   if (spdy_util_.spdy_version() < HTTP2) {
     // In HTTP/2 PUSH_PROMISE headers won't show up in the response headers.
-    (*initial_headers)["alpha"] = "beta";
+    initial_headers["alpha"] = "beta";
   }
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
-                                 initial_headers.get());
+                                 &initial_headers);
   std::unique_ptr<SpdySerializedFrame> stream2_syn(
       spdy_util_.ConstructInitialSpdyPushFrame(std::move(initial_headers), 2,
                                                1));
@@ -5354,7 +5356,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   SpdyHeaderBlock middle_headers;
   middle_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream2_headers1(
-      spdy_util_.ConstructSpdyResponseHeaders(2, middle_headers, false));
+      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(middle_headers),
+                                              false));
 
   SpdyHeaderBlock late_headers;
   late_headers[spdy_util_.GetStatusKey()] = "200";
@@ -5363,7 +5366,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
     late_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   }
   std::unique_ptr<SpdySerializedFrame> stream2_headers2(
-      spdy_util_.ConstructSpdyResponseHeaders(2, late_headers, false));
+      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(late_headers),
+                                              false));
 
   const char kPushedData[] = "pushed";
   std::unique_ptr<SpdySerializedFrame> stream2_body(
@@ -5469,9 +5473,9 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
   std::unique_ptr<SpdySerializedFrame> stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
 
-  std::unique_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
+  SpdyHeaderBlock initial_headers;
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
-                                 initial_headers.get());
+                                 &initial_headers);
   std::unique_ptr<SpdySerializedFrame> stream2_syn(
       spdy_util_.ConstructInitialSpdyPushFrame(std::move(initial_headers), 2,
                                                1));
@@ -5482,7 +5486,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
   SpdyHeaderBlock middle_headers;
   middle_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream2_headers1(
-      spdy_util_.ConstructSpdyResponseHeaders(2, middle_headers, false));
+      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(middle_headers),
+                                              false));
 
   const char kPushedData[] = "pushed";
   std::unique_ptr<SpdySerializedFrame> stream2_body(
@@ -5572,7 +5577,8 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyWithHeaders) {
   SpdyHeaderBlock late_headers;
   late_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream1_headers(
-      spdy_util_.ConstructSpdyResponseHeaders(1, late_headers, false));
+      spdy_util_.ConstructSpdyResponseHeaders(1, std::move(late_headers),
+                                              false));
   std::unique_ptr<SpdySerializedFrame> stream1_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
@@ -5610,7 +5616,8 @@ TEST_P(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
   SpdyHeaderBlock late_headers;
   late_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream1_headers(
-      spdy_util_.ConstructSpdyResponseHeaders(1, late_headers, false));
+      spdy_util_.ConstructSpdyResponseHeaders(1, std::move(late_headers),
+                                              false));
   std::unique_ptr<SpdySerializedFrame> stream1_body2(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
@@ -7011,9 +7018,8 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, GoAwayOnOddPushStreamId) {
-  std::unique_ptr<SpdyHeaderBlock> push_headers(new SpdyHeaderBlock);
-  spdy_util_.AddUrlToHeaderBlock("http://www.example.org/a.dat",
-                                 push_headers.get());
+  SpdyHeaderBlock push_headers;
+  spdy_util_.AddUrlToHeaderBlock("http://www.example.org/a.dat", &push_headers);
   std::unique_ptr<SpdySerializedFrame> push(
       spdy_util_.ConstructInitialSpdyPushFrame(std::move(push_headers), 3, 1));
   MockRead reads[] = {CreateMockRead(*push, 1)};
@@ -7038,9 +7044,9 @@ TEST_P(SpdyNetworkTransactionTest,
        GoAwayOnPushStreamIdLesserOrEqualThanLastAccepted) {
   std::unique_ptr<SpdySerializedFrame> push_a(spdy_util_.ConstructSpdyPush(
       NULL, 0, 4, 1, GetDefaultUrlWithPath("/a.dat").c_str()));
-  std::unique_ptr<SpdyHeaderBlock> push_b_headers(new SpdyHeaderBlock);
+  SpdyHeaderBlock push_b_headers;
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/b.dat"),
-                                 push_b_headers.get());
+                                 &push_b_headers);
   std::unique_ptr<SpdySerializedFrame> push_b(
       spdy_util_.ConstructInitialSpdyPushFrame(std::move(push_b_headers), 2,
                                                1));
@@ -7076,11 +7082,10 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
   request.url = GURL(GetDefaultUrl());
   request.extra_headers.SetHeader(kKey, kValue);
 
-  std::unique_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
-  (*headers)[kKey] = kValue;
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  headers[kKey] = kValue;
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),
   };
@@ -7108,10 +7113,9 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
 
 // Regression test for https://crbug.com/535629: response header exceeds 16 kB.
 TEST_P(SpdyNetworkTransactionTest, LargeResponseHeader) {
-  std::unique_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),
   };

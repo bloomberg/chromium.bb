@@ -4,6 +4,8 @@
 
 #include "net/http/http_proxy_client_socket_pool.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
@@ -302,7 +304,7 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
   spdy_util_.MaybeAddVersionHeader(&resp_block);
 
   std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyReply(1, resp_block));
+      spdy_util_.ConstructSpdyReply(1, std::move(resp_block)));
   MockRead spdy_reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     MockRead(ASYNC, 0, 3)

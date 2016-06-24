@@ -4,6 +4,8 @@
 
 #include "net/quic/bidirectional_stream_quic_impl.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -456,7 +458,7 @@ class BidirectionalStreamQuicImplTest
         ConvertRequestPriorityToQuicPriority(request_priority);
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, stream_id_, kIncludeVersion, fin, priority,
-        request_headers_, spdy_headers_frame_length);
+        std::move(request_headers_), spdy_headers_frame_length);
   }
 
   std::unique_ptr<QuicReceivedPacket>
@@ -471,7 +473,7 @@ class BidirectionalStreamQuicImplTest
     std::unique_ptr<QuicReceivedPacket> packet(
         client_maker_.MakeRequestHeadersAndMultipleDataFramesPacket(
             packet_number, stream_id_, kIncludeVersion, fin, priority,
-            request_headers_, spdy_headers_frame_length, data));
+            std::move(request_headers_), spdy_headers_frame_length, data));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
              << QuicUtils::StringToHexASCIIDump(packet->AsStringPiece());
     return packet;
@@ -480,12 +482,12 @@ class BidirectionalStreamQuicImplTest
   std::unique_ptr<QuicReceivedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
-      const SpdyHeaderBlock& response_headers,
+      SpdyHeaderBlock response_headers,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
     return server_maker_.MakeResponseHeadersPacket(
-        packet_number, stream_id_, !kIncludeVersion, fin, response_headers,
-        spdy_headers_frame_length, offset);
+        packet_number, stream_id_, !kIncludeVersion, fin,
+        std::move(response_headers), spdy_headers_frame_length, offset);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructResponseTrailersPacket(
@@ -633,8 +635,8 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      &offset));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
@@ -751,8 +753,8 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      &offset));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
@@ -850,8 +852,8 @@ TEST_P(BidirectionalStreamQuicImplTest,
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      &offset));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
@@ -950,8 +952,8 @@ TEST_P(BidirectionalStreamQuicImplTest,
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      &offset));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
@@ -1039,8 +1041,8 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      &offset));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
@@ -1116,8 +1118,8 @@ TEST_P(BidirectionalStreamQuicImplTest, PutRequest) {
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      &offset));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
@@ -1187,8 +1189,9 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
-  ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length, 0));
+  ProcessPacket(
+      ConstructResponseHeadersPacket(2, !kFin, std::move(response_headers),
+                                     &spdy_response_headers_frame_length, 0));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
@@ -1309,8 +1312,8 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      &offset));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
@@ -1365,8 +1368,9 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterSendData) {
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
-  ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length, 0));
+  ProcessPacket(
+      ConstructResponseHeadersPacket(2, !kFin, std::move(response_headers),
+                                     &spdy_response_headers_frame_length, 0));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
@@ -1424,8 +1428,8 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      &offset));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
@@ -1480,8 +1484,9 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterReadData) {
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
-  ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length, 0));
+  ProcessPacket(
+      ConstructResponseHeadersPacket(2, !kFin, std::move(response_headers),
+                                     &spdy_response_headers_frame_length, 0));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
@@ -1533,8 +1538,8 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
 
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      nullptr));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, nullptr));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
@@ -1576,8 +1581,8 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
 
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      nullptr));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, nullptr));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
 
@@ -1629,8 +1634,8 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   QuicStreamOffset offset = 0;
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
-      2, !kFin, response_headers, &spdy_response_headers_frame_length,
-      &offset));
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
 

@@ -1093,7 +1093,7 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateSynStream(
     SpdyStreamId stream_id,
     RequestPriority priority,
     SpdyControlFlags flags,
-    const SpdyHeaderBlock& block) {
+    SpdyHeaderBlock block) {
   ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
   CHECK(it != active_streams_.end());
   CHECK_EQ(it->second.stream->stream_id(), stream_id);
@@ -1105,17 +1105,7 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateSynStream(
       ConvertRequestPriorityToSpdyPriority(priority, GetProtocolVersion());
 
   std::unique_ptr<SpdySerializedFrame> syn_frame;
-  // TODO(hkhalil): Avoid copy of |block|.
   if (GetProtocolVersion() <= SPDY3) {
-    SpdySynStreamIR syn_stream(stream_id);
-    syn_stream.set_associated_to_stream_id(0);
-    syn_stream.set_priority(spdy_priority);
-    syn_stream.set_fin((flags & CONTROL_FLAG_FIN) != 0);
-    syn_stream.set_unidirectional((flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
-    syn_stream.set_header_block(block);
-    syn_frame.reset(new SpdySerializedFrame(
-        buffered_spdy_framer_->SerializeFrame(syn_stream)));
-
     if (net_log().IsCapturing()) {
       net_log().AddEvent(NetLog::TYPE_HTTP2_SESSION_SYN_STREAM,
                          base::Bind(&NetLogSpdySynStreamSentCallback, &block,
@@ -1123,33 +1113,42 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateSynStream(
                                     (flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0,
                                     spdy_priority, stream_id));
     }
+
+    SpdySynStreamIR syn_stream(stream_id, std::move(block));
+    syn_stream.set_associated_to_stream_id(0);
+    syn_stream.set_priority(spdy_priority);
+    syn_stream.set_fin((flags & CONTROL_FLAG_FIN) != 0);
+    syn_stream.set_unidirectional((flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
+    syn_frame.reset(new SpdySerializedFrame(
+        buffered_spdy_framer_->SerializeFrame(syn_stream)));
+
   } else {
-    SpdyHeadersIR headers(stream_id);
-    headers.set_weight(Spdy3PriorityToHttp2Weight(spdy_priority));
-    headers.set_has_priority(true);
+    bool has_priority = true;
+    int weight = Spdy3PriorityToHttp2Weight(spdy_priority);
+    SpdyStreamId dependent_stream_id = 0;
+    bool exclusive = false;
 
     if (priority_dependencies_enabled_) {
-      SpdyStreamId dependent_stream_id = 0;
-      bool exclusive = false;
       priority_dependency_state_.OnStreamSynSent(
           stream_id, spdy_priority, &dependent_stream_id, &exclusive);
-      headers.set_parent_stream_id(dependent_stream_id);
-      headers.set_exclusive(exclusive);
     }
-
-    headers.set_fin((flags & CONTROL_FLAG_FIN) != 0);
-    headers.set_header_block(block);
-    syn_frame.reset(new SpdySerializedFrame(
-        buffered_spdy_framer_->SerializeFrame(headers)));
 
     if (net_log().IsCapturing()) {
       net_log().AddEvent(
           NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS,
           base::Bind(&NetLogSpdyHeadersSentCallback, &block,
-                     (flags & CONTROL_FLAG_FIN) != 0, stream_id,
-                     headers.has_priority(), headers.weight(),
-                     headers.parent_stream_id(), headers.exclusive()));
+                     (flags & CONTROL_FLAG_FIN) != 0, stream_id, has_priority,
+                     weight, dependent_stream_id, exclusive));
     }
+
+    SpdyHeadersIR headers(stream_id, std::move(block));
+    headers.set_has_priority(has_priority);
+    headers.set_weight(weight);
+    headers.set_parent_stream_id(dependent_stream_id);
+    headers.set_exclusive(exclusive);
+    headers.set_fin((flags & CONTROL_FLAG_FIN) != 0);
+    syn_frame.reset(new SpdySerializedFrame(
+        buffered_spdy_framer_->SerializeFrame(headers)));
   }
 
   streams_initiated_count_++;

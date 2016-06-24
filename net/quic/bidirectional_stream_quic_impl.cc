@@ -4,6 +4,8 @@
 
 #include "net/quic/bidirectional_stream_quic_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -96,7 +98,7 @@ void BidirectionalStreamQuicImpl::SendRequestHeaders() {
                                    http_request_info.extra_headers, HTTP2, true,
                                    &headers);
   size_t headers_bytes_sent = stream_->WriteHeaders(
-      headers, request_info_->end_stream_on_headers, nullptr);
+      std::move(headers), request_info_->end_stream_on_headers, nullptr);
   headers_bytes_sent_ += headers_bytes_sent;
   has_sent_headers_ = true;
 }

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -378,7 +379,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         ConvertRequestPriorityToQuicPriority(request_priority);
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, stream_id, should_include_version, fin, priority,
-        request_headers_, spdy_headers_frame_length);
+        std::move(request_headers_), spdy_headers_frame_length);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructRequestHeadersPacket(
@@ -397,8 +398,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       bool fin,
       size_t* spdy_headers_frame_length) {
     return server_maker_.MakeResponseHeadersPacket(
-        packet_number, stream_id, !kIncludeVersion, fin, response_headers_,
-        spdy_headers_frame_length, &response_offset_);
+        packet_number, stream_id, !kIncludeVersion, fin,
+        std::move(response_headers_), spdy_headers_frame_length,
+        &response_offset_);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructResponseHeadersPacket(
@@ -415,18 +417,18 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
     return server_maker_.MakeResponseHeadersPacket(
-        packet_number, stream_id_, !kIncludeVersion, fin, response_headers_,
-        spdy_headers_frame_length, offset);
+        packet_number, stream_id_, !kIncludeVersion, fin,
+        std::move(response_headers_), spdy_headers_frame_length, offset);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructResponseTrailersPacket(
       QuicPacketNumber packet_number,
       bool fin,
-      const SpdyHeaderBlock& trailers,
+      SpdyHeaderBlock trailers,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
     return server_maker_.MakeResponseHeadersPacket(
-        packet_number, stream_id_, !kIncludeVersion, fin, trailers,
+        packet_number, stream_id_, !kIncludeVersion, fin, std::move(trailers),
         spdy_headers_frame_length, offset);
   }
 
@@ -669,7 +671,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   trailers["foo"] = "bar";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   ProcessPacket(ConstructResponseTrailersPacket(
-      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+      4, kFin, std::move(trailers), &spdy_trailers_frame_length, &offset));
 
   // Make sure trailers are processed.
   base::RunLoop().RunUntilIdle();
@@ -733,13 +735,11 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
 
   EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
 
-  SpdyHeaderBlock headers;
-  headers[":status"] = "200 OK";
-  headers[":version"] = "HTTP/1.1";
-  headers["content-type"] = "text/plain";
-  headers["big6"] = string(1000, 'x');  // Lots of x's.
+  response_headers_[":status"] = "200 OK";
+  response_headers_[":version"] = "HTTP/1.1";
+  response_headers_["content-type"] = "text/plain";
+  response_headers_["big6"] = string(1000, 'x');  // Lots of x's.
 
-  response_headers_ = headers;
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
       2, kFin, &spdy_response_headers_frame_length));

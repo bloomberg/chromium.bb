@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_http_stream.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
@@ -678,11 +680,11 @@ int QuicHttpStream::DoSendHeaders() {
   bool has_upload_data = request_body_stream_ != nullptr;
 
   next_state_ = STATE_SEND_HEADERS_COMPLETE;
-  size_t frame_len =
-      stream_->WriteHeaders(request_headers_, !has_upload_data, nullptr);
+  size_t frame_len = stream_->WriteHeaders(std::move(request_headers_),
+                                           !has_upload_data, nullptr);
   headers_bytes_sent_ += frame_len;
 
-  request_headers_.clear();
+  request_headers_ = SpdyHeaderBlock();
   return static_cast<int>(frame_len);
 }
 

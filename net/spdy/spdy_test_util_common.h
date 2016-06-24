@@ -296,26 +296,20 @@ class SpdyTestUtil {
   void AddUrlToHeaderBlock(base::StringPiece url,
                            SpdyHeaderBlock* headers) const;
 
-  std::unique_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(
-      base::StringPiece url) const;
-  std::unique_ptr<SpdyHeaderBlock> ConstructGetHeaderBlockForProxy(
-      base::StringPiece url) const;
-  std::unique_ptr<SpdyHeaderBlock> ConstructHeadHeaderBlock(
-      base::StringPiece url,
-      int64_t content_length) const;
-  std::unique_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(
-      base::StringPiece url,
-      int64_t content_length) const;
-  std::unique_ptr<SpdyHeaderBlock> ConstructPutHeaderBlock(
-      base::StringPiece url,
-      int64_t content_length) const;
+  SpdyHeaderBlock ConstructGetHeaderBlock(base::StringPiece url) const;
+  SpdyHeaderBlock ConstructGetHeaderBlockForProxy(base::StringPiece url) const;
+  SpdyHeaderBlock ConstructHeadHeaderBlock(base::StringPiece url,
+                                           int64_t content_length) const;
+  SpdyHeaderBlock ConstructPostHeaderBlock(base::StringPiece url,
+                                           int64_t content_length) const;
+  SpdyHeaderBlock ConstructPutHeaderBlock(base::StringPiece url,
+                                          int64_t content_length) const;
 
   // Construct a SPDY frame.  If it is a SYN_STREAM or SYN_REPLY frame (as
   // specified in header_info.kind), the provided headers are included in the
   // frame.
-  SpdySerializedFrame* ConstructSpdyFrame(
-      const SpdyHeaderInfo& header_info,
-      std::unique_ptr<SpdyHeaderBlock> headers) const;
+  SpdySerializedFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
+                                          SpdyHeaderBlock headers) const;
 
   // Construct a SPDY frame.  If it is a SYN_STREAM or SYN_REPLY frame (as
   // specified in header_info.kind), the headers provided in extra_headers and
@@ -411,10 +405,9 @@ class SpdyTestUtil {
                                          const char* status,
                                          const char* location);
 
-  SpdySerializedFrame* ConstructInitialSpdyPushFrame(
-      std::unique_ptr<SpdyHeaderBlock> headers,
-      int stream_id,
-      int associated_stream_id);
+  SpdySerializedFrame* ConstructInitialSpdyPushFrame(SpdyHeaderBlock headers,
+                                                     int stream_id,
+                                                     int associated_stream_id);
 
   SpdySerializedFrame* ConstructSpdyPushHeaders(
       int stream_id,
@@ -423,15 +416,14 @@ class SpdyTestUtil {
 
   // Constructs a SPDY header frame with the request header compression context
   // with END_STREAM flag set to |fin|.
-  SpdySerializedFrame* ConstructSpdyResponseHeaders(
-      int stream_id,
-      const SpdyHeaderBlock& headers,
-      bool fin);
+  SpdySerializedFrame* ConstructSpdyResponseHeaders(int stream_id,
+                                                    SpdyHeaderBlock headers,
+                                                    bool fin);
 
   // Construct a SPDY syn (HEADERS or SYN_STREAM, depending on protocol
   // version) carrying exactly the given headers and priority.
   SpdySerializedFrame* ConstructSpdySyn(int stream_id,
-                                        const SpdyHeaderBlock& headers,
+                                        SpdyHeaderBlock headers,
                                         RequestPriority priority,
                                         bool fin);
 
@@ -439,7 +431,7 @@ class SpdyTestUtil {
   // version) carrying exactly the given headers, and the default priority
   // (or no priority, depending on protocol version).
   SpdySerializedFrame* ConstructSpdyReply(int stream_id,
-                                          const SpdyHeaderBlock& headers);
+                                          SpdyHeaderBlock headers);
 
   // Constructs a standard SPDY SYN_REPLY frame to match the SPDY GET.
   // |extra_headers| are the extra header-value pairs, which typically
@@ -548,10 +540,9 @@ class SpdyTestUtil {
  private:
   // |content_length| may be NULL, in which case the content-length
   // header will be omitted.
-  std::unique_ptr<SpdyHeaderBlock> ConstructHeaderBlock(
-      base::StringPiece method,
-      base::StringPiece url,
-      int64_t* content_length) const;
+  SpdyHeaderBlock ConstructHeaderBlock(base::StringPiece method,
+                                       base::StringPiece url,
+                                       int64_t* content_length) const;
 
   const NextProto protocol_;
   const SpdyMajorVersion spdy_version_;

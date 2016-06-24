@@ -5,6 +5,7 @@
 #include "net/http/bidirectional_stream.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -523,7 +524,7 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   std::unique_ptr<SpdySerializedFrame> response_trailers(
-      spdy_util_.ConstructSpdyResponseHeaders(1, trailers, true));
+      spdy_util_.ConstructSpdyResponseHeaders(1, std::move(trailers), true));
 
   MockRead reads[] = {
       CreateMockRead(*resp, 1),
@@ -1013,7 +1014,7 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
   SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   std::unique_ptr<SpdySerializedFrame> response_trailers(
-      spdy_util_.ConstructSpdyResponseHeaders(1, trailers, true));
+      spdy_util_.ConstructSpdyResponseHeaders(1, std::move(trailers), true));
 
   MockRead reads[] = {
       CreateMockRead(*resp, 1),
@@ -1418,7 +1419,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
   SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   std::unique_ptr<SpdySerializedFrame> response_trailers(
-      spdy_util_.ConstructSpdyResponseHeaders(1, trailers, true));
+      spdy_util_.ConstructSpdyResponseHeaders(1, std::move(trailers), true));
 
   MockRead reads[] = {
       CreateMockRead(*resp, 1), CreateMockRead(*response_body_frame, 2),

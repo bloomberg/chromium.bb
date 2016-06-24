@@ -4,6 +4,8 @@
 
 #include "net/spdy/spdy_proxy_client_socket.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -338,7 +340,8 @@ void SpdyProxyClientSocketTest::PopulateConnectReplyIR(SpdyHeaderBlock* block,
 SpdySerializedFrame* SpdyProxyClientSocketTest::ConstructConnectRequestFrame() {
   SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
-  return spdy_util_.ConstructSpdySyn(kStreamId, block, LOWEST, false);
+  return spdy_util_.ConstructSpdySyn(kStreamId, std::move(block), LOWEST,
+                                     false);
 }
 
 // Constructs a SPDY SYN_STREAM frame for a CONNECT request which includes
@@ -348,15 +351,15 @@ SpdyProxyClientSocketTest::ConstructConnectAuthRequestFrame() {
   SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
   block["proxy-authorization"] = "Basic Zm9vOmJhcg==";
-  return spdy_util_.ConstructSpdySyn(kStreamId, block, LOWEST, false);
+  return spdy_util_.ConstructSpdySyn(kStreamId, std::move(block), LOWEST,
+                                     false);
 }
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT.
 SpdySerializedFrame* SpdyProxyClientSocketTest::ConstructConnectReplyFrame() {
   SpdyHeaderBlock block;
   PopulateConnectReplyIR(&block, "200");
-  SpdySynReplyIR reply_ir(kStreamId);
-  return spdy_util_.ConstructSpdyReply(kStreamId, block);
+  return spdy_util_.ConstructSpdyReply(kStreamId, std::move(block));
 }
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT,
@@ -366,7 +369,7 @@ SpdyProxyClientSocketTest::ConstructConnectAuthReplyFrame() {
   SpdyHeaderBlock block;
   PopulateConnectReplyIR(&block, "407");
   block["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
-  return spdy_util_.ConstructSpdyReply(kStreamId, block);
+  return spdy_util_.ConstructSpdyReply(kStreamId, std::move(block));
 }
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 302 redirect.
@@ -376,7 +379,7 @@ SpdyProxyClientSocketTest::ConstructConnectRedirectReplyFrame() {
   PopulateConnectReplyIR(&block, "302");
   block["location"] = kRedirectUrl;
   block["set-cookie"] = "foo=bar";
-  return spdy_util_.ConstructSpdyReply(kStreamId, block);
+  return spdy_util_.ConstructSpdyReply(kStreamId, std::move(block));
 }
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 500 error.
@@ -384,7 +387,7 @@ SpdySerializedFrame*
 SpdyProxyClientSocketTest::ConstructConnectErrorReplyFrame() {
   SpdyHeaderBlock block;
   PopulateConnectReplyIR(&block, "500");
-  return spdy_util_.ConstructSpdyReply(kStreamId, block);
+  return spdy_util_.ConstructSpdyReply(kStreamId, std::move(block));
 }
 
 SpdySerializedFrame* SpdyProxyClientSocketTest::ConstructBodyFrame(

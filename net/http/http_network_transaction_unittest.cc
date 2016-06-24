@@ -5248,10 +5248,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   request2.load_flags = 0;
 
   // http://www.example.org/
-  std::unique_ptr<SpdyHeaderBlock> headers(
+  SpdyHeaderBlock headers(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://www.example.org/"));
   std::unique_ptr<SpdySerializedFrame> get1(
-      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> get_resp1(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   std::unique_ptr<SpdySerializedFrame> body1(
@@ -5259,10 +5259,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   spdy_util_.UpdateWithStreamDestruction(1);
 
   // http://mail.example.org/
-  std::unique_ptr<SpdyHeaderBlock> headers2(
+  SpdyHeaderBlock headers2(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://mail.example.org/"));
   std::unique_ptr<SpdySerializedFrame> get2(
-      spdy_util_.ConstructSpdySyn(3, *headers2, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(3, std::move(headers2), LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> get_resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
   std::unique_ptr<SpdySerializedFrame> body2(
@@ -14023,10 +14023,10 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   SpdyTestUtil spdy_util_secure(GetProtocol(), GetDependenciesFromPriority());
 
   // SPDY GET for HTTP URL (through SPDY proxy)
-  std::unique_ptr<SpdyHeaderBlock> headers(
+  SpdyHeaderBlock headers(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://www.example.org/"));
   std::unique_ptr<SpdySerializedFrame> req1(
-      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, true));
+      spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
 
   MockWrite writes1[] = {
     CreateMockWrite(*req1, 0),
