@@ -1479,7 +1479,7 @@ config("symbols") {
       ldflags = [ "/DEBUG" ]
     }
   } else {
-    if (is_ios) {
+    if (is_mac || is_ios) {
       cflags = [ "-gdwarf-2" ]
     } else {
       cflags = [ "-g2" ]
