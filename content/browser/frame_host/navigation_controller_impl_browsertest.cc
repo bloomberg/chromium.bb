@@ -132,6 +132,69 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
   EXPECT_EQ(data_url, reload_entry->GetURL());
 }
 
+// Verify which page loads when going back to a LoadDataWithBaseURL entry.
+// See https://crbug.com/612196.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       LoadDataWithBaseURLTitleAfterBack) {
+  const GURL base_url("http://baseurl");
+  const GURL history_url(
+      embedded_test_server()->GetURL("/navigation_controller/form.html"));
+  const std::string data1 = "<html><title>One</title><body>foo</body></html>";
+  const GURL data_url1 = GURL("data:text/html;charset=utf-8," + data1);
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  {
+    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+    shell()->LoadDataWithBaseURL(history_url, data1, base_url);
+    same_tab_observer.Wait();
+  }
+
+  // Verify the last committed NavigationEntry.
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+  EXPECT_EQ(history_url, entry->GetVirtualURL());
+  EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
+  EXPECT_EQ(data_url1, entry->GetURL());
+
+  // Navigate again to a different data URL.
+  const std::string data2 = "<html><title>Two</title><body>bar</body></html>";
+  const GURL data_url2 = GURL("data:text/html;charset=utf-8," + data2);
+  {
+    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+    // Load data, not loaddatawithbaseurl.
+    EXPECT_TRUE(NavigateToURL(shell(), data_url2));
+    same_tab_observer.Wait();
+  }
+
+  // Go back.
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  controller.GoBack();
+  back_load_observer.Wait();
+
+  // Check title.
+  // TODO(creis): The default navigation path incorrectly loads the history_url
+  // and claims it loaded the data_url (due to a bug where GoToEntry does not
+  // handle this case).  This is confusing.  When using subframe
+  // FrameNavigationEntries, we load the data URL when going back, as expected.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    EXPECT_EQ("One", base::UTF16ToUTF8(shell()->web_contents()->GetTitle()));
+  else
+    EXPECT_EQ("form", base::UTF16ToUTF8(shell()->web_contents()->GetTitle()));
+
+  // Verify the last committed NavigationEntry.
+  NavigationEntryImpl* back_entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(base_url, back_entry->GetBaseURLForDataURL());
+  EXPECT_EQ(history_url, back_entry->GetVirtualURL());
+  EXPECT_EQ(history_url, back_entry->GetHistoryURLForDataURL());
+  EXPECT_EQ(data_url1, back_entry->GetOriginalRequestURL());
+  EXPECT_EQ(data_url1, back_entry->GetURL());
+
+  EXPECT_EQ(data_url1,
+            shell()->web_contents()->GetMainFrame()->GetLastCommittedURL());
+}
+
 #if defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        LoadDataWithInvalidBaseURL) {
