@@ -123,6 +123,7 @@ class ArcAuthService : public ArcService,
 
   // ArcBridgeService::Observer:
   void OnAuthInstanceReady() override;
+  void OnBridgeStopped() override;
 
   // AuthHost:
   // For security reason this code can be used only once and exists for specific
@@ -210,6 +211,7 @@ class ArcAuthService : public ArcService,
   bool context_prepared_ = false;
   UIPage ui_page_ = UIPage::NO_PAGE;
   base::string16 ui_page_status_;
+  bool clear_required_ = false;
 
   ProfileOAuth2TokenService* token_service_;
   std::string account_id_;

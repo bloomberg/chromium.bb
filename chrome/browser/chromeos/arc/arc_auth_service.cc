@@ -30,11 +30,15 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -181,6 +185,15 @@ void ArcAuthService::OnAuthInstanceReady() {
       binding_.CreateInterfacePtrAndBind());
 }
 
+void ArcAuthService::OnBridgeStopped() {
+  if (!clear_required_)
+    return;
+  clear_required_ = false;
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveArcData(
+      cryptohome::Identification(
+          multi_user_util::GetAccountIdFromProfile(profile_)));
+}
+
 std::string ArcAuthService::GetAndResetAuthCode() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   std::string auth_code;
@@ -257,6 +270,8 @@ void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
 
   if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+  if (reason == arc::mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL)
+    clear_required_ = true;
   ShutdownBridgeAndShowUI(UIPage::ERROR,
                           l10n_util::GetStringUTF16(error_message_id));
 }
