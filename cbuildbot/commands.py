@@ -63,6 +63,9 @@ _SWARMING_EXPIRATION = 20 * 60
 _RUN_SUITE_PATH = '/usr/local/autotest/site_utils/run_suite.py'
 _ABORT_SUITE_PATH = '/usr/local/autotest/site_utils/abort_suite.py'
 _MAX_HWTEST_CMD_RETRY = 10
+# Be very careful about retrying suite creation command as
+# it may create multiple suites.
+_MAX_HWTEST_START_CMD_RETRY = 1
 # For json_dump json dictionary marker
 JSON_DICT_START = '#JSON_START#'
 JSON_DICT_END = '#JSON_END#'
@@ -1094,8 +1097,10 @@ def _HWTestCreate(cmd, debug=False, **kwargs):
     logging.info('RunHWTestSuite would run: %s',
                  cros_build_lib.CmdToStr(start_cmd))
   else:
-    result = swarming_lib.RunSwarmingCommand(
-        start_cmd, capture_output=True, combine_stdout_stderr=True,
+    result = swarming_lib.RunSwarmingCommandWithRetries(
+        max_retry=_MAX_HWTEST_START_CMD_RETRY,
+        error_check=swarming_lib.SwarmingRetriableErrorCheck,
+        cmd=start_cmd, capture_output=True, combine_stdout_stderr=True,
         **kwargs)
     # If the command succeeds, result.task_summary_json
     # should have the right content.

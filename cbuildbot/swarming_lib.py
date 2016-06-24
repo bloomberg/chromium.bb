@@ -103,9 +103,12 @@ def SwarmingRetriableErrorCheck(exception):
     True if retriable, otherwise False.
   """
   if not isinstance(exception, cros_build_lib.RunCommandError):
+    logging.warning('Exception is not retriable: %s', str(exception))
     return False
   result = exception.result
   if not isinstance(result, SwarmingCommandResult):
+    logging.warning('Exception is not retriable as the result '
+                    'is not a SwarmingCommandResult: %s', str(result))
     return False
   if result.task_summary_json:
     try:
@@ -122,6 +125,9 @@ def SwarmingRetriableErrorCheck(exception):
           "Error: %s. Swarming summary json: %s",
           str(exception), str(e),
           json.dumps(result.task_summary_json, indent=2))
+      return False
+
+  logging.warning('Exception is not retriable %s', str(exception))
   return False
 
 
