@@ -6725,4 +6725,19 @@ All users must sign out to continue.
   <message name="IDS_FLAGS_ENABLE_IME_MENU_DESCRIPTION" desc="Description of the about: flag for enabling opt-in IME menu.">
     Enable access to the new IME menu in the Language Settings page.
   </message>
+  <message name="IDS_LOW_DISK_NOTIFICATION_TITLE" desc="Title of the notification warning users that they are low on disk space.">
+    Device is low on disk space
+  </message>
+  <message name="IDS_LOW_DISK_NOTIFICATION_MESSAGE" desc="Notification text warning users that they are low on disk space.">
+    Free up disk space or select data may be automatically deleted
+  </message>
+  <message name="IDS_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE" desc="Title of the notification warning users that they are critically low on disk space.">
+    Device disk space critically low
+  </message>
+  <message name="IDS_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE" desc="Notification text warning users that they are critically low on disk space.">
+    Free up disk space or device will become unresponsive.
+  </message>
+  <message name="IDS_LOW_DISK_NOTIFICATION_BUTTON" desc="Button on the low disk notification to open storage management.">
+    Manage storage
+  </message>
 </grit-part>

@@ -39,6 +39,9 @@ const char* kAlwaysShownSystemNotifierIds[] = {
 const char* kAshSystemNotifiers[] = {
   kNotifierBluetooth,
   kNotifierDisplayResolutionChange,
+#if defined(OS_CHROMEOS)
+  kNotifierDisk,
+#endif
   kNotifierLocale,
   kNotifierMultiProfileFirstRun,
 #if defined(OS_CHROMEOS)
@@ -73,6 +76,7 @@ bool MatchSystemNotifierId(const message_center::NotifierId& notifier_id,
 const char kNotifierBattery[] = "ash.battery";
 const char kNotifierBluetooth[] = "ash.bluetooth";
 const char kNotifierDeprecatedAccelerator[] = "ash.accelerator-controller";
+const char kNotifierDisk[] = "ash.disk";
 const char kNotifierDisplay[] = "ash.display";
 const char kNotifierDisplayError[] = "ash.display.error";
 const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
