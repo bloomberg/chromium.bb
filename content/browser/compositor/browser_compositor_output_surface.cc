@@ -31,8 +31,8 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
       synthetic_begin_frame_source_(begin_frame_source),
       reflector_(nullptr),
       use_begin_frame_scheduling_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              cc::switches::kEnableBeginFrameScheduling)) {
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              cc::switches::kDisableBeginFrameScheduling)) {
   overlay_candidate_validator_ = std::move(overlay_candidate_validator);
   Initialize();
 }
@@ -46,8 +46,8 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
       synthetic_begin_frame_source_(begin_frame_source),
       reflector_(nullptr),
       use_begin_frame_scheduling_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              cc::switches::kEnableBeginFrameScheduling)) {
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              cc::switches::kDisableBeginFrameScheduling)) {
   Initialize();
 }
 
