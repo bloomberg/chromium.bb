@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("google_toolbox_for_mac_config") {
+config("google_toolbox_for_mac_public_config") {
   include_dirs = [
     ".",
     "src",
@@ -10,11 +10,6 @@ config("google_toolbox_for_mac_config") {
     "src/DebugUtils",
     "src/Foundation",
   ]
-
-  # TODO(crbug.com/569158): Suppresses warnings that are treated as errors
-  # when minimum iOS version support is increased to iOS 9 and up.
-  # This should be removed once all deprecation violations have been fixed.
-  cflags = [ "-Wno-deprecated-declarations" ]
 }
 
 component("google_toolbox_for_mac") {
@@ -40,11 +35,8 @@ component("google_toolbox_for_mac") {
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":google_toolbox_for_mac_config",
-    "//build/config/compiler:no_chromium_code",
-  ]
-  public_configs = [ ":google_toolbox_for_mac_config" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+  public_configs = [ ":google_toolbox_for_mac_public_config" ]
 
   if (!is_ios) {
     sources += [
@@ -192,6 +184,11 @@ component("google_toolbox_for_mac") {
       "src/iPhone/GTMUILocalizer.h",
       "src/iPhone/GTMUILocalizer.m",
     ]
+
+    # TODO(crbug.com/569158): Suppresses warnings that are treated as errors
+    # when minimum iOS version support is increased to iOS 9 and up.
+    # This should be removed once all deprecation violations have been fixed.
+    cflags = [ "-Wno-deprecated-declarations" ]
   }
 
   if (is_component_build) {

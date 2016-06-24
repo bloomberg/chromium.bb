@@ -471,8 +471,6 @@ target(chrome_browser_target_type, "ui") {
       "Carbon.framework",
       "Quartz.framework",
     ]
-    configs +=
-        [ "//third_party/google_toolbox_for_mac:google_toolbox_for_mac_config" ]
   } else {  # non-Mac.
     sources += rebase_path(gypi_values.chrome_browser_ui_non_mac_sources,
                            ".",
