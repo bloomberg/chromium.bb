@@ -44,7 +44,7 @@ crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 
 crbug.com/622898 fast/repaint/window-resize-background-image-fixed-centered.html [ Failure Pass ]
 crbug.com/622898 fast/repaint/window-resize-background-image-fixed-centered-composited.html [ Failure Pass ]
-
+crbug.com/622898 fast/repaint/window-resize-background-image-non-fixed.html [ NeedsManualRebaseline ]
 crbug.com/600008 fast/dom/shadow/focus-controller-recursion-crash.html [ NeedsManualRebaseline ]
 
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
