@@ -259,8 +259,8 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             assertEquals(page2Title, getTitleOnUiThread(mAwContents));
 
             HistoryUtils.goBackSync(getInstrumentation(), mWebContents, onPageFinishedHelper);
-            // The title of the 'about.html' specified via historyUrl.
-            assertEquals(CommonResources.ABOUT_TITLE, getTitleOnUiThread(mAwContents));
+            // The title of first page loaded with loadDataWithBaseUrl.
+            assertEquals(page1Title, getTitleOnUiThread(mAwContents));
         } finally {
             webServer.shutdown();
         }
