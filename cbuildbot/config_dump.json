@@ -139,7 +139,8 @@
         "EXTERNAL_MANIFEST_VERSIONS_PATH": "manifest-versions",
         "EXTERNAL_REMOTES": [
             "cros",
-            "chromium"
+            "chromium",
+            "aosp"
         ],
         "GERRIT_HOSTS": {
             "aosp": "android-review.googlesource.com",
