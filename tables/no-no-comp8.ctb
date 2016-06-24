@@ -3,13 +3,10 @@
 #
 # Based on the braille contraction modules in BRLTTY
 #
-# Original copyright (C) 1995-2004 by The BRLTTY Team. All rights reserved.
-#
-# liblouis copyright 2004 by 
-# ViewPlus Technologies, inc.,  www.viewplustech.com .
-# and
-# Computers to Help People, Inc., www.chpi.org  
-# All rights reserved.
+# Copyright (C) 1995-2004 The BRLTTY Team
+# Copyright (C) 2004-2006 ViewPlus Technologies, Inc. www.viewplus.com
+# Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
+# Copyright (C) 2015 NLB Norwegian library of talking books and braille, http://www.nlb.no/
 #
 # liblouis  comes with ABSOLUTELY NO WARRANTY.
 #
