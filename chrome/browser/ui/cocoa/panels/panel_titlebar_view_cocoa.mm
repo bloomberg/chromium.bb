@@ -12,8 +12,6 @@
 #import "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
-#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #import "ui/base/cocoa/nsview_additions.h"

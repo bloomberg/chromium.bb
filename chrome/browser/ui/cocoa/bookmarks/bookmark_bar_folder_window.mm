@@ -8,7 +8,6 @@
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
-#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
 
 using bookmarks::kBookmarkBarMenuCornerRadius;
@@ -49,11 +48,9 @@ using bookmarks::kBookmarkBarMenuCornerRadius;
 - (void)drawRect:(NSRect)rect {
   // Like NSMenus, only the bottom corners are rounded.
   NSBezierPath* bezier =
-      [NSBezierPath gtm_bezierPathWithRoundRect:[self bounds]
-                            topLeftCornerRadius:kBookmarkBarMenuCornerRadius
-                           topRightCornerRadius:kBookmarkBarMenuCornerRadius
-                         bottomLeftCornerRadius:kBookmarkBarMenuCornerRadius
-                        bottomRightCornerRadius:kBookmarkBarMenuCornerRadius];
+      [NSBezierPath bezierPathWithRoundedRect:[self bounds]
+                                      xRadius:kBookmarkBarMenuCornerRadius
+                                      yRadius:kBookmarkBarMenuCornerRadius];
   NSColor* startColor = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
   NSColor* midColor =
       [startColor gtm_colorAdjustedFor:GTMColorationLightMidtone faded:YES];
