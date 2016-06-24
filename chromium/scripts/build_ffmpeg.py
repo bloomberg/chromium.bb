@@ -35,7 +35,7 @@ BRANDINGS = [
 USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]
 
 Valid combinations are android     [ia32|x64|mipsel|mips64el|arm-neon|arm64]
-                       linux       [ia32|x64|mipsel|arm|arm-neon|arm64]
+                       linux       [ia32|x64|mipsel|mips64el|arm|arm-neon|arm64]
                        linux-noasm [x64]
                        mac         [x64]
                        win         [ia32|x64]
@@ -51,6 +51,9 @@ Platform specific build notes:
   linux mipsel:
     Script must be run inside of ChromeOS SimpleChrome setup:
         cros chrome-sdk --board=mipsel-o32-generic --use-external-config
+
+  linux mips64el:
+    Script can run on a normal Ubuntu with mips64el cross-toolchain in $PATH.
 
   linux arm/arm-neon:
     Script must be run inside of ChromeOS SimpleChrome setup:
@@ -464,14 +467,30 @@ def main(argv):
           '--disable-mipsdsp',
           '--disable-mipsdspr2',
       ])
-    elif target_arch == 'mips64el' and target_os == "android":
-      configure_flags['Common'].extend([
-          '--arch=mips',
-          '--cpu=i6400',
-          '--extra-cflags=-mhard-float',
-          '--extra-cflags=-mips64r6',
-          '--disable-msa',
+    elif target_arch == 'mips64el':
+      if target_os != "android":
+        configure_flags['Common'].extend([
+            '--enable-cross-compile',
+            '--cross-prefix=mips64el-linux-gnuabi64-',
+            '--target-os=linux',
+            '--arch=mips',
+            '--extra-cflags=-mips64r2',
+            '--extra-cflags=-EL',
+            '--extra-ldflags=-mips64r2',
+            '--extra-ldflags=-EL',
+            '--disable-mipsfpu',
+            '--disable-mipsdsp',
+            '--disable-mipsdspr2',
+            '--disable-mips32r2',
       ])
+      else:
+        configure_flags['Common'].extend([
+            '--arch=mips',
+            '--cpu=i6400',
+            '--extra-cflags=-mhard-float',
+            '--extra-cflags=-mips64r6',
+            '--disable-msa',
+        ])
     else:
       print('Error: Unknown target arch %r for target OS %r!' % (
           target_arch, target_os), file=sys.stderr)
