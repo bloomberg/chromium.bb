@@ -9,10 +9,25 @@
 #include <stack>
 
 #include "base/atomic_sequence_num.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 
 namespace {
+
+struct WaitableEventLazyInstanceTraits
+    : public base::DefaultLazyInstanceTraits<base::WaitableEvent> {
+  static base::WaitableEvent* New(void* instance) {
+    // Use placement new to initialize our instance in our preallocated space.
+    return new (instance)
+        base::WaitableEvent(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::SIGNALED);
+  }
+};
+
+base::LazyInstance<base::WaitableEvent, WaitableEventLazyInstanceTraits>
+    dummy_event = LAZY_INSTANCE_INITIALIZER;
 
 base::StaticAtomicSequenceNumber g_next_id;
 
@@ -27,7 +42,8 @@ SyncMessage::SyncMessage(int32_t routing_id,
                          PriorityValue priority,
                          MessageReplyDeserializer* deserializer)
     : Message(routing_id, type, priority),
-      deserializer_(deserializer) {
+      deserializer_(deserializer),
+      pump_messages_event_(NULL) {
   set_sync();
   set_unblock(true);
 
@@ -43,6 +59,11 @@ SyncMessage::~SyncMessage() {
 MessageReplyDeserializer* SyncMessage::GetReplyDeserializer() {
   DCHECK(deserializer_.get());
   return deserializer_.release();
+}
+
+void SyncMessage::EnableMessagePumping() {
+  DCHECK(!pump_messages_event_);
+  set_pump_messages_event(dummy_event.Pointer());
 }
 
 bool SyncMessage::IsMessageReplyTo(const Message& msg, int request_id) {

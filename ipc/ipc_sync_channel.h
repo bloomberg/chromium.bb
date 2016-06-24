@@ -18,23 +18,15 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/watcher.h"
 
 namespace base {
 class WaitableEvent;
 };
 
-namespace mojo {
-class SyncHandleRegistry;
-class Watcher;
-}
-
 namespace IPC {
 
-class ChannelFactory;
-class MojoEvent;
 class SyncMessage;
+class ChannelFactory;
 
 // This is similar to ChannelProxy, with the added feature of supporting sending
 // synchronous messages.
@@ -144,19 +136,19 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
 
     // Adds information about an outgoing sync message to the context so that
     // we know how to deserialize the reply.
-    bool Push(SyncMessage* sync_msg);
+    void Push(SyncMessage* sync_msg);
 
     // Cleanly remove the top deserializer (and throw it away).  Returns the
     // result of the Send call for that message.
     bool Pop();
 
-    // Returns a Mojo Event that signals when a sync send is complete or timed
-    // out or the process shut down.
-    MojoEvent* GetSendDoneEvent();
+    // Returns an event that's set when the send is complete, timed out or the
+    // process shut down.
+    base::WaitableEvent* GetSendDoneEvent();
 
-    // Returns a Mojo Event that signals when an incoming message that's not the
-    // pending reply needs to get dispatched (by calling DispatchMessages.)
-    MojoEvent* GetDispatchEvent();
+    // Returns an event that's set when an incoming message that's not the reply
+    // needs to get dispatched (by calling SyncContext::DispatchMessages).
+    base::WaitableEvent* GetDispatchEvent();
 
     void DispatchMessages();
 
@@ -179,6 +171,8 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
       return restrict_dispatch_group_;
     }
 
+    base::WaitableEventWatcher::EventCallback MakeWaitableEventCallback();
+
    private:
     ~SyncContext() override;
     // ChannelProxy methods that we override.
@@ -195,11 +189,10 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
     // Cancels all pending Send calls.
     void CancelPendingSends();
 
-    void OnShutdownEventSignaled(base::WaitableEvent* event);
+    void OnWaitableEventSignaled(base::WaitableEvent* event);
 
     typedef std::deque<PendingSyncMsg> PendingSyncMessageQueue;
     PendingSyncMessageQueue deserializers_;
-    bool reject_new_deserializers_ = false;
     base::Lock deserializers_lock_;
 
     scoped_refptr<ReceivedSyncMsgQueue> received_sync_msgs_;
@@ -216,7 +209,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
       base::WaitableEvent* shutdown_event);
 
-  void OnDispatchHandleReady(MojoResult result);
+  void OnWaitableEventSignaled(base::WaitableEvent* arg);
 
   SyncContext* sync_context() {
     return reinterpret_cast<SyncContext*>(context());
@@ -224,9 +217,8 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
 
   // Both these functions wait for a reply, timeout or process shutdown.  The
   // latter one also runs a nested message loop in the meantime.
-  static void WaitForReply(mojo::SyncHandleRegistry* registry,
-                           SyncContext* context,
-                           bool pump_messages);
+  static void WaitForReply(
+      SyncContext* context, base::WaitableEvent* pump_messages_event);
 
   // Runs a nested message loop until a reply arrives, times out, or the process
   // shuts down.
@@ -238,10 +230,9 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   // ChannelProxy overrides:
   void OnChannelInit() override;
 
-  scoped_refptr<mojo::SyncHandleRegistry> sync_handle_registry_;
-
   // Used to signal events between the IPC and listener threads.
-  mojo::Watcher dispatch_watcher_;
+  base::WaitableEventWatcher dispatch_watcher_;
+  base::WaitableEventWatcher::EventCallback dispatch_watcher_callback_;
 
   // Tracks SyncMessageFilters created before complete channel initialization.
   std::vector<scoped_refptr<SyncMessageFilter>> pre_init_sync_message_filters_;
