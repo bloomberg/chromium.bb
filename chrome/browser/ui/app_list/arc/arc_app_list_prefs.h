@@ -170,6 +170,12 @@ class ArcAppListPrefs : public KeyedService,
   // OnAppIconUpdated.
   void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
 
+  // Sets notification enabled flag for given value. If the app or Arc bridge
+  // service is not ready, then defer this request until the app gets
+  // available. Once new value is set notifies an observer
+  // OnNotificationsEnabledChanged.
+  void SetNotificationsEnabled(const std::string& app_id, bool enabled);
+
   // Returns true if app is registered.
   bool IsRegistered(const std::string& app_id) const;
   // Returns true if app is a shortcut
@@ -194,6 +200,7 @@ class ArcAppListPrefs : public KeyedService,
   // arc::ArcBridgeService::Observer:
   void OnStateChanged(arc::ArcBridgeService::State state) override;
   void OnAppInstanceReady() override;
+  void OnAppInstanceClosed() override;
 
   // arc::mojom::AppHost:
   void OnAppListRefreshed(mojo::Array<arc::mojom::AppInfoPtr> apps) override;

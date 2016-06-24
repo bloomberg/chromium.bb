@@ -37,6 +37,7 @@ const char kLastBackupAndroidId[] = "last_backup_android_id";
 const char kLastBackupTime[] = "last_backup_time";
 const char kLastLaunchTime[] = "lastlaunchtime";
 const char kShouldSync[] = "should_sync";
+constexpr int kSetNotificationsEnabledMinVersion = 6;
 
 // Provider of write access to a dictionary storing ARC prefs.
 class ScopedArcPrefUpdate : public DictionaryPrefUpdate {
@@ -63,6 +64,36 @@ class ScopedArcPrefUpdate : public DictionaryPrefUpdate {
   const std::string id_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedArcPrefUpdate);
+};
+
+// Accessor for deferred set notifications enabled requests in prefs.
+class SetNotificationsEnabledDeferred {
+ public:
+  explicit SetNotificationsEnabledDeferred(PrefService* prefs)
+      : prefs_(prefs) {}
+
+  void Put(const std::string& app_id, bool enabled) {
+    DictionaryPrefUpdate update(prefs_,
+                                prefs::kArcSetNotificationsEnabledDeferred);
+    base::DictionaryValue* const dict = update.Get();
+    dict->SetBooleanWithoutPathExpansion(app_id, enabled);
+  }
+
+  bool Get(const std::string& app_id, bool* enabled) {
+    const base::DictionaryValue* dict =
+        prefs_->GetDictionary(prefs::kArcSetNotificationsEnabledDeferred);
+    return dict->GetBoolean(app_id, enabled);
+  }
+
+  void Remove(const std::string& app_id) {
+    DictionaryPrefUpdate update(prefs_,
+                                prefs::kArcSetNotificationsEnabledDeferred);
+    base::DictionaryValue* const dict = update.Get();
+    dict->RemoveWithoutPathExpansion(app_id, /* out_value */ nullptr);
+  }
+
+ private:
+  PrefService* const prefs_;
 };
 
 bool InstallIconFromFileThread(const std::string& app_id,
@@ -168,6 +199,7 @@ void ArcAppListPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kArcApps);
   registry->RegisterDictionaryPref(prefs::kArcPackages);
+  registry->RegisterDictionaryPref(prefs::kArcSetNotificationsEnabledDeferred);
 }
 
 // static
@@ -267,8 +299,8 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
   }
   arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
   if (!app_instance) {
-    VLOG(2) << "Request to load icon when bridge service is not ready: "
-            <<  app_id << ".";
+    // AppInstance should be ready since we have app_id in ready_apps_.
+    NOTREACHED();
     return;
   }
 
@@ -289,6 +321,51 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
         base::Bind(&ArcAppListPrefs::OnIcon, base::Unretained(this), app_id,
                    static_cast<arc::mojom::ScaleFactor>(scale_factor)));
   }
+}
+
+void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
+                                              bool enabled) {
+  if (!IsRegistered(app_id)) {
+    VLOG(2) << "Request to set notifications enabled flag for non-registered "
+            << "app:" << app_id << ".";
+    return;
+  }
+
+  std::unique_ptr<AppInfo> app_info = GetApp(app_id);
+  if (!app_info) {
+    VLOG(2) << "Failed to get app info: " << app_id << ".";
+    return;
+  }
+
+  // In case app is not ready, defer this request.
+  if (!ready_apps_.count(app_id)) {
+    SetNotificationsEnabledDeferred(prefs_).Put(app_id, enabled);
+    FOR_EACH_OBSERVER(Observer, observer_list_,
+                      OnNotificationsEnabledChanged(
+                          app_info->package_name, enabled));
+    return;
+  }
+
+  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
+  if (!bridge_service) {
+    NOTREACHED();
+    return;
+  }
+
+  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
+  if (!app_instance) {
+    // AppInstance should be ready since we have app_id in ready_apps_.
+    NOTREACHED();
+    return;
+  }
+
+  if (bridge_service->app_version() < kSetNotificationsEnabledMinVersion) {
+    VLOG(2) << "app version is too small to set notifications enabled.";
+    return;
+  }
+
+  SetNotificationsEnabledDeferred(prefs_).Remove(app_id);
+  app_instance->SetNotificationsEnabled(app_info->package_name, enabled);
 }
 
 void ArcAppListPrefs::AddObserver(Observer* observer) {
@@ -387,6 +464,11 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   base::Time last_launch_time;
   if (GetInt64FromPref(app, kLastLaunchTime, &last_launch_time_internal)) {
     last_launch_time = base::Time::FromInternalValue(last_launch_time_internal);
+  }
+
+  bool deferred;
+  if (SetNotificationsEnabledDeferred(prefs_).Get(app_id, &deferred)) {
+    notifications_enabled = deferred;
   }
 
   return base::MakeUnique<AppInfo>(name, package_name, activity, intent_uri,
@@ -491,6 +573,10 @@ void ArcAppListPrefs::OnAppInstanceReady() {
   app_instance->RefreshAppList();
 }
 
+void ArcAppListPrefs::OnAppInstanceClosed() {
+  ready_apps_.clear();
+}
+
 void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
                                         const std::string& package_name,
                                         const std::string& activity,
@@ -539,8 +625,7 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
                       OnAppRegistered(app_id, app_info));
   }
 
-  std::map<std::string, uint32_t>::iterator deferred_icons =
-      request_icon_deferred_.find(app_id);
+  auto deferred_icons = request_icon_deferred_.find(app_id);
   if (deferred_icons != request_icon_deferred_.end()) {
     for (uint32_t i = ui::SCALE_FACTOR_100P; i < ui::NUM_SCALE_FACTORS; ++i) {
       if (deferred_icons->second & (1 << i)) {
@@ -548,6 +633,12 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
       }
     }
     request_icon_deferred_.erase(deferred_icons);
+  }
+
+  bool deferred_notifications_enabled;
+  if (SetNotificationsEnabledDeferred(prefs_).Get(
+          app_id, &deferred_notifications_enabled)) {
+    SetNotificationsEnabled(app_id, deferred_notifications_enabled);
   }
 }
 

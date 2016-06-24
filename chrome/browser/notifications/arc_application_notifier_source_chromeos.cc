@@ -8,7 +8,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -17,30 +16,40 @@
 namespace arc {
 
 namespace {
-constexpr int kSetNotificationsEnabledMinVersion = 6;
 constexpr int kArcAppIconSizeInDp = 48;
 }  // namespace
 
 ArcApplicationNotifierSourceChromeOS::ArcApplicationNotifierSourceChromeOS(
     NotifierSource::Observer* observer)
-    : observer_(observer) {}
+    : observer_(observer), last_profile_(nullptr) {}
 
-ArcApplicationNotifierSourceChromeOS::~ArcApplicationNotifierSourceChromeOS() {}
+ArcApplicationNotifierSourceChromeOS::~ArcApplicationNotifierSourceChromeOS() {
+  StopObserving();
+}
 
 std::vector<std::unique_ptr<message_center::Notifier>>
 ArcApplicationNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
-  const ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(profile);
+  package_to_app_ids_.clear();
+  icons_.clear();
+  StopObserving();
+
+  ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(profile);
+  if (!app_list) {
+    // It can be null in unit tests.
+    return std::vector<std::unique_ptr<message_center::Notifier>>();
+  }
   const std::vector<std::string>& app_ids = app_list->GetAppIds();
-  std::set<std::string> added_packages;
   std::vector<std::unique_ptr<message_center::Notifier>> results;
 
-  icons_.clear();
+  last_profile_ = profile;
+  app_list->AddObserver(this);
+
   for (const std::string& app_id : app_ids) {
     const auto app = app_list->GetApp(app_id);
     if (!app)
       continue;
     // Handle packages having multiple launcher activities.
-    if (added_packages.count(app->package_name))
+    if (package_to_app_ids_.count(app->package_name))
       continue;
 
     // Load icons for notifier.
@@ -56,7 +65,7 @@ ArcApplicationNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
                                         .device_scale_factor()));
 
     // Add notifiers.
-    added_packages.insert(app->package_name);
+    package_to_app_ids_.insert(std::make_pair(app->package_name, app_id));
     message_center::NotifierId notifier_id(
         message_center::NotifierId::ARC_APPLICATION, app_id);
     std::unique_ptr<message_center::Notifier> notifier(
@@ -74,18 +83,27 @@ void ArcApplicationNotifierSourceChromeOS::SetNotifierEnabled(
     Profile* profile,
     const message_center::Notifier& notifier,
     bool enabled) {
-  auto* const service = arc::ArcBridgeService::Get();
-  if (service) {
-    if (service->app_version() >= kSetNotificationsEnabledMinVersion) {
-      service->app_instance()->SetNotificationsEnabled(notifier.notifier_id.id,
-                                                       enabled);
-      observer_->OnNotifierEnabledChanged(notifier.notifier_id, enabled);
-    }
-  }
+  ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(profile);
+  app_list->SetNotificationsEnabled(notifier.notifier_id.id, enabled);
+  // OnNotifierEnabledChanged will be invoked via ArcAppListPrefs::Observer.
+}
+
+void ArcApplicationNotifierSourceChromeOS::OnNotificationsEnabledChanged(
+    const std::string& package_name,
+    bool enabled) {
+  auto it = package_to_app_ids_.find(package_name);
+  if (it == package_to_app_ids_.end())
+    return;
+  observer_->OnNotifierEnabledChanged(
+      message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
+                                 it->second),
+      enabled);
 }
 
 void ArcApplicationNotifierSourceChromeOS::OnNotifierSettingsClosing() {
   icons_.clear();
+  package_to_app_ids_.clear();
+  StopObserving();
 }
 
 message_center::NotifierId::NotifierType
@@ -98,6 +116,14 @@ void ArcApplicationNotifierSourceChromeOS::OnIconUpdated(ArcAppIcon* icon) {
       message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
                                  icon->app_id()),
       icon->image());
+}
+
+void ArcApplicationNotifierSourceChromeOS::StopObserving() {
+  if (!last_profile_)
+    return;
+  ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(last_profile_);
+  app_list->RemoveObserver(this);
+  last_profile_ = nullptr;
 }
 
 }  // namespace arc

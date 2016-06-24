@@ -20,6 +20,9 @@ const char kArcApps[] = "arc.apps";
 const char kArcEnabled[] = "arc.enabled";
 // A preference to keep list of Android packages and their infomation.
 const char kArcPackages[] = "arc.packages";
+// A preference to keep deferred requests of setting notifications enabled flag.
+const char kArcSetNotificationsEnabledDeferred[] =
+    "arc.set_notifications_enabled_deferred";
 // A preference that indicates status of Android sign-in.
 const char kArcSignedIn[] = "arc.signedin";
 #endif
