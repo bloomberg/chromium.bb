@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_background_view.h"
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -10,13 +10,18 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_event_filter.h"
-#include "ash/common/wm_lookup.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/screen_util.h"
+#include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/tray_event_filter.h"
+#include "ash/wm/window_animations.h"
+#include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
@@ -97,7 +102,9 @@ class TrayBackground : public views::Background {
   ~TrayBackground() override {}
 
  private:
-  WmShelf* GetShelf() const { return tray_background_view_->shelf(); }
+  WmShelf* GetShelf() const {
+    return tray_background_view_->GetShelf();
+  }
 
   void PaintMaterial(gfx::Canvas* canvas, views::View* view) const {
     SkColor background_color = SK_ColorTRANSPARENT;
@@ -226,14 +233,14 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
 ////////////////////////////////////////////////////////////////////////////////
 // TrayBackgroundView
 
-TrayBackgroundView::TrayBackgroundView(WmShelf* wm_shelf)
-    : wm_shelf_(wm_shelf),
+TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
+    : status_area_widget_(status_area_widget),
       tray_container_(NULL),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
       draw_background_as_active_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
-  DCHECK(wm_shelf_);
+  DCHECK(status_area_widget->wm_shelf());
   set_notify_enter_exit_on_child(true);
 
   tray_container_ = new TrayContainer(shelf_alignment_);
@@ -259,12 +266,12 @@ void TrayBackgroundView::Initialize() {
 // static
 void TrayBackgroundView::InitializeBubbleAnimations(
     views::Widget* bubble_widget) {
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(bubble_widget);
-  window->SetVisibilityAnimationType(
-      ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  window->SetVisibilityAnimationTransition(::wm::ANIMATE_HIDE);
-  window->SetVisibilityAnimationDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMs));
+  aura::Window* window = bubble_widget->GetNativeWindow();
+  ::wm::SetWindowVisibilityAnimationType(
+      window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  ::wm::SetWindowVisibilityAnimationTransition(window, ::wm::ANIMATE_HIDE);
+  ::wm::SetWindowVisibilityAnimationDuration(
+      window, base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMs));
 }
 
 void TrayBackgroundView::SetVisible(bool visible) {
@@ -376,6 +383,10 @@ void TrayBackgroundView::SetContentsBackground() {
   tray_container_->set_background(background_);
 }
 
+WmShelf* TrayBackgroundView::GetShelf() {
+  return status_area_widget_->wm_shelf();
+}
+
 void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
   shelf_alignment_ = alignment;
   tray_container_->SetAlignment(alignment);
@@ -452,12 +463,10 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
       DCHECK(false) << "Unhandled anchor type.";
     }
   } else {
-    WmWindow* target_root = anchor_widget
-                                ? WmLookup::Get()
-                                      ->GetWindowForWidget(anchor_widget)
-                                      ->GetRootWindow()
-                                : WmShell::Get()->GetPrimaryRootWindow();
-    rect = target_root->GetBounds();
+    aura::Window* target_root = anchor_widget ?
+        anchor_widget->GetNativeView()->GetRootWindow() :
+        Shell::GetPrimaryRootWindow();
+    rect = target_root->bounds();
     if (anchor_type == TrayBubbleView::ANCHOR_TYPE_TRAY) {
       if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
         rect = gfx::Rect(
@@ -466,19 +475,19 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
             rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
             rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
             0, 0);
-        rect = target_root->ConvertRectToScreen(rect);
+        rect = ScreenUtil::ConvertRectToScreen(target_root, rect);
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
         rect = gfx::Rect(
             kPaddingFromRightEdgeOfScreenBottomAlignment,
             rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
             1, 1);
-        rect = target_root->ConvertRectToScreen(rect);
+        rect = ScreenUtil::ConvertRectToScreen(target_root, rect);
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT) {
         rect = gfx::Rect(
             rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
             rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
             1, 1);
-        rect = target_root->ConvertRectToScreen(rect);
+        rect = ScreenUtil::ConvertRectToScreen(target_root, rect);
       } else {
         // TODO(bruthig) May need to handle other ANCHOR_ALIGNMENT_ values.
         // ie. ANCHOR_ALIGNMENT_TOP

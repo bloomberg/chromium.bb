@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
-#define ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
+#ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
+#define ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 
 #include <memory>
 #include <vector>
 
-#include "ash/common/login_status.h"
+#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -75,4 +75,4 @@ class SystemTrayBubble {
 
 }  // namespace ash
 
-#endif  // ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
+#endif  // ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_

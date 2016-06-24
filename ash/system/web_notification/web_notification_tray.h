@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
-#include "ash/common/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -169,7 +169,6 @@ class ASH_EXPORT WebNotificationTray
   bool IsPopupVisible() const;
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
 
-  StatusAreaWidget* status_area_widget_;
   std::unique_ptr<message_center::MessageCenterTray> message_center_tray_;
   std::unique_ptr<WebNotificationBubbleWrapper> message_center_bubble_;
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;

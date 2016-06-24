@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/tray/tray_bubble_wrapper.h"
+#include "ash/system/tray/tray_bubble_wrapper.h"
 
-#include "ash/common/system/tray/tray_background_view.h"
-#include "ash/common/system/tray/tray_event_filter.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
+#include "ash/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_event_filter.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/widget/widget.h"
 

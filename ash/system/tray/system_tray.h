@@ -10,10 +10,11 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/system/tray/system_tray_bubble.h"
-#include "ash/common/system/tray/tray_background_view.h"
 #include "ash/system/cast/tray_cast.h"
+#include "ash/system/tray/system_tray_bubble.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "ash/system/user/login_status.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -21,7 +22,6 @@
 
 namespace ash {
 class ScreenTrayItem;
-class StatusAreaWidget;
 class SystemBubbleWrapper;
 class SystemTrayDelegate;
 class SystemTrayItem;
@@ -212,9 +212,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override;
-
-  // The widget containing this view.
-  StatusAreaWidget* status_area_widget_;
 
   // Owned items.
   ScopedVector<SystemTrayItem> items_;
