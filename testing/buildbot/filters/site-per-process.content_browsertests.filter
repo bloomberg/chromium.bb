@@ -1,8 +1,5 @@
 # crbug.com/417518: Get tests working with --site-per-process
 -NavigationControllerBrowserTest.ReloadOriginalRequest
 
-# crbug.com/609963: Fix unload in subframes.
--*.RestoreSubframeFileAccessForHistoryNavigation
-
 # crbug.com/612713: Fix in-page renderer kills.
 -NavigationControllerBrowserTest.BackTwiceToIframeWithContent

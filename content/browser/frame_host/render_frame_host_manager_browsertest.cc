@@ -2015,6 +2015,18 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Disable the swap out timer so we wait for the UpdateState message.
   root->current_frame_host()->DisableSwapOutTimerForTesting();
 
+  // Do an in-page navigation in the child to make sure we hear a PageState with
+  // the chosen file before the subframe's FrameTreeNode is deleted.  In
+  // practice, we'll get the PageState 1 second after the file is chosen.
+  // TODO(creis): Remove this in-page navigation once we keep track of
+  // FrameTreeNodes that are pending deletion.  See https://crbug.com/609963.
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    std::string script = "location.href='#foo';";
+    EXPECT_TRUE(ExecuteScript(root->child_at(0), script));
+    nav_observer.Wait();
+  }
+
   // Navigate to a different process without access to the file, and wait for
   // the old process to exit.
   RenderProcessHostWatcher exit_observer(
@@ -2036,7 +2048,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Go back, ending up in a different RenderProcessHost than before.
   TestNavigationObserver back_nav_load_observer(shell()->web_contents());
-  shell()->web_contents()->GetController().GoBack();
+  shell()->web_contents()->GetController().GoToIndex(0);
   back_nav_load_observer.Wait();
   EXPECT_NE(process_id,
             shell()->web_contents()->GetRenderProcessHost()->GetID());
