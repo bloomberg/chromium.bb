@@ -139,4 +139,36 @@
       assertWithMatcher:grey_notNil()];
 }
 
+// Tests tapping a link with onclick="event.preventDefault()" and verifies that
+// the URL didn't change..
+- (void)testNavigationLinkPreventDefaultOverridesHref {
+  // Create map of canned responses and set up the test HTML server.
+  std::map<GURL, std::string> responses;
+  const GURL URL = web::test::HttpServer::MakeUrl("http://overridesHrefLink");
+  const char pageHTML[] =
+      "<script>"
+      "  function printMsg() {"
+      "    document.body.appendChild(document.createTextNode('Default "
+      "prevented!'));"
+      "  }"
+      "</script>"
+      "<a href='#hash' id='overrides-href' onclick='event.preventDefault(); "
+      "printMsg();'>redirectLink</a>";
+  responses[URL] = pageHTML;
+
+  web::test::SetUpSimpleHttpServer(responses);
+
+  web::shell_test_util::LoadUrl(URL);
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL.spec())]
+      assertWithMatcher:grey_notNil()];
+
+  web::shell_test_util::TapWebViewElementWithId("overrides-href");
+
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL.spec())]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:web::webViewContainingText("Default prevented!")]
+      assertWithMatcher:grey_notNil()];
+}
+
 @end
