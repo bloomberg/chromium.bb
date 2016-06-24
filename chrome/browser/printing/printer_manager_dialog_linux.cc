@@ -30,28 +30,11 @@ const char* const kSystemConfigPrinterCommand[] = {"system-config-printer",
 const char* const kGnomeControlCenterPrintersCommand[] = {
     "gnome-control-center", "printers", nullptr};
 
-bool CommandExists(const char* command) {
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  std::string path;
-  if (!env->GetVar("PATH", &path)) {
-    LOG(ERROR) << "No $PATH variable. Assuming no " << command << ".";
-    return false;
-  }
-
-  for (const base::StringPiece& cur_path :
-       base::SplitStringPiece(path, ":", base::KEEP_WHITESPACE,
-                              base::SPLIT_WANT_NONEMPTY)) {
-    base::FilePath file(cur_path);
-    if (base::PathExists(file.Append(command)))
-      return true;
-  }
-  return false;
-}
-
 // Returns true if the dialog was opened successfully.
 bool OpenPrinterConfigDialog(const char* const* command) {
   DCHECK(command);
-  if (!CommandExists(*command))
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  if (!base::ExecutableExistsInPath(env.get(), *command))
     return false;
   std::vector<std::string> argv;
   while (*command)

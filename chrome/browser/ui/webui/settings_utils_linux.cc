@@ -10,12 +10,9 @@
 
 #include "base/bind.h"
 #include "base/environment.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/process/launch.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -72,27 +69,8 @@ bool StartProxyConfigUtil(const char* command[]) {
   // use StartProxyConfigUtil() to search possible options and stop on
   // success, so we search $PATH first to predict whether the exec is
   // expected to succeed.
-  // TODO(mdm): this is a useful check, and is very similar to some
-  // code in proxy_config_service_linux.cc. It should probably be in
-  // base:: somewhere.
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  std::string path;
-  if (!env->GetVar("PATH", &path)) {
-    LOG(ERROR) << "No $PATH variable. Assuming no " << command[0] << ".";
-    return false;
-  }
-
-  bool found = false;
-  for (const base::StringPiece& cur_path :
-       base::SplitStringPiece(path, ":", base::KEEP_WHITESPACE,
-                              base::SPLIT_WANT_NONEMPTY)) {
-    base::FilePath file(cur_path);
-    if (base::PathExists(file.Append(command[0]))) {
-      found = true;
-      break;
-    }
-  }
-  if (!found)
+  if (!base::ExecutableExistsInPath(env.get(), command[0]))
     return false;
 
   std::vector<std::string> argv;
