@@ -2252,6 +2252,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/PerfTraceEvent.java",
       "android/java/src/org/chromium/base/PowerMonitor.java",
       "android/java/src/org/chromium/base/PowerStatusReceiver.java",
+      "android/java/src/org/chromium/base/Promise.java",
       "android/java/src/org/chromium/base/ResourceExtractor.java",
       "android/java/src/org/chromium/base/SecureRandomInitializer.java",
       "android/java/src/org/chromium/base/StreamUtil.java",
@@ -2370,6 +2371,7 @@ if (is_android) {
     java_files = [
       "android/junit/src/org/chromium/base/BaseChromiumApplicationTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
+      "android/junit/src/org/chromium/base/PromiseTest.java",
       "test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java",
       "test/android/junit/src/org/chromium/base/test/util/MinAndroidSdkLevelSkipCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/RestrictionSkipCheckTest.java",

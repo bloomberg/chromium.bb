@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
@@ -24,7 +25,6 @@ import org.chromium.chrome.browser.ntp.NtpColorUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountTrackerService.OnSystemAccountsSeededListener;
-import org.chromium.chrome.browser.sync.SyncUserDataWiper;
 import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog;
 import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog.ImportSyncType;
 import org.chromium.signin.InvestigatedScenario;
@@ -379,16 +379,13 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                     new ConfirmImportSyncDataDialog.Listener() {
                         @Override
                         public void onConfirm(boolean wipeData) {
-                            if (wipeData) {
-                                SyncUserDataWiper.wipeSyncUserData(new Runnable(){
-                                    @Override
-                                    public void run() {
-                                        showConfirmSigninPage();
-                                    }
-                                });
-                            } else {
-                                showConfirmSigninPage();
-                            }
+                            SigninManager.wipeSyncUserDataIfRequired(wipeData)
+                                    .then(new Callback<Void>() {
+                                        @Override
+                                        public void onResult(Void v) {
+                                            showConfirmSigninPage();
+                                        }
+                                    });
                         }
 
                         @Override

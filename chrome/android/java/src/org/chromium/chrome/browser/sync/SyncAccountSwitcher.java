@@ -9,6 +9,8 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.text.TextUtils;
 
+import org.chromium.base.Callback;
+import org.chromium.base.Promise;
 import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
@@ -66,27 +68,23 @@ public class SyncAccountSwitcher
     public void onConfirm(final boolean wipeData) {
         assert mNewAccountName != null;
 
-        final SigninManager.SignInCallback callback = this;
-
-        // Sign out first to get sync working correctly.
-        SigninManager.get(mActivity).signOut(new Runnable() {
-            @Override
-            public void run() {
-                SigninManager.get(mActivity).clearLastSignedInUser();
-
-                if (wipeData) {
-                    SyncUserDataWiper.wipeSyncUserData(new Runnable() {
-                        @Override
-                        public void run() {
-                            SigninManager.get(mActivity)
-                                    .signIn(mNewAccountName, mActivity, callback);
-                        }
-                    });
-                } else {
-                    SigninManager.get(mActivity).signIn(mNewAccountName, mActivity, callback);
-                }
-            }
-        });
+        // Sign out first to ensure we don't wipe the data when sync is still on.
+        SigninManager.get(mActivity).signOutPromise()
+                .then(new Promise.AsyncFunction<Void, Void>(){
+                    @Override
+                    public Promise<Void> apply(Void argument) {
+                        // Once signed out, clear the last signed in user and wipe data if needed.
+                        SigninManager.get(mActivity).clearLastSignedInUser();
+                        return SigninManager.wipeSyncUserDataIfRequired(wipeData);
+                    }
+                }).then(new Callback<Void>(){
+                    @Override
+                    public void onResult(Void result) {
+                        // Once the data has been wiped (if needed), sign in to the next account.
+                        SigninManager.get(mActivity)
+                            .signIn(mNewAccountName, mActivity, SyncAccountSwitcher.this);
+                    }
+                });
     }
 
     @Override

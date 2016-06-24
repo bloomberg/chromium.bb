@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.interests;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.LruCache;
 import android.view.View;
@@ -13,9 +14,9 @@ import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 
+import org.chromium.base.Promise;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.interests.InterestsItemView.DrawingData;
-import org.chromium.chrome.browser.ntp.interests.InterestsItemView.ImageHolder;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickListener;
 import org.chromium.chrome.browser.ntp.interests.InterestsService.Interest;
 
@@ -61,7 +62,7 @@ public class InterestsView extends FrameLayout {
     }
 
     private class InterestsListAdapter extends ArrayAdapter<Interest> {
-        private final LruCache<String, ImageHolder> mImageCache;
+        private final LruCache<String, Promise<Drawable>> mImageCache;
         private final DrawingData mDrawingData;
 
         public InterestsListAdapter(Context context) {

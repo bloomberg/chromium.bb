@@ -16,6 +16,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -23,6 +24,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
+import org.chromium.chrome.browser.sync.SyncUserDataWiper;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -497,6 +499,24 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     /**
+     * Invokes signOut and returns a {@link Promise} that will be fulfilled on completion.
+     * This is equivalent to calling {@link #signOut(Runnable callback)} with a callback that
+     * fulfills the returned {@link Promise}.
+     */
+    public Promise<Void> signOutPromise() {
+        final Promise<Void> promise = new Promise<Void>();
+
+        signOut(new Runnable(){
+            @Override
+            public void run() {
+                promise.fulfill(null);
+            }
+        });
+
+        return promise;
+    }
+
+    /**
      * Invokes signOut with no callback or wipeDataHooks.
      */
     public void signOut() {
@@ -584,6 +604,18 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         if (hooks != null) hooks.preWipeData();
         // This will call back to onProfileDataWiped().
         nativeWipeProfileData(mNativeSigninManagerAndroid, hooks);
+    }
+
+    /**
+     * Convenience method to return a Promise to be fulfilled when the user's sync data has been
+     * wiped if the parameter is true, or an already fulfilled Promise if the parameter is false.
+     */
+    public static Promise<Void> wipeSyncUserDataIfRequired(boolean required) {
+        if (required) {
+            return SyncUserDataWiper.wipeSyncUserData();
+        } else {
+            return Promise.fulfilled(null);
+        }
     }
 
     @CalledByNative

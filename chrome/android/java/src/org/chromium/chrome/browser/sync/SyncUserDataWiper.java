@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.sync;
 
+import org.chromium.base.Promise;
 import org.chromium.chrome.browser.BrowsingDataType;
 import org.chromium.chrome.browser.TimePeriod;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
@@ -24,11 +25,12 @@ public class SyncUserDataWiper {
 
     /**
      * Wipes the user's bookmarks and sync data.
-     * @param callback Called when the data is cleared.
+     * @return A promise which will be fulfilled once the data is wiped.
      */
-    public static void wipeSyncUserData(final Runnable callback) {
-        final BookmarkModel model = new BookmarkModel();
+    public static Promise<Void> wipeSyncUserData() {
+        final Promise<Void> promise = new Promise<>();
 
+        final BookmarkModel model = new BookmarkModel();
         model.runAfterBookmarkModelLoaded(new Runnable() {
             @Override
             public void run() {
@@ -38,12 +40,14 @@ public class SyncUserDataWiper {
                         new OnClearBrowsingDataListener(){
                             @Override
                             public void onBrowsingDataCleared() {
-                                callback.run();
+                                promise.fulfill(null);
                             }
                         },
                         SYNC_DATA_TYPES, TimePeriod.EVERYTHING);
             }
         });
+
+        return promise;
     }
 }
 

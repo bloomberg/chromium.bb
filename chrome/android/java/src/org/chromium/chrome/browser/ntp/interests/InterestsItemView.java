@@ -24,8 +24,9 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.base.ObserverList;
+import org.chromium.base.Promise;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickListener;
@@ -82,7 +83,7 @@ class InterestsItemView extends AppCompatTextView implements OnClickListener {
 
     private final Context mContext;
     private final DrawingData mDrawingData;
-    private final LruCache<String, ImageHolder> mImageCache;
+    private final LruCache<String, Promise<Drawable>> mImageCache;
     private final InterestsClickListener mListener;
 
     /**
@@ -93,7 +94,7 @@ class InterestsItemView extends AppCompatTextView implements OnClickListener {
      * @param drawingData Information about the view size.
      */
     InterestsItemView(Context context, Interest interest, InterestsClickListener listener,
-            LruCache<String, ImageHolder> imageCache, DrawingData drawingData) {
+            LruCache<String, Promise<Drawable>> imageCache, DrawingData drawingData) {
         super(context);
 
         mContext = context;
@@ -132,25 +133,32 @@ class InterestsItemView extends AppCompatTextView implements OnClickListener {
 
         setText(mInterest.getName());
 
-        ImageHolder holder = mImageCache.get(mInterest.getImageUrl());
-        if (holder == null) {
-            // Create a new holder, add it to the cache and set it downloading.
-            holder = new ImageHolder();
-            mImageCache.put(mInterest.getImageUrl(), holder);
-            new ImageDownloadTask(mInterest.getImageUrl(), holder, getResources()).execute();
+        Promise<Drawable> promise = mImageCache.get(mInterest.getImageUrl());
+        if (promise == null) {
+            promise = new Promise<Drawable>();
+            mImageCache.put(mInterest.getImageUrl(),
+                    ImageDownloadTask.start(mInterest.getImageUrl(), getResources()));
         }
 
-        if (holder.getImageDrawable() != null) {
-            setImage(holder.getImageDrawable());
-        } else {
-            // Add a callback to a subclass that will call setImage once the holder is filled.
-            holder.addListener(new ImageDownloadedCallback());
-
-            // Display a letter tile in the meantime.
+        // If not fulfilled, display a letter tile while waiting for the image to download.
+        if (!promise.isFulfilled()) {
             mDrawingData.mIconGenerator.setBackgroundColor(getTileColor(mInterest.getName()));
             setImage(new BitmapDrawable(mContext.getResources(),
                     mDrawingData.mIconGenerator.generateIconForText(mInterest.getName())));
         }
+
+        // Once fulfilled, display the image (unless this view has been repurposed for a different
+        // Interest).
+        final String urlWhenDownloadRequested = mInterest.getImageUrl();
+        promise.then(new Callback<Drawable>() {
+            @Override
+            public void onResult(Drawable drawable) {
+                if (drawable == null) return;
+                if (TextUtils.equals(mInterest.getImageUrl(), urlWhenDownloadRequested)) return;
+
+                setImage(drawable);
+            }
+        });
     }
 
     /**
@@ -184,17 +192,23 @@ class InterestsItemView extends AppCompatTextView implements OnClickListener {
     }
 
     /*
-     * An AsyncTask that downloads an image, formats it then puts it in the given holder.
+     * An AsyncTask that downloads an image and formats it.
      */
     private static class ImageDownloadTask extends AsyncTask<Void, Void, Drawable> {
 
-        private final String mUrl;
-        private final ImageHolder mImageHolder;
-        private final Resources mResources;
+        public static Promise<Drawable> start(String url, Resources resources) {
+            Promise<Drawable> promise = new Promise<Drawable>();
+            new ImageDownloadTask(url, promise, resources).executeOnExecutor(THREAD_POOL_EXECUTOR);
+            return promise;
+        }
 
-        public ImageDownloadTask(String url, ImageHolder holder, Resources resources) {
+        private final String mUrl;
+        private final Resources mResources;
+        private Promise<Drawable> mPromise;
+
+        private ImageDownloadTask(String url, Promise<Drawable> promise, Resources resources) {
             mUrl = url;
-            mImageHolder = holder;
+            mPromise = promise;
             mResources = resources;
         }
 
@@ -221,60 +235,9 @@ class InterestsItemView extends AppCompatTextView implements OnClickListener {
 
         @Override
         protected void onPostExecute(Drawable image) {
-            // This is run on the main thread.
-            mImageHolder.set(image, mUrl);
-        }
-    }
-
-    /*
-     * A callback class that will set it's parent's image.
-     */
-    private class ImageDownloadedCallback {
-        public void onImageDownloaded(Drawable image, String url) {
-            boolean imageDownloadSuccess = image != null;
             RecordHistogram.recordBooleanHistogram(
-                    "NewTabPage.Interests.ImageDownloadSuccess", imageDownloadSuccess);
-            if (!imageDownloadSuccess) return;
-            // If the Interest this View is displaying has changed while downloading, do not update
-            // the image.
-            if (TextUtils.equals(url, mInterest.getImageUrl())) {
-                setImage(image);
-            }
-        }
-    }
-
-    /*
-     * A holder for an Image that allows listeners to subscribe to when it is set. It is
-     * like a listenable future that doesn't calculate the value itself. It can only be
-     * accessed on one thread. It can only be set once.
-     */
-    static class ImageHolder {
-        private final ObserverList<ImageDownloadedCallback> mCallbacks = new ObserverList<>();
-        private Drawable mImage;
-        private String mUrl;
-
-        public void set(Drawable image, String url) {
-            assert mImage == null;
-            mImage = image;
-            mUrl = url;
-
-            for (ImageDownloadedCallback callbacks : mCallbacks) {
-                callbacks.onImageDownloaded(image, mUrl);
-            }
-
-            mCallbacks.clear();
-        }
-
-        public void addListener(ImageDownloadedCallback callback) {
-            if (mImage == null) {
-                mCallbacks.addObserver(callback);
-            } else {
-                callback.onImageDownloaded(mImage, mUrl);
-            }
-        }
-
-        public Drawable getImageDrawable() {
-            return mImage;
+                    "NewTabPage.Interests.ImageDownloadSuccess", image != null);
+            mPromise.fulfill(image);
         }
     }
 }
