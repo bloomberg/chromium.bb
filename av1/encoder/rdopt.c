@@ -2702,12 +2702,12 @@ static void store_coding_context(const MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
   ctx->hybrid_pred_diff = (int)comp_pred_diff[REFERENCE_MODE_SELECT];
 }
 
-static void setup_buffer_inter(AV1_COMP *cpi, MACROBLOCK *x,
-                               MV_REFERENCE_FRAME ref_frame,
-                               BLOCK_SIZE block_size, int mi_row, int mi_col,
-                               int_mv frame_nearest_mv[MAX_REF_FRAMES],
-                               int_mv frame_near_mv[MAX_REF_FRAMES],
-                               struct buf_2d yv12_mb[4][MAX_MB_PLANE]) {
+static void setup_buffer_inter(
+    AV1_COMP *cpi, MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame,
+    BLOCK_SIZE block_size, int mi_row, int mi_col,
+    int_mv frame_nearest_mv[MAX_REF_FRAMES],
+    int_mv frame_near_mv[MAX_REF_FRAMES],
+    struct buf_2d yv12_mb[MAX_REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *cm = &cpi->common;
   const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref_frame);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -3568,7 +3568,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned char segment_id = mbmi->segment_id;
   int comp_pred, i, k;
   int_mv frame_mv[MB_MODE_COUNT][MAX_REF_FRAMES];
-  struct buf_2d yv12_mb[4][MAX_MB_PLANE];
+  struct buf_2d yv12_mb[MAX_REF_FRAMES][MAX_MB_PLANE];
   int_mv single_newmv[MAX_REF_FRAMES] = { { 0 } };
   InterpFilter single_inter_filter[MB_MODE_COUNT][MAX_REF_FRAMES];
   int single_skippable[MB_MODE_COUNT][MAX_REF_FRAMES];
@@ -4579,7 +4579,7 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned char segment_id = mbmi->segment_id;
   int comp_pred, i;
   int_mv frame_mv[MB_MODE_COUNT][MAX_REF_FRAMES];
-  struct buf_2d yv12_mb[4][MAX_MB_PLANE];
+  struct buf_2d yv12_mb[MAX_REF_FRAMES][MAX_MB_PLANE];
   static const int flag_list[REFS_PER_FRAME + 1] = {
     0, AOM_LAST_FLAG, AOM_GOLD_FLAG, AOM_ALT_FLAG
   };
