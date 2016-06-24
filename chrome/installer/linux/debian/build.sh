@@ -44,7 +44,7 @@ prep_staging_debian() {
   install -m 755 -d "${STAGEDIR}/DEBIAN" \
     "${STAGEDIR}/etc/cron.daily" \
     "${STAGEDIR}/usr/share/menu" \
-    "${STAGEDIR}/usr/share/doc/${PACKAGE}"
+    "${STAGEDIR}/usr/share/doc/${USR_BIN_SYMLINK_NAME}"
 }
 
 # Put the package contents in the staging area.
