@@ -755,11 +755,7 @@ void LocalDOMWindow::print(ScriptState* scriptState)
     }
 
     if (scriptState && v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
-        Deprecation::countDeprecation(frame()->document(), UseCounter::During_Microtask_Print);
-        if (RuntimeEnabledFeatures::disableBlockingMethodsDuringMicrotasksEnabled()) {
-            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'print()' during microtask execution."));
-            return;
-        }
+        UseCounter::count(frame()->document(), UseCounter::During_Microtask_Print);
     }
 
     if (frame()->isLoading()) {
@@ -795,11 +791,7 @@ void LocalDOMWindow::alert(ScriptState* scriptState, const String& message)
     }
 
     if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
-        Deprecation::countDeprecation(frame()->document(), UseCounter::During_Microtask_Alert);
-        if (RuntimeEnabledFeatures::disableBlockingMethodsDuringMicrotasksEnabled()) {
-            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'alert()' during microtask execution."));
-            return;
-        }
+        UseCounter::count(frame()->document(), UseCounter::During_Microtask_Alert);
     }
 
     frame()->document()->updateStyleAndLayoutTree();
@@ -828,11 +820,7 @@ bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message)
     }
 
     if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
-        Deprecation::countDeprecation(frame()->document(), UseCounter::During_Microtask_Confirm);
-        if (RuntimeEnabledFeatures::disableBlockingMethodsDuringMicrotasksEnabled()) {
-            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'confirm()' during microtask execution."));
-            return false;
-        }
+        UseCounter::count(frame()->document(), UseCounter::During_Microtask_Confirm);
     }
 
     frame()->document()->updateStyleAndLayoutTree();
@@ -861,11 +849,7 @@ String LocalDOMWindow::prompt(ScriptState* scriptState, const String& message, c
     }
 
     if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
-        Deprecation::countDeprecation(frame()->document(), UseCounter::During_Microtask_Prompt);
-        if (RuntimeEnabledFeatures::disableBlockingMethodsDuringMicrotasksEnabled()) {
-            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'prompt()' during microtask execution."));
-            return String();
-        }
+        UseCounter::count(frame()->document(), UseCounter::During_Microtask_Prompt);
     }
 
     frame()->document()->updateStyleAndLayoutTree();
