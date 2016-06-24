@@ -11,6 +11,8 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_lookup.h"
@@ -19,8 +21,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/tray_background_view.h"
-#include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
@@ -205,11 +205,13 @@ class WebNotificationButton : public views::CustomButton {
 };
 
 WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
-    : TrayBackgroundView(status_area_widget),
+    : TrayBackgroundView(status_area_widget->wm_shelf()),
+      status_area_widget_(status_area_widget),
       button_(NULL),
       show_message_center_on_unlock_(false),
       should_update_tray_content_(false),
       should_block_shelf_auto_hide_(false) {
+  DCHECK(status_area_widget_);
   button_ = new WebNotificationButton(this);
   button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
@@ -257,14 +259,13 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
           message_center_tray_.get(),
           true);
 
-  WmShelf* shelf = GetShelf();
   int max_height;
-  if (IsHorizontalAlignment(shelf->GetAlignment())) {
-    max_height = shelf->GetIdealBounds().y();
+  if (IsHorizontalAlignment(shelf()->GetAlignment())) {
+    max_height = shelf()->GetIdealBounds().y();
   } else {
     // Assume the status area and bubble bottoms are aligned when vertical.
     WmWindow* status_area_window =
-        WmLookup::Get()->GetWindowForWidget(status_area_widget());
+        WmLookup::Get()->GetWindowForWidget(status_area_widget_);
     gfx::Rect bounds_in_root =
         status_area_window->GetRootWindow()->ConvertRectFromScreen(
             status_area_window->GetBoundsInScreen());
@@ -277,8 +278,8 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   message_center_bubble_.reset(
       new WebNotificationBubbleWrapper(this, message_center_bubble));
 
-  status_area_widget()->SetHideSystemNotifications(true);
-  shelf->UpdateAutoHideState();
+  status_area_widget_->SetHideSystemNotifications(true);
+  shelf()->UpdateAutoHideState();
   button_->SetBubbleVisible(true);
   SetDrawBackgroundAsActive(true);
   return true;
@@ -295,8 +296,8 @@ void WebNotificationTray::HideMessageCenter() {
   message_center_bubble_.reset();
   should_block_shelf_auto_hide_ = false;
   show_message_center_on_unlock_ = false;
-  status_area_widget()->SetHideSystemNotifications(false);
-  GetShelf()->UpdateAutoHideState();
+  status_area_widget_->SetHideSystemNotifications(false);
+  shelf()->UpdateAutoHideState();
   button_->SetBubbleVisible(false);
 }
 
@@ -324,8 +325,8 @@ void WebNotificationTray::HidePopups() {
 // Private methods.
 
 bool WebNotificationTray::ShouldShowMessageCenter() {
-  return !(status_area_widget()->system_tray() &&
-           status_area_widget()->system_tray()->HasNotificationBubble());
+  return !(status_area_widget_->system_tray() &&
+           status_area_widget_->system_tray()->HasNotificationBubble());
 }
 
 bool WebNotificationTray::ShouldBlockShelfAutoHide() const {
@@ -522,8 +523,11 @@ message_center::MessageCenter* WebNotificationTray::message_center() const {
 }
 
 bool WebNotificationTray::IsLoggedIn() const {
-  return status_area_widget()->login_status() != LoginStatus::NOT_LOGGED_IN &&
-         !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
+  WmShell* shell = WmShell::Get();
+  // TODO(jamescook): Should this also check LoginState::LOCKED?
+  return shell->system_tray_delegate()->GetUserLoginStatus() !=
+             LoginStatus::NOT_LOGGED_IN &&
+         !shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 }
 
 // Methods for testing

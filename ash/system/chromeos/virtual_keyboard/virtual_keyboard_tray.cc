@@ -28,8 +28,7 @@
 namespace ash {
 
 VirtualKeyboardTray::VirtualKeyboardTray(StatusAreaWidget* status_area_widget)
-    : TrayBackgroundView(status_area_widget),
-      button_(NULL) {
+    : TrayBackgroundView(status_area_widget->wm_shelf()), button_(nullptr) {
   button_ = new views::ImageButton(this);
   if (MaterialDesignController::IsShelfMaterial()) {
     gfx::ImageSkia image_md =

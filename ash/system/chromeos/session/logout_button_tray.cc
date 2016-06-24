@@ -95,7 +95,7 @@ LogoutButton::~LogoutButton() {
 }
 
 LogoutButtonTray::LogoutButtonTray(StatusAreaWidget* status_area_widget)
-    : TrayBackgroundView(status_area_widget),
+    : TrayBackgroundView(status_area_widget->wm_shelf()),
       button_(NULL),
       login_status_(LoginStatus::NOT_LOGGED_IN),
       show_logout_button_in_tray_(false) {

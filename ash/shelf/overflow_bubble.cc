@@ -4,12 +4,12 @@
 
 #include "ash/shelf/overflow_bubble.h"
 
+#include "ash/common/system/tray/tray_background_view.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/tray/tray_background_view.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 
