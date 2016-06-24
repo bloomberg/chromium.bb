@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_DESKTOP_ENVIRONMENT_H_
 #define REMOTING_HOST_DESKTOP_ENVIRONMENT_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -53,6 +54,10 @@ class DesktopEnvironment {
   // Passes the final set of capabilities negotiated between the client and host
   // to |this|.
   virtual void SetCapabilities(const std::string& capabilities) = 0;
+
+  // Returns an id which identifies the current desktop session on Windows.
+  // Other platforms will always return the default value (UINT32_MAX).
+  virtual uint32_t GetDesktopSessionId() const = 0;
 };
 
 // Used to create |DesktopEnvironment| instances.

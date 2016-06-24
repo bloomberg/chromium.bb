@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_BASIC_DESKTOP_ENVIRONMENT_H_
 #define REMOTING_HOST_BASIC_DESKTOP_ENVIRONMENT_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -36,6 +37,7 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
       override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
+  uint32_t GetDesktopSessionId() const override;
 
  protected:
   friend class BasicDesktopEnvironmentFactory;

@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 #define REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 
+#include <cstdint>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -43,6 +45,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_METHOD0(CreateMouseCursorMonitorPtr, webrtc::MouseCursorMonitor*());
   MOCK_CONST_METHOD0(GetCapabilities, std::string());
   MOCK_METHOD1(SetCapabilities, void(const std::string&));
+  MOCK_CONST_METHOD0(GetDesktopSessionId, uint32_t());
 
   // DesktopEnvironment implementation.
   std::unique_ptr<AudioCapturer> CreateAudioCapturer() override;

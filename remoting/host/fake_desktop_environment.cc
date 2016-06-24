@@ -92,6 +92,10 @@ std::string FakeDesktopEnvironment::GetCapabilities() const {
 
 void FakeDesktopEnvironment::SetCapabilities(const std::string& capabilities) {}
 
+uint32_t FakeDesktopEnvironment::GetDesktopSessionId() const {
+  return UINT32_MAX;
+}
+
 FakeDesktopEnvironmentFactory::FakeDesktopEnvironmentFactory() {}
 FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() {}
 

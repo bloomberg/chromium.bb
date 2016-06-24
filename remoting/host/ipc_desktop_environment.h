@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_IPC_DESKTOP_ENVIRONMENT_H_
 #define REMOTING_HOST_IPC_DESKTOP_ENVIRONMENT_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -56,6 +57,7 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
       override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
+  uint32_t GetDesktopSessionId() const override;
 
  private:
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;

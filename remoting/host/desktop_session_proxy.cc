@@ -200,6 +200,13 @@ void DesktopSessionProxy::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: network <- desktop (" << peer_pid << ")";
+
+#if defined(OS_WIN)
+  if (!ProcessIdToSessionId(peer_pid,
+                            reinterpret_cast<DWORD*>(&desktop_session_id_))) {
+    PLOG(ERROR) << "ProcessIdToSessionId() failed!";
+  }
+#endif  // defined(OS_WIN)
 }
 
 void DesktopSessionProxy::OnChannelError() {
@@ -253,6 +260,7 @@ void DesktopSessionProxy::DetachFromDesktop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   desktop_channel_.reset();
+  desktop_session_id_ = UINT32_MAX;
 
   if (desktop_process_.IsValid())
     desktop_process_.Close();
