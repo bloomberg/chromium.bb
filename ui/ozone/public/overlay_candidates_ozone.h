@@ -7,9 +7,12 @@
 
 #include <vector>
 
+#include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/ozone_base_export.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
