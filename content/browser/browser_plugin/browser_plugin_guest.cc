@@ -103,7 +103,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       last_drag_status_(blink::WebDragStatusUnknown),
       seen_embedder_system_drag_ended_(false),
       seen_embedder_drag_source_ended_at_(false),
-      ignore_dragged_url_(false),
+      ignore_dragged_url_(true),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
@@ -535,7 +535,7 @@ void BrowserPluginGuest::EndSystemDragIfApplicable() {
     last_drag_status_ = blink::WebDragStatusUnknown;
     seen_embedder_system_drag_ended_ = false;
     seen_embedder_drag_source_ended_at_ = false;
-    ignore_dragged_url_ = false;
+    ignore_dragged_url_ = true;
   }
 }
 
@@ -813,7 +813,7 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
       // Only track the URL being dragged over the guest if the link isn't
       // coming from the guest.
       if (!embedder->DragEnteredGuest(this))
-        ignore_dragged_url_ = true;
+        ignore_dragged_url_ = false;
       break;
     case blink::WebDragStatusOver:
       host->DragTargetDragOver(location, location, mask,
@@ -822,18 +822,18 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
     case blink::WebDragStatusLeave:
       embedder->DragLeftGuest(this);
       host->DragTargetDragLeave();
-      ignore_dragged_url_ = false;
+      ignore_dragged_url_ = true;
       break;
     case blink::WebDragStatusDrop:
       host->DragTargetDrop(filtered_data, location, location,
                            drop_data.key_modifiers);
 
-      if (ignore_dragged_url_ && filtered_data.url.is_valid())
+      if (!ignore_dragged_url_ && filtered_data.url.is_valid())
         delegate_->DidDropLink(filtered_data.url);
-      ignore_dragged_url_ = false;
+      ignore_dragged_url_ = true;
       break;
     case blink::WebDragStatusUnknown:
-      ignore_dragged_url_ = false;
+      ignore_dragged_url_ = true;
       NOTREACHED();
   }
   last_drag_status_ = drag_status;
