@@ -334,6 +334,9 @@ WebScrollbarLayer* ScrollingCoordinator::getWebScrollbarLayer(ScrollableArea* sc
 
 void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea* scrollableArea, ScrollbarOrientation orientation)
 {
+    if (!m_page || !m_page->mainFrame())
+        return;
+
     bool isMainFrame = isForMainFrame(scrollableArea);
     GraphicsLayer* scrollbarGraphicsLayer = orientation == HorizontalScrollbar
         ? scrollableArea->layerForHorizontalScrollbar()
@@ -374,12 +377,13 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
 
 bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* scrollableArea)
 {
+    if (!m_page || !m_page->mainFrame())
+        return false;
+
     GraphicsLayer* scrollLayer = scrollableArea->layerForScrolling();
 
-    if (scrollLayer) {
-        ASSERT(m_page);
+    if (scrollLayer)
         scrollLayer->setScrollableArea(scrollableArea, isForViewport(scrollableArea));
-    }
 
     WebLayer* webLayer = toWebLayer(scrollableArea->layerForScrolling());
     WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
