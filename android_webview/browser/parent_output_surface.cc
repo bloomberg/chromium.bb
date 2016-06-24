@@ -5,6 +5,7 @@
 #include "android_webview/browser/parent_output_surface.h"
 
 #include "android_webview/browser/aw_render_thread_context_provider.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
@@ -31,7 +32,7 @@ void ParentOutputSurface::Reshape(const gfx::Size& size,
   surface_size_ = size;
 }
 
-void ParentOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+void ParentOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   client_->DidSwapBuffers();
 }

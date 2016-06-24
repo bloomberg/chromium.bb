@@ -30,7 +30,7 @@ class DirectOutputSurface : public cc::OutputSurface,
 
   // cc::OutputSurface implementation
   bool BindToClient(cc::OutputSurfaceClient* client) override;
-  void SwapBuffers(cc::CompositorFrame* frame) override;
+  void SwapBuffers(cc::CompositorFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 
   // SurfacesContextProviderDelegate implementation

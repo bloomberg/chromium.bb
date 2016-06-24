@@ -155,11 +155,11 @@ void SynchronousCompositorOutputSurface::Reshape(const gfx::Size& size,
 }
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
-    cc::CompositorFrame* frame) {
+    cc::CompositorFrame frame) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
   if (!fallback_tick_running_) {
-    sync_client_->SwapBuffers(output_surface_id_, frame);
+    sync_client_->SwapBuffers(output_surface_id_, std::move(frame));
     DeliverMessages();
   }
   client_->DidSwapBuffers();

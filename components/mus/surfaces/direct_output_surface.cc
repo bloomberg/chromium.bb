@@ -48,15 +48,15 @@ void DirectOutputSurface::OnVSyncParametersUpdated(
       interval.is_zero() ? cc::BeginFrameArgs::DefaultInterval() : interval);
 }
 
-void DirectOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+void DirectOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   DCHECK(context_provider_);
-  DCHECK(frame->gl_frame_data);
-  if (frame->gl_frame_data->sub_buffer_rect ==
-      gfx::Rect(frame->gl_frame_data->size)) {
+  DCHECK(frame.gl_frame_data);
+  if (frame.gl_frame_data->sub_buffer_rect ==
+      gfx::Rect(frame.gl_frame_data->size)) {
     context_provider_->ContextSupport()->Swap();
   } else {
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        frame->gl_frame_data->sub_buffer_rect);
+        frame.gl_frame_data->sub_buffer_rect);
   }
 
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();

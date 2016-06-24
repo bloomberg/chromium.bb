@@ -1478,22 +1478,21 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
   return false;
 }
 
-void RenderWidgetHostViewMac::OnSwapCompositorFrame(
-    uint32_t output_surface_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
+void RenderWidgetHostViewMac::OnSwapCompositorFrame(uint32_t output_surface_id,
+                                                    cc::CompositorFrame frame) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
-  last_scroll_offset_ = frame->metadata.root_scroll_offset;
+  last_scroll_offset_ = frame.metadata.root_scroll_offset;
 
-  page_at_minimum_scale_ = frame->metadata.page_scale_factor ==
-                           frame->metadata.min_page_scale_factor;
+  page_at_minimum_scale_ =
+      frame.metadata.page_scale_factor == frame.metadata.min_page_scale_factor;
 
-  if (frame->delegated_frame_data) {
-    float scale_factor = frame->metadata.device_scale_factor;
+  if (frame.delegated_frame_data) {
+    float scale_factor = frame.metadata.device_scale_factor;
 
     // Compute the frame size based on the root render pass rect size.
     cc::RenderPass* root_pass =
-        frame->delegated_frame_data->render_pass_list.back().get();
+        frame.delegated_frame_data->render_pass_list.back().get();
     gfx::Size pixel_size = root_pass->output_rect.size();
     gfx::Size dip_size = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
 

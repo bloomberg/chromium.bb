@@ -203,62 +203,62 @@ void MailboxOutputSurface::OnSwapAck(uint32_t output_surface_id,
 
   ReclaimResources(&ack);
   client_->DidSwapBuffersComplete();
-}
-
-void MailboxOutputSurface::ShortcutSwapAck(
-    uint32_t output_surface_id,
-    std::unique_ptr<cc::GLFrameData> gl_frame_data) {
-  if (!previous_frame_ack_) {
-    previous_frame_ack_.reset(new cc::CompositorFrameAck);
-    previous_frame_ack_->gl_frame_data.reset(new cc::GLFrameData);
   }
 
-  OnSwapAck(output_surface_id, *previous_frame_ack_);
+  void MailboxOutputSurface::ShortcutSwapAck(
+      uint32_t output_surface_id,
+      std::unique_ptr<cc::GLFrameData> gl_frame_data) {
+    if (!previous_frame_ack_) {
+      previous_frame_ack_.reset(new cc::CompositorFrameAck);
+      previous_frame_ack_->gl_frame_data.reset(new cc::GLFrameData);
+    }
 
-  previous_frame_ack_->gl_frame_data = std::move(gl_frame_data);
-}
+    OnSwapAck(output_surface_id, *previous_frame_ack_);
 
-void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
-  // This class is here to support layout tests that are currently
-  // doing a readback in the renderer instead of the browser. So they
-  // are using deprecated code paths in the renderer and don't need to
-  // actually swap anything to the browser. We shortcut the swap to the
-  // browser here and just ack directly within the renderer process.
-  // Once crbug.com/311404 is fixed, this can be removed.
+    previous_frame_ack_->gl_frame_data = std::move(gl_frame_data);
+  }
 
-  // This would indicate that crbug.com/311404 is being fixed, and this
-  // block needs to be removed.
-  DCHECK(!frame->delegated_frame_data);
+  void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
+    // This class is here to support layout tests that are currently
+    // doing a readback in the renderer instead of the browser. So they
+    // are using deprecated code paths in the renderer and don't need to
+    // actually swap anything to the browser. We shortcut the swap to the
+    // browser here and just ack directly within the renderer process.
+    // Once crbug.com/311404 is fixed, this can be removed.
 
-  DCHECK(frame->gl_frame_data);
-  DCHECK(!surface_size_.IsEmpty());
-  DCHECK(surface_size_ == current_backing_.size);
-  DCHECK(frame->gl_frame_data->size == current_backing_.size);
-  DCHECK(!current_backing_.mailbox.IsZero() ||
-         context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
-             GL_NO_ERROR);
+    // This would indicate that crbug.com/311404 is being fixed, and this
+    // block needs to be removed.
+    DCHECK(!frame.delegated_frame_data);
 
-  frame->gl_frame_data->mailbox = current_backing_.mailbox;
+    DCHECK(frame.gl_frame_data);
+    DCHECK(!surface_size_.IsEmpty());
+    DCHECK(surface_size_ == current_backing_.size);
+    DCHECK(frame.gl_frame_data->size == current_backing_.size);
+    DCHECK(!current_backing_.mailbox.IsZero() ||
+           context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
+               GL_NO_ERROR);
 
-  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+    frame.gl_frame_data->mailbox = current_backing_.mailbox;
 
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->Flush();
-  gl->GenSyncTokenCHROMIUM(fence_sync,
-                           frame->gl_frame_data->sync_token.GetData());
+    gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
 
-  // Copy the |sync_token| out of the GLFrameData before moving it into the
-  // closure.
-  gpu::SyncToken sync_token = frame->gl_frame_data->sync_token;
-  context_provider()->ContextSupport()->SignalSyncToken(
-      sync_token, base::Bind(&MailboxOutputSurface::ShortcutSwapAck,
-                             weak_ptrs_.GetWeakPtr(), output_surface_id_,
-                             base::Passed(&frame->gl_frame_data)));
+    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->Flush();
+    gl->GenSyncTokenCHROMIUM(fence_sync,
+                             frame.gl_frame_data->sync_token.GetData());
 
-  pending_textures_.push_back(current_backing_);
-  current_backing_ = TransferableFrame();
+    // Copy the |sync_token| out of the GLFrameData before moving it into the
+    // closure.
+    gpu::SyncToken sync_token = frame.gl_frame_data->sync_token;
+    context_provider()->ContextSupport()->SignalSyncToken(
+        sync_token, base::Bind(&MailboxOutputSurface::ShortcutSwapAck,
+                               weak_ptrs_.GetWeakPtr(), output_surface_id_,
+                               base::Passed(&frame.gl_frame_data)));
 
-  client_->DidSwapBuffers();
+    pending_textures_.push_back(current_backing_);
+    current_backing_ = TransferableFrame();
+
+    client_->DidSwapBuffers();
 }
 
 MailboxOutputSurface::TransferableFrame::TransferableFrame() : texture_id(0) {}

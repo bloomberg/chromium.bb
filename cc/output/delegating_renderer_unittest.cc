@@ -44,11 +44,8 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
                                    DrawResult draw_result) override {
     EXPECT_EQ(0u, output_surface_->num_sent_frames());
 
-    const CompositorFrame& last_frame = output_surface_->last_sent_frame();
-    EXPECT_FALSE(last_frame.delegated_frame_data);
-    EXPECT_FALSE(last_frame.gl_frame_data);
-    EXPECT_EQ(0.f, last_frame.metadata.min_page_scale_factor);
-    EXPECT_EQ(0.f, last_frame.metadata.max_page_scale_factor);
+    const CompositorFrame* last_frame = output_surface_->last_sent_frame();
+    EXPECT_EQ(nullptr, last_frame);
     return DRAW_SUCCESS;
   }
 
@@ -60,18 +57,18 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
     EXPECT_TRUE(result);
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
-    const CompositorFrame& last_frame = output_surface_->last_sent_frame();
-    DelegatedFrameData* last_frame_data = last_frame.delegated_frame_data.get();
-    ASSERT_TRUE(last_frame.delegated_frame_data);
-    EXPECT_FALSE(last_frame.gl_frame_data);
+    const CompositorFrame* last_frame = output_surface_->last_sent_frame();
+    DelegatedFrameData* last_frame_data =
+        last_frame->delegated_frame_data.get();
+    ASSERT_TRUE(last_frame->delegated_frame_data);
+    EXPECT_FALSE(last_frame->gl_frame_data);
     EXPECT_EQ(host_impl->DeviceViewport().ToString(),
               last_frame_data->render_pass_list.back()->output_rect.ToString());
-    EXPECT_EQ(0.5f, last_frame.metadata.min_page_scale_factor);
-    EXPECT_EQ(4.f, last_frame.metadata.max_page_scale_factor);
+    EXPECT_EQ(0.5f, last_frame->metadata.min_page_scale_factor);
+    EXPECT_EQ(4.f, last_frame->metadata.max_page_scale_factor);
 
-    EXPECT_EQ(
-        0u, last_frame.delegated_frame_data->resource_list.size());
-    EXPECT_EQ(1u, last_frame.delegated_frame_data->render_pass_list.size());
+    EXPECT_EQ(0u, last_frame->delegated_frame_data->resource_list.size());
+    EXPECT_EQ(1u, last_frame->delegated_frame_data->render_pass_list.size());
 
     EndTest();
   }
@@ -112,16 +109,16 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     EXPECT_TRUE(result);
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
-    const CompositorFrame& last_frame = output_surface_->last_sent_frame();
-    ASSERT_TRUE(last_frame.delegated_frame_data);
+    const CompositorFrame* last_frame = output_surface_->last_sent_frame();
+    ASSERT_TRUE(last_frame->delegated_frame_data);
 
-    EXPECT_EQ(2u, last_frame.delegated_frame_data->render_pass_list.size());
+    EXPECT_EQ(2u, last_frame->delegated_frame_data->render_pass_list.size());
     // Each render pass has 10 resources in it. And the root render pass has a
     // mask resource used when drawing the child render pass, as well as its
     // replica (it's added twice). The number 10 may change if
     // AppendOneOfEveryQuadType() is updated, and the value here should be
     // updated accordingly.
-    EXPECT_EQ(22u, last_frame.delegated_frame_data->resource_list.size());
+    EXPECT_EQ(22u, last_frame->delegated_frame_data->resource_list.size());
 
     EndTest();
   }

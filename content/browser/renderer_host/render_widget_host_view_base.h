@@ -197,9 +197,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Informs that the focused DOM node has changed.
   virtual void FocusedNodeChanged(bool is_editable_node) {}
 
-  virtual void OnSwapCompositorFrame(
-      uint32_t output_surface_id,
-      std::unique_ptr<cc::CompositorFrame> frame) {}
+  virtual void OnSwapCompositorFrame(uint32_t output_surface_id,
+                                     cc::CompositorFrame frame) {}
 
   // This method exists to allow removing of displayed graphics, after a new
   // page has been loaded, to prevent the displayed URL from being out of sync

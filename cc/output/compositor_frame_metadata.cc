@@ -16,9 +16,20 @@ CompositorFrameMetadata::CompositorFrameMetadata()
       root_background_color(SK_ColorWHITE) {}
 
 CompositorFrameMetadata::CompositorFrameMetadata(
-    const CompositorFrameMetadata& other) = default;
+    CompositorFrameMetadata&& other) = default;
 
 CompositorFrameMetadata::~CompositorFrameMetadata() {
 }
+
+CompositorFrameMetadata& CompositorFrameMetadata::operator=(
+    CompositorFrameMetadata&& other) = default;
+
+CompositorFrameMetadata CompositorFrameMetadata::Clone() const {
+  CompositorFrameMetadata metadata(*this);
+  return metadata;
+}
+
+CompositorFrameMetadata::CompositorFrameMetadata(
+    const CompositorFrameMetadata& other) = default;
 
 }  // namespace cc

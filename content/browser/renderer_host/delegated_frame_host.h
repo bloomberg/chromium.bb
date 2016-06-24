@@ -132,7 +132,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Public interface exposed to RenderWidgetHostView.
 
   void SwapDelegatedFrame(uint32_t output_surface_id,
-                          std::unique_ptr<cc::CompositorFrame> frame);
+                          cc::CompositorFrame frame);
   void ClearDelegatedFrame();
   void WasHidden();
   void WasShown(const ui::LatencyInfo& latency_info);

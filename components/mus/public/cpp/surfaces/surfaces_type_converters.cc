@@ -39,7 +39,7 @@ TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
   cc::DelegatedFrameData* frame_data = input.delegated_frame_data.get();
   frame->resources =
       mojo::Array<cc::TransferableResource>(frame_data->resource_list);
-  frame->metadata = input.metadata;
+  frame->metadata = input.metadata.Clone();
   const cc::RenderPassList& pass_list = frame_data->render_pass_list;
   std::vector<std::unique_ptr<cc::RenderPass>> copy;
   cc::RenderPass::CopyAll(pass_list, &copy);
@@ -59,7 +59,7 @@ std::unique_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
     frame_data->render_pass_list.push_back(std::move(input->passes[i]));
   }
   std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  cc::CompositorFrameMetadata metadata = input->metadata;
+  frame->metadata = input->metadata.Clone();
   frame->delegated_frame_data = std::move(frame_data);
   return frame;
 }

@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/base/region.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface.h"
@@ -154,7 +155,7 @@ class OverlayOutputSurface : public OutputSurface {
     // TestContextProvider has no real framebuffer, just use RGB.
     return GL_RGB;
   }
-  void SwapBuffers(CompositorFrame* frame) override {
+  void SwapBuffers(CompositorFrame frame) override {
     client_->DidSwapBuffers();
   }
   void OnSwapBuffersComplete() override { client_->DidSwapBuffersComplete(); }

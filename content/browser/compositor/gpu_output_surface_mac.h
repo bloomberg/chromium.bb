@@ -23,7 +23,7 @@ class GpuOutputSurfaceMac
   ~GpuOutputSurfaceMac() override;
 
   // cc::OutputSurface implementation.
-  void SwapBuffers(cc::CompositorFrame* frame) override;
+  void SwapBuffers(cc::CompositorFrame frame) override;
   bool SurfaceIsSuspendForRecycle() const override;
 
   // BrowserCompositorOutputSurface implementation.

@@ -8,12 +8,10 @@ namespace cc {
 
 CompositorFrame::CompositorFrame() {}
 
+CompositorFrame::CompositorFrame(CompositorFrame&& other) = default;
+
 CompositorFrame::~CompositorFrame() {}
 
-void CompositorFrame::AssignTo(CompositorFrame* target) {
-  target->delegated_frame_data = std::move(delegated_frame_data);
-  target->gl_frame_data = std::move(gl_frame_data);
-  target->metadata = metadata;
-}
+CompositorFrame& CompositorFrame::operator=(CompositorFrame&& other) = default;
 
 }  // namespace cc

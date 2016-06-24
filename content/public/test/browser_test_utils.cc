@@ -1159,7 +1159,7 @@ FrameWatcher::~FrameWatcher() {
 
 void FrameWatcher::ReceivedFrameSwap(cc::CompositorFrameMetadata metadata) {
   --frames_to_wait_;
-  last_metadata_ = metadata;
+  last_metadata_ = std::move(metadata);
   if (frames_to_wait_ == 0)
     quit_.Run();
 }
@@ -1169,12 +1169,12 @@ bool FrameWatcher::OnMessageReceived(const IPC::Message& message) {
     ViewHostMsg_SwapCompositorFrame::Param param;
     if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
       return false;
-    std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-    std::get<1>(param).AssignTo(frame.get());
+    cc::CompositorFrame frame(std::move(std::get<1>(param)));
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&FrameWatcher::ReceivedFrameSwap, this, frame->metadata));
+        base::Bind(&FrameWatcher::ReceivedFrameSwap, this,
+                   base::Passed(std::move(frame.metadata))));
   }
   return false;
 }

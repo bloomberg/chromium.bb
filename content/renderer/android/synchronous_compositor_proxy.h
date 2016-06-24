@@ -61,7 +61,7 @@ class SynchronousCompositorProxy
   void DidActivatePendingTree() override;
   void Invalidate() override;
   void SwapBuffers(uint32_t output_surface_id,
-                   cc::CompositorFrame* frame) override;
+                   cc::CompositorFrame frame) override;
 
   void SetOutputSurface(SynchronousCompositorOutputSurface* output_surface);
   void OnMessageReceived(const IPC::Message& message);
@@ -88,14 +88,14 @@ class SynchronousCompositorProxy
       SyncCompositorCommonRendererParams* common_renderer_params);
   void SetScroll(const gfx::ScrollOffset& total_scroll_offset);
 
-  void SwapBuffersHw(uint32_t output_surface_id, cc::CompositorFrame* frame);
-  void SendDemandDrawHwReply(cc::CompositorFrame* frame,
+  void SwapBuffersHw(uint32_t output_surface_id, cc::CompositorFrame frame);
+  void SendDemandDrawHwReply(cc::CompositorFrame frame,
                              uint32_t output_surface_id,
                              IPC::Message* reply_message);
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
-  void SwapBuffersSw(cc::CompositorFrame* frame);
+  void SwapBuffersSw(cc::CompositorFrame frame);
   void SendDemandDrawSwReply(bool success,
-                             cc::CompositorFrame* frame,
+                             cc::CompositorFrame frame,
                              IPC::Message* reply_message);
   void SendAsyncRendererStateIfNeeded();
 

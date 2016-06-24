@@ -23,7 +23,7 @@ class BlimpOutputSurface : public cc::OutputSurface {
   ~BlimpOutputSurface() override;
 
   // OutputSurface implementation.
-  void SwapBuffers(cc::CompositorFrame* frame) override;
+  void SwapBuffers(cc::CompositorFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 
  private:

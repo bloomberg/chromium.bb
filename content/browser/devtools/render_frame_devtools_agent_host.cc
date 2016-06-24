@@ -868,7 +868,8 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
   if (page_handler_)
-    page_handler_->OnSwapCompositorFrame(std::get<1>(param).metadata);
+    page_handler_->OnSwapCompositorFrame(
+        std::move(std::get<1>(param).metadata));
   if (input_handler_)
     input_handler_->OnSwapCompositorFrame(std::get<1>(param).metadata);
   if (frame_trace_recorder_ && tracing_handler_->did_initiate_recording()) {
@@ -878,9 +879,9 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
 }
 
 void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
-    const cc::CompositorFrameMetadata& frame_metadata) {
+    cc::CompositorFrameMetadata frame_metadata) {
   if (page_handler_)
-    page_handler_->OnSynchronousSwapCompositorFrame(frame_metadata);
+    page_handler_->OnSynchronousSwapCompositorFrame(std::move(frame_metadata));
   if (input_handler_)
     input_handler_->OnSwapCompositorFrame(frame_metadata);
   if (frame_trace_recorder_ && tracing_handler_->did_initiate_recording()) {

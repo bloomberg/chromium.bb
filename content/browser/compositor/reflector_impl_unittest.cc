@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -88,7 +89,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
-  void SwapBuffers(cc::CompositorFrame* frame) override {}
+  void SwapBuffers(cc::CompositorFrame frame) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return GL_RGB; }
 
   void OnReflectorChanged() override {

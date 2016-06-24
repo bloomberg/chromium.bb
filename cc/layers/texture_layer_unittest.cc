@@ -1108,7 +1108,7 @@ class TextureLayerNoExtraCommitForMailboxTest
   void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
     ASSERT_TRUE(result);
     DelegatedFrameData* delegated_frame_data =
-        output_surface()->last_sent_frame().delegated_frame_data.get();
+        output_surface()->last_sent_frame()->delegated_frame_data.get();
     if (!delegated_frame_data)
       return;
 
@@ -1245,7 +1245,7 @@ class TextureLayerChangeInvisibleMailboxTest
   void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
     ASSERT_TRUE(result);
     DelegatedFrameData* delegated_frame_data =
-        output_surface()->last_sent_frame().delegated_frame_data.get();
+        output_surface()->last_sent_frame()->delegated_frame_data.get();
     if (!delegated_frame_data)
       return;
 

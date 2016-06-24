@@ -79,30 +79,29 @@ void GpuBrowserCompositorOutputSurface::OnReflectorChanged() {
   }
 }
 
-void GpuBrowserCompositorOutputSurface::SwapBuffers(
-    cc::CompositorFrame* frame) {
-  DCHECK(frame->gl_frame_data);
+void GpuBrowserCompositorOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
+  DCHECK(frame.gl_frame_data);
 
-  GetCommandBufferProxy()->SetLatencyInfo(frame->metadata.latency_info);
+  GetCommandBufferProxy()->SetLatencyInfo(frame.metadata.latency_info);
 
   if (reflector_) {
-    if (frame->gl_frame_data->sub_buffer_rect ==
-        gfx::Rect(frame->gl_frame_data->size)) {
+    if (frame.gl_frame_data->sub_buffer_rect ==
+        gfx::Rect(frame.gl_frame_data->size)) {
       reflector_texture_->CopyTextureFullImage(SurfaceSize());
       reflector_->OnSourceSwapBuffers();
     } else {
-      const gfx::Rect& rect = frame->gl_frame_data->sub_buffer_rect;
+      const gfx::Rect& rect = frame.gl_frame_data->sub_buffer_rect;
       reflector_texture_->CopyTextureSubImage(rect);
       reflector_->OnSourcePostSubBuffer(rect);
     }
   }
 
-  if (frame->gl_frame_data->sub_buffer_rect ==
-      gfx::Rect(frame->gl_frame_data->size)) {
+  if (frame.gl_frame_data->sub_buffer_rect ==
+      gfx::Rect(frame.gl_frame_data->size)) {
     context_provider_->ContextSupport()->Swap();
   } else {
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        frame->gl_frame_data->sub_buffer_rect);
+        frame.gl_frame_data->sub_buffer_rect);
   }
 
   client_->DidSwapBuffers();

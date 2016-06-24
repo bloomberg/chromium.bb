@@ -141,7 +141,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // itself). For successful swaps, the implementation must call
   // OutputSurfaceClient::DidSwapBuffers() and eventually
   // DidSwapBuffersComplete().
-  virtual void SwapBuffers(CompositorFrame* frame) = 0;
+  virtual void SwapBuffers(CompositorFrame frame) = 0;
   virtual void OnSwapBuffersComplete();
 
   // Called by subclasses after receiving a response from the gpu process to a

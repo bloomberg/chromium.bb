@@ -119,14 +119,14 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
     frame.frame.reset();
   }
   if (frame.frame) {
-    UpdateFrameMetaData(frame.frame->metadata);
+    UpdateFrameMetaData(frame.frame->metadata.Clone());
   }
   return frame;
 }
 
 void SynchronousCompositorHost::UpdateFrameMetaData(
-    const cc::CompositorFrameMetadata& frame_metadata) {
-  rwhva_->SynchronousFrameMetadata(frame_metadata);
+    cc::CompositorFrameMetadata frame_metadata) {
+  rwhva_->SynchronousFrameMetadata(std::move(frame_metadata));
 }
 
 namespace {
@@ -161,7 +161,7 @@ bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
   if (!success)
     return false;
   ProcessCommonParams(common_renderer_params);
-  UpdateFrameMetaData(frame->metadata);
+  UpdateFrameMetaData(std::move(frame->metadata));
   return true;
 }
 
@@ -227,7 +227,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
     return false;
 
   ProcessCommonParams(common_renderer_params);
-  UpdateFrameMetaData(frame->metadata);
+  UpdateFrameMetaData(std::move(frame->metadata));
 
   SkBitmap bitmap;
   if (!bitmap.installPixels(info, software_draw_shm_->shm.memory(), stride))

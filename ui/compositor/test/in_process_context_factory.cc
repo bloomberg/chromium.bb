@@ -65,15 +65,15 @@ class DirectOutputSurface : public cc::OutputSurface {
       return false;
     return true;
   }
-  void SwapBuffers(cc::CompositorFrame* frame) override {
+  void SwapBuffers(cc::CompositorFrame frame) override {
     DCHECK(context_provider_.get());
-    DCHECK(frame->gl_frame_data);
-    if (frame->gl_frame_data->sub_buffer_rect ==
-        gfx::Rect(frame->gl_frame_data->size)) {
+    DCHECK(frame.gl_frame_data);
+    if (frame.gl_frame_data->sub_buffer_rect ==
+        gfx::Rect(frame.gl_frame_data->size)) {
       context_provider_->ContextSupport()->Swap();
     } else {
       context_provider_->ContextSupport()->PartialSwapBuffers(
-          frame->gl_frame_data->sub_buffer_rect);
+          frame.gl_frame_data->sub_buffer_rect);
     }
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
     const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();

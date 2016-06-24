@@ -1535,20 +1535,19 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   ViewHostMsg_SwapCompositorFrame::Param param;
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return false;
-  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  cc::CompositorFrame frame(std::move(std::get<1>(param)));
   uint32_t output_surface_id = std::get<0>(param);
-  std::get<1>(param).AssignTo(frame.get());
   std::vector<IPC::Message> messages_to_deliver_with_frame;
   messages_to_deliver_with_frame.swap(std::get<2>(param));
 
-  if (!ui::LatencyInfo::Verify(frame->metadata.latency_info,
+  if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
                                "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
-    std::vector<ui::LatencyInfo>().swap(frame->metadata.latency_info);
+    std::vector<ui::LatencyInfo>().swap(frame.metadata.latency_info);
   }
 
-  latency_tracker_.OnSwapCompositorFrame(&frame->metadata.latency_info);
+  latency_tracker_.OnSwapCompositorFrame(&frame.metadata.latency_info);
 
-  bool is_mobile_optimized = IsMobileOptimizedFrame(frame->metadata);
+  bool is_mobile_optimized = IsMobileOptimizedFrame(frame.metadata);
   input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);
   if (touch_emulator_)
     touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
@@ -1558,13 +1557,12 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     view_->DidReceiveRendererFrame();
   } else {
     cc::CompositorFrameAck ack;
-    if (frame->gl_frame_data) {
-      ack.gl_frame_data = std::move(frame->gl_frame_data);
+    if (frame.gl_frame_data) {
+      ack.gl_frame_data = std::move(frame.gl_frame_data);
       ack.gl_frame_data->sync_token.Clear();
-    } else if (frame->delegated_frame_data) {
+    } else if (frame.delegated_frame_data) {
       cc::TransferableResource::ReturnResources(
-          frame->delegated_frame_data->resource_list,
-          &ack.resources);
+          frame.delegated_frame_data->resource_list, &ack.resources);
     }
     SendSwapCompositorFrameAck(routing_id_, output_surface_id,
                                process_->GetID(), ack);

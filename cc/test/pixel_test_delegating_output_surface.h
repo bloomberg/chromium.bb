@@ -32,7 +32,7 @@ class PixelTestDelegatingOutputSurface : public OutputSurface,
   // OutputSurface implementation.
   bool BindToClient(OutputSurfaceClient* client) override;
   void DetachFromClient() override;
-  void SwapBuffers(CompositorFrame* frame) override;
+  void SwapBuffers(CompositorFrame frame) override;
   void ForceReclaimResources() override;
   void BindFramebuffer() override;
   uint32_t GetFramebufferCopyTextureFormat() override;

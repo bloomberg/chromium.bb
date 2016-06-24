@@ -142,7 +142,8 @@ void DevToolsFrameTraceRecorder::OnSynchronousSwapCompositorFrame(
   TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
   if (!is_new_trace && last_metadata_)
     CaptureFrame(host, *last_metadata_);
-  last_metadata_.reset(new cc::CompositorFrameMetadata(frame_metadata));
+  last_metadata_.reset(new cc::CompositorFrameMetadata);
+  *last_metadata_ = frame_metadata.Clone();
 }
 
 }  // namespace content

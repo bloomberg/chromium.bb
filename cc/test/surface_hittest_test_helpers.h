@@ -58,12 +58,11 @@ void CreateRenderPass(const RenderPassId& render_pass_id,
                       const gfx::Transform& transform_to_root_target,
                       RenderPassList* render_pass_list);
 
-std::unique_ptr<CompositorFrame> CreateCompositorFrameWithRenderPassList(
+CompositorFrame CreateCompositorFrameWithRenderPassList(
     RenderPassList* render_pass_list);
 
-std::unique_ptr<CompositorFrame> CreateCompositorFrame(
-    const gfx::Rect& root_rect,
-    RenderPass** render_pass);
+CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
+                                      RenderPass** render_pass);
 
 class TestSurfaceHittestDelegate : public SurfaceHittestDelegate {
  public:

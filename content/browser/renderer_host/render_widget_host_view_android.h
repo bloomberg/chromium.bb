@@ -148,9 +148,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  void OnSwapCompositorFrame(
-      uint32_t output_surface_id,
-      std::unique_ptr<cc::CompositorFrame> frame) override;
+  void OnSwapCompositorFrame(uint32_t output_surface_id,
+                             cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override;
   void DidOverscroll(const DidOverscrollParams& params) override;
   void DidStopFlinging() override;
@@ -247,8 +246,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnShowingPastePopup(const gfx::PointF& point);
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
 
-  void SynchronousFrameMetadata(
-      const cc::CompositorFrameMetadata& frame_metadata);
+  void SynchronousFrameMetadata(cc::CompositorFrameMetadata frame_metadata);
 
   void SetOverlayVideoMode(bool enabled);
 
@@ -265,9 +263,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void DestroyDelegatedContent();
   void CheckOutputSurfaceChanged(uint32_t output_surface_id);
-  void SubmitCompositorFrame(std::unique_ptr<cc::CompositorFrame> frame_data);
+  void SubmitCompositorFrame(cc::CompositorFrame frame_data);
   void SwapDelegatedFrame(uint32_t output_surface_id,
-                          std::unique_ptr<cc::CompositorFrame> frame_data);
+                          cc::CompositorFrame frame_data);
   void SendDelegatedFrameAck(uint32_t output_surface_id);
   void SendReturnedDelegatedResources(uint32_t output_surface_id);
 
@@ -304,11 +302,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Drop any incoming frames from the renderer when there are locks on the
   // current frame.
-  void RetainFrame(uint32_t output_surface_id,
-                   std::unique_ptr<cc::CompositorFrame> frame);
+  void RetainFrame(uint32_t output_surface_id, cc::CompositorFrame frame);
 
   void InternalSwapCompositorFrame(uint32_t output_surface_id,
-                                   std::unique_ptr<cc::CompositorFrame> frame);
+                                   cc::CompositorFrame frame);
   void OnLostResources();
 
   enum VSyncRequestType {
@@ -392,11 +389,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool observing_root_window_;
 
   struct LastFrameInfo {
-    LastFrameInfo(uint32_t output_id,
-                  std::unique_ptr<cc::CompositorFrame> output_frame);
+    LastFrameInfo(uint32_t output_id, cc::CompositorFrame output_frame);
     ~LastFrameInfo();
     uint32_t output_surface_id;
-    std::unique_ptr<cc::CompositorFrame> frame;
+    cc::CompositorFrame frame;
   };
 
   std::unique_ptr<LastFrameInfo> last_frame_info_;

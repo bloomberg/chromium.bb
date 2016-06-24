@@ -78,7 +78,7 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
     CompositorFrame frame;
     frame.delegated_frame_data = std::move(frame_data);
 
-    delegated_output_surface_->SwapBuffers(&frame);
+    delegated_output_surface_->SwapBuffers(std::move(frame));
   }
 
   void SetUp() override {

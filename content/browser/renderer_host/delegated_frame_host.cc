@@ -381,12 +381,11 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   }
 }
 
-void DelegatedFrameHost::SwapDelegatedFrame(
-    uint32_t output_surface_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
-  DCHECK(frame->delegated_frame_data.get());
-  cc::DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
-  float frame_device_scale_factor = frame->metadata.device_scale_factor;
+void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
+                                            cc::CompositorFrame frame) {
+  DCHECK(frame.delegated_frame_data.get());
+  cc::DelegatedFrameData* frame_data = frame.delegated_frame_data.get();
+  float frame_device_scale_factor = frame.metadata.device_scale_factor;
 
   DCHECK(!frame_data->render_pass_list.empty());
 
@@ -407,8 +406,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
                                               &ack.resources);
 
     skipped_latency_info_list_.insert(skipped_latency_info_list_.end(),
-                                      frame->metadata.latency_info.begin(),
-                                      frame->metadata.latency_info.end());
+                                      frame.metadata.latency_info.begin(),
+                                      frame.metadata.latency_info.end());
 
     client_->DelegatedFrameHostSendCompositorSwapAck(output_surface_id, ack);
     skipped_frames_ = true;
@@ -444,7 +443,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   bool skip_frame = false;
   pending_delegated_ack_count_++;
 
-  background_color_ = frame->metadata.root_background_color;
+  background_color_ = frame.metadata.root_background_color;
 
   if (frame_size.IsEmpty()) {
     DCHECK(frame_data->resource_list.empty());
@@ -473,9 +472,9 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       current_scale_factor_ = frame_device_scale_factor;
     }
 
-    frame->metadata.latency_info.insert(frame->metadata.latency_info.end(),
-                                        skipped_latency_info_list_.begin(),
-                                        skipped_latency_info_list_.end());
+    frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
+                                       skipped_latency_info_list_.begin(),
+                                       skipped_latency_info_list_.end());
     skipped_latency_info_list_.clear();
 
     gfx::Size desired_size = client_->DelegatedFrameHostDesiredSizeInDIP();
@@ -487,7 +486,9 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn, AsWeakPtr(),
                                 output_surface_id);
     }
-    surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
+    std::unique_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame);
+    *frame_copy = std::move(frame);
+    surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame_copy),
                                             ack_callback);
   }
   released_front_lock_ = NULL;

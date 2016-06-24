@@ -36,7 +36,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   ~SoftwareRenderer() override;
   const RendererCapabilitiesImpl& Capabilities() const override;
   void Finish() override;
-  void SwapBuffers(const CompositorFrameMetadata& metadata) override;
+  void SwapBuffers(CompositorFrameMetadata metadata) override;
   void DiscardBackbuffer() override;
   void EnsureBackbuffer() override;
 

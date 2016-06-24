@@ -63,7 +63,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // Waits for rendering to finish.
   void Finish() override;
 
-  void SwapBuffers(const CompositorFrameMetadata& metadata) override;
+  void SwapBuffers(CompositorFrameMetadata metadata) override;
   void SwapBuffersComplete() override;
 
   void DidReceiveTextureInUseResponses(

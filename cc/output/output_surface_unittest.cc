@@ -42,7 +42,7 @@ class TestOutputSurface : public OutputSurface {
                       nullptr,
                       std::move(software_device)) {}
 
-  void SwapBuffers(CompositorFrame* frame) override {
+  void SwapBuffers(CompositorFrame frame) override {
     client_->DidSwapBuffers();
     client_->DidSwapBuffersComplete();
   }

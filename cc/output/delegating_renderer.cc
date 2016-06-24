@@ -99,12 +99,12 @@ void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   resource_provider_->PrepareSendToParent(resources, &out_data.resource_list);
 }
 
-void DelegatingRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
+void DelegatingRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   TRACE_EVENT0("cc,benchmark", "DelegatingRenderer::SwapBuffers");
   CompositorFrame compositor_frame;
-  compositor_frame.metadata = metadata;
+  compositor_frame.metadata = std::move(metadata);
   compositor_frame.delegated_frame_data = std::move(delegated_frame_data_);
-  output_surface_->SwapBuffers(&compositor_frame);
+  output_surface_->SwapBuffers(std::move(compositor_frame));
 }
 
 void DelegatingRenderer::ReceiveSwapBuffersAck(

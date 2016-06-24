@@ -120,7 +120,7 @@ void PixelTestDelegatingOutputSurface::DetachFromClient() {
   OutputSurface::DetachFromClient();
 }
 
-void PixelTestDelegatingOutputSurface::SwapBuffers(CompositorFrame* frame) {
+void PixelTestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
   client_->DidSwapBuffers();
 
   if (delegated_surface_id_.is_null()) {
@@ -128,16 +128,16 @@ void PixelTestDelegatingOutputSurface::SwapBuffers(CompositorFrame* frame) {
     surface_factory_->Create(delegated_surface_id_);
   }
   display_->SetSurfaceId(delegated_surface_id_,
-                         frame->metadata.device_scale_factor);
+                         frame.metadata.device_scale_factor);
 
   gfx::Size frame_size =
-      frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
+      frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
   display_->Resize(frame_size);
 
-  std::unique_ptr<CompositorFrame> my_frame(new CompositorFrame);
-  frame->AssignTo(my_frame.get());
+  std::unique_ptr<CompositorFrame> frame_copy(new CompositorFrame);
+  *frame_copy = std::move(frame);
   surface_factory_->SubmitCompositorFrame(
-      delegated_surface_id_, std::move(my_frame),
+      delegated_surface_id_, std::move(frame_copy),
       base::Bind(&PixelTestDelegatingOutputSurface::DrawCallback,
                  weak_ptrs_.GetWeakPtr()));
 

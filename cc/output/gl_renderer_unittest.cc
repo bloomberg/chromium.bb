@@ -1780,7 +1780,8 @@ class MockOutputSurface : public OutputSurface {
                void(const gfx::Size& size, float scale_factor, bool has_alpha));
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
-  MOCK_METHOD1(SwapBuffers, void(CompositorFrame* frame));
+  MOCK_METHOD1(SwapBuffers_, void(CompositorFrame& frame));
+  void SwapBuffers(CompositorFrame frame) override { SwapBuffers_(frame); }
 };
 
 class MockOutputSurfaceTest : public GLRendererTest {
@@ -1849,7 +1850,7 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
   gfx::Rect device_viewport_rect(1, 1);
   DrawFrame(1.f, device_viewport_rect, true);
 
-  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 }
 
@@ -1857,7 +1858,7 @@ TEST_F(MockOutputSurfaceTest, DrawOpaqueFrameAndSwap) {
   gfx::Rect device_viewport_rect(1, 1);
   DrawFrame(1.f, device_viewport_rect, false);
 
-  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 }
 
@@ -1865,23 +1866,23 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
   gfx::Rect device_viewport_rect(1, 1);
 
   DrawFrame(1.f, device_viewport_rect, true);
-  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 
   device_viewport_rect = gfx::Rect(2, 2);
 
   DrawFrame(2.f, device_viewport_rect, true);
-  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 
   DrawFrame(2.f, device_viewport_rect, true);
-  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 
   device_viewport_rect = gfx::Rect(1, 1);
 
   DrawFrame(1.f, device_viewport_rect, true);
-  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 }
 

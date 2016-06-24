@@ -60,9 +60,9 @@ SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {
     DetachFromClient();
 }
 
-void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame* frame) {
+void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame frame) {
   gfx::Size frame_size =
-      frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
+      frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != last_swap_frame_size_) {
     if (!delegated_surface_id_.is_null()) {
       factory_.Destroy(delegated_surface_id_);
@@ -72,12 +72,12 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame* frame) {
     last_swap_frame_size_ = frame_size;
   }
   display_->SetSurfaceId(delegated_surface_id_,
-                         frame->metadata.device_scale_factor);
+                         frame.metadata.device_scale_factor);
 
   client_->DidSwapBuffers();
 
-  std::unique_ptr<CompositorFrame> frame_copy(new CompositorFrame());
-  frame->AssignTo(frame_copy.get());
+  std::unique_ptr<CompositorFrame> frame_copy(new CompositorFrame);
+  *frame_copy = std::move(frame);
   factory_.SubmitCompositorFrame(
       delegated_surface_id_, std::move(frame_copy),
       base::Bind(&SurfaceDisplayOutputSurface::SwapBuffersComplete,

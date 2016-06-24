@@ -1585,17 +1585,17 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateCursorIfOverSelf) {
   EXPECT_EQ(0, cursor_client.calls_to_set_cursor());
 }
 
-std::unique_ptr<cc::CompositorFrame> MakeDelegatedFrame(float scale_factor,
-                                                        gfx::Size size,
-                                                        gfx::Rect damage) {
-  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  frame->metadata.device_scale_factor = scale_factor;
-  frame->delegated_frame_data.reset(new cc::DelegatedFrameData);
+cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
+                                       gfx::Size size,
+                                       gfx::Rect damage) {
+  cc::CompositorFrame frame;
+  frame.metadata.device_scale_factor = scale_factor;
+  frame.delegated_frame_data.reset(new cc::DelegatedFrameData);
 
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(
       cc::RenderPassId(1, 1), gfx::Rect(size), damage, gfx::Transform());
-  frame->delegated_frame_data->render_pass_list.push_back(std::move(pass));
+  frame.delegated_frame_data->render_pass_list.push_back(std::move(pass));
   return frame;
 }
 
@@ -1730,9 +1730,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
       gfx::Rect());
   view_->SetSize(large_size);
   view_->Show();
-  std::unique_ptr<cc::CompositorFrame> frame =
+  cc::CompositorFrame frame =
       MakeDelegatedFrame(1.f, small_size, gfx::Rect(small_size));
-  frame->metadata.root_background_color = SK_ColorRED;
+  frame.metadata.root_background_color = SK_ColorRED;
   view_->OnSwapCompositorFrame(0, std::move(frame));
 
   ui::Layer* parent_layer = view_->GetNativeView()->layer();

@@ -25,7 +25,7 @@ class PixelTestOutputSurface : public OutputSurface {
   // OutputSurface implementation.
   void Reshape(const gfx::Size& size, float scale_factor, bool alpha) override;
   bool HasExternalStencilTest() const override;
-  void SwapBuffers(CompositorFrame* frame) override;
+  void SwapBuffers(CompositorFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 
   void set_surface_expansion_size(const gfx::Size& surface_expansion_size) {

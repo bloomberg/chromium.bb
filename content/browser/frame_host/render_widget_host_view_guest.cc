@@ -230,16 +230,16 @@ void RenderWidgetHostViewGuest::SetTooltipText(
 
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     uint32_t output_surface_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
+    cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewGuest::OnSwapCompositorFrame");
 
-  last_scroll_offset_ = frame->metadata.root_scroll_offset;
+  last_scroll_offset_ = frame.metadata.root_scroll_offset;
 
   cc::RenderPass* root_pass =
-      frame->delegated_frame_data->render_pass_list.back().get();
+      frame.delegated_frame_data->render_pass_list.back().get();
 
   gfx::Size frame_size = root_pass->output_rect.size();
-  float scale_factor = frame->metadata.device_scale_factor;
+  float scale_factor = frame.metadata.device_scale_factor;
 
   // Check whether we need to recreate the cc::Surface, which means the child
   // frame renderer has changed its output surface, or size, or scale factor.
@@ -282,7 +282,9 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
   DCHECK(ack_pending_count_ < 1000);
-  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
+  std::unique_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame);
+  *frame_copy = std::move(frame);
+  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame_copy),
                                           ack_callback);
 
   ProcessFrameSwappedCallbacks();

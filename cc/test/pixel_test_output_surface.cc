@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/transform.h"
@@ -50,7 +51,7 @@ bool PixelTestOutputSurface::HasExternalStencilTest() const {
   return external_stencil_test_;
 }
 
-void PixelTestOutputSurface::SwapBuffers(CompositorFrame* frame) {
+void PixelTestOutputSurface::SwapBuffers(CompositorFrame frame) {
   PostSwapBuffersComplete();
   client_->DidSwapBuffers();
 }

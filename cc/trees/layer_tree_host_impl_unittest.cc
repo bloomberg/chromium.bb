@@ -583,7 +583,7 @@ TEST_F(LayerTreeHostImplTest, ResourcelessDrawWithEmptyViewport) {
   host_impl_->OnDraw(identity, viewport, viewport, resourceless_software_draw);
   ASSERT_EQ(fake_output_surface->num_sent_frames(), 1u);
   EXPECT_EQ(gfx::SizeF(100.f, 100.f),
-            fake_output_surface->last_sent_frame().metadata.root_layer_size);
+            fake_output_surface->last_sent_frame()->metadata.root_layer_size);
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollDeltaNoLayers) {
@@ -8356,10 +8356,6 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   FakeOutputSurface* fake_output_surface =
       static_cast<FakeOutputSurface*>(host_impl_->output_surface());
 
-  const std::vector<ui::LatencyInfo>& metadata_latency_before =
-      fake_output_surface->last_sent_frame().metadata.latency_info;
-  EXPECT_TRUE(metadata_latency_before.empty());
-
   ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, 0);
@@ -8376,7 +8372,7 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   EXPECT_TRUE(host_impl_->SwapBuffers(frame));
 
   const std::vector<ui::LatencyInfo>& metadata_latency_after =
-      fake_output_surface->last_sent_frame().metadata.latency_info;
+      fake_output_surface->last_sent_frame()->metadata.latency_info;
   EXPECT_EQ(1u, metadata_latency_after.size());
   EXPECT_TRUE(metadata_latency_after[0].FindLatency(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, NULL));
@@ -8396,10 +8392,6 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   // Ensure the default frame selection bounds are empty.
   FakeOutputSurface* fake_output_surface =
       static_cast<FakeOutputSurface*>(host_impl_->output_surface());
-  const Selection<gfx::SelectionBound>& selection_before =
-      fake_output_surface->last_sent_frame().metadata.selection;
-  EXPECT_EQ(gfx::SelectionBound(), selection_before.start);
-  EXPECT_EQ(gfx::SelectionBound(), selection_before.end);
 
   // Plumb the layer-local selection bounds.
   gfx::Point selection_top(5, 0);
@@ -8424,7 +8416,7 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
 
   // Ensure the selection bounds have propagated to the frame metadata.
   const Selection<gfx::SelectionBound>& selection_after =
-      fake_output_surface->last_sent_frame().metadata.selection;
+      fake_output_surface->last_sent_frame()->metadata.selection;
   EXPECT_EQ(selection.start.type, selection_after.start.type());
   EXPECT_EQ(selection.end.type, selection_after.end.type());
   EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom());

@@ -1139,14 +1139,14 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     uint32_t output_surface_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
+    cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
-  last_scroll_offset_ = frame->metadata.root_scroll_offset;
-  if (!frame->delegated_frame_data)
+  last_scroll_offset_ = frame.metadata.root_scroll_offset;
+  if (!frame.delegated_frame_data)
     return;
 
-  cc::Selection<gfx::SelectionBound> selection = frame->metadata.selection;
+  cc::Selection<gfx::SelectionBound> selection = frame.metadata.selection;
   if (IsUseZoomForDSFEnabled()) {
     float viewportToDIPScale = 1.0f / current_device_scale_factor_;
     gfx::PointF start_edge_top = selection.start.edge_top();

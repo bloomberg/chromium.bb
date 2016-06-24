@@ -109,11 +109,11 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   output_device_->EndPaint();
 }
 
-void SoftwareRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
+void SoftwareRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   TRACE_EVENT0("cc,benchmark", "SoftwareRenderer::SwapBuffers");
   CompositorFrame compositor_frame;
-  compositor_frame.metadata = metadata;
-  output_surface_->SwapBuffers(&compositor_frame);
+  compositor_frame.metadata = std::move(metadata);
+  output_surface_->SwapBuffers(std::move(compositor_frame));
 }
 
 bool SoftwareRenderer::FlippedFramebuffer(const DrawingFrame* frame) const {

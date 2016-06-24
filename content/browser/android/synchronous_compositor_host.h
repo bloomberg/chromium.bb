@@ -79,7 +79,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
                             SynchronousCompositorClient* client,
                             bool use_in_proc_software_draw);
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
-  void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_metadata);
+  void UpdateFrameMetaData(cc::CompositorFrameMetadata frame_metadata);
   void OutputSurfaceCreated();
   bool DemandDrawSwInProc(SkCanvas* canvas);
   void SetSoftwareDrawSharedMemoryIfNeeded(size_t stride, size_t buffer_size);

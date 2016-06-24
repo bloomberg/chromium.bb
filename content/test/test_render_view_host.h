@@ -89,9 +89,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool IsSpeaking() const override;
   void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
-  void OnSwapCompositorFrame(
-      uint32_t output_surface_id,
-      std::unique_ptr<cc::CompositorFrame> frame) override;
+  void OnSwapCompositorFrame(uint32_t output_surface_id,
+                             cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override {}
 
   // RenderWidgetHostViewBase implementation.

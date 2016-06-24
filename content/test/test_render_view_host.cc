@@ -194,7 +194,7 @@ gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
 
 void TestRenderWidgetHostView::OnSwapCompositorFrame(
     uint32_t output_surface_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
+    cc::CompositorFrame frame) {
   did_swap_compositor_frame_ = true;
 }
 

@@ -23,7 +23,7 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
   void Reshape(const gfx::Size& size,
                float scale_factor,
                bool has_alpha) override;
-  void SwapBuffers(cc::CompositorFrame* frame) override;
+  void SwapBuffers(cc::CompositorFrame frame) override;
   void ApplyExternalStencil() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 

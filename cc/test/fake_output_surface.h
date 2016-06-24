@@ -109,10 +109,10 @@ class FakeOutputSurface : public OutputSurface {
     capabilities_.max_frames_pending = max;
   }
 
-  CompositorFrame& last_sent_frame() { return last_sent_frame_; }
+  CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
 
-  void SwapBuffers(CompositorFrame* frame) override;
+  void SwapBuffers(CompositorFrame frame) override;
 
   OutputSurfaceClient* client() { return client_; }
   bool BindToClient(OutputSurfaceClient* client) override;
@@ -170,7 +170,7 @@ class FakeOutputSurface : public OutputSurface {
                     bool delegated_rendering);
 
   OutputSurfaceClient* client_ = nullptr;
-  CompositorFrame last_sent_frame_;
+  std::unique_ptr<CompositorFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
   bool has_external_stencil_test_ = false;
   bool suspended_for_recycle_ = false;

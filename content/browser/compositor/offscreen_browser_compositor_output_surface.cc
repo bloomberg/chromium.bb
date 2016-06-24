@@ -135,13 +135,13 @@ OffscreenBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
 }
 
 void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
-    cc::CompositorFrame* frame) {
+    cc::CompositorFrame frame) {
   if (reflector_) {
-    if (frame->gl_frame_data->sub_buffer_rect ==
-        gfx::Rect(frame->gl_frame_data->size))
+    if (frame.gl_frame_data->sub_buffer_rect ==
+        gfx::Rect(frame.gl_frame_data->size))
       reflector_->OnSourceSwapBuffers();
     else
-      reflector_->OnSourcePostSubBuffer(frame->gl_frame_data->sub_buffer_rect);
+      reflector_->OnSourcePostSubBuffer(frame.gl_frame_data->sub_buffer_rect);
   }
 
   client_->DidSwapBuffers();

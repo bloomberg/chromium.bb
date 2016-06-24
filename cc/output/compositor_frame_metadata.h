@@ -23,8 +23,12 @@ namespace cc {
 class CC_EXPORT CompositorFrameMetadata {
  public:
   CompositorFrameMetadata();
-  CompositorFrameMetadata(const CompositorFrameMetadata& other);
+  CompositorFrameMetadata(CompositorFrameMetadata&& other);
   ~CompositorFrameMetadata();
+
+  CompositorFrameMetadata& operator=(CompositorFrameMetadata&& other);
+
+  CompositorFrameMetadata Clone() const;
 
   // The device scale factor used to generate this compositor frame.
   float device_scale_factor;
@@ -65,6 +69,10 @@ class CC_EXPORT CompositorFrameMetadata {
 
   // This is the set of Surfaces that are referenced by this frame.
   std::vector<SurfaceId> referenced_surfaces;
+
+ private:
+  CompositorFrameMetadata(const CompositorFrameMetadata& other);
+  CompositorFrameMetadata operator=(const CompositorFrameMetadata&) = delete;
 };
 
 }  // namespace cc

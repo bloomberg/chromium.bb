@@ -119,7 +119,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {
   CHECK(output_surface_->BindToClient(&output_surface_client));
 
   cc::CompositorFrame frame;
-  output_surface_->SwapBuffers(&frame);
+  output_surface_->SwapBuffers(std::move(frame));
 
   EXPECT_EQ(1, output_surface_client.swap_count());
   EXPECT_EQ(NULL, output_surface_->software_device()->GetVSyncProvider());
@@ -137,7 +137,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, VSyncProviderUpdates) {
   EXPECT_EQ(0, vsync_provider->call_count());
 
   cc::CompositorFrame frame;
-  output_surface_->SwapBuffers(&frame);
+  output_surface_->SwapBuffers(std::move(frame));
 
   EXPECT_EQ(1, output_surface_client.swap_count());
   EXPECT_EQ(1, vsync_provider->call_count());

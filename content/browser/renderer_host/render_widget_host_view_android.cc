@@ -289,7 +289,7 @@ gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
 
 RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
     uint32_t output_id,
-    std::unique_ptr<cc::CompositorFrame> output_frame)
+    cc::CompositorFrame output_frame)
     : output_surface_id(output_id), frame(std::move(output_frame)) {}
 
 RenderWidgetHostViewAndroid::LastFrameInfo::~LastFrameInfo() {}
@@ -995,7 +995,7 @@ void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
 }
 
 void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
-    std::unique_ptr<cc::CompositorFrame> frame) {
+    cc::CompositorFrame frame) {
   cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
   if (!surface_factory_) {
     surface_factory_ = base::WrapUnique(new cc::SurfaceFactory(manager, this));
@@ -1003,8 +1003,8 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
   if (surface_id_.is_null() ||
       texture_size_in_layer_ != current_surface_size_ ||
       location_bar_content_translation_ !=
-          frame->metadata.location_bar_content_translation ||
-      current_viewport_selection_ != frame->metadata.selection) {
+          frame.metadata.location_bar_content_translation ||
+      current_viewport_selection_ != frame.metadata.selection) {
     RemoveLayers();
     if (!surface_id_.is_null())
       surface_factory_->Destroy(surface_id_);
@@ -1016,21 +1016,23 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
 
     current_surface_size_ = texture_size_in_layer_;
     location_bar_content_translation_ =
-        frame->metadata.location_bar_content_translation;
-    current_viewport_selection_ = frame->metadata.selection;
+        frame.metadata.location_bar_content_translation;
+    current_viewport_selection_ = frame.metadata.selection;
     AttachLayers();
   }
 
   cc::SurfaceFactory::DrawCallback ack_callback =
       base::Bind(&RenderWidgetHostViewAndroid::RunAckCallbacks,
                  weak_ptr_factory_.GetWeakPtr());
-  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
+  std::unique_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame);
+  *frame_copy = std::move(frame);
+  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame_copy),
                                           ack_callback);
 }
 
 void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     uint32_t output_surface_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
+    cc::CompositorFrame frame) {
   CheckOutputSurfaceChanged(output_surface_id);
   bool has_content = !texture_size_in_layer_.IsEmpty();
 
@@ -1040,7 +1042,7 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
   // physical pixels and set our browser CC device_scale_factor to 1, so this
   // suppresses the transform.  This line may need to be removed when fixing
   // http://crbug.com/384134 or http://crbug.com/310763
-  frame->delegated_frame_data->device_scale_factor = 1.0f;
+  frame.delegated_frame_data->device_scale_factor = 1.0f;
 
   base::Closure ack_callback =
       base::Bind(&RenderWidgetHostViewAndroid::SendDelegatedFrameAck,
@@ -1067,9 +1069,9 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
 
 void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     uint32_t output_surface_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
-  last_scroll_offset_ = frame->metadata.root_scroll_offset;
-  if (!frame->delegated_frame_data) {
+    cc::CompositorFrame frame) {
+  last_scroll_offset_ = frame.metadata.root_scroll_offset;
+  if (!frame.delegated_frame_data) {
     LOG(ERROR) << "Non-delegated renderer path no longer supported";
     return;
   }
@@ -1082,32 +1084,32 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
 
   if (!CompositorImpl::GetSurfaceManager() && layer_.get() &&
       layer_->layer_tree_host()) {
-    for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
+    for (size_t i = 0; i < frame.metadata.latency_info.size(); i++) {
       std::unique_ptr<cc::SwapPromise> swap_promise(
-          new cc::LatencyInfoSwapPromise(frame->metadata.latency_info[i]));
+          new cc::LatencyInfoSwapPromise(frame.metadata.latency_info[i]));
       layer_->layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
     }
   }
 
-  DCHECK(!frame->delegated_frame_data->render_pass_list.empty());
+  DCHECK(!frame.delegated_frame_data->render_pass_list.empty());
 
   cc::RenderPass* root_pass =
-      frame->delegated_frame_data->render_pass_list.back().get();
+      frame.delegated_frame_data->render_pass_list.back().get();
   texture_size_in_layer_ = root_pass->output_rect.size();
 
-  cc::CompositorFrameMetadata metadata = frame->metadata;
+  cc::CompositorFrameMetadata metadata = frame.metadata.Clone();
 
   SwapDelegatedFrame(output_surface_id, std::move(frame));
   frame_evictor_->SwappedFrame(!host_->is_hidden());
 
   // As the metadata update may trigger view invalidation, always call it after
   // any potential compositor scheduling.
-  OnFrameMetadataUpdated(metadata);
+  OnFrameMetadataUpdated(std::move(metadata));
 }
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
     uint32_t output_surface_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
+    cc::CompositorFrame frame) {
   InternalSwapCompositorFrame(output_surface_id, std::move(frame));
 }
 
@@ -1115,9 +1117,8 @@ void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
   DestroyDelegatedContent();
 }
 
-void RenderWidgetHostViewAndroid::RetainFrame(
-    uint32_t output_surface_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
+void RenderWidgetHostViewAndroid::RetainFrame(uint32_t output_surface_id,
+                                              cc::CompositorFrame frame) {
   DCHECK(locks_on_frame_count_);
 
   // Store the incoming frame so that it can be swapped when all the locks have
@@ -1138,13 +1139,13 @@ void RenderWidgetHostViewAndroid::RetainFrame(
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
-    const cc::CompositorFrameMetadata& frame_metadata) {
+    cc::CompositorFrameMetadata frame_metadata) {
   if (!content_view_core_)
     return;
 
   // This is a subset of OnSwapCompositorFrame() used in the synchronous
   // compositor flow.
-  OnFrameMetadataUpdated(frame_metadata);
+  OnFrameMetadataUpdated(frame_metadata.Clone());
 
   // DevTools ScreenCast support for Android WebView.
   WebContents* web_contents = content_view_core_->GetWebContents();
@@ -1157,7 +1158,7 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
         base::Bind(
             &RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame,
             static_cast<RenderFrameDevToolsAgentHost*>(dtah.get()),
-            frame_metadata));
+            base::Passed(&frame_metadata)));
   }
 }
 

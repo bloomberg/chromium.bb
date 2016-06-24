@@ -174,13 +174,13 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
 
   ~OutputSurfaceWithoutParent() override = default;
 
-  void SwapBuffers(cc::CompositorFrame* frame) override {
-    GetCommandBufferProxy()->SetLatencyInfo(frame->metadata.latency_info);
-    if (frame->gl_frame_data->sub_buffer_rect.IsEmpty()) {
+  void SwapBuffers(cc::CompositorFrame frame) override {
+    GetCommandBufferProxy()->SetLatencyInfo(frame.metadata.latency_info);
+    if (frame.gl_frame_data->sub_buffer_rect.IsEmpty()) {
       context_provider_->ContextSupport()->CommitOverlayPlanes();
     } else {
-      DCHECK(frame->gl_frame_data->sub_buffer_rect ==
-             gfx::Rect(frame->gl_frame_data->size));
+      DCHECK(frame.gl_frame_data->sub_buffer_rect ==
+             gfx::Rect(frame.gl_frame_data->size));
       context_provider_->ContextSupport()->Swap();
     }
     client_->DidSwapBuffers();
@@ -264,7 +264,7 @@ class VulkanOutputSurface : public cc::OutputSurface {
     return true;
   }
 
-  void SwapBuffers(cc::CompositorFrame* frame) override {
+  void SwapBuffers(cc::CompositorFrame frame) override {
     surface_->SwapBuffers();
     PostSwapBuffersComplete();
     client_->DidSwapBuffers();

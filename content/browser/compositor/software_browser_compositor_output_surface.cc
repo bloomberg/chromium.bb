@@ -34,9 +34,9 @@ SoftwareBrowserCompositorOutputSurface::
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
-    cc::CompositorFrame* frame) {
+    cc::CompositorFrame frame) {
   base::TimeTicks swap_time = base::TimeTicks::Now();
-  for (auto& latency : frame->metadata.latency_info) {
+  for (auto& latency : frame.metadata.latency_info) {
     latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, swap_time, 1);
     latency.AddLatencyNumberWithTimestamp(
@@ -45,7 +45,7 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RenderWidgetHostImpl::CompositorFrameDrawn,
-                            frame->metadata.latency_info));
+                            frame.metadata.latency_info));
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
   if (vsync_provider) {

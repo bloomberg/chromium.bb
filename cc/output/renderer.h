@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/renderer_capabilities.h"
 #include "cc/output/renderer_settings.h"
 #include "ui/gfx/geometry/rect.h"
@@ -16,7 +17,6 @@
 namespace cc {
 
 class CompositorFrameAck;
-class CompositorFrameMetadata;
 class RenderPass;
 class RenderPassId;
 class ScopedResource;
@@ -78,7 +78,7 @@ class CC_EXPORT Renderer {
   virtual void Finish() = 0;
 
   // Puts backbuffer onscreen.
-  virtual void SwapBuffers(const CompositorFrameMetadata& metadata) = 0;
+  virtual void SwapBuffers(CompositorFrameMetadata metadata) = 0;
   virtual void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {}
 
   bool visible() const { return visible_; }

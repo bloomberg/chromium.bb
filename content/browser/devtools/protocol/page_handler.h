@@ -39,9 +39,9 @@ class PageHandler : public NotificationObserver {
   void SetRenderFrameHost(RenderFrameHostImpl* host);
   void SetClient(std::unique_ptr<Client> client);
   void Detached();
-  void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
-  void OnSynchronousSwapCompositorFrame(const cc::CompositorFrameMetadata&
-      frame_metadata);
+  void OnSwapCompositorFrame(cc::CompositorFrameMetadata frame_metadata);
+  void OnSynchronousSwapCompositorFrame(
+      cc::CompositorFrameMetadata frame_metadata);
   void DidAttachInterstitialPage();
   void DidDetachInterstitialPage();
   bool screencast_enabled() const { return enabled_ && screencast_enabled_; }
@@ -83,10 +83,10 @@ class PageHandler : public NotificationObserver {
   WebContentsImpl* GetWebContents();
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
-  void ScreencastFrameCaptured(const cc::CompositorFrameMetadata& metadata,
+  void ScreencastFrameCaptured(cc::CompositorFrameMetadata metadata,
                                const SkBitmap& bitmap,
                                ReadbackResponse response);
-  void ScreencastFrameEncoded(const cc::CompositorFrameMetadata& metadata,
+  void ScreencastFrameEncoded(cc::CompositorFrameMetadata metadata,
                               const base::Time& timestamp,
                               const std::string& data);
 

@@ -4,6 +4,7 @@
 
 #include "content/browser/compositor/gpu_output_surface_mac.h"
 
+#include "cc/output/compositor_frame.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -66,8 +67,8 @@ GpuOutputSurfaceMac::GpuOutputSurfaceMac(
 
 GpuOutputSurfaceMac::~GpuOutputSurfaceMac() {}
 
-void GpuOutputSurfaceMac::SwapBuffers(cc::CompositorFrame* frame) {
-  GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(frame);
+void GpuOutputSurfaceMac::SwapBuffers(cc::CompositorFrame frame) {
+  GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(std::move(frame));
 
   if (should_show_frames_state_ ==
       SHOULD_NOT_SHOW_FRAMES_NO_SWAP_AFTER_SUSPENDED) {

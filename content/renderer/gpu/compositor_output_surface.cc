@@ -103,7 +103,7 @@ void CompositorOutputSurface::DetachFromClient() {
   cc::OutputSurface::DetachFromClient();
 }
 
-void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   {
     std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
         send_message_scope =
@@ -114,7 +114,7 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     FrameSwapMessageQueue::TransferMessages(&messages,
                                             &messages_to_deliver_with_frame);
     Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, output_surface_id_,
-                                             *frame,
+                                             frame,
                                              messages_to_deliver_with_frame));
     // ~send_message_scope.
   }

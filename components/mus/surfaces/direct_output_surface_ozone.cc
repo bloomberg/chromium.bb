@@ -78,19 +78,19 @@ unsigned DirectOutputSurfaceOzone::GetOverlayTextureId() const {
   return buffer_queue_->current_texture_id();
 }
 
-void DirectOutputSurfaceOzone::SwapBuffers(cc::CompositorFrame* frame) {
+void DirectOutputSurfaceOzone::SwapBuffers(cc::CompositorFrame frame) {
   DCHECK(buffer_queue_);
-  DCHECK(frame->gl_frame_data);
+  DCHECK(frame.gl_frame_data);
 
-  buffer_queue_->SwapBuffers(frame->gl_frame_data->sub_buffer_rect);
+  buffer_queue_->SwapBuffers(frame.gl_frame_data->sub_buffer_rect);
 
   // Code combining GpuBrowserCompositorOutputSurface + DirectOutputSurface
-  if (frame->gl_frame_data->sub_buffer_rect ==
-      gfx::Rect(frame->gl_frame_data->size)) {
+  if (frame.gl_frame_data->sub_buffer_rect ==
+      gfx::Rect(frame.gl_frame_data->size)) {
     context_provider_->ContextSupport()->Swap();
   } else {
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        frame->gl_frame_data->sub_buffer_rect);
+        frame.gl_frame_data->sub_buffer_rect);
   }
 
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();

@@ -41,7 +41,7 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
   ~SurfaceDisplayOutputSurface() override;
 
   // OutputSurface implementation.
-  void SwapBuffers(CompositorFrame* frame) override;
+  void SwapBuffers(CompositorFrame frame) override;
   bool BindToClient(OutputSurfaceClient* client) override;
   void ForceReclaimResources() override;
   void DetachFromClient() override;

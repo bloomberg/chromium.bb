@@ -145,8 +145,8 @@ void PageHandler::Detached() {
 }
 
 void PageHandler::OnSwapCompositorFrame(
-    const cc::CompositorFrameMetadata& frame_metadata) {
-  last_compositor_frame_metadata_ = frame_metadata;
+    cc::CompositorFrameMetadata frame_metadata) {
+  last_compositor_frame_metadata_ = std::move(frame_metadata);
   has_compositor_frame_metadata_ = true;
 
   if (screencast_enabled_)
@@ -155,10 +155,15 @@ void PageHandler::OnSwapCompositorFrame(
 }
 
 void PageHandler::OnSynchronousSwapCompositorFrame(
-    const cc::CompositorFrameMetadata& frame_metadata) {
-  last_compositor_frame_metadata_ = has_compositor_frame_metadata_ ?
-      next_compositor_frame_metadata_ : frame_metadata;
-  next_compositor_frame_metadata_ = frame_metadata;
+    cc::CompositorFrameMetadata frame_metadata) {
+  if (has_compositor_frame_metadata_) {
+    last_compositor_frame_metadata_ =
+        std::move(next_compositor_frame_metadata_);
+  } else {
+    last_compositor_frame_metadata_ = frame_metadata.Clone();
+  }
+  next_compositor_frame_metadata_ = std::move(frame_metadata);
+
   has_compositor_frame_metadata_ = true;
 
   if (screencast_enabled_)
@@ -425,20 +430,18 @@ void PageHandler::InnerSwapCompositorFrame() {
   if (snapshot_size_dip.width() > 0 && snapshot_size_dip.height() > 0) {
     gfx::Rect viewport_bounds_dip(gfx::ToRoundedSize(viewport_size_dip));
     view->CopyFromCompositingSurface(
-        viewport_bounds_dip,
-        snapshot_size_dip,
+        viewport_bounds_dip, snapshot_size_dip,
         base::Bind(&PageHandler::ScreencastFrameCaptured,
                    weak_factory_.GetWeakPtr(),
-                   last_compositor_frame_metadata_),
+                   base::Passed(last_compositor_frame_metadata_.Clone())),
         kN32_SkColorType);
     frames_in_flight_++;
   }
 }
 
-void PageHandler::ScreencastFrameCaptured(
-    const cc::CompositorFrameMetadata& metadata,
-    const SkBitmap& bitmap,
-    ReadbackResponse response) {
+void PageHandler::ScreencastFrameCaptured(cc::CompositorFrameMetadata metadata,
+                                          const SkBitmap& bitmap,
+                                          ReadbackResponse response) {
   if (response != READBACK_SUCCESS) {
     if (capture_retry_count_) {
       --capture_retry_count_;
@@ -451,18 +454,17 @@ void PageHandler::ScreencastFrameCaptured(
     return;
   }
   base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true).get(),
-      FROM_HERE,
-      base::Bind(&EncodeScreencastFrame,
-                 bitmap, screencast_format_, screencast_quality_),
+      base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
+      base::Bind(&EncodeScreencastFrame, bitmap, screencast_format_,
+                 screencast_quality_),
       base::Bind(&PageHandler::ScreencastFrameEncoded,
-                 weak_factory_.GetWeakPtr(), metadata, base::Time::Now()));
+                 weak_factory_.GetWeakPtr(), base::Passed(&metadata),
+                 base::Time::Now()));
 }
 
-void PageHandler::ScreencastFrameEncoded(
-    const cc::CompositorFrameMetadata& metadata,
-    const base::Time& timestamp,
-    const std::string& data) {
+void PageHandler::ScreencastFrameEncoded(cc::CompositorFrameMetadata metadata,
+                                         const base::Time& timestamp,
+                                         const std::string& data) {
   // Consider metadata empty in case it has no device scale factor.
   if (metadata.device_scale_factor == 0 || !host_ || data.empty()) {
     --frames_in_flight_;

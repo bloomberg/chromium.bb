@@ -6662,8 +6662,9 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
   }
 
   void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
-    EXPECT_EQ(2.0f,
-              output_surface()->last_sent_frame().metadata.device_scale_factor);
+    EXPECT_EQ(
+        2.0f,
+        output_surface()->last_sent_frame()->metadata.device_scale_factor);
     EXPECT_EQ(2.0f, host_impl->active_tree()->painted_device_scale_factor());
     EXPECT_EQ(1.0f, host_impl->active_tree()->device_scale_factor());
     EndTest();

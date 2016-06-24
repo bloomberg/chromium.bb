@@ -307,7 +307,7 @@ bool Display::DrawAndSwap() {
           "step", "Display::DrawAndSwap");
     }
     benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
-    renderer_->SwapBuffers(frame->metadata);
+    renderer_->SwapBuffers(std::move(frame->metadata));
   } else {
     if (have_damage && !size_matches)
       aggregator_->SetFullDamageForSurface(current_surface_id_);

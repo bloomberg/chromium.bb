@@ -69,10 +69,10 @@ unsigned GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayTextureId()
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
-    cc::CompositorFrame* frame) {
+    cc::CompositorFrame frame) {
   DCHECK(buffer_queue_);
-  buffer_queue_->SwapBuffers(frame->gl_frame_data->sub_buffer_rect);
-  GpuBrowserCompositorOutputSurface::SwapBuffers(frame);
+  buffer_queue_->SwapBuffers(frame.gl_frame_data->sub_buffer_rect);
+  GpuBrowserCompositorOutputSurface::SwapBuffers(std::move(frame));
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnSwapBuffersComplete() {

@@ -66,7 +66,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static void OnBeforeNavigation(NavigationHandle* navigation_handle);
 
   void SynchronousSwapCompositorFrame(
-      const cc::CompositorFrameMetadata& frame_metadata);
+      cc::CompositorFrameMetadata frame_metadata);
 
   bool HasRenderFrameHost(RenderFrameHost* host);
 

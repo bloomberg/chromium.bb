@@ -2709,7 +2709,7 @@ void GLRenderer::Finish() {
   gl_->Finish();
 }
 
-void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
+void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   DCHECK(!is_backbuffer_discarded_);
 
   TRACE_EVENT0("cc,benchmark", "GLRenderer::SwapBuffers");
@@ -2718,7 +2718,7 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   gfx::Size surface_size = output_surface_->SurfaceSize();
 
   CompositorFrame compositor_frame;
-  compositor_frame.metadata = metadata;
+  compositor_frame.metadata = std::move(metadata);
   compositor_frame.gl_frame_data = base::WrapUnique(new GLFrameData);
   compositor_frame.gl_frame_data->size = surface_size;
   if (capabilities_.using_partial_swap) {
@@ -2752,7 +2752,7 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
     swapping_overlay_resources_.pop_front();
   }
 
-  output_surface_->SwapBuffers(&compositor_frame);
+  output_surface_->SwapBuffers(std::move(compositor_frame));
 
   swap_buffer_rect_ = gfx::Rect();
 }

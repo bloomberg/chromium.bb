@@ -1853,7 +1853,7 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
                                0, 0);
     }
   }
-  renderer_->SwapBuffers(metadata);
+  renderer_->SwapBuffers(std::move(metadata));
   return true;
 }
 

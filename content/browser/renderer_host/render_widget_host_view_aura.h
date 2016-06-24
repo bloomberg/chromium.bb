@@ -188,9 +188,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  void OnSwapCompositorFrame(
-      uint32_t output_surface_id,
-      std::unique_ptr<cc::CompositorFrame> frame) override;
+  void OnSwapCompositorFrame(uint32_t output_surface_id,
+                             cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override;
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
