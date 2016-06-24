@@ -213,10 +213,8 @@ void CSSParserToken::serialize(StringBuilder& builder) const
         serializeIdentifier(value().toString(), builder);
         break;
     case HashToken:
-        // This will always serialize as a hash-token with 'id' type instead of
-        // preserving the type of the input.
         builder.append('#');
-        serializeIdentifier(value().toString(), builder);
+        serializeIdentifier(value().toString(), builder, (getHashTokenType() == HashTokenUnrestricted));
         break;
     case UrlToken:
         builder.append("url(");

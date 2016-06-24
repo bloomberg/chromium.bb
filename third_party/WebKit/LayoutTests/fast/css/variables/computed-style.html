@@ -5,6 +5,8 @@
 <style>
 #color {
   --color-value: blue;
+  --accordionColor:#0000ee;
+  --foo:#1\.;
   background-color: var(--color-value);
 }
 
@@ -40,6 +42,11 @@
 test(function() {
   assert_equals(getComputedStyle(color).backgroundColor, 'rgb(0, 0, 255)');
 }, 'background-color property, color value');
+
+test(function() {
+  assert_equals(getComputedStyle(color).getPropertyValue('--accordionColor'), '#0000ee');
+  assert_equals(getComputedStyle(color).getPropertyValue('--foo'), '#1\\.');
+}, 'property value, accordionColor, foo');
 
 test(function() {
   assert_equals(getComputedStyle(float_pixel).borderWidth, '0px');

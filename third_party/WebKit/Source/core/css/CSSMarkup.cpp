@@ -82,9 +82,9 @@ static void serializeCharacterAsCodePoint(UChar32 c, StringBuilder& appendTo)
     appendTo.append(' ');
 }
 
-void serializeIdentifier(const String& identifier, StringBuilder& appendTo)
+void serializeIdentifier(const String& identifier, StringBuilder& appendTo, bool skipStartChecks)
 {
-    bool isFirst = true;
+    bool isFirst = !skipStartChecks;
     bool isSecond = false;
     bool isFirstCharHyphen = false;
     unsigned index = 0;
