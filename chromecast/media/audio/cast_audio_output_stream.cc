@@ -168,6 +168,7 @@ CastAudioOutputStream::CastAudioOutputStream(
       audio_manager_(audio_manager),
       volume_(1.0),
       source_callback_(nullptr),
+      timestamp_helper_(audio_params_.sample_rate()),
       backend_(new Backend()),
       buffer_duration_(audio_params.GetBufferDuration()),
       push_in_progress_(false),
@@ -203,6 +204,7 @@ bool CastAudioOutputStream::Open() {
   audio_bus_ = ::media::AudioBus::Create(audio_params_);
   decoder_buffer_ = new DecoderBufferAdapter(
       new ::media::DecoderBuffer(audio_params_.GetBytesPerBuffer()));
+  timestamp_helper_.SetBaseTimestamp(base::TimeDelta());
 
   VLOG(1) << __FUNCTION__ << " : " << this;
   return true;
@@ -279,6 +281,8 @@ void CastAudioOutputStream::PushBuffer() {
             frame_count * audio_params_.GetBytesPerFrame());
   audio_bus_->ToInterleaved(frame_count, audio_params_.bits_per_sample() / 8,
                             decoder_buffer_->writable_data());
+  decoder_buffer_->set_timestamp(timestamp_helper_.GetTimestamp());
+  timestamp_helper_.AddFrames(frame_count);
 
   auto completion_cb = base::Bind(&CastAudioOutputStream::OnPushBufferComplete,
                                   weak_factory_.GetWeakPtr());

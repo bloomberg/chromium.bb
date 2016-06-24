@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/audio_timestamp_helper.h"
 
 namespace chromecast {
 namespace media {
@@ -44,6 +45,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   AudioSourceCallback* source_callback_;
   std::unique_ptr<::media::AudioBus> audio_bus_;
   scoped_refptr<media::DecoderBufferBase> decoder_buffer_;
+  ::media::AudioTimestampHelper timestamp_helper_;
   std::unique_ptr<Backend> backend_;
   const base::TimeDelta buffer_duration_;
   bool push_in_progress_;
