@@ -300,7 +300,7 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns true if |window| is a descendant of the shelf.
   bool IsShelfWindow(aura::Window* window);
 
-  int GetWorkAreaSize(const State& state, int size) const;
+  int GetWorkAreaInsets(const State& state, int size) const;
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
@@ -312,6 +312,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Called when the LoginUI changes from visible to invisible.
   void UpdateShelfVisibilityAfterLoginUIChange();
+
+  // Compute |target_bounds| opacity based on gesture and shelf visibility.
+  float ComputeTargetOpacity(const State& state);
 
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being

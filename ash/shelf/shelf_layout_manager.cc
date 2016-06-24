@@ -13,6 +13,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -822,9 +823,9 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   target_bounds->status_bounds_in_shelf = gfx::Rect(status_origin, status_size);
 
   target_bounds->work_area_insets = SelectValueForShelfAlignment(
-      gfx::Insets(0, 0, GetWorkAreaSize(state, shelf_height), 0),
-      gfx::Insets(0, GetWorkAreaSize(state, shelf_width), 0, 0),
-      gfx::Insets(0, 0, 0, GetWorkAreaSize(state, shelf_width)));
+      gfx::Insets(0, 0, GetWorkAreaInsets(state, shelf_height), 0),
+      gfx::Insets(0, GetWorkAreaInsets(state, shelf_width), 0, 0),
+      gfx::Insets(0, 0, 0, GetWorkAreaInsets(state, shelf_width)));
 
   // TODO(varkha): The functionality of managing insets for display areas
   // should probably be pushed to a separate component. This would simplify or
@@ -850,10 +851,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
     target_bounds->work_area_insets += chromevox_insets;
   }
 
-  target_bounds->opacity =
-      (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
-       state.visibility_state == SHELF_VISIBLE ||
-       state.visibility_state == SHELF_AUTO_HIDE) ? 1.0f : 0.0f;
+  target_bounds->opacity = ComputeTargetOpacity(state);
   target_bounds->status_opacity =
       (state.visibility_state == SHELF_AUTO_HIDE &&
        state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
@@ -913,11 +911,11 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   } else {
     translate = gesture_drag_amount_;
   }
-
+  int shelf_insets = GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
   if (horizontal) {
     // Move and size the shelf with the gesture.
     int shelf_height = target_bounds->shelf_bounds_in_root.height() - translate;
-    shelf_height = std::max(shelf_height, kShelfAutoHideSize);
+    shelf_height = std::max(shelf_height, shelf_insets);
     target_bounds->shelf_bounds_in_root.set_height(shelf_height);
     if (IsHorizontalAlignment()) {
       target_bounds->shelf_bounds_in_root.set_y(
@@ -933,7 +931,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       shelf_width -= translate;
     else
       shelf_width += translate;
-    shelf_width = std::max(shelf_width, kShelfAutoHideSize);
+    shelf_width = std::max(shelf_width, shelf_insets);
     target_bounds->shelf_bounds_in_root.set_width(shelf_width);
     if (right_aligned) {
       target_bounds->shelf_bounds_in_root.set_x(
@@ -1124,11 +1122,11 @@ bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
               window));
 }
 
-int ShelfLayoutManager::GetWorkAreaSize(const State& state, int size) const {
+int ShelfLayoutManager::GetWorkAreaInsets(const State& state, int size) const {
   if (state.visibility_state == SHELF_VISIBLE)
     return size;
   if (state.visibility_state == SHELF_AUTO_HIDE)
-    return kShelfAutoHideSize;
+    return GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
   return 0;
 }
 
@@ -1194,6 +1192,23 @@ void ShelfLayoutManager::SessionStateChanged(
 void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
   UpdateVisibilityState();
   LayoutShelf();
+}
+
+float ShelfLayoutManager::ComputeTargetOpacity(const State& state) {
+  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
+      state.visibility_state == SHELF_VISIBLE) {
+    return 1.0f;
+  }
+  // In Chrome OS Material Design, when shelf is hidden during auto hide state,
+  // target bounds are also hidden. So the window can extend to the edge of
+  // screen.
+  if (ash::MaterialDesignController::IsShelfMaterial()) {
+    return (state.visibility_state == SHELF_AUTO_HIDE &&
+            state.auto_hide_state == SHELF_AUTO_HIDE_SHOWN)
+               ? 1.0f
+               : 0.0f;
+  }
+  return (state.visibility_state == SHELF_AUTO_HIDE) ? 1.0f : 0.0f;
 }
 
 }  // namespace ash

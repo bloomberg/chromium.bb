@@ -27,6 +27,7 @@ int GetShelfConstant(ShelfConstant shelf_constant) {
   const int kShelfSize[] = {47, 47, 48};
   const int kShelfButtonSpacing[] = {10, 10, 16};
   const int kShelfButtonSize[] = {44, 44, 48};
+  const int kShelfInsetsForAutoHide[] = {3, 3, 0};
 
   const int mode = MaterialDesignController::GetMode();
   DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&
@@ -41,6 +42,8 @@ int GetShelfConstant(ShelfConstant shelf_constant) {
       return kShelfButtonSpacing[mode];
     case SHELF_BUTTON_SIZE:
       return kShelfButtonSize[mode];
+    case SHELF_INSETS_FOR_AUTO_HIDE:
+      return kShelfInsetsForAutoHide[mode];
   }
   NOTREACHED();
   return 0;

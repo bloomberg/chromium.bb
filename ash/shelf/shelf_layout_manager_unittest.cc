@@ -184,8 +184,10 @@ class ShelfDragCallback {
       EXPECT_EQ(GetShelfWidget()->GetWindowBoundsInScreen(),
                 GetShelfWidget()->GetDimmerBoundsForTest());
 
-    // The shelf should never be smaller than the hidden state.
-    EXPECT_GE(shelf_bounds.height(), not_visible_bounds_.height());
+    // The shelf should never be smaller than the hidden state when shelf is
+    // visible; the shelf has a height of 0 when it is hidden.
+    if (was_visible_on_drag_start_)
+      EXPECT_GE(shelf_bounds.height(), not_visible_bounds_.height());
     float scroll_delta = GetShelfLayoutManager()->PrimaryAxisValue(
         scroll_.y(),
         scroll_.x());
@@ -858,9 +860,10 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   // LayoutShelf() forces the animation to completion, at which point the
   // shelf should go off the screen.
   layout_manager->LayoutShelf();
-  EXPECT_EQ(root->bounds().bottom() - kShelfAutoHideSize,
+  int shelf_insets = GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
+  EXPECT_EQ(root->bounds().bottom() - shelf_insets,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
-  EXPECT_EQ(root->bounds().bottom() - kShelfAutoHideSize,
+  EXPECT_EQ(root->bounds().bottom() - shelf_insets,
             display::Screen::GetScreen()
                 ->GetDisplayNearestWindow(root)
                 .work_area()
@@ -1723,8 +1726,10 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   EXPECT_EQ(display.bounds().height(), shelf_bounds.height());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(kShelfAutoHideSize, display.GetWorkAreaInsets().left());
-  EXPECT_EQ(kShelfAutoHideSize, display.work_area().x());
+  EXPECT_EQ(GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE),
+            display.GetWorkAreaInsets().left());
+  EXPECT_EQ(GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE),
+            display.work_area().x());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);

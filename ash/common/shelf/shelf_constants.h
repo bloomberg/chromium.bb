@@ -22,7 +22,10 @@ enum ShelfConstant {
   SHELF_BUTTON_SPACING,
 
   // Size allocated for each button on the shelf.
-  SHELF_BUTTON_SIZE
+  SHELF_BUTTON_SIZE,
+
+  // Insets allocated for shelf when it is auto hidden.
+  SHELF_INSETS_FOR_AUTO_HIDE
 };
 
 // Invalid image resource id used for ShelfItemDetails.

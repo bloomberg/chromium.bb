@@ -12,6 +12,7 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
@@ -553,11 +554,13 @@ void ShelfButton::UpdateBar() {
     Shelf* shelf = shelf_view_->shelf();
     gfx::ImageSkia image;
     if (ash::MaterialDesignController::IsShelfMaterial()) {
-      gfx::Size size(GetShelfConstant(SHELF_BUTTON_SIZE),
-                     GetShelfConstant(SHELF_SIZE));
-      gfx::Canvas canvas(size, kIndicatorCanvasScale, true /* is_opaque */);
-      PaintIndicatorOnCanvas(&canvas, size);
-      image = gfx::ImageSkia(canvas.ExtractImageRep());
+      if (shelf->shelf_widget()->shelf_layout_manager()->IsVisible()) {
+        gfx::Size size(GetShelfConstant(SHELF_BUTTON_SIZE),
+                       GetShelfConstant(SHELF_SIZE));
+        gfx::Canvas canvas(size, kIndicatorCanvasScale, true /* is_opaque */);
+        PaintIndicatorOnCanvas(&canvas, size);
+        image = gfx::ImageSkia(canvas.ExtractImageRep());
+      }
     } else {
       ResourceBundle* rb = &ResourceBundle::GetSharedInstance();
       image = *rb->GetImageNamed(bar_id).ToImageSkia();
