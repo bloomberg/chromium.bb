@@ -13,6 +13,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
+#include "cc/output/filter_operations.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -287,10 +288,11 @@ struct CC_EXPORT EffectNodeData {
   float opacity;
   float screen_space_opacity;
 
+  FilterOperations background_filters;
+
   bool has_render_surface;
   RenderSurfaceImpl* render_surface;
   bool has_copy_request;
-  bool has_background_filters;
   bool hidden_by_backface_visibility;
   bool double_sided;
   bool is_drawn;

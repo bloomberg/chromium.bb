@@ -1337,7 +1337,7 @@ TEST_F(LayerTreeHostCommonTest,
   child->SetDrawsContent(true);
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(1.5f));
-  render_surface1->SetBackgroundFilters(filters);
+  render_surface1->test_properties()->background_filters = filters;
 
   {
     LayerImplList render_surface_layer_list;

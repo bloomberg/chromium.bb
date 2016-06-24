@@ -80,6 +80,23 @@ using ::testing::_;
       grand_child->layer_tree_host()->LayerNeedsPushPropertiesForTesting(    \
           grand_child.get()));
 
+#define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)                  \
+  code_to_test;                                                              \
+  root->layer_tree_host()->BuildPropertyTreesForTesting();                   \
+  EXPECT_TRUE(root->layer_property_changed());                               \
+  EXPECT_FALSE(root->subtree_property_changed());                            \
+  EXPECT_TRUE(root->layer_tree_host()->LayerNeedsPushPropertiesForTesting(   \
+      root.get()));                                                          \
+  EXPECT_FALSE(child->layer_property_changed());                             \
+  EXPECT_FALSE(child->subtree_property_changed());                           \
+  EXPECT_FALSE(child->layer_tree_host()->LayerNeedsPushPropertiesForTesting( \
+      child.get()));                                                         \
+  EXPECT_FALSE(grand_child->layer_property_changed());                       \
+  EXPECT_FALSE(grand_child->subtree_property_changed());                     \
+  EXPECT_FALSE(                                                              \
+      grand_child->layer_tree_host()->LayerNeedsPushPropertiesForTesting(    \
+          grand_child.get()));
+
 namespace cc {
 
 // This class is a friend of Layer, and is used as a wrapper for all the tests
@@ -1109,6 +1126,12 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child->PushPropertiesTo(child_impl.get());
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(
+      root->SetBackgroundFilters(arbitrary_filters));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get()));
 
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);

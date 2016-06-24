@@ -519,7 +519,6 @@ EffectNodeData::EffectNodeData()
       has_render_surface(false),
       render_surface(nullptr),
       has_copy_request(false),
-      has_background_filters(false),
       hidden_by_backface_visibility(false),
       double_sided(false),
       is_drawn(true),
@@ -543,7 +542,7 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
          screen_space_opacity == other.screen_space_opacity &&
          has_render_surface == other.has_render_surface &&
          has_copy_request == other.has_copy_request &&
-         has_background_filters == other.has_background_filters &&
+         background_filters == other.background_filters &&
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided && is_drawn == other.is_drawn &&
          subtree_hidden == other.subtree_hidden &&
@@ -566,7 +565,6 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_screen_space_opacity(screen_space_opacity);
   data->set_has_render_surface(has_render_surface);
   data->set_has_copy_request(has_copy_request);
-  data->set_has_background_filters(has_background_filters);
   data->set_hidden_by_backface_visibility(hidden_by_backface_visibility);
   data->set_double_sided(double_sided);
   data->set_is_drawn(is_drawn);
@@ -591,7 +589,6 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   screen_space_opacity = data.screen_space_opacity();
   has_render_surface = data.has_render_surface();
   has_copy_request = data.has_copy_request();
-  has_background_filters = data.has_background_filters();
   hidden_by_backface_visibility = data.hidden_by_backface_visibility();
   double_sided = data.double_sided();
   is_drawn = data.is_drawn();
@@ -612,7 +609,6 @@ void EffectNodeData::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetDouble("opacity", opacity);
   value->SetBoolean("has_render_surface", has_render_surface);
   value->SetBoolean("has_copy_request", has_copy_request);
-  value->SetBoolean("has_background_filters", has_background_filters);
   value->SetBoolean("double_sided", double_sided);
   value->SetBoolean("is_drawn", is_drawn);
   value->SetBoolean("has_potential_opacity_animation",
@@ -1475,7 +1471,7 @@ void EffectTree::UpdateIsDrawn(EffectNode* node, EffectNode* parent_node) {
   else if (EffectiveOpacity(node) == 0.f &&
            (!node->data.has_potential_opacity_animation ||
             property_trees()->is_active) &&
-           !node->data.has_background_filters)
+           node->data.background_filters.IsEmpty())
     node->data.is_drawn = false;
   else if (parent_node)
     node->data.is_drawn = parent_node->data.is_drawn;

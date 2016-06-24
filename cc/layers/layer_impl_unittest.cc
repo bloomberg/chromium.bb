@@ -188,8 +188,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetDrawsContent(true));
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(
       root->SetBackgroundColor(arbitrary_color));
-  EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(
-      root->SetBackgroundFilters(arbitrary_filters));
 
   // Special case: check that SetBounds changes behavior depending on
   // masksToBounds.
@@ -314,8 +312,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetBackgroundFilters(arbitrary_filters));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->OnOpacityAnimated(arbitrary_number));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBlendMode(arbitrary_blend_mode);
                                       layer->NoteLayerPropertyChanged());
@@ -334,8 +330,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetDrawsContent(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundColor(arbitrary_color));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetBackgroundFilters(arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBlendMode(arbitrary_blend_mode));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(

@@ -1461,7 +1461,7 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
       LayerImpl* filtered_surface = this->CreateDrawingLayer(
           parent, scale_by_half, gfx::PointF(50.f, 50.f), gfx::Size(100, 100),
           false);
-      filtered_surface->SetBackgroundFilters(filters);
+      filtered_surface->test_properties()->background_filters = filters;
       gfx::Rect occlusion_rect;
       switch (i) {
         case LEFT:
@@ -1569,8 +1569,8 @@ class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
     filtered_surface2->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(1.f));
-    filtered_surface1->SetBackgroundFilters(filters);
-    filtered_surface2->SetBackgroundFilters(filters);
+    filtered_surface1->test_properties()->background_filters = filters;
+    filtered_surface2->test_properties()->background_filters = filters;
 
     // Save the distance of influence for the blur effect.
     int outset_top, outset_right, outset_bottom, outset_left;
@@ -1645,7 +1645,7 @@ class OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter
     filtered_surface->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
-    filtered_surface->SetBackgroundFilters(filters);
+    filtered_surface->test_properties()->background_filters = filters;
 
     this->CalcDrawEtc(parent);
 
@@ -1712,7 +1712,7 @@ class OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded
     filtered_surface->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
-    filtered_surface->SetBackgroundFilters(filters);
+    filtered_surface->test_properties()->background_filters = filters;
 
     this->CalcDrawEtc(parent);
 
@@ -1791,7 +1791,7 @@ class OcclusionTrackerTestReduceOcclusionWhenBkgdFilterIsPartiallyOccluded
     filtered_surface->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
-    filtered_surface->SetBackgroundFilters(filters);
+    filtered_surface->test_properties()->background_filters = filters;
 
     // Save the distance of influence for the blur effect.
     int outset_top, outset_right, outset_bottom, outset_left;

@@ -40,7 +40,6 @@ static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
     return;
 
   DCHECK(layer->filters().IsEmpty()) << "layer: " << layer->id();
-  DCHECK(layer->background_filters().IsEmpty()) << "layer: " << layer->id();
   DCHECK(!IsRootLayer(layer)) << "layer: " << layer->id();
   EffectNode* effect_node =
       layer->layer_tree_impl()->property_trees()->effect_tree.Node(
@@ -49,6 +48,7 @@ static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
     return;
   DCHECK_EQ(effect_node->data.mask_layer_id, -1) << "layer: " << layer->id();
   DCHECK_EQ(effect_node->data.replica_layer_id, -1) << "layer: " << layer->id();
+  DCHECK(effect_node->data.background_filters.IsEmpty());
 }
 
 #endif

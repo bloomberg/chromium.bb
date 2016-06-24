@@ -347,7 +347,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->clip_tree_index_ = clip_tree_index_;
   layer->scroll_tree_index_ = scroll_tree_index_;
   layer->filters_ = filters_;
-  layer->background_filters_ = background_filters_;
   layer->sorting_context_id_ = sorting_context_id_;
   layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
 
@@ -804,15 +803,6 @@ bool LayerImpl::FilterIsAnimating() const {
 
 bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
   return layer_tree_impl_->HasPotentiallyRunningFilterAnimation(this);
-}
-
-void LayerImpl::SetBackgroundFilters(
-    const FilterOperations& filters) {
-  if (background_filters_ == filters)
-    return;
-
-  background_filters_ = filters;
-  NoteLayerPropertyChanged();
 }
 
 void LayerImpl::SetMasksToBounds(bool masks_to_bounds) {

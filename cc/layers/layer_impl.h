@@ -196,11 +196,6 @@ class CC_EXPORT LayerImpl {
   bool FilterIsAnimating() const;
   bool HasPotentiallyRunningFilterAnimation() const;
 
-  void SetBackgroundFilters(const FilterOperations& filters);
-  const FilterOperations& background_filters() const {
-    return background_filters_;
-  }
-
   void SetMasksToBounds(bool masks_to_bounds);
   bool masks_to_bounds() const { return masks_to_bounds_; }
 
@@ -564,7 +559,6 @@ class CC_EXPORT LayerImpl {
   int scroll_tree_index_;
 
   FilterOperations filters_;
-  FilterOperations background_filters_;
 
  protected:
   friend class TreeSynchronizer;

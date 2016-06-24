@@ -95,7 +95,6 @@ message EffectNodeData {
   optional float screen_space_opacity = 2;
   optional bool has_render_surface = 3;
   optional bool has_copy_request = 4;
-  optional bool has_background_filters = 5;
   optional bool hidden_by_backface_visibility = 14;
   optional bool double_sided = 13;
   optional bool is_drawn = 6;

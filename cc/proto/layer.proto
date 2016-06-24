@@ -67,7 +67,7 @@ message LayerProperties {
   optional SolidColorScrollbarLayerProperties solid_scrollbar = 7;
 }
 
-// NEXT ID: 54
+// NEXT ID: 55
 message BaseLayerProperties {
   optional Point3F transform_origin = 1;
   optional uint32 background_color = 2;
@@ -82,6 +82,7 @@ message BaseLayerProperties {
   optional bool draws_content = 9;
   optional bool hide_layer_and_subtree = 10;
   optional bool subtree_property_changed = 47;
+  optional bool layer_property_changed = 54;
   // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
   // repeated FilterOperation filters = 12;
   // repeated FilterOperation background_filters = 13;

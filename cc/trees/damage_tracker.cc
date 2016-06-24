@@ -196,7 +196,7 @@ gfx::Rect DamageTracker::TrackDamageFromActiveLayers(
       continue;
 
     if (layer->render_surface() && layer->render_surface() != target_surface)
-      ExtendDamageForRenderSurface(layer, &damage_rect);
+      ExtendDamageForRenderSurface(layer->render_surface(), &damage_rect);
     else
       ExtendDamageForLayer(layer, &damage_rect);
   }
@@ -343,7 +343,7 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
 }
 
 void DamageTracker::ExtendDamageForRenderSurface(
-    LayerImpl* layer,
+    RenderSurfaceImpl* render_surface,
     gfx::Rect* target_damage_rect) {
   // There are two ways a "descendant surface" can damage regions of the "target
   // surface":
@@ -360,10 +360,9 @@ void DamageTracker::ExtendDamageForRenderSurface(
   //      as well, and that damage should propagate to the target surface.
   //
 
-  RenderSurfaceImpl* render_surface = layer->render_surface();
-
   bool surface_is_new = false;
-  SurfaceRectMapData& data = RectDataForSurface(layer->id(), &surface_is_new);
+  SurfaceRectMapData& data =
+      RectDataForSurface(render_surface->OwningLayerId(), &surface_is_new);
   gfx::Rect old_surface_rect = data.rect_;
 
   // The drawableContextRect() already includes the replica if it exists.
@@ -428,10 +427,11 @@ void DamageTracker::ExtendDamageForRenderSurface(
   // those pixels from the surface with only the contents of layers below this
   // one in them. This means we need to redraw any pixels in the surface being
   // used for the blur in this layer this frame.
-  if (layer->background_filters().HasFilterThatMovesPixels()) {
-    ExpandDamageRectInsideRectWithFilters(target_damage_rect,
-                                          surface_rect_in_target_space,
-                                          layer->background_filters());
+  const FilterOperations& background_filters =
+      render_surface->BackgroundFilters();
+  if (background_filters.HasFilterThatMovesPixels()) {
+    ExpandDamageRectInsideRectWithFilters(
+        target_damage_rect, surface_rect_in_target_space, background_filters);
   }
 }
 

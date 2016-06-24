@@ -716,6 +716,14 @@ static inline float Opacity(LayerImpl* layer) {
   return layer->test_properties()->opacity;
 }
 
+static inline const FilterOperations& BackgroundFilters(Layer* layer) {
+  return layer->background_filters();
+}
+
+static inline const FilterOperations& BackgroundFilters(LayerImpl* layer) {
+  return layer->test_properties()->background_filters;
+}
+
 static inline bool HideLayerAndSubtree(Layer* layer) {
   return layer->hide_layer_and_subtree();
 }
@@ -763,7 +771,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
   }
 
   // If the layer uses a CSS filter.
-  if (!layer->filters().IsEmpty() || !layer->background_filters().IsEmpty()) {
+  if (!layer->filters().IsEmpty() || !BackgroundFilters(layer).IsEmpty()) {
     return true;
   }
 
@@ -899,7 +907,7 @@ bool AddEffectNodeIfNeeded(
   node.data.opacity = Opacity(layer);
   node.data.has_render_surface = should_create_render_surface;
   node.data.has_copy_request = HasCopyRequest(layer);
-  node.data.has_background_filters = !layer->background_filters().IsEmpty();
+  node.data.background_filters = BackgroundFilters(layer);
   node.data.has_potential_opacity_animation = has_potential_opacity_animation;
   node.data.double_sided = DoubleSided(layer);
   node.data.subtree_hidden = HideLayerAndSubtree(layer);

@@ -25,6 +25,7 @@
 namespace cc {
 
 class DamageTracker;
+class FilterOperations;
 class Occlusion;
 class RenderPassId;
 class RenderPassSink;
@@ -149,6 +150,8 @@ class CC_EXPORT RenderSurfaceImpl {
 
   LayerImpl* ReplicaMaskLayer();
   bool HasReplicaMask() const;
+
+  const FilterOperations& BackgroundFilters() const;
 
   bool HasCopyRequest() const;
 

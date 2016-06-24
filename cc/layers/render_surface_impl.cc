@@ -14,6 +14,7 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_pass_sink.h"
+#include "cc/output/filter_operations.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -153,6 +154,10 @@ LayerImpl* RenderSurfaceImpl::ReplicaMaskLayer() {
 
 bool RenderSurfaceImpl::HasReplicaMask() const {
   return OwningEffectNode()->data.replica_mask_layer_id != -1;
+}
+
+const FilterOperations& RenderSurfaceImpl::BackgroundFilters() const {
+  return OwningEffectNode()->data.background_filters;
 }
 
 bool RenderSurfaceImpl::HasCopyRequest() const {
@@ -391,8 +396,7 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   quad->SetNew(shared_quad_state, content_rect(), visible_layer_rect,
                render_pass_id, mask_resource_id, mask_uv_scale,
                mask_texture_size, owning_layer_->filters(),
-               owning_layer_to_target_scale,
-               owning_layer_->background_filters());
+               owning_layer_to_target_scale, BackgroundFilters());
 }
 
 }  // namespace cc

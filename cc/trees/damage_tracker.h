@@ -60,7 +60,7 @@ class CC_EXPORT DamageTracker {
 
   // These helper functions are used only in TrackDamageFromActiveLayers().
   void ExtendDamageForLayer(LayerImpl* layer, gfx::Rect* target_damage_rect);
-  void ExtendDamageForRenderSurface(LayerImpl* layer,
+  void ExtendDamageForRenderSurface(RenderSurfaceImpl* render_surface,
                                     gfx::Rect* target_damage_rect);
 
   struct LayerRectMapData {

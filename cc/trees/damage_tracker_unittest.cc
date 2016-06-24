@@ -697,7 +697,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root);
-  child1->SetBackgroundFilters(filters);
+  child1->test_properties()->background_filters = filters;
+  child1->NoteLayerPropertyChanged();
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 

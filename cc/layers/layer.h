@@ -484,6 +484,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetSubtreePropertyChanged();
   bool subtree_property_changed() const { return subtree_property_changed_; }
 
+  void SetLayerPropertyChanged();
+  bool layer_property_changed() const { return layer_property_changed_; }
+
   void DidBeginTracing();
 
   int num_copy_requests_in_target_subtree();
@@ -646,6 +649,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool should_check_backface_visibility_ : 1;
   bool force_render_surface_for_testing_ : 1;
   bool subtree_property_changed_ : 1;
+  bool layer_property_changed_ : 1;
   bool has_will_change_transform_hint_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
