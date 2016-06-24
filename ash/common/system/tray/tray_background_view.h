@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
-#define ASH_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
+#ifndef ASH_COMMON_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
+#define ASH_COMMON_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
 
 #include <memory>
 
@@ -17,7 +17,6 @@
 
 namespace ash {
 class ShelfLayoutManager;
-class StatusAreaWidget;
 class TrayEventFilter;
 class TrayBackground;
 class WmShelf;
@@ -63,7 +62,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
     DISALLOW_COPY_AND_ASSIGN(TrayContainer);
   };
 
-  explicit TrayBackgroundView(StatusAreaWidget* status_area_widget);
+  explicit TrayBackgroundView(WmShelf* wm_shelf);
   ~TrayBackgroundView() override;
 
   // Called after the tray has been added to the widget containing it.
@@ -128,17 +127,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Returns true when the the background was overridden to be drawn as active.
   bool draw_background_as_active() const {return draw_background_as_active_; }
 
-  StatusAreaWidget* status_area_widget() {
-    return status_area_widget_;
-  }
-  const StatusAreaWidget* status_area_widget() const {
-    return status_area_widget_;
-  }
   TrayContainer* tray_container() const { return tray_container_; }
   ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
   TrayEventFilter* tray_event_filter() { return tray_event_filter_.get(); }
-
-  WmShelf* GetShelf();
+  WmShelf* shelf() { return wm_shelf_; }
 
   // Updates the arrow visibility based on the launcher visibility.
   void UpdateBubbleViewArrow(views::TrayBubbleView* bubble_view);
@@ -158,8 +150,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // SetVisible(false) is called.
   void HideTransformation();
 
-  // Unowned pointer to parent widget.
-  StatusAreaWidget* status_area_widget_;
+  // The shelf containing the system tray for this view.
+  WmShelf* wm_shelf_;
 
   // Convenience pointer to the contents view.
   TrayContainer* tray_container_;
@@ -183,4 +175,4 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
+#endif  // ASH_COMMON_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_

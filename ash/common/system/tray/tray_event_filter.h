@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_TRAY_EVENT_FILTER_H_
-#define ASH_SYSTEM_TRAY_TRAY_EVENT_FILTER_H_
+#ifndef ASH_COMMON_SYSTEM_TRAY_TRAY_EVENT_FILTER_H_
+#define ASH_COMMON_SYSTEM_TRAY_TRAY_EVENT_FILTER_H_
 
 #include <set>
 
@@ -50,4 +50,4 @@ class TrayEventFilter : public views::PointerWatcher {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_TRAY_EVENT_FILTER_H_
+#endif  // ASH_COMMON_SYSTEM_TRAY_TRAY_EVENT_FILTER_H_

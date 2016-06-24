@@ -15,6 +15,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -39,7 +40,7 @@ const int kVerticalShelfVerticalPadding = 5;
 namespace ash {
 
 OverviewButtonTray::OverviewButtonTray(StatusAreaWidget* status_area_widget)
-    : TrayBackgroundView(status_area_widget), icon_(NULL) {
+    : TrayBackgroundView(status_area_widget->wm_shelf()), icon_(nullptr) {
   SetContentsBackground();
 
   icon_ = new views::ImageView();

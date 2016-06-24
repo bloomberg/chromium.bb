@@ -7,13 +7,13 @@
 #include <vector>
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_container.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
@@ -534,7 +534,8 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedbackCancellation) {
 TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
   SystemTray* tray = GetPrimarySystemTray();
   WebNotificationTray* notification_tray =
-      tray->status_area_widget()->web_notification_tray();
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+          ->web_notification_tray();
 
   // Ensure the initial system tray height is zero.
   EXPECT_EQ(0, notification_tray->system_tray_height_for_test());

@@ -12,6 +12,7 @@
 #include "ash/common/system/date/tray_date.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
+#include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/update/tray_update.h"
@@ -22,7 +23,6 @@
 #include "ash/shell.h"
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/system/user/tray_user_separator.h"
@@ -130,7 +130,8 @@ class SystemBubbleWrapper {
 // SystemTray
 
 SystemTray::SystemTray(StatusAreaWidget* status_area_widget)
-    : TrayBackgroundView(status_area_widget),
+    : TrayBackgroundView(status_area_widget->wm_shelf()),
+      status_area_widget_(status_area_widget),
       items_(),
       detailed_item_(nullptr),
       default_bubble_height_(0),
@@ -142,6 +143,7 @@ SystemTray::SystemTray(StatusAreaWidget* status_area_widget)
       tray_update_(nullptr),
       screen_capture_tray_item_(nullptr),
       screen_share_tray_item_(nullptr) {
+  DCHECK(status_area_widget_);
   SetContentsBackground();
 }
 
@@ -527,7 +529,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   UpdateNotificationBubble();  // State changed, re-create notifications.
   if (!notification_bubble_)
     UpdateWebNotifications();
-  GetShelf()->UpdateAutoHideState();
+  shelf()->UpdateAutoHideState();
 
   // When we show the system menu in our alternate shelf layout, we need to
   // tint the background.
@@ -598,7 +600,7 @@ void SystemTray::UpdateWebNotifications() {
     height =
         std::max(0, work_area.height() - bubble_view->GetBoundsInScreen().y());
   }
-  status_area_widget()->web_notification_tray()->SetSystemTrayHeight(height);
+  status_area_widget_->web_notification_tray()->SetSystemTrayHeight(height);
 }
 
 base::string16 SystemTray::GetAccessibleTimeString(
@@ -647,7 +649,7 @@ void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   if (system_bubble_.get() && bubble_view == system_bubble_->bubble_view()) {
     DestroySystemBubble();
     UpdateNotificationBubble();  // State changed, re-create notifications.
-    GetShelf()->UpdateAutoHideState();
+    shelf()->UpdateAutoHideState();
   } else if (notification_bubble_.get() &&
              bubble_view == notification_bubble_->bubble_view()) {
     DestroyNotificationBubble();

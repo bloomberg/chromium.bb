@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/network/tray_sms.h"
 
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
+#include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_item_more.h"
@@ -13,7 +14,6 @@
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

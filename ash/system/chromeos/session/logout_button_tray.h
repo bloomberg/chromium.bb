@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_BUTTON_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/system/tray/tray_background_view.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
-#include "ash/system/tray/tray_background_view.h"
 #include "ash/system/user/login_status.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"

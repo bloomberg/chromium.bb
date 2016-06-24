@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_observer.h"
-#include "ash/system/tray/tray_background_view.h"
+#include "ash/common/system/tray/tray_background_view.h"
 #include "base/macros.h"
 
 namespace views {
@@ -16,6 +16,8 @@ class ImageView;
 }
 
 namespace ash {
+
+class StatusAreaWidget;
 
 // Status area tray for showing a toggle for Overview Mode. Overview Mode
 // is equivalent to WindowSelectorController being in selection mode.
