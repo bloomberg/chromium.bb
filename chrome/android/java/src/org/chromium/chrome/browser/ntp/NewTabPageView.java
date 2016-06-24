@@ -461,7 +461,8 @@ public class NewTabPageView extends FrameLayout
                 assert mPendingSnapScroll;
                 mPendingSnapScroll = false;
                 NewTabPageUma.SnapState currentSnapState = CardsLayoutOperations.snapScroll(
-                        mRecyclerView, mNewTabPageLayout, mMostVisitedLayout, getVerticalScroll());
+                        mRecyclerView, mNewTabPageLayout, mMostVisitedLayout, getVerticalScroll(),
+                        false);
                 snapStateObserver.updateSnapState(NewTabPageView.this, currentSnapState);
             }
         };
@@ -814,6 +815,11 @@ public class NewTabPageView extends FrameLayout
 
         if (mUseCardsUi) {
             mRecyclerView.updatePeekingCard();
+            // The positioning of elements may have been changed (since the elements expand to fill
+            // the available vertical space), so adjust the scroll. We force snapping to Most Likely
+            // so the user's snap point doesn't change on rotation.
+            CardsLayoutOperations.snapScroll(mRecyclerView, mNewTabPageLayout, mMostVisitedLayout,
+                    getVerticalScroll(), true);
         }
     }
 
