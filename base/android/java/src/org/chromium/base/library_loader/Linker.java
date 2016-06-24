@@ -244,7 +244,8 @@ public abstract class Linker {
                 // library loading path in order for the libraries to be found.
                 String appClass =
                         ContextUtils.getApplicationContext().getApplicationInfo().className;
-                boolean isIncrementalInstall = appClass.contains("incrementalinstall");
+                boolean isIncrementalInstall =
+                        appClass != null && appClass.contains("incrementalinstall");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isIncrementalInstall) {
                     sSingleton = ModernLinker.create();
                 } else {
