@@ -701,19 +701,6 @@ void HandleToggleSpokenFeedback() {
       A11Y_NOTIFICATION_SHOW);
 }
 
-bool CanHandleToggleTouchViewTesting() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableTouchViewTesting);
-}
-
-void HandleToggleTouchViewTesting() {
-  // TODO(skuhne): This is only temporary! Remove this!
-  MaximizeModeController* controller = Shell::GetInstance()->
-      maximize_mode_controller();
-  controller->EnableMaximizeModeWindowManager(
-      !controller->IsMaximizeModeWindowManagerEnabled());
-}
-
 bool CanHandleTouchHud() {
   return RootWindowController::ForTargetRootWindow()->touch_hud_debug();
 }
@@ -1049,6 +1036,7 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_ADD_REMOVE_DISPLAY:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
+    case DEBUG_TOGGLE_TOUCH_VIEW:
     case DEBUG_TOGGLE_UNIFIED_DESKTOP:
       return debug::DebugAcceleratorsEnabled();
     case DISABLE_CAPS_LOCK:
@@ -1060,8 +1048,6 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleCycleUser();
     case TOGGLE_CAPS_LOCK:
       return CanHandleToggleCapsLock(accelerator, previous_accelerator);
-    case TOGGLE_TOUCH_VIEW_TESTING:
-      return CanHandleToggleTouchViewTesting();
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
       return CanHandleTouchHud();
@@ -1313,6 +1299,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DEBUG_ADD_REMOVE_DISPLAY:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
+    case DEBUG_TOGGLE_TOUCH_VIEW:
     case DEBUG_TOGGLE_UNIFIED_DESKTOP:
       debug::PerformDebugActionIfEnabled(action);
       break;
@@ -1380,9 +1367,6 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case TOGGLE_SPOKEN_FEEDBACK:
       HandleToggleSpokenFeedback();
-      break;
-    case TOGGLE_TOUCH_VIEW_TESTING:
-      HandleToggleTouchViewTesting();
       break;
     case TOGGLE_WIFI:
       Shell::GetInstance()->system_tray_notifier()->NotifyRequestToggleWifi();

@@ -9,6 +9,9 @@
 
 namespace ash {
 
+const int kDebugModifier =
+    ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN;
+
 const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME },
   { false, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME },
@@ -79,10 +82,6 @@ const AcceleratorData kAcceleratorData[] = {
     SWITCH_TO_PREVIOUS_USER },
   { true, ui::VKEY_OEM_PERIOD, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     SWITCH_TO_NEXT_USER },
-  // Turning the TouchView maximizing mode on via hotkey for the time being.
-  // TODO(skuhne): Remove once the test isn't needed anymore.
-  { true, ui::VKEY_8, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
-    TOGGLE_TOUCH_VIEW_TESTING },
   // Single shift release turns off caps lock.
   { false, ui::VKEY_LSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
   { false, ui::VKEY_SHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
@@ -166,8 +165,7 @@ const AcceleratorData kAcceleratorData[] = {
 
   // Debugging shortcuts that need to be available to end-users in
   // release builds.
-  { true, ui::VKEY_U, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
-    PRINT_UI_HIERARCHIES },
+  { true, ui::VKEY_U, kDebugModifier, PRINT_UI_HIERARCHIES },
 
   // TODO(yusukes): Handle VKEY_MEDIA_STOP, and
   // VKEY_MEDIA_LAUNCH_MAIL.
@@ -267,10 +265,10 @@ const AcceleratorData kDebugAcceleratorData[] = {
      DEBUG_TOGGLE_TOUCH_PAD},
     {true, ui::VKEY_T, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DEBUG_TOGGLE_TOUCH_SCREEN},
+    { true, ui::VKEY_T, kDebugModifier, DEBUG_TOGGLE_TOUCH_VIEW},
     {true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI},
     // Extra shortcut for display swapping as alt-f4 is taken on linux desktop.
-    {true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-     SWAP_PRIMARY_DISPLAY},
+    {true, ui::VKEY_S, kDebugModifier, SWAP_PRIMARY_DISPLAY},
 #endif
     // Extra shortcut to rotate/scale up/down the screen on linux desktop.
     {true, ui::VKEY_R,
@@ -284,27 +282,13 @@ const AcceleratorData kDebugAcceleratorData[] = {
      DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE},
     {true, ui::VKEY_F, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
      TOGGLE_FULLSCREEN},
-    {true, ui::VKEY_L,
-     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-     DEBUG_PRINT_LAYER_HIERARCHY},
-    {true, ui::VKEY_V,
-     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-     DEBUG_PRINT_VIEW_HIERARCHY},
-    {true, ui::VKEY_W,
-     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-     DEBUG_PRINT_WINDOW_HIERARCHY},
-    {true, ui::VKEY_D,
-     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-     DEBUG_TOGGLE_DEVICE_SCALE_FACTOR},
-    {true, ui::VKEY_B,
-     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-     DEBUG_TOGGLE_SHOW_DEBUG_BORDERS},
-    {true, ui::VKEY_F,
-     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-     DEBUG_TOGGLE_SHOW_FPS_COUNTER},
-    {true, ui::VKEY_P,
-     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-     DEBUG_TOGGLE_SHOW_PAINT_RECTS},
+    {true, ui::VKEY_L, kDebugModifier, DEBUG_PRINT_LAYER_HIERARCHY},
+    {true, ui::VKEY_V, kDebugModifier, DEBUG_PRINT_VIEW_HIERARCHY},
+    {true, ui::VKEY_W, kDebugModifier, DEBUG_PRINT_WINDOW_HIERARCHY},
+    {true, ui::VKEY_D, kDebugModifier, DEBUG_TOGGLE_DEVICE_SCALE_FACTOR},
+    {true, ui::VKEY_B, kDebugModifier, DEBUG_TOGGLE_SHOW_DEBUG_BORDERS},
+    {true, ui::VKEY_F, kDebugModifier, DEBUG_TOGGLE_SHOW_FPS_COUNTER},
+    {true, ui::VKEY_P, kDebugModifier, DEBUG_TOGGLE_SHOW_PAINT_RECTS},
 };
 
 const size_t kDebugAcceleratorDataLength = arraysize(kDebugAcceleratorData);
@@ -353,13 +337,13 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   DEBUG_ADD_REMOVE_DISPLAY,
   DEBUG_TOGGLE_TOUCH_PAD,
   DEBUG_TOGGLE_TOUCH_SCREEN,
+  DEBUG_TOGGLE_TOUCH_VIEW,
   DISABLE_CAPS_LOCK,
   DISABLE_GPU_WATCHDOG,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
   TOGGLE_CAPS_LOCK,
   TOGGLE_SPOKEN_FEEDBACK,
-  TOGGLE_TOUCH_VIEW_TESTING,
   TOGGLE_MIRROR_MODE,
   TOGGLE_WIFI,
   TOUCH_HUD_CLEAR,

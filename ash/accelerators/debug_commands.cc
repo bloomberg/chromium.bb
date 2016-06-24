@@ -14,6 +14,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
@@ -140,6 +141,13 @@ void HandleToggleTouchscreen() {
   ash::Shell::GetInstance()->delegate()->ToggleTouchscreen();
 }
 
+void HandleToggleToggleTouchView() {
+  MaximizeModeController* controller =
+      Shell::GetInstance()->maximize_mode_controller();
+  controller->EnableMaximizeModeWindowManager(
+      !controller->IsMaximizeModeWindowManagerEnabled());
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
@@ -172,6 +180,9 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       break;
     case DEBUG_TOGGLE_TOUCH_SCREEN:
       HandleToggleTouchscreen();
+      break;
+    case DEBUG_TOGGLE_TOUCH_VIEW:
+      HandleToggleToggleTouchView();
       break;
     case DEBUG_TOGGLE_UNIFIED_DESKTOP:
       Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(
