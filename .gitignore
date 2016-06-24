@@ -327,6 +327,7 @@ vs-chromium-project.txt
 /third_party/drmemory/unpacked
 /third_party/elfutils/src
 /third_party/errorprone/lib
+/third_party/espresso/lib/*.jar
 /third_party/eyesfree/src
 /third_party/ffmpeg
 /third_party/findbugs
