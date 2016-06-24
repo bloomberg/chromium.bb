@@ -107,9 +107,7 @@ static bool isSchemeWhitelisted(const String& scheme)
         initCustomSchemeHandlerWhitelist();
 
     StringBuilder builder;
-    unsigned length = scheme.length();
-    for (unsigned i = 0; i < length; ++i)
-        builder.append(toASCIILower(scheme[i]));
+    builder.append(scheme.lower().ascii().data());
 
     return schemeWhitelist->contains(builder.toString());
 }
