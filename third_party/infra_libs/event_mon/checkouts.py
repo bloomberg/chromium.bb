@@ -14,7 +14,8 @@ import subprocess
 BASE_DIR = os.path.dirname(
   os.path.dirname(
     os.path.dirname(
-      os.path.dirname(os.path.realpath(__file__)))))
+      os.path.dirname(os.path.realpath(
+        __file__.decode(sys.getfilesystemencoding()))))))
 
 
 def parse_revinfo(revinfo):

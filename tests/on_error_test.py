@@ -21,12 +21,15 @@ import unittest
 import urllib
 import urlparse
 
-TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
+TESTS_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
 ROOT_DIR = os.path.dirname(TESTS_DIR)
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 from depot_tools import auto_stub
+from depot_tools import fix_encoding
+
 from utils import on_error
 
 
@@ -407,6 +410,8 @@ def run_shell_out(url, mode):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
+
   # Ignore _DISABLE_ENVVAR if set.
   os.environ.pop(on_error._DISABLE_ENVVAR, None)
 

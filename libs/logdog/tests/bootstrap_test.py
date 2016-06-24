@@ -8,7 +8,8 @@ import sys
 import unittest
 
 ROOT_DIR = os.path.dirname(os.path.abspath(os.path.join(
-    __file__, os.pardir, os.pardir, os.pardir)))
+    __file__.decode(sys.getfilesystemencoding()),
+    os.pardir, os.pardir, os.pardir)))
 sys.path.insert(0, ROOT_DIR)
 
 from libs.logdog import bootstrap

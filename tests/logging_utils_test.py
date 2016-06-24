@@ -11,7 +11,7 @@ import tempfile
 import unittest
 import re
 
-THIS_FILE = os.path.abspath(__file__)
+THIS_FILE = os.path.abspath(__file__.decode(sys.getfilesystemencoding()))
 sys.path.insert(0, os.path.dirname(os.path.dirname(THIS_FILE)))
 
 from third_party.depot_tools import fix_encoding

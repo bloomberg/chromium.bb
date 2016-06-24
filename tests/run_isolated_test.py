@@ -15,7 +15,8 @@ import sys
 import tempfile
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 

@@ -22,7 +22,8 @@ import sys
 import urllib
 
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, CLIENT_DIR)
 
 

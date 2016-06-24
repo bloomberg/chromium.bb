@@ -14,7 +14,8 @@ Useful for reproducing swarm-bot environment like this:
 import os
 import sys
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, ROOT_DIR)
 
 import run_isolated

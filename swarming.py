@@ -40,7 +40,8 @@ import isolateserver
 import run_isolated
 
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
 
 
 class Failure(Exception):

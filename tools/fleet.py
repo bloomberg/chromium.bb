@@ -19,7 +19,8 @@ import sys
 import urllib
 
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 
 _EPOCH = datetime.datetime.utcfromtimestamp(0)
 

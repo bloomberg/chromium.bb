@@ -15,7 +15,8 @@ import sys
 import tempfile
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, ROOT_DIR)
 
 import isolate
@@ -301,7 +302,8 @@ DEPENDENCIES = {
         """if __name__ == '__main__':
         import os, sys
         print('child_touch_root: Verify the relative directories')
-        root_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(os.path.abspath(
+            __file__.decode(sys.getfilesystemencoding())))
         parent_dir, base = os.path.split(root_dir)
         parent_dir, base2 = os.path.split(parent_dir)
         if base != 'isolate' or base2 != 'tests':
@@ -360,7 +362,8 @@ DEPENDENCIES = {
           print(actual)
           print(expected)
           sys.exit(1)
-        root_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(os.path.abspath(
+            __file__.decode(sys.getfilesystemencoding())))
         parent_dir, base = os.path.split(root_dir)
         if mode == 'trace':
           # Verify the parent directory.

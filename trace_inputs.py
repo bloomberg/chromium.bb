@@ -54,7 +54,8 @@ if sys.platform == 'win32':
 __version__ = '0.2'
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
 

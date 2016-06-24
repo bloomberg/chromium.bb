@@ -10,7 +10,8 @@ import subprocess
 import sys
 import unittest
 
-ROOT_DIR = unicode(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, ROOT_DIR)
 
 import isolated_format
@@ -25,7 +26,8 @@ import test_utils
 CONTENTS = {
   'check_files.py': """if True:
       import os, sys
-      ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+      ROOT_DIR = os.path.dirname(os.path.abspath(
+          __file__.decode(sys.getfilesystemencoding())))
       expected = [
         'check_files.py', 'file1.txt', 'file1_copy.txt', 'file2.txt',
         'repeated_files.py',
@@ -47,7 +49,8 @@ CONTENTS = {
   'repeated_files.py': """if True:
       import os, sys
       expected = ['file1.txt', 'file1_copy.txt', 'repeated_files.py']
-      actual = sorted(os.listdir(os.path.dirname(os.path.abspath(__file__))))
+      actual = sorted(os.listdir(os.path.dirname(os.path.abspath(
+          __file__.decode(sys.getfilesystemencoding())))))
       if expected != actual:
         print >> sys.stderr, 'Expected list doesn\\'t match:'
         print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
@@ -56,7 +59,8 @@ CONTENTS = {
   'max_path.py': """if True:
       import os, sys
       prefix = u'\\\\\\\\?\\\\' if sys.platform == 'win32' else u''
-      path = unicode(os.path.join(os.getcwd(), 'a' * 200, 'b' * 200))
+      path = os.path.join(os.getcwd().decode(
+          sys.getfilesystemencoding()), 'a' * 200, 'b' * 200)
       with open(prefix + path, 'rb') as f:
         actual = f.read()
         if actual != 'File1\\n':

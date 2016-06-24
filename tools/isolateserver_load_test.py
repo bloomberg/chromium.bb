@@ -20,8 +20,8 @@ import random
 import sys
 import time
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, ROOT_DIR)
 
 from third_party import colorama

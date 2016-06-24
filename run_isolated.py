@@ -58,10 +58,12 @@ EXECUTABLE_SUFFIX_PARAMETER = '${EXECUTABLE_SUFFIX}'
 SWARMING_BOT_FILE_PARAMETER = '${SWARMING_BOT_FILE}'
 
 # Absolute path to this file (can be None if running from zip on Mac).
-THIS_FILE_PATH = os.path.abspath(__file__) if __file__ else None
+THIS_FILE_PATH = os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())) if __file__ else None
 
 # Directory that contains this file (might be inside zip package).
-BASE_DIR = os.path.dirname(THIS_FILE_PATH) if __file__ else None
+BASE_DIR = os.path.dirname(THIS_FILE_PATH) if __file__.decode(
+    sys.getfilesystemencoding()) else None
 
 # Directory that contains currently running script file.
 if zip_package.get_main_script_path():
@@ -193,11 +195,11 @@ def run_command(command, cwd, tmp_dir, hard_timeout, grace_period):
 
   env = os.environ.copy()
   if sys.platform == 'darwin':
-    env['TMPDIR'] = tmp_dir.encode('ascii')
+    env['TMPDIR'] = tmp_dir.encode(sys.getfilesystemencoding())
   elif sys.platform == 'win32':
-    env['TEMP'] = tmp_dir.encode('ascii')
+    env['TEMP'] = tmp_dir.encode(sys.getfilesystemencoding())
   else:
-    env['TMP'] = tmp_dir.encode('ascii')
+    env['TMP'] = tmp_dir.encode(sys.getfilesystemencoding())
   exit_code = None
   had_hard_timeout = False
   with tools.Profiler('RunTest'):

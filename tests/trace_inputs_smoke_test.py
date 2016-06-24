@@ -15,7 +15,8 @@ import tempfile
 import unicodedata
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, ROOT_DIR)
 
 import trace_inputs
@@ -24,7 +25,7 @@ from utils import file_path
 from utils import threading_utils
 
 
-FILENAME = os.path.basename(__file__)
+FILENAME = os.path.basename(__file__.decode(sys.getfilesystemencoding()))
 REL_DATA = os.path.join(u'tests', 'trace_inputs')
 VERBOSE = False
 

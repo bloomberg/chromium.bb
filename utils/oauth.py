@@ -23,7 +23,8 @@ import urlparse
 import webbrowser
 
 # All libraries here expect to find themselves in sys.path.
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pyasn1'))
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'rsa'))

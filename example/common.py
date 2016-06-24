@@ -11,7 +11,8 @@ import subprocess
 import sys
 
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
 sys.path.append(os.path.join(ROOT_DIR, '..', 'third_party'))
 
 import colorama

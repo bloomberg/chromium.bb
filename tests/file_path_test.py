@@ -14,12 +14,13 @@ import subprocess
 import sys
 import time
 
-BASE_DIR = unicode(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
-FILE_PATH = unicode(os.path.abspath(__file__))
+FILE_PATH = os.path.abspath(__file__.decode(sys.getfilesystemencoding()))
 
 from depot_tools import auto_stub
 from depot_tools import fix_encoding

@@ -192,7 +192,8 @@ try:
 except ImportError:
     # Default CA certificates file bundled with httplib2.
     CA_CERTS = os.path.join(
-        os.path.dirname(os.path.abspath(__file__ )), "cacerts.txt")
+        os.path.dirname(os.path.abspath(
+            __file__.decode(sys.getfilesystemencoding()))), "cacerts.txt")
 
 # Which headers are hop-by-hop headers by default
 HOP_BY_HOP = ['connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailers', 'transfer-encoding', 'upgrade']

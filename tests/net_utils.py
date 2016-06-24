@@ -7,7 +7,8 @@ import os
 import sys
 import threading
 
-TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+TEST_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
 ROOT_DIR = os.path.dirname(TEST_DIR)
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))

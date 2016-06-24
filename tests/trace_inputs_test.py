@@ -10,11 +10,12 @@ import os
 import sys
 import unittest
 
-BASE_DIR = unicode(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.insert(0, ROOT_DIR)
 
-FILE_PATH = unicode(os.path.abspath(__file__))
+FILE_PATH = os.path.abspath(__file__.decode(sys.getfilesystemencoding()))
 
 import trace_inputs
 
@@ -237,7 +238,8 @@ if sys.platform != 'win32':
             '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = %d' %
             self._GRAND_CHILD_PID),
         (self._GRAND_CHILD_PID,
-          'open("%s", O_RDONLY)       = 76' % os.path.basename(str(FILE_PATH))),
+          'open("%s", O_RDONLY)       = 76' % os.path.basename(
+              FILE_PATH.encode('utf-8'))),
       ]
       size = os.stat(FILE_PATH).st_size
       expected = {

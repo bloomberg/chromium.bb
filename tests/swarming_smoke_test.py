@@ -9,7 +9,8 @@ import subprocess
 import sys
 import unittest
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
 
 ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
 SWARMING_SERVER = 'https://chromium-swarm.appspot.com/'

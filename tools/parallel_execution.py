@@ -13,7 +13,8 @@ import sys
 import tempfile
 import time
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 
 sys.path.insert(0, ROOT_DIR)
