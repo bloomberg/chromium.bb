@@ -101,6 +101,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void Focus() override {}
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override {}
+  void TextInputStateChanged(const TextInputState& params) override {}
   void ImeCancelComposition() override {}
   void ImeCompositionRangeChanged(
       const gfx::Range& range,

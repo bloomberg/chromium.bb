@@ -4,7 +4,6 @@
 
 #include "content/public/test/text_input_test_utils.h"
 
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
@@ -203,7 +202,7 @@ bool GetTextInputTypeForView(WebContents* web_contents,
 RenderWidgetHostView* GetActiveViewFromWebContents(WebContents* web_contents) {
   return static_cast<WebContentsImpl*>(web_contents)
       ->GetTextInputManager()
-      ->active_view_for_testing();
+      ->GetActiveView();
 }
 
 TextInputManagerTester::TextInputManagerTester(WebContents* web_contents)
@@ -238,7 +237,7 @@ bool TextInputManagerTester::GetTextInputValue(std::string* value) {
 
 const RenderWidgetHostView* TextInputManagerTester::GetActiveView() {
   DCHECK(observer_->text_input_manager());
-  return observer_->text_input_manager()->active_view_for_testing();
+  return observer_->text_input_manager()->GetActiveView();
 }
 
 const RenderWidgetHostView* TextInputManagerTester::GetUpdatedView() {

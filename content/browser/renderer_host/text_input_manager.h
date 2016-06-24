@@ -13,7 +13,6 @@
 
 namespace content {
 
-class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class WebContents;
@@ -41,22 +40,15 @@ class CONTENT_EXPORT TextInputManager {
   TextInputManager();
   ~TextInputManager();
 
-  // ---------------------------------------------------------------------------
-  // The following methods can be used to obtain information about IME-related
-  // state for the active RenderWidget.
-
-  // Returns the currently active widget, i.e., the RWH which is associated with
-  // |active_view_|.
-  RenderWidgetHostImpl* GetActiveWidget() const;
+  // Returns the currently active view (i.e., the RWHV with a focused <input>
+  // element), or nullptr if none exist. The |active_view_| cannot have a
+  // |TextInputState.type| of ui::TEXT_INPUT_TYPE_NONE.
+  RenderWidgetHostViewBase* GetActiveView() const;
 
   // Returns the TextInputState corresponding to |active_view_|.
   // Users of this method should not hold on to the pointer as it might become
   // dangling if the TextInputManager or |active_view_| might go away.
   const TextInputState* GetTextInputState();
-
-  // ---------------------------------------------------------------------------
-  // The following methods are called by RWHVs on the tab to update their IME-
-  // related state.
 
   // Updates the TextInputState for |view|.
   void UpdateTextInputState(RenderWidgetHostViewBase* view,
@@ -85,8 +77,6 @@ class CONTENT_EXPORT TextInputManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  RenderWidgetHostViewBase* active_view_for_testing() { return active_view_; }
-
  private:
   friend bool GetTextInputTypeForView(WebContents* web_contents,
                                       RenderWidgetHostView* view,
@@ -95,9 +85,7 @@ class CONTENT_EXPORT TextInputManager {
   void NotifyObserversAboutInputStateUpdate(RenderWidgetHostViewBase* view,
                                             bool did_update_state);
 
-  // The view with active text input state, i.e., a focused <input> element.
-  // It will be nullptr if no such view exists. Note that the active view
-  // cannot have a |TextInputState.type| of ui::TEXT_INPUT_TYPE_NONE.
+  // The view with active text input state.
   RenderWidgetHostViewBase* active_view_;
 
   std::unordered_map<RenderWidgetHostViewBase*, TextInputState>
