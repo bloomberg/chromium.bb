@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "cc/layers/picture_image_layer_impl.h"
+#include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/trees/layer_tree_host.h"
@@ -29,7 +29,9 @@ PictureImageLayer::~PictureImageLayer() {
 
 std::unique_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureImageLayerImpl::Create(tree_impl, id(), is_mask());
+  auto layer_impl = PictureLayerImpl::Create(tree_impl, id(), is_mask());
+  layer_impl->set_is_directly_composited_image(true);
+  return std::move(layer_impl);
 }
 
 bool PictureImageLayer::HasDrawableContent() const {

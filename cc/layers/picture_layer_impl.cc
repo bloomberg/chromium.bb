@@ -77,7 +77,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
       was_screen_space_transform_animating_(false),
       only_used_low_res_last_append_quads_(false),
       is_mask_(is_mask),
-      nearest_neighbor_(false) {
+      nearest_neighbor_(false),
+      is_directly_composited_image_(false) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
 }
 
@@ -134,6 +135,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->raster_source_scale_ = raster_source_scale_;
   layer_impl->raster_contents_scale_ = raster_contents_scale_;
   layer_impl->low_res_raster_contents_scale_ = low_res_raster_contents_scale_;
+  layer_impl->is_directly_composited_image_ = is_directly_composited_image_;
 
   layer_impl->SanityCheckTilingState();
 
@@ -872,6 +874,10 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
 }
 
 bool PictureLayerImpl::ShouldAdjustRasterScale() const {
+  // TODO(vmpstr): We might want to adjust the raster scale once in a while.
+  if (is_directly_composited_image_)
+    return false;
+
   if (was_screen_space_transform_animating_ !=
       draw_properties().screen_space_transform_is_animating)
     return true;
@@ -950,6 +956,16 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
 }
 
 void PictureLayerImpl::RecalculateRasterScales() {
+  // TODO(vmpstr): We might want to adjust these once in a while.
+  if (is_directly_composited_image_) {
+    raster_page_scale_ = 1.f;
+    raster_device_scale_ = 1.f;
+    raster_source_scale_ = std::max(1.f, MinimumContentsScale());
+    raster_contents_scale_ = raster_source_scale_;
+    low_res_raster_contents_scale_ = raster_contents_scale_;
+    return;
+  }
+
   float old_raster_contents_scale = raster_contents_scale_;
   float old_raster_page_scale = raster_page_scale_;
 
@@ -1179,6 +1195,15 @@ PictureLayerImpl::CreatePictureLayerTilingSet() {
 }
 
 void PictureLayerImpl::UpdateIdealScales() {
+  // TODO(vmpstr): We might want to adjust these once in a while.
+  if (is_directly_composited_image_) {
+    ideal_contents_scale_ = 1.f;
+    ideal_page_scale_ = 1.f;
+    ideal_device_scale_ = 1.f;
+    ideal_source_scale_ = 1.f;
+    return;
+  }
+
   DCHECK(CanHaveTilings());
 
   float min_contents_scale = MinimumContentsScale();
@@ -1196,8 +1221,13 @@ void PictureLayerImpl::UpdateIdealScales() {
 void PictureLayerImpl::GetDebugBorderProperties(
     SkColor* color,
     float* width) const {
-  *color = DebugColors::TiledContentLayerBorderColor();
-  *width = DebugColors::TiledContentLayerBorderWidth(layer_tree_impl());
+  if (is_directly_composited_image_) {
+    *color = DebugColors::ImageLayerBorderColor();
+    *width = DebugColors::ImageLayerBorderWidth(layer_tree_impl());
+  } else {
+    *color = DebugColors::TiledContentLayerBorderColor();
+    *width = DebugColors::TiledContentLayerBorderWidth(layer_tree_impl());
+  }
 }
 
 void PictureLayerImpl::GetAllPrioritizedTilesForTracing(

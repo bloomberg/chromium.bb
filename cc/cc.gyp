@@ -205,8 +205,6 @@
         'layers/painted_scrollbar_layer_impl.h',
         'layers/picture_image_layer.cc',
         'layers/picture_image_layer.h',
-        'layers/picture_image_layer_impl.cc',
-        'layers/picture_image_layer_impl.h',
         'layers/picture_layer.cc',
         'layers/picture_layer.h',
         'layers/picture_layer_impl.cc',

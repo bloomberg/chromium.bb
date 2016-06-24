@@ -92,14 +92,18 @@ class CC_EXPORT PictureLayerImpl
   // Used for benchmarking
   RasterSource* GetRasterSource() const { return raster_source_.get(); }
 
+  void set_is_directly_composited_image(bool is_directly_composited_image) {
+    is_directly_composited_image_ = is_directly_composited_image;
+  }
+
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveAllTilings();
   void AddTilingsForRasterScale();
   void AddLowResolutionTilingIfNeeded();
-  virtual bool ShouldAdjustRasterScale() const;
-  virtual void RecalculateRasterScales();
+  bool ShouldAdjustRasterScale() const;
+  void RecalculateRasterScales();
   void CleanUpTilingsOnActiveLayer(
       const std::vector<PictureLayerTiling*>& used_tilings);
   float MinimumContentsScale() const;
@@ -116,7 +120,7 @@ class CC_EXPORT PictureLayerImpl
       std::vector<PrioritizedTile>* prioritized_tiles) const override;
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
-  virtual void UpdateIdealScales();
+  void UpdateIdealScales();
   float MaximumTilingContentsScale() const;
   std::unique_ptr<PictureLayerTilingSet> CreatePictureLayerTilingSet();
 
@@ -142,6 +146,7 @@ class CC_EXPORT PictureLayerImpl
   const bool is_mask_;
 
   bool nearest_neighbor_;
+  bool is_directly_composited_image_;
 
   // Use this instead of |visible_layer_rect()| for tiling calculations. This
   // takes external viewport and transform for tile priority into account.

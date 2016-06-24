@@ -4862,5 +4862,87 @@ TEST_F(PictureLayerImplTest, HighResWasLowResCollision) {
   EXPECT_FALSE(tilings->tiling_at(1)->may_contain_low_resolution_tiles());
 }
 
+TEST_F(PictureLayerImplTest, CompositedImageCalculateContentsScale) {
+  gfx::Size layer_bounds(400, 400);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  host_impl()->CreatePendingTree();
+  LayerTreeImpl* pending_tree = host_impl()->pending_tree();
+
+  std::unique_ptr<FakePictureLayerImpl> pending_layer =
+      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, layer_id(),
+                                                   pending_raster_source);
+  pending_layer->set_is_directly_composited_image(true);
+  pending_layer->SetDrawsContent(true);
+  FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
+  pending_tree->SetRootLayer(std::move(pending_layer));
+  pending_tree->BuildLayerListAndPropertyTreesForTesting();
+
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_ptr, 2.f, 3.f, 4.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(1.f, pending_layer_ptr->MaximumTilingContentsScale());
+}
+
+TEST_F(PictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
+  gfx::Size layer_bounds(400, 400);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  host_impl()->SetViewportSize(layer_bounds);
+  host_impl()->CreatePendingTree();
+  LayerTreeImpl* pending_tree = host_impl()->pending_tree();
+
+  std::unique_ptr<FakePictureLayerImpl> pending_layer =
+      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, layer_id(),
+                                                   pending_raster_source);
+  pending_layer->set_is_directly_composited_image(true);
+  pending_layer->SetDrawsContent(true);
+  FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
+  pending_tree->SetRootLayer(std::move(pending_layer));
+  pending_tree->BuildLayerListAndPropertyTreesForTesting();
+
+  // Set PictureLayerImpl::ideal_contents_scale_ to 2.f.
+  const float suggested_ideal_contents_scale = 2.f;
+  const float device_scale_factor = 3.f;
+  const float page_scale_factor = 4.f;
+  const float animation_contents_scale = 1.f;
+  const bool animating_transform_to_screen = false;
+  SetupDrawPropertiesAndUpdateTiles(
+      pending_layer_ptr, suggested_ideal_contents_scale, device_scale_factor,
+      page_scale_factor, animation_contents_scale, animation_contents_scale,
+      animating_transform_to_screen);
+  EXPECT_EQ(1.f, pending_layer_ptr->tilings()->tiling_at(0)->contents_scale());
+
+  // Push to active layer.
+  host_impl()->ActivateSyncTree();
+
+  FakePictureLayerImpl* active_layer = static_cast<FakePictureLayerImpl*>(
+      host_impl()->active_tree()->root_layer());
+  SetupDrawPropertiesAndUpdateTiles(
+      active_layer, suggested_ideal_contents_scale, device_scale_factor,
+      page_scale_factor, animation_contents_scale, animation_contents_scale,
+      animating_transform_to_screen);
+  EXPECT_EQ(1.f, active_layer->tilings()->tiling_at(0)->contents_scale());
+  active_layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
+
+  // Create resources for the tiles.
+  host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(
+      active_layer->tilings()->tiling_at(0)->AllTilesForTesting());
+
+  // Draw.
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
+  active_layer->AppendQuads(render_pass.get(), &data);
+  active_layer->DidDraw(nullptr);
+
+  ASSERT_FALSE(render_pass->quad_list.empty());
+  EXPECT_EQ(DrawQuad::TILED_CONTENT, render_pass->quad_list.front()->material);
+
+  // Tiles are ready at correct scale, so should not set had_incomplete_tile.
+  EXPECT_EQ(0, data.num_incomplete_tiles);
+}
+
 }  // namespace
 }  // namespace cc
