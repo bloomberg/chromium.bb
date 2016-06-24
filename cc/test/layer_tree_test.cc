@@ -15,6 +15,7 @@
 #include "cc/animation/element_animations.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/switches.h"
+#include "cc/blimp/image_serialization_processor.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -22,6 +23,7 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
+#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/remote_channel_impl_for_test.h"
@@ -417,13 +419,16 @@ class LayerTreeHostForTesting : public LayerTreeHost {
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source,
+      ImageSerializationProcessor* image_serialization_processor) {
     LayerTreeHost::InitParams params;
     params.client = client;
     params.shared_bitmap_manager = shared_bitmap_manager;
     params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
     params.task_graph_runner = task_graph_runner;
     params.settings = &settings;
+    params.image_serialization_processor = image_serialization_processor;
+
     params.animation_host =
         AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     std::unique_ptr<LayerTreeHostForTesting> layer_tree_host(
@@ -504,6 +509,8 @@ LayerTreeTest::LayerTreeTest()
     : output_surface_(nullptr),
       external_begin_frame_source_(nullptr),
       remote_proto_channel_bridge_(this),
+      image_serialization_processor_(
+          base::WrapUnique(new FakeImageSerializationProcessor)),
       beginning_(false),
       end_when_begin_returns_(false),
       timed_out_(false),
@@ -709,7 +716,8 @@ void LayerTreeTest::DoBeginTest() {
         this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_main,
         nullptr, nullptr, task_graph_runner_.get(), settings_,
         base::ThreadTaskRunnerHandle::Get(), nullptr,
-        std::move(external_begin_frame_source));
+        std::move(external_begin_frame_source),
+        image_serialization_processor_.get());
     DCHECK(remote_proto_channel_bridge_.channel_main.HasReceiver());
   } else {
     layer_tree_host_ = LayerTreeHostForTesting::Create(
@@ -717,7 +725,8 @@ void LayerTreeTest::DoBeginTest() {
         gpu_memory_buffer_manager_.get(), task_graph_runner_.get(), settings_,
         base::ThreadTaskRunnerHandle::Get(),
         impl_thread_ ? impl_thread_->task_runner() : NULL,
-        std::move(external_begin_frame_source));
+        std::move(external_begin_frame_source),
+        image_serialization_processor_.get());
   }
 
   ASSERT_TRUE(layer_tree_host_);
@@ -964,8 +973,8 @@ void LayerTreeTest::CreateRemoteClientHost(
   remote_client_layer_tree_host_ = LayerTreeHostForTesting::Create(
       this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_impl,
       nullptr, nullptr, task_graph_runner_.get(), settings,
-      base::ThreadTaskRunnerHandle::Get(), impl_thread_->task_runner(),
-      nullptr);
+      base::ThreadTaskRunnerHandle::Get(), impl_thread_->task_runner(), nullptr,
+      image_serialization_processor_.get());
 
   DCHECK(remote_proto_channel_bridge_.channel_impl.HasReceiver());
   DCHECK(task_runner_provider()->HasImplThread());

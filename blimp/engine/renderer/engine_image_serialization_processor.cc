@@ -11,10 +11,12 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "blimp/common/blob_cache/id_util.h"
 #include "blimp/common/proto/blob_cache.pb.h"
+#include "blimp/engine/renderer/blimp_engine_picture_cache.h"
 #include "blimp/engine/renderer/blob_channel_sender_proxy.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/libwebp/webp/encode.h"
@@ -96,12 +98,14 @@ EngineImageSerializationProcessor::~EngineImageSerializationProcessor() {
   WebPMemoryWriterClear(&writer_state_);
 }
 
-SkPixelSerializer* EngineImageSerializationProcessor::GetPixelSerializer() {
-  return this;
+std::unique_ptr<cc::EnginePictureCache>
+EngineImageSerializationProcessor::CreateEnginePictureCache() {
+  return base::WrapUnique(new BlimpEnginePictureCache(this));
 }
 
-SkPicture::InstallPixelRefProc
-EngineImageSerializationProcessor::GetPixelDeserializer() {
+std::unique_ptr<cc::ClientPictureCache>
+EngineImageSerializationProcessor::CreateClientPictureCache() {
+  NOTREACHED();
   return nullptr;
 }
 

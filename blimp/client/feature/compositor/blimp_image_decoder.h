@@ -12,10 +12,10 @@ class SkBitmap;
 namespace blimp {
 namespace client {
 
-// BlimpImageDecoder is an implementation of SkPicture::InstallPixelRefProc
+// DecodeBlimpImage is an implementation of SkPicture::InstallPixelRefProc
 // which is used by the client to decode WebP images that are part of an
 // SkPicture.
-bool BlimpImageDecoder(const void* input, size_t input_size, SkBitmap* bitmap);
+bool DecodeBlimpImage(const void* input, size_t input_size, SkBitmap* bitmap);
 
 }  // namespace client
 }  // namespace blimp

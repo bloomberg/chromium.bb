@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "cc/proto/image_serialization_processor.h"
+#include "cc/blimp/image_serialization_processor.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 class SkPixelSerializer;
@@ -20,7 +20,8 @@ class BlobChannelReceiver;
 
 namespace client {
 
-// Adds BlobChannel image retrieval support to the Skia image decoding process.
+// Adds BlobChannel image retrieval support to the Skia image decoding process,
+// in addition to providing a cache for Skia images.
 class BlobImageSerializationProcessor : public cc::ImageSerializationProcessor {
  public:
   class ErrorDelegate {
@@ -33,7 +34,7 @@ class BlobImageSerializationProcessor : public cc::ImageSerializationProcessor {
   static BlobImageSerializationProcessor* current();
 
   BlobImageSerializationProcessor();
-  virtual ~BlobImageSerializationProcessor();
+  ~BlobImageSerializationProcessor() override;
 
   // Sets the |blob_receiver| to use for reading images.
   // |blob_receiver| must outlive |this|.
@@ -62,8 +63,8 @@ class BlobImageSerializationProcessor : public cc::ImageSerializationProcessor {
                                   SkBitmap* bitmap);
 
   // cc:ImageSerializationProcessor implementation.
-  SkPixelSerializer* GetPixelSerializer() override;
-  SkPicture::InstallPixelRefProc GetPixelDeserializer() override;
+  std::unique_ptr<cc::EnginePictureCache> CreateEnginePictureCache() override;
+  std::unique_ptr<cc::ClientPictureCache> CreateClientPictureCache() override;
 
   // Interface for accessing stored images received over the Blob Channel.
   BlobChannelReceiver* blob_receiver_ = nullptr;

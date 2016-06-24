@@ -14,7 +14,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
-class ImageSerializationProcessor;
 
 ClipPathDisplayItem::ClipPathDisplayItem(const SkPath& clip_path,
                                          SkRegion::Op clip_op,
@@ -50,9 +49,7 @@ void ClipPathDisplayItem::SetNew(const SkPath& clip_path,
   antialias_ = antialias;
 }
 
-void ClipPathDisplayItem::ToProtobuf(
-    proto::DisplayItem* proto,
-    ImageSerializationProcessor* image_serialization_processor) const {
+void ClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_ClipPath);
 
   proto::ClipPathDisplayItem* details = proto->mutable_clip_path_item();
@@ -98,9 +95,7 @@ EndClipPathDisplayItem::EndClipPathDisplayItem(
 EndClipPathDisplayItem::~EndClipPathDisplayItem() {
 }
 
-void EndClipPathDisplayItem::ToProtobuf(
-    proto::DisplayItem* proto,
-    ImageSerializationProcessor* image_serialization_processor) const {
+void EndClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_EndClipPath);
 }
 

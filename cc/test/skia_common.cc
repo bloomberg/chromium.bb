@@ -26,7 +26,7 @@ class TestImageGenerator : public SkImageGenerator {
 
 void DrawDisplayList(unsigned char* buffer,
                      const gfx::Rect& layer_rect,
-                     scoped_refptr<DisplayItemList> list) {
+                     scoped_refptr<const DisplayItemList> list) {
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
   SkBitmap bitmap;
@@ -37,8 +37,8 @@ void DrawDisplayList(unsigned char* buffer,
 }
 
 bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,
-                                      scoped_refptr<DisplayItemList> list_a,
-                                      scoped_refptr<DisplayItemList> list_b) {
+                                      const DisplayItemList* list_a,
+                                      const DisplayItemList* list_b) {
   const size_t pixel_size = 4 * layer_rect.size().GetArea();
 
   std::unique_ptr<unsigned char[]> pixels_a(new unsigned char[pixel_size]);

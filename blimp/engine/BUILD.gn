@@ -289,6 +289,8 @@ source_set("renderer") {
   sources = [
     "renderer/blimp_content_renderer_client.cc",
     "renderer/blimp_content_renderer_client.h",
+    "renderer/blimp_engine_picture_cache.cc",
+    "renderer/blimp_engine_picture_cache.h",
     "renderer/blob_channel_sender_proxy.cc",
     "renderer/blob_channel_sender_proxy.h",
     "renderer/engine_image_serialization_processor.cc",
@@ -465,6 +467,22 @@ source_set("feature_unit_tests") {
   ]
 }
 
+source_set("renderer_unit_tests") {
+  testonly = true
+
+  sources = [
+    "renderer/blimp_engine_picture_cache_unittest.cc",
+  ]
+
+  deps = [
+    ":renderer",
+    "//blimp/test:support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -472,6 +490,7 @@ source_set("unit_tests") {
     ":app_unit_tests",
     ":common_unit_tests",
     ":feature_unit_tests",
+    ":renderer_unit_tests",
   ]
 }
 

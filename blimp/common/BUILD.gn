@@ -16,6 +16,8 @@ component("common") {
     "blob_cache/in_memory_blob_cache.h",
     "compositor/blimp_task_graph_runner.cc",
     "compositor/blimp_task_graph_runner.h",
+    "compositor/reference_tracker.cc",
+    "compositor/reference_tracker.h",
     "create_blimp_message.cc",
     "create_blimp_message.h",
     "get_client_token.cc",
@@ -64,6 +66,7 @@ source_set("unit_tests") {
   sources = [
     "blob_cache/id_util_unittest.cc",
     "blob_cache/in_memory_blob_cache_unittest.cc",
+    "compositor/reference_tracker_unittest.cc",
     "create_blimp_message_unittest.cc",
     "logging_unittest.cc",
   ]

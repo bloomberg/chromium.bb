@@ -17,7 +17,6 @@
 class SkCanvas;
 
 namespace cc {
-class ImageSerializationProcessor;
 
 namespace proto {
 class DisplayItem;
@@ -27,9 +26,8 @@ class CC_EXPORT DisplayItem {
  public:
   virtual ~DisplayItem() {}
 
-  virtual void ToProtobuf(
-      proto::DisplayItem* proto,
-      ImageSerializationProcessor* image_serialization_processor) const = 0;
+  virtual void ToProtobuf(proto::DisplayItem* proto) const = 0;
+  virtual sk_sp<const SkPicture> GetPicture() const;
   virtual void Raster(SkCanvas* canvas,
                       SkPicture::AbortCallback* callback) const = 0;
   virtual void AsValueInto(const gfx::Rect& visual_rect,

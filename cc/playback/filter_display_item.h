@@ -18,7 +18,6 @@
 class SkCanvas;
 
 namespace cc {
-class ImageSerializationProcessor;
 
 class CC_EXPORT FilterDisplayItem : public DisplayItem {
  public:
@@ -26,9 +25,7 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
   explicit FilterDisplayItem(const proto::DisplayItem& proto);
   ~FilterDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto,
-                  ImageSerializationProcessor* image_serialization_processor)
-      const override;
+  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
@@ -54,9 +51,7 @@ class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
     return base::WrapUnique(new EndFilterDisplayItem());
   }
 
-  void ToProtobuf(proto::DisplayItem* proto,
-                  ImageSerializationProcessor* image_serialization_processor)
-      const override;
+  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,

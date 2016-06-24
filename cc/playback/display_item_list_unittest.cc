@@ -20,8 +20,11 @@
 #include "cc/playback/float_clip_display_item.h"
 #include "cc/playback/transform_display_item.h"
 #include "cc/proto/display_item.pb.h"
+#include "cc/test/fake_client_picture_cache.h"
+#include "cc/test/fake_engine_picture_cache.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/skia_common.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -83,15 +86,29 @@ void ValidateDisplayItemListSerialization(const gfx::Size& layer_size,
   std::unique_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =
           base::WrapUnique(new FakeImageSerializationProcessor);
+  std::unique_ptr<EnginePictureCache> fake_engine_picture_cache =
+      fake_image_serialization_processor->CreateEnginePictureCache();
+  FakeEnginePictureCache* fake_engine_picture_cache_ptr =
+      static_cast<FakeEnginePictureCache*>(fake_engine_picture_cache.get());
+  std::unique_ptr<ClientPictureCache> fake_client_picture_cache =
+      fake_image_serialization_processor->CreateClientPictureCache();
+
+  fake_engine_picture_cache_ptr->MarkAllSkPicturesAsUsed(list.get());
 
   // Serialize and deserialize the DisplayItemList.
   proto::DisplayItemList proto;
-  list->ToProtobuf(&proto, fake_image_serialization_processor.get());
-  scoped_refptr<DisplayItemList> new_list = DisplayItemList::CreateFromProto(
-      proto, fake_image_serialization_processor.get());
+  list->ToProtobuf(&proto);
 
-  EXPECT_TRUE(
-      AreDisplayListDrawingResultsSame(gfx::Rect(layer_size), list, new_list));
+  std::vector<uint32_t> actual_picture_ids;
+  scoped_refptr<DisplayItemList> new_list = DisplayItemList::CreateFromProto(
+      proto, fake_client_picture_cache.get(), &actual_picture_ids);
+
+  EXPECT_THAT(actual_picture_ids,
+              testing::UnorderedElementsAreArray(
+                  fake_engine_picture_cache_ptr->GetAllUsedPictureIds()));
+
+  EXPECT_TRUE(AreDisplayListDrawingResultsSame(gfx::Rect(layer_size),
+                                               list.get(), new_list.get()));
 }
 
 }  // namespace

@@ -19,7 +19,6 @@
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
-class ImageSerializationProcessor;
 
 FilterDisplayItem::FilterDisplayItem(const FilterOperations& filters,
                                      const gfx::RectF& bounds) {
@@ -46,9 +45,7 @@ void FilterDisplayItem::SetNew(const FilterOperations& filters,
   bounds_ = bounds;
 }
 
-void FilterDisplayItem::ToProtobuf(
-    proto::DisplayItem* proto,
-    ImageSerializationProcessor* image_serialization_processor) const {
+void FilterDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_Filter);
 
   proto::FilterDisplayItem* details = proto->mutable_filter_item();
@@ -96,9 +93,7 @@ EndFilterDisplayItem::EndFilterDisplayItem(const proto::DisplayItem& proto) {
 
 EndFilterDisplayItem::~EndFilterDisplayItem() {}
 
-void EndFilterDisplayItem::ToProtobuf(
-    proto::DisplayItem* proto,
-    ImageSerializationProcessor* image_serialization_processor) const {
+void EndFilterDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_EndFilter);
 }
 

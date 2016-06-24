@@ -8,10 +8,13 @@
 #include "cc/base/region.h"
 #include "cc/playback/raster_source.h"
 #include "cc/proto/recording_source.pb.h"
+#include "cc/test/fake_client_picture_cache.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_engine_picture_cache.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -37,12 +40,27 @@ void ValidateRecordingSourceSerialization(FakeRecordingSource* source) {
   std::unique_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =
           base::WrapUnique(new FakeImageSerializationProcessor);
+  std::unique_ptr<EnginePictureCache> fake_engine_picture_cache =
+      fake_image_serialization_processor->CreateEnginePictureCache();
+  FakeEnginePictureCache* fake_engine_picture_cache_ptr =
+      static_cast<FakeEnginePictureCache*>(fake_engine_picture_cache.get());
+  std::unique_ptr<ClientPictureCache> fake_client_picture_cache =
+      fake_image_serialization_processor->CreateClientPictureCache();
+
+  fake_engine_picture_cache_ptr->MarkAllSkPicturesAsUsed(
+      source->GetDisplayItemList());
 
   proto::RecordingSource proto;
-  source->ToProtobuf(&proto, fake_image_serialization_processor.get());
+  source->ToProtobuf(&proto);
 
+  std::vector<uint32_t> actual_picture_ids;
   FakeRecordingSource new_source;
-  new_source.FromProtobuf(proto, fake_image_serialization_processor.get());
+  new_source.FromProtobuf(proto, fake_client_picture_cache.get(),
+                          &actual_picture_ids);
+
+  EXPECT_THAT(actual_picture_ids,
+              testing::UnorderedElementsAreArray(
+                  fake_engine_picture_cache_ptr->GetAllUsedPictureIds()));
 
   EXPECT_TRUE(source->EqualsTo(new_source));
 }

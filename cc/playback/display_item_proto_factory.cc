@@ -15,14 +15,15 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
-class ImageSerializationProcessor;
+class ClientPictureCache;
 
 // static
 void DisplayItemProtoFactory::AllocateAndConstruct(
     const gfx::Rect& visual_rect,
     DisplayItemList* list,
     const proto::DisplayItem& proto,
-    ImageSerializationProcessor* image_serialization_processor) {
+    ClientPictureCache* client_picture_cache,
+    std::vector<uint32_t>* used_engine_picture_ids) {
   switch (proto.type()) {
     case proto::DisplayItem::Type_Clip:
       list->CreateAndAppendItem<ClipDisplayItem>(visual_rect, proto);
@@ -44,7 +45,7 @@ void DisplayItemProtoFactory::AllocateAndConstruct(
       return;
     case proto::DisplayItem::Type_Drawing:
       list->CreateAndAppendItem<DrawingDisplayItem>(
-          visual_rect, proto, image_serialization_processor);
+          visual_rect, proto, client_picture_cache, used_engine_picture_ids);
       return;
     case proto::DisplayItem::Type_Filter:
       list->CreateAndAppendItem<FilterDisplayItem>(visual_rect, proto);

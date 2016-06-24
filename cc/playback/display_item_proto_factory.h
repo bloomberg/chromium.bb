@@ -11,7 +11,7 @@
 #include "cc/playback/display_item_list.h"
 
 namespace cc {
-class ImageSerializationProcessor;
+class ClientPictureCache;
 
 namespace proto {
 class DisplayItem;
@@ -23,7 +23,8 @@ class DisplayItemProtoFactory {
       const gfx::Rect& visual_rect,
       DisplayItemList* list,
       const proto::DisplayItem& proto,
-      ImageSerializationProcessor* image_serialization_processor);
+      ClientPictureCache* client_picture_cache,
+      std::vector<uint32_t>* used_engine_picture_ids);
 
  private:
   DisplayItemProtoFactory() {}

@@ -19,7 +19,7 @@
 namespace blimp {
 namespace client {
 
-bool BlimpImageDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
+bool DecodeBlimpImage(const void* input, size_t input_size, SkBitmap* bitmap) {
   DCHECK(bitmap);
 
   // Initialize an empty WebPDecoderConfig.

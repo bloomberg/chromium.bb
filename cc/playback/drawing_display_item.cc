@@ -12,9 +12,10 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
+#include "cc/blimp/client_picture_cache.h"
+#include "cc/blimp/image_serialization_processor.h"
 #include "cc/debug/picture_debug_util.h"
 #include "cc/proto/display_item.pb.h"
-#include "cc/proto/image_serialization_processor.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -33,18 +34,21 @@ DrawingDisplayItem::DrawingDisplayItem(sk_sp<const SkPicture> picture) {
 
 DrawingDisplayItem::DrawingDisplayItem(
     const proto::DisplayItem& proto,
-    ImageSerializationProcessor* image_serialization_processor) {
+    ClientPictureCache* client_picture_cache,
+    std::vector<uint32_t>* used_engine_picture_ids) {
   DCHECK_EQ(proto::DisplayItem::Type_Drawing, proto.type());
+  DCHECK(client_picture_cache);
 
-  sk_sp<SkPicture> picture;
   const proto::DrawingDisplayItem& details = proto.drawing_item();
-  if (details.has_picture()) {
-    SkMemoryStream stream(details.picture().data(), details.picture().size());
+  DCHECK(details.has_id());
+  const proto::SkPictureID& sk_picture_id = details.id();
+  DCHECK(sk_picture_id.has_unique_id());
 
-    picture = SkPicture::MakeFromStream(
-        &stream, image_serialization_processor->GetPixelDeserializer());
-  }
+  uint32_t unique_id = sk_picture_id.unique_id();
+  sk_sp<const SkPicture> picture = client_picture_cache->GetPicture(unique_id);
+  DCHECK(picture);
 
+  used_engine_picture_ids->push_back(unique_id);
   SetNew(std::move(picture));
 }
 
@@ -59,26 +63,19 @@ void DrawingDisplayItem::SetNew(sk_sp<const SkPicture> picture) {
   picture_ = std::move(picture);
 }
 
-void DrawingDisplayItem::ToProtobuf(
-    proto::DisplayItem* proto,
-    ImageSerializationProcessor* image_serialization_processor) const {
+void DrawingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   TRACE_EVENT0("cc.remote", "DrawingDisplayItem::ToProtobuf");
   proto->set_type(proto::DisplayItem::Type_Drawing);
 
-  proto::DrawingDisplayItem* details = proto->mutable_drawing_item();
+  if (!picture_)
+    return;
 
-  // Just use skia's serialize() method for now.
-  if (picture_) {
-    TRACE_EVENT0("cc.remote",
-                 "DrawingDisplayItem::ToProtobuf SkPicture::Serialize");
-    SkDynamicMemoryWStream stream;
-    picture_->serialize(&stream,
-                        image_serialization_processor->GetPixelSerializer());
-    if (stream.bytesWritten() > 0) {
-      SkAutoDataUnref data(stream.copyToData());
-      details->set_picture(data->data(), data->size());
-    }
-  }
+  proto->mutable_drawing_item()->mutable_id()->set_unique_id(
+      picture_->uniqueID());
+}
+
+sk_sp<const SkPicture> DrawingDisplayItem::GetPicture() const {
+  return picture_;
 }
 
 void DrawingDisplayItem::Raster(SkCanvas* canvas,

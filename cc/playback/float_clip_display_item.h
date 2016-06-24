@@ -18,7 +18,6 @@
 class SkCanvas;
 
 namespace cc {
-class ImageSerializationProcessor;
 
 class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
  public:
@@ -26,9 +25,7 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
   explicit FloatClipDisplayItem(const proto::DisplayItem& proto);
   ~FloatClipDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto,
-                  ImageSerializationProcessor* image_serialization_processor)
-      const override;
+  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
@@ -53,9 +50,7 @@ class CC_EXPORT EndFloatClipDisplayItem : public DisplayItem {
     return base::WrapUnique(new EndFloatClipDisplayItem());
   }
 
-  void ToProtobuf(proto::DisplayItem* proto,
-                  ImageSerializationProcessor* image_serialization_processor)
-      const override;
+  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,

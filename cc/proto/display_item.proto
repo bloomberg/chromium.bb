@@ -74,8 +74,12 @@ message CompositingDisplayItem {
   optional bool lcd_text_requires_opaque_layer = 5;
 }
 
+message SkPictureID {
+  optional uint32 unique_id = 1;
+}
+
 message DrawingDisplayItem {
-  optional bytes picture = 1; /* SkPicture */
+  optional SkPictureID id = 1;
 }
 
 message FilterDisplayItem {

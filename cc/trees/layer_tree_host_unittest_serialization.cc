@@ -4,13 +4,21 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
+#include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/proto/layer.pb.h"
 #include "cc/proto/layer_tree_host.pb.h"
+#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/fake_picture_layer.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/test/skia_common.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,18 +29,54 @@
 
 namespace cc {
 
+namespace {
+std::unique_ptr<FakeRecordingSource> CreateRecordingSource(
+    const gfx::Rect& viewport) {
+  gfx::Rect layer_rect(viewport.right(), viewport.bottom());
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateRecordingSource(viewport, layer_rect.size());
+  return recording_source;
+}
+
+scoped_refptr<FakePictureLayer> CreatePictureLayer() {
+  gfx::Rect recorded_viewport(0, 0, 256, 256);
+
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      CreateRecordingSource(recorded_viewport);
+  recording_source->SetDisplayListUsesCachedPicture(false);
+
+  SkPaint simple_paint;
+  simple_paint.setColor(SkColorSetARGB(255, 12, 23, 34));
+  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 256, 256),
+                                             simple_paint);
+  recording_source->SetGenerateDiscardableImagesMetadata(true);
+  recording_source->Rerecord();
+
+  ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
+  return FakePictureLayer::CreateWithRecordingSource(
+      client, std::move(recording_source));
+}
+}  // namespace
+
 class LayerTreeHostSerializationTest : public testing::Test {
  public:
   LayerTreeHostSerializationTest()
-      : client_src_(FakeLayerTreeHostClient::DIRECT_3D),
+      : image_serialization_processor_(
+            base::WrapUnique(new FakeImageSerializationProcessor)),
+        client_src_(FakeLayerTreeHostClient::DIRECT_3D),
         client_dst_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
  protected:
   void SetUp() override {
-    layer_tree_host_src_ =
-        FakeLayerTreeHost::Create(&client_src_, &task_graph_runner_src_);
-    layer_tree_host_dst_ =
-        FakeLayerTreeHost::Create(&client_dst_, &task_graph_runner_dst_);
+    LayerTreeSettings settings;
+    layer_tree_host_src_ = FakeLayerTreeHost::Create(
+        &client_src_, &task_graph_runner_src_, settings,
+        CompositorMode::SINGLE_THREADED, image_serialization_processor_.get());
+    layer_tree_host_dst_ = FakeLayerTreeHost::Create(
+        &client_dst_, &task_graph_runner_dst_, settings,
+        CompositorMode::SINGLE_THREADED, image_serialization_processor_.get());
+    layer_tree_host_src_->InitializePictureCacheForTesting();
+    layer_tree_host_dst_->InitializePictureCacheForTesting();
   }
 
   void TearDown() override {
@@ -311,6 +355,39 @@ class LayerTreeHostSerializationTest : public testing::Test {
     VerifySerializationAndDeserialization();
   }
 
+  void RunPictureLayerMultipleSerializationsTest() {
+    // Just fake setup a layer for both source and dest.
+    scoped_refptr<Layer> root_layer_src = Layer::Create();
+    layer_tree_host_src_->SetRootLayer(root_layer_src);
+    layer_tree_host_dst_->SetRootLayer(Layer::Create());
+
+    // Ensure that a PictureLayer work correctly for multiple rounds of
+    // serialization and deserialization.
+    scoped_refptr<FakePictureLayer> picture_layer_src = CreatePictureLayer();
+    root_layer_src->AddChild(picture_layer_src);
+    picture_layer_src->SetBounds(gfx::Size(10, 10));
+    picture_layer_src->SetIsDrawable(true);
+    picture_layer_src->SavePaintProperties();
+    picture_layer_src->Update();
+    picture_layer_src->SavePaintProperties();
+    VerifySerializationAndDeserialization();
+    ASSERT_EQ(1U, layer_tree_host_dst_->root_layer()->children().size());
+    PictureLayer* picture_layer_dst = reinterpret_cast<PictureLayer*>(
+        layer_tree_host_dst_->root_layer()->child_at(0));
+
+    RecordingSource* recording_source_src =
+        picture_layer_src->GetRecordingSourceForTesting();
+    RecordingSource* recording_source_dst =
+        picture_layer_dst->GetRecordingSourceForTesting();
+    EXPECT_EQ(recording_source_src->GetSize(), recording_source_dst->GetSize());
+    EXPECT_TRUE(AreDisplayListDrawingResultsSame(
+        gfx::Rect(recording_source_src->GetSize()),
+        recording_source_src->GetDisplayItemList(),
+        recording_source_dst->GetDisplayItemList()));
+
+    VerifySerializationAndDeserialization();
+  }
+
   void RunAddAndRemoveNodeFromLayerTree() {
     /* Testing serialization when the tree hierarchy changes like this:
          root                  root
@@ -345,13 +422,15 @@ class LayerTreeHostSerializationTest : public testing::Test {
   }
 
  private:
+  std::unique_ptr<ImageSerializationProcessor> image_serialization_processor_;
+
   TestTaskGraphRunner task_graph_runner_src_;
   FakeLayerTreeHostClient client_src_;
-  std::unique_ptr<LayerTreeHost> layer_tree_host_src_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_src_;
 
   TestTaskGraphRunner task_graph_runner_dst_;
   FakeLayerTreeHostClient client_dst_;
-  std::unique_ptr<LayerTreeHost> layer_tree_host_dst_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_dst_;
 };
 
 TEST_F(LayerTreeHostSerializationTest, AllMembersChanged) {
@@ -368,6 +447,10 @@ TEST_F(LayerTreeHostSerializationTest, LayersChangedMultipleSerializations) {
 
 TEST_F(LayerTreeHostSerializationTest, AddAndRemoveNodeFromLayerTree) {
   RunAddAndRemoveNodeFromLayerTree();
+}
+
+TEST_F(LayerTreeHostSerializationTest, PictureLayerMultipleSerializations) {
+  RunPictureLayerMultipleSerializationsTest();
 }
 
 }  // namespace cc

@@ -188,6 +188,8 @@ source_set("test_support") {
 
 source_set("compositor") {
   sources = [
+    "feature/compositor/blimp_client_picture_cache.cc",
+    "feature/compositor/blimp_client_picture_cache.h",
     "feature/compositor/blimp_compositor.cc",
     "feature/compositor/blimp_compositor.h",
     "feature/compositor/blimp_compositor_manager.cc",
@@ -245,6 +247,7 @@ source_set("feature_unit_tests") {
   testonly = true
 
   sources = [
+    "feature/compositor/blimp_client_picture_cache_unittest.cc",
     "feature/compositor/blimp_compositor_manager_unittest.cc",
     "feature/navigation_feature_unittest.cc",
     "feature/render_widget_feature_unittest.cc",
@@ -261,6 +264,7 @@ source_set("feature_unit_tests") {
     "//blimp/common/proto",
     "//blimp/net",
     "//blimp/net:test_support",
+    "//blimp/test:support",
     "//cc/proto",
     "//net",
     "//net:test_support",

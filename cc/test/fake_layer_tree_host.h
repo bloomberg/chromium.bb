@@ -66,6 +66,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
   using LayerTreeHost::SetOutputSurfaceLostForTesting;
   using LayerTreeHost::InitializeSingleThreaded;
   using LayerTreeHost::InitializeForTesting;
+  using LayerTreeHost::InitializePictureCacheForTesting;
   using LayerTreeHost::RecordGpuRasterizationHistogram;
 
   void UpdateLayers() { LayerTreeHost::UpdateLayers(); }

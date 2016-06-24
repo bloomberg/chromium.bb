@@ -200,6 +200,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   FakeExternalBeginFrameSource* external_begin_frame_source_;
   RemoteProtoChannelBridge remote_proto_channel_bridge_;
 
+  std::unique_ptr<ImageSerializationProcessor> image_serialization_processor_;
+
   bool beginning_;
   bool end_when_begin_returns_;
   bool timed_out_;

@@ -13,7 +13,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
-class ImageSerializationProcessor;
 
 TransformDisplayItem::TransformDisplayItem(const gfx::Transform& transform)
     : transform_(gfx::Transform::kSkipInitialization) {
@@ -36,9 +35,7 @@ void TransformDisplayItem::SetNew(const gfx::Transform& transform) {
   transform_ = transform;
 }
 
-void TransformDisplayItem::ToProtobuf(
-    proto::DisplayItem* proto,
-    ImageSerializationProcessor* image_serialization_processor) const {
+void TransformDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_Transform);
 
   proto::TransformDisplayItem* details = proto->mutable_transform_item();
@@ -74,9 +71,7 @@ EndTransformDisplayItem::EndTransformDisplayItem(
 EndTransformDisplayItem::~EndTransformDisplayItem() {
 }
 
-void EndTransformDisplayItem::ToProtobuf(
-    proto::DisplayItem* proto,
-    ImageSerializationProcessor* image_serialization_processor) const {
+void EndTransformDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_EndTransform);
 }
 

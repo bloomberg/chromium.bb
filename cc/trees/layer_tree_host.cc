@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <stack>
 #include <string>
 #include <unordered_map>
@@ -28,6 +29,9 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
+#include "cc/blimp/image_serialization_processor.h"
+#include "cc/blimp/picture_data.h"
+#include "cc/blimp/picture_data_conversions.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
@@ -284,6 +288,11 @@ void LayerTreeHost::InitializeRemoteServer(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
   task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
 
+  if (image_serialization_processor_) {
+    engine_picture_cache_ =
+        image_serialization_processor_->CreateEnginePictureCache();
+  }
+
   // The LayerTreeHost on the server never requests the output surface since
   // it is only needed on the client. Since ProxyMain aborts commits if
   // output_surface_lost() is true, always assume we have the output surface
@@ -302,6 +311,11 @@ void LayerTreeHost::InitializeRemoteClient(
   task_runner_provider_ =
       TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
 
+  if (image_serialization_processor_) {
+    client_picture_cache_ =
+        image_serialization_processor_->CreateClientPictureCache();
+  }
+
   // For the remote mode, the RemoteChannelImpl implements the Proxy, which is
   // owned by the LayerTreeHost. The RemoteChannelImpl pipes requests which need
   // to handled locally, for instance the Output Surface creation to the
@@ -318,8 +332,23 @@ void LayerTreeHost::InitializeForTesting(
     std::unique_ptr<Proxy> proxy_for_testing,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   task_runner_provider_ = std::move(task_runner_provider);
+
+  InitializePictureCacheForTesting();
+
   InitializeProxy(std::move(proxy_for_testing),
                   std::move(external_begin_frame_source));
+}
+
+void LayerTreeHost::InitializePictureCacheForTesting() {
+  if (!image_serialization_processor_)
+    return;
+
+  // Initialize both engine and client cache to ensure serialization tests
+  // with a single LayerTreeHost can work correctly.
+  engine_picture_cache_ =
+      image_serialization_processor_->CreateEnginePictureCache();
+  client_picture_cache_ =
+      image_serialization_processor_->CreateClientPictureCache();
 }
 
 void LayerTreeHost::SetTaskRunnerProviderForTesting(
@@ -1499,6 +1528,7 @@ bool LayerTreeHost::IsRemoteClient() const {
 void LayerTreeHost::ToProtobufForCommit(
     proto::LayerTreeHost* proto,
     std::vector<std::unique_ptr<SwapPromise>>* swap_promises) {
+  DCHECK(engine_picture_cache_);
   // Not all fields are serialized, as they are either not needed for a commit,
   // or implementation isn't ready yet.
   // Unsupported items:
@@ -1537,6 +1567,11 @@ void LayerTreeHost::ToProtobufForCommit(
 
   LayerProtoConverter::SerializeLayerProperties(this,
                                                 proto->mutable_layer_updates());
+
+  std::vector<PictureData> pictures =
+      engine_picture_cache_->CalculateCacheUpdateAndFlush();
+  proto::PictureDataVectorToSkPicturesProto(pictures,
+                                            proto->mutable_pictures());
 
   proto->set_hud_layer_id(hud_layer_ ? hud_layer_->id() : Layer::INVALID_ID);
   debug_state_.ToProtobuf(proto->mutable_debug_state());
@@ -1594,6 +1629,8 @@ void LayerTreeHost::ToProtobufForCommit(
 }
 
 void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
+  DCHECK(client_picture_cache_);
+
   needs_full_tree_sync_ = proto.needs_full_tree_sync();
   needs_meta_info_recomputation_ = proto.needs_meta_info_recomputation();
   source_frame_number_ = proto.source_frame_number();
@@ -1609,8 +1646,18 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
   for (auto layer_id : proto.layers_that_should_push_properties())
     layers_that_should_push_properties_.insert(layer_id_map_[layer_id]);
 
+  // Ensure ClientPictureCache contains all the necessary SkPictures before
+  // deserializing the properties.
+  proto::SkPictures proto_pictures = proto.pictures();
+  std::vector<PictureData> pictures =
+      SkPicturesProtoToPictureDataVector(proto_pictures);
+  client_picture_cache_->ApplyCacheUpdate(pictures);
+
   LayerProtoConverter::DeserializeLayerProperties(root_layer_.get(),
                                                   proto.layer_updates());
+
+  // The deserialization is finished, so now clear the cache.
+  client_picture_cache_->Flush();
 
   debug_state_.FromProtobuf(proto.debug_state());
   device_viewport_size_ = ProtoToSize(proto.device_viewport_size());

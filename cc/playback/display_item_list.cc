@@ -29,7 +29,6 @@
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
-class ImageSerializationProcessor;
 
 namespace {
 
@@ -58,7 +57,8 @@ scoped_refptr<DisplayItemList> DisplayItemList::Create(
 
 scoped_refptr<DisplayItemList> DisplayItemList::CreateFromProto(
     const proto::DisplayItemList& proto,
-    ImageSerializationProcessor* image_serialization_processor) {
+    ClientPictureCache* client_picture_cache,
+    std::vector<uint32_t>* used_engine_picture_ids) {
   gfx::Rect layer_rect = ProtoToRect(proto.layer_rect());
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(ProtoToRect(proto.layer_rect()),
@@ -67,7 +67,8 @@ scoped_refptr<DisplayItemList> DisplayItemList::CreateFromProto(
   for (int i = 0; i < proto.items_size(); i++) {
     const proto::DisplayItem& item_proto = proto.items(i);
     DisplayItemProtoFactory::AllocateAndConstruct(
-        layer_rect, list.get(), item_proto, image_serialization_processor);
+        layer_rect, list.get(), item_proto, client_picture_cache,
+        used_engine_picture_ids);
   }
 
   list->Finalize();
@@ -100,9 +101,7 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
 DisplayItemList::~DisplayItemList() {
 }
 
-void DisplayItemList::ToProtobuf(
-    proto::DisplayItemList* proto,
-    ImageSerializationProcessor* image_serialization_processor) {
+void DisplayItemList::ToProtobuf(proto::DisplayItemList* proto) {
   // The flattened SkPicture approach is going away, and the proto
   // doesn't currently support serializing that flattened picture.
   DCHECK(retain_individual_display_items_);
@@ -112,7 +111,7 @@ void DisplayItemList::ToProtobuf(
 
   DCHECK_EQ(0, proto->items_size());
   for (const auto& item : items_)
-    item.ToProtobuf(proto->add_items(), image_serialization_processor);
+    item.ToProtobuf(proto->add_items());
 }
 
 void DisplayItemList::Raster(SkCanvas* canvas,

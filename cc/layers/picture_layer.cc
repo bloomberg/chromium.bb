@@ -179,9 +179,21 @@ void PictureLayer::LayerSpecificPropertiesToProto(
   DropRecordingSourceContentIfInvalid();
 
   proto::PictureLayerProperties* picture = proto->mutable_picture();
-  recording_source_->ToProtobuf(
-      picture->mutable_recording_source(),
-      layer_tree_host()->image_serialization_processor());
+  recording_source_->ToProtobuf(picture->mutable_recording_source());
+
+  // Add all SkPicture items to the picture cache.
+  const DisplayItemList* display_list = recording_source_->GetDisplayItemList();
+  if (display_list) {
+    for (auto it = display_list->begin(); it != display_list->end(); ++it) {
+      sk_sp<const SkPicture> picture = it->GetPicture();
+      // Only DrawingDisplayItems have SkPictures.
+      if (!picture)
+        continue;
+
+      layer_tree_host()->engine_picture_cache()->MarkUsed(picture.get());
+    }
+  }
+
   RegionToProto(last_updated_invalidation_, picture->mutable_invalidation());
   picture->set_is_mask(is_mask_);
   picture->set_nearest_neighbor(nearest_neighbor_);
@@ -201,9 +213,14 @@ void PictureLayer::FromLayerSpecificPropertiesProto(
   if (!recording_source_)
     recording_source_.reset(new RecordingSource);
 
-  recording_source_->FromProtobuf(
-      picture.recording_source(),
-      layer_tree_host()->image_serialization_processor());
+  std::vector<uint32_t> used_engine_picture_ids;
+  recording_source_->FromProtobuf(picture.recording_source(),
+                                  layer_tree_host()->client_picture_cache(),
+                                  &used_engine_picture_ids);
+
+  // Inform picture cache about which SkPictures are now in use.
+  for (uint32_t engine_picture_id : used_engine_picture_ids)
+    layer_tree_host()->client_picture_cache()->MarkUsed(engine_picture_id);
 
   Region new_invalidation = RegionFromProto(picture.invalidation());
   last_updated_invalidation_.Swap(&new_invalidation);

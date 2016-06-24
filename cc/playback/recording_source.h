@@ -23,10 +23,10 @@ namespace proto {
 class RecordingSource;
 }  // namespace proto
 
+class ClientPictureCache;
 class ContentLayerClient;
 class DisplayItemList;
 class RasterSource;
-class ImageSerializationProcessor;
 class Region;
 
 class CC_EXPORT RecordingSource {
@@ -46,11 +46,10 @@ class CC_EXPORT RecordingSource {
   RecordingSource();
   virtual ~RecordingSource();
 
-  void ToProtobuf(
-      proto::RecordingSource* proto,
-      ImageSerializationProcessor* image_serialization_processor) const;
+  void ToProtobuf(proto::RecordingSource* proto) const;
   void FromProtobuf(const proto::RecordingSource& proto,
-                    ImageSerializationProcessor* image_serialization_processor);
+                    ClientPictureCache* client_picture_cache,
+                    std::vector<uint32_t>* used_engine_picture_ids);
 
   bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
                                    Region* invalidation,
@@ -72,6 +71,8 @@ class CC_EXPORT RecordingSource {
   virtual bool IsSuitableForGpuRasterization() const;
 
   gfx::Rect recorded_viewport() const { return recorded_viewport_; }
+
+  const DisplayItemList* GetDisplayItemList();
 
  protected:
   void Clear();

@@ -12,9 +12,10 @@
 #include "blimp/common/blimp_common_export.h"
 #include "blimp/common/blob_cache/id_util.h"
 #include "blimp/engine/mojo/blob_channel.mojom.h"
-#include "cc/proto/image_serialization_processor.h"
+#include "cc/blimp/client_picture_cache.h"
+#include "cc/blimp/engine_picture_cache.h"
+#include "cc/blimp/image_serialization_processor.h"
 #include "third_party/libwebp/webp/encode.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPixelSerializer.h"
 
 namespace content {
@@ -26,8 +27,8 @@ namespace engine {
 
 class BlobChannelSenderProxy;
 
-// EngineImageSerializationProcessor provides functionality to serialize and
-// deserialize Skia images.
+// EngineImageSerializationProcessor provides functionality to serialize
+// and temporarily cache Skia images.
 class BLIMP_COMMON_EXPORT EngineImageSerializationProcessor
     : public cc::ImageSerializationProcessor,
       public SkPixelSerializer {
@@ -37,8 +38,8 @@ class BLIMP_COMMON_EXPORT EngineImageSerializationProcessor
   ~EngineImageSerializationProcessor() override;
 
   // cc::ImageSerializationProcessor implementation.
-  SkPixelSerializer* GetPixelSerializer() override;
-  SkPicture::InstallPixelRefProc GetPixelDeserializer() override;
+  std::unique_ptr<cc::EnginePictureCache> CreateEnginePictureCache() override;
+  std::unique_ptr<cc::ClientPictureCache> CreateClientPictureCache() override;
 
   // SkPixelSerializer implementation.
   bool onUseEncodedData(const void* data, size_t len) override;
@@ -47,6 +48,8 @@ class BLIMP_COMMON_EXPORT EngineImageSerializationProcessor
  private:
   scoped_refptr<BlobData> EncodeImageAsBlob(const SkPixmap& pixmap);
 
+  // A serializer that be used to pass in to SkPicture::serialize(...) for
+  // serializing the SkPicture to a stream.
   std::unique_ptr<SkPixelSerializer> pixel_serializer_;
 
   // Sends image data as blobs to the browser process.

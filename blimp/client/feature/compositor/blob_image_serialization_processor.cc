@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "blimp/client/feature/compositor/blimp_client_picture_cache.h"
 #include "blimp/client/feature/compositor/blimp_image_decoder.h"
 #include "blimp/common/blob_cache/blob_cache.h"
 #include "blimp/common/blob_cache/id_util.h"
@@ -77,18 +79,20 @@ bool BlobImageSerializationProcessor::GetAndDecodeBlob(const void* input,
   DVLOG(1) << "GetAndDecodeBlob(" << BlobIdToString(parsed_metadata.id())
            << ")";
 
-  return BlimpImageDecoder(reinterpret_cast<const void*>(&blob->data[0]),
-                           blob->data.size(), bitmap);
+  return DecodeBlimpImage(reinterpret_cast<const void*>(&blob->data[0]),
+                          blob->data.size(), bitmap);
 }
 
-SkPixelSerializer* BlobImageSerializationProcessor::GetPixelSerializer() {
+std::unique_ptr<cc::EnginePictureCache>
+BlobImageSerializationProcessor::CreateEnginePictureCache() {
   NOTREACHED();
   return nullptr;
 }
 
-SkPicture::InstallPixelRefProc
-BlobImageSerializationProcessor::GetPixelDeserializer() {
-  return &BlobImageSerializationProcessor::InstallPixelRefProc;
+std::unique_ptr<cc::ClientPictureCache>
+BlobImageSerializationProcessor::CreateClientPictureCache() {
+  return base::WrapUnique(new BlimpClientPictureCache(
+      &BlobImageSerializationProcessor::InstallPixelRefProc));
 }
 
 }  // namespace client

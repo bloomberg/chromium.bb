@@ -31,7 +31,7 @@ bool FakeRecordingSource::EqualsTo(const FakeRecordingSource& other) {
   bool display_lists_equal = !display_list_ && !other.display_list_;
   if (display_list_ && other.display_list_) {
     display_lists_equal = AreDisplayListDrawingResultsSame(
-        recorded_viewport_, display_list_, other.display_list_);
+        recorded_viewport_, display_list_.get(), other.display_list_.get());
   }
 
   return recorded_viewport_ == other.recorded_viewport_ &&

@@ -28,7 +28,6 @@ const bool kDefaultClearCanvasSetting = true;
 }  // namespace
 
 namespace cc {
-class ImageSerializationProcessor;
 
 RecordingSource::RecordingSource()
     : slow_down_raster_scale_factor_for_debug_(0),
@@ -42,9 +41,7 @@ RecordingSource::RecordingSource()
 
 RecordingSource::~RecordingSource() {}
 
-void RecordingSource::ToProtobuf(
-    proto::RecordingSource* proto,
-    ImageSerializationProcessor* image_serialization_processor) const {
+void RecordingSource::ToProtobuf(proto::RecordingSource* proto) const {
   RectToProto(recorded_viewport_, proto->mutable_recorded_viewport());
   SizeToProto(size_, proto->mutable_size());
   proto->set_slow_down_raster_scale_factor_for_debug(
@@ -56,15 +53,15 @@ void RecordingSource::ToProtobuf(
   proto->set_clear_canvas_with_debug_color(clear_canvas_with_debug_color_);
   proto->set_solid_color(static_cast<uint64_t>(solid_color_));
   proto->set_background_color(static_cast<uint64_t>(background_color_));
-  if (display_list_) {
-    display_list_->ToProtobuf(proto->mutable_display_list(),
-                              image_serialization_processor);
-  }
+  if (display_list_)
+    display_list_->ToProtobuf(proto->mutable_display_list());
 }
 
 void RecordingSource::FromProtobuf(
     const proto::RecordingSource& proto,
-    ImageSerializationProcessor* image_serialization_processor) {
+    ClientPictureCache* client_picture_cache,
+    std::vector<uint32_t>* used_engine_picture_ids) {
+  DCHECK(client_picture_cache);
   recorded_viewport_ = ProtoToRect(proto.recorded_viewport());
   size_ = ProtoToSize(proto.size());
   slow_down_raster_scale_factor_for_debug_ =
@@ -82,7 +79,7 @@ void RecordingSource::FromProtobuf(
   // called.
   if (proto.has_display_list()) {
     display_list_ = DisplayItemList::CreateFromProto(
-        proto.display_list(), image_serialization_processor);
+        proto.display_list(), client_picture_cache, used_engine_picture_ids);
     FinishDisplayItemListUpdate();
   } else {
     display_list_ = nullptr;
@@ -212,6 +209,10 @@ bool RecordingSource::IsSuitableForGpuRasterization() const {
   // create a display list (e.g., if the size is empty). We return true in these
   // cases because the gpu suitability bit sticks false.
   return !display_list_ || display_list_->IsSuitableForGpuRasterization();
+}
+
+const DisplayItemList* RecordingSource::GetDisplayItemList() {
+  return display_list_.get();
 }
 
 scoped_refptr<RasterSource> RecordingSource::CreateRasterSource(

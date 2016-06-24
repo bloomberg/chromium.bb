@@ -22,6 +22,8 @@
 #include "base/time/time.h"
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
+#include "cc/blimp/client_picture_cache.h"
+#include "cc/blimp/engine_picture_cache.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/input/event_listener_properties.h"
@@ -426,6 +428,14 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return image_serialization_processor_;
   }
 
+  EnginePictureCache* engine_picture_cache() const {
+    return engine_picture_cache_ ? engine_picture_cache_.get() : nullptr;
+  }
+
+  ClientPictureCache* client_picture_cache() const {
+    return client_picture_cache_ ? client_picture_cache_.get() : nullptr;
+  }
+
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);
   void InitializeThreaded(
@@ -447,6 +457,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       std::unique_ptr<TaskRunnerProvider> task_runner_provider,
       std::unique_ptr<Proxy> proxy_for_testing,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source);
+  void InitializePictureCacheForTesting();
   void SetOutputSurfaceLostForTesting(bool is_lost) {
     output_surface_lost_ = is_lost;
   }
@@ -580,6 +591,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   TaskGraphRunner* task_graph_runner_;
 
   ImageSerializationProcessor* image_serialization_processor_;
+  std::unique_ptr<EnginePictureCache> engine_picture_cache_;
+  std::unique_ptr<ClientPictureCache> client_picture_cache_;
 
   std::vector<std::unique_ptr<SwapPromise>> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;

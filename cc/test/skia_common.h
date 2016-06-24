@@ -21,11 +21,11 @@ class DisplayItemList;
 
 void DrawDisplayList(unsigned char* buffer,
                      const gfx::Rect& layer_rect,
-                     scoped_refptr<DisplayItemList> list);
+                     scoped_refptr<const DisplayItemList> list);
 
 bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,
-                                      scoped_refptr<DisplayItemList> list_a,
-                                      scoped_refptr<DisplayItemList> list_b);
+                                      const DisplayItemList* list_a,
+                                      const DisplayItemList* list_b);
 
 sk_sp<SkImage> CreateDiscardableImage(const gfx::Size& size);
 

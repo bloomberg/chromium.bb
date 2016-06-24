@@ -4,29 +4,29 @@
 
 #include "cc/test/fake_image_serialization_processor.h"
 
-#include "third_party/skia/include/core/SkPicture.h"
-
-namespace {
-bool NoopDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
-  return false;
-}
-}
-
-class SkPixelSerializer;
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "cc/test/fake_client_picture_cache.h"
+#include "cc/test/fake_engine_picture_cache.h"
+#include "cc/test/picture_cache_model.h"
 
 namespace cc {
 
-FakeImageSerializationProcessor::FakeImageSerializationProcessor() {}
+FakeImageSerializationProcessor::FakeImageSerializationProcessor()
+    : picture_cache_model_(base::WrapUnique(new PictureCacheModel)) {}
 
 FakeImageSerializationProcessor::~FakeImageSerializationProcessor() {}
 
-SkPixelSerializer* FakeImageSerializationProcessor::GetPixelSerializer() {
-  return nullptr;
+std::unique_ptr<EnginePictureCache>
+FakeImageSerializationProcessor::CreateEnginePictureCache() {
+  return base::WrapUnique(
+      new FakeEnginePictureCache(picture_cache_model_.get()));
 }
 
-SkPicture::InstallPixelRefProc
-FakeImageSerializationProcessor::GetPixelDeserializer() {
-  return &NoopDecoder;
+std::unique_ptr<ClientPictureCache>
+FakeImageSerializationProcessor::CreateClientPictureCache() {
+  return base::WrapUnique(
+      new FakeClientPictureCache(picture_cache_model_.get()));
 }
 
 }  // namespace cc
