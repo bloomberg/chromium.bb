@@ -17,6 +17,10 @@ class Server;
 }
 }
 
+namespace arc {
+class ArcNotificationSurfaceManager;
+}
+
 class ChromeBrowserMainExtraPartsExo : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsExo();
@@ -27,6 +31,8 @@ class ChromeBrowserMainExtraPartsExo : public ChromeBrowserMainExtraParts {
   void PostMainMessageLoopRun() override;
 
  private:
+  std::unique_ptr<arc::ArcNotificationSurfaceManager>
+      arc_notification_surface_manager_;
   std::unique_ptr<exo::Display> display_;
   std::unique_ptr<exo::wayland::Server> wayland_server_;
   class WaylandWatcher;

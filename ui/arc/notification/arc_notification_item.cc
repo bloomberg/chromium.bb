@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
@@ -28,9 +29,8 @@ namespace arc {
 
 namespace {
 
-static const char kNotifierId[] = "ARC_NOTIFICATION";
-
-static const char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
+constexpr char kNotifierId[] = "ARC_NOTIFICATION";
+constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
 
 SkBitmap DecodeImage(const std::vector<uint8_t>& data) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
@@ -84,28 +84,6 @@ SkBitmap CropImage(const SkBitmap& original_bitmap) {
       original_bitmap, source_rect, SkRect::MakeSize(container_size), &paint);
 
   return container_bitmap;
-}
-
-// Converts from Android notification priority to Chrome notification priority.
-// On Android, PRIORITY_DEFAULT does not pop up, so this maps PRIORITY_DEFAULT
-// to Chrome's -1 to adapt that behavior. Also, this maps PRIORITY_LOW and _HIGH
-// to -2 and 0 respectively to adjust the value with keeping the order among
-// _LOW, _DEFAULT and _HIGH.
-int convertAndroidPriority(const int android_priority) {
-  switch (android_priority) {
-    case -2:  // PRIORITY_MIN
-    case -1:  // PRIORITY_LOW
-      return -2;
-    case 0:   // PRIORITY_DEFAULT
-      return -1;
-    case 1:   // PRIORITY_HIGH
-      return 0;
-    case 2:   // PRIORITY_MAX
-      return 2;
-    default:
-      NOTREACHED() << "Invalid Priority: " << android_priority;
-      return 0;
-  }
 }
 
 class ArcNotificationDelegate : public message_center::NotificationDelegate {
@@ -166,13 +144,8 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
   // a decode task is on-going asynchronously. Otherwise, there is no task.
   // TODO(yoshiki): Refactor and remove this check by omitting image decoding
   // from here.
-  if (notification_) {
-    // Store the latest data to the |newer_data_| property and returns, if the
-    // previous decode is still in progress.
-    // If old |newer_data_| has been stored, discard the old one.
-    newer_data_ = data.Clone();
+  if (CacheArcNotificationData(data))
     return;
-  }
 
   message_center::RichNotificationData rich_data;
   message_center::NotificationType type;
@@ -236,7 +209,7 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
   // are false.
   rich_data.pinned = (data.no_clear || data.ongoing_event);
 
-  rich_data.priority = convertAndroidPriority(data.priority);
+  rich_data.priority = ConvertAndroidPriority(data.priority);
 
   // The identifier of the notifier, which is used to distinguish the notifiers
   // in the message center.
@@ -246,14 +219,14 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
 
   DCHECK(!data.title.is_null());
   DCHECK(!data.message.is_null());
-  notification_.reset(new message_center::Notification(
+  SetNotification(base::WrapUnique(new message_center::Notification(
       type, notification_id_, base::UTF8ToUTF16(data.title.get()),
       base::UTF8ToUTF16(data.message.get()),
       gfx::Image(),              // icon image: Will be overriden later.
       base::UTF8ToUTF16("arc"),  // display source
       GURL(),                    // empty origin url, for system component
       notifier_id, rich_data,
-      new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr())));
+      new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr()))));
 
   DCHECK(!data.icon_data.is_null());
   if (data.icon_data.size() == 0) {
@@ -297,12 +270,47 @@ void ArcNotificationItem::ButtonClick(int button_index) {
       notification_key_, button_index);
 }
 
-void ArcNotificationItem::OnImageDecoded(const SkBitmap& bitmap) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+// Converts from Android notification priority to Chrome notification priority.
+// On Android, PRIORITY_DEFAULT does not pop up, so this maps PRIORITY_DEFAULT
+// to Chrome's -1 to adapt that behavior. Also, this maps PRIORITY_LOW and _HIGH
+// to -2 and 0 respectively to adjust the value with keeping the order among
+// _LOW, _DEFAULT and _HIGH.
+// static
+int ArcNotificationItem::ConvertAndroidPriority(int android_priority) {
+  switch (android_priority) {
+    case -2:  // PRIORITY_MIN
+    case -1:  // PRIORITY_LOW
+      return -2;
+    case 0:  // PRIORITY_DEFAULT
+      return -1;
+    case 1:  // PRIORITY_HIGH
+      return 0;
+    case 2:  // PRIORITY_MAX
+      return 2;
+    default:
+      NOTREACHED() << "Invalid Priority: " << android_priority;
+      return 0;
+  }
+}
 
-  gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmap);
-  notification_->set_icon(image);
+bool ArcNotificationItem::CacheArcNotificationData(
+    const mojom::ArcNotificationData& data) {
+  if (!notification_)
+    return false;
 
+  // Store the latest data to the |newer_data_| property if there is a pending
+  // |notification_|.
+  // If old |newer_data_| has been stored, discard the old one.
+  newer_data_ = data.Clone();
+  return true;
+}
+
+void ArcNotificationItem::SetNotification(
+    std::unique_ptr<message_center::Notification> notification) {
+  notification_ = std::move(notification);
+}
+
+void ArcNotificationItem::AddToMessageCenter() {
   DCHECK(notification_);
   message_center_->AddNotification(std::move(notification_));
 
@@ -311,6 +319,18 @@ void ArcNotificationItem::OnImageDecoded(const SkBitmap& bitmap) {
     mojom::ArcNotificationDataPtr data(std::move(newer_data_));
     UpdateWithArcNotificationData(*data);
   }
+}
+
+bool ArcNotificationItem::CalledOnValidThread() const {
+  return thread_checker_.CalledOnValidThread();
+}
+
+void ArcNotificationItem::OnImageDecoded(const SkBitmap& bitmap) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmap);
+  notification_->set_icon(image);
+  AddToMessageCenter();
 }
 
 }  // namespace arc

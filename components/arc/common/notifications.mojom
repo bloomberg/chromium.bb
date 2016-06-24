@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 5
+// Next MinVersion: 6
 
 module arc.mojom;
 
@@ -70,6 +70,11 @@ struct ArcNotificationData {
   // Image for image notifications.
   [MinVersion=3]
   ArcBitmap? big_picture;
+  // Flag if a notification is a custom notification backed by a notification
+  // surface. Note the flag is only used on creation. Change of the flag
+  // on notification update is ignored.
+  [MinVersion=5]
+  bool use_custom_notification;
 };
 
 [MinVersion=2]

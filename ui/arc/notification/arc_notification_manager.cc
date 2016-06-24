@@ -8,6 +8,7 @@
 #include "ash/system/toast/toast_manager.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "ui/arc/notification/arc_custom_notification_item.h"
 #include "ui/arc/notification/arc_notification_item.h"
 
 namespace arc {
@@ -62,10 +63,17 @@ void ArcNotificationManager::OnNotificationPosted(
   const std::string& key = data->key;
   auto it = items_.find(key);
   if (it == items_.end()) {
-    // Show a notification on the primary loged-in user's desktop.
+    // Old client with version < 5 would have use_custom_notification default,
+    // which is false.
+    const bool use_custom_notification = data->use_custom_notification;
+    // Show a notification on the primary logged-in user's desktop.
     // TODO(yoshiki): Reconsider when ARC supports multi-user.
     ArcNotificationItem* item =
-        new ArcNotificationItem(this, message_center_, key, main_profile_id_);
+        use_custom_notification
+            ? new ArcCustomNotificationItem(this, message_center_, key,
+                                            main_profile_id_)
+            : new ArcNotificationItem(this, message_center_, key,
+                                      main_profile_id_);
     // TODO(yoshiki): Use emplacement for performance when it's available.
     auto result = items_.insert(std::make_pair(key, base::WrapUnique(item)));
     DCHECK(result.second);

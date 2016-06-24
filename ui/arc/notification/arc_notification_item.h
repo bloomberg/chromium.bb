@@ -5,6 +5,7 @@
 #ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_H_
 #define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -25,9 +26,10 @@ class ArcNotificationItem {
                       message_center::MessageCenter* message_center,
                       const std::string& notification_key,
                       const AccountId& profile_id);
-  ~ArcNotificationItem();
+  virtual ~ArcNotificationItem();
 
-  void UpdateWithArcNotificationData(const mojom::ArcNotificationData& data);
+  virtual void UpdateWithArcNotificationData(
+      const mojom::ArcNotificationData& data);
 
   // Methods called from ArcNotificationManager:
   void OnClosedFromAndroid(bool by_user);
@@ -36,6 +38,31 @@ class ArcNotificationItem {
   void Close(bool by_user);
   void Click();
   void ButtonClick(int button_index);
+
+ protected:
+  static int ConvertAndroidPriority(int android_priority);
+
+  // Checks whether there is on-going |notification_|. If so, cache the |data|
+  // in |newer_data_| and returns true. Otherwise, returns false.
+  bool CacheArcNotificationData(const mojom::ArcNotificationData& data);
+
+  // Sets the pending |notification_|.
+  void SetNotification(
+      std::unique_ptr<message_center::Notification> notification);
+
+  // Add |notification_| to message center and update again if there is
+  // |newer_data_|.
+  void AddToMessageCenter();
+
+  bool CalledOnValidThread() const;
+
+  const AccountId& profile_id() const { return profile_id_; }
+  const std::string& notification_key() const { return notification_key_; }
+  const std::string& notification_id() const { return notification_id_; }
+
+  message_center::Notification* pending_notification() {
+    return notification_.get();
+  }
 
  private:
   void OnImageDecoded(const SkBitmap& bitmap);

@@ -18,6 +18,7 @@
 #include "components/exo/display.h"
 #include "components/exo/wayland/server.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/arc/notification/arc_notification_surface_manager.h"
 
 #if defined(USE_GLIB)
 namespace {
@@ -110,7 +111,8 @@ class ChromeBrowserMainExtraPartsExo::WaylandWatcher
 #endif
 
 ChromeBrowserMainExtraPartsExo::ChromeBrowserMainExtraPartsExo()
-    : display_(new exo::Display) {}
+    : arc_notification_surface_manager_(new arc::ArcNotificationSurfaceManager),
+      display_(new exo::Display(arc_notification_surface_manager_.get())) {}
 
 ChromeBrowserMainExtraPartsExo::~ChromeBrowserMainExtraPartsExo() {}
 

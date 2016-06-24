@@ -24,10 +24,16 @@
         '../../components/components.gyp:signin_core_account_id',
       ],
       'sources': [
-        'notification/arc_notification_manager.cc',
-        'notification/arc_notification_manager.h',
+        'notification/arc_custom_notification_view.cc',
+        'notification/arc_custom_notification_view.h',
+        'notification/arc_custom_notification_item.cc',
+        'notification/arc_custom_notification_item.h',
         'notification/arc_notification_item.cc',
         'notification/arc_notification_item.h',
+        'notification/arc_notification_manager.cc',
+        'notification/arc_notification_manager.h',
+        'notification/arc_notification_surface_manager.cc',
+        'notification/arc_notification_surface_manager.h',
       ],
     },
     {
