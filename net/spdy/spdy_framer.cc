@@ -3105,7 +3105,7 @@ HpackEncoder* SpdyFramer::GetHpackEncoder() {
   return hpack_encoder_.get();
 }
 
-HpackDecoder* SpdyFramer::GetHpackDecoder() {
+HpackDecoderInterface* SpdyFramer::GetHpackDecoder() {
   DCHECK_EQ(HTTP2, protocol_version_);
   if (hpack_decoder_.get() == nullptr) {
     hpack_decoder_.reset(new HpackDecoder());

@@ -1117,6 +1117,7 @@
       'spdy/hpack/hpack_constants.h',
       'spdy/hpack/hpack_decoder.cc',
       'spdy/hpack/hpack_decoder.h',
+      'spdy/hpack/hpack_decoder_interface.h',
       'spdy/hpack/hpack_encoder.cc',
       'spdy/hpack/hpack_encoder.h',
       'spdy/hpack/hpack_entry.cc',

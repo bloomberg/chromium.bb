@@ -29,6 +29,16 @@ HpackDecoder::HpackDecoder()
 
 HpackDecoder::~HpackDecoder() {}
 
+void HpackDecoder::ApplyHeaderTableSizeSetting(size_t size_setting) {
+  header_table_.SetSettingsHeaderTableSize(size_setting);
+}
+
+void HpackDecoder::HandleControlFrameHeadersStart(
+    SpdyHeadersHandlerInterface* handler) {
+  handler_ = handler;
+  total_header_bytes_ = 0;
+}
+
 bool HpackDecoder::HandleControlFrameHeadersData(const char* headers_data,
                                                  size_t headers_data_length) {
   if (!header_block_started_) {
@@ -91,6 +101,20 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(size_t* compressed_len) {
   header_block_started_ = false;
   handler_ = nullptr;
   return true;
+}
+
+const SpdyHeaderBlock& HpackDecoder::decoded_block() {
+  return decoded_block_;
+}
+
+void HpackDecoder::SetHeaderTableDebugVisitor(
+    std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
+  header_table_.set_debug_visitor(std::move(visitor));
+}
+
+void HpackDecoder::set_max_decode_buffer_size_bytes(
+    size_t max_decode_buffer_size_bytes) {
+  max_decode_buffer_size_bytes_ = max_decode_buffer_size_bytes;
 }
 
 bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
