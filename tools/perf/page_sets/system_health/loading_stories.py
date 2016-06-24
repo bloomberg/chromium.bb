@@ -281,7 +281,8 @@ DUMP_WAIT_TIME = 3
 class _LoadCase(page_module.Page):
   """Generic System Health user story that loads a page and measures memory."""
 
-  def __init__(self, story_set, group, url, page_spec):
+  def __init__(self, story_set, group, url, page_spec,
+               take_memory_measurement=True):
     # For example, the name of the story for the |page_spec| with name
     # 'example' from the 'sample' URL |group| will be 'load:sample:example'.
     name = 'load:%s:%s' % (group, page_spec.name)
@@ -290,6 +291,7 @@ class _LoadCase(page_module.Page):
         credentials_path='../data/credentials.json',
         grouping_keys={'case': 'load', 'group': group})
     self._page_spec = page_spec
+    self._take_memory_measurement = take_memory_measurement
 
   @property
   def platform(self):
@@ -317,8 +319,8 @@ class _LoadCase(page_module.Page):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
     if self._page_spec.post_load_hook:
       self._page_spec.post_load_hook(self.platform, action_runner)
-    self._TakeMemoryMeasurement(action_runner)
-
+    if self._take_memory_measurement:
+      self._TakeMemoryMeasurement(action_runner)
 
 class _MemorySystemHealthStorySet(story.StorySet):
   """User stories for the System Health Plan.
@@ -327,7 +329,7 @@ class _MemorySystemHealthStorySet(story.StorySet):
   """
   PLATFORM = NotImplemented
 
-  def __init__(self):
+  def __init__(self, take_memory_measurement=True):
     super(_MemorySystemHealthStorySet, self).__init__(
         archive_data_file=('../data/memory_system_health_%s.json' %
                            self.PLATFORM),
@@ -340,7 +342,9 @@ class _MemorySystemHealthStorySet(story.StorySet):
           url = url.get(self.PLATFORM)
           if url is None:
             continue  # URL not supported on the platform.
-        self.AddStory(_LoadCase(self, group_name, url, page_spec))
+        self.AddStory(
+            _LoadCase(self, group_name, url, page_spec,
+            take_memory_measurement=take_memory_measurement))
 
 
 class DesktopMemorySystemHealthStorySet(_MemorySystemHealthStorySet):

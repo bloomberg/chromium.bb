@@ -8,6 +8,8 @@ import page_sets
 from telemetry import benchmark
 
 
+# TODO(rnephew): Remove BattOr naming from all benchmarks once the BattOr tests
+# are the primary means of benchmarking power.
 class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
@@ -48,8 +50,47 @@ class BattOrToughVideoCases(_BattOrBenchmark):
     return 'battor.tough_video_cases'
 
 
+# TODO(rnephew): Add a version that scrolls.
+class BattOrSystemHealthLoadingDesktop(_BattOrBenchmark):
+  """Desktop Chrome Memory System Health Benchmark."""
+
+  def CreateStorySet(self, options):
+    return page_sets.DesktopMemorySystemHealthStorySet(
+        take_memory_measurement=False)
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return (possible_browser.platform.GetDeviceTypeName() != 'Desktop' or
+            not possible_browser.platform.HasBattOrConnected())
+
+  @classmethod
+  def Name(cls):
+    return 'battor.system_health_loading_desktop'
+
+
+class BattOrSystemHealthLoadingMobile(_BattOrBenchmark):
+  """Mobile Chrome Memory System Health Benchmark."""
+
+  def CreateStorySet(self, options):
+    return page_sets.MobileMemorySystemHealthStorySet(
+        take_memory_measurement=False)
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    if possible_browser.platform.GetDeviceTypeName() == 'Desktop':
+      return True
+    if (possible_browser.browser_type == 'reference' and
+        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'):
+      return True
+    return not possible_browser.platform.HasBattOrConnected()
+
+  @classmethod
+  def Name(cls):
+    return 'battor.system_health_loading_mobile'
+
+
 @benchmark.Disabled('android')  # crbug.com/618330
-class BattOrPowerMobileSites(_BattOrBenchmark):
+class BattOrPowerCases(_BattOrBenchmark):
   page_set = page_sets.power_cases.PowerCasesPageSet
 
   @classmethod
@@ -58,7 +99,7 @@ class BattOrPowerMobileSites(_BattOrBenchmark):
 
 
 @benchmark.Disabled('android') # crbug.com/618330
-class BattOrPowerMobileSitesNoChromeTrace(_BattOrBenchmark):
+class BattOrPowerCasesNoChromeTrace(_BattOrBenchmark):
   page_set = page_sets.power_cases.PowerCasesPageSet
 
   def CreateTimelineBasedMeasurementOptions(self):
@@ -71,4 +112,4 @@ class BattOrPowerMobileSitesNoChromeTrace(_BattOrBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'battor.power_cases.no_chrome_trace'
+    return 'battor.power_cases_no_chrome_trace'
