@@ -105,10 +105,12 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
                 // the animation is janky.
                 float progress = mAnimationLogic.updateProgress(mTargetProgress,
                         Math.min(deltaTimeMs, PROGRESS_FRAME_TIME_CAP_MS) * 0.001f, getWidth());
+                progress = Math.max(progress, 0);
                 ToolbarProgressBar.super.setProgress(progress);
 
                 if (mAnimatingView != null) {
-                    int width = getDrawable().getBounds().right - getDrawable().getBounds().left;
+                    int width = Math.abs(
+                            getDrawable().getBounds().right - getDrawable().getBounds().left);
                     mAnimatingView.update(progress * width);
 
                     // If the progress bar was updated, reset the callback that triggers the
