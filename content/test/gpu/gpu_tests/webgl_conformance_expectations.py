@@ -377,8 +377,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Conformance expectations
     # ========================
     # Fails on all platforms
-    self.Fail('deqp/data/gles2/shaders/functions.html',
-        bug=478572)
 
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
@@ -406,6 +404,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/point-specific-shader-variables.html',
         ['win'], bug=616335)
 
+    # Win NVIDIA failures
+    self.Fail('deqp/data/gles2/shaders/functions.html',
+        ['win', 'nvidia'], bug=478572)
+
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
@@ -416,6 +418,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # basically any test that uses readPixels is potentially flaky, and
     # it's infeasible to suppress individual failures one by one.
     self.Flaky('conformance/*', ['win', ('amd', 0x6779)], bug=491419)
+
+    # Win AMD failures
+    self.Fail('deqp/data/gles2/shaders/functions.html',
+        ['win', 'amd'], bug=478572)
 
     # Win / AMD D3D9 failures
     self.Fail('conformance/extensions/angle-instanced-arrays.html',

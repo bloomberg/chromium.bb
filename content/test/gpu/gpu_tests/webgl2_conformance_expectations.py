@@ -46,12 +46,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/fboinvalidate.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbomultisample.html', bug=483282)
     self.Skip('deqp/functional/gles3/fborender.html', bug=483282)
-    self.Skip('deqp/functional/gles3/fragmentoutput.html', bug=483282)
     self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
     self.Flaky('deqp/functional/gles3/negativefragmentapi.html', bug=604794)
     self.Skip('deqp/functional/gles3/shaderoperator/*.html', bug=483282)
-    self.Skip('deqp/functional/gles3/textureshadow/*.html', bug=483282)
 
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
 
@@ -124,6 +122,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'textureprojgradoffset.html',
         ['win'], bug=483282)
 
+    self.Fail('deqp/functional/gles3/textureshadow/2d*',
+        ['win'], bug=483282)
+    self.Fail('deqp/functional/gles3/textureshadow/cube*',
+        ['win'], bug=483282)
+
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win'], bug=587601)
 
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
@@ -191,6 +194,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['win', ('amd', 0x6779)], bug=621201)
+    self.Fail('deqp/functional/gles3/fragmentoutput.html',
+        ['win', 'amd'], bug=483282)
 
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
@@ -236,6 +241,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
         ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/textureshadow/cube*.html',
+        ['mac', 'intel'], bug=483282)
 
     # Mac only.
     self.Flaky('deqp/functional/gles3/shaderindexing/varying.html',
@@ -245,6 +252,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
         ['mac'], bug=620067)
+    self.Fail('deqp/functional/gles3/fragmentoutput.html',
+        ['mac'], bug=483282)
     # This one's flaky on AMD, NVIDIA and Intel GPUs, but the
     # GPU-specific expectations aren't working properly.
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
