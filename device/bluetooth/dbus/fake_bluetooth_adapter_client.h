@@ -86,6 +86,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   void SetUUIDs(const std::vector<std::string>& uuids);
   void SetSecondUUIDs(const std::vector<std::string>& uuids);
 
+  // Set discoverable timeout
+  void SetDiscoverableTimeout(uint32_t timeout);
+
   // Object path, name and addresses of the adapters we emulate.
   static const char kAdapterPath[];
   static const char kAdapterName[];

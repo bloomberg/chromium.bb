@@ -353,6 +353,18 @@ void BluetoothAdapterBlueZ::SetDiscoverable(
                      weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
 }
 
+uint32_t BluetoothAdapterBlueZ::GetDiscoverableTimeout() const {
+  if (!IsPresent())
+    return 0;
+
+  bluez::BluetoothAdapterClient::Properties* properties =
+      bluez::BluezDBusManager::Get()
+          ->GetBluetoothAdapterClient()
+          ->GetProperties(object_path_);
+
+  return properties->discoverable_timeout.value();
+}
+
 bool BluetoothAdapterBlueZ::IsDiscovering() const {
   if (!IsPresent())
     return false;

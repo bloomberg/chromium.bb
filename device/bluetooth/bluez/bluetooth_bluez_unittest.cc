@@ -4162,6 +4162,22 @@ TEST_F(BluetoothBlueZTest, GetConnectionInfoForConnectedDevice) {
   EXPECT_EQ(4, conn_info.max_transmit_power);
 }
 
+TEST_F(BluetoothBlueZTest, GetDiscoverableTimeout) {
+  constexpr uint32_t kShortDiscoverableTimeout = 30;
+  constexpr uint32_t kLongDiscoverableTimeout = 240;
+  GetAdapter();
+  BluetoothAdapterBlueZ* adapter_bluez =
+      static_cast<BluetoothAdapterBlueZ*>(adapter_.get());
+
+  fake_bluetooth_adapter_client_->SetDiscoverableTimeout(
+      kShortDiscoverableTimeout);
+  EXPECT_EQ(kShortDiscoverableTimeout, adapter_bluez->GetDiscoverableTimeout());
+
+  fake_bluetooth_adapter_client_->SetDiscoverableTimeout(
+      kLongDiscoverableTimeout);
+  EXPECT_EQ(kLongDiscoverableTimeout, adapter_bluez->GetDiscoverableTimeout());
+}
+
 // Verifies Shutdown shuts down the adapter as expected.
 TEST_F(BluetoothBlueZTest, Shutdown) {
   // Set up adapter. Set powered & discoverable, start discovery.

@@ -103,6 +103,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void SetDiscoverable(bool discoverable,
                        const base::Closure& callback,
                        const ErrorCallback& error_callback) override;
+  uint32_t GetDiscoverableTimeout() const;
   bool IsDiscovering() const override;
   void CreateRfcommService(
       const device::BluetoothUUID& uuid,
