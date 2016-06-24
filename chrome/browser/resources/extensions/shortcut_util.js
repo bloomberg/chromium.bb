@@ -66,7 +66,10 @@ cr.define('extensions', function() {
    * @return {boolean} True if the event has any modifiers.
    */
   function hasModifier(e, countShiftAsModifier) {
-    return e.ctrlKey || e.altKey || (cr.isMac && e.metaKey) ||
+    return e.ctrlKey || e.altKey ||
+           // Meta key is only relevant on Mac and CrOS, where we treat Command
+           // and Search (respectively) as modifiers.
+           (cr.isMac && e.metaKey) ||
            (cr.isChromeOS && e.metaKey) ||
            (countShiftAsModifier && e.shiftKey);
   }
