@@ -735,13 +735,6 @@ cr.define('login', function() {
       this.actionBoxRemoveUserWarningButtonElement.addEventListener('keydown',
           this.handleRemoveUserConfirmationKeyDown_.bind(this));
 
-      var pinKeyboard = $('pin-keyboard');
-      // The pin keyboard is not present on the md user manager.
-      if (pinKeyboard) {
-        pinKeyboard.addEventListener('submit',
-            this.handlePinSubmitted_.bind(this));
-      }
-
       var customIcon = this.customIconElement;
       customIcon.parentNode.replaceChild(new UserPodCustomIcon(), customIcon);
     },
@@ -754,6 +747,11 @@ cr.define('login', function() {
           this.parentNode.handleKeyDown.bind(this.parentNode));
       this.passwordElement.addEventListener('keypress',
           this.handlePasswordKeyPress_.bind(this));
+
+      if (this.pinKeyboard) {
+        this.pinKeyboard.addEventListener('submit',
+            this.handlePinSubmitted_.bind(this));
+      }
 
       this.imageElement.addEventListener('load',
           this.parentNode.handlePodImageLoad.bind(this.parentNode, this));
@@ -837,6 +835,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets the authorization element of the pod.
+     * @type {!HTMLDivElement}
+     */
+    get authElement() {
+      return this.querySelector('.auth-container');
+    },
+
+    /**
      * Gets image element.
      * @type {!HTMLImageElement}
      */
@@ -886,11 +892,35 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets the pin-container of the pod.
+     * @type {!HTMLDivElement}
+     */
+    get pinContainer() {
+      return this.querySelector('.pin-container');
+    },
+
+    /**
+     * Gets the pin-keyboard of the pod.
+     * @type {!HTMLElement}
+     */
+    get pinKeyboard() {
+      return this.querySelector('pin-keyboard');
+    },
+
+    /**
      * Gets user online sign in hint element.
      * @type {!HTMLDivElement}
      */
     get reauthWarningElement() {
       return this.querySelector('.reauth-hint-container');
+    },
+
+    /**
+     * Gets the signed in indicator of the pod.
+     * @type {!HTMLDivElement}
+     */
+    get signInElement() {
+      return this.querySelector('.signed-in-indicator');
     },
 
     /**
@@ -1091,6 +1121,17 @@ cr.define('login', function() {
           this.querySelector('.mp-policy-not-allowed-msg').hidden = false;
       } else if (this.user_.isApp) {
         this.setUserPodIconType('app');
+      }
+    },
+
+    setPinVisibility: function(visible) {
+      var elements = [this, this.authElement, this.imageElement,
+                      this.signInElement, this.pinContainer];
+
+      for (var idx = 0; idx < elements.length; idx++) {
+        var currentElement = elements[idx];
+        currentElement.classList.toggle('pin-enabled', visible);
+        currentElement.classList.toggle('pin-disabled', !visible);
       }
     },
 
@@ -2508,6 +2549,11 @@ cr.define('login', function() {
       var userPod = this.createUserPod(user);
       this.appendChild(userPod);
       userPod.initialize();
+    },
+
+    setFocusedPodPinVisibility: function(visible) {
+      if (this.focusedPod_ && this.focusedPod_.user.showPin)
+        this.focusedPod_.setPinVisibility(visible);
     },
 
     /**

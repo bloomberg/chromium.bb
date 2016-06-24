@@ -216,13 +216,13 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * @param {boolean} showGuest Whether to show guest session button.
      */
     loadUsers: function(users, showGuest) {
-      this.loadPinKeyboardIfNeeded_(users);
-
       $('pod-row').loadPods(users);
       $('login-header-bar').showGuestButton = showGuest;
       // On Desktop, #login-header-bar has a shadow if there are 8+ profiles.
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.DESKTOP_USER_MANAGER)
         $('login-header-bar').classList.toggle('shadow', users.length > 8);
+
+      this.loadPinKeyboardIfNeeded_(users);
     },
 
     /**

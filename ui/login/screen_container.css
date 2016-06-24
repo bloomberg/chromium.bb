@@ -21,9 +21,18 @@
   -webkit-perspective: 600px;
 }
 
-#pin-container {
+.pin-container.pin-enabled {
+  opacity: 1;
+  transition: opacity 200ms ease-in-out 180ms,
+              visibility 200ms ease-in-out 180ms;
+  visibility: visible;
+}
+
+.pin-container.pin-disabled {
   opacity: 0; /* Opacity is set to 1 after the pin element is loaded. */
-  transition: opacity 200ms ease-in-out;
+  transition: none;
+  visibility: hidden; /* Needed because pin-keyboard's offsetHeight is
+                         checked to determine if loaded. */
 }
 
 #scroll-container {
@@ -42,7 +51,6 @@
 
 #inner-container {
   border-radius: 2px;
-  padding: 0;
   position: relative;
 }
 

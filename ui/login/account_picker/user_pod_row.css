@@ -19,6 +19,10 @@ podrow.images-loading {
   visibility: hidden;
 }
 
+pin-keyboard {
+  display: block;
+}
+
 .pod {
   -webkit-tap-highlight-color: transparent;
   background-color: white;
@@ -30,13 +34,28 @@ podrow.images-loading {
   height: 213px;
   outline: none;
   position: absolute;
+  top: 0;
   transform: scale3d(0.9, 0.9, 0.9);
+  transition: height 180ms ease-in-out,
+              padding 180ms ease-in-out,
+              top 180ms ease-in-out,
+              width 180ms ease-in-out;
   width: 180px;
   z-index: 0;
 }
 
-.account-picker.flying-pods .pod {
-  transition: all 180ms;
+.pod.pin-enabled {
+  height: 600px;
+  padding: 10px;
+  top: -200px !important;
+  width: 256px;
+}
+
+.pod .pin-container {
+  height: 334px;
+  position: absolute;
+  top: 276px;
+  width: 256px;
 }
 
 .pod.faded {
@@ -60,12 +79,6 @@ podrow[ncolumns='6'] .pod {
 
 .user-image-pane {
   background-color: white;
-  height: 160px;
-  left: 10px;
-  position: absolute;
-  top: 10px;
-  width: 160px;
-  z-index: 3;
 }
 
 html[dir=rtl] .user-image-pane {
@@ -91,6 +104,15 @@ html:not([screen=login-add-user]) .pod .user-image {
   max-height: 160px;
   max-width: 160px;
   opacity: 0.7;
+  position: absolute;
+  top: 10px;
+  transition: max-height 180ms ease-in-out,
+              max-width 180ms ease-in-out;
+}
+
+html:not([screen=login-add-user]) .pod .user-image.pin-enabled {
+  max-height: 256px;
+  max-width: 256px;
 }
 
 html:not([screen=login-add-user]) .pod.focused .user-image {
@@ -110,11 +132,16 @@ html:not([screen=login-add-user]) .pod.focused .user-image {
   color: white;
   display: block;
   font-size: small;
-  padding: 3px 0;
+  left: 10px;
   position: absolute;
   text-align: center;
-  top: 0;
-  width: 100%;
+  top: 10px;
+  transition: width 180ms ease-in-out;
+  width: 160px;
+}
+
+.pod.signed-in .signed-in-indicator.pin-enabled {
+  width: 256px;
 }
 
 .main-pane {
@@ -136,6 +163,26 @@ html[dir=rtl] .main-pane {
   position: absolute;
   top: 160px;
   width: 160px;
+}
+
+.pod.focused:not(.multiprofiles-policy-applied) .auth-container {
+  background-color: white;
+  position: absolute;
+  top: 160px;
+  width: 160px;
+}
+
+.auth-container.pin-disabled {
+  opacity: 1;
+  transition: opacity 200ms ease-in-out 180ms,
+              visibility 200ms ease-in-out 180ms;
+  visibility: visible;
+}
+
+.auth-container.pin-enabled {
+  opacity: 0;
+  transition: none;
+  visibility: hidden;
 }
 
 .name-container {

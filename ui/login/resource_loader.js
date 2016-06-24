@@ -213,12 +213,19 @@ cr.define('cr.ui.login.ResourceLoader', function() {
   /**
    * Wait until the element with the given |id| has finished its layout,
    * specifically, after it has an offsetHeight > 0.
-   * @param {string} id Identifier of the element to wait for.
+   * @param {string|function()} selector Identifier of the element to wait
+   * or a callback function to obtain element to wait for.
    * @param {function()} callback Function to invoke when done loading.
    */
-  function waitUntilLayoutComplete(id, callback) {
+  function waitUntilLayoutComplete(selector, callback) {
+    if (typeof selector == 'string') {
+      var id = selector;
+      selector = function() { return $(id) };
+    }
+
     var doWait = function() {
-      var element = $(id);
+      var element = selector();
+
       if (!element || !element.offsetHeight) {
         requestAnimationFrame(doWait);
         return;

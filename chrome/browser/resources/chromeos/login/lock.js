@@ -8,7 +8,9 @@
 
 <include src="login_shared.js">
 
-// Asynchronously loads the pin keyboard.
+/**
+ * Asynchronously loads the pin keyboard.
+ */
 function showPinKeyboardAsync() {
   'use strict';
 
@@ -25,8 +27,14 @@ function showPinKeyboardAsync() {
   });
 
   // Called after polymer has been loaded. Fades the pin element in.
-  var onPinLoaded = function(pinContainer) {
-    pinContainer.style.opacity = 1;
+  var onPinLoaded = function(pinKeyboard) {
+    var podRow = $('pod-row');
+    podRow.setFocusedPodPinVisibility(true);
+  };
+
+  // The element we want to see if loaded.
+  var getPinKeyboard = function() {
+    return $('pod-row').querySelectorAll('pin-keyboard')[0];
   };
 
   // We only load the PIN element when it is actually shown so that lock screen
@@ -36,7 +44,7 @@ function showPinKeyboardAsync() {
   // animations. We load the PIN after an idle notification to allow the pod
   // fly-in animation to complete without interruption.
   cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements', function() {
-    cr.ui.login.ResourceLoader.waitUntilLayoutComplete('pin-container',
+    cr.ui.login.ResourceLoader.waitUntilLayoutComplete(getPinKeyboard,
                                                        onPinLoaded);
   });
 }
