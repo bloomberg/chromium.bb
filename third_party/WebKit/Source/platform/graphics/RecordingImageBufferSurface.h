@@ -65,6 +65,7 @@ public:
     bool isAccelerated() const override;
     void setIsHidden(bool) override;
 
+    // This enum is used in a UMA histogram.
     enum FallbackReason {
         FallbackReasonUnknown = 0, // This value should never appear in production histograms
         FallbackReasonCanvasNotClearedBetweenFrames = 1,
@@ -85,6 +86,11 @@ public:
         FallbackReasonDrawImageOfVideo = 16,
         FallbackReasonDrawImageOfAnimated2dCanvas = 17,
         FallbackReasonSubPixelTextAntiAliasingSupport = 18,
+        FallbackReasonDrawImageWithTextureBackedSourceImage = 19,
+        FallbackReasonSnapshotForTransferToImageBitmap = 20,
+        FallbackReasonSnapshotForUnitTests = 21, // This value should never appear in production histograms
+        FallbackReasonSnapshotGetCopiedImage = 22,
+        FallbackReasonSnapshotWebGLDrawImageIntoBuffer = 23,
         FallbackReasonCount,
     };
 private:

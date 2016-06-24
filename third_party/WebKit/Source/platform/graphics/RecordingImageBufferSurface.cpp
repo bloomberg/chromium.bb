@@ -72,6 +72,7 @@ bool RecordingImageBufferSurface::writePixels(const SkImageInfo& origInfo, const
 void RecordingImageBufferSurface::fallBackToRasterCanvas(FallbackReason reason)
 {
     ASSERT(m_fallbackFactory);
+    DCHECK(reason != FallbackReasonUnknown);
 
     if (m_fallbackSurface) {
         ASSERT(!m_currentFrame);
@@ -122,6 +123,14 @@ static RecordingImageBufferSurface::FallbackReason snapshotReasonToFallbackReaso
         return RecordingImageBufferSurface::FallbackReasonSnapshotForDrawImage;
     case SnapshotReasonCreatePattern:
         return RecordingImageBufferSurface::FallbackReasonSnapshotForCreatePattern;
+    case SnapshotReasonTransferToImageBitmap:
+        return RecordingImageBufferSurface::FallbackReasonSnapshotForTransferToImageBitmap;
+    case SnapshotReasonUnitTests:
+        return RecordingImageBufferSurface::FallbackReasonSnapshotForUnitTests;
+    case SnapshotReasonGetCopiedImage:
+        return RecordingImageBufferSurface::FallbackReasonSnapshotGetCopiedImage;
+    case SnapshotReasonWebGLDrawImageIntoBuffer:
+        return RecordingImageBufferSurface::FallbackReasonSnapshotWebGLDrawImageIntoBuffer;
     }
     ASSERT_NOT_REACHED();
     return RecordingImageBufferSurface::FallbackReasonUnknown;
@@ -158,6 +167,8 @@ static RecordingImageBufferSurface::FallbackReason disableDeferralReasonToFallba
         return RecordingImageBufferSurface::FallbackReasonDrawImageOfAnimated2dCanvas;
     case DisableDeferralReasonSubPixelTextAntiAliasingSupport:
         return RecordingImageBufferSurface::FallbackReasonSubPixelTextAntiAliasingSupport;
+    case DisableDeferralDrawImageWithTextureBackedSourceImage:
+        return RecordingImageBufferSurface::FallbackReasonDrawImageWithTextureBackedSourceImage;
     case DisableDeferralReasonCount:
         ASSERT_NOT_REACHED();
         break;

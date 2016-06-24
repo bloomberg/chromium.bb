@@ -88,7 +88,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionS
     if (!imageBuffer())
         return nullptr;
     // TODO: crbug.com/593514 Add support for GPU rendering
-    RefPtr<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
+    RefPtr<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonTransferToImageBitmap);
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(skImage.release());
     image->setOriginClean(this->originClean());
     m_imageBuffer.reset(); // "Transfer" means no retained buffer

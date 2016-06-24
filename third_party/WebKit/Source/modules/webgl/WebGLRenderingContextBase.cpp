@@ -4074,7 +4074,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(PassRefPtr<Imag
     IntRect destRect(0, 0, size.width(), size.height());
     SkPaint paint;
     image->draw(buf->canvas(), paint, destRect, srcRect, DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect);
-    return buf->newImageSnapshot();
+    return buf->newImageSnapshot(PreferNoAcceleration, SnapshotReasonWebGLDrawImageIntoBuffer);
 }
 
 WebGLTexture* WebGLRenderingContextBase::validateTexImageBinding(const char* funcName, TexImageFunctionID functionID, GLenum target)

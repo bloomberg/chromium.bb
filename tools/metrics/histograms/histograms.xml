@@ -66968,10 +66968,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="12" label="Acquiring snapshot for drawImage() source."/>
   <int value="13" label="Acquiring snapshot for createPattern()."/>
   <int value="14" label="Expensive overdraw heuristic."/>
-  <int value="15" label="Darwing a texture-backed pattern."/>
+  <int value="15" label="Drawing a texture-backed pattern."/>
   <int value="16" label="Drawing a video."/>
   <int value="17" label="Drawing an animated 2D canvas."/>
   <int value="18" label="Sub-pixel text anti-aliasing support."/>
+  <int value="19" label="Drawing a texture-backed image."/>
+  <int value="20"
+      label="Calling
+             OffscreenCanvasRenderingContext2D::transferToImageBitmap()."/>
+  <int value="21"
+      label="Acquiring snapshot in unit tests (should not be seen in
+             production)."/>
+  <int value="22" label="Acquiring snapshot for copiedImage()."/>
+  <int value="23" label="Acquiring snapshot for drawImageIntoBuffer()."/>
 </enum>
 
 <enum name="CanvasGPUAccelerated2DCanvasDisableDeferralReason" type="int">

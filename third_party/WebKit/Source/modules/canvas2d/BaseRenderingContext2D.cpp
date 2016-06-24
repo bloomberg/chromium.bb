@@ -1046,8 +1046,10 @@ void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext, Canva
         return;
 
     DisableDeferralReason reason = DisableDeferralReasonUnknown;
-    if (shouldDisableDeferral(imageSource, &reason) || image->isTextureBacked())
+    if (shouldDisableDeferral(imageSource, &reason))
         disableDeferral(reason);
+    else if (image->isTextureBacked())
+        disableDeferral(DisableDeferralDrawImageWithTextureBackedSourceImage);
 
     validateStateStack();
 

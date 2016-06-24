@@ -998,7 +998,7 @@ PassRefPtr<Image> HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffe
     if (m_context->is3d())
         needToUpdate |= m_context->paintRenderingResultsToCanvas(sourceBuffer);
     if (needToUpdate && buffer()) {
-        m_copiedImage = buffer()->newImageSnapshot(hint);
+        m_copiedImage = buffer()->newImageSnapshot(hint, SnapshotReasonGetCopiedImage);
         updateExternallyAllocatedMemory();
     }
     return m_copiedImage;
