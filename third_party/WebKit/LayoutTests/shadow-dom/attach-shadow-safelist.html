@@ -41,4 +41,14 @@ test(() => {
     });
   });
 }, 'attachShadow should throw an exception for an element which is not in the safelist');
+
+test(() => {
+  class XFoo extends HTMLElement {
+    constructor() {
+      super();
+    }
+  }
+  window.customElements.define('x-foo', XFoo);
+  assert_true(new XFoo().attachShadow({mode: 'open'}) instanceof ShadowRoot);
+}, 'attachShadow should not fail for Custom Elements v1.');
 </script>
