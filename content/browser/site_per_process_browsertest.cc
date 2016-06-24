@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
@@ -7297,6 +7298,38 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, AllowFullscreen) {
   NavigateFrameToURL(root->child_at(0)->child_at(0),
                      embedded_test_server()->GetURL("d.com", "/title1.html"));
   EXPECT_TRUE(is_fullscreen_allowed(root->child_at(0)->child_at(0)));
+}
+
+// Test for https://crbug.com/615575. It ensures that file chooser triggered
+// by a document in an out-of-process subframe works properly.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FileChooserInSubframe) {
+  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)")));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  GURL url(embedded_test_server()->GetURL("b.com", "/file_input.html"));
+  NavigateFrameToURL(root->child_at(0), url);
+
+  // Use FileChooserDelegate to avoid showing the actual dialog and to respond
+  // back to the renderer process with predefined file.
+  base::FilePath file;
+  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file));
+  file = file.AppendASCII("bar");
+  std::unique_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
+  shell()->web_contents()->SetDelegate(delegate.get());
+  EXPECT_TRUE(ExecuteScript(root->child_at(0),
+                            "document.getElementById('fileinput').click();"));
+  EXPECT_TRUE(delegate->file_chosen());
+
+  // Also, extract the file from the renderer process to ensure that the
+  // response made it over successfully and the proper filename is set.
+  std::string file_name;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0),
+      "window.domAutomationController.send("
+      "document.getElementById('fileinput').files[0].name);",
+      &file_name));
+  EXPECT_EQ("bar", file_name);
 }
 
 }  // namespace content

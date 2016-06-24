@@ -3848,8 +3848,8 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(bool is_reload) {
 bool RenderFrameImpl::runFileChooser(
     const blink::WebFileChooserParams& params,
     blink::WebFileChooserCompletion* chooser_completion) {
-  // Do not open the file dialog in a hidden RenderView.
-  if (render_view_->is_hidden())
+  // Do not open the file dialog in a hidden RenderFrame.
+  if (IsHidden())
     return false;
 
   FileChooserParams ipc_params;
