@@ -68,6 +68,13 @@ def method_context(interface, method, is_visible=True):
     is_static = method.is_static
     name = method.name
 
+    # [OriginTrialEnabled]
+    # TODO(iclelland): Allow origin trials on methods
+    # (crbug.com/621641)
+    if v8_utilities.origin_trial_feature_name(method):
+        raise Exception('[OriginTrialEnabled] cannot be specified on '
+                        'individual methods: %s.%s' % (interface.name, method.name))
+
     if is_visible:
         idl_type.add_includes_for_type(extended_attributes)
 
