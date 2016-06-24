@@ -270,7 +270,9 @@ INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_BUILD_BRANCH = 'git_mnc-dr-arc-dev'
 ANDROID_BUILD_TARGETS = {
-    'ARM': ('linux-cheets_arm-user', r'\.zip$'),
+    # TODO(b/29509721): Workaround to roll adb with system image. We want to
+    # get rid of this.
+    'ARM': ('linux-cheets_arm-user', r'(\.zip|/adb)$'),
     'X86': ('linux-cheets_x86-user', r'\.zip$'),
     # TODO(hidehiko): Decprecate this when we switch to public CTS bundle.
     'CTS': ('linux-cts', r'/android-cts\.zip$'),

@@ -146,8 +146,8 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
       # Show files.
       mock_file_template_list = {
-          'ARM': ['file-%(version)s.zip'],
-          'X86': ['file-%(version)s.zip'],
+          'ARM': ['file-%(version)s.zip', 'adb'],
+          'X86': ['file-%(version)s.zip', 'adb'],
           'CTS': ['android-cts.zip'],
           'SDK_TOOLS': ['aapt', 'adb']
       }
