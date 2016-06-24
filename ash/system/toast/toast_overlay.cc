@@ -251,10 +251,14 @@ void ToastOverlay::Show(bool visible) {
 
   animation_settings.AddObserver(this);
 
-  if (visible)
+  if (visible) {
     overlay_widget_->Show();
-  else
+
+    // Notify accessibility about the overlay.
+    overlay_view_->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, false);
+  } else {
     overlay_widget_->Hide();
+  }
 }
 
 gfx::Rect ToastOverlay::CalculateOverlayBounds() {
