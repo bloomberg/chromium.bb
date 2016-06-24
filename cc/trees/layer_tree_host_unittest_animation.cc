@@ -1645,6 +1645,65 @@ class LayerTreeHostAnimationTestNotifyAnimationFinished
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestNotifyAnimationFinished);
 
+// Check that transform sync happens correctly at commit when we remove and add
+// a different animation player to an element.
+class LayerTreeHostAnimationTestChangeAnimationPlayer
+    : public LayerTreeHostAnimationTest {
+ public:
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+    AttachPlayersToTimeline();
+    timeline_->DetachPlayer(player_child_.get());
+    player_->AttachElement(layer_tree_host()->root_layer()->id());
+
+    TransformOperations start;
+    start.AppendTranslate(5.f, 5.f, 0.f);
+    TransformOperations end;
+    end.AppendTranslate(5.f, 5.f, 0.f);
+    AddAnimatedTransformToPlayer(player_.get(), 1.0, start, end);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    PropertyTrees* property_trees = host_impl->sync_tree()->property_trees();
+    TransformNode* node = property_trees->transform_tree.Node(
+        host_impl->sync_tree()->root_layer()->transform_tree_index());
+    gfx::Transform translate;
+    translate.Translate(5, 5);
+    switch (host_impl->sync_tree()->source_frame_number()) {
+      case 2:
+        EXPECT_EQ(node->data.local, translate);
+        EndTest();
+        break;
+      default:
+        break;
+    }
+  }
+
+  void DidCommit() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillBeginMainFrame() override {
+    if (layer_tree_host()->source_frame_number() == 2) {
+      // Destroy player.
+      timeline_->DetachPlayer(player_.get());
+      player_ = nullptr;
+      timeline_->AttachPlayer(player_child_.get());
+      player_child_->AttachElement(layer_tree_host()->root_layer()->id());
+      AddAnimatedTransformToPlayer(player_child_.get(), 1.0, 10, 10);
+      Animation* animation = player_child_->element_animations()->GetAnimation(
+          TargetProperty::TRANSFORM);
+      animation->set_start_time(base::TimeTicks::Now() +
+                                base::TimeDelta::FromSecondsD(1000));
+      animation->set_fill_mode(Animation::FillMode::NONE);
+    }
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestChangeAnimationPlayer);
+
 // Check that SetTransformIsPotentiallyAnimatingChanged is called
 // if we destroy ElementAnimations.
 class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction

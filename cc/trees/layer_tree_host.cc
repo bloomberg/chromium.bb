@@ -552,14 +552,17 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
     TreeSynchronizer::PushLayerProperties(this, sync_tree);
 
+    // This must happen after synchronizing property trees and after push
+    // properties, which updates property tree indices, but before animation
+    // host pushes properties as animation host push properties can change
+    // Animation::InEffect and we want the old InEffect value for updating
+    // property tree scrolling and animation.
+    sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread();
+
     TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
     DCHECK(host_impl->animation_host());
     animation_host_->PushPropertiesTo(host_impl->animation_host());
   }
-
-  // This must happen after synchronizing property trees and after push
-  // properties, which updates property tree indices.
-  sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread();
 
   // This must happen after synchronizing property trees and after pushing
   // properties, which updates the clobber_active_value flag.
