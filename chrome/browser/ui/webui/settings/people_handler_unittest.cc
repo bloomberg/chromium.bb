@@ -317,6 +317,9 @@ class PeopleHandlerFirstSigninTest : public PeopleHandlerTest {
 
 #if !defined(OS_CHROMEOS)
 TEST_F(PeopleHandlerFirstSigninTest, DisplayBasicLogin) {
+  // Test that the HandleStartSignin call enables JavaScript.
+  handler_->DisallowJavascript();
+
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   // Ensure that the user is not signed in before calling |HandleStartSignin()|.

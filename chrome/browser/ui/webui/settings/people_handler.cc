@@ -504,6 +504,8 @@ void PeopleHandler::HandleDoSignOutOnAuthError(const base::ListValue* args) {
 
 #if !defined(OS_CHROMEOS)
 void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
+  AllowJavascript();
+
   // Should only be called if the user is not already signed in.
   DCHECK(!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());
   bool creating_supervised_user = false;
