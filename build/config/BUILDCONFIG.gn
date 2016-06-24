@@ -633,14 +633,9 @@ template("component") {
     assert(invoker.static_component_type == "static_library" ||
            invoker.static_component_type == "source_set")
     _component_mode = invoker.static_component_type
-  } else if (!defined(invoker.sources) || is_mac ||
-             (is_win && is_official_build)) {
+  } else if (!defined(invoker.sources) || is_mac) {
     # When there are no sources defined, use a source set to avoid creating
     # an empty static library (which generally don't work).
-    #
-    # On Windows official builds, the link time code generation bloats static
-    # libraries to the point where some of them become >32 bits large which
-    # causes lib.exe to fail. Always use source sets for that configuration.
     #
     # TODO(brettw) bug 618797: Remove the mac condition. On Mac making these as
     # static_library causes crashes. Remove the mac condition above when this
