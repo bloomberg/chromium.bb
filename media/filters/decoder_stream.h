@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <list>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -14,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
@@ -191,6 +193,8 @@ class MEDIA_EXPORT DecoderStream {
 
   void ResetDecoder();
   void OnDecoderReset();
+
+  DecoderStreamTraits<StreamType> traits_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

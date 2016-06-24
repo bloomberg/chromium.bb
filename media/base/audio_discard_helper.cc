@@ -229,6 +229,9 @@ bool AudioDiscardHelper::ProcessBuffers(
     DCHECK(current_discard_padding.second.is_zero());
   }
 
+  DVLOG(3) << __FUNCTION__ << " ts: " << timestamp_helper_.GetTimestamp()
+           << " frames: " << decoded_buffer->frame_count();
+
   // Assign timestamp to the buffer.
   decoded_buffer->set_timestamp(timestamp_helper_.GetTimestamp());
   timestamp_helper_.AddFrames(decoded_buffer->frame_count());

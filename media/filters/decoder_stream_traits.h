@@ -8,6 +8,8 @@
 #include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/video_decoder_config.h"
+#include "media/filters/audio_timestamp_validator.h"
 
 namespace media {
 
@@ -21,43 +23,63 @@ class VideoDecoder;
 class VideoFrame;
 
 template <DemuxerStream::Type StreamType>
-struct DecoderStreamTraits {};
+class DecoderStreamTraits {};
 
 template <>
-struct DecoderStreamTraits<DemuxerStream::AUDIO> {
+class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
+ public:
   typedef AudioBuffer OutputType;
   typedef AudioDecoder DecoderType;
   typedef DecryptingAudioDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success)> InitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
 
+  explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log);
+
   static std::string ToString();
-  static void InitializeDecoder(DecoderType* decoder,
-                                DemuxerStream* stream,
-                                CdmContext* cdm_context,
-                                const InitCB& init_cb,
-                                const OutputCB& output_cb);
+  void InitializeDecoder(DecoderType* decoder,
+                         DemuxerStream* stream,
+                         CdmContext* cdm_context,
+                         const InitCB& init_cb,
+                         const OutputCB& output_cb);
   static bool NeedsBitstreamConversion(DecoderType* decoder);
+  void OnDecode(const scoped_refptr<DecoderBuffer>& buffer);
+  void OnDecodeDone(const scoped_refptr<OutputType>& buffer);
+  void OnStreamReset(DemuxerStream* stream);
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
   static scoped_refptr<OutputType> CreateEOSOutput();
+
+ private:
+  // Validates encoded timestamps match decoded output duration. MEDIA_LOG warns
+  // if timestamp gaps are detected. Sufficiently large gaps can lead to AV sync
+  // drift.
+  std::unique_ptr<AudioTimestampValidator> audio_ts_validator_;
+
+  scoped_refptr<MediaLog> media_log_;
 };
 
 template <>
-struct DecoderStreamTraits<DemuxerStream::VIDEO> {
+class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
+ public:
   typedef VideoFrame OutputType;
   typedef VideoDecoder DecoderType;
   typedef DecryptingVideoDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success)> InitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
 
+  explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log) {}
+
   static std::string ToString();
-  static void InitializeDecoder(DecoderType* decoder,
-                                DemuxerStream* stream,
-                                CdmContext* cdm_context,
-                                const InitCB& init_cb,
-                                const OutputCB& output_cb);
+  void InitializeDecoder(DecoderType* decoder,
+                         DemuxerStream* stream,
+                         CdmContext* cdm_context,
+                         const InitCB& init_cb,
+                         const OutputCB& output_cb);
   static bool NeedsBitstreamConversion(DecoderType* decoder);
+  void OnDecode(const scoped_refptr<DecoderBuffer>& buffer) {}
+  void OnDecodeDone(const scoped_refptr<OutputType>& buffer) {}
+  void OnStreamReset(DemuxerStream* stream) {}
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
   static scoped_refptr<OutputType> CreateEOSOutput();

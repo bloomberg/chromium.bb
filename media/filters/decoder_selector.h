@@ -71,7 +71,8 @@ class MEDIA_EXPORT DecoderSelector {
   //    select from the decoders following the decoder that was last returned.
   // 3. |cdm_context| is optional. If |cdm_context| is
   //    null, no CDM will be available to perform decryption.
-  void SelectDecoder(DemuxerStream* stream,
+  void SelectDecoder(StreamTraits* traits,
+                     DemuxerStream* stream,
                      CdmContext* cdm_context,
                      const SelectDecoderCB& select_decoder_cb,
                      const typename Decoder::OutputCB& output_cb,
@@ -92,6 +93,7 @@ class MEDIA_EXPORT DecoderSelector {
   ScopedVector<Decoder> decoders_;
   scoped_refptr<MediaLog> media_log_;
 
+  StreamTraits* traits_;
   DemuxerStream* input_stream_;
   CdmContext* cdm_context_;
   SelectDecoderCB select_decoder_cb_;

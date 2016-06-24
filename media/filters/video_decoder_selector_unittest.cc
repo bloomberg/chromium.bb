@@ -49,7 +49,9 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   };
 
   VideoDecoderSelectorTest()
-      : demuxer_stream_(
+      : media_log_(new MediaLog()),
+        traits_(media_log_),
+        demuxer_stream_(
             new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
         decoder_1_(new StrictMock<MockVideoDecoder>()),
         decoder_2_(new StrictMock<MockVideoDecoder>()) {
@@ -104,12 +106,12 @@ class VideoDecoderSelectorTest : public ::testing::Test {
         all_decoders_.begin() + num_decoders, all_decoders_.end());
 
     decoder_selector_.reset(new VideoDecoderSelector(
-        message_loop_.task_runner(), std::move(all_decoders_), new MediaLog()));
+        message_loop_.task_runner(), std::move(all_decoders_), media_log_));
   }
 
   void SelectDecoder() {
     decoder_selector_->SelectDecoder(
-        demuxer_stream_.get(), cdm_context_.get(),
+        &traits_, demuxer_stream_.get(), cdm_context_.get(),
         base::Bind(&VideoDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)),
         base::Bind(&VideoDecoderSelectorTest::FrameReady,
@@ -134,6 +136,11 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   void OnWaitingForDecryptionKey() {
     NOTREACHED();
   }
+
+  scoped_refptr<MediaLog> media_log_;
+
+  // Stream traits specific to video decoding.
+  DecoderStreamTraits<DemuxerStream::VIDEO> traits_;
 
   // Declare |decoder_selector_| after |demuxer_stream_| and |decryptor_| since
   // |demuxer_stream_| and |decryptor_| should outlive |decoder_selector_|.

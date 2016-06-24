@@ -80,6 +80,7 @@ DecoderSelector<StreamType>::~DecoderSelector() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::SelectDecoder(
+    StreamTraits* traits,
     DemuxerStream* stream,
     CdmContext* cdm_context,
     const SelectDecoderCB& select_decoder_cb,
@@ -87,6 +88,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
     const base::Closure& waiting_for_decryption_key_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(traits);
   DCHECK(stream);
   DCHECK(select_decoder_cb_.is_null());
 
@@ -102,6 +104,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
     return;
   }
 
+  traits_ = traits;
   input_stream_ = stream;
   output_cb_ = output_cb;
 
@@ -131,7 +134,7 @@ void DecoderSelector<StreamType>::InitializeDecryptingDecoder() {
   decoder_.reset(new typename StreamTraits::DecryptingDecoderType(
       task_runner_, media_log_, waiting_for_decryption_key_cb_));
 
-  DecoderStreamTraits<StreamType>::InitializeDecoder(
+  traits_->InitializeDecoder(
       decoder_.get(), input_stream_, cdm_context_,
       base::Bind(&DecoderSelector<StreamType>::DecryptingDecoderInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -204,7 +207,7 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
   decoder_.reset(decoders_.front());
   decoders_.weak_erase(decoders_.begin());
 
-  DecoderStreamTraits<StreamType>::InitializeDecoder(
+  traits_->InitializeDecoder(
       decoder_.get(), input_stream_, cdm_context_,
       base::Bind(&DecoderSelector<StreamType>::DecoderInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
