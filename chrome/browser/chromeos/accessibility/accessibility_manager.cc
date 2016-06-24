@@ -415,7 +415,7 @@ AccessibilityManager::AccessibilityManager()
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       autoclick_enabled_(false),
-      autoclick_delay_ms_(ash::AutoclickController::kDefaultAutoclickDelayMs),
+      autoclick_delay_ms_(ash::AutoclickController::GetDefaultAutoclickDelay()),
       virtual_keyboard_enabled_(false),
       mono_audio_enabled_(false),
       caret_highlight_enabled_(false),
@@ -842,15 +842,16 @@ void AccessibilityManager::SetAutoclickDelay(int delay_ms) {
 }
 
 int AccessibilityManager::GetAutoclickDelay() const {
-  return autoclick_delay_ms_;
+  return int{autoclick_delay_ms_.InMilliseconds()};
 }
 
 void AccessibilityManager::UpdateAutoclickDelayFromPref() {
   if (!profile_)
     return;
 
-  int autoclick_delay_ms =
-      profile_->GetPrefs()->GetInteger(prefs::kAccessibilityAutoclickDelayMs);
+  base::TimeDelta autoclick_delay_ms = base::TimeDelta::FromMilliseconds(
+      int64_t{profile_->GetPrefs()->GetInteger(
+          prefs::kAccessibilityAutoclickDelayMs)});
 
   if (autoclick_delay_ms == autoclick_delay_ms_)
     return;

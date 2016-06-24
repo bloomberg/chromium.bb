@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/ash_init.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/ui/autoclick_ring_handler.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
@@ -71,6 +73,8 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   ash::Shell* shell = ash::Shell::CreateInstance(shell_init_params);
   shell->accelerator_controller()->SetScreenshotDelegate(
       std::unique_ptr<ash::ScreenshotDelegate>(new ChromeScreenshotGrabber));
+  shell->autoclick_controller()->SetDelegate(
+      base::WrapUnique(new chromeos::AutoclickRingHandler()));
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
   chromeos::AccelerometerReader::GetInstance()->Initialize(
       content::BrowserThread::GetBlockingPool()

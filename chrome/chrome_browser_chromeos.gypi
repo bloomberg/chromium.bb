@@ -1053,6 +1053,8 @@
         'browser/chromeos/ui/accessibility_focus_ring_controller.h',
         'browser/chromeos/ui/accessibility_focus_ring_layer.cc',
         'browser/chromeos/ui/accessibility_focus_ring_layer.h',
+        'browser/chromeos/ui/autoclick_ring_handler.cc',
+        'browser/chromeos/ui/autoclick_ring_handler.h',
         'browser/chromeos/ui/choose_mobile_network_dialog.cc',
         'browser/chromeos/ui/choose_mobile_network_dialog.h',
         'browser/chromeos/ui/echo_dialog_listener.h',

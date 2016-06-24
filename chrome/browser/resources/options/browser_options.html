@@ -955,15 +955,18 @@
             data-type="number"
             aria-labelledby="accessibility-autoclick-label"
             pref="settings.a11y.autoclick_delay_ms">
-          <option value="200"
+          <!-- i18n strings contain the autoclick duration; if the autoclick
+               timing gets changed, then the 18n strings also needs to be
+               updated. -->
+          <option value="600"
               i18n-content="autoclickDelayExtremelyShort"></option>
-          <option value="400"
+          <option value="800"
               i18n-content="autoclickDelayVeryShort"></option>
-          <option value="600" i18n-content="autoclickDelayShort">
+          <option value="1000" i18n-content="autoclickDelayShort">
           </option>
-          <option value="800" i18n-content="autoclickDelayLong">
+          <option value="2000" i18n-content="autoclickDelayLong">
           </option>
-          <option value="1000"
+          <option value="4000"
               i18n-content="autoclickDelayVeryLong"></option>
         </select>
         <span class="controlled-setting-indicator"

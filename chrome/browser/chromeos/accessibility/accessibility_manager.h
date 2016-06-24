@@ -368,7 +368,7 @@ class AccessibilityManager
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
   bool autoclick_enabled_;
-  int autoclick_delay_ms_;
+  base::TimeDelta autoclick_delay_ms_;
   bool virtual_keyboard_enabled_;
   bool mono_audio_enabled_;
   bool caret_highlight_enabled_;

@@ -41,7 +41,11 @@ bool IsModifierKey(ui::KeyboardCode key_code) {
 }  // namespace
 
 // static.
-const int AutoclickController::kDefaultAutoclickDelayMs = 400;
+base::TimeDelta AutoclickController::GetDefaultAutoclickDelay() {
+  return base::TimeDelta::FromMilliseconds(int64_t{kDefaultAutoclickDelayMs});
+}
+
+const int AutoclickController::kDefaultAutoclickDelayMs = 1000;
 
 class AutoclickControllerImpl : public AutoclickController,
                                 public ui::EventHandler {
@@ -51,10 +55,11 @@ class AutoclickControllerImpl : public AutoclickController,
 
  private:
   // AutoclickController overrides:
+  void SetDelegate(std::unique_ptr<Delegate> delegate) override;
   void SetEnabled(bool enabled) override;
   bool IsEnabled() const override;
-  void SetAutoclickDelay(int delay_ms) override;
-  int GetAutoclickDelay() const override;
+  void SetAutoclickDelay(base::TimeDelta delay) override;
+  base::TimeDelta GetAutoclickDelay() const override;
 
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -63,31 +68,41 @@ class AutoclickControllerImpl : public AutoclickController,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
+  void StartRingDisplay();
+  void StopRingDisplay();
+  void ChangeRingDisplayCenter();
+
   void InitClickTimer();
 
   void DoAutoclick();
 
   bool enabled_;
-  int delay_ms_;
+  base::TimeDelta delay_;
   int mouse_event_flags_;
   std::unique_ptr<base::Timer> autoclick_timer_;
+  std::unique_ptr<Delegate> delegate_;
   // The position in screen coordinates used to determine
   // the distance the mouse has moved.
   gfx::Point anchor_location_;
+  gfx::Point current_mouse_location_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickControllerImpl);
 };
 
-
 AutoclickControllerImpl::AutoclickControllerImpl()
     : enabled_(false),
-      delay_ms_(kDefaultAutoclickDelayMs),
+      delay_(GetDefaultAutoclickDelay()),
       mouse_event_flags_(ui::EF_NONE),
+      delegate_(nullptr),
       anchor_location_(-kMovementThreshold, -kMovementThreshold) {
   InitClickTimer();
 }
 
 AutoclickControllerImpl::~AutoclickControllerImpl() {
+}
+
+void AutoclickControllerImpl::SetDelegate(std::unique_ptr<Delegate> delegate) {
+  delegate_ = std::move(delegate);
 }
 
 void AutoclickControllerImpl::SetEnabled(bool enabled) {
@@ -107,21 +122,34 @@ bool AutoclickControllerImpl::IsEnabled() const {
   return enabled_;
 }
 
-void AutoclickControllerImpl::SetAutoclickDelay(int delay_ms) {
-  delay_ms_ = delay_ms;
+void AutoclickControllerImpl::SetAutoclickDelay(base::TimeDelta delay) {
+  delay_ = delay;
   InitClickTimer();
 }
 
-int AutoclickControllerImpl::GetAutoclickDelay() const {
-  return delay_ms_;
+base::TimeDelta AutoclickControllerImpl::GetAutoclickDelay() const {
+  return delay_;
+}
+
+void AutoclickControllerImpl::StartRingDisplay() {
+  if (delegate_)
+    delegate_->StartGesture(delay_, anchor_location_);
+}
+
+void AutoclickControllerImpl::StopRingDisplay() {
+  if (delegate_)
+    delegate_->StopGesture();
+}
+
+void AutoclickControllerImpl::ChangeRingDisplayCenter() {
+  if (delegate_)
+    delegate_->SetGestureCenter(current_mouse_location_);
 }
 
 void AutoclickControllerImpl::InitClickTimer() {
   autoclick_timer_.reset(new base::Timer(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(delay_ms_),
-      base::Bind(&AutoclickControllerImpl::DoAutoclick,
-                 base::Unretained(this)),
+      FROM_HERE, delay_,
+      base::Bind(&AutoclickControllerImpl::DoAutoclick, base::Unretained(this)),
       false));
 }
 
@@ -144,12 +172,18 @@ void AutoclickControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
     if (delta.LengthSquared() >= kMovementThreshold * kMovementThreshold) {
       anchor_location_ = mouse_location;
       autoclick_timer_->Reset();
+      StartRingDisplay();
+    } else if (autoclick_timer_->IsRunning()) {
+      current_mouse_location_ = mouse_location;
+      ChangeRingDisplayCenter();
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED) {
     autoclick_timer_->Stop();
+    StopRingDisplay();
   } else if (event->type() == ui::ET_MOUSEWHEEL &&
              autoclick_timer_->IsRunning()) {
     autoclick_timer_->Reset();
+    StartRingDisplay();
   }
 }
 
@@ -160,20 +194,25 @@ void AutoclickControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
   int new_modifiers = event->flags() & modifier_mask;
   mouse_event_flags_ = (mouse_event_flags_ & ~modifier_mask) | new_modifiers;
 
-  if (!IsModifierKey(event->key_code()))
+  if (!IsModifierKey(event->key_code())) {
     autoclick_timer_->Stop();
+    StopRingDisplay();
+  }
 }
 
 void AutoclickControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
   autoclick_timer_->Stop();
+  StopRingDisplay();
 }
 
 void AutoclickControllerImpl::OnGestureEvent(ui::GestureEvent* event) {
   autoclick_timer_->Stop();
+  StopRingDisplay();
 }
 
 void AutoclickControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
   autoclick_timer_->Stop();
+  StopRingDisplay();
 }
 
 void AutoclickControllerImpl::DoAutoclick() {
