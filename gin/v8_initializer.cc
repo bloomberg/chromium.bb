@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -429,7 +430,9 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     v8::V8::SetFlagsFromString(flag, sizeof(flag) - 1);
   }
 
+  const char* ignition_enabled_crash_key = "N";
   if (ShouldUseIgnition()) {
+    ignition_enabled_crash_key = "Y";
     std::string flag("--ignition");
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
 
@@ -445,6 +448,9 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
           lazy_flag.c_str(), static_cast<int>(lazy_flag.size()));
     }
   }
+  static const char kIgnitionEnabledKey[] = "v8-ignition";
+  base::debug::SetCrashKeyValue(kIgnitionEnabledKey,
+                                ignition_enabled_crash_key);
 
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)

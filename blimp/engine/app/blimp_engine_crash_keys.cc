@@ -35,6 +35,9 @@ size_t RegisterEngineCrashKeys() {
       { "subresource_url", crash_keys::kLargeSize },
       { "total-discardable-memory-allocated", crash_keys::kSmallSize },
 
+      // gin/:
+      { "v8-ignition", crash_keys::kSmallSize },
+
       // Temporary for http://crbug.com/575245.
       { "commit_frame_id", crash_keys::kSmallSize },
       { "commit_proxy_id", crash_keys::kSmallSize },

@@ -45,6 +45,9 @@ size_t RegisterCastCrashKeys() {
     { "subresource_url", kLargeSize },
     { "total-discardable-memory-allocated", kSmallSize },
 
+    // gin/:
+    { "v8-ignition", kSmallSize },
+
     // Copied from common/crash_keys. Remove when
     // http://crbug.com/598854 is resolved.
 

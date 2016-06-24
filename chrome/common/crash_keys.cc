@@ -157,6 +157,9 @@ size_t RegisterChromeCrashKeys() {
 #endif
     { kZeroEncodeDetails, kSmallSize },
 
+    // gin/:
+    { "v8-ignition", kSmallSize },
+
     // Temporary for http://crbug.com/575245.
     { "swapout_frame_id", kSmallSize },
     { "swapout_proxy_id", kSmallSize },
