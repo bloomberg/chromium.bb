@@ -188,12 +188,6 @@ void TestRenderWidgetHostView::StopSpeaking() {
 
 #endif
 
-bool TestRenderWidgetHostView::GetScreenColorProfile(
-    std::vector<char>* color_profile) {
-  DCHECK(color_profile->empty());
-  return false;
-}
-
 gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
   return gfx::Rect();
 }

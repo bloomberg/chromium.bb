@@ -131,7 +131,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // the URL bar, this method does not need an implementation.
   void ClearCompositorFrame() override {}
   void GetScreenInfo(blink::WebScreenInfo* results) override;
-  bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                               InputEventAckState ack_result) override;

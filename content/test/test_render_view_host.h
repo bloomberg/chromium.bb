@@ -125,7 +125,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void LockCompositingSurface() override {}
   void UnlockCompositingSurface() override {}
   void GetScreenInfo(blink::WebScreenInfo* results) override {}
-  bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   gfx::Rect GetBoundsInRootWindow() override;
   bool LockMouse() override;
   void UnlockMouse() override;

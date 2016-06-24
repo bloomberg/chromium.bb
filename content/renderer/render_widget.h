@@ -444,7 +444,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnResize(const ResizeParams& params);
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
-  void OnColorProfile(const std::vector<char>& color_profile);
   void OnChangeResizeRect(const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
   virtual void OnWasShown(bool needs_repainting,

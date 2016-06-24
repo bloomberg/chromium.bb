@@ -98,7 +98,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
   bool LockMouse() override;
   void UnlockMouse() override;
   void GetScreenInfo(blink::WebScreenInfo* results) override;
-  bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   gfx::Rect GetBoundsInRootWindow() override;
 
 #if defined(OS_MACOSX)

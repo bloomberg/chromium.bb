@@ -180,7 +180,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void RemoveInputEventObserver(
       RenderWidgetHost::InputEventObserver* observer) override;
   void GetWebScreenInfo(blink::WebScreenInfo* result) override;
-  bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   void HandleCompositorProto(const std::vector<uint8_t>& proto) override;
 
   // Notification that the screen info has changed.
@@ -561,10 +560,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // NotifyRendererResponsive.
   void RendererIsResponsive();
 
-  // Routines used to send the RenderWidget its screen color profile.
-  void DispatchColorProfile();
-  void SendColorProfile();
-
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);
   void OnClose();
@@ -685,10 +680,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   // True when waiting for RESIZE_ACK.
   bool resize_ack_pending_;
-
-  // Set if the color profile should fetched and sent to the RenderWidget
-  // during the WasResized() resize message flow.
-  bool color_profile_out_of_date_;
 
   // The current size of the RenderWidget.
   gfx::Size current_size_;

@@ -1523,13 +1523,6 @@ void RenderWidgetHostViewMac::GetScreenInfo(blink::WebScreenInfo* results) {
   *results = GetWebScreenInfo(GetNativeView());
 }
 
-bool RenderWidgetHostViewMac::GetScreenColorProfile(
-    std::vector<char>* color_profile) {
-  DCHECK(color_profile->empty());
-  NSWindow* window = GetWebContents()->GetTopLevelNativeWindow();
-  return gfx::GetDisplayColorProfile(window, color_profile);
-}
-
 gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve

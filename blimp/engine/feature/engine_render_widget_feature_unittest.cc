@@ -99,8 +99,6 @@ class MockRenderWidgetHost
   void AddInputEventObserver(InputEventObserver* observer) override {}
   void RemoveInputEventObserver(InputEventObserver* observer) override {}
   void GetWebScreenInfo(blink::WebScreenInfo* result) override {}
-  bool GetScreenColorProfile(std::vector<char>* color_profile) override {
-    return false; }
   void HandleCompositorProto(const std::vector<uint8_t>& proto) override {}
 
   bool Send(IPC::Message* msg) override { return false; }

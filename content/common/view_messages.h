@@ -571,11 +571,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_EnableDeviceEmulation,
 // Disables device emulation, enabled previously by EnableDeviceEmulation.
 IPC_MESSAGE_ROUTED0(ViewMsg_DisableDeviceEmulation)
 
-// Sent to inform the renderer of its screen device color profile. An empty
-// profile tells the renderer use the default sRGB color profile.
-IPC_MESSAGE_ROUTED1(ViewMsg_ColorProfile,
-                    std::vector<char> /* color profile */)
-
 // Tells the render view that the resize rect has changed.
 IPC_MESSAGE_ROUTED1(ViewMsg_ChangeResizeRect,
                     gfx::Rect /* resizer_rect */)

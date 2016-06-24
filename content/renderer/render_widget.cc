@@ -483,7 +483,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnEnableDeviceEmulation)
     IPC_MESSAGE_HANDLER(ViewMsg_DisableDeviceEmulation,
                         OnDisableDeviceEmulation)
-    IPC_MESSAGE_HANDLER(ViewMsg_ColorProfile, OnColorProfile)
     IPC_MESSAGE_HANDLER(ViewMsg_ChangeResizeRect, OnChangeResizeRect)
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
@@ -610,10 +609,6 @@ void RenderWidget::OnEnableDeviceEmulation(
 
 void RenderWidget::OnDisableDeviceEmulation() {
   screen_metrics_emulator_.reset();
-}
-
-void RenderWidget::OnColorProfile(const std::vector<char>& color_profile) {
-  SetDeviceColorProfile(color_profile);
 }
 
 void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {

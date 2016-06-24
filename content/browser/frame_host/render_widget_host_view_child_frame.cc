@@ -444,15 +444,6 @@ void RenderWidgetHostViewChildFrame::GetScreenInfo(
   frame_connector_->GetScreenInfo(results);
 }
 
-bool RenderWidgetHostViewChildFrame::GetScreenColorProfile(
-    std::vector<char>* color_profile) {
-  if (!frame_connector_)
-    return false;
-  DCHECK(color_profile->empty());
-  NOTIMPLEMENTED();
-  return false;
-}
-
 gfx::Rect RenderWidgetHostViewChildFrame::GetBoundsInRootWindow() {
   gfx::Rect rect;
   if (frame_connector_) {

@@ -1189,13 +1189,6 @@ void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
   GetScreenInfoForWindow(results, window_->GetRootWindow() ? window_ : NULL);
 }
 
-bool RenderWidgetHostViewAura::GetScreenColorProfile(
-    std::vector<char>* color_profile) {
-  DCHECK(color_profile->empty());
-  gfx::Rect bounds(window_->GetToplevelWindow()->GetBoundsInScreen());
-  return gfx::GetDisplayColorProfile(bounds, color_profile);
-}
-
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
   aura::Window* top_level = window_->GetToplevelWindow();
   gfx::Rect bounds(top_level->GetBoundsInScreen());

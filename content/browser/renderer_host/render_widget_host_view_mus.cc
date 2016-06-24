@@ -252,12 +252,6 @@ void RenderWidgetHostViewMus::GetScreenInfo(blink::WebScreenInfo* results) {
   // TODO(fsamuel): Populate screen info from Mus.
 }
 
-bool RenderWidgetHostViewMus::GetScreenColorProfile(
-    std::vector<char>* color_profile) {
-  // TODO(fsamuel): Implement color profile in Mus.
-  return false;
-}
-
 gfx::Rect RenderWidgetHostViewMus::GetBoundsInRootWindow() {
   aura::Window* top_level = aura_window_->GetToplevelWindow();
   gfx::Rect bounds(top_level->GetBoundsInScreen());
