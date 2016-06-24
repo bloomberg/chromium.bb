@@ -59,10 +59,13 @@ class CC_EXPORT DisplayItemList
   void ToProtobuf(proto::DisplayItemList* proto,
                   ImageSerializationProcessor* image_serialization_processor);
 
+  // TODO(trchen): Deprecated. Apply clip and scale on the canvas instead.
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback,
               const gfx::Rect& canvas_target_playback_rect,
               float contents_scale) const;
+
+  void Raster(SkCanvas* canvas, SkPicture::AbortCallback* callback) const;
 
   // This is a fast path for use only if canvas_ is set and
   // retain_individual_display_items_ is false. This method also updates

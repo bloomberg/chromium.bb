@@ -43,21 +43,23 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
       const RecordingSource* other,
       bool can_use_lcd_text);
 
-  // Raster a subrect of this RasterSource into the given canvas. It is
-  // assumed that contents_scale has already been applied to this canvas.
-  // Writes the total number of pixels rasterized and the time spent
-  // rasterizing to the stats if the respective pointer is not nullptr.
-  // It is assumed that the canvas passed here will only be rasterized by
-  // this raster source via this call.
+  // TODO(trchen): Deprecated.
+  void PlaybackToCanvas(SkCanvas* canvas,
+                        const gfx::Rect& canvas_bitmap_rect,
+                        const gfx::Rect& canvas_playback_rect,
+                        float contents_scale,
+                        const PlaybackSettings& settings) const;
+
+  // Raster this RasterSource into the given canvas. Canvas states such as
+  // CTM and clip region will be respected. This function will replace pixels
+  // in the clip region without blending. It is assumed that existing pixels
+  // may be uninitialized and will be cleared before playback.
   //
   // Virtual for testing.
   //
   // Note that this should only be called after the image decode controller has
   // been set, which happens during commit.
   virtual void PlaybackToCanvas(SkCanvas* canvas,
-                                const gfx::Rect& canvas_bitmap_rect,
-                                const gfx::Rect& canvas_playback_rect,
-                                float contents_scale,
                                 const PlaybackSettings& settings) const;
 
   // Returns whether the given rect at given scale is of solid color in
@@ -145,16 +147,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   ImageDecodeController* image_decode_controller_;
 
  private:
-  void RasterCommon(SkCanvas* canvas,
-                    SkPicture::AbortCallback* callback,
-                    const gfx::Rect& canvas_bitmap_rect,
-                    const gfx::Rect& canvas_playback_rect,
-                    float contents_scale) const;
+  void RasterCommon(SkCanvas* canvas, SkPicture::AbortCallback* callback) const;
 
-  void PrepareForPlaybackToCanvas(SkCanvas* canvas,
-                                  const gfx::Rect& canvas_bitmap_rect,
-                                  const gfx::Rect& canvas_playback_rect,
-                                  float contents_scale) const;
+  void PrepareForPlaybackToCanvas(SkCanvas* canvas) const;
 
   DISALLOW_COPY_AND_ASSIGN(RasterSource);
 };

@@ -100,7 +100,6 @@ void CompositingDisplayItem::ToProtobuf(
 
 void CompositingDisplayItem::Raster(
     SkCanvas* canvas,
-    const gfx::Rect& canvas_target_playback_rect,
     SkPicture::AbortCallback* callback) const {
   SkPaint paint;
   paint.setXfermodeMode(xfermode_);
@@ -151,7 +150,6 @@ void EndCompositingDisplayItem::ToProtobuf(
 
 void EndCompositingDisplayItem::Raster(
     SkCanvas* canvas,
-    const gfx::Rect& canvas_target_playback_rect,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
 }

@@ -46,7 +46,6 @@ void TransformDisplayItem::ToProtobuf(
 }
 
 void TransformDisplayItem::Raster(SkCanvas* canvas,
-                                  const gfx::Rect& canvas_target_playback_rect,
                                   SkPicture::AbortCallback* callback) const {
   canvas->save();
   if (!transform_.IsIdentity())
@@ -83,7 +82,6 @@ void EndTransformDisplayItem::ToProtobuf(
 
 void EndTransformDisplayItem::Raster(
     SkCanvas* canvas,
-    const gfx::Rect& canvas_target_playback_rect,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
 }

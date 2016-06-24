@@ -30,7 +30,6 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
                   ImageSerializationProcessor* image_serialization_processor)
       const override;
   void Raster(SkCanvas* canvas,
-              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
@@ -58,7 +57,6 @@ class CC_EXPORT EndFloatClipDisplayItem : public DisplayItem {
                   ImageSerializationProcessor* image_serialization_processor)
       const override;
   void Raster(SkCanvas* canvas,
-              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;

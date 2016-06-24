@@ -31,7 +31,6 @@ class CC_EXPORT DisplayItem {
       proto::DisplayItem* proto,
       ImageSerializationProcessor* image_serialization_processor) const = 0;
   virtual void Raster(SkCanvas* canvas,
-                      const gfx::Rect& canvas_target_playback_rect,
                       SkPicture::AbortCallback* callback) const = 0;
   virtual void AsValueInto(const gfx::Rect& visual_rect,
                            base::trace_event::TracedValue* array) const = 0;

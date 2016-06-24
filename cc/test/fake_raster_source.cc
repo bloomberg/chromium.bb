@@ -140,15 +140,10 @@ FakeRasterSource::~FakeRasterSource() {}
 
 void FakeRasterSource::PlaybackToCanvas(
     SkCanvas* canvas,
-    const gfx::Rect& canvas_bitmap_rect,
-    const gfx::Rect& canvas_playback_rect,
-    float contents_scale,
     const PlaybackSettings& settings) const {
   if (playback_allowed_event_)
     playback_allowed_event_->Wait();
-  RasterSource::PlaybackToCanvas(canvas, canvas_bitmap_rect,
-                                 canvas_playback_rect, contents_scale,
-                                 settings);
+  RasterSource::PlaybackToCanvas(canvas, settings);
 }
 
 }  // namespace cc

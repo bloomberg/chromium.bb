@@ -65,7 +65,6 @@ void ClipDisplayItem::ToProtobuf(
 }
 
 void ClipDisplayItem::Raster(SkCanvas* canvas,
-                             const gfx::Rect& canvas_target_playback_rect,
                              SkPicture::AbortCallback* callback) const {
   canvas->save();
   canvas->clipRect(SkRect::MakeXYWH(clip_rect_.x(), clip_rect_.y(),
@@ -130,7 +129,6 @@ void EndClipDisplayItem::ToProtobuf(
 }
 
 void EndClipDisplayItem::Raster(SkCanvas* canvas,
-                                const gfx::Rect& canvas_target_playback_rect,
                                 SkPicture::AbortCallback* callback) const {
   canvas->restore();
 }

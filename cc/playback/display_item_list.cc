@@ -119,17 +119,31 @@ void DisplayItemList::Raster(SkCanvas* canvas,
                              SkPicture::AbortCallback* callback,
                              const gfx::Rect& canvas_target_playback_rect,
                              float contents_scale) const {
+  canvas->save();
+
+  if (!canvas_target_playback_rect.IsEmpty()) {
+    // canvas_target_playback_rect is specified in device space. We can't
+    // use clipRect because canvas CTM will be applied on it. Use clipRegion
+    // instead because it ignores canvas CTM.
+    SkRegion device_clip;
+    device_clip.setRect(gfx::RectToSkIRect(canvas_target_playback_rect));
+    canvas->clipRegion(device_clip);
+  }
+
+  canvas->scale(contents_scale, contents_scale);
+  Raster(canvas, callback);
+  canvas->restore();
+}
+
+void DisplayItemList::Raster(SkCanvas* canvas,
+                             SkPicture::AbortCallback* callback) const {
   if (!settings_.use_cached_picture) {
-    canvas->save();
-    canvas->scale(contents_scale, contents_scale);
     for (const auto& item : items_)
-      item.Raster(canvas, canvas_target_playback_rect, callback);
-    canvas->restore();
+      item.Raster(canvas, callback);
   } else {
     DCHECK(picture_);
 
     canvas->save();
-    canvas->scale(contents_scale, contents_scale);
     canvas->translate(layer_rect_.x(), layer_rect_.y());
     if (callback) {
       // If we have a callback, we need to call |draw()|, |drawPicture()|
@@ -148,7 +162,7 @@ void DisplayItemList::Raster(SkCanvas* canvas,
 void DisplayItemList::ProcessAppendedItem(const DisplayItem* item) {
   if (settings_.use_cached_picture) {
     DCHECK(recorder_);
-    item->Raster(recorder_->getRecordingCanvas(), gfx::Rect(), nullptr);
+    item->Raster(recorder_->getRecordingCanvas(), nullptr);
   }
   if (!retain_individual_display_items_) {
     items_.Clear();
@@ -159,7 +173,7 @@ void DisplayItemList::RasterIntoCanvas(const DisplayItem& item) {
   DCHECK(recorder_);
   DCHECK(!retain_individual_display_items_);
 
-  item.Raster(recorder_->getRecordingCanvas(), gfx::Rect(), nullptr);
+  item.Raster(recorder_->getRecordingCanvas(), nullptr);
 }
 
 bool DisplayItemList::RetainsIndividualDisplayItems() const {

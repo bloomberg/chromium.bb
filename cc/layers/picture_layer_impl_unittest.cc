@@ -339,7 +339,7 @@ TEST_F(PictureLayerImplTest, TileGridAlignment) {
   for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
     MockCanvas mock_canvas(1000, 1000);
     const gfx::Rect& content_rect = (*tile_iter)->content_rect();
-    updated_active_raster_source->PlaybackToCanvas(
+    updated_active_raster_source->RasterSource::PlaybackToCanvas(
         &mock_canvas, content_rect, content_rect, 1.0f, playback_settings);
 
     // This test verifies that when drawing the contents of a specific tile

@@ -69,7 +69,6 @@ void ClipPathDisplayItem::ToProtobuf(
 }
 
 void ClipPathDisplayItem::Raster(SkCanvas* canvas,
-                                 const gfx::Rect& canvas_target_playback_rect,
                                  SkPicture::AbortCallback* callback) const {
   canvas->save();
   canvas->clipPath(clip_path_, clip_op_, antialias_);
@@ -107,7 +106,6 @@ void EndClipPathDisplayItem::ToProtobuf(
 
 void EndClipPathDisplayItem::Raster(
     SkCanvas* canvas,
-    const gfx::Rect& canvas_target_playback_rect,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
 }

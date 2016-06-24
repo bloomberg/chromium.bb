@@ -36,9 +36,6 @@ class FakeRasterSource : public RasterSource {
       base::WaitableEvent* playback_allowed_event);
 
   void PlaybackToCanvas(SkCanvas* canvas,
-                        const gfx::Rect& canvas_bitmap_rect,
-                        const gfx::Rect& canvas_playback_rect,
-                        float contents_scale,
                         const PlaybackSettings& settings) const override;
 
  protected:
