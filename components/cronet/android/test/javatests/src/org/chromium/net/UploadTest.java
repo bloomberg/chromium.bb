@@ -210,8 +210,8 @@ public class UploadTest extends CronetTestBase {
         request.start();
         listener.blockForComplete();
 
-        assertEquals(200, listener.mHttpStatusCode);
-        assertEquals(UPLOAD_CHANNEL_DATA + "\0\0", listener.mResponseAsString);
+        assertEquals(0, listener.mHttpStatusCode);
+        assertNull(listener.mResponseAsString);
     }
 
     /**
