@@ -59,7 +59,7 @@ class RequestCoordinator : public KeyedService {
   void StopProcessing();
 
   // TODO(dougarnett): Move to OfflinerPolicy in some form.
-  Scheduler::TriggerConditions const& GetTriggerConditionsForUserRequest();
+  const Scheduler::TriggerConditions& GetTriggerConditionsForUserRequest();
 
   // A way for tests to set the callback in use when an operation is over.
   void SetProcessingCallbackForTest(const base::Callback<void(bool)> callback) {

@@ -168,7 +168,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   }
 }
 
-Scheduler::TriggerConditions const&
+const Scheduler::TriggerConditions&
 RequestCoordinator::GetTriggerConditionsForUserRequest() {
   return kUserRequestTriggerConditions;
 }
