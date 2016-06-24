@@ -224,6 +224,7 @@ base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
   // |TimeTicks::Now()| for event timestamp instead of the native timestamp to
   // ensure computed input latency and web exposed timestamp is consistent with
   // other components.
+  // It is unnecessary to invoke |ValidateEventTimeClock| here because of above.
   // [1] http://blogs.msdn.com/b/oldnewthing/archive/2014/01/22/10491576.aspx
   return EventTimeForNow();
 }

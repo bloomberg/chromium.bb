@@ -5,8 +5,10 @@
 #ifndef UI_EVENTS_BASE_EVENT_UTILS_H_
 #define UI_EVENTS_BASE_EVENT_UTILS_H_
 
+#include <memory>
 #include <stdint.h>
 
+#include "base/time/tick_clock.h"
 #include "ui/events/events_base_export.h"
 
 namespace base {
@@ -21,6 +23,12 @@ EVENTS_BASE_EXPORT uint32_t GetNextTouchEventId();
 
 // Checks if |flags| contains system key modifiers.
 EVENTS_BASE_EXPORT bool IsSystemKeyModifier(int flags);
+
+// Create a timestamp based on the current time.
+EVENTS_BASE_EXPORT base::TimeTicks EventTimeForNow();
+
+EVENTS_BASE_EXPORT void SetEventTickClockForTesting(
+    std::unique_ptr<base::TickClock> tick_clock);
 
 // Converts an event timestamp ticks to seconds (floating point representation).
 // WARNING: This should only be used when interfacing with platform code that

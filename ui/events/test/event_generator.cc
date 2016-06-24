@@ -599,15 +599,15 @@ void EventGenerator::Dispatch(ui::Event* event) {
 void EventGenerator::SetTickClock(std::unique_ptr<base::TickClock> tick_clock) {
   scoped_refptr<ClonableTickClock> clonable =
       new ClonableTickClock(std::move(tick_clock));
-#if defined(USE_X11)
-  ResetTimestampRolloverCountersForTesting(clonable->Clone());
-#endif
+  ui::SetEventTickClockForTesting(clonable->Clone());
   tick_clock_ = clonable->Clone();
 }
 
 base::TimeTicks EventGenerator::Now() {
   // This is the same as what EventTimeForNow() does, but here we do it
   // with a tick clock that can be replaced with a simulated clock for tests.
+  // TODO(majidvp): The tick clock used by |ui::EventTimeForNow()| is now
+  // mockable so we no longer need this.
   return tick_clock_->NowTicks();
 }
 

@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/display/display.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
@@ -57,10 +58,10 @@ EVENTS_EXPORT int EventFlagsFromNative(const base::NativeEvent& native_event);
 EVENTS_EXPORT base::TimeTicks EventTimeFromNative(
     const base::NativeEvent& native_event);
 
-// Create a timestamp based on the current time.
-// TODO(majidvp): Get rid of this in favor of call to TimeTicks::Now().
-// crbug.com/453559
-EVENTS_EXPORT base::TimeTicks EventTimeForNow();
+// Ensures that the event timestamp values are coming from the same underlying
+// monotonic clock as base::TimeTicks::Now() and if it is not then falls
+// back to using the current ticks for event timestamp.
+EVENTS_EXPORT void ValidateEventTimeClock(base::TimeTicks* timestamp);
 
 // Get the location from a native event.  The coordinate system of the resultant
 // |Point| has the origin at top-left of the "root window".  The nature of

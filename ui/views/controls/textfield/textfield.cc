@@ -1894,7 +1894,8 @@ void Textfield::UpdateContextMenu() {
 void Textfield::TrackMouseClicks(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton()) {
     base::TimeDelta time_delta = event.time_stamp() - last_click_time_;
-    if (time_delta.InMilliseconds() <= GetDoubleClickInterval() &&
+    if (!last_click_time_.is_null() &&
+        time_delta.InMilliseconds() <= GetDoubleClickInterval() &&
         !ExceededDragThreshold(event.location() - last_click_location_)) {
       // Upon clicking after a triple click, the count should go back to double
       // click and alternate between double and triple. This assignment maps

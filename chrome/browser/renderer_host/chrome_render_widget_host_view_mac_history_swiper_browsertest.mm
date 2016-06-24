@@ -10,6 +10,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -21,6 +22,7 @@
 #include "content/public/test/browser_test_utils.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
+#include "ui/events/base_event_utils.h"
 #include "url/gurl.h"
 
 namespace {
@@ -93,6 +95,11 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
     ASSERT_EQ(url1_, GetWebContents()->GetURL());
     ui_test_utils::NavigateToURL(browser(), url2_);
     ASSERT_EQ(url2_, GetWebContents()->GetURL());
+
+    std::unique_ptr<base::SimpleTestTickClock> mock_clock(
+      new base::SimpleTestTickClock());
+    mock_clock->Advance(base::TimeDelta::FromMilliseconds(100));
+    ui::SetEventTickClockForTesting(std::move(mock_clock));
   }
 
   void TearDownOnMainThread() override { event_queue_.reset(); }
@@ -160,6 +167,9 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
 
     id mock_event = [OCMockObject partialMockForObject:event];
     [[[mock_event stub] andReturnBool:NO] isDirectionInvertedFromDevice];
+    NSTimeInterval timestamp = 0;
+    [(NSEvent*)[[mock_event stub]
+        andReturnValue:OCMOCK_VALUE(timestamp)] timestamp];
     [(NSEvent*)[[mock_event stub] andReturnValue:OCMOCK_VALUE(type)] type];
 
     return mock_event;
@@ -182,6 +192,9 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
     NSUInteger modifierFlags = 0;
     [(NSEvent*)[[event stub]
         andReturnValue:OCMOCK_VALUE(modifierFlags)] modifierFlags];
+    NSTimeInterval timestamp = 0;
+    [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(timestamp)] timestamp];
+
     NSView* view = GetWebContents()
                        ->GetRenderViewHost()
                        ->GetWidget()
@@ -241,6 +254,9 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
     [[[event stub] andReturn:touches] touchesMatchingPhase:NSTouchPhaseAny
                                                     inView:[OCMArg any]];
     [[[event stub] andReturnBool:NO] isDirectionInvertedFromDevice];
+    NSTimeInterval timestamp = 0;
+    [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(timestamp)] timestamp];
+
     QueueEvent(event, deployment, run_message_loop);
   }
 

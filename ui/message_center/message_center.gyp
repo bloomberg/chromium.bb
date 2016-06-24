@@ -130,6 +130,7 @@
         ['toolkit_views==1 and OS!="mac"', {
           'dependencies': [
             '../events/events.gyp:events',
+            '../events/events.gyp:events_base',
             '../views/views.gyp:views',
             '../compositor/compositor.gyp:compositor',
           ],

@@ -84,8 +84,10 @@ base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
   int64_t seconds = since_system_startup;
   since_system_startup -= seconds;
   int64_t microseconds = since_system_startup * 1000000;
-  return ui::EventTimeStampFromSeconds(seconds) +
+  base::TimeTicks timestamp = ui::EventTimeStampFromSeconds(seconds) +
          base::TimeDelta::FromMicroseconds(microseconds);
+  ValidateEventTimeClock(&timestamp);
+  return timestamp;
 }
 
 gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
