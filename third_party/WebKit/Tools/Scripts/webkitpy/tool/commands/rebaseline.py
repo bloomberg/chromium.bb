@@ -303,7 +303,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     # The release builders cycle much faster than the debug ones and cover all the platforms.
     def _release_builders(self):
         release_builders = []
-        for builder_name in self._tool.builders.all_builder_names():
+        for builder_name in self._tool.builders.all_continuous_builder_names():
             if 'ASAN' in builder_name:
                 continue
             port = self._tool.port_factory.get_from_builder_name(builder_name)

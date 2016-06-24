@@ -34,39 +34,49 @@ corresponding port names and TestExpectations specifiers.
 The actual constants are in webkitpy.common.config.builders.
 """
 
-import re
-
 
 class BuilderList(object):
 
     def __init__(self, builders_dict):
-        """The given dictionary maps builder names to dicts with the keys:
-
-            port_name: A fully qualified port name.
-            specifiers: TestExpectations specifiers for that config. Valid values are found in
+        """
+        The given dictionary maps builder names to dicts with the keys:
+            "port_name": A fully qualified port name.
+            "specifiers": TestExpectations specifiers for that config. Valid values are found in
                   TestExpectationsParser._configuration_tokens_list.
+            "is_try_builder": True for try bots, False for continuous waterfall builders.
 
         Possible refactoring note: Potentially, it might make sense to use
         webkitpy.common.buildbot.Builder and add port_name and specifiers
         properties to that class.
         """
-        self._exact_matches = builders_dict
+        self._builders = builders_dict
 
     def all_builder_names(self):
-        return sorted(set(self._exact_matches.keys()))
+        return sorted(self._builders)
+
+    def all_continuous_builder_names(self):
+        return sorted(b for b in self._builders if not self._builders[b].get('is_try_builder'))
 
     def all_port_names(self):
-        return sorted(set(map(lambda x: x["port_name"], self._exact_matches.values())))
+        return sorted({b["port_name"] for b in self._builders.values()})
 
     def port_name_for_builder_name(self, builder_name):
-        return self._exact_matches[builder_name]["port_name"]
+        return self._builders[builder_name]["port_name"]
 
     def specifiers_for_builder(self, builder_name):
-        return self._exact_matches[builder_name]["specifiers"]
+        return self._builders[builder_name]["specifiers"]
 
     def builder_name_for_port_name(self, target_port_name):
+        """Returns a builder name for the given port name.
+
+        Multiple builders can have the same port name; this function only
+        returns builder names for non-try-bot builders, and it gives preference
+        to non-debug builders.
+        """
         debug_builder_name = None
-        for builder_name, builder_info in self._exact_matches.items():
+        for builder_name, builder_info in self._builders.items():
+            if builder_info.get('is_try_builder'):
+                continue
             if builder_info['port_name'] == target_port_name:
                 if 'dbg' in builder_name:
                     debug_builder_name = builder_name

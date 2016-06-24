@@ -40,11 +40,17 @@ class BuilderListTest(unittest.TestCase):
             'Blink B': {'port_name': 'port-b', 'specifiers': ['B', 'Release']},
             'Blink B (dbg)': {'port_name': 'port-b', 'specifiers': ['B', 'Debug']},
             'Blink C (dbg)': {'port_name': 'port-c', 'specifiers': ['C', 'Release']},
+            'Try A': {'port_name': 'port-a', 'specifiers': ['A', 'Release'], "is_try_builder": True},
+            'Try B': {'port_name': 'port-b', 'specifiers': ['B', 'Release'], "is_try_builder": True},
         })
 
     def test_all_builder_names(self):
         b = self.sample_builder_list()
-        self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)'], b.all_builder_names())
+        self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)', 'Try A', 'Try B'], b.all_builder_names())
+
+    def test_all_continuous_builder_names(self):
+        b = self.sample_builder_list()
+        self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)'], b.all_continuous_builder_names())
 
     def test_all_port_names(self):
         b = self.sample_builder_list()
