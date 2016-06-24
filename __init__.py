@@ -28,7 +28,6 @@ _paths = [
     os.path.join('gdata', 'src'),
     'pyelftools',
     'swarming.client',
-    os.path.join('swarming.client', 'third_party'),
 ]
 
 for _path in _paths:
