@@ -5430,17 +5430,6 @@
               'ARCHS': [
                 'x86_64',
               ],
-              'WARNING_CFLAGS': [
-                # TODO(thakis): Remove this once the deployment target on OS X
-                # is 10.7 too, http://crbug.com/547071
-                # In general, it is NOT OK to add -Wno-deprecated-declarations
-                # anywhere, you should instead fix your code instead.  But host
-                # compiles on iOS are really mac compiles, so this will be fixed
-                # when the mac deployment target is increased.  (Some of the
-                # fixes depend on OS X 10.7 so they can't be done before mac
-                # upgrades).
-                '-Wno-deprecated-declarations',
-              ],
             },
           }],
           ['_toolset=="target"', {
