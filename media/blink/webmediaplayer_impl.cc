@@ -181,7 +181,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       should_notify_time_changed_(false),
       fullscreen_(false),
       decoder_requires_restart_for_fullscreen_(false),
-      supports_overlay_fullscreen_video_(false),
       client_(client),
       encrypted_client_(encrypted_client),
       delegate_(delegate),
@@ -206,6 +205,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       volume_multiplier_(1.0),
       renderer_factory_(std::move(renderer_factory)),
       surface_manager_(params.surface_manager()),
+      fullscreen_surface_id_(SurfaceManager::kNoSurfaceID),
       suppress_destruction_errors_(false),
       can_suspend_state_(CanSuspendState::UNKNOWN) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
@@ -277,22 +277,7 @@ void WebMediaPlayerImpl::load(LoadType load_type,
 
 bool WebMediaPlayerImpl::supportsOverlayFullscreenVideo() {
 #if defined(OS_ANDROID)
-  // OverlayFullscreenVideo is only used when we're H/W decoding to an
-  // SurfaceView underlay on Android. It's possible that we haven't initialized
-  // any decoders before entering fullscreen, so we won't know whether to use
-  // OverlayFullscreenVideo. In that case we'll default to
-  // non-OverlayFullscreenVideo, which still works correctly, but has janky
-  // orientation changes.
-
-  // We return a consistent value while in fullscreen to avoid us getting into a
-  // state where some of the OverlayFullscreenVideo adjustments are applied and
-  // some aren't.
-  // TODO(watk): Implement dynamic OverlayFullscreenVideo switching in blink.
-  if (!fullscreen_) {
-    supports_overlay_fullscreen_video_ =
-        decoder_requires_restart_for_fullscreen_;
-  }
-  return supports_overlay_fullscreen_video_;
+  return true;
 #else
   return false;
 #endif
@@ -300,12 +285,20 @@ bool WebMediaPlayerImpl::supportsOverlayFullscreenVideo() {
 
 void WebMediaPlayerImpl::enteredFullscreen() {
   fullscreen_ = true;
+  if (surface_manager_) {
+    surface_created_cb_.Reset(
+        base::Bind(&WebMediaPlayerImpl::OnSurfaceCreated, AsWeakPtr()));
+    surface_manager_->CreateFullscreenSurface(pipeline_metadata_.natural_size,
+                                              surface_created_cb_.callback());
+  }
   if (decoder_requires_restart_for_fullscreen_)
     ScheduleRestart();
 }
 
 void WebMediaPlayerImpl::exitedFullscreen() {
   fullscreen_ = false;
+  surface_created_cb_.Cancel();
+  fullscreen_surface_id_ = SurfaceManager::kNoSurfaceID;
   if (decoder_requires_restart_for_fullscreen_)
     ScheduleRestart();
 }
@@ -982,14 +975,16 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
   if (hasVideo()) {
-    DCHECK(!video_weblayer_);
-
     if (pipeline_metadata_.video_rotation == VIDEO_ROTATION_90 ||
         pipeline_metadata_.video_rotation == VIDEO_ROTATION_270) {
       gfx::Size size = pipeline_metadata_.natural_size;
       pipeline_metadata_.natural_size = gfx::Size(size.height(), size.width());
     }
 
+    if (fullscreen_ && surface_manager_)
+      surface_manager_->NaturalSizeChanged(pipeline_metadata_.natural_size);
+
+    DCHECK(!video_weblayer_);
     video_weblayer_.reset(new cc_blink::WebLayerImpl(cc::VideoLayer::Create(
         compositor_, pipeline_metadata_.video_rotation)));
     video_weblayer_->layer()->SetContentsOpaque(opaque_);
@@ -1264,6 +1259,12 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
           "is_downloading_data", is_downloading));
 }
 
+void WebMediaPlayerImpl::OnSurfaceCreated(int surface_id) {
+  fullscreen_surface_id_ = surface_id;
+  if (!pending_surface_request_cb_.is_null())
+    base::ResetAndReturn(&pending_surface_request_cb_).Run(surface_id);
+}
+
 // TODO(watk): Move this state management out of WMPI.
 void WebMediaPlayerImpl::OnSurfaceRequested(
     const SurfaceCreatedCB& surface_created_cb) {
@@ -1273,6 +1274,7 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
   // A null callback indicates that the decoder is going away.
   if (surface_created_cb.is_null()) {
     decoder_requires_restart_for_fullscreen_ = false;
+    pending_surface_request_cb_.Reset();
     return;
   }
 
@@ -1285,8 +1287,10 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
   // cases where it isn't necessary.
   decoder_requires_restart_for_fullscreen_ = true;
   if (fullscreen_) {
-    surface_manager_->CreateFullscreenSurface(pipeline_metadata_.natural_size,
-                                              surface_created_cb);
+    if (fullscreen_surface_id_ != SurfaceManager::kNoSurfaceID)
+      surface_created_cb.Run(fullscreen_surface_id_);
+    else
+      pending_surface_request_cb_ = surface_created_cb;
   } else {
     // Tell the decoder to create its own surface.
     surface_created_cb.Run(SurfaceManager::kNoSurfaceID);
