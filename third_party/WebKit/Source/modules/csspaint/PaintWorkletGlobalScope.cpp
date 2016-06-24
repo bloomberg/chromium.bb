@@ -79,12 +79,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name, const ScriptValu
                 if (CSSVariableParser::isValidVariableName(property))
                     customInvalidationProperties.append(property);
             } else {
-                // Disallow prefixes.
-                if (property[0] == '-') {
-                    addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, property + " is a prefixed property which is not supported."));
-                } else {
-                    nativeInvalidationProperties.append(propertyID);
-                }
+                nativeInvalidationProperties.append(propertyID);
             }
         }
     }

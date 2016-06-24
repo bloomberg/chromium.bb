@@ -57,8 +57,7 @@ function runTest() {
     }, {
         script: "var c = function() { }; c.prototype.paint = function() { }; registerPaint('foo10', c); console.log('Success for \\'foo10\\'.');",
     }, {
-        expectedMessage: "-webkit-border-radius is a prefixed property which is not supported.",
-        script: "registerPaint('foo11', class { static get inputProperties() { return ['-webkit-border-radius']; } paint() { } });"
+        script: "registerPaint('foo11', class { static get inputProperties() { return ['-webkit-border-radius']; } paint() { } }); console.log('Success for \\'foo11\\'.');"
     }]);
 }
 </script>

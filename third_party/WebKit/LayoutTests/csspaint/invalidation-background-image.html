@@ -37,5 +37,10 @@ testRunnerInvalidationLogging('background-image', [
     { property: '--foo', prevValue: 'foo', value: 'var(--str)', noInvalidation: true},
     { property: '--str', value: 'bar'},
     { property: '--str', value: 'foo', noInvalidation: true },
+    { property: '-webkit-border-radius', value: '25px'},
+    { property: '-webkit-border-radius', invalidationProperty: 'border-radius', value: '25px'},
+    { property: 'border-radius', invalidationProperty: '-webkit-border-radius', prevValue: '25px'},
+    { property: '-webkit-border-radius', prevValue: '100px', value: 'calc(50px + 50px)', noInvalidation: true },
+    { property: '-webkit-margin-start', invalidationProperty: 'margin-left', prevValue: 'calc(50px + 50px)', value: '100px', noInvalidation: true },
 ]);
 </script>

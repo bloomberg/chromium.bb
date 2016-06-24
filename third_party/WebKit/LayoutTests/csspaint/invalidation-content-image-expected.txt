@@ -1,87 +1,87 @@
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 max-height: [inline not set] => max-height: 160px
-The worklet console should log: 'Succussful invalidation for: max-height'
+The worklet console should log: 'Successful invalidation for: max-height'
 CONSOLE MESSAGE: line 11: Successful invalidation for: max-height
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 max-height: 100px => max-height: 160px
-The worklet console should log: 'Succussful invalidation for: max-height'
+The worklet console should log: 'Successful invalidation for: max-height'
 CONSOLE MESSAGE: line 11: Successful invalidation for: max-height
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 max-height: 100px => max-height: calc(50px + 50px)
 The worklet console should log nothing
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 max-height: 100px => max-height: calc(50px + var(--fiftypx))
 The worklet console should log nothing
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 flex-basis: [inline not set] => flex-basis: 100px
-The worklet console should log: 'Succussful invalidation for: flex-basis'
+The worklet console should log: 'Successful invalidation for: flex-basis'
 CONSOLE MESSAGE: line 11: Successful invalidation for: flex-basis
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 flex-basis: 100px => flex-basis: [inline not set]
-The worklet console should log: 'Succussful invalidation for: flex-basis'
+The worklet console should log: 'Successful invalidation for: flex-basis'
 CONSOLE MESSAGE: line 11: Successful invalidation for: flex-basis
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 flex-basis: [inline not set] => flex-basis: 200px
 The worklet console should log nothing
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 flex-basis: 200px => flex-basis: [inline not set]
 The worklet console should log nothing
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 color: [inline not set] => color: red
-The worklet console should log: 'Succussful invalidation for: color'
+The worklet console should log: 'Successful invalidation for: color'
 CONSOLE MESSAGE: line 11: Successful invalidation for: color
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 color: #F00 => color: red
 The worklet console should log nothing
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 border-top-color: [inline not set] => border-top-color: blue
-The worklet console should log: 'Succussful invalidation for: border-top-color'
+The worklet console should log: 'Successful invalidation for: border-top-color'
 CONSOLE MESSAGE: line 11: Successful invalidation for: border-top-color
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 border-top-color: rgb(0,0,255) => border-top-color: blue
 The worklet console should log nothing
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 --foo: [inline not set] => --foo: foo
-The worklet console should log: 'Succussful invalidation for: --foo'
+The worklet console should log: 'Successful invalidation for: --foo'
 CONSOLE MESSAGE: line 11: Successful invalidation for: --foo
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 --foo: foo => --foo: var(--str)
 The worklet console should log nothing
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 --str: [inline not set] => --str: bar
-The worklet console should log: 'Succussful invalidation for: --str'
+The worklet console should log: 'Successful invalidation for: --str'
 CONSOLE MESSAGE: line 11: Successful invalidation for: --str
-CONSOLE MESSAGE: line 55: 
+CONSOLE MESSAGE: line 56: 
 
 Test case:
 --str: [inline not set] => --str: foo

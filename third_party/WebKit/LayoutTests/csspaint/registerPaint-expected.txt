@@ -18,8 +18,8 @@ CONSOLE MESSAGE: line 18: The worklet should not throw an error.
 CONSOLE MESSAGE: line 1: Success for 'foo9'.
 CONSOLE MESSAGE: line 18: The worklet should not throw an error.
 CONSOLE MESSAGE: line 1: Success for 'foo10'.
-CONSOLE MESSAGE: line 16: The worklet should log a warning with: "-webkit-border-radius is a prefixed property which is not supported."
-CONSOLE WARNING: line 1: -webkit-border-radius is a prefixed property which is not supported.
+CONSOLE MESSAGE: line 18: The worklet should not throw an error.
+CONSOLE MESSAGE: line 1: Success for 'foo11'.
 This tests a series of PaintWorkletGlobalScope#registerPaint calls.
 
 See the devtools console for test output.

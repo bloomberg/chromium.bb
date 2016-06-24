@@ -10,6 +10,7 @@
 // testRunnerInvalidationLogging('background-image', [
 //      { property: 'max-height', value: '100px' },
 //      { property: 'color', prevValue: '#00F', value: 'blue', noInvalidation: true },
+//      { property: '-webkit-margin-start', invalidationProperty: 'margin-left', prevValue: 'calc(50px + 50px)', value: '100px', noInvalidation: true }
 // ]);
 
 function testRunnerInvalidationLogging(imageType, tests) {
@@ -40,7 +41,7 @@ function testRunnerInvalidationLogging(imageType, tests) {
 }
 
 function registerTest(imageType, test) {
-    const testName = test.property + ': ' + (test.prevValue || '[inline not set]') + ' => ' + test.property + ': ' + (test.value || '[inline not set]');
+    const testName = test.property + ': ' + (test.prevValue || '[inline not set]') + ' => ' + (test.invalidationProperty || test.property) + ': ' + (test.value || '[inline not set]');
 
     // We use a promise_test instead of a async_test as they run sequentially.
     promise_test(function() {
@@ -50,7 +51,7 @@ function registerTest(imageType, test) {
             if (test.noInvalidation) {
                 msg.push('The worklet console should log nothing');
             } else {
-                msg.push('The worklet console should log: \'Succussful invalidation for: ' + test.property + '\'');
+                msg.push('The worklet console should log: \'Successful invalidation for: ' + test.property + '\'');
             }
             console.log(msg.join('\n'));
 
@@ -66,7 +67,11 @@ function registerTest(imageType, test) {
 
                 // Keep the BCR for the paint invalidation assertion, and invalidate paint.
                 const rect = el.getBoundingClientRect();
-                el.style.setProperty(test.property, test.value);
+                if (test.invalidationProperty) {
+                    el.style.setProperty(test.invalidationProperty, test.value);
+                } else {
+                    el.style.setProperty(test.property, test.value);
+                }
 
                 runAfterLayoutAndPaint(function() {
                     // Check that the we got the correct paint invalidation.
