@@ -144,9 +144,9 @@ class DualBrowserBenchmark(_MemoryInfra):
 @benchmark.Enabled('android')
 class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
   """Timeline based benchmark for measuring memory consumption on mobile
-  sites on which blink's memory consumption is relatively high."""
-
-  _RE_RENDERER_VALUES = re.compile('memory_.+_renderer')
+  sites on which blink's memory consumption is relatively high.
+  """
+  TBM_VERSION = 2
 
   page_set = page_sets.BlinkMemoryMobilePageSet
 
@@ -165,7 +165,8 @@ class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
-    return bool(cls._RE_RENDERER_VALUES.match(value.name))
+    return (not _IGNORED_STATS_RE.search(value.name) and
+            'renderer_processes' in value.name)
 
 
 class _MemoryV8Benchmark(_MemoryInfra):
