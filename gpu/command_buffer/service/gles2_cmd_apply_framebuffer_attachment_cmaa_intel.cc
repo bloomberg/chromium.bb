@@ -424,11 +424,8 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::ApplyCMAAEffectTexture(
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
     if (!is_gles31_compatible_) {
-      glUniform1i(edges_combine_shader_result_texture_float4_slot1_, 1);
       glUniform1i(edges_combine_shader_result_texture_slot2_, 2);
     }
-    glBindImageTextureEXT(1, dest_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY,
-                          GL_RGBA8);
     glBindImageTextureEXT(2, edge_texture_a, 0, GL_FALSE, 0, GL_WRITE_ONLY,
                           edge_format);
 
