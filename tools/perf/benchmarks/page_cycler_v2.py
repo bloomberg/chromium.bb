@@ -31,8 +31,8 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     tbm_options.SetTimelineBasedMetric('firstPaintMetric')
     return tbm_options
 
-# crbug.com/615178, crbug.com/619254, crbug.com/621473
-@benchmark.Disabled('win', 'mac', 'linux', 'reference')
+# crbug.com/619254
+@benchmark.Disabled('reference')
 class PageCyclerV2Typical25(_PageCyclerV2):
   """Page load time benchmark for a 25 typical web pages.
 
@@ -46,10 +46,7 @@ class PageCyclerV2Typical25(_PageCyclerV2):
     return 'page_cycler_v2.typical_25'
 
   @classmethod
-  def ShouldDisable(cls, possible_browser):  # crbug.com/615178
-    if (possible_browser.browser_type == 'reference' and
-        possible_browser.platform.GetOSName() == 'android'):
-      return True
+  def ShouldDisable(cls, possible_browser):
     # crbug.com/616781
     if (cls.IsSvelte(possible_browser) or
         possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X' or
