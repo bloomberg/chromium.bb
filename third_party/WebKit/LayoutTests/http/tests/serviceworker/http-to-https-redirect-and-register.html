@@ -13,18 +13,14 @@
 function redirect_and_register(target_url) {
   var redirect_url = get_host_info()['UNAUTHENTICATED_ORIGIN'] +
     '/serviceworker/resources/redirect.php?Redirect=';
-  var frame;
-
-  return with_iframe(redirect_url + encodeURIComponent(target_url))
-    .then(f => {
-        frame = f;
-        return new Promise(resolve => {
-            window.addEventListener('message', e => {resolve(e.data);});
-          });
-      })
-    .then(result => {
-        frame.remove();
-        return result;
+  var message_promise = new Promise(resolve => {
+      window.addEventListener('message', e => resolve(e.data));
+    });
+  var iframe_promise = with_iframe(redirect_url + encodeURIComponent(target_url));
+  return Promise.all([message_promise, iframe_promise])
+    .then(results => {
+        results[1].remove();
+        return results[0];
       });
 }
 
