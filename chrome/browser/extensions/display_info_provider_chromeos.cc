@@ -555,6 +555,9 @@ DisplayInfoProviderChromeOS::GetDisplayLayout() {
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
+  if (display_manager->num_connected_displays() < 2)
+    return DisplayInfoProvider::DisplayLayoutList();
+
   display::Screen* screen = display::Screen::GetScreen();
   std::vector<display::Display> displays = screen->GetAllDisplays();
 

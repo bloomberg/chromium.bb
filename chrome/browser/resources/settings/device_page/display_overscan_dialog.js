@@ -6,8 +6,6 @@
  * @fileoverview
  * 'settings-display-overscan-dialog' is the dialog for display overscan
  * adjustments.
- *
- * @group Chrome Settings Elements
  */
 
 Polymer({

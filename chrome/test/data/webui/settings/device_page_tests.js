@@ -311,16 +311,15 @@ cr.define('device_page_tests', function() {
         // Wait for the initial call to getInfo.
         fakeSystemDisplay.getInfoCalled.promise,
       ]).then(function() {
-        expectTrue(!!displayPage.displays);
-        expectEquals(0, displayPage.displays.length);
-
         // Add a display.
         addDisplay(1);
         fakeSystemDisplay.onDisplayChanged.callListeners();
 
-        return new Promise(function(resolve, reject) {
-          setTimeout(resolve);
-        });
+        return Promise.all([
+          fakeSystemDisplay.getInfoCalled.promise,
+          fakeSystemDisplay.getLayoutCalled.promise,
+          new Promise(function(resolve, reject) { setTimeout(resolve); })
+        ]);
       }).then(function() {
         // There should be a single display which should be primary and
         // selected. Mirroring should be disabled.
@@ -336,9 +335,11 @@ cr.define('device_page_tests', function() {
         addDisplay(2);
         fakeSystemDisplay.onDisplayChanged.callListeners();
 
-        return new Promise(function(resolve, reject) {
-          setTimeout(resolve);
-        });
+        return Promise.all([
+          fakeSystemDisplay.getInfoCalled.promise,
+          fakeSystemDisplay.getLayoutCalled.promise,
+          new Promise(function(resolve, reject) { setTimeout(resolve); })
+        ]);
       }).then(function() {
         // There should be two displays, the first should be primary and
         // selected. Mirroring should be enabled but set to false.
@@ -351,7 +352,11 @@ cr.define('device_page_tests', function() {
 
         // Select the second display and make it primary. Also change the
         // orientation of the second display.
-        MockInteractions.tap(displayPage.$$('#fakeDisplayId2'));
+        var displayLayout = displayPage.$$('#displayLayout');
+        assertTrue(!!displayLayout);
+        var displayDiv = displayLayout.$$('#_fakeDisplayId2');
+        assertTrue(!!displayDiv);
+        MockInteractions.tap(displayDiv);
         expectEquals(
             displayPage.displays[1].id, displayPage.selectedDisplay.id);
 
@@ -359,9 +364,11 @@ cr.define('device_page_tests', function() {
         displayPage.onSetOrientation_({detail: {selected: '90'}});
         fakeSystemDisplay.onDisplayChanged.callListeners();
 
-        return new Promise(function(resolve, reject) {
-          setTimeout(resolve);
-        });
+        return Promise.all([
+          fakeSystemDisplay.getInfoCalled.promise,
+          fakeSystemDisplay.getLayoutCalled.promise,
+          new Promise(function(resolve, reject) { setTimeout(resolve); })
+        ]);
       }).then(function() {
         // Confirm that the second display is selected, primary, and rotated.
         expectEquals(2, displayPage.displays.length);
@@ -375,9 +382,11 @@ cr.define('device_page_tests', function() {
         displayPage.onMirroredTap_();
         fakeSystemDisplay.onDisplayChanged.callListeners();
 
-        return new Promise(function(resolve, reject) {
-          setTimeout(resolve);
-        });
+        return Promise.all([
+          fakeSystemDisplay.getInfoCalled.promise,
+          fakeSystemDisplay.getLayoutCalled.promise,
+          new Promise(function(resolve, reject) { setTimeout(resolve); })
+        ]);
       }).then(function() {
         // Confirm that there is now only one display and that it is primary
         // and mirroring is enabled.

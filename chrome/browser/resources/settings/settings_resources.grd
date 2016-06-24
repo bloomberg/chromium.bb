@@ -342,6 +342,12 @@
         <structure name="IDR_SETTINGS_DEVICE_DISPLAY_JS"
                    file="device_page/display.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_DISPLAY_LAYOUT_HTML"
+                   file="device_page/display_layout.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_DISPLAY_LAYOUT_JS"
+                   file="device_page/display_layout.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DEVICE_DISPLAY_OVERSCAN_DIALOG_HTML"
                    file="device_page/display_overscan_dialog.html"
                    type="chrome_html" />

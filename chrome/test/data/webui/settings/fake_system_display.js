@@ -14,7 +14,9 @@ cr.define('settings', function() {
   function FakeSystemDisplay() {
     /** @type {!Array<!chrome.system.display.DisplayUnitInfo>} */
     this.fakeDisplays = [];
+    this.fakeLayouts = [];
     this.getInfoCalled = new PromiseResolver();
+    this.getLayoutCalled = new PromiseResolver();
   }
 
   FakeSystemDisplay.prototype = {
@@ -22,7 +24,10 @@ cr.define('settings', function() {
     /**
      * @param {!chrome.system.display.DisplayUnitInfo>} display
      */
-    addDisplayForTest: function(display) { this.fakeDisplays.push(display); },
+    addDisplayForTest: function(display) {
+      this.fakeDisplays.push(display);
+      this.updateLayouts_();
+    },
 
     // SystemDisplay overrides.
     /** @override */
@@ -57,13 +62,13 @@ cr.define('settings', function() {
       }
 
       if (info.mirroringSourceId != undefined) {
-        for (var d of this.fakeDisplays)
+        for (let d of this.fakeDisplays)
           d.mirroringSourceId = info.mirroringSourceId;
       }
 
       if (info.isPrimary != undefined) {
         var havePrimary = info.isPrimary;
-        for (var d of this.fakeDisplays) {
+        for (let d of this.fakeDisplays) {
           if (d.id == id) {
             d.isPrimary = info.isPrimary;
           } else if (havePrimary) {
@@ -73,9 +78,27 @@ cr.define('settings', function() {
             havePrimary = true;
           }
         }
+        this.updateLayouts_();
       }
       if (info.rotation != undefined)
         display.rotation = info.rotation;
+    },
+
+    /** @override */
+    getDisplayLayout(callback) {
+      setTimeout(function() {
+        // Create a shallow copy to trigger Polymer data binding updates.
+        callback(this.fakeLayouts.slice());
+        this.getLayoutCalled.resolve();
+        // Reset the promise resolver.
+        this.getLayoutCalled = new PromiseResolver();
+      }.bind(this));
+    },
+
+    /** @override */
+    setDisplayLayout(layouts, callback) {
+      this.fakeLayouts = layouts;
+      callback();
     },
 
     /** @override */
@@ -89,6 +112,26 @@ cr.define('settings', function() {
       if (idx >= 0)
         return this.fakeDisplays[idx];
       return undefined;
+    },
+
+    /** @private */
+    updateLayouts_() {
+      this.fakeLayouts = [];
+      var primaryId = '';
+      for (let d of this.fakeDisplays) {
+        if (d.isPrimary) {
+          primaryId = d.id;
+          break;
+        }
+      }
+      for (let d of this.fakeDisplays) {
+        this.fakeLayouts.push({
+          id: d.id,
+          parentId: d.isPrimary ? '' : primaryId,
+          position: chrome.system.display.LayoutPosition.RIGHT,
+          offset: 0
+        });
+      }
     }
   };
 

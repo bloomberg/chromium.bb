@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
+<link rel="import" href="/device_page/display_layout.html">
 <link rel="import" href="/device_page/display_overscan_dialog.html">
 <link rel="import" href="/settings_shared_css.html">
 
@@ -25,12 +26,10 @@
        padding: 0;
      }
 
-     /* TODO(stevenjb): Placeholder */
-     .display-area {
+     display-layout {
        align-self: stretch;
-       border: lightgrey solid 1px;
        flex: 1 1;
-       height: 200px;
+       height: 300px;
        margin: 10px;
      }
 
@@ -48,15 +47,10 @@
     </style>
     <div class="settings-box first layout vertical self-stretch">
       <div class="display-section">$i18n{displayArrangement}</div>
-      <div class="display-area">
-        <!-- TODO(stevenjb): Support layout -->
-        <template is="dom-repeat" items="[[displays]]">
-          <paper-button toggles active="[[isSelected_(item, selectedDisplay)]]"
-              on-tap="onSelectDisplayTap_" id="[[item.id]]">
-            [[item.name]]
-          </paper-button>
-        </template>
-      </div>
+      <display-layout id="displayLayout"
+          selected-display="[[selectedDisplay]]"
+          on-select-display="onSelectDisplay_">
+      </display-layout>
     </div>
     <div class="settings-box layout vertical">
       <div class="display-section">[[selectedDisplay.name]]</div>

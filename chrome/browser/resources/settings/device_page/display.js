@@ -5,8 +5,6 @@
 /**
  * @fileoverview
  * 'settings-display' is the settings subpage for display settings.
- *
- * @group Chrome Settings Elements
  */
 
 cr.define('settings.display', function() {
@@ -30,6 +28,12 @@ Polymer({
      * @type {!Array<!chrome.system.display.DisplayUnitInfo>}
      */
     displays: Array,
+
+    /**
+     * Array of display layouts.
+     * @type {!Array<!chrome.system.display.DisplayLayout>}
+     */
+    layouts: Array,
 
     /**
      * String listing the ids in displays. Used to observe changes to the
@@ -106,7 +110,29 @@ Polymer({
   /** @private */
   getDisplayInfo_: function() {
     settings.display.systemDisplayApi.getInfo(
-        this.updateDisplayInfo_.bind(this));
+        this.displayInfoFetched_.bind(this));
+  },
+
+  /**
+   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
+   * @private
+   */
+  displayInfoFetched_(displays) {
+    if (!displays.length)
+      return;
+    settings.display.systemDisplayApi.getDisplayLayout(
+        this.displayLayoutFetched_.bind(this, displays));
+  },
+
+  /**
+   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
+   * @param {!Array<!chrome.system.display.DisplayLayout>} layouts
+   * @private
+   */
+  displayLayoutFetched_(displays, layouts) {
+    this.layouts = layouts;
+    this.displays = displays;
+    this.updateDisplayInfo_();
   },
 
   /**
@@ -207,11 +233,15 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{index: number}, target: !PaperButtonElement}} e
+   * @param {!{detail: number}} e
    * @private
    */
-  onSelectDisplayTap_: function(e) {
-    this.selectedDisplay = this.displays[e.model.index];
+  onSelectDisplay_: function(e) {
+    var index = e.detail;
+    assert(index >= 0);
+    if (index >= this.displays.length)
+      return;
+    this.selectedDisplay = this.displays[e.detail];
     // Force active in case selected display was clicked.
     e.target.active = true;
   },
@@ -289,12 +319,8 @@ Polymer({
     this.showOverscanDialog_(true);
   },
 
-  /**
-   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
-   * @private
-   */
-  updateDisplayInfo_(displays) {
-    this.displays = displays;
+  /** @private */
+  updateDisplayInfo_() {
     var displayIds = '';
     var primaryDisplay = undefined;
     var selectedDisplay = undefined;
@@ -311,6 +337,7 @@ Polymer({
     this.primaryDisplayId = (primaryDisplay && primaryDisplay.id) || '';
     this.selectedDisplay = selectedDisplay || primaryDisplay ||
         (this.displays && this.displays[0]);
+    this.$.displayLayout.updateDisplays(this.displays, this.layouts);
   },
 
   /** @private */
