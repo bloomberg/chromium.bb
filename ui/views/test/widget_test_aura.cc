@@ -114,5 +114,10 @@ ui::internal::InputMethodDelegate* WidgetTest::GetInputMethodDelegateForWidget(
   return widget->GetNativeWindow()->GetRootWindow()->GetHost();
 }
 
+// static
+bool WidgetTest::IsNativeWindowTransparent(gfx::NativeWindow window) {
+  return window->transparent();
+}
+
 }  // namespace test
 }  // namespace views

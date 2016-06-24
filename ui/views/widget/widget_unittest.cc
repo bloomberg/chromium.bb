@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -45,6 +46,11 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#endif
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#include "ui/base/x/x11_util_internal.h"  // nogncheck
+#include "ui/gfx/x/x11_switches.h"        // nogncheck
 #endif
 
 namespace views {
@@ -3722,6 +3728,69 @@ TEST_F(WidgetTest, WindowModalOwnerDestroyedEnabledTest) {
 }
 
 #endif  // defined(OS_WIN)
+
+#if !defined(OS_CHROMEOS)
+
+namespace {
+
+void InitializeWidgetForOpacity(
+    Widget& widget,
+    Widget::InitParams init_params,
+    const Widget::InitParams::WindowOpacity opacity) {
+#if defined(USE_X11)
+  // On Linux, transparent visuals is currently not activated by default.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kEnableTransparentVisuals);
+
+  int depth = 0;
+  ui::ChooseVisualForWindow(NULL, &depth);
+  EXPECT_EQ(depth, 32);
+#endif
+
+  init_params.opacity = opacity;
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  init_params.bounds = gfx::Rect(0, 0, 500, 500);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget =
+      CreatePlatformDesktopNativeWidgetImpl(init_params, &widget, nullptr);
+  widget.Init(init_params);
+
+#if defined(USE_X11)
+  EXPECT_TRUE(widget.IsTranslucentWindowOpacitySupported());
+#endif
+}
+
+}  // namespace
+
+// Test opacity when compositing is enabled.
+TEST_F(WidgetTest, Transparency_DesktopWidgetInferOpacity) {
+  Widget widget;
+  InitializeWidgetForOpacity(widget,
+                             CreateParams(Widget::InitParams::TYPE_WINDOW),
+                             Widget::InitParams::INFER_OPACITY);
+  EXPECT_EQ(IsNativeWindowTransparent(widget.GetNativeWindow()),
+            widget.ShouldWindowContentsBeTransparent());
+}
+
+TEST_F(WidgetTest, Transparency_DesktopWidgetOpaque) {
+  Widget widget;
+  InitializeWidgetForOpacity(widget,
+                             CreateParams(Widget::InitParams::TYPE_WINDOW),
+                             Widget::InitParams::OPAQUE_WINDOW);
+  EXPECT_EQ(IsNativeWindowTransparent(widget.GetNativeWindow()),
+            widget.ShouldWindowContentsBeTransparent());
+}
+
+TEST_F(WidgetTest, Transparency_DesktopWidgetTranslucent) {
+  Widget widget;
+  InitializeWidgetForOpacity(widget,
+                             CreateParams(Widget::InitParams::TYPE_WINDOW),
+                             Widget::InitParams::TRANSLUCENT_WINDOW);
+  EXPECT_EQ(IsNativeWindowTransparent(widget.GetNativeWindow()),
+            widget.ShouldWindowContentsBeTransparent());
+}
+
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace test
 }  // namespace views

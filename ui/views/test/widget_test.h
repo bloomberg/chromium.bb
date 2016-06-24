@@ -89,6 +89,9 @@ class WidgetTest : public ViewsTestBase {
   static ui::internal::InputMethodDelegate* GetInputMethodDelegateForWidget(
       Widget* widget);
 
+  // Return true if |window| is transparent according to the native platform.
+  static bool IsNativeWindowTransparent(gfx::NativeWindow window);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WidgetTest);
 };
