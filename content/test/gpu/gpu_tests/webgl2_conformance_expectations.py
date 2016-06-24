@@ -29,24 +29,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Conformance expectations
     # ========================
 
-    # Passing tests, waiting to be turned on when sharding is implemented.
-    self.Skip('deqp/functional/gles3/draw/*', bug=1)
-    self.Skip('deqp/functional/gles3/shadermatrix/*', bug=1)
-    self.Skip('deqp/functional/gles3/texturefiltering/cube_formats_*',
-        ['mac', ('nvidia', 0xfe9)], bug=1)
-    self.Skip('deqp/functional/gles3/texturefiltering/cube_sizes_*',
-        ['mac', ('nvidia', 0xfe9)], bug=1)
-    self.Skip('deqp/functional/gles3/texturefiltering/cube_combinations_*',
-        ['mac', ('nvidia', 0xfe9)], bug=1)
-
     # All platforms.
     self.Skip('deqp/functional/gles3/builtinprecision/atan2.html', bug=619403)
     self.Skip('deqp/functional/gles3/builtinprecision/tanh.html', bug=619403)
-    self.Skip('deqp/functional/gles3/fbocolorbuffer/*.html', bug=618408)
-    self.Skip('deqp/functional/gles3/fboinvalidate.html', bug=483282)
-    self.Skip('deqp/functional/gles3/fbomultisample.html', bug=483282)
+    self.Skip('deqp/functional/gles3/fboinvalidate/*.html', bug=483282)
     self.Skip('deqp/functional/gles3/fborender.html', bug=483282)
-    self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
+    self.Skip('deqp/functional/gles3/framebufferblit/*.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
     self.Flaky('deqp/functional/gles3/negativefragmentapi.html', bug=604794)
     self.Skip('deqp/functional/gles3/shaderoperator/*.html', bug=483282)
@@ -143,6 +131,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['win'], bug=483282)
 
+    self.Fail('deqp/functional/gles3/fbomultisample*',
+        ['win'], bug=483282)
+
     # Windows 8 only.
 
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
@@ -202,7 +193,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel'], bug=617449)
-    self.Fail('deqp/functional/gles3/shaderderivate.html',
+    self.Fail('deqp/functional/gles3/shaderderivate_*',
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'intel'], bug=483282)
@@ -294,6 +285,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/negativetextureapi.html',
         ['mac'], bug=483282)
 
+    self.Fail('deqp/functional/gles3/fbomultisample*',
+        ['mac'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
+        ['mac'], bug=483282)
+
     # Mac Retina NVIDIA
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
@@ -360,6 +357,38 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texturelod.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
+        'tex2d_05.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
+        'tex2darray_05.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
+        'tex3d_05.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
+        'texcube_05.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
+        'blend.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
+    self.Fail('deqp/functional/gles3/draw/' +
+        'draw_arrays.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/draw/' +
+        'draw_arrays_instanced.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/draw/' +
+        'draw_elements.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/draw/' +
+        'draw_elements_instanced.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/draw/' +
+        'draw_range_elements.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
     # Mac AMD
     self.Fail('deqp/functional/gles3/builtinprecision/acosh.html',
         ['mac', 'amd'], bug=619403)
@@ -372,7 +401,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/primitiverestart.html',
+    self.Fail('deqp/functional/gles3/primitiverestart/00.html',
+        ['mac', 'amd'], bug=598930)
+    self.Fail('deqp/functional/gles3/primitiverestart/01.html',
         ['mac', 'amd'], bug=598930)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['mac', 'amd'], bug=483282)
@@ -414,7 +445,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['mac', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderderivate.html',
+    self.Fail('deqp/functional/gles3/shaderderivate_*',
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['mac', 'intel'], bug=483282)
@@ -520,7 +551,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['linux', 'intel', 'opengl'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderderivate.html',
+    self.Fail('deqp/functional/gles3/shaderderivate_*',
         ['linux', 'intel', 'opengl'], bug=618408)
 
     # The Mesa Intel driver has a scoping bug, see
