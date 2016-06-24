@@ -75705,6 +75705,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1417" label="AddEventListenerPassiveTrue"/>
   <int value="1418" label="AddEventListenerPassiveFalse"/>
   <int value="1419" label="CSPReferrerDirective"/>
+  <int value="1420" label="DocumentOpen"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
