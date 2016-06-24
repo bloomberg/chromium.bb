@@ -51,6 +51,9 @@ declare_args() {
 
   # Enable experimental vulkan backend.
   enable_vulkan = false
+
+  # Allow aura to access x11 clipboard.
+  enable_clipboard_aurax11 = false
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -82,4 +85,5 @@ if (is_linux && !use_ozone) {
 # Whether to use atk, the Accessibility ToolKit library
 use_atk = is_desktop_linux && use_x11
 
-use_clipboard_aurax11 = is_desktop_linux && use_aura && use_x11
+use_clipboard_aurax11 =
+    (is_desktop_linux && use_aura && use_x11) || enable_clipboard_aurax11
