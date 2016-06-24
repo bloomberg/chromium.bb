@@ -11,7 +11,6 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.design.widget.TextInputLayout;
-import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
@@ -196,6 +195,12 @@ public class EditorView extends AlwaysDismissedDialog
         };
     }
 
+    /** Launches the Autofill help page on top of the current Context. */
+    public static void launchAutofillHelpPage(Context context) {
+        EmbedContentViewActivity.show(
+                context, context.getString(R.string.help), HELP_URL);
+    }
+
     /**
      * Prepares the toolbar for use.
      *
@@ -203,16 +208,16 @@ public class EditorView extends AlwaysDismissedDialog
      * programmatically.  This is likely due to how we compile the support libraries.
      */
     private void prepareToolbar() {
-        Toolbar toolbar = (Toolbar) mLayout.findViewById(R.id.action_bar);
+        EditorDialogToolbar toolbar = (EditorDialogToolbar) mLayout.findViewById(R.id.action_bar);
         toolbar.setTitle(mEditorModel.getTitle());
         toolbar.setTitleTextColor(Color.WHITE);
+        toolbar.setShowDeleteMenuItem(false);
 
         // Show the help article when the user asks.
         toolbar.setOnMenuItemClickListener(new OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                EmbedContentViewActivity.show(
-                        mContext, mContext.getString(R.string.help), HELP_URL);
+                launchAutofillHelpPage(mContext);
                 return true;
             }
         });

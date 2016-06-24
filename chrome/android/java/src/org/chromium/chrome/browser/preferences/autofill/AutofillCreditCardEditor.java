@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.autofill;
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -13,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,12 +31,7 @@ import java.util.Locale;
 /**
  * Provides the Java-ui for editing a Credit Card autofill entry.
  */
-public class AutofillCreditCardEditor extends Fragment implements OnItemSelectedListener,
-        TextWatcher {
-    // GUID of the card profile we are editing.
-    // May be the empty string if creating a new card.
-    private String mGUID;
-
+public class AutofillCreditCardEditor extends AutofillEditorBase {
     private FloatLabelLayout mNameLabel;
     private EditText mNameText;
     private FloatLabelLayout mNumberLabel;
@@ -51,16 +44,10 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
     private int mInitialExpirationYearPos;
 
     @Override
-    public void onCreate(Bundle savedState) {
-        super.onCreate(savedState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        View v = super.onCreateView(inflater, container, savedInstanceState);
 
-        View v = inflater.inflate(R.layout.autofill_credit_card_editor, container, false);
         mNameLabel = (FloatLabelLayout) v.findViewById(R.id.credit_card_name_label);
         mNameText = (EditText) v.findViewById(R.id.credit_card_name_edit);
         mNumberLabel = (FloatLabelLayout) v.findViewById(R.id.credit_card_number_label);
@@ -74,23 +61,21 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         mBillingAddress =
                 (Spinner) v.findViewById(R.id.autofill_credit_card_editor_billing_address_spinner);
 
-        // We know which profile to edit based on the GUID stuffed in
-        // our extras by AutofillPreferences.
-        Bundle extras = getArguments();
-        if (extras != null) {
-            mGUID = extras.getString(AutofillPreferences.AUTOFILL_GUID);
-        }
-        if (mGUID == null) {
-            mGUID = "";
-            getActivity().setTitle(R.string.autofill_create_credit_card);
-        } else {
-            getActivity().setTitle(R.string.autofill_edit_credit_card);
-        }
-
         addSpinnerAdapters();
         addCardDataToEditFields();
-        initializeSaveCancelDeleteButtons(v);
+        initializeButtons(v);
         return v;
+    }
+
+    @Override
+    protected int getLayoutId() {
+        return R.layout.autofill_credit_card_editor;
+    }
+
+    @Override
+    protected int getTitleResourceId(boolean isNewEntry) {
+        return isNewEntry
+                ? R.string.autofill_create_credit_card : R.string.autofill_edit_credit_card;
     }
 
     @Override
@@ -100,15 +85,6 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
             updateSaveButtonEnabled();
         }
     }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {}
-
-    @Override
-    public void afterTextChanged(Editable s) {}
-
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -209,7 +185,8 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
 
     // Read edited data; save in the associated Chrome profile.
     // Ignore empty fields.
-    private void saveCreditCard() {
+    @Override
+    protected void saveEntry() {
         // Remove all spaces in editText.
         String cardNumber = mNumberText.getText().toString().replaceAll("\\s+", "");
         CreditCard card = new CreditCard(mGUID, AutofillPreferences.SETTINGS_ORIGIN,
@@ -223,43 +200,16 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         PersonalDataManager.getInstance().setCreditCard(card);
     }
 
-    private void deleteCreditCard() {
+    @Override
+    protected void deleteEntry() {
         if (mGUID != null) {
             PersonalDataManager.getInstance().deleteCreditCard(mGUID);
         }
     }
 
-    private void initializeSaveCancelDeleteButtons(View v) {
-        Button button = (Button) v.findViewById(R.id.autofill_credit_card_delete);
-        if ((mGUID == null) || (mGUID.compareTo("") == 0)) {
-            // If this is a create, disable the delete button.
-            button.setEnabled(false);
-        } else {
-            button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        AutofillCreditCardEditor.this.deleteCreditCard();
-                        getActivity().finish();
-                    }
-                });
-        }
-        button = (Button) v.findViewById(R.id.autofill_credit_card_cancel);
-        button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    getActivity().finish();
-                }
-            });
-        button = (Button) v.findViewById(R.id.autofill_credit_card_save);
-        button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AutofillCreditCardEditor.this.saveCreditCard();
-                    getActivity().finish();
-                }
-            });
-
-        button.setEnabled(false);
+    @Override
+    protected void initializeButtons(View v) {
+        super.initializeButtons(v);
 
         // Listen for changes to inputs. Enable the save button after something has changed.
         mNameText.addTextChangedListener(this);
@@ -271,7 +221,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
     private void updateSaveButtonEnabled() {
         boolean enabled = !TextUtils.isEmpty(mNameText.getText())
                 || !TextUtils.isEmpty(mNumberText.getText());
-        Button button = (Button) getView().findViewById(R.id.autofill_credit_card_save);
+        Button button = (Button) getView().findViewById(R.id.button_primary);
         button.setEnabled(enabled);
     }
 

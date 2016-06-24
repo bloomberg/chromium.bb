@@ -4,17 +4,13 @@
 
 package org.chromium.chrome.browser.preferences.autofill;
 
-import android.app.Fragment;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,12 +29,7 @@ import java.util.List;
 /**
  * Provides the Java-ui for editing a Profile autofill entry.
  */
-public class AutofillProfileEditor extends Fragment implements TextWatcher,
-        OnItemSelectedListener {
-    // GUID of the profile we are editing.
-    // May be the empty string if creating a new profile.
-    private String mGUID;
-
+public class AutofillProfileEditor extends AutofillEditorBase {
     private boolean mNoCountryItemIsSelected;
     private LayoutInflater mInflater;
     private EditText mPhoneText;
@@ -55,31 +46,12 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
     private boolean mUseSavedProfileLanguage;
 
     @Override
-    public void onCreate(Bundle savedState) {
-        super.onCreate(savedState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // We know which profile to edit based on the GUID stuffed in
-        // our extras by AutofillPreferences.
-        Bundle extras = getArguments();
-        if (extras != null) {
-            mGUID = extras.getString(AutofillPreferences.AUTOFILL_GUID);
-        }
-        if (mGUID == null) {
-            mGUID = "";
-            getActivity().setTitle(R.string.autofill_create_profile);
-        } else {
-            getActivity().setTitle(R.string.autofill_edit_profile);
-        }
+        View v = super.onCreateView(inflater, container, savedInstanceState);
 
         mInflater = inflater;
         mAddressFields = new FloatLabelLayout[AddressField.NUM_FIELDS];
-        View v = mInflater.inflate(R.layout.autofill_profile_editor, container, false);
 
         mPhoneText = (EditText) v.findViewById(R.id.phone_number_edit);
         mPhoneLabel = (FloatLabelLayout) v.findViewById(R.id.phone_number_label);
@@ -92,16 +64,20 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
 
         populateCountriesSpinner();
         createAndPopulateEditFields();
-        initializeSaveCancelDeleteButtons(v);
+        initializeButtons(v);
 
         return v;
     }
 
     @Override
-    public void afterTextChanged(Editable s) {}
+    protected int getLayoutId() {
+        return R.layout.autofill_profile_editor;
+    }
 
     @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+    protected int getTitleResourceId(boolean isNewEntry) {
+        return isNewEntry ? R.string.autofill_create_profile : R.string.autofill_edit_profile;
+    }
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -135,9 +111,6 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
             setSaveButtonEnabled(true);
         }
     }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {}
 
     private void populateCountriesSpinner() {
         List<Country> countries = AutofillProfileBridge.getSupportedCountries();
@@ -264,7 +237,8 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
 
     // Read edited data; save in the associated Chrome profile.
     // Ignore empty fields.
-    private void saveProfile() {
+    @Override
+    protected void saveEntry() {
         AutofillProfile profile = new PersonalDataManager.AutofillProfile(mGUID,
                 AutofillPreferences.SETTINGS_ORIGIN, true /* isLocal */,
                 getFieldText(AddressField.RECIPIENT), getFieldText(AddressField.ORGANIZATION),
@@ -289,42 +263,16 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
         }
     }
 
-    private void deleteProfile() {
-        if (AutofillProfileEditor.this.mGUID != null) {
+    @Override
+    protected void deleteEntry() {
+        if (mGUID != null) {
             PersonalDataManager.getInstance().deleteProfile(mGUID);
         }
     }
 
-    private void initializeSaveCancelDeleteButtons(View v) {
-        Button button = (Button) v.findViewById(R.id.autofill_profile_delete);
-        if ((mGUID == null) || (mGUID.compareTo("") == 0)) {
-            // If this is a create, disable the delete button.
-            button.setEnabled(false);
-        } else {
-            button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        AutofillProfileEditor.this.deleteProfile();
-                        getActivity().finish();
-                    }
-                });
-        }
-        button = (Button) v.findViewById(R.id.autofill_profile_cancel);
-        button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    getActivity().finish();
-                }
-            });
-        button = (Button) v.findViewById(R.id.autofill_profile_save);
-        button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AutofillProfileEditor.this.saveProfile();
-                    getActivity().finish();
-                }
-            });
-        button.setEnabled(false);
+    @Override
+    protected void initializeButtons(View v) {
+        super.initializeButtons(v);
 
         // Listen for changes to inputs. Enable the save button after something has changed.
         mPhoneText.addTextChangedListener(this);
@@ -335,7 +283,7 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
 
     private void setSaveButtonEnabled(boolean enabled) {
         if (getView() != null) {
-            Button button = (Button) getView().findViewById(R.id.autofill_profile_save);
+            Button button = (Button) getView().findViewById(R.id.button_primary);
             button.setEnabled(enabled);
         }
     }
