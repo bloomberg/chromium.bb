@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
 source_set("os_crypt") {
@@ -43,20 +44,34 @@ source_set("os_crypt") {
     libs = [ "crypt32.lib" ]
   }
 
-  if (is_desktop_linux && use_glib) {
+  if (is_desktop_linux && (use_glib || use_dbus)) {
     sources -= [ "os_crypt_posix.cc" ]
     sources += [
-      "key_storage_libsecret.cc",
-      "key_storage_libsecret.h",
       "key_storage_linux.cc",
       "key_storage_linux.h",
-      "libsecret_util_linux.cc",
-      "libsecret_util_linux.h",
       "os_crypt_linux.cc",
     ]
-    configs += [ "//build/config/linux:glib" ]
-    deps += [ "//third_party/libsecret" ]
-    defines = [ "USE_LIBSECRET" ]
+    defines = []
+
+    if (use_glib) {
+      sources += [
+        "key_storage_libsecret.cc",
+        "key_storage_libsecret.h",
+        "libsecret_util_linux.cc",
+        "libsecret_util_linux.h",
+      ]
+      configs += [ "//build/config/linux:glib" ]
+      deps += [ "//third_party/libsecret" ]
+      defines += [ "USE_LIBSECRET" ]
+    }
+    if (use_dbus) {
+      sources += [
+        "kwallet_dbus.cc",
+        "kwallet_dbus.h",
+      ]
+      deps += [ "//dbus" ]
+      defines += [ "USE_KWALLET" ]
+    }
   }
 }
 
@@ -71,7 +86,7 @@ source_set("test_support") {
     "//base",
     "//testing/gtest",
   ]
-  if (is_desktop_linux && use_glib) {
+  if (is_desktop_linux && (use_glib || use_dbus)) {
     sources += [
       "os_crypt_mocker_linux.cc",
       "os_crypt_mocker_linux.h",
@@ -93,15 +108,26 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//crypto",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 
-  if (is_desktop_linux && use_glib) {
-    sources += [
-      "os_crypt_linux_unittest.cc",
-      "os_crypt_util_linux_unittest.cc",
-    ]
-    deps += [ "//third_party/libsecret" ]
-    defines = [ "USE_LIBSECRET" ]
+  if (is_desktop_linux && (use_glib || use_dbus)) {
+    sources += [ "os_crypt_linux_unittest.cc" ]
+    defines = []
+
+    if (use_glib) {
+      sources += [ "os_crypt_util_linux_unittest.cc" ]
+      deps += [ "//third_party/libsecret" ]
+      defines += [ "USE_LIBSECRET" ]
+    }
+    if (use_dbus) {
+      sources += [ "kwallet_dbus_unittest.cc" ]
+      deps += [
+        "//dbus",
+        "//dbus:test_support",
+      ]
+      defines += [ "USE_KWALLET" ]
+    }
   }
 }

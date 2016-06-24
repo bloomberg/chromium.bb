@@ -1152,7 +1152,6 @@
     ],
     'chrome_unit_tests_desktop_linux_sources': [
       'browser/password_manager/native_backend_kwallet_x_unittest.cc',
-      'browser/password_manager/kwallet_dbus_unittest.cc',
       'browser/shell_integration_linux_unittest.cc',
     ],
     # Tests corresponding to the files in chrome_browser_ui_cocoa_sources.

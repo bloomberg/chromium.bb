@@ -1589,6 +1589,7 @@
         }],
         ['OS=="linux" and chromeos!=1', {
           'sources': [
+            'os_crypt/kwallet_dbus_unittest.cc',
             'os_crypt/os_crypt_linux_unittest.cc',
             'os_crypt/os_crypt_util_linux_unittest.cc',
           ],
@@ -1598,6 +1599,11 @@
           'include_dirs': [
             '../third_party/libsecret'
           ],
+          'dependencies' : [
+            '../build/linux/system.gyp:dbus',
+            '../dbus/dbus.gyp:dbus',
+            '../dbus/dbus.gyp:dbus_test_support',
+          ]
         }],
         ['OS=="linux" and use_udev==0', {
           'dependencies!': [

@@ -14,10 +14,10 @@
 #include "base/memory/scoped_vector.h"
 #include "base/nix/xdg_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/password_manager/kwallet_dbus.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/os_crypt/kwallet_dbus.h"
 
 namespace autofill {
 struct PasswordForm;
