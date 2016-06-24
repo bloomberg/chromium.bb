@@ -56,6 +56,8 @@ define('main', [
       var scoreInput = createElementWithClassName('input', 'score-input');
       scoreInput.addEventListener(
           'change', handleScoreChange.bind(undefined, info.origin));
+      scoreInput.addEventListener('focus', disableAutoupdate);
+      scoreInput.addEventListener('blur', enableAutoupdate);
       scoreInput.value = info.score;
 
       var scoreCell = createElementWithClassName('td', 'score-cell');
@@ -75,6 +77,18 @@ define('main', [
       return row;
     }
 
+    function disableAutoupdate() {
+      if (updateInterval)
+        clearInterval(updateInterval);
+      updateInterval = null;
+    }
+
+    function enableAutoupdate() {
+      if (updateInterval)
+        clearInterval(updateInterval);
+      updateInterval = setInterval(updateEngagementTable, 5000);
+    }
+
     /**
      * Sets the engagement score when a score input is changed. Also resets the
      * update interval.
@@ -83,8 +97,7 @@ define('main', [
      */
     function handleScoreChange(origin, e) {
       uiHandler.setSiteEngagementScoreForOrigin(origin, e.target.value);
-      clearInterval(updateInterval);
-      updateInterval = setInterval(updateEngagementTable, 5000);
+      enableAutoupdate();
     }
 
     /**
@@ -150,6 +163,6 @@ define('main', [
     };
 
     updateEngagementTable();
-    updateInterval = setInterval(updateEngagementTable, 5000);
+    enableAutoupdate();
   };
 });
