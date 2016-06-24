@@ -5,11 +5,6 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_PEPPER_FLASH_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_PEPPER_FLASH_COMPONENT_INSTALLER_H_
 
-namespace base {
-class DictionaryValue;
-class Version;
-}
-
 namespace component_updater {
 
 class ComponentUpdateService;
