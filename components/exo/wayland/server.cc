@@ -1813,6 +1813,11 @@ class VSyncTiming : public ui::CompositorVSyncManager::Observer {
                                base::TimeDelta interval) override {
     uint64_t timebase_us = timebase.ToInternalValue();
     uint64_t interval_us = interval.ToInternalValue();
+
+    // Ignore updates with interval 0.
+    if (!interval_us)
+      return;
+
     uint64_t offset_us = timebase_us % interval_us;
 
     // Avoid sending update events if interval did not change.
