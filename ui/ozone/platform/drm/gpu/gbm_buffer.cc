@@ -149,10 +149,9 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
   uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
 
   // Use scanout if supported.
-  const std::vector<uint32_t>& scanout_formats =
-      gbm->plane_manager()->GetSupportedFormats();
-  bool use_scanout = std::find(scanout_formats.begin(), scanout_formats.end(),
-                               fourcc_format) != scanout_formats.end();
+  bool use_scanout = gbm_device_is_format_supported(
+      gbm->device(), fourcc_format, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+
   gbm_bo* bo = nullptr;
   if (use_scanout) {
     struct gbm_import_fd_data fd_data;
@@ -166,8 +165,10 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     // kept open for the lifetime of the buffer.
     bo = gbm_bo_import(gbm->device(), GBM_BO_IMPORT_FD, &fd_data,
                        GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
-    if (!bo)
+    if (!bo) {
+      LOG(ERROR) << "nullptr returned from gbm_bo_import";
       return nullptr;
+    }
   }
 
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
