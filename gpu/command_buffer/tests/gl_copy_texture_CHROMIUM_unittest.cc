@@ -225,6 +225,29 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
   }
 }
 
+TEST_F(GLCopyTextureCHROMIUMTest, InternalFormatTypeCombinationNotSupported) {
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               nullptr);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  // Check unsupported internal_format/type combination reports error.
+  struct FormatType { GLenum format, type; };
+  FormatType unsupported_format_types[] = {
+    {GL_RGB, GL_UNSIGNED_SHORT_4_4_4_4},
+    {GL_RGB, GL_UNSIGNED_SHORT_5_5_5_1},
+    {GL_RGBA, GL_UNSIGNED_SHORT_5_6_5},
+  };
+  for (size_t dest_index = 0; dest_index < arraysize(unsupported_format_types);
+       dest_index++) {
+    glCopyTextureCHROMIUM(
+        textures_[0], textures_[1], unsupported_format_types[dest_index].format,
+        unsupported_format_types[dest_index].type, false, false, false);
+    EXPECT_TRUE(GL_INVALID_OPERATION == glGetError())
+        << "dest_index:" << dest_index;
+  }
+}
+
 // Test to ensure that the destination texture is redefined if the properties
 // are different.
 TEST_F(GLCopyTextureCHROMIUMTest, RedefineDestinationTexture) {

@@ -14260,8 +14260,14 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     GLboolean unpack_unmultiply_alpha) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCopyTextureCHROMIUM");
   static const char kFunctionName[] = "glCopyTextureCHROMIUM";
+
   TextureRef* source_texture_ref = GetTexture(source_id);
   TextureRef* dest_texture_ref = GetTexture(dest_id);
+
+  if (!texture_manager()->ValidateTextureParameters(
+          GetErrorState(), kFunctionName, true, internal_format, dest_type,
+          internal_format, 0))
+    return;
 
   if (!ValidateCopyTextureCHROMIUMTextures(kFunctionName, source_texture_ref,
                                            dest_texture_ref)) {
