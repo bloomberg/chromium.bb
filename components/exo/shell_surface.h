@@ -276,7 +276,8 @@ class ShellSurface : public SurfaceDelegate,
   gfx::Vector2d pending_origin_config_offset_;
   int resize_component_;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_;
-  std::unique_ptr<aura::Window> shadow_parent_;
+  aura::Window* shadow_overlay_{nullptr};
+  aura::Window* shadow_underlay_{nullptr};
   gfx::Rect shadow_content_bounds_;
   std::deque<Config> pending_configs_;
   std::unique_ptr<ash::WindowResizer> resizer_;

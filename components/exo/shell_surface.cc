@@ -247,7 +247,6 @@ ShellSurface::ShellSurface(Surface* surface)
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  shadow_parent_.reset();
   if (surface_) {
     if (scale_ != 1.0)
       surface_->window()->SetTransform(gfx::Transform());
@@ -616,6 +615,8 @@ void ShellSurface::WindowClosing() {
     EndDrag(true /* revert */);
   SetEnabled(false);
   widget_ = nullptr;
+  shadow_overlay_ = nullptr;
+  shadow_underlay_ = nullptr;
 }
 
 views::Widget* ShellSurface::GetWidget() {
@@ -1135,19 +1136,35 @@ void ShellSurface::UpdateShadow() {
     if (shadow_content_bounds_.IsEmpty()) {
       wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
     } else {
-      ui::Layer* shadow_layer = shadow->layer();
-      if (!shadow_parent_) {
-        shadow_parent_ = base::WrapUnique(new aura::Window(nullptr));
-        shadow_parent_->set_ignore_events(true);
-        shadow_parent_->Init(ui::LAYER_NOT_DRAWN);
-        shadow_parent_->layer()->Add(shadow_layer);
-        window->AddChild(shadow_parent_.get());
-        shadow_parent_->Show();
+      if (!shadow_overlay_) {
+        shadow_overlay_ = new aura::Window(nullptr);
+        DCHECK(shadow_overlay_->owned_by_parent());
+        shadow_overlay_->set_ignore_events(true);
+        shadow_overlay_->Init(ui::LAYER_NOT_DRAWN);
+        shadow_overlay_->layer()->Add(shadow->layer());
+        window->AddChild(shadow_overlay_);
+        shadow_overlay_->Show();
+      }
+      if (!shadow_underlay_) {
+        shadow_underlay_ = new aura::Window(nullptr);
+        DCHECK(shadow_underlay_->owned_by_parent());
+        shadow_underlay_->set_ignore_events(true);
+        // Ensure the background area inside the shadow is solid black.
+        // Clients that provide translucent contents should not be using
+        // rectangular shadows as this method requires opaque contents to
+        // cast a shadow that represent it correctly.
+        shadow_underlay_->Init(ui::LAYER_SOLID_COLOR);
+        shadow_underlay_->layer()->SetColor(SK_ColorBLACK);
+        DCHECK(shadow_underlay_->layer()->fills_bounds_opaquely());
+        window->AddChild(shadow_underlay_);
+        window->StackChildAtBottom(shadow_underlay_);
+        shadow_underlay_->Show();
       }
       gfx::Rect shadow_bounds(shadow_content_bounds_);
       aura::Window::ConvertRectToTarget(window->parent(), window,
                                         &shadow_bounds);
-      shadow_parent_->SetBounds(shadow_bounds);
+      shadow_overlay_->SetBounds(shadow_bounds);
+      shadow_underlay_->SetBounds(shadow_bounds);
       shadow->SetContentBounds(gfx::Rect(shadow_bounds.size()));
       wm::SetShadowType(window, wm::SHADOW_TYPE_RECTANGULAR);
     }
