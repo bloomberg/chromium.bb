@@ -100,14 +100,6 @@ const uint32_t kFilteredMessageClasses[] = {
     ChildProcessMsgStart, RenderProcessMsgStart, ViewMsgStart,
 };
 
-#if defined(OS_WIN)
-// On Windows, |g_color_profile| can run on an arbitrary background thread.
-// We avoid races by using LazyInstance's constructor lock to initialize the
-// object.
-base::LazyInstance<gfx::ColorProfile>::Leaky g_color_profile =
-    LAZY_INSTANCE_INITIALIZER;
-#endif
-
 #if defined(OS_MACOSX)
 void ResizeHelperHandleMsgOnUIThread(int render_process_id,
                                      const IPC::Message& message) {
@@ -395,8 +387,12 @@ void RenderMessageFilter::OnPreCacheFontCharacters(
 }
 
 void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
+  // TODO(ccameron): Remove this synchronous IPC and push the color profile
+  // to the renderer. https://crbug.com/622133
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  *profile = g_color_profile.Get().profile();
+  if (gfx::ColorProfile::CachedProfilesNeedUpdate())
+    gfx::ColorProfile::UpdateCachedProfilesOnBackgroundThread();
+  *profile = gfx::ColorProfile::GetFromBestMonitor().profile();
 }
 
 #endif  // OS_*

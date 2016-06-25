@@ -858,7 +858,7 @@ void RendererBlinkPlatformImpl::screenColorProfile(
 #else
   // On other platforms, the primary monitor color profile can be read
   // directly.
-  gfx::ColorProfile profile;
+  gfx::ColorProfile profile = gfx::ColorProfile::GetFromBestMonitor();
   *to_profile = profile.profile();
 #endif
 }

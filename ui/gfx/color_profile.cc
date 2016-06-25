@@ -7,23 +7,27 @@
 
 namespace gfx {
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-void ReadColorProfile(std::vector<char>* profile);
-#else
-void ReadColorProfile(std::vector<char>* profile) { }
-GFX_EXPORT bool GetDisplayColorProfile(const gfx::Rect& bounds,
-                                       std::vector<char>* profile) {
-  // TODO(port): consider screen color profile support.
-  return false;
+namespace {
+static const size_t kMinProfileLength = 128;
+static const size_t kMaxProfileLength = 4 * 1024 * 1024;
+}
+
+ColorProfile::ColorProfile() = default;
+ColorProfile::ColorProfile(ColorProfile&& other) = default;
+ColorProfile::ColorProfile(const ColorProfile& other) = default;
+ColorProfile& ColorProfile::operator=(const ColorProfile& other) = default;
+ColorProfile::~ColorProfile() = default;
+
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
+// static
+ColorProfile ColorProfile::GetFromBestMonitor() {
+  return ColorProfile();
 }
 #endif
 
-ColorProfile::ColorProfile() {
-  // TODO: support multiple monitors.
-  ReadColorProfile(&profile_);
-}
-
-ColorProfile::~ColorProfile() {
+// static
+bool ColorProfile::IsValidProfileLength(size_t length) {
+  return length >= kMinProfileLength && length <= kMaxProfileLength;
 }
 
 }  // namespace gfx

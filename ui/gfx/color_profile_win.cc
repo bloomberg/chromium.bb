@@ -15,94 +15,9 @@
 
 namespace gfx {
 
-class ColorProfileCache {
- public:
-  // A thread-safe cache of color profiles keyed by windows device name.
-  ColorProfileCache() {}
+namespace {
 
-  bool Find(const std::wstring& device, std::vector<char>* profile) {
-    base::AutoLock lock(lock_);
-    DeviceColorProfile::const_iterator it = cache_.find(device);
-    if (it == cache_.end())
-      return false;
-    *profile = it->second;
-    return true;
-  }
-
-  void Insert(const std::wstring& device, const std::vector<char>& profile) {
-    base::AutoLock lock(lock_);
-    cache_[device] = profile;
-  }
-
-  bool Erase(const std::wstring& device) {
-    base::AutoLock lock(lock_);
-    DeviceColorProfile::iterator it = cache_.find(device);
-    if (it == cache_.end())
-      return false;
-    cache_.erase(device);
-    return true;
-  }
-
-  void Clear() {
-    base::AutoLock lock(lock_);
-    cache_.clear();
-  }
-
- private:
-  typedef std::map<std::wstring, std::vector<char> > DeviceColorProfile;
-
-  DeviceColorProfile cache_;
-  base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ColorProfileCache);
-};
-
-base::LazyInstance<ColorProfileCache>::Leaky g_color_profile_cache =
-    LAZY_INSTANCE_INITIALIZER;
-
-inline ColorProfileCache& GetColorProfileCache() {
-  return g_color_profile_cache.Get();
-}
-
-bool GetDisplayColorProfile(const gfx::Rect& bounds,
-                            std::vector<char>* profile) {
-  DCHECK(profile->empty());
-
-  RECT rect = bounds.ToRECT();
-  HMONITOR handle = ::MonitorFromRect(&rect, MONITOR_DEFAULTTONULL);
-  if (bounds.IsEmpty() || !handle)
-    return false;
-
-  MONITORINFOEX monitor;
-  monitor.cbSize = sizeof(MONITORINFOEX);
-  CHECK(::GetMonitorInfo(handle, &monitor));
-  if (GetColorProfileCache().Find(monitor.szDevice, profile))
-    return true;
-
-  HDC hdc = ::CreateDC(monitor.szDevice, NULL, NULL, NULL);
-  DWORD path_length = MAX_PATH;
-  WCHAR path[MAX_PATH + 1];
-  BOOL result = ::GetICMProfile(hdc, &path_length, path);
-  ::DeleteDC(hdc);
-  if (!result)
-    return false;
-
-  base::FilePath file_name = base::FilePath(path).BaseName();
-  if (file_name != base::FilePath(L"sRGB Color Space Profile.icm")) {
-    std::string data;
-    if (base::ReadFileToString(base::FilePath(path), &data))
-      profile->assign(data.data(), data.data() + data.size());
-    size_t length = profile->size();
-    if (gfx::InvalidColorProfileLength(length))
-      profile->clear();
-  }
-
-  GetColorProfileCache().Insert(monitor.szDevice, *profile);
-  return true;
-}
-
-void ReadColorProfile(std::vector<char>* profile) {
-  // TODO: support multiple monitors.
+void ReadBestMonitorColorProfile(std::vector<char>* profile) {
   HDC screen_dc = GetDC(NULL);
   DWORD path_len = MAX_PATH;
   WCHAR path[MAX_PATH + 1];
@@ -115,9 +30,39 @@ void ReadColorProfile(std::vector<char>* profile) {
   if (!base::ReadFileToString(base::FilePath(path), &profileData))
     return;
   size_t length = profileData.size();
-  if (gfx::InvalidColorProfileLength(length))
+  if (!ColorProfile::IsValidProfileLength(length))
     return;
   profile->assign(profileData.data(), profileData.data() + length);
+}
+
+base::LazyInstance<base::Lock> g_best_color_profile_lock =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<gfx::ColorProfile> g_best_color_profile =
+    LAZY_INSTANCE_INITIALIZER;
+bool g_has_initialized_best_color_profile = false;
+
+}  // namespace
+
+// static
+ColorProfile ColorProfile::GetFromBestMonitor() {
+  base::AutoLock lock(g_best_color_profile_lock.Get());
+  return g_best_color_profile.Get();
+}
+
+// static
+bool ColorProfile::CachedProfilesNeedUpdate() {
+  base::AutoLock lock(g_best_color_profile_lock.Get());
+  return !g_has_initialized_best_color_profile;
+}
+
+// static
+void ColorProfile::UpdateCachedProfilesOnBackgroundThread() {
+  std::vector<char> profile;
+  ReadBestMonitorColorProfile(&profile);
+
+  base::AutoLock lock(g_best_color_profile_lock.Get());
+  g_best_color_profile.Get().profile_ = profile;
+  g_has_initialized_best_color_profile = true;
 }
 
 }  // namespace gfx
