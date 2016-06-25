@@ -1214,6 +1214,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetUpdateRect(update_rect_);
 
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
+  layer->SetNeedsPushProperties();
 
   // Reset any state that should be cleared for the next update.
   subtree_property_changed_ = false;

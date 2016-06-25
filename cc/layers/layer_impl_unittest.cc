@@ -204,9 +204,10 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // Changing these properties does not cause the layer to be marked as changed
   // but does cause the layer to need to push properties.
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetElementId(2));
+      root->SetElementId(2); root->SetNeedsPushProperties());
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetMutableProperties(MutableProperty::kOpacity));
+      root->SetMutableProperties(MutableProperty::kOpacity);
+      root->SetNeedsPushProperties());
 
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.

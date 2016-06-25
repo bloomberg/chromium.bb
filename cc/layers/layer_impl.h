@@ -120,7 +120,6 @@ class CC_EXPORT LayerImpl {
 
   void set_offset_to_transform_parent(const gfx::Vector2dF& offset) {
     offset_to_transform_parent_ = offset;
-    SetNeedsPushProperties();
   }
   gfx::Vector2dF offset_to_transform_parent() const {
     return offset_to_transform_parent_;
@@ -128,7 +127,6 @@ class CC_EXPORT LayerImpl {
 
   void set_should_flatten_transform_from_property_tree(bool should_flatten) {
     should_flatten_transform_from_property_tree_ = should_flatten;
-    SetNeedsPushProperties();
   }
   bool should_flatten_transform_from_property_tree() const {
     return should_flatten_transform_from_property_tree_;
@@ -215,10 +213,7 @@ class CC_EXPORT LayerImpl {
   void SetBlendMode(SkXfermode::Mode);
   SkXfermode::Mode blend_mode() const { return blend_mode_; }
   void set_draw_blend_mode(SkXfermode::Mode blend_mode) {
-    if (draw_blend_mode_ == blend_mode)
-      return;
     draw_blend_mode_ = blend_mode;
-    SetNeedsPushProperties();
   }
   SkXfermode::Mode draw_blend_mode() const { return draw_blend_mode_; }
   bool uses_default_blend_mode() const {

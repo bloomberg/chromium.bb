@@ -10862,6 +10862,7 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
     pending_tree->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
             last_scrolled_layer->id(), pending_base);
+    pending_tree->LayerById(content_layer->id())->SetNeedsPushProperties();
 
     pending_tree->set_needs_update_draw_properties();
     pending_tree->UpdateDrawProperties(false);

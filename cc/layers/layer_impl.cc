@@ -101,10 +101,7 @@ LayerImpl::~LayerImpl() {
 }
 
 void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {
-  if (has_will_change_transform_hint_ == has_will_change)
-    return;
   has_will_change_transform_hint_ = has_will_change;
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetDebugInfo(
@@ -142,22 +139,18 @@ void LayerImpl::ApplyScroll(ScrollState* scroll_state) {
 
 void LayerImpl::SetTransformTreeIndex(int index) {
   transform_tree_index_ = index;
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetClipTreeIndex(int index) {
   clip_tree_index_ = index;
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetEffectTreeIndex(int index) {
   effect_tree_index_ = index;
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetScrollTreeIndex(int index) {
   scroll_tree_index_ = index;
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::ClearRenderSurfaceLayerList() {
@@ -773,11 +766,7 @@ void LayerImpl::SetBackgroundColor(SkColor background_color) {
 }
 
 void LayerImpl::SetSafeOpaqueBackgroundColor(SkColor background_color) {
-  if (background_color == safe_opaque_background_color_)
-    return;
-
   safe_opaque_background_color_ = background_color;
-  SetNeedsPushProperties();
 }
 
 SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
@@ -790,9 +779,6 @@ SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
 }
 
 void LayerImpl::SetFilters(const FilterOperations& filters) {
-  if (filters_ == filters)
-    return;
-
   filters_ = filters;
 }
 
@@ -805,16 +791,10 @@ bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
 }
 
 void LayerImpl::SetMasksToBounds(bool masks_to_bounds) {
-  if (masks_to_bounds_ == masks_to_bounds)
-    return;
-
   masks_to_bounds_ = masks_to_bounds;
 }
 
 void LayerImpl::SetContentsOpaque(bool opaque) {
-  if (contents_opaque_ == opaque)
-    return;
-
   contents_opaque_ = opaque;
 }
 
@@ -845,7 +825,6 @@ void LayerImpl::SetElementId(uint64_t element_id) {
   layer_tree_impl_->RemoveFromElementMap(this);
   element_id_ = element_id;
   layer_tree_impl_->AddToElementMap(this);
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetMutableProperties(uint32_t properties) {
@@ -858,33 +837,21 @@ void LayerImpl::SetMutableProperties(uint32_t properties) {
   mutable_properties_ = properties;
   // If this layer is already in the element map, update its properties.
   layer_tree_impl_->AddToElementMap(this);
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetBlendMode(SkXfermode::Mode blend_mode) {
-  if (blend_mode_ == blend_mode)
-    return;
-
   blend_mode_ = blend_mode;
 }
 
 void LayerImpl::SetPosition(const gfx::PointF& position) {
-  if (position_ == position)
-    return;
-
   position_ = position;
 }
 
 void LayerImpl::Set3dSortingContextId(int id) {
-  if (id == sorting_context_id_)
-    return;
   sorting_context_id_ = id;
 }
 
 void LayerImpl::SetTransform(const gfx::Transform& transform) {
-  if (transform_ == transform)
-    return;
-
   transform_ = transform;
 }
 
