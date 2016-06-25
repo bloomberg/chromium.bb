@@ -285,8 +285,7 @@
       ],
       'xcode_settings' : {
         'WARNING_CFLAGS': [
-          # SkFontHost_mac.cpp uses API deprecated in iOS 7.
-          # crbug.com/408571
+          # SkFontHost_mac.cpp uses API deprecated in iOS 7, crbug.com/408571
           '-Wno-deprecated-declarations',
         ],
       },

@@ -540,7 +540,7 @@ component("skia") {
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 
-    # To disable warning "CGContextSelectFont' is deprecated"
+    # SkFontHost_mac.cpp uses API deprecated in iOS 7, crbug.com/408571
     cflags = [ "-Wno-deprecated-declarations" ]
   }
 }
