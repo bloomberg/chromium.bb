@@ -116,8 +116,6 @@ TranslateHelper::TranslateHelper(content::RenderFrame* render_frame,
     : content::RenderFrameObserver(render_frame),
       page_seq_no_(0),
       translation_pending_(false),
-      deferred_page_capture_(false),
-      deferred_page_seq_no_(-1),
       world_id_(world_id),
       extension_group_(extension_group),
       extension_scheme_(extension_scheme),
@@ -130,9 +128,6 @@ void TranslateHelper::PrepareForUrl(const GURL& url) {
   ++page_seq_no_;
   Send(new ChromeFrameHostMsg_TranslateAssignedSequenceNumber(routing_id(),
                                                               page_seq_no_));
-  deferred_page_capture_ = false;
-  deferred_page_seq_no_ = -1;
-  deferred_contents_.clear();
 }
 
 void TranslateHelper::PageCaptured(const base::string16& contents) {

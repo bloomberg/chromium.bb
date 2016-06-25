@@ -143,14 +143,6 @@ class TranslateHelper : public content::RenderFrameObserver {
   // time from showing infobar to requesting translation.
   base::TimeTicks language_determined_time_;
 
-  // Whether or not a PageCaptured event arrived prior to CLD data becoming
-  // available. If true, deferred_contents_ contains the most recent contents.
-  bool deferred_page_capture_;
-
-  // The ID of the page most recently reported to PageCaptured if
-  // deferred_page_capture_ is true.
-  int deferred_page_seq_no_;
-
   // The world ID to use for script execution.
   int world_id_;
 
@@ -159,10 +151,6 @@ class TranslateHelper : public content::RenderFrameObserver {
 
   // The URL scheme for translate extensions.
   std::string extension_scheme_;
-
-  // The contents of the page most recently reported to PageCaptured if
-  // deferred_page_capture_ is true.
-  base::string16 deferred_contents_;
 
   // Method factory used to make calls to TranslatePageImpl.
   base::WeakPtrFactory<TranslateHelper> weak_method_factory_;
