@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "ash/common/system/system_notifier.h"
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -301,10 +301,9 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
     return;
   last_network_path_ = network->path();
 
-  if (ash::Shell::HasInstance()) {
-    ash::Shell::GetInstance()
-        ->system_tray_notifier()
-        ->NotifyOnCaptivePortalDetected(network->path());
+  if (ash::WmShell::HasInstance()) {
+    ash::WmShell::Get()->system_tray_notifier()->NotifyOnCaptivePortalDetected(
+        network->path());
   }
 
   message_center::MessageCenter::Get()->AddNotification(

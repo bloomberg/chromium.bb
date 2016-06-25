@@ -9,12 +9,12 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_utils.h"
-#include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -230,14 +230,14 @@ TrayIME::TrayIME(SystemTray* system_tray)
       detailed_(NULL),
       keyboard_suppressed_(false),
       is_visible_(true) {
-  WmSystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
   tray_notifier->AddVirtualKeyboardObserver(this);
   tray_notifier->AddAccessibilityObserver(this);
   tray_notifier->AddIMEObserver(this);
 }
 
 TrayIME::~TrayIME() {
-  WmSystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
   tray_notifier->RemoveIMEObserver(this);
   tray_notifier->RemoveAccessibilityObserver(this);
   tray_notifier->RemoveVirtualKeyboardObserver(this);

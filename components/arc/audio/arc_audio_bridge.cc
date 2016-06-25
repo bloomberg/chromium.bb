@@ -4,7 +4,7 @@
 
 #include "components/arc/audio/arc_audio_bridge.h"
 
-#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "base/logging.h"
 #include "chromeos/audio/audio_device.h"

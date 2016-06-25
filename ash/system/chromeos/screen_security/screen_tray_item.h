@@ -10,7 +10,6 @@
 #include "ash/common/system/tray/tray_notification_view.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/macros.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/views/controls/button/button.h"

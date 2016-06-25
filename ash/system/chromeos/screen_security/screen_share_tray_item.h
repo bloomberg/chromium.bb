@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_CHROMEOS_SCREEN_SHARE_SCREEN_SHARE_TRAY_ITEM_H_
 #define ASH_SYSTEM_CHROMEOS_SCREEN_SHARE_SCREEN_SHARE_TRAY_ITEM_H_
 
-#include "ash/system/chromeos/screen_security/screen_share_observer.h"
+#include "ash/common/system/chromeos/screen_security/screen_share_observer.h"
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
 #include "base/macros.h"
 

@@ -8,6 +8,7 @@
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/throbber_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_details_view.h"
@@ -15,9 +16,7 @@
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -397,11 +396,11 @@ class BluetoothDetailedView : public TrayDetailsView,
 
 TrayBluetooth::TrayBluetooth(SystemTray* system_tray)
     : SystemTrayItem(system_tray), default_(NULL), detailed_(NULL) {
-  Shell::GetInstance()->system_tray_notifier()->AddBluetoothObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddBluetoothObserver(this);
 }
 
 TrayBluetooth::~TrayBluetooth() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveBluetoothObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveBluetoothObserver(this);
 }
 
 views::View* TrayBluetooth::CreateTrayView(LoginStatus status) {

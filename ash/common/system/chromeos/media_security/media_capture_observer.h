@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_MEDIA_SECURITY_MEDIA_CAPTURE_OBSERVER_H_
-#define ASH_SYSTEM_CHROMEOS_MEDIA_SECURITY_MEDIA_CAPTURE_OBSERVER_H_
-
-#include "ash/ash_export.h"
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_MEDIA_SECURITY_MEDIA_CAPTURE_OBSERVER_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_MEDIA_SECURITY_MEDIA_CAPTURE_OBSERVER_H_
 
 namespace ash {
 
-class ASH_EXPORT MediaCaptureObserver {
+class MediaCaptureObserver {
  public:
   // Called when media capture state has changed.
   virtual void OnMediaCaptureChanged() = 0;
@@ -20,4 +18,4 @@ class ASH_EXPORT MediaCaptureObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_MEDIA_SECURITY_MEDIA_CAPTURE_OBSERVER_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_MEDIA_SECURITY_MEDIA_CAPTURE_OBSERVER_H_

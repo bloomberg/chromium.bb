@@ -132,9 +132,6 @@ component("ash") {
       "accelerators/spoken_feedback_toggler.h",
       "display/resolution_notification_controller.cc",
       "display/resolution_notification_controller.h",
-      "system/tray/media_security/media_capture_observer.h",
-      "system/tray/media_security/multi_profile_media_tray_item.cc",
-      "system/tray/media_security/multi_profile_media_tray_item.h",
       "touch/touch_transformer_controller.cc",
       "touch/touch_transformer_controller.h",
       "touch/touchscreen_util.cc",
@@ -413,7 +410,6 @@ test("ash_unittests") {
       "autoclick/autoclick_unittest.cc",
       "magnifier/magnification_controller_unittest.cc",
       "sticky_keys/sticky_keys_overlay_unittest.cc",
-      "system/tray/media_security/multi_profile_media_tray_item_unittest.cc",
       "virtual_keyboard_controller_unittest.cc",
       "wm/workspace/workspace_window_resizer_unittest.cc",
     ]

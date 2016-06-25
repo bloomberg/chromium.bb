@@ -34,7 +34,7 @@ class WindowResizer;
 class WindowSelectorController;
 class WmActivationObserver;
 class WmDisplayObserver;
-class WmSystemTrayNotifier;
+class SystemTrayNotifier;
 class WmWindow;
 
 namespace wm {
@@ -52,7 +52,7 @@ class ASH_EXPORT WmShell {
 
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
 
-  WmSystemTrayNotifier* system_tray_notifier() {
+  SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
   }
 
@@ -177,7 +177,7 @@ class ASH_EXPORT WmShell {
   static WmShell* instance_;
 
   std::unique_ptr<FocusCycler> focus_cycler_;
-  std::unique_ptr<WmSystemTrayNotifier> system_tray_notifier_;
+  std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
 

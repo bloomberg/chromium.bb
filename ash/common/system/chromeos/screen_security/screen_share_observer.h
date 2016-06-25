@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_SCREEN_SHARE_SCREEN_SHARE_OBSERVER_H_
-#define ASH_SYSTEM_CHROMEOS_SCREEN_SHARE_SCREEN_SHARE_OBSERVER_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_SCREEN_SECURITY_SCREEN_SHARE_OBSERVER_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_SCREEN_SECURITY_SCREEN_SHARE_OBSERVER_H_
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
@@ -13,9 +13,8 @@ namespace ash {
 class ScreenShareObserver {
  public:
   // Called when screen share is started.
-  virtual void OnScreenShareStart(
-      const base::Closure& stop_callback,
-      const base::string16& helper_name) = 0;
+  virtual void OnScreenShareStart(const base::Closure& stop_callback,
+                                  const base::string16& helper_name) = 0;
 
   // Called when screen share is stopped.
   virtual void OnScreenShareStop() = 0;
@@ -26,4 +25,4 @@ class ScreenShareObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_SCREEN_SHARE_SCREEN_SHARE_OBSERVER_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_SCREEN_SECURITY_SCREEN_SHARE_OBSERVER_H_

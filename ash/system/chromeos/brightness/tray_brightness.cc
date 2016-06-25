@@ -15,7 +15,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"

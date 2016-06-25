@@ -15,7 +15,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/system/chromeos/supervised/custodian_info_tray_observer.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
@@ -45,7 +44,7 @@
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 
 namespace ash {
-class WmSystemTrayNotifier;
+class SystemTrayNotifier;
 class VPNDelegate;
 }
 
@@ -171,8 +170,6 @@ class SystemTrayDelegateChromeOS
   ash::SystemTray* GetPrimarySystemTray();
 
   ash::SystemTrayNotifier* GetSystemTrayNotifier();
-
-  ash::WmSystemTrayNotifier* GetWmSystemTrayNotifier();
 
   void SetProfile(Profile* profile);
 

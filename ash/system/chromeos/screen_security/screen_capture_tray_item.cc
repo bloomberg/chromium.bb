@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "ash/common/system/system_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,14 +28,12 @@ const char kScreenCaptureNotificationId[] = "chrome://screen/capture";
 ScreenCaptureTrayItem::ScreenCaptureTrayItem(SystemTray* system_tray)
     : ScreenTrayItem(system_tray) {
   WmShell::Get()->AddShellObserver(this);
-  Shell::GetInstance()->system_tray_notifier()->
-      AddScreenCaptureObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddScreenCaptureObserver(this);
 }
 
 ScreenCaptureTrayItem::~ScreenCaptureTrayItem() {
   WmShell::Get()->RemoveShellObserver(this);
-  Shell::GetInstance()->system_tray_notifier()->
-      RemoveScreenCaptureObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveScreenCaptureObserver(this);
 }
 
 views::View* ScreenCaptureTrayItem::CreateTrayView(LoginStatus status) {

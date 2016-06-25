@@ -5,9 +5,9 @@
 #ifndef ASH_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H
 #define ASH_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H
 
+#include "ash/common/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/view_click_listener.h"
-#include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "base/macros.h"
 
 namespace views {

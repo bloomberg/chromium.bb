@@ -6,8 +6,8 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_details_view.h"
-#include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/virtual_keyboard_test_helper.h"

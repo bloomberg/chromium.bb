@@ -9,6 +9,7 @@
 
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/user/login_status.h"
@@ -16,7 +17,6 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/logging.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -103,12 +103,11 @@ LogoutButtonTray::LogoutButtonTray(StatusAreaWidget* status_area_widget)
   button_ = new LogoutButton(this);
   tray_container()->AddChildView(button_);
   tray_container()->SetBorder(views::Border::NullBorder());
-  Shell::GetInstance()->system_tray_notifier()->AddLogoutButtonObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);
 }
 
 LogoutButtonTray::~LogoutButtonTray() {
-  Shell::GetInstance()->system_tray_notifier()->
-      RemoveLogoutButtonObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveLogoutButtonObserver(this);
 }
 
 void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {

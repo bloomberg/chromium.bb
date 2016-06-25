@@ -6,10 +6,10 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/time/time.h"
 
 namespace ash {
@@ -18,13 +18,11 @@ const int kLogoutConfirmationDelayInSeconds = 20;
 }
 
 LastWindowClosedLogoutReminder::LastWindowClosedLogoutReminder() {
-  Shell::GetInstance()->system_tray_notifier()->AddLastWindowClosedObserver(
-      this);
+  WmShell::Get()->system_tray_notifier()->AddLastWindowClosedObserver(this);
 }
 
 LastWindowClosedLogoutReminder::~LastWindowClosedLogoutReminder() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveLastWindowClosedObserver(
-      this);
+  WmShell::Get()->system_tray_notifier()->RemoveLastWindowClosedObserver(this);
 }
 
 void LastWindowClosedLogoutReminder::OnLastWindowClosed() {

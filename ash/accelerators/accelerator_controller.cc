@@ -20,6 +20,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/volume_control_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
@@ -49,7 +50,6 @@
 #include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
@@ -1371,7 +1371,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleToggleSpokenFeedback();
       break;
     case TOGGLE_WIFI:
-      Shell::GetInstance()->system_tray_notifier()->NotifyRequestToggleWifi();
+      WmShell::Get()->system_tray_notifier()->NotifyRequestToggleWifi();
       break;
     case TOUCH_HUD_CLEAR:
       HandleTouchHudClear();

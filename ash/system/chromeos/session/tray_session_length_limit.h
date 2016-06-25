@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "ash/common/system/chromeos/session/session_length_limit_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/system/chromeos/session/session_length_limit_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"

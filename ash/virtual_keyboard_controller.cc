@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
-#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"

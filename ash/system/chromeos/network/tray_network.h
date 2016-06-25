@@ -8,9 +8,9 @@
 #include <memory>
 #include <set>
 
+#include "ash/common/system/chromeos/network/network_observer.h"
+#include "ash/common/system/chromeos/network/network_portal_detector_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/system/chromeos/network/network_observer.h"
-#include "ash/system/chromeos/network/network_portal_detector_observer.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "base/macros.h"
 #include "base/time/time.h"

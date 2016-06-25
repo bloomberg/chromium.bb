@@ -8,6 +8,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_utils.h"
@@ -15,9 +16,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/user/user_view.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -47,11 +46,11 @@ TrayUser::TrayUser(SystemTray* system_tray, UserIndex index)
       layout_view_(nullptr),
       avatar_(nullptr),
       label_(nullptr) {
-  Shell::GetInstance()->system_tray_notifier()->AddUserObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddUserObserver(this);
 }
 
 TrayUser::~TrayUser() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveUserObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveUserObserver(this);
 }
 
 TrayUser::TestState TrayUser::GetStateForTest() const {
@@ -92,7 +91,7 @@ views::View* TrayUser::CreateDefaultView(LoginStatus status) {
   if (status == LoginStatus::NOT_LOGGED_IN)
     return nullptr;
   const SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
+      WmShell::Get()->GetSessionStateDelegate();
 
   // If the screen is locked or a system modal dialog box is shown, show only
   // the currently active user.
@@ -240,7 +239,7 @@ void TrayUser::OnUserUpdate() {
 
 void TrayUser::OnUserAddedToSession() {
   SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
+      WmShell::Get()->GetSessionStateDelegate();
   // Only create views for user items which are logged in.
   if (user_index_ >= session_state_delegate->NumberOfLoggedInUsers())
     return;
@@ -255,7 +254,7 @@ void TrayUser::OnUserAddedToSession() {
 
 void TrayUser::UpdateAvatarImage(LoginStatus status) {
   SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
+      WmShell::Get()->GetSessionStateDelegate();
   if (!avatar_ ||
       user_index_ >= session_state_delegate->NumberOfLoggedInUsers())
     return;

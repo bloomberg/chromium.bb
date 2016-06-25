@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_CHROMEOS_BLUETOOTH_TRAY_BLUETOOTH_H_
 #define ASH_SYSTEM_CHROMEOS_BLUETOOTH_TRAY_BLUETOOTH_H_
 
+#include "ash/common/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "base/macros.h"
 
 namespace ash {

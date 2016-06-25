@@ -5,7 +5,7 @@
 #include "ash/system/chromeos/power/power_event_observer.h"
 
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/power_button_controller.h"

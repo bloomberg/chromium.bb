@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_MULTI_PROFILE_MEDIA_TRAY_ITEM_H_
-#define ASH_SYSTEM_CHROMEOS_MULTI_PROFILE_MEDIA_TRAY_ITEM_H_
+#ifndef ASH_SYSTEM_CHROMEOS_MEDIA_SECURITY_MULTI_PROFILE_MEDIA_TRAY_ITEM_H_
+#define ASH_SYSTEM_CHROMEOS_MEDIA_SECURITY_MULTI_PROFILE_MEDIA_TRAY_ITEM_H_
 
 #include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
@@ -33,4 +33,4 @@ class ASH_EXPORT MultiProfileMediaTrayItem : public SystemTrayItem {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_MULTI_PROFILE_MEDIA_TRAY_ITEM_H_
+#endif  // ASH_SYSTEM_CHROMEOS_MEDIA_SECURITY_MULTI_PROFILE_MEDIA_TRAY_ITEM_H_

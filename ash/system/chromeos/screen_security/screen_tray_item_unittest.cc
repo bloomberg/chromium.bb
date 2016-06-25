@@ -4,8 +4,9 @@
 
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
 
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_item_view.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
 #include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/test/ash_test_base.h"
@@ -24,14 +25,6 @@ const char kTestScreenCaptureAppName[] =
     "\xE0\xB2\xA0\x5F\xE0\xB2\xA0 (Screen Capture Test)";
 const char kTestScreenShareHelperName[] =
     "\xE5\xAE\x8B\xE8\x85\xBE (Screen Share Test)";
-
-SystemTray* GetSystemTray() {
-  return Shell::GetInstance()->GetPrimarySystemTray();
-}
-
-SystemTrayNotifier* GetSystemTrayNotifier() {
-  return Shell::GetInstance()->system_tray_notifier();
-}
 
 void ClickViewCenter(views::View* view) {
   gfx::Point click_location_in_local =
@@ -86,9 +79,9 @@ class ScreenCaptureTest : public ScreenTrayItemTest {
     ScreenTrayItemTest::SetUp();
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.
-    ScreenTrayItem* tray_item = new ScreenCaptureTrayItem(GetSystemTray());
-    GetSystemTray()->AddTrayItem(tray_item);
-    set_tray_item(tray_item);
+    ScreenTrayItem* item = new ScreenCaptureTrayItem(GetPrimarySystemTray());
+    GetPrimarySystemTray()->AddTrayItem(item);
+    set_tray_item(item);
   }
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureTest);
@@ -103,9 +96,9 @@ class ScreenShareTest : public ScreenTrayItemTest {
     ScreenTrayItemTest::SetUp();
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.
-    ScreenTrayItem* tray_item = new ScreenShareTrayItem(GetSystemTray());
-    GetSystemTray()->AddTrayItem(tray_item);
-    set_tray_item(tray_item);
+    ScreenTrayItem* item = new ScreenShareTrayItem(GetPrimarySystemTray());
+    GetPrimarySystemTray()->AddTrayItem(item);
+    set_tray_item(item);
   }
 
   DISALLOW_COPY_AND_ASSIGN(ScreenShareTest);
@@ -147,14 +140,14 @@ void TestNotificationStartAndStop(ScreenTrayItemTest* test,
 TEST_F(ScreenCaptureTest, NotificationStartAndStop) {
   base::Closure start_function =
       base::Bind(&SystemTrayNotifier::NotifyScreenCaptureStart,
-          base::Unretained(GetSystemTrayNotifier()),
+          base::Unretained(WmShell::Get()->system_tray_notifier()),
           base::Bind(&ScreenTrayItemTest::StopCallback,
                      base::Unretained(this)),
                      base::UTF8ToUTF16(kTestScreenCaptureAppName));
 
   base::Closure stop_function =
       base::Bind(&SystemTrayNotifier::NotifyScreenCaptureStop,
-          base::Unretained(GetSystemTrayNotifier()));
+          base::Unretained(WmShell::Get()->system_tray_notifier()));
 
   TestNotificationStartAndStop(this, start_function, stop_function);
 }
@@ -162,14 +155,14 @@ TEST_F(ScreenCaptureTest, NotificationStartAndStop) {
 TEST_F(ScreenShareTest, NotificationStartAndStop) {
   base::Closure start_func =
       base::Bind(&SystemTrayNotifier::NotifyScreenShareStart,
-          base::Unretained(GetSystemTrayNotifier()),
+          base::Unretained(WmShell::Get()->system_tray_notifier()),
           base::Bind(&ScreenTrayItemTest::StopCallback,
                      base::Unretained(this)),
                      base::UTF8ToUTF16(kTestScreenShareHelperName));
 
   base::Closure stop_func =
       base::Bind(&SystemTrayNotifier::NotifyScreenShareStop,
-          base::Unretained(GetSystemTrayNotifier()));
+          base::Unretained(WmShell::Get()->system_tray_notifier()));
 
   TestNotificationStartAndStop(this, start_func, stop_func);
 }
@@ -193,7 +186,7 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   EXPECT_FALSE(tray_item->tray_view()->visible());
 
   const std::vector<SystemTrayItem*>& tray_items =
-      GetSystemTray()->GetTrayItems();
+      test::AshTestBase::GetPrimarySystemTray()->GetTrayItems();
   EXPECT_NE(std::find(tray_items.begin(), tray_items.end(), tray_item),
             tray_items.end());
 
@@ -201,16 +194,16 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   EXPECT_TRUE(tray_item->tray_view()->visible());
 
   // The default view should be created in a new bubble.
-  GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+  test::AshTestBase::GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_TRUE(tray_item->default_view());
-  GetSystemTray()->CloseSystemBubble();
+  test::AshTestBase::GetPrimarySystemTray()->CloseSystemBubble();
   EXPECT_FALSE(tray_item->default_view());
 
   test->StopSession();
   EXPECT_FALSE(tray_item->tray_view()->visible());
 
   // The default view should not be visible because session is stopped.
-  GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+  test::AshTestBase::GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_FALSE(tray_item->default_view()->visible());
 }
 

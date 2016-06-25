@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/media_delegate_chromeos.h"
 
+#include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -162,7 +162,5 @@ void MediaDelegateChromeOS::OnRequestUpdate(
 }
 
 void MediaDelegateChromeOS::NotifyMediaCaptureChange() {
-  ash::Shell::GetInstance()
-      ->system_tray_notifier()
-      ->NotifyMediaCaptureChanged();
+  ash::WmShell::Get()->system_tray_notifier()->NotifyMediaCaptureChanged();
 }

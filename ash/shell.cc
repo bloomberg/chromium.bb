@@ -64,7 +64,6 @@
 #include "ash/shell_init_params.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/toast/toast_manager.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
@@ -746,10 +745,6 @@ Shell::~Shell() {
   // so must be deleted before |focus_client_| (below).
   shelf_delegate_.reset();
 
-  // Destroy SystemTrayNotifier after destroying SystemTray as TrayItems
-  // needs to remove observers from it.
-  system_tray_notifier_.reset();
-
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
   // Alphabetical. TODO(oshima): sort.
@@ -1052,9 +1047,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_.reset(
       new ::wm::ShadowController(activation_client_));
-
-  // Create system_tray_notifier_ before the delegate.
-  system_tray_notifier_.reset(new SystemTrayNotifier());
 
   SystemTrayDelegate* system_tray_delegate =
       delegate()->CreateSystemTrayDelegate();

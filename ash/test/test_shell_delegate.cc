@@ -12,6 +12,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
@@ -32,7 +33,7 @@
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #endif
 
 namespace ash {
@@ -230,10 +231,9 @@ gfx::Image TestShellDelegate::GetDeprecatedAcceleratorImage() const {
 
 void TestShellDelegate::SetMediaCaptureState(MediaCaptureState state) {
 #if defined(OS_CHROMEOS)
-  Shell* shell = Shell::GetInstance();
-  static_cast<MediaDelegateImpl*>(shell->media_delegate())
+  static_cast<MediaDelegateImpl*>(Shell::GetInstance()->media_delegate())
       ->set_media_capture_state(state);
-  shell->system_tray_notifier()->NotifyMediaCaptureChanged();
+  WmShell::Get()->system_tray_notifier()->NotifyMediaCaptureChanged();
 #endif
 }
 

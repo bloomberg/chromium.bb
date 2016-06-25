@@ -10,12 +10,12 @@
 #include "ash/common/login_status.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/user/rounded_image_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
@@ -41,8 +41,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/ash_view_ids.h"
+#include "ash/common/system/chromeos/media_security/media_capture_observer.h"
 #include "ash/media_delegate.h"
-#include "ash/system/tray/media_security/media_capture_observer.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/fill_layout.h"
 #endif
@@ -73,13 +73,12 @@ class MediaIndicator : public views::View, public MediaCaptureObserver {
     label_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
         ui::ResourceBundle::SmallFont));
     OnMediaCaptureChanged();
-    Shell::GetInstance()->system_tray_notifier()->AddMediaCaptureObserver(this);
+    WmShell::Get()->system_tray_notifier()->AddMediaCaptureObserver(this);
     set_id(VIEW_ID_USER_VIEW_MEDIA_INDICATOR);
   }
 
   ~MediaIndicator() override {
-    Shell::GetInstance()->system_tray_notifier()->RemoveMediaCaptureObserver(
-        this);
+    WmShell::Get()->system_tray_notifier()->RemoveMediaCaptureObserver(this);
   }
 
   // MediaCaptureObserver:
@@ -163,8 +162,8 @@ PublicAccountUserDetails::PublicAccountUserDetails(int max_width)
   // Retrieve the user's display name and wrap it with markers.
   // Note that since this is a public account it always has to be the primary
   // user.
-  base::string16 display_name = Shell::GetInstance()
-                                    ->session_state_delegate()
+  base::string16 display_name = WmShell::Get()
+                                    ->GetSessionStateDelegate()
                                     ->GetUserInfo(0)
                                     ->GetDisplayName();
   base::RemoveChars(display_name, kDisplayNameMark, &display_name);
@@ -368,8 +367,7 @@ void UserCardView::AddUserContent(LoginStatus login_status, int user_index) {
   views::View* icon = CreateIcon(login_status, user_index);
   AddChildView(icon);
   views::Label* user_name = NULL;
-  SessionStateDelegate* delegate =
-      Shell::GetInstance()->session_state_delegate();
+  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
   if (!user_index) {
     base::string16 user_name_string =
         login_status == LoginStatus::GUEST
@@ -451,8 +449,7 @@ views::View* UserCardView::CreateIcon(LoginStatus login_status,
                         .ToImageSkia(),
                    gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
   } else {
-    SessionStateDelegate* delegate =
-        Shell::GetInstance()->session_state_delegate();
+    SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
     icon->SetImage(delegate->GetUserInfo(user_index)->GetImage(),
                    gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
   }

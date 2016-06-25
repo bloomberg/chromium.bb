@@ -9,7 +9,7 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
-#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

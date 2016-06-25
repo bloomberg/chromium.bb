@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_OBSERVER_H
-#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_OBSERVER_H
-
-#include <vector>
-
-#include "base/strings/string16.h"
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_OBSERVER_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_OBSERVER_H_
 
 namespace ash {
 
@@ -23,4 +19,4 @@ class NetworkObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_OBSERVER_H
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_OBSERVER_H_

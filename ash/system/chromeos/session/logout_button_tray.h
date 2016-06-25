@@ -7,8 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
+#include "ash/common/system/chromeos/session/logout_button_observer.h"
 #include "ash/common/system/tray/tray_background_view.h"
-#include "ash/system/chromeos/session/logout_button_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"

@@ -12,7 +12,6 @@
 #include "ash/common/system/tray/tray_notification_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "grit/ash_resources.h"

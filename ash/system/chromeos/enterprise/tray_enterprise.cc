@@ -6,10 +6,9 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "grit/ash_resources.h"
@@ -19,13 +18,11 @@ namespace ash {
 TrayEnterprise::TrayEnterprise(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_view_(NULL) {
-  Shell::GetInstance()->system_tray_notifier()->
-      AddEnterpriseDomainObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddEnterpriseDomainObserver(this);
 }
 
 TrayEnterprise::~TrayEnterprise() {
-  Shell::GetInstance()->system_tray_notifier()->
-      RemoveEnterpriseDomainObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveEnterpriseDomainObserver(this);
 }
 
 void TrayEnterprise::UpdateEnterpriseMessage() {

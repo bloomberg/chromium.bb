@@ -17,12 +17,14 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/session/logout_button_observer.h"
 #include "ash/common/system/chromeos/shutdown_policy_observer.h"
 #include "ash/common/system/date/clock_observer.h"
 #include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/update/update_observer.h"
 #include "ash/common/system/user/user_observer.h"
@@ -31,10 +33,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/system/chromeos/bluetooth/bluetooth_observer.h"
-#include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -882,11 +881,6 @@ ash::SystemTray* SystemTrayDelegateChromeOS::GetPrimarySystemTray() {
 }
 
 ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
-  return ash::Shell::GetInstance()->system_tray_notifier();
-}
-
-ash::WmSystemTrayNotifier*
-SystemTrayDelegateChromeOS::GetWmSystemTrayNotifier() {
   return ash::WmShell::Get()->system_tray_notifier();
 }
 
@@ -963,7 +957,7 @@ void SystemTrayDelegateChromeOS::OnSystemClockChanged(
     system::SystemClock* system_clock) {
   const bool use_24_hour_clock = system_clock->ShouldUse24HourClock();
   clock_type_ = use_24_hour_clock ? base::k24HourClock : base::k12HourClock;
-  GetWmSystemTrayNotifier()->NotifyDateFormatChanged();
+  GetSystemTrayNotifier()->NotifyDateFormatChanged();
 }
 
 void SystemTrayDelegateChromeOS::UpdateShowLogoutButtonInTray() {
@@ -1078,7 +1072,7 @@ void SystemTrayDelegateChromeOS::Observe(
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
       ash::UpdateInfo info;
       GetUpdateInfo(content::Source<UpgradeDetector>(source).ptr(), &info);
-      GetWmSystemTrayNotifier()->NotifyUpdateRecommended(info);
+      GetSystemTrayNotifier()->NotifyUpdateRecommended(info);
       break;
     }
     case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
@@ -1123,7 +1117,7 @@ void SystemTrayDelegateChromeOS::OnLanguageRemapSearchKeyToChanged() {
 
 void SystemTrayDelegateChromeOS::OnAccessibilityModeChanged(
     ash::AccessibilityNotificationVisibility notify) {
-  GetWmSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
+  GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
 }
 
 void SystemTrayDelegateChromeOS::UpdatePerformanceTracing() {
@@ -1131,7 +1125,7 @@ void SystemTrayDelegateChromeOS::UpdatePerformanceTracing() {
     return;
   bool value = user_pref_registrar_->prefs()->GetBoolean(
       prefs::kPerformanceTracingEnabled);
-  GetWmSystemTrayNotifier()->NotifyTracingModeChanged(value);
+  GetSystemTrayNotifier()->NotifyTracingModeChanged(value);
 }
 
 // Overridden from InputMethodManager::Observer.
@@ -1139,25 +1133,24 @@ void SystemTrayDelegateChromeOS::InputMethodChanged(
     input_method::InputMethodManager* manager,
     Profile* /* profile */,
     bool show_message) {
-  GetWmSystemTrayNotifier()->NotifyRefreshIME();
+  GetSystemTrayNotifier()->NotifyRefreshIME();
 }
 
 // Overridden from InputMethodMenuManager::Observer.
 void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
     ui::ime::InputMethodMenuManager* manager) {
-  GetWmSystemTrayNotifier()->NotifyRefreshIME();
+  GetSystemTrayNotifier()->NotifyRefreshIME();
 }
 
 // Overridden from CrasAudioHandler::AudioObserver.
 void SystemTrayDelegateChromeOS::OnOutputNodeVolumeChanged(uint64_t node_id,
                                                            int volume) {
-  GetWmSystemTrayNotifier()->NotifyAudioOutputVolumeChanged(node_id, volume);
+  GetSystemTrayNotifier()->NotifyAudioOutputVolumeChanged(node_id, volume);
 }
 
 void SystemTrayDelegateChromeOS::OnOutputMuteChanged(bool mute_on,
                                                      bool system_adjust) {
-  GetWmSystemTrayNotifier()->NotifyAudioOutputMuteChanged(mute_on,
-                                                          system_adjust);
+  GetSystemTrayNotifier()->NotifyAudioOutputMuteChanged(mute_on, system_adjust);
 }
 
 void SystemTrayDelegateChromeOS::OnInputNodeGainChanged(uint64_t /* node_id */,
@@ -1168,15 +1161,15 @@ void SystemTrayDelegateChromeOS::OnInputMuteChanged(bool /* mute_on */) {
 }
 
 void SystemTrayDelegateChromeOS::OnAudioNodesChanged() {
-  GetWmSystemTrayNotifier()->NotifyAudioNodesChanged();
+  GetSystemTrayNotifier()->NotifyAudioNodesChanged();
 }
 
 void SystemTrayDelegateChromeOS::OnActiveOutputNodeChanged() {
-  GetWmSystemTrayNotifier()->NotifyAudioActiveOutputNodeChanged();
+  GetSystemTrayNotifier()->NotifyAudioActiveOutputNodeChanged();
 }
 
 void SystemTrayDelegateChromeOS::OnActiveInputNodeChanged() {
-  GetWmSystemTrayNotifier()->NotifyAudioActiveInputNodeChanged();
+  GetSystemTrayNotifier()->NotifyAudioActiveInputNodeChanged();
 }
 
 // Overridden from BluetoothAdapter::Observer.
@@ -1290,7 +1283,7 @@ void SystemTrayDelegateChromeOS::OnShutdownPolicyChanged(
 }
 
 void SystemTrayDelegateChromeOS::ImeMenuActivationChanged(bool is_active) {
-  GetWmSystemTrayNotifier()->NotifyRefreshIMEMenu(is_active);
+  GetSystemTrayNotifier()->NotifyRefreshIMEMenu(is_active);
 }
 
 void SystemTrayDelegateChromeOS::ImeMenuListChanged() {}

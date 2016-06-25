@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/macros.h"

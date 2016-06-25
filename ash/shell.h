@@ -147,7 +147,6 @@ class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
-class SystemTrayNotifier;
 class ToastManager;
 class ToplevelWindowEventHandler;
 class TouchTransformerController;
@@ -471,10 +470,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Returns the system tray on primary display.
   SystemTray* GetPrimarySystemTray();
 
-  SystemTrayNotifier* system_tray_notifier() {
-    return system_tray_notifier_.get();
-  }
-
   static void set_initially_hide_cursor(bool hide) {
     initially_hide_cursor_ = hide;
   }
@@ -642,7 +637,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
   std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<ShellDelegate> delegate_;
-  std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;

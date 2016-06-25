@@ -6,7 +6,7 @@
 
 #include "ash/audio/sounds.h"
 #include "ash/common/accessibility_delegate.h"
-#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -30,7 +30,7 @@ AshTouchExplorationManager::AshTouchExplorationManager(
 }
 
 AshTouchExplorationManager::~AshTouchExplorationManager() {
-  WmSystemTrayNotifier* system_tray_notifier =
+  SystemTrayNotifier* system_tray_notifier =
       WmShell::Get()->system_tray_notifier();
   if (system_tray_notifier)
     system_tray_notifier->RemoveAccessibilityObserver(this);
