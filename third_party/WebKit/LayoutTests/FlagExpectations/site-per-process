@@ -86,17 +86,21 @@ http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 # https://crbug.com/616905 - history.back() has different behavior with --site-per-process.
 http/tests/history/cross-origin-redirect-on-back.html [ Timeout ]
 
-# TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
-# Uninvestigated failures under http/tests (but outside of http/tests/security):
+# https://crbug.com/623268 - Can't inspect OOPIFs from main page's DevTools window.
 http/tests/inspector-protocol/request-mixed-content-status-blockable.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-none.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.html [ Timeout ]
 http/tests/inspector/change-iframe-src.html [ Timeout ]
 http/tests/inspector/console-cross-origin-iframe-logging.html [ Timeout ]
+http/tests/inspector/inspect-iframe-from-different-domain.html [ Timeout ]
+
+# https://crbug.com/623210 - DevTools extensions load in separate process in layout tests.
 http/tests/inspector/extensions-headers.html [ Timeout ]
 http/tests/inspector/extensions-iframe-eval.html [ Timeout ]
 http/tests/inspector/extensions-ignore-cache.html [ Timeout ]
 http/tests/inspector/extensions-network-redirect.html [ Timeout ]
 http/tests/inspector/extensions-useragent.html [ Timeout ]
+
+# https://crbug.com/623265 - cross-site navigation in main page breaks test.
 http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
-http/tests/inspector/inspect-iframe-from-different-domain.html [ Timeout ]
+
