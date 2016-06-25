@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 import("//build/util/version.gni")
 import("//chrome/version.gni")
 import("//testing/test.gni")
+import("//third_party/protobuf/proto_library.gni")
 import("//url/features.gni")
 
 assert(!is_component_build, "Cronet requires static library build.")
@@ -105,6 +106,20 @@ process_version("cronet_version_header") {
   ]
 }
 
+proto_library("cronet_android_cert_proto") {
+  visibility = [ "//components/cronet/android/*" ]
+
+  sources = [
+    "//components/cronet/android/cert/proto/cert_verification.proto",
+  ]
+
+  deps = [
+    "//third_party/protobuf:protobuf_lite",
+  ]
+
+  extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
 # Variables:
 #   defines: Extra defines.
 #   deps: Extra dependencies.
@@ -114,6 +129,7 @@ template("cronet_static_tmpl") {
 
     deps = [
       ":chromium_url_request_java",
+      ":cronet_android_cert_proto",
       ":cronet_jni_headers",
       ":cronet_version_header",
       "//base",
@@ -123,6 +139,8 @@ template("cronet_static_tmpl") {
       "//url:url_features",
     ]
     sources = [
+      "//components/cronet/android/cert/cert_verifier_cache_serializer.cc",
+      "//components/cronet/android/cert/cert_verifier_cache_serializer.h",
       "//components/cronet/android/chromium_url_request.cc",
       "//components/cronet/android/chromium_url_request.h",
       "//components/cronet/android/chromium_url_request_context.cc",
@@ -668,17 +686,20 @@ android_apk("cronet_perf_test_apk") {
 
 test("cronet_unittests") {
   sources = [
+    "//components/cronet/android/cert/cert_verifier_cache_serializer_unittest.cc",
     "//components/cronet/histogram_manager_unittest.cc",
     "//components/cronet/run_all_unittests.cc",
     "//components/cronet/url_request_context_config_unittest.cc",
   ]
 
   deps = [
+    ":cronet_android_cert_proto",
     ":cronet_static",
     "//base",
     "//base/test:test_support",
     "//components/metrics",
     "//net",
+    "//net:test_support",
     "//testing/gtest",
   ]
 

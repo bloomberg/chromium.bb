@@ -174,6 +174,24 @@
           ],
         },
         {
+          # Protobuf compiler / generator for certificate verifcation protocol
+          # buffer.
+          # GN version: //cronet:cronet_android_cert_proto
+          'target_name': 'cronet_android_cert_proto',
+          'type': 'static_library',
+          'sources': [
+            'cronet/android/cert/proto/cert_verification.proto',
+          ],
+          'variables': {
+            'enable_wexit_time_destructors': 1,
+            'proto_in_dir': 'cronet/android/cert/proto',
+            'proto_out_dir': 'cronet/android/cert/proto',
+          },
+          'includes': [
+            '../build/protoc.gypi',
+          ],
+        },
+        {
           'target_name': 'cronet_static',
           'type': 'static_library',
           'dependencies': [
@@ -525,14 +543,17 @@
           'target_name': 'cronet_unittests',
           'type': '<(gtest_target_type)',
           'dependencies': [
+            'cronet_android_cert_proto',
             'cronet_static',
             'metrics',
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
+            '../net/net.gyp:net_test_support',
             '../testing/gtest.gyp:gtest',
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
           'sources': [
+            'cronet/android/cert/cert_verifier_cache_serializer_unittest.cc',
             'cronet/run_all_unittests.cc',
             'cronet/url_request_context_config_unittest.cc',
             'cronet/histogram_manager_unittest.cc',

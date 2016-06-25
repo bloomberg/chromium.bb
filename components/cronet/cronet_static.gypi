@@ -9,6 +9,7 @@
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../url/url.gyp:url_url_features',
     'chromium_url_request_java',
+    'cronet_android_cert_proto',
     'cronet_jni_headers',
     'cronet_version',
     'cronet_version_header',
@@ -16,6 +17,8 @@
     'url_request_error_java',
   ],
   'sources': [
+    'android/cert/cert_verifier_cache_serializer.cc',
+    'android/cert/cert_verifier_cache_serializer.h',
     'android/chromium_url_request.cc',
     'android/chromium_url_request.h',
     'android/chromium_url_request_context.cc',

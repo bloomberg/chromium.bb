@@ -25,6 +25,8 @@ class NET_EXPORT CertVerifyResult {
 
   void Reset();
 
+  bool operator==(const CertVerifyResult& other) const;
+
   // The certificate and chain that was constructed during verification.
   // Note that the though the verified certificate will match the originally
   // supplied certificate, the intermediate certificates stored within may
