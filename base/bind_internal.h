@@ -156,7 +156,7 @@ class RunnableAdapter<R(*)(Args...)> {
   }
 
   template <typename... RunArgs>
-  R Run(RunArgs&&... args) {
+  R Run(RunArgs&&... args) const {
     return function_(std::forward<RunArgs>(args)...);
   }
 
@@ -178,7 +178,7 @@ class RunnableAdapter<R(T::*)(Args...)> {
   }
 
   template <typename Receiver, typename... RunArgs>
-  R Run(Receiver&& receiver_ptr, RunArgs&&... args) {
+  R Run(Receiver&& receiver_ptr, RunArgs&&... args) const {
     // Clang skips CV qualifier check on a method pointer invocation when the
     // receiver is a subclass. Store the receiver into a const reference to
     // T to ensure the CV check works.
@@ -203,7 +203,7 @@ class RunnableAdapter<R(T::*)(Args...) const> {
   }
 
   template <typename Receiver, typename... RunArgs>
-  R Run(Receiver&& receiver_ptr, RunArgs&&... args) {
+  R Run(Receiver&& receiver_ptr, RunArgs&&... args) const {
     // Clang skips CV qualifier check on a method pointer invocation when the
     // receiver is a subclass. Store the receiver into a unqualified reference
     // to T to ensure the CV check works.
@@ -357,7 +357,7 @@ struct Invoker<IndexSequence<bound_indices...>,
                is_weak_call,
                R(UnboundArgs...)> {
   static R Run(BindStateBase* base, UnboundArgs&&... unbound_args) {
-    StorageType* storage = static_cast<StorageType*>(base);
+    const StorageType* storage = static_cast<StorageType*>(base);
     // Local references to make debugger stepping easier. If in a debugger,
     // you really want to warp ahead and step through the
     // InvokeHelper<>::MakeItSo() call below.

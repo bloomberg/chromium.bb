@@ -146,7 +146,7 @@ void WontCompile() {
   ref_arg_cb.Run(p);
 }
 
-#elif defined(NCTEST_DISALLOW_BIND_TO_NON_CONST_REF_PARAM)  // [r"fatal error: static_assert failed \"do not bind functions with nonconst ref\""]
+#elif defined(NCTEST_DISALLOW_BIND_TO_NON_CONST_REF_PARAM)  // [r"fatal error: binding value of type 'const base::Parent' to reference to type 'base::Parent' drops 'const' qualifier"]
 
 // Binding functions with reference parameters, unsupported.
 //

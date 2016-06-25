@@ -70,24 +70,6 @@ Bind(Functor functor, Args&&... args) {
   // Type aliases for how to store and run the functor.
   using RunnableType = typename internal::FunctorTraits<Functor>::RunnableType;
   using RunType = typename internal::FunctorTraits<Functor>::RunType;
-
-  // Use RunnableType::RunType instead of RunType above because our
-  // checks below for bound references need to know what the actual
-  // functor is going to interpret the argument as.
-  using BoundRunType = typename RunnableType::RunType;
-
-  using BoundArgs =
-      internal::TakeTypeListItem<sizeof...(Args),
-                                 internal::ExtractArgs<BoundRunType>>;
-
-  // Do not allow binding a non-const reference parameter. Non-const reference
-  // parameters are disallowed by the Google style guide.  Also, binding a
-  // non-const reference parameter can make for subtle bugs because the
-  // invoked function will receive a reference to the stored copy of the
-  // argument and not the original.
-  static_assert(!internal::HasNonConstReferenceItem<BoundArgs>::value,
-                "do not bind functions with nonconst ref");
-
   const bool is_method = internal::HasIsMethodTag<RunnableType>::value;
 
   // For methods, we need to be careful for parameter 1.  We do not require

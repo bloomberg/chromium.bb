@@ -426,12 +426,12 @@ const T& Unwrap(const T& o) {
 }
 
 template <typename T>
-T* Unwrap(UnretainedWrapper<T> unretained) {
+T* Unwrap(const UnretainedWrapper<T>& unretained) {
   return unretained.get();
 }
 
 template <typename T>
-const T& Unwrap(ConstRefWrapper<T> const_ref) {
+const T& Unwrap(const ConstRefWrapper<T>& const_ref) {
   return const_ref.get();
 }
 
@@ -451,7 +451,7 @@ T* Unwrap(const OwnedWrapper<T>& o) {
 }
 
 template <typename T>
-T Unwrap(PassedWrapper<T>& o) {
+T Unwrap(const PassedWrapper<T>& o) {
   return o.Take();
 }
 
