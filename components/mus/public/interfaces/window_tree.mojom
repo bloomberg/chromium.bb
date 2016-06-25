@@ -177,6 +177,9 @@ interface WindowTree {
   // The caller must have created |window_id|. If not the request fails and the
   // response is false.
   //
+  // The embedder can dictate the behaviour of the embedded client by setting
+  // the appropriate embed flags (e.g. kEmbedFlagEmbedderInterceptsEvents).
+  //
   // When a connection embeds a WindowTreeClient the originating connection no
   // longer has privileges to access or see any of the children of the window.
   // If the window had existing children the children are removed. The
@@ -192,7 +195,8 @@ interface WindowTree {
   // OnEmbeddedAppDisconnected().
   //
   // The callback returns whether the embedding was successful.
-  Embed(uint32 window_id, WindowTreeClient client) => (bool success);
+  Embed(uint32 window_id, WindowTreeClient client, uint32 embed_flags)
+      => (bool success);
 
   // Sets focus to the specified window, use 0 to clear focus. For a window to
   // get focus the following has to happen: the window is drawn, the window has

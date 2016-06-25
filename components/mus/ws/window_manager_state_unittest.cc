@@ -63,7 +63,31 @@ class WindowManagerStateTest : public testing::Test {
   TestWindowTreeClient* wm_client() {
     return window_event_targeting_helper_.wm_client();
   }
+  TestWindowTreeClient* last_tree_client() {
+    return window_event_targeting_helper_.last_window_tree_client();
+  }
+  WindowTree* last_tree() {
+    return window_event_targeting_helper_.last_binding()->tree();
+  }
   WindowManagerState* window_manager_state() { return window_manager_state_; }
+
+  void EmbedAt(WindowTree* tree,
+               const ClientWindowId& embed_window_id,
+               uint32_t embed_flags,
+               WindowTree** embed_tree,
+               TestWindowTreeClient** embed_client_proxy) {
+    mojom::WindowTreeClientPtr embed_client;
+    mojom::WindowTreeClientRequest client_request = GetProxy(&embed_client);
+    ASSERT_TRUE(
+        tree->Embed(embed_window_id, std::move(embed_client), embed_flags));
+    TestWindowTreeClient* client =
+        window_event_targeting_helper_.last_window_tree_client();
+    ASSERT_EQ(1u, client->tracker()->changes()->size());
+    EXPECT_EQ(CHANGE_TYPE_EMBED, (*client->tracker()->changes())[0].type);
+    client->tracker()->changes()->clear();
+    *embed_client_proxy = client;
+    *embed_tree = window_event_targeting_helper_.last_binding()->tree();
+  }
 
   // testing::Test:
   void SetUp() override;
@@ -295,6 +319,99 @@ TEST_F(WindowManagerStateTest, AckTimeout) {
   OnEventAckTimeout(window()->id().client_id);
   EXPECT_TRUE(window_manager()->on_accelerator_called());
   EXPECT_EQ(accelerator->id(), window_manager()->on_accelerator_id());
+}
+
+TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
+  WindowTree* embedder_tree = tree();
+  ServerWindow* embedder_root = window();
+  const ClientWindowId embed_window_id(
+      WindowIdToTransportId(WindowId(embedder_tree->id(), 12)));
+  embedder_tree->NewWindow(embed_window_id, ServerWindow::Properties());
+  ServerWindow* embedder_window =
+      embedder_tree->GetWindowByClientId(embed_window_id);
+  ASSERT_TRUE(embedder_tree->AddWindow(
+      ClientWindowId(WindowIdToTransportId(embedder_root->id())),
+      embed_window_id));
+
+  TestWindowTreeClient* embedder_client = wm_client();
+
+  {
+    // Do a normal embed.
+    const uint32_t embed_flags = 0;
+    WindowTree* embed_tree = nullptr;
+    TestWindowTreeClient* embed_client_proxy = nullptr;
+    EmbedAt(embedder_tree, embed_window_id, embed_flags, &embed_tree,
+            &embed_client_proxy);
+    ASSERT_TRUE(embed_client_proxy);
+
+    // Send an event to the embed window. It should go to the embedded client.
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                         base::TimeTicks(), 0, 0);
+    DispatchInputEventToWindow(embedder_window, mouse, nullptr);
+    ASSERT_EQ(1u, embed_client_proxy->tracker()->changes()->size());
+    EXPECT_EQ(CHANGE_TYPE_INPUT_EVENT,
+              (*embed_client_proxy->tracker()->changes())[0].type);
+    WindowTreeTestApi(embed_tree).AckLastEvent(mojom::EventResult::UNHANDLED);
+    embed_client_proxy->tracker()->changes()->clear();
+  }
+
+  {
+    // Do an embed where the embedder wants to intercept events to the embedded
+    // tree.
+    const uint32_t embed_flags = mojom::kEmbedFlagEmbedderInterceptsEvents;
+    WindowTree* embed_tree = nullptr;
+    TestWindowTreeClient* embed_client_proxy = nullptr;
+    EmbedAt(embedder_tree, embed_window_id, embed_flags, &embed_tree,
+            &embed_client_proxy);
+    ASSERT_TRUE(embed_client_proxy);
+    embedder_client->tracker()->changes()->clear();
+
+    // Send an event to the embed window. But this time, it should reach the
+    // embedder.
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                         base::TimeTicks(), 0, 0);
+    DispatchInputEventToWindow(embedder_window, mouse, nullptr);
+    ASSERT_EQ(0u, embed_client_proxy->tracker()->changes()->size());
+    ASSERT_EQ(1u, embedder_client->tracker()->changes()->size());
+    EXPECT_EQ(CHANGE_TYPE_INPUT_EVENT,
+              (*embedder_client->tracker()->changes())[0].type);
+    WindowTreeTestApi(embedder_tree)
+        .AckLastEvent(mojom::EventResult::UNHANDLED);
+    embedder_client->tracker()->changes()->clear();
+
+    // Embed another tree in the embedded tree.
+    const ClientWindowId nested_embed_window_id(
+        WindowIdToTransportId(WindowId(embed_tree->id(), 23)));
+    embed_tree->NewWindow(nested_embed_window_id, ServerWindow::Properties());
+    const ClientWindowId embed_root_id(
+        WindowIdToTransportId((*embed_tree->roots().begin())->id()));
+    ASSERT_TRUE(embed_tree->AddWindow(embed_root_id, nested_embed_window_id));
+
+    WindowTree* nested_embed_tree = nullptr;
+    TestWindowTreeClient* nested_embed_client_proxy = nullptr;
+    EmbedAt(embed_tree, nested_embed_window_id, embed_flags, &nested_embed_tree,
+            &nested_embed_client_proxy);
+    ASSERT_TRUE(nested_embed_client_proxy);
+    embed_client_proxy->tracker()->changes()->clear();
+    embedder_client->tracker()->changes()->clear();
+
+    // Send an event to the nested embed window. The event should still reach
+    // the outermost embedder.
+    ServerWindow* nested_embed_window =
+        embed_tree->GetWindowByClientId(nested_embed_window_id);
+    DCHECK(nested_embed_window->parent());
+    mouse = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                           base::TimeTicks(), 0, 0);
+    DispatchInputEventToWindow(nested_embed_window, mouse, nullptr);
+    ASSERT_EQ(0u, nested_embed_client_proxy->tracker()->changes()->size());
+    ASSERT_EQ(0u, embed_client_proxy->tracker()->changes()->size());
+
+    ASSERT_EQ(1u, embedder_client->tracker()->changes()->size());
+    EXPECT_EQ(CHANGE_TYPE_INPUT_EVENT,
+              (*embedder_client->tracker()->changes())[0].type);
+    WindowTreeTestApi(embedder_tree)
+        .AckLastEvent(mojom::EventResult::UNHANDLED);
+  }
 }
 
 }  // namespace test

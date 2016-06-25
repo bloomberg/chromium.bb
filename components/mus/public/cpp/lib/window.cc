@@ -447,14 +447,15 @@ void Window::SetCanFocus(bool can_focus) {
     client_->SetCanFocus(server_id_, can_focus);
 }
 
-void Window::Embed(mus::mojom::WindowTreeClientPtr client) {
-  Embed(std::move(client), base::Bind(&EmptyEmbedCallback));
+void Window::Embed(mus::mojom::WindowTreeClientPtr client, uint32_t flags) {
+  Embed(std::move(client), base::Bind(&EmptyEmbedCallback), flags);
 }
 
 void Window::Embed(mus::mojom::WindowTreeClientPtr client,
-                   const EmbedCallback& callback) {
+                   const EmbedCallback& callback,
+                   uint32_t flags) {
   if (PrepareForEmbed())
-    client_->Embed(server_id_, std::move(client), callback);
+    client_->Embed(server_id_, std::move(client), flags, callback);
   else
     callback.Run(false);
 }

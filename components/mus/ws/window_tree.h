@@ -79,6 +79,11 @@ class WindowTree : public mojom::WindowTree,
 
   ClientSpecificId id() const { return id_; }
 
+  void set_embedder_intercepts_events() { embedder_intercepts_events_ = true; }
+  bool embedder_intercepts_events() const {
+    return embedder_intercepts_events_;
+  }
+
   const UserId& user_id() const { return user_id_; }
 
   mojom::WindowTreeClient* client() { return binding_->client(); }
@@ -163,7 +168,8 @@ class WindowTree : public mojom::WindowTree,
   bool SetWindowOpacity(const ClientWindowId& window_id, float opacity);
   bool SetFocus(const ClientWindowId& window_id);
   bool Embed(const ClientWindowId& window_id,
-             mojom::WindowTreeClientPtr client);
+             mojom::WindowTreeClientPtr client,
+             uint32_t flags);
   void DispatchInputEvent(ServerWindow* target, const ui::Event& event);
 
   bool IsWaitingForNewTopLevelWindow(uint32_t wm_change_id);
@@ -375,6 +381,7 @@ class WindowTree : public mojom::WindowTree,
                      mojom::SurfaceClientPtr client) override;
   void Embed(Id transport_window_id,
              mojom::WindowTreeClientPtr client,
+             uint32_t flags,
              const EmbedCallback& callback) override;
   void SetFocus(uint32_t change_id, Id transport_window_id) override;
   void SetCanFocus(Id transport_window_id, bool can_focus) override;
@@ -479,6 +486,7 @@ class WindowTree : public mojom::WindowTree,
 
   std::unique_ptr<WaitingForTopLevelWindowInfo>
       waiting_for_top_level_window_info_;
+  bool embedder_intercepts_events_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTree);
 };

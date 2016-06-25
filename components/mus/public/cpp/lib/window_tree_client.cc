@@ -354,12 +354,12 @@ void WindowTreeClient::SetImeVisibility(Id window_id,
   tree_->SetImeVisibility(window_id, visible, std::move(state));
 }
 
-void WindowTreeClient::Embed(
-    Id window_id,
-    mojom::WindowTreeClientPtr client,
-    const mojom::WindowTree::EmbedCallback& callback) {
+void WindowTreeClient::Embed(Id window_id,
+                             mojom::WindowTreeClientPtr client,
+                             uint32_t flags,
+                             const mojom::WindowTree::EmbedCallback& callback) {
   DCHECK(tree_);
-  tree_->Embed(window_id, std::move(client), callback);
+  tree_->Embed(window_id, std::move(client), flags, callback);
 }
 
 void WindowTreeClient::RequestClose(Window* window) {

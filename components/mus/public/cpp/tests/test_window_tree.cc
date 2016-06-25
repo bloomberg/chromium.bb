@@ -129,6 +129,7 @@ void TestWindowTree::SetEventObserver(mojom::EventMatcherPtr matcher,
 
 void TestWindowTree::Embed(uint32_t window_id,
                            mojom::WindowTreeClientPtr client,
+                           uint32_t flags,
                            const EmbedCallback& callback) {}
 
 void TestWindowTree::SetFocus(uint32_t change_id, uint32_t window_id) {

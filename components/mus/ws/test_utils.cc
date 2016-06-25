@@ -145,9 +145,10 @@ int EventDispatcherTestApi::NumberPointerTargetsForWindow(
 // TestDisplayBinding ---------------------------------------------------------
 
 WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
+  const uint32_t embed_flags = 0;
   WindowTree* tree = window_server_->EmbedAtWindow(
       root, shell::mojom::kRootUserID, mus::mojom::WindowTreeClientPtr(),
-      base::WrapUnique(new WindowManagerAccessPolicy));
+      embed_flags, base::WrapUnique(new WindowManagerAccessPolicy));
   tree->ConfigureWindowManager();
   return tree;
 }
@@ -396,7 +397,8 @@ ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request = GetProxy(&client);
   wm_client_->Bind(std::move(client_request));
-  wm_tree->Embed(embed_window_id, std::move(client));
+  const uint32_t embed_flags = 0;
+  wm_tree->Embed(embed_window_id, std::move(client), embed_flags);
   ServerWindow* embed_window = wm_tree->GetWindowByClientId(embed_window_id);
   WindowTree* tree1 = window_server_->GetTreeWithRoot(embed_window);
   EXPECT_NE(nullptr, tree1);

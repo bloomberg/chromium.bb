@@ -81,6 +81,7 @@ class TestWindowTree : public mojom::WindowTree {
                         uint32_t observer_id) override;
   void Embed(uint32_t window_id,
              mojom::WindowTreeClientPtr client,
+             uint32_t flags,
              const EmbedCallback& callback) override;
   void SetFocus(uint32_t change_id, uint32_t window_id) override;
   void SetCanFocus(uint32_t window_id, bool can_focus) override;

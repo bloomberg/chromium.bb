@@ -67,7 +67,8 @@ bool EmbedUrl(shell::Connector* connector,
   {
     mojom::WindowTreeClientPtr client;
     connector->ConnectToInterface(url.get(), &client);
-    tree->Embed(root_id, std::move(client),
+    const uint32_t embed_flags = 0;
+    tree->Embed(root_id, std::move(client), embed_flags,
                 base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
@@ -78,7 +79,8 @@ bool Embed(WindowTree* tree, Id root_id, mojom::WindowTreeClientPtr client) {
   bool result = false;
   base::RunLoop run_loop;
   {
-    tree->Embed(root_id, std::move(client),
+    const uint32_t embed_flags = 0;
+    tree->Embed(root_id, std::move(client), embed_flags,
                 base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();

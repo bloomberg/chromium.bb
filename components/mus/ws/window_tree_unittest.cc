@@ -202,7 +202,8 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request = GetProxy(&client);
   wm_client()->Bind(std::move(client_request));
-  wm_tree()->Embed(embed_window_id, std::move(client));
+  const uint32_t embed_flags = 0;
+  wm_tree()->Embed(embed_window_id, std::move(client), embed_flags);
   WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
   ASSERT_TRUE(tree1 != nullptr);
   ASSERT_NE(tree1, wm_tree());

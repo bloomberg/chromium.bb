@@ -81,6 +81,9 @@ class WindowTreeTestApi {
                                  mojom::EventResult::UNHANDLED);
   }
   void EnableCapture() { tree_->event_ack_id_ = 1u; }
+  void AckLastEvent(mojom::EventResult result) {
+    tree_->OnWindowInputEventAck(tree_->event_ack_id_, result);
+  }
 
   void SetEventObserver(mojom::EventMatcherPtr matcher,
                         uint32_t event_observer_id);
@@ -159,6 +162,13 @@ class WindowManagerStateTestApi {
                                   Accelerator* accelerator) {
     wms_->DispatchInputEventToWindow(target, client_id, event, accelerator);
   }
+
+  ClientSpecificId GetEventTargetClientId(ServerWindow* window,
+                                          bool in_nonclient_area) {
+    return wms_->GetEventTargetClientId(window, in_nonclient_area);
+  }
+
+  void ProcessEvent(const ui::Event& event) { wms_->ProcessEvent(event); }
 
   void OnEventAckTimeout(ClientSpecificId client_id) {
     wms_->OnEventAckTimeout(client_id);

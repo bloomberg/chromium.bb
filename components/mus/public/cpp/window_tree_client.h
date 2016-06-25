@@ -125,6 +125,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
   void Embed(Id window_id,
              mojom::WindowTreeClientPtr client,
+             uint32_t flags,
              const mojom::WindowTree::EmbedCallback& callback);
 
   void RequestClose(Window* window);

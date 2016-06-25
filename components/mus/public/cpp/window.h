@@ -210,12 +210,13 @@ class Window {
   void SetCanFocus(bool can_focus);
 
   // Embedding. See window_tree.mojom for details.
-  void Embed(mus::mojom::WindowTreeClientPtr client);
+  void Embed(mus::mojom::WindowTreeClientPtr client, uint32_t flags = 0);
 
   // NOTE: callback is run synchronously if Embed() is not allowed on this
   // Window.
   void Embed(mus::mojom::WindowTreeClientPtr client,
-             const EmbedCallback& callback);
+             const EmbedCallback& callback,
+             uint32_t flags = 0);
 
   // TODO(sky): this API is only applicable to the WindowManager. Move it
   // to a better place.

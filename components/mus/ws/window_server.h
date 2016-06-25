@@ -73,6 +73,7 @@ class WindowServer : public ServerWindowDelegate,
   WindowTree* EmbedAtWindow(ServerWindow* root,
                             const UserId& user_id,
                             mojom::WindowTreeClientPtr client,
+                            uint32_t flags,
                             std::unique_ptr<AccessPolicy> access_policy);
 
   // Adds |tree_impl_ptr| to the set of known trees. Use DestroyTree() to

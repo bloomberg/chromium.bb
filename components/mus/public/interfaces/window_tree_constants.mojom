@@ -47,3 +47,11 @@ enum EventResult {
   UNHANDLED,
 };
 
+// When this flag is set in a call to Embed(), the embedder (i.e. the client
+// that is making the call to Embed()) will receive events that are targeted to
+// the embedded client. The embedded client will not receive any input events
+// from the window server. However, the embedder can choose to dispatch events
+// to the embedded client through other mechanism.
+// TODO(sad): Provide an API in mus for the embedder to dispatch events to the
+// embedded client. https://crbug.com/621085
+const uint32 kEmbedFlagEmbedderInterceptsEvents = 0x01;

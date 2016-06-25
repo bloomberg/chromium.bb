@@ -74,10 +74,13 @@ WindowTree* WindowServer::EmbedAtWindow(
     ServerWindow* root,
     const UserId& user_id,
     mojom::WindowTreeClientPtr client,
+    uint32_t flags,
     std::unique_ptr<AccessPolicy> access_policy) {
   std::unique_ptr<WindowTree> tree_ptr(
       new WindowTree(this, user_id, root, std::move(access_policy)));
   WindowTree* tree = tree_ptr.get();
+  if (flags & mojom::kEmbedFlagEmbedderInterceptsEvents)
+    tree->set_embedder_intercepts_events();
 
   mojom::WindowTreePtr window_tree_ptr;
   mojom::WindowTreeRequest window_tree_request = GetProxy(&window_tree_ptr);

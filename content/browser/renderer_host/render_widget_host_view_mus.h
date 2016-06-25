@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/scoped_window_ptr.h"
 #include "components/mus/public/cpp/window.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -30,7 +31,9 @@ struct TextInputState;
 // such as visibility, and bounds. Some aspects such as input, focus, and cursor
 // are managed by Mus directly. Input event routing will be plumbed directly to
 // the renderer from Mus.
-class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
+class CONTENT_EXPORT RenderWidgetHostViewMus
+    : public RenderWidgetHostViewBase,
+      NON_EXPORTED_BASE(public mus::InputEventHandler) {
  public:
   RenderWidgetHostViewMus(mus::Window* parent_window,
                           RenderWidgetHostImpl* widget);
@@ -113,6 +116,13 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
 
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
+
+  // mus::InputEventHandler:
+  void OnWindowInputEvent(
+      mus::Window* target,
+      const ui::Event& event,
+      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
+          ack_callback) override;
 
   RenderWidgetHostImpl* host_;
 

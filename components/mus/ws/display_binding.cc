@@ -27,8 +27,9 @@ DisplayBindingImpl::DisplayBindingImpl(mojom::WindowTreeHostRequest request,
 DisplayBindingImpl::~DisplayBindingImpl() {}
 
 WindowTree* DisplayBindingImpl::CreateWindowTree(ServerWindow* root) {
+  const uint32_t embed_flags = 0;
   WindowTree* tree = window_server_->EmbedAtWindow(
-      root, user_id_, std::move(client_),
+      root, user_id_, std::move(client_), embed_flags,
       base::WrapUnique(new WindowManagerAccessPolicy));
   tree->ConfigureWindowManager();
   return tree;

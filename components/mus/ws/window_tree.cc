@@ -349,7 +349,8 @@ bool WindowTree::SetFocus(const ClientWindowId& window_id) {
 }
 
 bool WindowTree::Embed(const ClientWindowId& window_id,
-                       mojom::WindowTreeClientPtr client) {
+                       mojom::WindowTreeClientPtr client,
+                       uint32_t flags) {
   if (!client || !CanEmbed(window_id))
     return false;
   ServerWindow* window = GetWindowByClientId(window_id);
@@ -357,6 +358,7 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
   // When embedding we don't know the user id of where the TreeClient came
   // from. Use an invalid id, which limits what the client is able to do.
   window_server_->EmbedAtWindow(window, InvalidUserId(), std::move(client),
+                                flags,
                                 base::WrapUnique(new DefaultAccessPolicy));
   return true;
 }
@@ -1353,8 +1355,10 @@ void WindowTree::SetHitTestMask(Id transport_window_id, const gfx::Rect& mask) {
 
 void WindowTree::Embed(Id transport_window_id,
                        mojom::WindowTreeClientPtr client,
+                       uint32_t flags,
                        const EmbedCallback& callback) {
-  callback.Run(Embed(ClientWindowId(transport_window_id), std::move(client)));
+  callback.Run(
+      Embed(ClientWindowId(transport_window_id), std::move(client), flags));
 }
 
 void WindowTree::SetFocus(uint32_t change_id, Id transport_window_id) {

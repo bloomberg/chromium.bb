@@ -54,6 +54,14 @@ std::unique_ptr<ui::Event> CoalesceEvents(std::unique_ptr<ui::Event> first,
   return second;
 }
 
+const ServerWindow* GetEmbedRoot(const ServerWindow* window) {
+  DCHECK(window);
+  const ServerWindow* embed_root = window->parent();
+  while (embed_root && embed_root->id().client_id == window->id().client_id)
+    embed_root = embed_root->parent();
+  return embed_root;
+}
+
 }  // namespace
 
 class WindowManagerState::ProcessedEventTarget {
@@ -428,18 +436,29 @@ void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
 ClientSpecificId WindowManagerState::GetEventTargetClientId(
     const ServerWindow* window,
     bool in_nonclient_area) {
-  WindowTree* tree =
-      in_nonclient_area ? window_server()->GetTreeWithId(window->id().client_id)
-                        : window_server()->GetTreeWithRoot(window);
-  if (!tree) {
-    if (in_nonclient_area) {
-      // Being the root of the tree means we may get events outside the bounds
-      // of the platform window. Because the root has a client id of 0,
-      // no WindowTree is found for it and we have to special case it here.
-      tree = window_tree_;
-    } else {
+  // If the event is in the non-client area the event goes to the owner of
+  // the window.
+  WindowTree* tree = nullptr;
+  if (in_nonclient_area) {
+    tree = window_server()->GetTreeWithId(window->id().client_id);
+  } else {
+    // If the window is an embed root, forward to the embedded window.
+    tree = window_server()->GetTreeWithRoot(window);
+    if (!tree)
       tree = window_server()->GetTreeWithId(window->id().client_id);
-    }
+  }
+
+  const ServerWindow* embed_root =
+      tree->HasRoot(window) ? window : GetEmbedRoot(window);
+  while (tree && tree->embedder_intercepts_events()) {
+    DCHECK(tree->HasRoot(embed_root));
+    tree = window_server()->GetTreeWithId(embed_root->id().client_id);
+    embed_root = GetEmbedRoot(embed_root);
+  }
+
+  if (!tree) {
+    DCHECK(in_nonclient_area);
+    tree = window_tree_;
   }
   return tree->id();
 }
