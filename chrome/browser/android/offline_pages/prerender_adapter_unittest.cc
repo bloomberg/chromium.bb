@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/offline_pages/prerender_adapter.h"
 
+#include "base/sys_info.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -159,7 +160,8 @@ void PrerenderAdapterTest::OnPrerenderStart() {
 }
 
 PrerenderAdapterTest::~PrerenderAdapterTest() {
-  prerender_manager_->Shutdown();
+  if (prerender_manager_)
+    prerender_manager_->Shutdown();
 }
 
 void PrerenderAdapterTest::OnPrerenderStopLoading() {
@@ -175,12 +177,16 @@ void PrerenderAdapterTest::OnPrerenderStop() {
 }
 
 void PrerenderAdapterTest::SetUp() {
+  if (base::SysInfo::IsLowEndDevice())
+    return;
   adapter_.reset(new PrerenderAdapter(this));
   prerender_contents_factory_ = new StubPrerenderContentsFactory();
   prerender_manager_ = PrerenderManagerFactory::GetForProfile(profile());
-  prerender_manager_->SetPrerenderContentsFactoryForTest(
-      prerender_contents_factory_);
-  prerender_manager_->SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
+  if (prerender_manager_) {
+    prerender_manager_->SetPrerenderContentsFactoryForTest(
+        prerender_contents_factory_);
+    prerender_manager_->SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
+  }
   observer_start_called_ = false;
   observer_stop_loading_called_ = false;
   observer_dom_content_loaded_called_ = false;
@@ -189,6 +195,10 @@ void PrerenderAdapterTest::SetUp() {
 }
 
 TEST_F(PrerenderAdapterTest, CanPrerender) {
+  // Skip test on low end device until supported.
+  if (!base::SysInfo::IsLowEndDevice())
+    return;
+
   EXPECT_TRUE(adapter()->CanPrerender());
 
   prerender_manager()->SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
@@ -196,6 +206,10 @@ TEST_F(PrerenderAdapterTest, CanPrerender) {
 }
 
 TEST_F(PrerenderAdapterTest, StartPrerenderFailsForUnsupportedScheme) {
+  // Skip test on low end device until supported.
+  if (!base::SysInfo::IsLowEndDevice())
+    return;
+
   content::WebContents* session_contents = content::WebContents::Create(
       content::WebContents::CreateParams(profile()));
   content::SessionStorageNamespace* sessionStorageNamespace =
@@ -209,6 +223,10 @@ TEST_F(PrerenderAdapterTest, StartPrerenderFailsForUnsupportedScheme) {
 }
 
 TEST_F(PrerenderAdapterTest, StartPrerenderSucceeds) {
+  // Skip test on low end device until supported.
+  if (!base::SysInfo::IsLowEndDevice())
+    return;
+
   content::WebContents* session_contents = content::WebContents::Create(
       content::WebContents::CreateParams(profile()));
   content::SessionStorageNamespace* sessionStorageNamespace =
