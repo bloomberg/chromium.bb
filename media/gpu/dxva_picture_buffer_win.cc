@@ -199,7 +199,7 @@ bool PbufferPictureBuffer::CopyOutputSampleDataToPictureBuffer(
     // DXVAPictureBuffer instance is destroyed.
     decoder_dx11_texture_ = dx11_texture;
     decoder->CopyTexture(dx11_texture, dx11_decoding_texture_.get(),
-                         dx11_keyed_mutex_, keyed_mutex_value_, NULL, id(),
+                         dx11_keyed_mutex_, keyed_mutex_value_, id(),
                          input_buffer_id);
     return true;
   }

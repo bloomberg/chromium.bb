@@ -283,15 +283,22 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
                                  int input_buffer_id);
 
   // Copies the source texture |src_texture| to the destination |dest_texture|.
-  // The copying is done on the decoder thread. The |video_frame| parameter
-  // is the sample containing the frame to be copied.
+  // The copying is done on the decoder thread.
   void CopyTexture(ID3D11Texture2D* src_texture,
                    ID3D11Texture2D* dest_texture,
                    base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
                    uint64_t keyed_mutex_value,
-                   IMFSample* video_frame,
                    int picture_buffer_id,
                    int input_buffer_id);
+
+  // Copies the |video_frame| to the destination |dest_texture|.
+  void CopyTextureOnDecoderThread(
+      ID3D11Texture2D* dest_texture,
+      base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
+      uint64_t keyed_mutex_value,
+      IMFSample* video_frame,
+      int picture_buffer_id,
+      int input_buffer_id);
 
   // Flushes the decoder device to ensure that the decoded surface is copied
   // to the target surface. |iterations| helps to maintain an upper limit on

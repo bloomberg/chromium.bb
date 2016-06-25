@@ -2360,54 +2360,64 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
     ID3D11Texture2D* dest_texture,
     base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
     uint64_t keyed_mutex_value,
-    IMFSample* video_frame,
     int picture_buffer_id,
     int input_buffer_id) {
   TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::CopyTexture");
-  HRESULT hr = E_FAIL;
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   DCHECK(use_dx11_);
 
-  if (!decoder_thread_task_runner_->BelongsToCurrentThread()) {
-    // The media foundation H.264 decoder outputs YUV12 textures which we
-    // cannot copy into ANGLE as they expect ARGB textures. In D3D land
-    // the StretchRect API in the IDirect3DDevice9Ex interface did the color
-    // space conversion for us. Sadly in DX11 land the API does not provide
-    // a straightforward way to do this.
-    // We use the video processor MFT.
-    // https://msdn.microsoft.com/en-us/library/hh162913(v=vs.85).aspx
-    // This object implements a media foundation transform (IMFTransform)
-    // which follows the same contract as the decoder. The color space
-    // conversion as per msdn is done in the GPU.
+  // The media foundation H.264 decoder outputs YUV12 textures which we
+  // cannot copy into ANGLE as they expect ARGB textures. In D3D land
+  // the StretchRect API in the IDirect3DDevice9Ex interface did the color
+  // space conversion for us. Sadly in DX11 land the API does not provide
+  // a straightforward way to do this.
+  // We use the video processor MFT.
+  // https://msdn.microsoft.com/en-us/library/hh162913(v=vs.85).aspx
+  // This object implements a media foundation transform (IMFTransform)
+  // which follows the same contract as the decoder. The color space
+  // conversion as per msdn is done in the GPU.
 
-    D3D11_TEXTURE2D_DESC source_desc;
-    src_texture->GetDesc(&source_desc);
+  D3D11_TEXTURE2D_DESC source_desc;
+  src_texture->GetDesc(&source_desc);
 
-    // Set up the input and output types for the video processor MFT.
-    if (!InitializeDX11VideoFormatConverterMediaType(source_desc.Width,
-                                                     source_desc.Height)) {
-      RETURN_AND_NOTIFY_ON_FAILURE(
-          false, "Failed to initialize media types for convesion.",
-          PLATFORM_FAILURE, );
-    }
-
-    // The input to the video processor is the output sample.
-    base::win::ScopedComPtr<IMFSample> input_sample_for_conversion;
-    {
-      base::AutoLock lock(decoder_lock_);
-      PendingSampleInfo& sample_info = pending_output_samples_.front();
-      input_sample_for_conversion = sample_info.output_sample;
-    }
-
-    decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::CopyTexture,
-                              base::Unretained(this), src_texture, dest_texture,
-                              dest_keyed_mutex, keyed_mutex_value,
-                              input_sample_for_conversion.Detach(),
-                              picture_buffer_id, input_buffer_id));
-    return;
+  // Set up the input and output types for the video processor MFT.
+  if (!InitializeDX11VideoFormatConverterMediaType(source_desc.Width,
+                                                   source_desc.Height)) {
+    RETURN_AND_NOTIFY_ON_FAILURE(
+        false, "Failed to initialize media types for convesion.",
+        PLATFORM_FAILURE, );
   }
 
+  // The input to the video processor is the output sample.
+  base::win::ScopedComPtr<IMFSample> input_sample_for_conversion;
+  {
+    base::AutoLock lock(decoder_lock_);
+    PendingSampleInfo& sample_info = pending_output_samples_.front();
+    input_sample_for_conversion = sample_info.output_sample;
+  }
+
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread,
+                 base::Unretained(this), dest_texture, dest_keyed_mutex,
+                 keyed_mutex_value, input_sample_for_conversion.Detach(),
+                 picture_buffer_id, input_buffer_id));
+}
+
+void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
+    ID3D11Texture2D* dest_texture,
+    base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
+    uint64_t keyed_mutex_value,
+    IMFSample* video_frame,
+    int picture_buffer_id,
+    int input_buffer_id) {
+  TRACE_EVENT0("media",
+               "DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread");
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  HRESULT hr = E_FAIL;
+
+  DCHECK(use_dx11_);
   DCHECK(video_frame);
 
   base::win::ScopedComPtr<IMFSample> input_sample;
