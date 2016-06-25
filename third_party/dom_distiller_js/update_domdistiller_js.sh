@@ -7,14 +7,14 @@
 
 # Clones the dom-distiller repo, compiles and extracts its javascript Then
 # copies that js into the Chromium tree.
-# This script should be run from the src/ directory and requires that ant is
-# installed. It takes an optional parameter for which SHA1 to roll to. If left
-# unspecified the script rolls to HEAD.
+# This script requires that ant is installed. It takes an optional parameter
+# for which SHA1 to roll to. If left unspecified the script rolls to HEAD.
 
 (
   set -e
 
   dom_distiller_js_path=$(dirname "${BASH_SOURCE[0]}")
+  src_path=$dom_distiller_js_path/../..
   readme_chromium=$dom_distiller_js_path/README.chromium
   [ ! -f $readme_chromium ] && echo "$readme_chromium is not found" && exit 1
   tmpdir=/tmp/domdistiller-$$
@@ -71,7 +71,7 @@
   popd # dom-distiller-dist
 
   popd # tmpdir
-  curr_dist_gitsha=$(grep -e "/external\/github.com\/chromium\/dom-distiller-dist.git" DEPS | sed -e "s/.*'\([A-Za-z0-9]\{40\}\)'.*/\1/g")
+  curr_dist_gitsha=$(grep -e "/external\/github.com\/chromium\/dom-distiller-dist.git" $src_path/DEPS | sed -e "s/.*'\([A-Za-z0-9]\{40\}\)'.*/\1/g")
   if [[ "${new_dist_gitsha}" == "${curr_dist_gitsha}" ]]; then
     echo "The roll does not include any changes to the dist package. Exiting."
     rm -rf $tmpdir
@@ -80,7 +80,7 @@
 
   cp $tmpdir/dom-distiller/LICENSE $dom_distiller_js_path/
   sed -i "s/Version: [0-9a-f]*/Version: ${new_gitsha}/" $readme_chromium
-  sed -i -e "s/\('\/external\/github.com\/chromium\/dom-distiller-dist.git' + '@' + '\)\([0-9a-f]\+\)'/\1${new_dist_gitsha}'/" DEPS
+  sed -i -e "s/\('\/external\/github.com\/chromium\/dom-distiller-dist.git' + '@' + '\)\([0-9a-f]\+\)'/\1${new_dist_gitsha}'/" $src_path/DEPS
 
   gen_message () {
     echo "Roll DOM Distiller JavaScript distribution package"
@@ -99,7 +99,7 @@
 
   # Run checklicenses.py on the pulled files, but only print the output on
   # failures.
-  tools/checklicenses/checklicenses.py $dom_distiller_js_path > $tmpdir/checklicenses.out || cat $tmpdir/checklicenses.out
+  $src_path/tools/checklicenses/checklicenses.py third_party/dom_distiller_js > $tmpdir/checklicenses.out || cat $tmpdir/checklicenses.out
 
   git commit -a -F $message
 
