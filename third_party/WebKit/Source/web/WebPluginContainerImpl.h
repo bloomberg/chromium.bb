@@ -89,7 +89,6 @@ public:
     void handleEvent(Event*) override;
     void frameRectsChanged() override;
     void setParentVisible(bool) override;
-    void setParent(Widget*) override;
     void widgetGeometryMayHaveChanged() override;
     bool isPluginContainer() const override { return true; }
     void eventListenersRemoved() override;

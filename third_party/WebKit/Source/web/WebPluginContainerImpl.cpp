@@ -264,20 +264,6 @@ void WebPluginContainerImpl::setParentVisible(bool parentVisible)
         m_webPlugin->updateVisibility(isVisible());
 }
 
-void WebPluginContainerImpl::setParent(Widget* widget)
-{
-    // We override this function so that if the plugin is windowed, we can call
-    // NPP_SetWindow at the first possible moment.  This ensures that
-    // NPP_SetWindow is called before the manual load data is sent to a plugin.
-    // If this order is reversed, Flash won't load videos.
-
-    Widget::setParent(widget);
-    if (widget)
-        reportGeometry();
-    else if (m_webPlugin)
-        m_webPlugin->containerDidDetachFromParent();
-}
-
 void WebPluginContainerImpl::setPlugin(WebPlugin* plugin)
 {
     if (plugin == m_webPlugin)

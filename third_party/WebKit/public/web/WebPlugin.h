@@ -92,7 +92,6 @@ public:
     // if the container has been assigned a new plugin, then the container will
     // own the new plugin, not this old plugin.
     virtual WebPluginContainer* container() const { return nullptr; }
-    virtual void containerDidDetachFromParent() { }
 
     virtual v8::Local<v8::Object> v8ScriptableObject(v8::Isolate*) { return v8::Local<v8::Object>(); }
 
