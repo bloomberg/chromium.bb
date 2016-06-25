@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -18,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
 
 /**
  * Tests making requests using QUIC.
@@ -35,7 +37,7 @@ public class QuicTest extends CronetTestBase {
         QuicTestServer.startQuicTestServer(getContext());
 
         mBuilder = new CronetEngine.Builder(getContext());
-        mBuilder.enableQUIC(true);
+        mBuilder.enableQUIC(true).enableNetworkQualityEstimator(true);
         mBuilder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
 
@@ -169,5 +171,58 @@ public class QuicTest extends CronetTestBase {
         fileInputStream.read(data);
         fileInputStream.close();
         return new String(data, "UTF-8").contains(content);
+    }
+
+    @LargeTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    @SuppressWarnings("deprecation")
+    public void testRealTimeNetworkQualityObservationsWithQuic() throws Exception {
+        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mBuilder);
+        registerHostResolver(mTestFramework);
+        String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
+        ConditionVariable waitForThroughput = new ConditionVariable();
+
+        TestNetworkQualityRttListener rttListener =
+                new TestNetworkQualityRttListener(Executors.newSingleThreadExecutor());
+        TestNetworkQualityThroughputListener throughputListener =
+                new TestNetworkQualityThroughputListener(
+                        Executors.newSingleThreadExecutor(), waitForThroughput);
+
+        mTestFramework.mCronetEngine.addRttListener(rttListener);
+        mTestFramework.mCronetEngine.addThroughputListener(throughputListener);
+
+        mTestFramework.mCronetEngine.configureNetworkQualityEstimatorForTesting(true, true);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+
+        // Although the native stack races QUIC and SPDY for the first request,
+        // since there is no http server running on the corresponding TCP port,
+        // QUIC will always succeed with a 200 (see
+        // net::HttpStreamFactoryImpl::Request::OnStreamFailed).
+        UrlRequest.Builder requestBuilder = new UrlRequest.Builder(
+                quicURL, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        requestBuilder.build().start();
+        callback.blockForDone();
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        String expectedContent = "This is a simple text file served by QUIC.\n";
+        assertEquals(expectedContent, callback.mResponseAsString);
+        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+
+        // Throughput observation is posted to the network quality estimator on the network thread
+        // after the UrlRequest is completed. The observations are then eventually posted to
+        // throughput listeners on the executor provided to network quality.
+        waitForThroughput.block();
+        assertTrue(throughputListener.throughputObservationCount() > 0);
+
+        // Check RTT observation count after throughput observation has been received. This ensures
+        // that executor has finished posting the RTT observation to the RTT listeners.
+        // NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST
+        assertTrue(rttListener.rttObservationCount(0) > 0);
+
+        // NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC
+        assertTrue(rttListener.rttObservationCount(2) > 0);
+
+        mTestFramework.mCronetEngine.shutdown();
     }
 }

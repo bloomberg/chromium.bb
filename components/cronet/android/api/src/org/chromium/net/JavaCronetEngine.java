@@ -98,11 +98,14 @@ final class JavaCronetEngine extends CronetEngine {
     }
 
     @Override
+    public void setRequestFinishedListenerExecutor(Executor executor) {}
+
+    @Override
     public void enableNetworkQualityEstimator(Executor executor) {}
 
     @Override
-    void enableNetworkQualityEstimatorForTesting(
-            boolean useLocalHostRequests, boolean useSmallerResponses, Executor executor) {}
+    void configureNetworkQualityEstimatorForTesting(
+            boolean useLocalHostRequests, boolean useSmallerResponses) {}
 
     @Override
     public void addRttListener(NetworkQualityRttListener listener) {}

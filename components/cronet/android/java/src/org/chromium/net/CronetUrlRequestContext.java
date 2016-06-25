@@ -85,6 +85,7 @@ class CronetUrlRequestContext extends CronetEngine {
             if (mUrlRequestContextAdapter == 0) {
                 throw new NullPointerException("Context Adapter creation failed.");
             }
+            mNetworkQualityEstimatorEnabled = builder.networkQualityEstimatorEnabled();
         }
 
         // Init native Chromium URLRequestContext on main UI thread.
@@ -117,7 +118,7 @@ class CronetUrlRequestContext extends CronetEngine {
                 builder.dataReductionProxyPrimaryProxy(), builder.dataReductionProxyFallbackProxy(),
                 builder.dataReductionProxySecureProxyCheckUrl(), builder.cacheDisabled(),
                 builder.httpCacheMode(), builder.httpCacheMaxSize(), builder.experimentalOptions(),
-                builder.mockCertVerifier());
+                builder.mockCertVerifier(), builder.networkQualityEstimatorEnabled());
         for (Builder.QuicHint quicHint : builder.quicHints()) {
             nativeAddQuicHint(urlRequestContextConfig, quicHint.mHost, quicHint.mPort,
                     quicHint.mAlternatePort);
@@ -222,15 +223,32 @@ class CronetUrlRequestContext extends CronetEngine {
         return nativeGetHistogramDeltas();
     }
 
+    /**
+     * TODO(tbansal):  http://crbug.com/618034 Remove this API once all
+     * embedders have switched to using a request finished listener that
+     * provides its own executor.
+     */
     @Override
-    public void enableNetworkQualityEstimator(Executor executor) {
-        enableNetworkQualityEstimatorForTesting(false, false, executor);
+    public void setRequestFinishedListenerExecutor(Executor executor) {
+        if (!mNetworkQualityEstimatorEnabled) {
+            throw new IllegalStateException("Network quality estimator not enabled");
+        }
+        if (executor == null) {
+            throw new NullPointerException("Request finished listener requires an executor");
+        }
+        if (mNetworkQualityExecutor != null) {
+            throw new NullPointerException("Request finished listener executor already set");
+        }
+        mNetworkQualityExecutor = executor;
     }
 
-    @VisibleForTesting
+    /**
+     * TODO(tbansal):  http://crbug.com/618034 Remove this API once all
+     * embedders have switched to using CronetEngine builder for enabling
+     * network quality estimator.
+     */
     @Override
-    void enableNetworkQualityEstimatorForTesting(
-            boolean useLocalHostRequests, boolean useSmallerResponses, Executor executor) {
+    public void enableNetworkQualityEstimator(Executor executor) {
         if (mNetworkQualityEstimatorEnabled) {
             throw new IllegalStateException("Network quality estimator already enabled");
         }
@@ -241,7 +259,20 @@ class CronetUrlRequestContext extends CronetEngine {
         mNetworkQualityExecutor = executor;
         synchronized (mLock) {
             checkHaveAdapter();
-            nativeEnableNetworkQualityEstimator(
+            nativeEnableNetworkQualityEstimator(mUrlRequestContextAdapter);
+        }
+    }
+
+    @VisibleForTesting
+    @Override
+    void configureNetworkQualityEstimatorForTesting(
+            boolean useLocalHostRequests, boolean useSmallerResponses) {
+        if (!mNetworkQualityEstimatorEnabled) {
+            throw new IllegalStateException("Network quality estimator must be enabled");
+        }
+        synchronized (mLock) {
+            checkHaveAdapter();
+            nativeConfigureNetworkQualityEstimatorForTesting(
                     mUrlRequestContextAdapter, useLocalHostRequests, useSmallerResponses);
         }
     }
@@ -250,6 +281,9 @@ class CronetUrlRequestContext extends CronetEngine {
     public void addRttListener(NetworkQualityRttListener listener) {
         if (!mNetworkQualityEstimatorEnabled) {
             throw new IllegalStateException("Network quality estimator must be enabled");
+        }
+        if (mNetworkQualityExecutor == null && listener.getExecutor() == null) {
+            throw new IllegalStateException("Executor must not be null");
         }
         synchronized (mNetworkQualityLock) {
             if (mRttListenerList.isEmpty()) {
@@ -310,16 +344,28 @@ class CronetUrlRequestContext extends CronetEngine {
         }
     }
 
+    /**
+     * TODO(tbansal):  http://crbug.com/618034 Remove this API once all
+     * embedders have switched to using a request finished listener that
+     * provides its own executor.
+     */
     @Override
     public void addRequestFinishedListener(RequestFinishedListener listener) {
         if (!mNetworkQualityEstimatorEnabled) {
             throw new IllegalStateException("Network quality estimator must be enabled");
+        }
+        // RequestFinishedListener does not provide its own executor.
+        if (mNetworkQualityExecutor == null) {
+            throw new IllegalStateException("Executor must not be null");
         }
         synchronized (mNetworkQualityLock) {
             mFinishedListenerList.addObserver(listener);
         }
     }
 
+    /**
+     * TODO(tbansal):  http://crbug.com/618034 Remove this API.
+     */
     @Override
     public void removeRequestFinishedListener(RequestFinishedListener listener) {
         if (!mNetworkQualityEstimatorEnabled) {
@@ -416,56 +462,73 @@ class CronetUrlRequestContext extends CronetEngine {
     @SuppressWarnings("unused")
     @CalledByNative
     private void onRttObservation(final int rttMs, final long whenMs, final int source) {
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                synchronized (mNetworkQualityLock) {
-                    for (NetworkQualityRttListener listener : mRttListenerList) {
+        synchronized (mNetworkQualityLock) {
+            for (final NetworkQualityRttListener listener : mRttListenerList) {
+                Runnable task = new Runnable() {
+                    @Override
+                    public void run() {
                         listener.onRttObservation(rttMs, whenMs, source);
                     }
-                }
+                };
+                // Use the executor provided by the listener. If not available,
+                // use the network quality executor.
+                // TODO(tbansal): Change this to always use the executor
+                // provided by the listener, once all embedders start providing
+                // a non-null executor.
+                Executor executor = listener.getExecutor() != null ? listener.getExecutor()
+                                                                   : mNetworkQualityExecutor;
+                postObservationTaskToExecutor(executor, task);
             }
-        };
-        postObservationTaskToNetworkQualityExecutor(task);
+        }
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onThroughputObservation(
             final int throughputKbps, final long whenMs, final int source) {
+        synchronized (mNetworkQualityLock) {
+            for (final NetworkQualityThroughputListener listener : mThroughputListenerList) {
+                Runnable task = new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onThroughputObservation(throughputKbps, whenMs, source);
+                    }
+                };
+                postObservationTaskToExecutor(listener.getExecutor(), task);
+            }
+        }
+    }
+
+    void reportFinished(final CronetUrlRequest request) {
+        if (!mNetworkQualityEstimatorEnabled) {
+            return;
+        }
+        // If no request finished listener has been added, then mNetworkQualityExecutor may be
+        // null. Exit early to avoid posting to a null executor.
+        synchronized (mNetworkQualityLock) {
+            if (mFinishedListenerList.isEmpty()) {
+                return;
+            }
+        }
         Runnable task = new Runnable() {
             @Override
             public void run() {
                 synchronized (mNetworkQualityLock) {
-                    for (NetworkQualityThroughputListener listener : mThroughputListenerList) {
-                        listener.onThroughputObservation(throughputKbps, whenMs, source);
+                    UrlRequestInfo requestInfo = request.getRequestInfo();
+                    for (RequestFinishedListener listener : mFinishedListenerList) {
+                        listener.onRequestFinished(requestInfo);
                     }
                 }
             }
         };
-        postObservationTaskToNetworkQualityExecutor(task);
+        // Use {@link mNetworkQualityExecutor} since
+        // RequestFInishedListeners do not provide an executor.
+        postObservationTaskToExecutor(mNetworkQualityExecutor, task);
     }
 
-    void reportFinished(final CronetUrlRequest request) {
-        if (mNetworkQualityEstimatorEnabled) {
-            Runnable task = new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (mNetworkQualityLock) {
-                        UrlRequestInfo requestInfo = request.getRequestInfo();
-                        for (RequestFinishedListener listener : mFinishedListenerList) {
-                            listener.onRequestFinished(requestInfo);
-                        }
-                    }
-                }
-            };
-            postObservationTaskToNetworkQualityExecutor(task);
-        }
-    }
-
-    void postObservationTaskToNetworkQualityExecutor(Runnable task) {
+    private static void postObservationTaskToExecutor(Executor executor, Runnable task) {
         try {
-            mNetworkQualityExecutor.execute(task);
+            executor.execute(task);
         } catch (RejectedExecutionException failException) {
             Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor",
                     failException);
@@ -478,7 +541,8 @@ class CronetUrlRequestContext extends CronetEngine {
             boolean sdchEnabled, String dataReductionProxyKey,
             String dataReductionProxyPrimaryProxy, String dataReductionProxyFallbackProxy,
             String dataReductionProxySecureProxyCheckUrl, boolean disableCache, int httpCacheMode,
-            long httpCacheMaxSize, String experimentalOptions, long mockCertVerifier);
+            long httpCacheMaxSize, String experimentalOptions, long mockCertVerifier,
+            boolean enableNetworkQualityEstimator);
 
     private static native void nativeAddQuicHint(
             long urlRequestContextConfig, String host, int port, int alternatePort);
@@ -506,8 +570,11 @@ class CronetUrlRequestContext extends CronetEngine {
     private native void nativeInitRequestContextOnMainThread(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
-    private native void nativeEnableNetworkQualityEstimator(
+    private native void nativeConfigureNetworkQualityEstimatorForTesting(
             long nativePtr, boolean useLocalHostRequests, boolean useSmallerResponses);
+
+    @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+    private native void nativeEnableNetworkQualityEstimator(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeProvideRTTObservations(long nativePtr, boolean should);

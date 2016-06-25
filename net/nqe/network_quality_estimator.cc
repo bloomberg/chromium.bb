@@ -622,6 +622,21 @@ NetworkQualityEstimator::GetSocketPerformanceWatcherFactory() {
   return watcher_factory_.get();
 }
 
+void NetworkQualityEstimator::SetUseLocalHostRequestsForTesting(
+    bool use_localhost_requests) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  use_localhost_requests_ = use_localhost_requests;
+  throughput_analyzer_->SetUseLocalHostRequestsForTesting(
+      use_localhost_requests_);
+}
+
+void NetworkQualityEstimator::SetUseSmallResponsesForTesting(
+    bool use_small_responses) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  use_small_responses_ = use_small_responses;
+  throughput_analyzer_->SetUseSmallResponsesForTesting(use_small_responses_);
+}
+
 bool NetworkQualityEstimator::RequestProvidesRTTObservation(
     const URLRequest& request) const {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -47,6 +47,7 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/nqe/external_estimate_provider.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
 #include "net/sdch/sdch_owner.h"
@@ -420,27 +421,46 @@ void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
 }
 
 void CronetURLRequestContextAdapter::
-    EnableNetworkQualityEstimatorOnNetworkThread(bool use_local_host_requests,
-                                                 bool use_smaller_responses) {
+    ConfigureNetworkQualityEstimatorOnNetworkThreadForTesting(
+        bool use_local_host_requests,
+        bool use_smaller_responses) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
-  DCHECK(!network_quality_estimator_);
-  network_quality_estimator_.reset(new net::NetworkQualityEstimator(
-      std::unique_ptr<net::ExternalEstimateProvider>(),
-      std::map<std::string, std::string>(), use_local_host_requests,
-      use_smaller_responses));
-  context_->set_network_quality_estimator(network_quality_estimator_.get());
+  network_quality_estimator_->SetUseLocalHostRequestsForTesting(
+      use_local_host_requests);
+  network_quality_estimator_->SetUseSmallResponsesForTesting(
+      use_smaller_responses);
 }
 
-void CronetURLRequestContextAdapter::EnableNetworkQualityEstimator(
+void CronetURLRequestContextAdapter::ConfigureNetworkQualityEstimatorForTesting(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     jboolean use_local_host_requests,
     jboolean use_smaller_responses) {
   PostTaskToNetworkThread(
+      FROM_HERE,
+      base::Bind(&CronetURLRequestContextAdapter::
+                     ConfigureNetworkQualityEstimatorOnNetworkThreadForTesting,
+                 base::Unretained(this), use_local_host_requests,
+                 use_smaller_responses));
+}
+
+void CronetURLRequestContextAdapter::
+    EnableNetworkQualityEstimatorOnNetworkThread() {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  DCHECK(!network_quality_estimator_);
+  network_quality_estimator_.reset(new net::NetworkQualityEstimator(
+      std::unique_ptr<net::ExternalEstimateProvider>(),
+      std::map<std::string, std::string>()));
+  context_->set_network_quality_estimator(network_quality_estimator_.get());
+}
+
+void CronetURLRequestContextAdapter::EnableNetworkQualityEstimator(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
+  PostTaskToNetworkThread(
       FROM_HERE, base::Bind(&CronetURLRequestContextAdapter::
                                 EnableNetworkQualityEstimatorOnNetworkThread,
-                            base::Unretained(this), use_local_host_requests,
-                            use_smaller_responses));
+                            base::Unretained(this)));
 }
 
 void CronetURLRequestContextAdapter::ProvideRTTObservationsOnNetworkThread(
@@ -571,7 +591,20 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   // Disable net::CookieStore and net::ChannelIDService.
   context_builder.SetCookieAndChannelIdStores(nullptr, nullptr);
 
+  if (config->enable_network_quality_estimator) {
+    DCHECK(!network_quality_estimator_);
+    network_quality_estimator_.reset(new net::NetworkQualityEstimator(
+        std::unique_ptr<net::ExternalEstimateProvider>(),
+        std::map<std::string, std::string>(), false, false));
+    // Set the socket performance watcher factory so that network quality
+    // estimator is notified of socket performance metrics from TCP and QUIC.
+    context_builder.set_socket_performance_watcher_factory(
+        network_quality_estimator_->GetSocketPerformanceWatcherFactory());
+  }
+
   context_ = context_builder.Build();
+  if (network_quality_estimator_)
+    context_->set_network_quality_estimator(network_quality_estimator_.get());
 
   if (config->load_disable_cache)
     default_load_flags_ |= net::LOAD_DISABLE_CACHE;
@@ -783,7 +816,8 @@ static jlong CreateRequestContextConfig(
     jint jhttp_cache_mode,
     jlong jhttp_cache_max_size,
     const JavaParamRef<jstring>& jexperimental_quic_connection_options,
-    jlong jmock_cert_verifier) {
+    jlong jmock_cert_verifier,
+    jboolean jenable_network_quality_estimator) {
   return reinterpret_cast<jlong>(new URLRequestContextConfig(
       jquic_enabled,
       ConvertNullableJavaStringToUTF8(env, jquic_default_user_agent_id),
@@ -801,7 +835,8 @@ static jlong CreateRequestContextConfig(
       ConvertNullableJavaStringToUTF8(
           env, jdata_reduction_proxy_secure_proxy_check_url),
       base::WrapUnique(
-          reinterpret_cast<net::CertVerifier*>(jmock_cert_verifier))));
+          reinterpret_cast<net::CertVerifier*>(jmock_cert_verifier)),
+      jenable_network_quality_estimator));
 }
 
 // Add a QUIC hint to a URLRequestContextConfig.

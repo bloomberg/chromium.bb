@@ -213,7 +213,8 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       backoff_enabled_(false),
       sdch_enabled_(false),
       cookie_store_set_by_client_(false),
-      net_log_(nullptr) {
+      net_log_(nullptr),
+      socket_performance_watcher_factory_(nullptr) {
 }
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
@@ -451,6 +452,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (proxy_delegate_) {
     network_session_params.proxy_delegate = proxy_delegate_.get();
     storage->set_proxy_delegate(std::move(proxy_delegate_));
+  }
+  if (socket_performance_watcher_factory_) {
+    network_session_params.socket_performance_watcher_factory =
+        socket_performance_watcher_factory_;
   }
 
   storage->set_http_network_session(

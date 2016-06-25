@@ -57,7 +57,9 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       // Data reduction proxy secure proxy check URL.
       "",
       // MockCertVerifier to use for testing purposes.
-      std::unique_ptr<net::CertVerifier>());
+      std::unique_ptr<net::CertVerifier>(),
+      // Enable network quality estimator.
+      false);
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -134,7 +136,9 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
       // Data reduction proxy secure proxy check URL.
       "",
       // MockCertVerifier to use for testing purposes.
-      std::unique_ptr<net::CertVerifier>());
+      std::unique_ptr<net::CertVerifier>(),
+      // Enable network quality estimator.
+      false);
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;

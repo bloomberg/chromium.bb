@@ -107,7 +107,9 @@ struct URLRequestContextConfig {
       // Data reduction proxy secure proxy check URL.
       const std::string& data_reduction_secure_proxy_check_url,
       // MockCertVerifier to use for testing purposes.
-      std::unique_ptr<net::CertVerifier> mock_cert_verifier);
+      std::unique_ptr<net::CertVerifier> mock_cert_verifier,
+      // Enable network quality estimator.
+      bool enable_network_quality_estimator);
   ~URLRequestContextConfig();
 
   // Configure |context_builder| based on |this|.
@@ -150,6 +152,9 @@ struct URLRequestContextConfig {
 
   // Certificate verifier for testing.
   std::unique_ptr<net::CertVerifier> mock_cert_verifier;
+
+  // Enable network quality estimator.
+  const bool enable_network_quality_estimator;
 
   // App-provided list of servers that support QUIC.
   ScopedVector<QuicHint> quic_hints;

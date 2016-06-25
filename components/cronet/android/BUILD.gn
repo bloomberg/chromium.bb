@@ -589,6 +589,8 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/TestBidirectionalStreamCallback.java",
     "test/javatests/src/org/chromium/net/TestDrivenDataProvider.java",
     "test/javatests/src/org/chromium/net/TestHttpUrlRequestListener.java",
+    "test/javatests/src/org/chromium/net/TestNetworkQualityRttListener.java",
+    "test/javatests/src/org/chromium/net/TestNetworkQualityThroughputListener.java",
     "test/javatests/src/org/chromium/net/TestUploadDataProvider.java",
     "test/javatests/src/org/chromium/net/TestUrlRequestCallback.java",
     "test/javatests/src/org/chromium/net/UploadDataProvidersTest.java",

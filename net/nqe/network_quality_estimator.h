@@ -269,6 +269,16 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   static EffectiveConnectionType GetEffectiveConnectionTypeForName(
       const std::string& connection_type_name);
 
+  // |use_localhost_requests| should only be true when testing against local
+  // HTTP server and allows the requests to local host to be used for network
+  // quality estimation.
+  void SetUseLocalHostRequestsForTesting(bool use_localhost_requests);
+
+  // |use_smaller_responses_for_tests| should only be true when testing.
+  // Allows the responses smaller than |kMinTransferSizeInBits| to be used for
+  // network quality estimation.
+  void SetUseSmallResponsesForTesting(bool use_small_responses);
+
  protected:
   // NetworkID is used to uniquely identify a network.
   // For the purpose of network quality estimation and caching, a network is
@@ -494,12 +504,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
-  const bool use_localhost_requests_;
+  bool use_localhost_requests_;
 
   // Determines if the responses smaller than |kMinTransferSizeInBytes|
   // or shorter than |kMinTransferSizeInBytes| can be used in estimating the
   // network quality. Set to true only for tests.
-  const bool use_small_responses_;
+  bool use_small_responses_;
 
   // The factor by which the weight of an observation reduces every second.
   const double weight_multiplier_per_second_;
