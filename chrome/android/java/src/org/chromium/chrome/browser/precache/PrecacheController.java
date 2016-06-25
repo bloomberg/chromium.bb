@@ -9,15 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.OneoffTask;
 import com.google.android.gms.gcm.PeriodicTask;
@@ -29,7 +26,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeBackgroundService;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.util.NonThreadSafe;
 import org.chromium.components.precache.DeviceState;
 import org.chromium.sync.ModelType;
@@ -155,10 +151,12 @@ public class PrecacheController {
         return sInstance != null;
     }
 
-    /** Schedules a periodic task to precache resources. */
-    public static void schedulePeriodicPrecacheTask(Context context) {
-        if (!canScheduleTasks(context)) return;
-
+    /**
+     * Schedules a periodic task to precache resources.
+     * @param context The application context.
+     * @return false if the task cannot be scheduled.
+     */
+    private static boolean schedulePeriodicPrecacheTask(Context context) {
         PeriodicTask task = new PeriodicTask.Builder()
                 .setPeriod(WAIT_UNTIL_NEXT_PRECACHE_SECONDS)
                 .setPersisted(true)
@@ -167,8 +165,7 @@ public class PrecacheController {
                 .setService(ChromeBackgroundService.class)
                 .setTag(PERIODIC_TASK_TAG)
                 .build();
-        sTaskScheduler.scheduleTask(context, task);
-        // TODO(rajenrant): Track any failure via UMA.
+        return sTaskScheduler.scheduleTask(context, task);
     }
 
     private static void cancelPeriodicPrecacheTask(Context context) {
@@ -185,8 +182,6 @@ public class PrecacheController {
      */
     private static void schedulePrecacheCompletionTask(Context context) {
         Log.v(TAG, "scheduling a precache completion task");
-        if (!canScheduleTasks(context)) return;
-
         OneoffTask task = new OneoffTask.Builder()
                 .setExecutionWindow(COMPLETION_TASK_MIN_DELAY_SECONDS,
                         COMPLETION_TASK_MAX_DELAY_SECONDS)
@@ -208,20 +203,13 @@ public class PrecacheController {
     }
 
     public static void rescheduleTasksOnUpgrade(Context context) {
-        schedulePeriodicPrecacheTask(context);
-    }
-
-    @VisibleForTesting
-    static boolean canScheduleTasks(Context context) {
-        // This experimental feature should not run on Chrome Stable.
-        if (ChromeVersionInfo.isStableBuild()) {
-            return false;
+        // Reschedule the periodic task if precache was enabled previously.
+        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+        if (sharedPreferences.getBoolean(PREF_IS_PRECACHING_ENABLED, false)
+                && !schedulePeriodicPrecacheTask(context)) {
+            // Clear the preference, for the task to be scheduled next time.
+            sharedPreferences.edit().putBoolean(PREF_IS_PRECACHING_ENABLED, false).apply();
         }
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
-                != ConnectionResult.SUCCESS) {
-            return false;
-        }
-        return true;
     }
 
     @VisibleForTesting
@@ -262,13 +250,13 @@ public class PrecacheController {
         }
 
         Log.v(TAG, "setting precache enabled to %s", enabled);
-        Editor editor = sharedPreferences.edit();
-        editor.putBoolean(PREF_IS_PRECACHING_ENABLED, enabled);
-        editor.apply();
+        sharedPreferences.edit().putBoolean(PREF_IS_PRECACHING_ENABLED, enabled).apply();
 
         if (enabled) {
-            // Overwrites existing periodic task.
-            schedulePeriodicPrecacheTask(appContext);
+            if (!schedulePeriodicPrecacheTask(appContext)) {
+                // Clear the preference, for the task to be scheduled next time.
+                sharedPreferences.edit().putBoolean(PREF_IS_PRECACHING_ENABLED, false).apply();
+            }
         } else {
             // If precaching, stop.
             cancelPeriodicPrecacheTask(appContext);

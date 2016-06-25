@@ -71,7 +71,13 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
         public int cancelContinuationCnt = 0;
 
         @Override
+        boolean canScheduleTasks(Context context) {
+            return false;
+        }
+
+        @Override
         boolean scheduleTask(Context context, Task task) {
+            if (!canScheduleTasks(context)) return true;
             if (PrecacheController.PERIODIC_TASK_TAG.equals(task.getTag())) {
                 schedulePeriodicCnt++;
             } else if (PrecacheController.CONTINUATION_TASK_TAG.equals(task.getTag())) {
@@ -110,8 +116,7 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
     protected void verifyScheduledAndCanceledCounts(
             int expectedPeriodicScheduled, int expectedContinuationScheduled,
             int expectedPeriodicCanceled, int expectedContinuationCanceled) {
-        // This experimental feature should not run on Chrome Stable.
-        if (!PrecacheController.canScheduleTasks(mContext)) {
+        if (!mPrecacheTaskScheduler.canScheduleTasks(mContext)) {
             expectedPeriodicScheduled = 0;
             expectedContinuationScheduled = 0;
         }

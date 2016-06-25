@@ -14,9 +14,16 @@ import com.google.android.gms.gcm.Task;
 import org.chromium.chrome.browser.ChromeBackgroundService;
 
 class PrecacheTaskScheduler {
-    boolean scheduleTask(Context context, Task task) {
+    boolean canScheduleTasks(Context context) {
         if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
                 != ConnectionResult.SUCCESS) {
+            return false;
+        }
+        return true;
+    }
+
+    boolean scheduleTask(Context context, Task task) {
+        if (!canScheduleTasks(context)) {
             return false;
         }
         try {
@@ -28,8 +35,7 @@ class PrecacheTaskScheduler {
     }
 
     boolean cancelTask(Context context, String tag) {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
-                != ConnectionResult.SUCCESS) {
+        if (!canScheduleTasks(context)) {
             return false;
         }
         try {
