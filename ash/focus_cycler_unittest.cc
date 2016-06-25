@@ -6,15 +6,14 @@
 
 #include <memory>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -74,13 +73,10 @@ class FocusCyclerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    if (tray_) {
-      GetStatusAreaWidgetDelegate(tray_->GetWidget())->
-          SetFocusCyclerForTesting(NULL);
-      tray_.reset();
-    }
+    GetStatusAreaWidgetDelegate(GetPrimarySystemTray()->GetWidget())
+        ->SetFocusCyclerForTesting(nullptr);
 
-    shelf_widget()->SetFocusCycler(NULL);
+    shelf_widget()->SetFocusCycler(nullptr);
 
     focus_cycler_.reset();
 
@@ -88,29 +84,20 @@ class FocusCyclerTest : public AshTestBase {
   }
 
  protected:
-  // Creates the system tray, returning true on success.
-  bool CreateTray() {
-    if (tray_)
-      return false;
-    WmWindow* parent =
-        WmShell::Get()->GetRootWindowForNewWindows()->GetChildByShellWindowId(
-            kShellWindowId_StatusContainer);
-
-    StatusAreaWidget* widget = new StatusAreaWidget(parent, GetPrimaryShelf());
+  // Setup the system tray using StatusAreaWidgetTestHelper and focus_cycler.
+  void SetUpTrayFocusCycle() {
+    StatusAreaWidget* widget =
+        StatusAreaWidgetTestHelper::GetStatusAreaWidget();
     widget->CreateTrayViews();
     widget->Show();
-    tray_.reset(widget->system_tray());
-    if (!tray_->GetWidget())
-      return false;
-    focus_cycler_->AddWidget(tray()->GetWidget());
-    GetStatusAreaWidgetDelegate(tray_->GetWidget())->SetFocusCyclerForTesting(
-        focus_cycler());
-    return true;
+    views::Widget* system_tray_widget = GetPrimarySystemTray()->GetWidget();
+    ASSERT_TRUE(system_tray_widget);
+    focus_cycler_->AddWidget(system_tray_widget);
+    GetStatusAreaWidgetDelegate(system_tray_widget)
+        ->SetFocusCyclerForTesting(focus_cycler());
   }
 
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
-
-  SystemTray* tray() { return tray_.get(); }
 
   ShelfWidget* shelf_widget() {
     return Shelf::ForPrimaryDisplay()->shelf_widget();
@@ -123,7 +110,6 @@ class FocusCyclerTest : public AshTestBase {
 
  private:
   std::unique_ptr<FocusCycler> focus_cycler_;
-  std::unique_ptr<SystemTray> tray_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusCyclerTest);
 };
@@ -140,7 +126,7 @@ TEST_F(FocusCyclerTest, CycleFocusBrowserOnly) {
 }
 
 TEST_F(FocusCyclerTest, CycleFocusForward) {
-  ASSERT_TRUE(CreateTray());
+  SetUpTrayFocusCycle();
 
   InstallFocusCycleOnShelf();
 
@@ -151,7 +137,7 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Cycle focus to the shelf.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
@@ -163,7 +149,7 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
 }
 
 TEST_F(FocusCyclerTest, CycleFocusBackward) {
-  ASSERT_TRUE(CreateTray());
+  SetUpTrayFocusCycle();
 
   InstallFocusCycleOnShelf();
 
@@ -178,7 +164,7 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Cycle focus to the browser.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
@@ -186,7 +172,7 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
 }
 
 TEST_F(FocusCyclerTest, CycleFocusForwardBackward) {
-  ASSERT_TRUE(CreateTray());
+  SetUpTrayFocusCycle();
 
   InstallFocusCycleOnShelf();
 
@@ -201,7 +187,7 @@ TEST_F(FocusCyclerTest, CycleFocusForwardBackward) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Cycle focus to the browser.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
@@ -209,7 +195,7 @@ TEST_F(FocusCyclerTest, CycleFocusForwardBackward) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Cycle focus to the shelf.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
@@ -221,7 +207,7 @@ TEST_F(FocusCyclerTest, CycleFocusForwardBackward) {
 }
 
 TEST_F(FocusCyclerTest, CycleFocusNoBrowser) {
-  ASSERT_TRUE(CreateTray());
+  SetUpTrayFocusCycle();
 
   InstallFocusCycleOnShelf();
 
@@ -230,7 +216,7 @@ TEST_F(FocusCyclerTest, CycleFocusNoBrowser) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Cycle focus to the shelf.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
@@ -238,7 +224,7 @@ TEST_F(FocusCyclerTest, CycleFocusNoBrowser) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Cycle focus to the shelf.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
@@ -246,12 +232,12 @@ TEST_F(FocusCyclerTest, CycleFocusNoBrowser) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 }
 
 // Tests that focus cycles from the active browser to the status area and back.
 TEST_F(FocusCyclerTest, Shelf_CycleFocusForward) {
-  ASSERT_TRUE(CreateTray());
+  SetUpTrayFocusCycle();
   InstallFocusCycleOnShelf();
   shelf_widget()->Hide();
 
@@ -264,7 +250,7 @@ TEST_F(FocusCyclerTest, Shelf_CycleFocusForward) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Cycle focus to the browser.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
@@ -272,11 +258,11 @@ TEST_F(FocusCyclerTest, Shelf_CycleFocusForward) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 }
 
 TEST_F(FocusCyclerTest, Shelf_CycleFocusBackwardInvisible) {
-  ASSERT_TRUE(CreateTray());
+  SetUpTrayFocusCycle();
   InstallFocusCycleOnShelf();
   shelf_widget()->Hide();
 
@@ -287,7 +273,7 @@ TEST_F(FocusCyclerTest, Shelf_CycleFocusBackwardInvisible) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Cycle focus to the browser.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
@@ -295,7 +281,7 @@ TEST_F(FocusCyclerTest, Shelf_CycleFocusBackwardInvisible) {
 }
 
 TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
-  ASSERT_TRUE(CreateTray());
+  SetUpTrayFocusCycle();
 
   InstallFocusCycleOnShelf();
 
@@ -347,7 +333,7 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
 
   // Cycle focus to the status area.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Cycle focus to the shelf.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
@@ -365,7 +351,7 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
 
   // Cycle focus back to the status area.
   focus_cycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Reverse direction - back to the second pane in the browser.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
@@ -383,7 +369,7 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
 
   // Back to the status area.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
-  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+  EXPECT_TRUE(GetPrimarySystemTray()->GetWidget()->IsActive());
 
   // Pressing "Escape" while on the status area should
   // deactivate it, and activate the browser window.
