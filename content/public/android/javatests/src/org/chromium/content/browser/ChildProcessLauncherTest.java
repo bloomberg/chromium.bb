@@ -21,8 +21,6 @@ import java.util.concurrent.Callable;
 
 /**
  * Instrumentation tests for ChildProcessLauncher.
- * TODO(hanxi): Add tests for assigning {@ChildConnectionAllocator} for different package names
- * when render processes can be run in WebAPKs.
  */
 public class ChildProcessLauncherTest extends InstrumentationTestCase {
     // Pseudo command line arguments to instruct the child process to wait until being killed.
@@ -30,6 +28,9 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     // channels that are not being set up in this test.
     private static final String[] sProcessWaitArguments = {
         "_", "--" + BaseSwitches.RENDERER_WAIT_FOR_JAVA_DEBUGGER };
+    private static final String EXTERNAL_APK_PACKAGE_NAME = "org.chromium.external.apk";
+    private static final String DEFAULT_SANDBOXED_PROCESS_SERVICE =
+            "org.chromium.content.app.SandboxedProcessService";
 
     /**
      *  Tests cleanup for a connection that fails to connect in the first place.
@@ -224,6 +225,70 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         }));
     }
 
+    /**
+     * Tests service number of connections for external APKs and regular tabs are assigned properly,
+     * i.e. from different ChildConnectionAllocators.
+     */
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    @CommandLineFlags.Add({ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4",
+            ChildProcessLauncher.SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING + "="
+            + DEFAULT_SANDBOXED_PROCESS_SERVICE})
+    public void testServiceNumberAllocation() throws InterruptedException {
+        Context appContext = getInstrumentation().getTargetContext();
+        assertEquals(0, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
+                                appContext, EXTERNAL_APK_PACKAGE_NAME));
+        assertEquals(0, allocatedChromeSandboxedConnectionsCount());
+
+        // Start and connect to a new service of an external APK.
+        ChildProcessConnectionImpl externalApkConnection =
+                allocateConnection(EXTERNAL_APK_PACKAGE_NAME);
+        // Start and connect to a new service for a regular tab.
+        ChildProcessConnectionImpl tabConnection = allocateConnection(appContext.getPackageName());
+
+        // Verify that one connection is allocated for an external APK and a regular tab
+        // respectively.
+        assertEquals(1, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
+                                appContext, EXTERNAL_APK_PACKAGE_NAME));
+        assertEquals(1, allocatedChromeSandboxedConnectionsCount());
+
+        // Verify that connections allocated for an external APK and the regular tab are from
+        // different ChildConnectionAllocators, since both ChildConnectionAllocators start
+        // allocating connections from number 0.
+        assertEquals(0, externalApkConnection.getServiceNumber());
+        assertEquals(0, tabConnection.getServiceNumber());
+    }
+
+    /**
+     * Tests that after reaching the maximum allowed connections for an external APK, we can't
+     * allocate a new connection to the APK, but we can still allocate a connection for a regular
+     * tab.
+     */
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    @CommandLineFlags.Add({ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=1",
+            ChildProcessLauncher.SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING + "="
+            + DEFAULT_SANDBOXED_PROCESS_SERVICE})
+    public void testExceedMaximumConnectionNumber() throws InterruptedException, RemoteException {
+        Context appContext = getInstrumentation().getTargetContext();
+        assertEquals(0, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
+                                appContext, EXTERNAL_APK_PACKAGE_NAME));
+
+        // Setup a connection for an external APK to reach the maximum allowed connection number.
+        ChildProcessConnectionImpl externalApkConnection =
+                allocateConnection(EXTERNAL_APK_PACKAGE_NAME);
+        assertNotNull(externalApkConnection);
+
+        // Verify that there isn't any connection available for the external APK.
+        ChildProcessConnectionImpl exceedNumberExternalApkConnection =
+                allocateConnection(EXTERNAL_APK_PACKAGE_NAME);
+        assertNull(exceedNumberExternalApkConnection);
+
+        // Verify that we can still allocate connection for a regular tab.
+        ChildProcessConnectionImpl tabConnection = allocateConnection(appContext.getPackageName());
+        assertNotNull(tabConnection);
+    }
+
     private ChildProcessConnectionImpl startConnection() throws InterruptedException {
         // Allocate a new connection.
         Context context = getInstrumentation().getTargetContext();
@@ -240,6 +305,18 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                     }
                 });
         return connection;
+    }
+
+    /**
+     * Returns a new connection if it is allocated. Note this function only allocates a connection
+     * but doesn't really start the connection to bind a service. It is for testing whether the
+     * connection is allocated properly for different application packages.
+     */
+    private ChildProcessConnectionImpl allocateConnection(String packageName) {
+        // Allocate a new connection.
+        Context context = getInstrumentation().getTargetContext();
+        return (ChildProcessConnectionImpl) ChildProcessLauncher.allocateConnectionForTesting(
+                        context, getDefaultChildProcessCreationParams(packageName));
     }
 
     /**

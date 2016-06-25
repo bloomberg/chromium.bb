@@ -979,6 +979,13 @@ public class ChildProcessLauncher {
         return allocateBoundConnection(context, null, true, false, creationParams);
     }
 
+    @VisibleForTesting
+    static ChildProcessConnection allocateConnectionForTesting(Context context,
+            ChildProcessCreationParams creationParams) {
+        return allocateConnection(
+                context, true, getLinkerParamsForNewConnection(), false, creationParams);
+    }
+
     /**
      * Queue up a spawn requests for testing.
      */
