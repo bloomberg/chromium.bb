@@ -10,4 +10,13 @@ DemuxerStreamProvider::DemuxerStreamProvider() {}
 
 DemuxerStreamProvider::~DemuxerStreamProvider() {}
 
+GURL DemuxerStreamProvider::GetUrl() const {
+  NOTREACHED();
+  return GURL();
+}
+
+DemuxerStreamProvider::Type DemuxerStreamProvider::GetType() const {
+  return STREAM;
+}
+
 }  // namespace media
