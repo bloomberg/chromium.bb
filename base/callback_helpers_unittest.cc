@@ -58,4 +58,47 @@ TEST(BindHelpersTest, TestScopedClosureRunnerReset) {
   EXPECT_EQ(1, run_count_3);
 }
 
+TEST(BindHelpersTest, TestScopedClosureRunnerMoveConstructor) {
+  int run_count = 0;
+  {
+    std::unique_ptr<base::ScopedClosureRunner> runner(
+        new base::ScopedClosureRunner(base::Bind(&Increment, &run_count)));
+    base::ScopedClosureRunner runner2(std::move(*runner));
+    runner.reset();
+    EXPECT_EQ(0, run_count);
+  }
+  EXPECT_EQ(1, run_count);
+}
+
+TEST(BindHelpersTest, TestScopedClosureRunnerMoveAssignment) {
+  int run_count = 0;
+  {
+    base::ScopedClosureRunner runner;
+    {
+      base::ScopedClosureRunner runner2(base::Bind(&Increment, &run_count));
+      runner = std::move(runner2);
+    }
+    EXPECT_EQ(0, run_count);
+  }
+  EXPECT_EQ(1, run_count);
+}
+
+TEST(BindHelpersTest, TestScopedClosureRunnerRunOnReplace) {
+  int run_count1 = 0;
+  int run_count2 = 0;
+  {
+    base::ScopedClosureRunner runner1(base::Bind(&Increment, &run_count1));
+    {
+      base::ScopedClosureRunner runner2(base::Bind(&Increment, &run_count2));
+      runner1 = std::move(runner2);
+      EXPECT_EQ(1, run_count1);
+      EXPECT_EQ(0, run_count2);
+    }
+    EXPECT_EQ(1, run_count1);
+    EXPECT_EQ(0, run_count2);
+  }
+  EXPECT_EQ(1, run_count1);
+  EXPECT_EQ(1, run_count2);
+}
+
 }  // namespace
