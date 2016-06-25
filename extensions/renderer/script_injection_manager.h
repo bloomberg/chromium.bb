@@ -120,7 +120,7 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   ScriptInjectionVector running_injections_;
 
   // Whether or not dom activity should be logged for scripts injected.
-  bool activity_logging_enabled_;
+  bool activity_logging_enabled_ = false;
 
   ScopedObserver<UserScriptSetManager, UserScriptSetManager::Observer>
       user_script_set_manager_observer_;
