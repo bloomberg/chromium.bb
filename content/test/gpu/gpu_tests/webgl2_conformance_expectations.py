@@ -32,7 +32,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # All platforms.
 
     # Too slow (take about one hour to run)
-    self.Fail('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
+    self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
     self.Fail('deqp/functional/gles3/fboinvalidate/*.html', bug=483282)
     self.Fail('deqp/functional/gles3/fborender/*.html', bug=483282)
