@@ -27,8 +27,6 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
@@ -806,20 +804,19 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
       pref_service->GetBoolean(prefs::kMediaRouterFirstRunFlowAcknowledged);
   bool show_cloud_pref = false;
 #if defined(GOOGLE_CHROME_BUILD)
-  // Cloud services preference is shown if user is logged in and has sync
-  // enabled. If the user enables sync after acknowledging the first run flow,
-  // this is treated as the user opting into Google services, including cloud
-  // services, if the browser is a Chrome branded build.
-  if (!pref_service->GetBoolean(prefs::kMediaRouterCloudServicesPrefSet) &&
-      profile->IsSyncAllowed()) {
+  // Cloud services preference is shown if user is logged in. If the user
+  // enables sync after acknowledging the first run flow, this is treated as
+  // the user opting into Google services, including cloud services, if the
+  // browser is a Chrome branded build.
+  if (!pref_service->GetBoolean(prefs::kMediaRouterCloudServicesPrefSet)) {
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(profile);
-    if (signin_manager && signin_manager->IsAuthenticated() &&
-        ProfileSyncServiceFactory::GetForProfile(profile)->IsSyncActive()) {
+    if (signin_manager && signin_manager->IsAuthenticated()) {
       // If the user had previously acknowledged the first run flow without
       // being shown the cloud services option, and is now logged in with sync
       // enabled, turn on cloud services.
-      if (first_run_flow_acknowledged) {
+      if (first_run_flow_acknowledged &&
+          ProfileSyncServiceFactory::GetForProfile(profile)->IsSyncActive()) {
         pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices, true);
         pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet,
                                  true);
