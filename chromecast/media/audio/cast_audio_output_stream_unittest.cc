@@ -4,6 +4,7 @@
 
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chromecast/base/metrics/cast_metrics_test_helper.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
@@ -104,8 +105,8 @@ class FakeMediaPipelineBackend : public MediaPipelineBackend {
   // MediaPipelineBackend implementation:
   AudioDecoder* CreateAudioDecoder() override {
     DCHECK(!audio_decoder_);
-    audio_decoder_ = new FakeAudioDecoder();
-    return audio_decoder_;
+    audio_decoder_ = base::MakeUnique<FakeAudioDecoder>();
+    return audio_decoder_.get();
   }
   VideoDecoder* CreateVideoDecoder() override {
     NOTREACHED();
@@ -137,11 +138,11 @@ class FakeMediaPipelineBackend : public MediaPipelineBackend {
   bool SetPlaybackRate(float rate) override { return true; }
 
   State state() const { return state_; }
-  FakeAudioDecoder* decoder() const { return audio_decoder_; }
+  FakeAudioDecoder* decoder() const { return audio_decoder_.get(); }
 
  private:
   State state_;
-  FakeAudioDecoder* audio_decoder_;
+  std::unique_ptr<FakeAudioDecoder> audio_decoder_;
 };
 
 class FakeAudioSourceCallback
