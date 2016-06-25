@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/offline_pages/recent_tab_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -22,17 +23,30 @@ namespace offline_pages {
 
 namespace {
 const GURL kTestPageUrl("http://mystery.site/foo.html");
+const GURL kTestPageUrlOther("http://crazy.site/foo_other.html");
+const int kTabId = 153;
 }
 
-class TestArchiveFactoryImpl : public RecentTabHelper::TestArchiveFactory {
+class TestDelegate: public RecentTabHelper::Delegate {
  public:
-  explicit TestArchiveFactoryImpl(OfflinePageTestArchiver::Observer* observer);
-  ~TestArchiveFactoryImpl() override {}
+  explicit TestDelegate(
+      OfflinePageTestArchiver::Observer* observer,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      int tab_id,
+      bool tab_id_result);
+  ~TestDelegate() override {}
 
-  std::unique_ptr<OfflinePageArchiver> CreateArchiver(
+  std::unique_ptr<OfflinePageArchiver> CreatePageArchiver(
         content::WebContents* web_contents) override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
+    // There is no expectations that tab_id is always present.
+  bool GetTabId(content::WebContents* web_contents, int* tab_id) override;
+
  private:
   OfflinePageTestArchiver::Observer* observer_;  // observer owns this.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  int tab_id_;
+  bool tab_id_result_;
 };
 
 class RecentTabHelperTest
@@ -44,8 +58,6 @@ class RecentTabHelperTest
   ~RecentTabHelperTest() override {}
 
   void SetUp() override;
-  void SetUpTestArchiver(const GURL& url);
-  void SetUpMockTaskRunner();
   const std::vector<OfflinePageItem>& GetAllPages();
 
   void FailLoad(const GURL& url);
@@ -56,8 +68,15 @@ class RecentTabHelperTest
   void FastForwardSnapshotController();
 
   RecentTabHelper* recent_tab_helper() const { return recent_tab_helper_; }
+
   OfflinePageModel* model() const { return model_; }
+
   const std::vector<OfflinePageItem>& all_pages() { return all_pages_; }
+
+  scoped_refptr<base::TestMockTimeTaskRunner>& task_runner() {
+    return task_runner_;
+  }
+
   size_t model_changed_count() { return model_changed_count_; }
   size_t model_removed_count() { return model_removed_count_; }
 
@@ -88,12 +107,18 @@ class RecentTabHelperTest
   DISALLOW_COPY_AND_ASSIGN(RecentTabHelperTest);
 };
 
-TestArchiveFactoryImpl::TestArchiveFactoryImpl(
-    OfflinePageTestArchiver::Observer* observer)
-    : observer_(observer) {
+TestDelegate::TestDelegate(
+    OfflinePageTestArchiver::Observer* observer,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    int tab_id,
+    bool tab_id_result)
+    : observer_(observer),
+      task_runner_(task_runner),
+      tab_id_(tab_id),
+      tab_id_result_(tab_id_result) {
 }
 
-std::unique_ptr<OfflinePageArchiver> TestArchiveFactoryImpl::CreateArchiver(
+std::unique_ptr<OfflinePageArchiver> TestDelegate::CreatePageArchiver(
     content::WebContents* web_contents) {
   const size_t kArchiveSizeToReport = 1234;
   std::unique_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
@@ -103,6 +128,15 @@ std::unique_ptr<OfflinePageArchiver> TestArchiveFactoryImpl::CreateArchiver(
     kArchiveSizeToReport,
     base::ThreadTaskRunnerHandle::Get()));
   return std::move(archiver);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> TestDelegate::GetTaskRunner() {
+  return task_runner_;
+}
+  // There is no expectations that tab_id is always present.
+bool TestDelegate::GetTabId(content::WebContents* web_contents, int* tab_id) {
+  *tab_id = tab_id_;
+  return tab_id_result_;
 }
 
 RecentTabHelperTest::RecentTabHelperTest()
@@ -124,12 +158,9 @@ void RecentTabHelperTest::SetUp() {
   RecentTabHelper::CreateForWebContents(web_contents());
   recent_tab_helper_ =
       RecentTabHelper::FromWebContents(web_contents());
-  recent_tab_helper_->SetTaskRunnerForTest(task_runner_);
 
-  std::unique_ptr<RecentTabHelper::TestArchiveFactory> test_archive_factory(
-      new TestArchiveFactoryImpl(this));
-  recent_tab_helper_->SetArchiveFactoryForTest(std::move(test_archive_factory));
-
+  recent_tab_helper_->SetDelegate(base::MakeUnique<TestDelegate>(
+      this, task_runner(), kTabId, true));
 
   model_ = OfflinePageModelFactory::GetForBrowserContext(browser_context());
   model_->AddObserver(this);
@@ -181,7 +212,22 @@ TEST_F(RecentTabHelperTest, SimpleCapture) {
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 }
 
-TEST_F(RecentTabHelperTest, TwoCaptures) {
+TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
+  // Create delegate that returns 'false' as TabId retrieval result.
+  recent_tab_helper()->SetDelegate(base::MakeUnique<TestDelegate>(
+      this, task_runner(), kTabId, false));
+
+  NavigateAndCommit(kTestPageUrl);
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  GetAllPages();
+  // No page shodul be captured.
+  EXPECT_EQ(0U, all_pages().size());
+}
+
+// Should end up with 1 page.
+TEST_F(RecentTabHelperTest, TwoCapturesSameUrl) {
   NavigateAndCommit(kTestPageUrl);
   // Triggers snapshot after a time delay.
   recent_tab_helper()->DocumentAvailableInMainFrame();
@@ -206,6 +252,35 @@ TEST_F(RecentTabHelperTest, TwoCaptures) {
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+}
+
+// Should end up with 1 page.
+TEST_F(RecentTabHelperTest, TwoCapturesDifferentUrls) {
+  NavigateAndCommit(kTestPageUrl);
+  // Triggers snapshot after a time delay.
+  recent_tab_helper()->DocumentAvailableInMainFrame();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_EQ(0U, model_changed_count());
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
+  RunUntilIdle();
+  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(0U, model_removed_count());
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+
+  NavigateAndCommit(kTestPageUrlOther);
+  // Triggers snapshot immediately;
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  RunUntilIdle();
+  EXPECT_EQ(2U, model_changed_count());
+  EXPECT_EQ(1U, model_removed_count());
+  // the same page should be simply overridden.
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  EXPECT_EQ(kTestPageUrlOther, all_pages()[0].url);
 }
 
 TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
