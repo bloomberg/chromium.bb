@@ -2077,7 +2077,10 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     // We are now in our parent container's coordinate space.  Apply our transform to obtain a bounding box
     // in the parent's coordinate space that encloses us.
     if (hasLayer() && layer()->transform()) {
-        rect = LayoutRect(layer()->transform()->mapRect(pixelSnappedIntRect(rect)));
+        // Use enclosingIntRect because we cannot properly compute pixel snapping for painted elements within
+        // the transform since we don't know the desired subpixel accumulation at this point, and the transform may
+        // include a scale.
+        rect = LayoutRect(layer()->transform()->mapRect(enclosingIntRect(rect)));
         topLeft = rect.location();
         topLeft.move(locationOffset());
     }
