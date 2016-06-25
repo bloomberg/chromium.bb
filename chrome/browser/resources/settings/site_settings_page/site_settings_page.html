@@ -9,6 +9,9 @@
 <dom-module id="settings-site-settings-page">
   <template>
     <style include="settings-shared">
+      .settings-box[category] {
+        @apply(--settings-actionable);
+      }
     </style>
     <div class="settings-box first" category$="[[ALL_SITES]]"
         on-tap="onTapCategory">

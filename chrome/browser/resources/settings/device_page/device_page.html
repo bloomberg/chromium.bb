@@ -19,16 +19,18 @@
         current-route="{{currentRoute}}">
       <neon-animatable id="main">
         <div id="touchpadRow" class="settings-box first"
-            on-tap="onTouchpadTap_">
+            on-tap="onTouchpadTap_" actionable>
           <!-- TODO(michaelpg): Get a touchpad icon. -->
           <iron-icon icon="settings:brightness-1"></iron-icon>
           <div class="middle">$i18n{touchpadTitle}</div>
         </div>
-        <div id="keyboardRow" class="settings-box" on-tap="onKeyboardTap_">
+        <div id="keyboardRow" class="settings-box" on-tap="onKeyboardTap_"
+            actionable>
           <iron-icon icon="settings:keyboard"></iron-icon>
           <div class="middle">$i18n{keyboardTitle}</div>
         </div>
-        <div id="displayRow" class="settings-box" on-tap="onDisplayTap_">
+        <div id="displayRow" class="settings-box" on-tap="onDisplayTap_"
+            actionable>
           <iron-icon icon="settings:desktop-windows"></iron-icon>
           <div class="middle">$i18n{displayTitle}</div>
         </div>

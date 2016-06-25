@@ -45,17 +45,11 @@
         cursor: pointer;
       }
 
-<if expr="not chromeos">
-      #profile-name:hover {
-        cursor: pointer;
-      }
-</if>
-
       #managed-by-domain-name {
         font-weight: bold;
       }
 
-      iron-icon[icon="settings:sync-problem"] {
+      iron-icon[icon='settings:sync-problem'] {
        --iron-icon-fill-color: var(--settings-error-color);
       }
 
@@ -81,14 +75,14 @@
       <neon-animatable id="main">
         <div class="settings-box first two-line">
           <img id="profile-icon" src="[[profileIconUrl_]]"
-              on-tap="onPictureTap_">
+              on-tap="onPictureTap_" actionable>
           <div class="middle">
-<if expr="chromeos">
-            <span id="profile-name" on-tap="onProfileNameTap_">
+<if expr="not chromeos">
+            <span id="profile-name" on-tap="onProfileNameTap_" actionable>
               [[profileName_]]
             </span>
 </if>
-<if expr="not chromeos">
+<if expr="chromeos">
             <span id="profile-name">
               [[profileName_]]
             </span>
@@ -132,7 +126,7 @@
 
         <template is="dom-if"
             if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
-          <div class="settings-box two-line" on-tap="onSyncTap_">
+          <div class="settings-box two-line" on-tap="onSyncTap_" actionable>
             <div class="icon-container">
               <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
               </iron-icon>
@@ -151,7 +145,7 @@
         </template>
 
         <div class="settings-box two-line" id="activity-controls"
-            on-tap="onActivityControlsTap_">
+            on-tap="onActivityControlsTap_" actionable>
           <div class="icon-container">
             <div id="googleg-logo"></div>
           </div>
