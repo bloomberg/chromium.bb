@@ -1,60 +1,39 @@
 <!DOCTYPE HTML>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+<title>Test seeking by very small increments.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var seekedEventCount = 0;
+    var increment = 0;
+    var video = document.querySelector("video");
 
-        <script>
-            var seekedEventCount = 0;
-            var increment = 0;
+    video.currentTime = seekIncrement();
 
-            function seekIncrement()
-            {
-                // We want to verify that seeking by an increment smaller than the test movie's time scale
-                // (the smallest unit of time in that file) succeeds. test.mp4 has a time scale of 2500,
-                // 0.0004 seconds, so start with that and decrease by half each time.
-                if (!increment)
-                    increment = 0.0004;
-                else
-                    increment /= 2;
-                return increment;
-            }
+    video.onseeked = t.step_func(function() {
+        if (++seekedEventCount == 8) {
+            t.done();
+            return;
+        }
+        video.currentTime += seekIncrement();
+    });
 
-            function seeked()
-            {
-                if (++seekedEventCount == 8) {
-                    consoleWrite("");
-                    endTest();
-                    return;
-                }
-                attemptSeek();
-            }
+    function seekIncrement() {
+        // We want to verify that seeking by an increment smaller than the test movie's
+        // time scale(the smallest unit of time in that file) succeeds. test.mp4 has a time // scale of 2500, 0.0004 seconds, so start with that and decrease by half each time.
+        if (!increment)
+            increment = 0.0004;
+        else
+            increment /= 2;
+        return increment;
+    }
 
-            function attemptSeek()
-            {
-                var increment = seekIncrement();
-                consoleWrite("<br>** Seeking by " + increment);
-                video.currentTime += increment;
-            }
+    video.onseeking = t.step_func(function() {});
+    video.onplay = t.step_func(function() {});
+    video.onpause = t.step_func(function() {});
 
-            function start()
-            {
-                findMediaElement();
-                video.src = findMediaFile("video", "content/test");
-
-                waitForEventOnce('canplaythrough', attemptSeek);
-                waitForEvent('seeked', seeked);
-                waitForEvent('seeking');
-                waitForEvent('play');
-                waitForEvent('pause');
-            }
-        </script>
-    </head>
-    <body>
-        <video controls></video>
-        <p>Test seeking by very small increments.</p>
-        <script>start()</script>
-    </body>
-</html>
+    video.src = findMediaFile("video", "content/test");
+});
+</script>
