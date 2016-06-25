@@ -82,10 +82,9 @@ TEST_F(PowerStatusViewTest, Basic) {
   UpdatePowerStatus(prop);
   EXPECT_NE(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING),
             RemainingTimeInView());
-  EXPECT_NE(
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE),
-      RemainingTimeInView());
+  EXPECT_NE(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE),
+            RemainingTimeInView());
 
   prop.set_external_power(PowerSupplyProperties::AC);
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
@@ -95,19 +94,17 @@ TEST_F(PowerStatusViewTest, Basic) {
   EXPECT_TRUE(IsTimeStatusVisible());
   EXPECT_NE(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING),
             RemainingTimeInView());
-  EXPECT_NE(
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE),
-      RemainingTimeInView());
+  EXPECT_NE(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE),
+            RemainingTimeInView());
 
   prop.set_external_power(PowerSupplyProperties::USB);
   UpdatePowerStatus(prop);
   EXPECT_TRUE(IsPercentageVisible());
   EXPECT_TRUE(IsTimeStatusVisible());
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE),
-      RemainingTimeInView());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE),
+            RemainingTimeInView());
 
   // Tricky -- connected to non-USB but still discharging. Not likely happening
   // on production though.

@@ -226,11 +226,11 @@ class ASH_EXPORT StickyKeysHandler {
   // Represents event type in Sticky Key context.
   enum KeyEventType {
     TARGET_MODIFIER_DOWN,  // The monitoring modifier key is down.
-    TARGET_MODIFIER_UP,  // The monitoring modifier key is up.
-    NORMAL_KEY_DOWN,  // The non modifier key is down.
-    NORMAL_KEY_UP,  // The non modifier key is up.
-    OTHER_MODIFIER_DOWN,  // The modifier key but not monitored key is down.
-    OTHER_MODIFIER_UP,  // The modifier key but not monitored key is up.
+    TARGET_MODIFIER_UP,    // The monitoring modifier key is up.
+    NORMAL_KEY_DOWN,       // The non modifier key is down.
+    NORMAL_KEY_UP,         // The non modifier key is up.
+    OTHER_MODIFIER_DOWN,   // The modifier key but not monitored key is down.
+    OTHER_MODIFIER_UP,     // The modifier key but not monitored key is up.
   };
 
   // Translates event type and key code to sticky keys event type.

@@ -32,11 +32,10 @@ namespace test {
 class DragDropControllerTest;
 }
 
-class ASH_EXPORT DragDropController
-    : public aura::client::DragDropClient,
-      public ui::EventHandler,
-      public gfx::AnimationDelegate,
-      public aura::WindowObserver {
+class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
+                                      public ui::EventHandler,
+                                      public gfx::AnimationDelegate,
+                                      public aura::WindowObserver {
  public:
   DragDropController();
   ~DragDropController() override;

@@ -22,7 +22,6 @@ namespace ash {
 namespace {
 
 const char kScreenShareNotificationId[] = "chrome://screen/share";
-
 }
 
 ScreenShareTrayItem::ScreenShareTrayItem(SystemTray* system_tray)
@@ -35,19 +34,15 @@ ScreenShareTrayItem::~ScreenShareTrayItem() {
 }
 
 views::View* ScreenShareTrayItem::CreateTrayView(LoginStatus status) {
-  set_tray_view(
-      new tray::ScreenTrayView(this, IDR_AURA_UBER_TRAY_SCREENSHARE));
+  set_tray_view(new tray::ScreenTrayView(this, IDR_AURA_UBER_TRAY_SCREENSHARE));
   return tray_view();
 }
 
 views::View* ScreenShareTrayItem::CreateDefaultView(LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
-      this,
-      IDR_AURA_UBER_TRAY_SCREENSHARE_DARK,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED),
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP)));
+      this, IDR_AURA_UBER_TRAY_SCREENSHARE_DARK,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED),
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP)));
   return default_view();
 }
 
@@ -55,8 +50,7 @@ void ScreenShareTrayItem::CreateOrUpdateNotification() {
   base::string16 help_label_text;
   if (!helper_name_.empty()) {
     help_label_text = l10n_util::GetStringFUTF16(
-        IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED_NAME,
-        helper_name_);
+        IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED_NAME, helper_name_);
   } else {
     help_label_text = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED);

@@ -24,12 +24,8 @@ class LabelTrayView;
 // Adds a countdown timer to the system tray if the session length is limited.
 class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
                                           public SessionLengthLimitObserver {
-public:
-  enum LimitState {
-    LIMIT_NONE,
-    LIMIT_SET,
-    LIMIT_EXPIRING_SOON
-  };
+ public:
+  enum LimitState { LIMIT_NONE, LIMIT_SET, LIMIT_EXPIRING_SOON };
 
   explicit TraySessionLengthLimit(SystemTray* system_tray);
   ~TraySessionLengthLimit() override;

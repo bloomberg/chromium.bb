@@ -19,8 +19,7 @@ WindowWatcherShelfItemDelegate::WindowWatcherShelfItemDelegate(
   DCHECK(watcher_);
 }
 
-WindowWatcherShelfItemDelegate::~WindowWatcherShelfItemDelegate() {
-}
+WindowWatcherShelfItemDelegate::~WindowWatcherShelfItemDelegate() {}
 
 ShelfItemDelegate::PerformedAction WindowWatcherShelfItemDelegate::ItemSelected(
     const ui::Event& event) {
@@ -53,8 +52,7 @@ bool WindowWatcherShelfItemDelegate::ShouldShowTooltip() {
   return true;
 }
 
-void WindowWatcherShelfItemDelegate::Close() {
-}
+void WindowWatcherShelfItemDelegate::Close() {}
 
 }  // namespace shell
 }  // namespace ash

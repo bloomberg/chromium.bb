@@ -46,8 +46,8 @@ bool IsActiveWindow(aura::Window* window) {
 }
 
 aura::Window* GetActiveWindow() {
-  return aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
-      GetActiveWindow();
+  return aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
+      ->GetActiveWindow();
 }
 
 aura::Window* GetActivatableWindow(aura::Window* window) {
@@ -108,8 +108,7 @@ void SetSnapsChildrenToPhysicalPixelBoundary(aura::Window* container) {
 void InstallSnapLayoutManagerToContainers(aura::Window* parent) {
   aura::Window::Windows children = parent->children();
   for (aura::Window::Windows::iterator iter = children.begin();
-       iter != children.end();
-       ++iter) {
+       iter != children.end(); ++iter) {
     aura::Window* container = *iter;
     if (container->id() < 0)  // not a container
       continue;

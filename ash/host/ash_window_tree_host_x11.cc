@@ -44,7 +44,9 @@ AshWindowTreeHostX11::~AshWindowTreeHostX11() {
   UnConfineCursor();
 }
 
-void AshWindowTreeHostX11::ToggleFullScreen() { NOTIMPLEMENTED(); }
+void AshWindowTreeHostX11::ToggleFullScreen() {
+  NOTIMPLEMENTED();
+}
 
 bool AshWindowTreeHostX11::ConfineCursorToRootWindow() {
 #if XFIXES_MAJOR >= 5
@@ -55,45 +57,21 @@ bool AshWindowTreeHostX11::ConfineCursorToRootWindow() {
   gfx::Rect barrier(bounds());
   barrier.Inset(transformer_helper_.GetHostInsets());
   // Horizontal, top barriers.
-  pointer_barriers_[0] = XFixesCreatePointerBarrier(xdisplay(),
-                                                    x_root_window(),
-                                                    barrier.x(),
-                                                    barrier.y(),
-                                                    barrier.right(),
-                                                    barrier.y(),
-                                                    BarrierPositiveY,
-                                                    0,
-                                                    XIAllDevices);
+  pointer_barriers_[0] = XFixesCreatePointerBarrier(
+      xdisplay(), x_root_window(), barrier.x(), barrier.y(), barrier.right(),
+      barrier.y(), BarrierPositiveY, 0, XIAllDevices);
   // Horizontal, bottom barriers.
-  pointer_barriers_[1] = XFixesCreatePointerBarrier(xdisplay(),
-                                                    x_root_window(),
-                                                    barrier.x(),
-                                                    barrier.bottom(),
-                                                    barrier.right(),
-                                                    barrier.bottom(),
-                                                    BarrierNegativeY,
-                                                    0,
-                                                    XIAllDevices);
+  pointer_barriers_[1] = XFixesCreatePointerBarrier(
+      xdisplay(), x_root_window(), barrier.x(), barrier.bottom(),
+      barrier.right(), barrier.bottom(), BarrierNegativeY, 0, XIAllDevices);
   // Vertical, left  barriers.
-  pointer_barriers_[2] = XFixesCreatePointerBarrier(xdisplay(),
-                                                    x_root_window(),
-                                                    barrier.x(),
-                                                    barrier.y(),
-                                                    barrier.x(),
-                                                    barrier.bottom(),
-                                                    BarrierPositiveX,
-                                                    0,
-                                                    XIAllDevices);
+  pointer_barriers_[2] = XFixesCreatePointerBarrier(
+      xdisplay(), x_root_window(), barrier.x(), barrier.y(), barrier.x(),
+      barrier.bottom(), BarrierPositiveX, 0, XIAllDevices);
   // Vertical, right barriers.
-  pointer_barriers_[3] = XFixesCreatePointerBarrier(xdisplay(),
-                                                    x_root_window(),
-                                                    barrier.right(),
-                                                    barrier.y(),
-                                                    barrier.right(),
-                                                    barrier.bottom(),
-                                                    BarrierNegativeX,
-                                                    0,
-                                                    XIAllDevices);
+  pointer_barriers_[3] = XFixesCreatePointerBarrier(
+      xdisplay(), x_root_window(), barrier.right(), barrier.y(),
+      barrier.right(), barrier.bottom(), BarrierNegativeX, 0, XIAllDevices);
 #endif
   return true;
 }
@@ -123,7 +101,9 @@ gfx::Insets AshWindowTreeHostX11::GetHostInsets() const {
   return transformer_helper_.GetHostInsets();
 }
 
-aura::WindowTreeHost* AshWindowTreeHostX11::AsWindowTreeHost() { return this; }
+aura::WindowTreeHost* AshWindowTreeHostX11::AsWindowTreeHost() {
+  return this;
+}
 
 void AshWindowTreeHostX11::PrepareForShutdown() {
   // Block the root window from dispatching events because it is weird for a
@@ -193,7 +173,7 @@ void AshWindowTreeHostX11::OnConfigureNotify() {
 }
 
 bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
-  if(!WindowTreeHostX11::CanDispatchEvent(event))
+  if (!WindowTreeHostX11::CanDispatchEvent(event))
     return false;
   XEvent* xev = event;
   ui::EventType type = ui::EventTypeFromNative(xev);
@@ -262,29 +242,14 @@ void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {
       int old_format;
       unsigned long old_nvalues, bytes;
       unsigned char* data;
-      int result = XIGetProperty(xdisplay(),
-                                 dev_list[i].deviceid,
-                                 prop,
-                                 0,
-                                 0,
-                                 False,
-                                 AnyPropertyType,
-                                 &old_type,
-                                 &old_format,
-                                 &old_nvalues,
-                                 &bytes,
-                                 &data);
+      int result = XIGetProperty(xdisplay(), dev_list[i].deviceid, prop, 0, 0,
+                                 False, AnyPropertyType, &old_type, &old_format,
+                                 &old_nvalues, &bytes, &data);
       if (result != Success)
         continue;
       XFree(data);
-      XIChangeProperty(xdisplay(),
-                       dev_list[i].deviceid,
-                       prop,
-                       XA_INTEGER,
-                       8,
-                       PropModeReplace,
-                       &value,
-                       1);
+      XIChangeProperty(xdisplay(), dev_list[i].deviceid, prop, XA_INTEGER, 8,
+                       PropModeReplace, &value, 1);
     }
   }
 }

@@ -26,8 +26,9 @@ namespace shell {
 class LockView : public views::WidgetDelegateView,
                  public views::ButtonListener {
  public:
-  LockView() : unlock_button_(new views::LabelButton(
-                                  this, base::ASCIIToUTF16("Unlock"))) {
+  LockView()
+      : unlock_button_(
+            new views::LabelButton(this, base::ASCIIToUTF16("Unlock"))) {
     unlock_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(unlock_button_);
   }
@@ -43,7 +44,7 @@ class LockView : public views::WidgetDelegateView,
     base::string16 text = base::ASCIIToUTF16("LOCKED!");
     int string_width = gfx::GetStringWidth(text, font_list_);
     canvas->DrawStringRect(text, font_list_, SK_ColorRED,
-                           gfx::Rect((width() - string_width)/ 2,
+                           gfx::Rect((width() - string_width) / 2,
                                      (height() - font_list_.GetHeight()) / 2,
                                      string_width, font_list_.GetHeight()));
   }

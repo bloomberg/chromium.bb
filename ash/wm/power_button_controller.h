@@ -37,13 +37,15 @@ class LockStateController;
 // Handles power & lock button events which may result in the locking or
 // shutting down of the system as well as taking screen shots while in maximize
 // mode.
-class ASH_EXPORT PowerButtonController : ui::EventHandler
+class ASH_EXPORT PowerButtonController
+    : ui::EventHandler
 // TODO(derat): Remove these ifdefs after DisplayConfigurator becomes
 // cross-platform.
 #if defined(OS_CHROMEOS)
-      , public ui::DisplayConfigurator::Observer
+      ,
+      public ui::DisplayConfigurator::Observer
 #endif
-      {
+{
  public:
   explicit PowerButtonController(LockStateController* controller);
   ~PowerButtonController() override;

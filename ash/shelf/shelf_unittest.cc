@@ -57,25 +57,15 @@ class ShelfTest : public ash::test::AshTestBase {
 
   void TearDown() override { test::AshTestBase::TearDown(); }
 
-  Shelf* shelf() {
-    return shelf_;
-  }
+  Shelf* shelf() { return shelf_; }
 
-  ShelfView* shelf_view() {
-    return shelf_view_;
-  }
+  ShelfView* shelf_view() { return shelf_view_; }
 
-  ShelfModel* shelf_model() {
-    return shelf_model_;
-  }
+  ShelfModel* shelf_model() { return shelf_model_; }
 
-  ShelfItemDelegateManager* item_manager() {
-    return item_delegate_manager_;
-  }
+  ShelfItemDelegateManager* item_manager() { return item_delegate_manager_; }
 
-  ash::test::ShelfViewTestAPI* test_api() {
-    return test_.get();
-  }
+  ash::test::ShelfViewTestAPI* test_api() { return test_.get(); }
 
  private:
   Shelf* shelf_;

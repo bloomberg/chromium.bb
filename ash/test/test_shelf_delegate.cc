@@ -20,8 +20,7 @@ namespace test {
 
 TestShelfDelegate* TestShelfDelegate::instance_ = NULL;
 
-TestShelfDelegate::TestShelfDelegate(ShelfModel* model)
-    : model_(model) {
+TestShelfDelegate::TestShelfDelegate(ShelfModel* model) : model_(model) {
   CHECK(!instance_);
   instance_ = this;
 }
@@ -83,7 +82,7 @@ void TestShelfDelegate::OnWindowDestroying(aura::Window* window) {
 }
 
 void TestShelfDelegate::OnWindowHierarchyChanging(
-      const HierarchyChangeParams& params) {
+    const HierarchyChangeParams& params) {
   // The window may be legitimately reparented while staying open if it moves
   // to another display or container. If the window does not have a new parent
   // then remove the shelf item.

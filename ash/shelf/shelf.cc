@@ -119,17 +119,16 @@ gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(
   gfx::Point screen_origin;
   views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
   return gfx::Rect(screen_origin.x() + bounds.x(),
-                   screen_origin.y() + bounds.y(),
-                   bounds.width(),
+                   screen_origin.y() + bounds.y(), bounds.width(),
                    bounds.height());
 }
 
 void Shelf::UpdateIconPositionForWindow(aura::Window* window) {
   shelf_view_->UpdatePanelIconPosition(
       GetShelfIDForWindow(window),
-      ScreenUtil::ConvertRectFromScreen(
-          shelf_widget()->GetNativeView(),
-          window->GetBoundsInScreen()).CenterPoint());
+      ScreenUtil::ConvertRectFromScreen(shelf_widget()->GetNativeView(),
+                                        window->GetBoundsInScreen())
+          .CenterPoint());
 }
 
 void Shelf::ActivateShelfItem(int index) {
@@ -147,8 +146,8 @@ void Shelf::ActivateShelfItem(int index) {
 }
 
 void Shelf::CycleWindowLinear(CycleDirection direction) {
-  int item_index = GetNextActivatedItemIndex(
-      *(shelf_view_->model()), direction);
+  int item_index =
+      GetNextActivatedItemIndex(*(shelf_view_->model()), direction);
   if (item_index >= 0)
     ActivateShelfItem(item_index);
 }

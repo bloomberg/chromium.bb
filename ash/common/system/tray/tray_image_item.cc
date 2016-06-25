@@ -18,8 +18,7 @@ namespace ash {
 TrayImageItem::TrayImageItem(SystemTray* system_tray, int resource_id)
     : SystemTrayItem(system_tray),
       resource_id_(resource_id),
-      tray_view_(NULL) {
-}
+      tray_view_(NULL) {}
 
 TrayImageItem::~TrayImageItem() {}
 
@@ -31,16 +30,18 @@ void TrayImageItem::SetImageFromResourceId(int resource_id) {
   resource_id_ = resource_id;
   if (!tray_view_)
     return;
-  tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance().
-      GetImageNamed(resource_id_).ToImageSkia());
+  tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
+                                         .GetImageNamed(resource_id_)
+                                         .ToImageSkia());
 }
 
 views::View* TrayImageItem::CreateTrayView(LoginStatus status) {
   CHECK(tray_view_ == NULL);
   tray_view_ = new TrayItemView(this);
   tray_view_->CreateImageView();
-  tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance().
-      GetImageNamed(resource_id_).ToImageSkia());
+  tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
+                                         .GetImageNamed(resource_id_)
+                                         .ToImageSkia());
   tray_view_->SetVisible(GetInitialVisibility());
   SetItemAlignment(system_tray()->shelf_alignment());
   return tray_view_;
@@ -65,11 +66,9 @@ void TrayImageItem::DestroyTrayView() {
   tray_view_ = NULL;
 }
 
-void TrayImageItem::DestroyDefaultView() {
-}
+void TrayImageItem::DestroyDefaultView() {}
 
-void TrayImageItem::DestroyDetailedView() {
-}
+void TrayImageItem::DestroyDetailedView() {}
 
 void TrayImageItem::SetItemAlignment(ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.

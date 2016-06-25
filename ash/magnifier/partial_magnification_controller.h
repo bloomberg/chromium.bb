@@ -18,10 +18,9 @@ const float kNonPartialMagnifiedScale = 1.0f;
 
 // Controls the partial screen magnifier, which is a small area of the screen
 // which is zoomed in.  The zoomed area follows the mouse cursor when enabled.
-class PartialMagnificationController
-  : public ui::EventHandler,
-    public aura::WindowObserver,
-    public views::WidgetObserver {
+class PartialMagnificationController : public ui::EventHandler,
+                                       public aura::WindowObserver,
+                                       public views::WidgetObserver {
  public:
   PartialMagnificationController();
   ~PartialMagnificationController() override;

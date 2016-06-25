@@ -46,17 +46,17 @@ void OnSuspendDisplaysCompleted(const base::Closure& suspend_callback,
 
 PowerEventObserver::PowerEventObserver()
     : screen_locked_(false), waiting_for_lock_screen_animations_(false) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      AddObserver(this);
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-      AddObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      this);
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(
+      this);
 }
 
 PowerEventObserver::~PowerEventObserver() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      RemoveObserver(this);
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-      RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(
+      this);
 }
 
 void PowerEventObserver::OnLockAnimationsComplete() {
@@ -95,11 +95,13 @@ void PowerEventObserver::SuspendImminent() {
   // is unblocked from OnLockAnimationsComplete().
   if (!screen_locked_ && delegate->ShouldLockScreenBeforeSuspending() &&
       delegate->CanLockScreen()) {
-    screen_lock_callback_ = chromeos::DBusThreadManager::Get()->
-        GetPowerManagerClient()->GetSuspendReadinessCallback();
+    screen_lock_callback_ = chromeos::DBusThreadManager::Get()
+                                ->GetPowerManagerClient()
+                                ->GetSuspendReadinessCallback();
     VLOG(1) << "Requesting screen lock from PowerEventObserver";
-    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-        RequestLockScreen();
+    chromeos::DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->RequestLockScreen();
   } else if (waiting_for_lock_screen_animations_) {
     // The lock-before-suspending pref has been set and the lock screen is ready
     // but the animations have not completed yet.  This can happen if a suspend

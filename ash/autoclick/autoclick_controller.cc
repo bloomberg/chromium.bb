@@ -28,14 +28,10 @@ namespace {
 const int kMovementThreshold = 20;
 
 bool IsModifierKey(ui::KeyboardCode key_code) {
-  return key_code == ui::VKEY_SHIFT ||
-      key_code == ui::VKEY_LSHIFT ||
-      key_code == ui::VKEY_CONTROL ||
-      key_code == ui::VKEY_LCONTROL ||
-      key_code == ui::VKEY_RCONTROL ||
-      key_code == ui::VKEY_MENU ||
-      key_code == ui::VKEY_LMENU ||
-      key_code == ui::VKEY_RMENU;
+  return key_code == ui::VKEY_SHIFT || key_code == ui::VKEY_LSHIFT ||
+         key_code == ui::VKEY_CONTROL || key_code == ui::VKEY_LCONTROL ||
+         key_code == ui::VKEY_RCONTROL || key_code == ui::VKEY_MENU ||
+         key_code == ui::VKEY_LMENU || key_code == ui::VKEY_RMENU;
 }
 
 }  // namespace
@@ -98,8 +94,7 @@ AutoclickControllerImpl::AutoclickControllerImpl()
   InitClickTimer();
 }
 
-AutoclickControllerImpl::~AutoclickControllerImpl() {
-}
+AutoclickControllerImpl::~AutoclickControllerImpl() {}
 
 void AutoclickControllerImpl::SetDelegate(std::unique_ptr<Delegate> delegate) {
   delegate_ = std::move(delegate);
@@ -216,8 +211,7 @@ void AutoclickControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void AutoclickControllerImpl::DoAutoclick() {
-  gfx::Point screen_location =
-      aura::Env::GetInstance()->last_mouse_location();
+  gfx::Point screen_location = aura::Env::GetInstance()->last_mouse_location();
   aura::Window* root_window =
       WmWindowAura::GetAuraWindow(wm::GetRootWindowAt(screen_location));
   DCHECK(root_window) << "Root window not found while attempting autoclick.";

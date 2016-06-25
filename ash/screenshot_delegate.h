@@ -26,8 +26,8 @@ class ScreenshotDelegate {
 
   // The actual task of taking a partial screenshot for the given
   // window.
-  virtual void HandleTakePartialScreenshot(
-      aura::Window* window, const gfx::Rect& rect) = 0;
+  virtual void HandleTakePartialScreenshot(aura::Window* window,
+                                           const gfx::Rect& rect) = 0;
 
   // The actual task of taking screenshot for the given window.
   virtual void HandleTakeWindowScreenshot(aura::Window* window) = 0;

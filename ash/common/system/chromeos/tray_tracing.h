@@ -26,8 +26,7 @@ class ASH_EXPORT TracingObserver {
 // This is the item that displays when users enable performance tracing at
 // chrome://slow.  It alerts them that this mode is running, and provides an
 // easy way to open the page to disable it.
-class TrayTracing : public TrayImageItem,
-                    public TracingObserver {
+class TrayTracing : public TrayImageItem, public TracingObserver {
  public:
   explicit TrayTracing(SystemTray* system_tray);
   ~TrayTracing() override;

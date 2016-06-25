@@ -39,7 +39,8 @@ void SanitizeProto(power_manager::PowerSupplyProperties* proto) {
     proto->set_battery_percent(100.0);
 
   if (!proto->is_calculating_battery_time()) {
-    const bool on_line_power = proto->external_power() !=
+    const bool on_line_power =
+        proto->external_power() !=
         power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
     if ((on_line_power && proto->battery_time_to_full_sec() < 0) ||
         (!on_line_power && proto->battery_time_to_empty_sec() < 0))
@@ -199,7 +200,7 @@ PowerStatus* PowerStatus::Get() {
 // static
 bool PowerStatus::ShouldDisplayBatteryTime(const base::TimeDelta& time) {
   return time >= base::TimeDelta::FromMinutes(1) &&
-      time.InSeconds() <= kMaxBatteryTimeToDisplaySec;
+         time.InSeconds() <= kMaxBatteryTimeToDisplaySec;
 }
 
 // static
@@ -224,8 +225,9 @@ void PowerStatus::RemoveObserver(Observer* observer) {
 }
 
 void PowerStatus::RequestStatusUpdate() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      RequestStatusUpdate();
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->RequestStatusUpdate();
 }
 
 void PowerStatus::SetPowerSource(const std::string& id) {
@@ -235,22 +237,23 @@ void PowerStatus::SetPowerSource(const std::string& id) {
 
 bool PowerStatus::IsBatteryPresent() const {
   return proto_.battery_state() !=
-      power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT;
+         power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT;
 }
 
 bool PowerStatus::IsBatteryFull() const {
   return proto_.battery_state() ==
-      power_manager::PowerSupplyProperties_BatteryState_FULL;
+         power_manager::PowerSupplyProperties_BatteryState_FULL;
 }
 
 bool PowerStatus::IsBatteryCharging() const {
   return proto_.battery_state() ==
-      power_manager::PowerSupplyProperties_BatteryState_CHARGING;
+         power_manager::PowerSupplyProperties_BatteryState_CHARGING;
 }
 
 bool PowerStatus::IsBatteryDischargingOnLinePower() const {
-  return IsLinePowerConnected() && proto_.battery_state() ==
-      power_manager::PowerSupplyProperties_BatteryState_DISCHARGING;
+  return IsLinePowerConnected() &&
+         proto_.battery_state() ==
+             power_manager::PowerSupplyProperties_BatteryState_DISCHARGING;
 }
 
 double PowerStatus::GetBatteryPercent() const {
@@ -259,7 +262,7 @@ double PowerStatus::GetBatteryPercent() const {
 
 int PowerStatus::GetRoundedBatteryPercent() const {
   return std::max(kMinBatteryPercent,
-      static_cast<int>(GetBatteryPercent() + 0.5));
+                  static_cast<int>(GetBatteryPercent() + 0.5));
 }
 
 bool PowerStatus::IsBatteryTimeBeingCalculated() const {
@@ -276,17 +279,17 @@ base::TimeDelta PowerStatus::GetBatteryTimeToFull() const {
 
 bool PowerStatus::IsLinePowerConnected() const {
   return proto_.external_power() !=
-      power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
+         power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
 }
 
 bool PowerStatus::IsMainsChargerConnected() const {
   return proto_.external_power() ==
-      power_manager::PowerSupplyProperties_ExternalPower_AC;
+         power_manager::PowerSupplyProperties_ExternalPower_AC;
 }
 
 bool PowerStatus::IsUsbChargerConnected() const {
   return proto_.external_power() ==
-      power_manager::PowerSupplyProperties_ExternalPower_USB;
+         power_manager::PowerSupplyProperties_ExternalPower_USB;
 }
 
 bool PowerStatus::SupportsDualRoleDevices() const {
@@ -448,16 +451,16 @@ base::string16 PowerStatus::GetAccessibleNameString(
   }
 
   base::string16 battery_percentage_accessible = l10n_util::GetStringFUTF16(
-      IsBatteryCharging() ?
-      IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE :
-      IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE,
+      IsBatteryCharging()
+          ? IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE
+          : IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE,
       base::IntToString16(GetRoundedBatteryPercent()));
   if (!full_description)
     return battery_percentage_accessible;
 
   base::string16 battery_time_accessible = base::string16();
-  const base::TimeDelta time = IsBatteryCharging() ? GetBatteryTimeToFull() :
-      GetBatteryTimeToEmpty();
+  const base::TimeDelta time =
+      IsBatteryCharging() ? GetBatteryTimeToFull() : GetBatteryTimeToEmpty();
 
   if (IsUsbChargerConnected()) {
     battery_time_accessible = rb.GetLocalizedString(
@@ -469,32 +472,32 @@ base::string16 PowerStatus::GetAccessibleNameString(
              !IsBatteryDischargingOnLinePower()) {
     int hour = 0, min = 0;
     PowerStatus::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
-    base::string16 minute = min < 10 ?
-        base::ASCIIToUTF16("0") + base::IntToString16(min) :
-        base::IntToString16(min);
-    battery_time_accessible =
-        l10n_util::GetStringFUTF16(
-            IsBatteryCharging() ?
-            IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_ACCESSIBLE :
-            IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_ACCESSIBLE,
-            GetBatteryTimeAccessibilityString(hour, min));
+    base::string16 minute =
+        min < 10 ? base::ASCIIToUTF16("0") + base::IntToString16(min)
+                 : base::IntToString16(min);
+    battery_time_accessible = l10n_util::GetStringFUTF16(
+        IsBatteryCharging()
+            ? IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_ACCESSIBLE
+            : IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_ACCESSIBLE,
+        GetBatteryTimeAccessibilityString(hour, min));
   }
-  return battery_time_accessible.empty() ?
-      battery_percentage_accessible :
-      battery_percentage_accessible + base::ASCIIToUTF16(". ") +
-      battery_time_accessible;
+  return battery_time_accessible.empty()
+             ? battery_percentage_accessible
+             : battery_percentage_accessible + base::ASCIIToUTF16(". ") +
+                   battery_time_accessible;
 }
 
 PowerStatus::PowerStatus() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      AddObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      RequestStatusUpdate();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      this);
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->RequestStatusUpdate();
 }
 
 PowerStatus::~PowerStatus() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
 }
 
 void PowerStatus::SetProtoForTesting(

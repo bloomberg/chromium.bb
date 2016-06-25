@@ -72,8 +72,7 @@ namespace test {
 class TestShelfIconObserver : public ShelfIconObserver {
  public:
   explicit TestShelfIconObserver(Shelf* shelf)
-      : shelf_(shelf),
-        change_notified_(false) {
+      : shelf_(shelf), change_notified_(false) {
     if (shelf_)
       shelf_->AddIconObserver(this);
   }
@@ -150,9 +149,7 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   }
 
   // Returns true if the delegate was selected.
-  bool WasSelected() {
-    return selected_;
-  }
+  bool WasSelected() { return selected_; }
 
   // TestShelfItemDelegate:
   ShelfItemDelegate::PerformedAction ItemSelected(
@@ -196,10 +193,9 @@ TEST_F(ShelfViewIconObserverTest, AddRemove) {
 // Sometimes fails on trybots on win7_aura. http://crbug.com/177135
 #if defined(OS_WIN)
 #define MAYBE_AddRemoveWithMultipleDisplays \
-    DISABLED_AddRemoveWithMultipleDisplays
+  DISABLED_AddRemoveWithMultipleDisplays
 #else
-#define MAYBE_AddRemoveWithMultipleDisplays \
-    AddRemoveWithMultipleDisplays
+#define MAYBE_AddRemoveWithMultipleDisplays AddRemoveWithMultipleDisplays
 #endif
 // Make sure creating/deleting an window on one displays notifies a
 // shelf on external display as well as one on primary.
@@ -437,10 +433,9 @@ class ShelfViewTest : public AshTestBase {
   }
 
   void CheckModelIDs(
-      const std::vector<std::pair<ShelfID, views::View*> >& id_map) {
+      const std::vector<std::pair<ShelfID, views::View*>>& id_map) {
     size_t map_index = 0;
-    for (size_t model_index = 0;
-         model_index < model_->items().size();
+    for (size_t model_index = 0; model_index < model_->items().size();
          ++model_index) {
       ShelfItem item = model_->items()[model_index];
       ShelfID id = item.id;
@@ -574,8 +569,7 @@ class ShelfViewTest : public AshTestBase {
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(expected_id_map));
   }
 
-  void SetupForDragTest(
-      std::vector<std::pair<ShelfID, views::View*> >* id_map) {
+  void SetupForDragTest(std::vector<std::pair<ShelfID, views::View*>>* id_map) {
     // Initialize |id_map| with the automatically-created shelf buttons.
     for (size_t i = 0; i < model_->items().size(); ++i) {
       ShelfButton* button = test_api_->GetButton(i);
@@ -622,8 +616,7 @@ class ShelfViewTest : public AshTestBase {
     int second_last_visible_item_id_in_overflow =
         GetItemId(test_api_for_overflow.GetLastVisibleIndex() - 1);
 
-    int drag_item_index =
-        test_api_for_overflow.GetLastVisibleIndex();
+    int drag_item_index = test_api_for_overflow.GetLastVisibleIndex();
     ShelfID drag_item_id = GetItemId(drag_item_index);
     ShelfButton* drag_button = test_api_for_overflow.GetButton(drag_item_index);
     gfx::Point center_point_of_drag_item =
@@ -747,9 +740,8 @@ class ScopedTextDirectionChange {
   std::string original_locale_;
 };
 
-class ShelfViewTextDirectionTest
-    : public ShelfViewTest,
-      public testing::WithParamInterface<bool> {
+class ShelfViewTextDirectionTest : public ShelfViewTest,
+                                   public testing::WithParamInterface<bool> {
  public:
   ShelfViewTextDirectionTest() : text_direction_change_(GetParam()) {}
   virtual ~ShelfViewTextDirectionTest() {}
@@ -811,24 +803,23 @@ TEST_F(ShelfViewTest, OverflowButtonBounds) {
 TEST_F(ShelfViewTest, EnforceDragType) {
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_PLATFORM_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_APP_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP,
-                                       TYPE_BROWSER_SHORTCUT));
+  EXPECT_FALSE(
+      test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_BROWSER_SHORTCUT));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_WINDOWED_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_APP_LIST));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_APP_PANEL));
 
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_SHORTCUT));
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_SHORTCUT,
-                                      TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT,
-                                       TYPE_WINDOWED_APP));
+  EXPECT_TRUE(
+      test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_BROWSER_SHORTCUT));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_WINDOWED_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_LIST));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_PANEL));
 
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT,
-                                      TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT,
-                                       TYPE_WINDOWED_APP));
+  EXPECT_TRUE(
+      test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_BROWSER_SHORTCUT));
+  EXPECT_FALSE(
+      test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_WINDOWED_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_LIST));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_PANEL));
 
@@ -846,8 +837,7 @@ TEST_F(ShelfViewTest, EnforceDragType) {
 // platform app button is hidden.
 TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button until overflow.
   int items_added = 0;
@@ -870,8 +860,7 @@ TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
 // is still visible.
 TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   ShelfID browser_button_id = AddPlatformApp();
 
@@ -893,8 +882,7 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
 
 TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button until overflow, remember last visible platform app
   // button.
@@ -923,8 +911,7 @@ TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
 // rather than platform apps.
 TEST_F(ShelfViewTest, PlatformAppHidesExcessPanels) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
   ShelfID platform_app = AddPlatformApp();
@@ -1051,8 +1038,7 @@ TEST_P(ShelfViewTextDirectionTest, OverflowArrowForShelfPosition) {
 // chevron is gone.
 TEST_F(ShelfViewTest, RemoveButtonRevealsOverflowed) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app buttons until overflow.
   int items_added = 0;
@@ -1081,8 +1067,7 @@ TEST_F(ShelfViewTest, RemoveButtonRevealsOverflowed) {
 // Verifies that remove last overflowed button should hide overflow chevron.
 TEST_F(ShelfViewTest, RemoveLastOverflowed) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button until overflow.
   int items_added = 0;
@@ -1101,8 +1086,7 @@ TEST_F(ShelfViewTest, RemoveLastOverflowed) {
 // that all added buttons are visible.
 TEST_F(ShelfViewTest, AddButtonQuickly) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add a few platform buttons quickly without wait for animation.
   int added_count = 0;
@@ -1131,31 +1115,25 @@ TEST_F(ShelfViewTest, AddButtonQuickly) {
 // Check that model changes are handled correctly while a shelf icon is being
 // dragged.
 TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
-  std::vector<std::pair<ShelfID, views::View*> > id_map;
+  std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
 
   // Dragging browser shortcut at index 1.
   EXPECT_TRUE(model_->items()[1].type == TYPE_BROWSER_SHORTCUT);
   views::View* dragged_button = SimulateDrag(ShelfView::MOUSE, 1, 3, false);
-  std::rotate(id_map.begin() + 1,
-              id_map.begin() + 2,
-              id_map.begin() + 4);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
   EXPECT_TRUE(model_->items()[3].type == TYPE_BROWSER_SHORTCUT);
 
   // Dragging changes model order.
   dragged_button = SimulateDrag(ShelfView::MOUSE, 1, 3, false);
-  std::rotate(id_map.begin() + 1,
-              id_map.begin() + 2,
-              id_map.begin() + 4);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Cancelling the drag operation restores previous order.
   shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, true);
-  std::rotate(id_map.begin() + 1,
-              id_map.begin() + 3,
-              id_map.begin() + 4);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 3, id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Deleting an item keeps the remaining intact.
@@ -1185,15 +1163,13 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
 
 // Check that 2nd drag from the other pointer would be ignored.
 TEST_F(ShelfViewTest, SimultaneousDrag) {
-  std::vector<std::pair<ShelfID, views::View*> > id_map;
+  std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
 
   // Start a mouse drag.
   views::View* dragged_button_mouse =
       SimulateDrag(ShelfView::MOUSE, 1, 3, false);
-  std::rotate(id_map.begin() + 1,
-              id_map.begin() + 2,
-              id_map.begin() + 4);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   // Attempt a touch drag before the mouse drag finishes.
   views::View* dragged_button_touch =
@@ -1209,9 +1185,7 @@ TEST_F(ShelfViewTest, SimultaneousDrag) {
 
   // Now start a touch drag.
   dragged_button_touch = SimulateDrag(ShelfView::TOUCH, 4, 2, false);
-  std::rotate(id_map.begin() + 3,
-              id_map.begin() + 4,
-              id_map.begin() + 5);
+  std::rotate(id_map.begin() + 3, id_map.begin() + 4, id_map.begin() + 5);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // And attempt a mouse drag before the touch drag finishes.
@@ -1250,7 +1224,7 @@ TEST_F(ShelfViewTest, DragWithNotDraggableItemInFront) {
 // Check that clicking first on one item and then dragging another works as
 // expected.
 TEST_F(ShelfViewTest, ClickOneDragAnother) {
-  std::vector<std::pair<ShelfID, views::View*> > id_map;
+  std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
 
   // A click on item 1 is simulated.
@@ -1286,7 +1260,7 @@ TEST_F(ShelfViewTest, ClickingTwiceActivatesOnce) {
 // Check that clicking an item and jittering the mouse a bit still selects the
 // item.
 TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
-  std::vector<std::pair<ShelfID, views::View*> > id_map;
+  std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
 
   ShelfID shelf_id = (id_map.begin() + 1)->first;
@@ -1332,8 +1306,7 @@ TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
 // Confirm that item status changes are reflected in the buttons.
 TEST_F(ShelfViewTest, ShelfItemStatus) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
   ShelfID last_added = AddPlatformApp();
@@ -1353,8 +1326,7 @@ TEST_F(ShelfViewTest, ShelfItemStatus) {
 // for platform apps.
 TEST_F(ShelfViewTest, ShelfItemStatusPlatformApp) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
   ShelfID last_added = AddPlatformApp();
@@ -1583,8 +1555,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
 // new ideal bounds.
 TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add buttons until overflow. Let the non-overflow add animations finish but
   // leave the last running.
@@ -1634,7 +1605,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   int ripped_index = test_for_overflow_view.GetLastVisibleIndex();
   gfx::Size bubble_size = test_for_overflow_view.GetPreferredSize();
   int item_width = test_for_overflow_view.GetButtonSize() +
-      test_for_overflow_view.GetButtonSpacing();
+                   test_for_overflow_view.GetButtonSpacing();
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
@@ -1760,8 +1731,8 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
       test_api_for_overflow_view.GetBoundsForDragInsertInScreen();
   EXPECT_TRUE(drag_reinsert_bounds.Contains(point_in_shelf_view));
   // Checks that a point out of shelf is not contained in drag insert bounds.
-  EXPECT_FALSE(drag_reinsert_bounds.Contains(
-      gfx::Point(point_in_shelf_view.x(), 0)));
+  EXPECT_FALSE(
+      drag_reinsert_bounds.Contains(gfx::Point(point_in_shelf_view.x(), 0)));
 
   // Test #2: Test drag insertion bounds of secondary shelf.
   // Show overflow bubble.
@@ -1865,8 +1836,8 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.set_current_location(app_list_button->
-      GetBoundsInScreen().CenterPoint());
+  generator.set_current_location(
+      app_list_button->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
   EXPECT_TRUE(app_list_button->draw_background_as_active());
 
@@ -1883,14 +1854,14 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.set_current_location(app_list_button->
-      GetBoundsInScreen().CenterPoint());
+  generator.set_current_location(
+      app_list_button->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
   EXPECT_TRUE(app_list_button->draw_background_as_active());
 
-  gfx::Point moved_point(app_list_button->GetBoundsInScreen().right() + 1,
-                         app_list_button->
-                             GetBoundsInScreen().CenterPoint().y());
+  gfx::Point moved_point(
+      app_list_button->GetBoundsInScreen().right() + 1,
+      app_list_button->GetBoundsInScreen().CenterPoint().y());
   generator.MoveTouch(moved_point);
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
@@ -1978,8 +1949,8 @@ class ShelfViewVisibleBoundsTest : public ShelfViewTest,
 
   void CheckAppListButtonIsInBounds() {
     gfx::Rect visible_bounds = shelf_view_->GetVisibleItemsBoundsInScreen();
-    gfx::Rect app_list_button_bounds = shelf_view_->GetAppListButtonView()->
-       GetBoundsInScreen();
+    gfx::Rect app_list_button_bounds =
+        shelf_view_->GetAppListButtonView()->GetBoundsInScreen();
     EXPECT_TRUE(visible_bounds.Contains(app_list_button_bounds));
   }
 
@@ -2006,8 +1977,9 @@ TEST_P(ShelfViewVisibleBoundsTest, ItemsAreInBounds) {
 }
 
 INSTANTIATE_TEST_CASE_P(LtrRtl, ShelfViewTextDirectionTest, testing::Bool());
-INSTANTIATE_TEST_CASE_P(VisibleBounds, ShelfViewVisibleBoundsTest,
-    testing::Bool());
+INSTANTIATE_TEST_CASE_P(VisibleBounds,
+                        ShelfViewVisibleBoundsTest,
+                        testing::Bool());
 
 namespace {
 

@@ -192,11 +192,9 @@ bool ShellDelegateImpl::IsForceMaximizeOnFirstRun() const {
   return false;
 }
 
-void ShellDelegateImpl::PreInit() {
-}
+void ShellDelegateImpl::PreInit() {}
 
-void ShellDelegateImpl::PreShutdown() {
-}
+void ShellDelegateImpl::PreShutdown() {}
 
 void ShellDelegateImpl::Exit() {
   base::MessageLoop::current()->QuitWhenIdle();
@@ -206,16 +204,13 @@ keyboard::KeyboardUI* ShellDelegateImpl::CreateKeyboardUI() {
   return new TestKeyboardUI;
 }
 
-void ShellDelegateImpl::VirtualKeyboardActivated(bool activated) {
-}
+void ShellDelegateImpl::VirtualKeyboardActivated(bool activated) {}
 
 void ShellDelegateImpl::AddVirtualKeyboardStateObserver(
-    VirtualKeyboardStateObserver* observer) {
-}
+    VirtualKeyboardStateObserver* observer) {}
 
 void ShellDelegateImpl::RemoveVirtualKeyboardStateObserver(
-    VirtualKeyboardStateObserver* observer) {
-}
+    VirtualKeyboardStateObserver* observer) {}
 
 void ShellDelegateImpl::OpenUrl(const GURL& url) {}
 

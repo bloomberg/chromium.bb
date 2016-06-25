@@ -70,8 +70,7 @@ std::string GetLayerNames(const aura::Window* window) {
   std::string result;
   const std::vector<ui::Layer*>& layers(window->layer()->children());
   for (size_t i = 0; i < layers.size(); ++i) {
-    LayerToWindowNameMap::iterator layer_i =
-        window_names.find(layers[i]);
+    LayerToWindowNameMap::iterator layer_i = window_names.find(layers[i]);
     if (layer_i != window_names.end()) {
       if (!result.empty())
         result += " ";
@@ -121,10 +120,7 @@ class WorkspaceControllerTest : public test::AshTestBase {
   aura::Window* CreateTestPanel(aura::WindowDelegate* delegate,
                                 const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        delegate,
-        ui::wm::WINDOW_TYPE_PANEL,
-        0,
-        bounds);
+        delegate, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     test::TestShelfDelegate* shelf_delegate =
         test::TestShelfDelegate::instance();
     shelf_delegate->AddShelfItem(window);
@@ -234,8 +230,7 @@ TEST_F(WorkspaceControllerTest, FullscreenWithNormalWindow) {
   EXPECT_EQ(w1.get(), GetDesktop()->children()[0]);
   EXPECT_EQ(w2.get(), GetDesktop()->children()[1]);
 
-  gfx::Rect work_area(
-      ScreenUtil::GetMaximizedWindowBoundsInParent(w1.get()));
+  gfx::Rect work_area(ScreenUtil::GetMaximizedWindowBoundsInParent(w1.get()));
   EXPECT_EQ(work_area.width(), w2->bounds().width());
   EXPECT_EQ(work_area.height(), w2->bounds().height());
 
@@ -464,17 +459,17 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
-  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(
-                w2->parent()).ToString(),
-            w2->bounds().ToString());
+  EXPECT_EQ(
+      ScreenUtil::GetMaximizedWindowBoundsInParent(w2->parent()).ToString(),
+      w2->bounds().ToString());
 
   // Switch to w1.
   wm::ActivateWindow(w1.get());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
-  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(
-                w2->parent()).ToString(),
-            w2->bounds().ToString());
+  EXPECT_EQ(
+      ScreenUtil::GetMaximizedWindowBoundsInParent(w2->parent()).ToString(),
+      w2->bounds().ToString());
 
   // Switch to w2.
   wm::ActivateWindow(w2.get());
@@ -706,8 +701,8 @@ TEST_F(WorkspaceControllerTest, TransientParent) {
   // Window with a transient parent. We set the transient parent to the root,
   // which would never happen but is enough to exercise the bug.
   std::unique_ptr<Window> w1(CreateTestWindowUnparented());
-  ::wm::AddTransientChild(
-      Shell::GetInstance()->GetPrimaryRootWindow(), w1.get());
+  ::wm::AddTransientChild(Shell::GetInstance()->GetPrimaryRootWindow(),
+                          w1.get());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
   ParentWindowInPrimaryRootWindow(w1.get());
   w1->Show();
@@ -736,14 +731,14 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnCreate) {
   browser_window->Show();
   browser_popup->Show();
 
-  { // With a shown window it's size should get returned.
+  {  // With a shown window it's size should get returned.
     std::unique_ptr<aura::Window> new_browser_window(
         CreateBrowserLikeWindow(source_browser_bounds));
     // The position should be right flush.
     EXPECT_EQ("960,32 640x320", new_browser_window->bounds().ToString());
   }
 
-  { // With the window shown - but more on the right side then on the left
+  {  // With the window shown - but more on the right side then on the left
     // side (and partially out of the screen), it should default to the other
     // side and inside the screen.
     gfx::Rect source_browser_bounds(gfx::Rect(1000, 600, 640, 320));
@@ -759,14 +754,14 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnCreate) {
     EXPECT_EQ("1000,600 640x320", browser_window->bounds().ToString());
   }
 
-  { // Make sure that popups do not get changed.
+  {  // Make sure that popups do not get changed.
     std::unique_ptr<aura::Window> new_popup_window(
         CreatePopupLikeWindow(gfx::Rect(50, 100, 300, 150)));
     EXPECT_EQ("50,100 300x150", new_popup_window->bounds().ToString());
   }
 
   browser_window->Hide();
-  { // If a window is there but not shown the default should be centered.
+  {  // If a window is there but not shown the default should be centered.
     std::unique_ptr<aura::Window> new_browser_window(
         CreateBrowserLikeWindow(gfx::Rect(50, 100, 300, 150)));
     EXPECT_EQ("650,100 300x150", new_browser_window->bounds().ToString());
@@ -859,16 +854,17 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
   window3->Show();
   // |window1| should be flush left and |window3| flush right.
   EXPECT_EQ("0,32 640x320", window1->bounds().ToString());
-  EXPECT_EQ(base::IntToString(
-                desktop_area.width() - window3->bounds().width()) +
-            ",48 256x512", window3->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(desktop_area.width() - window3->bounds().width()) +
+          ",48 256x512",
+      window3->bounds().ToString());
 
   // After removing |window3|, |window1| should be centered again.
   window3.reset();
-  EXPECT_EQ(
-      base::IntToString(
-          (desktop_area.width() - window1->bounds().width()) / 2) +
-      ",32 640x320", window1->bounds().ToString());
+  EXPECT_EQ(base::IntToString(
+                (desktop_area.width() - window1->bounds().width()) / 2) +
+                ",32 640x320",
+            window1->bounds().ToString());
 
   // Test 3: Set up a manageable and a non manageable window and check
   // positioning.
@@ -880,10 +876,10 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
   window4->SetBounds(gfx::Rect(32, 48, 256, 512));
   window1->Show();
   // |window1| should be centered and |window4| untouched.
-  EXPECT_EQ(
-      base::IntToString(
-          (desktop_area.width() - window1->bounds().width()) / 2) +
-      ",32 640x320", window1->bounds().ToString());
+  EXPECT_EQ(base::IntToString(
+                (desktop_area.width() - window1->bounds().width()) / 2) +
+                ",32 640x320",
+            window1->bounds().ToString());
   EXPECT_EQ("32,48 256x512", window4->bounds().ToString());
 
   // Test4: A single manageable window should get centered.
@@ -893,10 +889,10 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
   window1->Hide();
   window1->Show();
   // |window1| should be centered.
-  EXPECT_EQ(
-      base::IntToString(
-          (desktop_area.width() - window1->bounds().width()) / 2) +
-      ",32 640x320", window1->bounds().ToString());
+  EXPECT_EQ(base::IntToString(
+                (desktop_area.width() - window1->bounds().width()) / 2) +
+                ",32 640x320",
+            window1->bounds().ToString());
 }
 
 // Test the proper usage of user window movement interaction.
@@ -933,7 +929,8 @@ TEST_F(WorkspaceControllerTest, TestUserMovedWindowRepositioning) {
   EXPECT_EQ("0,32 640x320", window1->bounds().ToString());
   EXPECT_EQ(
       base::IntToString(desktop_area.width() - window2->bounds().width()) +
-      ",48 256x512", window2->bounds().ToString());
+          ",48 256x512",
+      window2->bounds().ToString());
   // FLag should now be reset.
   EXPECT_FALSE(window1_state->bounds_changed_by_user());
   EXPECT_FALSE(window2_state->bounds_changed_by_user());
@@ -1016,11 +1013,12 @@ TEST_F(WorkspaceControllerTest, TestUserHandledWindowRestore) {
   window2->Show();
 
   // |window1| should be flush left and |window2| flush right.
-  EXPECT_EQ("0," + base::IntToString(user_pos.y()) +
-            " 640x320", window1->bounds().ToString());
+  EXPECT_EQ("0," + base::IntToString(user_pos.y()) + " 640x320",
+            window1->bounds().ToString());
   EXPECT_EQ(
       base::IntToString(desktop_area.width() - window2->bounds().width()) +
-      ",48 256x512", window2->bounds().ToString());
+          ",48 256x512",
+      window2->bounds().ToString());
   window2->Hide();
 
   // After the other window get hidden the window has to move back to the
@@ -1103,13 +1101,15 @@ TEST_F(WorkspaceControllerTest, ToMinimizeRepositionsRemaining) {
   EXPECT_TRUE(window2_state->IsNormalStateType());
   EXPECT_EQ(base::IntToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
-            ",48 256x512", window2->bounds().ToString());
+                ",48 256x512",
+            window2->bounds().ToString());
 
   window1_state->Restore();
   // |window1| should be flush right and |window3| flush left.
-  EXPECT_EQ(base::IntToString(
-                desktop_area.width() - window1->bounds().width()) +
-            ",32 640x320", window1->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+          ",32 640x320",
+      window1->bounds().ToString());
   EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
 }
 
@@ -1133,7 +1133,8 @@ TEST_F(WorkspaceControllerTest, MaxToMinRepositionsRemaining) {
   EXPECT_TRUE(window2_state->IsNormalStateType());
   EXPECT_EQ(base::IntToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
-            ",48 256x512", window2->bounds().ToString());
+                ",48 256x512",
+            window2->bounds().ToString());
 }
 
 // Test that nomral, maximize, minimizing will repos the remaining.
@@ -1154,9 +1155,10 @@ TEST_F(WorkspaceControllerTest, NormToMaxToMinRepositionsRemaining) {
   window1->Show();
 
   // |window1| should be flush right and |window3| flush left.
-  EXPECT_EQ(base::IntToString(
-                desktop_area.width() - window1->bounds().width()) +
-            ",32 640x320", window1->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+          ",32 640x320",
+      window1->bounds().ToString());
   EXPECT_EQ("0,40 256x512", window2->bounds().ToString());
 
   window1_state->Maximize();
@@ -1167,7 +1169,8 @@ TEST_F(WorkspaceControllerTest, NormToMaxToMinRepositionsRemaining) {
   EXPECT_TRUE(window2_state->IsNormalStateType());
   EXPECT_EQ(base::IntToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
-            ",40 256x512", window2->bounds().ToString());
+                ",40 256x512",
+            window2->bounds().ToString());
 }
 
 // Test that nomral, maximize, normal will repos the remaining.
@@ -1187,18 +1190,20 @@ TEST_F(WorkspaceControllerTest, NormToMaxToNormRepositionsRemaining) {
   window1->Show();
 
   // |window1| should be flush right and |window3| flush left.
-  EXPECT_EQ(base::IntToString(
-                desktop_area.width() - window1->bounds().width()) +
-            ",32 640x320", window1->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+          ",32 640x320",
+      window1->bounds().ToString());
   EXPECT_EQ("0,40 256x512", window2->bounds().ToString());
 
   window1_state->Maximize();
   window1_state->Restore();
 
   // |window1| should be flush right and |window2| flush left.
-  EXPECT_EQ(base::IntToString(
-                desktop_area.width() - window1->bounds().width()) +
-            ",32 640x320", window1->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+          ",32 640x320",
+      window1->bounds().ToString());
   EXPECT_EQ("0,40 256x512", window2->bounds().ToString());
 }
 
@@ -1233,9 +1238,10 @@ TEST_F(WorkspaceControllerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
   window1->layer()->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
   // |window1| should be flush right and |window2| flush left.
-  EXPECT_EQ(base::IntToString(
-                desktop_area.width() - window1->bounds().width()) +
-            ",32 640x320", window1->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+          ",32 640x320",
+      window1->bounds().ToString());
   EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
 }
 
@@ -1257,11 +1263,9 @@ TEST_F(WorkspaceControllerTest, VerifyLayerOrdering) {
   aura::test::TestWindowDelegate* status_bubble_delegate =
       aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
   status_bubble_delegate->set_can_focus(false);
-  Window* status_bubble =
-      aura::test::CreateTestWindowWithDelegate(status_bubble_delegate,
-                                               ui::wm::WINDOW_TYPE_POPUP,
-                                               gfx::Rect(5, 6, 7, 8),
-                                               NULL);
+  Window* status_bubble = aura::test::CreateTestWindowWithDelegate(
+      status_bubble_delegate, ui::wm::WINDOW_TYPE_POPUP, gfx::Rect(5, 6, 7, 8),
+      NULL);
   ::wm::AddTransientChild(browser.get(), status_bubble);
   ParentWindowInPrimaryRootWindow(status_bubble);
   status_bubble->SetName("status_bubble");
@@ -1313,19 +1317,14 @@ namespace {
 
 // Used by DragMaximizedNonTrackedWindow to track how many times the window
 // hierarchy changes affecting the specified window.
-class DragMaximizedNonTrackedWindowObserver
-    : public aura::WindowObserver {
+class DragMaximizedNonTrackedWindowObserver : public aura::WindowObserver {
  public:
   DragMaximizedNonTrackedWindowObserver(aura::Window* window)
-  : change_count_(0),
-    window_(window) {
-  }
+      : change_count_(0), window_(window) {}
 
   // Number of times OnWindowHierarchyChanged() has been received.
   void clear_change_count() { change_count_ = 0; }
-  int change_count() const {
-    return change_count_;
-  }
+  int change_count() const { return change_count_; }
 
   // aura::WindowObserver overrides:
   // Counts number of times a window is reparented. Ignores reparenting into and
@@ -1362,8 +1361,8 @@ TEST_F(WorkspaceControllerTest, SwitchFromModal) {
   wm::ActivateWindow(modal_window.get());
 
   std::unique_ptr<Window> maximized_window(CreateTestWindow());
-  maximized_window->SetProperty(
-      aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  maximized_window->SetProperty(aura::client::kShowStateKey,
+                                ui::SHOW_STATE_MAXIMIZED);
   maximized_window->Show();
   wm::ActivateWindow(maximized_window.get());
   EXPECT_TRUE(maximized_window->IsVisible());
@@ -1465,10 +1464,10 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
     const char* direction;
     gfx::Point location;
   } points[kNumPoints] = {
-    { "left", gfx::Point(28, 45) },  // outside the left edge.
-    { "top", gfx::Point(50, 38) },  // outside the top edge.
-    { "right", gfx::Point(72, 45) },  // outside the right edge.
-    { "bottom", gfx::Point(50, 52) },  // outside the bottom edge.
+      {"left", gfx::Point(28, 45)},    // outside the left edge.
+      {"top", gfx::Point(50, 38)},     // outside the top edge.
+      {"right", gfx::Point(72, 45)},   // outside the right edge.
+      {"bottom", gfx::Point(50, 52)},  // outside the bottom edge.
   };
   // Do two iterations, first without any transform on |second|, and the second
   // time after applying some transform on |second| so that it doesn't get
@@ -1511,11 +1510,11 @@ TEST_F(WorkspaceControllerTest, WindowEdgeMouseHitTestPanel) {
     gfx::Point location;
     bool is_target_hit;
   } points[kNumPoints] = {
-    { "left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true },
-    { "top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true },
-    { "right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true },
-    { "bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), true },
-    { "outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false },
+      {"left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true},
+      {"top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true},
+      {"right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true},
+      {"bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), true},
+      {"outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false},
   };
   for (int i = 0; i < kNumPoints; ++i) {
     SCOPED_TRACE(points[i].direction);
@@ -1547,11 +1546,11 @@ TEST_F(WorkspaceControllerTest, WindowEdgeTouchHitTestPanel) {
     gfx::Point location;
     bool is_target_hit;
   } points[kNumPoints] = {
-    { "left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true },
-    { "top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true },
-    { "right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true },
-    { "bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), false },
-    { "outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false },
+      {"left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true},
+      {"top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true},
+      {"right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true},
+      {"bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), false},
+      {"outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false},
   };
   for (int i = 0; i < kNumPoints; ++i) {
     SCOPED_TRACE(points[i].direction);
@@ -1588,11 +1587,11 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTestDocked) {
     gfx::Point location;
     bool is_target_hit;
   } points[kNumPoints] = {
-    { "left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true },
-    { "top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true },
-    { "right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true },
-    { "bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), true },
-    { "outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false },
+      {"left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true},
+      {"top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true},
+      {"right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true},
+      {"bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), true},
+      {"outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false},
   };
   for (int i = 0; i < kNumPoints; ++i) {
     SCOPED_TRACE(points[i].direction);

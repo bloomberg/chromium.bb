@@ -31,8 +31,7 @@ const int kHalfSecondInMs = 500;  // Half a second.
 LogoutConfirmationDialog::LogoutConfirmationDialog(
     LogoutConfirmationController* controller,
     base::TimeTicks logout_time)
-    : controller_(controller),
-      logout_time_(logout_time) {
+    : controller_(controller), logout_time_(logout_time) {
   SetLayoutManager(new views::FillLayout());
 
   label_ = new views::Label;
@@ -48,14 +47,11 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
   GetWidget()->Show();
 
   update_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kCountdownUpdateIntervalMs),
-      this,
-      &LogoutConfirmationDialog::UpdateLabel);
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kCountdownUpdateIntervalMs),
+      this, &LogoutConfirmationDialog::UpdateLabel);
 }
 
-LogoutConfirmationDialog::~LogoutConfirmationDialog() {
-}
+LogoutConfirmationDialog::~LogoutConfirmationDialog() {}
 
 void LogoutConfirmationDialog::Update(base::TimeTicks logout_time) {
   logout_time_ = logout_time;
@@ -102,12 +98,11 @@ void LogoutConfirmationDialog::UpdateLabel() {
     label_->SetText(l10n_util::GetStringFUTF16(
         IDS_ASH_LOGOUT_CONFIRMATION_WARNING,
         ui::TimeFormat::Detailed(ui::TimeFormat::FORMAT_DURATION,
-                                 ui::TimeFormat::LENGTH_LONG,
-                                 10,
+                                 ui::TimeFormat::LENGTH_LONG, 10,
                                  time_remaining)));
   } else {
-    label_->SetText(l10n_util::GetStringUTF16(
-        IDS_ASH_LOGOUT_CONFIRMATION_WARNING_NOW));
+    label_->SetText(
+        l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_WARNING_NOW));
     update_timer_.Stop();
   }
 }

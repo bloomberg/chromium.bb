@@ -200,8 +200,7 @@ void TestSessionStateDelegate::SetUserAddingScreenRunning(
     session_state_ = SESSION_STATE_ACTIVE;
 }
 
-void TestSessionStateDelegate::SetUserImage(
-    const gfx::ImageSkia& user_image) {
+void TestSessionStateDelegate::SetUserImage(const gfx::ImageSkia& user_image) {
   user_list_[active_user_index_]->SetUserImage(user_image);
 }
 
@@ -226,8 +225,7 @@ void TestSessionStateDelegate::SwitchActiveUser(const AccountId& account_id) {
             GetUserIdFromEmail(account_id.GetUserEmail()));
   active_user_index_ = 0;
   for (std::vector<MockUserInfo*>::iterator iter = user_list_.begin();
-       iter != user_list_.end();
-       ++iter) {
+       iter != user_list_.end(); ++iter) {
     if ((*iter)->GetAccountId() == account_id) {
       active_user_index_ = iter - user_list_.begin();
       return;
@@ -246,12 +244,10 @@ bool TestSessionStateDelegate::IsMultiProfileAllowedByPrimaryUserPolicy()
 }
 
 void TestSessionStateDelegate::AddSessionStateObserver(
-    SessionStateObserver* observer) {
-}
+    SessionStateObserver* observer) {}
 
 void TestSessionStateDelegate::RemoveSessionStateObserver(
-    SessionStateObserver* observer) {
-}
+    SessionStateObserver* observer) {}
 
 }  // namespace test
 }  // namespace ash

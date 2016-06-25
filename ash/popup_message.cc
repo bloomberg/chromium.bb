@@ -77,10 +77,9 @@ PopupMessage::MessageBubble::MessageBubble(const base::string16& caption,
                                            int arrow_offset)
     : views::BubbleDialogDelegateView(anchor, arrow),
       size_override_(size_override) {
-  gfx::Insets insets = gfx::Insets(kArrowOffsetTopBottom,
-                                   kArrowOffsetLeftRight,
-                                   kArrowOffsetTopBottom,
-                                   kArrowOffsetLeftRight);
+  gfx::Insets insets =
+      gfx::Insets(kArrowOffsetTopBottom, kArrowOffsetLeftRight,
+                  kArrowOffsetTopBottom, kArrowOffsetLeftRight);
   // An anchor can have an asymmetrical border for spacing reasons. Adjust the
   // anchor location for this.
   if (anchor->border())
@@ -117,8 +116,7 @@ PopupMessage::MessageBubble::MessageBubble(const base::string16& caption,
   // Add the icon to the first column (if there is one).
   if (message_type != ICON_NONE) {
     views::ImageView* icon = new views::ImageView();
-    icon->SetImage(
-        bundle.GetImageNamed(IDR_AURA_WARNING_ICON).ToImageSkia());
+    icon->SetImage(bundle.GetImageNamed(IDR_AURA_WARNING_ICON).ToImageSkia());
     icon->SetVerticalAlignment(views::ImageView::LEADING);
     AddChildView(icon);
   }
@@ -198,16 +196,14 @@ PopupMessage::PopupMessage(const base::string16& caption,
                            const gfx::Size& size_override,
                            int arrow_offset)
     : view_(NULL) {
-  view_ = new MessageBubble(
-      caption, message, message_type, anchor, arrow, size_override,
-      arrow_offset);
+  view_ = new MessageBubble(caption, message, message_type, anchor, arrow,
+                            size_override, arrow_offset);
   widget_ = view_->GetWidget();
 
   gfx::NativeView native_view = widget_->GetNativeView();
   wm::SetWindowVisibilityAnimationType(
       native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  wm::SetWindowVisibilityAnimationTransition(
-      native_view, wm::ANIMATE_HIDE);
+  wm::SetWindowVisibilityAnimationTransition(native_view, wm::ANIMATE_HIDE);
   view_->GetWidget()->Show();
 }
 
@@ -229,8 +225,7 @@ void PopupMessage::CancelHidingAnimation() {
     return;
 
   gfx::NativeView native_view = widget_->GetNativeView();
-  wm::SetWindowVisibilityAnimationTransition(
-      native_view, wm::ANIMATE_NONE);
+  wm::SetWindowVisibilityAnimationTransition(native_view, wm::ANIMATE_NONE);
 }
 
 }  // namespace ash

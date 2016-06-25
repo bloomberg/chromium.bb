@@ -41,9 +41,7 @@ namespace {
 // A simple view that makes sure RunShellDrag is invoked on mouse drag.
 class DragTestView : public views::View {
  public:
-  DragTestView() : views::View() {
-    Reset();
-  }
+  DragTestView() : views::View() { Reset(); }
 
   void Reset() {
     num_drag_enters_ = 0;
@@ -127,8 +125,7 @@ class CompletableLinearAnimation : public gfx::LinearAnimation {
                              int frame_rate,
                              gfx::AnimationDelegate* delegate)
       : gfx::LinearAnimation(duration, frame_rate, delegate),
-        duration_(duration) {
-  }
+        duration_(duration) {}
 
   void Complete() {
     Step(start_time() + base::TimeDelta::FromMilliseconds(duration_));
@@ -203,13 +200,9 @@ class TestDragDropController : public DragDropController {
 class TestNativeWidgetAura : public views::NativeWidgetAura {
  public:
   explicit TestNativeWidgetAura(views::internal::NativeWidgetDelegate* delegate)
-      : NativeWidgetAura(delegate),
-        check_if_capture_lost_(false) {
-  }
+      : NativeWidgetAura(delegate), check_if_capture_lost_(false) {}
 
-  void set_check_if_capture_lost(bool value) {
-    check_if_capture_lost_ = value;
-  }
+  void set_check_if_capture_lost(bool value) { check_if_capture_lost_ = value; }
 
   void OnCaptureLost() override {
     DCHECK(!check_if_capture_lost_);
@@ -224,11 +217,11 @@ class TestNativeWidgetAura : public views::NativeWidgetAura {
 
 // TODO(sky): this is for debugging, remove when track down failure.
 void SetCheckIfCaptureLost(views::Widget* widget, bool value) {
-  // On Windows, the DCHECK triggers when running on bot or locally through RDP,
-  // but not when logged in locally.
+// On Windows, the DCHECK triggers when running on bot or locally through RDP,
+// but not when logged in locally.
 #if !defined(OS_WIN)
-  static_cast<TestNativeWidgetAura*>(widget->native_widget())->
-      set_check_if_capture_lost(value);
+  static_cast<TestNativeWidgetAura*>(widget->native_widget())
+      ->set_check_if_capture_lost(value);
 #endif
 }
 
@@ -263,8 +256,8 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
 
 void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
   ui::GestureEventDetails event_details(gesture_type);
-  ui::GestureEvent gesture_event(
-      location.x(), location.y(), 0, ui::EventTimeForNow(), event_details);
+  ui::GestureEvent gesture_event(location.x(), location.y(), 0,
+                                 ui::EventTimeForNow(), event_details);
   ui::EventSource* event_source =
       Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource();
   ui::EventSourceTestApi event_source_test(event_source);
@@ -298,9 +291,7 @@ class DragDropControllerTest : public AshTestBase {
     drag_drop_controller_->drag_data_ = data;
   }
 
-  aura::Window* GetDragWindow() {
-    return drag_drop_controller_->drag_window_;
-  }
+  aura::Window* GetDragWindow() { return drag_drop_controller_->drag_window_; }
 
   aura::Window* GetDragSourceWindow() {
     return drag_drop_controller_->drag_source_window_;
@@ -312,9 +303,10 @@ class DragDropControllerTest : public AshTestBase {
   }
 
   aura::Window* GetDragImageWindow() {
-    return drag_drop_controller_->drag_image_.get() ?
-        drag_drop_controller_->drag_image_->GetWidget()->GetNativeWindow() :
-        NULL;
+    return drag_drop_controller_->drag_image_.get()
+               ? drag_drop_controller_->drag_image_->GetWidget()
+                     ->GetNativeWindow()
+               : NULL;
   }
 
   DragDropTracker* drag_drop_tracker() {
@@ -374,14 +366,14 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInSingleViewTest) {
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
-      drag_drop_controller_->num_drag_updates_);
+            drag_drop_controller_->num_drag_updates_);
   EXPECT_TRUE(drag_drop_controller_->drop_received_);
   EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
-      drag_drop_controller_->drag_string_);
+            drag_drop_controller_->drag_string_);
 
   EXPECT_EQ(1, drag_view->num_drag_enters_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
-      drag_view->num_drag_updates_);
+            drag_view->num_drag_updates_);
   EXPECT_EQ(1, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
@@ -414,12 +406,12 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold() + 1,
-      drag_drop_controller_->num_drag_updates_);
+            drag_drop_controller_->num_drag_updates_);
   EXPECT_TRUE(drag_drop_controller_->drop_received_);
 
   EXPECT_EQ(1, drag_view->num_drag_enters_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold() + 1,
-      drag_view->num_drag_updates_);
+            drag_view->num_drag_updates_);
   EXPECT_EQ(1, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
@@ -427,9 +419,11 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
 
 // TODO(win_aura) http://crbug.com/154081
 #if defined(OS_WIN)
-#define MAYBE_DragDropInMultipleViewsSingleWidgetTest DISABLED_DragDropInMultipleViewsSingleWidgetTest
+#define MAYBE_DragDropInMultipleViewsSingleWidgetTest \
+  DISABLED_DragDropInMultipleViewsSingleWidgetTest
 #else
-#define MAYBE_DragDropInMultipleViewsSingleWidgetTest DragDropInMultipleViewsSingleWidgetTest
+#define MAYBE_DragDropInMultipleViewsSingleWidgetTest \
+  DragDropInMultipleViewsSingleWidgetTest
 #endif
 TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsSingleWidgetTest) {
   std::unique_ptr<views::Widget> widget(CreateNewWidget());
@@ -464,16 +458,16 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsSingleWidgetTest) {
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view1->HorizontalDragThreshold(),
-      drag_drop_controller_->num_drag_updates_);
+            drag_drop_controller_->num_drag_updates_);
   EXPECT_TRUE(drag_drop_controller_->drop_received_);
   EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
-      drag_drop_controller_->drag_string_);
+            drag_drop_controller_->drag_string_);
 
   EXPECT_EQ(1, drag_view1->num_drag_enters_);
-  int num_expected_updates = drag_view1->bounds().width() -
-      drag_view1->bounds().CenterPoint().x() - 2;
+  int num_expected_updates =
+      drag_view1->bounds().width() - drag_view1->bounds().CenterPoint().x() - 2;
   EXPECT_EQ(num_expected_updates - drag_view1->HorizontalDragThreshold(),
-      drag_view1->num_drag_updates_);
+            drag_view1->num_drag_updates_);
   EXPECT_EQ(0, drag_view1->num_drops_);
   EXPECT_EQ(1, drag_view1->num_drag_exits_);
   EXPECT_TRUE(drag_view1->drag_done_received_);
@@ -488,11 +482,14 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsSingleWidgetTest) {
 
 // TODO(win_aura) http://crbug.com/154081
 #if defined(OS_WIN)
-#define MAYBE_DragDropInMultipleViewsMultipleWidgetsTest DISABLED_DragDropInMultipleViewsMultipleWidgetsTest
+#define MAYBE_DragDropInMultipleViewsMultipleWidgetsTest \
+  DISABLED_DragDropInMultipleViewsMultipleWidgetsTest
 #else
-#define MAYBE_DragDropInMultipleViewsMultipleWidgetsTest DragDropInMultipleViewsMultipleWidgetsTest
+#define MAYBE_DragDropInMultipleViewsMultipleWidgetsTest \
+  DragDropInMultipleViewsMultipleWidgetsTest
 #endif
-TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsMultipleWidgetsTest) {
+TEST_F(DragDropControllerTest,
+       MAYBE_DragDropInMultipleViewsMultipleWidgetsTest) {
   std::unique_ptr<views::Widget> widget1(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget1.get(), drag_view1);
@@ -502,7 +499,8 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsMultipleWidgetsTest)
   gfx::Rect widget1_bounds = widget1->GetClientAreaBoundsInScreen();
   gfx::Rect widget2_bounds = widget2->GetClientAreaBoundsInScreen();
   widget2->SetBounds(gfx::Rect(widget1_bounds.width(), 0,
-      widget2_bounds.width(), widget2_bounds.height()));
+                               widget2_bounds.width(),
+                               widget2_bounds.height()));
 
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
@@ -529,16 +527,16 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsMultipleWidgetsTest)
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view1->HorizontalDragThreshold(),
-      drag_drop_controller_->num_drag_updates_);
+            drag_drop_controller_->num_drag_updates_);
   EXPECT_TRUE(drag_drop_controller_->drop_received_);
   EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
-      drag_drop_controller_->drag_string_);
+            drag_drop_controller_->drag_string_);
 
   EXPECT_EQ(1, drag_view1->num_drag_enters_);
-  int num_expected_updates = drag_view1->bounds().width() -
-      drag_view1->bounds().CenterPoint().x() - 2;
+  int num_expected_updates =
+      drag_view1->bounds().width() - drag_view1->bounds().CenterPoint().x() - 2;
   EXPECT_EQ(num_expected_updates - drag_view1->HorizontalDragThreshold(),
-      drag_view1->num_drag_updates_);
+            drag_view1->num_drag_updates_);
   EXPECT_EQ(0, drag_view1->num_drops_);
   EXPECT_EQ(1, drag_view1->num_drag_exits_);
   EXPECT_TRUE(drag_view1->drag_done_received_);
@@ -553,7 +551,8 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsMultipleWidgetsTest)
 
 // TODO(win_aura) http://crbug.com/154081
 #if defined(OS_WIN)
-#define MAYBE_ViewRemovedWhileInDragDropTest DISABLED_ViewRemovedWhileInDragDropTest
+#define MAYBE_ViewRemovedWhileInDragDropTest \
+  DISABLED_ViewRemovedWhileInDragDropTest
 #else
 #define MAYBE_ViewRemovedWhileInDragDropTest ViewRemovedWhileInDragDropTest
 #endif
@@ -597,14 +596,14 @@ TEST_F(DragDropControllerTest, MAYBE_ViewRemovedWhileInDragDropTest) {
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags_1 + num_drags_2 - 1 - drag_view->VerticalDragThreshold(),
-      drag_drop_controller_->num_drag_updates_);
+            drag_drop_controller_->num_drag_updates_);
   EXPECT_TRUE(drag_drop_controller_->drop_received_);
   EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
-      drag_drop_controller_->drag_string_);
+            drag_drop_controller_->drag_string_);
 
   EXPECT_EQ(1, drag_view->num_drag_enters_);
   EXPECT_EQ(num_drags_1 - 1 - drag_view->VerticalDragThreshold(),
-      drag_view->num_drag_updates_);
+            drag_view->num_drag_updates_);
   EXPECT_EQ(0, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
@@ -619,7 +618,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
     scw.WriteText(base::ASCIIToUTF16(clip_str));
   }
   EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
-      ui::CLIPBOARD_TYPE_COPY_PASTE));
+                                    ui::CLIPBOARD_TYPE_COPY_PASTE));
 
   std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
@@ -640,7 +639,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
   // Verify the clipboard contents haven't changed
   std::string result;
   EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
-      ui::CLIPBOARD_TYPE_COPY_PASTE));
+                                    ui::CLIPBOARD_TYPE_COPY_PASTE));
   cb->ReadAsciiText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
   EXPECT_EQ(clip_str, result);
   // Destory the clipboard here because ash doesn't delete it.
@@ -720,8 +719,10 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     gfx::Point mouse_move_location = drag_view->bounds().CenterPoint();
     ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, mouse_move_location,
                               mouse_move_location, ui::EventTimeForNow(), 0, 0);
-    ui::EventDispatchDetails details = Shell::GetPrimaryRootWindow()->
-        GetHost()->event_processor()->OnEventFromSource(&mouse_move);
+    ui::EventDispatchDetails details = Shell::GetPrimaryRootWindow()
+                                           ->GetHost()
+                                           ->event_processor()
+                                           ->OnEventFromSource(&mouse_move);
     ASSERT_FALSE(details.dispatcher_destroyed);
   }
 
@@ -729,14 +730,14 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
-      drag_drop_controller_->num_drag_updates_);
+            drag_drop_controller_->num_drag_updates_);
   EXPECT_TRUE(drag_drop_controller_->drop_received_);
   EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
-      drag_drop_controller_->drag_string_);
+            drag_drop_controller_->drag_string_);
 
   EXPECT_EQ(1, drag_view->num_drag_enters_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
-      drag_view->num_drag_updates_);
+            drag_view->num_drag_updates_);
   EXPECT_EQ(1, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
@@ -744,7 +745,8 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
 
 // TODO(win_aura) http://crbug.com/154081
 #if defined(OS_WIN)
-#define MAYBE_PressingEscapeCancelsDragDrop DISABLED_PressingEscapeCancelsDragDrop
+#define MAYBE_PressingEscapeCancelsDragDrop \
+  DISABLED_PressingEscapeCancelsDragDrop
 #define MAYBE_CaptureLostCancelsDragDrop DISABLED_CaptureLostCancelsDragDrop
 #else
 #define MAYBE_PressingEscapeCancelsDragDrop PressingEscapeCancelsDragDrop
@@ -778,15 +780,15 @@ TEST_F(DragDropControllerTest, MAYBE_PressingEscapeCancelsDragDrop) {
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
-      drag_drop_controller_->num_drag_updates_);
+            drag_drop_controller_->num_drag_updates_);
   EXPECT_FALSE(drag_drop_controller_->drop_received_);
   EXPECT_TRUE(drag_drop_controller_->drag_canceled_);
   EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
-      drag_drop_controller_->drag_string_);
+            drag_drop_controller_->drag_string_);
 
   EXPECT_EQ(1, drag_view->num_drag_enters_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
-      drag_view->num_drag_updates_);
+            drag_view->num_drag_updates_);
   EXPECT_EQ(0, drag_view->num_drops_);
   EXPECT_EQ(1, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
@@ -819,25 +821,23 @@ TEST_F(DragDropControllerTest, MAYBE_CaptureLostCancelsDragDrop) {
   aura::Window* capture_window = drag_drop_tracker()->capture_window();
   ASSERT_TRUE(capture_window);
   EXPECT_EQ("0x0", capture_window->bounds().size().ToString());
-  EXPECT_EQ(NULL,
-            capture_window->GetEventHandlerForPoint(gfx::Point()));
-  EXPECT_EQ(NULL,
-            capture_window->GetTopWindowContainingPoint(gfx::Point()));
+  EXPECT_EQ(NULL, capture_window->GetEventHandlerForPoint(gfx::Point()));
+  EXPECT_EQ(NULL, capture_window->GetTopWindowContainingPoint(gfx::Point()));
 
-  aura::client::GetCaptureClient(widget->GetNativeView()->GetRootWindow())->
-      SetCapture(NULL);
+  aura::client::GetCaptureClient(widget->GetNativeView()->GetRootWindow())
+      ->SetCapture(NULL);
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
-      drag_drop_controller_->num_drag_updates_);
+            drag_drop_controller_->num_drag_updates_);
   EXPECT_FALSE(drag_drop_controller_->drop_received_);
   EXPECT_TRUE(drag_drop_controller_->drag_canceled_);
   EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
-      drag_drop_controller_->drag_string_);
+            drag_drop_controller_->drag_string_);
 
   EXPECT_EQ(1, drag_view->num_drag_enters_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
-      drag_view->num_drag_updates_);
+            drag_view->num_drag_updates_);
   EXPECT_EQ(0, drag_view->num_drops_);
   EXPECT_EQ(1, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
@@ -855,7 +855,8 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
   gfx::Rect widget1_bounds = widget1->GetClientAreaBoundsInScreen();
   gfx::Rect widget2_bounds = widget2->GetClientAreaBoundsInScreen();
   widget2->SetBounds(gfx::Rect(widget1_bounds.width(), 0,
-      widget2_bounds.width(), widget2_bounds.height()));
+                               widget2_bounds.width(),
+                               widget2_bounds.height()));
 
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
@@ -886,11 +887,11 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
   EXPECT_EQ(num_drags, drag_drop_controller_->num_drag_updates_);
   EXPECT_TRUE(drag_drop_controller_->drop_received_);
   EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
-      drag_drop_controller_->drag_string_);
+            drag_drop_controller_->drag_string_);
 
   EXPECT_EQ(1, drag_view1->num_drag_enters_);
-  int num_expected_updates = drag_view1->bounds().width() -
-      drag_view1->bounds().CenterPoint().x() - 1;
+  int num_expected_updates =
+      drag_view1->bounds().width() - drag_view1->bounds().CenterPoint().x() - 1;
   EXPECT_EQ(num_expected_updates, drag_view1->num_drag_updates_);
   EXPECT_EQ(0, drag_view1->num_drops_);
   EXPECT_EQ(1, drag_view1->num_drag_exits_);
@@ -991,10 +992,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     std::unique_ptr<views::Widget> widget(CreateNewWidget());
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
-        data,
-        window->GetRootWindow(),
-        window,
-        gfx::Point(5, 5),
+        data, window->GetRootWindow(), window, gfx::Point(5, 5),
         ui::DragDropTypes::DRAG_MOVE,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 
@@ -1025,10 +1023,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     std::unique_ptr<views::Widget> widget(CreateNewWidget());
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
-        data,
-        window->GetRootWindow(),
-        window,
-        gfx::Point(405, 405),
+        data, window->GetRootWindow(), window, gfx::Point(405, 405),
         ui::DragDropTypes::DRAG_MOVE,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
     DragImageWindowObserver observer;

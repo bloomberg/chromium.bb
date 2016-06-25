@@ -58,11 +58,7 @@ class ASH_EXPORT ExitWarningHandler {
  private:
   friend class AcceleratorControllerTest;
 
-  enum State {
-    IDLE,
-    WAIT_FOR_DOUBLE_PRESS,
-    EXITING
-  };
+  enum State { IDLE, WAIT_FOR_DOUBLE_PRESS, EXITING };
 
   // Performs actions when the time limit is exceeded.
   void TimerAction();

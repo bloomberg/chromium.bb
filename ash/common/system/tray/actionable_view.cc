@@ -13,13 +13,11 @@ namespace ash {
 // static
 const char ActionableView::kViewClassName[] = "tray/ActionableView";
 
-ActionableView::ActionableView()
-    : has_capture_(false) {
+ActionableView::ActionableView() : has_capture_(false) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
-ActionableView::~ActionableView() {
-}
+ActionableView::~ActionableView() {}
 
 void ActionableView::OnPaintFocus(gfx::Canvas* canvas) {
   gfx::Rect rect(GetFocusBounds());

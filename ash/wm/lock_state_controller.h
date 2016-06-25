@@ -114,9 +114,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
     bool real_shutdown_timer_is_running() const {
       return controller_->real_shutdown_timer_.IsRunning();
     }
-    bool is_animating_lock() const {
-      return controller_->animating_lock_;
-    }
+    bool is_animating_lock() const { return controller_->animating_lock_; }
     bool is_lock_cancellable() const {
       return controller_->CanCancelLockAnimation();
     }
@@ -258,7 +256,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   void CancelPreLockAnimation();
   void StartPostLockAnimation();
   // This method calls |callback| when animation completes.
-  void StartUnlockAnimationBeforeUIDestroyed(base::Closure &callback);
+  void StartUnlockAnimationBeforeUIDestroyed(base::Closure& callback);
   void StartUnlockAnimationAfterUIDestroyed();
 
   // These methods are called when corresponding animation completes.

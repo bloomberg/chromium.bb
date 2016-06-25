@@ -40,31 +40,24 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
 class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
  public:
-  enum MaximizeAllowed {
-    MAXIMIZE_ALLOWED,
-    MAXIMIZE_DISALLOWED
-  };
+  enum MaximizeAllowed { MAXIMIZE_ALLOWED, MAXIMIZE_DISALLOWED };
 
-  enum MinimizeAllowed {
-    MINIMIZE_ALLOWED,
-    MINIMIZE_DISALLOWED
-  };
+  enum MinimizeAllowed { MINIMIZE_ALLOWED, MINIMIZE_DISALLOWED };
 
-  FrameCaptionButtonContainerViewTest() {
-  }
+  FrameCaptionButtonContainerViewTest() {}
 
   ~FrameCaptionButtonContainerViewTest() override {}
 
   // Creates a widget which allows maximizing based on |maximize_allowed|.
   // The caller takes ownership of the returned widget.
-  views::Widget* CreateTestWidget(
-      MaximizeAllowed maximize_allowed,
-      MinimizeAllowed minimize_allowed) WARN_UNUSED_RESULT {
+  views::Widget* CreateTestWidget(MaximizeAllowed maximize_allowed,
+                                  MinimizeAllowed minimize_allowed)
+      WARN_UNUSED_RESULT {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params;
-    params.delegate = new TestWidgetDelegate(
-        maximize_allowed == MAXIMIZE_ALLOWED,
-        minimize_allowed == MINIMIZE_ALLOWED);
+    params.delegate =
+        new TestWidgetDelegate(maximize_allowed == MAXIMIZE_ALLOWED,
+                               minimize_allowed == MINIMIZE_ALLOWED);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = CurrentContext();
     widget->Init(params);
@@ -91,8 +84,7 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
     gfx::Rect container_size(container->GetPreferredSize());
     if (leftmost.y() == rightmost.y() &&
         leftmost.height() == rightmost.height() &&
-        leftmost.x() == expected.x() &&
-        leftmost.y() == expected.y() &&
+        leftmost.x() == expected.x() && leftmost.y() == expected.y() &&
         leftmost.height() == expected.height() &&
         rightmost.bounds().right() == expected.right()) {
       return true;
@@ -120,8 +112,8 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   EXPECT_TRUE(t1.minimize_button()->visible());
   EXPECT_TRUE(t1.size_button()->visible());
   EXPECT_TRUE(t1.close_button()->visible());
-  EXPECT_TRUE(CheckButtonsAtEdges(
-      &container1, *t1.minimize_button(), *t1.close_button()));
+  EXPECT_TRUE(CheckButtonsAtEdges(&container1, *t1.minimize_button(),
+                                  *t1.close_button()));
 
   // The minimize button should be visible when minimizing is allowed but
   // maximizing is disallowed.
@@ -133,8 +125,8 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   EXPECT_TRUE(t2.minimize_button()->visible());
   EXPECT_FALSE(t2.size_button()->visible());
   EXPECT_TRUE(t2.close_button()->visible());
-  EXPECT_TRUE(CheckButtonsAtEdges(
-      &container2, *t2.minimize_button(), *t2.close_button()));
+  EXPECT_TRUE(CheckButtonsAtEdges(&container2, *t2.minimize_button(),
+                                  *t2.close_button()));
 
   // Neither the minimize button nor the size button should be visible when
   // neither minimizing nor maximizing are allowed.
@@ -146,8 +138,8 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   EXPECT_FALSE(t3.minimize_button()->visible());
   EXPECT_FALSE(t3.size_button()->visible());
   EXPECT_TRUE(t3.close_button()->visible());
-  EXPECT_TRUE(CheckButtonsAtEdges(
-      &container3, *t3.close_button(), *t3.close_button()));
+  EXPECT_TRUE(
+      CheckButtonsAtEdges(&container3, *t3.close_button(), *t3.close_button()));
 }
 
 // Tests that the layout animations trigered by button visibility result in the
@@ -173,8 +165,9 @@ TEST_F(FrameCaptionButtonContainerViewTest,
 
   // Hidden size button should result in minimize button animating to the
   // right. The size button should not be visible, but should not have moved.
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
   container.UpdateSizeButtonVisibility();
   test.EndAnimations();
   // Parent needs to layout in response to size change.
@@ -193,8 +186,9 @@ TEST_F(FrameCaptionButtonContainerViewTest,
 
   // Revealing the size button should cause the minimize button to return to its
   // original position.
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
   container.UpdateSizeButtonVisibility();
   // Calling code needs to layout in response to size change.
   container.Layout();

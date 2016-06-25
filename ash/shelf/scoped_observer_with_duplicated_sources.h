@@ -42,8 +42,7 @@ class ScopedObserverWithDuplicatedSources {
   // Only remove the object passed to the constructor as an observer from
   // |source| when Remove() is invoked the same number of times as Add().
   void Remove(Source* source) {
-    typename SourceToAddCountMap::iterator iter =
-        counted_sources_.find(source);
+    typename SourceToAddCountMap::iterator iter = counted_sources_.find(source);
     DCHECK(iter != counted_sources_.end() && iter->second > 0);
 
     if (--iter->second == 0) {

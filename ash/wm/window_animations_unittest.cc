@@ -120,8 +120,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(1.0f, old_layer->GetTargetOpacity());
 
   // Cross fade to a larger size, as in a maximize animation.
-  GetWindowState(window.get())->SetBoundsDirectCrossFade(
-      gfx::Rect(0, 0, 640, 480));
+  GetWindowState(window.get())
+      ->SetBoundsDirectCrossFade(gfx::Rect(0, 0, 640, 480));
   // Window's layer has been replaced.
   EXPECT_NE(old_layer, window->layer());
   // Original layer stays opaque and stretches to new size.
@@ -143,8 +143,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
 
   // Cross fade to a smaller size, as in a restore animation.
   old_layer = window->layer();
-  GetWindowState(window.get())->SetBoundsDirectCrossFade(
-      gfx::Rect(5, 10, 320, 240));
+  GetWindowState(window.get())
+      ->SetBoundsDirectCrossFade(gfx::Rect(5, 10, 320, 240));
   // Again, window layer has been replaced.
   EXPECT_NE(old_layer, window->layer());
   // Original layer fades out and stretches down to new size.
@@ -183,8 +183,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBoundsFromTransform) {
   EXPECT_EQ(1.0f, old_layer->GetTargetOpacity());
 
   // Cross fade to a larger size, as in a maximize animation.
-  GetWindowState(window.get())->SetBoundsDirectCrossFade(
-      gfx::Rect(0, 0, 640, 480));
+  GetWindowState(window.get())
+      ->SetBoundsDirectCrossFade(gfx::Rect(0, 0, 640, 480));
   // Window's layer has been replaced.
   EXPECT_NE(old_layer, window->layer());
   // Original layer stays opaque and stretches to new size.

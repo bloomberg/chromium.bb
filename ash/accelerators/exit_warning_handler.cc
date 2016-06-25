@@ -98,9 +98,7 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
 }  // namespace
 
 ExitWarningHandler::ExitWarningHandler()
-    : state_(IDLE),
-      stub_timer_for_test_(false) {
-}
+    : state_(IDLE), stub_timer_for_test_(false) {}
 
 ExitWarningHandler::~ExitWarningHandler() {
   // Note: If a timer is outstanding, it is stopped in its destructor.
@@ -141,8 +139,7 @@ void ExitWarningHandler::StartTimer() {
   if (stub_timer_for_test_)
     return;
   timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMilliseconds(kTimeOutMilliseconds),
-               this,
+               base::TimeDelta::FromMilliseconds(kTimeOutMilliseconds), this,
                &ExitWarningHandler::TimerAction);
 }
 
@@ -158,8 +155,7 @@ void ExitWarningHandler::Show() {
   gfx::Size rs = root_window->bounds().size();
   gfx::Size ps = delegate->GetPreferredSize();
   gfx::Rect bounds((rs.width() - ps.width()) / 2,
-                   (rs.height() - ps.height()) / 3,
-                   ps.width(), ps.height());
+                   (rs.height() - ps.height()) / 3, ps.width(), ps.height());
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;

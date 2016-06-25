@@ -56,8 +56,7 @@ namespace ash {
 
 class TraySms::SmsDefaultView : public TrayItemMore {
  public:
-  explicit SmsDefaultView(TraySms* owner)
-      : TrayItemMore(owner, true) {
+  explicit SmsDefaultView(TraySms* owner) : TrayItemMore(owner, true) {
     SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_SMS));
     Update();
@@ -84,18 +83,14 @@ class TraySms::SmsDefaultView : public TrayItemMore {
 class TraySms::SmsMessageView : public views::View,
                                 public views::ButtonListener {
  public:
-  enum ViewType {
-    VIEW_DETAILED,
-    VIEW_NOTIFICATION
-  };
+  enum ViewType { VIEW_DETAILED, VIEW_NOTIFICATION };
 
   SmsMessageView(TraySms* owner,
                  ViewType view_type,
                  size_t index,
                  const std::string& number,
                  const std::string& message)
-      : owner_(owner),
-        index_(index) {
+      : owner_(owner), index_(index) {
     // TODO(jshin): Convert ASCII digits in |number| (phone number) to native
     // digits if necessary. |number| can contain non-digit characters and may
     // have to be converted one-by-one or use libphonenumber's formating API.
@@ -131,9 +126,13 @@ class TraySms::SmsMessageView : public views::View,
         views::CustomButton::STATE_NORMAL,
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_AURA_UBER_TRAY_SMS_DISMISS));
-    const int msg_width = owner_->system_tray()->GetSystemBubble()->
-        bubble_view()->GetPreferredSize().width() -
-            (kNotificationIconWidth + kTrayPopupPaddingHorizontal * 2);
+    const int msg_width =
+        owner_->system_tray()
+            ->GetSystemBubble()
+            ->bubble_view()
+            ->GetPreferredSize()
+            .width() -
+        (kNotificationIconWidth + kTrayPopupPaddingHorizontal * 2);
     message_label_->SizeToFit(msg_width);
 
     views::GridLayout* layout = new views::GridLayout(this);
@@ -144,15 +143,14 @@ class TraySms::SmsMessageView : public views::View,
     // Message
     columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal);
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                       0 /* resize percent */,
-                       views::GridLayout::FIXED, msg_width, msg_width);
+                       0 /* resize percent */, views::GridLayout::FIXED,
+                       msg_width, msg_width);
 
     // Close button
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                        0, /* resize percent */
-                       views::GridLayout::FIXED,
-                       kNotificationIconWidth, kNotificationIconWidth);
-
+                       views::GridLayout::FIXED, kNotificationIconWidth,
+                       kNotificationIconWidth);
 
     layout->AddPaddingRow(0, kPaddingVertical);
     layout->StartRow(0, 0);
@@ -183,8 +181,7 @@ class TraySms::SmsMessageView : public views::View,
 class TraySms::SmsDetailedView : public TrayDetailsView,
                                  public ViewClickListener {
  public:
-  explicit SmsDetailedView(TraySms* owner)
-      : TrayDetailsView(owner) {
+  explicit SmsDetailedView(TraySms* owner) : TrayDetailsView(owner) {
     Init();
     Update();
   }
@@ -259,9 +256,9 @@ class TraySms::SmsNotificationView : public TrayNotificationView {
   void Update(size_t message_index,
               const std::string& number,
               const std::string& text) {
-    SmsMessageView* message_view = new SmsMessageView(
-        tray_sms(), SmsMessageView::VIEW_NOTIFICATION,
-        message_index_, number, text);
+    SmsMessageView* message_view =
+        new SmsMessageView(tray_sms(), SmsMessageView::VIEW_NOTIFICATION,
+                           message_index_, number, text);
     UpdateView(message_view);
   }
 
@@ -271,9 +268,7 @@ class TraySms::SmsNotificationView : public TrayNotificationView {
   void OnClickAction() override { owner()->PopupDetailedView(0, true); }
 
  private:
-  TraySms* tray_sms() {
-    return static_cast<TraySms*>(owner());
-  }
+  TraySms* tray_sms() { return static_cast<TraySms*>(owner()); }
 
   size_t message_index_;
 
@@ -339,7 +334,6 @@ void TraySms::DestroyNotificationView() {
 }
 
 void TraySms::MessageReceived(const base::DictionaryValue& message) {
-
   std::string message_text;
   if (!message.GetStringWithoutPathExpansion(
           chromeos::NetworkSmsHandler::kTextKey, &message_text)) {
@@ -360,8 +354,9 @@ void TraySms::MessageReceived(const base::DictionaryValue& message) {
     return;
   }
 
-  NET_LOG_DEBUG("Received SMS from: " + message_number + " with text: " +
-                message_text, "");
+  NET_LOG_DEBUG(
+      "Received SMS from: " + message_number + " with text: " + message_text,
+      "");
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString(kSmsNumberKey, message_number);

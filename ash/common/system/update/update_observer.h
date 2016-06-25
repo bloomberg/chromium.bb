@@ -20,4 +20,4 @@ class ASH_EXPORT UpdateObserver {
 
 }  // namespace ash
 
-#endif  //ASH_COMMON_SYSTEM_UPDATE_UPDATE_OBSERVER_H_
+#endif  // ASH_COMMON_SYSTEM_UPDATE_UPDATE_OBSERVER_H_

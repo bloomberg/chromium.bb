@@ -16,8 +16,7 @@
 namespace ash {
 
 TrayEnterprise::TrayEnterprise(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
-      tray_view_(NULL) {
+    : SystemTrayItem(system_tray), tray_view_(NULL) {
   WmShell::Get()->system_tray_notifier()->AddEnterpriseDomainObserver(this);
 }
 
@@ -55,4 +54,4 @@ void TrayEnterprise::OnViewClicked(views::View* sender) {
   WmShell::Get()->system_tray_delegate()->ShowEnterpriseInfo();
 }
 
-} // namespace ash
+}  // namespace ash

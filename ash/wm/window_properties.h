@@ -12,7 +12,7 @@
 namespace aura {
 class Window;
 
-template<typename T>
+template <typename T>
 struct WindowProperty;
 }
 

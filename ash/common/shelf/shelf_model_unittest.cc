@@ -22,8 +22,7 @@ class TestShelfModelObserver : public ShelfModelObserver {
       : added_count_(0),
         removed_count_(0),
         changed_count_(0),
-        moved_count_(0) {
-  }
+        moved_count_(0) {}
 
   // Returns a string description of the changes that have occurred since this
   // was last invoked. Resets state to initial state.

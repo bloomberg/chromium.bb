@@ -24,16 +24,16 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   enum State {
     // Nothing special. Usually represents an app shortcut item with no running
     // instance.
-    STATE_NORMAL    = 0,
+    STATE_NORMAL = 0,
     // Button has mouse hovering on it.
-    STATE_HOVERED   = 1 << 0,
+    STATE_HOVERED = 1 << 0,
     // Underlying ShelfItem has a running instance.
-    STATE_RUNNING   = 1 << 1,
+    STATE_RUNNING = 1 << 1,
     // Underlying ShelfItem is active (i.e. has focus).
-    STATE_ACTIVE    = 1 << 2,
+    STATE_ACTIVE = 1 << 2,
     // Underlying ShelfItem needs user's attention.
     STATE_ATTENTION = 1 << 3,
-    STATE_FOCUSED   = 1 << 4,
+    STATE_FOCUSED = 1 << 4,
     // Hide the status (temporarily for some animations).
     STATE_HIDDEN = 1 << 5,
   };

@@ -11,9 +11,7 @@
 
 namespace ash {
 
-OverlayEventFilter::OverlayEventFilter()
-    : delegate_(NULL) {
-}
+OverlayEventFilter::OverlayEventFilter() : delegate_(NULL) {}
 
 OverlayEventFilter::~OverlayEventFilter() {
   delegate_ = NULL;

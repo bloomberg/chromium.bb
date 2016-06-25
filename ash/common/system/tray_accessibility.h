@@ -95,8 +95,7 @@ class AccessibilityDetailedView : public TrayDetailsView,
 
 }  // namespace tray
 
-class TrayAccessibility : public TrayImageItem,
-                          public AccessibilityObserver {
+class TrayAccessibility : public TrayImageItem, public AccessibilityObserver {
  public:
   explicit TrayAccessibility(SystemTray* system_tray);
   ~TrayAccessibility() override;

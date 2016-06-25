@@ -56,7 +56,7 @@ void AshTouchExplorationManager::SetOutputLevel(int volume) {
 
 void AshTouchExplorationManager::SilenceSpokenFeedback() {
   AccessibilityDelegate* delegate =
-    Shell::GetInstance()->accessibility_delegate();
+      Shell::GetInstance()->accessibility_delegate();
   if (!delegate->IsSpokenFeedbackEnabled())
     return;
   delegate->SilenceSpokenFeedback();

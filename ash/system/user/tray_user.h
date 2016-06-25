@@ -28,8 +28,7 @@ class RoundedImageView;
 class UserView;
 }
 
-class ASH_EXPORT TrayUser : public SystemTrayItem,
-                            public UserObserver {
+class ASH_EXPORT TrayUser : public SystemTrayItem, public UserObserver {
  public:
   // The given |index| is the user index in a multi profile scenario. Index #0
   // is the active user, the other indices are other logged in users (if there
@@ -40,11 +39,11 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
 
   // Allows unit tests to see if the item was created.
   enum TestState {
-    HIDDEN,               // The item is hidden.
-    SHOWN,                // The item gets presented to the user.
-    HOVERED,              // The item is hovered and presented to the user.
-    ACTIVE,               // The item was clicked and can add a user.
-    ACTIVE_BUT_DISABLED   // The item was clicked anc cannot add a user.
+    HIDDEN,              // The item is hidden.
+    SHOWN,               // The item gets presented to the user.
+    HOVERED,             // The item is hovered and presented to the user.
+    ACTIVE,              // The item was clicked and can add a user.
+    ACTIVE_BUT_DISABLED  // The item was clicked anc cannot add a user.
   };
   TestState GetStateForTest() const;
 

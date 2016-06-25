@@ -32,8 +32,7 @@ class TouchPointView : public views::View,
  public:
   explicit TouchPointView(views::Widget* parent_widget)
       : circle_center_(kPointRadius + 1, kPointRadius + 1),
-        gradient_center_(SkPoint::Make(kPointRadius + 1,
-                                       kPointRadius + 1)) {
+        gradient_center_(SkPoint::Make(kPointRadius + 1, kPointRadius + 1)) {
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
 
@@ -57,19 +56,16 @@ class TouchPointView : public views::View,
     if (touch.type() == ui::ET_TOUCH_RELEASED ||
         touch.type() == ui::ET_TOUCH_CANCELLED) {
       fadeout_.reset(new gfx::LinearAnimation(kFadeoutDurationInMs,
-                                             kFadeoutFrameRate,
-                                             this));
+                                              kFadeoutFrameRate, this));
       fadeout_->Start();
     } else {
       SetX(parent()->GetMirroredXInView(touch.root_location().x()) -
-               kPointRadius - 1);
+           kPointRadius - 1);
       SetY(touch.root_location().y() - kPointRadius - 1);
     }
   }
 
-  void Remove() {
-    delete this;
-  }
+  void Remove() { delete this; }
 
  private:
   ~TouchPointView() override {
@@ -131,15 +127,13 @@ class TouchPointView : public views::View,
 };
 
 TouchHudProjection::TouchHudProjection(aura::Window* initial_root)
-    : TouchObserverHUD(initial_root) {
-}
+    : TouchObserverHUD(initial_root) {}
 
-TouchHudProjection::~TouchHudProjection() {
-}
+TouchHudProjection::~TouchHudProjection() {}
 
 void TouchHudProjection::Clear() {
   for (std::map<int, TouchPointView*>::iterator iter = points_.begin();
-      iter != points_.end(); iter++)
+       iter != points_.end(); iter++)
     iter->second->Remove();
   points_.clear();
 }

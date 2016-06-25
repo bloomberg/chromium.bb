@@ -154,10 +154,9 @@ PublicAccountUserDetails::PublicAccountUserDetails(int max_width)
   const int inner_padding =
       kTrayPopupPaddingHorizontal - kTrayPopupPaddingBetweenItems;
   const bool rtl = base::i18n::IsRTL();
-  SetBorder(views::Border::CreateEmptyBorder(kUserDetailsVerticalPadding,
-                                             rtl ? 0 : inner_padding,
-                                             kUserDetailsVerticalPadding,
-                                             rtl ? inner_padding : 0));
+  SetBorder(views::Border::CreateEmptyBorder(
+      kUserDetailsVerticalPadding, rtl ? 0 : inner_padding,
+      kUserDetailsVerticalPadding, rtl ? inner_padding : 0));
 
   // Retrieve the user's display name and wrap it with markers.
   // Note that since this is a public account it always has to be the primary
@@ -174,8 +173,8 @@ PublicAccountUserDetails::PublicAccountUserDetails(int max_width)
   base::RemoveChars(domain, kDisplayNameMark, &domain);
   base::i18n::WrapStringWithLTRFormatting(&domain);
   // Retrieve the label text, inserting the display name and domain.
-  text_ = l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_PUBLIC_LABEL, display_name, domain);
+  text_ = l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_PUBLIC_LABEL,
+                                     display_name, domain);
 
   learn_more_ = new views::Link(l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE));
   learn_more_->SetUnderline(false);
@@ -196,18 +195,14 @@ void PublicAccountUserDetails::Layout() {
   // Word-wrap the label text.
   const gfx::FontList font_list;
   std::vector<base::string16> lines;
-  gfx::ElideRectangleText(text_,
-                          font_list,
-                          contents_area.width(),
-                          contents_area.height(),
-                          gfx::ELIDE_LONG_WORDS,
+  gfx::ElideRectangleText(text_, font_list, contents_area.width(),
+                          contents_area.height(), gfx::ELIDE_LONG_WORDS,
                           &lines);
   // Loop through the lines, creating a renderer for each.
   gfx::Point position = contents_area.origin();
   gfx::Range display_name(gfx::Range::InvalidRange());
   for (std::vector<base::string16>::const_iterator it = lines.begin();
-       it != lines.end();
-       ++it) {
+       it != lines.end(); ++it) {
     gfx::RenderText* line = gfx::RenderText::CreateInstance();
     line->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_UI);
     line->SetText(*it);
@@ -265,8 +260,7 @@ gfx::Size PublicAccountUserDetails::GetPreferredSize() const {
 
 void PublicAccountUserDetails::OnPaint(gfx::Canvas* canvas) {
   for (ScopedVector<gfx::RenderText>::const_iterator it = lines_.begin();
-       it != lines_.end();
-       ++it) {
+       it != lines_.end(); ++it) {
     (*it)->Draw(canvas);
   }
   views::View::OnPaint(canvas);
@@ -297,12 +291,9 @@ void PublicAccountUserDetails::CalculatePreferredSize(int max_allowed_width) {
   while (min_width < max_width) {
     lines.clear();
     const int width = (min_width + max_width) / 2;
-    const bool too_narrow = gfx::ElideRectangleText(text_,
-                                                    font_list,
-                                                    width,
-                                                    INT_MAX,
-                                                    gfx::TRUNCATE_LONG_WORDS,
-                                                    &lines) != 0;
+    const bool too_narrow =
+        gfx::ElideRectangleText(text_, font_list, width, INT_MAX,
+                                gfx::TRUNCATE_LONG_WORDS, &lines) != 0;
     int line_count = lines.size();
     if (!too_narrow && line_count == 3 &&
         width - gfx::GetStringWidth(lines.back(), font_list) <=
@@ -316,8 +307,8 @@ void PublicAccountUserDetails::CalculatePreferredSize(int max_allowed_width) {
 
   // Calculate the corresponding height and set the preferred size.
   lines.clear();
-  gfx::ElideRectangleText(
-      text_, font_list, min_width, INT_MAX, gfx::TRUNCATE_LONG_WORDS, &lines);
+  gfx::ElideRectangleText(text_, font_list, min_width, INT_MAX,
+                          gfx::TRUNCATE_LONG_WORDS, &lines);
   int line_count = lines.size();
   if (min_width - gfx::GetStringWidth(lines.back(), font_list) <=
       space_width + link_size.width()) {
@@ -336,8 +327,8 @@ void PublicAccountUserDetails::CalculatePreferredSize(int max_allowed_width) {
 UserCardView::UserCardView(LoginStatus login_status,
                            int max_width,
                            int user_index) {
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                                        kTrayPopupPaddingBetweenItems));
   if (login_status == LoginStatus::PUBLIC) {
     AddPublicModeUserContent(max_width);
   } else {

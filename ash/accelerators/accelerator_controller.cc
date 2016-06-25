@@ -240,7 +240,7 @@ void HandleLaunchLastApp() {
 bool CanHandleMagnifyScreen() {
   Shell* shell = Shell::GetInstance();
   return shell->magnification_controller()->IsEnabled() ||
-      shell->partial_magnification_controller()->is_enabled();
+         shell->partial_magnification_controller()->is_enabled();
 }
 
 // Magnify the screen
@@ -257,11 +257,12 @@ void HandleMagnifyScreen(int delta_index) {
 
     ash::Shell::GetInstance()->magnification_controller()->SetScale(
         std::pow(kMagnificationScaleFactor, new_scale_index), true);
-  } else if (ash::Shell::GetInstance()->
-             partial_magnification_controller()->is_enabled()) {
+  } else if (ash::Shell::GetInstance()
+                 ->partial_magnification_controller()
+                 ->is_enabled()) {
     float scale = delta_index > 0 ? kDefaultPartialMagnifiedScale : 1;
-    ash::Shell::GetInstance()->partial_magnification_controller()->
-        SetScale(scale);
+    ash::Shell::GetInstance()->partial_magnification_controller()->SetScale(
+        scale);
   }
 }
 
@@ -390,8 +391,8 @@ void HandleRotateActiveWindow() {
     // rotation and position. Since there could be an animation in progress
     // right now, queue this animation so when it starts it picks up a neutral
     // rotation and position. Use replace so we only enqueue one at a time.
-    active_window->layer()->GetAnimator()->
-        set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+    active_window->layer()->GetAnimator()->set_preemption_strategy(
+        ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
     active_window->layer()->GetAnimator()->StartAnimation(
         new ui::LayerAnimationSequence(
             new ash::WindowRotation(360, active_window->layer())));
@@ -442,7 +443,7 @@ void HandleShowTaskManager() {
 bool CanHandleSwitchIme(ImeControlDelegate* ime_control_delegate,
                         const ui::Accelerator& accelerator) {
   return ime_control_delegate &&
-      ime_control_delegate->CanSwitchIme(accelerator);
+         ime_control_delegate->CanSwitchIme(accelerator);
 }
 
 void HandleSwitchIme(ImeControlDelegate* ime_control_delegate,
@@ -526,15 +527,14 @@ void HandleWindowSnapOrDock(AcceleratorAction action) {
   else
     base::RecordAction(UserMetricsAction("Accel_Window_Snap_Right"));
 
-  const wm::WMEvent event(action == WINDOW_CYCLE_SNAP_DOCK_LEFT ?
-                          wm::WM_EVENT_CYCLE_SNAP_DOCK_LEFT :
-                          wm::WM_EVENT_CYCLE_SNAP_DOCK_RIGHT);
+  const wm::WMEvent event(action == WINDOW_CYCLE_SNAP_DOCK_LEFT
+                              ? wm::WM_EVENT_CYCLE_SNAP_DOCK_LEFT
+                              : wm::WM_EVENT_CYCLE_SNAP_DOCK_RIGHT);
   wm::GetActiveWindowState()->OnWMEvent(&event);
 }
 
 void HandleWindowMinimize() {
-  base::RecordAction(
-      base::UserMetricsAction("Accel_Toggle_Minimized_Minus"));
+  base::RecordAction(base::UserMetricsAction("Accel_Toggle_Minimized_Minus"));
   accelerators::ToggleMinimized();
 }
 
@@ -646,7 +646,7 @@ void HandleSwapPrimaryDisplay() {
 bool CanHandleCycleUser() {
   Shell* shell = Shell::GetInstance();
   return shell->delegate()->IsMultiProfilesEnabled() &&
-      shell->session_state_delegate()->NumberOfLoggedInUsers() > 1;
+         shell->session_state_delegate()->NumberOfLoggedInUsers() > 1;
 }
 
 void HandleCycleUser(SessionStateDelegate::CycleUser cycle_user) {
@@ -749,14 +749,12 @@ AcceleratorController::AcceleratorController()
   Init();
 }
 
-AcceleratorController::~AcceleratorController() {
-}
+AcceleratorController::~AcceleratorController() {}
 
 void AcceleratorController::Register(const ui::Accelerator& accelerator,
                                      ui::AcceleratorTarget* target) {
-  accelerator_manager_->Register(accelerator,
-                                 ui::AcceleratorManager::kNormalPriority,
-                                 target);
+  accelerator_manager_->Register(
+      accelerator, ui::AcceleratorManager::kNormalPriority, target);
 }
 
 void AcceleratorController::Unregister(const ui::Accelerator& accelerator,
@@ -951,8 +949,7 @@ void AcceleratorController::RegisterAccelerators(
         CreateAccelerator(accelerators[i].keycode, accelerators[i].modifiers,
                           accelerators[i].trigger_on_press);
     Register(accelerator, this);
-    accelerators_.insert(
-        std::make_pair(accelerator, accelerators[i].action));
+    accelerators_.insert(std::make_pair(accelerator, accelerators[i].action));
   }
 }
 
@@ -1321,8 +1318,8 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case LOCK_PRESSED:
     case LOCK_RELEASED:
-      Shell::GetInstance()->power_button_controller()->
-          OnLockButtonEvent(action == LOCK_PRESSED, base::TimeTicks());
+      Shell::GetInstance()->power_button_controller()->OnLockButtonEvent(
+          action == LOCK_PRESSED, base::TimeTicks());
       break;
     case LOCK_SCREEN:
       HandleLock();
@@ -1341,8 +1338,8 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       if (!base::SysInfo::IsRunningOnChromeOS()) {
         // There is no powerd, the Chrome OS power manager, in linux desktop,
         // so call the PowerButtonController here.
-        Shell::GetInstance()->power_button_controller()->
-            OnPowerButtonEvent(action == POWER_PRESSED, base::TimeTicks());
+        Shell::GetInstance()->power_button_controller()->OnPowerButtonEvent(
+            action == POWER_PRESSED, base::TimeTicks());
       }
       // We don't do anything with these at present on the device,
       // (power button events are reported to us from powerm via

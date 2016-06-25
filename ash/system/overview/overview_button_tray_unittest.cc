@@ -37,13 +37,13 @@ namespace {
 const char kTrayOverview[] = "Tray_Overview";
 
 OverviewButtonTray* GetTray() {
-  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->
-      overview_button_tray();
+  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+      ->overview_button_tray();
 }
 
 OverviewButtonTray* GetSecondaryTray() {
-  return StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget()->
-      overview_button_tray();
+  return StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget()
+      ->overview_button_tray();
 }
 
 }  // namespace
@@ -87,12 +87,14 @@ TEST_F(OverviewButtonTrayTest, BasicConstruction) {
 // By default the system should not have MaximizeMode enabled.
 TEST_F(OverviewButtonTrayTest, MaximizeModeObserverOnMaximizeModeToggled) {
   ASSERT_FALSE(GetTray()->visible());
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
   EXPECT_TRUE(GetTray()->visible());
 
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
   EXPECT_FALSE(GetTray()->visible());
 }
 
@@ -147,12 +149,14 @@ TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
   UpdateDisplay("400x400,200x200");
   EXPECT_FALSE(GetTray()->visible());
   EXPECT_FALSE(GetSecondaryTray()->visible());
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
   EXPECT_TRUE(GetTray()->visible());
   EXPECT_TRUE(GetSecondaryTray()->visible());
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
 }
 
 // Tests if Maximize Mode is enabled before a secondary display is attached
@@ -161,19 +165,22 @@ TEST_F(OverviewButtonTrayTest, SecondaryTrayCreatedVisible) {
   if (!SupportsMultipleDisplays())
     return;
 
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetSecondaryTray()->visible());
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
 }
 
 // Tests that the tray loses visibility when a user logs out, and that it
 // regains visibility when a user logs back in.
 TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
   SetUserLoggedIn(false);
   Shell::GetInstance()->UpdateAfterLoginStatusChange(
       LoginStatus::NOT_LOGGED_IN);
@@ -188,8 +195,9 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
   SetUserAddingScreenRunning(false);
   NotifySessionStateChanged();
   EXPECT_TRUE(GetTray()->visible());
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
 }
 
 // Tests that the tray only renders as active while selection is ongoing. Any

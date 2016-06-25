@@ -67,7 +67,7 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
 
   // This enum is used for histogram. The existing values should not be removed,
   // and the new values should be added just before CHARGER_TYPE_COUNT.
-  enum ChargerType{
+  enum ChargerType {
     UNKNOWN_CHARGER,
     MAINS_CHARGER,
     USB_CHARGER,

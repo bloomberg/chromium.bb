@@ -21,8 +21,7 @@ TestActivationDelegate::TestActivationDelegate()
       activate_(true),
       activated_count_(0),
       lost_active_count_(0),
-      should_activate_count_(0) {
-}
+      should_activate_count_(0) {}
 
 TestActivationDelegate::TestActivationDelegate(bool activate)
     : window_(NULL),
@@ -30,8 +29,7 @@ TestActivationDelegate::TestActivationDelegate(bool activate)
       activate_(activate),
       activated_count_(0),
       lost_active_count_(0),
-      should_activate_count_(0) {
-}
+      should_activate_count_(0) {}
 
 void TestActivationDelegate::SetWindow(aura::Window* window) {
   window_ = window;

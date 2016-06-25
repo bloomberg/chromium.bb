@@ -35,4 +35,3 @@ class AshTestViewsDelegate : public views::TestViewsDelegate {
 }  // namespace ash
 
 #endif  // ASH_TEST_ASH_TEST_VIEWS_DELEGATE_H_
-

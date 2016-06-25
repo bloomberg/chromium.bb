@@ -10,11 +10,9 @@
 namespace ash {
 namespace test {
 
-AshTestViewsDelegate::AshTestViewsDelegate() {
-}
+AshTestViewsDelegate::AshTestViewsDelegate() {}
 
-AshTestViewsDelegate::~AshTestViewsDelegate() {
-}
+AshTestViewsDelegate::~AshTestViewsDelegate() {}
 
 content::WebContents* AshTestViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,

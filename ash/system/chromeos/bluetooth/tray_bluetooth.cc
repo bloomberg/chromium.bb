@@ -349,9 +349,8 @@ class BluetoothDetailedView : public TrayDetailsView,
       delegate->ManageBluetoothDevices();
     } else if (sender == enable_bluetooth_) {
       WmShell::Get()->RecordUserMetricsAction(
-          delegate->GetBluetoothEnabled()
-              ? UMA_STATUS_AREA_BLUETOOTH_DISABLED
-              : UMA_STATUS_AREA_BLUETOOTH_ENABLED);
+          delegate->GetBluetoothEnabled() ? UMA_STATUS_AREA_BLUETOOTH_DISABLED
+                                          : UMA_STATUS_AREA_BLUETOOTH_ENABLED);
       delegate->ToggleBluetooth();
     } else {
       if (!delegate->GetBluetoothEnabled())

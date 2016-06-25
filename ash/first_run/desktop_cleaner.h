@@ -30,7 +30,7 @@ class ASH_EXPORT DesktopCleaner {
   // Returns the list of containers that DesctopCleaner hides.
   static std::vector<int> GetContainersToHideForTest();
 
-  std::vector<linked_ptr<ContainerHider> > container_hiders_;
+  std::vector<linked_ptr<ContainerHider>> container_hiders_;
   std::unique_ptr<NotificationBlocker> notification_blocker_;
 
   friend class ash::test::FirstRunHelperTest;

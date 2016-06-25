@@ -65,10 +65,7 @@ class BluetoothPairingNotificationDelegate
 
  private:
   // Buttons that appear in notifications.
-  enum Button {
-    BUTTON_ACCEPT,
-    BUTTON_REJECT
-  };
+  enum Button { BUTTON_ACCEPT, BUTTON_REJECT };
 
   // Reference to the underlying Bluetooth Adapter, holding onto this
   // reference ensures the adapter object doesn't go out of scope while we have
@@ -84,12 +81,9 @@ class BluetoothPairingNotificationDelegate
 BluetoothPairingNotificationDelegate::BluetoothPairingNotificationDelegate(
     scoped_refptr<BluetoothAdapter> adapter,
     const std::string& address)
-    : adapter_(adapter),
-      address_(address) {
-}
+    : adapter_(adapter), address_(address) {}
 
-BluetoothPairingNotificationDelegate::~BluetoothPairingNotificationDelegate() {
-}
+BluetoothPairingNotificationDelegate::~BluetoothPairingNotificationDelegate() {}
 
 void BluetoothPairingNotificationDelegate::Close(bool by_user) {
   VLOG(1) << "Pairing notification closed. by_user = " << by_user;
@@ -126,7 +120,6 @@ void BluetoothPairingNotificationDelegate::ButtonClick(int button_index) {
 
 }  // namespace
 
-
 namespace ash {
 
 BluetoothNotificationController::BluetoothNotificationController()
@@ -143,7 +136,6 @@ BluetoothNotificationController::~BluetoothNotificationController() {
     adapter_ = NULL;
   }
 }
-
 
 void BluetoothNotificationController::AdapterDiscoverableChanged(
     BluetoothAdapter* adapter,
@@ -184,7 +176,6 @@ void BluetoothNotificationController::DeviceRemoved(BluetoothAdapter* adapter,
                                                     BluetoothDevice* device) {
   paired_devices_.erase(device->GetAddress());
 }
-
 
 void BluetoothNotificationController::RequestPinCode(BluetoothDevice* device) {
   // Cannot provide keyboard entry in a notification; these devices (old car
@@ -244,7 +235,6 @@ void BluetoothNotificationController::AuthorizePairing(
   NotifyPairing(device, message, true);
 }
 
-
 void BluetoothNotificationController::OnGetAdapter(
     scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK(!adapter_.get());
@@ -267,7 +257,6 @@ void BluetoothNotificationController::OnGetAdapter(
       paired_devices_.insert(device->GetAddress());
   }
 }
-
 
 void BluetoothNotificationController::NotifyAdapterDiscoverable() {
   message_center::RichNotificationData optional;
@@ -296,11 +285,9 @@ void BluetoothNotificationController::NotifyPairing(
   message_center::RichNotificationData optional;
   if (with_buttons) {
     optional.buttons.push_back(message_center::ButtonInfo(
-        l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_BLUETOOTH_ACCEPT)));
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_ACCEPT)));
     optional.buttons.push_back(message_center::ButtonInfo(
-        l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_BLUETOOTH_REJECT)));
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_REJECT)));
   }
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();

@@ -19,8 +19,8 @@ DisplayLayoutStore::DisplayLayoutStore()
     : default_display_placement_(display::DisplayPlacement::RIGHT, 0) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshSecondaryDisplayLayout)) {
-    std::string value = command_line->GetSwitchValueASCII(
-        switches::kAshSecondaryDisplayLayout);
+    std::string value =
+        command_line->GetSwitchValueASCII(switches::kAshSecondaryDisplayLayout);
     char layout;
     int offset = 0;
     if (sscanf(value.c_str(), "%c,%d", &layout, &offset) == 2) {
@@ -37,8 +37,7 @@ DisplayLayoutStore::DisplayLayoutStore()
   }
 }
 
-DisplayLayoutStore::~DisplayLayoutStore() {
-}
+DisplayLayoutStore::~DisplayLayoutStore() {}
 
 void DisplayLayoutStore::SetDefaultDisplayPlacement(
     const display::DisplayPlacement& placement) {

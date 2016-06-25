@@ -83,7 +83,6 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItem) {
   // Clears twice doesn't do anything.
   ClearShelfItemDetailsForWindow(w2.get());
   EXPECT_EQ(1, model_->item_count());
-
 }
 
 TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
@@ -190,14 +189,12 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindow) {
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
 
   aura::Window* root_window = window->GetRootWindow();
-  aura::Window* default_container = Shell::GetContainer(
-      root_window,
-      kShellWindowId_DefaultContainer);
+  aura::Window* default_container =
+      Shell::GetContainer(root_window, kShellWindowId_DefaultContainer);
   EXPECT_EQ(default_container, window->parent());
 
-  aura::Window* new_parent = Shell::GetContainer(
-      root_window,
-      kShellWindowId_PanelContainer);
+  aura::Window* new_parent =
+      Shell::GetContainer(root_window, kShellWindowId_PanelContainer);
 
   // Check |window|'s item is removed when it is re-parented to |new_parent|
   // which is not default container.
@@ -233,7 +230,7 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
   resizer->Drag(gfx::Point(50, 50), 0);
   resizer->CompleteDrag();
 
-  //Index and id are not changed after dragging a |window|.
+  // Index and id are not changed after dragging a |window|.
   EXPECT_EQ(index, model_->ItemIndexByID(id));
   EXPECT_EQ(id, model_->items()[index].id);
 }
@@ -254,14 +251,12 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindowDuringTheDragging) {
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
 
   aura::Window* root_window = window->GetRootWindow();
-  aura::Window* default_container = Shell::GetContainer(
-      root_window,
-      kShellWindowId_DefaultContainer);
+  aura::Window* default_container =
+      Shell::GetContainer(root_window, kShellWindowId_DefaultContainer);
   EXPECT_EQ(default_container, window->parent());
 
-  aura::Window* new_parent = Shell::GetContainer(
-      root_window,
-      kShellWindowId_PanelContainer);
+  aura::Window* new_parent =
+      Shell::GetContainer(root_window, kShellWindowId_PanelContainer);
 
   // Simulate re-parenting to |new_parent| during the dragging.
   {

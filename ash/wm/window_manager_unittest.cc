@@ -30,8 +30,7 @@ namespace {
 class TestingCursorClientObserver : public aura::client::CursorClientObserver {
  public:
   TestingCursorClientObserver()
-      : cursor_visibility_(false),
-        did_visibility_change_(false) {}
+      : cursor_visibility_(false), did_visibility_change_(false) {}
   void reset() { cursor_visibility_ = did_visibility_change_ = false; }
   bool is_cursor_visible() const { return cursor_visibility_; }
   bool did_visibility_change() const { return did_visibility_change_; }
@@ -58,9 +57,7 @@ base::TimeTicks getTime() {
 class CustomEventHandler : public ui::test::TestEventHandler {
  public:
   CustomEventHandler()
-      : key_result_(ui::ER_UNHANDLED),
-        mouse_result_(ui::ER_UNHANDLED) {
-  }
+      : key_result_(ui::ER_UNHANDLED), mouse_result_(ui::ER_UNHANDLED) {}
 
   ~CustomEventHandler() override {}
 
@@ -114,9 +111,7 @@ class NonFocusableDelegate : public aura::test::TestWindowDelegate {
 
 class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
  public:
-  HitTestWindowDelegate()
-      : hittest_code_(HTNOWHERE) {
-  }
+  HitTestWindowDelegate() : hittest_code_(HTNOWHERE) {}
   ~HitTestWindowDelegate() override {}
   void set_hittest_code(int hittest_code) { hittest_code_ = hittest_code; }
 
@@ -662,8 +657,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   std::unique_ptr<CustomEventHandler> f2(new CustomEventHandler);
 
   // Adds them to root window event filter.
-  ::wm::CompoundEventFilter* env_filter =
-      Shell::GetInstance()->env_filter();
+  ::wm::CompoundEventFilter* env_filter = Shell::GetInstance()->env_filter();
   env_filter->AddHandler(f1.get());
   env_filter->AddHandler(f2.get());
 

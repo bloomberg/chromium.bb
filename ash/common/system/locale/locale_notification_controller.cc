@@ -88,14 +88,14 @@ void LocaleNotificationController::OnLocaleChanged(
   if (!delegate)
     return;
 
-  base::string16 from = l10n_util::GetDisplayNameForLocale(
-      from_locale, cur_locale, true);
-  base::string16 to = l10n_util::GetDisplayNameForLocale(
-      to_locale, cur_locale, true);
+  base::string16 from =
+      l10n_util::GetDisplayNameForLocale(from_locale, cur_locale, true);
+  base::string16 to =
+      l10n_util::GetDisplayNameForLocale(to_locale, cur_locale, true);
 
   message_center::RichNotificationData optional;
-  optional.buttons.push_back(message_center::ButtonInfo(
-      l10n_util::GetStringFUTF16(
+  optional.buttons.push_back(
+      message_center::ButtonInfo(l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE, from)));
   optional.never_timeout = true;
 

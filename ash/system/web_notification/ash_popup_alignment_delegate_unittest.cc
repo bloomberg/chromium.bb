@@ -55,13 +55,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
   }
 
  protected:
-  enum Position {
-    TOP_LEFT,
-    TOP_RIGHT,
-    BOTTOM_LEFT,
-    BOTTOM_RIGHT,
-    OUTSIDE
-  };
+  enum Position { TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, OUTSIDE };
 
   AshPopupAlignmentDelegate* alignment_delegate() {
     return alignment_delegate_.get();
@@ -100,9 +94,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
       return (center_point.y() < point.y()) ? BOTTOM_LEFT : TOP_LEFT;
   }
 
-  gfx::Rect GetWorkArea() {
-    return alignment_delegate_->work_area_;
-  }
+  gfx::Rect GetWorkArea() { return alignment_delegate_->work_area_; }
 
   std::unique_ptr<views::Widget> CreateTestWidget(int container_id) {
     std::unique_ptr<views::Widget> widget(new views::Widget);

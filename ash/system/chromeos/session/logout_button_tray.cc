@@ -34,28 +34,26 @@ namespace {
 const int kLogoutButtonHorizontalExtraPadding = 7;
 
 const int kLogoutButtonNormalImages[] = {
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_LEFT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_RIGHT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_LEFT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_CENTER,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_RIGHT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM_LEFT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM_RIGHT
-};
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_LEFT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_RIGHT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_LEFT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_CENTER,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_RIGHT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM_LEFT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM_RIGHT};
 
 const int kLogoutButtonPushedImages[] = {
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP_LEFT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP_RIGHT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_LEFT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_CENTER,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_RIGHT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_LEFT,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM,
-  IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_RIGHT
-};
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP_LEFT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP_RIGHT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_LEFT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_CENTER,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_RIGHT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_LEFT,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM,
+    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_RIGHT};
 
 class LogoutButton : public views::LabelButton {
  public:
@@ -76,15 +74,18 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
 
   std::unique_ptr<views::LabelButtonAssetBorder> border(
       new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
-  border->SetPainter(false, views::Button::STATE_NORMAL,
+  border->SetPainter(
+      false, views::Button::STATE_NORMAL,
       views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));
-  border->SetPainter(false, views::Button::STATE_HOVERED,
+  border->SetPainter(
+      false, views::Button::STATE_HOVERED,
       views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));
-  border->SetPainter(false, views::Button::STATE_PRESSED,
+  border->SetPainter(
+      false, views::Button::STATE_PRESSED,
       views::Painter::CreateImageGridPainter(kLogoutButtonPushedImages));
   gfx::Insets insets = border->GetInsets();
-  insets += gfx::Insets(0, kLogoutButtonHorizontalExtraPadding,
-                        0, kLogoutButtonHorizontalExtraPadding);
+  insets += gfx::Insets(0, kLogoutButtonHorizontalExtraPadding, 0,
+                        kLogoutButtonHorizontalExtraPadding);
   border->set_insets(insets);
   SetBorder(std::move(border));
   set_animate_on_state_change(false);
@@ -92,8 +93,7 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
   SetMinSize(gfx::Size(0, kShelfItemHeight));
 }
 
-LogoutButton::~LogoutButton() {
-}
+LogoutButton::~LogoutButton() {}
 
 LogoutButtonTray::LogoutButtonTray(StatusAreaWidget* status_area_widget)
     : TrayBackgroundView(status_area_widget->wm_shelf()),
@@ -120,8 +120,7 @@ base::string16 LogoutButtonTray::GetAccessibleNameForTray() {
 }
 
 void LogoutButtonTray::HideBubbleWithView(
-    const views::TrayBubbleView* bubble_view) {
-}
+    const views::TrayBubbleView* bubble_view) {}
 
 void LogoutButtonTray::ClickedOutsideBubble() {}
 

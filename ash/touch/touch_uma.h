@@ -54,11 +54,9 @@ class ASH_EXPORT TouchUMA {
   // Returns the singleton instance.
   static TouchUMA* GetInstance();
 
-  void RecordGestureEvent(aura::Window* target,
-                          const ui::GestureEvent& event);
+  void RecordGestureEvent(aura::Window* target, const ui::GestureEvent& event);
   void RecordGestureAction(GestureActionType action);
-  void RecordTouchEvent(aura::Window* target,
-                        const ui::TouchEvent& event);
+  void RecordTouchEvent(aura::Window* target, const ui::TouchEvent& event);
 
  private:
   friend struct base::DefaultSingletonTraits<TouchUMA>;

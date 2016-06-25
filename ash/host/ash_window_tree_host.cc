@@ -29,8 +29,7 @@ base::LazyInstance<AshWindowTreeHost::Factory> creation_factory =
 
 }  // namespace
 
-AshWindowTreeHost::AshWindowTreeHost() : input_method_handler_(nullptr) {
-}
+AshWindowTreeHost::AshWindowTreeHost() : input_method_handler_(nullptr) {}
 
 void AshWindowTreeHost::TranslateLocatedEvent(ui::LocatedEvent* event) {
   if (event->IsTouchEvent())

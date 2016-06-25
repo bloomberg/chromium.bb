@@ -20,10 +20,7 @@ class FrameCaptionButton;
 // Delegate interface for FrameSizeButton.
 class ASH_EXPORT FrameSizeButtonDelegate {
  public:
-  enum Animate {
-    ANIMATE_YES,
-    ANIMATE_NO
-  };
+  enum Animate { ANIMATE_YES, ANIMATE_NO };
 
   // Returns whether the minimize button is visible.
   virtual bool IsMinimizeButtonVisible() const = 0;

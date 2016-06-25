@@ -13,10 +13,8 @@ namespace {
 // Returns true if accelerator processing should skip the shelf item with the
 // specified type.
 bool ShouldSkip(ShelfItemType type) {
-  return type == TYPE_APP_LIST ||
-         type == TYPE_BROWSER_SHORTCUT ||
-         type == TYPE_APP_SHORTCUT ||
-         type == TYPE_WINDOWED_APP;
+  return type == TYPE_APP_LIST || type == TYPE_BROWSER_SHORTCUT ||
+         type == TYPE_APP_SHORTCUT || type == TYPE_WINDOWED_APP;
 }
 
 }  // namespace

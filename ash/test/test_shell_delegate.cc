@@ -111,8 +111,7 @@ TestShellDelegate::TestShellDelegate()
       app_list_presenter_delegate_factory_(new AppListPresenterDelegateFactory(
           base::WrapUnique(new AppListViewDelegateFactoryImpl))) {}
 
-TestShellDelegate::~TestShellDelegate() {
-}
+TestShellDelegate::~TestShellDelegate() {}
 
 bool TestShellDelegate::IsFirstRunAfterBoot() const {
   return false;
@@ -138,11 +137,9 @@ bool TestShellDelegate::IsForceMaximizeOnFirstRun() const {
   return force_maximize_on_first_run_;
 }
 
-void TestShellDelegate::PreInit() {
-}
+void TestShellDelegate::PreInit() {}
 
-void TestShellDelegate::PreShutdown() {
-}
+void TestShellDelegate::PreShutdown() {}
 
 void TestShellDelegate::Exit() {
   num_exit_requests_++;

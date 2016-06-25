@@ -253,7 +253,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // A reference to the Screen share and capture item.
   ScreenTrayItem* screen_capture_tray_item_;  // not owned
-  ScreenTrayItem* screen_share_tray_item_;  // not owned
+  ScreenTrayItem* screen_share_tray_item_;    // not owned
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };

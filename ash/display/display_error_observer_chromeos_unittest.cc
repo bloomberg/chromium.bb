@@ -18,8 +18,7 @@ namespace ash {
 
 class DisplayErrorObserverTest : public test::AshTestBase {
  protected:
-  DisplayErrorObserverTest() {
-  }
+  DisplayErrorObserverTest() {}
 
   ~DisplayErrorObserverTest() override {}
 

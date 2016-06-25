@@ -9,11 +9,9 @@ namespace ash {
 TestVolumeControlDelegate::TestVolumeControlDelegate()
     : handle_volume_mute_count_(0),
       handle_volume_down_count_(0),
-      handle_volume_up_count_(0) {
-}
+      handle_volume_up_count_(0) {}
 
-TestVolumeControlDelegate::~TestVolumeControlDelegate() {
-}
+TestVolumeControlDelegate::~TestVolumeControlDelegate() {}
 
 void TestVolumeControlDelegate::HandleVolumeMute(
     const ui::Accelerator& accelerator) {

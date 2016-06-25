@@ -7,8 +7,7 @@
 
 namespace ash {
 
-ScopedTargetRootWindow::ScopedTargetRootWindow(
-    aura::Window* root_window) {
+ScopedTargetRootWindow::ScopedTargetRootWindow(aura::Window* root_window) {
   Shell::GetInstance()->scoped_target_root_window_ = root_window;
 }
 

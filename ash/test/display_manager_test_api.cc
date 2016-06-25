@@ -46,8 +46,7 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
        iter != parts.end(); ++iter, ++index) {
     int64_t id = (index < list.size()) ? list[index].id()
                                        : display::Display::kInvalidDisplayID;
-    display_info_list.push_back(
-        DisplayInfo::CreateFromSpecWithID(*iter, id));
+    display_info_list.push_back(DisplayInfo::CreateFromSpecWithID(*iter, id));
   }
   return display_info_list;
 }
@@ -69,8 +68,9 @@ bool DisplayManagerTestApi::TestIfMouseWarpsAt(
       screen->GetDisplayNearestPoint(point_in_screen);
   event_generator.MoveMouseTo(point_in_screen);
   return original_display.id() !=
-         screen->GetDisplayNearestPoint(
-                   aura::Env::GetInstance()->last_mouse_location())
+         screen
+             ->GetDisplayNearestPoint(
+                 aura::Env::GetInstance()->last_mouse_location())
              .id();
 }
 

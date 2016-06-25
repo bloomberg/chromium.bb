@@ -47,9 +47,7 @@ class TestDetailsView : public TrayDetailsView,
     return tray_popup_header_button_;
   }
 
-  void FocusFooter() {
-    footer()->content()->RequestFocus();
-  }
+  void FocusFooter() { footer()->content()->RequestFocus(); }
 
   // ViewClickListener:
   void OnViewClicked(views::View* sender) override {}
@@ -118,8 +116,8 @@ class TrayDetailsViewTest : public AshTestBase {
     tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
     RunAllPendingInMessageLoop();
 
-    return static_cast<HoverHighlightView*>(test_item->detailed_view()->
-        footer()->content());
+    return static_cast<HoverHighlightView*>(
+        test_item->detailed_view()->footer()->content());
   }
 
   TrayPopupHeaderButton* CreateAndShowTrayPopupHeaderButton() {

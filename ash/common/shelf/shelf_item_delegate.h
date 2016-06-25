@@ -72,7 +72,6 @@ class ASH_EXPORT ShelfItemDelegate {
 
   // Closes all windows associated with this item.
   virtual void Close() = 0;
-
 };
 
 }  // namespace ash

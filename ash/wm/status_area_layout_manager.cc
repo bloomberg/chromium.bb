@@ -18,11 +18,9 @@ namespace ash {
 
 StatusAreaLayoutManager::StatusAreaLayoutManager(aura::Window* container,
                                                  ShelfWidget* shelf)
-    : SnapToPixelLayoutManager(container), in_layout_(false), shelf_(shelf) {
-}
+    : SnapToPixelLayoutManager(container), in_layout_(false), shelf_(shelf) {}
 
-StatusAreaLayoutManager::~StatusAreaLayoutManager() {
-}
+StatusAreaLayoutManager::~StatusAreaLayoutManager() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaLayoutManager, aura::LayoutManager implementation:

@@ -12,8 +12,7 @@
 
 namespace ash {
 
-HighContrastController::HighContrastController()
-    : enabled_(false) {
+HighContrastController::HighContrastController() : enabled_(false) {
   WmShell::Get()->AddShellObserver(this);
 }
 
@@ -27,7 +26,7 @@ void HighContrastController::SetEnabled(bool enabled) {
   // Update all active displays.
   aura::Window::Windows root_window_list = Shell::GetAllRootWindows();
   for (aura::Window::Windows::iterator it = root_window_list.begin();
-      it != root_window_list.end(); it++) {
+       it != root_window_list.end(); it++) {
     UpdateDisplay(*it);
   }
 }

@@ -221,11 +221,13 @@ class TouchHudDebugTest : public TouchHudTestBase {
     EXPECT_EQ(GetInternalRootWindow(),
               GetRootWindowForTouchHud(GetInternalTouchHudDebug()));
     EXPECT_EQ(GetInternalRootWindow(),
-              GetWidgetForTouchHud(GetInternalTouchHudDebug())->
-                  GetNativeView()->GetRootWindow());
+              GetWidgetForTouchHud(GetInternalTouchHudDebug())
+                  ->GetNativeView()
+                  ->GetRootWindow());
     EXPECT_EQ(GetInternalDisplay().size(),
-              GetWidgetForTouchHud(GetInternalTouchHudDebug())->
-                  GetWindowBoundsInScreen().size());
+              GetWidgetForTouchHud(GetInternalTouchHudDebug())
+                  ->GetWindowBoundsInScreen()
+                  .size());
   }
 
   void CheckExternalDisplay() {
@@ -234,11 +236,13 @@ class TouchHudDebugTest : public TouchHudTestBase {
     EXPECT_EQ(GetExternalRootWindow(),
               GetRootWindowForTouchHud(GetExternalTouchHudDebug()));
     EXPECT_EQ(GetExternalRootWindow(),
-              GetWidgetForTouchHud(GetExternalTouchHudDebug())->
-                  GetNativeView()->GetRootWindow());
+              GetWidgetForTouchHud(GetExternalTouchHudDebug())
+                  ->GetNativeView()
+                  ->GetRootWindow());
     EXPECT_EQ(GetExternalDisplay().size(),
-              GetWidgetForTouchHud(GetExternalTouchHudDebug())->
-                  GetWindowBoundsInScreen().size());
+              GetWidgetForTouchHud(GetExternalTouchHudDebug())
+                  ->GetWindowBoundsInScreen()
+                  .size());
   }
 
  private:

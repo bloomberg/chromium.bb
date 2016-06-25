@@ -145,8 +145,7 @@ void MaximizeModeWindowManager::OnWindowBoundsChanged(
     return;
   // Reposition all non maximizeable windows.
   for (WindowToState::iterator it = window_state_map_.begin();
-       it != window_state_map_.end();
-       ++it) {
+       it != window_state_map_.end(); ++it) {
     it->second->UpdateWindowPosition(wm::GetWindowState(it->first));
   }
 }
@@ -208,7 +207,7 @@ void MaximizeModeWindowManager::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 MaximizeModeWindowManager::MaximizeModeWindowManager()
-      : backdrops_hidden_(false) {
+    : backdrops_hidden_(false) {
   // The overview mode needs to be ended before the maximize mode is started. To
   // guarantee the proper order, it will be turned off from here.
   CancelOverview();
@@ -222,8 +221,9 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
 }
 
 void MaximizeModeWindowManager::MaximizeAllWindows() {
-  MruWindowTracker::WindowList windows = ash::Shell::GetInstance()->
-      mru_window_tracker()->BuildWindowListIgnoreModal();
+  MruWindowTracker::WindowList windows = ash::Shell::GetInstance()
+                                             ->mru_window_tracker()
+                                             ->BuildWindowListIgnoreModal();
   // Add all existing Mru windows.
   for (WmWindow* window : windows)
     MaximizeAndTrackWindow(WmWindowAura::GetAuraWindow(window));
@@ -237,14 +237,12 @@ void MaximizeModeWindowManager::RestoreAllWindows() {
 void MaximizeModeWindowManager::SetDeferBoundsUpdates(
     bool defer_bounds_updates) {
   for (WindowToState::iterator it = window_state_map_.begin();
-       it != window_state_map_.end();
-       ++it) {
+       it != window_state_map_.end(); ++it) {
     it->second->SetDeferBoundsUpdates(defer_bounds_updates);
   }
 }
 
-void MaximizeModeWindowManager::MaximizeAndTrackWindow(
-    aura::Window* window) {
+void MaximizeModeWindowManager::MaximizeAndTrackWindow(aura::Window* window) {
   if (!ShouldHandleWindow(window))
     return;
 
@@ -296,7 +294,7 @@ void MaximizeModeWindowManager::AddWindowCreationObservers() {
     aura::Window* container =
         Shell::GetContainer(*iter, kShellWindowId_DefaultContainer);
     DCHECK(observed_container_windows_.find(container) ==
-              observed_container_windows_.end());
+           observed_container_windows_.end());
     container->AddObserver(this);
     observed_container_windows_.insert(container);
   }
@@ -320,7 +318,7 @@ void MaximizeModeWindowManager::DisplayConfigurationChanged() {
 
 bool MaximizeModeWindowManager::IsContainerWindow(aura::Window* window) {
   return observed_container_windows_.find(window) !=
-             observed_container_windows_.end();
+         observed_container_windows_.end();
 }
 
 void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(

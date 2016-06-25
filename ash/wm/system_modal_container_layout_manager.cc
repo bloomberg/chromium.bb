@@ -40,8 +40,7 @@ SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
       container_(container),
       modal_background_(nullptr) {}
 
-SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
-}
+SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, aura::LayoutManager implementation:
@@ -215,8 +214,8 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() {
   if (keyboard_controller) {
     gfx::Rect bounds = keyboard_controller->current_keyboard_bounds();
     if (!bounds.IsEmpty()) {
-      valid_bounds.set_height(std::max(
-          0, valid_bounds.height() - bounds.height()));
+      valid_bounds.set_height(
+          std::max(0, valid_bounds.height() - bounds.height()));
     }
   }
   return valid_bounds;
@@ -248,9 +247,9 @@ bool SystemModalContainerLayoutManager::DialogIsCentered(
     const gfx::Rect& window_bounds) {
   gfx::Point window_center = window_bounds.CenterPoint();
   gfx::Point container_center = GetUsableDialogArea().CenterPoint();
-  return
-      std::abs(window_center.x() - container_center.x()) < kCenterPixelDelta &&
-      std::abs(window_center.y() - container_center.y()) < kCenterPixelDelta;
+  return std::abs(window_center.x() - container_center.x()) <
+             kCenterPixelDelta &&
+         std::abs(window_center.y() - container_center.y()) < kCenterPixelDelta;
 }
 
 }  // namespace ash

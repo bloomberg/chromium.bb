@@ -147,9 +147,9 @@ class ShellTest : public test::AshTestBase {
     widget->Show();
 
     EXPECT_TRUE(
-        expected_container->Contains(widget->GetNativeWindow()->parent())) <<
-        "TestCreateWindow: type=" << type << ", always_on_top=" <<
-        always_on_top;
+        expected_container->Contains(widget->GetNativeWindow()->parent()))
+        << "TestCreateWindow: type=" << type
+        << ", always_on_top=" << always_on_top;
 
     widget->Close();
   }
@@ -213,8 +213,8 @@ TEST_F(ShellTest, ChangeAlwaysOnTop) {
   widget->Show();
 
   // It should be in default container.
-  EXPECT_TRUE(GetDefaultContainer()->Contains(
-                  widget->GetNativeWindow()->parent()));
+  EXPECT_TRUE(
+      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   // Flip always-on-top flag.
   widget->SetAlwaysOnTop(true);
@@ -224,14 +224,14 @@ TEST_F(ShellTest, ChangeAlwaysOnTop) {
   // Flip always-on-top flag.
   widget->SetAlwaysOnTop(false);
   // It should go back to default container.
-  EXPECT_TRUE(GetDefaultContainer()->Contains(
-                  widget->GetNativeWindow()->parent()));
+  EXPECT_TRUE(
+      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   // Set the same always-on-top flag again.
   widget->SetAlwaysOnTop(false);
   // Should have no effect and we are still in the default container.
-  EXPECT_TRUE(GetDefaultContainer()->Contains(
-                  widget->GetNativeWindow()->parent()));
+  EXPECT_TRUE(
+      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   widget->Close();
 }
@@ -245,8 +245,8 @@ TEST_F(ShellTest, CreateModalWindow) {
   widget->Show();
 
   // It should be in default container.
-  EXPECT_TRUE(GetDefaultContainer()->Contains(
-                  widget->GetNativeWindow()->parent()));
+  EXPECT_TRUE(
+      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   // Create a modal window.
   views::Widget* modal_widget = views::Widget::CreateWindowWithParent(
@@ -280,8 +280,8 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   EXPECT_TRUE(widget->GetNativeView()->HasFocus());
 
   // It should be in default container.
-  EXPECT_TRUE(GetDefaultContainer()->Contains(
-                  widget->GetNativeWindow()->parent()));
+  EXPECT_TRUE(
+      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   Shell::GetInstance()->session_state_delegate()->LockScreen();
   // Create a LockScreen window.
@@ -353,8 +353,9 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   std::unique_ptr<ui::SimpleMenuModel> menu_model(
       new ui::SimpleMenuModel(&menu_delegate));
   menu_model->AddItem(0, base::ASCIIToUTF16("Menu item"));
-  views::Widget* widget = ash::Shell::GetPrimaryRootWindowController()->
-      wallpaper_controller()->widget();
+  views::Widget* widget = ash::Shell::GetPrimaryRootWindowController()
+                              ->wallpaper_controller()
+                              ->widget();
   std::unique_ptr<views::MenuRunner> menu_runner(
       new views::MenuRunner(menu_model.get(), views::MenuRunner::CONTEXT_MENU));
 
@@ -366,9 +367,7 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
                             base::Unretained(this)));
 
   EXPECT_EQ(views::MenuRunner::NORMAL_EXIT,
-            menu_runner->RunMenuAt(widget,
-                                   NULL,
-                                   gfx::Rect(),
+            menu_runner->RunMenuAt(widget, NULL, gfx::Rect(),
                                    views::MENU_ANCHOR_TOPLEFT,
                                    ui::MENU_SOURCE_MOUSE));
 }
@@ -419,24 +418,21 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   EXPECT_FALSE(widget->IsMaximized());
 
   // Shelf defaults to visible.
-  EXPECT_EQ(
-      SHELF_VISIBLE,
-      Shell::GetPrimaryRootWindowController()->
-          GetShelfLayoutManager()->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, Shell::GetPrimaryRootWindowController()
+                               ->GetShelfLayoutManager()
+                               ->visibility_state());
 
   // Fullscreen window hides it.
   widget->SetFullscreen(true);
-  EXPECT_EQ(
-      SHELF_HIDDEN,
-      Shell::GetPrimaryRootWindowController()->
-          GetShelfLayoutManager()->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, Shell::GetPrimaryRootWindowController()
+                              ->GetShelfLayoutManager()
+                              ->visibility_state());
 
   // Restoring the window restores it.
   widget->Restore();
-  EXPECT_EQ(
-      SHELF_VISIBLE,
-      Shell::GetPrimaryRootWindowController()->
-          GetShelfLayoutManager()->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, Shell::GetPrimaryRootWindowController()
+                               ->GetShelfLayoutManager()
+                               ->visibility_state());
 
   // Clean up.
   widget->Close();
@@ -480,9 +476,8 @@ TEST_F(ShellTest, TestPreTargetHandlerOrder) {
   const ui::EventHandlerList& handlers = test_api.pre_target_handlers();
   ui::EventHandlerList::const_iterator cursor_filter =
       std::find(handlers.begin(), handlers.end(), shell->mouse_cursor_filter());
-  ui::EventHandlerList::const_iterator drag_drop =
-      std::find(handlers.begin(), handlers.end(),
-                shell_test_api.drag_drop_controller());
+  ui::EventHandlerList::const_iterator drag_drop = std::find(
+      handlers.begin(), handlers.end(), shell_test_api.drag_drop_controller());
   EXPECT_NE(handlers.end(), cursor_filter);
   EXPECT_NE(handlers.end(), drag_drop);
   EXPECT_GT(drag_drop, cursor_filter);

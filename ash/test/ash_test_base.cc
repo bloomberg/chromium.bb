@@ -91,9 +91,7 @@ class AshEventGeneratorDelegate
 /////////////////////////////////////////////////////////////////////////////
 
 AshTestBase::AshTestBase()
-    : setup_called_(false),
-      teardown_called_(false),
-      start_session_(true) {
+    : setup_called_(false), teardown_called_(false), start_session_(true) {
 #if defined(USE_X11)
   // This is needed for tests which use this base class but are run in browser
   // test binaries so don't get the default initialization in the unit test
@@ -126,8 +124,8 @@ void AshTestBase::SetUp() {
   // lap with the native mouse cursor.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kAshHostWindowBounds)) {
-    command_line->AppendSwitchASCII(
-        switches::kAshHostWindowBounds, "1+1-800x600");
+    command_line->AppendSwitchASCII(switches::kAshHostWindowBounds,
+                                    "1+1-800x600");
   }
 #if defined(OS_WIN)
   ui::test::SetUsePopupAsRootWindowForTest(true);
@@ -279,8 +277,8 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
 }
 
 void AshTestBase::ParentWindowInPrimaryRootWindow(aura::Window* window) {
-  aura::client::ParentWindowWithContext(
-      window, Shell::GetPrimaryRootWindow(), gfx::Rect());
+  aura::client::ParentWindowWithContext(window, Shell::GetPrimaryRootWindow(),
+                                        gfx::Rect());
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

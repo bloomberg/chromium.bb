@@ -54,8 +54,7 @@ class CountingEventHandler : public ui::EventHandler {
 
 }  // namespace
 
-class FirstRunHelperTest : public AshTestBase,
-                           public FirstRunHelper::Observer {
+class FirstRunHelperTest : public AshTestBase, public FirstRunHelper::Observer {
  public:
   FirstRunHelperTest() : cancelled_times_(0) {}
 

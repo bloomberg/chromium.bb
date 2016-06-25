@@ -79,18 +79,15 @@ base::string16 GetDisplayInfoLine(int64_t display_id) {
   base::string16 display_data;
   if (display_info.has_overscan()) {
     display_data = l10n_util::GetStringFUTF16(
-        IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION,
-        size_text,
+        IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION, size_text,
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION_OVERSCAN));
   } else {
     display_data = size_text;
   }
 
-  return l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
-      GetDisplayName(display_id),
-      display_data);
+  return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
+                                    GetDisplayName(display_id), display_data);
 }
 
 base::string16 GetAllDisplayInfo() {
@@ -142,10 +139,9 @@ const char TrayDisplay::kNotificationId[] = "chrome://settings/display";
 class DisplayView : public ActionableView {
  public:
   explicit DisplayView() {
-    SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal,
-        kTrayPopupPaddingHorizontal, 0,
-        kTrayPopupPaddingBetweenItems));
+    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                          kTrayPopupPaddingHorizontal, 0,
+                                          kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     image_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
@@ -215,14 +211,14 @@ class DisplayView : public ActionableView {
     if (display_info.GetActiveRotation() != display::Display::ROTATE_0 ||
         display_info.configured_ui_scale() != 1.0f ||
         !display_info.overscan_insets_in_dip().IsEmpty()) {
-      name = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME,
-          name, GetDisplaySize(external_id));
+      name =
+          l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME,
+                                     name, GetDisplaySize(external_id));
     } else if (display_info.overscan_insets_in_dip().IsEmpty() &&
                display_info.has_overscan()) {
       name = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME,
-          name, l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME, name,
+          l10n_util::GetStringUTF16(
               IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION_OVERSCAN));
     }
 
@@ -234,8 +230,8 @@ class DisplayView : public ActionableView {
     DisplayManager* display_manager = GetDisplayManager();
     if (display_manager->GetNumDisplays() > 1) {
       if (display::Display::HasInternalDisplay()) {
-        return l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetExternalDisplayName());
+        return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED,
+                                          GetExternalDisplayName());
       }
       return l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL);
@@ -290,7 +286,8 @@ class DisplayView : public ActionableView {
 
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
     int label_max_width = bounds().width() - kTrayPopupPaddingHorizontal * 2 -
-        kTrayPopupPaddingBetweenItems - image_->GetPreferredSize().width();
+                          kTrayPopupPaddingBetweenItems -
+                          image_->GetPreferredSize().width();
     label_->SizeToFit(label_max_width);
   }
 
@@ -301,8 +298,7 @@ class DisplayView : public ActionableView {
 };
 
 TrayDisplay::TrayDisplay(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
-      default_(NULL) {
+    : SystemTrayItem(system_tray), default_(NULL) {
   Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   UpdateDisplayInfo(NULL);
 }
@@ -385,8 +381,8 @@ void TrayDisplay::CreateOrUpdateNotification(
     const base::string16& additional_message) {
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.
-  message_center::MessageCenter::Get()->RemoveNotification(
-      kNotificationId, false /* by_user */);
+  message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
+                                                           false /* by_user */);
 
   if (message.empty() && additional_message.empty())
     return;

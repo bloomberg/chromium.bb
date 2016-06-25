@@ -45,11 +45,9 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
 
 }  // namespace
 
-ShelfModel::ShelfModel() : next_id_(1), status_(STATUS_NORMAL) {
-}
+ShelfModel::ShelfModel() : next_id_(1), status_(STATUS_NORMAL) {}
 
-ShelfModel::~ShelfModel() {
-}
+ShelfModel::~ShelfModel() {}
 
 int ShelfModel::Add(const ShelfItem& item) {
   return AddAt(items_.size(), item);
@@ -87,8 +85,9 @@ void ShelfModel::Move(int index, int target_index) {
 
 void ShelfModel::Set(int index, const ShelfItem& item) {
   DCHECK(index >= 0 && index < item_count());
-  int new_index = item.type == items_[index].type ?
-      index : ValidateInsertionIndex(item.type, index);
+  int new_index = item.type == items_[index].type
+                      ? index
+                      : ValidateInsertionIndex(item.type, index);
 
   ShelfItem old_item(items_[index]);
   items_[index] = item;
@@ -125,8 +124,7 @@ int ShelfModel::GetItemIndexForType(ShelfItemType type) {
 }
 
 ShelfItems::const_iterator ShelfModel::ItemByID(int id) const {
-  for (ShelfItems::const_iterator i = items_.begin();
-       i != items_.end(); ++i) {
+  for (ShelfItems::const_iterator i = items_.begin(); i != items_.end(); ++i) {
     if (i->id == id)
       return i;
   }
@@ -141,14 +139,16 @@ int ShelfModel::FirstRunningAppIndex() const {
   ShelfItem weight_dummy;
   weight_dummy.type = TYPE_WINDOWED_APP;
   return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
-                          CompareByWeight) - items_.begin();
+                          CompareByWeight) -
+         items_.begin();
 }
 
 int ShelfModel::FirstPanelIndex() const {
   ShelfItem weight_dummy;
   weight_dummy.type = TYPE_APP_PANEL;
   return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
-                          CompareByWeight) - items_.begin();
+                          CompareByWeight) -
+         items_.begin();
 }
 
 void ShelfModel::AddObserver(ShelfModelObserver* observer) {
@@ -166,10 +166,12 @@ int ShelfModel::ValidateInsertionIndex(ShelfItemType type, int index) const {
   ShelfItem weight_dummy;
   weight_dummy.type = type;
   index = std::max(std::lower_bound(items_.begin(), items_.end(), weight_dummy,
-                                    CompareByWeight) - items_.begin(),
+                                    CompareByWeight) -
+                       items_.begin(),
                    static_cast<ShelfItems::difference_type>(index));
   index = std::min(std::upper_bound(items_.begin(), items_.end(), weight_dummy,
-                                    CompareByWeight) - items_.begin(),
+                                    CompareByWeight) -
+                       items_.begin(),
                    static_cast<ShelfItems::difference_type>(index));
 
   return index;

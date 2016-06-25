@@ -114,12 +114,10 @@ class DockedWindowLayoutManagerTest
     DragStartAtOffsetFromwindowOrigin(window, 0, 0);
   }
 
-  void DragStartAtOffsetFromwindowOrigin(aura::Window* window,
-                                         int dx, int dy) {
+  void DragStartAtOffsetFromwindowOrigin(aura::Window* window, int dx, int dy) {
     initial_location_in_parent_ =
         window->bounds().origin() + gfx::Vector2d(dx, dy);
-    resizer_.reset(CreateSomeWindowResizer(window,
-                                           initial_location_in_parent_,
+    resizer_.reset(CreateSomeWindowResizer(window, initial_location_in_parent_,
                                            HTCAPTION));
     ASSERT_TRUE(resizer_.get());
   }
@@ -152,9 +150,7 @@ class DockedWindowLayoutManagerTest
   // horizontally to the edge with an added offset from the edge of |dx|.
   void DragRelativeToEdge(DockedEdge edge, aura::Window* window, int dx) {
     DragVerticallyAndRelativeToEdge(
-        edge,
-        window,
-        dx,
+        edge, window, dx,
         window_type_ == ui::wm::WINDOW_TYPE_PANEL ? -100 : 20);
   }
 
@@ -176,7 +172,8 @@ class DockedWindowLayoutManagerTest
   // horizontally to the edge with an added offset from the edge of |dx|.
   void DragVerticallyAndRelativeToEdge(DockedEdge edge,
                                        aura::Window* window,
-                                       int dx, int dy) {
+                                       int dx,
+                                       int dy) {
     gfx::Rect initial_bounds = window->GetBoundsInScreen();
     // avoid snap by clicking away from the border
     ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(window, 25, 5));
@@ -276,11 +273,12 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeft) {
   window1->SetBounds(gfx::Rect(250, 32, 231, 320));
   window1->Show();
   // |window1| should be centered in work area.
-  EXPECT_EQ(base::IntToString(
-      docked_width(manager) + min_dock_gap() +
-      (desktop_area.width() - docked_width(manager) -
-       min_dock_gap() - window1->bounds().width()) / 2) +
-      ",32 231x320", window1->bounds().ToString());
+  EXPECT_EQ(base::IntToString(docked_width(manager) + min_dock_gap() +
+                              (desktop_area.width() - docked_width(manager) -
+                               min_dock_gap() - window1->bounds().width()) /
+                                  2) +
+                ",32 231x320",
+            window1->bounds().ToString());
 
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
   wm::GetWindowState(window2.get())->set_window_position_managed(true);
@@ -292,12 +290,12 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeft) {
 
   // |window1| should be flush left and |window2| flush right.
   EXPECT_EQ(
-      base::IntToString(docked_width(manager) + min_dock_gap()) +
-      ",32 231x320", window1->bounds().ToString());
+      base::IntToString(docked_width(manager) + min_dock_gap()) + ",32 231x320",
+      window1->bounds().ToString());
   EXPECT_EQ(
-      base::IntToString(
-          desktop_area.width() - window2->bounds().width()) +
-      ",48 150x300", window2->bounds().ToString());
+      base::IntToString(desktop_area.width() - window2->bounds().width()) +
+          ",48 150x300",
+      window2->bounds().ToString());
 }
 
 // Tests that with a window docked on the right the auto-placing logic in
@@ -327,10 +325,11 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRight) {
   window1->Show();
 
   // |window1| should be centered in work area.
-  EXPECT_EQ(base::IntToString(
-      (desktop_area.width() - docked_width(manager) -
-       min_dock_gap() - window1->bounds().width()) / 2) +
-      ",32 231x320", window1->bounds().ToString());
+  EXPECT_EQ(base::IntToString((desktop_area.width() - docked_width(manager) -
+                               min_dock_gap() - window1->bounds().width()) /
+                              2) +
+                ",32 231x320",
+            window1->bounds().ToString());
 
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
   wm::GetWindowState(window2.get())->set_window_position_managed(true);
@@ -342,11 +341,10 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRight) {
 
   // |window1| should be flush left and |window2| flush right.
   EXPECT_EQ("0,32 231x320", window1->bounds().ToString());
-  EXPECT_EQ(
-      base::IntToString(
-          desktop_area.width() - window2->bounds().width() -
-          docked_width(manager) - min_dock_gap()) +
-      ",48 256x512", window2->bounds().ToString());
+  EXPECT_EQ(base::IntToString(desktop_area.width() - window2->bounds().width() -
+                              docked_width(manager) - min_dock_gap()) +
+                ",48 256x512",
+            window2->bounds().ToString());
 }
 
 // Tests that with a window docked on the right the auto-placing logic in
@@ -382,10 +380,12 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
   window1->Show();
 
   // |window1| should be centered in work area.
-  EXPECT_EQ(base::IntToString(
-      600 + (desktop_area.width() - docked_width(manager) -
-          min_dock_gap() - window1->bounds().width()) / 2) +
-      ",32 231x320", window1->GetBoundsInScreen().ToString());
+  EXPECT_EQ(base::IntToString(600 +
+                              (desktop_area.width() - docked_width(manager) -
+                               min_dock_gap() - window1->bounds().width()) /
+                                  2) +
+                ",32 231x320",
+            window1->GetBoundsInScreen().ToString());
 
   bounds = gfx::Rect(632, 48, 256, 512);
   std::unique_ptr<aura::Window> window2(
@@ -399,10 +399,10 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
   // |window1| should be flush left and |window2| flush right.
   EXPECT_EQ("600,32 231x320", window1->GetBoundsInScreen().ToString());
   EXPECT_EQ(
-      base::IntToString(
-          600 + desktop_area.width() - window2->bounds().width() -
-          docked_width(manager) - min_dock_gap()) +
-      ",48 256x512", window2->GetBoundsInScreen().ToString());
+      base::IntToString(600 + desktop_area.width() - window2->bounds().width() -
+                        docked_width(manager) - min_dock_gap()) +
+          ",48 256x512",
+      window2->GetBoundsInScreen().ToString());
 }
 
 // Adds two windows and tests that the gaps are evenly distributed.
@@ -696,9 +696,9 @@ TEST_P(DockedWindowLayoutManagerTest, WidthMoreThanMax) {
 
   // Secondary drag ensures that we are testing the minimum size restriction
   // and not just failure to get past the tiling step in SnapSizer.
-  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(window.get(),
-                                                            25, 5));
-  DragMove(150,0);
+  ASSERT_NO_FATAL_FAILURE(
+      DragStartAtOffsetFromwindowOrigin(window.get(), 25, 5));
+  DragMove(150, 0);
   DragEnd();
 
   // The window should not get docked even though it is dragged past the edge.
@@ -767,8 +767,7 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsSplitHeightEvenly) {
                             ->GetDisplayNearestWindow(w1.get())
                             .work_area();
   EXPECT_NEAR(w1->GetBoundsInScreen().height(),
-              w2->GetBoundsInScreen().height(),
-              1);
+              w2->GetBoundsInScreen().height(), 1);
   EXPECT_NEAR(work_area.height() / 2, w1->GetBoundsInScreen().height(),
               min_dock_gap() * 2);
 
@@ -783,11 +782,9 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsSplitHeightEvenly) {
 
   // All windows should be near same size vertically and about 1/3 of work area.
   EXPECT_NEAR(w1->GetBoundsInScreen().height(),
-              w2->GetBoundsInScreen().height(),
-              1);
+              w2->GetBoundsInScreen().height(), 1);
   EXPECT_NEAR(w2->GetBoundsInScreen().height(),
-              w3->GetBoundsInScreen().height(),
-              1);
+              w3->GetBoundsInScreen().height(), 1);
   EXPECT_NEAR(work_area.height() / 3, w1->GetBoundsInScreen().height(),
               min_dock_gap() * 2);
 }

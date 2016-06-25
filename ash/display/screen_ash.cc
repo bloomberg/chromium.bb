@@ -33,8 +33,7 @@ class ScreenForShutdown : public display::Screen {
  public:
   explicit ScreenForShutdown(ScreenAsh* screen_ash)
       : display_list_(screen_ash->GetAllDisplays()),
-        primary_display_(screen_ash->GetPrimaryDisplay()) {
-  }
+        primary_display_(screen_ash->GetPrimaryDisplay()) {}
 
   // display::Screen overrides:
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
@@ -78,11 +77,9 @@ class ScreenForShutdown : public display::Screen {
 
 }  // namespace
 
-ScreenAsh::ScreenAsh() {
-}
+ScreenAsh::ScreenAsh() {}
 
-ScreenAsh::~ScreenAsh() {
-}
+ScreenAsh::~ScreenAsh() {}
 
 void ScreenAsh::NotifyMetricsChanged(const display::Display& display,
                                      uint32_t metrics) {

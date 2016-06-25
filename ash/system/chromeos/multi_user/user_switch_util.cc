@@ -101,11 +101,11 @@ bool DesktopCastingWarningView::Accept() {
 }
 
 base::string16 DesktopCastingWarningView::GetDialogButtonLabel(
-      ui::DialogButton button) const {
+    ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK ?
-          IDS_DESKTOP_CASTING_ACTIVE_BUTTON_SWITCH_USER :
-          IDS_DESKTOP_CASTING_ACTIVE_BUTTON_ABORT_USER_SWITCH);
+      button == ui::DIALOG_BUTTON_OK
+          ? IDS_DESKTOP_CASTING_ACTIVE_BUTTON_SWITCH_USER
+          : IDS_DESKTOP_CASTING_ACTIVE_BUTTON_ABORT_USER_SWITCH);
 }
 
 bool DesktopCastingWarningView::IsDialogButtonEnabled(
@@ -167,8 +167,7 @@ void DesktopCastingWarningView::InitDialog() {
 ////////////////////////////////////////////////////////////////////////////////
 // Factory function.
 
-void TrySwitchingActiveUser(
-   const base::Callback<void()> on_switch) {
+void TrySwitchingActiveUser(const base::Callback<void()> on_switch) {
   // Some unit tests do not have a shell. In that case simply execute.
   if (!ash::Shell::HasInstance()) {
     on_switch.Run();

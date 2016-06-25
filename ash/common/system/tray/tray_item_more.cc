@@ -24,7 +24,8 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
       label_(NULL),
       more_(NULL) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-      kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
+                                        kTrayPopupPaddingHorizontal, 0,
+                                        kTrayPopupPaddingBetweenItems));
 
   icon_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
   AddChildView(icon_);
@@ -36,14 +37,14 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
   if (show_more) {
     more_ = new views::ImageView;
     more_->EnableCanvasFlippingForRTLUI(true);
-    more_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_AURA_UBER_TRAY_MORE).ToImageSkia());
+    more_->SetImage(ui::ResourceBundle::GetSharedInstance()
+                        .GetImageNamed(IDR_AURA_UBER_TRAY_MORE)
+                        .ToImageSkia());
     AddChildView(more_);
   }
 }
 
-TrayItemMore::~TrayItemMore() {
-}
+TrayItemMore::~TrayItemMore() {}
 
 void TrayItemMore::SetLabel(const base::string16& label) {
   label_->SetText(label);

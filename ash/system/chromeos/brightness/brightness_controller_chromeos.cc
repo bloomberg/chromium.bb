@@ -15,11 +15,11 @@ namespace system {
 void BrightnessControllerChromeos::HandleBrightnessDown(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN)
-    base::RecordAction(
-        base::UserMetricsAction("Accel_BrightnessDown_F6"));
+    base::RecordAction(base::UserMetricsAction("Accel_BrightnessDown_F6"));
 
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      DecreaseScreenBrightness(true);
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->DecreaseScreenBrightness(true);
 }
 
 void BrightnessControllerChromeos::HandleBrightnessUp(
@@ -27,20 +27,23 @@ void BrightnessControllerChromeos::HandleBrightnessUp(
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP)
     base::RecordAction(base::UserMetricsAction("Accel_BrightnessUp_F7"));
 
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      IncreaseScreenBrightness();
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->IncreaseScreenBrightness();
 }
 
 void BrightnessControllerChromeos::SetBrightnessPercent(double percent,
                                                         bool gradual) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      SetScreenBrightnessPercent(percent, gradual);
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->SetScreenBrightnessPercent(percent, gradual);
 }
 
 void BrightnessControllerChromeos::GetBrightnessPercent(
     const base::Callback<void(double)>& callback) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      GetScreenBrightnessPercent(callback);
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->GetScreenBrightnessPercent(callback);
 }
 
 }  // namespace system

@@ -15,10 +15,8 @@
 namespace ash {
 namespace {}  // namespace
 
-AcceleratorDelegate::AcceleratorDelegate() {
-}
-AcceleratorDelegate::~AcceleratorDelegate() {
-}
+AcceleratorDelegate::AcceleratorDelegate() {}
+AcceleratorDelegate::~AcceleratorDelegate() {}
 
 bool AcceleratorDelegate::ProcessAccelerator(const ui::KeyEvent& key_event,
                                              const ui::Accelerator& accelerator,

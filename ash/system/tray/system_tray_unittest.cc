@@ -207,10 +207,9 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
 
   // Check items have been added
   const std::vector<SystemTrayItem*>& items = tray->GetTrayItems();
-  ASSERT_TRUE(
-      std::find(items.begin(), items.end(), test_item) != items.end());
-  ASSERT_TRUE(
-      std::find(items.begin(), items.end(), detailed_item) != items.end());
+  ASSERT_TRUE(std::find(items.begin(), items.end(), test_item) != items.end());
+  ASSERT_TRUE(std::find(items.begin(), items.end(), detailed_item) !=
+              items.end());
 
   // Ensure the tray views are created.
   ASSERT_TRUE(test_item->tray_view() != NULL);
@@ -332,15 +331,19 @@ TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
 
   EXPECT_FALSE(test_item->default_view());
 
-  EXPECT_EQ(bubble_bounds.ToString(), test_item->detailed_view()->GetWidget()->
-      GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(bubble_bounds.ToString(), test_item->detailed_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen()
+                                          .ToString());
   EXPECT_EQ(widget, test_item->detailed_view()->GetWidget());
 
   tray->ShowDefaultView(BUBBLE_USE_EXISTING);
   RunAllPendingInMessageLoop();
 
-  EXPECT_EQ(bubble_bounds.ToString(), test_item->default_view()->GetWidget()->
-      GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(bubble_bounds.ToString(), test_item->default_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen()
+                                          .ToString());
   EXPECT_EQ(widget, test_item->default_view()->GetWidget());
 }
 
@@ -429,8 +432,7 @@ TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
   Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
       true);
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      new ModalWidgetDelegate(),
-      Shell::GetPrimaryRootWindow(),
+      new ModalWidgetDelegate(), Shell::GetPrimaryRootWindow(),
       gfx::Rect(0, 0, 100, 100));
   widget->Show();
 
@@ -470,9 +472,8 @@ TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
   ASSERT_TRUE(tray->visible());
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration;
-  animation_duration.reset(
-      new ui::ScopedAnimationDurationScaleMode(
-          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+  animation_duration.reset(new ui::ScopedAnimationDurationScaleMode(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
   tray->SetVisible(false);
   EXPECT_TRUE(tray->visible());
   EXPECT_EQ(0.0f, tray->layer()->GetTargetOpacity());
@@ -491,9 +492,8 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedback) {
   SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
-  TrayPopupItemContainer* view =
-      static_cast<TrayPopupItemContainer*>(tray->GetSystemBubble()->
-          bubble_view()->child_at(0));
+  TrayPopupItemContainer* view = static_cast<TrayPopupItemContainer*>(
+      tray->GetSystemBubble()->bubble_view()->child_at(0));
   EXPECT_FALSE(view->active());
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
@@ -511,9 +511,8 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedbackCancellation) {
   SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
-  TrayPopupItemContainer* view =
-      static_cast<TrayPopupItemContainer*>(tray->GetSystemBubble()->
-          bubble_view()->child_at(0));
+  TrayPopupItemContainer* view = static_cast<TrayPopupItemContainer*>(
+      tray->GetSystemBubble()->bubble_view()->child_at(0));
   EXPECT_FALSE(view->active());
 
   gfx::Rect view_bounds = view->GetBoundsInScreen();

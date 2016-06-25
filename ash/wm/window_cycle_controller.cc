@@ -62,11 +62,9 @@ void WindowCycleEventFilter::OnKeyEvent(ui::KeyEvent* event) {
 //////////////////////////////////////////////////////////////////////////////
 // WindowCycleController, public:
 
-WindowCycleController::WindowCycleController() {
-}
+WindowCycleController::WindowCycleController() {}
 
-WindowCycleController::~WindowCycleController() {
-}
+WindowCycleController::~WindowCycleController() {}
 
 // static
 bool WindowCycleController::CanCycle() {

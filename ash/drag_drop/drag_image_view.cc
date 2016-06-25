@@ -112,8 +112,8 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
   } else {
     float device_scale = 1;
     if (widget_->GetNativeView() && widget_->GetNativeView()->layer()) {
-      device_scale = ui::GetDeviceScaleFactor(
-          widget_->GetNativeView()->layer());
+      device_scale =
+          ui::GetDeviceScaleFactor(widget_->GetNativeView()->layer());
     }
     // The drag image already has device scale factor applied. But
     // |widget_size_| is in DIP units.
@@ -152,7 +152,7 @@ gfx::Image* DragImageView::DragHint() const {
   // Select appropriate drag hint.
   gfx::Image* drag_hint =
       &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_TOUCH_DRAG_TIP_NODROP);
+          IDR_TOUCH_DRAG_TIP_NODROP);
   if (touch_drag_operation_ & ui::DragDropTypes::DRAG_COPY) {
     drag_hint = &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_TOUCH_DRAG_TIP_COPY);

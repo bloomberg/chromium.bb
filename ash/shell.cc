@@ -123,7 +123,7 @@
 #if defined(OS_CHROMEOS)
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_types.h"  // nogncheck
-#endif  // defined(USE_X11)
+#endif                           // defined(USE_X11)
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/common/ash_constants.h"
@@ -278,8 +278,7 @@ aura::Window::Windows Shell::GetAllRootWindows() {
 }
 
 // static
-aura::Window* Shell::GetContainer(aura::Window* root_window,
-                                  int container_id) {
+aura::Window* Shell::GetContainer(aura::Window* root_window, int container_id) {
   return root_window->GetChildById(container_id);
 }
 
@@ -319,8 +318,8 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
 
   aura::Window* root = WmWindowAura::GetAuraWindow(
       wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size())));
-  GetRootWindowController(root)
-      ->ShowContextMenu(location_in_screen, source_type);
+  GetRootWindowController(root)->ShowContextMenu(location_in_screen,
+                                                 source_type);
 }
 
 void Shell::ShowAppList(aura::Window* window) {
@@ -436,8 +435,8 @@ void Shell::CreateKeyboard() {
   // TODO(bshe): Primary root window controller may not be the controller to
   // attach virtual keyboard. See http://crbug.com/303429
   InitKeyboard();
-  GetPrimaryRootWindowController()->
-      ActivateKeyboard(keyboard::KeyboardController::GetInstance());
+  GetPrimaryRootWindowController()->ActivateKeyboard(
+      keyboard::KeyboardController::GetInstance());
 }
 
 void Shell::DeactivateKeyboard() {
@@ -447,7 +446,7 @@ void Shell::DeactivateKeyboard() {
   if (keyboard::KeyboardController::GetInstance()) {
     RootWindowControllerList controllers = GetAllRootWindowControllers();
     for (RootWindowControllerList::iterator iter = controllers.begin();
-        iter != controllers.end(); ++iter) {
+         iter != controllers.end(); ++iter) {
       (*iter)->DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
     }
   }
@@ -480,9 +479,9 @@ void Shell::RemovePointerWatcher(views::PointerWatcher* watcher) {
 
 #if defined(OS_CHROMEOS)
 bool Shell::ShouldSaveDisplaySettings() {
-  return !(screen_orientation_controller_
-               ->ignore_display_configuration_updates() ||
-           resolution_notification_controller_->DoesNotificationTimeout());
+  return !(
+      screen_orientation_controller_->ignore_display_configuration_updates() ||
+      resolution_notification_controller_->DoesNotificationTimeout());
 }
 #endif
 
@@ -526,8 +525,9 @@ void Shell::OnModalWindowRemoved(aura::Window* removed) {
   bool activated = false;
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end() && !activated; ++iter) {
-    activated = (*iter)->GetSystemModalLayoutManager(removed)->
-        ActivateNextModalWindow();
+    activated = (*iter)
+                    ->GetSystemModalLayoutManager(removed)
+                    ->ActivateNextModalWindow();
   }
   if (!activated) {
     RemovePreTargetHandler(modality_filter_.get());
@@ -599,8 +599,9 @@ void Shell::SetCursorCompositingEnabled(bool enabled) {
 #endif  // defined(OS_CHROMEOS)
 
 void Shell::DoInitialWorkspaceAnimation() {
-  return GetPrimaryRootWindowController()->workspace_controller()->
-      DoInitialAnimation();
+  return GetPrimaryRootWindowController()
+      ->workspace_controller()
+      ->DoInitialAnimation();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -712,8 +713,8 @@ Shell::~Shell() {
   // Drag-and-drop must be canceled prior to close all windows.
   drag_drop_controller_.reset();
 
-  // Controllers who have WindowObserver added must be deleted
-  // before |window_tree_host_manager_| is deleted.
+// Controllers who have WindowObserver added must be deleted
+// before |window_tree_host_manager_| is deleted.
 
 #if defined(OS_CHROMEOS)
   // VideoActivityNotifier must be deleted before |video_detector_| is
@@ -914,8 +915,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal
   // windows are active.
-  window_modality_controller_.reset(
-      new ::wm::WindowModalityController(this));
+  window_modality_controller_.reset(new ::wm::WindowModalityController(this));
 
   env_filter_.reset(new ::wm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
@@ -991,8 +991,8 @@ void Shell::Init(const ShellInitParams& init_params) {
       wm_shell_common_.get(), window_tree_host_manager_.get()));
 
   lock_state_controller_.reset(new LockStateController);
-  power_button_controller_.reset(new PowerButtonController(
-      lock_state_controller_.get()));
+  power_button_controller_.reset(
+      new PowerButtonController(lock_state_controller_.get()));
 #if defined(OS_CHROMEOS)
   // Pass the initial display state to PowerButtonController.
   power_button_controller_->OnDisplayModeChanged(
@@ -1014,12 +1014,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   // RootWindowController as possible.
   visibility_controller_.reset(new AshVisibilityController);
 
-  magnification_controller_.reset(
-      MagnificationController::CreateInstance());
+  magnification_controller_.reset(MagnificationController::CreateInstance());
   wm_shell_common_->CreateMruWindowTracker();
 
-  partial_magnification_controller_.reset(
-      new PartialMagnificationController());
+  partial_magnification_controller_.reset(new PartialMagnificationController());
 
   autoclick_controller_.reset(AutoclickController::CreateInstance());
 
@@ -1045,8 +1043,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   pointer_watcher_delegate_ = delegate_->CreatePointerWatcherDelegate();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
-  shadow_controller_.reset(
-      new ::wm::ShadowController(activation_client_));
+  shadow_controller_.reset(new ::wm::ShadowController(activation_client_));
 
   SystemTrayDelegate* system_tray_delegate =
       delegate()->CreateSystemTrayDelegate();
@@ -1153,7 +1150,7 @@ void Shell::InitRootWindow(aura::Window* root_window) {
   aura::client::SetFocusClient(root_window, focus_client_.get());
   aura::client::SetActivationClient(root_window, activation_client_);
   ::wm::FocusController* focus_controller =
-      static_cast< ::wm::FocusController*>(activation_client_);
+      static_cast<::wm::FocusController*>(activation_client_);
   root_window->AddPreTargetHandler(focus_controller);
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
@@ -1164,7 +1161,7 @@ void Shell::InitRootWindow(aura::Window* root_window) {
   aura::client::SetEventClient(root_window, event_client_.get());
 
   aura::client::SetWindowMoveClient(root_window,
-      toplevel_window_event_handler_.get());
+                                    toplevel_window_event_handler_.get());
   root_window->AddPreTargetHandler(toplevel_window_event_handler_.get());
   root_window->AddPostTargetHandler(toplevel_window_event_handler_.get());
 }

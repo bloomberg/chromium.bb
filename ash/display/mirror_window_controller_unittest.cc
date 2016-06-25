@@ -49,7 +49,6 @@ class MirrorOnBootTest : public test::AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(MirrorOnBootTest);
 };
-
 }
 
 typedef test::AshTestBase MirrorWindowControllerTest;

@@ -28,12 +28,8 @@ class ASH_EXPORT MagnifierKeyScroller : public KeyHoldDetector::Delegate {
   // A scoped object to enable and disable the magnifier accelerator for test.
   class ScopedEnablerForTest {
    public:
-    ScopedEnablerForTest() {
-      SetEnabled(true);
-    }
-    ~ScopedEnablerForTest() {
-      SetEnabled(false);
-    }
+    ScopedEnablerForTest() { SetEnabled(true); }
+    ~ScopedEnablerForTest() { SetEnabled(false); }
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ScopedEnablerForTest);

@@ -101,8 +101,7 @@ bool DesktopBackgroundController::SetWallpaperImage(const gfx::ImageSkia& image,
       image, GetMaxDisplaySizeInNative(), layout, blocking_pool_));
   current_wallpaper_->StartResize();
 
-  FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver,
-                    observers_,
+  FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver, observers_,
                     OnWallpaperDataChanged());
   SetDesktopBackgroundImageMode();
   return true;
@@ -226,8 +225,9 @@ void DesktopBackgroundController::InstallDesktopController(
       NOTREACHED();
       return;
   }
-  GetRootWindowController(root_window)->SetAnimatingWallpaperController(
-      new AnimatingDesktopController(component));
+  GetRootWindowController(root_window)
+      ->SetAnimatingWallpaperController(
+          new AnimatingDesktopController(component));
 
   component->StartAnimating(GetRootWindowController(root_window));
 }
@@ -247,7 +247,7 @@ bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
   Shell::RootWindowControllerList controllers =
       Shell::GetAllRootWindowControllers();
   for (Shell::RootWindowControllerList::iterator iter = controllers.begin();
-    iter != controllers.end(); ++iter) {
+       iter != controllers.end(); ++iter) {
     RootWindowController* root_window_controller = *iter;
     // In the steady state (no animation playing) the background widget
     // controller exists in the RootWindowController.
@@ -256,8 +256,7 @@ bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
     if (desktop_controller) {
       moved |=
           desktop_controller->Reparent(root_window_controller->GetRootWindow(),
-                                       src_container,
-                                       dst_container);
+                                       src_container, dst_container);
     }
     // During desktop show animations the controller lives in
     // AnimatingDesktopController owned by RootWindowController.
@@ -265,14 +264,13 @@ bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
     // can temporarily be two desktop background widgets.  We must reparent
     // both of them - one above and one here.
     DesktopBackgroundWidgetController* animating_controller =
-        root_window_controller->animating_wallpaper_controller() ?
-        root_window_controller->animating_wallpaper_controller()->
-            GetController(false) :
-        NULL;
+        root_window_controller->animating_wallpaper_controller()
+            ? root_window_controller->animating_wallpaper_controller()
+                  ->GetController(false)
+            : NULL;
     if (animating_controller) {
       moved |= animating_controller->Reparent(
-          root_window_controller->GetRootWindow(),
-          src_container,
+          root_window_controller->GetRootWindow(), src_container,
           dst_container);
     }
   }

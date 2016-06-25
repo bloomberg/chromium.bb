@@ -22,12 +22,9 @@
 
 namespace ash {
 
-ShelfGestureHandler::ShelfGestureHandler()
-    : drag_in_progress_(false) {
-}
+ShelfGestureHandler::ShelfGestureHandler() : drag_in_progress_(false) {}
 
-ShelfGestureHandler::~ShelfGestureHandler() {
-}
+ShelfGestureHandler::~ShelfGestureHandler() {}
 
 bool ShelfGestureHandler::ProcessGestureEvent(
     const ui::GestureEvent& event,

@@ -15,8 +15,7 @@
 
 namespace ash {
 
-TrayEventFilter::TrayEventFilter() {
-}
+TrayEventFilter::TrayEventFilter() {}
 
 TrayEventFilter::~TrayEventFilter() {
   DCHECK(wrappers_.empty());

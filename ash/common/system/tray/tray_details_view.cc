@@ -65,13 +65,11 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
       scroller_(NULL),
       scroll_content_(NULL),
       scroll_border_(NULL) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-      0, 0, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 }
 
-TrayDetailsView::~TrayDetailsView() {
-}
+TrayDetailsView::~TrayDetailsView() {}
 
 void TrayDetailsView::CreateSpecialRow(int string_id,
                                        ViewClickListener* listener) {
@@ -84,8 +82,8 @@ void TrayDetailsView::CreateSpecialRow(int string_id,
 void TrayDetailsView::CreateScrollableList() {
   DCHECK(!scroller_);
   scroll_content_ = new views::View;
-  scroll_content_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, 1));
+  scroll_content_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
   scroller_ = new FixedSizedScrollView;
   scroller_->SetContentsView(scroll_content_);
 

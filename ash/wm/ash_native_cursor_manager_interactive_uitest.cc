@@ -36,23 +36,14 @@ DisplayInfo CreateDisplayInfo(int64_t id,
 
 void MoveMouseSync(aura::Window* window, int x, int y) {
 #if defined(USE_X11)
-  XWarpPointer(gfx::GetXDisplay(),
-               None,
-               window->GetHost()->GetAcceleratedWidget(),
-               0, 0, 0, 0,
-               x, y);
+  XWarpPointer(gfx::GetXDisplay(), None,
+               window->GetHost()->GetAcceleratedWidget(), 0, 0, 0, 0, x, y);
 #endif
   // Send and wait for a key event to make sure that mouse
   // events are fully processed.
   base::RunLoop loop;
-  ui_controls::SendKeyPressNotifyWhenDone(
-      window,
-      ui::VKEY_SPACE,
-      false,
-      false,
-      false,
-      false,
-      loop.QuitClosure());
+  ui_controls::SendKeyPressNotifyWhenDone(window, ui::VKEY_SPACE, false, false,
+                                          false, false, loop.QuitClosure());
   loop.Run();
 }
 

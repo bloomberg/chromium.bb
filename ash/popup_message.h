@@ -22,10 +22,7 @@ namespace ash {
 // dismiss it, the calling code needs to explictly close and destroy it.
 class ASH_EXPORT PopupMessage {
  public:
-  enum IconType {
-    ICON_WARNING,
-    ICON_NONE
-  };
+  enum IconType { ICON_WARNING, ICON_NONE };
 
   // Creates a message pointing towards |anchor| with the requested
   // |arrow_orientation|. The message contains an optional |caption| which is

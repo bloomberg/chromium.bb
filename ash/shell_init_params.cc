@@ -13,9 +13,11 @@ ShellInitParams::ShellInitParams()
       context_factory(nullptr),
       blocking_pool(nullptr)
 #if defined(OS_WIN)
-      , remote_hwnd(nullptr)
+      ,
+      remote_hwnd(nullptr)
 #endif
-      {}
+{
+}
 
 ShellInitParams::~ShellInitParams() {}
 

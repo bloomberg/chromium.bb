@@ -30,8 +30,7 @@ class CursorManagerTestApi;
 // visibility. It communicates back with the CursorManager through the
 // NativeCursorManagerDelegate interface, which receives messages about what
 // changes were acted on.
-class ASH_EXPORT AshNativeCursorManager
-    : public ::wm::NativeCursorManager {
+class ASH_EXPORT AshNativeCursorManager : public ::wm::NativeCursorManager {
  public:
   AshNativeCursorManager();
   ~AshNativeCursorManager() override;

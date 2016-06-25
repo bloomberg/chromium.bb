@@ -31,8 +31,7 @@ PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
     InitHeaderPainter();
 }
 
-PanelFrameView::~PanelFrameView() {
-}
+PanelFrameView::~PanelFrameView() {}
 
 void PanelFrameView::SetFrameColors(SkColor active_frame_color,
                                     SkColor inactive_frame_color) {
@@ -68,10 +67,9 @@ gfx::Size PanelFrameView::GetMinimumSize() const {
   if (!header_painter_)
     return gfx::Size();
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
-  return gfx::Size(
-      std::max(header_painter_->GetMinimumHeaderWidth(),
-               min_client_view_size.width()),
-      NonClientTopBorderHeight() + min_client_view_size.height());
+  return gfx::Size(std::max(header_painter_->GetMinimumHeaderWidth(),
+                            min_client_view_size.width()),
+                   NonClientTopBorderHeight() + min_client_view_size.height());
 }
 
 void PanelFrameView::Layout() {
@@ -105,14 +103,13 @@ void PanelFrameView::UpdateWindowTitle() {
   header_painter_->SchedulePaintForTitle();
 }
 
-void PanelFrameView::SizeConstraintsChanged() {
-}
+void PanelFrameView::SizeConstraintsChanged() {}
 
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!header_painter_)
     return HTNOWHERE;
-  return FrameBorderHitTestController::NonClientHitTest(this,
-      caption_button_container_, point);
+  return FrameBorderHitTestController::NonClientHitTest(
+      this, caption_button_container_, point);
 }
 
 void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
@@ -121,8 +118,9 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
   bool paint_as_active = ShouldPaintAsActive();
   caption_button_container_->SetPaintAsActive(paint_as_active);
 
-  HeaderPainter::Mode header_mode = paint_as_active ?
-      HeaderPainter::MODE_ACTIVE : HeaderPainter::MODE_INACTIVE;
+  HeaderPainter::Mode header_mode = paint_as_active
+                                        ? HeaderPainter::MODE_ACTIVE
+                                        : HeaderPainter::MODE_INACTIVE;
   header_painter_->PaintHeader(canvas, header_mode);
 }
 

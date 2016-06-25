@@ -18,14 +18,11 @@ namespace ash {
 namespace {
 
 const int kBarImagesActive[] = {
-    IDR_SLIDER_ACTIVE_LEFT,
-    IDR_SLIDER_ACTIVE_CENTER,
-    IDR_SLIDER_ACTIVE_RIGHT,
+    IDR_SLIDER_ACTIVE_LEFT, IDR_SLIDER_ACTIVE_CENTER, IDR_SLIDER_ACTIVE_RIGHT,
 };
 
 const int kBarImagesDisabled[] = {
-    IDR_SLIDER_DISABLED_LEFT,
-    IDR_SLIDER_DISABLED_CENTER,
+    IDR_SLIDER_DISABLED_LEFT, IDR_SLIDER_DISABLED_CENTER,
     IDR_SLIDER_DISABLED_RIGHT,
 };
 
@@ -34,11 +31,10 @@ const int kBarImagesDisabled[] = {
 class TrayBarButtonWithTitle::TrayBarButton : public views::View {
  public:
   TrayBarButton(const int bar_active_images[], const int bar_disabled_images[])
-    : views::View(),
-      bar_active_images_(bar_active_images),
-      bar_disabled_images_(bar_disabled_images),
-      painter_(new views::HorizontalPainter(bar_active_images_)){
-  }
+      : views::View(),
+        bar_active_images_(bar_active_images),
+        bar_disabled_images_(bar_disabled_images),
+        painter_(new views::HorizontalPainter(bar_active_images_)) {}
   ~TrayBarButton() override {}
 
   // Overriden from views::View:
@@ -76,8 +72,10 @@ TrayBarButtonWithTitle::TrayBarButtonWithTitle(views::ButtonListener* listener,
     AddChildView(title_);
   }
 
-  image_height_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      kBarImagesActive[0]).ToImageSkia()->height();
+  image_height_ = ui::ResourceBundle::GetSharedInstance()
+                      .GetImageNamed(kBarImagesActive[0])
+                      .ToImageSkia()
+                      ->height();
 }
 
 TrayBarButtonWithTitle::~TrayBarButtonWithTitle() {}
@@ -93,18 +91,13 @@ gfx::Size TrayBarButtonWithTitle::GetPreferredSize() const {
 void TrayBarButtonWithTitle::Layout() {
   gfx::Rect rect(GetContentsBounds());
   int bar_image_y = rect.height() / 2 - image_height_ / 2;
-  gfx::Rect bar_image_rect(rect.x(),
-                           bar_image_y,
-                           rect.width(),
-                           image_height_);
+  gfx::Rect bar_image_rect(rect.x(), bar_image_y, rect.width(), image_height_);
   image_->SetBoundsRect(bar_image_rect);
   if (title_) {
     // The image_ has some empty space below the bar image, move the title
     // a little bit up to look closer to the bar.
     gfx::Size title_size = title_->GetPreferredSize();
-    title_->SetBounds(rect.x(),
-                      bar_image_y + image_height_ - 3,
-                      rect.width(),
+    title_->SetBounds(rect.x(), bar_image_y + image_height_ - 3, rect.width(),
                       title_size.height());
   }
 }

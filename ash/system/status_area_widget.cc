@@ -49,8 +49,7 @@ StatusAreaWidget::StatusAreaWidget(WmWindow* status_container,
   SetContentsView(status_area_widget_delegate_);
 }
 
-StatusAreaWidget::~StatusAreaWidget() {
-}
+StatusAreaWidget::~StatusAreaWidget() {}
 
 void StatusAreaWidget::CreateTrayViews() {
   AddOverviewButtonTray();

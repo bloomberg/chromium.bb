@@ -188,8 +188,7 @@ class WindowSelectorTest
     gfx::RectF bounds(ScreenUtil::ConvertRectToScreen(
         window->parent(), window->layer()->bounds()));
     gfx::Transform transform(gfx::TransformAboutPivot(
-        gfx::ToFlooredPoint(bounds.origin()),
-        window->layer()->transform()));
+        gfx::ToFlooredPoint(bounds.origin()), window->layer()->transform()));
     transform.TransformRect(&bounds);
     return bounds;
   }
@@ -197,9 +196,9 @@ class WindowSelectorTest
   gfx::RectF GetTransformedTargetBounds(aura::Window* window) {
     gfx::RectF bounds(ScreenUtil::ConvertRectToScreen(
         window->parent(), window->layer()->GetTargetBounds()));
-    gfx::Transform transform(gfx::TransformAboutPivot(
-        gfx::ToFlooredPoint(bounds.origin()),
-        window->layer()->GetTargetTransform()));
+    gfx::Transform transform(
+        gfx::TransformAboutPivot(gfx::ToFlooredPoint(bounds.origin()),
+                                 window->layer()->GetTargetTransform()));
     transform.TransformRect(&bounds);
     return bounds;
   }
@@ -225,16 +224,16 @@ class WindowSelectorTest
 
   void SendKey(ui::KeyboardCode key) {
     ui::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow());
-      event_generator.PressKey(key, 0);
-      event_generator.ReleaseKey(key, 0);
+    event_generator.PressKey(key, 0);
+    event_generator.ReleaseKey(key, 0);
   }
 
   bool IsSelecting() { return window_selector_controller()->IsSelecting(); }
 
   aura::Window* GetFocusedWindow() {
-    return aura::client::GetFocusClient(
-        Shell::GetPrimaryRootWindow())->GetFocusedWindow();
-    }
+    return aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
+        ->GetFocusedWindow();
+  }
 
   const std::vector<WindowSelectorItem*>& GetWindowItemsForRoot(int index) {
     return window_selector()->grid_list_[index]->window_list_.get();
@@ -318,9 +317,7 @@ class WindowSelectorTest
     window_selector()->ContentsChanged(nullptr, base::UTF8ToUTF16(pattern));
   }
 
-  test::ShelfViewTestAPI* shelf_view_test() {
-    return shelf_view_test_.get();
-  }
+  test::ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
 
   views::Widget* text_filter_widget() {
     return window_selector()->text_filter_widget_.get();
@@ -630,8 +627,9 @@ TEST_P(WindowSelectorTest, BasicGesture) {
   EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      window2.get());
-  generator.GestureTapAt(gfx::ToEnclosingRect(
-      GetTransformedTargetBounds(window2.get())).CenterPoint());
+  generator.GestureTapAt(
+      gfx::ToEnclosingRect(GetTransformedTargetBounds(window2.get()))
+          .CenterPoint());
   EXPECT_EQ(window2.get(), GetFocusedWindow());
 }
 
@@ -948,8 +946,9 @@ TEST_P(WindowSelectorTest, FullscreenWindowMaximizeMode) {
   gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
   wm::ActivateWindow(window2.get());
   wm::ActivateWindow(window1.get());
   gfx::Rect normal_window_bounds(window1->bounds());
@@ -1101,8 +1100,8 @@ TEST_P(WindowSelectorTest, LastWindowDestroyed) {
 TEST_P(WindowSelectorTest, QuickReentryRestoresInitialTransform) {
   gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(CreateWindow(bounds));
-  gfx::Rect initial_bounds = ToEnclosingRect(
-      GetTransformedBounds(window.get()));
+  gfx::Rect initial_bounds =
+      ToEnclosingRect(GetTransformedBounds(window.get()));
   ToggleOverview();
   // Quickly exit and reenter overview mode. The window should still be
   // animating when we reenter. We cannot short circuit animations for this but
@@ -1113,12 +1112,12 @@ TEST_P(WindowSelectorTest, QuickReentryRestoresInitialTransform) {
     ToggleOverview();
     ToggleOverview();
   }
-  EXPECT_NE(initial_bounds, ToEnclosingRect(
-      GetTransformedTargetBounds(window.get())));
+  EXPECT_NE(initial_bounds,
+            ToEnclosingRect(GetTransformedTargetBounds(window.get())));
   ToggleOverview();
   EXPECT_FALSE(IsSelecting());
-  EXPECT_EQ(initial_bounds, ToEnclosingRect(
-      GetTransformedTargetBounds(window.get())));
+  EXPECT_EQ(initial_bounds,
+            ToEnclosingRect(GetTransformedTargetBounds(window.get())));
 }
 
 // Tests that windows with modal child windows are transformed with the modal
@@ -1134,7 +1133,7 @@ TEST_P(WindowSelectorTest, ModalChild) {
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_TRUE(child1->IsVisible());
   EXPECT_EQ(ToEnclosingRect(GetTransformedTargetBounds(child1.get())),
-      ToEnclosingRect(GetTransformedTargetBounds(window1.get())));
+            ToEnclosingRect(GetTransformedTargetBounds(window1.get())));
   ToggleOverview();
 }
 
@@ -1286,9 +1285,9 @@ TEST_P(WindowSelectorTest, DISABLED_DragDropInProgress) {
       FROM_HERE,
       base::Bind(&CancelDrag, drag_drop_controller, &drag_canceled_by_test));
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  drag_drop_controller->StartDragAndDrop(data, window->GetRootWindow(),
-      window.get(), gfx::Point(5, 5), ui::DragDropTypes::DRAG_MOVE,
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  drag_drop_controller->StartDragAndDrop(
+      data, window->GetRootWindow(), window.get(), gfx::Point(5, 5),
+      ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(drag_canceled_by_test);
   ASSERT_TRUE(IsSelecting());
@@ -1386,12 +1385,8 @@ TEST_P(WindowSelectorTest, BasicArrowKeyNavigation) {
   for (size_t i = test_windows; i > 0; i--)
     windows.push_back(CreateWindowWithId(gfx::Rect(0, 0, 100, 100), i));
 
-  ui::KeyboardCode arrow_keys[] = {
-      ui::VKEY_RIGHT,
-      ui::VKEY_DOWN,
-      ui::VKEY_LEFT,
-      ui::VKEY_UP
-  };
+  ui::KeyboardCode arrow_keys[] = {ui::VKEY_RIGHT, ui::VKEY_DOWN, ui::VKEY_LEFT,
+                                   ui::VKEY_UP};
   // Expected window layout, assuming that the text filtering feature is
   // enabled by default (i.e., --ash-disable-text-filtering-in-overview-mode
   // is not being used).

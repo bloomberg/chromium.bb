@@ -57,8 +57,8 @@ class OverflowBubble : public views::PointerWatcher,
   void OnWidgetDestroying(views::Widget* widget) override;
 
   OverflowBubbleView* bubble_;  // Owned by views hierarchy.
-  views::View* anchor_;  // Owned by ShelfView.
-  ShelfView* shelf_view_;  // Owned by |bubble_|.
+  views::View* anchor_;         // Owned by ShelfView.
+  ShelfView* shelf_view_;       // Owned by |bubble_|.
 
   DISALLOW_COPY_AND_ASSIGN(OverflowBubble);
 };

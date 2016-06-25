@@ -85,8 +85,7 @@ gfx::Transform TouchTransformerController::GetTouchTransform(
 
 #if defined(USE_OZONE)
   // Translate the touch so that it falls within the display bounds.
-  ctm.Translate(display.bounds_in_native().x(),
-                display.bounds_in_native().y());
+  ctm.Translate(display.bounds_in_native().x(), display.bounds_in_native().y());
 #endif
 
   // Take care of panel fitting only if supported. Panel fitting is emulated in

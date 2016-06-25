@@ -34,13 +34,13 @@ class BootSplashScreen::CopyHostContentLayerDelegate
 
   // ui::LayerDelegate overrides:
   void OnPaintLayer(const ui::PaintContext& context) override {
-    // It'd be safer to copy the area to a canvas in the constructor and then
-    // copy from that canvas to this one here, but this appears to work (i.e. we
-    // only call this before we draw our first frame) and it saves us an extra
-    // copy.
-    // TODO(derat): Instead of copying the data, use GLX_EXT_texture_from_pixmap
-    // to create a zero-copy texture (when possible):
-    // https://codereview.chromium.org/10543125
+// It'd be safer to copy the area to a canvas in the constructor and then
+// copy from that canvas to this one here, but this appears to work (i.e. we
+// only call this before we draw our first frame) and it saves us an extra
+// copy.
+// TODO(derat): Instead of copying the data, use GLX_EXT_texture_from_pixmap
+// to create a zero-copy texture (when possible):
+// https://codereview.chromium.org/10543125
 #if defined(USE_X11)
     ui::PaintRecorder recorder(context, host_->GetBounds().size());
     ui::CopyAreaToCanvas(host_->GetAcceleratedWidget(), host_->GetBounds(),
@@ -78,8 +78,7 @@ BootSplashScreen::BootSplashScreen(aura::WindowTreeHost* host)
   root_layer->StackAtTop(layer_.get());
 }
 
-BootSplashScreen::~BootSplashScreen() {
-}
+BootSplashScreen::~BootSplashScreen() {}
 
 void BootSplashScreen::StartHideAnimation(base::TimeDelta duration) {
   ui::ScopedLayerAnimationSettings settings(layer_->GetAnimator());

@@ -38,13 +38,11 @@ TEST_P(WindowPositionerTest, OpenMaximizedWindowOnSecondDisplay) {
   // Tests that for a screen that is narrower than kForceMaximizeWidthLimit
   // a new window gets maximized.
   UpdateDisplay("400x400,500x500");
-  Shell::GetInstance()->set_target_root_window(
-      Shell::GetAllRootWindows()[1]);
+  Shell::GetInstance()->set_target_root_window(Shell::GetAllRootWindows()[1]);
   shell::ToplevelWindow::CreateParams params;
   params.can_resize = true;
   params.can_maximize = true;
-  views::Widget* widget =
-      shell::ToplevelWindow::CreateToplevelWindow(params);
+  views::Widget* widget = shell::ToplevelWindow::CreateToplevelWindow(params);
   EXPECT_EQ(gfx::Rect(400, 0, 500, 453 + height_offset).ToString(),
             widget->GetWindowBoundsInScreen().ToString());
 }
@@ -57,13 +55,11 @@ TEST_P(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
 #endif
   UpdateDisplay("400x400,1400x900");
   aura::Window* second_root_window = Shell::GetAllRootWindows()[1];
-  Shell::GetInstance()->set_target_root_window(
-      second_root_window);
+  Shell::GetInstance()->set_target_root_window(second_root_window);
   shell::ToplevelWindow::CreateParams params;
   params.can_resize = true;
   params.can_maximize = true;
-  views::Widget* widget =
-      shell::ToplevelWindow::CreateToplevelWindow(params);
+  views::Widget* widget = shell::ToplevelWindow::CreateToplevelWindow(params);
   gfx::Rect bounds = widget->GetWindowBoundsInScreen();
 #if defined(OS_WIN)
   EXPECT_TRUE(widget->IsMaximized());
@@ -87,8 +83,7 @@ TEST_P(WindowPositionerTest, SecondMaximizedWindowHasProperRestoreSize) {
   shell::ToplevelWindow::CreateParams params;
   params.can_resize = true;
   params.can_maximize = true;
-  views::Widget* widget1 =
-      shell::ToplevelWindow::CreateToplevelWindow(params);
+  views::Widget* widget1 = shell::ToplevelWindow::CreateToplevelWindow(params);
   gfx::Rect bounds = widget1->GetWindowBoundsInScreen();
 
   // The window should have default size.
@@ -103,8 +98,7 @@ TEST_P(WindowPositionerTest, SecondMaximizedWindowHasProperRestoreSize) {
             bounds.ToString());
 
   // Create another window
-  views::Widget* widget2 =
-      shell::ToplevelWindow::CreateToplevelWindow(params);
+  views::Widget* widget2 = shell::ToplevelWindow::CreateToplevelWindow(params);
 
   // The second window should be maximized.
   bounds = widget2->GetWindowBoundsInScreen();
@@ -157,7 +151,7 @@ TEST_P(WindowPositionerTest, EnsureMinimumVisibility) {
   params.delegate = new OutOfDisplayDelegate(widget);
   params.context = Shell::GetPrimaryRootWindow();
   widget->Init(params);
-  widget->SetBounds(gfx::Rect(450,10, 100, 100));
+  widget->SetBounds(gfx::Rect(450, 10, 100, 100));
   wm::GetWindowState(widget->GetNativeView())->set_minimum_visibility(true);
   widget->Show();
   // Make sure the bounds is adjusted to be inside the work area.

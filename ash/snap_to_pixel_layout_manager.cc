@@ -10,29 +10,22 @@
 
 namespace ash {
 
-SnapToPixelLayoutManager::SnapToPixelLayoutManager(aura::Window* container) {
-}
+SnapToPixelLayoutManager::SnapToPixelLayoutManager(aura::Window* container) {}
 
-SnapToPixelLayoutManager::~SnapToPixelLayoutManager() {
-}
+SnapToPixelLayoutManager::~SnapToPixelLayoutManager() {}
 
-void SnapToPixelLayoutManager::OnWindowResized() {
-}
+void SnapToPixelLayoutManager::OnWindowResized() {}
 
-void SnapToPixelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-}
+void SnapToPixelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {}
 
 void SnapToPixelLayoutManager::OnWillRemoveWindowFromLayout(
-    aura::Window* child) {
-}
+    aura::Window* child) {}
 
-void SnapToPixelLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
-}
+void SnapToPixelLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {}
 
 void SnapToPixelLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
-    bool visibile) {
-}
+    bool visibile) {}
 
 void SnapToPixelLayoutManager::SetChildBounds(
     aura::Window* child,

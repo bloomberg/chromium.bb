@@ -6,22 +6,16 @@
 
 namespace ash {
 
-CastConfigDelegate::Receiver::Receiver() {
-}
+CastConfigDelegate::Receiver::Receiver() {}
 
-CastConfigDelegate::Receiver::~Receiver() {
-}
+CastConfigDelegate::Receiver::~Receiver() {}
 
-CastConfigDelegate::Activity::Activity() {
-}
+CastConfigDelegate::Activity::Activity() {}
 
-CastConfigDelegate::Activity::~Activity() {
-}
+CastConfigDelegate::Activity::~Activity() {}
 
-CastConfigDelegate::ReceiverAndActivity::ReceiverAndActivity() {
-}
+CastConfigDelegate::ReceiverAndActivity::ReceiverAndActivity() {}
 
-CastConfigDelegate::ReceiverAndActivity::~ReceiverAndActivity() {
-}
+CastConfigDelegate::ReceiverAndActivity::~ReceiverAndActivity() {}
 
 }  // namespace ash

@@ -41,9 +41,7 @@ const int kSwipeDelayMS = 150;
 // the animation.
 class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
  public:
-  explicit AnimationObserverDeleteLayer(ui::Layer* layer)
-      : layer_(layer) {
-  }
+  explicit AnimationObserverDeleteLayer(ui::Layer* layer) : layer_(layer) {}
 
   ~AnimationObserverDeleteLayer() override {}
 
@@ -69,8 +67,7 @@ SystemTrayBubble::SystemTrayBubble(
       bubble_view_(NULL),
       items_(items),
       bubble_type_(bubble_type),
-      autoclose_delay_(0) {
-}
+      autoclose_delay_(0) {}
 
 SystemTrayBubble::~SystemTrayBubble() {
   DestroyItemViews();
@@ -197,8 +194,7 @@ void SystemTrayBubble::InitView(views::View* anchor,
   CreateItemViews(login_status);
 
   if (bubble_view_->CanActivate()) {
-    bubble_view_->NotifyAccessibilityEvent(
-        ui::AX_EVENT_ALERT, true);
+    bubble_view_->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
   }
 }
 
@@ -214,8 +210,7 @@ void SystemTrayBubble::FocusDefaultIfNeeded() {
 
 void SystemTrayBubble::DestroyItemViews() {
   for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
-       it != items_.end();
-       ++it) {
+       it != items_.end(); ++it) {
     switch (bubble_type_) {
       case BUBBLE_TYPE_DEFAULT:
         (*it)->DestroyDefaultView();
@@ -238,8 +233,7 @@ void SystemTrayBubble::StartAutoCloseTimer(int seconds) {
   autoclose_.Stop();
   autoclose_delay_ = seconds;
   if (autoclose_delay_) {
-    autoclose_.Start(FROM_HERE,
-                     base::TimeDelta::FromSeconds(autoclose_delay_),
+    autoclose_.Start(FROM_HERE, base::TimeDelta::FromSeconds(autoclose_delay_),
                      this, &SystemTrayBubble::Close);
   }
 }
@@ -273,8 +267,7 @@ bool SystemTrayBubble::IsVisible() {
 
 bool SystemTrayBubble::ShouldShowShelf() const {
   for (std::vector<ash::SystemTrayItem*>::const_iterator it = items_.begin();
-       it != items_.end();
-       ++it) {
+       it != items_.end(); ++it) {
     if ((*it)->ShouldShowShelf())
       return true;
   }

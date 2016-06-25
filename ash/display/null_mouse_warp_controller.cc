@@ -10,7 +10,6 @@ bool NullMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   return false;
 }
 
-void NullMouseWarpController::SetEnabled(bool enable) {
-}
+void NullMouseWarpController::SetEnabled(bool enable) {}
 
 }  // namespace ash

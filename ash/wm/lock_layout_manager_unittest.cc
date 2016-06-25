@@ -31,8 +31,7 @@ const int kVirtualKeyboardHeight = 100;
 // A login implementation of WidgetDelegate.
 class LoginTestWidgetDelegate : public views::WidgetDelegate {
  public:
-  explicit LoginTestWidgetDelegate(views::Widget* widget) : widget_(widget) {
-  }
+  explicit LoginTestWidgetDelegate(views::Widget* widget) : widget_(widget) {}
   ~LoginTestWidgetDelegate() override {}
 
   // Overridden from WidgetDelegate:
@@ -69,8 +68,9 @@ class LockLayoutManagerTest : public AshTestBase {
 
   aura::Window* CreateTestLoginWindow(views::Widget::InitParams params,
                                       bool use_delegate) {
-    aura::Window* parent = Shell::GetPrimaryRootWindowController()->
-        GetContainer(ash::kShellWindowId_LockScreenContainer);
+    aura::Window* parent =
+        Shell::GetPrimaryRootWindowController()->GetContainer(
+            ash::kShellWindowId_LockScreenContainer);
     params.parent = parent;
     views::Widget* widget = new views::Widget;
     if (use_delegate)
@@ -201,7 +201,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   // When virtual keyboard overscroll is enabled keyboard bounds should not
   // affect window bounds.
   keyboard::SetKeyboardOverscrollOverride(
-       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_ENABLED);
+      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_ENABLED);
   ShowKeyboard(true);
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
   gfx::Rect keyboard_bounds =
@@ -215,7 +215,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   // 1. Set up login screen defaults: VK override disabled
   // 2. Show/hide keyboard, make sure that no stale keyboard bounds are cached.
   keyboard::SetKeyboardOverscrollOverride(
-       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
+      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
   ShowKeyboard(true);
   ShowKeyboard(false);
   ash::DisplayManager* display_manager =
@@ -233,10 +233,10 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   // When virtual keyboard overscroll is disabled keyboard bounds do
   // affect window bounds.
   keyboard::SetKeyboardOverscrollOverride(
-       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
+      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
   ShowKeyboard(true);
   keyboard::KeyboardController* keyboard =
-        keyboard::KeyboardController::GetInstance();
+      keyboard::KeyboardController::GetInstance();
   primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   gfx::Rect target_bounds(screen_bounds);

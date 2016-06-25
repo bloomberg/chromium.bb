@@ -16,9 +16,7 @@
 namespace ash {
 
 OverflowBubble::OverflowBubble()
-    : bubble_(NULL),
-      anchor_(NULL),
-      shelf_view_(NULL) {
+    : bubble_(NULL), anchor_(NULL), shelf_view_(NULL) {
   Shell::GetInstance()->AddPointerWatcher(this);
 }
 

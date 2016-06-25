@@ -20,8 +20,7 @@ PanelWindowEventHandler::~PanelWindowEventHandler() {}
 
 void PanelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (!event->handled() &&
-      event->type() == ui::ET_MOUSE_PRESSED &&
+  if (!event->handled() && event->type() == ui::ET_MOUSE_PRESSED &&
       event->flags() & ui::EF_IS_DOUBLE_CLICK &&
       event->IsOnlyLeftMouseButton() &&
       target->delegate()->GetNonClientComponent(event->location()) ==
@@ -35,8 +34,7 @@ void PanelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 
 void PanelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (!event->handled() &&
-      event->type() == ui::ET_GESTURE_TAP &&
+  if (!event->handled() && event->type() == ui::ET_GESTURE_TAP &&
       event->details().tap_count() == 2 &&
       target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {

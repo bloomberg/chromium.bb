@@ -18,8 +18,9 @@ void KeyboardBrightnessController::HandleKeyboardBrightnessDown(
         UMA_ACCEL_KEYBOARD_BRIGHTNESS_DOWN_F6);
   }
 
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      DecreaseKeyboardBrightness();
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->DecreaseKeyboardBrightness();
 }
 
 void KeyboardBrightnessController::HandleKeyboardBrightnessUp(
@@ -29,8 +30,9 @@ void KeyboardBrightnessController::HandleKeyboardBrightnessUp(
         UMA_ACCEL_KEYBOARD_BRIGHTNESS_UP_F7);
   }
 
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      IncreaseKeyboardBrightness();
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->IncreaseKeyboardBrightness();
 }
 
 }  // namespace ash

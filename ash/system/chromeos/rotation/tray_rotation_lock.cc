@@ -24,8 +24,7 @@ namespace tray {
 // DetailedView. This was chosen over ActionableView in order to reuse the
 // layout and styling of labels and images. This allows RotationLockDefaultView
 // to maintain the look of other system tray items without code duplication.
-class RotationLockDefaultView : public TrayItemMore,
-                                public ShellObserver {
+class RotationLockDefaultView : public TrayItemMore, public ShellObserver {
  public:
   explicit RotationLockDefaultView(SystemTrayItem* owner);
   ~RotationLockDefaultView() override;
@@ -46,8 +45,9 @@ class RotationLockDefaultView : public TrayItemMore,
 RotationLockDefaultView::RotationLockDefaultView(SystemTrayItem* owner)
     : TrayItemMore(owner, false) {
   UpdateImage();
-  SetVisible(Shell::GetInstance()->maximize_mode_controller()->
-                 IsMaximizeModeWindowManagerEnabled());
+  SetVisible(Shell::GetInstance()
+                 ->maximize_mode_controller()
+                 ->IsMaximizeModeWindowManagerEnabled());
   WmShell::Get()->AddShellObserver(this);
 }
 
@@ -79,14 +79,14 @@ void RotationLockDefaultView::UpdateImage() {
   if (Shell::GetInstance()
           ->screen_orientation_controller()
           ->rotation_locked()) {
-    SetImage(bundle.GetImageNamed(
-        IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED_DARK).ToImageSkia());
+    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED_DARK)
+                 .ToImageSkia());
     label = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED);
     SetLabel(label);
     SetAccessibleName(label);
   } else {
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_AUTO_ROTATION_DARK).
-        ToImageSkia());
+    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_AUTO_ROTATION_DARK)
+                 .ToImageSkia());
     label = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO);
     SetLabel(label);
     SetAccessibleName(label);

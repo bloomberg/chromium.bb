@@ -34,9 +34,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   ~TestWidgetDelegate() override {}
 
   // views::WidgetDelegateView:
-  bool CanResize() const override {
-    return true;
-  }
+  bool CanResize() const override { return true; }
 
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
@@ -60,8 +58,8 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
         test::ShellTestApi(Shell::GetInstance()).workspace_controller();
     WorkspaceEventHandler* event_handler =
         WorkspaceControllerTestHelper(wc).GetEventHandler();
-    resize_controller_ = WorkspaceEventHandlerTestHelper(event_handler).
-        resize_controller();
+    resize_controller_ =
+        WorkspaceEventHandlerTestHelper(event_handler).resize_controller();
   }
 
  protected:
@@ -76,21 +74,13 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
     return window;
   }
 
-  void ShowNow() {
-    resize_controller_->ShowNow();
-  }
+  void ShowNow() { resize_controller_->ShowNow(); }
 
-  bool IsShowing() {
-    return resize_controller_->IsShowing();
-  }
+  bool IsShowing() { return resize_controller_->IsShowing(); }
 
-  bool HasPendingShow() {
-    return resize_controller_->show_timer_.IsRunning();
-  }
+  bool HasPendingShow() { return resize_controller_->show_timer_.IsRunning(); }
 
-  void Hide() {
-    resize_controller_->Hide();
-  }
+  void Hide() { resize_controller_->Hide(); }
 
   bool HasTarget(aura::Window* window) {
     if (!resize_controller_->windows_.is_valid())

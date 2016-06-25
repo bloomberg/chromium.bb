@@ -51,11 +51,7 @@ class ASH_EXPORT FrameSizeButton : public FrameCaptionButton {
   }
 
  private:
-  enum SnapType {
-    SNAP_LEFT,
-    SNAP_RIGHT,
-    SNAP_NONE
-  };
+  enum SnapType { SNAP_LEFT, SNAP_RIGHT, SNAP_NONE };
 
   // Starts |set_buttons_to_snap_mode_timer_|.
   void StartSetButtonsToSnapModeTimer(const ui::LocatedEvent& event);

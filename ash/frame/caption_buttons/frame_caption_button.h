@@ -24,10 +24,7 @@ namespace ash {
 // close).
 class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
  public:
-  enum Animate {
-    ANIMATE_YES,
-    ANIMATE_NO
-  };
+  enum Animate { ANIMATE_YES, ANIMATE_NO };
 
   static const char kViewClassName[];
 
@@ -60,9 +57,7 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
 
   void set_use_light_images(bool light) { use_light_images_ = light; }
 
-  CaptionButtonIcon icon() const {
-    return icon_;
-  }
+  CaptionButtonIcon icon() const { return icon_; }
 
   gfx::VectorIconId icon_image_id() const { return icon_image_id_; }
 

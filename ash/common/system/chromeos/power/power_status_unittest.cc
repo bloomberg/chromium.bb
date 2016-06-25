@@ -98,40 +98,39 @@ TEST_P(PowerStatusTest, InitializeAndUpdate) {
 }
 
 TEST_P(PowerStatusTest, ShouldDisplayBatteryTime) {
-  EXPECT_FALSE(PowerStatus::ShouldDisplayBatteryTime(
-      base::TimeDelta::FromSeconds(-1)));
-  EXPECT_FALSE(PowerStatus::ShouldDisplayBatteryTime(
-      base::TimeDelta::FromSeconds(0)));
-  EXPECT_FALSE(PowerStatus::ShouldDisplayBatteryTime(
-      base::TimeDelta::FromSeconds(59)));
-  EXPECT_TRUE(PowerStatus::ShouldDisplayBatteryTime(
-      base::TimeDelta::FromSeconds(60)));
-  EXPECT_TRUE(PowerStatus::ShouldDisplayBatteryTime(
-      base::TimeDelta::FromSeconds(600)));
+  EXPECT_FALSE(
+      PowerStatus::ShouldDisplayBatteryTime(base::TimeDelta::FromSeconds(-1)));
+  EXPECT_FALSE(
+      PowerStatus::ShouldDisplayBatteryTime(base::TimeDelta::FromSeconds(0)));
+  EXPECT_FALSE(
+      PowerStatus::ShouldDisplayBatteryTime(base::TimeDelta::FromSeconds(59)));
+  EXPECT_TRUE(
+      PowerStatus::ShouldDisplayBatteryTime(base::TimeDelta::FromSeconds(60)));
+  EXPECT_TRUE(
+      PowerStatus::ShouldDisplayBatteryTime(base::TimeDelta::FromSeconds(600)));
   EXPECT_TRUE(PowerStatus::ShouldDisplayBatteryTime(
       base::TimeDelta::FromSeconds(3600)));
   EXPECT_TRUE(PowerStatus::ShouldDisplayBatteryTime(
-      base::TimeDelta::FromSeconds(
-          PowerStatus::kMaxBatteryTimeToDisplaySec)));
-  EXPECT_FALSE(PowerStatus::ShouldDisplayBatteryTime(
-      base::TimeDelta::FromSeconds(
+      base::TimeDelta::FromSeconds(PowerStatus::kMaxBatteryTimeToDisplaySec)));
+  EXPECT_FALSE(
+      PowerStatus::ShouldDisplayBatteryTime(base::TimeDelta::FromSeconds(
           PowerStatus::kMaxBatteryTimeToDisplaySec + 1)));
 }
 
 TEST_P(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
   int hours = 0, minutes = 0;
-  PowerStatus::SplitTimeIntoHoursAndMinutes(
-      base::TimeDelta::FromSeconds(0), &hours, &minutes);
+  PowerStatus::SplitTimeIntoHoursAndMinutes(base::TimeDelta::FromSeconds(0),
+                                            &hours, &minutes);
   EXPECT_EQ(0, hours);
   EXPECT_EQ(0, minutes);
 
-  PowerStatus::SplitTimeIntoHoursAndMinutes(
-      base::TimeDelta::FromSeconds(60), &hours, &minutes);
+  PowerStatus::SplitTimeIntoHoursAndMinutes(base::TimeDelta::FromSeconds(60),
+                                            &hours, &minutes);
   EXPECT_EQ(0, hours);
   EXPECT_EQ(1, minutes);
 
-  PowerStatus::SplitTimeIntoHoursAndMinutes(
-      base::TimeDelta::FromSeconds(3600), &hours, &minutes);
+  PowerStatus::SplitTimeIntoHoursAndMinutes(base::TimeDelta::FromSeconds(3600),
+                                            &hours, &minutes);
   EXPECT_EQ(1, hours);
   EXPECT_EQ(0, minutes);
 

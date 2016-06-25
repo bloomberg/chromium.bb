@@ -14,8 +14,8 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
  public:
   // The action type to perform / check for upon user switching.
   enum ActionType {
-    NO_DIALOG,  // No dialog should be shown.
-    ACCEPT_DIALOG,  // A dialog should be shown and we should accept it.
+    NO_DIALOG,       // No dialog should be shown.
+    ACCEPT_DIALOG,   // A dialog should be shown and we should accept it.
     DECLINE_DIALOG,  // A dialog should be shown and we do not accept it.
   };
   TrySwitchingUserTest()
@@ -29,7 +29,7 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
   void SetUp() override {
     test::AshTestBase::SetUp();
     TrayItemView::DisableAnimationsForTest();
-    SystemTray* system_tray =  Shell::GetInstance()->GetPrimarySystemTray();
+    SystemTray* system_tray = Shell::GetInstance()->GetPrimarySystemTray();
     share_item_ = system_tray->GetScreenShareItem();
     capture_item_ = system_tray->GetScreenCaptureItem();
     EXPECT_TRUE(share_item_);
@@ -39,47 +39,36 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
   // Accessing the capture session functionality.
   // Simulates a screen capture session start.
   void StartCaptureSession() {
-    capture_item_->Start(
-        base::Bind(&TrySwitchingUserTest::StopCaptureCallback,
-                   base::Unretained(this)));
+    capture_item_->Start(base::Bind(&TrySwitchingUserTest::StopCaptureCallback,
+                                    base::Unretained(this)));
   }
 
   // The callback which gets called when the screen capture gets stopped.
-  void StopCaptureSession() {
-    capture_item_->Stop();
-  }
+  void StopCaptureSession() { capture_item_->Stop(); }
 
   // Simulates a screen capture session stop.
-  void StopCaptureCallback() {
-    stop_capture_callback_hit_count_++;
-  }
+  void StopCaptureCallback() { stop_capture_callback_hit_count_++; }
 
   // Accessing the share session functionality.
   // Simulate a Screen share session start.
   void StartShareSession() {
-    share_item_->Start(
-        base::Bind(&TrySwitchingUserTest::StopShareCallback,
-                   base::Unretained(this)));
+    share_item_->Start(base::Bind(&TrySwitchingUserTest::StopShareCallback,
+                                  base::Unretained(this)));
   }
 
   // Simulates a screen share session stop.
-  void StopShareSession() {
-    share_item_->Stop();
-  }
+  void StopShareSession() { share_item_->Stop(); }
 
   // The callback which gets called when the screen share gets stopped.
-  void StopShareCallback() {
-    stop_share_callback_hit_count_++;
-  }
+  void StopShareCallback() { stop_share_callback_hit_count_++; }
 
   // Issuing a switch user call which might or might not create a dialog.
   // The passed |action| type parameter defines the outcome (which will be
   // checked) and the action the user will choose.
   void SwitchUser(ActionType action) {
-    TrySwitchingActiveUser(
-        base::Bind(&TrySwitchingUserTest::SwitchCallback,
-                   base::Unretained(this)));
-    switch(action) {
+    TrySwitchingActiveUser(base::Bind(&TrySwitchingUserTest::SwitchCallback,
+                                      base::Unretained(this)));
+    switch (action) {
       case NO_DIALOG:
         EXPECT_TRUE(!TestAndTerminateDesktopCastingWarningForTest(true));
         return;
@@ -93,9 +82,7 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
   }
 
   // Called when the user will get actually switched.
-  void SwitchCallback() {
-    switch_callback_hit_count_++;
-  }
+  void SwitchCallback() { switch_callback_hit_count_++; }
 
   // Various counter accessors.
   int stop_capture_callback_hit_count() const {

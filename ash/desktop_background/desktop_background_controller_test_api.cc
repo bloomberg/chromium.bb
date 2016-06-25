@@ -8,8 +8,7 @@ namespace ash {
 
 DesktopBackgroundController::TestAPI::TestAPI(
     DesktopBackgroundController* controller)
-    : controller_(controller) {
-}
+    : controller_(controller) {}
 
 void DesktopBackgroundController::TestAPI::set_wallpaper_reload_delay_for_test(
     bool value) {

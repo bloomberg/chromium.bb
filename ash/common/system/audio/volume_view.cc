@@ -46,8 +46,8 @@ namespace tray {
 
 class VolumeButton : public views::ToggleImageButton {
  public:
-   VolumeButton(views::ButtonListener* listener,
-                system::TrayAudioDelegate* audio_delegate)
+  VolumeButton(views::ButtonListener* listener,
+               system::TrayAudioDelegate* audio_delegate)
       : views::ToggleImageButton(listener),
         audio_delegate_(audio_delegate),
         image_index_(-1) {
@@ -62,13 +62,15 @@ class VolumeButton : public views::ToggleImageButton {
   void Update() {
     float level =
         static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f;
-    int image_index = audio_delegate_->IsOutputAudioMuted() ?
-        0 : (level == 1.0 ?
-             kVolumeLevels :
-             std::max(1, int(std::ceil(level * (kVolumeLevels - 1)))));
+    int image_index =
+        audio_delegate_->IsOutputAudioMuted()
+            ? 0
+            : (level == 1.0
+                   ? kVolumeLevels
+                   : std::max(1, int(std::ceil(level * (kVolumeLevels - 1)))));
     if (image_index != image_index_) {
-      gfx::Rect region(0, image_index * kVolumeImageHeight,
-                       kVolumeImageWidth, kVolumeImageHeight);
+      gfx::Rect region(0, image_index * kVolumeImageHeight, kVolumeImageWidth,
+                       kVolumeImageHeight);
       gfx::ImageSkia image_skia = gfx::ImageSkiaOperations::ExtractSubset(
           *(image_.ToImageSkia()), region);
       SetImage(views::CustomButton::STATE_NORMAL, &image_skia);
@@ -150,8 +152,9 @@ VolumeView::VolumeView(SystemTrayItem* owner,
 
   more_ = new views::ImageView;
   more_->EnableCanvasFlippingForRTLUI(true);
-  more_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_AURA_UBER_TRAY_MORE).ToImageSkia());
+  more_->SetImage(ui::ResourceBundle::GetSharedInstance()
+                      .GetImageNamed(IDR_AURA_UBER_TRAY_MORE)
+                      .ToImageSkia());
   more_region_->AddChildView(more_);
 
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -159,8 +162,7 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   Update();
 }
 
-VolumeView::~VolumeView() {
-}
+VolumeView::~VolumeView() {}
 
 void VolumeView::Update() {
   icon_->Update();
@@ -174,7 +176,7 @@ void VolumeView::SetVolumeLevel(float percent) {
   // there will be a small discrepancy between slider's value and volume level
   // on audio side. To avoid the jittering in slider UI, do not set change
   // slider value if the change is less than 1%.
-  if (std::abs(percent-slider_->value()) < 0.01)
+  if (std::abs(percent - slider_->value()) < 0.01)
     return;
   slider_->SetValue(percent);
   // It is possible that the volume was (un)muted, but the actual volume level
@@ -200,9 +202,9 @@ void VolumeView::UpdateDeviceTypeAndMore() {
   int device_icon = audio_delegate_->GetActiveOutputDeviceIconId();
   if (device_icon != system::TrayAudioDelegate::kNoAudioDeviceIcon) {
     device_type_->SetVisible(true);
-    device_type_->SetImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            device_icon).ToImageSkia());
+    device_type_->SetImage(ui::ResourceBundle::GetSharedInstance()
+                               .GetImageNamed(device_icon)
+                               .ToImageSkia());
     more_region_->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
   } else {

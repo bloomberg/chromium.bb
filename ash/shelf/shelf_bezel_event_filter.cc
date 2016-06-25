@@ -13,10 +13,8 @@
 
 namespace ash {
 
-ShelfBezelEventFilter::ShelfBezelEventFilter(
-    ShelfLayoutManager* shelf)
-    : shelf_(shelf),
-      in_touch_drag_(false) {
+ShelfBezelEventFilter::ShelfBezelEventFilter(ShelfLayoutManager* shelf)
+    : shelf_(shelf), in_touch_drag_(false) {
   Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
@@ -24,8 +22,7 @@ ShelfBezelEventFilter::~ShelfBezelEventFilter() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-void ShelfBezelEventFilter::OnGestureEvent(
-    ui::GestureEvent* event) {
+void ShelfBezelEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   gfx::Point point_in_screen(event->location());
   aura::Window* target = static_cast<aura::Window*>(event->target());
   ::wm::ConvertPointToScreen(target, &point_in_screen);

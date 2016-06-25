@@ -20,8 +20,7 @@ TrayPopupLabelButton::TrayPopupLabelButton(views::ButtonListener* listener,
   set_animate_on_state_change(false);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor,
-      gfx::Insets(1, 1, 2, 2)));
+      kFocusBorderColor, gfx::Insets(1, 1, 2, 2)));
 }
 
 TrayPopupLabelButton::~TrayPopupLabelButton() {}

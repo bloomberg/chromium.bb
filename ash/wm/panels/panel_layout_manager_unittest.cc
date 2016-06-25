@@ -51,8 +51,8 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test::AshTestBase::SetUp();
     ASSERT_TRUE(test::TestShelfDelegate::instance());
 
-    shelf_view_test_.reset(new test::ShelfViewTestAPI(
-        GetShelfView(Shelf::ForPrimaryDisplay())));
+    shelf_view_test_.reset(
+        new test::ShelfViewTestAPI(GetShelfView(Shelf::ForPrimaryDisplay())));
     shelf_view_test_->SetAnimationDuration(1);
   }
 
@@ -100,8 +100,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
     gfx::Rect panel_bounds_in_screen = panel->GetBoundsInScreen();
     gfx::Point screen_bottom_right = gfx::Point(
-        panel_bounds_in_screen.right(),
-        panel_bounds_in_screen.bottom());
+        panel_bounds_in_screen.right(), panel_bounds_in_screen.bottom());
     gfx::Rect display_bounds = display.bounds();
     EXPECT_TRUE(screen_bottom_right.x() < display_bounds.width() &&
                 screen_bottom_right.y() < display_bounds.height());
@@ -175,12 +174,10 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
     if (IsHorizontal(alignment)) {
       EXPECT_NEAR(icon_bounds.CenterPoint().x(),
-                  widget->GetWindowBoundsInScreen().CenterPoint().x(),
-                  1);
+                  widget->GetWindowBoundsInScreen().CenterPoint().x(), 1);
     } else {
       EXPECT_NEAR(icon_bounds.CenterPoint().y(),
-                  widget->GetWindowBoundsInScreen().CenterPoint().y(),
-                  1);
+                  widget->GetWindowBoundsInScreen().CenterPoint().y(), 1);
     }
   }
 
@@ -189,9 +186,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     return widget->IsVisible();
   }
 
-  test::ShelfViewTestAPI* shelf_view_test() {
-    return shelf_view_test_.get();
-  }
+  test::ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
 
   // Clicks the shelf items on |shelf_view| that is associated with given
   // |window|.
@@ -312,8 +307,7 @@ TEST_F(PanelLayoutManagerTest, PanelAlignsToHiddenLauncherIconSecondDisplay) {
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(panel.get()));
   gfx::Rect shelf_visible_position = panel->GetBoundsInScreen();
 
-  SetShelfAutoHideBehavior(root_windows[1],
-                           SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  SetShelfAutoHideBehavior(root_windows[1], SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   // Expect the panel X position to remain the same after the shelf is hidden
   // but the Y to move down.
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(panel.get()));
@@ -585,8 +579,7 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
       CreatePanelWindow(gfx::Rect(600, 0, 50, 50)));
 
   ShelfView* shelf_view_1st = GetShelfView(Shelf::ForPrimaryDisplay());
-  ShelfView* shelf_view_2nd =
-      GetShelfView(Shelf::ForWindow(root_windows[1]));
+  ShelfView* shelf_view_2nd = GetShelfView(Shelf::ForWindow(root_windows[1]));
 
   EXPECT_EQ(root_windows[0], p1_d1->GetRootWindow());
   EXPECT_EQ(root_windows[0], p2_d1->GetRootWindow());
@@ -781,8 +774,8 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
   SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_BOTTOM);
   gfx::Rect bounds(w->bounds());
   ui::TouchEvent touch(ui::ET_TOUCH_PRESSED,
-                       gfx::Point(bounds.right() + 3, bounds.y() + 2),
-                       0, ui::EventTimeForNow());
+                       gfx::Point(bounds.right() + 3, bounds.y() + 2), 0,
+                       ui::EventTimeForNow());
   ui::EventTarget* target = targeter->FindTargetForEvent(root, &touch);
   EXPECT_EQ(w.get(), target);
 
@@ -816,7 +809,8 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
   EXPECT_NE(w.get(), target);
 }
 
-INSTANTIATE_TEST_CASE_P(LtrRtl, PanelLayoutManagerTextDirectionTest,
+INSTANTIATE_TEST_CASE_P(LtrRtl,
+                        PanelLayoutManagerTextDirectionTest,
                         testing::Bool());
 
 }  // namespace ash

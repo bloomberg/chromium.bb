@@ -75,11 +75,9 @@ class UserMetricsRecorderTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(UserMetricsRecorderTest);
 };
 
-UserMetricsRecorderTest::UserMetricsRecorderTest() {
-}
+UserMetricsRecorderTest::UserMetricsRecorderTest() {}
 
-UserMetricsRecorderTest::~UserMetricsRecorderTest() {
-}
+UserMetricsRecorderTest::~UserMetricsRecorderTest() {}
 
 void UserMetricsRecorderTest::SetUp() {
   test::AshTestBase::SetUp();

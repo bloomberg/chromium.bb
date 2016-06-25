@@ -25,11 +25,9 @@ LoginStatus g_initial_status = LoginStatus::USER;
 TestSystemTrayDelegate::TestSystemTrayDelegate()
     : should_show_display_notification_(false),
       login_status_(g_initial_status),
-      session_length_limit_set_(false) {
-}
+      session_length_limit_set_(false) {}
 
-TestSystemTrayDelegate::~TestSystemTrayDelegate() {
-}
+TestSystemTrayDelegate::~TestSystemTrayDelegate() {}
 
 // static
 void TestSystemTrayDelegate::SetInitialLoginStatus(LoginStatus login_status) {

@@ -246,8 +246,7 @@ void RotateScreen(int64_t display_id,
 ScreenRotationAnimator::ScreenRotationAnimator(int64_t display_id)
     : display_id_(display_id) {}
 
-ScreenRotationAnimator::~ScreenRotationAnimator() {
-}
+ScreenRotationAnimator::~ScreenRotationAnimator() {}
 
 bool ScreenRotationAnimator::CanAnimate() const {
   return Shell::GetInstance()

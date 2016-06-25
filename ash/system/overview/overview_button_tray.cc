@@ -118,16 +118,12 @@ void OverviewButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
 void OverviewButtonTray::SetIconBorderForShelfAlignment() {
   if (IsHorizontalAlignment(shelf_alignment())) {
     icon_->SetBorder(views::Border::CreateEmptyBorder(
-        kHorizontalShelfVerticalPadding,
-        kHorizontalShelfHorizontalPadding,
-        kHorizontalShelfVerticalPadding,
-        kHorizontalShelfHorizontalPadding));
+        kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding,
+        kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding));
   } else {
     icon_->SetBorder(views::Border::CreateEmptyBorder(
-        kVerticalShelfVerticalPadding,
-        kVerticalShelfHorizontalPadding,
-        kVerticalShelfVerticalPadding,
-        kVerticalShelfHorizontalPadding));
+        kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding,
+        kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding));
   }
 }
 

@@ -25,8 +25,7 @@ const SessionStateAnimator::Container
         SessionStateAnimator::LOCK_SCREEN_BACKGROUND,
         SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::LOCK_SCREEN_RELATED_CONTAINERS,
-        SessionStateAnimator::ROOT_CONTAINER
-    };
+        SessionStateAnimator::ROOT_CONTAINER};
 
 // A simple SessionStateAnimator::AnimationSequence that tracks the number of
 // attached sequences.  The callback will be invoked if all animations complete
@@ -38,14 +37,11 @@ class TestSessionStateAnimator::AnimationSequence
       : SessionStateAnimator::AnimationSequence(callback),
         sequence_count_(0),
         sequence_aborted_(false),
-        animator_(animator) {
-  }
+        animator_(animator) {}
 
   ~AnimationSequence() override {}
 
-  virtual void SequenceAttached() {
-    ++sequence_count_;
-  }
+  virtual void SequenceAttached() { ++sequence_count_; }
 
   // Notify the sequence that is has completed.
   virtual void SequenceFinished(bool successfully) {
@@ -94,19 +90,15 @@ TestSessionStateAnimator::ActiveAnimation::ActiveAnimation(
       type(type),
       speed(speed),
       success_callback(success_callback),
-      failed_callback(failed_callback) {
-}
+      failed_callback(failed_callback) {}
 
 TestSessionStateAnimator::ActiveAnimation::ActiveAnimation(
     const ActiveAnimation& other) = default;
 
-TestSessionStateAnimator::ActiveAnimation::~ActiveAnimation() {
-}
+TestSessionStateAnimator::ActiveAnimation::~ActiveAnimation() {}
 
 TestSessionStateAnimator::TestSessionStateAnimator()
-    : last_animation_epoch_(0),
-      is_background_hidden_(false) {
-}
+    : last_animation_epoch_(0), is_background_hidden_(false) {}
 
 TestSessionStateAnimator::~TestSessionStateAnimator() {
   CompleteAllAnimations(false);
@@ -120,8 +112,7 @@ void TestSessionStateAnimator::ResetAnimationEpoch() {
 void TestSessionStateAnimator::Advance(const base::TimeDelta& duration) {
   for (ActiveAnimationsMap::iterator container_iter =
            active_animations_.begin();
-       container_iter != active_animations_.end();
-       ++container_iter) {
+       container_iter != active_animations_.end(); ++container_iter) {
     AnimationList::iterator animation_iter = (*container_iter).second.begin();
     while (animation_iter != (*container_iter).second.end()) {
       ActiveAnimation& active_animation = *animation_iter;
@@ -140,8 +131,7 @@ void TestSessionStateAnimator::CompleteAnimations(int animation_epoch,
                                                   bool completed_successfully) {
   for (ActiveAnimationsMap::iterator container_iter =
            active_animations_.begin();
-       container_iter != active_animations_.end();
-       ++container_iter) {
+       container_iter != active_animations_.end(); ++container_iter) {
     AnimationList::iterator animation_iter = (*container_iter).second.begin();
     while (animation_iter != (*container_iter).second.end()) {
       ActiveAnimation active_animation = *animation_iter;
@@ -170,9 +160,8 @@ bool TestSessionStateAnimator::IsContainerAnimated(
       active_animations_.find(container);
   if (container_iter != active_animations_.end()) {
     for (AnimationList::const_iterator animation_iter =
-          (*container_iter).second.begin();
-         animation_iter != (*container_iter).second.end();
-         ++animation_iter) {
+             (*container_iter).second.begin();
+         animation_iter != (*container_iter).second.end(); ++animation_iter) {
       const ActiveAnimation& active_animation = *animation_iter;
       if (active_animation.type == type)
         return true;
@@ -182,7 +171,8 @@ bool TestSessionStateAnimator::IsContainerAnimated(
 }
 
 bool TestSessionStateAnimator::AreContainersAnimated(
-    int container_mask, SessionStateAnimator::AnimationType type) const {
+    int container_mask,
+    SessionStateAnimator::AnimationType type) const {
   for (size_t i = 0; i < arraysize(kAllContainers); ++i) {
     if (container_mask & kAllContainers[i] &&
         !IsContainerAnimated(kAllContainers[i], type)) {
@@ -195,9 +185,8 @@ bool TestSessionStateAnimator::AreContainersAnimated(
 size_t TestSessionStateAnimator::GetAnimationCount() const {
   size_t count = 0;
   for (ActiveAnimationsMap::const_iterator container_iter =
-          active_animations_.begin();
-       container_iter != active_animations_.end();
-       ++container_iter) {
+           active_animations_.begin();
+       container_iter != active_animations_.end(); ++container_iter) {
     count += (*container_iter).second.size();
   }
   return count;
@@ -232,7 +221,7 @@ void TestSessionStateAnimator::StartAnimationWithCallback(
 }
 
 ash::SessionStateAnimator::AnimationSequence*
-    TestSessionStateAnimator::BeginAnimationSequence(base::Closure callback) {
+TestSessionStateAnimator::BeginAnimationSequence(base::Closure callback) {
   return new AnimationSequence(callback, this);
 }
 
@@ -264,7 +253,7 @@ void TestSessionStateAnimator::StartAnimationInSequence(
                      base::Unretained(animation_sequence), false);
       animation_sequence->SequenceAttached();
       AddAnimation(kAllContainers[i], type, speed, success_callback,
-          failed_callback);
+                   failed_callback);
     }
   }
 }
@@ -276,12 +265,8 @@ void TestSessionStateAnimator::AddAnimation(
     base::Closure success_callback,
     base::Closure failed_callback) {
   base::TimeDelta duration = GetDuration(speed);
-  ActiveAnimation active_animation(last_animation_epoch_,
-                                   duration,
-                                   container,
-                                   type,
-                                   speed,
-                                   success_callback,
+  ActiveAnimation active_animation(last_animation_epoch_, duration, container,
+                                   type, speed, success_callback,
                                    failed_callback);
   // This test double is limited to only have one animation active for a given
   // container at a time.

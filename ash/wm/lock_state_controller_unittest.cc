@@ -45,11 +45,11 @@ void CheckCalledCallback(bool* flag) {
 
 class LockStateControllerTest : public AshTestBase {
  public:
-  LockStateControllerTest() : power_button_controller_(NULL),
-                              lock_state_controller_(NULL),
-                              lock_state_controller_delegate_(NULL),
-                              test_animator_(NULL) {
-  }
+  LockStateControllerTest()
+      : power_button_controller_(NULL),
+        lock_state_controller_(NULL),
+        lock_state_controller_delegate_(NULL),
+        test_animator_(NULL) {}
   ~LockStateControllerTest() override {}
 
   void SetUp() override {
@@ -81,7 +81,7 @@ class LockStateControllerTest : public AshTestBase {
 
   int NumShutdownRequests() {
     return lock_state_controller_delegate_->num_shutdown_requests() +
-        shell_delegate_->num_exit_requests();
+           shell_delegate_->num_exit_requests();
   }
 
   void Advance(SessionStateAnimator::AnimationSpeed speed) {
@@ -99,176 +99,152 @@ class LockStateControllerTest : public AshTestBase {
   void ExpectPreLockAnimationStarted() {
     SCOPED_TRACE("Failure in ExpectPreLockAnimationStarted");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_LIFT));
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LAUNCHER,
-            SessionStateAnimator::ANIMATION_FADE_OUT));
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_LIFT));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LAUNCHER,
+        SessionStateAnimator::ANIMATION_FADE_OUT));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
     EXPECT_TRUE(test_api_->is_animating_lock());
   }
 
   void ExpectPreLockAnimationRunning() {
     SCOPED_TRACE("Failure in ExpectPreLockAnimationRunning");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_LIFT));
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LAUNCHER,
-            SessionStateAnimator::ANIMATION_FADE_OUT));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_LIFT));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LAUNCHER,
+        SessionStateAnimator::ANIMATION_FADE_OUT));
     EXPECT_TRUE(test_api_->is_animating_lock());
   }
 
   void ExpectPreLockAnimationCancel() {
     SCOPED_TRACE("Failure in ExpectPreLockAnimationCancel");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_UNDO_LIFT));
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LAUNCHER,
-            SessionStateAnimator::ANIMATION_FADE_IN));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_UNDO_LIFT));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LAUNCHER,
+        SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectPreLockAnimationFinished() {
     SCOPED_TRACE("Failure in ExpectPreLockAnimationFinished");
-    EXPECT_FALSE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_LIFT));
-    EXPECT_FALSE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LAUNCHER,
-            SessionStateAnimator::ANIMATION_FADE_OUT));
-    EXPECT_FALSE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
+    EXPECT_FALSE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_LIFT));
+    EXPECT_FALSE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LAUNCHER,
+        SessionStateAnimator::ANIMATION_FADE_OUT));
+    EXPECT_FALSE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   }
 
   void ExpectPostLockAnimationStarted() {
     SCOPED_TRACE("Failure in ExpectPostLockAnimationStarted");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN));
   }
 
   void ExpectPostLockAnimationFinished() {
     SCOPED_TRACE("Failure in ExpectPostLockAnimationFinished");
-    EXPECT_FALSE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN));
+    EXPECT_FALSE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN));
   }
 
   void ExpectUnlockBeforeUIDestroyedAnimationStarted() {
     SCOPED_TRACE("Failure in ExpectUnlockBeforeUIDestroyedAnimationStarted");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_LIFT));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_LIFT));
   }
 
   void ExpectUnlockBeforeUIDestroyedAnimationFinished() {
     SCOPED_TRACE("Failure in ExpectUnlockBeforeUIDestroyedAnimationFinished");
-    EXPECT_FALSE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_LIFT));
+    EXPECT_FALSE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_LIFT));
   }
 
   void ExpectUnlockAfterUIDestroyedAnimationStarted() {
     SCOPED_TRACE("Failure in ExpectUnlockAfterUIDestroyedAnimationStarted");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_DROP));
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LAUNCHER,
-            SessionStateAnimator::ANIMATION_FADE_IN));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_DROP));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LAUNCHER,
+        SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectUnlockAfterUIDestroyedAnimationFinished() {
     SCOPED_TRACE("Failure in ExpectUnlockAfterUIDestroyedAnimationFinished");
     EXPECT_EQ(0u, test_animator_->GetAnimationCount());
-    EXPECT_FALSE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_DROP));
-    EXPECT_FALSE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::LAUNCHER,
-            SessionStateAnimator::ANIMATION_FADE_IN));
+    EXPECT_FALSE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+        SessionStateAnimator::ANIMATION_DROP));
+    EXPECT_FALSE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::LAUNCHER,
+        SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectShutdownAnimationStarted() {
     SCOPED_TRACE("Failure in ExpectShutdownAnimationStarted");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::ROOT_CONTAINER,
-            SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::ROOT_CONTAINER,
+        SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS));
   }
 
   void ExpectShutdownAnimationFinished() {
     SCOPED_TRACE("Failure in ExpectShutdownAnimationFinished");
     EXPECT_EQ(0u, test_animator_->GetAnimationCount());
-    EXPECT_FALSE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::ROOT_CONTAINER,
-            SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS));
+    EXPECT_FALSE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::ROOT_CONTAINER,
+        SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS));
   }
 
   void ExpectShutdownAnimationCancel() {
     SCOPED_TRACE("Failure in ExpectShutdownAnimationCancel");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::ROOT_CONTAINER,
-            SessionStateAnimator::ANIMATION_UNDO_GRAYSCALE_BRIGHTNESS));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::ROOT_CONTAINER,
+        SessionStateAnimator::ANIMATION_UNDO_GRAYSCALE_BRIGHTNESS));
   }
 
   void ExpectBackgroundIsShowing() {
     SCOPED_TRACE("Failure in ExpectBackgroundIsShowing");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::DESKTOP_BACKGROUND,
-            SessionStateAnimator::ANIMATION_FADE_IN));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::DESKTOP_BACKGROUND,
+        SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectBackgroundIsHiding() {
     SCOPED_TRACE("Failure in ExpectBackgroundIsHiding");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::DESKTOP_BACKGROUND,
-            SessionStateAnimator::ANIMATION_FADE_OUT));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::DESKTOP_BACKGROUND,
+        SessionStateAnimator::ANIMATION_FADE_OUT));
   }
 
   void ExpectRestoringBackgroundVisibility() {
     SCOPED_TRACE("Failure in ExpectRestoringBackgroundVisibility");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(
-        test_animator_->AreContainersAnimated(
-            SessionStateAnimator::DESKTOP_BACKGROUND,
-            SessionStateAnimator::ANIMATION_FADE_IN));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::DESKTOP_BACKGROUND,
+        SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectUnlockedState() {
@@ -283,9 +259,7 @@ class LockStateControllerTest : public AshTestBase {
     EXPECT_TRUE(session_state_delegate_->IsScreenLocked());
   }
 
-  void HideBackground() {
-    test_animator_->HideBackground();
-  }
+  void HideBackground() { test_animator_->HideBackground(); }
 
   void PressPowerButton() {
     power_button_controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
@@ -327,8 +301,9 @@ class LockStateControllerTest : public AshTestBase {
   }
 
   void EnableMaximizeMode(bool enable) {
-    Shell::GetInstance()->maximize_mode_controller()->
-        EnableMaximizeModeWindowManager(enable);
+    Shell::GetInstance()
+        ->maximize_mode_controller()
+        ->EnableMaximizeModeWindowManager(enable);
   }
 
   void Initialize(bool legacy_button, LoginStatus status) {
@@ -342,10 +317,10 @@ class LockStateControllerTest : public AshTestBase {
   }
 
   PowerButtonController* power_button_controller_;  // not owned
-  LockStateController* lock_state_controller_;  // not owned
+  LockStateController* lock_state_controller_;      // not owned
   TestLockStateControllerDelegate*
-      lock_state_controller_delegate_;  // not owned
-  TestSessionStateAnimator* test_animator_;  // not owned
+      lock_state_controller_delegate_;            // not owned
+  TestSessionStateAnimator* test_animator_;       // not owned
   SessionStateDelegate* session_state_delegate_;  // not owned
   std::unique_ptr<LockStateController::TestApi> test_api_;
   TestShellDelegate* shell_delegate_;  // not owned
@@ -808,10 +783,9 @@ TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
   Initialize(false, LoginStatus::USER);
   lock_state_controller_->OnAppTerminating();
 
-  EXPECT_TRUE(
-      test_animator_->AreContainersAnimated(
-          SessionStateAnimator::kAllNonRootContainersMask,
-          SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
+  EXPECT_TRUE(test_animator_->AreContainersAnimated(
+      SessionStateAnimator::kAllNonRootContainersMask,
+      SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
 }

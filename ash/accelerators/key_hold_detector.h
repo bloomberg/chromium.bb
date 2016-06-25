@@ -59,11 +59,7 @@ class ASH_EXPORT KeyHoldDetector : public ui::EventHandler {
   // INITIAL --(first press)--> PRESSED --(press)-->
   //   HOLD[OnKeyHold] --(press)--> HOLD[OnKeyHold] --(release)-->
   //   INITIAL[OnKeyUnhold]
-  enum State {
-    INITIAL,
-    PRESSED,
-    HOLD
-  };
+  enum State { INITIAL, PRESSED, HOLD };
 
   State state_;
   std::unique_ptr<Delegate> delegate_;

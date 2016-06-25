@@ -220,10 +220,8 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 
   // When a modal window is active, cycling window does not take effect.
-  aura::Window* modal_container =
-      ash::Shell::GetContainer(
-          Shell::GetPrimaryRootWindow(),
-          kShellWindowId_SystemModalContainer);
+  aura::Window* modal_container = ash::Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(), kShellWindowId_SystemModalContainer);
   std::unique_ptr<Window> modal_window(
       CreateTestWindowWithId(-2, modal_container));
   modal_window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
@@ -294,10 +292,8 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopWindow) {
   std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
 
-  Window* top_container =
-      Shell::GetContainer(
-          Shell::GetPrimaryRootWindow(),
-          kShellWindowId_AlwaysOnTopContainer);
+  Window* top_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(), kShellWindowId_AlwaysOnTopContainer);
   std::unique_ptr<Window> window2(CreateTestWindowWithId(2, top_container));
   wm::ActivateWindow(window0.get());
 
@@ -338,10 +334,8 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
   std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
 
-  Window* top_container =
-      Shell::GetContainer(
-          Shell::GetPrimaryRootWindow(),
-          kShellWindowId_AlwaysOnTopContainer);
+  Window* top_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(), kShellWindowId_AlwaysOnTopContainer);
   std::unique_ptr<Window> window2(CreateTestWindowWithId(2, top_container));
   std::unique_ptr<Window> window3(CreateTestWindowWithId(3, top_container));
   wm::ActivateWindow(window0.get());
@@ -397,9 +391,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   EXPECT_EQ(root_windows[0], window0->GetRootWindow());
   Window* top_container0 =
-      Shell::GetContainer(
-          root_windows[0],
-          kShellWindowId_AlwaysOnTopContainer);
+      Shell::GetContainer(root_windows[0], kShellWindowId_AlwaysOnTopContainer);
   std::unique_ptr<Window> window1(CreateTestWindowWithId(1, top_container0));
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
 
@@ -409,9 +401,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 
   Window* top_container1 =
-      Shell::GetContainer(
-          root_windows[1],
-          kShellWindowId_AlwaysOnTopContainer);
+      Shell::GetContainer(root_windows[1], kShellWindowId_AlwaysOnTopContainer);
   std::unique_ptr<Window> window3(CreateTestWindowWithId(3, top_container1));
   EXPECT_EQ(root_windows[1], window3->GetRootWindow());
 
@@ -483,7 +473,6 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   controller->StopCycling();
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-
 
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));

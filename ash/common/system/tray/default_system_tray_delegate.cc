@@ -15,11 +15,9 @@
 namespace ash {
 
 DefaultSystemTrayDelegate::DefaultSystemTrayDelegate()
-    : bluetooth_enabled_(true) {
-}
+    : bluetooth_enabled_(true) {}
 
-DefaultSystemTrayDelegate::~DefaultSystemTrayDelegate() {
-}
+DefaultSystemTrayDelegate::~DefaultSystemTrayDelegate() {}
 
 bool DefaultSystemTrayDelegate::GetTrayVisibilityOnStartup() {
   return true;

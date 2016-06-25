@@ -132,9 +132,9 @@ class PanelWindowResizerTest : public test::AshTestBase {
   void TestWindowOrder(const std::vector<aura::Window*>& window_order) {
     int panel_index = model_->FirstPanelIndex();
     EXPECT_EQ((int)(panel_index + window_order.size()), model_->item_count());
-    for (std::vector<aura::Window*>::const_iterator iter =
-         window_order.begin(); iter != window_order.end();
-         ++iter, ++panel_index) {
+    for (std::vector<aura::Window *>::const_iterator
+             iter = window_order.begin();
+         iter != window_order.end(); ++iter, ++panel_index) {
       ShelfID id = GetShelfIDForWindow(*iter);
       EXPECT_EQ(id, model_->items()[panel_index].id);
     }
@@ -228,20 +228,20 @@ class PanelWindowResizerTransientTest
 // Verifies a window can be dragged from the panel and detached and then
 // reattached.
 TEST_F(PanelWindowResizerTest, PanelDetachReattachBottom) {
- if (!SupportsHostWindowResize())
+  if (!SupportsHostWindowResize())
     return;
 
- std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
- DetachReattachTest(window.get(), 0, -1);
+  std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
+  DetachReattachTest(window.get(), 0, -1);
 }
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
- if (!SupportsHostWindowResize())
+  if (!SupportsHostWindowResize())
     return;
 
- Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
- std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
- DetachReattachTest(window.get(), 1, 0);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
+  DetachReattachTest(window.get(), 1, 0);
 }
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachRight) {
@@ -420,8 +420,7 @@ TEST_F(PanelWindowResizerTest, AttachToSecondFullscreenDisplay) {
   DragStart(window.get());
   DragMove(500, 250);
   EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
-  EXPECT_GT(window->GetBoundsInScreen().y(),
-            initial_bounds.y() + 200);
+  EXPECT_GT(window->GetBoundsInScreen().y(), initial_bounds.y() + 200);
   DragEnd();
 
   // When dropped should move to second display's panel container.
@@ -510,7 +509,7 @@ TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
   // Drag the child to the shelf. Its new position should not be overridden.
   const gfx::Rect attached_bounds(window->GetBoundsInScreen());
   const int dy = window->GetBoundsInScreen().bottom() -
-      child->GetBoundsInScreen().bottom();
+                 child->GetBoundsInScreen().bottom();
   DragStart(child.get());
   DragMove(50, dy);
   // While moving the transient child window should be in the panel container.
@@ -555,7 +554,8 @@ TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
   EXPECT_EQ(kShellWindowId_DefaultContainer, child->parent()->id());
 }
 
-INSTANTIATE_TEST_CASE_P(LtrRtl, PanelWindowResizerTextDirectionTest,
+INSTANTIATE_TEST_CASE_P(LtrRtl,
+                        PanelWindowResizerTextDirectionTest,
                         testing::Bool());
 INSTANTIATE_TEST_CASE_P(NormalPanelPopup,
                         PanelWindowResizerTransientTest,

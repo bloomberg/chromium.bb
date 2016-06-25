@@ -20,10 +20,7 @@ namespace ash {
 // window.
 class ASH_EXPORT FocusCycler {
  public:
-  enum Direction {
-    FORWARD,
-    BACKWARD
-  };
+  enum Direction { FORWARD, BACKWARD };
 
   FocusCycler();
   ~FocusCycler();

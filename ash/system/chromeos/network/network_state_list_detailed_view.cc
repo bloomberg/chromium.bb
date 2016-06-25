@@ -161,8 +161,8 @@ class ScanningThrobber : public ThrobberView {
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetOpacity(1.0);
-    accessible_name_ = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE);
+    accessible_name_ =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE);
   }
   ~ScanningThrobber() override {}
 
@@ -195,8 +195,9 @@ class InfoIcon : public views::ImageButton {
   explicit InfoIcon(views::ButtonListener* listener)
       : views::ImageButton(listener) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    SetImage(STATE_NORMAL, bundle.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_INFO)
-                               .ToImageSkia());
+    SetImage(
+        STATE_NORMAL,
+        bundle.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_INFO).ToImageSkia());
     SetImage(STATE_HOVERED,
              bundle.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER)
                  .ToImageSkia());
@@ -385,9 +386,8 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
     ToggleMobile();
   } else if (sender == settings_) {
     WmShell::Get()->RecordUserMetricsAction(
-        list_type_ == LIST_TYPE_VPN
-            ? UMA_STATUS_AREA_VPN_SETTINGS_CLICKED
-            : UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED);
+        list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_CLICKED
+                                    : UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED);
     delegate->ShowNetworkSettingsForGuid("");
   } else if (sender == proxy_settings_) {
     delegate->ChangeProxySettings();
@@ -580,7 +580,7 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
         // Since the |scanning_throbber_| view is behind the |info_icon_|
         // view, the tooltip text for |info_icon_| will be used for both.
         info_icon_->SetTooltipText(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
+            IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
       } else {
         SetScanningStateForThrobberView(false);
 

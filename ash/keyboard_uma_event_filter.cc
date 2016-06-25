@@ -13,7 +13,6 @@ namespace {
 // These keystrokes are dropped to avoid recording outliers, as well as pauses
 // between actual segments of typing.
 const int kKeystrokeThresholdInSeconds = 5;
-
 }
 
 namespace ash {

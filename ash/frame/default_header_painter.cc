@@ -50,11 +50,14 @@ void TileRoundRect(gfx::Canvas* canvas,
                    int corner_radius) {
   SkRect rect = gfx::RectToSkRect(bounds);
   const SkScalar corner_radius_scalar = SkIntToScalar(corner_radius);
-  SkScalar radii[8] = {
-      corner_radius_scalar, corner_radius_scalar,  // top-left
-      corner_radius_scalar, corner_radius_scalar,  // top-right
-      0, 0,   // bottom-right
-      0, 0};  // bottom-left
+  SkScalar radii[8] = {corner_radius_scalar,
+                       corner_radius_scalar,  // top-left
+                       corner_radius_scalar,
+                       corner_radius_scalar,  // top-right
+                       0,
+                       0,  // bottom-right
+                       0,
+                       0};  // bottom-left
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
   canvas->DrawPath(path, paint);
@@ -87,8 +90,7 @@ DefaultHeaderPainter::DefaultHeaderPainter()
       initial_paint_(true),
       activation_animation_(new gfx::SlideAnimation(this)) {}
 
-DefaultHeaderPainter::~DefaultHeaderPainter() {
-}
+DefaultHeaderPainter::~DefaultHeaderPainter() {}
 
 void DefaultHeaderPainter::Init(
     views::Widget* frame,
@@ -109,7 +111,7 @@ int DefaultHeaderPainter::GetMinimumHeaderWidth() const {
   // Ensure we have enough space for the window icon and buttons. We allow
   // the title string to collapse to zero width.
   return GetTitleBounds().x() +
-      caption_button_container_->GetMinimumSize().width();
+         caption_button_container_->GetMinimumSize().width();
 }
 
 void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
@@ -133,8 +135,9 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
     initial_paint_ = false;
   }
 
-  int corner_radius = (frame_->IsMaximized() || frame_->IsFullscreen()) ?
-      0 : HeaderPainterUtil::GetTopCornerRadiusWhenRestored();
+  int corner_radius = (frame_->IsMaximized() || frame_->IsFullscreen())
+                          ? 0
+                          : HeaderPainterUtil::GetTopCornerRadiusWhenRestored();
 
   SkPaint paint;
   int active_alpha = activation_animation_->CurrentValueBetween(0, 255);
@@ -163,8 +166,7 @@ void DefaultHeaderPainter::LayoutHeader() {
   gfx::Size caption_button_container_size =
       caption_button_container_->GetPreferredSize();
   caption_button_container_->SetBounds(
-      view_->width() - caption_button_container_size.width(),
-      0,
+      view_->width() - caption_button_container_size.width(), 0,
       caption_button_container_size.width(),
       caption_button_container_size.height());
 
@@ -224,46 +226,38 @@ void DefaultHeaderPainter::AnimationProgressed(
 void DefaultHeaderPainter::PaintHighlightForInactiveRestoredWindow(
     gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia top_edge = *rb.GetImageSkiaNamed(
-      IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP);
-  gfx::ImageSkia left_edge = *rb.GetImageSkiaNamed(
-      IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT);
-  gfx::ImageSkia right_edge = *rb.GetImageSkiaNamed(
-      IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT);
-  gfx::ImageSkia bottom_edge = *rb.GetImageSkiaNamed(
-      IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM);
+  gfx::ImageSkia top_edge =
+      *rb.GetImageSkiaNamed(IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP);
+  gfx::ImageSkia left_edge =
+      *rb.GetImageSkiaNamed(IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT);
+  gfx::ImageSkia right_edge =
+      *rb.GetImageSkiaNamed(IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT);
+  gfx::ImageSkia bottom_edge =
+      *rb.GetImageSkiaNamed(IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM);
 
   int left_edge_width = left_edge.width();
   int right_edge_width = right_edge.width();
   canvas->DrawImageInt(left_edge, 0, 0);
   canvas->DrawImageInt(right_edge, view_->width() - right_edge_width, 0);
-  canvas->TileImageInt(
-      top_edge,
-      left_edge_width,
-      0,
-      view_->width() - left_edge_width - right_edge_width,
-      top_edge.height());
+  canvas->TileImageInt(top_edge, left_edge_width, 0,
+                       view_->width() - left_edge_width - right_edge_width,
+                       top_edge.height());
 
   DCHECK_EQ(left_edge.height(), right_edge.height());
   int bottom = left_edge.height();
   int bottom_height = bottom_edge.height();
-  canvas->TileImageInt(
-      bottom_edge,
-      left_edge_width,
-      bottom - bottom_height,
-      view_->width() - left_edge_width - right_edge_width,
-      bottom_height);
+  canvas->TileImageInt(bottom_edge, left_edge_width, bottom - bottom_height,
+                       view_->width() - left_edge_width - right_edge_width,
+                       bottom_height);
 }
 
 void DefaultHeaderPainter::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by its own views::View.
   gfx::Rect title_bounds = GetTitleBounds();
   title_bounds.set_x(view_->GetMirroredXForRect(title_bounds));
-  canvas->DrawStringRectWithFlags(frame_->widget_delegate()->GetWindowTitle(),
-                                  GetTitleFontList(),
-                                  kTitleTextColor,
-                                  title_bounds,
-                                  gfx::Canvas::NO_SUBPIXEL_RENDERING);
+  canvas->DrawStringRectWithFlags(
+      frame_->widget_delegate()->GetWindowTitle(), GetTitleFontList(),
+      kTitleTextColor, title_bounds, gfx::Canvas::NO_SUBPIXEL_RENDERING);
 }
 
 void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
@@ -271,8 +265,8 @@ void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
   const float scale = canvas->UndoDeviceScaleFactor();
   gfx::RectF rect(0, painted_height_ * scale - 1, view_->width() * scale, 1);
   SkPaint paint;
-  paint.setColor((mode_ == MODE_ACTIVE) ?
-      kHeaderContentSeparatorColor : kHeaderContentSeparatorInactiveColor);
+  paint.setColor((mode_ == MODE_ACTIVE) ? kHeaderContentSeparatorColor
+                                        : kHeaderContentSeparatorInactiveColor);
   canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), paint);
 }
 

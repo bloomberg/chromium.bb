@@ -45,7 +45,6 @@ class TrayEnterprise : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TrayEnterprise);
 };
 
-} // namespace ash
+}  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H
-

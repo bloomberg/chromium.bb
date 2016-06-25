@@ -15,9 +15,7 @@ DEFINE_WINDOW_PROPERTY_KEY(ShelfID, kShelfID, kInvalidShelfID);
 
 // ShelfItemDetails for kShelfItemDetaildKey is owned by the window
 // and will be freed automatically.
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(ShelfItemDetails,
-                                 kShelfItemDetailsKey,
-                                 NULL);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(ShelfItemDetails, kShelfItemDetailsKey, NULL);
 
 void SetShelfIDForWindow(ShelfID id, aura::Window* window) {
   if (!window)
@@ -53,8 +51,7 @@ void ClearShelfItemDetailsForWindow(aura::Window* window) {
   window->ClearProperty(kShelfItemDetailsKey);
 }
 
-const ShelfItemDetails* GetShelfItemDetailsForWindow(
-    aura::Window* window) {
+const ShelfItemDetails* GetShelfItemDetailsForWindow(aura::Window* window) {
   return window->GetProperty(kShelfItemDetailsKey);
 }
 

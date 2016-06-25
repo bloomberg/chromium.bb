@@ -42,8 +42,7 @@ class ASH_EXPORT StickyKeysOverlay : public ui::LayerAnimationObserver {
   bool GetModifierVisible(ui::EventFlags modifier);
 
   // Updates the overlay with the current state of a sticky key modifier.
-  void SetModifierKeyState(ui::EventFlags modifier,
-                           StickyKeyState state);
+  void SetModifierKeyState(ui::EventFlags modifier, StickyKeyState state);
 
   // Get the current state of the sticky key modifier in the overlay.
   StickyKeyState GetModifierKeyState(ui::EventFlags modifier);

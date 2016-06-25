@@ -21,14 +21,11 @@ class EmptyBackground : public views::Background {
 
   DISALLOW_COPY_AND_ASSIGN(EmptyBackground);
 };
-
 }
 
 namespace ash {
 
-TrayEmpty::TrayEmpty(SystemTray* system_tray)
-    : SystemTrayItem(system_tray) {
-}
+TrayEmpty::TrayEmpty(SystemTray* system_tray) : SystemTrayItem(system_tray) {}
 
 TrayEmpty::~TrayEmpty() {}
 
@@ -43,8 +40,8 @@ views::View* TrayEmpty::CreateDefaultView(LoginStatus status) {
   views::View* view = new views::View;
   view->set_background(new EmptyBackground());
   view->SetBorder(views::Border::CreateEmptyBorder(10, 0, 0, 0));
-  view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-        0, 0, 0));
+  view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   view->SetPaintToLayer(true);
   view->layer()->SetFillsBoundsOpaquely(false);
   return view;

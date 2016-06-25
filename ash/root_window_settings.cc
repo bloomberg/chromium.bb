@@ -13,7 +13,8 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::RootWindowSettings*);
 namespace ash {
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(RootWindowSettings,
-                                 kRootWindowSettingsKey, NULL);
+                                 kRootWindowSettingsKey,
+                                 NULL);
 
 RootWindowSettings::RootWindowSettings()
     : display_id(display::Display::kInvalidDisplayID), controller(NULL) {}

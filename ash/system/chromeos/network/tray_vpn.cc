@@ -116,8 +116,7 @@ TrayVPN::TrayVPN(SystemTray* system_tray)
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
 }
 
-TrayVPN::~TrayVPN() {
-}
+TrayVPN::~TrayVPN() {}
 
 views::View* TrayVPN::CreateTrayView(LoginStatus status) {
   return NULL;
@@ -153,8 +152,7 @@ views::View* TrayVPN::CreateDetailedView(LoginStatus status) {
   return detailed_;
 }
 
-void TrayVPN::DestroyTrayView() {
-}
+void TrayVPN::DestroyTrayView() {}
 
 void TrayVPN::DestroyDefaultView() {
   default_ = NULL;

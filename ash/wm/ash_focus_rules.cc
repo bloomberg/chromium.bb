@@ -33,11 +33,9 @@ bool BelongsToContainerWithEqualOrGreaterId(const aura::Window* window,
 ////////////////////////////////////////////////////////////////////////////////
 // AshFocusRules, public:
 
-AshFocusRules::AshFocusRules() {
-}
+AshFocusRules::AshFocusRules() {}
 
-AshFocusRules::~AshFocusRules() {
-}
+AshFocusRules::~AshFocusRules() {}
 
 bool AshFocusRules::IsWindowConsideredActivatable(aura::Window* window) const {
   return ash::IsWindowConsideredActivatable(WmWindowAura::Get(window));
@@ -125,7 +123,7 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
   aura::Window::Windows containers = Shell::GetContainersFromAllRootWindows(
       kActivatableShellWindowIds[index], root);
   for (aura::Window::Windows::const_iterator iter = containers.begin();
-        iter != containers.end() && !window; ++iter) {
+       iter != containers.end() && !window; ++iter) {
     window = GetTopmostWindowToActivateInContainer((*iter), ignore);
   }
   return window;
@@ -136,11 +134,9 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateInContainer(
     aura::Window* ignore) const {
   for (aura::Window::Windows::const_reverse_iterator i =
            container->children().rbegin();
-       i != container->children().rend();
-       ++i) {
+       i != container->children().rend(); ++i) {
     WindowState* window_state = GetWindowState(*i);
-    if (*i != ignore &&
-        window_state->CanActivate() &&
+    if (*i != ignore && window_state->CanActivate() &&
         !window_state->IsMinimized())
       return *i;
   }

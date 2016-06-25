@@ -57,20 +57,23 @@ WidgetsWindow::WidgetsWindow()
       disabled_button_(
           new views::LabelButton(NULL, base::ASCIIToUTF16("Disabled button"))),
       checkbox_(new views::Checkbox(base::ASCIIToUTF16("Checkbox"))),
-      checkbox_disabled_(new views::Checkbox(
-          base::ASCIIToUTF16("Checkbox disabled"))),
-      checkbox_checked_(new views::Checkbox(
-          base::ASCIIToUTF16("Checkbox checked"))),
-      checkbox_checked_disabled_(new views::Checkbox(
-          base::ASCIIToUTF16("Checkbox checked disabled"))),
-      radio_button_(new views::RadioButton(
-          base::ASCIIToUTF16("Radio button"), 0)),
-      radio_button_disabled_(new views::RadioButton(
-          base::ASCIIToUTF16("Radio button disabled"), 0)),
-      radio_button_selected_(new views::RadioButton(
-          base::ASCIIToUTF16("Radio button selected"), 0)),
+      checkbox_disabled_(
+          new views::Checkbox(base::ASCIIToUTF16("Checkbox disabled"))),
+      checkbox_checked_(
+          new views::Checkbox(base::ASCIIToUTF16("Checkbox checked"))),
+      checkbox_checked_disabled_(
+          new views::Checkbox(base::ASCIIToUTF16("Checkbox checked disabled"))),
+      radio_button_(
+          new views::RadioButton(base::ASCIIToUTF16("Radio button"), 0)),
+      radio_button_disabled_(
+          new views::RadioButton(base::ASCIIToUTF16("Radio button disabled"),
+                                 0)),
+      radio_button_selected_(
+          new views::RadioButton(base::ASCIIToUTF16("Radio button selected"),
+                                 0)),
       radio_button_selected_disabled_(new views::RadioButton(
-          base::ASCIIToUTF16("Radio button selected disabled"), 1)) {
+          base::ASCIIToUTF16("Radio button selected disabled"),
+          1)) {
   button_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(button_);
   disabled_button_->SetEnabled(false);
@@ -94,8 +97,7 @@ WidgetsWindow::WidgetsWindow()
   AddChildView(radio_button_selected_disabled_);
 }
 
-WidgetsWindow::~WidgetsWindow() {
-}
+WidgetsWindow::~WidgetsWindow() {}
 
 void WidgetsWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), SK_ColorWHITE);
@@ -136,9 +138,8 @@ namespace shell {
 
 void CreateWidgetsWindow() {
   gfx::Rect bounds(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight);
-  views::Widget* widget =
-      views::Widget::CreateWindowWithContextAndBounds(
-          new WidgetsWindow, Shell::GetPrimaryRootWindow(), bounds);
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      new WidgetsWindow, Shell::GetPrimaryRootWindow(), bounds);
   widget->GetNativeView()->SetName("WidgetsWindow");
   widget->Show();
 }

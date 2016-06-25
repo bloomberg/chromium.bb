@@ -138,8 +138,7 @@ ScreenOrientationControllerTest::ScreenOrientationControllerTest() {
   webview_test_helper_.reset(new views::WebViewTestHelper());
 }
 
-ScreenOrientationControllerTest::~ScreenOrientationControllerTest() {
-}
+ScreenOrientationControllerTest::~ScreenOrientationControllerTest() {}
 
 content::WebContents* ScreenOrientationControllerTest::CreateWebContents() {
   return views::ViewsDelegate::GetInstance()->CreateWebContents(
@@ -645,14 +644,16 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
 
   test::ScopedSetInternalDisplayId set_internal(kInternalDisplayId);
 
-  ASSERT_NE(kNewRotation, display_manager->GetDisplayInfo(kInternalDisplayId)
-                              .GetActiveRotation());
+  ASSERT_NE(
+      kNewRotation,
+      display_manager->GetDisplayInfo(kInternalDisplayId).GetActiveRotation());
 
   Shell::GetInstance()->screen_orientation_controller()->SetDisplayRotation(
       kNewRotation, display::Display::ROTATION_SOURCE_ACTIVE);
 
-  EXPECT_EQ(kNewRotation, display_manager->GetDisplayInfo(kInternalDisplayId)
-                              .GetActiveRotation());
+  EXPECT_EQ(
+      kNewRotation,
+      display_manager->GetDisplayInfo(kInternalDisplayId).GetActiveRotation());
 }
 
 }  // namespace ash

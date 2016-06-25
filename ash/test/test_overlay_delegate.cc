@@ -7,8 +7,7 @@
 namespace ash {
 namespace test {
 
-TestOverlayDelegate::TestOverlayDelegate()
-    : cancel_count_(0) {}
+TestOverlayDelegate::TestOverlayDelegate() : cancel_count_(0) {}
 TestOverlayDelegate::~TestOverlayDelegate() {}
 
 int TestOverlayDelegate::GetCancelCountAndReset() {

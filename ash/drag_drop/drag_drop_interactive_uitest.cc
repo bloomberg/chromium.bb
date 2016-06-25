@@ -86,23 +86,20 @@ void QuitLoop() {
 }
 
 void DragDropAcrossMultiDisplay_Step4() {
-  ui_controls::SendMouseEventsNotifyWhenDone(
-      ui_controls::LEFT, ui_controls::UP,
-      base::Bind(&QuitLoop));
+  ui_controls::SendMouseEventsNotifyWhenDone(ui_controls::LEFT, ui_controls::UP,
+                                             base::Bind(&QuitLoop));
 }
 
 void DragDropAcrossMultiDisplay_Step3() {
   // Move to the edge of the 1st display so that the mouse
   // is moved to 2nd display by ash.
   ui_controls::SendMouseMoveNotifyWhenDone(
-      399, 10,
-      base::Bind(&DragDropAcrossMultiDisplay_Step4));
+      399, 10, base::Bind(&DragDropAcrossMultiDisplay_Step4));
 }
 
 void DragDropAcrossMultiDisplay_Step2() {
   ui_controls::SendMouseMoveNotifyWhenDone(
-      20, 10,
-      base::Bind(&DragDropAcrossMultiDisplay_Step3));
+      20, 10, base::Bind(&DragDropAcrossMultiDisplay_Step3));
 }
 
 void DragDropAcrossMultiDisplay_Step1() {

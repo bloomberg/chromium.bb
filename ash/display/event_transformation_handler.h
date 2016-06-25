@@ -17,10 +17,10 @@ namespace ash {
 class ASH_EXPORT EventTransformationHandler : public ui::EventHandler {
  public:
   enum TransformationMode {
-    TRANSFORM_AUTO,   // Transform events by the default amount.
-                      // 1. Linear scaling w.r.t. the device scale factor.
-                      // 2. Add 20% more for non-integrated displays.
-    TRANSFORM_NONE,   // No transformation.
+    TRANSFORM_AUTO,  // Transform events by the default amount.
+                     // 1. Linear scaling w.r.t. the device scale factor.
+                     // 2. Add 20% more for non-integrated displays.
+    TRANSFORM_NONE,  // No transformation.
   };
 
   EventTransformationHandler();

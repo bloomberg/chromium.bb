@@ -76,11 +76,10 @@ TEST_P(WindowStateTest, SnapWindowBasic) {
   WindowState* window_state = GetWindowState(window.get());
   const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
-  gfx::Rect expected = gfx::Rect(
-      kPrimaryDisplayWorkAreaBounds.x(),
-      kPrimaryDisplayWorkAreaBounds.y(),
-      kPrimaryDisplayWorkAreaBounds.width() / 2,
-      kPrimaryDisplayWorkAreaBounds.height());
+  gfx::Rect expected = gfx::Rect(kPrimaryDisplayWorkAreaBounds.x(),
+                                 kPrimaryDisplayWorkAreaBounds.y(),
+                                 kPrimaryDisplayWorkAreaBounds.width() / 2,
+                                 kPrimaryDisplayWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
   const WMEvent snap_right(WM_EVENT_SNAP_RIGHT);
@@ -93,12 +92,11 @@ TEST_P(WindowStateTest, SnapWindowBasic) {
                             ScreenUtil::GetSecondaryDisplay());
 
   window_state->OnWMEvent(&snap_right);
-  expected = gfx::Rect(
-      kSecondaryDisplayWorkAreaBounds.x() +
-          kSecondaryDisplayWorkAreaBounds.width() / 2,
-      kSecondaryDisplayWorkAreaBounds.y(),
-      kSecondaryDisplayWorkAreaBounds.width() / 2,
-      kSecondaryDisplayWorkAreaBounds.height());
+  expected = gfx::Rect(kSecondaryDisplayWorkAreaBounds.x() +
+                           kSecondaryDisplayWorkAreaBounds.width() / 2,
+                       kSecondaryDisplayWorkAreaBounds.y(),
+                       kSecondaryDisplayWorkAreaBounds.width() / 2,
+                       kSecondaryDisplayWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
   window_state->OnWMEvent(&snap_left);
@@ -126,10 +124,9 @@ TEST_P(WindowStateTest, SnapWindowMinimumSize) {
   EXPECT_TRUE(window_state->CanSnap());
   const WMEvent snap_right(WM_EVENT_SNAP_RIGHT);
   window_state->OnWMEvent(&snap_right);
-  gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x() + 1,
-                                 kWorkAreaBounds.y(),
-                                 kWorkAreaBounds.width() - 1,
-                                 kWorkAreaBounds.height());
+  gfx::Rect expected =
+      gfx::Rect(kWorkAreaBounds.x() + 1, kWorkAreaBounds.y(),
+                kWorkAreaBounds.width() - 1, kWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
   // It should not be possible to snap a window with a maximum size, or if it
@@ -219,10 +216,9 @@ TEST_P(WindowStateTest, SnapWindowSetBounds) {
   const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
   EXPECT_EQ(WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
-  gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x(),
-                                 kWorkAreaBounds.y(),
-                                 kWorkAreaBounds.width() / 2,
-                                 kWorkAreaBounds.height());
+  gfx::Rect expected =
+      gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),
+                kWorkAreaBounds.width() / 2, kWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
   // Snapped windows can have any width.
@@ -289,10 +285,8 @@ TEST_P(WindowStateTest, AutoManaged) {
   const gfx::Rect kWorkAreaBounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   gfx::Rect expected_snapped_bounds(
-      kWorkAreaBounds.x() + kWorkAreaBounds.width() / 2,
-      kWorkAreaBounds.y(),
-      kWorkAreaBounds.width() / 2,
-      kWorkAreaBounds.height());
+      kWorkAreaBounds.x() + kWorkAreaBounds.width() / 2, kWorkAreaBounds.y(),
+      kWorkAreaBounds.width() / 2, kWorkAreaBounds.height());
   EXPECT_EQ(expected_snapped_bounds.ToString(),
             window->GetBoundsInScreen().ToString());
 

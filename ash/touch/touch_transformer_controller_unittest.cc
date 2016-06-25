@@ -46,8 +46,7 @@ TEST_F(TouchTransformerControllerTest, MirrorModeLetterboxing) {
       CreateDisplayInfo(1, 10u, gfx::Rect(0, 0, 1920, 1200));
   internal_display_info.set_is_aspect_preserving_scaling(true);
   std::vector<DisplayMode> internal_modes;
-  internal_modes.push_back(
-      DisplayMode(gfx::Size(2560, 1700), 60, false, true));
+  internal_modes.push_back(DisplayMode(gfx::Size(2560, 1700), 60, false, true));
   internal_modes.push_back(
       DisplayMode(gfx::Size(1920, 1200), 60, false, false));
   internal_display_info.SetDisplayModes(internal_modes);
@@ -117,10 +116,8 @@ TEST_F(TouchTransformerControllerTest, MirrorModePillarboxing) {
       CreateDisplayInfo(1, 10, gfx::Rect(0, 0, 1024, 768));
   internal_display_info.set_is_aspect_preserving_scaling(true);
   std::vector<DisplayMode> internal_modes;
-  internal_modes.push_back(
-      DisplayMode(gfx::Size(1366, 768), 60, false, true));
-  internal_modes.push_back(
-      DisplayMode(gfx::Size(1024, 768), 60, false, false));
+  internal_modes.push_back(DisplayMode(gfx::Size(1366, 768), 60, false, true));
+  internal_modes.push_back(DisplayMode(gfx::Size(1024, 768), 60, false, false));
   internal_display_info.SetDisplayModes(internal_modes);
 
   DisplayInfo external_display_info =

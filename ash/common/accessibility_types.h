@@ -20,7 +20,7 @@ enum AccessibilityAlert {
 
 // Note: Do not change these values; UMA and prefs depend on them.
 enum MagnifierType {
-  MAGNIFIER_FULL    = 1,
+  MAGNIFIER_FULL = 1,
   MAGNIFIER_PARTIAL = 2,
 };
 

@@ -44,9 +44,7 @@ TEST_F(DefaultHeaderPainterTest, TitleIconAlignment) {
   w->Show();
 
   DefaultHeaderPainter painter;
-  painter.Init(w.get(),
-               w->non_client_view()->frame_view(),
-               &container);
+  painter.Init(w.get(), w->non_client_view()->frame_view(), &container);
   painter.UpdateLeftHeaderView(&window_icon);
   painter.LayoutHeader();
   gfx::Rect title_bounds = painter.GetTitleBounds();

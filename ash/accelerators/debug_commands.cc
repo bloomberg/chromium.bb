@@ -67,8 +67,7 @@ void PrintWindowHierarchy(aura::Window* window,
        << " type=" << window->type()
        << (wm::IsActiveWindow(window) ? " [active] " : " ")
        << (window->IsVisible() ? " visible " : " ")
-       << window->bounds().ToString()
-       << '\n';
+       << window->bounds().ToString() << '\n';
 
   for (size_t i = 0; i < window->children().size(); ++i)
     PrintWindowHierarchy(window->children()[i], indent + 3, out);
@@ -108,8 +107,9 @@ void HandleToggleDesktopBackgroundMode() {
       Shell::GetInstance()->desktop_background_controller();
   switch (++index % 4) {
     case 0:
-      ash::Shell::GetInstance()->user_wallpaper_delegate()->
-          InitializeWallpaper();
+      ash::Shell::GetInstance()
+          ->user_wallpaper_delegate()
+          ->InitializeWallpaper();
       break;
     case 1:
       desktop_background_controller->SetWallpaperImage(

@@ -34,9 +34,7 @@ const unsigned int kTouchPadDeviceId = 1;
 
 class StickyKeysTest : public test::AshTestBase {
  protected:
-  StickyKeysTest()
-      : target_(NULL),
-        root_window_(NULL) {}
+  StickyKeysTest() : target_(NULL), root_window_(NULL) {}
 
   void SetUp() override {
     test::AshTestBase::SetUp();
@@ -80,11 +78,7 @@ class StickyKeysTest : public test::AshTestBase {
   ui::MouseEvent* GenerateMouseEventAt(ui::EventType type,
                                        const gfx::Point& location) {
 #if defined(USE_X11)
-    scoped_xevent_.InitGenericButtonEvent(
-        kTouchPadDeviceId,
-        type,
-        location,
-        0);
+    scoped_xevent_.InitGenericButtonEvent(kTouchPadDeviceId, type, location, 0);
     return new ui::MouseEvent(scoped_xevent_);
 #else
     return GenerateSynthesizedMouseEventAt(type, location);
@@ -94,8 +88,8 @@ class StickyKeysTest : public test::AshTestBase {
   ui::MouseWheelEvent* GenerateMouseWheelEvent(int wheel_delta) {
 #if defined(USE_X11)
     EXPECT_NE(0, wheel_delta);
-    scoped_xevent_.InitGenericMouseWheelEvent(
-        kTouchPadDeviceId, wheel_delta, 0);
+    scoped_xevent_.InitGenericMouseWheelEvent(kTouchPadDeviceId, wheel_delta,
+                                              0);
     ui::MouseWheelEvent* event = new ui::MouseWheelEvent(scoped_xevent_);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
@@ -107,12 +101,12 @@ class StickyKeysTest : public test::AshTestBase {
 
   ui::ScrollEvent* GenerateScrollEvent(int scroll_delta) {
 #if defined(USE_X11)
-    scoped_xevent_.InitScrollEvent(kTouchPadDeviceId, // deviceid
-                                   0,               // x_offset
-                                   scroll_delta,    // y_offset
-                                   0,               // x_offset_ordinal
-                                   scroll_delta,    // y_offset_ordinal
-                                   2);              // finger_count
+    scoped_xevent_.InitScrollEvent(kTouchPadDeviceId,  // deviceid
+                                   0,                  // x_offset
+                                   scroll_delta,       // y_offset
+                                   0,                  // x_offset_ordinal
+                                   scroll_delta,       // y_offset_ordinal
+                                   2);                 // finger_count
     ui::ScrollEvent* event = new ui::ScrollEvent(scoped_xevent_);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
@@ -131,16 +125,14 @@ class StickyKeysTest : public test::AshTestBase {
 #endif
   }
 
-  ui::ScrollEvent* GenerateFlingScrollEvent(int fling_delta,
-                                            bool is_cancel) {
+  ui::ScrollEvent* GenerateFlingScrollEvent(int fling_delta, bool is_cancel) {
 #if defined(USE_X11)
-    scoped_xevent_.InitFlingScrollEvent(
-        kTouchPadDeviceId, // deviceid
-        0,               // x_velocity
-        fling_delta,     // y_velocity
-        0,               // x_velocity_ordinal
-        fling_delta,     // y_velocity_ordinal
-        is_cancel);      // is_cancel
+    scoped_xevent_.InitFlingScrollEvent(kTouchPadDeviceId,  // deviceid
+                                        0,                  // x_velocity
+                                        fling_delta,        // y_velocity
+                                        0,            // x_velocity_ordinal
+                                        fling_delta,  // y_velocity_ordinal
+                                        is_cancel);   // is_cancel
     ui::ScrollEvent* event = new ui::ScrollEvent(scoped_xevent_);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
@@ -551,7 +543,7 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
     EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
     ev.reset(GenerateMouseEvent(ui::ET_MOUSE_RELEASED));
     released = false;
-  mod_down_flags = 0;
+    mod_down_flags = 0;
     sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
     EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
@@ -565,7 +557,7 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
     sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
     ev.reset(GenerateMouseWheelEvent(-ui::MouseWheelEvent::kWheelDelta));
     released = false;
-  mod_down_flags = 0;
+    mod_down_flags = 0;
     sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
     EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
@@ -611,7 +603,7 @@ TEST_F(StickyKeysTest, ScrollEventOneshot) {
     for (int j = 0; j < 3; ++j) {
       ev.reset(GenerateScrollEvent(scroll_deltas[i]));
       released = false;
-  mod_down_flags = 0;
+      mod_down_flags = 0;
       sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
       EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
       EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
@@ -620,7 +612,7 @@ TEST_F(StickyKeysTest, ScrollEventOneshot) {
     // Fling start event ends scroll sequence.
     ev.reset(GenerateFlingScrollEvent(scroll_deltas[i], false));
     released = false;
-  mod_down_flags = 0;
+    mod_down_flags = 0;
     sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
     EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -658,7 +650,7 @@ TEST_F(StickyKeysTest, ScrollDirectionChanged) {
     for (int j = 0; j < 3; ++j) {
       ev.reset(GenerateScrollEvent(10));
       released = false;
-  mod_down_flags = 0;
+      mod_down_flags = 0;
       sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
       EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
       EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
@@ -666,7 +658,7 @@ TEST_F(StickyKeysTest, ScrollDirectionChanged) {
 
     ev.reset(GenerateScrollEvent(direction_change_values[i]));
     released = false;
-  mod_down_flags = 0;
+    mod_down_flags = 0;
     sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
     EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
   }
@@ -692,7 +684,7 @@ TEST_F(StickyKeysTest, ScrollEventLocked) {
 
     ev.reset(GenerateScrollEvent(10));
     released = false;
-  mod_down_flags = 0;
+    mod_down_flags = 0;
     sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
     EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
     ev.reset(GenerateScrollEvent(-10));

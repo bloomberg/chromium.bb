@@ -20,12 +20,10 @@ ContextMenu::ContextMenu(WmShelf* wm_shelf)
   AddCheckItemWithStringId(MENU_AUTO_HIDE,
                            IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
-                         IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
-                         &alignment_menu_);
+                         IDS_ASH_SHELF_CONTEXT_MENU_POSITION, &alignment_menu_);
 }
 
-ContextMenu::~ContextMenu() {
-}
+ContextMenu::~ContextMenu() {}
 
 bool ContextMenu::IsCommandIdChecked(int command_id) const {
   if (command_id == MENU_AUTO_HIDE)

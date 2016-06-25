@@ -42,7 +42,7 @@ class ASH_EXPORT ResizeShadowController : public aura::WindowObserver {
   void OnWindowDestroyed(aura::Window* window) override;
 
  private:
-  typedef std::map<aura::Window*, linked_ptr<ResizeShadow> > WindowShadowMap;
+  typedef std::map<aura::Window*, linked_ptr<ResizeShadow>> WindowShadowMap;
 
   // Creates a shadow for a given window and returns it.  |window_shadows_|
   // owns the memory.

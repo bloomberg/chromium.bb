@@ -35,8 +35,7 @@ class StatusAreaWidgetDelegateAnimationSettings
       : ui::ScopedLayerAnimationSettings(layer->GetAnimator()) {
     SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
-    SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     SetTweenType(gfx::Tween::EASE_IN_OUT);
   }
 
@@ -59,8 +58,7 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate()
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {
-}
+StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {}
 
 void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
     const FocusCycler* focus_cycler) {
@@ -98,8 +96,7 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
   return focus_cycler->widget_activating() == GetWidget();
 }
 
-void StatusAreaWidgetDelegate::DeleteDelegate() {
-}
+void StatusAreaWidgetDelegate::DeleteDelegate() {}
 
 void StatusAreaWidgetDelegate::AddTray(views::View* tray) {
   SetLayoutManager(NULL);  // Reset layout manager before adding a child.

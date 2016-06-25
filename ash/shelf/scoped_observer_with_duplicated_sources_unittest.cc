@@ -20,16 +20,10 @@ class TestSource {
   TestSource() : observer_count_(0) {}
   ~TestSource() {}
 
-  void AddObserver(TestObserver* observer) {
-    observer_count_++;
-  }
-  void RemoveObserver(TestObserver* observer) {
-    observer_count_--;
-  }
+  void AddObserver(TestObserver* observer) { observer_count_++; }
+  void RemoveObserver(TestObserver* observer) { observer_count_--; }
 
-  int GetObserverCount() {
-    return observer_count_;
-  }
+  int GetObserverCount() { return observer_count_; }
 
  private:
   int observer_count_;
@@ -42,8 +36,8 @@ TEST(ScopedObserverWithDuplicatedSourcesTest, DuplicatedSource) {
   TestSource source1;
   TestSource source2;
 
-  ScopedObserverWithDuplicatedSources<TestSource, TestObserver>
-      observers(&observer);
+  ScopedObserverWithDuplicatedSources<TestSource, TestObserver> observers(
+      &observer);
   EXPECT_EQ(0, source1.GetObserverCount());
   EXPECT_FALSE(observers.IsObserving(&source1));
   EXPECT_EQ(0, source2.GetObserverCount());

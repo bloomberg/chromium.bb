@@ -10,7 +10,6 @@ namespace system {
 
 class ASH_EXPORT TrayAudioDelegate {
  public:
-
   enum { kNoAudioDeviceIcon = -1 };
   enum AudioChannelMode {
     NORMAL,

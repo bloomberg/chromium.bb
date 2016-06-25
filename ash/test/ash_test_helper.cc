@@ -68,8 +68,7 @@ AshTestHelper::AshTestHelper(base::MessageLoopForUI* message_loop)
   aura::test::InitializeAuraEventGeneratorDelegate();
 }
 
-AshTestHelper::~AshTestHelper() {
-}
+AshTestHelper::~AshTestHelper() {}
 
 void AshTestHelper::SetUp(bool start_session) {
   ResetDisplayIdForTest();

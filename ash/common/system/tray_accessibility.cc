@@ -74,10 +74,10 @@ class DefaultAccessibilityView : public TrayItemMore {
   explicit DefaultAccessibilityView(SystemTrayItem* owner)
       : TrayItemMore(owner, true) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK).
-                    ToImageSkia());
-    base::string16 label = bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
+    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK)
+                 .ToImageSkia());
+    base::string16 label =
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
     SetLabel(label);
     SetAccessibleName(label);
     set_id(test::kAccessibilityTrayItemViewId);
@@ -203,11 +203,9 @@ void AccessibilityDetailedView::AppendHelpEntries() {
     return;
 
   views::View* bottom_row = new View();
-  views::BoxLayout* layout = new
-      views::BoxLayout(views::BoxLayout::kHorizontal,
-                       kTrayMenuBottomRowPadding,
-                       kTrayMenuBottomRowPadding,
-                       kTrayMenuBottomRowPaddingBetweenItems);
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kTrayMenuBottomRowPadding,
+      kTrayMenuBottomRowPadding, kTrayMenuBottomRowPaddingBetweenItems);
   layout->SetDefaultFlex(1);
   bottom_row->SetLayoutManager(layout);
 
@@ -215,15 +213,13 @@ void AccessibilityDetailedView::AppendHelpEntries() {
 
   TrayPopupLabelButton* help = new TrayPopupLabelButton(
       this,
-      bundle.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LEARN_MORE));
+      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LEARN_MORE));
   bottom_row->AddChildView(help);
   help_view_ = help;
 
   TrayPopupLabelButton* settings = new TrayPopupLabelButton(
       this,
-      bundle.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS));
+      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS));
   bottom_row->AddChildView(settings);
   settings_view_ = settings;
 
@@ -246,39 +242,38 @@ void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
     TransitionToDefaultView();
   } else if (sender == spoken_feedback_view_) {
     WmShell::Get()->RecordUserMetricsAction(
-        delegate->IsSpokenFeedbackEnabled() ?
-            ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK :
-            ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK);
+        delegate->IsSpokenFeedbackEnabled()
+            ? ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK
+            : ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK);
     delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
   } else if (sender == high_contrast_view_) {
     WmShell::Get()->RecordUserMetricsAction(
-        delegate->IsHighContrastEnabled() ?
-            ash::UMA_STATUS_AREA_DISABLE_HIGH_CONTRAST :
-            ash::UMA_STATUS_AREA_ENABLE_HIGH_CONTRAST);
+        delegate->IsHighContrastEnabled()
+            ? ash::UMA_STATUS_AREA_DISABLE_HIGH_CONTRAST
+            : ash::UMA_STATUS_AREA_ENABLE_HIGH_CONTRAST);
     delegate->ToggleHighContrast();
   } else if (sender == screen_magnifier_view_) {
     WmShell::Get()->RecordUserMetricsAction(
-        delegate->IsMagnifierEnabled() ?
-            ash::UMA_STATUS_AREA_DISABLE_MAGNIFIER :
-            ash::UMA_STATUS_AREA_ENABLE_MAGNIFIER);
+        delegate->IsMagnifierEnabled() ? ash::UMA_STATUS_AREA_DISABLE_MAGNIFIER
+                                       : ash::UMA_STATUS_AREA_ENABLE_MAGNIFIER);
     delegate->SetMagnifierEnabled(!delegate->IsMagnifierEnabled());
   } else if (large_cursor_view_ && sender == large_cursor_view_) {
     WmShell::Get()->RecordUserMetricsAction(
-        delegate->IsLargeCursorEnabled() ?
-            ash::UMA_STATUS_AREA_DISABLE_LARGE_CURSOR :
-            ash::UMA_STATUS_AREA_ENABLE_LARGE_CURSOR);
+        delegate->IsLargeCursorEnabled()
+            ? ash::UMA_STATUS_AREA_DISABLE_LARGE_CURSOR
+            : ash::UMA_STATUS_AREA_ENABLE_LARGE_CURSOR);
     delegate->SetLargeCursorEnabled(!delegate->IsLargeCursorEnabled());
   } else if (autoclick_view_ && sender == autoclick_view_) {
     WmShell::Get()->RecordUserMetricsAction(
-        delegate->IsAutoclickEnabled() ?
-            ash::UMA_STATUS_AREA_DISABLE_AUTO_CLICK :
-            ash::UMA_STATUS_AREA_ENABLE_AUTO_CLICK);
+        delegate->IsAutoclickEnabled()
+            ? ash::UMA_STATUS_AREA_DISABLE_AUTO_CLICK
+            : ash::UMA_STATUS_AREA_ENABLE_AUTO_CLICK);
     delegate->SetAutoclickEnabled(!delegate->IsAutoclickEnabled());
   } else if (virtual_keyboard_view_ && sender == virtual_keyboard_view_) {
     WmShell::Get()->RecordUserMetricsAction(
-        delegate->IsVirtualKeyboardEnabled() ?
-            ash::UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD :
-            ash::UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD);
+        delegate->IsVirtualKeyboardEnabled()
+            ? ash::UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD
+            : ash::UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD);
     delegate->SetVirtualKeyboardEnabled(!delegate->IsVirtualKeyboardEnabled());
   }
 }

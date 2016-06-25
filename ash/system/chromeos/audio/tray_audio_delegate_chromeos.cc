@@ -9,7 +9,7 @@
 
 using chromeos::CrasAudioHandler;
 
-namespace ash  {
+namespace ash {
 namespace system {
 
 void TrayAudioDelegateChromeOs::AdjustOutputVolumeToAudibleLevel() {
@@ -40,7 +40,6 @@ int TrayAudioDelegateChromeOs::GetActiveOutputDeviceIconId() {
   else
     return kNoAudioDeviceIcon;
 }
-
 
 bool TrayAudioDelegateChromeOs::HasAlternativeSources() {
   CrasAudioHandler* audio_handler = CrasAudioHandler::Get();

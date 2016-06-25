@@ -32,8 +32,7 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(UIControlsAura, kUIControlsKey, NULL);
 // kUIControlsKey is owned property and UIControls object
 // will be deleted when the root window is deleted.
 UIControlsAura* GetUIControlsForRootWindow(aura::Window* root_window) {
-  UIControlsAura* native_ui_control =
-      root_window->GetProperty(kUIControlsKey);
+  UIControlsAura* native_ui_control = root_window->GetProperty(kUIControlsKey);
   if (!native_ui_control) {
     native_ui_control =
         aura::test::CreateUIControlsAura(root_window->GetHost());
@@ -54,8 +53,7 @@ UIControlsAura* GetUIControlsAt(const gfx::Point& point_in_screen) {
 
 class UIControlsAsh : public UIControlsAura {
  public:
-  UIControlsAsh() {
-  }
+  UIControlsAsh() {}
   ~UIControlsAsh() override {}
 
   // UIControslAura overrides:
@@ -65,8 +63,8 @@ class UIControlsAsh : public UIControlsAura {
                     bool shift,
                     bool alt,
                     bool command) override {
-    return SendKeyPressNotifyWhenDone(
-        window, key, control, shift, alt, command, base::Closure());
+    return SendKeyPressNotifyWhenDone(window, key, control, shift, alt, command,
+                                      base::Closure());
   }
 
   bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
@@ -79,8 +77,9 @@ class UIControlsAsh : public UIControlsAura {
     aura::Window* root =
         window ? window->GetRootWindow() : ash::Shell::GetTargetRootWindow();
     UIControlsAura* ui_controls = GetUIControlsForRootWindow(root);
-    return ui_controls && ui_controls->SendKeyPressNotifyWhenDone(
-        window, key, control, shift, alt, command, closure);
+    return ui_controls &&
+           ui_controls->SendKeyPressNotifyWhenDone(window, key, control, shift,
+                                                   alt, command, closure);
   }
 
   bool SendMouseMove(long x, long y) override {
@@ -95,7 +94,7 @@ class UIControlsAsh : public UIControlsAura {
     gfx::Point p(x, y);
     UIControlsAura* ui_controls = GetUIControlsAt(p);
     return ui_controls &&
-        ui_controls->SendMouseMoveNotifyWhenDone(p.x(), p.y(), closure);
+           ui_controls->SendMouseMoveNotifyWhenDone(p.x(), p.y(), closure);
   }
 
   bool SendMouseEvents(MouseButton type, int state) override {
@@ -109,8 +108,8 @@ class UIControlsAsh : public UIControlsAura {
                                      const base::Closure& closure) override {
     gfx::Point p(aura::Env::GetInstance()->last_mouse_location());
     UIControlsAura* ui_controls = GetUIControlsAt(p);
-    return ui_controls && ui_controls->SendMouseEventsNotifyWhenDone(
-        type, state, closure);
+    return ui_controls &&
+           ui_controls->SendMouseEventsNotifyWhenDone(type, state, closure);
   }
 
   bool SendMouseClick(MouseButton type) override {
@@ -121,8 +120,8 @@ class UIControlsAsh : public UIControlsAura {
 
   void RunClosureAfterAllPendingUIEvents(
       const base::Closure& closure) override {
-    UIControlsAura* ui_controls = GetUIControlsForRootWindow(
-        ash::Shell::GetTargetRootWindow());
+    UIControlsAura* ui_controls =
+        GetUIControlsForRootWindow(ash::Shell::GetTargetRootWindow());
     if (ui_controls)
       ui_controls->RunClosureAfterAllPendingUIEvents(closure);
   }

@@ -20,13 +20,11 @@ const float kSwipeThresholdPixels = 300;
 
 OverviewGestureHandler::OverviewGestureHandler() : scroll_x_(0), scroll_y_(0) {}
 
-OverviewGestureHandler::~OverviewGestureHandler() {
-}
+OverviewGestureHandler::~OverviewGestureHandler() {}
 
 bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   if (event.type() == ui::ET_SCROLL_FLING_START ||
-      event.type() == ui::ET_SCROLL_FLING_CANCEL ||
-      event.finger_count() != 3) {
+      event.type() == ui::ET_SCROLL_FLING_CANCEL || event.finger_count() != 3) {
     scroll_x_ = scroll_y_ = 0;
     return false;
   }

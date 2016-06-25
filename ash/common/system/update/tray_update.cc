@@ -23,20 +23,19 @@ namespace {
 int DecideResource(ash::UpdateInfo::UpdateSeverity severity, bool dark) {
   switch (severity) {
     case ash::UpdateInfo::UPDATE_NORMAL:
-      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK:
-                    IDR_AURA_UBER_TRAY_UPDATE;
+      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK : IDR_AURA_UBER_TRAY_UPDATE;
 
     case ash::UpdateInfo::UPDATE_LOW_GREEN:
-      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_GREEN :
-                    IDR_AURA_UBER_TRAY_UPDATE_GREEN;
+      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_GREEN
+                  : IDR_AURA_UBER_TRAY_UPDATE_GREEN;
 
     case ash::UpdateInfo::UPDATE_HIGH_ORANGE:
-      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_ORANGE :
-                    IDR_AURA_UBER_TRAY_UPDATE_ORANGE;
+      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_ORANGE
+                  : IDR_AURA_UBER_TRAY_UPDATE_ORANGE;
 
     case ash::UpdateInfo::UPDATE_SEVERE_RED:
-      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_RED :
-                    IDR_AURA_UBER_TRAY_UPDATE_RED;
+      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_RED
+                  : IDR_AURA_UBER_TRAY_UPDATE_RED;
   }
 
   NOTREACHED() << "Unknown update severity level.";
@@ -46,10 +45,9 @@ int DecideResource(ash::UpdateInfo::UpdateSeverity severity, bool dark) {
 class UpdateView : public ash::ActionableView {
  public:
   explicit UpdateView(const ash::UpdateInfo& info) {
-    SetLayoutManager(new
-        views::BoxLayout(views::BoxLayout::kHorizontal,
-        ash::kTrayPopupPaddingHorizontal, 0,
-        ash::kTrayPopupPaddingBetweenItems));
+    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                          ash::kTrayPopupPaddingHorizontal, 0,
+                                          ash::kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     views::ImageView* image =
@@ -79,7 +77,6 @@ class UpdateView : public ash::ActionableView {
 
   DISALLOW_COPY_AND_ASSIGN(UpdateView);
 };
-
 }
 
 namespace ash {

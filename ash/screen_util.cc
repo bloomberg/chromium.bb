@@ -81,19 +81,19 @@ gfx::Rect ScreenUtil::GetShelfDisplayBoundsInRoot(aura::Window* window) {
 
 // static
 gfx::Rect ScreenUtil::ConvertRectToScreen(aura::Window* window,
-                                         const gfx::Rect& rect) {
+                                          const gfx::Rect& rect) {
   gfx::Point point = rect.origin();
-  aura::client::GetScreenPositionClient(window->GetRootWindow())->
-      ConvertPointToScreen(window, &point);
+  aura::client::GetScreenPositionClient(window->GetRootWindow())
+      ->ConvertPointToScreen(window, &point);
   return gfx::Rect(point, rect.size());
 }
 
 // static
 gfx::Rect ScreenUtil::ConvertRectFromScreen(aura::Window* window,
-                                           const gfx::Rect& rect) {
+                                            const gfx::Rect& rect) {
   gfx::Point point = rect.origin();
-  aura::client::GetScreenPositionClient(window->GetRootWindow())->
-      ConvertPointFromScreen(window, &point);
+  aura::client::GetScreenPositionClient(window->GetRootWindow())
+      ->ConvertPointFromScreen(window, &point);
   return gfx::Rect(point, rect.size());
 }
 

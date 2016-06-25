@@ -37,14 +37,15 @@ bool use_125_dsf_for_ui_scaling = true;
 
 // Check the content of |spec| and fill |bounds| and |device_scale_factor|.
 // Returns true when |bounds| is found.
-bool GetDisplayBounds(
-    const std::string& spec, gfx::Rect* bounds, float* device_scale_factor) {
+bool GetDisplayBounds(const std::string& spec,
+                      gfx::Rect* bounds,
+                      float* device_scale_factor) {
   int width = 0;
   int height = 0;
   int x = 0;
   int y = 0;
-  if (sscanf(spec.c_str(), "%dx%d*%f",
-             &width, &height, device_scale_factor) >= 2 ||
+  if (sscanf(spec.c_str(), "%dx%d*%f", &width, &height, device_scale_factor) >=
+          2 ||
       sscanf(spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
              device_scale_factor) >= 4) {
     bounds->SetRect(x, y, width, height);
@@ -103,9 +104,8 @@ gfx::Size DisplayMode::GetSizeInDIP(bool is_internal) const {
 
 bool DisplayMode::IsEquivalent(const DisplayMode& other) const {
   const float kEpsilon = 0.0001f;
-  return size == other.size &&
-      std::abs(ui_scale - other.ui_scale) < kEpsilon &&
-      std::abs(device_scale_factor - other.device_scale_factor) < kEpsilon;
+  return size == other.size && std::abs(ui_scale - other.ui_scale) < kEpsilon &&
+         std::abs(device_scale_factor - other.device_scale_factor) < kEpsilon;
 }
 
 // satic
@@ -191,8 +191,8 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
       gfx::Rect mode_bounds;
       std::vector<std::string> resolution = base::SplitString(
           parts[i], "%", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-      if (GetDisplayBounds(
-              resolution[0], &mode_bounds, &mode.device_scale_factor)) {
+      if (GetDisplayBounds(resolution[0], &mode_bounds,
+                           &mode.device_scale_factor)) {
         mode.size = mode_bounds.size();
         if (resolution.size() > 1)
           sscanf(resolution[1].c_str(), "%f", &mode.refresh_rate);
@@ -268,8 +268,7 @@ DisplayInfo::DisplayInfo(int64_t id, const std::string& name, bool has_overscan)
 
 DisplayInfo::DisplayInfo(const DisplayInfo& other) = default;
 
-DisplayInfo::~DisplayInfo() {
-}
+DisplayInfo::~DisplayInfo() {}
 
 void DisplayInfo::SetRotation(display::Display::Rotation rotation,
                               display::Display::RotationSource source) {
@@ -423,12 +422,9 @@ std::string DisplayInfo::ToFullString() const {
   for (; iter != display_modes_.end(); ++iter) {
     if (!display_modes_str.empty())
       display_modes_str += ",";
-    base::StringAppendF(&display_modes_str,
-                        "(%dx%d@%f%c%s)",
-                        iter->size.width(),
-                        iter->size.height(),
-                        iter->refresh_rate,
-                        iter->interlaced ? 'I' : 'P',
+    base::StringAppendF(&display_modes_str, "(%dx%d@%f%c%s)",
+                        iter->size.width(), iter->size.height(),
+                        iter->refresh_rate, iter->interlaced ? 'I' : 'P',
                         iter->native ? "(N)" : "");
   }
   return ToString() + ", display_modes==" + display_modes_str;

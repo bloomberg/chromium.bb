@@ -49,8 +49,8 @@ namespace {
 #if defined(USE_X11)
 // Mirror window shouldn't handle input events.
 void DisableInput(XID window) {
-  long event_mask = ExposureMask | VisibilityChangeMask |
-      StructureNotifyMask | PropertyChangeMask;
+  long event_mask = ExposureMask | VisibilityChangeMask | StructureNotifyMask |
+                    PropertyChangeMask;
   XSelectInput(gfx::GetXDisplay(), window, event_mask);
   unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {0};
   XIEventMask evmask;
@@ -145,15 +145,12 @@ struct MirrorWindowController::MirroringHostInfo {
   aura::Window* mirror_window = nullptr;
 };
 
-MirrorWindowController::MirroringHostInfo::MirroringHostInfo() {
-}
-MirrorWindowController::MirroringHostInfo::~MirroringHostInfo() {
-}
+MirrorWindowController::MirroringHostInfo::MirroringHostInfo() {}
+MirrorWindowController::MirroringHostInfo::~MirroringHostInfo() {}
 
 MirrorWindowController::MirrorWindowController()
     : multi_display_mode_(DisplayManager::EXTENDED),
-      screen_position_client_(new MirroringScreenPositionClient(this)) {
-}
+      screen_position_client_(new MirroringScreenPositionClient(this)) {}
 
 MirrorWindowController::~MirrorWindowController() {
   // Make sure the root window gets deleted before cursor_window_delegate.

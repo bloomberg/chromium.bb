@@ -13,8 +13,7 @@ namespace ash {
 SystemBackgroundController::SystemBackgroundController(
     aura::Window* root_window,
     SkColor color)
-    : root_window_(root_window),
-      layer_(new ui::Layer(ui::LAYER_SOLID_COLOR)) {
+    : root_window_(root_window), layer_(new ui::Layer(ui::LAYER_SOLID_COLOR)) {
   root_window_->AddObserver(this);
   layer_->SetColor(color);
 

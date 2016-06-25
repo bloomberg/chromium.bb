@@ -12,12 +12,10 @@ namespace test {
 ShelfButtonPressedMetricTrackerTestAPI::ShelfButtonPressedMetricTrackerTestAPI(
     ShelfButtonPressedMetricTracker* shelf_button_pressed_metric_tracker)
     : shelf_button_pressed_metric_tracker_(
-          shelf_button_pressed_metric_tracker) {
-}
+          shelf_button_pressed_metric_tracker) {}
 
 ShelfButtonPressedMetricTrackerTestAPI::
-    ~ShelfButtonPressedMetricTrackerTestAPI() {
-}
+    ~ShelfButtonPressedMetricTrackerTestAPI() {}
 
 void ShelfButtonPressedMetricTrackerTestAPI::SetTickClock(
     std::unique_ptr<base::TickClock> tick_clock) {

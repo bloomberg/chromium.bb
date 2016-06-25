@@ -50,7 +50,8 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
     // Right align the caption button container.
     gfx::Size preferred_size = caption_button_container_->GetPreferredSize();
     caption_button_container_->SetBounds(width() - preferred_size.width(), 0,
-        preferred_size.width(), preferred_size.height());
+                                         preferred_size.width(),
+                                         preferred_size.height());
   }
 
   void ViewHierarchyChanged(
@@ -99,8 +100,8 @@ class FrameSizeButtonTest : public AshTestBase {
   // Returns true if all three buttons are in the normal state.
   bool AllButtonsInNormalState() const {
     return minimize_button_->state() == views::Button::STATE_NORMAL &&
-        size_button_->state() == views::Button::STATE_NORMAL &&
-        close_button_->state() == views::Button::STATE_NORMAL;
+           size_button_->state() == views::Button::STATE_NORMAL &&
+           close_button_->state() == views::Button::STATE_NORMAL;
   }
 
   // Creates a widget with |delegate|. The returned widget takes ownership of
@@ -122,16 +123,16 @@ class FrameSizeButtonTest : public AshTestBase {
     AshTestBase::SetUp();
 
     TestWidgetDelegate* delegate = new TestWidgetDelegate();
-    window_state_ = ash::wm::GetWindowState(
-        CreateWidget(delegate)->GetNativeWindow());
+    window_state_ =
+        ash::wm::GetWindowState(CreateWidget(delegate)->GetNativeWindow());
 
     FrameCaptionButtonContainerView::TestApi test(
         delegate->caption_button_container());
 
     minimize_button_ = test.minimize_button();
     size_button_ = test.size_button();
-    static_cast<FrameSizeButton*>(
-        size_button_)->set_delay_to_set_buttons_to_snap_mode(0);
+    static_cast<FrameSizeButton*>(size_button_)
+        ->set_delay_to_set_buttons_to_snap_mode(0);
     close_button_ = test.close_button();
   }
 
@@ -221,20 +222,16 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
 
   // 2) Test with scroll gestures.
   // Snap right.
-  generator.GestureScrollSequence(
-      CenterPointInScreen(size_button()),
-      CenterPointInScreen(close_button()),
-      base::TimeDelta::FromMilliseconds(100),
-      3);
+  generator.GestureScrollSequence(CenterPointInScreen(size_button()),
+                                  CenterPointInScreen(close_button()),
+                                  base::TimeDelta::FromMilliseconds(100), 3);
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED));
 
   // Snap left.
-  generator.GestureScrollSequence(
-      CenterPointInScreen(size_button()),
-      CenterPointInScreen(minimize_button()),
-      base::TimeDelta::FromMilliseconds(100),
-      3);
+  generator.GestureScrollSequence(CenterPointInScreen(size_button()),
+                                  CenterPointInScreen(minimize_button()),
+                                  base::TimeDelta::FromMilliseconds(100), 3);
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED));
 

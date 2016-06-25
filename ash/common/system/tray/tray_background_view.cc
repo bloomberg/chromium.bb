@@ -60,9 +60,7 @@ const char TrayBackgroundView::kViewClassName[] = "tray/TrayBackgroundView";
 // bubble position can be updated.
 class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
  public:
-  explicit TrayWidgetObserver(TrayBackgroundView* host)
-      : host_(host) {
-  }
+  explicit TrayWidgetObserver(TrayBackgroundView* host) : host_(host) {}
 
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override {
@@ -90,9 +88,8 @@ class TrayBackground : public views::Background {
   const static int kImageVertical = 1;
   const static int kNumOrientations = 2;
 
-  explicit TrayBackground(TrayBackgroundView* tray_background_view) :
-      tray_background_view_(tray_background_view) {
-  }
+  explicit TrayBackground(TrayBackgroundView* tray_background_view)
+      : tray_background_view_(tray_background_view) {}
 
   ~TrayBackground() override {}
 
@@ -129,17 +126,18 @@ class TrayBackground : public views::Background {
   void PaintNonMaterial(gfx::Canvas* canvas, views::View* view) const {
     const int kGridSizeForPainter = 9;
     const int kImages[kNumOrientations][kNumStates][kGridSizeForPainter] = {
-      { // Horizontal
-        IMAGE_GRID_HORIZONTAL(IDR_AURA_TRAY_BG_HORIZ),
-        IMAGE_GRID_HORIZONTAL(IDR_AURA_TRAY_BG_HORIZ_ONBLACK),
-        IMAGE_GRID_HORIZONTAL(IDR_AURA_TRAY_BG_HORIZ_PRESSED),
-      },
-      { // Vertical
-        IMAGE_GRID_VERTICAL(IDR_AURA_TRAY_BG_VERTICAL),
-        IMAGE_GRID_VERTICAL(IDR_AURA_TRAY_BG_VERTICAL_ONBLACK),
-        IMAGE_GRID_VERTICAL(IDR_AURA_TRAY_BG_VERTICAL_PRESSED),
-      }
-    };
+        {
+            // Horizontal
+            IMAGE_GRID_HORIZONTAL(IDR_AURA_TRAY_BG_HORIZ),
+            IMAGE_GRID_HORIZONTAL(IDR_AURA_TRAY_BG_HORIZ_ONBLACK),
+            IMAGE_GRID_HORIZONTAL(IDR_AURA_TRAY_BG_HORIZ_PRESSED),
+        },
+        {
+            // Vertical
+            IMAGE_GRID_VERTICAL(IDR_AURA_TRAY_BG_VERTICAL),
+            IMAGE_GRID_VERTICAL(IDR_AURA_TRAY_BG_VERTICAL_ONBLACK),
+            IMAGE_GRID_VERTICAL(IDR_AURA_TRAY_BG_VERTICAL_PRESSED),
+        }};
 
     WmShelf* shelf = GetShelf();
     const int orientation = IsHorizontalAlignment(shelf->GetAlignment())
@@ -289,8 +287,8 @@ void TrayBackgroundView::SetVisible(bool visible) {
   }
 
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-  animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-      kAnimationDurationForVisibilityMs));
+  animation.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kAnimationDurationForVisibilityMs));
   animation.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
@@ -301,7 +299,7 @@ void TrayBackgroundView::SetVisible(bool visible) {
     layer()->GetAnimator()->SchedulePauseForProperties(
         base::TimeDelta::FromMilliseconds(kShowAnimationDelayMs),
         ui::LayerAnimationElement::OPACITY |
-        ui::LayerAnimationElement::TRANSFORM);
+            ui::LayerAnimationElement::TRANSFORM);
     layer()->SetOpacity(1.0f);
     gfx::Transform transform;
     transform.Translate(0.0f, 0.0f);
@@ -352,8 +350,8 @@ void TrayBackgroundView::OnGestureEvent(ui::GestureEvent* event) {
   if (switches::IsTouchFeedbackEnabled()) {
     if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
       SetDrawBackgroundAsActive(true);
-    } else if (event->type() ==  ui::ET_GESTURE_SCROLL_BEGIN ||
-               event->type() ==  ui::ET_GESTURE_TAP_CANCEL) {
+    } else if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+               event->type() == ui::ET_GESTURE_TAP_CANCEL) {
       SetDrawBackgroundAsActive(false);
     }
   }
@@ -388,8 +386,7 @@ void TrayBackgroundView::OnImplicitAnimationsCompleted() {
   // layer()->GetTargetVisibility() can be incorrect if the hide animation was
   // aborted to schedule an animation to become visible. As the new animation
   // is not yet added to the queue. crbug.com/374236
-  if(layer()->GetAnimator()->is_animating() ||
-     layer()->GetTargetVisibility())
+  if (layer()->GetAnimator()->is_animating() || layer()->GetTargetVisibility())
     return;
   views::View::SetVisible(false);
 }
@@ -422,11 +419,9 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
     if (anchor_type == TrayBubbleView::ANCHOR_TYPE_TRAY) {
       if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
         bool rtl = base::i18n::IsRTL();
-        rect.Inset(
-            rtl ? kBubblePaddingHorizontalSide : 0,
-            kBubblePaddingHorizontalBottom,
-            rtl ? 0 : kBubblePaddingHorizontalSide,
-            0);
+        rect.Inset(rtl ? kBubblePaddingHorizontalSide : 0,
+                   kBubblePaddingHorizontalBottom,
+                   rtl ? 0 : kBubblePaddingHorizontalSide, 0);
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
         rect.Inset(0, 0, kBubblePaddingVerticalSide + 4,
                    kBubblePaddingVerticalBottom);
@@ -461,23 +456,20 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
     if (anchor_type == TrayBubbleView::ANCHOR_TYPE_TRAY) {
       if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
         rect = gfx::Rect(
-            base::i18n::IsRTL() ?
-            kPaddingFromRightEdgeOfScreenBottomAlignment :
-            rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
-            rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
-            0, 0);
+            base::i18n::IsRTL()
+                ? kPaddingFromRightEdgeOfScreenBottomAlignment
+                : rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
+            rect.height() - kPaddingFromBottomOfScreenBottomAlignment, 0, 0);
         rect = target_root->ConvertRectToScreen(rect);
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
         rect = gfx::Rect(
             kPaddingFromRightEdgeOfScreenBottomAlignment,
-            rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
-            1, 1);
+            rect.height() - kPaddingFromBottomOfScreenBottomAlignment, 1, 1);
         rect = target_root->ConvertRectToScreen(rect);
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT) {
         rect = gfx::Rect(
             rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
-            rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
-            1, 1);
+            rect.height() - kPaddingFromBottomOfScreenBottomAlignment, 1, 1);
         rect = target_root->ConvertRectToScreen(rect);
       } else {
         // TODO(bruthig) May need to handle other ANCHOR_ALIGNMENT_ values.
@@ -486,11 +478,10 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
       }
     } else {
       rect = gfx::Rect(
-          base::i18n::IsRTL() ?
-          kPaddingFromRightEdgeOfScreenBottomAlignment :
-          rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
-          rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
-          0, 0);
+          base::i18n::IsRTL()
+              ? kPaddingFromRightEdgeOfScreenBottomAlignment
+              : rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
+          rect.height() - kPaddingFromBottomOfScreenBottomAlignment, 0, 0);
     }
   }
   return rect;

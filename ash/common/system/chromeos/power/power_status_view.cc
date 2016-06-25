@@ -75,9 +75,8 @@ void PowerStatusView::LayoutView() {
     AddChildView(icon_);
   } else {
     // PowerStatusView is left aligned on the system tray pop up item.
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                             kTrayPopupPaddingBetweenItems);
+    views::BoxLayout* layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems);
     SetLayoutManager(layout);
 
     icon_ = new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
@@ -108,8 +107,9 @@ void PowerStatusView::UpdateText() {
       battery_time_status =
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
     } else {
-      base::TimeDelta time = status.IsBatteryCharging() ?
-          status.GetBatteryTimeToFull() : status.GetBatteryTimeToEmpty();
+      base::TimeDelta time = status.IsBatteryCharging()
+                                 ? status.GetBatteryTimeToFull()
+                                 : status.GetBatteryTimeToEmpty();
       if (PowerStatus::ShouldDisplayBatteryTime(time) &&
           !status.IsBatteryDischargingOnLinePower()) {
         battery_time_status = l10n_util::GetStringFUTF16(

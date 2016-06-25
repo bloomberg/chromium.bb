@@ -41,8 +41,7 @@ void ShelfItemDelegateManager::SetShelfItemDelegate(
   // |item_delegate|.
   RemoveShelfItemDelegate(id);
 
-  FOR_EACH_OBSERVER(ShelfItemDelegateManagerObserver,
-                    observers_,
+  FOR_EACH_OBSERVER(ShelfItemDelegateManagerObserver, observers_,
                     OnSetShelfItemDelegate(id, item_delegate.get()));
 
   id_to_item_delegate_map_[id] = item_delegate.release();
@@ -61,8 +60,7 @@ void ShelfItemDelegateManager::ShelfItemAdded(int index) {}
 
 void ShelfItemDelegateManager::ShelfItemRemoved(int index, ShelfID id) {
   RemoveShelfItemDelegate(id);
-  FOR_EACH_OBSERVER(ShelfItemDelegateManagerObserver,
-                    observers_,
+  FOR_EACH_OBSERVER(ShelfItemDelegateManagerObserver, observers_,
                     OnSetShelfItemDelegate(id, nullptr));
 }
 

@@ -155,8 +155,8 @@ void AddUserView::AddContent() {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
   add_user_ = new views::View;
-  add_user_->SetBorder(views::Border::CreateEmptyBorder(
-      0, kTrayUserTileHoverBorderInset, 0, 0));
+  add_user_->SetBorder(
+      views::Border::CreateEmptyBorder(0, kTrayUserTileHoverBorderInset, 0, 0));
 
   add_user_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
@@ -196,8 +196,8 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
         login == LoginStatus::PUBLIC ? kPublicAccountBackgroundColor
                                      : kBackgroundColor));
   }
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                                        kTrayPopupPaddingBetweenItems));
   // The logout button must be added before the user card so that the user card
   // can correctly calculate the remaining available width.
   // Note that only the current multiprofile user gets a button.
@@ -338,16 +338,13 @@ void UserView::AddLogoutButton(LoginStatus login) {
   if (login == LoginStatus::PUBLIC) {
     std::unique_ptr<TrayPopupLabelButtonBorder> border(
         new TrayPopupLabelButtonBorder());
-    border->SetPainter(false,
-                       views::Button::STATE_NORMAL,
+    border->SetPainter(false, views::Button::STATE_NORMAL,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesNormal));
-    border->SetPainter(false,
-                       views::Button::STATE_HOVERED,
+    border->SetPainter(false, views::Button::STATE_HOVERED,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesHovered));
-    border->SetPainter(false,
-                       views::Button::STATE_PRESSED,
+    border->SetPainter(false, views::Button::STATE_PRESSED,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesHovered));
     logout_button_->SetBorder(std::move(border));
@@ -357,10 +354,9 @@ void UserView::AddLogoutButton(LoginStatus login) {
 
 void UserView::AddUserCard(LoginStatus login) {
   // Add padding around the panel.
-  SetBorder(views::Border::CreateEmptyBorder(kTrayPopupUserCardVerticalPadding,
-                                             kTrayPopupPaddingHorizontal,
-                                             kTrayPopupUserCardVerticalPadding,
-                                             kTrayPopupPaddingHorizontal));
+  SetBorder(views::Border::CreateEmptyBorder(
+      kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal,
+      kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal));
 
   views::TrayBubbleView* bubble_view =
       owner_->system_tray()->GetSystemBubble()->bubble_view();
@@ -381,8 +377,7 @@ void UserView::AddUserCard(LoginStatus login) {
       SetBorder(views::Border::CreateEmptyBorder(
           kTrayPopupUserCardVerticalPadding,
           kTrayPopupPaddingHorizontal - kTrayUserTileHoverBorderInset,
-          kTrayPopupUserCardVerticalPadding,
-          kTrayPopupPaddingHorizontal));
+          kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal));
       user_card_view_->SetBorder(views::Border::CreateEmptyBorder(
           0, kTrayUserTileHoverBorderInset, 0, 0));
     }
@@ -458,10 +453,9 @@ void UserView::ToggleAddUserMenuOption() {
   SessionStateDelegate::AddUserError add_user_error;
   add_user_enabled_ = delegate->CanAddUserToMultiProfile(&add_user_error);
 
-  ButtonFromView* button = new ButtonFromView(add_user_view,
-                                              add_user_enabled_ ? this : NULL,
-                                              add_user_enabled_,
-                                              gfx::Insets(1, 1, 1, 1));
+  ButtonFromView* button =
+      new ButtonFromView(add_user_view, add_user_enabled_ ? this : NULL,
+                         add_user_enabled_, gfx::Insets(1, 1, 1, 1));
   button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   button->ForceBorderVisible(true);
@@ -492,10 +486,8 @@ void UserView::ToggleAddUserMenuOption() {
 
     popup_message_.reset(new PopupMessage(
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAPTION_CANNOT_ADD_USER),
-        bundle.GetLocalizedString(message_id),
-        PopupMessage::ICON_WARNING,
-        add_user_view->anchor(),
-        views::BubbleBorder::TOP_LEFT,
+        bundle.GetLocalizedString(message_id), PopupMessage::ICON_WARNING,
+        add_user_view->anchor(), views::BubbleBorder::TOP_LEFT,
         gfx::Size(parent()->bounds().width() - kPopupMessageOffset, 0),
         2 * kPopupMessageOffset));
   }

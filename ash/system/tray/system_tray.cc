@@ -96,8 +96,7 @@ class SystemBubbleWrapper {
     bubble_->InitView(anchor, login_status, init_params);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_->bubble_view()));
     // The system bubble should not have an arrow.
-    bubble_->bubble_view()->SetArrowPaintType(
-        views::BubbleBorder::PAINT_NONE);
+    bubble_->bubble_view()->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     is_persistent_ = is_persistent;
 
     // If ChromeVox is enabled, focus the default item if no item is focused and
@@ -126,7 +125,6 @@ class SystemBubbleWrapper {
   DISALLOW_COPY_AND_ASSIGN(SystemBubbleWrapper);
 };
 
-
 // SystemTray
 
 SystemTray::SystemTray(StatusAreaWidget* status_area_widget)
@@ -152,8 +150,7 @@ SystemTray::~SystemTray() {
   system_bubble_.reset();
   notification_bubble_.reset();
   for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
-       it != items_.end();
-       ++it) {
+       it != items_.end(); ++it) {
     (*it)->DestroyTrayView();
   }
 }
@@ -243,18 +240,12 @@ const std::vector<SystemTrayItem*>& SystemTray::GetTrayItems() const {
 
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
   ShowDefaultViewWithOffset(
-      creation_type,
-      TrayBubbleView::InitParams::kArrowDefaultOffset,
-      false);
+      creation_type, TrayBubbleView::InitParams::kArrowDefaultOffset, false);
 }
 
 void SystemTray::ShowPersistentDefaultView() {
-  ShowItems(items_.get(),
-            false,
-            false,
-            BUBBLE_CREATE_NEW,
-            TrayBubbleView::InitParams::kArrowDefaultOffset,
-            true);
+  ShowItems(items_.get(), false, false, BUBBLE_CREATE_NEW,
+            TrayBubbleView::InitParams::kArrowDefaultOffset, true);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
@@ -265,11 +256,11 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
   // The detailed view with timeout means a UI to show the current system state,
   // like the audio level or brightness. Such UI should behave as persistent and
   // keep its own logic for the appearance.
-  bool persistent = (
-      !activate && close_delay > 0 && creation_type == BUBBLE_CREATE_NEW);
+  bool persistent =
+      (!activate && close_delay > 0 && creation_type == BUBBLE_CREATE_NEW);
   items.push_back(item);
-  ShowItems(
-      items, true, activate, creation_type, GetTrayXOffset(item), persistent);
+  ShowItems(items, true, activate, creation_type, GetTrayXOffset(item),
+            persistent);
   if (system_bubble_)
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
@@ -287,8 +278,8 @@ void SystemTray::HideDetailedView(SystemTrayItem* item) {
 }
 
 void SystemTray::ShowNotificationView(SystemTrayItem* item) {
-  if (std::find(notification_items_.begin(), notification_items_.end(), item)
-      != notification_items_.end())
+  if (std::find(notification_items_.begin(), notification_items_.end(), item) !=
+      notification_items_.end())
     return;
   notification_items_.push_back(item);
   UpdateNotificationBubble();
@@ -351,8 +342,7 @@ SystemTrayBubble* SystemTray::GetSystemBubble() {
 }
 
 bool SystemTray::IsAnyBubbleVisible() const {
-  return ((system_bubble_.get() &&
-           system_bubble_->bubble()->IsVisible()) ||
+  return ((system_bubble_.get() && system_bubble_->bubble()->IsVisible()) ||
           (notification_bubble_.get() &&
            notification_bubble_->bubble()->IsVisible()));
 }
@@ -408,8 +398,8 @@ base::string16 SystemTray::GetAccessibleNameForTray() {
 #if defined(OS_CHROMEOS)
   battery = PowerStatus::Get()->GetAccessibleNameString(false);
 #endif
-  return l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION, time, battery);
+  return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION,
+                                    time, battery);
 }
 
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
@@ -455,9 +445,9 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   }
 
   // Destroy any existing bubble and create a new one.
-  SystemTrayBubble::BubbleType bubble_type = detailed ?
-      SystemTrayBubble::BUBBLE_TYPE_DETAILED :
-      SystemTrayBubble::BUBBLE_TYPE_DEFAULT;
+  SystemTrayBubble::BubbleType bubble_type =
+      detailed ? SystemTrayBubble::BUBBLE_TYPE_DETAILED
+               : SystemTrayBubble::BUBBLE_TYPE_DEFAULT;
 
   // Destroy the notification bubble here so that it doesn't get rebuilt
   // while we add items to the main bubble_ (e.g. in HideNotificationView).
@@ -465,8 +455,9 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   if (system_bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
     system_bubble_->bubble()->UpdateView(items, bubble_type);
     // If ChromeVox is enabled, focus the default item if no item is focused.
-    if (Shell::GetInstance()->accessibility_delegate()->
-        IsSpokenFeedbackEnabled()) {
+    if (Shell::GetInstance()
+            ->accessibility_delegate()
+            ->IsSpokenFeedbackEnabled()) {
       system_bubble_->bubble()->FocusDefaultIfNeeded();
     }
   } else {
@@ -487,8 +478,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
         WmShell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
 
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
-                                           GetAnchorAlignment(),
-                                           menu_width,
+                                           GetAnchorAlignment(), menu_width,
                                            kTrayPopupMaxWidth);
     init_params.can_activate = can_activate;
     init_params.first_item_has_no_margin = true;
@@ -554,8 +544,7 @@ void SystemTray::UpdateNotificationBubble() {
   // initializing the |system_bubble_| - but it might not be fully initialized
   // when coming here - this would produce a crashed like crbug.com/247416.
   // As such we check the existence of the widget here.
-  if (system_bubble_.get() &&
-      system_bubble_->bubble_view() &&
+  if (system_bubble_.get() && system_bubble_->bubble_view() &&
       system_bubble_->bubble_view()->GetWidget()) {
     anchor = system_bubble_->bubble_view();
     anchor_type = TrayBubbleView::ANCHOR_TYPE_BUBBLE;
@@ -563,8 +552,7 @@ void SystemTray::UpdateNotificationBubble() {
     anchor = tray_container();
     anchor_type = TrayBubbleView::ANCHOR_TYPE_TRAY;
   }
-  TrayBubbleView::InitParams init_params(anchor_type,
-                                         GetAnchorAlignment(),
+  TrayBubbleView::InitParams init_params(anchor_type, GetAnchorAlignment(),
                                          kTrayPopupMinWidth,
                                          kTrayPopupMaxWidth);
   init_params.first_item_has_no_margin = true;
@@ -607,8 +595,8 @@ base::string16 SystemTray::GetAccessibleTimeString(
     const base::Time& now) const {
   base::HourClockType hour_type =
       WmShell::Get()->system_tray_delegate()->GetHourClockType();
-  return base::TimeFormatTimeOfDayWithHourClockType(
-      now, hour_type, base::kKeepAmPm);
+  return base::TimeFormatTimeOfDayWithHourClockType(now, hour_type,
+                                                    base::kKeepAmPm);
 }
 
 void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
@@ -712,9 +700,13 @@ views::View* SystemTray::GetTrayItemViewForTest(SystemTrayItem* item) {
   return it == tray_item_map_.end() ? NULL : it->second;
 }
 
-TrayCast* SystemTray::GetTrayCastForTesting() const { return tray_cast_; }
+TrayCast* SystemTray::GetTrayCastForTesting() const {
+  return tray_cast_;
+}
 
-TrayDate* SystemTray::GetTrayDateForTesting() const { return tray_date_; }
+TrayDate* SystemTray::GetTrayDateForTesting() const {
+  return tray_date_;
+}
 
 TrayUpdate* SystemTray::GetTrayUpdateForTesting() const {
   return tray_update_;

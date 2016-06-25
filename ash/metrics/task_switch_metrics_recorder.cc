@@ -55,11 +55,9 @@ const char* GetHistogramName(
 
 }  // namespace
 
-TaskSwitchMetricsRecorder::TaskSwitchMetricsRecorder() {
-}
+TaskSwitchMetricsRecorder::TaskSwitchMetricsRecorder() {}
 
-TaskSwitchMetricsRecorder::~TaskSwitchMetricsRecorder() {
-}
+TaskSwitchMetricsRecorder::~TaskSwitchMetricsRecorder() {}
 
 void TaskSwitchMetricsRecorder::OnTaskSwitch(
     TaskSwitchSource task_switch_source) {

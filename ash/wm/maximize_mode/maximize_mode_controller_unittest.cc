@@ -136,8 +136,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
     float radians = degrees * kDegreesToRadians;
     gfx::Vector3dF base_vector(0.0f, -kMeanGravity, 0.0f);
-    gfx::Vector3dF lid_vector(0.0f,
-                              kMeanGravity * cos(radians),
+    gfx::Vector3dF lid_vector(0.0f, kMeanGravity * cos(radians),
                               kMeanGravity * sin(radians));
     TriggerBaseAndLidUpdate(base_vector, lid_vector);
   }
@@ -149,13 +148,13 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   }
 
   void OpenLid() {
-    maximize_mode_controller()->LidEventReceived(true /* open */,
-        maximize_mode_controller()->tick_clock_->NowTicks());
+    maximize_mode_controller()->LidEventReceived(
+        true /* open */, maximize_mode_controller()->tick_clock_->NowTicks());
   }
 
   void CloseLid() {
-    maximize_mode_controller()->LidEventReceived(false /* open */,
-        maximize_mode_controller()->tick_clock_->NowTicks());
+    maximize_mode_controller()->LidEventReceived(
+        false /* open */, maximize_mode_controller()->tick_clock_->NowTicks());
   }
 
   bool WasLidOpenedRecently() {
@@ -216,8 +215,7 @@ TEST_F(MaximizeModeControllerTest, CloseLidWhileInMaximizeMode) {
 }
 
 // Verify that maximize mode will not be entered when the lid is closed.
-TEST_F(MaximizeModeControllerTest,
-    HingeAnglesWithLidClosed) {
+TEST_F(MaximizeModeControllerTest, HingeAnglesWithLidClosed) {
   AttachTickClockForTest();
 
   CloseLid();
@@ -234,8 +232,7 @@ TEST_F(MaximizeModeControllerTest,
 
 // Verify the maximize mode state for unstable hinge angles when the lid was
 // recently open.
-TEST_F(MaximizeModeControllerTest,
-    UnstableHingeAnglesWhenLidRecentlyOpened) {
+TEST_F(MaximizeModeControllerTest, UnstableHingeAnglesWhenLidRecentlyOpened) {
   AttachTickClockForTest();
 
   OpenLid();
@@ -521,6 +518,7 @@ class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {
         switches::kAshEnableTouchViewTesting);
     MaximizeModeControllerTest::SetUp();
   }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeControllerSwitchesTest);
 };

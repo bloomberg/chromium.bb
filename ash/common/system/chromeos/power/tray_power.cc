@@ -92,9 +92,7 @@ namespace tray {
 // This view is used only for the tray.
 class PowerTrayView : public views::ImageView {
  public:
-  PowerTrayView() {
-    UpdateImage();
-  }
+  PowerTrayView() { UpdateImage(); }
 
   ~PowerTrayView() override {}
 
@@ -180,8 +178,7 @@ void TrayPower::DestroyTrayView() {
   power_tray_ = NULL;
 }
 
-void TrayPower::DestroyDefaultView() {
-}
+void TrayPower::DestroyDefaultView() {}
 
 void TrayPower::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
@@ -266,16 +263,15 @@ void TrayPower::MaybeShowDualRoleNotification() {
 
 bool TrayPower::UpdateNotificationState() {
   const PowerStatus& status = *PowerStatus::Get();
-  if (!status.IsBatteryPresent() ||
-      status.IsBatteryTimeBeingCalculated() ||
+  if (!status.IsBatteryPresent() || status.IsBatteryTimeBeingCalculated() ||
       status.IsMainsChargerConnected()) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }
 
-  return status.IsUsbChargerConnected() ?
-      UpdateNotificationStateForRemainingPercentage() :
-      UpdateNotificationStateForRemainingTime();
+  return status.IsUsbChargerConnected()
+             ? UpdateNotificationStateForRemainingPercentage()
+             : UpdateNotificationStateForRemainingTime();
 }
 
 bool TrayPower::UpdateNotificationStateForRemainingTime() {

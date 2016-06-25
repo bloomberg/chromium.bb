@@ -120,7 +120,7 @@ class TrayPowerTest : public test::AshTestBase {
 
   void SetUsbChargerConnected(bool connected) {
     tray_power_->usb_charger_was_connected_ = connected;
-   }
+  }
 
   // Returns a discharging PowerSupplyProperties more appropriate for testing.
   static PowerSupplyProperties DefaultPowerSupplyProperties() {

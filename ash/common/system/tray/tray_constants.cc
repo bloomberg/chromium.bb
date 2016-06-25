@@ -76,9 +76,9 @@ const int kTrayPopupMinWidth = 300;
 const int kTrayPopupMaxWidth = 500;
 const int kNotificationIconWidth = 40;
 const int kNotificationButtonWidth = 32;
-const int kTrayNotificationContentsWidth = kTrayPopupMinWidth -
-    (kNotificationIconWidth + kNotificationButtonWidth +
-     (kTrayPopupPaddingHorizontal / 2) * 3);
+const int kTrayNotificationContentsWidth =
+    kTrayPopupMinWidth - (kNotificationIconWidth + kNotificationButtonWidth +
+                          (kTrayPopupPaddingHorizontal / 2) * 3);
 
 const int kTrayAvatarCornerRadius = 2;
 const int kTrayAvatarSize = 32;

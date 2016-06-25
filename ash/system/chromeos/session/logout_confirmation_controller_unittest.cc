@@ -41,8 +41,7 @@ LogoutConfirmationControllerTest::LogoutConfirmationControllerTest()
   controller_.SetClockForTesting(runner_->GetMockTickClock());
 }
 
-LogoutConfirmationControllerTest::~LogoutConfirmationControllerTest() {
-}
+LogoutConfirmationControllerTest::~LogoutConfirmationControllerTest() {}
 
 void LogoutConfirmationControllerTest::LogOut() {
   log_out_called_ = true;

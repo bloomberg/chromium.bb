@@ -36,8 +36,7 @@ views::Widget* CreateFirstRunWindow() {
 
 }  // anonymous namespace
 
-FirstRunHelperImpl::FirstRunHelperImpl()
-    : widget_(CreateFirstRunWindow()) {
+FirstRunHelperImpl::FirstRunHelperImpl() : widget_(CreateFirstRunWindow()) {
   Shell::GetInstance()->overlay_filter()->Activate(this);
 }
 

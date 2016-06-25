@@ -42,7 +42,7 @@ bool SpokenFeedbackToggler::ShouldProcessEvent(
 
 bool SpokenFeedbackToggler::IsStartEvent(const ui::KeyEvent* event) const {
   return event->type() == ui::ET_KEY_PRESSED &&
-      event->flags() & ui::EF_SHIFT_DOWN;
+         event->flags() & ui::EF_SHIFT_DOWN;
 }
 
 bool SpokenFeedbackToggler::ShouldStopEventPropagation() const {

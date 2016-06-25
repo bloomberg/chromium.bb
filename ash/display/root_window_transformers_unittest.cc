@@ -113,8 +113,10 @@ class TestEventHandler : public ui::EventHandler {
 };
 
 float GetStoredUIScale(int64_t id) {
-  return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).
-      GetEffectiveUIScale();
+  return Shell::GetInstance()
+      ->display_manager()
+      ->GetDisplayInfo(id)
+      .GetEffectiveUIScale();
 }
 
 std::unique_ptr<RootWindowTransformer>
@@ -312,9 +314,9 @@ TEST_F(RootWindowTransformersTest, MAYBE_TouchScaleAndMagnify) {
   EXPECT_FLOAT_EQ(0.2f, event_handler.touch_radius_x());
   EXPECT_FLOAT_EQ(0.2f, event_handler.touch_radius_y());
 
-  generator.ScrollSequence(gfx::Point(0,0),
-                           base::TimeDelta::FromMilliseconds(100),
-                           10.0, 1.0, 5, 1);
+  generator.ScrollSequence(gfx::Point(0, 0),
+                           base::TimeDelta::FromMilliseconds(100), 10.0, 1.0, 5,
+                           1);
 
   // ordinal_offset is invariant to the device scale factor.
   EXPECT_FLOAT_EQ(event_handler.scroll_x_offset(),

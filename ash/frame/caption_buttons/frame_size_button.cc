@@ -46,27 +46,23 @@ bool HitTestButton(const FrameCaptionButton* button,
 
 }  // namespace
 
-FrameSizeButton::FrameSizeButton(
-    views::ButtonListener* listener,
-    views::Widget* frame,
-    FrameSizeButtonDelegate* delegate)
+FrameSizeButton::FrameSizeButton(views::ButtonListener* listener,
+                                 views::Widget* frame,
+                                 FrameSizeButtonDelegate* delegate)
     : FrameCaptionButton(listener, CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE),
       frame_(frame),
       delegate_(delegate),
       set_buttons_to_snap_mode_delay_ms_(kSetButtonsToSnapModeDelayMs),
       in_snap_mode_(false),
-      snap_type_(SNAP_NONE) {
-}
+      snap_type_(SNAP_NONE) {}
 
-FrameSizeButton::~FrameSizeButton() {
-}
+FrameSizeButton::~FrameSizeButton() {}
 
 bool FrameSizeButton::OnMousePressed(const ui::MouseEvent& event) {
   // The minimize and close buttons are set to snap left and right when snapping
   // is enabled. Do not enable snapping if the minimize button is not visible.
   // The close button is always visible.
-  if (IsTriggerableEvent(event) &&
-      !in_snap_mode_ &&
+  if (IsTriggerableEvent(event) && !in_snap_mode_ &&
       delegate_->IsMinimizeButtonVisible()) {
     StartSetButtonsToSnapModeTimer(event);
   }
@@ -142,8 +138,7 @@ void FrameSizeButton::StartSetButtonsToSnapModeTimer(
     set_buttons_to_snap_mode_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(set_buttons_to_snap_mode_delay_ms_),
-        this,
-        &FrameSizeButton::AnimateButtonsToSnapMode);
+        this, &FrameSizeButton::AnimateButtonsToSnapMode);
   }
 }
 
@@ -159,12 +154,10 @@ void FrameSizeButton::SetButtonsToSnapMode(
   // button and the minimize button is right of the size button.
   if (base::i18n::IsRTL()) {
     delegate_->SetButtonIcons(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-                              CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-                              animate);
+                              CAPTION_BUTTON_ICON_LEFT_SNAPPED, animate);
   } else {
     delegate_->SetButtonIcons(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-                              CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-                              animate);
+                              CAPTION_BUTTON_ICON_RIGHT_SNAPPED, animate);
   }
 }
 
@@ -175,8 +168,8 @@ void FrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
     // |set_buttons_to_snap_mode_timer_| is checked to avoid entering the snap
     // mode as a result of an unsupported drag type (e.g. only the right mouse
     // button is pressed).
-    gfx::Vector2d delta(
-        event.location() - set_buttons_to_snap_mode_timer_event_location_);
+    gfx::Vector2d delta(event.location() -
+                        set_buttons_to_snap_mode_timer_event_location_);
     if (!set_buttons_to_snap_mode_timer_.IsRunning() ||
         !views::View::ExceededDragThreshold(delta)) {
       return;
@@ -197,8 +190,8 @@ void FrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
     SetButtonsToSnapMode(FrameSizeButtonDelegate::ANIMATE_NO);
   }
 
-  delegate_->SetHoveredAndPressedButtons(
-      to_hover, press_size_button ? this : NULL);
+  delegate_->SetHoveredAndPressedButtons(to_hover,
+                                         press_size_button ? this : NULL);
 
   snap_type_ = SNAP_NONE;
   if (to_hover) {
@@ -241,8 +234,8 @@ void FrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
 
 const FrameCaptionButton* FrameSizeButton::GetButtonToHover(
     const gfx::Point& event_location_in_screen) const {
-  const FrameCaptionButton* closest_button = delegate_->GetButtonClosestTo(
-      event_location_in_screen);
+  const FrameCaptionButton* closest_button =
+      delegate_->GetButtonClosestTo(event_location_in_screen);
   if ((closest_button->icon() == CAPTION_BUTTON_ICON_LEFT_SNAPPED ||
        closest_button->icon() == CAPTION_BUTTON_ICON_RIGHT_SNAPPED) &&
       HitTestButton(closest_button, event_location_in_screen)) {
@@ -256,18 +249,16 @@ bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
   // event.
   UpdateSnapType(event);
 
-  if (in_snap_mode_ &&
-      (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
+  if (in_snap_mode_ && (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
     wm::WindowState* window_state =
         wm::GetWindowState(frame_->GetNativeWindow());
-    const wm::WMEvent snap_event(
-        snap_type_ == SNAP_LEFT ?
-        wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
+    const wm::WMEvent snap_event(snap_type_ == SNAP_LEFT
+                                     ? wm::WM_EVENT_SNAP_LEFT
+                                     : wm::WM_EVENT_SNAP_RIGHT);
     window_state->OnWMEvent(&snap_event);
     WmShell::Get()->RecordUserMetricsAction(
-        snap_type_ == SNAP_LEFT ?
-        UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
-        UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
+        snap_type_ == SNAP_LEFT ? UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT
+                                : UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
     SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_NO);
     return true;
   }

@@ -144,7 +144,8 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
 
   // Holds all observed activation clients.
   ScopedObserverWithDuplicatedSources<aura::client::ActivationClient,
-      aura::client::ActivationChangeObserver> observed_activation_clients_;
+                                      aura::client::ActivationChangeObserver>
+      observed_activation_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfWindowWatcher);
 };

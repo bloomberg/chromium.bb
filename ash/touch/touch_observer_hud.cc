@@ -30,8 +30,8 @@ TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
   content->SetSize(display_size);
 
   widget_ = new views::Widget();
-  views::Widget::InitParams
-      params(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.accept_events = false;
@@ -66,8 +66,7 @@ TouchObserverHUD::~TouchObserverHUD() {
   widget_->RemoveObserver(this);
 }
 
-void TouchObserverHUD::Clear() {
-}
+void TouchObserverHUD::Clear() {}
 
 void TouchObserverHUD::Remove() {
   root_window_->RemovePreTargetHandler(this);
@@ -78,8 +77,7 @@ void TouchObserverHUD::Remove() {
   widget_->CloseNow();
 }
 
-void TouchObserverHUD::OnTouchEvent(ui::TouchEvent* /*event*/) {
-}
+void TouchObserverHUD::OnTouchEvent(ui::TouchEvent* /*event*/) {}
 
 void TouchObserverHUD::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget, widget_);

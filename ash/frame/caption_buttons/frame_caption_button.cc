@@ -51,8 +51,7 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
   // horizontally symmetrical.
 }
 
-FrameCaptionButton::~FrameCaptionButton() {
-}
+FrameCaptionButton::~FrameCaptionButton() {}
 
 void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
                                   Animate animate,
@@ -122,7 +121,7 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
   int icon_alpha = swap_images_animation_->CurrentValueBetween(0, 255);
   int crossfade_icon_alpha = 0;
   if (icon_alpha < static_cast<int>(kFadeOutRatio * 255))
-     crossfade_icon_alpha = static_cast<int>(255 - icon_alpha / kFadeOutRatio);
+    crossfade_icon_alpha = static_cast<int>(255 - icon_alpha / kFadeOutRatio);
 
   if (crossfade_icon_alpha > 0 && !crossfade_icon_image_.isNull()) {
     gfx::Canvas icon_canvas(icon_image_.size(), canvas->image_scale(), false);
@@ -183,10 +182,8 @@ void FrameCaptionButton::PaintCentered(gfx::Canvas* canvas,
 
   SkPaint paint;
   paint.setAlpha(alpha);
-  canvas->DrawImageInt(to_center,
-                       (width() - to_center.width()) / 2,
-                       (height() - to_center.height()) / 2,
-                       paint);
+  canvas->DrawImageInt(to_center, (width() - to_center.width()) / 2,
+                       (height() - to_center.height()) / 2, paint);
 }
 
 }  // namespace ash

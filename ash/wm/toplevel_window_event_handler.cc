@@ -53,15 +53,15 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   if (move_source == aura::client::WINDOW_MOVE_SOURCE_TOUCH &&
       aura::Env::GetInstance()->is_touch_down()) {
     gfx::PointF drag_location_f;
-    bool has_point = ui::GestureRecognizer::Get()->
-        GetLastTouchPointForTarget(source, &drag_location_f);
+    bool has_point = ui::GestureRecognizer::Get()->GetLastTouchPointForTarget(
+        source, &drag_location_f);
     drag_location = gfx::ToFlooredPoint(drag_location_f);
     DCHECK(has_point);
   } else {
     drag_location =
         root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
-    aura::Window::ConvertPointToTarget(
-        root_window, source->parent(), &drag_location);
+    aura::Window::ConvertPointToTarget(root_window, source->parent(),
+                                       &drag_location);
   }
   // Set the cursor before calling AttemptToStartDrag(), as that will
   // eventually call LockCursor() and prevent the cursor from changing.

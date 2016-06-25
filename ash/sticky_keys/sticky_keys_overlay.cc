@@ -38,7 +38,6 @@ const ui::ResourceBundle::FontStyle kKeyLabelFontStyle =
 
 // Duration of slide animation when overlay is shown or hidden.
 const int kSlideAnimationDurationMs = 100;
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,8 +71,7 @@ StickyKeyOverlayLabel::StickyKeyOverlayLabel(const std::string& key_name)
   SetSubpixelRenderingEnabled(false);
 }
 
-StickyKeyOverlayLabel::~StickyKeyOverlayLabel() {
-}
+StickyKeyOverlayLabel::~StickyKeyOverlayLabel() {}
 
 void StickyKeyOverlayLabel::SetKeyState(StickyKeyState state) {
   state_ = state;
@@ -144,21 +142,16 @@ StickyKeysOverlayView::StickyKeysOverlayView() {
   int child_spacing = font_size - 2 * font_padding;
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        horizontal_spacing,
-                                        vertical_spacing,
+                                        horizontal_spacing, vertical_spacing,
                                         child_spacing));
   AddKeyLabel(ui::EF_CONTROL_DOWN,
               l10n_util::GetStringUTF8(IDS_ASH_CONTROL_KEY));
-  AddKeyLabel(ui::EF_ALT_DOWN,
-              l10n_util::GetStringUTF8(IDS_ASH_ALT_KEY));
-  AddKeyLabel(ui::EF_SHIFT_DOWN,
-              l10n_util::GetStringUTF8(IDS_ASH_SHIFT_KEY));
+  AddKeyLabel(ui::EF_ALT_DOWN, l10n_util::GetStringUTF8(IDS_ASH_ALT_KEY));
+  AddKeyLabel(ui::EF_SHIFT_DOWN, l10n_util::GetStringUTF8(IDS_ASH_SHIFT_KEY));
   AddKeyLabel(ui::EF_COMMAND_DOWN,
               l10n_util::GetStringUTF8(IDS_ASH_SEARCH_KEY));
-  AddKeyLabel(ui::EF_ALTGR_DOWN,
-              l10n_util::GetStringUTF8(IDS_ASH_ALTGR_KEY));
-  AddKeyLabel(ui::EF_MOD3_DOWN,
-              l10n_util::GetStringUTF8(IDS_ASH_MOD3_KEY));
+  AddKeyLabel(ui::EF_ALTGR_DOWN, l10n_util::GetStringUTF8(IDS_ASH_ALTGR_KEY));
+  AddKeyLabel(ui::EF_MOD3_DOWN, l10n_util::GetStringUTF8(IDS_ASH_MOD3_KEY));
 }
 
 StickyKeysOverlayView::~StickyKeysOverlayView() {}
@@ -287,8 +280,7 @@ void StickyKeysOverlay::SetModifierKeyState(ui::EventFlags modifier,
   overlay_view_->SetKeyState(modifier, state);
 }
 
-StickyKeyState StickyKeysOverlay::GetModifierKeyState(
-    ui::EventFlags modifier) {
+StickyKeyState StickyKeysOverlay::GetModifierKeyState(ui::EventFlags modifier) {
   return overlay_view_->GetKeyState(modifier);
 }
 
@@ -318,7 +310,6 @@ void StickyKeysOverlay::OnLayerAnimationAborted(
 }
 
 void StickyKeysOverlay::OnLayerAnimationScheduled(
-    ui::LayerAnimationSequence* sequence) {
-}
+    ui::LayerAnimationSequence* sequence) {}
 
 }  // namespace ash

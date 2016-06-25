@@ -194,17 +194,15 @@ class ASH_EXPORT SessionStateAnimator {
   // Apply animation |type| to all containers included in |container_mask| with
   // specified |speed| and call a |callback| at the end of the animation, if it
   // is not null.
-  virtual void StartAnimationWithCallback(
-      int container_mask,
-      AnimationType type,
-      AnimationSpeed speed,
-      base::Closure callback) = 0;
+  virtual void StartAnimationWithCallback(int container_mask,
+                                          AnimationType type,
+                                          AnimationSpeed speed,
+                                          base::Closure callback) = 0;
 
   // Begins an animation sequence.  Use this when you need to be notified when
   // a group of animations are completed.  See AnimationSequence documentation
   // for more details.
-  virtual AnimationSequence* BeginAnimationSequence(
-      base::Closure callback) = 0;
+  virtual AnimationSequence* BeginAnimationSequence(base::Closure callback) = 0;
 
   // Retruns true if the background is hidden.
   virtual bool IsBackgroundHidden() const = 0;

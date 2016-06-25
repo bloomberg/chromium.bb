@@ -41,7 +41,7 @@ class AshWindowTreeHost;
 class DisplayInfo;
 class RootWindowTransformer;
 
-namespace test{
+namespace test {
 class MirrorWindowTestApi;
 }
 

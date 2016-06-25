@@ -37,8 +37,7 @@ class ScreenTrayView : public TrayItemView {
   DISALLOW_COPY_AND_ASSIGN(ScreenTrayView);
 };
 
-class ScreenStatusView : public views::View,
-                         public views::ButtonListener {
+class ScreenStatusView : public views::View, public views::ButtonListener {
  public:
   ScreenStatusView(ScreenTrayItem* screen_tray_item,
                    int icon_id,
@@ -84,7 +83,6 @@ class ScreenNotificationDelegate : public message_center::NotificationDelegate {
 };
 
 }  // namespace tray
-
 
 // The base tray item for screen capture and screen sharing. The
 // Start method brings up a notification and a tray item, and the user

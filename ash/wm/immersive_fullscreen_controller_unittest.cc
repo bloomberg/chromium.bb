@@ -50,8 +50,7 @@ class MockImmersiveFullscreenControllerDelegate
   MockImmersiveFullscreenControllerDelegate(views::View* top_container_view)
       : top_container_view_(top_container_view),
         enabled_(false),
-        visible_fraction_(1) {
-  }
+        visible_fraction_(1) {}
   ~MockImmersiveFullscreenControllerDelegate() override {}
 
   // ImmersiveFullscreenController::Delegate overrides:
@@ -73,13 +72,9 @@ class MockImmersiveFullscreenControllerDelegate
     return bounds_in_screen;
   }
 
-  bool is_enabled() const {
-    return enabled_;
-  }
+  bool is_enabled() const { return enabled_; }
 
-  double visible_fraction() const {
-    return visible_fraction_;
-  }
+  double visible_fraction() const { return visible_fraction_; }
 
  private:
   views::View* top_container_view_;
@@ -120,23 +115,15 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
       : widget_(nullptr), top_container_(nullptr), content_view_(nullptr) {}
   ~ImmersiveFullscreenControllerTest() override {}
 
-  ImmersiveFullscreenController* controller() {
-    return controller_.get();
-  }
+  ImmersiveFullscreenController* controller() { return controller_.get(); }
 
-  views::NativeViewHost* content_view() {
-    return content_view_;
-  }
+  views::NativeViewHost* content_view() { return content_view_; }
 
-  views::View* top_container() {
-    return top_container_;
-  }
+  views::View* top_container() { return top_container_; }
 
   views::Widget* widget() { return widget_; }
 
-  aura::Window* window() {
-    return widget_->GetNativeWindow();
-  }
+  aura::Window* window() { return widget_->GetNativeWindow(); }
 
   MockImmersiveFullscreenControllerDelegate* delegate() {
     return delegate_.get();
@@ -169,8 +156,7 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
     widget_->GetContentsView()->AddChildView(content_view_);
 
     top_container_ = new views::View();
-    top_container_->SetBounds(
-        0, 0, window_size.width(), 100);
+    top_container_->SetBounds(0, 0, window_size.width(), 100);
     top_container_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     widget_->GetContentsView()->AddChildView(top_container_);
 
@@ -254,8 +240,7 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
         views::View::ConvertPointToScreen(top_container_, &end);
         ui::test::EventGenerator& event_generator(GetEventGenerator());
         event_generator.GestureScrollSequence(
-            start, end,
-            base::TimeDelta::FromMilliseconds(30), 1);
+            start, end, base::TimeDelta::FromMilliseconds(30), 1);
         break;
       }
     }
@@ -263,8 +248,8 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
 
   std::unique_ptr<ImmersiveFullscreenController> controller_;
   std::unique_ptr<MockImmersiveFullscreenControllerDelegate> delegate_;
-  views::Widget* widget_;  // Owned by the native widget.
-  views::View* top_container_;  // Owned by |widget_|'s root-view.
+  views::Widget* widget_;                // Owned by the native widget.
+  views::View* top_container_;           // Owned by |widget_|'s root-view.
   views::NativeViewHost* content_view_;  // Owned by |widget_|'s root-view.
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveFullscreenControllerTest);
@@ -380,8 +365,8 @@ TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
 
   // Moving |ImmersiveFullscreenControllerTest::kMouseRevealBoundsHeight| down
   // from the top edge stops it.
-  event_generator.MoveMouseBy(0,
-      ImmersiveFullscreenController::kMouseRevealBoundsHeight);
+  event_generator.MoveMouseBy(
+      0, ImmersiveFullscreenController::kMouseRevealBoundsHeight);
   EXPECT_FALSE(top_edge_hover_timer_running());
 
   // Moving back to the top starts the timer again.
@@ -473,8 +458,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Inactive) {
 
   // The top-of-window views should stay hidden if the cursor is at the top edge
   // but above an obscured portion of the top-of-window views.
-  MoveMouse(popup_bounds_in_screen.x(),
-            top_container_bounds_in_screen.y());
+  MoveMouse(popup_bounds_in_screen.x(), top_container_bounds_in_screen.y());
   EXPECT_FALSE(controller()->IsRevealed());
 
   // The top-of-window views should reveal if the cursor is at the top edge and
@@ -1064,8 +1048,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
 
   // Disabling immersive fullscreen maintains the user's auto-hide selection.
   SetEnabled(false);
-  window()->SetProperty(aura::client::kShowStateKey,
-                        ui::SHOW_STATE_NORMAL);
+  window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 }
 

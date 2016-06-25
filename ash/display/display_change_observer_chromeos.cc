@@ -47,9 +47,9 @@ struct DeviceScaleFactorDPIThreshold {
 };
 
 const DeviceScaleFactorDPIThreshold kThresholdTable[] = {
-  {200.0f, 2.0f},
-  {150.0f, 1.25f},
-  {0.0f, 1.0f},
+    {200.0f, 2.0f},
+    {150.0f, 1.25f},
+    {0.0f, 1.0f},
 };
 
 // 1 inch in mm.
@@ -82,8 +82,7 @@ std::vector<DisplayMode> DisplayChangeObserver::GetInternalDisplayModeList(
   const ui::DisplayMode* ui_native_mode = output.native_mode();
   DisplayMode native_mode(ui_native_mode->size(),
                           ui_native_mode->refresh_rate(),
-                          ui_native_mode->is_interlaced(),
-                          true);
+                          ui_native_mode->is_interlaced(), true);
   native_mode.device_scale_factor = display_info.device_scale_factor();
 
   return CreateInternalDisplayModeList(native_mode);
@@ -131,8 +130,7 @@ std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
   }
 
   if (native_mode.size.width() >= kMinimumWidthFor4K) {
-    for (size_t i = 0; i < arraysize(kAdditionalDeviceScaleFactorsFor4k);
-         ++i) {
+    for (size_t i = 0; i < arraysize(kAdditionalDeviceScaleFactorsFor4k); ++i) {
       DisplayMode mode = native_mode;
       mode.device_scale_factor = kAdditionalDeviceScaleFactorsFor4k[i];
       mode.native = false;
@@ -168,15 +166,15 @@ ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
                                              ->display_manager()
                                              ->layout_store()
                                              ->GetRegisteredDisplayLayout(list);
-  return layout.mirrored ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR :
-                           ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+  return layout.mirrored ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
+                         : ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
 }
 
 bool DisplayChangeObserver::GetResolutionForDisplayId(int64_t display_id,
                                                       gfx::Size* size) const {
   DisplayMode mode;
   if (!Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
-           display_id, &mode))
+          display_id, &mode))
     return false;
 
   *size = mode.size;

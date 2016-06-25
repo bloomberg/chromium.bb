@@ -27,7 +27,7 @@ namespace test {
 
 // Accesses private data from a Shell for testing.
 class ShellTestApi {
-public:
+ public:
   explicit ShellTestApi(Shell* shell);
 
   SystemGestureEventFilter* system_gesture_event_filter();

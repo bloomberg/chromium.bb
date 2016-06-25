@@ -62,11 +62,11 @@ class DisplayErrorNotificationDelegate
 // 800, 1024, 1280, 1440, 1600 and 1920 pixel width respectively on
 // 2560 pixel width 2x density display. Please see crbug.com/233375
 // for the full list of resolutions.
-const float kUIScalesFor2x[] =
-    {0.5f, 0.625f, 0.8f, 1.0f, 1.125f, 1.25f, 1.5f, 2.0f};
-const float kUIScalesFor1_25x[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.25f };
-const float kUIScalesFor1280[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f };
-const float kUIScalesFor1366[] = {0.5f, 0.6f, 0.75f, 1.0f, 1.125f };
+const float kUIScalesFor2x[] = {0.5f,   0.625f, 0.8f, 1.0f,
+                                1.125f, 1.25f,  1.5f, 2.0f};
+const float kUIScalesFor1_25x[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.25f};
+const float kUIScalesFor1280[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f};
+const float kUIScalesFor1366[] = {0.5f, 0.6f, 0.75f, 1.0f, 1.125f};
 
 std::vector<float> GetScalesForDisplay(const DisplayMode& native_mode) {
 #define ASSIGN_ARRAY(v, a) v.assign(a, a + arraysize(a))

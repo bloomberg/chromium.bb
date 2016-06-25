@@ -59,8 +59,7 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
 }  // namespace
 
 TransformerHelper::TransformerHelper(AshWindowTreeHost* ash_host)
-    : ash_host_(ash_host) {
-}
+    : ash_host_(ash_host) {}
 
 TransformerHelper::~TransformerHelper() {}
 

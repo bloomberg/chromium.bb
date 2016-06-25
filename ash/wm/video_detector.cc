@@ -45,7 +45,7 @@ class VideoDetector::WindowInfo {
     buffer_size_++;
 
     return buffer_size_ == static_cast<size_t>(kMinFramesPerSecond) &&
-        (now - update_times_[buffer_start_]).InSecondsF() <= 1.0;
+           (now - update_times_[buffer_start_]).InSecondsF() <= 1.0;
   }
 
  private:
@@ -63,8 +63,7 @@ class VideoDetector::WindowInfo {
 };
 
 VideoDetector::VideoDetector()
-    : observer_manager_(this),
-      is_shutting_down_(false) {
+    : observer_manager_(this), is_shutting_down_(false) {
   aura::Env::GetInstance()->AddObserver(this);
   WmShell::Get()->AddShellObserver(this);
 }
@@ -116,7 +115,7 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
                                          base::TimeTicks now) {
   if (!last_observer_notification_time_.is_null() &&
       (now - last_observer_notification_time_).InSecondsF() <
-      kNotifyIntervalSec)
+          kNotifyIntervalSec)
     return;
 
   if (!window->IsVisible())
@@ -137,7 +136,8 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
       Shell::GetContainersFromAllRootWindows(kShellWindowId_DefaultContainer,
                                              NULL);
   for (std::vector<aura::Window*>::const_iterator container =
-       containers.begin(); container != containers.end(); ++container) {
+           containers.begin();
+       container != containers.end(); ++container) {
     const aura::Window::Windows& windows = (*container)->children();
     for (aura::Window::Windows::const_iterator window = windows.begin();
          window != windows.end(); ++window) {
@@ -148,8 +148,7 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
     }
   }
 
-  FOR_EACH_OBSERVER(VideoDetectorObserver,
-                    observers_,
+  FOR_EACH_OBSERVER(VideoDetectorObserver, observers_,
                     OnVideoDetected(fullscreen_window_exists));
   last_observer_notification_time_ = now;
 }

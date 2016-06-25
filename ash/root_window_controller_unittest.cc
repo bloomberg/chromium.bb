@@ -117,10 +117,8 @@ class RootWindowControllerTest : public AshMDTestBase {
 
   views::Widget* CreateModalWidgetWithParent(const gfx::Rect& bounds,
                                              gfx::NativeWindow parent) {
-    views::Widget* widget =
-        views::Widget::CreateWindowWithParentAndBounds(new TestDelegate(true),
-                                                       parent,
-                                                       bounds);
+    views::Widget* widget = views::Widget::CreateWindowWithParentAndBounds(
+        new TestDelegate(true), parent, bounds);
     widget->Show();
     return widget;
   }
@@ -164,15 +162,13 @@ TEST_P(RootWindowControllerTest, MoveWindows_Basic) {
   views::Widget* minimized = CreateTestWidget(gfx::Rect(800, 10, 100, 100));
   minimized->Minimize();
   EXPECT_EQ(root_windows[1], minimized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("800,10 100x100",
-            minimized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("800,10 100x100", minimized->GetWindowBoundsInScreen().ToString());
 
   views::Widget* fullscreen = CreateTestWidget(gfx::Rect(850, 10, 100, 100));
   fullscreen->SetFullscreen(true);
   EXPECT_EQ(root_windows[1], fullscreen->GetNativeView()->GetRootWindow());
 
-  EXPECT_EQ("600,0 300x300",
-            fullscreen->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("600,0 300x300", fullscreen->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("0,0 300x300",
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 
@@ -234,13 +230,11 @@ TEST_P(RootWindowControllerTest, MoveWindows_Basic) {
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   EXPECT_EQ(root_windows[0], minimized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("400,20 100x100",
-            minimized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("400,20 100x100", minimized->GetWindowBoundsInScreen().ToString());
 
   EXPECT_EQ(root_windows[0], fullscreen->GetNativeView()->GetRootWindow());
   EXPECT_TRUE(fullscreen->IsFullscreen());
-  EXPECT_EQ("0,0 600x600",
-            fullscreen->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("0,0 600x600", fullscreen->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("0,0 600x600",
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 
@@ -251,8 +245,7 @@ TEST_P(RootWindowControllerTest, MoveWindows_Basic) {
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   fullscreen->SetFullscreen(false);
-  EXPECT_EQ("500,20 100x100",
-            fullscreen->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("500,20 100x100", fullscreen->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("500,20 100x100",
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 
@@ -284,8 +277,8 @@ TEST_P(RootWindowControllerTest, MoveWindows_Modal) {
 
   views::Widget* modal = CreateModalWidget(gfx::Rect(650, 10, 100, 100));
   EXPECT_EQ(root_windows[1], modal->GetNativeView()->GetRootWindow());
-  EXPECT_TRUE(GetModalContainer(root_windows[1])->Contains(
-      modal->GetNativeView()));
+  EXPECT_TRUE(
+      GetModalContainer(root_windows[1])->Contains(modal->GetNativeView()));
   EXPECT_TRUE(wm::IsActiveWindow(modal->GetNativeView()));
 
   ui::test::EventGenerator generator_1st(root_windows[0]);
@@ -462,7 +455,7 @@ TEST_P(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
             controller->GetSystemModalLayoutManager(NULL));
 
   views::Widget* session_modal_widget =
-        CreateModalWidget(gfx::Rect(300, 10, 100, 100));
+      CreateModalWidget(gfx::Rect(300, 10, 100, 100));
   EXPECT_EQ(controller->GetContainer(kShellWindowId_SystemModalContainer)
                 ->layout_manager(),
             controller->GetSystemModalLayoutManager(
@@ -475,10 +468,9 @@ TEST_P(RootWindowControllerTest, ModalContainerBlockedSession) {
   aura::Window* lock_container =
       controller->GetContainer(kShellWindowId_LockScreenContainer);
   for (int block_reason = FIRST_BLOCK_REASON;
-       block_reason < NUMBER_OF_BLOCK_REASONS;
-       ++block_reason) {
+       block_reason < NUMBER_OF_BLOCK_REASONS; ++block_reason) {
     views::Widget* session_modal_widget =
-          CreateModalWidget(gfx::Rect(300, 10, 100, 100));
+        CreateModalWidget(gfx::Rect(300, 10, 100, 100));
     EXPECT_EQ(controller->GetContainer(kShellWindowId_SystemModalContainer)
                   ->layout_manager(),
               controller->GetSystemModalLayoutManager(
@@ -494,16 +486,14 @@ TEST_P(RootWindowControllerTest, ModalContainerBlockedSession) {
                   ->layout_manager(),
               controller->GetSystemModalLayoutManager(NULL));
 
-    views::Widget* lock_modal_widget =
-        CreateModalWidgetWithParent(gfx::Rect(300, 10, 100, 100),
-                                    lock_container);
+    views::Widget* lock_modal_widget = CreateModalWidgetWithParent(
+        gfx::Rect(300, 10, 100, 100), lock_container);
     EXPECT_EQ(controller->GetContainer(kShellWindowId_LockSystemModalContainer)
                   ->layout_manager(),
               controller->GetSystemModalLayoutManager(
                   lock_modal_widget->GetNativeView()));
 
-    session_modal_widget =
-          CreateModalWidget(gfx::Rect(300, 10, 100, 100));
+    session_modal_widget = CreateModalWidget(gfx::Rect(300, 10, 100, 100));
     EXPECT_EQ(controller->GetContainer(kShellWindowId_SystemModalContainer)
                   ->layout_manager(),
               controller->GetSystemModalLayoutManager(
@@ -525,8 +515,8 @@ TEST_P(RootWindowControllerTest, GetWindowForFullscreenMode) {
   Widget* w2 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
   w2->SetFullscreen(true);
   // |w3| is a transient child of |w2|.
-  Widget* w3 = Widget::CreateWindowWithParentAndBounds(NULL,
-      w2->GetNativeWindow(), gfx::Rect(0, 0, 100, 100));
+  Widget* w3 = Widget::CreateWindowWithParentAndBounds(
+      NULL, w2->GetNativeWindow(), gfx::Rect(0, 0, 100, 100));
 
   // Test that GetWindowForFullscreenMode() finds the fullscreen window when one
   // of its transient children is active.
@@ -623,16 +613,17 @@ TEST_P(RootWindowControllerTest, FocusBlockedWindow) {
       Shell::GetInstance()->GetPrimaryRootWindowController();
   aura::Window* lock_container =
       controller->GetContainer(kShellWindowId_LockScreenContainer);
-  aura::Window* lock_window = Widget::CreateWindowWithParentAndBounds(NULL,
-      lock_container, gfx::Rect(0, 0, 100, 100))->GetNativeView();
+  aura::Window* lock_window =
+      Widget::CreateWindowWithParentAndBounds(NULL, lock_container,
+                                              gfx::Rect(0, 0, 100, 100))
+          ->GetNativeView();
   lock_window->Show();
   aura::Window* session_window =
       CreateTestWidget(gfx::Rect(0, 0, 100, 100))->GetNativeView();
   session_window->Show();
 
   for (int block_reason = FIRST_BLOCK_REASON;
-       block_reason < NUMBER_OF_BLOCK_REASONS;
-       ++block_reason) {
+       block_reason < NUMBER_OF_BLOCK_REASONS; ++block_reason) {
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
     lock_window->Focus();
     EXPECT_TRUE(lock_window->HasFocus());
@@ -737,16 +728,13 @@ class VirtualKeyboardRootWindowControllerTest
 
 class MockTextInputClient : public ui::DummyTextInputClient {
  public:
-  MockTextInputClient() :
-      ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
+  MockTextInputClient() : ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
 
   void EnsureCaretInRect(const gfx::Rect& rect) override {
     visible_rect_ = rect;
   }
 
-  const gfx::Rect& visible_rect() const {
-    return visible_rect_;
-  }
+  const gfx::Rect& visible_rect() const { return visible_rect_; }
 
  private:
   gfx::Rect visible_rect_;
@@ -780,9 +768,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Window* primary_root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* secondary_root_window =
-      root_windows[0] == primary_root_window ?
-          root_windows[1] : root_windows[0];
+  aura::Window* secondary_root_window = root_windows[0] == primary_root_window
+                                            ? root_windows[1]
+                                            : root_windows[0];
 
   ASSERT_TRUE(Shell::GetContainer(primary_root_window,
                                   kShellWindowId_VirtualKeyboardContainer));
@@ -816,8 +804,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   EXPECT_EQ(expected_mouse_presses, handler.num_mouse_events() / 2);
 
   for (int block_reason = FIRST_BLOCK_REASON;
-       block_reason < NUMBER_OF_BLOCK_REASONS;
-       ++block_reason) {
+       block_reason < NUMBER_OF_BLOCK_REASONS; ++block_reason) {
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
     event_generator.ClickLeftButton();
     expected_mouse_presses++;
@@ -901,8 +888,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   ui::test::EventGenerator keyboard_event_generator(root_window,
                                                     keyboard_window);
 
-  views::Widget* modal_widget =
-      CreateModalWidget(gfx::Rect(300, 10, 100, 100));
+  views::Widget* modal_widget = CreateModalWidget(gfx::Rect(300, 10, 100, 100));
 
   // Verify that mouse events to the root window are block with a visble modal
   // dialog.

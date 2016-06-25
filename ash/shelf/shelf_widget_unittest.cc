@@ -36,7 +36,7 @@ ShelfLayoutManager* GetShelfLayoutManager() {
   return GetShelfWidget()->shelf_layout_manager();
 }
 
-} // namespace
+}  // namespace
 
 using ShelfWidgetTest = test::AshMDTestBase;
 
@@ -144,12 +144,12 @@ TEST_P(ShelfWidgetTest, LauncherInitiallySized) {
   ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
   ASSERT_TRUE(shelf_layout_manager);
   ASSERT_TRUE(shelf_widget->status_area_widget());
-  int status_width = shelf_widget->status_area_widget()->
-      GetWindowBoundsInScreen().width();
+  int status_width =
+      shelf_widget->status_area_widget()->GetWindowBoundsInScreen().width();
   // Test only makes sense if the status is > 0, which it better be.
   EXPECT_GT(status_width, 0);
   EXPECT_EQ(status_width, shelf_widget->GetContentsView()->width() -
-            test::ShelfTestAPI(shelf).shelf_view()->width());
+                              test::ShelfTestAPI(shelf).shelf_view()->width());
 }
 
 // Verifies when the shell is deleted with a full screen window we don't crash.
@@ -175,8 +175,7 @@ TEST_P(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   Shell::RootWindowControllerList controllers(
       Shell::GetAllRootWindowControllers());
   for (Shell::RootWindowControllerList::const_iterator i = controllers.begin();
-       i != controllers.end();
-       ++i) {
+       i != controllers.end(); ++i) {
     if (!(*i)->shelf_widget()->shelf()) {
       shelf_widget = (*i)->shelf_widget();
       break;
@@ -193,9 +192,8 @@ TEST_P(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   const int status_width =
       shelf_widget->status_area_widget()->GetWindowBoundsInScreen().width();
   EXPECT_GT(status_width, 0);
-  EXPECT_EQ(status_width,
-            shelf_widget->GetContentsView()->width() -
-                test::ShelfTestAPI(shelf).shelf_view()->width());
+  EXPECT_EQ(status_width, shelf_widget->GetContentsView()->width() -
+                              test::ShelfTestAPI(shelf).shelf_view()->width());
 }
 #endif  // defined(OS_CHROMEOS)
 

@@ -7,14 +7,12 @@
 namespace ash {
 
 FixedSizedImageView::FixedSizedImageView(int width, int height)
-    : width_(width),
-      height_(height) {
+    : width_(width), height_(height) {
   SetHorizontalAlignment(views::ImageView::CENTER);
   SetVerticalAlignment(views::ImageView::CENTER);
 }
 
-FixedSizedImageView::~FixedSizedImageView() {
-}
+FixedSizedImageView::~FixedSizedImageView() {}
 
 gfx::Size FixedSizedImageView::GetPreferredSize() const {
   gfx::Size size = views::ImageView::GetPreferredSize();

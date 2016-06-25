@@ -20,8 +20,7 @@ SystemGestureEventFilter::SystemGestureEventFilter()
     : overview_gesture_handler_(new OverviewGestureHandler),
       shelf_gesture_handler_(new ShelfGestureHandler()) {}
 
-SystemGestureEventFilter::~SystemGestureEventFilter() {
-}
+SystemGestureEventFilter::~SystemGestureEventFilter() {}
 
 void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 #if defined(OS_CHROMEOS)

@@ -32,8 +32,7 @@ class DummyButton : public views::Button {
   DISALLOW_COPY_AND_ASSIGN(DummyButton);
 };
 
-DummyButton::DummyButton() : views::Button(nullptr) {
-}
+DummyButton::DummyButton() : views::Button(nullptr) {}
 
 // A simple light weight test double dummy for a ui::Event.
 class DummyEvent : public ui::Event {
@@ -55,8 +54,7 @@ DummyEvent::DummyEvent()
     : Event(ui::ET_GESTURE_TAP, base::TimeTicks(), 0),
       unique_id_(next_unique_id_++) {}
 
-DummyEvent::~DummyEvent() {
-}
+DummyEvent::~DummyEvent() {}
 
 // Test fixture for the ShelfButtonPressedMetricTracker class. Relies on
 // AshTestBase to initilize the UserMetricsRecorder and it's dependencies.
@@ -101,11 +99,9 @@ const char* ShelfButtonPressedMetricTrackerTest::
         ShelfButtonPressedMetricTracker::
             kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName;
 
-ShelfButtonPressedMetricTrackerTest::ShelfButtonPressedMetricTrackerTest() {
-}
+ShelfButtonPressedMetricTrackerTest::ShelfButtonPressedMetricTrackerTest() {}
 
-ShelfButtonPressedMetricTrackerTest::~ShelfButtonPressedMetricTrackerTest() {
-}
+ShelfButtonPressedMetricTrackerTest::~ShelfButtonPressedMetricTrackerTest() {}
 
 void ShelfButtonPressedMetricTrackerTest::SetUp() {
   AshTestBase::SetUp();

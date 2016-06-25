@@ -68,8 +68,7 @@ namespace tray {
 // actually pick the cast receiver.
 class CastSelectDefaultView : public TrayItemMore {
  public:
-  CastSelectDefaultView(SystemTrayItem* owner,
-                        bool show_more);
+  CastSelectDefaultView(SystemTrayItem* owner, bool show_more);
   ~CastSelectDefaultView() override;
 
  private:
@@ -160,8 +159,7 @@ CastCastView::CastCastView() {
   AddChildView(stop_button_);
 }
 
-CastCastView::~CastCastView() {
-}
+CastCastView::~CastCastView() {}
 
 int CastCastView::GetHeightForWidth(int width) const {
   // We are reusing the cached label_->bounds() calculation which was
@@ -351,8 +349,7 @@ CastTrayView::CastTrayView(SystemTrayItem* tray_item)
                              .ToImageSkia());
 }
 
-CastTrayView::~CastTrayView() {
-}
+CastTrayView::~CastTrayView() {}
 
 void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.
@@ -415,8 +412,7 @@ CastDetailedView::CastDetailedView(
   UpdateReceiverList(receivers_and_activities);
 }
 
-CastDetailedView::~CastDetailedView() {
-}
+CastDetailedView::~CastDetailedView() {}
 
 void CastDetailedView::SimulateViewClickedForTest(
     const std::string& receiver_id) {

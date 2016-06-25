@@ -19,21 +19,13 @@ class TestVolumeControlDelegate : public ash::VolumeControlDelegate {
   TestVolumeControlDelegate();
   ~TestVolumeControlDelegate() override;
 
-  int handle_volume_mute_count() const {
-    return handle_volume_mute_count_;
-  }
+  int handle_volume_mute_count() const { return handle_volume_mute_count_; }
 
-  int handle_volume_down_count() const {
-    return handle_volume_down_count_;
-  }
+  int handle_volume_down_count() const { return handle_volume_down_count_; }
 
-  int handle_volume_up_count() const {
-    return handle_volume_up_count_;
-  }
+  int handle_volume_up_count() const { return handle_volume_up_count_; }
 
-  const ui::Accelerator& last_accelerator() const {
-    return last_accelerator_;
-  }
+  const ui::Accelerator& last_accelerator() const { return last_accelerator_; }
 
   // ash::VolumeControlDelegate:
   void HandleVolumeMute(const ui::Accelerator& accelerator) override;

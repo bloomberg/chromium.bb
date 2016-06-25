@@ -17,8 +17,7 @@ namespace test {
 CursorManagerTestApi::CursorManagerTestApi(::wm::CursorManager* cursor_manager)
     : cursor_manager_(cursor_manager) {}
 
-CursorManagerTestApi::~CursorManagerTestApi() {
-}
+CursorManagerTestApi::~CursorManagerTestApi() {}
 
 // TODO(tdanderson): CursorManagerTestApi may no longer be needed.
 ui::CursorSetType CursorManagerTestApi::GetCurrentCursorSet() const {
@@ -31,14 +30,15 @@ gfx::NativeCursor CursorManagerTestApi::GetCurrentCursor() const {
 
 display::Display::Rotation CursorManagerTestApi::GetCurrentCursorRotation()
     const {
-  return ShellTestApi(Shell::GetInstance()).ash_native_cursor_manager()->
-      image_cursors_->GetRotation();
+  return ShellTestApi(Shell::GetInstance())
+      .ash_native_cursor_manager()
+      ->image_cursors_->GetRotation();
 }
 
-float
-CursorManagerTestApi::GetCurrentCursorScale() const {
-  return ShellTestApi(Shell::GetInstance()).ash_native_cursor_manager()->
-      image_cursors_->GetScale();
+float CursorManagerTestApi::GetCurrentCursorScale() const {
+  return ShellTestApi(Shell::GetInstance())
+      .ash_native_cursor_manager()
+      ->image_cursors_->GetScale();
 }
 
 }  // namespace test

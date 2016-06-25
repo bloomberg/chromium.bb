@@ -92,8 +92,8 @@ bool IsAngleBetweenAccelerometerReadingsStable(
                  update.get(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD))
                  .Length() -
              ui::ConvertAccelerometerReadingToVector3dF(
-                 update.get(chromeos::ACCELEROMETER_SOURCE_SCREEN)).Length()) <=
-         kNoisyMagnitudeDeviation;
+                 update.get(chromeos::ACCELEROMETER_SOURCE_SCREEN))
+                 .Length()) <= kNoisyMagnitudeDeviation;
 }
 #endif  // OS_CHROMEOS
 
@@ -120,8 +120,8 @@ MaximizeModeController::MaximizeModeController()
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
     Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   }
-  chromeos::DBusThreadManager::Get()->
-      GetPowerManagerClient()->AddObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      this);
 #endif  // OS_CHROMEOS
 }
 
@@ -133,8 +133,8 @@ MaximizeModeController::~MaximizeModeController() {
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
     Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   }
-  chromeos::DBusThreadManager::Get()->
-      GetPowerManagerClient()->RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
 #endif  // OS_CHROMEOS
 }
 
@@ -407,15 +407,16 @@ void MaximizeModeController::OnAppTerminating() {
 
   if (CanEnterMaximizeMode()) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewActiveTotal",
-        total_touchview_time_.InMinutes(),
-        1, base::TimeDelta::FromDays(7).InMinutes(), 50);
+                                total_touchview_time_.InMinutes(), 1,
+                                base::TimeDelta::FromDays(7).InMinutes(), 50);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewInactiveTotal",
-        total_non_touchview_time_.InMinutes(),
-        1, base::TimeDelta::FromDays(7).InMinutes(), 50);
-    base::TimeDelta total_runtime = total_touchview_time_ +
-        total_non_touchview_time_;
+                                total_non_touchview_time_.InMinutes(), 1,
+                                base::TimeDelta::FromDays(7).InMinutes(), 50);
+    base::TimeDelta total_runtime =
+        total_touchview_time_ + total_non_touchview_time_;
     if (total_runtime.InSeconds() > 0) {
-      UMA_HISTOGRAM_PERCENTAGE("Ash.TouchView.TouchViewActivePercentage",
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Ash.TouchView.TouchViewActivePercentage",
           100 * total_touchview_time_.InSeconds() / total_runtime.InSeconds());
     }
   }

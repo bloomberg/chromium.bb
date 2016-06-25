@@ -66,7 +66,6 @@ namespace {
 // Menu commands
 const int kToggleQuietMode = 0;
 const int kEnableQuietModeDay = 2;
-
 }
 
 namespace {
@@ -213,23 +212,21 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
       should_block_shelf_auto_hide_(false) {
   DCHECK(status_area_widget_);
   button_ = new WebNotificationButton(this);
-  button_->set_triggerable_event_flags(
-      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
+  button_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                       ui::EF_RIGHT_MOUSE_BUTTON);
   tray_container()->AddChildView(button_);
   button_->SetFocusBehavior(FocusBehavior::NEVER);
   SetContentsBackground();
   tray_container()->SetBorder(views::Border::NullBorder());
   message_center_tray_.reset(new message_center::MessageCenterTray(
-      this,
-      message_center::MessageCenter::Get()));
+      this, message_center::MessageCenter::Get()));
   WmShelf* shelf = WmLookup::Get()
                        ->GetWindowForWidget(status_area_widget)
                        ->GetRootWindowController()
                        ->GetShelf();
   popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate(shelf));
   popup_collection_.reset(new message_center::MessagePopupCollection(
-      message_center(),
-      message_center_tray_.get(),
+      message_center(), message_center_tray_.get(),
       popup_alignment_delegate_.get()));
   const display::Display& display = WmLookup::Get()
                                         ->GetWindowForWidget(status_area_widget)
@@ -254,10 +251,8 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
 
   should_block_shelf_auto_hide_ = true;
   message_center::MessageCenterBubble* message_center_bubble =
-      new message_center::MessageCenterBubble(
-          message_center(),
-          message_center_tray_.get(),
-          true);
+      new message_center::MessageCenterBubble(message_center(),
+                                              message_center_tray_.get(), true);
 
   int max_height;
   if (IsHorizontalAlignment(shelf()->GetAlignment())) {
@@ -371,8 +366,7 @@ void WebNotificationTray::AnchorUpdated() {
 }
 
 base::string16 WebNotificationTray::GetAccessibleNameForTray() {
-  return l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_ACCESSIBLE_NAME);
+  return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_ACCESSIBLE_NAME);
 }
 
 void WebNotificationTray::HideBubbleWithView(
@@ -432,7 +426,8 @@ void WebNotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {
 bool WebNotificationTray::ShowNotifierSettings() {
   if (message_center_bubble()) {
     static_cast<message_center::MessageCenterBubble*>(
-        message_center_bubble()->bubble())->SetSettingsVisible();
+        message_center_bubble()->bubble())
+        ->SetSettingsVisible();
     return true;
   }
   return ShowMessageCenterInternal(true /* show_settings */);
@@ -468,9 +463,9 @@ void WebNotificationTray::ExecuteCommand(int command_id, int event_flags) {
     message_center()->SetQuietMode(!in_quiet_mode);
     return;
   }
-  base::TimeDelta expires_in = command_id == kEnableQuietModeDay ?
-      base::TimeDelta::FromDays(1):
-      base::TimeDelta::FromHours(1);
+  base::TimeDelta expires_in = command_id == kEnableQuietModeDay
+                                   ? base::TimeDelta::FromDays(1)
+                                   : base::TimeDelta::FromHours(1);
   message_center()->EnterQuietModeWithExpire(expires_in);
 }
 

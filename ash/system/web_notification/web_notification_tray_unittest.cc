@@ -47,8 +47,8 @@ namespace ash {
 namespace {
 
 WebNotificationTray* GetTray() {
-  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->
-      web_notification_tray();
+  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+      ->web_notification_tray();
 }
 
 WebNotificationTray* GetSecondaryTray() {
@@ -130,9 +130,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
     GetMessageCenter()->RemoveNotification(id, false);
   }
 
-  views::Widget* GetWidget() {
-    return GetTray()->GetWidget();
-  }
+  views::Widget* GetWidget() { return GetTray()->GetWidget(); }
 
   int GetPopupWorkAreaBottom() {
     return GetPopupWorkAreaBottomForTray(GetTray());
@@ -142,9 +140,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
     return tray->popup_alignment_delegate_->GetWorkAreaBottom();
   }
 
-  bool IsPopupVisible() {
-    return GetTray()->IsPopupVisible();
-  }
+  bool IsPopupVisible() { return GetTray()->IsPopupVisible(); }
 
   std::unique_ptr<views::Widget> CreateTestWidget() {
     std::unique_ptr<views::Widget> widget(new views::Widget);
@@ -229,7 +225,6 @@ TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
 
 using message_center::NotificationList;
 
-
 // Flakily fails. http://crbug.com/229791
 TEST_F(WebNotificationTrayTest, DISABLED_ManyMessageCenterNotifications) {
   // Add the max visible notifications +1, ensure the correct visible number.
@@ -243,11 +238,10 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyMessageCenterNotifications) {
   EXPECT_TRUE(shown);
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(GetTray()->message_center_bubble() != NULL);
-  EXPECT_EQ(notifications_to_add,
-            GetMessageCenter()->NotificationCount());
-  EXPECT_EQ(message_center::kMaxVisibleMessageCenterNotifications,
-            GetTray()->GetMessageCenterBubbleForTest()->
-                NumMessageViewsForTest());
+  EXPECT_EQ(notifications_to_add, GetMessageCenter()->NotificationCount());
+  EXPECT_EQ(
+      message_center::kMaxVisibleMessageCenterNotifications,
+      GetTray()->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
 }
 
 // Flakily times out. http://crbug.com/229792
@@ -261,8 +255,7 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
   }
   GetTray()->ShowPopups();
   EXPECT_TRUE(GetTray()->IsPopupVisible());
-  EXPECT_EQ(notifications_to_add,
-            GetMessageCenter()->NotificationCount());
+  EXPECT_EQ(notifications_to_add, GetMessageCenter()->NotificationCount());
   NotificationList::PopupNotifications popups =
       GetMessageCenter()->GetPopupNotifications();
   EXPECT_EQ(message_center::kMaxVisiblePopupNotifications, popups.size());
@@ -498,7 +491,8 @@ TEST_F(WebNotificationTrayTest, TouchFeedback) {
   generator.Dispatch(&press);
   EXPECT_TRUE(tray->draw_background_as_active());
 
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, center_point, touch_id,
+  ui::TouchEvent release(
+      ui::ET_TOUCH_RELEASED, center_point, touch_id,
       press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
   generator.Dispatch(&release);
   EXPECT_TRUE(tray->draw_background_as_active());
@@ -528,13 +522,15 @@ TEST_F(WebNotificationTrayTest, TouchFeedbackCancellation) {
   EXPECT_TRUE(tray->draw_background_as_active());
 
   gfx::Point out_of_bounds(bounds.x() - 1, center_point.y());
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, out_of_bounds, touch_id,
-                      press.time_stamp()+base::TimeDelta::FromMilliseconds(50));
+  ui::TouchEvent move(
+      ui::ET_TOUCH_MOVED, out_of_bounds, touch_id,
+      press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
   generator.Dispatch(&move);
   EXPECT_FALSE(tray->draw_background_as_active());
 
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, out_of_bounds, touch_id,
-      move.time_stamp()+base::TimeDelta::FromMilliseconds(50));
+  ui::TouchEvent release(
+      ui::ET_TOUCH_RELEASED, out_of_bounds, touch_id,
+      move.time_stamp() + base::TimeDelta::FromMilliseconds(50));
   generator.Dispatch(&release);
   EXPECT_FALSE(tray->draw_background_as_active());
   EXPECT_FALSE(tray->IsMessageCenterBubbleVisible());

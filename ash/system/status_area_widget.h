@@ -54,9 +54,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   WebNotificationTray* web_notification_tray() {
     return web_notification_tray_;
   }
-  OverviewButtonTray* overview_button_tray() {
-    return overview_button_tray_;
-  }
+  OverviewButtonTray* overview_button_tray() { return overview_button_tray_; }
   WmShelf* wm_shelf() { return wm_shelf_; }
 
   LoginStatus login_status() const { return login_status_; }

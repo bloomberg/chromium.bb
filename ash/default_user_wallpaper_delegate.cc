@@ -19,32 +19,28 @@ int DefaultUserWallpaperDelegate::GetAnimationDurationOverride() {
 }
 
 void DefaultUserWallpaperDelegate::SetAnimationDurationOverride(
-    int animation_duration_in_ms) {
-}
+    int animation_duration_in_ms) {}
 
 bool DefaultUserWallpaperDelegate::ShouldShowInitialAnimation() {
   return false;
 }
 
-void DefaultUserWallpaperDelegate::UpdateWallpaper(bool clear_cache) {
-}
+void DefaultUserWallpaperDelegate::UpdateWallpaper(bool clear_cache) {}
 
 void DefaultUserWallpaperDelegate::InitializeWallpaper() {
-  ash::Shell::GetInstance()->desktop_background_controller()->
-      CreateEmptyWallpaper();
+  ash::Shell::GetInstance()
+      ->desktop_background_controller()
+      ->CreateEmptyWallpaper();
 }
 
-void DefaultUserWallpaperDelegate::OpenSetWallpaperPage() {
-}
+void DefaultUserWallpaperDelegate::OpenSetWallpaperPage() {}
 
 bool DefaultUserWallpaperDelegate::CanOpenSetWallpaperPage() {
   return false;
 }
 
-void DefaultUserWallpaperDelegate::OnWallpaperAnimationFinished() {
-}
+void DefaultUserWallpaperDelegate::OnWallpaperAnimationFinished() {}
 
-void DefaultUserWallpaperDelegate::OnWallpaperBootAnimationFinished() {
-}
+void DefaultUserWallpaperDelegate::OnWallpaperBootAnimationFinished() {}
 
 }  // namespace ash

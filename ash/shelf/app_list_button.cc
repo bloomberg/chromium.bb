@@ -46,7 +46,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   SetSize(
       gfx::Size(GetShelfConstant(SHELF_SIZE), GetShelfConstant(SHELF_SIZE)));
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-                      kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
+      kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
   set_notify_action(CustomButton::NOTIFY_ON_PRESS);
 }
 
@@ -76,35 +76,35 @@ bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
 
 void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
-   case ui::ET_GESTURE_SCROLL_BEGIN:
-     if (switches::IsTouchFeedbackEnabled())
-       SetDrawBackgroundAsActive(false);
-     shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
-     event->SetHandled();
-     return;
-   case ui::ET_GESTURE_SCROLL_UPDATE:
-     shelf_view_->PointerDraggedOnButton(this, ShelfView::TOUCH, *event);
-     event->SetHandled();
-     return;
-   case ui::ET_GESTURE_SCROLL_END:
-   case ui::ET_SCROLL_FLING_START:
-     shelf_view_->PointerReleasedOnButton(this, ShelfView::TOUCH, false);
-     event->SetHandled();
-     return;
-   case ui::ET_GESTURE_TAP_DOWN:
-     if (switches::IsTouchFeedbackEnabled())
-       SetDrawBackgroundAsActive(true);
-     ImageButton::OnGestureEvent(event);
-     break;
-   case ui::ET_GESTURE_TAP_CANCEL:
-   case ui::ET_GESTURE_TAP:
-     if (switches::IsTouchFeedbackEnabled())
-       SetDrawBackgroundAsActive(false);
-     ImageButton::OnGestureEvent(event);
-     break;
-   default:
-     ImageButton::OnGestureEvent(event);
-     return;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      if (switches::IsTouchFeedbackEnabled())
+        SetDrawBackgroundAsActive(false);
+      shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
+      event->SetHandled();
+      return;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      shelf_view_->PointerDraggedOnButton(this, ShelfView::TOUCH, *event);
+      event->SetHandled();
+      return;
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      shelf_view_->PointerReleasedOnButton(this, ShelfView::TOUCH, false);
+      event->SetHandled();
+      return;
+    case ui::ET_GESTURE_TAP_DOWN:
+      if (switches::IsTouchFeedbackEnabled())
+        SetDrawBackgroundAsActive(true);
+      ImageButton::OnGestureEvent(event);
+      break;
+    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::ET_GESTURE_TAP:
+      if (switches::IsTouchFeedbackEnabled())
+        SetDrawBackgroundAsActive(false);
+      ImageButton::OnGestureEvent(event);
+      break;
+    default:
+      ImageButton::OnGestureEvent(event);
+      return;
   }
 }
 
@@ -247,8 +247,7 @@ void AppListButton::NotifyClick(const ui::Event& event) {
     listener_->ButtonPressed(this, event, ink_drop());
 }
 
-void AppListButton::SetDrawBackgroundAsActive(
-    bool draw_background_as_active) {
+void AppListButton::SetDrawBackgroundAsActive(bool draw_background_as_active) {
   if (draw_background_as_active_ == draw_background_as_active)
     return;
   draw_background_as_active_ = draw_background_as_active;

@@ -20,8 +20,7 @@ class HoverHighlightView;
 
 namespace tray {
 
-class AudioDetailedView : public TrayDetailsView,
-                          public ViewClickListener {
+class AudioDetailedView : public TrayDetailsView, public ViewClickListener {
  public:
   explicit AudioDetailedView(SystemTrayItem* owner);
 

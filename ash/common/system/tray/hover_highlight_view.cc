@@ -47,8 +47,7 @@ HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
   set_notify_enter_exit_on_child(true);
 }
 
-HoverHighlightView::~HoverHighlightView() {
-}
+HoverHighlightView::~HoverHighlightView() {}
 
 bool HoverHighlightView::GetTooltipText(const gfx::Point& p,
                                         base::string16* tooltip) const {
@@ -61,8 +60,8 @@ bool HoverHighlightView::GetTooltipText(const gfx::Point& p,
 void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                                          const base::string16& text,
                                          bool highlight) {
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 3, kTrayPopupPaddingBetweenItems));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3,
+                                        kTrayPopupPaddingBetweenItems));
   DoAddIconAndLabel(image, text, highlight);
 }
 
@@ -134,9 +133,9 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
     const gfx::ImageSkia* check =
         rb.GetImageNamed(IDR_MENU_CHECK).ToImageSkia();
     int margin = kTrayPopupPaddingHorizontal +
-        kTrayPopupDetailsLabelExtraLeftMargin - kCheckLabelPadding;
-    SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 3, kCheckLabelPadding));
+                 kTrayPopupDetailsLabelExtraLeftMargin - kCheckLabelPadding;
+    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3,
+                                          kCheckLabelPadding));
     views::ImageView* image_view = new FixedSizedImageView(margin, 0);
     image_view->SetImage(check);
     image_view->SetHorizontalAlignment(views::ImageView::TRAILING);

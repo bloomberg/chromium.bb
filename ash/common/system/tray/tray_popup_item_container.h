@@ -20,9 +20,7 @@ class TrayPopupItemContainer : public views::View {
 
   ~TrayPopupItemContainer() override;
 
-  bool active() {
-    return active_;
-  }
+  bool active() { return active_; }
 
  private:
   // Sets whether the active background is to be used, and triggers a paint.

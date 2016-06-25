@@ -52,11 +52,11 @@ TEST_P(ScreenUtilTest, Bounds) {
 
   // Display bounds
   EXPECT_EQ("0,0 600x600",
-            ScreenUtil::GetDisplayBoundsInParent(
-                primary->GetNativeView()).ToString());
+            ScreenUtil::GetDisplayBoundsInParent(primary->GetNativeView())
+                .ToString());
   EXPECT_EQ("0,0 500x500",
-            ScreenUtil::GetDisplayBoundsInParent(
-                secondary->GetNativeView()).ToString());
+            ScreenUtil::GetDisplayBoundsInParent(secondary->GetNativeView())
+                .ToString());
 
   // Work area bounds
   EXPECT_EQ(
@@ -79,7 +79,7 @@ TEST_P(ScreenUtilTest, StabilityTest) {
   views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
       NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
   EXPECT_EQ(Shell::GetAllRootWindows()[1],
-      secondary->GetNativeView()->GetRootWindow());
+            secondary->GetNativeView()->GetRootWindow());
   secondary->Show();
   secondary->Maximize();
   secondary->Show();
@@ -101,23 +101,23 @@ TEST_P(ScreenUtilTest, ConvertRect) {
       NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
   secondary->Show();
 
-  EXPECT_EQ(
-      "0,0 100x100",
-      ScreenUtil::ConvertRectFromScreen(
-          primary->GetNativeView(), gfx::Rect(10, 10, 100, 100)).ToString());
-  EXPECT_EQ(
-      "10,10 100x100",
-      ScreenUtil::ConvertRectFromScreen(
-          secondary->GetNativeView(), gfx::Rect(620, 20, 100, 100)).ToString());
+  EXPECT_EQ("0,0 100x100",
+            ScreenUtil::ConvertRectFromScreen(primary->GetNativeView(),
+                                              gfx::Rect(10, 10, 100, 100))
+                .ToString());
+  EXPECT_EQ("10,10 100x100",
+            ScreenUtil::ConvertRectFromScreen(secondary->GetNativeView(),
+                                              gfx::Rect(620, 20, 100, 100))
+                .ToString());
 
-  EXPECT_EQ(
-      "40,40 100x100",
-      ScreenUtil::ConvertRectToScreen(
-          primary->GetNativeView(), gfx::Rect(30, 30, 100, 100)).ToString());
-  EXPECT_EQ(
-      "650,50 100x100",
-      ScreenUtil::ConvertRectToScreen(
-          secondary->GetNativeView(), gfx::Rect(40, 40, 100, 100)).ToString());
+  EXPECT_EQ("40,40 100x100",
+            ScreenUtil::ConvertRectToScreen(primary->GetNativeView(),
+                                            gfx::Rect(30, 30, 100, 100))
+                .ToString());
+  EXPECT_EQ("650,50 100x100",
+            ScreenUtil::ConvertRectToScreen(secondary->GetNativeView(),
+                                            gfx::Rect(40, 40, 100, 100))
+                .ToString());
 }
 
 TEST_P(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {

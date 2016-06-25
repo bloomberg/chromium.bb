@@ -331,9 +331,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   DisplayConfigurationController* display_configuration_controller() {
     return display_configuration_controller_.get();
   }
-  ::wm::CompoundEventFilter* env_filter() {
-    return env_filter_.get();
-  }
+  ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
   views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
@@ -357,9 +355,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   MruWindowTracker* mru_window_tracker() {
     return wm_shell_common_->mru_window_tracker();
   }
-  VideoDetector* video_detector() {
-    return video_detector_.get();
-  }
+  VideoDetector* video_detector() { return video_detector_.get(); }
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
   }
@@ -403,9 +399,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return new_window_delegate_.get();
   }
 
-  MediaDelegate* media_delegate() {
-    return media_delegate_.get();
-  }
+  MediaDelegate* media_delegate() { return media_delegate_.get(); }
 
   HighContrastController* high_contrast_controller() {
     return high_contrast_controller_.get();
@@ -431,9 +425,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return shelf_item_delegate_manager_.get();
   }
 
-  base::SequencedWorkerPool* blocking_pool() {
-    return blocking_pool_;
-  }
+  base::SequencedWorkerPool* blocking_pool() { return blocking_pool_; }
 
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
@@ -520,20 +512,14 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
 #endif  // defined(OS_CHROMEOS)
 
-  ShelfModel* shelf_model() {
-    return shelf_model_.get();
-  }
+  ShelfModel* shelf_model() { return shelf_model_.get(); }
 
-  WindowPositioner* window_positioner() {
-    return window_positioner_.get();
-  }
+  WindowPositioner* window_positioner() { return window_positioner_.get(); }
 
   // Returns the launcher delegate, creating if necesary.
   ShelfDelegate* GetShelfDelegate();
 
-  UserMetricsRecorder* metrics() {
-    return user_metrics_recorder_.get();
-  }
+  UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
 
   void SetTouchHudProjectionEnabled(bool enabled);
 

@@ -63,11 +63,9 @@ class MultiProfileMediaTrayView : public TrayItemView,
 }  // namespace tray
 
 MultiProfileMediaTrayItem::MultiProfileMediaTrayItem(SystemTray* system_tray)
-    : SystemTrayItem(system_tray), tray_view_(NULL) {
-}
+    : SystemTrayItem(system_tray), tray_view_(NULL) {}
 
-MultiProfileMediaTrayItem::~MultiProfileMediaTrayItem() {
-}
+MultiProfileMediaTrayItem::~MultiProfileMediaTrayItem() {}
 
 views::View* MultiProfileMediaTrayItem::CreateTrayView(LoginStatus status) {
   tray_view_ = new tray::MultiProfileMediaTrayView(this);

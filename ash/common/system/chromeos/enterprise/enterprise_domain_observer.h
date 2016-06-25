@@ -17,4 +17,3 @@ class EnterpriseDomainObserver {
 }  // namespace ash
 
 #endif  // ASH_COMMON_SYSTEM_CHROMEOS_ENTERPRISE_ENTERPRISE_DOMAIN_OBSERVER_H_
-

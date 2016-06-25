@@ -47,9 +47,10 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view, ShelfAlignment alignment) {
         kTrayLabelItemHorizontalPaddingBottomAlignment));
   } else {
     // Center the label for vertical launcher alignment.
-    int horizontal_padding = std::max(0,
-        (tray_view->GetPreferredSize().width() -
-        tray_view->label()->GetPreferredSize().width()) / 2);
+    int horizontal_padding =
+        std::max(0, (tray_view->GetPreferredSize().width() -
+                     tray_view->label()->GetPreferredSize().width()) /
+                        2);
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
         kTrayLabelItemVerticalPaddingVerticalAlignment, horizontal_padding,
         kTrayLabelItemVerticalPaddingVerticalAlignment, horizontal_padding));

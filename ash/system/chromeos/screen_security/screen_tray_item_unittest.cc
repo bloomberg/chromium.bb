@@ -36,8 +36,7 @@ void ClickViewCenter(views::View* view) {
 
 class ScreenTrayItemTest : public ash::test::AshTestBase {
  public:
-  ScreenTrayItemTest()
-      : tray_item_(NULL), stop_callback_hit_count_(0) {}
+  ScreenTrayItemTest() : tray_item_(NULL), stop_callback_hit_count_(0) {}
   ~ScreenTrayItemTest() override {}
 
   ScreenTrayItem* tray_item() { return tray_item_; }
@@ -55,13 +54,9 @@ class ScreenTrayItemTest : public ash::test::AshTestBase {
         base::Bind(&ScreenTrayItemTest::StopCallback, base::Unretained(this)));
   }
 
-  void StopSession() {
-    tray_item_->Stop();
-  }
+  void StopSession() { tray_item_->Stop(); }
 
-  void StopCallback() {
-    stop_callback_hit_count_++;
-  }
+  void StopCallback() { stop_callback_hit_count_++; }
 
  private:
   ScreenTrayItem* tray_item_;
@@ -118,8 +113,12 @@ void TestStartAndStop(ScreenTrayItemTest* test) {
   EXPECT_EQ(1, test->stop_callback_hit_count());
 }
 
-TEST_F(ScreenCaptureTest, StartAndStop) { TestStartAndStop(this); }
-TEST_F(ScreenShareTest, StartAndStop) { TestStartAndStop(this); }
+TEST_F(ScreenCaptureTest, StartAndStop) {
+  TestStartAndStop(this);
+}
+TEST_F(ScreenShareTest, StartAndStop) {
+  TestStartAndStop(this);
+}
 
 void TestNotificationStartAndStop(ScreenTrayItemTest* test,
                                   const base::Closure& start_function,
@@ -138,31 +137,29 @@ void TestNotificationStartAndStop(ScreenTrayItemTest* test,
 }
 
 TEST_F(ScreenCaptureTest, NotificationStartAndStop) {
-  base::Closure start_function =
-      base::Bind(&SystemTrayNotifier::NotifyScreenCaptureStart,
-          base::Unretained(WmShell::Get()->system_tray_notifier()),
-          base::Bind(&ScreenTrayItemTest::StopCallback,
-                     base::Unretained(this)),
-                     base::UTF8ToUTF16(kTestScreenCaptureAppName));
+  base::Closure start_function = base::Bind(
+      &SystemTrayNotifier::NotifyScreenCaptureStart,
+      base::Unretained(WmShell::Get()->system_tray_notifier()),
+      base::Bind(&ScreenTrayItemTest::StopCallback, base::Unretained(this)),
+      base::UTF8ToUTF16(kTestScreenCaptureAppName));
 
   base::Closure stop_function =
       base::Bind(&SystemTrayNotifier::NotifyScreenCaptureStop,
-          base::Unretained(WmShell::Get()->system_tray_notifier()));
+                 base::Unretained(WmShell::Get()->system_tray_notifier()));
 
   TestNotificationStartAndStop(this, start_function, stop_function);
 }
 
 TEST_F(ScreenShareTest, NotificationStartAndStop) {
-  base::Closure start_func =
-      base::Bind(&SystemTrayNotifier::NotifyScreenShareStart,
-          base::Unretained(WmShell::Get()->system_tray_notifier()),
-          base::Bind(&ScreenTrayItemTest::StopCallback,
-                     base::Unretained(this)),
-                     base::UTF8ToUTF16(kTestScreenShareHelperName));
+  base::Closure start_func = base::Bind(
+      &SystemTrayNotifier::NotifyScreenShareStart,
+      base::Unretained(WmShell::Get()->system_tray_notifier()),
+      base::Bind(&ScreenTrayItemTest::StopCallback, base::Unretained(this)),
+      base::UTF8ToUTF16(kTestScreenShareHelperName));
 
   base::Closure stop_func =
       base::Bind(&SystemTrayNotifier::NotifyScreenShareStop,
-          base::Unretained(WmShell::Get()->system_tray_notifier()));
+                 base::Unretained(WmShell::Get()->system_tray_notifier()));
 
   TestNotificationStartAndStop(this, start_func, stop_func);
 }
@@ -178,8 +175,12 @@ void TestNotificationView(ScreenTrayItemTest* test) {
   test->StopSession();
 }
 
-TEST_F(ScreenCaptureTest, NotificationView) { TestNotificationView(this); }
-TEST_F(ScreenShareTest, NotificationView) { TestNotificationView(this); }
+TEST_F(ScreenCaptureTest, NotificationView) {
+  TestNotificationView(this);
+}
+TEST_F(ScreenShareTest, NotificationView) {
+  TestNotificationView(this);
+}
 
 void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   ScreenTrayItem* tray_item = test->tray_item();

@@ -19,7 +19,7 @@ class Rect;
 }
 
 namespace ash {
-namespace  internal {
+namespace internal {
 class DisplayManager;
 }
 

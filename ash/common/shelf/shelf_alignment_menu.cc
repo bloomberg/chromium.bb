@@ -17,15 +17,13 @@ ShelfAlignmentMenu::ShelfAlignmentMenu(WmShelf* wm_shelf)
   DCHECK(wm_shelf_);
   const int align_group_id = 1;
   set_delegate(this);
-  AddRadioItemWithStringId(MENU_ALIGN_LEFT,
-                           IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_LEFT,
-                           align_group_id);
+  AddRadioItemWithStringId(
+      MENU_ALIGN_LEFT, IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_LEFT, align_group_id);
   AddRadioItemWithStringId(MENU_ALIGN_BOTTOM,
                            IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_BOTTOM,
                            align_group_id);
-  AddRadioItemWithStringId(MENU_ALIGN_RIGHT,
-                           IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_RIGHT,
-                           align_group_id);
+  AddRadioItemWithStringId(
+      MENU_ALIGN_RIGHT, IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_RIGHT, align_group_id);
 }
 
 ShelfAlignmentMenu::~ShelfAlignmentMenu() {}

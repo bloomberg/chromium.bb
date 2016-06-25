@@ -67,9 +67,9 @@ class ASH_EXPORT SessionStateAnimatorImpl : public SessionStateAnimator {
   friend class AnimationSequence;
 
   virtual void StartAnimationInSequence(int container_mask,
-      AnimationType type,
-      AnimationSpeed speed,
-      AnimationSequence* observer);
+                                        AnimationType type,
+                                        AnimationSpeed speed,
+                                        AnimationSequence* observer);
 
   // Apply animation |type| to window |window| with |speed| and add |observer|
   // if it is not NULL to the last animation sequence.

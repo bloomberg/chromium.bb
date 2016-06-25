@@ -60,6 +60,6 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TraySupervisedUser);
 };
 
-} // namespace ash
+}  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H

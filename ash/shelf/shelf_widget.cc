@@ -55,7 +55,7 @@ const int kNumBlackPixels = 3;
 const int kDimAlpha = 128;
 
 // The time to dim and un-dim.
-const int kTimeToDimMs = 3000;  // Slow in dimming.
+const int kTimeToDimMs = 3000;   // Slow in dimming.
 const int kTimeToUnDimMs = 200;  // Fast in activating.
 
 // Class used to slightly dim shelf items when maximized and visible.
@@ -154,8 +154,7 @@ DimmerView::DimmerView(ShelfWidget* shelf_widget,
   SetHovered(false);
 }
 
-DimmerView::~DimmerView() {
-}
+DimmerView::~DimmerView() {}
 
 void DimmerView::SetHovered(bool hovered) {
   // Remember the hovered state so that we can correct the state once a
@@ -197,9 +196,7 @@ void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
 DimmerView::DimmerEventFilter::DimmerEventFilter(DimmerView* owner)
-    : owner_(owner),
-      mouse_inside_(false),
-      touch_inside_(false) {
+    : owner_(owner), mouse_inside_(false), touch_inside_(false) {
   Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
@@ -482,12 +479,11 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
         shelf_corner = gfx::ImageSkiaOperations::CreateRotatedImage(
             shelf_corner, SkBitmapOperations::ROTATION_90_CW);
       }
-      canvas->DrawImageInt(
-          shelf_corner, 0, 0, shelf_corner.width(), shelf_corner.height(),
-          dock_bounds.x() > 0
-              ? dock_bounds.x()
-              : dock_bounds.width() - height(),
-          0, height(), height(), false, paint);
+      canvas->DrawImageInt(shelf_corner, 0, 0, shelf_corner.width(),
+                           shelf_corner.height(),
+                           dock_bounds.x() > 0 ? dock_bounds.x()
+                                               : dock_bounds.width() - height(),
+                           0, height(), height(), false, paint);
       // The part of the shelf background that is just below the docked windows
       // is drawn using the last (lowest) 1-pixel tall strip of the image asset.
       // This avoids showing the border 3D shadow between the shelf and the
@@ -568,8 +564,9 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
                          WmShelfAura* wm_shelf_aura,
                          WorkspaceController* workspace_controller)
     : delegate_view_(new DelegateView(this)),
-      background_animator_(
-          delegate_view_, 0, GetShelfConstant(SHELF_BACKGROUND_ALPHA)),
+      background_animator_(delegate_view_,
+                           0,
+                           GetShelfConstant(SHELF_BACKGROUND_ALPHA)),
       activating_as_fallback_(false) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -599,8 +596,9 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
   status_area_widget_ =
       new StatusAreaWidget(wm_status_container, wm_shelf_aura);
   status_area_widget_->CreateTrayViews();
-  if (Shell::GetInstance()->session_state_delegate()->
-          IsActiveUserSessionStarted()) {
+  if (Shell::GetInstance()
+          ->session_state_delegate()
+          ->IsActiveUserSessionStarted()) {
     status_area_widget_->Show();
   }
   WmShell::Get()->focus_cycler()->AddWidget(status_area_widget_);
@@ -634,8 +632,8 @@ void ShelfWidget::SetPaintsBackground(
       (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
   std::unique_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
   if (change_type != BACKGROUND_CHANGE_IMMEDIATE) {
-    opaque_background_animation.reset(new ui::ScopedLayerAnimationSettings(
-        opaque_background->GetAnimator()));
+    opaque_background_animation.reset(
+        new ui::ScopedLayerAnimationSettings(opaque_background->GetAnimator()));
     opaque_background_animation->SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kTimeToSwitchBackgroundMs));
   }
@@ -664,8 +662,8 @@ void ShelfWidget::HideShelfBehindBlackBar(bool hide, int animation_time_ms) {
   ui::Layer* opaque_foreground = delegate_view_->opaque_foreground();
   float target_opacity = hide ? 1.0f : 0.0f;
   std::unique_ptr<ui::ScopedLayerAnimationSettings> opaque_foreground_animation;
-  opaque_foreground_animation.reset(new ui::ScopedLayerAnimationSettings(
-      opaque_foreground->GetAnimator()));
+  opaque_foreground_animation.reset(
+      new ui::ScopedLayerAnimationSettings(opaque_foreground->GetAnimator()));
   opaque_foreground_animation->SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(animation_time_ms));
   opaque_foreground_animation->SetPreemptionStrategy(

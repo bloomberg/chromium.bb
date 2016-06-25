@@ -9,12 +9,10 @@
 
 namespace ash {
 
-VPNProvider::Key::Key() : third_party(false) {
-}
+VPNProvider::Key::Key() : third_party(false) {}
 
 VPNProvider::Key::Key(const std::string& extension_id)
-    : third_party(true), extension_id(extension_id) {
-}
+    : third_party(true), extension_id(extension_id) {}
 
 bool VPNProvider::Key::operator==(const Key& other) const {
   return other.third_party == third_party && other.extension_id == extension_id;
@@ -33,17 +31,13 @@ bool VPNProvider::Key::MatchesNetwork(
 }
 
 VPNProvider::VPNProvider(const Key& key, const std::string& name)
-    : key(key), name(name) {
-}
+    : key(key), name(name) {}
 
-VPNDelegate::Observer::~Observer() {
-}
+VPNDelegate::Observer::~Observer() {}
 
-VPNDelegate::VPNDelegate() {
-}
+VPNDelegate::VPNDelegate() {}
 
-VPNDelegate::~VPNDelegate() {
-}
+VPNDelegate::~VPNDelegate() {}
 
 void VPNDelegate::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

@@ -32,24 +32,21 @@ bool CapsLockIsEnabled() {
              ? ime->GetImeKeyboard()->CapsLockIsEnabled()
              : false;
 }
-
 }
 
 class CapsLockDefaultView : public ActionableView {
  public:
   CapsLockDefaultView()
-      : text_label_(new views::Label),
-        shortcut_label_(new views::Label) {
+      : text_label_(new views::Label), shortcut_label_(new views::Label) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                          kTrayPopupPaddingHorizontal,
-                                          0,
+                                          kTrayPopupPaddingHorizontal, 0,
                                           kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     FixedSizedImageView* image =
         new FixedSizedImageView(0, kTrayPopupItemHeight);
-    image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).
-        ToImageSkia());
+    image->SetImage(
+        bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).ToImageSkia());
     AddChildView(image);
 
     text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -64,22 +61,24 @@ class CapsLockDefaultView : public ActionableView {
   // Updates the label text and the shortcut text.
   void Update(bool caps_lock_enabled) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    const int text_string_id = caps_lock_enabled ?
-        IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED :
-        IDS_ASH_STATUS_TRAY_CAPS_LOCK_DISABLED;
+    const int text_string_id = caps_lock_enabled
+                                   ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED
+                                   : IDS_ASH_STATUS_TRAY_CAPS_LOCK_DISABLED;
     text_label_->SetText(bundle.GetLocalizedString(text_string_id));
 
     int shortcut_string_id = 0;
     bool search_mapped_to_caps_lock =
         WmShell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock();
     if (caps_lock_enabled) {
-      shortcut_string_id = search_mapped_to_caps_lock ?
-          IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH_OR_SHIFT :
-          IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH_OR_SHIFT;
+      shortcut_string_id =
+          search_mapped_to_caps_lock
+              ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH_OR_SHIFT
+              : IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH_OR_SHIFT;
     } else {
-      shortcut_string_id = search_mapped_to_caps_lock ?
-          IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH :
-          IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH;
+      shortcut_string_id =
+          search_mapped_to_caps_lock
+              ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH
+              : IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH;
     }
     shortcut_label_->SetText(bundle.GetLocalizedString(shortcut_string_id));
 
@@ -97,8 +96,8 @@ class CapsLockDefaultView : public ActionableView {
         width() - shortcut_label_->width() - kTrayPopupPaddingHorizontal;
     shortcut_label_->SetX(new_x);
     const gfx::Size text_size = text_label_->size();
-    text_label_->SetSize(gfx::Size(text_size.width() + new_x - old_x,
-                                   text_size.height()));
+    text_label_->SetSize(
+        gfx::Size(text_size.width() + new_x - old_x, text_size.height()));
   }
 
   void GetAccessibleState(ui::AXViewState* state) override {
@@ -112,9 +111,9 @@ class CapsLockDefaultView : public ActionableView {
         chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
     if (keyboard) {
       WmShell::Get()->RecordUserMetricsAction(
-          keyboard->CapsLockIsEnabled() ?
-          UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK :
-          UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK);
+          keyboard->CapsLockIsEnabled()
+              ? UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK
+              : UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK);
       keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
     }
     return true;
@@ -184,14 +183,14 @@ views::View* TrayCapsLock::CreateDetailedView(LoginStatus status) {
   DCHECK(detailed_ == NULL);
   detailed_ = new views::View;
 
-  detailed_->SetLayoutManager(new
-      views::BoxLayout(views::BoxLayout::kHorizontal,
-      kTrayPopupPaddingHorizontal, 10, kTrayPopupPaddingBetweenItems));
+  detailed_->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kTrayPopupPaddingHorizontal, 10,
+      kTrayPopupPaddingBetweenItems));
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* image = new views::ImageView;
-  image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).
-      ToImageSkia());
+  image->SetImage(
+      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).ToImageSkia());
 
   detailed_->AddChildView(image);
 

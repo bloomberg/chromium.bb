@@ -61,8 +61,8 @@ void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
   tray_container()->SetBorder(views::Border::NullBorder());
 
   // Pad button size to align with other controls in the system tray.
-  const gfx::ImageSkia image = button_->GetImage(
-      views::CustomButton::STATE_NORMAL);
+  const gfx::ImageSkia image =
+      button_->GetImage(views::CustomButton::STATE_NORMAL);
   int top_padding = (kTrayBarButtonWidth - image.height()) / 2;
   int left_padding = (kTrayBarButtonWidth - image.width()) / 2;
   int bottom_padding = kTrayBarButtonWidth - image.height() - top_padding;
@@ -78,10 +78,7 @@ void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
   }
 
   button_->SetBorder(views::Border::CreateEmptyBorder(
-      top_padding,
-      left_padding,
-      bottom_padding,
-      right_padding));
+      top_padding, left_padding, bottom_padding, right_padding));
 }
 
 base::string16 VirtualKeyboardTray::GetAccessibleNameForTray() {
@@ -90,8 +87,7 @@ base::string16 VirtualKeyboardTray::GetAccessibleNameForTray() {
 }
 
 void VirtualKeyboardTray::HideBubbleWithView(
-    const views::TrayBubbleView* bubble_view) {
-}
+    const views::TrayBubbleView* bubble_view) {}
 
 void VirtualKeyboardTray::ClickedOutsideBubble() {}
 

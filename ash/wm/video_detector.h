@@ -42,7 +42,7 @@ class ASH_EXPORT VideoDetectorObserver {
 // continuous scrolling of a page.
 class ASH_EXPORT VideoDetector : public aura::EnvObserver,
                                  public aura::WindowObserver,
-                                 public ShellObserver  {
+                                 public ShellObserver {
  public:
   // Minimum dimensions in pixels that a window update must have to be
   // considered a potential video frame.
@@ -78,7 +78,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
 
  private:
   class WindowInfo;
-  typedef std::map<aura::Window*, linked_ptr<WindowInfo> > WindowInfoMap;
+  typedef std::map<aura::Window*, linked_ptr<WindowInfo>> WindowInfoMap;
 
   // Possibly notifies observers in response to detection of a video in
   // |window|.  Notifications are rate-limited and don't get sent if the window

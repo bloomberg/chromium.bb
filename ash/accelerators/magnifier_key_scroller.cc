@@ -27,7 +27,7 @@ bool MagnifierKeyScroller::IsEnabled() {
 #endif
 
   return (magnifier_key_scroller_enabled || has_switch) &&
-      ash::Shell::GetInstance()->magnification_controller()->IsEnabled();
+         ash::Shell::GetInstance()->magnification_controller()->IsEnabled();
 }
 
 // static
@@ -44,16 +44,15 @@ std::unique_ptr<ui::EventHandler> MagnifierKeyScroller::CreateHandler() {
 }
 
 bool MagnifierKeyScroller::ShouldProcessEvent(const ui::KeyEvent* event) const {
-  return IsEnabled() &&
-      (event->key_code() == ui::VKEY_UP ||
-       event->key_code() == ui::VKEY_DOWN ||
-       event->key_code() == ui::VKEY_LEFT ||
-       event->key_code() == ui::VKEY_RIGHT);
+  return IsEnabled() && (event->key_code() == ui::VKEY_UP ||
+                         event->key_code() == ui::VKEY_DOWN ||
+                         event->key_code() == ui::VKEY_LEFT ||
+                         event->key_code() == ui::VKEY_RIGHT);
 }
 
 bool MagnifierKeyScroller::IsStartEvent(const ui::KeyEvent* event) const {
   return event->type() == ui::ET_KEY_PRESSED &&
-      event->flags() & ui::EF_SHIFT_DOWN;
+         event->flags() & ui::EF_SHIFT_DOWN;
 }
 
 bool MagnifierKeyScroller::ShouldStopEventPropagation() const {

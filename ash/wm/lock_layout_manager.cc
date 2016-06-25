@@ -66,12 +66,10 @@ void LockLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   child->RemoveObserver(this);
 }
 
-void LockLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
-}
+void LockLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {}
 
 void LockLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
-                                                       bool visible) {
-}
+                                                       bool visible) {}
 
 void LockLayoutManager::SetChildBounds(aura::Window* child,
                                        const gfx::Rect& requested_bounds) {
@@ -81,16 +79,13 @@ void LockLayoutManager::SetChildBounds(aura::Window* child,
 }
 
 void LockLayoutManager::OnWindowHierarchyChanged(
-    const WindowObserver::HierarchyChangeParams& params) {
-}
+    const WindowObserver::HierarchyChangeParams& params) {}
 
 void LockLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                 const void* key,
-                                                intptr_t old) {
-}
+                                                intptr_t old) {}
 
-void LockLayoutManager::OnWindowStackingChanged(aura::Window* window) {
-}
+void LockLayoutManager::OnWindowStackingChanged(aura::Window* window) {}
 
 void LockLayoutManager::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
@@ -132,8 +127,7 @@ void LockLayoutManager::AdjustWindowsForWorkAreaChange(
          event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
 
   for (aura::Window::Windows::const_iterator it = window_->children().begin();
-       it != window_->children().end();
-       ++it) {
+       it != window_->children().end(); ++it) {
     wm::GetWindowState(*it)->OnWMEvent(event);
   }
 }

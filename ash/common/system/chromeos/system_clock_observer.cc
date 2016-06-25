@@ -11,16 +11,15 @@
 namespace ash {
 
 SystemClockObserver::SystemClockObserver() {
-  chromeos::DBusThreadManager::Get()->GetSystemClockClient()
-      ->AddObserver(this);
+  chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(this);
   chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
   can_set_time_ =
       chromeos::DBusThreadManager::Get()->GetSystemClockClient()->CanSetTime();
 }
 
 SystemClockObserver::~SystemClockObserver() {
-  chromeos::DBusThreadManager::Get()->GetSystemClockClient()
-      ->RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
+      this);
   chromeos::system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 }
 

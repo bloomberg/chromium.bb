@@ -43,8 +43,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
   // Overridden from ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsScheduled() override {
     if (is_initial_animation_) {
-      root_window_controller_->
-          HandleInitialDesktopBackgroundAnimationStarted();
+      root_window_controller_->HandleInitialDesktopBackgroundAnimationStarted();
     }
   }
 
@@ -99,8 +98,8 @@ bool DesktopBackgroundWidgetController::Reparent(aura::Window* root_window,
                                                  int dest_container) {
   if (widget_) {
     widget_parent_->RemoveObserver(this);
-    views::Widget::ReparentNativeView(widget_->GetNativeView(),
-        root_window->GetChildById(dest_container));
+    views::Widget::ReparentNativeView(
+        widget_->GetNativeView(), root_window->GetChildById(dest_container));
     widget_parent_ = WmLookup::Get()->GetWindowForWidget(widget_)->GetParent();
     widget_parent_->AddObserver(this);
     return true;
@@ -128,9 +127,9 @@ void DesktopBackgroundWidgetController::StartAnimating(
     ui::ScopedLayerAnimationSettings settings(
         widget_->GetNativeView()->layer()->GetAnimator());
     settings.AddObserver(new ShowWallpaperAnimationObserver(
-        root_window_controller, widget_,
-        Shell::GetInstance()->user_wallpaper_delegate()->
-            ShouldShowInitialAnimation()));
+        root_window_controller, widget_, Shell::GetInstance()
+                                             ->user_wallpaper_delegate()
+                                             ->ShouldShowInitialAnimation()));
     // When |widget_| shows, AnimateShowWindowCommon() is called to do the
     // animation. Sets transition duration to 0 to avoid animating to the
     // show animation's initial values.
@@ -144,8 +143,7 @@ AnimatingDesktopController::AnimatingDesktopController(
   controller_.reset(component);
 }
 
-AnimatingDesktopController::~AnimatingDesktopController() {
-}
+AnimatingDesktopController::~AnimatingDesktopController() {}
 
 void AnimatingDesktopController::StopAnimating() {
   if (controller_) {

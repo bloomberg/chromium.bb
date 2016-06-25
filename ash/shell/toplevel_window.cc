@@ -50,11 +50,9 @@ void ToplevelWindow::ClearSavedStateForTest() {
   saved_state = NULL;
 }
 
-ToplevelWindow::ToplevelWindow(const CreateParams& params) : params_(params) {
-}
+ToplevelWindow::ToplevelWindow(const CreateParams& params) : params_(params) {}
 
-ToplevelWindow::~ToplevelWindow() {
-}
+ToplevelWindow::~ToplevelWindow() {}
 
 void ToplevelWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), SK_ColorDKGRAY);

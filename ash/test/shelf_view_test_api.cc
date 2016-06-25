@@ -40,8 +40,7 @@ namespace test {
 ShelfViewTestAPI::ShelfViewTestAPI(ShelfView* shelf_view)
     : shelf_view_(shelf_view) {}
 
-ShelfViewTestAPI::~ShelfViewTestAPI() {
-}
+ShelfViewTestAPI::~ShelfViewTestAPI() {}
 
 int ShelfViewTestAPI::GetButtonCount() {
   return shelf_view_->view_model_->view_size();
@@ -154,7 +153,7 @@ bool ShelfViewTestAPI::IsRippedOffFromShelf() {
 }
 
 bool ShelfViewTestAPI::DraggedItemFromOverflowToShelf() {
-    return shelf_view_->dragged_off_from_overflow_to_shelf_;
+  return shelf_view_->dragged_off_from_overflow_to_shelf_;
 }
 
 ShelfButtonPressedMetricTracker*

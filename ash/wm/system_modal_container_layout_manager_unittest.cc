@@ -50,7 +50,8 @@ bool AllRootWindowsHaveModalBackgroundsForContainer(int container_id) {
   for (std::vector<aura::Window*>::iterator iter = containers.begin();
        iter != containers.end(); ++iter) {
     has_modal_screen &= static_cast<SystemModalContainerLayoutManager*>(
-                            (*iter)->layout_manager())->has_modal_background();
+                            (*iter)->layout_manager())
+                            ->has_modal_background();
   }
   return has_modal_screen;
 }
@@ -93,8 +94,7 @@ class TestWindow : public views::WidgetDelegateView {
 
 class EventTestWindow : public TestWindow {
  public:
-  explicit EventTestWindow(bool modal) : TestWindow(modal),
-                                         mouse_presses_(0) {}
+  explicit EventTestWindow(bool modal) : TestWindow(modal), mouse_presses_(0) {}
   ~EventTestWindow() override {}
 
   aura::Window* OpenTestWindowWithContext(aura::Window* context) {
@@ -106,8 +106,7 @@ class EventTestWindow : public TestWindow {
 
   aura::Window* OpenTestWindowWithParent(aura::Window* parent) {
     DCHECK(parent);
-    views::Widget* widget =
-        views::Widget::CreateWindowWithParent(this, parent);
+    views::Widget* widget = views::Widget::CreateWindowWithParent(this, parent);
     widget->Show();
     return widget->GetNativeView();
   }
@@ -119,6 +118,7 @@ class EventTestWindow : public TestWindow {
   }
 
   int mouse_presses() const { return mouse_presses_; }
+
  private:
   int mouse_presses_;
 
@@ -195,7 +195,6 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
 
     DCHECK_EQ(show, keyboard->keyboard_visible());
   }
-
 };
 
 TEST_F(SystemModalContainerLayoutManagerTest, NonModalTransient) {
@@ -347,8 +346,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   EXPECT_EQ(1, transient_delegate->mouse_presses());
 
   for (int block_reason = FIRST_BLOCK_REASON;
-       block_reason < NUMBER_OF_BLOCK_REASONS;
-       ++block_reason) {
+       block_reason < NUMBER_OF_BLOCK_REASONS; ++block_reason) {
     // Create a window in the lock screen container and ensure that it receives
     // the mouse event instead of the modal window (crbug.com/110920).
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
@@ -464,8 +462,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
   EXPECT_FALSE(AllRootWindowsHaveLockedModalBackgrounds());
 
   for (int block_reason = FIRST_BLOCK_REASON;
-       block_reason < NUMBER_OF_BLOCK_REASONS;
-       ++block_reason) {
+       block_reason < NUMBER_OF_BLOCK_REASONS; ++block_reason) {
     // Normal system modal window while blocked.  Shows blocked system modal
     // background.
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));

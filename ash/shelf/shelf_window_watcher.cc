@@ -56,11 +56,9 @@ namespace ash {
 
 ShelfWindowWatcher::RootWindowObserver::RootWindowObserver(
     ShelfWindowWatcher* window_watcher)
-    : window_watcher_(window_watcher) {
-}
+    : window_watcher_(window_watcher) {}
 
-ShelfWindowWatcher::RootWindowObserver::~RootWindowObserver() {
-}
+ShelfWindowWatcher::RootWindowObserver::~RootWindowObserver() {}
 
 void ShelfWindowWatcher::RootWindowObserver::OnWindowDestroying(
     aura::Window* window) {
@@ -69,11 +67,9 @@ void ShelfWindowWatcher::RootWindowObserver::OnWindowDestroying(
 
 ShelfWindowWatcher::RemovedWindowObserver::RemovedWindowObserver(
     ShelfWindowWatcher* window_watcher)
-    : window_watcher_(window_watcher) {
-}
+    : window_watcher_(window_watcher) {}
 
-ShelfWindowWatcher::RemovedWindowObserver::~RemovedWindowObserver() {
-}
+ShelfWindowWatcher::RemovedWindowObserver::~RemovedWindowObserver() {}
 
 void ShelfWindowWatcher::RemovedWindowObserver::OnWindowParentChanged(
     aura::Window* window,
@@ -128,11 +124,10 @@ ShelfWindowWatcher::~ShelfWindowWatcher() {
 }
 
 void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
-  const ShelfItemDetails* item_details =
-      GetShelfItemDetailsForWindow(window);
+  const ShelfItemDetails* item_details = GetShelfItemDetailsForWindow(window);
   ShelfItem item;
   ShelfID id = model_->next_id();
-  item.status = wm::IsActiveWindow(window) ? STATUS_ACTIVE: STATUS_RUNNING;
+  item.status = wm::IsActiveWindow(window) ? STATUS_ACTIVE : STATUS_RUNNING;
   SetShelfItemDetailsForShelfItem(&item, *item_details);
   SetShelfIDForWindow(id, window);
   std::unique_ptr<ShelfItemDelegate> item_delegate(
@@ -155,9 +150,8 @@ void ShelfWindowWatcher::OnRootWindowAdded(WmWindow* root_window_wm) {
       aura::client::GetActivationClient(root_window));
   observed_root_windows_.Add(root_window);
 
-  aura::Window* default_container = Shell::GetContainer(
-      root_window,
-      kShellWindowId_DefaultContainer);
+  aura::Window* default_container =
+      Shell::GetContainer(root_window, kShellWindowId_DefaultContainer);
   observed_windows_.Add(default_container);
   for (size_t i = 0; i < default_container->children().size(); ++i)
     observed_windows_.Add(default_container->children()[i]);
@@ -179,8 +173,7 @@ void ShelfWindowWatcher::UpdateShelfItemStatus(aura::Window* window,
   model_->Set(index, item);
 }
 
-int ShelfWindowWatcher::GetShelfItemIndexForWindow(
-    aura::Window* window) const {
+int ShelfWindowWatcher::GetShelfItemIndexForWindow(aura::Window* window) const {
   return model_->ItemIndexByID(GetShelfIDForWindow(window));
 }
 
@@ -258,8 +251,7 @@ void ShelfWindowWatcher::OnWindowPropertyChanged(aura::Window* window,
     int index = GetShelfItemIndexForWindow(window);
     DCHECK_GE(index, 0);
     ShelfItem item = model_->items()[index];
-    const ShelfItemDetails* details =
-        GetShelfItemDetailsForWindow(window);
+    const ShelfItemDetails* details = GetShelfItemDetailsForWindow(window);
     SetShelfItemDetailsForShelfItem(&item, *details);
     model_->Set(index, item);
     return;

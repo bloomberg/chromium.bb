@@ -63,7 +63,6 @@ bool AppListShelfItemDelegate::ShouldShowTooltip() {
   return true;
 }
 
-void AppListShelfItemDelegate::Close() {
-}
+void AppListShelfItemDelegate::Close() {}
 
 }  // namespace ash

@@ -64,8 +64,7 @@ TEST_P(DIPTest, WorkArea) {
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x.id());
 
   // The |bounds_in_pixel()| should report bounds in pixel coordinate.
-  EXPECT_EQ("1,1 2000x1800",
-            display_info_2x.bounds_in_native().ToString());
+  EXPECT_EQ("1,1 2000x1800", display_info_2x.bounds_in_native().ToString());
 
   // Aura and views coordinates are in DIP, so they their bounds do not change.
   EXPECT_EQ("0,0 1000x900", display_2x.bounds().ToString());
@@ -78,9 +77,8 @@ TEST_P(DIPTest, WorkArea) {
   // Sanity check if the workarea's inset hight is same as
   // the shelf's height.
   Shelf* shelf = Shelf::ForPrimaryDisplay();
-  EXPECT_EQ(
-      display_2x.bounds().InsetsFrom(work_area).height(),
-      shelf->shelf_widget()->GetNativeView()->layer()->bounds().height());
+  EXPECT_EQ(display_2x.bounds().InsetsFrom(work_area).height(),
+            shelf->shelf_widget()->GetNativeView()->layer()->bounds().height());
 }
 #endif  // defined(OS_CHROMEOS)
 

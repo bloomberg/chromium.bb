@@ -14,8 +14,8 @@ namespace ash {
 // is going on, and let the user decide if he wants to terminate it or not.
 // After terminating any desktop sharing operations, the |switch_user| function
 // will be called.
-void ASH_EXPORT TrySwitchingActiveUser(
-    const base::Callback<void()> switch_user);
+void ASH_EXPORT
+TrySwitchingActiveUser(const base::Callback<void()> switch_user);
 
 // Terminates the "DesktopCastingWarning" dialog from a unit tests and |accept|s
 // it. False will be returned if there was no dialog shown.

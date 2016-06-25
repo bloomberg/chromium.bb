@@ -58,7 +58,7 @@ class TextInputView : public views::WidgetDelegateView {
 
 }  // namespace
 
-class MagnificationControllerTest: public test::AshTestBase {
+class MagnificationControllerTest : public test::AshTestBase {
  public:
   MagnificationControllerTest() : text_input_view_(NULL) {}
   ~MagnificationControllerTest() override {}
@@ -82,9 +82,7 @@ class MagnificationControllerTest: public test::AshTestBase {
   void TearDown() override { AshTestBase::TearDown(); }
 
  protected:
-  aura::Window* GetRootWindow() const {
-    return Shell::GetPrimaryRootWindow();
-  }
+  aura::Window* GetRootWindow() const { return Shell::GetPrimaryRootWindow(); }
 
   std::string GetHostMouseLocation() {
     const gfx::Point& location =
@@ -104,8 +102,9 @@ class MagnificationControllerTest: public test::AshTestBase {
   }
 
   std::string CurrentPointOfInterest() const {
-    return GetMagnificationController()->
-        GetPointOfInterestForTesting().ToString();
+    return GetMagnificationController()
+        ->GetPointOfInterestForTesting()
+        .ToString();
   }
 
   void CreateAndShowTextInputView(const gfx::Rect& bounds) {
@@ -133,8 +132,8 @@ class MagnificationControllerTest: public test::AshTestBase {
         GetInputMethod()->GetTextInputClient()->GetCaretBounds();
     gfx::Point origin = caret_bounds.origin();
     ::wm::ConvertPointFromScreen(GetRootWindow(), &origin);
-    return gfx::Rect(
-        origin.x(), origin.y(), caret_bounds.width(), caret_bounds.height());
+    return gfx::Rect(origin.x(), origin.y(), caret_bounds.width(),
+                     caret_bounds.height());
   }
 
   void FocusOnTextInputView() {
@@ -285,8 +284,8 @@ TEST_F(MagnificationControllerTest, FollowFocusChanged) {
   EXPECT_EQ("400,300 400x300", GetViewport().ToString());
 
   // Don't follow focus onto empty rectangle.
-  GetMagnificationController()->HandleFocusedNodeChanged(
-      false, gfx::Rect(0, 0, 0, 0));
+  GetMagnificationController()->HandleFocusedNodeChanged(false,
+                                                         gfx::Rect(0, 0, 0, 0));
   EXPECT_EQ("400,300 400x300", GetViewport().ToString());
 }
 
@@ -682,7 +681,6 @@ TEST_F(MagnificationControllerTest, CenterTextCaretInViewport) {
   gfx::Rect caret_bounds = GetCaretBounds();
   EXPECT_EQ(caret_bounds.CenterPoint(), new_view_port.CenterPoint());
 }
-
 
 // Make sure that unified desktop can enter magnified mode.
 TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {

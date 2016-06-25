@@ -10,11 +10,9 @@
 
 namespace ash {
 
-DisplayErrorObserver::DisplayErrorObserver() {
-}
+DisplayErrorObserver::DisplayErrorObserver() {}
 
-DisplayErrorObserver::~DisplayErrorObserver() {
-}
+DisplayErrorObserver::~DisplayErrorObserver() {}
 
 void DisplayErrorObserver::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,

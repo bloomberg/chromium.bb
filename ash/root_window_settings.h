@@ -39,8 +39,8 @@ ASH_EXPORT RootWindowSettings* InitRootWindowSettings(aura::Window* root);
 ASH_EXPORT RootWindowSettings* GetRootWindowSettings(aura::Window* root);
 
 // const version of GetRootWindowSettings.
-ASH_EXPORT const RootWindowSettings*
-GetRootWindowSettings(const aura::Window* root);
+ASH_EXPORT const RootWindowSettings* GetRootWindowSettings(
+    const aura::Window* root);
 
 }  // namespace ash
 

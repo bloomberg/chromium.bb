@@ -45,4 +45,3 @@ class FirstRunHelperImpl : public FirstRunHelper,
 }  // namespace ash
 
 #endif  // ASH_FIRST_RUN_FIRST_RUN_HELPER_IMPL_H_
-

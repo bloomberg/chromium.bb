@@ -23,8 +23,7 @@ const int kIndicatorAnimationDurationMs = 1000;
 
 class IndicatorView : public views::View {
  public:
-  IndicatorView() {
-  }
+  IndicatorView() {}
   ~IndicatorView() override {}
 
   void SetColor(SkColor color) {
@@ -69,9 +68,7 @@ views::Widget* CreateWidget(const gfx::Rect& bounds,
 }  // namespace
 
 SharedDisplayEdgeIndicator::SharedDisplayEdgeIndicator()
-    : src_indicator_(NULL),
-      dst_indicator_(NULL) {
-}
+    : src_indicator_(NULL), dst_indicator_(NULL) {}
 
 SharedDisplayEdgeIndicator::~SharedDisplayEdgeIndicator() {
   Hide();
@@ -107,7 +104,6 @@ void SharedDisplayEdgeIndicator::AnimationProgressed(
     static_cast<IndicatorView*>(src_indicator_)->SetColor(color);
   if (dst_indicator_)
     static_cast<IndicatorView*>(dst_indicator_)->SetColor(color);
-
 }
 
 }  // namespace ash

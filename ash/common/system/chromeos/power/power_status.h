@@ -34,10 +34,7 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   };
 
   // Different styles of battery icons.
-  enum IconSet {
-    ICON_LIGHT,
-    ICON_DARK
-  };
+  enum IconSet { ICON_LIGHT, ICON_DARK };
 
   // Interface for classes that wish to be notified when the power status
   // has changed.

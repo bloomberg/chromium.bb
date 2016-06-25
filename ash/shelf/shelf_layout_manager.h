@@ -69,7 +69,6 @@ class ASH_EXPORT ShelfLayoutManager
       public SnapToPixelLayoutManager,
       public SessionStateObserver {
  public:
-
   explicit ShelfLayoutManager(ShelfWidget* shelf_widget);
   ~ShelfLayoutManager() override;
 
@@ -189,7 +188,7 @@ class ASH_EXPORT ShelfLayoutManager
     return right;
   }
 
-  template<typename T>
+  template <typename T>
   T PrimaryAxisValue(T horizontal, T vertical) const {
     return IsHorizontalAlignment() ? horizontal : vertical;
   }

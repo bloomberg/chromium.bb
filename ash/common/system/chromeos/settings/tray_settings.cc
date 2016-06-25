@@ -35,8 +35,8 @@ class SettingsDefaultView : public ActionableView,
       : login_status_(status), label_(NULL), power_status_view_(NULL) {
     PowerStatus::Get()->AddObserver(this);
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-        ash::kTrayPopupPaddingHorizontal, 0,
-        ash::kTrayPopupPaddingBetweenItems));
+                                          ash::kTrayPopupPaddingHorizontal, 0,
+                                          ash::kTrayPopupPaddingBetweenItems));
 
     bool power_view_right_align = false;
     if (login_status_ != LoginStatus::NOT_LOGGED_IN &&
@@ -107,10 +107,11 @@ class SettingsDefaultView : public ActionableView,
     if (!PowerStatus::Get()->IsBatteryPresent())
       return;
 
-    base::string16 accessible_name = label_ ?
-        label_->text() + base::ASCIIToUTF16(", ") +
-            PowerStatus::Get()->GetAccessibleNameString(true) :
-        PowerStatus::Get()->GetAccessibleNameString(true);
+    base::string16 accessible_name =
+        label_
+            ? label_->text() + base::ASCIIToUTF16(", ") +
+                  PowerStatus::Get()->GetAccessibleNameString(true)
+            : PowerStatus::Get()->GetAccessibleNameString(true);
     SetAccessibleName(accessible_name);
   }
 
@@ -120,17 +121,14 @@ class SettingsDefaultView : public ActionableView,
   ash::PowerStatusView* power_status_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsDefaultView);
- };
+};
 
 }  // namespace tray
 
 TraySettings::TraySettings(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
-      default_view_(NULL) {
-}
+    : SystemTrayItem(system_tray), default_view_(NULL) {}
 
-TraySettings::~TraySettings() {
-}
+TraySettings::~TraySettings() {}
 
 views::View* TraySettings::CreateTrayView(LoginStatus status) {
   return NULL;
@@ -143,7 +141,7 @@ views::View* TraySettings::CreateDefaultView(LoginStatus status) {
   if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
     return NULL;
   CHECK(default_view_ == NULL);
-  default_view_ =  new tray::SettingsDefaultView(status);
+  default_view_ = new tray::SettingsDefaultView(status);
   return default_view_;
 }
 

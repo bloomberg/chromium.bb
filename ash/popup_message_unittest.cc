@@ -18,13 +18,12 @@ using PopupMessageTest = test::AshTestBase;
 TEST_F(PopupMessageTest, Layout) {
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       nullptr, CurrentContext(), gfx::Rect(0, 0, 100, 100));
-  PopupMessage message(base::ASCIIToUTF16("caption text"),
-                       base::ASCIIToUTF16(
-                           "Message text, which will be usually longer than "
-                           "the caption, so that it's wrapped at some width"),
-                       PopupMessage::ICON_WARNING,
-                       widget->GetContentsView() /* anchor */,
-                       views::BubbleBorder::TOP_LEFT, gfx::Size(), 10);
+  PopupMessage message(
+      base::ASCIIToUTF16("caption text"),
+      base::ASCIIToUTF16("Message text, which will be usually longer than "
+                         "the caption, so that it's wrapped at some width"),
+      PopupMessage::ICON_WARNING, widget->GetContentsView() /* anchor */,
+      views::BubbleBorder::TOP_LEFT, gfx::Size(), 10);
 
   views::View* contents_view = message.widget_->GetContentsView();
   views::View* caption_label =

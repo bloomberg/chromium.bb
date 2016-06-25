@@ -24,8 +24,7 @@ class ShelfBezelEventFilter : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  bool IsShelfOnBezel(const gfx::Rect& screen,
-                      const gfx::Point& point) const;
+  bool IsShelfOnBezel(const gfx::Rect& screen, const gfx::Point& point) const;
 
   ShelfLayoutManager* shelf_;  // non-owned
   bool in_touch_drag_;

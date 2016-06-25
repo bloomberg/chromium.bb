@@ -11,12 +11,9 @@
 namespace ash {
 
 SystemTrayItem::SystemTrayItem(SystemTray* system_tray)
-    : system_tray_(system_tray),
-      restore_focus_(false) {
-}
+    : system_tray_(system_tray), restore_focus_(false) {}
 
-SystemTrayItem::~SystemTrayItem() {
-}
+SystemTrayItem::~SystemTrayItem() {}
 
 views::View* SystemTrayItem::CreateTrayView(LoginStatus status) {
   return NULL;
@@ -34,17 +31,13 @@ views::View* SystemTrayItem::CreateNotificationView(LoginStatus status) {
   return NULL;
 }
 
-void SystemTrayItem::DestroyTrayView() {
-}
+void SystemTrayItem::DestroyTrayView() {}
 
-void SystemTrayItem::DestroyDefaultView() {
-}
+void SystemTrayItem::DestroyDefaultView() {}
 
-void SystemTrayItem::DestroyDetailedView() {
-}
+void SystemTrayItem::DestroyDetailedView() {}
 
-void SystemTrayItem::DestroyNotificationView() {
-}
+void SystemTrayItem::DestroyNotificationView() {}
 
 void SystemTrayItem::TransitionDetailedView() {
   system_tray()->ShowDetailedView(this, 0, true, BUBBLE_USE_EXISTING);
@@ -56,8 +49,8 @@ void SystemTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
-  system_tray()->ShowDetailedView(
-      this, for_seconds, activate, BUBBLE_CREATE_NEW);
+  system_tray()->ShowDetailedView(this, for_seconds, activate,
+                                  BUBBLE_CREATE_NEW);
 }
 
 void SystemTrayItem::SetDetailedViewCloseDelay(int for_seconds) {

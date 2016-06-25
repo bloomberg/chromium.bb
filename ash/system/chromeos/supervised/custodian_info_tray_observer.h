@@ -18,6 +18,6 @@ class CustodianInfoTrayObserver {
   virtual ~CustodianInfoTrayObserver() {}
 };
 
-} // namespace ash
+}  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SUPERVISED_CUSTODIAN_INFO_TRAY_OBSERVER_H_

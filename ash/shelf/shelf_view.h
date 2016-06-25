@@ -172,9 +172,9 @@ class ASH_EXPORT ShelfView : public views::View,
   };
 
   enum RemovableState {
-    REMOVABLE,     // Item can be removed when dragged away.
-    DRAGGABLE,     // Item can be dragged, but will snap always back to origin.
-    NOT_REMOVABLE, // Item is fixed and can never be removed.
+    REMOVABLE,      // Item can be removed when dragged away.
+    DRAGGABLE,      // Item can be dragged, but will snap always back to origin.
+    NOT_REMOVABLE,  // Item is fixed and can never be removed.
   };
 
   // Minimum distance before drag starts.

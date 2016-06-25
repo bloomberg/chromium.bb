@@ -109,9 +109,7 @@ void RunAllBlockingPoolTasksUntilIdle(base::SequencedWorkerPool* pool) {
 class DesktopBackgroundControllerTest : public test::AshTestBase {
  public:
   DesktopBackgroundControllerTest()
-      : controller_(NULL),
-        wallpaper_delegate_(NULL) {
-  }
+      : controller_(NULL), wallpaper_delegate_(NULL) {}
   ~DesktopBackgroundControllerTest() override {}
 
   void SetUp() override {
@@ -244,8 +242,9 @@ TEST_F(DesktopBackgroundControllerTest, ControllerOwnership) {
   // holds the widget controller instance. kDesktopController will get it later.
   RootWindowController* root_window_controller =
       Shell::GetPrimaryRootWindowController();
-  EXPECT_TRUE(root_window_controller->animating_wallpaper_controller()->
-              GetController(false));
+  EXPECT_TRUE(
+      root_window_controller->animating_wallpaper_controller()->GetController(
+          false));
 
   // kDesktopController will receive the widget controller when the animation
   // is done.
@@ -255,8 +254,9 @@ TEST_F(DesktopBackgroundControllerTest, ControllerOwnership) {
   RunDesktopControllerAnimation();
 
   // Ownership has moved from kAnimatingDesktopController to kDesktopController.
-  EXPECT_FALSE(root_window_controller->animating_wallpaper_controller()->
-               GetController(false));
+  EXPECT_FALSE(
+      root_window_controller->animating_wallpaper_controller()->GetController(
+          false));
   EXPECT_TRUE(root_window_controller->wallpaper_controller());
 }
 
@@ -286,8 +286,9 @@ TEST_F(DesktopBackgroundControllerTest, BackgroundMovementDuringUnlock) {
   // properties. Both are in the lock screen background container.
   RootWindowController* root_window_controller =
       Shell::GetPrimaryRootWindowController();
-  EXPECT_TRUE(root_window_controller->animating_wallpaper_controller()->
-              GetController(false));
+  EXPECT_TRUE(
+      root_window_controller->animating_wallpaper_controller()->GetController(
+          false));
   EXPECT_TRUE(root_window_controller->wallpaper_controller());
   EXPECT_EQ(0, ChildCountForContainer(kDesktopBackgroundId));
   EXPECT_EQ(2, ChildCountForContainer(kLockScreenBackgroundId));
@@ -342,18 +343,20 @@ TEST_F(DesktopBackgroundControllerTest, ChangeWallpaperQuick) {
             root_window_controller->wallpaper_controller());
 
   // Cache the new animating controller.
-  animating_controller = root_window_controller->
-      animating_wallpaper_controller()->GetController(false);
+  animating_controller =
+      root_window_controller->animating_wallpaper_controller()->GetController(
+          false);
 
   // Run wallpaper show animation to completion.
-  ASSERT_NO_FATAL_FAILURE(
-      RunAnimationForWidget(
-          root_window_controller->animating_wallpaper_controller()->
-              GetController(false)->widget()));
+  ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(
+      root_window_controller->animating_wallpaper_controller()
+          ->GetController(false)
+          ->widget()));
 
   EXPECT_TRUE(root_window_controller->wallpaper_controller());
-  EXPECT_FALSE(root_window_controller->animating_wallpaper_controller()->
-               GetController(false));
+  EXPECT_FALSE(
+      root_window_controller->animating_wallpaper_controller()->GetController(
+          false));
   // The desktop controller should be the last created animating controller.
   EXPECT_EQ(animating_controller,
             root_window_controller->wallpaper_controller());

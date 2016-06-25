@@ -14,15 +14,14 @@
 
 namespace ash {
 
-ScreenRotationAnimation::ScreenRotationAnimation(
-    ui::Layer* layer,
-    int start_degrees,
-    int end_degrees,
-    float initial_opacity,
-    float target_opacity,
-    gfx::Point pivot,
-    base::TimeDelta duration,
-    gfx::Tween::Type tween_type)
+ScreenRotationAnimation::ScreenRotationAnimation(ui::Layer* layer,
+                                                 int start_degrees,
+                                                 int end_degrees,
+                                                 float initial_opacity,
+                                                 float target_opacity,
+                                                 gfx::Point pivot,
+                                                 base::TimeDelta duration,
+                                                 gfx::Tween::Type tween_type)
     : ui::LayerAnimationElement(
           LayerAnimationElement::TRANSFORM | LayerAnimationElement::OPACITY,
           duration),
@@ -40,11 +39,9 @@ ScreenRotationAnimation::ScreenRotationAnimation(
   interpolated_transform_->SetChild(rotation.release());
 }
 
-ScreenRotationAnimation::~ScreenRotationAnimation() {
-}
+ScreenRotationAnimation::~ScreenRotationAnimation() {}
 
-void ScreenRotationAnimation::OnStart(ui::LayerAnimationDelegate* delegate) {
-}
+void ScreenRotationAnimation::OnStart(ui::LayerAnimationDelegate* delegate) {}
 
 bool ScreenRotationAnimation::OnProgress(double current,
                                          ui::LayerAnimationDelegate* delegate) {

@@ -125,7 +125,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   void SetDrawBackgroundAsActive(bool visible);
 
   // Returns true when the the background was overridden to be drawn as active.
-  bool draw_background_as_active() const {return draw_background_as_active_; }
+  bool draw_background_as_active() const { return draw_background_as_active_; }
 
   TrayContainer* tray_container() const { return tray_container_; }
   ShelfAlignment shelf_alignment() const { return shelf_alignment_; }

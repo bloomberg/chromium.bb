@@ -85,8 +85,8 @@ class DockedBackgroundWidget : public views::Widget,
     ui::PaintRecorder recorder(context, local_window_bounds.size());
 
     if (MaterialDesignController::IsShelfMaterial()) {
-      recorder.canvas()->FillRect(
-          local_window_bounds, SkColorSetA(kShelfBaseColor, alpha_));
+      recorder.canvas()->FillRect(local_window_bounds,
+                                  SkColorSetA(kShelfBaseColor, alpha_));
     } else {
       const gfx::ImageSkia& shelf_background(alignment_ == DOCKED_ALIGNMENT_LEFT
                                                  ? shelf_background_left_
@@ -103,9 +103,8 @@ class DockedBackgroundWidget : public views::Widget,
           paint);
       recorder.canvas()->DrawImageInt(
           shelf_background,
-          alignment_ == DOCKED_ALIGNMENT_LEFT
-              ? 0
-              : shelf_background.width() - 1,
+          alignment_ == DOCKED_ALIGNMENT_LEFT ? 0
+                                              : shelf_background.width() - 1,
           0, 1, shelf_background.height(),
           alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width(), 0,
           local_window_bounds.width() - shelf_background.width(),

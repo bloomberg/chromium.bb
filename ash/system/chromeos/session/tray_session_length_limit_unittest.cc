@@ -46,7 +46,8 @@ class TraySessionLengthLimitTest : public AshTestBase {
     const message_center::NotificationList::Notifications& notifications =
         message_center::MessageCenter::Get()->GetVisibleNotifications();
     for (message_center::NotificationList::Notifications::const_iterator iter =
-             notifications.begin(); iter != notifications.end(); ++iter) {
+             notifications.begin();
+         iter != notifications.end(); ++iter) {
       if ((*iter)->id() == TraySessionLengthLimit::kNotificationId)
         return *iter;
     }
@@ -85,8 +86,8 @@ TEST_F(TraySessionLengthLimitTest, Notification) {
   EXPECT_EQ(message_center::SYSTEM_PRIORITY, notification->priority());
   base::string16 first_content = notification->message();
   // Should read the content.
-  EXPECT_TRUE(notification->rich_notification_data().
-              should_make_spoken_feedback_for_popup_updates);
+  EXPECT_TRUE(notification->rich_notification_data()
+                  .should_make_spoken_feedback_for_popup_updates);
 
   // Limit is 10 min.
   UpdateSessionLengthLimitInMin(10);
@@ -96,8 +97,8 @@ TEST_F(TraySessionLengthLimitTest, Notification) {
   // The content should be updated.
   EXPECT_NE(first_content, notification->message());
   // Should NOT read, because just update the remaining time.
-  EXPECT_FALSE(notification->rich_notification_data().
-               should_make_spoken_feedback_for_popup_updates);
+  EXPECT_FALSE(notification->rich_notification_data()
+                   .should_make_spoken_feedback_for_popup_updates);
 
   // Limit is 3 min.
   UpdateSessionLengthLimitInMin(3);
@@ -105,8 +106,8 @@ TEST_F(TraySessionLengthLimitTest, Notification) {
   EXPECT_TRUE(notification);
   EXPECT_EQ(message_center::SYSTEM_PRIORITY, notification->priority());
   // Should read the content again because the state has changed.
-  EXPECT_TRUE(notification->rich_notification_data().
-              should_make_spoken_feedback_for_popup_updates);
+  EXPECT_TRUE(notification->rich_notification_data()
+                  .should_make_spoken_feedback_for_popup_updates);
 
   // Session length limit is updated to longer: 15 min.
   UpdateSessionLengthLimitInMin(15);
@@ -114,8 +115,8 @@ TEST_F(TraySessionLengthLimitTest, Notification) {
   EXPECT_TRUE(notification);
   EXPECT_EQ(message_center::SYSTEM_PRIORITY, notification->priority());
   // Should read again because an increase of the remaining time is noteworthy.
-  EXPECT_TRUE(notification->rich_notification_data().
-              should_make_spoken_feedback_for_popup_updates);
+  EXPECT_TRUE(notification->rich_notification_data()
+                  .should_make_spoken_feedback_for_popup_updates);
 
   // Clears the limit: the notification should be gone.
   ClearSessionLengthLimit();
@@ -140,8 +141,8 @@ TEST_F(TraySessionLengthLimitTest, RemoveNotification) {
   UpdateSessionLengthLimitInMin(3);
   message_center::Notification* notification = GetNotification();
   EXPECT_TRUE(notification);
-  EXPECT_TRUE(notification->rich_notification_data().
-              should_make_spoken_feedback_for_popup_updates);
+  EXPECT_TRUE(notification->rich_notification_data()
+                  .should_make_spoken_feedback_for_popup_updates);
 
   RemoveNotification();
 
@@ -150,8 +151,8 @@ TEST_F(TraySessionLengthLimitTest, RemoveNotification) {
   UpdateSessionLengthLimitInMin(15);
   notification = GetNotification();
   EXPECT_TRUE(notification);
-  EXPECT_TRUE(notification->rich_notification_data().
-              should_make_spoken_feedback_for_popup_updates);
+  EXPECT_TRUE(notification->rich_notification_data()
+                  .should_make_spoken_feedback_for_popup_updates);
 }
 
 }  // namespace test

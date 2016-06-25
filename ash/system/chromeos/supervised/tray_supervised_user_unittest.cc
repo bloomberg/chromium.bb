@@ -32,7 +32,8 @@ message_center::Notification* TraySupervisedUserTest::GetPopup() {
   NotificationList::PopupNotifications popups =
       message_center::MessageCenter::Get()->GetPopupNotifications();
   for (NotificationList::PopupNotifications::const_iterator iter =
-           popups.begin(); iter != popups.end(); ++iter) {
+           popups.begin();
+       iter != popups.end(); ++iter) {
     if ((*iter)->id() == TraySupervisedUser::kNotificationId)
       return *iter;
   }

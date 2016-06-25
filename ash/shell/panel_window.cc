@@ -31,13 +31,11 @@ views::Widget* PanelWindow::CreatePanelWindow(const gfx::Rect& rect) {
 }
 
 PanelWindow::PanelWindow(const std::string& name)
-    : name_(name),
-      params_(views::Widget::InitParams::TYPE_PANEL) {
+    : name_(name), params_(views::Widget::InitParams::TYPE_PANEL) {
   params_.delegate = this;
 }
 
-PanelWindow::~PanelWindow() {
-}
+PanelWindow::~PanelWindow() {}
 
 views::Widget* PanelWindow::CreateWidget() {
   views::Widget* widget = new views::Widget;
@@ -47,8 +45,7 @@ views::Widget* PanelWindow::CreateWidget() {
   if (params().bounds.height() == 0)
     params().bounds.set_height(kDefaultHeight);
   params().bounds = ScreenUtil::ConvertRectToScreen(
-      Shell::GetTargetRootWindow(),
-      params().bounds);
+      Shell::GetTargetRootWindow(), params().bounds);
 
   widget->Init(params());
   widget->GetNativeView()->SetName(name_);

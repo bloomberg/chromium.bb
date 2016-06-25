@@ -20,6 +20,6 @@ enum CaptionButtonIcon {
   CAPTION_BUTTON_ICON_COUNT
 };
 
-} // namespace ash
+}  // namespace ash
 
 #endif  // ASH_FRAME_CAPTION_BUTTONS_CAPTION_BUTTON_TYPES_H_

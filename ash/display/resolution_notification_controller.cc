@@ -55,13 +55,11 @@ class ResolutionChangeNotificationDelegate
 ResolutionChangeNotificationDelegate::ResolutionChangeNotificationDelegate(
     ResolutionNotificationController* controller,
     bool has_timeout)
-    : controller_(controller),
-      has_timeout_(has_timeout) {
+    : controller_(controller), has_timeout_(has_timeout) {
   DCHECK(controller_);
 }
 
-ResolutionChangeNotificationDelegate::~ResolutionChangeNotificationDelegate() {
-}
+ResolutionChangeNotificationDelegate::~ResolutionChangeNotificationDelegate() {}
 
 void ResolutionChangeNotificationDelegate::Close(bool by_user) {
   if (by_user)
@@ -147,8 +145,7 @@ ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
 }
 
 ResolutionNotificationController::ResolutionChangeInfo::
-    ~ResolutionChangeInfo() {
-}
+    ~ResolutionChangeInfo() {}
 
 ResolutionNotificationController::ResolutionNotificationController() {
   Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
@@ -175,8 +172,8 @@ void ResolutionNotificationController::PrepareNotification(
     original_resolution = change_info_->old_resolution;
   }
 
-  change_info_.reset(new ResolutionChangeInfo(
-      display_id, old_resolution, new_resolution, accept_callback));
+  change_info_.reset(new ResolutionChangeInfo(display_id, old_resolution,
+                                              new_resolution, accept_callback));
   if (!original_resolution.size.IsEmpty())
     change_info_->old_resolution = original_resolution;
 }
@@ -206,7 +203,7 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
             base::TimeDelta::FromSeconds(change_info_->timeout_count)));
   }
   data.buttons.push_back(message_center::ButtonInfo(
-        l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_RESOLUTION_CHANGE_REVERT)));
+      l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_RESOLUTION_CHANGE_REVERT)));
 
   data.should_make_spoken_feedback_for_popup_updates = enable_spoken_feedback;
 
@@ -215,16 +212,16 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
           change_info_->display_id));
   const base::string16 message =
       (change_info_->new_resolution.size ==
-       change_info_->current_resolution.size) ?
-      l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-          display_name,
-          base::UTF8ToUTF16(change_info_->new_resolution.size.ToString())) :
-      l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TO_UNSUPPORTED,
-          display_name,
-          base::UTF8ToUTF16(change_info_->new_resolution.size.ToString()),
-          base::UTF8ToUTF16(change_info_->current_resolution.size.ToString()));
+       change_info_->current_resolution.size)
+          ? l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED, display_name,
+                base::UTF8ToUTF16(change_info_->new_resolution.size.ToString()))
+          : l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TO_UNSUPPORTED,
+                display_name,
+                base::UTF8ToUTF16(change_info_->new_resolution.size.ToString()),
+                base::UTF8ToUTF16(
+                    change_info_->current_resolution.size.ToString()));
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   std::unique_ptr<Notification> notification(new Notification(
@@ -265,15 +262,15 @@ void ResolutionNotificationController::AcceptResolutionChange(
 }
 
 void ResolutionNotificationController::RevertResolutionChange() {
-  message_center::MessageCenter::Get()->RemoveNotification(
-      kNotificationId, false /* by_user */);
+  message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
+                                                           false /* by_user */);
   if (!change_info_)
     return;
   int64_t display_id = change_info_->display_id;
   DisplayMode old_resolution = change_info_->old_resolution;
   change_info_.reset();
-  Shell::GetInstance()->display_manager()->SetDisplayMode(
-      display_id, old_resolution);
+  Shell::GetInstance()->display_manager()->SetDisplayMode(display_id,
+                                                          old_resolution);
 }
 
 void ResolutionNotificationController::OnDisplayAdded(
@@ -293,13 +290,12 @@ void ResolutionNotificationController::OnDisplayConfigurationChanged() {
   if (!change_info_)
     return;
 
-  change_info_->current_resolution = Shell::GetInstance()->display_manager()->
-      GetActiveModeForDisplayId(change_info_->display_id);
+  change_info_->current_resolution =
+      Shell::GetInstance()->display_manager()->GetActiveModeForDisplayId(
+          change_info_->display_id);
   CreateOrUpdateNotification(true);
   if (g_use_timer && change_info_->timeout_count > 0) {
-    change_info_->timer.Start(FROM_HERE,
-                              base::TimeDelta::FromSeconds(1),
-                              this,
+    change_info_->timer.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,
                               &ResolutionNotificationController::OnTimerTick);
   }
 }

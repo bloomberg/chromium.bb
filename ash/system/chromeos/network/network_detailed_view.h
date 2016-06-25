@@ -22,8 +22,7 @@ class NetworkDetailedView : public TrayDetailsView {
   };
 
   explicit NetworkDetailedView(SystemTrayItem* owner)
-      : TrayDetailsView(owner) {
-  }
+      : TrayDetailsView(owner) {}
 
   virtual void Init() = 0;
 

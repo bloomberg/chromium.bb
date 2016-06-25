@@ -46,11 +46,9 @@ class TaskSwitchTimeTrackerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchTimeTrackerTest);
 };
 
-TaskSwitchTimeTrackerTest::TaskSwitchTimeTrackerTest() {
-}
+TaskSwitchTimeTrackerTest::TaskSwitchTimeTrackerTest() {}
 
-TaskSwitchTimeTrackerTest::~TaskSwitchTimeTrackerTest() {
-}
+TaskSwitchTimeTrackerTest::~TaskSwitchTimeTrackerTest() {}
 
 void TaskSwitchTimeTrackerTest::SetUp() {
   testing::Test::SetUp();

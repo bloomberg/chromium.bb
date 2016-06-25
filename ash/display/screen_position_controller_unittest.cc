@@ -25,9 +25,12 @@
 // TODO(scottmg): RootWindow doesn't get resized immediately on Windows
 // Ash. http://crbug.com/247916.
 #define MAYBE_ConvertHostPointToScreen DISABLED_ConvertHostPointToScreen
-#define MAYBE_ConvertHostPointToScreenHiDPI DISABLED_ConvertHostPointToScreenHiDPI
-#define MAYBE_ConvertHostPointToScreenRotate DISABLED_ConvertHostPointToScreenRotate
-#define MAYBE_ConvertHostPointToScreenUIScale DISABLED_ConvertHostPointToScreenUIScale
+#define MAYBE_ConvertHostPointToScreenHiDPI \
+  DISABLED_ConvertHostPointToScreenHiDPI
+#define MAYBE_ConvertHostPointToScreenRotate \
+  DISABLED_ConvertHostPointToScreenRotate
+#define MAYBE_ConvertHostPointToScreenUIScale \
+  DISABLED_ConvertHostPointToScreenUIScale
 #define MAYBE_ConvertToScreenWhileRemovingSecondaryDisplay \
   DISABLED_ConvertToScreenWhileRemovingSecondaryDisplay
 #else

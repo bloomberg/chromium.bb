@@ -83,7 +83,7 @@ class AshTestHelper {
   static bool SupportsHostWindowResize();
 
  private:
-  base::MessageLoopForUI* message_loop_;  // Not owned.
+  base::MessageLoopForUI* message_loop_;    // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 

@@ -16,8 +16,7 @@ typedef test::AshTestBase AshTouchExplorationManagerTest;
 TEST_F(AshTouchExplorationManagerTest, AdjustSound) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   AshTouchExplorationManager touch_exploration_manager(controller);
-  chromeos::CrasAudioHandler* audio_handler =
-      chromeos::CrasAudioHandler::Get();
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
 
   touch_exploration_manager.SetOutputLevel(10);
   EXPECT_EQ(audio_handler->GetOutputVolumePercent(), 10);
@@ -36,4 +35,4 @@ TEST_F(AshTouchExplorationManagerTest, AdjustSound) {
   EXPECT_TRUE(audio_handler->IsOutputMuted());
 }
 
-} //  namespace ash
+}  //  namespace ash

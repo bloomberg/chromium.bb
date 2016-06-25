@@ -50,7 +50,7 @@ base::string16 FormatDate(const base::Time& time) {
       icu::DateFormat::createDateInstance(icu::DateFormat::kMedium));
   formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
   return base::string16(date_string.getBuffer(),
-                  static_cast<size_t>(date_string.length()));
+                        static_cast<size_t>(date_string.length()));
 }
 
 base::string16 FormatDayOfWeek(const base::Time& time) {
@@ -65,11 +65,11 @@ base::string16 FormatDayOfWeek(const base::Time& time) {
   icu::SimpleDateFormat simple_formatter(generated_pattern, status);
   DCHECK(U_SUCCESS(status));
   icu::UnicodeString date_string;
-  simple_formatter.format(
-      static_cast<UDate>(time.ToDoubleT() * 1000), date_string, status);
+  simple_formatter.format(static_cast<UDate>(time.ToDoubleT() * 1000),
+                          date_string, status);
   DCHECK(U_SUCCESS(status));
-  return base::string16(
-      date_string.getBuffer(), static_cast<size_t>(date_string.length()));
+  return base::string16(date_string.getBuffer(),
+                        static_cast<size_t>(date_string.length()));
 }
 
 views::Label* CreateLabel() {
@@ -121,9 +121,8 @@ void BaseDateTimeView::SetTimer(const base::Time& now) {
   seconds_left += kTimerSlopSeconds;
 
   timer_.Stop();
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(seconds_left),
-      this, &BaseDateTimeView::UpdateText);
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(seconds_left), this,
+               &BaseDateTimeView::UpdateText);
 }
 
 void BaseDateTimeView::UpdateTextInternal(const base::Time& now) {
@@ -146,25 +145,22 @@ void BaseDateTimeView::OnLocaleChanged() {
 ///////////////////////////////////////////////////////////////////////////////
 
 DateView::DateView() : action_(TrayDate::NONE) {
-  SetLayoutManager(
-      new views::BoxLayout(
-          views::BoxLayout::kVertical, 0, 0, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   date_label_ = CreateLabel();
   date_label_->SetEnabledColor(kHeaderTextColorNormal);
   UpdateTextInternal(base::Time::Now());
   AddChildView(date_label_);
 }
 
-DateView::~DateView() {
-}
+DateView::~DateView() {}
 
 void DateView::SetAction(TrayDate::DateAction action) {
   if (action == action_)
     return;
   if (IsMouseHovered()) {
-    date_label_->SetEnabledColor(
-        action == TrayDate::NONE ? kHeaderTextColorNormal :
-                                   kHeaderTextColorHover);
+    date_label_->SetEnabledColor(action == TrayDate::NONE
+                                     ? kHeaderTextColorNormal
+                                     : kHeaderTextColorHover);
     SchedulePaint();
   }
   action_ = action;
@@ -189,9 +185,8 @@ void DateView::SetActive(bool active) {
 
 void DateView::UpdateTextInternal(const base::Time& now) {
   BaseDateTimeView::UpdateTextInternal(now);
-  date_label_->SetText(
-      l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));
+  date_label_->SetText(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));
 }
 
 bool DateView::PerformAction(const ui::Event& event) {
@@ -236,8 +231,7 @@ TimeView::TimeView(TrayDate::ClockLayout clock_layout) {
   UpdateClockLayout(clock_layout);
 }
 
-TimeView::~TimeView() {
-}
+TimeView::~TimeView() {}
 
 void TimeView::UpdateTimeFormat() {
   hour_type_ = WmShell::Get()->system_tray_delegate()->GetHourClockType();
@@ -269,8 +263,7 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
   base::string16 minute = current_time.substr(colon_pos + 1);
 
   // Sometimes pad single-digit hours with a zero for aesthetic reasons.
-  if (hour.length() == 1 &&
-      hour_type_ == base::k24HourClock &&
+  if (hour.length() == 1 && hour_type_ == base::k24HourClock &&
       !base::i18n::IsRTL())
     hour = base::ASCIIToUTF16("0") + hour;
 
@@ -318,9 +311,7 @@ void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout) {
 void TimeView::SetBorderFromLayout(TrayDate::ClockLayout clock_layout) {
   if (clock_layout == TrayDate::HORIZONTAL_CLOCK)
     SetBorder(views::Border::CreateEmptyBorder(
-        0,
-        kTrayLabelItemHorizontalPaddingBottomAlignment,
-        0,
+        0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,
         kTrayLabelItemHorizontalPaddingBottomAlignment));
   else
     SetBorder(views::Border::NullBorder());

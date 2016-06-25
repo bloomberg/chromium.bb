@@ -94,8 +94,7 @@ void PartialMagnificationController::OnMouseEvent(ui::MouseEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // PartialMagnificationController: aura::WindowObserver implementation
 
-void PartialMagnificationController::OnWindowDestroying(
-    aura::Window* window) {
+void PartialMagnificationController::OnWindowDestroying(aura::Window* window) {
   CloseMagnifierWindow();
 
   aura::Window* new_root_window = GetCurrentRootWindow();
@@ -103,8 +102,7 @@ void PartialMagnificationController::OnWindowDestroying(
     SwitchTargetRootWindow(new_root_window);
 }
 
-void PartialMagnificationController::OnWidgetDestroying(
-    views::Widget* widget) {
+void PartialMagnificationController::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget, zoom_widget_);
   RemoveZoomWidgetObservers();
   zoom_widget_ = NULL;
@@ -117,8 +115,8 @@ void PartialMagnificationController::OnMouseMove(
   origin.Offset(-kMagnifierWidth / 2, -kMagnifierHeight / 2);
 
   if (zoom_widget_) {
-    zoom_widget_->SetBounds(gfx::Rect(origin.x(), origin.y(),
-                                      kMagnifierWidth, kMagnifierHeight));
+    zoom_widget_->SetBounds(
+        gfx::Rect(origin.x(), origin.y(), kMagnifierWidth, kMagnifierHeight));
   }
 }
 
@@ -157,12 +155,8 @@ void PartialMagnificationController::CreateMagnifierWindow() {
   window->SetName(kPartialMagniferWindowName);
 
   zoom_widget_->GetNativeView()->layer()->SetBounds(
-      gfx::Rect(0, 0,
-                kMagnifierWidth,
-                kMagnifierHeight));
-  zoom_widget_->GetNativeView()->layer()->SetBackgroundZoom(
-      scale_,
-      kZoomInset);
+      gfx::Rect(0, 0, kMagnifierWidth, kMagnifierHeight));
+  zoom_widget_->GetNativeView()->layer()->SetBackgroundZoom(scale_, kZoomInset);
 
   zoom_widget_->AddObserver(this);
 }
@@ -178,8 +172,7 @@ void PartialMagnificationController::CloseMagnifierWindow() {
 void PartialMagnificationController::RemoveZoomWidgetObservers() {
   DCHECK(zoom_widget_);
   zoom_widget_->RemoveObserver(this);
-  aura::Window* root_window =
-      zoom_widget_->GetNativeView()->GetRootWindow();
+  aura::Window* root_window = zoom_widget_->GetNativeView()->GetRootWindow();
   DCHECK(root_window);
   root_window->RemoveObserver(this);
 }

@@ -25,10 +25,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
   // Internal class name.
   static const char kViewClassName[];
 
-  enum FrameType {
-    FRAME_NONE,
-    FRAME_ASH
-  };
+  enum FrameType { FRAME_NONE, FRAME_ASH };
 
   PanelFrameView(views::Widget* frame, FrameType frame_type);
   ~PanelFrameView() override;
@@ -78,7 +75,6 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
 
   DISALLOW_COPY_AND_ASSIGN(PanelFrameView);
 };
-
 }
 
-#endif // ASH_WM_PANELS_PANEL_FRAME_VIEW_H_
+#endif  // ASH_WM_PANELS_PANEL_FRAME_VIEW_H_

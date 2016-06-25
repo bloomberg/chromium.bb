@@ -106,8 +106,7 @@ void ScopedShowWindow::OnWindowTreeChanging(WmWindow* window,
 }
 
 WindowCycleList::WindowCycleList(const WindowList& windows)
-    : windows_(windows),
-      current_index_(0) {
+    : windows_(windows), current_index_(0) {
   ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
 
   for (WmWindow* window : windows_)

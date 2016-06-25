@@ -63,9 +63,9 @@ views::View* TraySessionLengthLimit::CreateDefaultView(LoginStatus status) {
   UpdateState();
   if (limit_state_ == LIMIT_NONE)
     return NULL;
-  tray_bubble_view_ = new LabelTrayView(
-      NULL /* click_listener */,
-      IDR_AURA_UBER_TRAY_BUBBLE_SESSION_LENGTH_LIMIT);
+  tray_bubble_view_ =
+      new LabelTrayView(NULL /* click_listener */,
+                        IDR_AURA_UBER_TRAY_BUBBLE_SESSION_LENGTH_LIMIT);
   tray_bubble_view_->SetMessage(ComposeTrayBubbleMessage());
   return tray_bubble_view_;
 }
@@ -95,19 +95,18 @@ void TraySessionLengthLimit::UpdateState() {
       delegate->GetSessionLengthLimit(&time_limit_)) {
     const base::TimeDelta expiring_soon_threshold(
         base::TimeDelta::FromMinutes(kExpiringSoonThresholdInMinutes));
-    remaining_session_time_ = std::max(
-        time_limit_ - (base::TimeTicks::Now() - session_start_time_),
-        base::TimeDelta());
-    limit_state_ = remaining_session_time_ <= expiring_soon_threshold ?
-        LIMIT_EXPIRING_SOON : LIMIT_SET;
+    remaining_session_time_ =
+        std::max(time_limit_ - (base::TimeTicks::Now() - session_start_time_),
+                 base::TimeDelta());
+    limit_state_ = remaining_session_time_ <= expiring_soon_threshold
+                       ? LIMIT_EXPIRING_SOON
+                       : LIMIT_SET;
     if (!timer_)
       timer_.reset(new base::RepeatingTimer);
     if (!timer_->IsRunning()) {
-      timer_->Start(FROM_HERE,
-                    base::TimeDelta::FromMilliseconds(
-                        kTimerIntervalInMilliseconds),
-                    this,
-                    &TraySessionLengthLimit::Update);
+      timer_->Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
+                                   kTimerIntervalInMilliseconds),
+                    this, &TraySessionLengthLimit::Update);
     }
   } else {
     remaining_session_time_ = base::TimeDelta();
@@ -182,8 +181,7 @@ base::string16 TraySessionLengthLimit::ComposeNotificationMessage() const {
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT,
       ui::TimeFormat::Detailed(ui::TimeFormat::FORMAT_DURATION,
-                               ui::TimeFormat::LENGTH_LONG,
-                               10,
+                               ui::TimeFormat::LENGTH_LONG, 10,
                                remaining_session_time_));
 }
 
@@ -191,8 +189,7 @@ base::string16 TraySessionLengthLimit::ComposeTrayBubbleMessage() const {
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_BUBBLE_SESSION_LENGTH_LIMIT,
       ui::TimeFormat::Detailed(ui::TimeFormat::FORMAT_DURATION,
-                               ui::TimeFormat::LENGTH_LONG,
-                               10,
+                               ui::TimeFormat::LENGTH_LONG, 10,
                                remaining_session_time_));
 }
 

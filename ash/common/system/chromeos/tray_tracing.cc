@@ -25,10 +25,9 @@ namespace tray {
 class DefaultTracingView : public ActionableView {
  public:
   DefaultTracingView() {
-    SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal,
-        kTrayPopupPaddingHorizontal, 0,
-        kTrayPopupPaddingBetweenItems));
+    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                          kTrayPopupPaddingHorizontal, 0,
+                                          kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     image_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
@@ -64,8 +63,7 @@ class DefaultTracingView : public ActionableView {
 // ash::TrayTracing
 
 TrayTracing::TrayTracing(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_TRACING),
-      default_(NULL) {
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_TRACING), default_(NULL) {
   DCHECK(system_tray);
   WmShell::Get()->system_tray_notifier()->AddTracingObserver(this);
 }
@@ -98,8 +96,7 @@ void TrayTracing::DestroyDefaultView() {
   default_ = NULL;
 }
 
-void TrayTracing::DestroyDetailedView() {
-}
+void TrayTracing::DestroyDetailedView() {}
 
 void TrayTracing::OnTracingModeChanged(bool value) {
   SetTrayIconVisible(value);

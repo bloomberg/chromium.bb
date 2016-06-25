@@ -22,22 +22,20 @@ namespace tray {
 
 // ScreenTrayView implementations.
 ScreenTrayView::ScreenTrayView(ScreenTrayItem* screen_tray_item, int icon_id)
-    : TrayItemView(screen_tray_item),
-      screen_tray_item_(screen_tray_item) {
+    : TrayItemView(screen_tray_item), screen_tray_item_(screen_tray_item) {
   CreateImageView();
   image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
-      .GetImageNamed(icon_id).ToImageSkia());
+                             .GetImageNamed(icon_id)
+                             .ToImageSkia());
 
   Update();
 }
 
-ScreenTrayView::~ScreenTrayView() {
-}
+ScreenTrayView::~ScreenTrayView() {}
 
 void ScreenTrayView::Update() {
   SetVisible(screen_tray_item_->is_started());
 }
-
 
 // ScreenStatusView implementations.
 ScreenStatusView::ScreenStatusView(ScreenTrayItem* screen_tray_item,
@@ -55,8 +53,7 @@ ScreenStatusView::ScreenStatusView(ScreenTrayItem* screen_tray_item,
   Update();
 }
 
-ScreenStatusView::~ScreenStatusView() {
-}
+ScreenStatusView::~ScreenStatusView() {}
 
 void ScreenStatusView::Layout() {
   views::View::Layout();
@@ -71,15 +68,14 @@ void ScreenStatusView::Layout() {
   // Adjust the label's bounds in case it got cut off by |stop_button_|.
   if (label_->bounds().Intersects(stop_button_->bounds())) {
     gfx::Rect label_bounds = label_->bounds();
-    label_bounds.set_width(
-        stop_button_->x() - kTrayPopupPaddingBetweenItems - label_->x());
+    label_bounds.set_width(stop_button_->x() - kTrayPopupPaddingBetweenItems -
+                           label_->x());
     label_->SetBoundsRect(label_bounds);
   }
 }
 
-void ScreenStatusView::ButtonPressed(
-    views::Button* sender,
-    const ui::Event& event) {
+void ScreenStatusView::ButtonPressed(views::Button* sender,
+                                     const ui::Event& event) {
   DCHECK(sender == stop_button_);
   screen_tray_item_->Stop();
 }
@@ -88,8 +84,7 @@ void ScreenStatusView::CreateItems() {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        kTrayPopupPaddingHorizontal,
-                                        0,
+                                        kTrayPopupPaddingHorizontal, 0,
                                         kTrayPopupPaddingBetweenItems));
   icon_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
   icon_->SetImage(bundle.GetImageNamed(icon_id_).ToImageSkia());
@@ -112,11 +107,9 @@ void ScreenStatusView::Update() {
 
 ScreenNotificationDelegate::ScreenNotificationDelegate(
     ScreenTrayItem* screen_tray)
-  : screen_tray_(screen_tray) {
-}
+    : screen_tray_(screen_tray) {}
 
-ScreenNotificationDelegate::~ScreenNotificationDelegate() {
-}
+ScreenNotificationDelegate::~ScreenNotificationDelegate() {}
 
 void ScreenNotificationDelegate::ButtonClick(int button_index) {
   DCHECK_EQ(0, button_index);
@@ -130,8 +123,7 @@ ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray)
       tray_view_(NULL),
       default_view_(NULL),
       is_started_(false),
-      stop_callback_(base::Bind(&base::DoNothing)) {
-}
+      stop_callback_(base::Bind(&base::DoNothing)) {}
 
 ScreenTrayItem::~ScreenTrayItem() {}
 
@@ -159,7 +151,7 @@ void ScreenTrayItem::Start(const base::Closure& stop_callback) {
     default_view_->Update();
 
   if (!system_tray()->HasSystemBubbleType(
-      SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
+          SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
     CreateOrUpdateNotification();
   }
 }

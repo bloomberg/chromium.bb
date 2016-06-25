@@ -170,9 +170,7 @@ class AshTestBase : public testing::Test {
 
 class NoSessionAshTestBase : public AshTestBase {
  public:
-  NoSessionAshTestBase() {
-    set_start_session(false);
-  }
+  NoSessionAshTestBase() { set_start_session(false); }
   ~NoSessionAshTestBase() override {}
 
  private:

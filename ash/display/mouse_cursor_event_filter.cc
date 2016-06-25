@@ -51,7 +51,7 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   // (at least X11) stops generating a ui::ET_MOUSE_MOVED event.
   if (event->type() != ui::ET_MOUSE_MOVED &&
       event->type() != ui::ET_MOUSE_DRAGGED) {
-      return;
+    return;
   }
 
   Shell::GetInstance()

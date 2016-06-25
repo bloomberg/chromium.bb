@@ -15,7 +15,6 @@ AshWindowTreeHostInitParams::AshWindowTreeHostInitParams()
 {
 }
 
-AshWindowTreeHostInitParams::~AshWindowTreeHostInitParams() {
-}
+AshWindowTreeHostInitParams::~AshWindowTreeHostInitParams() {}
 
 }  // namespace ash

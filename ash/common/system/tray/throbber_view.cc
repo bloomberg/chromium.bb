@@ -18,11 +18,9 @@ const int kThrobberAnimationDurationMs = 200;
 
 }  // namespace
 
-SystemTrayThrobber::SystemTrayThrobber() : views::SmoothedThrobber() {
-}
+SystemTrayThrobber::SystemTrayThrobber() : views::SmoothedThrobber() {}
 
-SystemTrayThrobber::~SystemTrayThrobber() {
-}
+SystemTrayThrobber::~SystemTrayThrobber() {}
 
 void SystemTrayThrobber::SetTooltipText(const base::string16& tooltip_text) {
   tooltip_text_ = tooltip_text;
@@ -47,8 +45,7 @@ ThrobberView::ThrobberView() {
   layer()->SetOpacity(0.0);
 }
 
-ThrobberView::~ThrobberView() {
-}
+ThrobberView::~ThrobberView() {}
 
 gfx::Size ThrobberView::GetPreferredSize() const {
   return gfx::Size(ash::kTrayPopupItemHeight, ash::kTrayPopupItemHeight);
@@ -57,8 +54,7 @@ gfx::Size ThrobberView::GetPreferredSize() const {
 void ThrobberView::Layout() {
   View* child = child_at(0);
   gfx::Size ps = child->GetPreferredSize();
-  child->SetBounds((width() - ps.width()) / 2,
-                   (height() - ps.height()) / 2,
+  child->SetBounds((width() - ps.width()) / 2, (height() - ps.height()) / 2,
                    ps.width(), ps.height());
   SizeToPreferredSize();
 }

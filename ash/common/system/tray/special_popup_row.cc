@@ -39,25 +39,22 @@ views::View* CreatePopupHeaderButtonsContainer() {
 
 }  // namespace
 
-SpecialPopupRow::SpecialPopupRow()
-    : content_(NULL),
-      button_container_(NULL) {
-  set_background(views::Background::CreateSolidBackground(
-      kHeaderBackgroundColor));
-  SetBorder(views::Border::CreateSolidSidedBorder(
-      kBorderHeight, 0, 0, 0, kBorderColor));
+SpecialPopupRow::SpecialPopupRow() : content_(NULL), button_container_(NULL) {
+  set_background(
+      views::Background::CreateSolidBackground(kHeaderBackgroundColor));
+  SetBorder(views::Border::CreateSolidSidedBorder(kBorderHeight, 0, 0, 0,
+                                                  kBorderColor));
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 }
 
-SpecialPopupRow::~SpecialPopupRow() {
-}
+SpecialPopupRow::~SpecialPopupRow() {}
 
 void SpecialPopupRow::SetTextLabel(int string_id, ViewClickListener* listener) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   HoverHighlightView* container = new HoverHighlightView(listener);
-  container->SetLayoutManager(new
-      views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
+  container->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
 
   container->set_highlight_color(SkColorSetARGB(0, 0, 0, 0));
   container->set_default_color(SkColorSetARGB(0, 0, 0, 0));

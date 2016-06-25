@@ -63,29 +63,29 @@ const int kShowAnimationDurationMs = kPositionAnimationDurationMs;
 // Value of |maximize_mode_animation_| showing to begin animating alpha of
 // |size_button_|.
 float SizeButtonShowStartValue() {
-  return static_cast<float>(kShowAnimationAlphaDelayMs)
-      / kShowAnimationDurationMs;
+  return static_cast<float>(kShowAnimationAlphaDelayMs) /
+         kShowAnimationDurationMs;
 }
 
 // Amount of |maximize_mode_animation_| showing to animate the alpha of
 // |size_button_|.
 float SizeButtonShowDuration() {
-  return static_cast<float>(kAlphaAnimationDurationMs)
-      / kShowAnimationDurationMs;
+  return static_cast<float>(kAlphaAnimationDurationMs) /
+         kShowAnimationDurationMs;
 }
 
 // Amount of |maximize_mode_animation_| hiding to animate the alpha of
 // |size_button_|.
 float SizeButtonHideDuration() {
-  return static_cast<float>(kAlphaAnimationDurationMs)
-      / kHideAnimationDurationMs;
+  return static_cast<float>(kAlphaAnimationDurationMs) /
+         kHideAnimationDurationMs;
 }
 
 // Value of |maximize_mode_animation_| hiding to begin animating the position of
 // |minimize_button_|.
 float HidePositionStartValue() {
-  return 1.0f - static_cast<float>(kHidePositionDelayMs)
-      / kHideAnimationDurationMs;
+  return 1.0f -
+         static_cast<float>(kHidePositionDelayMs) / kHideAnimationDurationMs;
 }
 
 // Converts |point| from |src| to |dst| and hittests against |dst|.
@@ -143,8 +143,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   AddChildView(close_button_);
 }
 
-FrameCaptionButtonContainerView::~FrameCaptionButtonContainerView() {
-}
+FrameCaptionButtonContainerView::~FrameCaptionButtonContainerView() {}
 
 void FrameCaptionButtonContainerView::TestApi::EndAnimations() {
   container_view_->maximize_mode_animation_->End();
@@ -155,9 +154,8 @@ void FrameCaptionButtonContainerView::SetButtonImage(
     gfx::VectorIconId icon_image_id) {
   button_icon_id_map_[icon] = icon_image_id;
 
-  FrameCaptionButton* buttons[] = {
-    minimize_button_, size_button_, close_button_
-  };
+  FrameCaptionButton* buttons[] = {minimize_button_, size_button_,
+                                   close_button_};
   for (size_t i = 0; i < arraysize(buttons); ++i) {
     if (buttons[i]->icon() == icon)
       buttons[i]->SetImage(icon, FrameCaptionButton::ANIMATE_NO, icon_image_id);
@@ -261,11 +259,11 @@ void FrameCaptionButtonContainerView::AnimationProgressed(
   int size_alpha = 0;
   int minimize_x = 0;
   if (maximize_mode_animation_->IsShowing()) {
-    double scaled_value = CapAnimationValue(
-        (current_value - SizeButtonShowStartValue())
-            / SizeButtonShowDuration());
+    double scaled_value =
+        CapAnimationValue((current_value - SizeButtonShowStartValue()) /
+                          SizeButtonShowDuration());
     double tweened_value_alpha =
-        gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT,scaled_value);
+        gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT, scaled_value);
     size_alpha = gfx::Tween::LinearIntValueBetween(tweened_value_alpha, 0, 255);
 
     double tweened_value_slide =
@@ -273,15 +271,14 @@ void FrameCaptionButtonContainerView::AnimationProgressed(
     minimize_x = gfx::Tween::LinearIntValueBetween(tweened_value_slide,
                                                    size_button_->x(), 0);
   } else {
-    double scaled_value_alpha = CapAnimationValue(
-        (1.0f - current_value) / SizeButtonHideDuration());
+    double scaled_value_alpha =
+        CapAnimationValue((1.0f - current_value) / SizeButtonHideDuration());
     double tweened_value_alpha =
         gfx::Tween::CalculateValue(gfx::Tween::EASE_IN, scaled_value_alpha);
     size_alpha = gfx::Tween::LinearIntValueBetween(tweened_value_alpha, 255, 0);
 
     double scaled_value_position = CapAnimationValue(
-        (HidePositionStartValue() - current_value)
-            / HidePositionStartValue());
+        (HidePositionStartValue() - current_value) / HidePositionStartValue());
     double tweened_value_position =
         gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT, scaled_value_position);
     minimize_x = gfx::Tween::LinearIntValueBetween(tweened_value_position, 0,
@@ -302,17 +299,19 @@ void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
     return;
   }
 
-  FrameCaptionButton::Animate fcb_animate = (animate == ANIMATE_YES) ?
-      FrameCaptionButton::ANIMATE_YES : FrameCaptionButton::ANIMATE_NO;
+  FrameCaptionButton::Animate fcb_animate =
+      (animate == ANIMATE_YES) ? FrameCaptionButton::ANIMATE_YES
+                               : FrameCaptionButton::ANIMATE_NO;
   auto it = button_icon_id_map_.find(icon);
   if (it != button_icon_id_map_.end())
     button->SetImage(icon, fcb_animate, it->second);
 }
 
 bool FrameCaptionButtonContainerView::ShouldSizeButtonBeVisible() const {
-  return !Shell::GetInstance()->maximize_mode_controller()->
-      IsMaximizeModeWindowManagerEnabled() &&
-      frame_->widget_delegate()->CanMaximize();
+  return !Shell::GetInstance()
+              ->maximize_mode_controller()
+              ->IsMaximizeModeWindowManagerEnabled() &&
+         frame_->widget_delegate()->CanMaximize();
 }
 
 void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
@@ -354,7 +353,7 @@ bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {
 
 void FrameCaptionButtonContainerView::SetButtonsToNormal(Animate animate) {
   SetButtonIcons(CAPTION_BUTTON_ICON_MINIMIZE, CAPTION_BUTTON_ICON_CLOSE,
-      animate);
+                 animate);
   minimize_button_->SetState(views::Button::STATE_NORMAL);
   size_button_->SetState(views::Button::STATE_NORMAL);
   close_button_->SetState(views::Button::STATE_NORMAL);
@@ -376,9 +375,8 @@ const FrameCaptionButton* FrameCaptionButtonContainerView::GetButtonClosestTo(
   gfx::Point position(position_in_screen);
   views::View::ConvertPointFromScreen(this, &position);
 
-  FrameCaptionButton* buttons[] = {
-    minimize_button_, size_button_, close_button_
-  };
+  FrameCaptionButton* buttons[] = {minimize_button_, size_button_,
+                                   close_button_};
   int min_squared_distance = INT_MAX;
   FrameCaptionButton* closest_button = NULL;
   for (size_t i = 0; i < arraysize(buttons); ++i) {
@@ -402,9 +400,8 @@ const FrameCaptionButton* FrameCaptionButtonContainerView::GetButtonClosestTo(
 void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
     const FrameCaptionButton* to_hover,
     const FrameCaptionButton* to_press) {
-  FrameCaptionButton* buttons[] = {
-    minimize_button_, size_button_, close_button_
-  };
+  FrameCaptionButton* buttons[] = {minimize_button_, size_button_,
+                                   close_button_};
   for (size_t i = 0; i < arraysize(buttons); ++i) {
     FrameCaptionButton* button = buttons[i];
     views::Button::ButtonState new_state = views::Button::STATE_NORMAL;

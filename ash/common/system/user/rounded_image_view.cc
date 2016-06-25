@@ -56,23 +56,18 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
   image_bounds.ClampToCenteredSize(GetPreferredSize());
   image_bounds.Inset(GetInsets());
   const SkScalar kRadius[8] = {
-    SkIntToScalar(corner_radius_[0]),
-    SkIntToScalar(corner_radius_[0]),
-    SkIntToScalar(corner_radius_[1]),
-    SkIntToScalar(corner_radius_[1]),
-    SkIntToScalar(corner_radius_[2]),
-    SkIntToScalar(corner_radius_[2]),
-    SkIntToScalar(corner_radius_[3]),
-    SkIntToScalar(corner_radius_[3])
-  };
+      SkIntToScalar(corner_radius_[0]), SkIntToScalar(corner_radius_[0]),
+      SkIntToScalar(corner_radius_[1]), SkIntToScalar(corner_radius_[1]),
+      SkIntToScalar(corner_radius_[2]), SkIntToScalar(corner_radius_[2]),
+      SkIntToScalar(corner_radius_[3]), SkIntToScalar(corner_radius_[3])};
   SkPath path;
   path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius);
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setXfermodeMode(active_user_ ? SkXfermode::kSrcOver_Mode
                                      : SkXfermode::kLuminosity_Mode);
-  canvas->DrawImageInPath(
-      resized_, image_bounds.x(), image_bounds.y(), path, paint);
+  canvas->DrawImageInPath(resized_, image_bounds.x(), image_bounds.y(), path,
+                          paint);
 }
 
 }  // namespace tray

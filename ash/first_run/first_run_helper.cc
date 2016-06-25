@@ -18,4 +18,3 @@ void FirstRunHelper::RemoveObserver(Observer* observer) {
 }
 
 }  // namespace chromeos
-

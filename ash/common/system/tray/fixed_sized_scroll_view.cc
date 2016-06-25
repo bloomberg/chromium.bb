@@ -10,8 +10,7 @@ FixedSizedScrollView::FixedSizedScrollView() {
   set_notify_enter_exit_on_child(true);
 }
 
-FixedSizedScrollView::~FixedSizedScrollView() {
-}
+FixedSizedScrollView::~FixedSizedScrollView() {}
 
 void FixedSizedScrollView::SetContentsView(views::View* view) {
   SetContents(view);
@@ -26,8 +25,8 @@ void FixedSizedScrollView::SetFixedSize(const gfx::Size& size) {
 }
 
 gfx::Size FixedSizedScrollView::GetPreferredSize() const {
-  gfx::Size size = fixed_size_.IsEmpty() ?
-      contents()->GetPreferredSize() : fixed_size_;
+  gfx::Size size =
+      fixed_size_.IsEmpty() ? contents()->GetPreferredSize() : fixed_size_;
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;

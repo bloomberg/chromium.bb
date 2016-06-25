@@ -50,10 +50,9 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
   // |message_out| to empty, which means the notification should be removed. It
   // also sets |additional_message_out| which appears in the notification with
   // the |message_out|.
-  bool GetDisplayMessageForNotification(
-      const DisplayInfoMap& old_info,
-      base::string16* message_out,
-      base::string16* additional_message_out);
+  bool GetDisplayMessageForNotification(const DisplayInfoMap& old_info,
+                                        base::string16* message_out,
+                                        base::string16* additional_message_out);
 
   // Creates or updates the display notification.
   void CreateOrUpdateNotification(const base::string16& message,

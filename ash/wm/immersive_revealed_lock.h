@@ -20,10 +20,7 @@ class ASH_EXPORT ImmersiveRevealedLock {
  public:
   class ASH_EXPORT Delegate {
    public:
-    enum AnimateReveal {
-      ANIMATE_REVEAL_YES,
-      ANIMATE_REVEAL_NO
-    };
+    enum AnimateReveal { ANIMATE_REVEAL_YES, ANIMATE_REVEAL_NO };
 
     virtual void LockRevealedState(AnimateReveal animate_reveal) = 0;
     virtual void UnlockRevealedState() = 0;

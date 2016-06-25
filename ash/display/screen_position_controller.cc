@@ -40,8 +40,7 @@ void MoveAllTransientChildrenToNewRoot(const display::Display& display,
   aura::Window* dst_root = Shell::GetInstance()
                                ->window_tree_host_manager()
                                ->GetRootWindowForDisplayId(display.id());
-  aura::Window::Windows transient_children =
-      ::wm::GetTransientChildren(window);
+  aura::Window::Windows transient_children = ::wm::GetTransientChildren(window);
   for (aura::Window::Windows::iterator iter = transient_children.begin();
        iter != transient_children.end(); ++iter) {
     aura::Window* transient_child = *iter;
@@ -117,9 +116,8 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
   *point = point_in_root;
 }
 
-void ScreenPositionController::ConvertPointToScreen(
-    const aura::Window* window,
-    gfx::Point* point) {
+void ScreenPositionController::ConvertPointToScreen(const aura::Window* window,
+                                                    gfx::Point* point) {
   const aura::Window* root = window->GetRootWindow();
   aura::Window::ConvertPointToTarget(window, root, point);
   const gfx::Point display_origin =
@@ -185,8 +183,8 @@ void ScreenPositionController::SetBounds(aura::Window* window,
     }
 
     if (dst_container && window->parent() != dst_container) {
-      aura::Window* focused = aura::client::GetFocusClient(window)->
-          GetFocusedWindow();
+      aura::Window* focused =
+          aura::client::GetFocusClient(window)->GetFocusedWindow();
       aura::client::ActivationClient* activation_client =
           aura::client::GetActivationClient(window->GetRootWindow());
       aura::Window* active = activation_client->GetActiveWindow();

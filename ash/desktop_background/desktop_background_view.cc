@@ -150,10 +150,10 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   if (wallpaper_layout == WALLPAPER_LAYOUT_CENTER_CROPPED) {
     // The dimension with the smallest ratio must be cropped, the other one
     // is preserved. Both are set in gfx::Size cropped_size.
-    double horizontal_ratio = static_cast<double>(width()) /
-        static_cast<double>(wallpaper.width());
-    double vertical_ratio = static_cast<double>(height()) /
-        static_cast<double>(wallpaper.height());
+    double horizontal_ratio =
+        static_cast<double>(width()) / static_cast<double>(wallpaper.width());
+    double vertical_ratio =
+        static_cast<double>(height()) / static_cast<double>(wallpaper.height());
 
     gfx::Size cropped_size;
     if (vertical_ratio > horizontal_ratio) {
@@ -166,33 +166,28 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
           gfx::ToFlooredInt(static_cast<double>(height()) / horizontal_ratio));
     }
 
-    gfx::Rect wallpaper_cropped_rect(
-        0, 0, wallpaper.width(), wallpaper.height());
+    gfx::Rect wallpaper_cropped_rect(0, 0, wallpaper.width(),
+                                     wallpaper.height());
     wallpaper_cropped_rect.ClampToCenteredSize(cropped_size);
-    canvas->DrawImageInt(wallpaper,
-        wallpaper_cropped_rect.x(), wallpaper_cropped_rect.y(),
-        wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(),
-        0, 0, width(), height(),
-        true);
+    canvas->DrawImageInt(
+        wallpaper, wallpaper_cropped_rect.x(), wallpaper_cropped_rect.y(),
+        wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(), 0, 0,
+        width(), height(), true);
   } else if (wallpaper_layout == WALLPAPER_LAYOUT_TILE) {
     canvas->TileImageInt(wallpaper, 0, 0, width(), height());
   } else if (wallpaper_layout == WALLPAPER_LAYOUT_STRETCH) {
     // This is generally not recommended as it may show artifacts.
-    canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(),
-        wallpaper.height(), 0, 0, width(), height(), true);
+    canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(), wallpaper.height(),
+                         0, 0, width(), height(), true);
   } else {
     float image_scale = canvas->image_scale();
     gfx::Rect wallpaper_rect(0, 0, wallpaper.width() / image_scale,
                              wallpaper.height() / image_scale);
     // All other are simply centered, and not scaled (but may be clipped).
-    canvas->DrawImageInt(
-        wallpaper,
-        0, 0, wallpaper.width(), wallpaper.height(),
-        (width() - wallpaper_rect.width()) / 2,
-        (height() - wallpaper_rect.height()) / 2,
-        wallpaper_rect.width(),
-        wallpaper_rect.height(),
-        true);
+    canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(), wallpaper.height(),
+                         (width() - wallpaper_rect.width()) / 2,
+                         (height() - wallpaper_rect.height()) / 2,
+                         wallpaper_rect.width(), wallpaper_rect.height(), true);
   }
 }
 

@@ -31,5 +31,4 @@ ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents);
 
 }  // namespace ash
 
-
 #endif  // ASH_SHELL_FACTORY_H_

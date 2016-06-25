@@ -25,7 +25,6 @@ const ash::KeyboardOverlayView::KeyEventData kCancelKeys[] = {
     {ui::VKEY_HELP, ui::EF_NONE},
     {ui::VKEY_F14, ui::EF_NONE},
 };
-
 }
 
 namespace ash {

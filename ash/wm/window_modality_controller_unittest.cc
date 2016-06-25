@@ -65,14 +65,14 @@ TEST_F(WindowModalityControllerTest, BasicActivation) {
   wm::ActivateWindow(w11.get());
   EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
 
-  int check1[] = { -1, -12, -11 };
+  int check1[] = {-1, -12, -11};
   EXPECT_TRUE(ValidateStacking(w1->parent(), check1, arraysize(check1)));
 
   wm::ActivateWindow(w1.get());
   EXPECT_TRUE(wm::IsActiveWindow(w12.get()));
   // Transient children are always stacked above their transient parent, which
   // is why this order is not -11, -1, -12.
-  int check2[] = { -1, -11, -12 };
+  int check2[] = {-1, -11, -12};
   EXPECT_TRUE(ValidateStacking(w1->parent(), check2, arraysize(check2)));
 
   w12.reset();
@@ -112,7 +112,7 @@ TEST_F(WindowModalityControllerTest, NestedModals) {
 
   wm::ActivateWindow(w1.get());
   EXPECT_TRUE(wm::IsActiveWindow(w111.get()));
-  int check1[] = { -2, -1, -11, -111 };
+  int check1[] = {-2, -1, -11, -111};
   EXPECT_TRUE(ValidateStacking(w1->parent(), check1, arraysize(check1)));
 
   wm::ActivateWindow(w11.get());
@@ -125,7 +125,7 @@ TEST_F(WindowModalityControllerTest, NestedModals) {
 
   wm::ActivateWindow(w2.get());
   EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-  int check2[] = { -1, -11, -111, -2 };
+  int check2[] = {-1, -11, -111, -2};
   EXPECT_TRUE(ValidateStacking(w1->parent(), check2, arraysize(check2)));
 
   w2.reset();
@@ -379,9 +379,7 @@ TEST_F(WindowModalityControllerTest, ReleaseCapture) {
 class TouchTrackerWindowDelegate : public aura::test::TestWindowDelegate {
  public:
   TouchTrackerWindowDelegate()
-      : received_touch_(false),
-        last_event_type_(ui::ET_UNKNOWN) {
-  }
+      : received_touch_(false), last_event_type_(ui::ET_UNKNOWN) {}
   ~TouchTrackerWindowDelegate() override {}
 
   void reset() {

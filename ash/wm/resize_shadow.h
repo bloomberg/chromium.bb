@@ -45,9 +45,7 @@ class ResizeShadow {
   // Updates the effect positions based on the |bounds| of the window.
   void Layout(const gfx::Rect& bounds);
 
-  int GetLastHitTestForTest() const {
-    return last_hit_test_;
-  }
+  int GetLastHitTestForTest() const { return last_hit_test_; }
 
  private:
   // Images for the shadow effect.

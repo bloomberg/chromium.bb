@@ -20,7 +20,6 @@ std::string GetAdjustedBounds(const gfx::Rect& visible,
   wm::AdjustBoundsToEnsureMinimumWindowVisibility(visible, &to_be_adjusted);
   return to_be_adjusted.ToString();
 }
-
 }
 
 typedef test::AshTestBase WindowUtilTest;
@@ -64,12 +63,10 @@ TEST_F(WindowUtilTest, AdjustBoundsToEnsureMinimumVisibility) {
 
   const gfx::Rect visible_bounds_right(200, 50, 100, 100);
 
-  EXPECT_EQ(
-      "210,60 90x90",
-      GetAdjustedBounds(visible_bounds_right, gfx::Rect(210, 60, 90, 90)));
-  EXPECT_EQ(
-      "210,60 100x100",
-      GetAdjustedBounds(visible_bounds_right, gfx::Rect(210, 60, 150, 150)));
+  EXPECT_EQ("210,60 90x90", GetAdjustedBounds(visible_bounds_right,
+                                              gfx::Rect(210, 60, 90, 90)));
+  EXPECT_EQ("210,60 100x100", GetAdjustedBounds(visible_bounds_right,
+                                                gfx::Rect(210, 60, 150, 150)));
   EXPECT_EQ("125,50 100x100",
             GetAdjustedBounds(visible_bounds_right, gfx::Rect(0, 0, 150, 150)));
   EXPECT_EQ("275,50 100x100", GetAdjustedBounds(visible_bounds_right,
@@ -79,9 +76,8 @@ TEST_F(WindowUtilTest, AdjustBoundsToEnsureMinimumVisibility) {
       GetAdjustedBounds(visible_bounds_right, gfx::Rect(-100, 150, 150, 150)));
 
   const gfx::Rect visible_bounds_left(-200, -50, 100, 100);
-  EXPECT_EQ(
-      "-190,-40 90x90",
-      GetAdjustedBounds(visible_bounds_left, gfx::Rect(-190, -40, 90, 90)));
+  EXPECT_EQ("-190,-40 90x90", GetAdjustedBounds(visible_bounds_left,
+                                                gfx::Rect(-190, -40, 90, 90)));
   EXPECT_EQ(
       "-190,-40 100x100",
       GetAdjustedBounds(visible_bounds_left, gfx::Rect(-190, -40, 150, 150)));

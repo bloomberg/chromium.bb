@@ -84,8 +84,7 @@ CursorWindowController::CursorWindowController()
       cursor_type_(ui::kCursorNone),
       visible_(true),
       cursor_set_(ui::CURSOR_SET_NORMAL),
-      delegate_(new CursorWindowDelegate()) {
-}
+      delegate_(new CursorWindowDelegate()) {}
 
 CursorWindowController::~CursorWindowController() {
   SetContainer(NULL);
@@ -139,8 +138,8 @@ void CursorWindowController::SetDisplay(const display::Display& display) {
   if (!root_window)
     return;
 
-  SetContainer(GetRootWindowController(root_window)->GetContainer(
-      kShellWindowId_MouseCursorContainer));
+  SetContainer(GetRootWindowController(root_window)
+                   ->GetContainer(kShellWindowId_MouseCursorContainer));
   SetBoundsInScreen(display.bounds());
   // Updates the hot point based on the current display.
   UpdateCursorImage();
@@ -239,23 +238,18 @@ void CursorWindowController::UpdateCursorImage() {
       case display::Display::ROTATE_90:
         rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
             *image, SkBitmapOperations::ROTATION_90_CW);
-        hot_point_.SetPoint(
-            rotated.width() - hot_point_.y(),
-            hot_point_.x());
+        hot_point_.SetPoint(rotated.width() - hot_point_.y(), hot_point_.x());
         break;
       case display::Display::ROTATE_180:
         rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
             *image, SkBitmapOperations::ROTATION_180_CW);
-        hot_point_.SetPoint(
-            rotated.height() - hot_point_.x(),
-            rotated.width() - hot_point_.y());
+        hot_point_.SetPoint(rotated.height() - hot_point_.x(),
+                            rotated.width() - hot_point_.y());
         break;
       case display::Display::ROTATE_270:
         rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
             *image, SkBitmapOperations::ROTATION_270_CW);
-        hot_point_.SetPoint(
-            hot_point_.y(),
-            rotated.height() - hot_point_.x());
+        hot_point_.SetPoint(hot_point_.y(), rotated.height() - hot_point_.x());
         break;
     }
     // Note that mirror window's scale factor is always 1.0f, therefore we

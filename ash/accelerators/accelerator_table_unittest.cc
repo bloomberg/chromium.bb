@@ -13,8 +13,7 @@ namespace ash {
 namespace {
 
 struct Cmp {
-  bool operator()(const AcceleratorData& lhs,
-                  const AcceleratorData& rhs) {
+  bool operator()(const AcceleratorData& lhs, const AcceleratorData& rhs) {
     if (lhs.trigger_on_press != rhs.trigger_on_press)
       return lhs.trigger_on_press < rhs.trigger_on_press;
     if (lhs.keycode != rhs.keycode)

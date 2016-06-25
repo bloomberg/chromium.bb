@@ -25,8 +25,7 @@ namespace shell {
 
 class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
  public:
-  explicit WorkspaceWindowWatcher(WindowWatcher* watcher) : watcher_(watcher) {
-  }
+  explicit WorkspaceWindowWatcher(WindowWatcher* watcher) : watcher_(watcher) {}
 
   ~WorkspaceWindowWatcher() override {}
 
@@ -73,7 +72,7 @@ WindowWatcher::WindowWatcher() {
   workspace_window_watcher_.reset(new WorkspaceWindowWatcher(this));
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++ iter) {
+       iter != root_windows.end(); ++iter) {
     workspace_window_watcher_->RootWindowAdded(*iter);
   }
 }
@@ -81,7 +80,7 @@ WindowWatcher::WindowWatcher() {
 WindowWatcher::~WindowWatcher() {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++ iter) {
+       iter != root_windows.end(); ++iter) {
     workspace_window_watcher_->RootWindowRemoved(*iter);
   }
 }
@@ -107,10 +106,8 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
 
   SkBitmap icon_bitmap;
   icon_bitmap.allocN32Pixels(16, 16);
-  icon_bitmap.eraseARGB(255,
-                        image_count == 0 ? 255 : 0,
-                        image_count == 1 ? 255 : 0,
-                        image_count == 2 ? 255 : 0);
+  icon_bitmap.eraseARGB(255, image_count == 0 ? 255 : 0,
+                        image_count == 1 ? 255 : 0, image_count == 2 ? 255 : 0);
   image_count = (image_count + 1) % 3;
   item.image = gfx::ImageSkia(gfx::ImageSkiaRep(icon_bitmap, 1.0f));
 
@@ -125,8 +122,8 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
 }
 
 void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
-  for (IDToWindow::iterator i = id_to_window_.begin();
-       i != id_to_window_.end(); ++i) {
+  for (IDToWindow::iterator i = id_to_window_.begin(); i != id_to_window_.end();
+       ++i) {
     if (i->second == window) {
       ShelfModel* model = Shell::GetInstance()->shelf_model();
       int index = model->ItemIndexByID(i->first);

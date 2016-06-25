@@ -16,13 +16,9 @@ namespace ash {
 // Helper class for painting the window header.
 class ASH_EXPORT HeaderPainter {
  public:
-  enum Mode {
-    MODE_ACTIVE,
-    MODE_INACTIVE
-  };
+  enum Mode { MODE_ACTIVE, MODE_INACTIVE };
 
-  virtual ~HeaderPainter() {
-  }
+  virtual ~HeaderPainter() {}
 
   // Returns the header's minimum width.
   virtual int GetMinimumHeaderWidth() const = 0;

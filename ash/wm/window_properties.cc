@@ -11,9 +11,7 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WindowState*);
 
 namespace ash {
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect,
-                                 kRestoreBoundsOverrideKey,
-                                 NULL);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsOverrideKey, NULL);
 
 DEFINE_WINDOW_PROPERTY_KEY(ui::WindowShowState,
                            kRestoreShowStateOverrideKey,
@@ -25,7 +23,6 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);
 
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(wm::WindowState,
-                                 kWindowStateKey, NULL);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(wm::WindowState, kWindowStateKey, NULL);
 
 }  // namespace ash

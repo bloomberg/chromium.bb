@@ -17,14 +17,9 @@
 namespace ash {
 
 TrayNotificationView::TrayNotificationView(SystemTrayItem* owner, int icon_id)
-    : owner_(owner),
-      icon_id_(icon_id),
-      icon_(NULL),
-      autoclose_delay_(0) {
-}
+    : owner_(owner), icon_id_(icon_id), icon_(NULL), autoclose_delay_(0) {}
 
-TrayNotificationView::~TrayNotificationView() {
-}
+TrayNotificationView::~TrayNotificationView() {}
 
 void TrayNotificationView::InitView(views::View* contents) {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -33,9 +28,9 @@ void TrayNotificationView::InitView(views::View* contents) {
   SetLayoutManager(layout);
 
   views::ImageButton* close_button = new views::ImageButton(this);
-  close_button->SetImage(views::CustomButton::STATE_NORMAL,
-                         ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_MESSAGE_CLOSE));
+  close_button->SetImage(
+      views::CustomButton::STATE_NORMAL,
+      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_MESSAGE_CLOSE));
   close_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                   views::ImageButton::ALIGN_MIDDLE);
 
@@ -52,16 +47,15 @@ void TrayNotificationView::InitView(views::View* contents) {
   // Icon
   columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
                      0, /* resize percent */
-                     views::GridLayout::FIXED,
-                     kNotificationIconWidth, kNotificationIconWidth);
+                     views::GridLayout::FIXED, kNotificationIconWidth,
+                     kNotificationIconWidth);
 
   columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
 
   // Contents
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                      100, /* resize percent */
-                     views::GridLayout::FIXED,
-                     kTrayNotificationContentsWidth,
+                     views::GridLayout::FIXED, kTrayNotificationContentsWidth,
                      kTrayNotificationContentsWidth);
 
   columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
@@ -69,8 +63,8 @@ void TrayNotificationView::InitView(views::View* contents) {
   // Close button
   columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
                      0, /* resize percent */
-                     views::GridLayout::FIXED,
-                     kNotificationButtonWidth, kNotificationButtonWidth);
+                     views::GridLayout::FIXED, kNotificationButtonWidth,
+                     kNotificationButtonWidth);
 
   // Layout rows
   layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
@@ -108,8 +102,7 @@ void TrayNotificationView::StartAutoCloseTimer(int seconds) {
   autoclose_.Stop();
   autoclose_delay_ = seconds;
   if (autoclose_delay_) {
-    autoclose_.Start(FROM_HERE,
-                     base::TimeDelta::FromSeconds(autoclose_delay_),
+    autoclose_.Start(FROM_HERE, base::TimeDelta::FromSeconds(autoclose_delay_),
                      this, &TrayNotificationView::HandleClose);
   }
 }
@@ -143,11 +136,9 @@ void TrayNotificationView::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-void TrayNotificationView::OnClose() {
-}
+void TrayNotificationView::OnClose() {}
 
-void TrayNotificationView::OnClickAction() {
-}
+void TrayNotificationView::OnClickAction() {}
 
 void TrayNotificationView::OnSlideOut() {
   owner_->HideNotificationView();

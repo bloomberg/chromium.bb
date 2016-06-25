@@ -72,7 +72,6 @@ ScopedDisableInternalMouseAndKeyboardX11::
       keyboard_device_id_(kDeviceIdNone),
       core_keyboard_device_id_(kDeviceIdNone),
       last_mouse_location_(GetMouseLocationInScreen()) {
-
   ui::DeviceDataManagerX11* device_data_manager =
       ui::DeviceDataManagerX11::GetInstance();
   if (device_data_manager->IsXInput2Available()) {
@@ -136,15 +135,13 @@ ScopedDisableInternalMouseAndKeyboardX11::
 }
 
 void ScopedDisableInternalMouseAndKeyboardX11::WillProcessEvent(
-    const ui::PlatformEvent& event) {
-}
+    const ui::PlatformEvent& event) {}
 
 void ScopedDisableInternalMouseAndKeyboardX11::DidProcessEvent(
     const ui::PlatformEvent& event) {
   if (event->type != GenericEvent)
     return;
-  XIDeviceEvent* xievent =
-      static_cast<XIDeviceEvent*>(event->xcookie.data);
+  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event->xcookie.data);
   ui::DeviceDataManagerX11* device_data_manager =
       static_cast<ui::DeviceDataManagerX11*>(
           ui::DeviceDataManager::GetInstance());

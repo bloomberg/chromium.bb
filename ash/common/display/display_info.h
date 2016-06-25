@@ -34,11 +34,11 @@ struct ASH_EXPORT DisplayMode {
   // Returns true if |other| has same size and scale factors.
   bool IsEquivalent(const DisplayMode& other) const;
 
-  gfx::Size size;      // Physical pixel size of the display.
-  float refresh_rate;  // Refresh rate of the display, in Hz.
-  bool interlaced;     // True if mode is interlaced.
-  bool native;         // True if mode is native mode of the display.
-  float ui_scale;      // The UI scale factor of the mode.
+  gfx::Size size;             // Physical pixel size of the display.
+  float refresh_rate;         // Refresh rate of the display, in Hz.
+  bool interlaced;            // True if mode is interlaced.
+  bool native;                // True if mode is native mode of the display.
+  float ui_scale;             // The UI scale factor of the mode.
   float device_scale_factor;  // The device scale factor of the mode.
 };
 
@@ -138,9 +138,7 @@ class ASH_EXPORT DisplayInfo {
   // The native bounds for the display. The size of this can be
   // different from the |size_in_pixel| when overscan insets are set
   // and/or |configured_ui_scale_| is set.
-  const gfx::Rect& bounds_in_native() const {
-    return bounds_in_native_;
-  }
+  const gfx::Rect& bounds_in_native() const { return bounds_in_native_; }
 
   // The size for the display in pixels.
   const gfx::Size& size_in_pixel() const { return size_in_pixel_; }
@@ -220,9 +218,7 @@ class ASH_EXPORT DisplayInfo {
   // empty size.
   gfx::Size GetNativeModeSize() const;
 
-  ui::ColorCalibrationProfile color_profile() const {
-    return color_profile_;
-  }
+  ui::ColorCalibrationProfile color_profile() const { return color_profile_; }
 
   // Sets the color profile. It will ignore if the specified |profile| is not in
   // |available_color_profiles_|.
@@ -231,8 +227,8 @@ class ASH_EXPORT DisplayInfo {
   // Returns true if |profile| is in |available_color_profiles_|.
   bool IsColorProfileAvailable(ui::ColorCalibrationProfile profile) const;
 
-  const std::vector<ui::ColorCalibrationProfile>&
-      available_color_profiles() const {
+  const std::vector<ui::ColorCalibrationProfile>& available_color_profiles()
+      const {
     return available_color_profiles_;
   }
 

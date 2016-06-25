@@ -28,9 +28,8 @@ namespace test {
 // video is playing.
 class TestVideoDetectorObserver : public VideoDetectorObserver {
  public:
-  TestVideoDetectorObserver() : num_invocations_(0),
-                                num_fullscreens_(0),
-                                num_not_fullscreens_(0) {}
+  TestVideoDetectorObserver()
+      : num_invocations_(0), num_fullscreens_(0), num_not_fullscreens_(0) {}
 
   int num_invocations() const { return num_invocations_; }
   int num_fullscreens() const { return num_fullscreens_; }
@@ -106,10 +105,9 @@ TEST_F(VideoDetectorTest, Basic) {
       CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
 
   // Send enough updates, but make them be too small to trigger detection.
-  gfx::Rect update_region(
-      gfx::Point(),
-      gfx::Size(VideoDetector::kMinUpdateWidth - 1,
-                VideoDetector::kMinUpdateHeight));
+  gfx::Rect update_region(gfx::Point(),
+                          gfx::Size(VideoDetector::kMinUpdateWidth - 1,
+                                    VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
@@ -117,9 +115,8 @@ TEST_F(VideoDetectorTest, Basic) {
   // Send not-quite-enough adaquately-sized updates.
   observer_->reset_stats();
   AdvanceTime(base::TimeDelta::FromSeconds(2));
-  update_region.set_size(
-      gfx::Size(VideoDetector::kMinUpdateWidth,
-                VideoDetector::kMinUpdateHeight));
+  update_region.set_size(gfx::Size(VideoDetector::kMinUpdateWidth,
+                                   VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond - 1; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
@@ -173,10 +170,9 @@ TEST_F(VideoDetectorTest, Shutdown) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
-  gfx::Rect update_region(
-      gfx::Point(),
-      gfx::Size(VideoDetector::kMinUpdateWidth,
-                VideoDetector::kMinUpdateHeight));
+  gfx::Rect update_region(gfx::Point(),
+                          gfx::Size(VideoDetector::kMinUpdateWidth,
+                                    VideoDetector::kMinUpdateHeight));
 
   // It should not detect video during the shutdown.
   Shell::GetInstance()->OnAppTerminating();
@@ -196,10 +192,9 @@ TEST_F(VideoDetectorTest, WindowNotVisible) {
 
   // We shouldn't report video that's played in a hidden window.
   window->Hide();
-  gfx::Rect update_region(
-      gfx::Point(),
-      gfx::Size(VideoDetector::kMinUpdateWidth,
-                VideoDetector::kMinUpdateHeight));
+  gfx::Rect update_region(gfx::Point(),
+                          gfx::Size(VideoDetector::kMinUpdateWidth,
+                                    VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
@@ -237,10 +232,9 @@ TEST_F(VideoDetectorTest, MultipleWindows) {
 
   // Even if there's video playing in both, the observer should only receive a
   // single notification.
-  gfx::Rect update_region(
-      gfx::Point(),
-      gfx::Size(VideoDetector::kMinUpdateWidth,
-                VideoDetector::kMinUpdateHeight));
+  gfx::Rect update_region(gfx::Point(),
+                          gfx::Size(VideoDetector::kMinUpdateWidth,
+                                    VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window1.get(), update_region);
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
@@ -256,10 +250,9 @@ TEST_F(VideoDetectorTest, RepeatedNotifications) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
 
-  gfx::Rect update_region(
-      gfx::Point(),
-      gfx::Size(VideoDetector::kMinUpdateWidth,
-                VideoDetector::kMinUpdateHeight));
+  gfx::Rect update_region(gfx::Point(),
+                          gfx::Size(VideoDetector::kMinUpdateWidth,
+                                    VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(1, observer_->num_invocations());
@@ -291,10 +284,9 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
   window_state->OnWMEvent(&toggle_fullscreen_event);
   ASSERT_TRUE(window_state->IsFullscreen());
   window->Focus();
-  const gfx::Rect kUpdateRegion(
-      gfx::Point(),
-      gfx::Size(VideoDetector::kMinUpdateWidth,
-                VideoDetector::kMinUpdateHeight));
+  const gfx::Rect kUpdateRegion(gfx::Point(),
+                                gfx::Size(VideoDetector::kMinUpdateWidth,
+                                          VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), kUpdateRegion);
   EXPECT_EQ(1, observer_->num_invocations());

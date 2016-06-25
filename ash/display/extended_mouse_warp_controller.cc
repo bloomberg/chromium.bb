@@ -99,8 +99,7 @@ ExtendedMouseWarpController::WarpRegion::GetIndicatorBoundsForTest(
 
 ExtendedMouseWarpController::ExtendedMouseWarpController(
     aura::Window* drag_source)
-    : drag_source_root_(drag_source),
-      allow_non_native_event_(false) {
+    : drag_source_root_(drag_source), allow_non_native_event_(false) {
   ash::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
   int64_t drag_source_id = drag_source ? GetDisplayIdFromWindow(drag_source)
@@ -122,8 +121,7 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
   }
 }
 
-ExtendedMouseWarpController::~ExtendedMouseWarpController() {
-}
+ExtendedMouseWarpController::~ExtendedMouseWarpController() {}
 
 bool ExtendedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   if (display::Screen::GetScreen()->GetNumDisplays() <= 1 || !enabled_)

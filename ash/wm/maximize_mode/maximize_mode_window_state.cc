@@ -112,7 +112,8 @@ void MaximizeModeWindowState::UpdateWindowPosition(
 }
 
 MaximizeModeWindowState::MaximizeModeWindowState(
-    aura::Window* window, MaximizeModeWindowManager* creator)
+    aura::Window* window,
+    MaximizeModeWindowManager* creator)
     : window_(window),
       creator_(creator),
       current_state_type_(wm::GetWindowState(window)->GetStateType()),
@@ -166,8 +167,7 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_NORMAL:
     case wm::WM_EVENT_MAXIMIZE:
     case wm::WM_EVENT_DOCK:
-      UpdateWindow(window_state,
-                   GetMaximizedOrCenteredWindowType(window_state),
+      UpdateWindow(window_state, GetMaximizedOrCenteredWindowType(window_state),
                    true);
       return;
     case wm::WM_EVENT_MINIMIZE:
@@ -247,8 +247,7 @@ void MaximizeModeWindowState::AttachState(
       current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED &&
       current_state_type_ != wm::WINDOW_STATE_TYPE_FULLSCREEN &&
       current_state_type_ != wm::WINDOW_STATE_TYPE_PINNED) {
-    UpdateWindow(window_state,
-                 GetMaximizedOrCenteredWindowType(window_state),
+    UpdateWindow(window_state, GetMaximizedOrCenteredWindowType(window_state),
                  true);
   }
 
@@ -313,9 +312,9 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
 }
 
 wm::WindowStateType MaximizeModeWindowState::GetMaximizedOrCenteredWindowType(
-      wm::WindowState* window_state) {
-  return window_state->CanMaximize() ? wm::WINDOW_STATE_TYPE_MAXIMIZED :
-                                       wm::WINDOW_STATE_TYPE_NORMAL;
+    wm::WindowState* window_state) {
+  return window_state->CanMaximize() ? wm::WINDOW_STATE_TYPE_MAXIMIZED
+                                     : wm::WINDOW_STATE_TYPE_NORMAL;
 }
 
 void MaximizeModeWindowState::UpdateBounds(wm::WindowState* window_state,
@@ -328,8 +327,7 @@ void MaximizeModeWindowState::UpdateBounds(wm::WindowState* window_state,
   if (!bounds_in_parent.IsEmpty() &&
       bounds_in_parent != window_state->window()->GetBounds()) {
     if (current_state_type_ == wm::WINDOW_STATE_TYPE_MINIMIZED ||
-        !window_state->window()->IsVisible() ||
-        !animated) {
+        !window_state->window()->IsVisible() || !animated) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
       // If we animate (to) maximized mode, we want to use the cross fade to

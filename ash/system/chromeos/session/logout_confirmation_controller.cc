@@ -32,8 +32,7 @@ LogoutConfirmationController::~LogoutConfirmationController() {
     dialog_->ControllerGone();
 }
 
-void LogoutConfirmationController::ConfirmLogout(
-    base::TimeTicks logout_time) {
+void LogoutConfirmationController::ConfirmLogout(base::TimeTicks logout_time) {
   if (!logout_time_.is_null() && logout_time >= logout_time_) {
     // If a confirmation dialog is already being shown and its countdown expires
     // no later than the |logout_time| requested now, keep the current dialog
@@ -50,8 +49,7 @@ void LogoutConfirmationController::ConfirmLogout(
     dialog_->Update(logout_time_);
   }
 
-  logout_timer_.Start(FROM_HERE,
-                      logout_time_ - clock_->NowTicks(),
+  logout_timer_.Start(FROM_HERE, logout_time_ - clock_->NowTicks(),
                       logout_closure_);
 }
 

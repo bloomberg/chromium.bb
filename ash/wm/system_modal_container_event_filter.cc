@@ -12,11 +12,9 @@ namespace ash {
 
 SystemModalContainerEventFilter::SystemModalContainerEventFilter(
     SystemModalContainerEventFilterDelegate* delegate)
-    : delegate_(delegate) {
-}
+    : delegate_(delegate) {}
 
-SystemModalContainerEventFilter::~SystemModalContainerEventFilter() {
-}
+SystemModalContainerEventFilter::~SystemModalContainerEventFilter() {}
 
 void SystemModalContainerEventFilter::OnEvent(ui::Event* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());

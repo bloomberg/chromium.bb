@@ -87,8 +87,7 @@ void TrayDate::DestroyDefaultView() {
   default_view_ = NULL;
 }
 
-void TrayDate::DestroyDetailedView() {
-}
+void TrayDate::DestroyDetailedView() {}
 
 void TrayDate::UpdateAfterLoginStatusChange(LoginStatus status) {}
 

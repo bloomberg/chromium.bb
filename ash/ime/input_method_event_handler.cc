@@ -13,11 +13,9 @@ namespace ash {
 // InputMethodEventHandler, public:
 
 InputMethodEventHandler::InputMethodEventHandler(ui::InputMethod* input_method)
-    : input_method_(input_method), post_ime_(false) {
-}
+    : input_method_(input_method), post_ime_(false) {}
 
-InputMethodEventHandler::~InputMethodEventHandler() {
-}
+InputMethodEventHandler::~InputMethodEventHandler() {}
 
 void InputMethodEventHandler::SetPostIME(bool post_ime) {
   post_ime_ = post_ime;

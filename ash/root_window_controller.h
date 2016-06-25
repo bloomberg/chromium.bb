@@ -127,9 +127,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   ShelfWidget* shelf_widget() { return shelf_widget_.get(); }
 
   // Get touch HUDs associated with this root window controller.
-  TouchHudDebug* touch_hud_debug() const {
-    return touch_hud_debug_;
-  }
+  TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
   TouchHudProjection* touch_hud_projection() const {
     return touch_hud_projection_;
   }
@@ -138,9 +136,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // will not own the HUDs; their lifetimes are managed by themselves. Whenever
   // the widget showing a HUD is being destroyed (e.g. because of detaching a
   // display), the HUD deletes itself.
-  void set_touch_hud_debug(TouchHudDebug* hud) {
-    touch_hud_debug_ = hud;
-  }
+  void set_touch_hud_debug(TouchHudDebug* hud) { touch_hud_debug_ = hud; }
   void set_touch_hud_projection(TouchHudProjection* hud) {
     touch_hud_projection_ = hud;
   }
@@ -247,10 +243,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
  private:
   explicit RootWindowController(AshWindowTreeHost* host);
-  enum RootWindowType {
-    PRIMARY,
-    SECONDARY
-  };
+  enum RootWindowType { PRIMARY, SECONDARY };
 
   // Initializes the RootWindowController.  |is_primary| is true if
   // the controller is for primary display.  |first_run_after_boot| is

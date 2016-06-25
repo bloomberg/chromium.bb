@@ -11,8 +11,7 @@
 
 namespace ash {
 
-ResizeShadowController::ResizeShadowController() {
-}
+ResizeShadowController::ResizeShadowController() {}
 
 ResizeShadowController::~ResizeShadowController() {
   for (WindowShadowMap::const_iterator it = window_shadows_.begin();

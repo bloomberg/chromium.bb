@@ -39,18 +39,18 @@ namespace ash {
 
 const int kPointRadius = 20;
 const SkColor kColors[] = {
-  SK_ColorYELLOW,
-  SK_ColorGREEN,
-  SK_ColorRED,
-  SK_ColorBLUE,
-  SK_ColorGRAY,
-  SK_ColorMAGENTA,
-  SK_ColorCYAN,
-  SK_ColorWHITE,
-  SK_ColorBLACK,
-  SkColorSetRGB(0xFF, 0x8C, 0x00),
-  SkColorSetRGB(0x8B, 0x45, 0x13),
-  SkColorSetRGB(0xFF, 0xDE, 0xAD),
+    SK_ColorYELLOW,
+    SK_ColorGREEN,
+    SK_ColorRED,
+    SK_ColorBLUE,
+    SK_ColorGRAY,
+    SK_ColorMAGENTA,
+    SK_ColorCYAN,
+    SK_ColorWHITE,
+    SK_ColorBLACK,
+    SkColorSetRGB(0xFF, 0x8C, 0x00),
+    SkColorSetRGB(0x8B, 0x45, 0x13),
+    SkColorSetRGB(0xFF, 0xDE, 0xAD),
 };
 const int kAlpha = 0x60;
 const int kMaxPaths = arraysize(kColors);
@@ -142,8 +142,7 @@ class TouchTrace {
   typedef std::vector<TouchPointLog>::const_reverse_iterator
       const_reverse_iterator;
 
-  TouchTrace() {
-  }
+  TouchTrace() {}
 
   void AddTouchPoint(const ui::TouchEvent& touch) {
     log_.push_back(TouchPointLog(touch));
@@ -153,7 +152,7 @@ class TouchTrace {
 
   bool active() const {
     return !log_.empty() && log_.back().type != ui::ET_TOUCH_RELEASED &&
-        log_.back().type != ui::ET_TOUCH_CANCELLED;
+           log_.back().type != ui::ET_TOUCH_CANCELLED;
   }
 
   // Returns a list containing data from all events for the touch point.
@@ -164,9 +163,7 @@ class TouchTrace {
     return list;
   }
 
-  void Reset() {
-    log_.clear();
-  }
+  void Reset() { log_.clear(); }
 
  private:
   std::vector<TouchPointLog> log_;
@@ -177,8 +174,7 @@ class TouchTrace {
 // A TouchLog keeps track of all touch events of all touch points.
 class TouchLog {
  public:
-  TouchLog() : next_trace_index_(0) {
-  }
+  TouchLog() : next_trace_index_(0) {}
 
   void AddTouchPoint(const ui::TouchEvent& touch) {
     if (touch.type() == ui::ET_TOUCH_PRESSED)
@@ -205,9 +201,7 @@ class TouchLog {
     return touch_id_to_trace_index_.at(touch_id);
   }
 
-  const TouchTrace* traces() const {
-    return traces_;
-  }
+  const TouchTrace* traces() const { return traces_; }
 
  private:
   void StartTrace(const ui::TouchEvent& touch) {
@@ -243,8 +237,7 @@ class TouchLog {
 class TouchHudCanvas : public views::View {
  public:
   explicit TouchHudCanvas(const TouchLog& touch_log)
-      : touch_log_(touch_log),
-        scale_(1) {
+      : touch_log_(touch_log), scale_(1) {
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
 
@@ -340,8 +333,8 @@ TouchHudDebug::TouchHudDebug(aura::Window* initial_root)
   canvas_->SetSize(display_size);
 
   label_container_ = new views::View;
-  label_container_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, 0));
+  label_container_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
   for (int i = 0; i < kMaxTouchPoints; ++i) {
     touch_labels_[i] = new views::Label;
@@ -357,15 +350,14 @@ TouchHudDebug::TouchHudDebug(aura::Window* initial_root)
   content->AddChildView(label_container_);
 }
 
-TouchHudDebug::~TouchHudDebug() {
-}
+TouchHudDebug::~TouchHudDebug() {}
 
 // static
 std::unique_ptr<base::DictionaryValue> TouchHudDebug::GetAllAsDictionary() {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   aura::Window::Windows roots = Shell::GetInstance()->GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = roots.begin();
-      iter != roots.end(); ++iter) {
+       iter != roots.end(); ++iter) {
     RootWindowController* controller = GetRootWindowController(*iter);
     TouchHudDebug* hud = controller->touch_hud_debug();
     if (hud) {
@@ -440,11 +432,9 @@ void TouchHudDebug::UpdateTouchPointLabel(int index) {
   DCHECK(point != trace.log().rend());
   gfx::Point touch_position = point->location;
 
-  std::string string = base::StringPrintf("%2d: %s %s (%.4f)",
-                                          index,
-                                          GetTouchEventLabel(touch_status),
-                                          touch_position.ToString().c_str(),
-                                          touch_radius);
+  std::string string = base::StringPrintf(
+      "%2d: %s %s (%.4f)", index, GetTouchEventLabel(touch_status),
+      touch_position.ToString().c_str(), touch_radius);
   touch_labels_[index]->SetText(base::UTF8ToUTF16(string));
 }
 

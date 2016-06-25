@@ -30,9 +30,7 @@ class AshTestHelperTest : public testing::Test {
     testing::Test::TearDown();
   }
 
-  ash::test::AshTestHelper* ash_test_helper() {
-    return ash_test_helper_.get();
-  }
+  ash::test::AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
 
  private:
   base::MessageLoopForUI message_loop_;

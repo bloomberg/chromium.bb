@@ -30,7 +30,6 @@ class CaptureWindowActivationDelegate
   bool ShouldActivate() const override { return false; }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(CaptureWindowActivationDelegate);
 };
 
@@ -56,10 +55,9 @@ aura::Window* CreateCaptureWindow(aura::Window* context_root,
 
 DragDropTracker::DragDropTracker(aura::Window* context_root,
                                  aura::WindowDelegate* delegate)
-    : capture_window_(CreateCaptureWindow(context_root, delegate)) {
-}
+    : capture_window_(CreateCaptureWindow(context_root, delegate)) {}
 
-DragDropTracker::~DragDropTracker()  {
+DragDropTracker::~DragDropTracker() {
   capture_window_->ReleaseCapture();
 }
 
@@ -78,9 +76,8 @@ aura::Window* DragDropTracker::GetTarget(const ui::LocatedEvent& event) {
   return root_window_at_point->GetEventHandlerForPoint(location_in_root);
 }
 
-ui::LocatedEvent* DragDropTracker::ConvertEvent(
-    aura::Window* target,
-    const ui::LocatedEvent& event) {
+ui::LocatedEvent* DragDropTracker::ConvertEvent(aura::Window* target,
+                                                const ui::LocatedEvent& event) {
   DCHECK(capture_window_.get());
   gfx::Point target_location = event.location();
   aura::Window::ConvertPointToTarget(capture_window_.get(), target,

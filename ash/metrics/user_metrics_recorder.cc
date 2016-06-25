@@ -102,10 +102,9 @@ bool IsUserActive() {
 // UMA statistics. Note the containers are ordered from top most visible
 // container to the lowest to allow the |GetNumVisibleWindows| method to short
 // circuit when processing a maximized or fullscreen window.
-int kVisibleWindowContainerIds[] = {kShellWindowId_PanelContainer,
-                                    kShellWindowId_DockedContainer,
-                                    kShellWindowId_AlwaysOnTopContainer,
-                                    kShellWindowId_DefaultContainer};
+int kVisibleWindowContainerIds[] = {
+    kShellWindowId_PanelContainer, kShellWindowId_DockedContainer,
+    kShellWindowId_AlwaysOnTopContainer, kShellWindowId_DefaultContainer};
 
 // Returns an approximate count of how many windows are currently visible in the
 // primary root window.
@@ -119,7 +118,8 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
 
     const aura::Window::Windows& children =
         Shell::GetContainer(Shell::GetInstance()->GetPrimaryRootWindow(),
-                            current_container_id)->children();
+                            current_container_id)
+            ->children();
     // Reverse iterate over the child windows so that they are processed in
     // visible stacking order.
     for (aura::Window::Windows::const_reverse_iterator it = children.rbegin(),
@@ -217,8 +217,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
           base::UserMetricsAction("Accel_LockScreen_PowerButton"));
       break;
     case UMA_ACCEL_MAXIMIZE_RESTORE_F4:
-      base::RecordAction(
-          base::UserMetricsAction("Accel_Maximize_Restore_F4"));
+      base::RecordAction(base::UserMetricsAction("Accel_Maximize_Restore_F4"));
       break;
     case UMA_ACCEL_PREVWINDOW_F5:
       base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_F5"));
@@ -230,12 +229,10 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(base::UserMetricsAction("Accel_Exit_Second_Q"));
       break;
     case UMA_ACCEL_RESTART_POWER_BUTTON:
-      base::RecordAction(
-          base::UserMetricsAction("Accel_Restart_PowerButton"));
+      base::RecordAction(base::UserMetricsAction("Accel_Restart_PowerButton"));
       break;
     case UMA_ACCEL_SHUT_DOWN_POWER_BUTTON:
-      base::RecordAction(
-          base::UserMetricsAction("Accel_ShutDown_PowerButton"));
+      base::RecordAction(base::UserMetricsAction("Accel_ShutDown_PowerButton"));
       break;
     case UMA_CLOSE_THROUGH_CONTEXT_MENU:
       base::RecordAction(base::UserMetricsAction("CloseFromContextMenu"));
@@ -294,7 +291,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case UMA_PANEL_MINIMIZE_CAPTION_CLICK:
       base::RecordAction(
-         base::UserMetricsAction("Panel_Minimize_Caption_Click"));
+          base::UserMetricsAction("Panel_Minimize_Caption_Click"));
       break;
     case UMA_PANEL_MINIMIZE_CAPTION_GESTURE:
       base::RecordAction(
@@ -358,8 +355,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
           base::UserMetricsAction("StatusArea_CapsLock_EnabledByClick"));
       break;
     case UMA_STATUS_AREA_CAPS_LOCK_POPUP:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_CapsLock_Popup"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_CapsLock_Popup"));
       break;
     case UMA_STATUS_AREA_CAST_STOP_CAST:
       base::RecordAction(base::UserMetricsAction("StatusArea_Cast_StopCast"));
@@ -389,8 +385,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
           base::UserMetricsAction("StatusArea_Accessability_DetailedView"));
       break;
     case UMA_STATUS_AREA_DETAILED_AUDIO_VIEW:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_Audio_Detailed"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_Audio_Detailed"));
       break;
     case UMA_STATUS_AREA_DETAILED_BLUETOOTH_VIEW:
       base::RecordAction(
@@ -408,16 +403,14 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
           base::UserMetricsAction("StatusArea_Cast_Detailed_Launch_Cast"));
       break;
     case UMA_STATUS_AREA_DETAILED_DRIVE_VIEW:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_Drive_Detailed"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_Drive_Detailed"));
       break;
     case UMA_STATUS_AREA_DETAILED_NETWORK_VIEW:
       base::RecordAction(
           base::UserMetricsAction("StatusArea_Network_Detailed"));
       break;
     case UMA_STATUS_AREA_DETAILED_VPN_VIEW:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_VPN_Detailed"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_VPN_Detailed"));
       break;
     case UMA_STATUS_AREA_DISABLE_AUTO_CLICK:
       base::RecordAction(
@@ -452,8 +445,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
           base::UserMetricsAction("StatusArea_Drive_CancelOperation"));
       break;
     case UMA_STATUS_AREA_DRIVE_SETTINGS:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_Drive_Settings"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_Drive_Settings"));
       break;
     case UMA_STATUS_AREA_ENABLE_AUTO_CLICK:
       base::RecordAction(
@@ -484,16 +476,13 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
           base::UserMetricsAction("StatusArea_Network_WifiEnabled"));
       break;
     case UMA_STATUS_AREA_IME_SHOW_DETAILED:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_IME_Detailed"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_IME_Detailed"));
       break;
     case UMA_STATUS_AREA_IME_SWITCH_MODE:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_IME_SwitchMode"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_IME_SwitchMode"));
       break;
     case UMA_STATUS_AREA_MENU_OPENED:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_MenuOpened"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_MenuOpened"));
       break;
     case UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED:
       base::RecordAction(
@@ -512,8 +501,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
           base::UserMetricsAction("StatusArea_VPN_ConnectionDetails"));
       break;
     case UMA_STATUS_AREA_SIGN_OUT:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_SignOut"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_SignOut"));
       break;
     case UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED:
       base::RecordAction(base::UserMetricsAction("StatusArea_VPN_AddBuiltIn"));
@@ -526,8 +514,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(base::UserMetricsAction("StatusArea_VPN_Disconnect"));
       break;
     case UMA_STATUS_AREA_VPN_SETTINGS_CLICKED:
-      base::RecordAction(
-          base::UserMetricsAction("StatusArea_VPN_Settings"));
+      base::RecordAction(base::UserMetricsAction("StatusArea_VPN_Settings"));
       break;
     case UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK:
       base::RecordAction(
@@ -538,13 +525,11 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
           base::UserMetricsAction("Caption_GestureTogglesMaximize"));
       break;
     case UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK:
-      base::RecordAction(
-          base::UserMetricsAction(
-              "WindowBorder_ClickTogglesSingleAxisMaximize"));
+      base::RecordAction(base::UserMetricsAction(
+          "WindowBorder_ClickTogglesSingleAxisMaximize"));
       break;
     case UMA_TOUCHPAD_GESTURE_OVERVIEW:
-      base::RecordAction(
-          base::UserMetricsAction("Touchpad_Gesture_Overview"));
+      base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
       break;
     case UMA_TOUCHSCREEN_TAP_DOWN:
       base::RecordAction(base::UserMetricsAction("Touchscreen_Down"));
@@ -571,12 +556,10 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(base::UserMetricsAction("MaxButton_Clk_ExitFS"));
       break;
     case UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE:
-      base::RecordAction(
-          base::UserMetricsAction("MaxButton_Clk_Restore"));
+      base::RecordAction(base::UserMetricsAction("MaxButton_Clk_Restore"));
       break;
     case UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE:
-      base::RecordAction(
-          base::UserMetricsAction("MaxButton_Clk_Maximize"));
+      base::RecordAction(base::UserMetricsAction("MaxButton_Clk_Maximize"));
       break;
     case UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MINIMIZE:
       base::RecordAction(base::UserMetricsAction("MinButton_Clk"));

@@ -17,14 +17,12 @@ namespace ash {
 
 LabelTrayView::LabelTrayView(ViewClickListener* click_listener,
                              int icon_resource_id)
-    : click_listener_(click_listener),
-      icon_resource_id_(icon_resource_id) {
+    : click_listener_(click_listener), icon_resource_id_(icon_resource_id) {
   SetLayoutManager(new views::FillLayout());
   SetVisible(false);
 }
 
-LabelTrayView::~LabelTrayView() {
-}
+LabelTrayView::~LabelTrayView() {}
 
 void LabelTrayView::SetMessage(const base::string16& message) {
   if (message_ == message)

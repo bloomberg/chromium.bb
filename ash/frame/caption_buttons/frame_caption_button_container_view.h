@@ -43,8 +43,7 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   class ASH_EXPORT TestApi {
    public:
     explicit TestApi(FrameCaptionButtonContainerView* container_view)
-        : container_view_(container_view) {
-    }
+        : container_view_(container_view) {}
 
     void EndAnimations();
 

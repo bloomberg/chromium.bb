@@ -27,8 +27,7 @@ FrameBorderHitTestController::FrameBorderHitTestController(views::Widget* frame)
       new ResizeHandleWindowTargeter(frame_window_, NULL)));
 }
 
-FrameBorderHitTestController::~FrameBorderHitTestController() {
-}
+FrameBorderHitTestController::~FrameBorderHitTestController() {}
 
 // static
 int FrameBorderHitTestController::NonClientHitTest(
@@ -56,24 +55,21 @@ int FrameBorderHitTestController::NonClientHitTest(
     resize_border = 0;
     can_ever_resize = false;
   }
-  int frame_component = view->GetHTComponentForFrame(point_in_widget,
-                                                     resize_border,
-                                                     resize_border,
-                                                     kResizeAreaCornerSize,
-                                                     kResizeAreaCornerSize,
-                                                     can_ever_resize);
+  int frame_component = view->GetHTComponentForFrame(
+      point_in_widget, resize_border, resize_border, kResizeAreaCornerSize,
+      kResizeAreaCornerSize, can_ever_resize);
   if (frame_component != HTNOWHERE)
     return frame_component;
 
-  int client_component = frame->client_view()->NonClientHitTest(
-      point_in_widget);
+  int client_component =
+      frame->client_view()->NonClientHitTest(point_in_widget);
   if (client_component != HTNOWHERE)
     return client_component;
 
   if (caption_button_container->visible()) {
     gfx::Point point_in_caption_button_container(point_in_widget);
     views::View::ConvertPointFromWidget(caption_button_container,
-        &point_in_caption_button_container);
+                                        &point_in_caption_button_container);
     int caption_button_component = caption_button_container->NonClientHitTest(
         point_in_caption_button_container);
     if (caption_button_component != HTNOWHERE)

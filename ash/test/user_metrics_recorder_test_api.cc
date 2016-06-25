@@ -8,11 +8,9 @@ namespace ash {
 namespace test {
 
 UserMetricsRecorderTestAPI::UserMetricsRecorderTestAPI()
-    : user_metrics_recorder_(false) {
-}
+    : user_metrics_recorder_(false) {}
 
-UserMetricsRecorderTestAPI::~UserMetricsRecorderTestAPI() {
-}
+UserMetricsRecorderTestAPI::~UserMetricsRecorderTestAPI() {}
 
 void UserMetricsRecorderTestAPI::RecordPeriodicMetrics() {
   user_metrics_recorder_.RecordPeriodicMetrics();

@@ -27,9 +27,7 @@ bool animations_enabled = true;
 namespace ash {
 
 TrayItemView::TrayItemView(SystemTrayItem* owner)
-    : owner_(owner),
-      label_(NULL),
-      image_view_(NULL) {
+    : owner_(owner), label_(NULL), image_view_(NULL) {
   SetPaintToLayer(true);
   layer()->SetFillsBoundsOpaquely(false);
   SetLayoutManager(
@@ -93,11 +91,11 @@ gfx::Size TrayItemView::GetPreferredSize() const {
   if (!animation_.get() || !animation_->is_animating())
     return size;
   if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment())) {
-    size.set_width(std::max(1,
-        static_cast<int>(size.width() * animation_->GetCurrentValue())));
+    size.set_width(std::max(
+        1, static_cast<int>(size.width() * animation_->GetCurrentValue())));
   } else {
-    size.set_height(std::max(1,
-        static_cast<int>(size.height() * animation_->GetCurrentValue())));
+    size.set_height(std::max(
+        1, static_cast<int>(size.height() * animation_->GetCurrentValue())));
   }
   return size;
 }
@@ -114,13 +112,13 @@ void TrayItemView::AnimationProgressed(const gfx::Animation* animation) {
   gfx::Transform transform;
   if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment())) {
     transform.Translate(0, animation->CurrentValueBetween(
-        static_cast<double>(height()) / 2, 0.));
+                               static_cast<double>(height()) / 2, 0.));
   } else {
-    transform.Translate(animation->CurrentValueBetween(
-        static_cast<double>(width() / 2), 0.), 0);
+    transform.Translate(
+        animation->CurrentValueBetween(static_cast<double>(width() / 2), 0.),
+        0);
   }
-  transform.Scale(animation->GetCurrentValue(),
-                  animation->GetCurrentValue());
+  transform.Scale(animation->GetCurrentValue(), animation->GetCurrentValue());
   layer()->SetTransform(transform);
   PreferredSizeChanged();
 }

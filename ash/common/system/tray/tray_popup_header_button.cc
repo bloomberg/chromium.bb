@@ -25,12 +25,13 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
     : views::ToggleImageButton(listener) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   SetImage(views::Button::STATE_NORMAL,
-      bundle.GetImageNamed(enabled_resource_id).ToImageSkia());
+           bundle.GetImageNamed(enabled_resource_id).ToImageSkia());
   SetToggledImage(views::Button::STATE_NORMAL,
-      bundle.GetImageNamed(disabled_resource_id).ToImageSkia());
+                  bundle.GetImageNamed(disabled_resource_id).ToImageSkia());
   SetImage(views::Button::STATE_HOVERED,
-      bundle.GetImageNamed(enabled_resource_id_hover).ToImageSkia());
-  SetToggledImage(views::Button::STATE_HOVERED,
+           bundle.GetImageNamed(enabled_resource_id_hover).ToImageSkia());
+  SetToggledImage(
+      views::Button::STATE_HOVERED,
       bundle.GetImageNamed(disabled_resource_id_hover).ToImageSkia());
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
@@ -38,8 +39,7 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
   SetFocusForPlatform();
 
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-                      kFocusBorderColor,
-                      gfx::Insets(1, 2, 2, 3)));
+      kFocusBorderColor, gfx::Insets(1, 2, 2, 3)));
 }
 
 TrayPopupHeaderButton::~TrayPopupHeaderButton() {}

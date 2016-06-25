@@ -121,8 +121,8 @@ class ASH_EXPORT ImmersiveFullscreenController
   // fullscreen being enabled / disabled. If acquiring the lock causes a reveal,
   // the top-of-window views will animate according to |animate_reveal|. The
   // caller takes ownership of the returned lock.
-  ImmersiveRevealedLock* GetRevealedLock(
-      AnimateReveal animate_reveal) WARN_UNUSED_RESULT;
+  ImmersiveRevealedLock* GetRevealedLock(AnimateReveal animate_reveal)
+      WARN_UNUSED_RESULT;
 
   // Disables animations and moves the mouse so that it is not over the
   // top-of-window views for the sake of testing.
@@ -171,11 +171,7 @@ class ASH_EXPORT ImmersiveFullscreenController
     REVEALED,
     SLIDING_CLOSED,
   };
-  enum SwipeType {
-    SWIPE_OPEN,
-    SWIPE_CLOSE,
-    SWIPE_NONE
-  };
+  enum SwipeType { SWIPE_OPEN, SWIPE_CLOSE, SWIPE_NONE };
 
   // Enables or disables observers for mouse, touch, focus, and activation.
   void EnableWindowObservers(bool enable);

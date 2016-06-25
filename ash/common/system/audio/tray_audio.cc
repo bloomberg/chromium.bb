@@ -115,7 +115,7 @@ void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
 
 void TrayAudio::OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) {
   if (tray_view())
-      tray_view()->SetVisible(GetInitialVisibility());
+    tray_view()->SetVisible(GetInitialVisibility());
 
   if (volume_view_) {
     volume_view_->Update();
@@ -175,7 +175,7 @@ void TrayAudio::OnDisplayMetricsChanged(const display::Display& display,
 
 void TrayAudio::Update() {
   if (tray_view())
-      tray_view()->SetVisible(GetInitialVisibility());
+    tray_view()->SetVisible(GetInitialVisibility());
   if (volume_view_) {
     volume_view_->SetVolumeLevel(
         static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f);

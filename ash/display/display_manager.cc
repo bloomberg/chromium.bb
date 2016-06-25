@@ -485,8 +485,8 @@ bool DisplayManager::IsDisplayUIScalingEnabled() const {
 gfx::Insets DisplayManager::GetOverscanInsets(int64_t display_id) const {
   std::map<int64_t, DisplayInfo>::const_iterator it =
       display_info_.find(display_id);
-  return (it != display_info_.end()) ?
-      it->second.overscan_insets_in_dip() : gfx::Insets();
+  return (it != display_info_.end()) ? it->second.overscan_insets_in_dip()
+                                     : gfx::Insets();
 }
 
 void DisplayManager::SetColorCalibrationProfile(
@@ -503,8 +503,8 @@ void DisplayManager::SetColorCalibrationProfile(
       Shell::GetInstance()->display_configurator()->SetColorCalibrationProfile(
           display_id, profile)) {
     display_info_[display_id].SetColorProfile(profile);
-    UMA_HISTOGRAM_ENUMERATION(
-        "ChromeOS.Display.ColorProfile", profile, ui::NUM_COLOR_PROFILES);
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Display.ColorProfile", profile,
+                              ui::NUM_COLOR_PROFILES);
   }
   if (delegate_)
     delegate_->PostDisplayConfigurationChange();
@@ -555,8 +555,7 @@ void DisplayManager::OnNativeDisplaysChanged(
   software_mirroring_display_list_.clear();
   DisplayInfoList new_display_info_list;
   for (DisplayInfoList::const_iterator iter = updated_displays.begin();
-       iter != updated_displays.end();
-       ++iter) {
+       iter != updated_displays.end(); ++iter) {
     if (!internal_display_connected)
       internal_display_connected =
           display::Display::IsInternalDisplayId(iter->id());
@@ -639,16 +638,15 @@ void DisplayManager::UpdateDisplays() {
 void DisplayManager::UpdateDisplaysWith(
     const std::vector<DisplayInfo>& updated_display_info_list) {
 #if defined(OS_WIN)
-  DCHECK_EQ(1u, updated_display_info_list.size()) <<
-      ": Multiple display test does not work on Windows bots. Please "
-      "skip (don't disable) the test using SupportsMultipleDisplays()";
+  DCHECK_EQ(1u, updated_display_info_list.size())
+      << ": Multiple display test does not work on Windows bots. Please "
+         "skip (don't disable) the test using SupportsMultipleDisplays()";
 #endif
 
   DisplayInfoList new_display_info_list = updated_display_info_list;
   std::sort(active_display_list_.begin(), active_display_list_.end(),
             DisplaySortFunctor());
-  std::sort(new_display_info_list.begin(),
-            new_display_info_list.end(),
+  std::sort(new_display_info_list.begin(), new_display_info_list.end(),
             DisplayInfoSortFunctor());
 
   if (new_display_info_list.size() > 1) {
@@ -711,9 +709,8 @@ void DisplayManager::UpdateDisplaysWith(
       // the layout.
       // Using display.bounds() and display.work_area() would fail most of the
       // time.
-      if (force_bounds_changed_ ||
-          (current_display_info.bounds_in_native() !=
-           new_display_info.bounds_in_native()) ||
+      if (force_bounds_changed_ || (current_display_info.bounds_in_native() !=
+                                    new_display_info.bounds_in_native()) ||
           (current_display_info.GetOverscanInsetsInPixel() !=
            new_display_info.GetOverscanInsetsInPixel()) ||
           current_display.size() != new_display.size()) {
@@ -801,8 +798,7 @@ void DisplayManager::UpdateDisplaysWith(
       delegate_ ? old_primary.id() != screen_->GetPrimaryDisplay().id() : false;
 
   for (std::map<size_t, uint32_t>::iterator iter = display_changes.begin();
-       iter != display_changes.end();
-       ++iter) {
+       iter != display_changes.end(); ++iter) {
     uint32_t metrics = iter->second;
     const display::Display& updated_display = active_display_list_[iter->first];
 
@@ -1271,8 +1267,8 @@ display::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   // Simply set the origin to (0,0).  The primary display's origin is
   // always (0,0) and the bounds of non-primary display(s) will be updated
   // in |UpdateNonPrimaryDisplayBoundsForLayout| called in |UpdateDisplay|.
-  new_display.SetScaleAndBounds(
-      device_scale_factor, gfx::Rect(bounds_in_native.size()));
+  new_display.SetScaleAndBounds(device_scale_factor,
+                                gfx::Rect(bounds_in_native.size()));
   new_display.set_rotation(display_info.GetActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());

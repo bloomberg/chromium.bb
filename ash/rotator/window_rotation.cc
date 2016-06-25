@@ -37,8 +37,7 @@ WindowRotation::WindowRotation(int degrees, ui::Layer* layer)
   InitTransform(layer);
 }
 
-WindowRotation::~WindowRotation() {
-}
+WindowRotation::~WindowRotation() {}
 
 void WindowRotation::InitTransform(ui::Layer* layer) {
   // No rotation required, use the identity transform.
@@ -102,8 +101,7 @@ void WindowRotation::InitTransform(ui::Layer* layer) {
   interpolated_transform_->SetChild(rotation.release());
 }
 
-void WindowRotation::OnStart(ui::LayerAnimationDelegate* delegate) {
-}
+void WindowRotation::OnStart(ui::LayerAnimationDelegate* delegate) {}
 
 bool WindowRotation::OnProgress(double t,
                                 ui::LayerAnimationDelegate* delegate) {
@@ -115,7 +113,6 @@ void WindowRotation::OnGetTarget(TargetValue* target) const {
   target->transform = interpolated_transform_->Interpolate(1.0);
 }
 
-void WindowRotation::OnAbort(ui::LayerAnimationDelegate* delegate) {
-}
+void WindowRotation::OnAbort(ui::LayerAnimationDelegate* delegate) {}
 
 }  // namespace ash

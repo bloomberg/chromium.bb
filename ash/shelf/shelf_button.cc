@@ -85,9 +85,7 @@ class ShelfButtonAnimation : public gfx::AnimationDelegate {
     return s_instance;
   }
 
-  void AddObserver(Observer* observer) {
-    observers_.AddObserver(observer);
-  }
+  void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
 
   void RemoveObserver(Observer* observer) {
     observers_.RemoveObserver(observer);
@@ -95,17 +93,12 @@ class ShelfButtonAnimation : public gfx::AnimationDelegate {
       animation_.Stop();
   }
 
-  int GetAlpha() {
-    return GetThrobAnimation().CurrentValueBetween(0, 255);
-  }
+  int GetAlpha() { return GetThrobAnimation().CurrentValueBetween(0, 255); }
 
-  double GetAnimation() {
-    return GetThrobAnimation().GetCurrentValue();
-  }
+  double GetAnimation() { return GetThrobAnimation().GetCurrentValue(); }
 
  private:
-  ShelfButtonAnimation()
-      : animation_(this) {
+  ShelfButtonAnimation() : animation_(this) {
     animation_.SetThrobDuration(kAttentionThrobDurationMS);
     animation_.SetTweenType(gfx::Tween::SMOOTH_IN_OUT);
   }
@@ -188,7 +181,8 @@ class ShelfButton::BarView : public views::ImageView,
       show_attention_ = show;
       if (show_attention_) {
         animating_ = true;
-        animation_end_time_ = base::TimeTicks::Now() +
+        animation_end_time_ =
+            base::TimeTicks::Now() +
             base::TimeDelta::FromSeconds(kMaxAnimationSeconds);
         ShelfButtonAnimation::GetInstance()->AddObserver(this);
       } else {
@@ -207,8 +201,9 @@ class ShelfButton::BarView : public views::ImageView,
       // visible width of the image), so the animation "rests" briefly at full
       // visible width.  Cap bounds length at kIconSize to prevent visual
       // flutter while centering bar within further expanding bounds.
-      double animation = animating_ ?
-          ShelfButtonAnimation::GetInstance()->GetAnimation() : 1.0;
+      double animation =
+          animating_ ? ShelfButtonAnimation::GetInstance()->GetAnimation()
+                     : 1.0;
       double scale = .35 + .65 * animation;
       if (shelf_->IsHorizontalAlignment()) {
         int width = base_bounds_.width() * scale;
@@ -317,8 +312,8 @@ void ShelfButton::SetImage(const gfx::ImageSkia& image) {
     return;
   }
 
-  SetShadowedImage(gfx::ImageSkiaOperations::CreateResizedImage(image,
-      skia::ImageOperations::RESIZE_BEST, gfx::Size(width, height)));
+  SetShadowedImage(gfx::ImageSkiaOperations::CreateResizedImage(
+      image, skia::ImageOperations::RESIZE_BEST, gfx::Size(width, height)));
 }
 
 const gfx::ImageSkia& ShelfButton::GetImage() const {

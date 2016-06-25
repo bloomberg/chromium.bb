@@ -25,8 +25,7 @@ class DragDropTrackerTest : public test::AshTestBase {
     static int window_id = 0;
     return CreateTestWindowInShellWithDelegate(
         aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(),
-        window_id++,
-        bounds);
+        window_id++, bounds);
   }
 
   static aura::Window* GetTarget(const gfx::Point& location) {
@@ -39,7 +38,7 @@ class DragDropTrackerTest : public test::AshTestBase {
   }
 
   static ui::LocatedEvent* ConvertEvent(aura::Window* target,
-                                           const ui::MouseEvent& event) {
+                                        const ui::MouseEvent& event) {
     std::unique_ptr<DragDropTracker> tracker(
         new DragDropTracker(Shell::GetPrimaryRootWindow(), NULL));
     ui::LocatedEvent* converted = tracker->ConvertEvent(target, event);

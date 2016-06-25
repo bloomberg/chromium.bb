@@ -291,22 +291,20 @@ MagnificationControllerImpl::~MagnificationControllerImpl() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-void MagnificationControllerImpl::RedrawKeepingMousePosition(
-    float scale, bool animate) {
+void MagnificationControllerImpl::RedrawKeepingMousePosition(float scale,
+                                                             bool animate) {
   gfx::Point mouse_in_root = point_of_interest_;
 
   // mouse_in_root is invalid value when the cursor is hidden.
   if (!root_window_->bounds().Contains(mouse_in_root))
     mouse_in_root = root_window_->bounds().CenterPoint();
 
-  const gfx::PointF origin =
-      gfx::PointF(mouse_in_root.x() -
-                      (scale_ / scale) * (mouse_in_root.x() - origin_.x()),
-                  mouse_in_root.y() -
-                      (scale_ / scale) * (mouse_in_root.y() - origin_.y()));
-  bool changed = RedrawDIP(origin, scale,
-                           animate ? kDefaultAnimationDurationInMs : 0,
-                           kDefaultAnimationTweenType);
+  const gfx::PointF origin = gfx::PointF(
+      mouse_in_root.x() - (scale_ / scale) * (mouse_in_root.x() - origin_.x()),
+      mouse_in_root.y() - (scale_ / scale) * (mouse_in_root.y() - origin_.y()));
+  bool changed =
+      RedrawDIP(origin, scale, animate ? kDefaultAnimationDurationInMs : 0,
+                kDefaultAnimationTweenType);
   if (changed)
     AfterAnimationMoveCursorTo(mouse_in_root);
 }
@@ -347,9 +345,7 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
     y = max_y;
 
   // Does nothing if both the origin and the scale are not changed.
-  if (origin_.x() == x  &&
-      origin_.y() == y &&
-      scale == scale_) {
+  if (origin_.x() == x && origin_.y() == y && scale == scale_) {
     return false;
   }
 
@@ -568,8 +564,8 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
     return;
 
   ValidateScale(&scale);
-  Shell::GetInstance()->accessibility_delegate()->
-      SaveScreenMagnifierScale(scale);
+  Shell::GetInstance()->accessibility_delegate()->SaveScreenMagnifierScale(
+      scale);
   RedrawKeepingMousePosition(scale, animate);
 }
 
@@ -601,9 +597,9 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
     if (!is_enabled_ && input_method)
       input_method->AddObserver(this);
 
-    float scale =
-        Shell::GetInstance()->accessibility_delegate()->
-        GetSavedScreenMagnifierScale();
+    float scale = Shell::GetInstance()
+                      ->accessibility_delegate()
+                      ->GetSavedScreenMagnifierScale();
     if (scale <= 0.0f)
       scale = kInitialMagnifiedScale;
     ValidateScale(&scale);
@@ -825,9 +821,7 @@ void MagnificationControllerImpl::OnCaretBoundsChanged(
     // Visible window_rect in |root_window_| coordinates.
     const gfx::Rect visible_window_rect = GetViewportRect();
     const int panning_margin = kCaretPanningMargin / scale_;
-    MoveMagnifierWindowFollowPoint(caret_point_,
-                                   panning_margin,
-                                   panning_margin,
+    MoveMagnifierWindowFollowPoint(caret_point_, panning_margin, panning_margin,
                                    visible_window_rect.width() / 2,
                                    visible_window_rect.height() / 2);
     return;

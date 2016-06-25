@@ -12,11 +12,9 @@ namespace ash {
 
 WorkspaceControllerTestHelper::WorkspaceControllerTestHelper(
     WorkspaceController* controller)
-    : controller_(controller) {
-}
+    : controller_(controller) {}
 
-WorkspaceControllerTestHelper::~WorkspaceControllerTestHelper() {
-}
+WorkspaceControllerTestHelper::~WorkspaceControllerTestHelper() {}
 
 WorkspaceEventHandler* WorkspaceControllerTestHelper::GetEventHandler() {
   return controller_->event_handler_.get();

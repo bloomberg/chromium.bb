@@ -22,9 +22,7 @@ namespace {
 // which can appear regardless of the situation, such like login screen or lock
 // screen.
 const char* kAlwaysShownSystemNotifierIds[] = {
-    kNotifierDeprecatedAccelerator,
-    kNotifierBattery,
-    kNotifierDisplay,
+    kNotifierDeprecatedAccelerator, kNotifierBattery, kNotifierDisplay,
     kNotifierDisplayError,
 #if defined(OS_CHROMEOS)
     ui::NetworkStateNotifier::kNotifierNetworkError,
@@ -37,27 +35,20 @@ const char* kAlwaysShownSystemNotifierIds[] = {
 // |kAshSystemNotifiers| is the list of normal system notification sources for
 // ash events. These notifications can be hidden in some context.
 const char* kAshSystemNotifiers[] = {
-  kNotifierBluetooth,
-  kNotifierDisplayResolutionChange,
+    kNotifierBluetooth, kNotifierDisplayResolutionChange,
 #if defined(OS_CHROMEOS)
-  kNotifierDisk,
+    kNotifierDisk,
 #endif
-  kNotifierLocale,
-  kNotifierMultiProfileFirstRun,
+    kNotifierLocale, kNotifierMultiProfileFirstRun,
 #if defined(OS_CHROMEOS)
-  ui::NetworkStateNotifier::kNotifierNetwork,
+    ui::NetworkStateNotifier::kNotifierNetwork,
 #endif
-  kNotifierNetworkPortalDetector,
-  kNotifierScreenshot,
-  kNotifierScreenCapture,
-  kNotifierScreenShare,
-  kNotifierSessionLengthTimeout,
-  kNotifierSupervisedUser,
-  kNotifierWebUsb,
-  // Note: Order doesn't matter here, so keep this in alphabetic order, don't
-  // just add your stuff at the end!
-  NULL
-};
+    kNotifierNetworkPortalDetector, kNotifierScreenshot, kNotifierScreenCapture,
+    kNotifierScreenShare, kNotifierSessionLengthTimeout,
+    kNotifierSupervisedUser, kNotifierWebUsb,
+    // Note: Order doesn't matter here, so keep this in alphabetic order, don't
+    // just add your stuff at the end!
+    NULL};
 
 bool MatchSystemNotifierId(const message_center::NotifierId& notifier_id,
                            const char* id_list[]) {

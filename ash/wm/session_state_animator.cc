@@ -23,20 +23,17 @@ const int SessionStateAnimator::kAllLockScreenContainersMask =
 
 const int SessionStateAnimator::kAllNonRootContainersMask =
     SessionStateAnimator::kAllLockScreenContainersMask |
-    SessionStateAnimator::DESKTOP_BACKGROUND |
-    SessionStateAnimator::LAUNCHER |
+    SessionStateAnimator::DESKTOP_BACKGROUND | SessionStateAnimator::LAUNCHER |
     SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS;
 
 SessionStateAnimator::AnimationSequence::AnimationSequence(
     base::Closure callback)
-  : sequence_ended_(false),
-    animation_completed_(false),
-    invoke_callback_(false),
-    callback_(callback) {
-}
+    : sequence_ended_(false),
+      animation_completed_(false),
+      invoke_callback_(false),
+      callback_(callback) {}
 
-SessionStateAnimator::AnimationSequence::~AnimationSequence() {
-}
+SessionStateAnimator::AnimationSequence::~AnimationSequence() {}
 
 void SessionStateAnimator::AnimationSequence::EndSequence() {
   sequence_ended_ = true;
@@ -63,11 +60,9 @@ void SessionStateAnimator::AnimationSequence::CleanupIfSequenceCompleted() {
   }
 }
 
-SessionStateAnimator::SessionStateAnimator() {
-}
+SessionStateAnimator::SessionStateAnimator() {}
 
-SessionStateAnimator::~SessionStateAnimator() {
-}
+SessionStateAnimator::~SessionStateAnimator() {}
 
 base::TimeDelta SessionStateAnimator::GetDuration(
     SessionStateAnimator::AnimationSpeed speed) {

@@ -52,8 +52,8 @@ void ProjectingObserver::OnCastingSessionStartedOrStopped(bool started) {
 void ProjectingObserver::SetIsProjecting() {
   // "Projecting" is defined as having more than 1 output connected while at
   // least one of them is an internal output.
-  bool projecting = has_internal_output_ &&
-      (output_count_ + casting_session_count_ > 1);
+  bool projecting =
+      has_internal_output_ && (output_count_ + casting_session_count_ > 1);
 
   power_manager_client_->SetIsProjecting(projecting);
 }

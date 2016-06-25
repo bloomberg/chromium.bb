@@ -80,9 +80,8 @@ views::View* TrayUser::CreateTrayView(LoginStatus status) {
   CHECK(layout_view_ == nullptr);
 
   layout_view_ = new views::View;
-  layout_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal,
-                           0, 0, kUserLabelToIconPadding));
+  layout_view_->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, kUserLabelToIconPadding));
   UpdateAfterLoginStatusChange(status);
   return layout_view_;
 }
@@ -131,7 +130,7 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
   bool need_avatar = false;
   SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   if (delegate->IsUserSupervised())
-    need_label =  true;
+    need_label = true;
   switch (status) {
     case LoginStatus::LOCKED:
     case LoginStatus::USER:
@@ -177,8 +176,8 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
   }
 
   if (avatar_) {
-    avatar_->SetCornerRadii(
-        0, kTrayAvatarCornerRadius, kTrayAvatarCornerRadius, 0);
+    avatar_->SetCornerRadii(0, kTrayAvatarCornerRadius, kTrayAvatarCornerRadius,
+                            0);
     avatar_->SetBorder(views::Border::NullBorder());
   }
   UpdateAvatarImage(status);
@@ -194,8 +193,8 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (IsHorizontalAlignment(alignment)) {
     if (avatar_) {
       avatar_->SetBorder(views::Border::NullBorder());
-      avatar_->SetCornerRadii(
-          0, kTrayAvatarCornerRadius, kTrayAvatarCornerRadius, 0);
+      avatar_->SetCornerRadii(0, kTrayAvatarCornerRadius,
+                              kTrayAvatarCornerRadius, 0);
     }
     if (label_) {
       // If label_ hasn't figured out its size yet, do that first.
@@ -206,18 +205,16 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
       int remainder = height % 2;
       label_->SetBorder(views::Border::CreateEmptyBorder(
           vertical_pad + remainder,
-          kTrayLabelItemHorizontalPaddingBottomAlignment,
-          vertical_pad,
+          kTrayLabelItemHorizontalPaddingBottomAlignment, vertical_pad,
           kTrayLabelItemHorizontalPaddingBottomAlignment));
     }
-    layout_view_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal,
-                             0, 0, kUserLabelToIconPadding));
+    layout_view_->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0, kUserLabelToIconPadding));
   } else {
     if (avatar_) {
       avatar_->SetBorder(views::Border::NullBorder());
-      avatar_->SetCornerRadii(
-          0, 0, kTrayAvatarCornerRadius, kTrayAvatarCornerRadius);
+      avatar_->SetCornerRadii(0, 0, kTrayAvatarCornerRadius,
+                              kTrayAvatarCornerRadius);
     }
     if (label_) {
       label_->SetBorder(views::Border::CreateEmptyBorder(
@@ -226,9 +223,8 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
           kTrayLabelItemVerticalPaddingVerticalAlignment,
           kTrayLabelItemHorizontalPaddingBottomAlignment));
     }
-    layout_view_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical,
-                             0, 0, kUserLabelToIconPadding));
+    layout_view_->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical, 0, 0, kUserLabelToIconPadding));
   }
 }
 

@@ -8,10 +8,8 @@ namespace ash {
 
 WorkspaceEventHandlerTestHelper::WorkspaceEventHandlerTestHelper(
     WorkspaceEventHandler* handler)
-    : handler_(handler) {
-}
+    : handler_(handler) {}
 
-WorkspaceEventHandlerTestHelper::~WorkspaceEventHandlerTestHelper() {
-}
+WorkspaceEventHandlerTestHelper::~WorkspaceEventHandlerTestHelper() {}
 
 }  // namespace ash

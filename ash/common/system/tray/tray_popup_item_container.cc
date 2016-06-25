@@ -15,15 +15,14 @@ namespace ash {
 TrayPopupItemContainer::TrayPopupItemContainer(views::View* view,
                                                bool change_background,
                                                bool draw_border)
-    : active_(false),
-      change_background_(change_background) {
+    : active_(false), change_background_(change_background) {
   set_notify_enter_exit_on_child(true);
   if (draw_border) {
     SetBorder(
         views::Border::CreateSolidSidedBorder(0, 0, 1, 0, kBorderLightColor));
   }
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, 0);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   layout->SetDefaultFlex(1);
   SetLayoutManager(layout);
   if (view->layer()) {
@@ -34,8 +33,7 @@ TrayPopupItemContainer::TrayPopupItemContainer(views::View* view,
   SetVisible(view->visible());
 }
 
-TrayPopupItemContainer::~TrayPopupItemContainer() {
-}
+TrayPopupItemContainer::~TrayPopupItemContainer() {}
 
 void TrayPopupItemContainer::SetActive(bool active) {
   if (!change_background_ || active_ == active)
@@ -80,8 +78,8 @@ void TrayPopupItemContainer::OnPaintBackground(gfx::Canvas* canvas) {
 
   views::View* view = child_at(0);
   if (!view->background()) {
-    canvas->FillRect(gfx::Rect(size()), (active_) ? kHoverBackgroundColor
-                                                  : kBackgroundColor);
+    canvas->FillRect(gfx::Rect(size()),
+                     (active_) ? kHoverBackgroundColor : kBackgroundColor);
   }
 }
 

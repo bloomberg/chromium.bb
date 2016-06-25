@@ -75,11 +75,9 @@ const int LockStateController::kLockToShutdownTimeoutMs = 150;
 const int LockStateController::kShutdownRequestDelayMs = 50;
 
 LockStateController::TestApi::TestApi(LockStateController* controller)
-    : controller_(controller) {
-}
+    : controller_(controller) {}
 
-LockStateController::TestApi::~TestApi() {
-}
+LockStateController::TestApi::~TestApi() {}
 
 LockStateController::LockStateController()
     : animator_(new SessionStateAnimatorImpl()),
@@ -114,8 +112,7 @@ bool LockStateController::HasObserver(const LockStateObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
-void LockStateController::StartLockAnimation(
-    bool shutdown_after_lock) {
+void LockStateController::StartLockAnimation(bool shutdown_after_lock) {
   if (animating_lock_)
     return;
   shutdown_after_lock_ = shutdown_after_lock;
@@ -157,8 +154,7 @@ void LockStateController::CancelLockAnimation() {
 }
 
 bool LockStateController::CanCancelShutdownAnimation() {
-  return pre_shutdown_timer_.IsRunning() ||
-         shutdown_after_lock_ ||
+  return pre_shutdown_timer_.IsRunning() || shutdown_after_lock_ ||
          lock_to_shutdown_timer_.IsRunning();
 }
 
@@ -207,7 +203,7 @@ void LockStateController::RequestShutdown() {
 }
 
 void LockStateController::OnLockScreenHide(
-  base::Callback<void(void)>& callback) {
+    base::Callback<void(void)>& callback) {
   StartUnlockAnimationBeforeUIDestroyed(callback);
 }
 
@@ -283,8 +279,7 @@ void LockStateController::StartLockToShutdownTimer() {
   shutdown_after_lock_ = false;
   lock_to_shutdown_timer_.Stop();
   lock_to_shutdown_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kLockToShutdownTimeoutMs),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kLockToShutdownTimeoutMs),
       this, &LockStateController::OnLockToShutdownTimeout);
 }
 
@@ -298,8 +293,7 @@ void LockStateController::StartPreShutdownAnimationTimer() {
   pre_shutdown_timer_.Start(
       FROM_HERE,
       animator_->GetDuration(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN),
-      this,
-      &LockStateController::OnPreShutdownAnimationTimeout);
+      this, &LockStateController::OnPreShutdownAnimationTimeout);
 }
 
 void LockStateController::OnPreShutdownAnimationTimeout() {
@@ -371,8 +365,7 @@ void LockStateController::StartImmediatePreLockAnimation(
 
   base::Closure next_animation_starter =
       base::Bind(&LockStateController::PreLockAnimationFinished,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 request_lock_on_completion);
+                 weak_ptr_factory_.GetWeakPtr(), request_lock_on_completion);
   SessionStateAnimator::AnimationSequence* animation_sequence =
       animator_->BeginAnimationSequence(next_animation_starter);
 
@@ -381,8 +374,7 @@ void LockStateController::StartImmediatePreLockAnimation(
       SessionStateAnimator::ANIMATION_LIFT,
       SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
   animation_sequence->StartAnimation(
-      SessionStateAnimator::LAUNCHER,
-      SessionStateAnimator::ANIMATION_FADE_OUT,
+      SessionStateAnimator::LAUNCHER, SessionStateAnimator::ANIMATION_FADE_OUT,
       SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
   // Hide the screen locker containers so we can raise them later.
   animator_->StartAnimation(SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
@@ -394,7 +386,8 @@ void LockStateController::StartImmediatePreLockAnimation(
   animation_sequence->EndSequence();
 
   DispatchCancelMode();
-  FOR_EACH_OBSERVER(LockStateObserver, observers_,
+  FOR_EACH_OBSERVER(
+      LockStateObserver, observers_,
       OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_STARTED));
 }
 
@@ -404,8 +397,7 @@ void LockStateController::StartCancellablePreLockAnimation() {
   VLOG(1) << "StartCancellablePreLockAnimation";
   base::Closure next_animation_starter =
       base::Bind(&LockStateController::PreLockAnimationFinished,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 true /* request_lock */);
+                 weak_ptr_factory_.GetWeakPtr(), true /* request_lock */);
   SessionStateAnimator::AnimationSequence* animation_sequence =
       animator_->BeginAnimationSequence(next_animation_starter);
 
@@ -414,8 +406,7 @@ void LockStateController::StartCancellablePreLockAnimation() {
       SessionStateAnimator::ANIMATION_LIFT,
       SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
   animation_sequence->StartAnimation(
-      SessionStateAnimator::LAUNCHER,
-      SessionStateAnimator::ANIMATION_FADE_OUT,
+      SessionStateAnimator::LAUNCHER, SessionStateAnimator::ANIMATION_FADE_OUT,
       SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
   // Hide the screen locker containers so we can raise them later.
   animator_->StartAnimation(SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
@@ -425,7 +416,8 @@ void LockStateController::StartCancellablePreLockAnimation() {
       SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, animation_sequence);
 
   DispatchCancelMode();
-  FOR_EACH_OBSERVER(LockStateObserver, observers_,
+  FOR_EACH_OBSERVER(
+      LockStateObserver, observers_,
       OnLockStateEvent(LockStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
   animation_sequence->EndSequence();
 }
@@ -443,8 +435,7 @@ void LockStateController::CancelPreLockAnimation() {
       SessionStateAnimator::ANIMATION_UNDO_LIFT,
       SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS);
   animation_sequence->StartAnimation(
-      SessionStateAnimator::LAUNCHER,
-      SessionStateAnimator::ANIMATION_FADE_IN,
+      SessionStateAnimator::LAUNCHER, SessionStateAnimator::ANIMATION_FADE_IN,
       SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS);
   AnimateBackgroundHidingIfNecessary(
       SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS,
@@ -474,8 +465,7 @@ void LockStateController::StartUnlockAnimationBeforeUIDestroyed(
   animator_->StartAnimationWithCallback(
       SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
       SessionStateAnimator::ANIMATION_LIFT,
-      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
-      callback);
+      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, callback);
 }
 
 void LockStateController::StartUnlockAnimationAfterUIDestroyed() {
@@ -491,8 +481,7 @@ void LockStateController::StartUnlockAnimationAfterUIDestroyed() {
       SessionStateAnimator::ANIMATION_DROP,
       SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
   animation_sequence->StartAnimation(
-      SessionStateAnimator::LAUNCHER,
-      SessionStateAnimator::ANIMATION_FADE_IN,
+      SessionStateAnimator::LAUNCHER, SessionStateAnimator::ANIMATION_FADE_IN,
       SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
   AnimateBackgroundHidingIfNecessary(
       SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, animation_sequence);
@@ -535,8 +524,8 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
     timeout *= 2;
   }
 #endif
-  lock_fail_timer_.Start(
-      FROM_HERE, timeout, this, &LockStateController::OnLockFailTimeout);
+  lock_fail_timer_.Start(FROM_HERE, timeout, this,
+                         &LockStateController::OnLockFailTimeout);
 
   lock_duration_timer_.reset(new base::ElapsedTimer());
 }
@@ -544,7 +533,8 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
 void LockStateController::PostLockAnimationFinished() {
   animating_lock_ = false;
   VLOG(1) << "PostLockAnimationFinished";
-  FOR_EACH_OBSERVER(LockStateObserver, observers_,
+  FOR_EACH_OBSERVER(
+      LockStateObserver, observers_,
       OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED));
   if (!lock_screen_displayed_callback_.is_null()) {
     lock_screen_displayed_callback_.Run();
@@ -594,10 +584,9 @@ void LockStateController::AnimateBackgroundAppearanceIfNecessary(
     SessionStateAnimator::AnimationSequence* animation_sequence) {
   if (unlocked_properties_.get() &&
       unlocked_properties_->background_is_hidden) {
-    animation_sequence->StartAnimation(
-        SessionStateAnimator::DESKTOP_BACKGROUND,
-        SessionStateAnimator::ANIMATION_FADE_IN,
-        speed);
+    animation_sequence->StartAnimation(SessionStateAnimator::DESKTOP_BACKGROUND,
+                                       SessionStateAnimator::ANIMATION_FADE_IN,
+                                       speed);
   }
 }
 
@@ -606,10 +595,9 @@ void LockStateController::AnimateBackgroundHidingIfNecessary(
     SessionStateAnimator::AnimationSequence* animation_sequence) {
   if (unlocked_properties_.get() &&
       unlocked_properties_->background_is_hidden) {
-    animation_sequence->StartAnimation(
-        SessionStateAnimator::DESKTOP_BACKGROUND,
-        SessionStateAnimator::ANIMATION_FADE_OUT,
-        speed);
+    animation_sequence->StartAnimation(SessionStateAnimator::DESKTOP_BACKGROUND,
+                                       SessionStateAnimator::ANIMATION_FADE_OUT,
+                                       speed);
   }
 }
 

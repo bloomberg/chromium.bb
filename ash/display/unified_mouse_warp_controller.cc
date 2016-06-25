@@ -47,7 +47,8 @@ aura::WindowTreeHost* FindMirroringWindowTreeHostFromScreenPoint(
   if (index < 0)
     return nullptr;
   return GetMirroringAshWindowTreeHostForDisplayId(
-             mirroring_display_list[index].id())->AsWindowTreeHost();
+             mirroring_display_list[index].id())
+      ->AsWindowTreeHost();
 }
 #endif
 
@@ -57,8 +58,7 @@ UnifiedMouseWarpController::UnifiedMouseWarpController()
     : current_cursor_display_id_(display::Display::kInvalidDisplayID),
       update_location_for_test_(false) {}
 
-UnifiedMouseWarpController::~UnifiedMouseWarpController() {
-}
+UnifiedMouseWarpController::~UnifiedMouseWarpController() {}
 
 bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   // Mirroring windows are created asynchronously, so compute the edge

@@ -74,6 +74,7 @@ class CustomFrameViewAshWindowStateDelegate
       GetAuraWindow()->RemoveObserver(this);
     }
   }
+
  private:
   aura::Window* GetAuraWindow() {
     return ash::WmWindowAura::GetAuraWindow(window_state_->window());
@@ -104,13 +105,11 @@ class CustomFrameViewAshWindowStateDelegate
   // Overridden from ash::wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
                                    ash::wm::WindowStateType old_type) override {
-    if (!window_state->IsFullscreen() &&
-        !window_state->IsMinimized() &&
+    if (!window_state->IsFullscreen() && !window_state->IsMinimized() &&
         immersive_fullscreen_controller_.get() &&
         immersive_fullscreen_controller_->IsEnabled()) {
       immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
-          false);
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
     }
   }
 
@@ -173,9 +172,7 @@ class CustomFrameViewAsh::HeaderView
     return caption_button_container_;
   }
 
-  views::View* avatar_icon() const {
-    return avatar_icon_;
-  }
+  views::View* avatar_icon() const { return avatar_icon_; }
 
  private:
   // ImmersiveFullscreenController::Delegate:
@@ -233,8 +230,8 @@ void CustomFrameViewAsh::HeaderView::ResetWindowControls() {
 
 int CustomFrameViewAsh::HeaderView::GetPreferredOnScreenHeight() const {
   if (frame_->IsFullscreen()) {
-    return static_cast<int>(
-        GetPreferredHeight() * fullscreen_visible_fraction_);
+    return static_cast<int>(GetPreferredHeight() *
+                            fullscreen_visible_fraction_);
   }
   return GetPreferredHeight();
 }
@@ -276,7 +273,8 @@ void CustomFrameViewAsh::HeaderView::SizeConstraintsChanged() {
 }
 
 void CustomFrameViewAsh::HeaderView::SetFrameColors(
-    SkColor active_frame_color, SkColor inactive_frame_color) {
+    SkColor active_frame_color,
+    SkColor inactive_frame_color) {
   header_painter_->SetFrameColors(active_frame_color, inactive_frame_color);
 }
 
@@ -292,13 +290,14 @@ void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
       frame_->non_client_view()->frame_view()->ShouldPaintAsActive();
   caption_button_container_->SetPaintAsActive(paint_as_active);
 
-  HeaderPainter::Mode header_mode = paint_as_active ?
-      HeaderPainter::MODE_ACTIVE : HeaderPainter::MODE_INACTIVE;
+  HeaderPainter::Mode header_mode = paint_as_active
+                                        ? HeaderPainter::MODE_ACTIVE
+                                        : HeaderPainter::MODE_INACTIVE;
   header_painter_->PaintHeader(canvas, header_mode);
 }
 
-void CustomFrameViewAsh::HeaderView::
-    ChildPreferredSizeChanged(views::View* child) {
+void CustomFrameViewAsh::HeaderView::ChildPreferredSizeChanged(
+    views::View* child) {
   // FrameCaptionButtonContainerView animates the visibility changes in
   // UpdateSizeButtonVisibility(false). Due to this a new size is not available
   // until the completion of the animation. Layout in response to the preferred
@@ -396,8 +395,7 @@ CustomFrameViewAsh::OverlayView::OverlayView(HeaderView* header_view)
       std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
-CustomFrameViewAsh::OverlayView::~OverlayView() {
-}
+CustomFrameViewAsh::OverlayView::~OverlayView() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh::OverlayView, views::View overrides:
@@ -453,8 +451,7 @@ CustomFrameViewAsh::CustomFrameViewAsh(views::Widget* frame)
   }
 }
 
-CustomFrameViewAsh::~CustomFrameViewAsh() {
-}
+CustomFrameViewAsh::~CustomFrameViewAsh() {}
 
 void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
@@ -483,8 +480,8 @@ gfx::Rect CustomFrameViewAsh::GetWindowBoundsForClientBounds(
 }
 
 int CustomFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  return FrameBorderHitTestController::NonClientHitTest(this,
-      header_view_->caption_button_container(), point);
+  return FrameBorderHitTestController::NonClientHitTest(
+      this, header_view_->caption_button_container(), point);
 }
 
 void CustomFrameViewAsh::GetWindowMask(const gfx::Size& size,
@@ -496,8 +493,7 @@ void CustomFrameViewAsh::ResetWindowControls() {
   header_view_->ResetWindowControls();
 }
 
-void CustomFrameViewAsh::UpdateWindowIcon() {
-}
+void CustomFrameViewAsh::UpdateWindowIcon() {}
 
 void CustomFrameViewAsh::UpdateWindowTitle() {
   header_view_->SchedulePaintForTitle();
@@ -513,8 +509,9 @@ void CustomFrameViewAsh::SizeConstraintsChanged() {
 gfx::Size CustomFrameViewAsh::GetPreferredSize() const {
   gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
-  return frame_->non_client_view()->GetWindowBoundsForClientBounds(
-      bounds).size();
+  return frame_->non_client_view()
+      ->GetWindowBoundsForClientBounds(bounds)
+      .size();
 }
 
 void CustomFrameViewAsh::Layout() {
@@ -589,8 +586,8 @@ bool CustomFrameViewAsh::DoesIntersectRect(const views::View* target,
   return false;
 }
 
-FrameCaptionButtonContainerView* CustomFrameViewAsh::
-    GetFrameCaptionButtonContainerViewForTest() {
+FrameCaptionButtonContainerView*
+CustomFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
   return header_view_->caption_button_container();
 }
 

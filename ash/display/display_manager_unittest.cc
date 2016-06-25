@@ -60,8 +60,7 @@ class DisplayManagerTest : public test::AshMDTestBase,
   DisplayManagerTest()
       : removed_count_(0U),
         root_window_destroyed_(false),
-        changed_metrics_(0U) {
-  }
+        changed_metrics_(0U) {}
   ~DisplayManagerTest() override {}
 
   void SetUp() override {
@@ -83,8 +82,8 @@ class DisplayManagerTest : public test::AshMDTestBase,
   uint32_t changed_metrics() const { return changed_metrics_; }
 
   string GetCountSummary() const {
-    return StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS,
-                        changed_.size(), added_.size(), removed_count_);
+    return StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS, changed_.size(),
+                        added_.size(), removed_count_);
   }
 
   void reset() {
@@ -95,9 +94,7 @@ class DisplayManagerTest : public test::AshMDTestBase,
     root_window_destroyed_ = false;
   }
 
-  bool root_window_destroyed() const {
-    return root_window_destroyed_;
-  }
+  bool root_window_destroyed() const { return root_window_destroyed_; }
 
   const DisplayInfo& GetDisplayInfo(const display::Display& display) {
     return display_manager()->GetDisplayInfo(display.id());
@@ -484,19 +481,17 @@ TEST_P(DisplayManagerTest, OverscanInsetsTest) {
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
   const DisplayInfo& display_info1 = GetDisplayInfoAt(0);
   const DisplayInfo& display_info2 = GetDisplayInfoAt(1);
-  display_manager()->SetOverscanInsets(
-      display_info2.id(), gfx::Insets(13, 12, 11, 10));
+  display_manager()->SetOverscanInsets(display_info2.id(),
+                                       gfx::Insets(13, 12, 11, 10));
 
   std::vector<display::Display> changed_displays = changed();
   EXPECT_EQ(1u, changed_displays.size());
   EXPECT_EQ(display_info2.id(), changed_displays[0].id());
-  EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_native().ToString());
+  EXPECT_EQ("0,0 500x500", GetDisplayInfoAt(0).bounds_in_native().ToString());
   DisplayInfo updated_display_info2 = GetDisplayInfoAt(1);
   EXPECT_EQ("0,501 400x400",
             updated_display_info2.bounds_in_native().ToString());
-  EXPECT_EQ("378x376",
-            updated_display_info2.size_in_pixel().ToString());
+  EXPECT_EQ("378x376", updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("13,12,11,10",
             updated_display_info2.overscan_insets_in_dip().ToString());
   EXPECT_EQ("500,0 378x376",
@@ -504,24 +499,20 @@ TEST_P(DisplayManagerTest, OverscanInsetsTest) {
 
   // Make sure that SetOverscanInsets() is idempotent.
   display_manager()->SetOverscanInsets(display_info1.id(), gfx::Insets());
-  display_manager()->SetOverscanInsets(
-      display_info2.id(), gfx::Insets(13, 12, 11, 10));
-  EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_native().ToString());
+  display_manager()->SetOverscanInsets(display_info2.id(),
+                                       gfx::Insets(13, 12, 11, 10));
+  EXPECT_EQ("0,0 500x500", GetDisplayInfoAt(0).bounds_in_native().ToString());
   updated_display_info2 = GetDisplayInfoAt(1);
   EXPECT_EQ("0,501 400x400",
             updated_display_info2.bounds_in_native().ToString());
-  EXPECT_EQ("378x376",
-            updated_display_info2.size_in_pixel().ToString());
+  EXPECT_EQ("378x376", updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("13,12,11,10",
             updated_display_info2.overscan_insets_in_dip().ToString());
 
-  display_manager()->SetOverscanInsets(
-      display_info2.id(), gfx::Insets(10, 11, 12, 13));
-  EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_native().ToString());
-  EXPECT_EQ("376x378",
-            GetDisplayInfoAt(1).size_in_pixel().ToString());
+  display_manager()->SetOverscanInsets(display_info2.id(),
+                                       gfx::Insets(10, 11, 12, 13));
+  EXPECT_EQ("0,0 500x500", GetDisplayInfoAt(0).bounds_in_native().ToString());
+  EXPECT_EQ("376x378", GetDisplayInfoAt(1).size_in_pixel().ToString());
   EXPECT_EQ("10,11,12,13",
             GetDisplayInfoAt(1).overscan_insets_in_dip().ToString());
 
@@ -529,10 +520,8 @@ TEST_P(DisplayManagerTest, OverscanInsetsTest) {
   // new display has a different ID.
   UpdateDisplay("0+0-500x500");
   UpdateDisplay("0+0-500x500,0+501-400x400");
-  EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_native().ToString());
-  EXPECT_EQ("0,501 400x400",
-            GetDisplayInfoAt(1).bounds_in_native().ToString());
+  EXPECT_EQ("0,0 500x500", GetDisplayInfoAt(0).bounds_in_native().ToString());
+  EXPECT_EQ("0,501 400x400", GetDisplayInfoAt(1).bounds_in_native().ToString());
 
   // Recreate the displays with the same ID.  It should apply the overscan
   // inset.
@@ -541,25 +530,21 @@ TEST_P(DisplayManagerTest, OverscanInsetsTest) {
   display_info_list.push_back(display_info1);
   display_info_list.push_back(display_info2);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ("1,1 500x500",
-            GetDisplayInfoAt(0).bounds_in_native().ToString());
+  EXPECT_EQ("1,1 500x500", GetDisplayInfoAt(0).bounds_in_native().ToString());
   updated_display_info2 = GetDisplayInfoAt(1);
-  EXPECT_EQ("376x378",
-            updated_display_info2.size_in_pixel().ToString());
+  EXPECT_EQ("376x378", updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("10,11,12,13",
             updated_display_info2.overscan_insets_in_dip().ToString());
 
   // HiDPI but overscan display. The specified insets size should be doubled.
   UpdateDisplay("0+0-500x500,0+501-400x400*2");
-  display_manager()->SetOverscanInsets(
-      display_manager()->GetDisplayAt(1).id(), gfx::Insets(4, 5, 6, 7));
-  EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_native().ToString());
+  display_manager()->SetOverscanInsets(display_manager()->GetDisplayAt(1).id(),
+                                       gfx::Insets(4, 5, 6, 7));
+  EXPECT_EQ("0,0 500x500", GetDisplayInfoAt(0).bounds_in_native().ToString());
   updated_display_info2 = GetDisplayInfoAt(1);
   EXPECT_EQ("0,501 400x400",
             updated_display_info2.bounds_in_native().ToString());
-  EXPECT_EQ("376x380",
-            updated_display_info2.size_in_pixel().ToString());
+  EXPECT_EQ("376x380", updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("4,5,6,7",
             updated_display_info2.overscan_insets_in_dip().ToString());
   EXPECT_EQ("8,10,12,14",
@@ -570,9 +555,9 @@ TEST_P(DisplayManagerTest, OverscanInsetsTest) {
       ScreenUtil::GetSecondaryDisplay().id());
   EXPECT_EQ("-500,0 500x500",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
-  EXPECT_EQ("0,0 500x500",
-            GetDisplayInfo(ScreenUtil::GetSecondaryDisplay()).
-            bounds_in_native().ToString());
+  EXPECT_EQ("0,0 500x500", GetDisplayInfo(ScreenUtil::GetSecondaryDisplay())
+                               .bounds_in_native()
+                               .ToString());
   EXPECT_EQ("0,501 400x400",
             GetDisplayInfo(display::Screen::GetScreen()->GetPrimaryDisplay())
                 .bounds_in_native()
@@ -796,8 +781,7 @@ TEST_P(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_EQ("0,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
-  EXPECT_EQ("500,0 100x100",
-            GetDisplayForId(10).bounds().ToString());
+  EXPECT_EQ("500,0 100x100", GetDisplayForId(10).bounds().ToString());
 
   // Turn off internal
   display_info_list.clear();
@@ -872,8 +856,11 @@ TEST_P(DisplayManagerTest, TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("1,1 100x100",
             GetDisplayInfoForId(10).bounds_in_native().ToString());
-  EXPECT_EQ("100x100", ash::Shell::GetPrimaryRootWindow()->GetHost()->
-      GetBounds().size().ToString());
+  EXPECT_EQ("100x100", ash::Shell::GetPrimaryRootWindow()
+                           ->GetHost()
+                           ->GetBounds()
+                           .size()
+                           .ToString());
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -1033,29 +1020,21 @@ TEST_P(DisplayManagerTest, Rotate) {
     return;
 
   UpdateDisplay("100x200/r,300x400/l");
-  EXPECT_EQ("1,1 100x200",
-            GetDisplayInfoAt(0).bounds_in_native().ToString());
-  EXPECT_EQ("200x100",
-            GetDisplayInfoAt(0).size_in_pixel().ToString());
+  EXPECT_EQ("1,1 100x200", GetDisplayInfoAt(0).bounds_in_native().ToString());
+  EXPECT_EQ("200x100", GetDisplayInfoAt(0).size_in_pixel().ToString());
 
-  EXPECT_EQ("1,201 300x400",
-            GetDisplayInfoAt(1).bounds_in_native().ToString());
-  EXPECT_EQ("400x300",
-            GetDisplayInfoAt(1).size_in_pixel().ToString());
+  EXPECT_EQ("1,201 300x400", GetDisplayInfoAt(1).bounds_in_native().ToString());
+  EXPECT_EQ("400x300", GetDisplayInfoAt(1).size_in_pixel().ToString());
   reset();
   UpdateDisplay("100x200/b,300x400");
   EXPECT_EQ("2 0 0", GetCountSummary());
   reset();
 
-  EXPECT_EQ("1,1 100x200",
-            GetDisplayInfoAt(0).bounds_in_native().ToString());
-  EXPECT_EQ("100x200",
-            GetDisplayInfoAt(0).size_in_pixel().ToString());
+  EXPECT_EQ("1,1 100x200", GetDisplayInfoAt(0).bounds_in_native().ToString());
+  EXPECT_EQ("100x200", GetDisplayInfoAt(0).size_in_pixel().ToString());
 
-  EXPECT_EQ("1,201 300x400",
-            GetDisplayInfoAt(1).bounds_in_native().ToString());
-  EXPECT_EQ("300x400",
-            GetDisplayInfoAt(1).size_in_pixel().ToString());
+  EXPECT_EQ("1,201 300x400", GetDisplayInfoAt(1).bounds_in_native().ToString());
+  EXPECT_EQ("300x400", GetDisplayInfoAt(1).size_in_pixel().ToString());
 
   // Just Rotating display will change the bounds on both display.
   UpdateDisplay("100x200/l,300x400");
@@ -1610,8 +1589,8 @@ TEST_P(DisplayManagerTest, SoftwareMirroringWithCompositingCursor) {
   EXPECT_EQ(nullptr, test_api.GetHost());
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayInfo secondary_info = display_manager->GetDisplayInfo(
-      ScreenUtil::GetSecondaryDisplay().id());
+  DisplayInfo secondary_info =
+      display_manager->GetDisplayInfo(ScreenUtil::GetSecondaryDisplay().id());
 
   display_manager->SetSoftwareMirroring(true);
   display_manager->UpdateDisplays();
@@ -2140,8 +2119,7 @@ TEST_P(DisplayManagerTest, DontRegisterBadConfig) {
 
 class ScreenShutdownTest : public test::AshTestBase {
  public:
-  ScreenShutdownTest() {
-  }
+  ScreenShutdownTest() {}
   ~ScreenShutdownTest() override {}
 
   void TearDown() override {
@@ -2176,10 +2154,7 @@ namespace {
 // initialization process.
 class FontTestHelper : public test::AshTestBase {
  public:
-  enum DisplayType {
-    INTERNAL,
-    EXTERNAL
-  };
+  enum DisplayType { INTERNAL, EXTERNAL };
 
   FontTestHelper(float scale, DisplayType display_type) {
     gfx::ClearFontRenderParamsCacheForTest();
@@ -2199,7 +2174,6 @@ class FontTestHelper : public test::AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(FontTestHelper);
 };
-
 
 bool IsTextSubpixelPositioningEnabled() {
   gfx::FontRenderParams params =

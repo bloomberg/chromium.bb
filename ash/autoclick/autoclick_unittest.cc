@@ -22,9 +22,7 @@ class MouseEventCapturer : public ui::EventHandler {
   MouseEventCapturer() { Reset(); }
   ~MouseEventCapturer() override {}
 
-  void Reset() {
-    events_.clear();
-  }
+  void Reset() { events_.clear(); }
 
   void OnMouseEvent(ui::MouseEvent* event) override {
     if (!(event->flags() & ui::EF_LEFT_MOUSE_BUTTON))
@@ -48,9 +46,7 @@ class MouseEventCapturer : public ui::EventHandler {
     ASSERT_LT(events_.size(), 100u);
   }
 
-  const std::vector<ui::MouseEvent>& captured_events() const {
-    return events_;
-  }
+  const std::vector<ui::MouseEvent>& captured_events() const { return events_; }
 
  private:
   std::vector<ui::MouseEvent> events_;
@@ -214,7 +210,8 @@ TEST_F(AutoclickTest, KeyModifiersReleased) {
   MoveMouseWithFlagsTo(12, 12, modifier_flags);
 
   // Simulate releasing key modifiers by sending key released events.
-  GetEventGenerator().ReleaseKey(ui::VKEY_CONTROL,
+  GetEventGenerator().ReleaseKey(
+      ui::VKEY_CONTROL,
       static_cast<ui::EventFlags>(ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN));
   GetEventGenerator().ReleaseKey(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
 
@@ -253,18 +250,16 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
   // Test another gesture.
   GetEventGenerator().MoveMouseTo(100, 100);
   GetEventGenerator().GestureScrollSequence(
-      gfx::Point(100, 100),
-      gfx::Point(200, 200),
-      base::TimeDelta::FromMilliseconds(200),
-      3);
+      gfx::Point(100, 100), gfx::Point(200, 200),
+      base::TimeDelta::FromMilliseconds(200), 3);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
 
   // Test scroll events.
   GetEventGenerator().MoveMouseTo(200, 200);
-  GetEventGenerator().ScrollSequence(
-      gfx::Point(100, 100), base::TimeDelta::FromMilliseconds(200),
-      0, 100, 3, 2);
+  GetEventGenerator().ScrollSequence(gfx::Point(100, 100),
+                                     base::TimeDelta::FromMilliseconds(200), 0,
+                                     100, 3, 2);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
 }

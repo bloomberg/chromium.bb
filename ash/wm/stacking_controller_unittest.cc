@@ -40,7 +40,7 @@ TEST_F(StackingControllerTest, TransientParent) {
   std::unique_ptr<Window> w2(CreateTestWindow());
   w2->SetBounds(gfx::Rect(10, 11, 250, 251));
   aura::Window* launcher = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-      kShellWindowId_ShelfContainer);
+                                               kShellWindowId_ShelfContainer);
   launcher->AddChild(w2.get());
   w2->Show();
 

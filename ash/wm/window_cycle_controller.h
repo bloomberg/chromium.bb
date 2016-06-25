@@ -29,10 +29,7 @@ class WmWindow;
 // order.
 class ASH_EXPORT WindowCycleController {
  public:
-  enum Direction {
-    FORWARD,
-    BACKWARD
-  };
+  enum Direction { FORWARD, BACKWARD };
 
   WindowCycleController();
   virtual ~WindowCycleController();
