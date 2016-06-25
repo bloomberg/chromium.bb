@@ -22,8 +22,8 @@
   'sources': [
     'app/android/app_jni_registrar.cc',
     'app/android/app_jni_registrar.h',
-    'app/android/child_process_service.cc',
-    'app/android/child_process_service.h',
+    'app/android/child_process_service_impl.cc',
+    'app/android/child_process_service_impl.h',
     'app/android/content_jni_onload.cc',
     'app/android/content_main.cc',
     'app/android/content_main.h',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/app/android/child_process_service.h"
+#include "content/app/android/child_process_service_impl.h"
 
 #include <android/native_window_jni.h>
 #include <cpu-features.h>
@@ -19,7 +19,7 @@
 #include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "ipc/ipc_descriptors.h"
-#include "jni/ChildProcessService_jni.h"
+#include "jni/ChildProcessServiceImpl_jni.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
 using base::android::AttachCurrentThread;
@@ -36,11 +36,11 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
                                   public gpu::SurfaceTexturePeer,
                                   public gpu::GpuSurfaceLookup {
  public:
-  // |service| is the instance of
-  // org.chromium.content.app.ChildProcessService.
+  // |service impl| is the instance of
+  // org.chromium.content.app.ChildProcessServiceImpl.
   explicit SurfaceTextureManagerImpl(
-      const base::android::JavaRef<jobject>& service)
-      : service_(service) {
+      const base::android::JavaRef<jobject>& service_impl)
+      : service_impl_(service_impl) {
     SurfaceTexturePeer::InitInstance(this);
     gpu::GpuSurfaceLookup::InitInstance(this);
   }
@@ -54,9 +54,9 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
                               int client_id,
                               gl::SurfaceTexture* surface_texture) override {
     JNIEnv* env = base::android::AttachCurrentThread();
-    Java_ChildProcessService_createSurfaceTextureSurface(
+    Java_ChildProcessServiceImpl_createSurfaceTextureSurface(
         env,
-        service_.obj(),
+        service_impl_.obj(),
         surface_texture_id,
         client_id,
         surface_texture->j_surface_texture().obj());
@@ -64,15 +64,15 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
   void UnregisterSurfaceTexture(int surface_texture_id,
                                 int client_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
-    Java_ChildProcessService_destroySurfaceTextureSurface(
-        env, service_.obj(), surface_texture_id, client_id);
+    Java_ChildProcessServiceImpl_destroySurfaceTextureSurface(
+        env, service_impl_.obj(), surface_texture_id, client_id);
   }
   gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
       int surface_texture_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     gl::ScopedJavaSurface surface(
-        Java_ChildProcessService_getSurfaceTextureSurface(env, service_.obj(),
-                                                          surface_texture_id));
+        Java_ChildProcessServiceImpl_getSurfaceTextureSurface(
+            env, service_impl_.obj(), surface_texture_id));
 
     if (surface.j_surface().is_null())
       return NULL;
@@ -94,9 +94,9 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
       int primary_id,
       int secondary_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
-    content::Java_ChildProcessService_establishSurfaceTexturePeer(
+    content::Java_ChildProcessServiceImpl_establishSurfaceTexturePeer(
         env,
-        service_.obj(),
+        service_impl_.obj(),
         pid,
         surface_texture->j_surface_texture().obj(),
         primary_id,
@@ -107,8 +107,8 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
   gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     gl::ScopedJavaSurface surface(
-        content::Java_ChildProcessService_getViewSurface(env, service_.obj(),
-                                                         surface_id));
+        content::Java_ChildProcessServiceImpl_getViewSurface(
+            env, service_impl_.obj(), surface_id));
 
     if (surface.j_surface().is_null())
       return NULL;
@@ -127,27 +127,27 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
   gl::ScopedJavaSurface AcquireJavaSurface(int surface_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     return gl::ScopedJavaSurface(
-        content::Java_ChildProcessService_getViewSurface(env, service_.obj(),
-                                                         surface_id));
+        content::Java_ChildProcessServiceImpl_getViewSurface(
+            env, service_impl_.obj(), surface_id));
   }
 
  private:
-  // The instance of org.chromium.content.app.ChildProcessService.
-  base::android::ScopedJavaGlobalRef<jobject> service_;
+  // The instance of org.chromium.content.app.ChildProcessServiceImpl.
+  base::android::ScopedJavaGlobalRef<jobject> service_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureManagerImpl);
 };
 
 // Chrome actually uses the renderer code path for all of its child
 // processes such as renderers, plugins, etc.
-void InternalInitChildProcess(JNIEnv* env,
-                              const JavaParamRef<jobject>& service,
-                              jint cpu_count,
-                              jlong cpu_features) {
+void InternalInitChildProcessImpl(JNIEnv* env,
+                                  const JavaParamRef<jobject>& service_impl,
+                                  jint cpu_count,
+                                  jlong cpu_features) {
   // Set the CPU properties.
   android_setCpu(cpu_count, cpu_features);
   gpu::SurfaceTextureManager::SetInstance(
-      new SurfaceTextureManagerImpl(service));
+      new SurfaceTextureManagerImpl(service_impl));
 
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(env);
 }
@@ -164,21 +164,21 @@ void RegisterGlobalFileDescriptor(JNIEnv* env,
   base::GlobalDescriptors::GetInstance()->Set(id, fd, region);
 }
 
-void InitChildProcess(JNIEnv* env,
-                      const JavaParamRef<jclass>& clazz,
-                      const JavaParamRef<jobject>& service,
-                      jint cpu_count,
-                      jlong cpu_features) {
-  InternalInitChildProcess(env, service, cpu_count, cpu_features);
+void InitChildProcessImpl(JNIEnv* env,
+                          const JavaParamRef<jclass>& clazz,
+                          const JavaParamRef<jobject>& service_impl,
+                          jint cpu_count,
+                          jlong cpu_features) {
+  InternalInitChildProcessImpl(env, service_impl, cpu_count, cpu_features);
 }
 
 void ExitChildProcess(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  VLOG(0) << "ChildProcessService: Exiting child process.";
+  VLOG(0) << "ChildProcessServiceImpl: Exiting child process.";
   base::android::LibraryLoaderExitHook();
   _exit(0);
 }
 
-bool RegisterChildProcessService(JNIEnv* env) {
+bool RegisterChildProcessServiceImpl(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

@@ -66,6 +66,7 @@ android_library("content_java") {
 
   java_files = [
     "java/src/org/chromium/content/app/ChildProcessService.java",
+    "java/src/org/chromium/content/app/ChildProcessServiceImpl.java",
     "java/src/org/chromium/content/app/ChromiumLinkerParams.java",
     "java/src/org/chromium/content/app/ContentApplication.java",
     "java/src/org/chromium/content/app/ContentMain.java",

@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.annotation.SuppressLint;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -27,7 +28,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.Linker;
-import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.DownloadProcessService;
 import org.chromium.content.app.PrivilegedProcessService;
@@ -65,20 +65,20 @@ public class ChildProcessLauncher {
         private final ArrayList<Integer> mFreeConnectionIndices;
         private final Object mConnectionLock = new Object();
 
-        private Class<? extends ChildProcessService> mChildClass;
+        private final Class<? extends Service> mChildClass;
         private final boolean mInSandbox;
         // Each Allocator keeps a queue for the pending spawn data. Once a connection is free, we
         // dequeue the pending spawn data from the same allocator as the connection.
         private final PendingSpawnQueue mPendingSpawnQueue = new PendingSpawnQueue();
 
-        public ChildConnectionAllocator(boolean inSandbox, int numChildServices) {
+        public ChildConnectionAllocator(boolean inSandbox, int numChildServices,
+                Class<? extends Service> serviceClass) {
             mChildProcessConnections = new ChildProcessConnectionImpl[numChildServices];
             mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
             for (int i = 0; i < numChildServices; i++) {
                 mFreeConnectionIndices.add(i);
             }
-            mChildClass =
-                    inSandbox ? SandboxedProcessService.class : PrivilegedProcessService.class;
+            mChildClass = serviceClass;
             mInSandbox = inSandbox;
         }
 
@@ -235,41 +235,80 @@ public class ChildProcessLauncher {
             "org.chromium.content.browser.NUM_SANDBOXED_SERVICES";
     private static final String NUM_PRIVILEGED_SERVICES_KEY =
             "org.chromium.content.browser.NUM_PRIVILEGED_SERVICES";
+    private static final String SANDBOXED_SERVICES_NAME_KEY =
+            "org.chromium.content.browser.SANDBOXED_SERVICES_NAME";
     // Overrides the number of available sandboxed services.
     @VisibleForTesting
     public static final String SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING = "num-sandboxed-services";
+    public static final String SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING =
+            "sandboxed-services-name";
 
     private static int getNumberOfServices(Context context, boolean inSandbox, String packageName) {
-        try {
-            PackageManager packageManager = context.getPackageManager();
-            ApplicationInfo appInfo = packageManager.getApplicationInfo(packageName,
-                    PackageManager.GET_META_DATA);
-            int numServices = -1;
-            if (appInfo.metaData != null) {
-                numServices = appInfo.metaData.getInt(
-                        inSandbox ? NUM_SANDBOXED_SERVICES_KEY : NUM_PRIVILEGED_SERVICES_KEY, -1);
-            }
-            if (inSandbox
-                    && CommandLine.getInstance().hasSwitch(
-                               SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING)) {
-                String value = CommandLine.getInstance().getSwitchValue(
-                        SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING);
-                if (!TextUtils.isEmpty(value)) {
-                    try {
-                        numServices = Integer.parseInt(value);
-                    } catch (NumberFormatException e) {
-                        Log.w(TAG, "The value of --num-sandboxed-services is formatted wrongly: "
-                                        + value);
-                    }
+        int numServices = -1;
+        if (inSandbox
+                && CommandLine.getInstance().hasSwitch(
+                           SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING)) {
+            String value = CommandLine.getInstance().getSwitchValue(
+                    SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING);
+            if (!TextUtils.isEmpty(value)) {
+                try {
+                    numServices = Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    Log.w(TAG, "The value of --num-sandboxed-services is formatted wrongly: "
+                                    + value);
                 }
             }
-            if (numServices < 0) {
-                throw new RuntimeException("Illegal meta data value for number of child services");
+        } else {
+            try {
+                PackageManager packageManager = context.getPackageManager();
+                ApplicationInfo appInfo = packageManager.getApplicationInfo(packageName,
+                        PackageManager.GET_META_DATA);
+                if (appInfo.metaData != null) {
+                    numServices = appInfo.metaData.getInt(inSandbox
+                            ? NUM_SANDBOXED_SERVICES_KEY : NUM_PRIVILEGED_SERVICES_KEY, -1);
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                throw new RuntimeException("Could not get application info");
             }
-            return numServices;
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new RuntimeException("Could not get application info");
         }
+        if (numServices < 0) {
+            throw new RuntimeException("Illegal meta data value for number of child services");
+        }
+        return numServices;
+    }
+
+    private static Class<? extends Service> getClassOfService(Context context, boolean inSandbox,
+            String packageName) {
+        if (!inSandbox) {
+            return PrivilegedProcessService.class;
+        }
+        String serviceName = null;
+        if (CommandLine.getInstance().hasSwitch(SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING)) {
+            serviceName = CommandLine.getInstance().getSwitchValue(
+                    SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING);
+        } else {
+            try {
+                PackageManager packageManager = context.getPackageManager();
+                ApplicationInfo appInfo = packageManager.getApplicationInfo(packageName,
+                        PackageManager.GET_META_DATA);
+                if (appInfo.metaData != null) {
+                    serviceName = appInfo.metaData.getString(SANDBOXED_SERVICES_NAME_KEY);
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                throw new RuntimeException("Could not get application info.");
+            }
+        }
+        if (serviceName != null) {
+            try {
+                Class<? extends Service> service =
+                        (Class<? extends Service>) Class.forName(serviceName);
+                return service;
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(
+                        "Illegal meta data value: the child service class doesn't exist");
+            }
+        }
+        return SandboxedProcessService.class;
     }
 
     private static void initConnectionAllocatorsIfNecessary(
@@ -287,11 +326,13 @@ public class ChildProcessLauncher {
                             packageName);
                     sSandboxedChildConnectionAllocatorMap.put(packageName,
                             new ChildConnectionAllocator(true,
-                                    getNumberOfServices(context, true, packageName)));
+                                    getNumberOfServices(context, true, packageName),
+                                    getClassOfService(context, true, packageName)));
                 }
             } else if (sPrivilegedChildConnectionAllocator == null) {
                 sPrivilegedChildConnectionAllocator = new ChildConnectionAllocator(
-                        false, getNumberOfServices(context, false, packageName));
+                        false, getNumberOfServices(context, false, packageName),
+                        getClassOfService(context, false, packageName));
             }
             // TODO(pkotwicz|hanxi): Figure out when old allocators should be removed from
             // {@code sSandboxedChildConnectionAllocatorMap}.
@@ -944,8 +985,10 @@ public class ChildProcessLauncher {
     @VisibleForTesting
     static void enqueuePendingSpawnForTesting(Context context, String[] commandLine,
             ChildProcessCreationParams creationParams, boolean inSandbox) {
+        String packageName = creationParams != null ? creationParams.getPackageName()
+                : context.getPackageName();
         PendingSpawnQueue pendingSpawnQueue = getPendingSpawnQueue(context,
-                creationParams.getPackageName(), inSandbox);
+                packageName, inSandbox);
         synchronized (pendingSpawnQueue.mPendingSpawnsLock) {
             pendingSpawnQueue.enqueueLocked(new PendingSpawnData(context, commandLine, 1,
                     new FileDescriptorInfo[0], 0, CALLBACK_FOR_RENDERER_PROCESS, true,

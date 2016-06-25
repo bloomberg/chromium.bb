@@ -8,7 +8,7 @@
   # TODO(jrg): when doing the above, make sure we support multiple
   # output directories (e.g. browser/jni and common/jni if needed).
   'sources': [
-    'public/android/java/src/org/chromium/content/app/ChildProcessService.java',
+    'public/android/java/src/org/chromium/content/app/ChildProcessServiceImpl.java',
     'public/android/java/src/org/chromium/content/app/ContentMain.java',
     'public/android/java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java',
     'public/android/java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java',

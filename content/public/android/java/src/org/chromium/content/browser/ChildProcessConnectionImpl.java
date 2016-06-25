@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -19,7 +20,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
@@ -34,7 +34,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     private final int mServiceNumber;
     private final boolean mInSandbox;
     private final ChildProcessConnection.DeathCallback mDeathCallback;
-    private final Class<? extends ChildProcessService> mServiceClass;
+    private final Class<? extends Service> mServiceClass;
     private final ComponentName mServiceName;
 
     // Synchronization: While most internal flow occurs on the UI thread, the public API
@@ -211,7 +211,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
 
     ChildProcessConnectionImpl(Context context, int number, boolean inSandbox,
             ChildProcessConnection.DeathCallback deathCallback,
-            Class<? extends ChildProcessService> serviceClass,
+            Class<? extends Service> serviceClass,
             ChromiumLinkerParams chromiumLinkerParams,
             boolean alwaysInForeground,
             ChildProcessCreationParams creationParams) {
