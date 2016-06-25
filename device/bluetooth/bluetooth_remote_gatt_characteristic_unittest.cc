@@ -398,6 +398,16 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ReadRemoteCharacteristic) {
 #endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_WIN)
+// Callback that make sure GattCharacteristicValueChanged has been called
+// before the callback runs.
+static void test_callback(
+    BluetoothRemoteGattCharacteristic::ValueCallback callback,
+    const TestBluetoothAdapterObserver& callback_observer,
+    const std::vector<uint8_t>& value) {
+  EXPECT_EQ(1, callback_observer.gatt_characteristic_value_changed_count());
+  callback.Run(value);
+}
+
 // Tests that ReadRemoteCharacteristic results in a
 // GattCharacteristicValueChanged call.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
@@ -407,21 +417,8 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
   TestBluetoothAdapterObserver observer(adapter_);
 
-  // Callback that make sure GattCharacteristicValueChanged has been called
-  // before the callback runs.
-  auto test_callback = [](
-      BluetoothRemoteGattCharacteristic::ValueCallback callback,
-      const TestBluetoothAdapterObserver& callback_observer,
-      const std::vector<uint8_t>& value) {
-    EXPECT_EQ(1, callback_observer.gatt_characteristic_value_changed_count());
-    callback.Run(value);
-  };
-
   characteristic1_->ReadRemoteCharacteristic(
-      base::Bind((void (*)(BluetoothRemoteGattCharacteristic::ValueCallback,
-                           const TestBluetoothAdapterObserver&,
-                           const std::vector<uint8_t>&))test_callback,
-                 GetReadValueCallback(Call::EXPECTED),
+      base::Bind(test_callback, GetReadValueCallback(Call::EXPECTED),
                  base::ConstRef(observer)),
       GetGattErrorCallback(Call::NOT_EXPECTED));
 
