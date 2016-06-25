@@ -4363,30 +4363,22 @@ void WebGLRenderingContextBase::texImageHelperHTMLCanvasElement(TexImageFunction
         functionType = TexSubImage;
     if (!validateTexFunc(funcName, functionType, SourceHTMLCanvasElement, target, level, internalformat, canvas->width(), canvas->height(), 1, 0, format, type, xoffset, yoffset, zoffset))
         return;
-    // TODO(xidachen): merge TexImage2D and TexSubImage2D because they have similar code path
-    if (functionID == TexImage2D) {
+    if (functionID == TexImage2D || functionID == TexSubImage2D) {
         // texImageByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
-        // FIXME: relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
+        // TODO(crbug.com/622958): relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
         if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageByGPU(functionID, internalformat, type)) {
             // 2D canvas has only FrontBuffer.
-            texImageImpl(TexImage2D, target, level, internalformat, xoffset, yoffset, zoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
+            texImageImpl(functionID, target, level, internalformat, xoffset, yoffset, zoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
                 WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
             return;
         }
 
-        texImage2DBase(target, level, internalformat, canvas->width(), canvas->height(), 0, format, type, 0);
-        texImageByGPU(TexImage2DByGPU, texture, target, level, internalformat, type, 0, 0, 0, canvas);
-    } else if (functionID == TexSubImage2D) {
-        // texImageCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
-        // FIXME: relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
-        if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageByGPU(functionID, internalformat, type)) {
-            // 2D canvas has only FrontBuffer.
-            texImageImpl(TexSubImage2D, target, level, 0, xoffset, yoffset, 0, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
-                WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
-            return;
+        if (functionID == TexImage2D) {
+            texImage2DBase(target, level, internalformat, canvas->width(), canvas->height(), 0, format, type, 0);
+            texImageByGPU(TexImage2DByGPU, texture, target, level, internalformat, type, 0, 0, 0, canvas);
+        } else {
+            texImageByGPU(TexSubImage2DByGPU, texture, target, level, GL_RGBA, type, xoffset, yoffset, 0, canvas);
         }
-
-        texImageByGPU(TexSubImage2DByGPU, texture, target, level, GL_RGBA, type, xoffset, yoffset, 0, canvas);
     } else {
         DCHECK_EQ(functionID, TexSubImage3D);
         // FIXME: Implement GPU-to-GPU copy path (crbug.com/586269).
