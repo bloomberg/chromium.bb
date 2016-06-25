@@ -108,7 +108,8 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUIHelpHost) {
     if (base::FeatureList::IsEnabled(
             features::kMaterialDesignSettingsFeature)) {
-      return true;  // Prevent further rewriting - this is a valid URL.
+      host = chrome::kChromeUISettingsHost;
+      path = chrome::kChromeUIHelpHost;
     } else if (::switches::AboutInSettingsEnabled()) {
       host = chrome::kChromeUISettingsFrameHost;
       if (url->path().empty() || url->path() == "/")

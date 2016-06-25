@@ -125,7 +125,8 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForMDSettings) {
       {{GURL(chrome_prefix + chrome::kChromeUISettingsHost),
         GURL(chrome_prefix + chrome::kChromeUISettingsHost)},
        {GURL(chrome_prefix + chrome::kChromeUIHelpHost),
-        GURL(chrome_prefix + chrome::kChromeUIHelpHost)}});
+        GURL(chrome_prefix + chrome::kChromeUISettingsHost + "/" +
+             chrome::kChromeUIHelpHost)}});
   TestWillHandleBrowserAboutURL(test_cases);
 }
 

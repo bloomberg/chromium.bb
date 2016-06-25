@@ -1022,6 +1022,7 @@
       'test/data/webui/settings/bluetooth_page_browsertest_chromeos.js',
       'test/data/webui/settings/cr_settings_browsertest.js',
       'test/data/webui/settings/easy_unlock_browsertest_chromeos.js',
+      'test/data/webui/settings/help_page_browsertest.js',
       'test/data/webui/settings/languages_page_browsertest.js',
       'test/data/webui/settings/on_startup_browsertest.js',
       'test/data/webui/settings/passwords_and_autofill_fake_data.js',
