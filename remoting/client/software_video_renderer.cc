@@ -20,6 +20,8 @@
 #include "remoting/codec/video_decoder_vpx.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/frame_consumer.h"
+#include "remoting/protocol/frame_stats.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/session_config.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -94,12 +96,15 @@ void SoftwareVideoRenderer::ProcessVideoPacket(
 
   base::ScopedClosureRunner done_runner(done);
 
-  if (perf_tracker_)
-    perf_tracker_->RecordVideoPacketStats(*packet);
+  std::unique_ptr<protocol::FrameStats> frame_stats(new protocol::FrameStats(
+      protocol::FrameStats::GetForVideoPacket(*packet)));
 
-  // If the video packet is empty then drop it. Empty packets are used to
-  // maintain activity on the network.
+  // If the video packet is empty then there is nothing to decode. Empty packets
+  // are used to maintain activity on the network. Stats for such packets still
+  // need to be reported.
   if (!packet->has_data() || packet->data().size() == 0) {
+    if (perf_tracker_)
+      perf_tracker_->RecordVideoFrameStats(*frame_stats);
     return;
   }
 
@@ -126,23 +131,22 @@ void SoftwareVideoRenderer::ProcessVideoPacket(
       consumer_->AllocateFrame(source_size_);
   frame->set_dpi(source_dpi_);
 
-  int32_t frame_id = packet->frame_id();
   base::PostTaskAndReplyWithResult(
       decode_task_runner_.get(), FROM_HERE,
       base::Bind(&DoDecodeFrame, decoder_.get(), base::Passed(&packet),
                  base::Passed(&frame)),
       base::Bind(&SoftwareVideoRenderer::RenderFrame,
-                 weak_factory_.GetWeakPtr(), frame_id, done_runner.Release()));
+                 weak_factory_.GetWeakPtr(), base::Passed(&frame_stats),
+                 done_runner.Release()));
 }
 
 void SoftwareVideoRenderer::RenderFrame(
-    int32_t frame_id,
+    std::unique_ptr<protocol::FrameStats> stats,
     const base::Closure& done,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (perf_tracker_)
-    perf_tracker_->OnFrameDecoded(frame_id);
+  stats->time_decoded = base::TimeTicks::Now();
 
   if (!frame) {
     if (!done.is_null())
@@ -150,17 +154,20 @@ void SoftwareVideoRenderer::RenderFrame(
     return;
   }
 
-  consumer_->DrawFrame(std::move(frame),
-                       base::Bind(&SoftwareVideoRenderer::OnFrameRendered,
-                                  weak_factory_.GetWeakPtr(), frame_id, done));
+  consumer_->DrawFrame(
+      std::move(frame),
+      base::Bind(&SoftwareVideoRenderer::OnFrameRendered,
+                 weak_factory_.GetWeakPtr(), base::Passed(&stats), done));
 }
 
-void SoftwareVideoRenderer::OnFrameRendered(int32_t frame_id,
-                                            const base::Closure& done) {
+void SoftwareVideoRenderer::OnFrameRendered(
+    std::unique_ptr<protocol::FrameStats> stats,
+    const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  stats->time_rendered = base::TimeTicks::Now();
   if (perf_tracker_)
-    perf_tracker_->OnFramePainted(frame_id);
+    perf_tracker_->RecordVideoFrameStats(*stats);
 
   if (!done.is_null())
     done.Run();

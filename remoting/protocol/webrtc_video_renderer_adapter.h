@@ -25,6 +25,7 @@ namespace remoting {
 namespace protocol {
 
 class FrameConsumer;
+struct FrameStats;
 
 class WebrtcVideoRendererAdapter
     : public rtc::VideoSinkInterface<cricket::VideoFrame> {
@@ -40,8 +41,11 @@ class WebrtcVideoRendererAdapter
   void OnFrame(const cricket::VideoFrame& frame) override;
 
  private:
-  void HandleFrameOnMainThread(scoped_refptr<webrtc::VideoFrameBuffer> frame);
-  void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame);
+  void HandleFrameOnMainThread(std::unique_ptr<FrameStats> stats,
+                               scoped_refptr<webrtc::VideoFrameBuffer> frame);
+  void DrawFrame(std::unique_ptr<FrameStats> stats,
+                 std::unique_ptr<webrtc::DesktopFrame> frame);
+  void FrameRendered(std::unique_ptr<FrameStats> stats);
 
   scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
   FrameConsumer* frame_consumer_;

@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/video_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -32,6 +31,7 @@ class VideoDecoder;
 
 namespace protocol {
 class FrameConsumer;
+struct FrameStats;
 class PerformanceTracker;
 }  // namespace protocol
 
@@ -60,10 +60,11 @@ class SoftwareVideoRenderer : public protocol::VideoRenderer,
                           const base::Closure& done) override;
 
  private:
-  void RenderFrame(int32_t frame_id,
+  void RenderFrame(std::unique_ptr<protocol::FrameStats> stats,
                    const base::Closure& done,
                    std::unique_ptr<webrtc::DesktopFrame> frame);
-  void OnFrameRendered(int32_t frame_id, const base::Closure& done);
+  void OnFrameRendered(std::unique_ptr<protocol::FrameStats> stats,
+                       const base::Closure& done);
 
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
   protocol::FrameConsumer* consumer_;

@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "remoting/protocol/frame_consumer.h"
+#include "remoting/protocol/frame_stats.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 #include "third_party/libyuv/include/libyuv/video_common.h"
 #include "third_party/webrtc/media/base/videoframe.h"
@@ -83,15 +84,21 @@ void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
     LOG(WARNING) << "Received frame with playout delay greater than 0.";
   }
 
+  std::unique_ptr<FrameStats> stats(new FrameStats());
+  // TODO(sergeyu): |time_received| is not reported correctly here because the
+  // frame is already decoded at this point.
+  stats->time_received = base::TimeTicks::Now();
+
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&WebrtcVideoRendererAdapter::HandleFrameOnMainThread,
-                 weak_factory_.GetWeakPtr(),
+                 weak_factory_.GetWeakPtr(), base::Passed(&stats),
                  scoped_refptr<webrtc::VideoFrameBuffer>(
                      frame.video_frame_buffer().get())));
 }
 
 void WebrtcVideoRendererAdapter::HandleFrameOnMainThread(
+    std::unique_ptr<FrameStats> stats,
     scoped_refptr<webrtc::VideoFrameBuffer> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -104,13 +111,23 @@ void WebrtcVideoRendererAdapter::HandleFrameOnMainThread(
       base::Bind(&ConvertYuvToRgb, base::Passed(&frame),
                  base::Passed(&rgb_frame), frame_consumer_->GetPixelFormat()),
       base::Bind(&WebrtcVideoRendererAdapter::DrawFrame,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), base::Passed(&stats)));
 }
 
 void WebrtcVideoRendererAdapter::DrawFrame(
+    std::unique_ptr<FrameStats> stats,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  frame_consumer_->DrawFrame(std::move(frame), base::Closure());
+  stats->time_decoded = base::TimeTicks::Now();
+  frame_consumer_->DrawFrame(
+      std::move(frame),
+      base::Bind(&WebrtcVideoRendererAdapter::FrameRendered,
+                 weak_factory_.GetWeakPtr(), base::Passed(&stats)));
+}
+
+void WebrtcVideoRendererAdapter::FrameRendered(
+    std::unique_ptr<FrameStats> stats) {
+  // TODO(sergeyu): Report stats here
 }
 
 }  // namespace protocol

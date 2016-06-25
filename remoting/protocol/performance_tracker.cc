@@ -4,7 +4,7 @@
 
 #include "remoting/protocol/performance_tracker.h"
 
-#include "remoting/proto/video.pb.h"
+#include "remoting/protocol/frame_stats.h"
 
 namespace {
 
@@ -62,7 +62,6 @@ const int kBandwidthHistogramBuckets = 100;
 // boundary value, so set to 101.
 const int kMaxFramesPerSec = 101;
 
-
 void UpdateUmaEnumHistogramStub(const std::string& histogram_name,
                                 int64_t value,
                                 int histogram_max) {}
@@ -76,9 +75,6 @@ void UpdateUmaCustomHistogramStub(const std::string& histogram_name,
 
 namespace remoting {
 namespace protocol {
-
-PerformanceTracker::FrameTimestamps::FrameTimestamps() {}
-PerformanceTracker::FrameTimestamps::~FrameTimestamps() {}
 
 PerformanceTracker::PerformanceTracker()
     : video_bandwidth_(base::TimeDelta::FromSeconds(kStatsUpdatePeriodSeconds)),
@@ -111,7 +107,7 @@ void PerformanceTracker::SetUpdateUmaCallbacks(
   uma_enum_histogram_updater_ = update_uma_enum_histogram_callback;
 }
 
-void PerformanceTracker::RecordVideoPacketStats(const VideoPacket& packet) {
+void PerformanceTracker::RecordVideoFrameStats(const FrameStats& stats) {
   if (!is_paused_ && !upload_uma_stats_timer_.IsRunning()) {
     upload_uma_stats_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kStatsUpdatePeriodSeconds),
@@ -122,146 +118,107 @@ void PerformanceTracker::RecordVideoPacketStats(const VideoPacket& packet) {
   // Record this received packet, even if it is empty.
   video_packet_rate_.Record(1);
 
-  FrameTimestamps timestamps;
-  timestamps.time_received = base::TimeTicks::Now();
-  if (packet.has_latest_event_timestamp()) {
-    base::TimeTicks timestamp =
-        base::TimeTicks::FromInternalValue(packet.latest_event_timestamp());
-    // Only use latest_event_timestamp field if it has changed from the
-    // previous frame.
-    if (timestamp > latest_event_timestamp_) {
-      timestamps.latest_event_timestamp = timestamp;
-      latest_event_timestamp_ = timestamp;
-    }
-  }
+  // Use only non-empty frames to estimate frame rate.
+  if (stats.frame_size)
+    video_frame_rate_.Record(1);
 
-  // If the host didn't specify any of the latency fields then set
-  // |total_host_latency| to Max, to indicate that the latency is unknown.
-  timestamps.total_host_latency = base::TimeDelta::Max();
-  if (packet.has_capture_time_ms() && packet.has_encode_time_ms() &&
-      packet.has_capture_pending_time_ms() &&
-      packet.has_capture_overhead_time_ms() &&
-      packet.has_encode_pending_time_ms() &&
-      packet.has_send_pending_time_ms()) {
-    timestamps.total_host_latency = base::TimeDelta::FromMilliseconds(
-        packet.capture_time_ms() + packet.encode_time_ms() +
-        packet.capture_pending_time_ms() + packet.capture_overhead_time_ms() +
-        packet.encode_pending_time_ms() + packet.send_pending_time_ms());
-  }
+  video_bandwidth_.Record(stats.frame_size);
 
-  // If the packet is empty, there are no other stats to update.
-  if (!packet.data().size()) {
-    // Record the RTT, even for empty packets, otherwise input events that
-    // do not cause an on-screen change can give very large, bogus RTTs.
-    RecordRoundTripLatency(timestamps);
-    return;
-  }
-
-  DCHECK(packet.has_frame_id());
-  frame_timestamps_[packet.frame_id()] = timestamps;
-
-  video_frame_rate_.Record(1);
-  video_bandwidth_.Record(packet.data().size());
-
-  if (packet.has_capture_time_ms()) {
-    video_capture_ms_.Record(packet.capture_time_ms());
+  if (stats.capture_delay != base::TimeDelta::Max()) {
+    video_capture_ms_.Record(stats.capture_delay.InMilliseconds());
     uma_custom_times_updater_.Run(
-        kVideoCaptureLatencyHistogram, packet.capture_time_ms(),
+        kVideoCaptureLatencyHistogram, stats.capture_delay.InMilliseconds(),
         kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
         kVideoActionsHistogramsBuckets);
   }
 
-  if (packet.has_encode_time_ms()) {
-    video_encode_ms_.Record(packet.encode_time_ms());
+  if (stats.encode_delay != base::TimeDelta::Max()) {
+    video_encode_ms_.Record(stats.encode_delay.InMilliseconds());
     uma_custom_times_updater_.Run(
-        kVideoEncodeLatencyHistogram, packet.encode_time_ms(),
+        kVideoEncodeLatencyHistogram, stats.encode_delay.InMilliseconds(),
         kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
         kVideoActionsHistogramsBuckets);
   }
 
-  if (packet.has_capture_pending_time_ms()) {
+  if (stats.capture_pending_delay != base::TimeDelta::Max()) {
+    uma_custom_times_updater_.Run(kCapturePendingLatencyHistogram,
+                                  stats.capture_pending_delay.InMilliseconds(),
+                                  kVideoActionsHistogramsMinMs,
+                                  kVideoActionsHistogramsMaxMs,
+                                  kVideoActionsHistogramsBuckets);
+  }
+
+  if (stats.capture_overhead_delay != base::TimeDelta::Max()) {
+    uma_custom_times_updater_.Run(kCaptureOverheadHistogram,
+                                  stats.capture_overhead_delay.InMilliseconds(),
+                                  kVideoActionsHistogramsMinMs,
+                                  kVideoActionsHistogramsMaxMs,
+                                  kVideoActionsHistogramsBuckets);
+  }
+
+  if (stats.encode_pending_delay != base::TimeDelta::Max()) {
+    uma_custom_times_updater_.Run(kEncodePendingLatencyHistogram,
+                                  stats.encode_pending_delay.InMilliseconds(),
+                                  kVideoActionsHistogramsMinMs,
+                                  kVideoActionsHistogramsMaxMs,
+                                  kVideoActionsHistogramsBuckets);
+  }
+
+  if (stats.send_pending_delay != base::TimeDelta::Max()) {
     uma_custom_times_updater_.Run(
-        kCapturePendingLatencyHistogram, packet.capture_pending_time_ms(),
+        kSendPendingLatencyHistogram, stats.send_pending_delay.InMilliseconds(),
         kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
         kVideoActionsHistogramsBuckets);
   }
 
-  if (packet.has_capture_overhead_time_ms()) {
+  DCHECK(!stats.time_received.is_null());
+
+  // Report decode and render delay only for non-empty frames.
+  if (stats.frame_size > 0) {
+    DCHECK(!stats.time_rendered.is_null());
+    DCHECK(!stats.time_decoded.is_null());
+    base::TimeDelta decode_delay = stats.time_decoded - stats.time_received;
+    video_decode_ms_.Record(decode_delay.InMilliseconds());
     uma_custom_times_updater_.Run(
-        kCaptureOverheadHistogram, packet.capture_overhead_time_ms(),
+        kVideoDecodeLatencyHistogram, decode_delay.InMilliseconds(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
+
+    base::TimeDelta render_delay = stats.time_rendered - stats.time_decoded;
+    video_paint_ms_.Record(render_delay.InMilliseconds());
+    uma_custom_times_updater_.Run(
+        kVideoPaintLatencyHistogram, render_delay.InMilliseconds(),
         kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
         kVideoActionsHistogramsBuckets);
   }
 
-  if (packet.has_encode_pending_time_ms()) {
-    uma_custom_times_updater_.Run(
-        kEncodePendingLatencyHistogram, packet.encode_pending_time_ms(),
-        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
-        kVideoActionsHistogramsBuckets);
-  }
-
-  if (packet.has_send_pending_time_ms()) {
-    uma_custom_times_updater_.Run(
-        kSendPendingLatencyHistogram, packet.send_pending_time_ms(),
-        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
-        kVideoActionsHistogramsBuckets);
-  }
-}
-
-void PerformanceTracker::OnFrameDecoded(int32_t frame_id) {
-  FramesTimestampsMap::iterator it = frame_timestamps_.find(frame_id);
-  DCHECK(it != frame_timestamps_.end());
-  it->second.time_decoded = base::TimeTicks::Now();
-  base::TimeDelta delay = it->second.time_decoded - it->second.time_received;
-
-  video_decode_ms_.Record(delay.InMilliseconds());
-  uma_custom_times_updater_.Run(
-      kVideoDecodeLatencyHistogram, delay.InMilliseconds(),
-      kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
-      kVideoActionsHistogramsBuckets);
-}
-
-void PerformanceTracker::OnFramePainted(int32_t frame_id) {
-  base::TimeTicks now = base::TimeTicks::Now();
-
-  while (!frame_timestamps_.empty() &&
-         frame_timestamps_.begin()->first <= frame_id) {
-    FrameTimestamps& timestamps = frame_timestamps_.begin()->second;
-
-    // time_decoded may be null if OnFrameDecoded() was never called, e.g. if
-    // the frame was dropped or decoding has failed.
-    if (!timestamps.time_decoded.is_null()) {
-      base::TimeDelta delay = now - timestamps.time_decoded;
-      video_paint_ms_.Record(delay.InMilliseconds());
-      uma_custom_times_updater_.Run(
-          kVideoPaintLatencyHistogram, delay.InMilliseconds(),
-          kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
-          kVideoActionsHistogramsBuckets);
-    }
-
-    RecordRoundTripLatency(timestamps);
-    frame_timestamps_.erase(frame_timestamps_.begin());
-  }
-}
-
-void PerformanceTracker::RecordRoundTripLatency(
-    const FrameTimestamps& timestamps) {
-  if (timestamps.latest_event_timestamp.is_null())
+  // |latest_event_timestamp| is set only for the first frame after an input
+  // event.
+  if (stats.latest_event_timestamp.is_null())
     return;
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  // For empty frames use time_received as time_rendered.
+  base::TimeTicks time_rendered =
+      (stats.frame_size > 0) ? stats.time_rendered : stats.time_received;
   base::TimeDelta round_trip_latency =
-      now - timestamps.latest_event_timestamp;
-
+      time_rendered - stats.latest_event_timestamp;
   round_trip_ms_.Record(round_trip_latency.InMilliseconds());
   uma_custom_times_updater_.Run(
       kRoundTripLatencyHistogram, round_trip_latency.InMilliseconds(),
       kLatencyHistogramMinMs, kLatencyHistogramMaxMs, kLatencyHistogramBuckets);
 
-  if (!timestamps.total_host_latency.is_max()) {
+  // Report estimated network latency.
+  if (stats.capture_delay != base::TimeDelta::Max() &&
+      stats.encode_delay != base::TimeDelta::Max() &&
+      stats.capture_pending_delay != base::TimeDelta::Max() &&
+      stats.capture_overhead_delay != base::TimeDelta::Max() &&
+      stats.encode_pending_delay != base::TimeDelta::Max() &&
+      stats.send_pending_delay != base::TimeDelta::Max()) {
     // Calculate total processing time on host and client.
     base::TimeDelta total_processing_latency =
-        timestamps.total_host_latency + (now - timestamps.time_received);
+        stats.capture_delay + stats.encode_delay + stats.capture_pending_delay +
+        stats.capture_overhead_delay + stats.encode_pending_delay +
+        stats.send_pending_delay + (time_rendered - stats.time_received);
     base::TimeDelta network_latency =
         round_trip_latency - total_processing_latency;
     uma_custom_times_updater_.Run(
@@ -285,7 +242,7 @@ void PerformanceTracker::OnPauseStateChanged(bool paused) {
   is_paused_ = paused;
   if (is_paused_) {
     // Pause the UMA timer when the video is paused. It will be unpaused in
-    // RecordVideoPacketStats() when a new frame is received.
+    // RecordVideoFrameStats() when a new frame is received.
     upload_uma_stats_timer_.Stop();
   }
 }
