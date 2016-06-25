@@ -73,6 +73,3 @@ class MockHost(MockSystemHost):
         # FIXME: consider supporting more than one SCM so that we can do more comprehensive testing.
         self.initialize_scm()
         return self._scm
-
-    def checkout(self):
-        return self._checkout
