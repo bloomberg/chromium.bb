@@ -711,7 +711,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   capture_client_.reset(new MusCaptureClient(hosted_window, content_, window_));
 
   content_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  content_->Init(ui::LAYER_TEXTURED);
+  content_->Init(params.layer_type);
   if (window_->visible())
     content_->Show();
   content_->SetTransparent(true);
