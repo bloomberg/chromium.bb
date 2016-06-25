@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -40,7 +41,10 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
     }
 
     /** Attempt to update the contact information with invalid data and cancel the transaction. */
+    /*
     @MediumTest
+    */
+    @DisabledTest(message = "crbug.com/623244")
     public void testEditIncompleteContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
