@@ -140,8 +140,8 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
 
   return ShowQuestionMessageBox(
              parent, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-             l10n_util::GetPluralStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
-                                              child_count)) ==
+             l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
+                                        base::IntToString16(child_count))) ==
          MESSAGE_BOX_RESULT_YES;
 }
 #endif
