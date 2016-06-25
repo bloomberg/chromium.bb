@@ -1,37 +1,19 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src="../media/media-file.js"></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="../media/video-test.js"></script>
-        <script>
-            var metaElement;
-            var standaloneMediaDocument;
-            var skipOnFirstEmptyLoad = 0;
+<title>This tests that a standalone media document has viewport settings.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<iframe></iframe>
+<script>
+async_test(function(t) {
+    var iframe = document.querySelector("iframe");
 
-            function frameLoaded()
-            {
-                if (++skipOnFirstEmptyLoad == 1)
-                    return;
+    iframe.onload = t.step_func_done(function() {
+        var metaElement = iframe.contentDocument.querySelector("meta");
+        assert_equals(metaElement.name, "viewport");
+        assert_equals(metaElement.content, "width=device-width");
+    });
 
-                standaloneMediaDocument = document.getElementById("videoframe").contentDocument;
-                metaElement = standaloneMediaDocument.querySelector("meta");
-
-                testExpected("metaElement.name", "viewport");
-                testExpected("metaElement.content", "width=device-width");
-
-                endTest();
-            }
-        </script>
-    </head>
-    <body>
-        <p>
-            This tests that a standalone media document has viewport settings.
-        </p>
-        <iframe id="videoframe" onload="frameLoaded()"></iframe>
-        <script>
-            document.getElementById("videoframe").src = findMediaFile("video", "content/test");
-        </script>
-    </body>
-</html>
+    iframe.src = findMediaFile("video", "content/test");
+});
+</script>
