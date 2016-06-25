@@ -510,6 +510,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderderivate_*',
         ['linux', 'intel', 'opengl'], bug=618408)
 
+    self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+
     # The Mesa Intel driver has a scoping bug, see
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
     self.Fail('deqp/data/gles3/shaders/scoping.html',
@@ -657,6 +660,22 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/vertexarrays/' +
         'single_attribute.output_type.unsigned_int.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/draw/*.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/fbomultisample*',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/textureshadow/*.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadermatrix/mul_dynamic_highp.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadermatrix/mul_dynamic_lowp.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadermatrix/mul_dynamic_mediump.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadermatrix/pre_decrement.html',
         ['linux', 'amd'], bug=483282)
 
     # Conflicting expectations to test that the
