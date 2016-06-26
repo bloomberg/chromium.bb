@@ -1,58 +1,33 @@
-<html>
-<body>
-    <script src=media-file.js></script>
-    <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=video-test.js></script>
-    <div id=panel></div>
-    <script>
-        var panel = document.getElementById("panel");
-        var mediaFile = findMediaFile("video", "content/test");
-        panel.innerHTML = "<video src=" + mediaFile + " controls onloadedmetadata='loadedmetadata()'><source src=content/counting.mp4></video>";
-    </script>
+<!DOCTYPE html>
+<title>Test that removing valid "src" attribute doesn't trigger load of "source" elements.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video>
+    <source></source>
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-    <p>Test that removing valid 'src' attribute DOES NOT trigger load of &lt;source&gt; elements</p>
+    video.onloadedmetadata = t.step_func(function() {
+        testSrc();
+        video.removeAttribute("src");
+        video.onloadedmetadata = t.unreached_func();
 
-    <script>
-        findMediaElement();
-
-        var loadCount = 0;
-
-        function testSrc()
-        {
-            testExpected("stripExtension(relativeURL(video.currentSrc))", stripExtension(mediaFile));
-            testExpected("isNaN(video.duration)", false);
-            consoleWrite("");
-        }
-
-        function loadedmetadata()
-        {
-            consoleWrite("EVENT(loadedmetadata)");
-
-            ++loadCount;
-            if (loadCount == 1)
-            {
-                testSrc();
-                run("video.removeAttribute('src')");
-            }
-            else
-            {
-                consoleWrite("<span style='color:red'>FAIL</span> : 'loadCount' fired " + loadCount + "times" );
-                endTest();
-            }
-            consoleWrite("");
-            setTimeout(someTimeLater, 100) ;
-        }
-
-        function someTimeLater()
-        {
+        setTimeout(t.step_func_done(function() {
             testSrc();
-            endTest();
-            consoleWrite("");
-        }
+        }), 100) ;
+    });
 
-        consoleWrite("");
-    </script>
+    function testSrc() {
+        var url = video.currentSrc;
+        assert_equals(url.substr(url.lastIndexOf("/media/")+7), mediaFile);
+        assert_false(isNaN(video.duration));
+    }
 
-</body>
-</html>
+    document.querySelector("source").src = findMediaFile("video", "content/counting");
+    var mediaFile = findMediaFile("video", "content/test");
+    video.src = mediaFile;
+});
+</script>

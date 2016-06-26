@@ -1,15 +1,22 @@
-<body>
-<video><source></source></video>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that a "source" element is not used when "src" attribute is set.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video>
+    <source></source>
+</video>
 <script>
+async_test(function(t) {
+    var video = document.querySelector("video");
     var mediaFile = findMediaFile("video", "content/test");
-    waitForEvent('loadstart', function () {
-        testExpected("stripExtension(relativeURL(video.currentSrc))", stripExtension(mediaFile));
-        endTest();
-    } );
-    document.getElementsByTagName('source')[0].src = "content/error.mpeg";
-    mediaElement.src = mediaFile;
+
+    video.onloadstart = t.step_func_done(function() {
+        var url = video.currentSrc;
+        assert_equals(url.substr(url.lastIndexOf("/media/")+7), mediaFile);
+    });
+
+    document.querySelector("source").src = "content/error.mpeg";
+    video.src = mediaFile;
+});
 </script>
