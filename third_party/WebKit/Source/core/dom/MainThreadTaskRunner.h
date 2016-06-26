@@ -35,6 +35,7 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
+#include "wtf/text/WTFString.h"
 #include <memory>
 
 namespace blink {
@@ -52,9 +53,9 @@ public:
 
     DECLARE_TRACE();
 
-    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>); // Executes the task on context's thread asynchronously.
+    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, const String& taskNameForInstrumentation = emptyString()); // Executes the task on context's thread asynchronously.
     void postInspectorTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
-    void perform(std::unique_ptr<ExecutionContextTask>, bool);
+    void perform(std::unique_ptr<ExecutionContextTask>, bool isInspectorTask, bool instrumenting);
 
     void suspend();
     void resume();
@@ -64,13 +65,13 @@ private:
 
     void pendingTasksTimerFired(Timer<MainThreadTaskRunner>*);
 
-    void postTaskInternal(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, bool isInspectorTask);
+    void postTaskInternal(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, bool isInspectorTask, bool instrumenting);
 
     // Untraced back reference to the owner Document;
     // this object has identical lifetime to it.
     UntracedMember<ExecutionContext> m_context;
     Timer<MainThreadTaskRunner> m_pendingTasksTimer;
-    Vector<std::unique_ptr<ExecutionContextTask>> m_pendingTasks;
+    Vector<std::pair<std::unique_ptr<ExecutionContextTask>, bool /* instrumenting */>> m_pendingTasks;
     bool m_suspended;
     WeakPtrFactory<MainThreadTaskRunner> m_weakFactory;
 };

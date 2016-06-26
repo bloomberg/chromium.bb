@@ -45,7 +45,6 @@ public:
     ExecutionContextTask() { }
     virtual ~ExecutionContextTask() { }
     virtual void performTask(ExecutionContext*) = 0;
-    virtual String taskNameForInstrumentation() const { return String(); }
 };
 
 namespace internal {

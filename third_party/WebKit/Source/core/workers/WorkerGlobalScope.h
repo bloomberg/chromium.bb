@@ -92,7 +92,7 @@ public:
 
     WorkerThread* thread() const { return m_thread; }
 
-    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) final; // Executes the task on context's thread asynchronously.
+    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, const String& taskNameForInstrumentation) final; // Executes the task on context's thread asynchronously.
 
     // WorkerGlobalScope
     WorkerGlobalScope* self() { return this; }

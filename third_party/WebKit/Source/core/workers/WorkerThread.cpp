@@ -240,7 +240,7 @@ bool WorkerThread::isCurrentThread()
     return m_started && workerBackingThread().backingThread().isCurrentThread();
 }
 
-void WorkerThread::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
+void WorkerThread::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, bool isInstrumented)
 {
     {
         MutexLocker lock(m_threadStateMutex);
@@ -248,7 +248,6 @@ void WorkerThread::postTask(const WebTraceLocation& location, std::unique_ptr<Ex
             return;
     }
 
-    bool isInstrumented = !task->taskNameForInstrumentation().isEmpty();
     if (isInstrumented) {
         DCHECK(isCurrentThread());
         InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());

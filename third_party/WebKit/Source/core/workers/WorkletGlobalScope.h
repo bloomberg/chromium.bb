@@ -48,7 +48,7 @@ public:
     using SecurityContext::contentSecurityPolicy;
 
     DOMTimerCoordinator* timers() final { NOTREACHED(); return nullptr; } // WorkletGlobalScopes don't have timers.
-    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override
+    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, const String&) override
     {
         // TODO(ikilpatrick): implement.
         NOTREACHED();

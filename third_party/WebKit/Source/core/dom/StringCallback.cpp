@@ -42,9 +42,9 @@ namespace {
 
 class DispatchCallbackTask final : public ExecutionContextTask {
 public:
-    static std::unique_ptr<DispatchCallbackTask> create(StringCallback* callback, const String& data, const String& taskName)
+    static std::unique_ptr<DispatchCallbackTask> create(StringCallback* callback, const String& data)
     {
-        return wrapUnique(new DispatchCallbackTask(callback, data, taskName));
+        return wrapUnique(new DispatchCallbackTask(callback, data));
     }
 
     void performTask(ExecutionContext*) override
@@ -52,29 +52,22 @@ public:
         m_callback->handleEvent(m_data);
     }
 
-    String taskNameForInstrumentation() const override
-    {
-        return m_taskName;
-    }
-
 private:
-    DispatchCallbackTask(StringCallback* callback, const String& data, const String& taskName)
+    DispatchCallbackTask(StringCallback* callback, const String& data)
         : m_callback(callback)
         , m_data(data)
-        , m_taskName(taskName)
     {
     }
 
     Persistent<StringCallback> m_callback;
     const String m_data;
-    const String m_taskName;
 };
 
 } // namespace
 
 void StringCallback::scheduleCallback(StringCallback* callback, ExecutionContext* context, const String& data, const String& instrumentationName)
 {
-    context->postTask(BLINK_FROM_HERE, DispatchCallbackTask::create(callback, data, instrumentationName));
+    context->postTask(BLINK_FROM_HERE, DispatchCallbackTask::create(callback, data), instrumentationName);
 }
 
 } // namespace blink

@@ -87,11 +87,6 @@ public:
         m_creationCallback->handleEvent(m_database.get());
     }
 
-    String taskNameForInstrumentation() const override
-    {
-        return "openDatabase";
-    }
-
 private:
     DatabaseCreationCallbackTask(Database* database, DatabaseCallback* callback)
         : m_database(database)
@@ -219,7 +214,7 @@ Database* DatabaseManager::openDatabase(ExecutionContext* context,
 
     if (database->isNew() && creationCallback) {
         WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database);
-        database->getExecutionContext()->postTask(BLINK_FROM_HERE, DatabaseCreationCallbackTask::create(database, creationCallback));
+        database->getExecutionContext()->postTask(BLINK_FROM_HERE, DatabaseCreationCallbackTask::create(database, creationCallback), "openDatabase");
     }
 
     ASSERT(database);

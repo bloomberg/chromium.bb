@@ -47,28 +47,30 @@ MainThreadTaskRunner::~MainThreadTaskRunner()
 {
 }
 
-void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, bool isInspectorTask)
+void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, bool isInspectorTask, bool instrumenting)
 {
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, threadSafeBind(
         &MainThreadTaskRunner::perform,
         m_weakFactory.createWeakPtr(),
         passed(std::move(task)),
-        isInspectorTask));
+        isInspectorTask,
+        instrumenting));
 }
 
-void MainThreadTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
+void MainThreadTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, const String& taskNameForInstrumentation)
 {
-    if (!task->taskNameForInstrumentation().isEmpty())
-        InspectorInstrumentation::asyncTaskScheduled(m_context, task->taskNameForInstrumentation(), task.get());
-    postTaskInternal(location, std::move(task), false);
+    if (!taskNameForInstrumentation.isEmpty())
+        InspectorInstrumentation::asyncTaskScheduled(m_context, taskNameForInstrumentation, task.get());
+    const bool instrumenting = !taskNameForInstrumentation.isEmpty();
+    postTaskInternal(location, std::move(task), false, instrumenting);
 }
 
 void MainThreadTaskRunner::postInspectorTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
-    postTaskInternal(location, std::move(task), true);
+    postTaskInternal(location, std::move(task), true, false);
 }
 
-void MainThreadTaskRunner::perform(std::unique_ptr<ExecutionContextTask> task, bool isInspectorTask)
+void MainThreadTaskRunner::perform(std::unique_ptr<ExecutionContextTask> task, bool isInspectorTask, bool instrumenting)
 {
     // If the owner m_context is about to be swept then it
     // is no longer safe to access.
@@ -76,7 +78,7 @@ void MainThreadTaskRunner::perform(std::unique_ptr<ExecutionContextTask> task, b
         return;
 
     if (!isInspectorTask && (m_context->tasksNeedSuspension() || !m_pendingTasks.isEmpty())) {
-        m_pendingTasks.append(std::move(task));
+        m_pendingTasks.append(make_pair(std::move(task), instrumenting));
         return;
     }
 
@@ -108,9 +110,9 @@ void MainThreadTaskRunner::pendingTasksTimerFired(Timer<MainThreadTaskRunner>*)
         return;
 
     while (!m_pendingTasks.isEmpty()) {
-        std::unique_ptr<ExecutionContextTask> task = std::move(m_pendingTasks[0]);
+        std::unique_ptr<ExecutionContextTask> task = std::move(m_pendingTasks[0].first);
+        const bool instrumenting = m_pendingTasks[0].second;
         m_pendingTasks.remove(0);
-        const bool instrumenting = !task->taskNameForInstrumentation().isEmpty();
         InspectorInstrumentation::AsyncTask asyncTask(m_context, task.get(), instrumenting);
         task->performTask(m_context);
     }

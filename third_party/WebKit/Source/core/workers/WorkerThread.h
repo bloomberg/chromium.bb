@@ -127,7 +127,7 @@ public:
 
     WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
 
-    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
+    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, bool isInstrumented = false);
     void appendDebuggerTask(std::unique_ptr<CrossThreadClosure>);
 
     // Runs only debugger tasks while paused in debugger.

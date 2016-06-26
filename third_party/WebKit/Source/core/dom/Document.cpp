@@ -5212,9 +5212,9 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
 }
 
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-LocalDOMWindow migration.
-void Document::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
+void Document::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, const String& taskNameForInstrumentation)
 {
-    m_taskRunner->postTask(location, std::move(task));
+    m_taskRunner->postTask(location, std::move(task), taskNameForInstrumentation);
 }
 
 void Document::postInspectorTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)

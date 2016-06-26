@@ -89,7 +89,7 @@ public:
     virtual void disableEval(const String& errorMessage) = 0;
     virtual LocalDOMWindow* executingWindow() { return 0; }
     virtual String userAgent() const = 0;
-    virtual void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0; // Executes the task on context's thread asynchronously.
+    virtual void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, const String& taskNameForInstrumentation = emptyString()) = 0; // Executes the task on context's thread asynchronously.
 
     // Gets the DOMTimerCoordinator which maintains the "active timer
     // list" of tasks created by setTimeout and setInterval. The

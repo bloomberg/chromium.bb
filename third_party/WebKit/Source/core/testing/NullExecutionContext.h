@@ -24,7 +24,7 @@ public:
     void disableEval(const String&) override { }
     String userAgent() const override { return String(); }
 
-    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
+    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, const String& taskNameForInstrumentation = emptyString()) override;
 
     EventTarget* errorEventTarget() override { return nullptr; }
     EventQueue* getEventQueue() const override { return m_queue.get(); }

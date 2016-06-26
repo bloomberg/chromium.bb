@@ -169,9 +169,9 @@ WorkerNavigator* WorkerGlobalScope::navigator() const
     return m_navigator.get();
 }
 
-void WorkerGlobalScope::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
+void WorkerGlobalScope::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, const String& taskNameForInstrumentation)
 {
-    thread()->postTask(location, std::move(task));
+    thread()->postTask(location, std::move(task), !taskNameForInstrumentation.isEmpty());
 }
 
 void WorkerGlobalScope::clearScript()

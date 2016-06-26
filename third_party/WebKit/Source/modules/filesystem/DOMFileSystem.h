@@ -106,16 +106,13 @@ public:
 private:
     DOMFileSystem(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
 
-    class DispatchCallbackTaskBase : public ExecutionContextTask {
-    public:
-        String taskNameForInstrumentation() const override
-        {
-            return "FileSystem";
-        }
-    };
+    static String taskNameForInstrumentation()
+    {
+        return "FileSystem";
+    }
 
     template <typename CB, typename CBArg>
-    class DispatchCallbackPtrArgTask final : public DispatchCallbackTaskBase {
+    class DispatchCallbackPtrArgTask final : public ExecutionContextTask {
     public:
         DispatchCallbackPtrArgTask(CB* callback, CBArg* arg)
             : m_callback(callback)
@@ -134,7 +131,7 @@ private:
     };
 
     template <typename CB, typename CBArg>
-    class DispatchCallbackNonPtrArgTask final : public DispatchCallbackTaskBase {
+    class DispatchCallbackNonPtrArgTask final : public ExecutionContextTask {
     public:
         DispatchCallbackNonPtrArgTask(CB* callback, const CBArg& arg)
             : m_callback(callback)
@@ -153,7 +150,7 @@ private:
     };
 
     template <typename CB>
-    class DispatchCallbackNoArgTask final : public DispatchCallbackTaskBase {
+    class DispatchCallbackNoArgTask final : public ExecutionContextTask {
     public:
         DispatchCallbackNoArgTask(CB* callback)
             : m_callback(callback)
@@ -178,7 +175,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackPtrArgTask<CB, CBArg>(callback, arg)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackPtrArgTask<CB, CBArg>(callback, arg)), taskNameForInstrumentation());
 }
 
 template <typename CB, typename CBArg>
@@ -186,7 +183,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, PersistentHeapVector<CBArg>>(callback, arg)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, PersistentHeapVector<CBArg>>(callback, arg)), taskNameForInstrumentation());
 }
 
 template <typename CB, typename CBArg>
@@ -194,7 +191,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, CBArg>(callback, arg)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, CBArg>(callback, arg)), taskNameForInstrumentation());
 }
 
 template <typename CB, typename CBArg>
@@ -202,7 +199,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, Persistent<CBArg>>(callback, arg)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, Persistent<CBArg>>(callback, arg)), taskNameForInstrumentation());
 }
 
 template <typename CB>
@@ -210,7 +207,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNoArgTask<CB>(callback)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNoArgTask<CB>(callback)), taskNameForInstrumentation());
 }
 
 } // namespace blink
