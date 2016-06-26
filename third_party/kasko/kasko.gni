@@ -14,6 +14,7 @@ declare_args() {
   enable_kasko_failed_rdv_reports = false
 }
 
-# Enable the Kasko crash reporter. Enabled by default on syzyasan build.
-enable_kasko =
-    is_syzyasan || enable_kasko_hang_reports || enable_kasko_failed_rdv_reports
+# Enable the Kasko crash reporter. Enabled by default on Syzyasan official
+# build.
+enable_kasko = (is_official_build && is_syzyasan) ||
+               enable_kasko_hang_reports || enable_kasko_failed_rdv_reports

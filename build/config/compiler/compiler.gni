@@ -21,23 +21,6 @@ declare_args() {
   # example, don't omit the frame pointer and leave in symbols.
   enable_profiling = false
 
-  # Specify the current PGO phase, only used for the Windows MSVS build. Here's
-  # the different values that can be used:
-  #     0 : Means that PGO is turned off.
-  #     1 : Used during the PGI (instrumentation) phase.
-  #     2 : Used during the PGO (optimization) phase.
-  #
-  # TODO(sebmarchand): Add support for the PGU (update) phase.
-  chrome_pgo_phase = 0
-
-  # Whether or not the official builds should be built with full WPO. Enabled by
-  # default for the PGO and the x64 builds.
-  if (chrome_pgo_phase > 0 || target_cpu == "x64") {
-    full_wpo_on_official = true
-  } else {
-    full_wpo_on_official = false
-  }
-
   # use_debug_fission: whether to use split DWARF debug info
   # files. This can reduce link time significantly, but is incompatible
   # with some utilities such as icecc and ccache. Requires gold and
@@ -49,6 +32,37 @@ declare_args() {
   # value expression until after its input values such as use_gold have
   # been set, e.g. by a toolchain_args() block.
   use_debug_fission = "default"
+
+  # Tell VS to create a PDB that references information in .obj files rather
+  # than copying it all. This should improve linker performance. mspdbcmf.exe
+  # can be used to convert a fastlink pdb to a normal one.
+  is_win_fastlink = false
+
+  # Specify the current PGO phase, only used for the Windows MSVS build. Here's
+  # the different values that can be used:
+  #     0 : Means that PGO is turned off.
+  #     1 : Used during the PGI (instrumentation) phase.
+  #     2 : Used during the PGO (optimization) phase.
+  #
+  # TODO(sebmarchand): Add support for the PGU (update) phase.
+  chrome_pgo_phase = 0
+}
+
+declare_args() {
+  # Whether or not the official builds should be built with full WPO. Enabled by
+  # default for the PGO and the x64 builds.
+  if (chrome_pgo_phase > 0 || target_cpu == "x64") {
+    full_wpo_on_official = true
+  } else {
+    full_wpo_on_official = false
+  }
+}
+
+declare_args() {
+  # Generate Syzygy optimized binaries. Syzygy optimize mode is a profile
+  # guided optimization that reorders code for better locality.
+  syzygy_optimize = is_win && target_cpu == "x86" && is_official_build &&
+                    !is_clang && !is_win_fastlink && symbol_level == 2
 }
 
 declare_args() {
