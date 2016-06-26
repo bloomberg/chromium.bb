@@ -136,6 +136,15 @@ if (is_win) {
       "//url:url_unittests",
     ]
   }
+
+  group("All_syzygy") {
+    if (is_syzyasan || syzygy_optimize) {
+      deps = [
+        "//chrome/installer/mini_installer:mini_installer",
+        "//chrome/installer/mini_installer:mini_installer_syzygy",
+      ]
+    }
+  }
 }
 
 if (is_chromeos) {
