@@ -15,8 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
-#include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 namespace content {
 
@@ -108,9 +108,8 @@ class UtilityProcessMojoClient {
 
       utility_host_->Start();
 
-      ServiceRegistry* service_registry = utility_host_->GetServiceRegistry();
-      service_registry->ConnectToRemoteService(mojo_interface_name,
-                                               std::move(interface_pipe));
+      utility_host_->GetRemoteInterfaces()->GetInterface(
+          mojo_interface_name, std::move(interface_pipe));
     }
 
     // Properties of the utility process.

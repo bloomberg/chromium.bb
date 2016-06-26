@@ -29,8 +29,8 @@ class BlimpContentBrowserClient : public content::ContentBrowserClient {
       const content::MainFunctionParams& parameters) override;
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
-  void RegisterRenderProcessMojoServices(
-      content::ServiceRegistry* registry,
+  void ExposeInterfacesToRenderer(
+      shell::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
 
   content::LocationProvider* OverrideSystemLocationProvider() override;

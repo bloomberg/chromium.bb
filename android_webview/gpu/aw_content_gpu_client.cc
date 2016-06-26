@@ -12,7 +12,7 @@ AwContentGpuClient::AwContentGpuClient(
 
 AwContentGpuClient::~AwContentGpuClient() {}
 
-void AwContentGpuClient::RegisterMojoInterfaces(
+void AwContentGpuClient::ExposeInterfacesToBrowser(
     shell::InterfaceRegistry* registry) {}
 
 gpu::SyncPointManager* AwContentGpuClient::GetSyncPointManager() {

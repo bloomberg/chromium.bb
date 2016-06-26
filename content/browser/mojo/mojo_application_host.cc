@@ -17,10 +17,16 @@ namespace {
 //             http://crbug.com/2072603002
 class ApplicationSetupImpl : public mojom::ApplicationSetup {
  public:
-  ApplicationSetupImpl(ServiceRegistryImpl* service_registry,
+  ApplicationSetupImpl(shell::InterfaceRegistry* interface_registry,
+                       shell::InterfaceProvider* remote_interfaces,
                        mojo::InterfaceRequest<mojom::ApplicationSetup> request)
       : binding_(this, std::move(request)),
-        service_registry_(service_registry) {}
+        interface_registry_(interface_registry),
+        remote_interfaces_(remote_interfaces) {
+    shell::mojom::InterfaceProviderPtr remote;
+    pending_interfaces_request_ = GetProxy(&remote);
+    remote_interfaces_->Bind(std::move(remote));
+  }
 
   ~ApplicationSetupImpl() override {
   }
@@ -28,31 +34,36 @@ class ApplicationSetupImpl : public mojom::ApplicationSetup {
  private:
   // mojom::ApplicationSetup implementation.
   void ExchangeInterfaceProviders(
-      shell::mojom::InterfaceProviderRequest services,
-      shell::mojom::InterfaceProviderPtr exposed_services) override {
-    service_registry_->Bind(std::move(services));
-    mojo::FuseInterface(service_registry_->TakeRemoteRequest(),
-                        exposed_services.PassInterface());
+      shell::mojom::InterfaceProviderRequest request,
+      shell::mojom::InterfaceProviderPtr remote_interfaces) override {
+    mojo::FuseInterface(std::move(pending_interfaces_request_),
+                        remote_interfaces.PassInterface());
+    interface_registry_->Bind(std::move(request));
   }
 
   mojo::Binding<mojom::ApplicationSetup> binding_;
-  ServiceRegistryImpl* service_registry_;
+  shell::InterfaceRegistry* interface_registry_;
+  shell::InterfaceProvider* remote_interfaces_;
+  shell::mojom::InterfaceProviderRequest pending_interfaces_request_;
 };
 
 }  // namespace
 
 MojoApplicationHost::MojoApplicationHost(const std::string& child_token)
-    : token_(mojo::edk::GenerateRandomToken()) {
+    : token_(mojo::edk::GenerateRandomToken()),
+      interface_registry_(new shell::InterfaceRegistry(nullptr)),
+      remote_interfaces_(new shell::InterfaceProvider) {
 #if defined(OS_ANDROID)
-  service_registry_android_ =
-      ServiceRegistryAndroid::Create(&service_registry_);
+  service_registry_android_ = ServiceRegistryAndroid::Create(
+      interface_registry_.get(), remote_interfaces_.get());
 #endif
 
   mojo::ScopedMessagePipeHandle pipe =
       mojo::edk::CreateParentMessagePipe(token_, child_token);
   DCHECK(pipe.is_valid());
   application_setup_.reset(new ApplicationSetupImpl(
-      &service_registry_,
+      interface_registry_.get(),
+      remote_interfaces_.get(),
       mojo::MakeRequest<mojom::ApplicationSetup>(std::move(pipe))));
 }
 

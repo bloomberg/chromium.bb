@@ -222,12 +222,13 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 
   // Use of base::Unretained(this) is safe here because |service_registry()|
   // will be destroyed before GpuChildThread is destructed.
-  interface_registry()->AddInterface(base::Bind(
+  GetInterfaceRegistry()->AddInterface(base::Bind(
       &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
 
   if (GetContentClient()->gpu()) {  // NULL in tests.
     GetContentClient()->gpu()->Initialize(this);
-    GetContentClient()->gpu()->RegisterMojoInterfaces(interface_registry());
+    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
+        GetInterfaceRegistry());
   }
 }
 

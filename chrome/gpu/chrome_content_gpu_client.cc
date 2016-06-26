@@ -31,7 +31,7 @@ ChromeContentGpuClient::ChromeContentGpuClient() {}
 
 ChromeContentGpuClient::~ChromeContentGpuClient() {}
 
-void ChromeContentGpuClient::RegisterMojoInterfaces(
+void ChromeContentGpuClient::ExposeInterfacesToBrowser(
     shell::InterfaceRegistry* registry) {
 #if defined(OS_CHROMEOS)
   registry->AddInterface(base::Bind(&CreateGpuArcVideoService));

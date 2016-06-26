@@ -355,9 +355,9 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void DidInitializeWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context) {}
 
-  // Adds interface factories to the process-wide shell::InterfaceRegistry the
-  // browser is connected to.
-  virtual void RegisterProcessMojoInterfaces(
+  // Allows the client to expose interfaces from the renderer process to the
+  // browser process via |registry|.
+  virtual void ExposeInterfacesToBrowser(
       shell::InterfaceRegistry* interface_registry) {}
 };
 

@@ -13,14 +13,16 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/android/service_registry_android.h"
-#include "content/public/common/service_registry.h"
 #include "jni/ShellMojoTestUtils_jni.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace {
 
 struct TestEnvironment {
   base::MessageLoop message_loop;
-  ScopedVector<content::ServiceRegistry> registries;
+  std::vector<std::unique_ptr<shell::InterfaceRegistry>> registries;
+  std::vector<std::unique_ptr<shell::InterfaceProvider>> providers;
   ScopedVector<content::ServiceRegistryAndroid> wrappers;
 };
 
@@ -46,27 +48,40 @@ static ScopedJavaLocalRef<jobject> CreateServiceRegistryPair(
   TestEnvironment* test_environment =
       reinterpret_cast<TestEnvironment*>(native_test_environment);
 
-  content::ServiceRegistry* registry_a = ServiceRegistry::Create();
-  test_environment->registries.push_back(registry_a);
-  content::ServiceRegistry* registry_b = ServiceRegistry::Create();
-  test_environment->registries.push_back(registry_b);
+  std::unique_ptr<shell::InterfaceRegistry> registry_a(
+      new shell::InterfaceRegistry(nullptr));
+  std::unique_ptr<shell::InterfaceRegistry> registry_b(
+      new shell::InterfaceRegistry(nullptr));
+  std::unique_ptr<shell::InterfaceProvider> provider_a(
+      new shell::InterfaceProvider);
+  std::unique_ptr<shell::InterfaceProvider> provider_b(
+      new shell::InterfaceProvider);
 
-  shell::mojom::InterfaceProviderPtr exposed_services_a;
-  registry_a->Bind(GetProxy(&exposed_services_a));
-  mojo::FuseInterface(registry_b->TakeRemoteRequest(),
-                      exposed_services_a.PassInterface());
+  shell::mojom::InterfaceProviderPtr a_to_b;
+  shell::mojom::InterfaceProviderRequest a_to_b_request =
+      mojo::GetProxy(&a_to_b);
+  provider_a->Bind(std::move(a_to_b));
+  registry_b->Bind(std::move(a_to_b_request));
 
-  shell::mojom::InterfaceProviderPtr exposed_services_b;
-  registry_b->Bind(GetProxy(&exposed_services_b));
-  mojo::FuseInterface(registry_a->TakeRemoteRequest(),
-                      exposed_services_b.PassInterface());
+  shell::mojom::InterfaceProviderPtr b_to_a;
+  shell::mojom::InterfaceProviderRequest b_to_a_request =
+      mojo::GetProxy(&b_to_a);
+  provider_b->Bind(std::move(b_to_a));
+  registry_a->Bind(std::move(b_to_a_request));
 
   content::ServiceRegistryAndroid* wrapper_a =
-      ServiceRegistryAndroid::Create(registry_a).release();
+      ServiceRegistryAndroid::Create(registry_a.get(),
+                                     provider_a.get()).release();
   test_environment->wrappers.push_back(wrapper_a);
   content::ServiceRegistryAndroid* wrapper_b =
-      ServiceRegistryAndroid::Create(registry_b).release();
+      ServiceRegistryAndroid::Create(registry_b.get(),
+                                     provider_b.get()).release();
   test_environment->wrappers.push_back(wrapper_b);
+
+  test_environment->registries.push_back(std::move(registry_a));
+  test_environment->providers.push_back(std::move(provider_a));
+  test_environment->registries.push_back(std::move(registry_b));
+  test_environment->providers.push_back(std::move(provider_b));
 
   return Java_ShellMojoTestUtils_makePair(env, wrapper_a->GetObj().obj(),
                                           wrapper_b->GetObj().obj());

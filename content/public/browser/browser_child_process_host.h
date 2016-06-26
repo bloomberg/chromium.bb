@@ -23,12 +23,16 @@ class CommandLine;
 class FilePath;
 }
 
+namespace shell {
+class InterfaceProvider;
+class InterfaceRegistry;
+}
+
 namespace content {
 
 class BrowserChildProcessHostDelegate;
 class ChildProcessHost;
 class SandboxedProcessLauncherDelegate;
-class ServiceRegistry;
 struct ChildProcessData;
 
 // This represents child processes of the browser process, i.e. plugins. They
@@ -89,9 +93,13 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // this object.
   virtual void SetHandle(base::ProcessHandle handle) = 0;
 
-  // Get the Mojo service registry connected to the child process. Returns
-  // nullptr if no service registry exists.
-  virtual ServiceRegistry* GetServiceRegistry() = 0;
+  // Returns the shell::InterfaceRegistry the browser process uses to expose
+  // interfaces to the child.
+  virtual shell::InterfaceRegistry* GetInterfaceRegistry() = 0;
+
+  // Returns the shell::InterfaceProvider the browser process can use to bind
+  // interfaces exposed to it from the child.
+  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
 
 #if defined(OS_MACOSX)
   // Returns a PortProvider used to get the task port for child processes.

@@ -159,7 +159,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_type.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
@@ -2728,10 +2727,10 @@ bool ChromeContentBrowserClient::IsWin32kLockdownEnabledForMimeType(
 }
 #endif  // defined(OS_WIN)
 
-void ChromeContentBrowserClient::RegisterRenderProcessMojoServices(
-    content::ServiceRegistry* registry,
+void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
+    shell::InterfaceRegistry* registry,
     content::RenderProcessHost* render_process_host) {
-  registry->AddService(
+  registry->AddInterface(
       base::Bind(&startup_metric_utils::StartupMetricHostImpl::Create));
 }
 

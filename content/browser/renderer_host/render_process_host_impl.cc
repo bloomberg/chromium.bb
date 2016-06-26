@@ -1025,35 +1025,35 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #if !defined(OS_ANDROID)
-  mojo_application_host_->service_registry()->AddService(
+  GetInterfaceRegistry()->AddInterface(
       base::Bind(&device::BatteryMonitorImpl::Create));
 #endif
 
-  mojo_application_host_->service_registry()->AddService(
+  GetInterfaceRegistry()->AddInterface(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
 
   // TODO(mcasas): finalize arguments.
-  mojo_application_host_->service_registry()->AddService(
+  GetInterfaceRegistry()->AddInterface(
       base::Bind(&ImageCaptureImpl::Create));
 
-  mojo_application_host_->service_registry()->AddService(
+  GetInterfaceRegistry()->AddInterface(
       base::Bind(&OffscreenCanvasSurfaceImpl::Create));
 
-  mojo_application_host_->service_registry()->AddService(base::Bind(
+  GetInterfaceRegistry()->AddInterface(base::Bind(
       &BackgroundSyncContext::CreateService,
       base::Unretained(storage_partition_impl_->GetBackgroundSyncContext())));
 
-  mojo_application_host_->service_registry()->AddService(base::Bind(
+  GetInterfaceRegistry()->AddInterface(base::Bind(
       &PlatformNotificationContextImpl::CreateService,
       base::Unretained(
           storage_partition_impl_->GetPlatformNotificationContext()), GetID()));
 
-  mojo_application_host_->service_registry()->AddService(
+  GetInterfaceRegistry()->AddInterface(
       base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,
                  base::Unretained(this)));
 
-  mojo_application_host_->service_registry()->AddService(
+  GetInterfaceRegistry()->AddInterface(
       base::Bind(&MimeRegistryImpl::Create),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
@@ -1062,8 +1062,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       mojo_application_host_->service_registry_android());
 #endif
 
-  GetContentClient()->browser()->RegisterRenderProcessMojoServices(
-      mojo_application_host_->service_registry(), this);
+  GetContentClient()->browser()->ExposeInterfacesToRenderer(
+      mojo_application_host_->interface_registry(), this);
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
@@ -1088,9 +1088,14 @@ void RenderProcessHostImpl::NotifyTimezoneChange(const std::string& zone_id) {
   Send(new ViewMsg_TimezoneChange(zone_id));
 }
 
-ServiceRegistry* RenderProcessHostImpl::GetServiceRegistry() {
+shell::InterfaceRegistry* RenderProcessHostImpl::GetInterfaceRegistry() {
   DCHECK(mojo_application_host_);
-  return mojo_application_host_->service_registry();
+  return mojo_application_host_->interface_registry();
+}
+
+shell::InterfaceProvider* RenderProcessHostImpl::GetRemoteInterfaces() {
+  DCHECK(mojo_application_host_);
+  return mojo_application_host_->remote_interfaces();
 }
 
 shell::Connection* RenderProcessHostImpl::GetChildConnection() {

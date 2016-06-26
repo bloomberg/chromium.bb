@@ -57,6 +57,8 @@
 #include "ipc/message_filter.h"
 #include "media/base/media_switches.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
@@ -921,8 +923,12 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
       process_->GetTerminationStatus(true /* known_dead */, NULL));
 }
 
-ServiceRegistry* GpuProcessHost::GetServiceRegistry() {
-  return mojo_application_host_->service_registry();
+shell::InterfaceRegistry* GpuProcessHost::GetInterfaceRegistry() {
+  return mojo_application_host_->interface_registry();
+}
+
+shell::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
+  return mojo_application_host_->remote_interfaces();
 }
 
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {

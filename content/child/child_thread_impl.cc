@@ -593,6 +593,14 @@ void ChildThreadImpl::RecordComputedAction(const std::string& action) {
     NOTREACHED();
 }
 
+shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
+  return mojo_application_->interface_registry();
+}
+
+shell::InterfaceProvider* ChildThreadImpl::GetRemoteInterfaces() {
+  return mojo_application_->remote_interfaces();
+}
+
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(base::MessageLoop::current() == message_loop());
   return &router_;

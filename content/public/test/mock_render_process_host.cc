@@ -261,8 +261,12 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
 void MockRenderProcessHost::NotifyTimezoneChange(const std::string& zone_id) {
 }
 
-ServiceRegistry* MockRenderProcessHost::GetServiceRegistry() {
-  return service_registry_.get();
+shell::InterfaceRegistry* MockRenderProcessHost::GetInterfaceRegistry() {
+  return interface_registry_.get();
+}
+
+shell::InterfaceProvider* MockRenderProcessHost::GetRemoteInterfaces() {
+  return remote_interfaces_.get();
 }
 
 shell::Connection* MockRenderProcessHost::GetChildConnection() {

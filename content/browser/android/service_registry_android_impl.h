@@ -24,7 +24,6 @@ class ServiceRegistryAndroidImpl : public ServiceRegistryAndroid {
   // Use ServiceRegistryAndroid::Create() to create an instance.
   ServiceRegistryAndroidImpl(shell::InterfaceRegistry* interface_registry,
                              shell::InterfaceProvider* remote_interfaces);
-  explicit ServiceRegistryAndroidImpl(ServiceRegistry* service_registry);
 
   // ServiceRegistryAndroid implementation:
   void AddService(

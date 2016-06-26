@@ -22,7 +22,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/service_registry.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -94,8 +94,7 @@ void WebCacheManager::Add(int renderer_id) {
       content::RenderProcessHost::FromID(renderer_id);
   if (host) {
     mojom::WebCachePtr service;
-    host->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&service));
+    host->GetRemoteInterfaces()->GetInterface(&service);
     web_cache_services_[renderer_id] = std::move(service);
   }
 

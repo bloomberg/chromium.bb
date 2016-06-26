@@ -11,23 +11,21 @@
 #include "components/arc/common/video_accelerator.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_service_registry.h"
-#include "content/public/common/service_registry.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 namespace {
 
 void ConnectToVideoAcceleratorServiceOnIOThread(
     arc::mojom::VideoAcceleratorServiceClientRequest request) {
-  content::ServiceRegistry* registry = content::GetGpuServiceRegistry();
-
   // Note |request| is not a ServiceRequest. It is a ClientRequest but doesn't
   // request for a Client. Instead, it requests for a Service while specified
   // the client. It works this odd way because the interfaces were modeled as
   // arc's "Host notifies to Instance::Init", not mojo's typical "Client
   // registers to Service".
   // TODO(kcwu): revise the interface.
-  registry->ConnectToRemoteService(std::move(request));
+  content::GetGpuRemoteInterfaces()->GetInterface(std::move(request));
 }
 
 }  // namespace

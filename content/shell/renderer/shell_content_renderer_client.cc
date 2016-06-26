@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
@@ -124,7 +123,7 @@ void ShellContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
   }
 }
 
-void ShellContentRendererClient::RegisterProcessMojoInterfaces(
+void ShellContentRendererClient::ExposeInterfacesToBrowser(
     shell::InterfaceRegistry* interface_registry) {
   interface_registry->AddInterface<mojom::TestMojoService>(
       base::Bind(&CreateTestMojoService));

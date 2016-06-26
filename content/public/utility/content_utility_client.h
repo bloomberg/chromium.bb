@@ -34,8 +34,9 @@ class CONTENT_EXPORT ContentUtilityClient {
   // Allows the embedder to filter messages.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
-  // Registers Mojo interfaces.
-  virtual void RegisterMojoInterfaces(shell::InterfaceRegistry* registry) {}
+  // Allows the client to expose interfaces from this utility process to the
+  // browser process via |registry|.
+  virtual void ExposeInterfacesToBrowser(shell::InterfaceRegistry* registry) {}
 
   // Registers Mojo applications.
   virtual void RegisterMojoApplications(StaticMojoApplicationMap* apps) {}

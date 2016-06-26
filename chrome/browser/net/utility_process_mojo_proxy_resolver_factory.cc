@@ -15,7 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
-#include "content/public/common/service_registry.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -54,10 +54,8 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
       IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME));
   bool process_started = utility_process_host->Start();
   if (process_started) {
-    content::ServiceRegistry* service_registry =
-        utility_process_host->GetServiceRegistry();
-    service_registry->ConnectToRemoteService(
-        mojo::GetProxy(&resolver_factory_));
+    utility_process_host->GetRemoteInterfaces()->GetInterface(
+        &resolver_factory_);
     resolver_factory_.set_connection_error_handler(
         base::Bind(&UtilityProcessMojoProxyResolverFactory::OnConnectionError,
                    base::Unretained(this)));

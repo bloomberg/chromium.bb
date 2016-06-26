@@ -106,7 +106,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       GpuMainThreadFactoryFunction create);
 
   // BrowserChildProcessHostDelegate implementation.
-  ServiceRegistry* GetServiceRegistry() override;
+  shell::InterfaceRegistry* GetInterfaceRegistry() override;
+  shell::InterfaceProvider* GetRemoteInterfaces() override;
 
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.
@@ -290,7 +291,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   std::string shader_prefix_key_;
 
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
-  // process and contains the browser's ServiceRegistry.
+  // process and contains the browser's InterfaceRegistry.
   const std::string child_token_;
   std::unique_ptr<MojoApplicationHost> mojo_application_host_;
 

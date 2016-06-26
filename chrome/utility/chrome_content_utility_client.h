@@ -33,7 +33,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
   void UtilityThreadStarted() override;
   bool OnMessageReceived(const IPC::Message& message) override;
-  void RegisterMojoInterfaces(shell::InterfaceRegistry* registry) override;
+  void ExposeInterfacesToBrowser(shell::InterfaceRegistry* registry) override;
 
   void AddHandler(std::unique_ptr<UtilityMessageHandler> handler);
 

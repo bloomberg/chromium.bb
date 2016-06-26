@@ -19,10 +19,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
-#include "content/public/common/service_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "grit/theme_resources.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -123,11 +123,9 @@ void ConnectResourceReporterOnIOThread(
   if (!host)
     return;
 
-  content::ServiceRegistry* registry = host->GetServiceRegistry();
-  if (!registry)
-    return;
-
-  registry->ConnectToRemoteService(std::move(resource_reporter));
+  shell::InterfaceProvider* interfaces = host->GetRemoteInterfaces();
+  if (interfaces)
+    interfaces->GetInterface(std::move(resource_reporter));
 }
 
 // Creates the Mojo service wrapper that will be used to sample the V8 memory

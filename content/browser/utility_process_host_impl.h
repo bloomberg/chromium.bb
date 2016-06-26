@@ -58,7 +58,8 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   void SetEnv(const base::EnvironmentMap& env) override;
 #endif
   bool Start() override;
-  ServiceRegistry* GetServiceRegistry() override;
+  shell::InterfaceRegistry* GetInterfaceRegistry() override;
+  shell::InterfaceProvider* GetRemoteInterfaces() override;
   void SetName(const base::string16& name) override;
 
   void set_child_flags(int flags) { child_flags_ = flags; }
@@ -118,7 +119,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   std::unique_ptr<base::Thread> in_process_thread_;
 
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
-  // process and contains the browser's ServiceRegistry.
+  // process and contains the browser's shell::InterfaceRegistry.
   const std::string child_token_;
   std::unique_ptr<MojoApplicationHost> mojo_application_host_;
 

@@ -7,14 +7,16 @@
 
 #include "content/common/content_export.h"
 
+namespace shell {
+class InterfaceProvider;
+}
+
 namespace content {
 
-class ServiceRegistry;
-
-// Get ServiceRegistry registered via
-// ContentGpuClient::RegisterMojoInterfaces().
+// Get shell::InterfaceProvider that can be used to bind interfaces registered
+// via ContentGpuClient::ExposeInterfacesToBrowser().
 // This must be called on IO thread.
-CONTENT_EXPORT ServiceRegistry* GetGpuServiceRegistry();
+CONTENT_EXPORT shell::InterfaceProvider* GetGpuRemoteInterfaces();
 
 }  // namespace content
 

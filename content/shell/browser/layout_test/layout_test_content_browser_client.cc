@@ -10,7 +10,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_registry.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
@@ -22,6 +21,7 @@
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace content {
 namespace {
@@ -68,7 +68,7 @@ void LayoutTestContentBrowserClient::RenderProcessWillLaunch(
       partition->GetQuotaManager(),
       partition->GetURLRequestContext()));
 
-  host->GetServiceRegistry()->AddService(base::Bind(
+  host->GetInterfaceRegistry()->AddInterface(base::Bind(
       &LayoutTestBluetoothFakeAdapterSetterImpl::Create, host->GetID()));
 
   host->Send(new ShellViewMsg_SetWebKitSourceDir(GetWebKitRootDirFilePath()));

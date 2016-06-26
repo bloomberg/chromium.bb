@@ -96,6 +96,8 @@ class CONTENT_EXPORT ChildThreadImpl
 #endif
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
+  shell::InterfaceRegistry* GetInterfaceRegistry() override;
+  shell::InterfaceProvider* GetRemoteInterfaces() override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -194,14 +196,6 @@ class CONTENT_EXPORT ChildThreadImpl
   // process.
   static void ShutdownThread();
 #endif
-
-  shell::InterfaceRegistry* interface_registry() {
-    return mojo_application_->interface_registry();
-  }
-
-  shell::InterfaceProvider* remote_interfaces() const {
-    return mojo_application_->remote_interfaces();
-  }
 
  protected:
   friend class ChildProcess;

@@ -11,7 +11,9 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/common/application_setup.mojom.h"
-#include "content/common/mojo/service_registry_impl.h"
+#include "content/common/content_export.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/service_registry_android.h"
@@ -26,8 +28,8 @@ namespace content {
 // MojoApplicationHost represents the code needed on the browser side to setup
 // a child process as a Mojo application. The child process should use the token
 // from GetToken() to initialize its MojoApplication. MojoApplicationHost makes
-// the ServiceRegistry interface available so that child-provided services can
-// be invoked.
+// the InterfaceRegistry interface available so that child-provided interfaces
+// can be bound.
 class CONTENT_EXPORT MojoApplicationHost {
  public:
   explicit MojoApplicationHost(const std::string& child_token);
@@ -37,7 +39,12 @@ class CONTENT_EXPORT MojoApplicationHost {
   // MojoApplication.
   const std::string& GetToken() { return token_; }
 
-  ServiceRegistry* service_registry() { return &service_registry_; }
+  shell::InterfaceRegistry* interface_registry() {
+    return interface_registry_.get();
+  }
+  shell::InterfaceProvider* remote_interfaces() {
+    return remote_interfaces_.get();
+  }
 
 #if defined(OS_ANDROID)
   ServiceRegistryAndroid* service_registry_android() {
@@ -49,7 +56,8 @@ class CONTENT_EXPORT MojoApplicationHost {
   const std::string token_;
 
   std::unique_ptr<mojom::ApplicationSetup> application_setup_;
-  ServiceRegistryImpl service_registry_;
+  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<ServiceRegistryAndroid> service_registry_android_;

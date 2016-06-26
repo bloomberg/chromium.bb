@@ -15,8 +15,9 @@
 #include "base/observer_list.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
-#include "content/public/common/service_registry.h"
 #include "ipc/ipc_test_sink.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 class StoragePartition;
 
@@ -93,7 +94,8 @@ class MockRenderProcessHost : public RenderProcessHost {
 #endif
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
   void NotifyTimezoneChange(const std::string& zone_id) override;
-  ServiceRegistry* GetServiceRegistry() override;
+  shell::InterfaceRegistry* GetInterfaceRegistry() override;
+  shell::InterfaceProvider* GetRemoteInterfaces() override;
   shell::Connection* GetChildConnection() override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
@@ -137,8 +139,13 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   int worker_ref_count() const { return worker_ref_count_; }
 
-  void SetServiceRegistry(std::unique_ptr<ServiceRegistry> service_registry) {
-    service_registry_ = std::move(service_registry);
+  void SetInterfaceRegistry(
+      std::unique_ptr<shell::InterfaceRegistry> interface_registry) {
+    interface_registry_ = std::move(interface_registry);
+  }
+  void SetRemoteInterfaces(
+      std::unique_ptr<shell::InterfaceProvider> remote_interfaces) {
+    remote_interfaces_ = std::move(remote_interfaces);
   }
 
  private:
@@ -160,7 +167,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_process_backgrounded_;
   std::unique_ptr<base::ProcessHandle> process_handle;
   int worker_ref_count_;
-  std::unique_ptr<ServiceRegistry> service_registry_;
+  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

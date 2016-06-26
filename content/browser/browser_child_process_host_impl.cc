@@ -278,9 +278,14 @@ void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {
   data_.handle = handle;
 }
 
-ServiceRegistry* BrowserChildProcessHostImpl::GetServiceRegistry() {
+shell::InterfaceRegistry* BrowserChildProcessHostImpl::GetInterfaceRegistry() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return delegate_->GetServiceRegistry();
+  return delegate_->GetInterfaceRegistry();
+}
+
+shell::InterfaceProvider* BrowserChildProcessHostImpl::GetRemoteInterfaces() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return delegate_->GetRemoteInterfaces();
 }
 
 void BrowserChildProcessHostImpl::ForceShutdown() {

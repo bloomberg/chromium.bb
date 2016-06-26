@@ -274,8 +274,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsWin32kLockdownEnabledForMimeType(
       const std::string& mime_type) const override;
 #endif
-  void RegisterRenderProcessMojoServices(
-      content::ServiceRegistry* registry,
+  void ExposeInterfacesToRenderer(
+      shell::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
   void RegisterFrameMojoShellInterfaces(
       shell::InterfaceRegistry* registry,

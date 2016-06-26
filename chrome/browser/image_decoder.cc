@@ -12,7 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
-#include "content/public/common/service_registry.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -186,9 +186,7 @@ void ImageDecoder::StartBatchMode() {
     delete utility_process_host_.get();
     return;
   }
-  content::ServiceRegistry* service_registry =
-      utility_process_host_->GetServiceRegistry();
-  service_registry->ConnectToRemoteService(mojo::GetProxy(&decoder_));
+  utility_process_host_->GetRemoteInterfaces()->GetInterface(&decoder_);
 }
 
 void ImageDecoder::StopBatchMode() {

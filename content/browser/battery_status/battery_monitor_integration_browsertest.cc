@@ -12,7 +12,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -21,6 +20,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "device/battery/battery_monitor.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 // These tests run against a dummy implementation of the BatteryMonitor service.
 // That is, they verify that the service implementation is correctly exposed to
@@ -89,10 +89,10 @@ class FakeBatteryMonitor : public device::BatteryMonitor {
 // declared above.
 class TestContentBrowserClient : public ContentBrowserClient {
  public:
-  void RegisterRenderProcessMojoServices(
-      ServiceRegistry* registry,
+  void ExposeInterfacesToRenderer(
+      shell::InterfaceRegistry* registry,
       RenderProcessHost* render_process_host) override {
-    registry->AddService(base::Bind(&FakeBatteryMonitor::Create));
+    registry->AddInterface(base::Bind(&FakeBatteryMonitor::Create));
   }
 
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,

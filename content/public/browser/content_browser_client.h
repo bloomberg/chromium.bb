@@ -117,7 +117,6 @@ class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
 class ResourceContext;
-class ServiceRegistry;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class TracingDelegate;
@@ -660,8 +659,8 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows to register browser Mojo interfaces exposed through the
   // RenderProcessHost.
-  virtual void RegisterRenderProcessMojoServices(
-      ServiceRegistry* registry,
+  virtual void ExposeInterfacesToRenderer(
+      shell::InterfaceRegistry* registry,
       RenderProcessHost* render_process_host) {}
 
   // Allows to register browser Mojo interfaces exposed through the

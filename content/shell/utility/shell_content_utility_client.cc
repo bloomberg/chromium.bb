@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/process.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/test/test_mojo_app.h"
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace content {
 
@@ -71,7 +71,7 @@ void ShellContentUtilityClient::RegisterMojoApplications(
   apps->insert(std::make_pair(kTestMojoAppUrl, app_info));
 }
 
-void ShellContentUtilityClient::RegisterMojoInterfaces(
+void ShellContentUtilityClient::ExposeInterfacesToBrowser(
     shell::InterfaceRegistry* registry) {
   registry->AddInterface(base::Bind(&TestMojoServiceImpl::Create));
 }

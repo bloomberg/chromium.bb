@@ -25,6 +25,11 @@ class GURL;
 struct EmbeddedWorkerMsg_StartWorker_Params;
 struct ServiceWorkerMsg_ExtendableMessageEvent_Params;
 
+namespace shell {
+class InterfaceProvider;
+class InterfaceRegistry;
+}
+
 namespace content {
 
 class EmbeddedWorkerRegistry;
@@ -179,7 +184,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   int next_thread_id_;
   int mock_render_process_id_;
 
-  ServiceRegistryImpl render_process_service_registry_;
+  std::unique_ptr<shell::InterfaceRegistry> render_process_interface_registry_;
 
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
 

@@ -31,9 +31,6 @@ class CONTENT_EXPORT ServiceRegistryAndroid {
       shell::InterfaceRegistry* interface_registry,
       shell::InterfaceProvider* remote_interfaces);
 
-  static std::unique_ptr<ServiceRegistryAndroid> Create(
-      ServiceRegistry* service_registry);
-
   // Called from Java.
   virtual void AddService(
       JNIEnv* env,

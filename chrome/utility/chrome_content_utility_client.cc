@@ -190,7 +190,7 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   return false;
 }
 
-void ChromeContentUtilityClient::RegisterMojoInterfaces(
+void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
     shell::InterfaceRegistry* registry) {
   // When the utility process is running with elevated privileges, we need to
   // filter messages so that only a whitelist of IPCs can run. In Mojo, there's

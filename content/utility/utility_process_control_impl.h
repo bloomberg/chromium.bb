@@ -11,7 +11,7 @@
 namespace content {
 
 // Customization of ProcessControlImpl for the utility process. Exposed to the
-// browser via the utility process's ServiceRegistry.
+// browser via the utility process's InterfaceRegistry.
 class UtilityProcessControlImpl : public ProcessControlImpl {
  public:
   UtilityProcessControlImpl();

@@ -21,8 +21,8 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/common/service_registry.h"
 #include "grit/theme_resources.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
@@ -96,11 +96,7 @@ void ChildProcessResource::ConnectResourceReporterOnIOThread(
   if (!host)
     return;
 
-  content::ServiceRegistry* registry = host->GetServiceRegistry();
-  if (!registry)
-    return;
-
-  registry->ConnectToRemoteService(std::move(req));
+  host->GetRemoteInterfaces()->GetInterface(std::move(req));
 }
 
 ChildProcessResource::ChildProcessResource(int process_type,

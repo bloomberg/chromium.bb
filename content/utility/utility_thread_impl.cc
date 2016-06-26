@@ -96,10 +96,11 @@ void UtilityThreadImpl::Init() {
   GetContentClient()->utility()->UtilityThreadStarted();
 
   process_control_.reset(new UtilityProcessControlImpl);
-  interface_registry()->AddInterface(base::Bind(
+  GetInterfaceRegistry()->AddInterface(base::Bind(
       &UtilityThreadImpl::BindProcessControlRequest, base::Unretained(this)));
 
-  GetContentClient()->utility()->RegisterMojoInterfaces(interface_registry());
+  GetContentClient()->utility()->ExposeInterfacesToBrowser(
+      GetInterfaceRegistry());
 }
 
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

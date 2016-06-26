@@ -297,6 +297,7 @@ if (is_linux && !is_chromeos && use_x11) {
       "//blimp/client:compositor",
       "//blimp/net",
       "//net",
+      "//services/shell/public/cpp",
 
       # TODO(khushalsagar|scottmg): Remove this dependency from browser to
       # blink. See https://crbug.com/608114.

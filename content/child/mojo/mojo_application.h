@@ -15,8 +15,8 @@ namespace content {
 
 // MojoApplication represents the code needed to setup a child process as a
 // Mojo application. Instantiate MojoApplication and call InitWithToken() with
-// a token passed from the process host. It makes the ServiceRegistry interface
-// available.
+// a token passed from the process host. It makes the InterfaceRegistry
+// interface available.
 class MojoApplication {
  public:
   MojoApplication();

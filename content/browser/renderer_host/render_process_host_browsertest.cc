@@ -13,13 +13,14 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -222,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
   rph->AddObserver(this);
 
   mojom::TestMojoServicePtr service;
-  rph->GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&service));
+  rph->GetRemoteInterfaces()->GetInterface(&service);
 
   base::RunLoop run_loop;
   set_process_exit_callback(run_loop.QuitClosure());

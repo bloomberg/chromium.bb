@@ -27,6 +27,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -106,11 +107,11 @@ void SetupMojoOnUIThread(
     shell::mojom::InterfaceProviderRequest services,
     shell::mojom::InterfaceProviderPtrInfo exposed_services) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  // |rph| or its ServiceRegistry may be NULL in unit tests.
-  if (!rph || !rph->GetServiceRegistry())
+  // |rph| or its InterfaceProvider may be NULL in unit tests.
+  if (!rph || !rph->GetRemoteInterfaces())
     return;
   mojom::EmbeddedWorkerSetupPtr setup;
-  rph->GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&setup));
+  rph->GetRemoteInterfaces()->GetInterface(&setup);
   setup->ExchangeInterfaceProviders(
       thread_id, std::move(services),
       mojo::MakeProxy(std::move(exposed_services)));

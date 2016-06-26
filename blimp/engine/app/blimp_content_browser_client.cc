@@ -6,7 +6,7 @@
 #include "blimp/engine/app/blimp_browser_main_parts.h"
 #include "blimp/engine/app/settings_manager.h"
 #include "blimp/engine/mojo/blob_channel_service.h"
-#include "content/public/common/service_registry.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace blimp {
 namespace engine {
@@ -51,10 +51,10 @@ bool BlimpContentBrowserClient::UseNetworkLocationProviders() {
   return false;
 }
 
-void BlimpContentBrowserClient::RegisterRenderProcessMojoServices(
-    content::ServiceRegistry* registry,
+void BlimpContentBrowserClient::ExposeInterfacesToRenderer(
+    shell::InterfaceRegistry* registry,
     content::RenderProcessHost* render_process_host) {
-  registry->AddService<mojom::BlobChannel>(
+  registry->AddInterface<mojom::BlobChannel>(
       base::Bind(&BlobChannelService::Create,
                  blimp_browser_main_parts_->GetBlobChannelSender()));
 }

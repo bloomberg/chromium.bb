@@ -48,12 +48,6 @@ std::unique_ptr<ServiceRegistryAndroid> ServiceRegistryAndroid::Create(
 }
 
 // static
-std::unique_ptr<ServiceRegistryAndroid> ServiceRegistryAndroid::Create(
-    ServiceRegistry* service_registry) {
-  return base::WrapUnique(new ServiceRegistryAndroidImpl(service_registry));
-}
-
-// static
 bool ServiceRegistryAndroidImpl::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
@@ -73,16 +67,6 @@ ServiceRegistryAndroidImpl::ServiceRegistryAndroidImpl(
       env,
       Java_ServiceRegistry_create(env, reinterpret_cast<intptr_t>(this)).obj());
 }
-
-ServiceRegistryAndroidImpl::ServiceRegistryAndroidImpl(
-    ServiceRegistry* service_registry)
-    : service_registry_(service_registry) {
-  JNIEnv* env = AttachCurrentThread();
-  obj_.Reset(
-      env,
-      Java_ServiceRegistry_create(env, reinterpret_cast<intptr_t>(this)).obj());
-}
-
 
 const base::android::ScopedJavaGlobalRef<jobject>&
 ServiceRegistryAndroidImpl::GetObj() {

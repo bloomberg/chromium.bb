@@ -2394,14 +2394,12 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
     return;
 
   interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
-  if (!GetProcess()->GetServiceRegistry())
+  if (!GetProcess()->GetRemoteInterfaces())
     return;
 
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;
-  GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
-      mojo::GetProxy(&frame_factory));
-
+  GetProcess()->GetRemoteInterfaces()->GetInterface(&frame_factory);
   frame_factory->CreateFrame(routing_id_, GetProxy(&frame_),
                              frame_host_binding_.CreateInterfacePtrAndBind());
 

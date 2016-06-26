@@ -27,7 +27,6 @@
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_registry.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
@@ -60,8 +59,7 @@ void StartUtilityProcessOnIOThread(
     process_host->DisableSandbox();
   process_host->Start();
 
-  ServiceRegistry* services = process_host->GetServiceRegistry();
-  services->ConnectToRemoteService(std::move(request));
+  process_host->GetRemoteInterfaces()->GetInterface(std::move(request));
 }
 
 void OnApplicationLoaded(const std::string& name, bool success) {
@@ -103,8 +101,7 @@ void RequestGpuProcessControl(
   // load requests through mojom::ProcessControl will also fail. Make sure we
   // handle
   // these cases correctly.
-  process_host->GetServiceRegistry()->ConnectToRemoteService(
-      std::move(request));
+  process_host->GetRemoteInterfaces()->GetInterface(std::move(request));
 }
 
 void LaunchAppInGpuProcess(const std::string& app_name,

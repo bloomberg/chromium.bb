@@ -13,7 +13,7 @@
 #include "chrome/browser/task_manager/task_manager_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/service_registry.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 namespace task_manager {
 
@@ -24,10 +24,8 @@ RendererResource::RendererResource(base::ProcessHandle process,
   // process reference becomes NULL and the TaskManager still needs it.
   unique_process_id_ = render_view_host_->GetProcess()->GetID();
   mojom::ResourceUsageReporterPtr service;
-  content::ServiceRegistry* service_registry =
-      render_view_host_->GetProcess()->GetServiceRegistry();
-  if (service_registry)
-    service_registry->ConnectToRemoteService(mojo::GetProxy(&service));
+  render_view_host_->GetProcess()->GetRemoteInterfaces()->GetInterface(
+      &service);
   process_resource_usage_.reset(new ProcessResourceUsage(std::move(service)));
 }
 

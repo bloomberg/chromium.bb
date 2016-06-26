@@ -28,10 +28,9 @@ class CONTENT_EXPORT ContentGpuClient {
   // which should be used to inform the browser process of this state.
   virtual void Initialize(base::FieldTrialList::Observer* observer) {}
 
-  // Allows client to register Mojo interfaces in |registry| on the GPU process.
-  // The registered interfaces will be exposed to the browser process through
-  // GpuProcessHost.
-  virtual void RegisterMojoInterfaces(shell::InterfaceRegistry* registry) {}
+  // Allows the client to expose interfaces from the GPU process to the browser
+  // process via |registry|.
+  virtual void ExposeInterfacesToBrowser(shell::InterfaceRegistry* registry) {}
 
   // Allows client to supply a SyncPointManager instance instead of having
   // content internally create one.

@@ -37,6 +37,8 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
@@ -225,9 +227,14 @@ bool UtilityProcessHostImpl::Start() {
   return StartProcess();
 }
 
-ServiceRegistry* UtilityProcessHostImpl::GetServiceRegistry() {
+shell::InterfaceRegistry* UtilityProcessHostImpl::GetInterfaceRegistry() {
   DCHECK(mojo_application_host_);
-  return mojo_application_host_->service_registry();
+  return mojo_application_host_->interface_registry();
+}
+
+shell::InterfaceProvider* UtilityProcessHostImpl::GetRemoteInterfaces() {
+  DCHECK(mojo_application_host_);
+  return mojo_application_host_->remote_interfaces();
 }
 
 void UtilityProcessHostImpl::SetName(const base::string16& name) {

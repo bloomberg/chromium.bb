@@ -19,7 +19,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/service_registry.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace task_management {
@@ -32,10 +32,7 @@ namespace {
 ProcessResourceUsage* CreateRendererResourcesSampler(
     content::RenderProcessHost* render_process_host) {
   mojom::ResourceUsageReporterPtr service;
-  content::ServiceRegistry* service_registry =
-      render_process_host->GetServiceRegistry();
-  if (service_registry)
-    service_registry->ConnectToRemoteService(mojo::GetProxy(&service));
+  render_process_host->GetRemoteInterfaces()->GetInterface(&service);
   return new ProcessResourceUsage(std::move(service));
 }
 

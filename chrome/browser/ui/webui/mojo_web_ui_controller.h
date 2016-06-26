@@ -14,7 +14,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/shell/public/cpp/interface_registry.h"
 
