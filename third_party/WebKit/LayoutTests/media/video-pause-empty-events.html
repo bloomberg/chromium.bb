@@ -1,23 +1,26 @@
-<video controls></video>
-<p>Test that pause() from EMPTY network state triggers load()</p>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that pause() from EMPTY network state triggers load().</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
 <script>
+async_test(function(t) {
+    var video = document.querySelector("video");
     video.src = findMediaFile("video", "content/test");
-    testExpected("video.networkState", HTMLMediaElement.NETWORK_NO_SOURCE);
+    assert_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
 
-    waitForEvent("loadstart");
-    waitForEvent("ratechange");
-    waitForEvent("waiting");
-    waitForEvent("ratechange");
-    waitForEvent("durationchange");
-    waitForEvent("loadedmetadata");
-    waitForEvent("loadeddata");
-    waitForEvent("canplay");
-    waitForEventAndEnd("canplaythrough");
+    video.onloadstart = t.step_func(function() {});
+    video.onratechange = t.step_func(function() {});
+    video.onwaiting = t.step_func(function() {});
+    video.onratechange = t.step_func(function() {});
+    video.ondurationchange = t.step_func(function() {});
+    video.onloadedmetadata = t.step_func(function() {});
+    video.onloadeddata = t.step_func(function() {});
+    video.oncanplay = t.step_func(function() {});
+    video.oncanplaythrough = t.step_func_done();
 
-    run("video.pause()");
-    consoleWrite("SCRIPT DONE");
+    // TODO(srirama.m): Rewrite or remove this test as settings "src" itself triggers media load.
+    video.pause();
+});
 </script>

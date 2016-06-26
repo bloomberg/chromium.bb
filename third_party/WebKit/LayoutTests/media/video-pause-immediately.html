@@ -1,51 +1,30 @@
-<html>
-    <head>
-        <title>Test pause() pauses the clock immediately</title>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            var timeAfterPause;
+<!DOCTYPE html>
+<title>Test that pausing the media element has an immediate effect on the clock.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var timeAfterPause;
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "content/test");
+    video.oncanplay = t.step_func(function() {
+        video.play();
+    });
 
-            function test()
-            {
-                findMediaElement();
-                video.src = findMediaFile("video", "content/test");
-                waitForEvent("canplay", canplay);
-                waitForEvent("playing", playing);
-                waitForEvent("pause", pause);
-            }
+    video.onplaying = t.step_func(function() {
+        video.ontimeupdate = t.step_func(function() {
+            assert_greater_than(video.currentTime, 0);
+            video.ontimeupdate = null;
+            video.pause();
+            timeAfterPause = video.currentTime;
+        });
+    });
 
-            function canplay()
-            {
-                video.play();
-            }
-
-            function playing()
-            {
-                video.addEventListener("timeupdate", timeupdate);
-            }
-
-            function timeupdate()
-            {
-                if (video.currentTime > 0) {
-                    video.removeEventListener("timeupdate", timeupdate);
-                    video.pause();
-                    timeAfterPause = video.currentTime;
-                }
-            }
-
-            function pause()
-            {
-                testExpected("(video.currentTime - timeAfterPause)", 0);
-                testExpected("(video.played.end(0) - timeAfterPause)", 0);
-                endTest();
-            }
-        </script>
-     </head>
-    <body onload="test()">
-        <p>Test that pausing the media element has an immediate effect on the clock.</p>
-        <video controls></video>
-    </body>
-</html>
+    video.onpause = t.step_func_done(function() {
+        assert_equals(video.currentTime, timeAfterPause);
+        assert_equals(video.played.end(0), timeAfterPause);
+    });
+});
+</script>

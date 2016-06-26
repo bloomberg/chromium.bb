@@ -1,14 +1,13 @@
-<p>This test intentionally lets the video keep playing past endTest() to ensure
+<!DOCTYPE html>
+<p>This test intentionally lets the video keep playing past end of test to ensure
 that shutdown is clean, since DumpRenderTree used to crash in this case.</p>
-
-<video autoplay id="video"></video>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
-<script type="text/javascript">
-if (window.testRunner)
-  testRunner.dumpAsText();
-waitForEvent("playing", null, true);
+<video autoplay></video>
+<script src="media-file.js"></script>
+<script>
+testRunner.dumpAsText();
+var video = document.querySelector("video");
+video.onplaying = function() {
+    testRunner.notifyDone();
+};
 video.src = findMediaFile("video", "content/test");
 </script>
