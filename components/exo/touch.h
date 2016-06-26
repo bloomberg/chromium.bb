@@ -36,10 +36,10 @@ class Touch : public ui::EventHandler, public SurfaceObserver {
   Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
 
   // The delegate instance that all events are dispatched to.
-  TouchDelegate* delegate_;
+  TouchDelegate* const delegate_;
 
   // The current focus surface for the touch device.
-  Surface* focus_;
+  Surface* focus_ = nullptr;
 
   // Vector of touch points in focus surface.
   std::vector<int> touch_points_;

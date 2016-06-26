@@ -74,6 +74,7 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
  private:
   friend class base::RefCounted<SurfaceFactoryOwner>;
   friend class Surface;
+
   ~SurfaceFactoryOwner() override;
 
   std::map<int,
@@ -82,7 +83,7 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
       release_callbacks_;
   std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
-  Surface* surface_;
+  Surface* surface_ = nullptr;
 };
 
 // This class represents a rectangular area that is displayed on the screen.
@@ -90,7 +91,7 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
 class Surface : public ui::LayerOwnerDelegate,
                 public ui::ContextFactoryObserver {
  public:
-  typedef void (*PropertyDeallocator)(int64_t value);
+  using PropertyDeallocator = void (*)(int64_t value);
 
   Surface();
   ~Surface() override;
@@ -247,7 +248,7 @@ class Surface : public ui::LayerOwnerDelegate,
 
     SkRegion opaque_region;
     SkRegion input_region;
-    float buffer_scale = 1.f;
+    float buffer_scale = 1.0f;
     gfx::Size viewport;
     gfx::RectF crop;
     bool only_visible_on_secure_output = false;
@@ -325,7 +326,7 @@ class Surface : public ui::LayerOwnerDelegate,
 
   // This is true when Attach() has been called and new contents should take
   // effect next time Commit() is called.
-  bool has_pending_contents_;
+  bool has_pending_contents_ = false;
 
   // The buffer that will become the content of surface when Commit() is called.
   BufferAttachment pending_buffer_;
@@ -374,7 +375,7 @@ class Surface : public ui::LayerOwnerDelegate,
 
   // This is true if a call to Commit() as been made but
   // CommitSurfaceHierarchy() has not yet been called.
-  bool needs_commit_surface_hierarchy_;
+  bool needs_commit_surface_hierarchy_ = false;
 
   // This is set when the compositing starts and passed to active frame
   // callbacks when compositing successfully ends.
@@ -386,7 +387,7 @@ class Surface : public ui::LayerOwnerDelegate,
   // This can be set to have some functions delegated. E.g. ShellSurface class
   // can set this to handle Commit() and apply any double buffered state it
   // maintains.
-  SurfaceDelegate* delegate_;
+  SurfaceDelegate* delegate_ = nullptr;
 
   struct Value {
     const char* name;

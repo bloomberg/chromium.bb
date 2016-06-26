@@ -63,22 +63,22 @@ class Pointer : public ui::EventHandler,
   Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
 
   // The delegate instance that all events are dispatched to.
-  PointerDelegate* delegate_;
+  PointerDelegate* const delegate_;
 
   // The widget for the pointer cursor.
   std::unique_ptr<views::Widget> widget_;
 
   // The current pointer surface.
-  Surface* surface_;
+  Surface* surface_ = nullptr;
 
   // The current focus surface for the pointer.
-  Surface* focus_;
+  Surface* focus_ = nullptr;
 
   // The location of the pointer in the current focus surface.
   gfx::PointF location_;
 
   // The scale applied to the cursor to compensate for the UI scale.
-  float cursor_scale_;
+  float cursor_scale_ = 1.0f;
 
   // The position of the pointer surface relative to the pointer location.
   gfx::Point hotspot_;

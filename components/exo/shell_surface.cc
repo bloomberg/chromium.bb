@@ -25,7 +25,6 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/hit_test.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow.h"
@@ -139,7 +138,7 @@ class ShellSurface::ScopedConfigure {
  private:
   ShellSurface* const shell_surface_;
   const bool force_configure_;
-  bool needs_configure_;
+  bool needs_configure_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedConfigure);
 };
@@ -153,7 +152,7 @@ class ShellSurface::ScopedAnimationsDisabled {
 
  private:
   ShellSurface* const shell_surface_;
-  bool saved_animations_disabled_;
+  bool saved_animations_disabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAnimationsDisabled);
 };
@@ -163,9 +162,7 @@ class ShellSurface::ScopedAnimationsDisabled {
 
 ShellSurface::ScopedConfigure::ScopedConfigure(ShellSurface* shell_surface,
                                                bool force_configure)
-    : shell_surface_(shell_surface),
-      force_configure_(force_configure),
-      needs_configure_(false) {
+    : shell_surface_(shell_surface), force_configure_(force_configure) {
   // ScopedConfigure instances cannot be nested.
   DCHECK(!shell_surface_->scoped_configure_);
   shell_surface_->scoped_configure_ = this;
@@ -220,14 +217,7 @@ ShellSurface::ShellSurface(Surface* surface,
       parent_(parent ? parent->GetWidget()->GetNativeWindow() : nullptr),
       initial_bounds_(initial_bounds),
       activatable_(activatable),
-      container_(container),
-      pending_show_widget_(false),
-      scale_(1.0),
-      pending_scale_(1.0),
-      scoped_configure_(nullptr),
-      ignore_window_bounds_changes_(false),
-      resize_component_(HTCAPTION),
-      pending_resize_component_(HTCAPTION) {
+      container_(container) {
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);

@@ -15,6 +15,7 @@
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -251,39 +252,39 @@ class ShellSurface : public SurfaceDelegate,
   // |pending_shadow_content_bounds_|.
   void UpdateShadow();
 
-  views::Widget* widget_;
+  views::Widget* widget_ = nullptr;
   Surface* surface_;
   aura::Window* parent_;
   const gfx::Rect initial_bounds_;
   const bool activatable_;
   // Container Window Id (see ash/common/shell_window_ids.h)
   const int container_;
-  bool pending_show_widget_;
+  bool pending_show_widget_ = false;
   base::string16 title_;
   std::string application_id_;
   gfx::Rect geometry_;
   gfx::Rect pending_geometry_;
-  double scale_;
-  double pending_scale_;
+  double scale_ = 1.0;
+  double pending_scale_ = 1.0;
   base::Closure close_callback_;
   base::Closure surface_destroyed_callback_;
   StateChangedCallback state_changed_callback_;
   ConfigureCallback configure_callback_;
-  ScopedConfigure* scoped_configure_;
-  bool ignore_window_bounds_changes_;
+  ScopedConfigure* scoped_configure_ = nullptr;
+  bool ignore_window_bounds_changes_ = false;
   gfx::Point origin_;
   gfx::Vector2d pending_origin_offset_;
   gfx::Vector2d pending_origin_config_offset_;
-  int resize_component_;  // HT constant (see ui/base/hit_test.h)
-  int pending_resize_component_;
-  aura::Window* shadow_overlay_{nullptr};
-  aura::Window* shadow_underlay_{nullptr};
+  int resize_component_ = HTCAPTION;  // HT constant (see ui/base/hit_test.h)
+  int pending_resize_component_ = HTCAPTION;
+  aura::Window* shadow_overlay_ = nullptr;
+  aura::Window* shadow_underlay_ = nullptr;
   gfx::Rect shadow_content_bounds_;
   std::deque<Config> pending_configs_;
   std::unique_ptr<ash::WindowResizer> resizer_;
   std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;
-  int top_inset_height_{0};
-  int pending_top_inset_height_{0};
+  int top_inset_height_ = 0;
+  int pending_top_inset_height_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

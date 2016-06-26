@@ -111,7 +111,7 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // This is incremented when a texture mailbox is produced and decremented
   // when a texture mailbox is released. It is used to determine when we should
   // notify the client that buffer has been released.
-  unsigned use_count_;
+  unsigned use_count_ = 0;
 
   // This keeps track of how many Surfaces the buffer is attached to.
   unsigned attach_count_ = 0;

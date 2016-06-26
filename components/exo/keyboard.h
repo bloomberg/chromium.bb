@@ -46,16 +46,16 @@ class Keyboard : public ui::EventHandler,
   Surface* GetEffectiveFocus(aura::Window* window) const;
 
   // The delegate instance that all events are dispatched to.
-  KeyboardDelegate* delegate_;
+  KeyboardDelegate* const delegate_;
 
   // The current focus surface for the keyboard.
-  Surface* focus_;
+  Surface* focus_ = nullptr;
 
   // Vector of currently pressed keys.
   std::vector<ui::DomCode> pressed_keys_;
 
   // Current set of modifier flags.
-  int modifier_flags_;
+  int modifier_flags_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Keyboard);
 };

@@ -161,8 +161,13 @@ void RequireCallback(cc::SurfaceManager* manager,
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// SurfaceFactoryOwner, public:
+
 SurfaceFactoryOwner::SurfaceFactoryOwner() {}
-SurfaceFactoryOwner::~SurfaceFactoryOwner() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// cc::SurfaceFactoryClient overrides:
 
 void SurfaceFactoryOwner::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
@@ -174,6 +179,7 @@ void SurfaceFactoryOwner::ReturnResources(
     release_callbacks_.erase(it);
   }
 }
+
 void SurfaceFactoryOwner::WillDrawSurface(cc::SurfaceId id,
                                           const gfx::Rect& damage_rect) {
   if (surface_)
@@ -184,16 +190,18 @@ void SurfaceFactoryOwner::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {}
 
 ////////////////////////////////////////////////////////////////////////////////
+// SurfaceFactoryOwner, private:
+
+SurfaceFactoryOwner::~SurfaceFactoryOwner() {}
+
+////////////////////////////////////////////////////////////////////////////////
 // Surface, public:
 
 Surface::Surface()
     : window_(new aura::Window(new CustomWindowDelegate(this))),
-      has_pending_contents_(false),
       surface_manager_(
           aura::Env::GetInstance()->context_factory()->GetSurfaceManager()),
-      factory_owner_(new SurfaceFactoryOwner),
-      needs_commit_surface_hierarchy_(false),
-      delegate_(nullptr) {
+      factory_owner_(new SurfaceFactoryOwner) {
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   window_->SetName("ExoSurface");
   window_->SetProperty(kSurfaceKey, this);

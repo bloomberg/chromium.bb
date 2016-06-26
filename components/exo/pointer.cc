@@ -34,11 +34,7 @@ bool SameLocation(const ui::LocatedEvent* event, const gfx::PointF& location) {
 ////////////////////////////////////////////////////////////////////////////////
 // Pointer, public:
 
-Pointer::Pointer(PointerDelegate* delegate)
-    : delegate_(delegate),
-      surface_(nullptr),
-      focus_(nullptr),
-      cursor_scale_(1.0f) {
+Pointer::Pointer(PointerDelegate* delegate) : delegate_(delegate) {
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
 }
 

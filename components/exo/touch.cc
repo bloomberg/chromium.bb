@@ -31,7 +31,7 @@ bool VectorContainsItem(T& vector, U value) {
 ////////////////////////////////////////////////////////////////////////////////
 // Touch, public:
 
-Touch::Touch(TouchDelegate* delegate) : delegate_(delegate), focus_(nullptr) {
+Touch::Touch(TouchDelegate* delegate) : delegate_(delegate) {
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
 }
 

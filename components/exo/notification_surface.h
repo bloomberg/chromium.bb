@@ -34,7 +34,6 @@ class NotificationSurface : public SurfaceDelegate, public SurfaceObserver {
   aura::Window* window() { return window_.get(); }
   const std::string& notification_id() const { return notification_id_; }
 
- private:
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsSurfaceSynchronized() const override;
@@ -42,6 +41,7 @@ class NotificationSurface : public SurfaceDelegate, public SurfaceObserver {
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
 
+ private:
   NotificationSurfaceManager* const manager_;  // Not owned.
   Surface* surface_;                           // Not owned.
   const std::string notification_id_;

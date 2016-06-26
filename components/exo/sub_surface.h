@@ -58,7 +58,7 @@ class SubSurface : public SurfaceDelegate, public SurfaceObserver {
  private:
   Surface* surface_;
   Surface* parent_;
-  bool is_synchronized_;
+  bool is_synchronized_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SubSurface);
 };

@@ -139,13 +139,13 @@ class Buffer::Texture {
   const unsigned texture_target_;
   const unsigned query_type_;
   const GLenum internalformat_;
-  unsigned image_id_;
-  unsigned query_id_;
-  unsigned texture_id_;
+  unsigned image_id_ = 0;
+  unsigned query_id_ = 0;
+  unsigned texture_id_ = 0;
   gpu::Mailbox mailbox_;
   base::Closure release_callback_;
   base::TimeTicks wait_for_release_time_;
-  bool wait_for_release_pending_;
+  bool wait_for_release_pending_ = false;
   base::WeakPtrFactory<Texture> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Texture);
@@ -156,10 +156,6 @@ Buffer::Texture::Texture(cc::ContextProvider* context_provider)
       texture_target_(GL_TEXTURE_2D),
       query_type_(GL_COMMANDS_COMPLETED_CHROMIUM),
       internalformat_(GL_RGBA),
-      image_id_(0),
-      query_id_(0),
-      texture_id_(0),
-      wait_for_release_pending_(false),
       weak_ptr_factory_(this) {
   gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   texture_id_ = CreateGLTexture(gles2, texture_target_);
@@ -175,10 +171,6 @@ Buffer::Texture::Texture(cc::ContextProvider* context_provider,
       texture_target_(texture_target),
       query_type_(query_type),
       internalformat_(GLInternalFormat(gpu_memory_buffer->GetFormat())),
-      image_id_(0),
-      query_id_(0),
-      texture_id_(0),
-      wait_for_release_pending_(false),
       weak_ptr_factory_(this) {
   gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   gfx::Size size = gpu_memory_buffer->GetSize();
@@ -351,8 +343,7 @@ Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer)
       texture_target_(GL_TEXTURE_2D),
       query_type_(GL_COMMANDS_COMPLETED_CHROMIUM),
       use_zero_copy_(true),
-      is_overlay_candidate_(false),
-      use_count_(0) {}
+      is_overlay_candidate_(false) {}
 
 Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
                unsigned texture_target,
@@ -363,8 +354,7 @@ Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
       texture_target_(texture_target),
       query_type_(query_type),
       use_zero_copy_(use_zero_copy),
-      is_overlay_candidate_(is_overlay_candidate),
-      use_count_(0) {}
+      is_overlay_candidate_(is_overlay_candidate) {}
 
 Buffer::~Buffer() {}
 

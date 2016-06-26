@@ -15,7 +15,7 @@ namespace exo {
 // SubSurface, public:
 
 SubSurface::SubSurface(Surface* surface, Surface* parent)
-    : surface_(surface), parent_(parent), is_synchronized_(true) {
+    : surface_(surface), parent_(parent) {
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
   parent_->AddSurfaceObserver(this);

@@ -1085,7 +1085,7 @@ class WaylandDisplayObserver : public display::DisplayObserver {
   }
 
   // The identifier associated with the observed display.
-  int64_t display_id_;
+  const int64_t display_id_;
 
   // The output resource associated with the display.
   wl_resource* const output_resource_;
@@ -1632,7 +1632,7 @@ class WaylandRemoteShell : public ash::ShellObserver,
   Display* const display_;
 
   // The identifier associated with the observed display.
-  int64_t display_id_;
+  const int64_t display_id_;
 
   // The remote shell resource associated with observer.
   wl_resource* const remote_shell_resource_;
@@ -2024,7 +2024,6 @@ class WaylandPointerDelegate : public PointerDelegate {
       }
     }
   }
-
   void OnPointerScroll(base::TimeTicks time_stamp,
                        const gfx::Vector2dF& offset,
                        bool discrete) override {
@@ -2048,14 +2047,12 @@ class WaylandPointerDelegate : public PointerDelegate {
                          WL_POINTER_AXIS_VERTICAL_SCROLL,
                          wl_fixed_from_double(-y_value));
   }
-
   void OnPointerScrollCancel(base::TimeTicks time_stamp) override {
     // Wayland doesn't know the concept of a canceling kinetic scrolling.
     // But we can send a 0 distance scroll to emulate this behavior.
     OnPointerScroll(time_stamp, gfx::Vector2dF(0, 0), false);
     OnPointerScrollStop(time_stamp);
   }
-
   void OnPointerScrollStop(base::TimeTicks time_stamp) override {
     if (wl_resource_get_version(pointer_resource_) >=
         WL_POINTER_AXIS_STOP_SINCE_VERSION) {
@@ -2067,7 +2064,6 @@ class WaylandPointerDelegate : public PointerDelegate {
                                 WL_POINTER_AXIS_VERTICAL_SCROLL);
     }
   }
-
   void OnPointerFrame() override {
     if (wl_resource_get_version(pointer_resource_) >=
         WL_POINTER_FRAME_SINCE_VERSION) {

@@ -74,8 +74,7 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // Keyboard, public:
 
-Keyboard::Keyboard(KeyboardDelegate* delegate)
-    : delegate_(delegate), focus_(nullptr), modifier_flags_(0) {
+Keyboard::Keyboard(KeyboardDelegate* delegate) : delegate_(delegate) {
   ash::Shell::GetInstance()->AddPostTargetHandler(this);
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
