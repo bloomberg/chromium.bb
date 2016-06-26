@@ -382,6 +382,8 @@ int GetFourCCFormatForFramebuffer(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
       return DRM_FORMAT_XRGB8888;
+    case gfx::BufferFormat::BGR_565:
+      return DRM_FORMAT_RGB565;
     case gfx::BufferFormat::UYVY_422:
       return DRM_FORMAT_UYVY;
     default:
