@@ -1,38 +1,25 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            function inputFileChanged(e) {
-                findMediaElement();
-                var file = e.target.files[0];
-                waitForEventAndEnd('loadedmetadata');
-                waitForEventAndFail('error');
-                video.src = window.URL.createObjectURL(file);
-            }
+<title>This tests the ability of the "video" element to load blob URLs. In the browser, select a video file.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<input type="file">
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var inputFile = document.querySelector("input");
 
-            function runTest() {
-                var inputFile = document.getElementById('file');
-                var centerX = inputFile.offsetLeft + inputFile.offsetWidth / 2;
-                var centerY = inputFile.offsetTop + inputFile.offsetHeight / 2;
-                waitForEvent('change', inputFileChanged, false, false, inputFile);
+    inputFile.onchange = t.step_func(function(event) {
+        video.onloadedmetadata = t.step_func_done();
+        video.onerror = t.unreached_func();
+        video.src = URL.createObjectURL(event.target.files[0]);
+    });
 
-                if (window.eventSender) {
-                    eventSender.beginDragWithFiles([findMediaFile("video", "content/test")]);
-                    eventSender.mouseMoveTo(centerX, centerY);
-                    eventSender.mouseUp();
-                }
-            }
-        </script>
-    </head>
-    <body onload="runTest()">
-        <div>
-            This tests the ability of the &lt;video&gt; element to load blob URLs. In the browser, select a video file:
-            <input type="file" name="file" id="file">
-        </div>
-        <video></video>
-    </body>
-</html>
+    eventSender.beginDragWithFiles([findMediaFile("video", "content/test")]);
+    var centerX = inputFile.offsetLeft + inputFile.offsetWidth / 2;
+    var centerY = inputFile.offsetTop + inputFile.offsetHeight / 2;
+    eventSender.mouseMoveTo(centerX, centerY);
+    eventSender.mouseUp();
+});
+</script>
