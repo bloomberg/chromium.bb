@@ -84,6 +84,7 @@
     },
 
     'chromium.fyi': {
+      'Afl Upload Linux ASan': 'gn_release_afl_asan',
       'Android ChromeDriver Tests (dbg)': 'none',
       'Android Cloud Tests': 'android_gn_debug_static_bot_x86',
       'Android Remoting Tests': 'none',
@@ -1183,6 +1184,11 @@
       'gn', 'release', 'drmemory', 'drfuzz', 'x86', 'proprietary_codecs',
      ],
 
+    'gn_release_afl_asan': [
+      'gn', 'release', 'afl', 'asan', 'proprietary_codecs', 'pdf_xfa',
+      'disable_nacl',
+    ],
+
     'gn_release_libfuzzer_asan': [
       'gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa',
       'disable_nacl',
@@ -1864,6 +1870,8 @@
   # This is a dict mapping a given 'mixin' name to a dict of settings that
   # mb should use. See //tools/mb/docs/user_guide.md for more information.
   'mixins': {
+    'afl': { 'gn_args': 'use_afl=true' },
+
     # We build Android with codecs on most bots to ensure maximum test
     # coverage, but use 'android_without_codecs' on bots responsible for
     # building publicly advertised non-Official Android builds --
@@ -2118,8 +2126,6 @@
       'gyp_defines': 'debug_extra_cflags="-gline-tables-only"',
     },
 
-    'ubsan_security': { 'gn_args': 'is_ubsan_security=true' },
-
     'lsan': {
       'gn_args': 'is_lsan=true',
       'gyp_defines': 'lsan=1',
@@ -2272,6 +2278,8 @@
       'gn_args': 'is_ubsan_no_recover=true',
       'gyp_defines': 'release_extra_cflags=-fno-sanitize-recover=undefined',
     },
+
+    'ubsan_security': { 'gn_args': 'is_ubsan_security=true' },
 
     'ubsan_vptr': {
       'gn_args': 'is_ubsan_vptr=true',
