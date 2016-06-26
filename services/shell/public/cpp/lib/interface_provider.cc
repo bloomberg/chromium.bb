@@ -6,11 +6,13 @@
 
 namespace shell {
 
-InterfaceProvider::InterfaceProvider(
-    mojom::InterfaceProviderPtr interface_provider)
-    : interface_provider_(std::move(interface_provider)),
-      weak_factory_(this) {}
+InterfaceProvider::InterfaceProvider() : weak_factory_(this) {}
 InterfaceProvider::~InterfaceProvider() {}
+
+void InterfaceProvider::Bind(mojom::InterfaceProviderPtr interface_provider) {
+  DCHECK(!interface_provider_.is_bound());
+  interface_provider_ = std::move(interface_provider);
+}
 
 void InterfaceProvider::SetConnectionLostClosure(
     const base::Closure& connection_lost_closure) {

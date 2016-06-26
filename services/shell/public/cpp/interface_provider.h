@@ -38,8 +38,10 @@ class InterfaceProvider {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  explicit InterfaceProvider(mojom::InterfaceProviderPtr interface_provider);
+  InterfaceProvider();
   ~InterfaceProvider();
+
+  void Bind(mojom::InterfaceProviderPtr interface_provider);
 
   // Returns a raw pointer to the remote InterfaceProvider.
   mojom::InterfaceProvider* get() { return interface_provider_.get(); }

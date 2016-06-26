@@ -76,10 +76,33 @@ void ShellConnection::AcceptConnection(
     mojom::InterfaceProviderPtr remote_interfaces,
     mojom::CapabilityRequestPtr allowed_capabilities,
     const mojo::String& name) {
-  std::unique_ptr<Connection> registry(new internal::ConnectionImpl(
-      name, source.To<Identity>(), source_id, std::move(remote_interfaces),
-      std::move(local_interfaces), allowed_capabilities.To<CapabilityRequest>(),
-      Connection::State::CONNECTED));
+  std::unique_ptr<internal::ConnectionImpl> registry(
+      new internal::ConnectionImpl(name, source.To<Identity>(), source_id,
+                                   allowed_capabilities.To<CapabilityRequest>(),
+                                   Connection::State::CONNECTED));
+
+  InterfaceRegistry* exposed_interfaces =
+      client_->GetInterfaceRegistryForConnection();
+  if (exposed_interfaces) {
+    exposed_interfaces->Bind(std::move(local_interfaces));
+    registry->set_exposed_interfaces(exposed_interfaces);
+  } else {
+    std::unique_ptr<InterfaceRegistry> interfaces(
+        new InterfaceRegistry(registry.get()));
+    interfaces->Bind(std::move(local_interfaces));
+    registry->SetExposedInterfaces(std::move(interfaces));
+  }
+  shell::InterfaceProvider* remote_interface_provider =
+    client_->GetInterfaceProviderForConnection();
+  if (remote_interface_provider) {
+    remote_interface_provider->Bind(std::move(remote_interfaces));
+    registry->set_remote_interfaces(remote_interface_provider);
+  } else {
+    std::unique_ptr<InterfaceProvider> interfaces(new InterfaceProvider);
+    interfaces->Bind(std::move(remote_interfaces));
+    registry->SetRemoteInterfaces(std::move(interfaces));
+  }
+
   if (!client_->AcceptConnection(registry.get()))
     return;
 

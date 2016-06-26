@@ -33,11 +33,24 @@ class ConnectionImpl : public Connection {
   ConnectionImpl(const std::string& connection_name,
                  const Identity& remote,
                  uint32_t remote_id,
-                 shell::mojom::InterfaceProviderPtr remote_interfaces,
-                 shell::mojom::InterfaceProviderRequest local_interfaces,
                  const CapabilityRequest& capability_request,
                  State initial_state);
   ~ConnectionImpl() override;
+
+  // Sets the local registry & remote provider, transferring ownership to the
+  // ConnectionImpl.
+  void SetExposedInterfaces(
+      std::unique_ptr<InterfaceRegistry> exposed_interfaces);
+  void SetRemoteInterfaces(
+      std::unique_ptr<InterfaceProvider> remote_interfaces);
+
+  // Sets the local registry & remote provider, without transferring ownership.
+  void set_exposed_interfaces(InterfaceRegistry* exposed_interfaces) {
+    exposed_interfaces_ = exposed_interfaces;
+  }
+  void set_remote_interfaces(InterfaceProvider* remote_interfaces) {
+    remote_interfaces_ = remote_interfaces;
+  }
 
   shell::mojom::Connector::ConnectCallback GetConnectCallback();
 
@@ -69,8 +82,11 @@ class ConnectionImpl : public Connection {
   shell::mojom::ConnectResult result_ = shell::mojom::ConnectResult::SUCCEEDED;
   std::vector<base::Closure> connection_completed_callbacks_;
 
-  InterfaceRegistry interfaces_;
-  InterfaceProvider remote_interfaces_;
+  InterfaceRegistry* exposed_interfaces_ = nullptr;
+  InterfaceProvider* remote_interfaces_ = nullptr;
+
+  std::unique_ptr<InterfaceRegistry> exposed_interfaces_owner_;
+  std::unique_ptr<InterfaceProvider> remote_interfaces_owner_;
 
   const CapabilityRequest capability_request_;
   const bool allow_all_interfaces_;

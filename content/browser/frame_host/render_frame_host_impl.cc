@@ -2409,8 +2409,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   shell::mojom::InterfaceProviderPtr remote_interfaces;
   shell::mojom::InterfaceProviderRequest remote_interfaces_request =
       GetProxy(&remote_interfaces);
-  remote_interfaces_.reset(
-      new shell::InterfaceProvider(std::move(remote_interfaces)));
+  remote_interfaces_.reset(new shell::InterfaceProvider);
+  remote_interfaces_->Bind(std::move(remote_interfaces));
   frame_->GetInterfaceProvider(std::move(remote_interfaces_request));
 
 #if defined(OS_ANDROID)

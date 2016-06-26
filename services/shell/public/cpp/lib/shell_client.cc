@@ -13,6 +13,14 @@ void ShellClient::Initialize(Connector* connector, const Identity& identity,
                              uint32_t id) {
 }
 
+InterfaceProvider* ShellClient::GetInterfaceProviderForConnection() {
+  return nullptr;
+}
+
+InterfaceRegistry* ShellClient::GetInterfaceRegistryForConnection() {
+  return nullptr;
+}
+
 bool ShellClient::AcceptConnection(Connection* connection) {
   return false;
 }

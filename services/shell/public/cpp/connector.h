@@ -53,11 +53,21 @@ class Connector {
       *shell_client = std::move(shell_client_);
       *pid_receiver_request = std::move(pid_receiver_request_);
     }
+    InterfaceRegistry* exposed_interfaces() { return exposed_interfaces_; }
+    void set_exposed_interfaces(InterfaceRegistry* exposed_interfaces) {
+      exposed_interfaces_ = exposed_interfaces;
+    }
+    InterfaceProvider* remote_interfaces() { return remote_interfaces_; }
+    void set_remote_interfaces(InterfaceProvider* remote_interfaces) {
+      remote_interfaces_ = remote_interfaces;
+    }
 
    private:
     Identity target_;
     mojom::ShellClientPtr shell_client_;
     mojom::PIDReceiverRequest pid_receiver_request_;
+    InterfaceRegistry* exposed_interfaces_ = nullptr;
+    InterfaceProvider* remote_interfaces_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);
   };

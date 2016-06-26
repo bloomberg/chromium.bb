@@ -35,6 +35,9 @@ class ShellClient {
                           const Identity& identity,
                           uint32_t id);
 
+  virtual InterfaceProvider* GetInterfaceProviderForConnection();
+  virtual InterfaceRegistry* GetInterfaceRegistryForConnection();
+
   // Called when a connection to this client is brokered by the shell. Override
   // to expose services to the remote application. Return true if the connection
   // should succeed. Return false if the connection should be rejected and the

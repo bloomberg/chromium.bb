@@ -195,8 +195,8 @@ shell::InterfaceProvider* MockRenderThread::GetRemoteInterfaces() {
     shell::mojom::InterfaceProviderPtr remote_interface_provider;
     pending_remote_interface_provider_request_ =
         GetProxy(&remote_interface_provider);
-    remote_interfaces_.reset(new shell::InterfaceProvider(
-        std::move(remote_interface_provider)));
+    remote_interfaces_.reset(new shell::InterfaceProvider);
+    remote_interfaces_->Bind(std::move(remote_interface_provider));
   }
   return remote_interfaces_.get();
 }

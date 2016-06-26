@@ -1118,8 +1118,8 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
   interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
   shell::mojom::InterfaceProviderPtr remote_interfaces;
   pending_remote_interface_provider_request_ = GetProxy(&remote_interfaces);
-  remote_interfaces_.reset(
-      new shell::InterfaceProvider(std::move(remote_interfaces)));
+  remote_interfaces_.reset(new shell::InterfaceProvider);
+  remote_interfaces_->Bind(std::move(remote_interfaces));
   blink_service_registry_.reset(new BlinkServiceRegistryImpl(
       remote_interfaces_->GetWeakPtr()));
 

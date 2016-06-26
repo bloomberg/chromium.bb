@@ -35,8 +35,8 @@ void MojoApplication::InitWithToken(const std::string& token) {
   shell::mojom::InterfaceProviderPtr remote_interfaces;
   shell::mojom::InterfaceProviderRequest remote_interfaces_request =
       GetProxy(&remote_interfaces);
-  remote_interfaces_.reset(
-      new shell::InterfaceProvider(std::move(remote_interfaces)));
+  remote_interfaces_.reset(new shell::InterfaceProvider);
+  remote_interfaces_->Bind(std::move(remote_interfaces));
   application_setup->ExchangeInterfaceProviders(
       std::move(remote_interfaces_request),
       std::move(exposed_interfaces));

@@ -60,8 +60,25 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   std::unique_ptr<internal::ConnectionImpl> registry(
       new internal::ConnectionImpl(
           params->target().name(), params->target(), mojom::kInvalidInstanceID,
-          std::move(remote_interfaces), std::move(local_request), request,
-          Connection::State::PENDING));
+          request, Connection::State::PENDING));
+  if (params->exposed_interfaces()) {
+    params->exposed_interfaces()->Bind(std::move(local_request));
+    registry->set_exposed_interfaces(params->exposed_interfaces());
+  } else {
+    std::unique_ptr<InterfaceRegistry> exposed_interfaces(
+        new InterfaceRegistry(registry.get()));
+    exposed_interfaces->Bind(std::move(local_request));
+    registry->SetExposedInterfaces(std::move(exposed_interfaces));
+  }
+  if (params->remote_interfaces()) {
+    params->remote_interfaces()->Bind(std::move(remote_interfaces));
+    registry->set_remote_interfaces(params->remote_interfaces());
+  } else {
+    std::unique_ptr<InterfaceProvider> remote_interface_provider(
+        new InterfaceProvider);
+    remote_interface_provider->Bind(std::move(remote_interfaces));
+    registry->SetRemoteInterfaces(std::move(remote_interface_provider));
+  }
 
   mojom::ShellClientPtr shell_client;
   mojom::PIDReceiverRequest pid_receiver_request;
