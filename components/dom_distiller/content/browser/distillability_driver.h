@@ -31,13 +31,16 @@ class DistillabilityDriver
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
+  void RenderFrameHostChanged(
+      content::RenderFrameHost* old_host,
+      content::RenderFrameHost* new_host) override;
 
  private:
   explicit DistillabilityDriver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<DistillabilityDriver>;
   friend class DistillabilityServiceImpl;
 
-  void SetupMojoService();
+  void SetupMojoService(content::RenderFrameHost* frame_host);
   void OnDistillability(bool distillable, bool is_last);
 
   base::Callback<void(bool, bool)> m_delegate_;

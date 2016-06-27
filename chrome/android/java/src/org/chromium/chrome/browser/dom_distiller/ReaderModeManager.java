@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -545,6 +546,14 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     public boolean isPanelOpened() {
         if (mReaderModePanel == null) return false;
         return mReaderModePanel.isPanelOpened();
+    }
+
+    /**
+     * @return The ReaderModePanel for testing.
+     */
+    @VisibleForTesting
+    public ReaderModePanel getPanelForTesting() {
+        return mReaderModePanel;
     }
 
     /**

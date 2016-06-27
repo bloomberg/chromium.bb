@@ -1239,6 +1239,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /**
      * @return The {@code ReaderModeManager} or {@code null} if none;
      */
+    @VisibleForTesting
     public ReaderModeManager getReaderModeManager() {
         return mReaderModeManager;
     }

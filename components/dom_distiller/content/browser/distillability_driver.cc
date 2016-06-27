@@ -41,7 +41,8 @@ DistillabilityDriver::DistillabilityDriver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       weak_factory_(this) {
-  SetupMojoService();
+  if (!web_contents) return;
+  SetupMojoService(web_contents->GetMainFrame());
 }
 
 DistillabilityDriver::~DistillabilityDriver() {
@@ -65,16 +66,26 @@ void DistillabilityDriver::OnDistillability(
   m_delegate_.Run(distillable, is_last);
 }
 
+void DistillabilityDriver::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  // If the RenderFrameHost changes (this will happen if the user navigates to
+  // or from a native page), the service needs to be attached to that host.
+  SetupMojoService(new_host);
+  // Clean up the service on the old host if possible.
+  if (!old_host) return;
+  old_host->GetInterfaceRegistry()
+      ->RemoveInterface<mojom::DistillabilityService>();
+}
+
 void DistillabilityDriver::DidStartProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host, const GURL& validated_url,
     bool is_error_page, bool is_iframe_srcdoc) {
-  SetupMojoService();
+  SetupMojoService(render_frame_host);
 }
 
-void DistillabilityDriver::SetupMojoService() {
-  if (!web_contents()) return;
-
-  content::RenderFrameHost* frame_host = web_contents()->GetMainFrame();
+void DistillabilityDriver::SetupMojoService(
+    content::RenderFrameHost* frame_host) {
   if (!frame_host || !frame_host->GetInterfaceRegistry()) return;
 
   frame_host->GetInterfaceRegistry()->AddInterface(
