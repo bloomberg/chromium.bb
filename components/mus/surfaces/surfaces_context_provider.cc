@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/mus/common/switches.h"
 #include "components/mus/gles2/command_buffer_driver.h"
 #include "components/mus/gles2/command_buffer_impl.h"
@@ -34,9 +35,15 @@ SurfacesContextProvider::SurfacesContextProvider(
       delegate_(nullptr),
       widget_(widget),
       command_buffer_local_(nullptr) {
+// TODO(penghuang): Kludge: Use mojo command buffer when running on Windows
+// since Chrome command buffer breaks unit tests
+#if defined(OS_WIN)
+  use_chrome_gpu_command_buffer_ = false;
+#else
   use_chrome_gpu_command_buffer_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseChromeGpuCommandBufferInMus);
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMojoGpuCommandBufferInMus);
+#endif
   if (!use_chrome_gpu_command_buffer_) {
     command_buffer_local_ = new CommandBufferLocal(this, widget_, state);
   } else {

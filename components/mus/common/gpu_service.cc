@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/mus/common/gpu_type_converters.h"
 #include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/common/switches.h"
@@ -32,8 +33,14 @@ GpuService::~GpuService() {}
 
 // static
 bool GpuService::UseChromeGpuCommandBuffer() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseChromeGpuCommandBufferInMus);
+// TODO(penghuang): Kludge: Running with Chrome GPU command buffer by default
+// breaks unit tests on Windows
+#if defined(OS_WIN)
+  return false;
+#else
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseMojoGpuCommandBufferInMus);
+#endif
 }
 
 // static

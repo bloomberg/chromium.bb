@@ -79,7 +79,13 @@ struct MusApp::UserState {
 
 MusApp::MusApp()
     : test_config_(false),
+      // TODO(penghuang): Kludge: Use mojo command buffer when running on
+      // Windows since chrome command buffer breaks unit tests
+#if defined(OS_WIN)
       use_chrome_gpu_command_buffer_(false),
+#else
+      use_chrome_gpu_command_buffer_(true),
+#endif
       platform_screen_(ws::PlatformScreen::Create()),
       weak_ptr_factory_(this) {}
 
@@ -145,9 +151,15 @@ void MusApp::Initialize(shell::Connector* connector,
 
   test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseTestConfig);
+// TODO(penghuang): Kludge: use mojo command buffer when running on Windows
+// since Chrome command buffer breaks unit tests
+#if defined(OS_WIN)
+  use_chrome_gpu_command_buffer_ = false;
+#else
   use_chrome_gpu_command_buffer_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseChromeGpuCommandBufferInMus);
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMojoGpuCommandBufferInMus);
+#endif
 #if defined(USE_X11)
   XInitThreads();
   if (test_config_)

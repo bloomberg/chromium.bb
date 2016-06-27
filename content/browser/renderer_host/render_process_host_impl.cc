@@ -1548,7 +1548,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kIpcFuzzerTestcase,
 #endif
 #if defined(MOJO_RUNNER_CLIENT)
-    mus::switches::kUseChromeGpuCommandBufferInMus,
+    mus::switches::kUseMojoGpuCommandBufferInMus,
 #endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
