@@ -34,11 +34,19 @@
 }
 
 - (NSColor*)subtextColor {
-  return [NSColor grayColor];
+  // Represents #646464.
+  return [NSColor colorWithCalibratedRed:100.0 / 255.0
+                                   green:100.0 / 255.0
+                                    blue:100.0 / 255.0
+                                   alpha:1.0];
 }
 
 - (NSColor*)warningColor {
-  return [NSColor grayColor];
+  // Represents #646464.
+  return [NSColor colorWithCalibratedRed:100.0 / 255.0
+                                   green:100.0 / 255.0
+                                    blue:100.0 / 255.0
+                                   alpha:1.0];
 }
 
 #pragma mark -
