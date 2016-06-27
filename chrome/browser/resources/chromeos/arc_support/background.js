@@ -12,7 +12,8 @@ var UI_PAGES = ['none',
                 'lso-loading',
                 'lso',
                 'arc-loading',
-                'error'];
+                'error',
+                'error-with-feedback'];
 
 /**
  * Chrome window that hosts UI. Only one window is allowed.
@@ -206,6 +207,14 @@ function showPage(pageDivId) {
 
   var doc = appWindow.contentWindow.document;
   var pages = doc.getElementsByClassName('section');
+  var sendFeedbackElement = doc.getElementById('button-send-feedback');
+  if (pageDivId == 'error-with-feedback') {
+    // Only show feedback button if the pageDivId is 'error-with-feedback'.
+    sendFeedbackElement.hidden = false;
+    pageDivId = 'error';
+  } else {
+    sendFeedbackElement.hidden = true;
+  }
   for (var i = 0; i < pages.length; i++) {
     pages[i].hidden = pages[i].id != pageDivId;
   }
@@ -248,7 +257,8 @@ function showPageWithStatus(pageId, status) {
 
   if (UI_PAGES[pageId] == 'start') {
     loadInitialTerms();
-  } else if (UI_PAGES[pageId] == 'error') {
+  } else if (UI_PAGES[pageId] == 'error' ||
+             UI_PAGES[pageId] == 'error-with-feedback') {
     setErrorMessage(status);
   }
   showPage(UI_PAGES[pageId]);
@@ -364,9 +374,15 @@ chrome.app.runtime.onLaunched.addListener(function() {
       sendNativeMessage('startLso');
     };
 
+    var onSendFeedback = function() {
+      sendNativeMessage('sendFeedback');
+    };
+
     doc.getElementById('button-agree').addEventListener('click', onAgree);
     doc.getElementById('button-cancel').addEventListener('click', onCancel);
     doc.getElementById('button-retry').addEventListener('click', onRetry);
+    doc.getElementById('button-send-feedback')
+        .addEventListener('click', onSendFeedback);
 
     connectPort();
   };

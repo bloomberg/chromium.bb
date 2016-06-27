@@ -285,10 +285,17 @@ void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
       UpdateOptInCancelUMA(OptInCancelReason::UNKNOWN_ERROR);
   }
 
+  if (reason == arc::mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL) {
+    clear_required_ = true;
+    // We'll delay shutting down the bridge in this case to allow people to send
+    // feedback.
+    ShowUI(UIPage::ERROR_WITH_FEEDBACK,
+           l10n_util::GetStringUTF16(error_message_id));
+    return;
+  }
+
   if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
-  if (reason == arc::mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL)
-    clear_required_ = true;
   ShutdownBridgeAndShowUI(UIPage::ERROR,
                           l10n_util::GetStringUTF16(error_message_id));
 }
@@ -325,7 +332,7 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   if (!IsAllowedForProfile(profile))
     return;
 
-  // TODO (khmel): Move this to IsAllowedForProfile.
+  // TODO(khmel): Move this to IsAllowedForProfile.
   if (IsArcDisabledForEnterprise() && IsAccountManaged(profile)) {
     VLOG(2) << "Enterprise users are not supported in ARC.";
     return;
@@ -592,9 +599,13 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
 void ArcAuthService::StartLso() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
 
-  // Update UMA only if error is currently shown.
-  if (ui_page_ == UIPage::ERROR)
+  // Update UMA only if error (with or without feedback) is currently shown.
+  if (ui_page_ == UIPage::ERROR) {
     UpdateOptInActionUMA(OptInActionType::RETRY);
+  } else if (ui_page_ == UIPage::ERROR_WITH_FEEDBACK) {
+    UpdateOptInActionUMA(OptInActionType::RETRY);
+    ShutdownBridge();
+  }
 
   initial_opt_in_ = false;
   StartUI();
@@ -603,7 +614,14 @@ void ArcAuthService::StartLso() {
 void ArcAuthService::CancelAuthCode() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
 
-  if (state_ != State::FETCHING_CODE && ui_page_ != UIPage::ERROR)
+  if (ui_page_ == UIPage::ERROR_WITH_FEEDBACK) {
+    ShutdownBridge();
+    if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
+      profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+  }
+
+  if (state_ != State::FETCHING_CODE && ui_page_ != UIPage::ERROR &&
+      ui_page_ != UIPage::ERROR_WITH_FEEDBACK)
     return;
 
   // Update UMA with user cancel only if error is not currently shown.

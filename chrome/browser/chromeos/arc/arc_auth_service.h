@@ -65,12 +65,13 @@ class ArcAuthService : public ArcService,
   };
 
   enum class UIPage {
-    NO_PAGE,         // Hide everything.
-    START,           // Initial start page.
-    LSO_PROGRESS,    // LSO loading progress page.
-    LSO,             // LSO page to enter user's credentials.
-    START_PROGRESS,  // Arc starting progress page.
-    ERROR,           // Arc start error page.
+    NO_PAGE,              // Hide everything.
+    START,                // Initial start page.
+    LSO_PROGRESS,         // LSO loading progress page.
+    LSO,                  // LSO page to enter user's credentials.
+    START_PROGRESS,       // Arc starting progress page.
+    ERROR,                // Arc start error page.
+    ERROR_WITH_FEEDBACK,  // Arc start error page, plus feedback button.
   };
 
   class Observer {

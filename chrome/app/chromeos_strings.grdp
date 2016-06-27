@@ -6659,6 +6659,9 @@ All users must sign out to continue.
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_RETRY" desc="Retry button of the opt-in dialog for Android apps.">
     Retry
   </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_SEND_FEEDBACK" desc="Send feedback button of the opt-in dialog for Android apps.">
+    Send feedback
+  </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_PROGRESS_LSO" desc="Name of LSO loading progress of the opt-in dialog for Android apps.">
     Just a sec...
   </message>

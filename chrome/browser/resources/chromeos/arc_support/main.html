@@ -13,14 +13,14 @@
       width: 360px;
     }
     paper-progress.red {
-      --paper-progress-active-color: #ff374f;
-      --paper-progress-secondary-color: #ff374f;
-      --paper-progress-container-color: #c8bdd4;
+      --paper-progress-active-color: rgb(255, 55, 79);
+      --paper-progress-container-color: rgb(200, 189, 212);
+      --paper-progress-secondary-color: rgb(255, 55, 79);
     }
     paper-progress.blue {
-      --paper-progress-active-color: #4285f4;
-      --paper-progress-secondary-color: #4285f4;
+      --paper-progress-active-color: rgb(66, 133, 244);
       --paper-progress-container-color: #e6e6e6;
+      --paper-progress-secondary-color: rgb(66, 133, 244);
     }
     paper-button {
       font-size: 13px;
@@ -83,6 +83,9 @@
     <img class="image-header" src="images/header.png">
     <paper-progress class="red" value="100" max="100" ></paper-progress>
     <p class="text-status" id="error-message"></p>
+    <paper-button class="blue" id="button-send-feedback"
+        i18n-content="buttonSendFeedback">
+    </paper-button>
     <paper-button class="blue" id="button-retry" i18n-content="buttonRetry">
     </paper-button>
   </div>

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 
+#include <string>
+
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "base/i18n/timezone.h"
 #include "base/json/json_reader.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -39,6 +42,7 @@ const char kActionStartLso[] = "startLso";
 const char kActionCancelAuthCode[] = "cancelAuthCode";
 const char kActionSetAuthCode[] = "setAuthCode";
 const char kActionEnableMetrics[] = "enableMetrics";
+const char kActionSendFeedback[] = "sendFeedback";
 const char kActionCloseUI[] = "closeUI";
 const char kActionShowPage[] = "showPage";
 }  // namespace
@@ -111,6 +115,9 @@ void ArcSupportHost::Initialize() {
   localized_strings->SetString(
       "buttonCancel",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BUTTON_CANCEL));
+  localized_strings->SetString(
+      "buttonSendFeedback",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BUTTON_SEND_FEEDBACK));
   localized_strings->SetString(
       "buttonRetry",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BUTTON_RETRY));
@@ -243,6 +250,8 @@ void ArcSupportHost::OnMessage(const std::string& request_string) {
     arc_auth_service->CancelAuthCode();
   } else if (action == kActionEnableMetrics) {
     EnableMetrics();
+  } else if (action == kActionSendFeedback) {
+    chrome::OpenFeedbackDialog(nullptr);
   } else {
     NOTREACHED();
   }
