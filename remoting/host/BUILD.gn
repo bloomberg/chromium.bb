@@ -1159,33 +1159,36 @@ if (enable_me2me_host) {
   }
 
   if (is_win && is_chrome_branded) {
+    # We do not release a 64 bits binary. So to avoid any potential
+    # misunderstanding, we only build 32 bits MSI file.
     if (target_cpu == "x86") {
       # The script uses "ia32" instead of "x86".
       msi_script_arch = "ia32"
-    } else {
-      msi_script_arch = target_cpu
-    }
 
-    # GYP version: remoting/remoting_host_win.gyp:remoting_host_installation
-    action("remoting_host_installation") {
-      deps = [
-        "//remoting/host:remoting_me2me_host_archive",
-      ]
-      script = "../tools/zip2msi.py"
-      outputs = [
-        "$root_out_dir/chromoting.msi",
-      ]
-      args = [
-        "--wix_path",
-        rebase_path("//third_party/wix"),
-        "--intermediate_dir",
-        rebase_path("$root_gen_dir/installation", root_build_dir),
-        "--target_arch",
-        msi_script_arch,
-        rebase_path("$root_out_dir/remoting-me2me-host-$current_os.zip",
-                    root_build_dir),
-        rebase_path(outputs[0], root_build_dir),
-      ]
+      # GYP version: remoting/remoting_host_win.gyp:remoting_host_installation
+      action("remoting_host_installation") {
+        deps = [
+          "//remoting/host:remoting_me2me_host_archive",
+        ]
+        script = "../tools/zip2msi.py"
+        outputs = [
+          "$root_out_dir/chromoting.msi",
+        ]
+        args = [
+          "--wix_path",
+          rebase_path("//third_party/wix"),
+          "--intermediate_dir",
+          rebase_path("$root_gen_dir/installation", root_build_dir),
+          "--target_arch",
+          msi_script_arch,
+          rebase_path("$root_out_dir/remoting-me2me-host-$current_os.zip",
+                      root_build_dir),
+          rebase_path(outputs[0], root_build_dir),
+        ]
+      }
+    } else {
+      group("remoting_host_installation") {
+      }
     }
   }
 }
