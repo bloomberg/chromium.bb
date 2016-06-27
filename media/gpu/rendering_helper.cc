@@ -526,9 +526,13 @@ void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
     base::RunLoop wait_for_swap_ack;
-    gl_surface_->SwapBuffersAsync(
-        base::Bind(&WaitForSwapAck, wait_for_swap_ack.QuitClosure()));
-    wait_for_swap_ack.Run();
+    if (gl_surface_->SupportsAsyncSwap()) {
+      gl_surface_->SwapBuffersAsync(
+          base::Bind(&WaitForSwapAck, wait_for_swap_ack.QuitClosure()));
+      wait_for_swap_ack.Run();
+    } else {
+      gl_surface_->SwapBuffers();
+    }
   }
   glDeleteTextures(1, &texture_id);
 }
@@ -774,7 +778,12 @@ void RenderingHelper::RenderContent() {
     return;
   }
 
-  gl_surface_->SwapBuffersAsync(base::Bind(&WaitForSwapAck, schedule_frame));
+  if (gl_surface_->SupportsAsyncSwap()) {
+    gl_surface_->SwapBuffersAsync(base::Bind(&WaitForSwapAck, schedule_frame));
+  } else {
+    gl_surface_->SwapBuffers();
+    ScheduleNextRenderContent();
+  }
 }
 
 // Helper function for the LayoutRenderingAreas(). The |lengths| are the
