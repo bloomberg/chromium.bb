@@ -50,6 +50,7 @@ class ASH_EXPORT SystemModalContainerLayoutManager
                                const void* key,
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;

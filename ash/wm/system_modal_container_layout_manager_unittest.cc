@@ -676,6 +676,32 @@ TEST_F(SystemModalContainerLayoutManagerTest, UpdateModalType) {
   EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
 }
 
+TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
+  std::unique_ptr<aura::Window> window(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> modal_window(
+      views::Widget::CreateWindowWithContext(new TestWindow(true),
+                                             CurrentContext())
+          ->GetNativeWindow());
+  SystemModalContainerLayoutManager* layout_manager =
+      Shell::GetPrimaryRootWindowController()->GetSystemModalLayoutManager(
+          modal_window.get());
+
+  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(layout_manager->has_modal_background());
+
+  modal_window->Show();
+  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(layout_manager->has_modal_background());
+
+  modal_window->Hide();
+  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(layout_manager->has_modal_background());
+
+  modal_window->Show();
+  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(layout_manager->has_modal_background());
+}
+
 namespace {
 
 class InputTestDelegate : public aura::test::TestWindowDelegate {

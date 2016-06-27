@@ -57,16 +57,23 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
   DCHECK(
       container_->id() != kShellWindowId_LockSystemModalContainer ||
       Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked());
+  // Since this is for SystemModal, there is no goodd reason to add
+  // these window other than MODAL_TYPE_NONE or MODAL_TYPE_SYSTEM.
+  // DCHECK to avoid simple mistake.
+  DCHECK_NE(child->GetProperty(aura::client::kModalKey), ui::MODAL_TYPE_CHILD);
+  DCHECK_NE(child->GetProperty(aura::client::kModalKey), ui::MODAL_TYPE_WINDOW);
 
   child->AddObserver(this);
-  if (child->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE)
+  if (child->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM &&
+      child->IsVisible()) {
     AddModalWindow(child);
+  }
 }
 
 void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
   child->RemoveObserver(this);
-  if (child->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE)
+  if (child->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM)
     RemoveModalWindow(child);
 }
 
@@ -84,14 +91,14 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
-  if (key != aura::client::kModalKey)
+  if (key != aura::client::kModalKey || !window->IsVisible())
     return;
 
   ui::ModalType new_modal = window->GetProperty(aura::client::kModalKey);
   if (static_cast<ui::ModalType>(old) == new_modal)
     return;
 
-  if (new_modal != ui::MODAL_TYPE_NONE) {
+  if (new_modal == ui::MODAL_TYPE_SYSTEM) {
     AddModalWindow(window);
   } else {
     RemoveModalWindow(window);
@@ -108,6 +115,19 @@ void SystemModalContainerLayoutManager::OnWindowDestroying(
   }
 }
 
+void SystemModalContainerLayoutManager::OnWindowVisibilityChanged(
+    aura::Window* window,
+    bool visible) {
+  if (window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_SYSTEM)
+    return;
+  if (window->IsVisible()) {
+    AddModalWindow(window);
+  } else {
+    RemoveModalWindow(window);
+    Shell::GetInstance()->OnModalWindowRemoved(window);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, Keyboard::KeybaordControllerObserver
 // implementation:
@@ -119,7 +139,7 @@ void SystemModalContainerLayoutManager::OnKeyboardBoundsChanging(
 
 bool SystemModalContainerLayoutManager::IsPartOfActiveModalWindow(
     aura::Window* window) {
-  return modal_window() && wm::GetActivatableWindow(window) == modal_window();
+  return modal_window() && modal_window()->Contains(window);
 }
 
 bool SystemModalContainerLayoutManager::ActivateNextModalWindow() {
@@ -176,6 +196,7 @@ void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
     if (capture_window)
       capture_window->ReleaseCapture();
   }
+  DCHECK(window->IsVisible());
   DCHECK(!ContainsValue(modal_windows_, window));
 
   modal_windows_.push_back(window);
