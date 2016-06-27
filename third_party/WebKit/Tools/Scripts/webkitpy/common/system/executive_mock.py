@@ -104,7 +104,7 @@ class MockExecutive(object):
 
         self.calls.append(args)
 
-        assert(isinstance(args, list) or isinstance(args, tuple))
+        assert isinstance(args, list) or isinstance(args, tuple)
         if self._should_log:
             env_string = ""
             if env:
@@ -195,7 +195,7 @@ class MockExecutive2(MockExecutive):
                     env=None,
                     debug_logging=False):
         self.calls.append(args)
-        assert(isinstance(args, list) or isinstance(args, tuple))
+        assert isinstance(args, list) or isinstance(args, tuple)
         if self._exception:
             raise self._exception  # pylint: disable=E0702
         if self._run_command_fn:

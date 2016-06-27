@@ -1463,7 +1463,7 @@ def check_for_non_standard_constructs(clean_lines, line_number,
                   'having virtual method(s), one declared at line %d.'
                   % (classinfo.name, classinfo.virtual_method_line_number))
         # Look for mixed bool and unsigned bitfields.
-        if (classinfo.bool_bitfields and classinfo.unsigned_bitfields):
+        if classinfo.bool_bitfields and classinfo.unsigned_bitfields:
             bool_list = ', '.join(classinfo.bool_bitfields)
             unsigned_list = ', '.join(classinfo.unsigned_bitfields)
             error(classinfo.line_number, 'runtime/bitfields', 5,
@@ -2099,7 +2099,7 @@ def check_spacing(file_extension, clean_lines, line_number, error):
         error(line_number, 'whitespace/semicolon', 5,
               'Line contains only semicolon. If this should be an empty statement, '
               'use { } instead.')
-    elif (search(r'\s+;\s*$', line) and not search(r'\bfor\b', line)):
+    elif search(r'\s+;\s*$', line) and not search(r'\bfor\b', line):
         error(line_number, 'whitespace/semicolon', 5,
               'Extra space before last semicolon. If this should be an empty '
               'statement, use { } instead.')
@@ -3696,7 +3696,7 @@ def check_for_object_static_cast(processing_file, line_number, line, error):
 
     report_error = True
     # Ensure found static_cast instance is not from within toFoo definition itself.
-    if (os.path.basename(processing_file) == header_file):
+    if os.path.basename(processing_file) == header_file:
         for item in matches:
             if line_number in range(item[1], item[2]):
                 report_error = False

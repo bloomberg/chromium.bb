@@ -57,7 +57,7 @@ class User(object):
     @classmethod
     def prompt(cls, message, repeat=1, raw_input=raw_input):
         response = None
-        while (repeat and not response):
+        while repeat and not response:
             repeat -= 1
             response = raw_input(message)
         return response

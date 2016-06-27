@@ -294,7 +294,7 @@ def summarize_results(port_obj, expectations, initial_results,
             if retry_result:
                 test_dict.update(_interpret_test_failures(retry_result.failures))
 
-        if (result.has_repaint_overlay):
+        if result.has_repaint_overlay:
             test_dict['has_repaint_overlay'] = True
 
         # Store test hierarchically by directory. e.g.

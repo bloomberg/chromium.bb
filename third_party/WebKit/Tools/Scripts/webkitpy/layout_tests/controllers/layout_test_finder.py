@@ -186,9 +186,9 @@ class LayoutTestFinder(object):
         try:
             (chunk_num, chunk_len) = chunk_value.split(":")
             chunk_num = int(chunk_num)
-            assert(chunk_num >= 0)
+            assert chunk_num >= 0
             test_size = int(chunk_len)
-            assert(test_size > 0)
+            assert test_size > 0
         except AssertionError:
             _log.critical("invalid chunk '%s'" % chunk_value)
             return (None, None)
@@ -204,8 +204,8 @@ class LayoutTestFinder(object):
             slice_start = (chunk_num * chunk_len) % num_tests
         else:
             # Validate the data.
-            assert(test_size <= num_tests)
-            assert(chunk_num <= test_size)
+            assert test_size <= num_tests
+            assert chunk_num <= test_size
 
             # To count the chunk_len, and make sure we don't skip
             # some tests, we round to the next value that fits exactly

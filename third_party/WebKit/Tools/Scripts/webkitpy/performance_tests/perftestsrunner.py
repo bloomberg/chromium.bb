@@ -191,7 +191,7 @@ class PerfTestsRunner(object):
 
         run_count = 0
         repeat = self._options.repeat
-        while (run_count < repeat):
+        while run_count < repeat:
             run_count += 1
 
             tests = self._collect_tests()

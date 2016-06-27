@@ -38,7 +38,7 @@ class PrettyPatch(object):
     def pretty_diff_file(self, diff):
         # Diffs can contain multiple text files of different encodings
         # so we always deal with them as byte arrays, not unicode strings.
-        assert(isinstance(diff, str))
+        assert isinstance(diff, str)
         pretty_diff = self.pretty_diff(diff)
         diff_file = tempfile.NamedTemporaryFile(suffix=".html")
         diff_file.write(pretty_diff)

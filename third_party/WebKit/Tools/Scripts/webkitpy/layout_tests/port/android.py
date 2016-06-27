@@ -729,8 +729,8 @@ http://goto.google.com/cr-android-perf-howto
 """)
 
     def attach_to_pid(self, pid):
-        assert(pid)
-        assert(self._perf_process is None)
+        assert pid
+        assert self._perf_process is None
         # FIXME: This can't be a fixed timeout!
         cmd = self._android_commands.adb_command() + ['shell', 'perf', 'record', '-g', '-p', pid, 'sleep', 30]
         self._perf_process = self._host.executive.popen(cmd)
@@ -876,7 +876,7 @@ class ChromiumAndroidDriver(driver.Driver):
         symfs_library_path = fs.join(symfs_path, "data/app-lib/%s-1/%s" %
                                      (self._driver_details.package_name(), self._driver_details.library_name()))
         built_library_path = self._port._build_path('lib', self._driver_details.library_name())
-        assert(fs.exists(built_library_path))
+        assert fs.exists(built_library_path)
 
         # FIXME: Ideally we'd check the sha1's first and make a soft-link instead
         # of copying (since we probably never care about windows).

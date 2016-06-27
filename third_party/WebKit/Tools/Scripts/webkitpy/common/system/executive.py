@@ -353,7 +353,7 @@ class Executive(object):
                     return_stderr=True,
                     decode_output=True, debug_logging=True):
         """Popen wrapper for convenience and to work around python bugs."""
-        assert(isinstance(args, list) or isinstance(args, tuple))
+        assert isinstance(args, list) or isinstance(args, tuple)
         start_time = time.time()
 
         stdin, string_to_communicate = self._compute_stdin(input)

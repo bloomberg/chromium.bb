@@ -77,7 +77,7 @@ class _CygPath(object):
         self._child_process = None
 
     def start(self):
-        assert(self._child_process is None)
+        assert self._child_process is None
         args = ['cygpath', '-f', '-', '-wa']
         self._child_process = subprocess.Popen(args,
                                                stdin=subprocess.PIPE,

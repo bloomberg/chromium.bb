@@ -433,7 +433,7 @@ class Manager(object):
         """
         crashed_processes = []
         for test, result in run_results.unexpected_results_by_name.iteritems():
-            if (result.type != test_expectations.CRASH):
+            if result.type != test_expectations.CRASH:
                 continue
             for failure in result.failures:
                 if not isinstance(failure, test_failures.FailureCrash):

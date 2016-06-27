@@ -410,7 +410,7 @@ class SingleTestRunner(object):
             if (expectation == '!=' and test_result.failures) or (expectation == '==' and not test_result.failures):
                 break
 
-        assert(expected_output)
+        assert expected_output
 
         if expected_text:
             text_output = DriverOutput(text=test_output.text, image=None, image_hash=None, audio=None)

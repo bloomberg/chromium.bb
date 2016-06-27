@@ -35,7 +35,7 @@ import traceback
 def log_thread_state(logger, name, thread_id, msg=''):
     """Log information about the given thread state."""
     stack = _find_thread_stack(thread_id)
-    assert(stack is not None)
+    assert stack is not None
     logger("")
     logger("%s (tid %d) %s" % (name, thread_id, msg))
     _log_stack(logger, stack)

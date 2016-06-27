@@ -903,7 +903,7 @@ class TestExpectations(object):
 
     @classmethod
     def expectation_from_string(cls, string):
-        assert(' ' not in string)  # This only handles one expectation at a time.
+        assert ' ' not in string  # This only handles one expectation at a time.
         return cls.EXPECTATIONS.get(string.lower())
 
     @staticmethod
@@ -913,7 +913,7 @@ class TestExpectations(object):
             result: actual result of a test execution
             expected_results: set of results listed in test_expectations
             test_needs_rebaselining: whether test was marked as REBASELINE"""
-        if not (set(expected_results) - (set(TestExpectations.NON_TEST_OUTCOME_EXPECTATIONS))):
+        if not set(expected_results) - set(TestExpectations.NON_TEST_OUTCOME_EXPECTATIONS):
             expected_results = set([PASS])
 
         if result in expected_results:
