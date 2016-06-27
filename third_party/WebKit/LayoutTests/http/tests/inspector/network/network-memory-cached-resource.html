@@ -2,7 +2,6 @@
 <head>
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
-<link rel='StyleSheet' href="resources/style.css" type="text/css">
 <script>
 function attachIframe()
 {
@@ -40,7 +39,7 @@ function test()
 
     function onRequest()
     {
-        if (!finished && findResource(/style\.css/, 200, false) && findResource(/style\.css/, 200, true)) {
+        if (!finished && findResource(/abe\.png/, 200, false) && findResource(/abe\.png/, 200, true)) {
             finished = true;
             InspectorTest.addResult("Memory-cached resource found.");
             step3();
@@ -61,5 +60,6 @@ function test()
 </head>
 <body onload="runTest()">
  <p>Tests that memory-cached resources are correctly reported.</p>
+ <img src="resources/abe.png">
 </body>
 </html>
