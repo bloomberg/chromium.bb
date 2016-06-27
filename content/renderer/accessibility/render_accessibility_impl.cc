@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/accessibility/renderer_accessibility.h"
+#include "content/renderer/accessibility/render_accessibility_impl.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -25,9 +25,11 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/accessibility/ax_node.h"
 
 using blink::WebAXObject;
 using blink::WebDocument;
+using blink::WebElement;
 using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebPoint;
@@ -44,7 +46,7 @@ namespace content {
 const size_t kMaxSnapshotNodeCount = 5000;
 
 // static
-void RendererAccessibility::SnapshotAccessibilityTree(
+void RenderAccessibilityImpl::SnapshotAccessibilityTree(
     RenderFrameImpl* render_frame,
     AXContentTreeUpdate* response) {
   DCHECK(render_frame);
@@ -61,11 +63,12 @@ void RendererAccessibility::SnapshotAccessibilityTree(
   serializer.SerializeChanges(context.root(), response);
 }
 
-RendererAccessibility::RendererAccessibility(RenderFrameImpl* render_frame)
+RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame)
     : RenderFrameObserver(render_frame),
       render_frame_(render_frame),
       tree_source_(render_frame),
       serializer_(&tree_source_),
+      pdf_tree_source_(nullptr),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
       reset_token_(0),
@@ -102,12 +105,12 @@ RendererAccessibility::RendererAccessibility(RenderFrameImpl* render_frame)
   }
 }
 
-RendererAccessibility::~RendererAccessibility() {
+RenderAccessibilityImpl::~RenderAccessibilityImpl() {
 }
 
-bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
+bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RendererAccessibility, message)
+  IPC_BEGIN_MESSAGE_MAP(RenderAccessibilityImpl, message)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_DoDefaultAction, OnDoDefaultAction)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Events_ACK, OnEventsAck)
@@ -128,12 +131,12 @@ bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void RendererAccessibility::HandleWebAccessibilityEvent(
+void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
     const blink::WebAXObject& obj, blink::WebAXEvent event) {
   HandleAXEvent(obj, AXEventFromBlink(event));
 }
 
-void RendererAccessibility::HandleAccessibilityFindInPageResult(
+void RenderAccessibilityImpl::HandleAccessibilityFindInPageResult(
     int identifier,
     int match_index,
     const blink::WebAXObject& start_object,
@@ -150,7 +153,7 @@ void RendererAccessibility::HandleAccessibilityFindInPageResult(
   Send(new AccessibilityHostMsg_FindInPageResult(routing_id(), params));
 }
 
-void RendererAccessibility::AccessibilityFocusedNodeChanged(
+void RenderAccessibilityImpl::AccessibilityFocusedNodeChanged(
     const WebNode& node) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
@@ -163,7 +166,7 @@ void RendererAccessibility::AccessibilityFocusedNodeChanged(
   }
 }
 
-void RendererAccessibility::DisableAccessibility() {
+void RenderAccessibilityImpl::DisableAccessibility() {
   RenderView* render_view = render_frame_->GetRenderView();
   if (!render_view)
     return;
@@ -179,7 +182,7 @@ void RendererAccessibility::DisableAccessibility() {
   settings->setAccessibilityEnabled(false);
 }
 
-void RendererAccessibility::HandleAXEvent(
+void RenderAccessibilityImpl::HandleAXEvent(
     const blink::WebAXObject& obj, ui::AXEvent event) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
@@ -226,18 +229,55 @@ void RendererAccessibility::HandleAXEvent(
     // up additional events.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&RendererAccessibility::SendPendingAccessibilityEvents,
+        base::Bind(&RenderAccessibilityImpl::SendPendingAccessibilityEvents,
                    weak_factory_.GetWeakPtr()));
   }
 }
 
-WebDocument RendererAccessibility::GetMainDocument() {
+int RenderAccessibilityImpl::GenerateAXID() {
+  WebAXObject root = tree_source_.GetRoot();
+  return root.generateAXID();
+}
+
+void RenderAccessibilityImpl::SetPdfTreeSource(
+    RenderAccessibilityImpl::PdfAXTreeSource* pdf_tree_source) {
+  pdf_tree_source_ = pdf_tree_source;
+  pdf_serializer_.reset(new PdfAXTreeSerializer(pdf_tree_source_));
+
+  WebAXObject root = tree_source_.GetRoot();
+  if (!root.updateLayoutAndCheckValidity())
+    return;
+
+  std::queue<WebAXObject> objs_to_explore;
+  objs_to_explore.push(root);
+  while (objs_to_explore.size()) {
+    WebAXObject obj = objs_to_explore.front();
+    objs_to_explore.pop();
+
+    WebNode node = obj.node();
+    if (!node.isNull() && node.isElementNode()) {
+      WebElement element = node.to<WebElement>();
+      if (element.hasHTMLTagName("embed")) {
+        HandleAXEvent(obj, ui::AX_EVENT_CHILDREN_CHANGED);
+        break;
+      }
+    }
+
+    // Explore children of this object.
+    std::vector<blink::WebAXObject> children;
+    tree_source_.GetChildren(obj, &children);
+    for (size_t i = 0; i < children.size(); ++i)
+      objs_to_explore.push(children[i]);
+  }
+}
+
+WebDocument RenderAccessibilityImpl::GetMainDocument() {
   if (render_frame_ && render_frame_->GetWebFrame())
     return render_frame_->GetWebFrame()->document();
   return WebDocument();
 }
 
-void RendererAccessibility::SendPendingAccessibilityEvents() {
+void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -289,6 +329,9 @@ void RendererAccessibility::SendPendingAccessibilityEvents() {
       continue;
     }
 
+    if (pdf_tree_source_)
+      AddPdfTreeToUpdate(&event_msg.update);
+
     event_msgs.push_back(event_msg);
 
     // For each node in the update, set the location in our map from
@@ -310,7 +353,7 @@ void RendererAccessibility::SendPendingAccessibilityEvents() {
     SendLocationChanges();
 }
 
-void RendererAccessibility::SendLocationChanges() {
+void RenderAccessibilityImpl::SendLocationChanges() {
   std::vector<AccessibilityHostMsg_LocationChangeParams> messages;
 
   // Update layout on the root of the tree.
@@ -356,7 +399,7 @@ void RendererAccessibility::SendLocationChanges() {
   Send(new AccessibilityHostMsg_LocationChanges(routing_id(), messages));
 }
 
-void RendererAccessibility::OnDoDefaultAction(int acc_obj_id) {
+void RenderAccessibilityImpl::OnDoDefaultAction(int acc_obj_id) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -372,17 +415,17 @@ void RendererAccessibility::OnDoDefaultAction(int acc_obj_id) {
   obj.performDefaultAction();
 }
 
-void RendererAccessibility::OnEventsAck() {
+void RenderAccessibilityImpl::OnEventsAck() {
   DCHECK(ack_pending_);
   ack_pending_ = false;
   SendPendingAccessibilityEvents();
 }
 
-void RendererAccessibility::OnFatalError() {
+void RenderAccessibilityImpl::OnFatalError() {
   CHECK(false) << "Invalid accessibility tree.";
 }
 
-void RendererAccessibility::OnHitTest(gfx::Point point) {
+void RenderAccessibilityImpl::OnHitTest(gfx::Point point) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -411,7 +454,7 @@ void RendererAccessibility::OnHitTest(gfx::Point point) {
   HandleAXEvent(obj, ui::AX_EVENT_HOVER);
 }
 
-void RendererAccessibility::OnSetAccessibilityFocus(int acc_obj_id) {
+void RenderAccessibilityImpl::OnSetAccessibilityFocus(int acc_obj_id) {
   if (tree_source_.accessibility_focus_id() == acc_obj_id)
     return;
 
@@ -431,7 +474,7 @@ void RendererAccessibility::OnSetAccessibilityFocus(int acc_obj_id) {
   HandleAXEvent(obj, ui::AX_EVENT_TREE_CHANGED);
 }
 
-void RendererAccessibility::OnReset(int reset_token) {
+void RenderAccessibilityImpl::OnReset(int reset_token) {
   reset_token_ = reset_token;
   serializer_.Reset();
   pending_events_.clear();
@@ -446,7 +489,7 @@ void RendererAccessibility::OnReset(int reset_token) {
   }
 }
 
-void RendererAccessibility::OnScrollToMakeVisible(
+void RenderAccessibilityImpl::OnScrollToMakeVisible(
     int acc_obj_id, gfx::Rect subfocus) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
@@ -470,7 +513,8 @@ void RendererAccessibility::OnScrollToMakeVisible(
   HandleAXEvent(document.accessibilityObject(), ui::AX_EVENT_LAYOUT_COMPLETE);
 }
 
-void RendererAccessibility::OnScrollToPoint(int acc_obj_id, gfx::Point point) {
+void RenderAccessibilityImpl::OnScrollToPoint(
+    int acc_obj_id, gfx::Point point) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -492,7 +536,7 @@ void RendererAccessibility::OnScrollToPoint(int acc_obj_id, gfx::Point point) {
   HandleAXEvent(document.accessibilityObject(), ui::AX_EVENT_LAYOUT_COMPLETE);
 }
 
-void RendererAccessibility::OnSetScrollOffset(int acc_obj_id,
+void RenderAccessibilityImpl::OnSetScrollOffset(int acc_obj_id,
                                               gfx::Point offset) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
@@ -505,7 +549,7 @@ void RendererAccessibility::OnSetScrollOffset(int acc_obj_id,
   obj.setScrollOffset(WebPoint(offset.x(), offset.y()));
 }
 
-void RendererAccessibility::OnSetFocus(int acc_obj_id) {
+void RenderAccessibilityImpl::OnSetFocus(int acc_obj_id) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -535,7 +579,7 @@ void RendererAccessibility::OnSetFocus(int acc_obj_id) {
     obj.setFocused(true);
 }
 
-void RendererAccessibility::OnSetSelection(int anchor_acc_obj_id,
+void RenderAccessibilityImpl::OnSetSelection(int anchor_acc_obj_id,
                                            int anchor_offset,
                                            int focus_acc_obj_id,
                                            int focus_offset) {
@@ -573,7 +617,7 @@ void RendererAccessibility::OnSetSelection(int anchor_acc_obj_id,
   HandleAXEvent(root, ui::AX_EVENT_LAYOUT_COMPLETE);
 }
 
-void RendererAccessibility::OnSetValue(
+void RenderAccessibilityImpl::OnSetValue(
     int acc_obj_id,
     base::string16 value) {
   const WebDocument& document = GetMainDocument();
@@ -592,7 +636,7 @@ void RendererAccessibility::OnSetValue(
   HandleAXEvent(obj, ui::AX_EVENT_VALUE_CHANGED);
 }
 
-void RendererAccessibility::OnShowContextMenu(int acc_obj_id) {
+void RenderAccessibilityImpl::OnShowContextMenu(int acc_obj_id) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -608,8 +652,30 @@ void RendererAccessibility::OnShowContextMenu(int acc_obj_id) {
   obj.showContextMenu();
 }
 
-void RendererAccessibility::OnDestruct() {
+void RenderAccessibilityImpl::OnDestruct() {
   delete this;
+}
+
+void RenderAccessibilityImpl::AddPdfTreeToUpdate(AXContentTreeUpdate* update) {
+  for (size_t i = 0; i < update->nodes.size(); ++i) {
+    if (update->nodes[i].role == ui::AX_ROLE_EMBEDDED_OBJECT) {
+      const ui::AXNode* root = pdf_tree_source_->GetRoot();
+      update->nodes[i].child_ids.push_back(root->id());
+
+      ui::AXTreeUpdate pdf_update;
+      pdf_serializer_->SerializeChanges(root, &pdf_update);
+
+      // We have to copy the updated nodes using a loop because we're
+      // converting from a generic ui::AXNodeData to a vector of its
+      // content-specific subclass AXContentNodeData.
+      size_t old_count = update->nodes.size();
+      size_t new_count = pdf_update.nodes.size();
+      update->nodes.resize(old_count + new_count);
+      for (size_t i = 0; i < new_count; ++i)
+        update->nodes[old_count + i] = pdf_update.nodes[i];
+      break;
+    }
+  }
 }
 
 }  // namespace content

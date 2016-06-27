@@ -35,6 +35,10 @@ AXContentNodeData::AXContentNodeData() {
 
 AXContentNodeData::AXContentNodeData(const AXContentNodeData& other) = default;
 
+AXContentNodeData::AXContentNodeData(const AXNodeData& other)
+    : AXNodeData(other) {
+}
+
 AXContentNodeData::~AXContentNodeData() {
 }
 

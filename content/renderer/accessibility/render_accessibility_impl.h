@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_H_
-#define CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_H_
+#ifndef CONTENT_RENDERER_ACCESSIBILITY_RENDER_ACCESSIBILITY_IMPL_H_
+#define CONTENT_RENDERER_ACCESSIBILITY_RENDER_ACCESSIBILITY_IMPL_H_
 
 #include <vector>
 
@@ -11,9 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/ax_content_node_data.h"
+#include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
 struct AccessibilityHostMsg_EventParams;
@@ -47,7 +49,9 @@ class RenderFrameImpl;
 // representation of that tree whenever it changes. It also handles requests
 // from the browser to perform accessibility actions on nodes in the tree
 // (e.g., change focus, or click on a button).
-class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
+class CONTENT_EXPORT RenderAccessibilityImpl
+    : public RenderAccessibility,
+             RenderFrameObserver {
  public:
   // Request a one-time snapshot of the accessibility tree without
   // enabling accessibility if it wasn't already enabled.
@@ -55,8 +59,12 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
       RenderFrameImpl* render_frame,
       AXContentTreeUpdate* response);
 
-  explicit RendererAccessibility(RenderFrameImpl* render_frame);
-  ~RendererAccessibility() override;
+  explicit RenderAccessibilityImpl(RenderFrameImpl* render_frame);
+  ~RenderAccessibilityImpl() override;
+
+  // RenderAccessibility implementation.
+  int GenerateAXID() override;
+  void SetPdfTreeSource(PdfAXTreeSource* source) override;
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -76,7 +84,7 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
 
   void AccessibilityFocusedNodeChanged(const blink::WebNode& node);
 
-  // This can be called before deleting a RendererAccessibility instance due
+  // This can be called before deleting a RenderAccessibilityImpl instance due
   // to the accessibility mode changing, as opposed to during frame destruction
   // (when there'd be no point).
   void DisableAccessibility();
@@ -121,6 +129,8 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
   void OnSetValue(int acc_obj_id, base::string16 value);
   void OnShowContextMenu(int acc_obj_id);
 
+  void AddPdfTreeToUpdate(AXContentTreeUpdate* update);
+
   // Events from Blink are collected until they are ready to be
   // sent to the browser.
   std::vector<AccessibilityHostMsg_EventParams> pending_events_;
@@ -134,6 +144,12 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
                            AXContentNodeData,
                            AXContentTreeData>;
   BlinkAXTreeSerializer serializer_;
+
+  using PdfAXTreeSerializer = ui::AXTreeSerializer<const ui::AXNode*,
+                                                   ui::AXNodeData,
+                                                   ui::AXTreeData>;
+  std::unique_ptr<PdfAXTreeSerializer> pdf_serializer_;
+  PdfAXTreeSource* pdf_tree_source_;
 
   // Current location of every object, so we can detect when it moves.
   base::hash_map<int, gfx::Rect> locations_;
@@ -151,9 +167,9 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
   int reset_token_;
 
   // So we can queue up tasks to be executed later.
-  base::WeakPtrFactory<RendererAccessibility> weak_factory_;
+  base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererAccessibility);
+  DISALLOW_COPY_AND_ASSIGN(RenderAccessibilityImpl);
 };
 
 }  // namespace content

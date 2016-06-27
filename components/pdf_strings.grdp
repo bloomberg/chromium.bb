@@ -49,5 +49,9 @@
     <message name="IDS_PDF_LABEL_PAGE_NUMBER" desc="Label for the input field containing the current page number">
       Page number
     </message>
+    <message name="IDS_PDF_PAGE_INDEX" desc="Accessible label for each page, describing the page number">
+      {COUNT, plural,
+         other {Page #}}
+    </message>
   </if>
 </grit-part>

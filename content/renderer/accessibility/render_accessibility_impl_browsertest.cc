@@ -14,7 +14,7 @@
 #include "content/common/view_message_enums.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/render_view_test.h"
-#include "content/renderer/accessibility/renderer_accessibility.h"
+#include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,20 +29,20 @@ using blink::WebDocument;
 
 namespace content {
 
-class TestRendererAccessibility : public RendererAccessibility {
+class TestRenderAccessibilityImpl : public RenderAccessibilityImpl {
  public:
-  explicit TestRendererAccessibility(RenderFrameImpl* render_frame)
-    : RendererAccessibility(render_frame) {
+  explicit TestRenderAccessibilityImpl(RenderFrameImpl* render_frame)
+    : RenderAccessibilityImpl(render_frame) {
   }
 
   void SendPendingAccessibilityEvents() {
-    RendererAccessibility::SendPendingAccessibilityEvents();
+    RenderAccessibilityImpl::SendPendingAccessibilityEvents();
   }
 };
 
-class RendererAccessibilityTest : public RenderViewTest {
+class RenderAccessibilityImplTest : public RenderViewTest {
  public:
-  RendererAccessibilityTest() {}
+  RenderAccessibilityImplTest() {}
 
   RenderViewImpl* view() {
     return static_cast<RenderViewImpl*>(view_);
@@ -97,12 +97,12 @@ class RendererAccessibilityTest : public RenderViewTest {
  protected:
   IPC::TestSink* sink_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererAccessibilityTest);
+  DISALLOW_COPY_AND_ASSIGN(RenderAccessibilityImplTest);
 
 };
 
-TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
-  // The job of RendererAccessibility is to serialize the
+TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
+  // The job of RenderAccessibilityImpl is to serialize the
   // accessibility tree built by WebKit and send it to the browser.
   // When the accessibility tree changes, it tries to send only
   // the nodes that actually changed or were reparented. This test
@@ -117,9 +117,9 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
       "</body>";
   LoadHTML(html.c_str());
 
-  // Creating a RendererAccessibility should sent the tree to the browser.
-  std::unique_ptr<TestRendererAccessibility> accessibility(
-      new TestRendererAccessibility(frame()));
+  // Creating a RenderAccessibilityImpl should sent the tree to the browser.
+  std::unique_ptr<TestRenderAccessibilityImpl> accessibility(
+      new TestRenderAccessibilityImpl(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
@@ -168,8 +168,8 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 }
 
-TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
-  // Test RendererAccessibility and make sure it sends the
+TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
+  // Test RenderAccessibilityImpl and make sure it sends the
   // proper event to the browser when an object in the tree
   // is hidden, but its children are not.
   std::string html =
@@ -183,8 +183,8 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
       "</body>";
   LoadHTML(html.c_str());
 
-  std::unique_ptr<TestRendererAccessibility> accessibility(
-      new TestRendererAccessibility(frame()));
+  std::unique_ptr<TestRenderAccessibilityImpl> accessibility(
+      new TestRenderAccessibilityImpl(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
@@ -211,7 +211,7 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
   GetLastAccEvent(&event);
   ASSERT_EQ(2U, event.update.nodes.size());
 
-  // RendererAccessibility notices that 'C' is being reparented,
+  // RenderAccessibilityImpl notices that 'C' is being reparented,
   // so it clears the subtree rooted at 'A', then updates 'A' and then 'C'.
   EXPECT_EQ(node_a.axID(), event.update.node_id_to_clear);
   EXPECT_EQ(node_a.axID(), event.update.nodes[0].id);
@@ -219,8 +219,8 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
   EXPECT_EQ(2, CountAccessibilityNodesSentToBrowser());
 }
 
-TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
-  // Test RendererAccessibility and make sure it sends the
+TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
+  // Test RenderAccessibilityImpl and make sure it sends the
   // proper event to the browser when an object in the tree
   // is shown, causing its own already-visible children to be
   // reparented to it.
@@ -235,8 +235,8 @@ TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
       "</body>";
   LoadHTML(html.c_str());
 
-  std::unique_ptr<TestRendererAccessibility> accessibility(
-      new TestRendererAccessibility(frame()));
+  std::unique_ptr<TestRenderAccessibilityImpl> accessibility(
+      new TestRenderAccessibilityImpl(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 
@@ -268,8 +268,8 @@ TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 }
 
-TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
-  // Test RendererAccessibility and make sure it sends the
+TEST_F(RenderAccessibilityImplTest, DetachAccessibilityObject) {
+  // Test RenderAccessibilityImpl and make sure it sends the
   // proper event to the browser when an object in the tree
   // is detached, but its children are not. This can happen when
   // a layout occurs and an anonymous render block is no longer needed.
@@ -279,8 +279,8 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
       "</body>";
   LoadHTML(html.c_str());
 
-  std::unique_ptr<TestRendererAccessibility> accessibility(
-      new TestRendererAccessibility(frame()));
+  std::unique_ptr<TestRenderAccessibilityImpl> accessibility(
+      new TestRenderAccessibilityImpl(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(7, CountAccessibilityNodesSentToBrowser());
 

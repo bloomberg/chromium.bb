@@ -139,7 +139,7 @@ class PepperPluginInstanceImpl;
 class PermissionDispatcher;
 class PresentationDispatcher;
 class PushMessagingDispatcher;
-class RendererAccessibility;
+class RenderAccessibilityImpl;
 class RendererCdmManager;
 class RendererMediaPlayerManager;
 class RendererMediaSessionManager;
@@ -286,8 +286,8 @@ class CONTENT_EXPORT RenderFrameImpl
     return accessibility_mode_;
   }
 
-  RendererAccessibility* renderer_accessibility() {
-    return renderer_accessibility_;
+  RenderAccessibilityImpl* render_accessibility() {
+    return render_accessibility_;
   }
 
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
@@ -298,7 +298,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void FocusedNodeChanged(const blink::WebNode& node);
 
   // TODO(dmazzoni): the only reason this is here is to plumb it through to
-  // RendererAccessibility. It should use the RenderFrameObserver method, once
+  // RenderAccessibilityImpl. It should use the RenderFrameObserver method, once
   // blink has a separate accessibility tree per frame.
   void FocusedNodeChangedForAccessibility(const blink::WebNode& node);
 
@@ -386,6 +386,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // RenderFrame implementation:
   RenderView* GetRenderView() override;
+  RenderAccessibility* GetRenderAccessibility() override;
   int GetRoutingID() override;
   blink::WebLocalFrame* GetWebFrame() override;
   WebPreferences& GetWebkitPreferences() override;
@@ -698,13 +699,13 @@ class CONTENT_EXPORT RenderFrameImpl
  private:
   friend class RenderFrameImplTest;
   friend class RenderFrameObserver;
-  friend class RendererAccessibilityTest;
+  friend class RenderAccessibilityImplTest;
   friend class TestRenderFrame;
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
-  FRIEND_TEST_ALL_PREFIXES(RendererAccessibilityTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderAccessibilityImplTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
 
   // A wrapper class used as the callback for JavaScript executed
@@ -1238,7 +1239,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.
-  RendererAccessibility* renderer_accessibility_;
+  RenderAccessibilityImpl* render_accessibility_;
 
   std::unique_ptr<PermissionDispatcher> permission_client_;
 

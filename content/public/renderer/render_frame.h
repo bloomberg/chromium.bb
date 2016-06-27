@@ -51,6 +51,7 @@ class Isolate;
 namespace content {
 class ContextMenuClient;
 class PluginInstanceThrottler;
+class RenderAccessibility;
 class RenderView;
 struct ContextMenuParams;
 struct WebPluginInfo;
@@ -88,6 +89,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the RenderView associated with this frame.
   virtual RenderView* GetRenderView() = 0;
+
+  // Return the RenderAccessibility associated with this frame.
+  virtual RenderAccessibility* GetRenderAccessibility() = 0;
 
   // Get the routing ID of the frame.
   virtual int GetRoutingID() = 0;

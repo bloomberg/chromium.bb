@@ -23,6 +23,7 @@ struct PP_Size;
 class SkBitmap;
 
 namespace content {
+class PepperPluginInstance;
 class RendererPpapiHost;
 }
 
@@ -37,6 +38,8 @@ struct HostMessageContext;
 }
 
 namespace pdf {
+
+class PdfAccessibilityTree;
 
 class PepperPDFHost : public ppapi::host::ResourceHost {
  public:
@@ -100,6 +103,11 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
       const PP_PrivateAccessibilityPageInfo& page_info,
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
+
+  void CreatePdfAccessibilityTreeIfNeeded(
+      content::PepperPluginInstance* instance);
+
+  std::unique_ptr<PdfAccessibilityTree> pdf_accessibility_tree_;
 
   content::RendererPpapiHost* host_;
 

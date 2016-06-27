@@ -46,7 +46,7 @@
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
-#include "content/renderer/accessibility/renderer_accessibility.h"
+#include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_controller.h"
@@ -2024,19 +2024,19 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
 
 TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
-  ASSERT_EQ((RendererAccessibility*) NULL, frame()->renderer_accessibility());
+  ASSERT_FALSE(frame()->render_accessibility());
 
   frame()->SetAccessibilityMode(AccessibilityModeTreeOnly);
   ASSERT_EQ(AccessibilityModeTreeOnly, frame()->accessibility_mode());
-  ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
+  ASSERT_TRUE(frame()->render_accessibility());
 
   frame()->SetAccessibilityMode(AccessibilityModeOff);
   ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
-  ASSERT_EQ((RendererAccessibility*) NULL, frame()->renderer_accessibility());
+  ASSERT_FALSE(frame()->render_accessibility());
 
   frame()->SetAccessibilityMode(AccessibilityModeComplete);
   ASSERT_EQ(AccessibilityModeComplete, frame()->accessibility_mode());
-  ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
+  ASSERT_TRUE(frame()->render_accessibility());
 }
 
 // Sanity check for the Navigation Timing API |navigationStart| override. We

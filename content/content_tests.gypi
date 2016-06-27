@@ -288,7 +288,7 @@
       'browser/webkit_browsertest.cc',
       'browser/webui/web_ui_mojo_browsertest.cc',
       'child/site_isolation_stats_gatherer_browsertest.cc',
-      'renderer/accessibility/renderer_accessibility_browsertest.cc',
+      'renderer/accessibility/render_accessibility_impl_browsertest.cc',
       'renderer/devtools/v8_sampling_profiler_browsertest.cc',
       'renderer/gin_browsertest.cc',
       'renderer/history_controller_browsertest.cc',

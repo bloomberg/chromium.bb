@@ -28,6 +28,7 @@ enum AXContentIntAttribute {
 // content-layer-specific AX attributes.
 struct CONTENT_EXPORT AXContentNodeData : public ui::AXNodeData {
   AXContentNodeData();
+  AXContentNodeData(const AXNodeData& other);
   AXContentNodeData(const AXContentNodeData& other);
   ~AXContentNodeData() override;
 

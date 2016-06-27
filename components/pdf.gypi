@@ -50,6 +50,8 @@
       'pdf_common',
     ],
     'sources': [
+      'pdf/renderer/pdf_accessibility_tree.cc',
+      'pdf/renderer/pdf_accessibility_tree.h',
       'pdf/renderer/pepper_pdf_host.cc',
       'pdf/renderer/pepper_pdf_host.h',
     ],

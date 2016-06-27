@@ -85,7 +85,7 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
-#include "content/renderer/accessibility/renderer_accessibility.h"
+#include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/bluetooth/web_bluetooth_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
@@ -1098,7 +1098,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       screen_orientation_dispatcher_(NULL),
       manifest_manager_(NULL),
       accessibility_mode_(AccessibilityModeOff),
-      renderer_accessibility_(NULL),
+      render_accessibility_(NULL),
       media_player_delegate_(NULL),
       is_using_lofi_(false),
       effective_connection_type_(
@@ -2102,25 +2102,25 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
   if (accessibility_mode_ == new_mode)
     return;
   accessibility_mode_ = new_mode;
-  if (renderer_accessibility_) {
+  if (render_accessibility_) {
     // Note: this isn't called automatically by the destructor because
     // there'd be no point in calling it in frame teardown, only if there's
     // an accessibility mode change but the frame is persisting.
-    renderer_accessibility_->DisableAccessibility();
+    render_accessibility_->DisableAccessibility();
 
-    delete renderer_accessibility_;
-    renderer_accessibility_ = NULL;
+    delete render_accessibility_;
+    render_accessibility_ = NULL;
   }
   if (accessibility_mode_ == AccessibilityModeOff)
     return;
 
   if (accessibility_mode_ & AccessibilityModeFlagFullTree)
-    renderer_accessibility_ = new RendererAccessibility(this);
+    render_accessibility_ = new RenderAccessibilityImpl(this);
 }
 
 void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id) {
   AXContentTreeUpdate response;
-  RendererAccessibility::SnapshotAccessibilityTree(this, &response);
+  RenderAccessibilityImpl::SnapshotAccessibilityTree(this, &response);
   Send(new AccessibilityHostMsg_SnapshotResponse(
       routing_id_, callback_id, response));
 }
@@ -2352,6 +2352,10 @@ void RenderFrameImpl::DidCommitAndDrawCompositorFrame() {
 
 RenderView* RenderFrameImpl::GetRenderView() {
   return render_view_.get();
+}
+
+RenderAccessibility* RenderFrameImpl::GetRenderAccessibility() {
+  return render_accessibility_;
 }
 
 int RenderFrameImpl::GetRoutingID() {
@@ -4425,8 +4429,8 @@ void RenderFrameImpl::handleAccessibilityFindInPageResult(
     int start_offset,
     const blink::WebAXObject& end_object,
     int end_offset) {
-  if (renderer_accessibility_) {
-    renderer_accessibility_->HandleAccessibilityFindInPageResult(
+  if (render_accessibility_) {
+    render_accessibility_->HandleAccessibilityFindInPageResult(
         identifier, match_index, start_object, start_offset,
         end_object, end_offset);
   }
@@ -4807,8 +4811,8 @@ void RenderFrameImpl::didChangeLoadProgress(double load_progress) {
 
 void RenderFrameImpl::HandleWebAccessibilityEvent(
     const blink::WebAXObject& obj, blink::WebAXEvent event) {
-  if (renderer_accessibility_)
-    renderer_accessibility_->HandleWebAccessibilityEvent(obj, event);
+  if (render_accessibility_)
+    render_accessibility_->HandleWebAccessibilityEvent(obj, event);
 }
 
 void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
@@ -4816,8 +4820,8 @@ void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
 }
 
 void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {
-  if (renderer_accessibility())
-    renderer_accessibility()->AccessibilityFocusedNodeChanged(node);
+  if (render_accessibility())
+    render_accessibility()->AccessibilityFocusedNodeChanged(node);
 }
 
 // PlzNavigate
