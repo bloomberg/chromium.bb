@@ -95,7 +95,7 @@ MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
 MenuRunnerImplCocoa::MenuRunnerImplCocoa(ui::MenuModel* menu)
     : running_(false),
       delete_after_run_(false),
-      closing_event_time_(base::TimeDelta()) {
+      closing_event_time_(base::TimeTicks()) {
   menu_controller_.reset(
       [[MenuController alloc] initWithModel:menu useWithPopUpButtonCell:NO]);
 }
@@ -124,7 +124,7 @@ MenuRunner::RunResult MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
   DCHECK(run_types & kNativeRunTypes);
   DCHECK(!IsRunning());
   DCHECK(parent);
-  closing_event_time_ = base::TimeDelta();
+  closing_event_time_ = base::TimeTicks();
   running_ = true;
 
   if (run_types & MenuRunner::CONTEXT_MENU) {
@@ -145,7 +145,7 @@ MenuRunner::RunResult MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
     NOTREACHED();
   }
 
-  closing_event_time_ = (base::TimeTicks::Now() - base::TimeTicks());
+  closing_event_time_ = base::TimeTicks::Now();
   running_ = false;
 
   if (delete_after_run_) {
@@ -160,7 +160,7 @@ void MenuRunnerImplCocoa::Cancel() {
   [menu_controller_ cancel];
 }
 
-base::TimeDelta MenuRunnerImplCocoa::GetClosingEventTime() const {
+base::TimeTicks MenuRunnerImplCocoa::GetClosingEventTime() const {
   return closing_event_time_;
 }
 

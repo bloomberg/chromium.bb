@@ -36,7 +36,6 @@ MenuRunnerImpl::MenuRunnerImpl(MenuItemView* menu)
       for_drop_(false),
       controller_(NULL),
       owns_controller_(false),
-      closing_event_time_(base::TimeDelta()),
       weak_factory_(this) {}
 
 bool MenuRunnerImpl::IsRunning() const {
@@ -80,7 +79,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
                                                 const gfx::Rect& bounds,
                                                 MenuAnchorPosition anchor,
                                                 int32_t run_types) {
-  closing_event_time_ = base::TimeDelta();
+  closing_event_time_ = base::TimeTicks();
   if (running_) {
     // Ignore requests to show the menu while it's already showing. MenuItemView
     // doesn't handle this very well (meaning it crashes).
@@ -158,7 +157,7 @@ void MenuRunnerImpl::Cancel() {
     controller_->Cancel(MenuController::EXIT_ALL);
 }
 
-base::TimeDelta MenuRunnerImpl::GetClosingEventTime() const {
+base::TimeTicks MenuRunnerImpl::GetClosingEventTime() const {
   return closing_event_time_;
 }
 

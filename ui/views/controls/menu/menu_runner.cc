@@ -67,7 +67,7 @@ void MenuRunner::Cancel() {
   impl_->Cancel();
 }
 
-base::TimeDelta MenuRunner::closing_event_time() const {
+base::TimeTicks MenuRunner::closing_event_time() const {
   return impl_->GetClosingEventTime();
 }
 

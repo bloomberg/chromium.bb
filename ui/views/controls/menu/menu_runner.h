@@ -16,7 +16,7 @@
 #include "ui/views/views_export.h"
 
 namespace base {
-class TimeDelta;
+class TimeTicks;
 }
 
 namespace gfx {
@@ -130,7 +130,7 @@ class VIEWS_EXPORT MenuRunner {
   void Cancel();
 
   // Returns the time from the event which closed the menu - or 0.
-  base::TimeDelta closing_event_time() const;
+  base::TimeTicks closing_event_time() const;
 
  private:
   friend class test::MenuRunnerTestAPI;

@@ -44,7 +44,7 @@ class MenuRunnerImplInterface {
   virtual void Cancel() = 0;
 
   // Returns the time from the event which closed the menu - or 0.
-  virtual base::TimeDelta GetClosingEventTime() const = 0;
+  virtual base::TimeTicks GetClosingEventTime() const = 0;
 
  protected:
   // Call Release() to delete.

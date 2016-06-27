@@ -1854,8 +1854,7 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
 
   // Unpinning an item will reset |launcher_menu_runner_| before coming here.
   if (launcher_menu_runner_)
-    closing_event_time_ =
-        base::TimeTicks() + launcher_menu_runner_->closing_event_time();
+    closing_event_time_ = launcher_menu_runner_->closing_event_time();
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 

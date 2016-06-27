@@ -29,7 +29,7 @@ class MenuRunnerImplAdapter : public MenuRunnerImplInterface {
                                   MenuAnchorPosition anchor,
                                   int32_t types) override;
   void Cancel() override;
-  base::TimeDelta GetClosingEventTime() const override;
+  base::TimeTicks GetClosingEventTime() const override;
 
  private:
   ~MenuRunnerImplAdapter() override;

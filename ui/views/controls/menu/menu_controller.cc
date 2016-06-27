@@ -397,7 +397,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   possible_drag_ = false;
   drag_in_progress_ = false;
   did_initiate_drag_ = false;
-  closing_event_time_ = base::TimeDelta();
+  closing_event_time_ = base::TimeTicks();
   menu_start_time_ = base::TimeTicks::Now();
   menu_start_mouse_press_loc_ = gfx::Point();
 
@@ -1181,7 +1181,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
     // Remember the time stamp of the current (press down) event. The owner can
     // then use this to figure out if this menu was finished with the same click
     // which is sent to it thereafter.
-    closing_event_time_ = event->time_stamp() - base::TimeTicks();
+    closing_event_time_ = event->time_stamp();
     // Event wasn't pressed over any menu, or the active menu, cancel.
     RepostEventAndCancel(source, event);
     // Do not repost events for Linux Aura because this behavior is more
@@ -1367,8 +1367,6 @@ MenuController::MenuController(bool blocking,
       hot_button_(nullptr),
       delegate_(delegate),
       message_loop_depth_(0),
-      closing_event_time_(base::TimeDelta()),
-      menu_start_time_(base::TimeTicks()),
       async_run_(false),
       is_combobox_(false),
       item_selected_by_touch_(false),

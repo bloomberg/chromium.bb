@@ -40,7 +40,7 @@ class VIEWS_EXPORT MenuRunnerImpl
                                   MenuAnchorPosition anchor,
                                   int32_t run_types) override;
   void Cancel() override;
-  base::TimeDelta GetClosingEventTime() const override;
+  base::TimeTicks GetClosingEventTime() const override;
 
   // MenuControllerDelegate:
   void OnMenuClosed(NotifyType type,
@@ -92,7 +92,7 @@ class VIEWS_EXPORT MenuRunnerImpl
   bool owns_controller_;
 
   // The timestamp of the event which closed the menu - or 0.
-  base::TimeDelta closing_event_time_;
+  base::TimeTicks closing_event_time_;
 
   // Used to detect deletion of |this| when notifying delegate of success.
   base::WeakPtrFactory<MenuRunnerImpl> weak_factory_;

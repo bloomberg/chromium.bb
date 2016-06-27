@@ -169,7 +169,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
 };
 
 TEST_F(MenuRunnerCocoaTest, RunMenuAndCancel) {
-  base::TimeDelta min_time = (ui::EventTimeForNow() - base::TimeTicks());
+  base::TimeTicks min_time = ui::EventTimeForNow();
 
   MenuRunner::RunResult result = RunMenu(base::Bind(
       &MenuRunnerCocoaTest::MenuCancelCallback, base::Unretained(this)));
@@ -178,8 +178,7 @@ TEST_F(MenuRunnerCocoaTest, RunMenuAndCancel) {
   EXPECT_FALSE(runner_->IsRunning());
 
   EXPECT_GE(runner_->GetClosingEventTime(), min_time);
-  EXPECT_LE(runner_->GetClosingEventTime(),
-      (ui::EventTimeForNow() - base::TimeTicks()));
+  EXPECT_LE(runner_->GetClosingEventTime(), ui::EventTimeForNow());
 
   // Cancel again.
   runner_->Cancel();
@@ -213,7 +212,7 @@ TEST_F(MenuRunnerCocoaTest, RunMenuTwice) {
 TEST_F(MenuRunnerCocoaTest, CancelWithoutRunning) {
   runner_->Cancel();
   EXPECT_FALSE(runner_->IsRunning());
-  EXPECT_EQ(base::TimeDelta(), runner_->GetClosingEventTime());
+  EXPECT_EQ(base::TimeTicks(), runner_->GetClosingEventTime());
 }
 
 TEST_F(MenuRunnerCocoaTest, DeleteWithoutRunning) {

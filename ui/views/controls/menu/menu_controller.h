@@ -132,8 +132,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   ExitType exit_type() const { return exit_type_; }
 
   // Returns the time from the event which closed the menu - or 0.
-  // TODO(majidvp): Should return a TimeTicks. crbug.com/453559
-  base::TimeDelta closing_event_time() const { return closing_event_time_; }
+  base::TimeTicks closing_event_time() const { return closing_event_time_; }
 
   void set_is_combobox(bool is_combobox) { is_combobox_ = is_combobox; }
 
@@ -669,7 +668,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   int message_loop_depth_;
 
   // The timestamp of the event which closed the menu - or 0 otherwise.
-  base::TimeDelta closing_event_time_;
+  base::TimeTicks closing_event_time_;
 
   // Time when the menu is first shown.
   base::TimeTicks menu_start_time_;
