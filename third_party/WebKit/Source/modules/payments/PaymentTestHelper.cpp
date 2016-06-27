@@ -66,6 +66,27 @@ PaymentShippingOption buildShippingOptionForTest(PaymentTestDataToChange data, P
     return shippingOption;
 }
 
+PaymentDetailsModifier buildPaymentDetailsModifierForTest(PaymentTestDetailToChange detail, PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
+{
+    PaymentItem total;
+    if (detail == PaymentTestDetailModifierTotal)
+        total = buildPaymentItemForTest(data, modificationType, valueToUse);
+    else
+        total = buildPaymentItemForTest();
+
+    PaymentItem item;
+    if (detail == PaymentTestDetailModifierItem)
+        item = buildPaymentItemForTest(data, modificationType, valueToUse);
+    else
+        item = buildPaymentItemForTest();
+
+    PaymentDetailsModifier modifier;
+    modifier.setSupportedMethods(Vector<String>(1, "foo"));
+    modifier.setTotal(total);
+    modifier.setAdditionalDisplayItems(HeapVector<PaymentItem>(1, item));
+    return modifier;
+}
+
 PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
     PaymentItem total;
@@ -86,10 +107,17 @@ PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, Paym
     else
         shippingOption = buildShippingOptionForTest();
 
+    PaymentDetailsModifier modifier;
+    if (detail == PaymentTestDetailModifierTotal || detail == PaymentTestDetailModifierItem)
+        modifier = buildPaymentDetailsModifierForTest(detail, data, modificationType, valueToUse);
+    else
+        modifier = buildPaymentDetailsModifierForTest();
+
     PaymentDetails result;
     result.setTotal(total);
     result.setDisplayItems(HeapVector<PaymentItem>(1, item));
     result.setShippingOptions(HeapVector<PaymentShippingOption>(2, shippingOption));
+    result.setModifiers(HeapVector<PaymentDetailsModifier>(1, modifier));
 
     return result;
 }

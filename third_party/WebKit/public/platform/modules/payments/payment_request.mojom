@@ -84,10 +84,17 @@ struct PaymentShippingOption {
   bool selected;
 };
 
+struct PaymentDetailsModifier {
+  array<string> supported_methods;
+  PaymentItem total;
+  array<PaymentItem> additional_display_items;
+};
+
 struct PaymentDetails {
   PaymentItem total;
   array<PaymentItem> display_items;
   array<PaymentShippingOption> shipping_options;
+  array<PaymentDetailsModifier> modifiers;
 };
 
 struct PaymentOptions {

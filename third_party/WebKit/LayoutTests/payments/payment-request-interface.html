@@ -35,27 +35,28 @@ function buildItem(optionalSubstituteKeyValuePairs) {
     return item;
 }
 
+function setValue(obj, key, val) {
+    keys = key.split(/\./);
+    key = keys.pop();
+    keys.forEach((k) => { obj = obj[k]; });
+    assert_true(obj != undefined);
+    obj[key] = val;
+}
+
 function buildDetails(optionalDetailName, optionalSubstituteKeyValuePairs) {
-    var details = {};
-    var detailNames = ['total', 'displayItems', 'shippingOptions'];
+    var details = {
+        'total': buildItem(),
+        'displayItems': [buildItem()],
+        'shippingOptions': [buildItem()],
+        'modifiers': [{
+            'supportedMethods': ['foo'],
+            'total': buildItem(),
+            'additionalDisplayItems': [buildItem()]
+        }]
+    };
 
-    assert_true(!optionalDetailName || detailNames.indexOf(optionalDetailName) >= 0, 'Detail name "' + optionalDetailName + '" should be either "total", "displayItems", or "shippingOptions".');
-
-    for (var i in detailNames) {
-        if (optionalDetailName == detailNames[i]) {
-            if (detailNames[i] == 'total') {
-                details[detailNames[i]] = buildItem(optionalSubstituteKeyValuePairs);
-            } else {
-                details[detailNames[i]] = [buildItem(optionalSubstituteKeyValuePairs)];
-            }
-        } else {
-            if (detailNames[i] == 'total') {
-                details[detailNames[i]] = buildItem();
-            } else {
-                details[detailNames[i]] = [buildItem()];
-            }
-        }
-    }
+    if (optionalDetailName)
+        setValue(details, optionalDetailName, buildItem(optionalSubstituteKeyValuePairs));
 
     return details;
 }
@@ -111,12 +112,12 @@ test(function() {
 }, 'Valid data causes no errors.');
 
 test(function() {
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('shippingOptions', {'id': 'standard'}));
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('shippingOptions.0', {'id': 'standard'}));
     assert_equals(null, request.shippingOption);
 }, 'Shipping option identifier should be null if shipping request is omitted.');
 
 test(function() {
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('shippingOptions', {'id': 'standard'}), {'requestShipping': false});
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('shippingOptions.0', {'id': 'standard'}), {'requestShipping': false});
     assert_equals(null, request.shippingOption);
 }, 'Shipping option identifier should be null if shipping is explicitly not requested.');
 
@@ -126,12 +127,12 @@ test(function() {
 }, 'Shipping option identifier should be null if no shipping options are provided.');
 
 test(function() {
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('shippingOptions', {'selected': false}), {'requestShipping': true});
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('shippingOptions.0', {'selected': false}), {'requestShipping': true});
     assert_equals(null, request.shippingOption);
 }, 'Shipping option identifier should be null if the single provided option is not selected.');
 
 test(function() {
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('shippingOptions', {'id': 'standard', 'selected': true}), {'requestShipping': true});
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('shippingOptions.0', {'id': 'standard', 'selected': true}), {'requestShipping': true});
     assert_equals('standard', request.shippingOption);
 }, 'Shipping option identifier should default to the single provided option if it is selected.');
 
@@ -172,7 +173,7 @@ test(function() {
 }, 'Negative total value should throw a TypeError.');
 
 test(function() {
-    new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('displayItems', {'value': '-0.01'}));
+    new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('displayItems.0', {'value': '-0.01'}));
 }, 'Negative line item value should not throw.');
 
 test(function() {
@@ -180,6 +181,50 @@ test(function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {'displayItems': [buildItem()]});
     });
 }, 'Absence of total should throw TypeError.');
+
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': undefined});
+}, 'Undefined modifiers should not throw.');
+
+test(function() {
+    assert_throws(new TypeError(), function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': []});
+    });
+}, 'Empty modifiers should throw TypeError.');
+
+test(function() {
+    assert_throws(new TypeError(), function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'total': buildItem()}]});
+    });
+}, 'Absence of supportedMethods in modifiers should throw TypeError.');
+
+test(function() {
+    assert_throws(new TypeError(), function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': []}]});
+    });
+}, 'Empty supportedMethods in modifiers should throw TypeError.');
+
+test(function() {
+    assert_throws(new TypeError(), function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': undefined}]});
+    });
+}, 'Undefined supportedMethods in modifiers should throw TypeError.');
+
+test(function() {
+    assert_throws(new TypeError(), function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': null}]});
+    });
+}, 'Null supportedMethods in modifiers should throw TypeError.');
+
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo'], 'total': buildItem({'value': '0.0'})}]});
+}, 'Non-negative total value in PaymentDetailsModifier should not throw.');
+
+test(function() {
+    assert_throws(new TypeError(), function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo'], 'total': buildItem({'value': '-0.01'})}]});
+    });
+}, 'Negative total value in PaymentDetailsModifier should throw a TypeError.');
 
 promise_test(function(t) {
     return promise_rejects(t, null, new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails()).abort());
@@ -231,7 +276,7 @@ generate_tests(assert_throws, [
     }]
 ]);
 
-var detailNames = ['total', 'displayItems', 'shippingOptions'];
+var detailNames = ['total', 'displayItems.0', 'shippingOptions.0', 'modifiers.0.total', 'modifiers.0.additionalDisplayItems.0'];
 for (var i in detailNames) {
     generate_tests(assert_throws, [
         // Invalid currency code formats.

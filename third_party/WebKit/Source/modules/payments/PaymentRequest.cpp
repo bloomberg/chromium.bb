@@ -32,6 +32,8 @@ namespace mojo {
 using blink::mojom::blink::PaymentCurrencyAmount;
 using blink::mojom::blink::PaymentCurrencyAmountPtr;
 using blink::mojom::blink::PaymentDetails;
+using blink::mojom::blink::PaymentDetailsModifier;
+using blink::mojom::blink::PaymentDetailsModifierPtr;
 using blink::mojom::blink::PaymentDetailsPtr;
 using blink::mojom::blink::PaymentItem;
 using blink::mojom::blink::PaymentItemPtr;
@@ -78,6 +80,27 @@ struct TypeConverter<PaymentShippingOptionPtr, blink::PaymentShippingOption> {
 };
 
 template <>
+struct TypeConverter<PaymentDetailsModifierPtr, blink::PaymentDetailsModifier> {
+    static PaymentDetailsModifierPtr Convert(const blink::PaymentDetailsModifier& input)
+    {
+        PaymentDetailsModifierPtr output = PaymentDetailsModifier::New();
+        output->supported_methods = WTF::Vector<WTF::String>(input.supportedMethods());
+
+        if (input.hasTotal())
+            output->total = PaymentItem::From(input.total());
+        else
+            output->total = PaymentItem::New();
+
+        if (input.hasAdditionalDisplayItems())
+            output->additional_display_items = mojo::WTFArray<PaymentItemPtr>::From(input.additionalDisplayItems());
+        else
+            output->additional_display_items = mojo::WTFArray<PaymentItemPtr>::New(0);
+
+        return output;
+    }
+};
+
+template <>
 struct TypeConverter<PaymentDetailsPtr, blink::PaymentDetails> {
     static PaymentDetailsPtr Convert(const blink::PaymentDetails& input)
     {
@@ -93,6 +116,11 @@ struct TypeConverter<PaymentDetailsPtr, blink::PaymentDetails> {
             output->shipping_options = mojo::WTFArray<PaymentShippingOptionPtr>::From(input.shippingOptions());
         else
             output->shipping_options = mojo::WTFArray<PaymentShippingOptionPtr>::New(0);
+
+        if (input.hasModifiers())
+            output->modifiers = mojo::WTFArray<PaymentDetailsModifierPtr>::From(input.modifiers());
+        else
+            output->modifiers = mojo::WTFArray<PaymentDetailsModifierPtr>::New(0);
 
         return output;
     }
@@ -189,6 +217,38 @@ void validateShippingOptions(const HeapVector<PaymentShippingOption>& options, E
     }
 }
 
+void validatePaymentDetailsModifiers(const HeapVector<PaymentDetailsModifier>& modifiers, ExceptionState& exceptionState)
+{
+    if (modifiers.isEmpty()) {
+        exceptionState.throwTypeError("Must specify at least one payment details modifier");
+        return;
+    }
+
+    for (const auto& modifier : modifiers) {
+        if (modifier.supportedMethods().isEmpty()) {
+            exceptionState.throwTypeError("Must specify at least one payment method identifier");
+            return;
+        }
+
+        if (modifier.hasTotal()) {
+            validateShippingOptionOrPaymentItem(modifier.total(), exceptionState);
+            if (exceptionState.hadException())
+                return;
+
+            if (modifier.total().amount().value()[0] == '-') {
+                exceptionState.throwTypeError("Total amount value should be non-negative");
+                return;
+            }
+        }
+
+        if (modifier.hasAdditionalDisplayItems()) {
+            validateDisplayItems(modifier.additionalDisplayItems(), exceptionState);
+            if (exceptionState.hadException())
+                return;
+        }
+    }
+}
+
 void validatePaymentDetails(const PaymentDetails& details, ExceptionState& exceptionState)
 {
     if (!details.hasTotal()) {
@@ -213,6 +273,12 @@ void validatePaymentDetails(const PaymentDetails& details, ExceptionState& excep
 
     if (details.hasShippingOptions()) {
         validateShippingOptions(details.shippingOptions(), exceptionState);
+        if (exceptionState.hadException())
+            return;
+    }
+
+    if (details.hasModifiers()) {
+        validatePaymentDetailsModifiers(details.modifiers(), exceptionState);
     }
 }
 

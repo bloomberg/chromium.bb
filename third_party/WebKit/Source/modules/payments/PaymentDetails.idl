@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#paymentdetails-dictionary
+// https://w3c.github.io/browser-payment-api/#paymentdetails-dictionary
 
 [
     RuntimeEnabled=PaymentRequest
@@ -10,4 +10,5 @@
     PaymentItem total;
     sequence<PaymentItem> displayItems;
     sequence<PaymentShippingOption> shippingOptions;
+    sequence<PaymentDetailsModifier> modifiers;
 };

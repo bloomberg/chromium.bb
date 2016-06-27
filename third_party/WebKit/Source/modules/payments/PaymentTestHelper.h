@@ -28,7 +28,9 @@ enum PaymentTestDetailToChange {
     PaymentTestDetailNone,
     PaymentTestDetailTotal,
     PaymentTestDetailItem,
-    PaymentTestDetailShippingOption
+    PaymentTestDetailShippingOption,
+    PaymentTestDetailModifierTotal,
+    PaymentTestDetailModifierItem
 };
 
 enum PaymentTestDataToChange {
@@ -48,6 +50,8 @@ enum PaymentTestModificationType {
 PaymentItem buildPaymentItemForTest(PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
 
 PaymentShippingOption buildShippingOptionForTest(PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
+
+PaymentDetailsModifier buildPaymentDetailsModifierForTest(PaymentTestDetailToChange = PaymentTestDetailNone, PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
 
 PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange = PaymentTestDetailNone, PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
 
