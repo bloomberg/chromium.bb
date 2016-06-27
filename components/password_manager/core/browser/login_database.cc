@@ -1063,8 +1063,11 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   base::string16 decrypted_password;
   EncryptionResult encryption_result =
       DecryptedString(encrypted_password, &decrypted_password);
-  if (encryption_result != ENCRYPTION_RESULT_SUCCESS)
+  if (encryption_result != ENCRYPTION_RESULT_SUCCESS) {
+    VLOG(0) << "Password decryption failed, encryption_result is "
+            << encryption_result;
     return encryption_result;
+  }
 
   std::string tmp = s.ColumnString(COLUMN_ORIGIN_URL);
   form->origin = GURL(tmp);
