@@ -13,6 +13,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
+#include "components/arc/intent_helper/local_activity_resolver.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/account_id/account_id.h"
 
@@ -63,6 +64,11 @@ class ArcServiceManager {
   // Returns the icon loader owned by ArcServiceManager and shared by services.
   scoped_refptr<ActivityIconLoader> icon_loader() { return icon_loader_; }
 
+  // Returns the activity resolver owned by ArcServiceManager.
+  scoped_refptr<LocalActivityResolver> activity_resolver() {
+    return activity_resolver_;
+  }
+
  private:
   base::ThreadChecker thread_checker_;
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
@@ -70,6 +76,7 @@ class ArcServiceManager {
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::vector<std::unique_ptr<ArcService>> services_;
   scoped_refptr<ActivityIconLoader> icon_loader_;
+  scoped_refptr<LocalActivityResolver> activity_resolver_;
 
   // True once the window manager service got added, barring adding any more
   // of those since OnAshStarted() might be called multiple times.

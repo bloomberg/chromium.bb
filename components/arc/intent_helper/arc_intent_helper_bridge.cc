@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/link_handler_model_impl.h"
+#include "components/arc/intent_helper/local_activity_resolver.h"
 #include "components/arc/set_wallpaper_delegate.h"
 #include "ui/base/layout.h"
 #include "url/gurl.h"
@@ -29,11 +30,13 @@ constexpr char kArcIntentHelperPackageName[] = "org.chromium.arc.intent_helper";
 ArcIntentHelperBridge::ArcIntentHelperBridge(
     ArcBridgeService* bridge_service,
     const scoped_refptr<ActivityIconLoader>& icon_loader,
-    std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate)
+    std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate,
+    const scoped_refptr<LocalActivityResolver>& activity_resolver)
     : ArcService(bridge_service),
       binding_(this),
       icon_loader_(icon_loader),
-      set_wallpaper_delegate_(std::move(set_wallpaper_delegate)) {
+      set_wallpaper_delegate_(std::move(set_wallpaper_delegate)),
+      activity_resolver_(activity_resolver) {
   DCHECK(thread_checker_.CalledOnValidThread());
   arc_bridge_service()->AddObserver(this);
 }
@@ -113,6 +116,12 @@ ArcIntentHelperBridge::FilterOutIntentHelper(
     handlers_filtered.push_back(std::move(handler));
   }
   return handlers_filtered;
+}
+
+void ArcIntentHelperBridge::OnIntentFiltersUpdated(
+    mojo::Array<mojom::IntentFilterPtr> filters) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  activity_resolver_->UpdateIntentFilters(std::move(filters));
 }
 
 }  // namespace arc

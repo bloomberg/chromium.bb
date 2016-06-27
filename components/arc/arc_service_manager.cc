@@ -41,7 +41,8 @@ ArcBridgeService* g_arc_bridge_service_for_testing = nullptr;
 ArcServiceManager::ArcServiceManager(
     scoped_refptr<base::TaskRunner> blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner),
-      icon_loader_(new ActivityIconLoader) {
+      icon_loader_(new ActivityIconLoader),
+      activity_resolver_(new LocalActivityResolver) {
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
 
@@ -118,6 +119,7 @@ void ArcServiceManager::OnAshStarted() {
 
 void ArcServiceManager::Shutdown() {
   icon_loader_ = nullptr;
+  activity_resolver_ = nullptr;
   services_.clear();
 }
 

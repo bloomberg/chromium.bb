@@ -26,6 +26,7 @@ class LinkHandlerModel;
 namespace arc {
 
 class ActivityIconLoader;
+class LocalActivityResolver;
 class SetWallpaperDelegate;
 
 // Receives intents from ARC.
@@ -37,7 +38,8 @@ class ArcIntentHelperBridge : public ArcService,
   ArcIntentHelperBridge(
       ArcBridgeService* bridge_service,
       const scoped_refptr<ActivityIconLoader>& icon_loader,
-      std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate);
+      std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate,
+      const scoped_refptr<LocalActivityResolver>& activity_resolver);
   ~ArcIntentHelperBridge() override;
 
   // ArcBridgeService::Observer
@@ -46,6 +48,8 @@ class ArcIntentHelperBridge : public ArcService,
 
   // arc::mojom::IntentHelperHost
   void OnIconInvalidated(const mojo::String& package_name) override;
+  void OnIntentFiltersUpdated(
+      mojo::Array<mojom::IntentFilterPtr> intent_filters) override;
   void OnOpenDownloads() override;
   void OnOpenUrl(const mojo::String& url) override;
   void OpenWallpaperPicker() override;
@@ -66,6 +70,7 @@ class ArcIntentHelperBridge : public ArcService,
   mojo::Binding<mojom::IntentHelperHost> binding_;
   scoped_refptr<ActivityIconLoader> icon_loader_;
   std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate_;
+  scoped_refptr<LocalActivityResolver> activity_resolver_;
 
   base::ThreadChecker thread_checker_;
 

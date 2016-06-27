@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 9
+// Next MinVersion: 10
 
 module arc.mojom;
 
@@ -13,6 +13,12 @@ enum ActionType {
   VIEW,
   SEND,
   SEND_MULTIPLE,
+};
+
+struct IntentFilter {
+  array<string> actions;
+  array<string> categories;
+  array<string> data_schemes;
 };
 
 // Describes a package that can handle a URL.
@@ -45,10 +51,14 @@ struct UrlWithMimeType {
 };
 
 // Handles intents from ARC in Chrome.
-// Next method ID: 5
+// Next method ID: 6
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
+
+  // Called when intent filters are updated. Either on startup or when
+  // apps are installed or uninstalled.
+  [MinVersion=9] OnIntentFiltersUpdated@5(array<IntentFilter> intent_filters);
 
   // Opens the downloads directory in the Chrome OS file manager.
   [MinVersion=5] OnOpenDownloads@2();
