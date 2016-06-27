@@ -747,7 +747,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
               shelf_widget_->status_area_widget()->GetNativeView()->parent(),
               status_bounds));
     }
-    if (!state_.is_screen_locked) {
+    // For crbug.com/622431, when the shelf alignment is BOTTOM_LOCKED, we
+    // don't set display work area, as it is not real user-set alignment.
+    if (!state_.is_screen_locked &&
+        shelf_widget_->GetAlignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
       gfx::Insets insets;
       // If user session is blocked (login to new user session or add user to
       // the existing session - multi-profile) then give 100% of work area only
