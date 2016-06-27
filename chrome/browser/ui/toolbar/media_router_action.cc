@@ -137,6 +137,11 @@ ui::MenuModel* MediaRouterAction::GetContextMenu() {
 bool MediaRouterAction::ExecuteAction(bool by_user) {
   base::RecordAction(base::UserMetricsAction("MediaRouter_Icon_Click"));
 
+  if (GetMediaRouterDialogController()->IsShowingMediaRouterDialog()) {
+    GetMediaRouterDialogController()->HideMediaRouterDialog();
+    return false;
+  }
+
   GetMediaRouterDialogController()->ShowMediaRouterDialog();
   if (GetPlatformDelegate()) {
     media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(

@@ -347,8 +347,9 @@ TEST_F(MediaRouterActionUnitTest, IconPressedState) {
   EXPECT_CALL(*mock_delegate, OnPopupShown(true)).Times(1);
   action()->ExecuteAction(true);
 
+  // Pressing the icon while the popup is shown should close the popup
   EXPECT_CALL(*mock_delegate, OnPopupClosed()).Times(1);
-  dialog_controller_->HideMediaRouterDialog();
+  action()->ExecuteAction(true);
 
   EXPECT_CALL(*mock_delegate, OnPopupShown(true)).Times(1);
   dialog_controller_->CreateMediaRouterDialog();
