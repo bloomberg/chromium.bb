@@ -45,7 +45,7 @@ public:
     T* get() const
     {
 #if DCHECK_IS_ON()
-        DCHECK(m_boundThread == currentThread());
+        DCHECK_EQ(m_boundThread, currentThread());
 #endif
         return m_ptr;
     }
@@ -53,7 +53,7 @@ public:
     void clear()
     {
 #if DCHECK_IS_ON()
-        DCHECK(m_boundThread == currentThread());
+        DCHECK_EQ(m_boundThread, currentThread());
 #endif
         m_ptr = 0;
     }
