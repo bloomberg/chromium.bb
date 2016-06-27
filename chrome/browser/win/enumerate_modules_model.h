@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ENUMERATE_MODULES_MODEL_WIN_H_
-#define CHROME_BROWSER_ENUMERATE_MODULES_MODEL_WIN_H_
+#ifndef CHROME_BROWSER_WIN_ENUMERATE_MODULES_MODEL_H_
+#define CHROME_BROWSER_WIN_ENUMERATE_MODULES_MODEL_H_
 
 #include <utility>
 #include <vector>
@@ -363,4 +363,4 @@ class EnumerateModulesModel {
   DISALLOW_COPY_AND_ASSIGN(EnumerateModulesModel);
 };
 
-#endif  // CHROME_BROWSER_ENUMERATE_MODULES_MODEL_WIN_H_
+#endif  // CHROME_BROWSER_WIN_ENUMERATE_MODULES_MODEL_H_

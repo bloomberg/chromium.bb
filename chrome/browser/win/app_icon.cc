@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/app_icon_win.h"
+#include "chrome/browser/win/app_icon.h"
 
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_constants.h"

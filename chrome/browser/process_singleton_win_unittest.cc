@@ -23,7 +23,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/wrapped_window_proc.h"
-#include "chrome/browser/chrome_process_finder_win.h"
+#include "chrome/browser/win/chrome_process_finder.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/result_codes.h"

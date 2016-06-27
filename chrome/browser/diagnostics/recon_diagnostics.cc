@@ -30,7 +30,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "chrome/browser/enumerate_modules_model_win.h"
+#include "chrome/browser/win/enumerate_modules_model.h"
 #include "chrome/installer/util/install_util.h"
 #endif
 

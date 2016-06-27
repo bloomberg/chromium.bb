@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/private_working_set_snapshot.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
@@ -61,6 +60,10 @@
 
 #if defined(OS_MACOSX)
 #include "content/public/browser/browser_child_process_host.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/win/private_working_set_snapshot.h"
 #endif
 
 using content::BrowserThread;

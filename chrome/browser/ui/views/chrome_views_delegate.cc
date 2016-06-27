@@ -40,7 +40,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/task_runner_util.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/app_icon_win.h"
+#include "chrome/browser/win/app_icon.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/win/shell.h"
 #endif

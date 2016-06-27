@@ -16,8 +16,8 @@
         '../chrome/common_constants.gyp:common_constants',
       ],
       'sources': [
-        'browser/chrome_process_finder_win.cc',
-        'browser/chrome_process_finder_win.h',
+        'browser/win/chrome_process_finder.cc',
+        'browser/win/chrome_process_finder.h',
       ],
     },
   ],

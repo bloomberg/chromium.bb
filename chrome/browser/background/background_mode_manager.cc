@@ -66,7 +66,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/app_icon_win.h"
+#include "chrome/browser/win/app_icon.h"
 #endif
 
 using base::UserMetricsAction;

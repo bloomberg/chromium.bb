@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/jumplist_win.h"
+#include "chrome/browser/win/jumplist.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

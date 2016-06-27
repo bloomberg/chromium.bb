@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROME_SELECT_FILE_DIALOG_FACTORY_WIN_H_
-#define CHROME_BROWSER_CHROME_SELECT_FILE_DIALOG_FACTORY_WIN_H_
+#ifndef CHROME_BROWSER_WIN_CHROME_SELECT_FILE_DIALOG_FACTORY_H_
+#define CHROME_BROWSER_WIN_CHROME_SELECT_FILE_DIALOG_FACTORY_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -35,4 +35,4 @@ class ChromeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   DISALLOW_COPY_AND_ASSIGN(ChromeSelectFileDialogFactory);
 };
 
-#endif  // CHROME_BROWSER_CHROME_SELECT_FILE_DIALOG_FACTORY_WIN_H_
+#endif  // CHROME_BROWSER_WIN_CHROME_SELECT_FILE_DIALOG_FACTORY_H_

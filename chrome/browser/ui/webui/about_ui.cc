@@ -80,7 +80,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/enumerate_modules_model_win.h"
+#include "chrome/browser/win/enumerate_modules_model.h"
 #endif
 
 #if defined(OS_CHROMEOS)

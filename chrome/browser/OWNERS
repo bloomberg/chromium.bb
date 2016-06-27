@@ -29,9 +29,6 @@ per-file chrome_browser_field_trials*=file://components/variations/OWNERS
 per-file chrome_device_client*=reillyg@chromium.org
 per-file chrome_device_client*=rockot@chromium.org
 
-per-file chrome_elf_init_*=csharp@chromium.org
-per-file chrome_elf_init_*=robertshield@chromium.org
-
 per-file chrome_navigation_browsertest.cc=alexmos@chromium.org
 per-file chrome_navigation_browsertest.cc=file://content/OWNERS
 
@@ -44,8 +41,6 @@ per-file chrome_site_per_process_browsertest.cc=file://content/OWNERS
 per-file chrome_webusb_browser_client*=juncai@chromium.org
 per-file chrome_webusb_browser_client*=reillyg@chromium.org
 per-file chrome_webusb_browser_client*=rockot@chromium.org
-
-per-file enumerate_modules_model*=finnur@chromium.org
 
 per-file io_thread*=cbentzel@chromium.org
 per-file io_thread*=mmenke@chromium.org

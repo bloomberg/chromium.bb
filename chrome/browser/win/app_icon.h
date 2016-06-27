@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APP_ICON_WIN_H_
-#define CHROME_BROWSER_APP_ICON_WIN_H_
+#ifndef CHROME_BROWSER_WIN_APP_ICON_H_
+#define CHROME_BROWSER_WIN_APP_ICON_H_
 
 #include <windows.h>
 
@@ -26,4 +26,4 @@ gfx::Size GetSmallAppIconSize();
 // the different sizes of the icon as an ImageFamily.
 std::unique_ptr<gfx::ImageFamily> GetAppIconImageFamily();
 
-#endif  // CHROME_BROWSER_APP_ICON_WIN_H_
+#endif  // CHROME_BROWSER_WIN_APP_ICON_H_

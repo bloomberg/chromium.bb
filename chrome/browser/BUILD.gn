@@ -997,8 +997,8 @@ if (android_java_ui) {
 if (is_win) {
   source_set("chrome_process_finder") {
     sources = [
-      "chrome_process_finder_win.cc",
-      "chrome_process_finder_win.h",
+      "win/chrome_process_finder.cc",
+      "win/chrome_process_finder.h",
     ]
     deps = [
       "//base",

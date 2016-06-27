@@ -39,8 +39,8 @@
 #include "content/public/browser/tracing_controller.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
+#include "chrome/browser/win/browser_util.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

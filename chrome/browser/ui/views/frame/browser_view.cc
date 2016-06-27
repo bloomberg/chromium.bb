@@ -166,7 +166,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/jumplist_win.h"
+#include "chrome/browser/win/jumplist.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme_dark_win.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"

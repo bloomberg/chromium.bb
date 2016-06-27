@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/private_working_set_snapshot.h"
+#include "chrome/browser/win/private_working_set_snapshot.h"
 
 #include <stddef.h>
 

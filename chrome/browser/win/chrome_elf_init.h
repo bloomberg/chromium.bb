@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROME_ELF_INIT_WIN_H_
-#define CHROME_BROWSER_CHROME_ELF_INIT_WIN_H_
+#ifndef CHROME_BROWSER_WIN_CHROME_ELF_INIT_H_
+#define CHROME_BROWSER_WIN_CHROME_ELF_INIT_H_
 
 // Field trial name and full name for the blacklist disabled group.
 extern const char kBrowserBlacklistTrialName[];
@@ -19,4 +19,4 @@ void AddFinchBlacklistToRegistry();
 // Set the required state for an enabled browser blacklist.
 void BrowserBlacklistBeaconSetup();
 
-#endif  // CHROME_BROWSER_CHROME_ELF_INIT_WIN_H_
+#endif  // CHROME_BROWSER_WIN_CHROME_ELF_INIT_H_

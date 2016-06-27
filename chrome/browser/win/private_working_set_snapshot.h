@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRIVATE_WORKING_SET_SNAPSHOT_H_
-#define CHROME_BROWSER_PRIVATE_WORKING_SET_SNAPSHOT_H_
+#ifndef CHROME_BROWSER_WIN_PRIVATE_WORKING_SET_SNAPSHOT_H_
+#define CHROME_BROWSER_WIN_PRIVATE_WORKING_SET_SNAPSHOT_H_
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
 #include <pdh.h>
 #include <stddef.h>
 
@@ -117,6 +116,4 @@ class PrivateWorkingSetSnapshot {
   DISALLOW_COPY_AND_ASSIGN(PrivateWorkingSetSnapshot);
 };
 
-#endif  // defined(OS_WIN)
-
-#endif  // CHROME_BROWSER_PRIVATE_WORKING_SET_SNAPSHOT_H_
+#endif  // CHROME_BROWSER_WIN_PRIVATE_WORKING_SET_SNAPSHOT_H_

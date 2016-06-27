@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROME_PROCESS_FINDER_WIN_H_
-#define CHROME_BROWSER_CHROME_PROCESS_FINDER_WIN_H_
+#ifndef CHROME_BROWSER_WIN_CHROME_PROCESS_FINDER_H_
+#define CHROME_BROWSER_WIN_CHROME_PROCESS_FINDER_H_
 
 #include <windows.h>
 
@@ -36,4 +36,4 @@ base::TimeDelta SetNotificationTimeoutForTesting(base::TimeDelta new_timeout);
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_CHROME_PROCESS_FINDER_WIN_H_
+#endif  // CHROME_BROWSER_WIN_CHROME_PROCESS_FINDER_H_

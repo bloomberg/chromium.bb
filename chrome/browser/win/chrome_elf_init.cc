@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/win/chrome_elf_init.h"
+
 #include <stddef.h>
 
 #include "base/bind.h"
@@ -10,7 +12,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/browser/chrome_elf_init_win.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/chrome_elf_constants.h"

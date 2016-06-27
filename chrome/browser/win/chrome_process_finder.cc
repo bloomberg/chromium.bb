@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_process_finder_win.h"
+#include "chrome/browser/win/chrome_process_finder.h"
 
 #include <shellapi.h>
 #include <string>
