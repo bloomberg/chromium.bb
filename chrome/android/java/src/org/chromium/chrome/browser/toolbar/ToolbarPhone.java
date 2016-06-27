@@ -1975,6 +1975,14 @@ public class ToolbarPhone extends ToolbarLayout
         boolean visualStateChanged = mVisualState != newVisualState;
 
         int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
+        int themeColorForProgressBar = currentPrimaryColor;
+
+        // If The page is native force the use of the standard theme for the progress bar.
+        if (getToolbarDataProvider() != null && getToolbarDataProvider().getTab() != null
+                && getToolbarDataProvider().getTab().isNativePage()) {
+            themeColorForProgressBar = getToolbarColorForVisualState(VisualState.NORMAL);
+        }
+
         if (mVisualState == VisualState.BRAND_COLOR && !visualStateChanged) {
             boolean useLightToolbarDrawables =
                     ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
@@ -1986,7 +1994,7 @@ public class ToolbarPhone extends ToolbarLayout
                 visualStateChanged = true;
             } else {
                 updateToolbarBackground(VisualState.BRAND_COLOR);
-                getProgressBar().setThemeColor(currentPrimaryColor, isIncognito());
+                getProgressBar().setThemeColor(themeColorForProgressBar, isIncognito());
             }
         }
 
@@ -2005,7 +2013,7 @@ public class ToolbarPhone extends ToolbarLayout
         mUnfocusedLocationBarUsesTransparentBg = false;
         mUrlBackgroundAlpha = 255;
         updateToolbarBackground(mVisualState);
-        getProgressBar().setThemeColor(currentPrimaryColor, isIncognito());
+        getProgressBar().setThemeColor(themeColorForProgressBar, isIncognito());
 
         if (isInTabSwitcherMode) {
             mUseLightToolbarDrawables = true;
