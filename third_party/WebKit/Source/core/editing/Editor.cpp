@@ -560,6 +560,7 @@ bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard)
 
 void Editor::replaceSelectionWithFragment(DocumentFragment* fragment, bool selectReplacement, bool smartReplace, bool matchStyle)
 {
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
     if (frame().selection().isNone() || !frame().selection().isContentEditable() || !fragment)
         return;
 
