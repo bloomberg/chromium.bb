@@ -15,6 +15,10 @@ if (is_win) {
       "$root_out_dir/cdb/dbgeng.dll",
       "$root_out_dir/cdb/dbghelp.dll",
       "$root_out_dir/cdb/dbgmodel.dll",
+      "$root_out_dir/cdb/winext/ext.dll",
+      "$root_out_dir/cdb/winext/uext.dll",
+      "$root_out_dir/cdb/winxp/exts.dll",
+      "$root_out_dir/cdb/winxp/ntsdexts.dll",
     ]
     args = [
       rebase_path("$root_out_dir/cdb", root_out_dir),

@@ -43,6 +43,11 @@ def _CopyImpl(file_name, target_dir, source_dir, verbose=False):
     shutil.copy(source, target)
 
 
+def _ConditionalMkdir(output_dir):
+  if not os.path.isdir(output_dir):
+    os.makedirs(output_dir)
+
+
 def _CopyCDBToOutput(output_dir, target_arch):
   """Copies the Windows debugging executable cdb.exe to the output
   directory, which is created if it does not exist. The output
@@ -50,8 +55,7 @@ def _CopyCDBToOutput(output_dir, target_arch):
   passed. Supported values for the target architecture are the GYP
   values "ia32" and "x64" and the GN values "x86" and "x64".
   """
-  if not os.path.isdir(output_dir):
-    os.makedirs(output_dir)
+  _ConditionalMkdir(output_dir)
   vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
   # If WINDOWSSDKDIR is not set use the default SDK path. This will be the case
   # when DEPOT_TOOLS_WIN_TOOLCHAIN=0 and vcvarsall.bat has not been run.
@@ -67,12 +71,24 @@ def _CopyCDBToOutput(output_dir, target_arch):
     sys.exit(1)
   # We need to copy multiple files, so cache the computed source directory.
   src_dir = os.path.join(win_sdk_dir, 'Debuggers', src_arch)
+  # We need to copy some helper DLLs to get access to the !uniqstack
+  # command to dump all threads' stacks.
+  src_winext_dir = os.path.join(src_dir, 'winext')
+  dst_winext_dir = os.path.join(output_dir, 'winext')
+  src_winxp_dir = os.path.join(src_dir, 'winxp')
+  dst_winxp_dir = os.path.join(output_dir, 'winxp')
+  _ConditionalMkdir(dst_winext_dir)
+  _ConditionalMkdir(dst_winxp_dir)
   # Note that the outputs from the "copy_cdb_to_output" target need to
   # be kept in sync with this list.
   _CopyImpl('cdb.exe', output_dir, src_dir)
   _CopyImpl('dbgeng.dll', output_dir, src_dir)
   _CopyImpl('dbghelp.dll', output_dir, src_dir)
   _CopyImpl('dbgmodel.dll', output_dir, src_dir)
+  _CopyImpl('ext.dll', dst_winext_dir, src_winext_dir)
+  _CopyImpl('uext.dll', dst_winext_dir, src_winext_dir)
+  _CopyImpl('exts.dll', dst_winxp_dir, src_winxp_dir)
+  _CopyImpl('ntsdexts.dll', dst_winxp_dir, src_winxp_dir)
   return 0
 
 
