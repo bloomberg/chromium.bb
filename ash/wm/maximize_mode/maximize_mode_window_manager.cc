@@ -73,7 +73,8 @@ void MaximizeModeWindowManager::AddWindow(aura::Window* window) {
   MaximizeAndTrackWindow(window);
 }
 
-void MaximizeModeWindowManager::WindowStateDestroyed(aura::Window* window) {
+void MaximizeModeWindowManager::WindowStateDestroyed(WmWindow* wm_window) {
+  aura::Window* window = WmWindowAura::GetAuraWindow(wm_window);
   // At this time ForgetWindow() should already have been called. If not,
   // someone else must have replaced the "window manager's state object".
   DCHECK(!window->HasObserver(this));
@@ -251,7 +252,8 @@ void MaximizeModeWindowManager::MaximizeAndTrackWindow(aura::Window* window) {
 
   // We create and remember a maximize mode state which will attach itself to
   // the provided state object.
-  window_state_map_[window] = new MaximizeModeWindowState(window, this);
+  window_state_map_[window] =
+      new MaximizeModeWindowState(WmWindowAura::Get(window), this);
 }
 
 void MaximizeModeWindowManager::ForgetWindow(aura::Window* window) {
@@ -343,7 +345,8 @@ void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
         controller->GetRootWindow(), kShellWindowId_DefaultContainer);
     controller->workspace_controller()->SetMaximizeBackdropDelegate(
         std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate>(
-            enable ? new WorkspaceBackdropDelegate(container) : NULL));
+            enable ? new WorkspaceBackdropDelegate(WmWindowAura::Get(container))
+                   : nullptr));
   }
 }
 

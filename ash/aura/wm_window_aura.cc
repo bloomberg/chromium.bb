@@ -450,6 +450,19 @@ void WmWindowAura::SetRestoreShowState(ui::WindowShowState show_state) {
   window_->SetProperty(aura::client::kRestoreShowStateKey, show_state);
 }
 
+void WmWindowAura::SetRestoreOverrides(
+    const gfx::Rect& bounds_override,
+    ui::WindowShowState window_state_override) {
+  if (bounds_override.IsEmpty()) {
+    window_->ClearProperty(kRestoreShowStateOverrideKey);
+    window_->ClearProperty(kRestoreBoundsOverrideKey);
+    return;
+  }
+  window_->SetProperty(kRestoreShowStateOverrideKey, window_state_override);
+  window_->SetProperty(kRestoreBoundsOverrideKey,
+                       new gfx::Rect(bounds_override));
+}
+
 void WmWindowAura::SetLockedToRoot(bool value) {
   window_->SetProperty(kStayInSameRootWindowKey, value);
 }

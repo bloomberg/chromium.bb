@@ -191,6 +191,13 @@ class ASH_EXPORT WmWindow {
 
   virtual void SetRestoreShowState(ui::WindowShowState show_state) = 0;
 
+  // Sets the restore bounds and show state overrides. These values take
+  // precedence over the restore bounds and restore show state (if set).
+  // If |bounds_override| is empty the values are cleared.
+  virtual void SetRestoreOverrides(
+      const gfx::Rect& bounds_override,
+      ui::WindowShowState window_state_override) = 0;
+
   // If |value| is true the window can not be moved to another root, regardless
   // of the bounds set on it.
   virtual void SetLockedToRoot(bool value) = 0;

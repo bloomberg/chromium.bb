@@ -9,12 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-
-namespace aura {
-class Window;
-}
 
 namespace views {
 class Widget;
@@ -22,13 +17,15 @@ class Widget;
 
 namespace ash {
 
+class WmWindow;
+
 // A background which gets created for a container |window| and which gets
 // stacked behind the topmost window (within that container) covering the
 // entire container.
 class ASH_EXPORT WorkspaceBackdropDelegate
     : public WorkspaceLayoutManagerBackdropDelegate {
  public:
-  explicit WorkspaceBackdropDelegate(aura::Window* container);
+  explicit WorkspaceBackdropDelegate(WmWindow* container);
   ~WorkspaceBackdropDelegate() override;
 
   // WorkspaceLayoutManagerBackdropDelegate overrides:
@@ -47,7 +44,7 @@ class ASH_EXPORT WorkspaceBackdropDelegate
   void RestackBackdrop();
 
   // Returns the current visible top level window in the container.
-  aura::Window* GetCurrentTopWindow();
+  WmWindow* GetCurrentTopWindow();
 
   // Position & size the background over the container window.
   void AdjustToContainerBounds();
@@ -58,10 +55,12 @@ class ASH_EXPORT WorkspaceBackdropDelegate
   std::unique_ptr<WindowObserverImpl> container_observer_;
 
   // The background which covers the rest of the screen.
-  views::Widget* background_;
+  views::Widget* background_ = nullptr;
+  // WmWindow for |background_|.
+  WmWindow* background_window_ = nullptr;
 
   // The window which is being "maximized".
-  aura::Window* container_;
+  WmWindow* container_;
 
   // If true, the |RestackOrHideWindow| might recurse.
   bool in_restacking_;

@@ -169,6 +169,8 @@ class WmWindowMus : public WmWindow, public ::mus::WindowObserver {
   void SetShowState(ui::WindowShowState show_state) override;
   ui::WindowShowState GetShowState() const override;
   void SetRestoreShowState(ui::WindowShowState show_state) override;
+  void SetRestoreOverrides(const gfx::Rect& bounds_override,
+                           ui::WindowShowState window_state_override) override;
   void SetLockedToRoot(bool value) override;
   void SetCapture() override;
   bool HasCapture() override;

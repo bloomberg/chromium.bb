@@ -883,7 +883,8 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
   void ShowTopWindowBackdrop(bool show) {
     std::unique_ptr<ash::WorkspaceLayoutManagerBackdropDelegate> backdrop;
     if (show) {
-      backdrop.reset(new ash::WorkspaceBackdropDelegate(default_container_));
+      backdrop.reset(new ash::WorkspaceBackdropDelegate(
+          WmWindowAura::Get(default_container_)));
     }
     GetWorkspaceLayoutManager(default_container_)
         ->SetMaximizeBackdropDelegate(std::move(backdrop));

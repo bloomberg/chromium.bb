@@ -4,12 +4,13 @@
 
 #include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "ash/wm/window_animations.h"
-#include "ash/wm/window_util.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/auto_reset.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
@@ -25,16 +26,15 @@ const float kBackdropOpacity = 0.5f;
 
 }  // namespace
 
-class WorkspaceBackdropDelegate::WindowObserverImpl
-    : public aura::WindowObserver {
+class WorkspaceBackdropDelegate::WindowObserverImpl : public WmWindowObserver {
  public:
   explicit WindowObserverImpl(WorkspaceBackdropDelegate* delegate)
       : delegate_(delegate) {}
   ~WindowObserverImpl() override {}
 
  private:
-  // WindowObserver overrides:
-  void OnWindowBoundsChanged(aura::Window* window,
+  // WmWindowObserver overrides:
+  void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
     // The container size has changed and the layer needs to be adapt to it.
@@ -46,29 +46,31 @@ class WorkspaceBackdropDelegate::WindowObserverImpl
   DISALLOW_COPY_AND_ASSIGN(WindowObserverImpl);
 };
 
-WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(aura::Window* container)
+WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(WmWindow* container)
     : container_observer_(new WindowObserverImpl(this)),
-      background_(nullptr),
       container_(container),
       in_restacking_(false) {
   background_ = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.parent = container_;
   params.bounds = container_->GetBoundsInScreen();
   params.layer_type = ui::LAYER_SOLID_COLOR;
+  params.name = "WorkspaceBackdropDelegate";
   // To disallow the MRU list from picking this window up it should not be
   // activateable.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  DCHECK_NE(kShellWindowId_Invalid, container_->GetShellWindowId());
+  container_->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
+      background_, container_->GetShellWindowId(), &params);
   background_->Init(params);
+  background_window_ = WmLookup::Get()->GetWindowForWidget(background_);
   // Do not use the animation system. We don't want the bounds animation and
   // opacity needs to get set to |kBackdropOpacity|.
-  ::wm::SetWindowVisibilityAnimationTransition(background_->GetNativeView(),
-                                               ::wm::ANIMATE_NONE);
-  background_->GetNativeView()->SetName("WorkspaceBackdropDelegate");
-  background_->GetNativeView()->layer()->SetColor(SK_ColorBLACK);
+  background_window_->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
+  background_window_->GetLayer()->SetColor(SK_ColorBLACK);
   // Make sure that the layer covers visibly everything - including the shelf.
-  background_->GetNativeView()->layer()->SetBounds(params.bounds);
+  background_window_->GetLayer()->SetBounds(params.bounds);
+  DCHECK(background_window_->GetBounds() == params.bounds);
   Show();
   RestackBackdrop();
   container_->AddObserver(container_observer_.get());
@@ -76,10 +78,11 @@ WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(aura::Window* container)
 
 WorkspaceBackdropDelegate::~WorkspaceBackdropDelegate() {
   container_->RemoveObserver(container_observer_.get());
+  // TODO: animations won't work right with mus: http://crbug.com/548396.
   ::wm::ScopedHidingAnimationSettings hiding_settings(
       background_->GetNativeView());
   background_->Close();
-  background_->GetNativeView()->layer()->SetOpacity(0.0f);
+  background_window_->GetLayer()->SetOpacity(0.0f);
 }
 
 void WorkspaceBackdropDelegate::OnWindowAddedToLayout(WmWindow* child) {
@@ -114,19 +117,16 @@ void WorkspaceBackdropDelegate::RestackBackdrop() {
   if (in_restacking_)
     return;
 
-  aura::Window* window = GetCurrentTopWindow();
+  WmWindow* window = GetCurrentTopWindow();
   if (!window) {
     // Hide backdrop since no suitable window was found.
     background_->Hide();
     return;
   }
-  if (window == background_->GetNativeWindow() && background_->IsVisible()) {
+  if (window == background_window_ && background_->IsVisible())
     return;
-  }
-  if (window->GetRootWindow() !=
-      background_->GetNativeWindow()->GetRootWindow()) {
+  if (window->GetRootWindow() != background_window_->GetRootWindow())
     return;
-  }
   // We are changing the order of windows which will cause recursion.
   base::AutoReset<bool> lock(&in_restacking_, true);
   if (!background_->IsVisible())
@@ -134,44 +134,44 @@ void WorkspaceBackdropDelegate::RestackBackdrop() {
   // Since the backdrop needs to be immediately behind the window and the
   // stacking functions only guarantee a "it's above or below", we need
   // to re-arrange the two windows twice.
-  container_->StackChildAbove(background_->GetNativeView(), window);
-  container_->StackChildAbove(window, background_->GetNativeView());
+  container_->StackChildAbove(background_window_, window);
+  container_->StackChildAbove(window, background_window_);
 }
 
-aura::Window* WorkspaceBackdropDelegate::GetCurrentTopWindow() {
-  const aura::Window::Windows& windows = container_->children();
-  for (aura::Window::Windows::const_reverse_iterator window_iter =
-           windows.rbegin();
-       window_iter != windows.rend(); ++window_iter) {
-    aura::Window* window = *window_iter;
-    if (window->TargetVisibility() &&
-        window->type() == ui::wm::WINDOW_TYPE_NORMAL &&
-        ash::wm::CanActivateWindow(window))
+WmWindow* WorkspaceBackdropDelegate::GetCurrentTopWindow() {
+  const WmWindow::Windows windows = container_->GetChildren();
+  for (auto window_iter = windows.rbegin(); window_iter != windows.rend();
+       ++window_iter) {
+    WmWindow* window = *window_iter;
+    if (window->GetTargetVisibility() &&
+        window->GetType() == ui::wm::WINDOW_TYPE_NORMAL &&
+        window->CanActivate())
       return window;
   }
-  return NULL;
+  return nullptr;
 }
 
 void WorkspaceBackdropDelegate::AdjustToContainerBounds() {
   // Cover the entire container window.
-  gfx::Rect target_rect(gfx::Point(0, 0), container_->bounds().size());
-  if (target_rect != background_->GetNativeWindow()->bounds()) {
+  gfx::Rect target_rect(gfx::Point(0, 0), container_->GetBounds().size());
+  if (target_rect != background_window_->GetBounds()) {
+    // TODO: this won't work right with mus: http://crbug.com/548396.
     // This needs to be instant.
     ui::ScopedLayerAnimationSettings settings(
-        background_->GetNativeView()->layer()->GetAnimator());
+        background_window_->GetLayer()->GetAnimator());
     settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(0));
-    background_->GetNativeWindow()->SetBounds(target_rect);
+    background_window_->SetBounds(target_rect);
     if (!background_->IsVisible())
-      background_->GetNativeView()->layer()->SetOpacity(kBackdropOpacity);
+      background_window_->GetLayer()->SetOpacity(kBackdropOpacity);
   }
 }
 
 void WorkspaceBackdropDelegate::Show() {
-  background_->GetNativeView()->layer()->SetOpacity(0.0f);
+  background_window_->GetLayer()->SetOpacity(0.0f);
   background_->Show();
   ui::ScopedLayerAnimationSettings settings(
-      background_->GetNativeView()->layer()->GetAnimator());
-  background_->GetNativeView()->layer()->SetOpacity(kBackdropOpacity);
+      background_window_->GetLayer()->GetAnimator());
+  background_window_->GetLayer()->SetOpacity(kBackdropOpacity);
 }
 
 }  // namespace ash

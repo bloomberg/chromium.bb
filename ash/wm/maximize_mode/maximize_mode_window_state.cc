@@ -6,29 +6,16 @@
 
 #include <utility>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_animation_types.h"
-#include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_util.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/common/wm_shell.h"
-#include "ash/screen_util.h"
-#include "ash/shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
-#include "ash/wm/window_animations.h"
-#include "ash/wm/window_properties.h"
-#include "ash/wm/window_state_aura.h"
-#include "ash/wm/window_util.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/view_constants_aura.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
@@ -112,13 +99,13 @@ void MaximizeModeWindowState::UpdateWindowPosition(
 }
 
 MaximizeModeWindowState::MaximizeModeWindowState(
-    aura::Window* window,
+    WmWindow* window,
     MaximizeModeWindowManager* creator)
     : window_(window),
       creator_(creator),
-      current_state_type_(wm::GetWindowState(window)->GetStateType()),
+      current_state_type_(window->GetWindowState()->GetStateType()),
       defer_bounds_updates_(false) {
-  old_state_.reset(wm::GetWindowState(window)
+  old_state_.reset(window_->GetWindowState()
                        ->SetStateObject(std::unique_ptr<State>(this))
                        .release());
 }
@@ -139,7 +126,7 @@ void MaximizeModeWindowState::SetDeferBoundsUpdates(bool defer_bounds_updates) {
 
   defer_bounds_updates_ = defer_bounds_updates;
   if (!defer_bounds_updates_)
-    UpdateBounds(wm::GetWindowState(window_), true);
+    UpdateBounds(window_->GetWindowState(), true);
 }
 
 void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
@@ -230,16 +217,12 @@ void MaximizeModeWindowState::AttachState(
     wm::WindowState::State* previous_state) {
   current_state_type_ = previous_state->GetType();
 
-  aura::Window* window =
-      ash::WmWindowAura::GetAuraWindow(window_state->window());
   gfx::Rect restore_bounds = GetRestoreBounds(window_state);
   if (!restore_bounds.IsEmpty()) {
     // We do not want to do a session restore to our window states. Therefore
     // we tell the window to use the current default states instead.
-    window->SetProperty(ash::kRestoreShowStateOverrideKey,
-                        window_state->GetShowState());
-    window->SetProperty(ash::kRestoreBoundsOverrideKey,
-                        new gfx::Rect(restore_bounds));
+    window_state->window()->SetRestoreOverrides(restore_bounds,
+                                                window_state->GetShowState());
   }
 
   // Initialize the state to a good preset.
@@ -256,8 +239,8 @@ void MaximizeModeWindowState::AttachState(
 
 void MaximizeModeWindowState::DetachState(wm::WindowState* window_state) {
   // From now on, we can use the default session restore mechanism again.
-  ash::WmWindowAura::GetAuraWindow(window_state->window())
-      ->ClearProperty(ash::kRestoreBoundsOverrideKey);
+  window_state->window()->SetRestoreOverrides(gfx::Rect(),
+                                              ui::SHOW_STATE_NORMAL);
   window_state->set_can_be_dragged(true);
 }
 

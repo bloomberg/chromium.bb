@@ -26,6 +26,7 @@ class TouchEvent;
 namespace ash {
 class MaximizeModeController;
 class MaximizeModeWindowState;
+class WmWindow;
 
 // A window manager which - when created - will force all windows into maximized
 // mode. Exception are panels and windows which cannot be maximized.
@@ -51,7 +52,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   void AddWindow(aura::Window* window);
 
   // Called from a window state object when it gets destroyed.
-  void WindowStateDestroyed(aura::Window* window);
+  void WindowStateDestroyed(WmWindow* wm_window);
 
   // ShellObserver overrides:
   void OnOverviewModeStarting() override;

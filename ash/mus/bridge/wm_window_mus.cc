@@ -506,6 +506,13 @@ void WmWindowMus::SetRestoreShowState(ui::WindowShowState show_state) {
   restore_show_state_ = show_state;
 }
 
+void WmWindowMus::SetRestoreOverrides(
+    const gfx::Rect& bounds_override,
+    ui::WindowShowState window_state_override) {
+  // TODO(sky): see http://crbug.com/623314.
+  NOTIMPLEMENTED();
+}
+
 void WmWindowMus::SetLockedToRoot(bool value) {
   // TODO(sky): there is no getter for this. Investigate where used.
   NOTIMPLEMENTED();
