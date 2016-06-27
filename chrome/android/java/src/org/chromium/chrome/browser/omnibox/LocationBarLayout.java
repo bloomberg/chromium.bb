@@ -554,7 +554,13 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             for (int i = 0; i < mSuggestionItems.size(); i++) {
                 OmniboxResultItem item = mSuggestionItems.get(i);
                 if (!TextUtils.isEmpty(item.getSuggestion().getAnswerContents())) {
-                    idealListSize += mSuggestionAnswerHeight;
+                    int num = SuggestionView.parseNumAnswerLines(
+                            item.getSuggestion().getAnswer().getSecondLine().getTextFields());
+                    if (num > 1) {
+                        idealListSize += mSuggestionAnswerHeight * 2;
+                    } else {
+                        idealListSize += mSuggestionAnswerHeight;
+                    }
                 } else {
                     idealListSize += mSuggestionHeight;
                 }
