@@ -12,5 +12,5 @@ TimeStamp Properties:
     startTime : <number>
     type : "TimeStamp"
 }
-Text details for TimeStamp: null
+Text details for TimeStamp: MARK TIMELINE
 
