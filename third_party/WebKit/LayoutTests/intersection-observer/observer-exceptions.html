@@ -5,7 +5,6 @@
 <script src="../resources/gc.js"></script>
 <script>
   description("Test for observer exceptions.");
-  let rootDiv = document.getElementById("root");
   var exc;
 
   try {
@@ -61,9 +60,17 @@
     shouldBeType("exc", "TypeError");
   }
 
-  observer = new IntersectionObserver(c => {}, {root: rootDiv});
-  rootDiv.parentNode.removeChild(rootDiv);
-  rootDiv = null;
+  // Initialize observer and remove root in an inner function to avoid
+  // references to rootDiv remaining live on this function's stack frame
+  // (http://crbug.com/595672/).
+  function initializeObserverThenRemoveRootDiv() {
+    let rootDiv = document.getElementById("root");
+    let observer = new IntersectionObserver(c => {}, {root: rootDiv});
+    rootDiv.parentNode.removeChild(rootDiv);
+    return observer;
+  }
+
+  observer = initializeObserverThenRemoveRootDiv();
   gc();
 
   try {
