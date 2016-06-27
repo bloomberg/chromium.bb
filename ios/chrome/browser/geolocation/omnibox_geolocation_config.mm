@@ -35,11 +35,12 @@ NSString* const kEligibleDomainsKey = @"EligibleDomains";
   return instance;
 }
 
-- (id)init {
+- (instancetype)init {
   self =
       [super initWithAppId:nil version:nil plist:@"OmniboxGeolocation.plist"];
   if (self) {
     [self loadEligibleDomains];
+    self.stopsUpdateChecksOnAppTermination = YES;
   }
   return self;
 }

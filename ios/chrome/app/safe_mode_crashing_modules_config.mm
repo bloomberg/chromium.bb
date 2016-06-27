@@ -22,7 +22,11 @@ NSString* const kModuleFriendlyNameKey = @"ModuleFriendlyName";
 }
 
 - (instancetype)init {
-  return [super initWithAppId:nil version:nil plist:@"CrashingModules.plist"];
+  self = [super initWithAppId:nil version:nil plist:@"CrashingModules.plist"];
+  if (self) {
+    self.stopsUpdateChecksOnAppTermination = YES;
+  }
+  return self;
 }
 
 - (NSString*)startupCrashModuleFriendlyName:(NSString*)modulePath {
