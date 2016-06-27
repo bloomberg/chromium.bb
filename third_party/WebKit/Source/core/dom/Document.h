@@ -919,7 +919,8 @@ public:
     // Only one event for a target/event type combination will be dispatched per frame.
     void enqueueUniqueAnimationFrameEvent(Event*);
     void enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryListListener>>&);
-    void enqueueVisualViewportChangedEvent();
+    void enqueueVisualViewportScrollEvent();
+    void enqueueVisualViewportResizeEvent();
 
     void dispatchEventsForPrinting();
 

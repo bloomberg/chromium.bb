@@ -188,6 +188,8 @@ private:
 // EventTargetWithInlineData::m_eventTargetData and store it to a Member etc.
 class GC_PLUGIN_IGNORE("513199") CORE_EXPORT EventTargetWithInlineData : public EventTarget {
 public:
+    ~EventTargetWithInlineData() override { }
+
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_eventTargetData);

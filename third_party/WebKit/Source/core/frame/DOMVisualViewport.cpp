@@ -37,11 +37,28 @@
 namespace blink {
 
 DOMVisualViewport::DOMVisualViewport(LocalDOMWindow* window)
-    : m_window(window) {}
+    : m_window(window)
+{
+}
+
+DOMVisualViewport::~DOMVisualViewport()
+{
+}
 
 DEFINE_TRACE(DOMVisualViewport)
 {
     visitor->trace(m_window);
+    EventTargetWithInlineData::trace(visitor);
+}
+
+const AtomicString& DOMVisualViewport::interfaceName() const
+{
+    return EventTargetNames::DOMVisualViewport;
+}
+
+ExecutionContext* DOMVisualViewport::getExecutionContext() const
+{
+    return m_window->getExecutionContext();
 }
 
 double DOMVisualViewport::scrollLeft()

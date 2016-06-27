@@ -242,7 +242,6 @@ updateready
 updatestart
 upgradeneeded
 versionchange
-visualviewportchanged
 visibilitychange
 voiceschanged
 volumechange

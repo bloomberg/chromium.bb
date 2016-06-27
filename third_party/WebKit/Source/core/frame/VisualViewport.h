@@ -225,7 +225,8 @@ private:
 
     void updateStyleAndLayoutIgnorePendingStylesheets();
 
-    void enqueueChangedEvent();
+    void enqueueScrollEvent();
+    void enqueueResizeEvent();
 
     // GraphicsLayerClient implementation.
     bool needsRepaint(const GraphicsLayer&) const { ASSERT_NOT_REACHED(); return true; }

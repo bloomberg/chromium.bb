@@ -32,15 +32,16 @@
 #define DOMVisualViewport_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class LocalDOMWindow;
+class ExecutionContext;
 
-class DOMVisualViewport final
-    : public GarbageCollected<DOMVisualViewport>
-    , public ScriptWrappable {
+class DOMVisualViewport final : public EventTargetWithInlineData {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMVisualViewport* create(LocalDOMWindow* window)
@@ -48,7 +49,13 @@ public:
         return new DOMVisualViewport(window);
     }
 
+    ~DOMVisualViewport() override;
+
     DECLARE_VIRTUAL_TRACE();
+
+    // EventTarget overrides:
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     double scrollLeft();
     double scrollTop();

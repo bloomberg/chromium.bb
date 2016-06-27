@@ -127,6 +127,7 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
+#include "core/frame/DOMVisualViewport.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
@@ -3914,10 +3915,17 @@ void Document::enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryList
     ensureScriptedAnimationController().enqueueMediaQueryChangeListeners(listeners);
 }
 
-void Document::enqueueVisualViewportChangedEvent()
+void Document::enqueueVisualViewportScrollEvent()
 {
-    Event* event = Event::create(EventTypeNames::visualviewportchanged);
-    event->setTarget(domWindow());
+    Event* event = Event::create(EventTypeNames::scroll);
+    event->setTarget(domWindow()->visualViewport());
+    ensureScriptedAnimationController().enqueuePerFrameEvent(event);
+}
+
+void Document::enqueueVisualViewportResizeEvent()
+{
+    Event* event = Event::create(EventTypeNames::resize);
+    event->setTarget(domWindow()->visualViewport());
     ensureScriptedAnimationController().enqueuePerFrameEvent(event);
 }
 

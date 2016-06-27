@@ -96,13 +96,22 @@ void VisualViewport::updateStyleAndLayoutIgnorePendingStylesheets()
         document->updateStyleAndLayoutIgnorePendingStylesheets();
 }
 
-void VisualViewport::enqueueChangedEvent()
+void VisualViewport::enqueueScrollEvent()
 {
     if (!RuntimeEnabledFeatures::visualViewportAPIEnabled())
         return;
 
     if (Document* document = mainFrame()->document())
-        document->enqueueVisualViewportChangedEvent();
+        document->enqueueVisualViewportScrollEvent();
+}
+
+void VisualViewport::enqueueResizeEvent()
+{
+    if (!RuntimeEnabledFeatures::visualViewportAPIEnabled())
+        return;
+
+    if (Document* document = mainFrame()->document())
+        document->enqueueVisualViewportResizeEvent();
 }
 
 void VisualViewport::setSize(const IntSize& size)
@@ -124,7 +133,7 @@ void VisualViewport::setSize(const IntSize& size)
     if (!mainFrame())
         return;
 
-    enqueueChangedEvent();
+    enqueueResizeEvent();
 
     bool autosizerNeedsUpdating = widthDidChange
         && mainFrame()->settings()
@@ -291,6 +300,7 @@ void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location
         m_scale = scale;
         valuesChanged = true;
         frameHost().chromeClient().pageScaleFactorChanged();
+        enqueueResizeEvent();
     }
 
     FloatPoint clampedOffset(clampOffsetToBoundaries(location));
@@ -308,14 +318,14 @@ void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location
                 document->enqueueScrollEventForNode(document);
         }
 
+        enqueueScrollEvent();
+
         mainFrame()->loader().client()->didChangeScrollOffset();
         valuesChanged = true;
     }
 
     if (!valuesChanged)
         return;
-
-    enqueueChangedEvent();
 
     InspectorInstrumentation::didUpdateLayout(mainFrame());
     mainFrame()->loader().saveScrollState();
