@@ -1898,7 +1898,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       upload_args.extend(['--email', options.email])
 
     if self.GetIssue():
-      if options.title:
+      if options.title is not None:
         upload_args.extend(['--title', options.title])
       if options.message:
         upload_args.extend(['--message', options.message])
@@ -1906,7 +1906,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       print('This branch is associated with issue %s. '
             'Adding patch to that issue.' % self.GetIssue())
     else:
-      if options.title:
+      if options.title is not None:
         upload_args.extend(['--title', options.title])
       message = (options.title or options.message or
                  CreateDescriptionFromLog(args))

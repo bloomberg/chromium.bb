@@ -2440,6 +2440,7 @@ def RealMain(argv, data=None):
 
   # Process --message, --title and --file.
   message = options.message or ""
+  explicit_title = options.title is not None
   title = options.title or ""
   if options.file:
     if options.message:
@@ -2448,7 +2449,7 @@ def RealMain(argv, data=None):
     message = file.read()
     file.close()
   title = title or message.split('\n', 1)[0].strip()
-  if not title:
+  if not title and not explicit_title:
     if options.issue:
       prompt = "Title describing this patch set"
     else:
