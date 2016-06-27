@@ -62,6 +62,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/test_content_browser_client.h"
+#include "net/log/net_log.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -720,7 +721,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
         std::move(request), version_.get(), RESOURCE_TYPE_MAIN_FRAME,
-        CreatePrepareReceiver(prepare_result),
+        net::BoundNetLog(), CreatePrepareReceiver(prepare_result),
         CreateResponseReceiver(done, blob_context_.get(), result)));
     fetch_dispatcher_->Run();
   }

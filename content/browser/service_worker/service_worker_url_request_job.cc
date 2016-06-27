@@ -1002,7 +1002,7 @@ void ServiceWorkerURLRequestJob::RequestBodyBlobsCompleted(bool success) {
 
   DCHECK(!fetch_dispatcher_);
   fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
-      CreateFetchRequest(), active_worker, resource_type_,
+      CreateFetchRequest(), active_worker, resource_type_, request()->net_log(),
       base::Bind(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
                  weak_factory_.GetWeakPtr(), active_worker),
       base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
