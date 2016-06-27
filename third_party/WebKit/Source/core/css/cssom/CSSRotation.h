@@ -35,7 +35,7 @@ public:
         return new CSSRotation(x, y, z, angleValue->degrees());
     }
 
-    static CSSRotation* fromCSSValue(const CSSFunctionValue&) { return nullptr; }
+    static CSSRotation* fromCSSValue(const CSSFunctionValue&);
 
     double angle() const { return m_angle; }
     double x() const { return m_x; }
