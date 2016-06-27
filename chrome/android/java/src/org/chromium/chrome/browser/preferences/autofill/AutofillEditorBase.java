@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences.autofill;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -34,11 +35,15 @@ public abstract class AutofillEditorBase
     /** Whether or not the editor is creating a new entry. */
     protected boolean mIsNewEntry;
 
+    /** Context for the app. */
+    protected Context mContext;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
+        mContext = container.getContext();
 
         // We know which profile to edit based on the GUID stuffed in
         // our extras by AutofillPreferences.
@@ -76,7 +81,7 @@ public abstract class AutofillEditorBase
             getActivity().finish();
             return true;
         } else if (item.getItemId() == R.id.help_menu_id) {
-            EditorView.launchAutofillHelpPage(getContext());
+            EditorView.launchAutofillHelpPage(mContext);
             return true;
         }
 
