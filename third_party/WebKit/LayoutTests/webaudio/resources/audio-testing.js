@@ -870,9 +870,9 @@ var Should = (function () {
                     maxAbsError = diff;
                 }
                 // Keep track of the location of the max relative error, ignoring cases where the
-                // relative error is ininfinity (because the expected value = 0).
+                // relative error is NaN.
                 var relError = diff / Math.abs(expected[i]);
-                if (isFinite(relError) && relError > maxRelError) {
+                if (!isNaN(relError) && relError > maxRelError) {
                     maxRelErrorIndex = i;
                     maxRelError = relError;
                 }

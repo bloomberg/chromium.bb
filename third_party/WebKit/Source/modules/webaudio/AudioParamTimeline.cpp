@@ -409,6 +409,31 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
         return defaultValue;
     }
 
+    // Optimize the case where the last event is in the past.
+    if (m_events.size() > 0) {
+        ParamEvent& lastEvent = m_events[m_events.size() - 1];
+        ParamEvent::Type lastEventType = lastEvent.getType();
+        double lastEventTime = lastEvent.time();
+        double currentTime = startFrame / sampleRate;
+
+        // If the last event is in the past and the event has ended, then we can
+        // just propagate the same value.  Except for SetTarget which lasts
+        // "forever".  SetValueCurve also has an explicit SetValue at the end of
+        // the curve, so we don't need to worry that SetValueCurve time is a
+        // start time, not an end time.
+        if (lastEventTime < currentTime && lastEventType != ParamEvent::SetTarget) {
+            // The event has finished, so just copy the default value out.
+            // Since all events are now also in the past, we can just remove all
+            // timeline events too because |defaultValue| has the expected
+            // value.
+            for (unsigned i = 0; i < numberOfValues; ++i)
+                values[i] = defaultValue;
+            m_smoothedValue = defaultValue;
+            m_events.clear();
+            return defaultValue;
+        }
+    }
+
     // Maintain a running time (frame) and index for writing the values buffer.
     size_t currentFrame = startFrame;
     unsigned writeIndex = 0;

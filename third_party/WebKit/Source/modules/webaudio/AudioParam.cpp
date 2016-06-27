@@ -47,12 +47,12 @@ AudioParamHandler::AudioParamHandler(AbstractAudioContext& context, AudioParamTy
     , m_defaultValue(defaultValue)
     , m_minValue(minValue)
     , m_maxValue(maxValue)
-    , m_smoothedValue(defaultValue)
 {
     // The destination MUST exist because we need the destination handler for the AudioParam.
     RELEASE_ASSERT(context.destination());
 
     m_destinationHandler = &context.destination()->audioDestinationHandler();
+    m_timeline.setSmoothedValue(defaultValue);
 }
 
 AudioDestinationHandler& AudioParamHandler::destinationHandler() const
@@ -172,7 +172,7 @@ void AudioParamHandler::setValue(float value)
 
 float AudioParamHandler::smoothedValue()
 {
-    return m_smoothedValue;
+    return m_timeline.smoothedValue();
 }
 
 bool AudioParamHandler::smooth()
@@ -182,23 +182,26 @@ bool AudioParamHandler::smooth()
     bool useTimelineValue = false;
     float value = m_timeline.valueForContextTime(destinationHandler(), intrinsicValue(), useTimelineValue, minValue(), maxValue());
 
-    if (m_smoothedValue == value) {
+
+    float smoothedValue = m_timeline.smoothedValue();
+    if (smoothedValue == value) {
         // Smoothed value has already approached and snapped to value.
         setIntrinsicValue(value);
         return true;
     }
 
     if (useTimelineValue) {
-        m_smoothedValue = value;
+        m_timeline.setSmoothedValue(value);
     } else {
         // Dezipper - exponential approach.
-        m_smoothedValue += (value - m_smoothedValue) * DefaultSmoothingConstant;
+        smoothedValue += (value - smoothedValue) * DefaultSmoothingConstant;
 
         // If we get close enough then snap to actual value.
         // FIXME: the threshold needs to be adjustable depending on range - but
         // this is OK general purpose value.
-        if (fabs(m_smoothedValue - value) < SnapThreshold)
-            m_smoothedValue = value;
+        if (fabs(smoothedValue - value) < SnapThreshold)
+            smoothedValue = value;
+        m_timeline.setSmoothedValue(smoothedValue);
     }
 
     setIntrinsicValue(value);

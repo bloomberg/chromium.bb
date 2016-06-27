@@ -190,7 +190,9 @@
 
           var zero = new Float32Array(result.length);
           zero.fill(0);
-          Should(options.message, result).beCloseToArray(zero, options.threshold || 0);
+          Should(options.message, result, {
+            verbose: true
+          }).beCloseToArray(zero, options.threshold || 0);
         });
       }
     </script>

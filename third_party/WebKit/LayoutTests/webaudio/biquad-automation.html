@@ -20,6 +20,9 @@
 
       // How long to render for each test.
       var renderDuration = 1;
+      // Where to end the automations.  Fairly arbitrary, but must end before
+      // the renderDuration.
+      var automationEndTime = renderDuration / 2;
 
       var audit = Audit.createTaskRunner();
 
@@ -38,8 +41,9 @@
       // A property bag with properties |b0|, |b1|, |b2|, |a1|, |a2|.  Each propery is an array
       // consisting of the coefficients for the time-varying biquad filter.
       function generateFilterCoefficients(filterTypeFunction, parameters, duration) {
+         var renderEndFrame = Math.ceil(renderDuration * sampleRate);
          var endFrame = Math.ceil(duration * sampleRate);
-         var nCoef = endFrame;
+         var nCoef = renderEndFrame;
          var b0 = new Float64Array(nCoef);
          var b1 = new Float64Array(nCoef);
          var b2 = new Float64Array(nCoef);
@@ -53,7 +57,7 @@
          var gains = parameters.gain || [0, 0];
          var detunes = parameters.detune || [0, 0];
 
-         for (var frame = 0; frame < endFrame; ++frame) {
+         for (var frame = 0; frame <= endFrame; ++frame) {
             // Apply linear ramp at frame |frame|.
             var f = linearRamp(frame / sampleRate, freqs[0], freqs[1], 0, duration);
             var q = linearRamp(frame / sampleRate, qs[0], qs[1], 0, duration);
@@ -72,6 +76,14 @@
             a2[k] = coef.a2;
             ++k;
          }
+
+         // Fill the rest of the arrays with the constant value to the end of
+         // the rendering duration.
+         b0.fill(b0[endFrame], endFrame + 1);
+         b1.fill(b1[endFrame], endFrame + 1);
+         b2.fill(b2[endFrame], endFrame + 1);
+         a1.fill(a1[endFrame], endFrame + 1);
+         a2.fill(a2[endFrame], endFrame + 1);
 
          return {b0: b0, b1: b1, b2: b2, a1: a1, a2: a2};
       }
@@ -120,11 +132,13 @@
       function createFilterVerifier(filterCreator, threshold, parameters, input, message) {
         return function (resultBuffer) {
           var actual = resultBuffer.getChannelData(0);
-          var coefs = generateFilterCoefficients(filterCreator, parameters, renderDuration);
+          var coefs = generateFilterCoefficients(filterCreator, parameters, automationEndTime);
 
           reference = timeVaryingFilter(input, coefs);
 
-          Should(message, actual).beCloseToArray(reference, threshold);
+          Should(message, actual, {
+            verbose: true
+          }).beCloseToArray(reference, threshold);
         };
       }
 
@@ -136,11 +150,14 @@
         // Center frequency of bandpass filter and also the frequency of the test tone.
         var centerFreq = 10*440;
 
-        // Sweep the frequency +/- 9*440 Hz from the center.  This should cause the output to low at
-        // the beginning and end of the test where the done is outside the pass band of the filter,
-        // but high in the center where the tone is near the center of the pass band.
+        // Sweep the frequency +/- 5*440 Hz from the center.  This should cause
+        // the output to be low at the beginning and end of the test where the
+        // tone is outside the pass band of the filter, but high in the middle
+        // of the automation time where the tone is near the center of the pass
+        // band.  Make sure the frequency sweep stays inside the Nyquist
+        // frequency.
         var parameters = {
-          freq: [centerFreq - 9*440, centerFreq + 9*440]
+          freq: [centerFreq - 5*440, centerFreq + 5*440]
         }
         var graph = configureGraph(context, centerFreq);
         var f = graph.filter;
@@ -148,10 +165,10 @@
 
         f.type = "bandpass";
         f.frequency.setValueAtTime(parameters.freq[0], 0);
-        f.frequency.linearRampToValueAtTime(parameters.freq[1], renderDuration);
+        f.frequency.linearRampToValueAtTime(parameters.freq[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 5e-5, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createBandpassFilter, 4.8429e-6, parameters, b.getChannelData(0),
             "Output of bandpass filter with frequency automation"))
           .then(done);
       });
@@ -180,10 +197,10 @@
         f.type = "bandpass";
         f.frequency.value = parameters.freq[0];
         f.Q.setValueAtTime(parameters.Q[0], 0);
-        f.Q.linearRampToValueAtTime(parameters.Q[1], renderDuration);
+        f.Q.linearRampToValueAtTime(parameters.Q[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 1.4e-6, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createBandpassFilter, 1.1062e-6, parameters, b.getChannelData(0),
             "Output of bandpass filter with Q automation"))
           .then(done);
       });
@@ -210,10 +227,10 @@
         f.type = "lowshelf";
         f.frequency.value = parameters.freq[0];
         f.gain.setValueAtTime(parameters.gain[0], 0);
-        f.gain.linearRampToValueAtTime(parameters.gain[1], renderDuration);
+        f.gain.linearRampToValueAtTime(parameters.gain[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createLowShelfFilter, 8e-6, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createLowShelfFilter, 1.4306e-5, parameters, b.getChannelData(0),
             "Output of lowshelf filter with gain automation"))
           .then(done);
       });
@@ -234,10 +251,10 @@
         f.type = "bandpass";
         f.frequency.value = parameters.freq[0];
         f.detune.setValueAtTime(parameters.detune[0], 0);
-        f.detune.linearRampToValueAtTime(parameters.detune[1], renderDuration);
+        f.detune.linearRampToValueAtTime(parameters.detune[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 5e-6, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createBandpassFilter, 2.9535e-5, parameters, b.getChannelData(0),
             "Output of bandpass filter with detune automation"))
           .then(done);
       });
@@ -252,7 +269,7 @@
 
         // Sweep all of the filter parameters.  These are pretty much arbitrary.
         var parameters = {
-          freq: [10000, 100],
+          freq: [8000, 100],
           Q: [f.Q.value, .0001],
           gain: [f.gain.value, 20],
           detune: [2400, -2400]
@@ -267,13 +284,13 @@
         f.detune.setValueAtTime(parameters.detune[0], 0);
 
         // Linear ramp each parameter
-        f.frequency.linearRampToValueAtTime(parameters.freq[1], renderDuration);
-        f.Q.linearRampToValueAtTime(parameters.Q[1], renderDuration);
-        f.gain.linearRampToValueAtTime(parameters.gain[1], renderDuration);
-        f.detune.linearRampToValueAtTime(parameters.detune[1], renderDuration);
+        f.frequency.linearRampToValueAtTime(parameters.freq[1], automationEndTime);
+        f.Q.linearRampToValueAtTime(parameters.Q[1], automationEndTime);
+        f.gain.linearRampToValueAtTime(parameters.gain[1], automationEndTime);
+        f.detune.linearRampToValueAtTime(parameters.detune[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createPeakingFilter, 3.3e-4, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createPeakingFilter, 3.1233e-4, parameters, b.getChannelData(0),
             "Output of peaking filter with automation of all parameters"))
           .then(done);
       });
@@ -339,7 +356,7 @@
 
              Should("Output of bandpass filter with sinusoidal modulation of bandpass center frequency",
                actual)
-               .beCloseToArray(reference, 4e-6);
+               .beCloseToArray(reference, 3.9787e-5);
            })
           .then(done);
       });

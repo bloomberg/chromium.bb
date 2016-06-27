@@ -74,6 +74,8 @@ Biquad::~Biquad()
 
 void Biquad::process(const float* sourceP, float* destP, size_t framesToProcess)
 {
+    // WARNING: sourceP and destP may be pointing to the same area of memory!
+    // Be sure to read from sourceP before writing to destP!
     if (hasSampleAccurateValues()) {
         int n = framesToProcess;
 
@@ -120,14 +122,28 @@ void Biquad::process(const float* sourceP, float* destP, size_t framesToProcess)
         // how to update them anyway.
     } else {
 #if OS(MACOSX)
+        double* inputP = m_inputBuffer.data();
+        double* outputP = m_outputBuffer.data();
+
+        // Set up filter state.  This is needed in case we're switching from
+        // filtering with variable coefficients (i.e., with automations) to
+        // fixed coefficients (without automations).
+        inputP[0] = m_x2;
+        inputP[1] = m_x1;
+        outputP[0] = m_y2;
+        outputP[1] = m_y1;
+
         // Use vecLib if available
         processFast(sourceP, destP, framesToProcess);
 
-        // Copy the last inputs and outputs to the filter memory variables.  This is needed because
-        // the next rendering quantum might be an automation which needs the history to continue
-        // correctly.
-        m_x1 = sourceP[framesToProcess - 1];
-        m_x2 = sourceP[framesToProcess - 2];
+        // Copy the last inputs and outputs to the filter memory variables.
+        // This is needed because the next rendering quantum might be an
+        // automation which needs the history to continue correctly.  Because
+        // sourceP and destP can be the same block of memory, we can't read from
+        // sourceP to get the last inputs.  Fortunately, processFast has put the
+        // last inputs in input[0] and input[1].
+        m_x1 = inputP[1];
+        m_x2 = inputP[0];
         m_y1 = destP[framesToProcess - 1];
         m_y2 = destP[framesToProcess - 2];
 

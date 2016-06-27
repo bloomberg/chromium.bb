@@ -139,7 +139,7 @@ public:
     // Returns true if smoothed value has already snapped exactly to value.
     bool smooth();
 
-    void resetSmoothedValue() { m_smoothedValue = intrinsicValue(); }
+    void resetSmoothedValue() { m_timeline.setSmoothedValue(intrinsicValue()); }
 
     bool hasSampleAccurateValues() { return m_timeline.hasValues() || numberOfRenderingConnections(); }
 
@@ -180,9 +180,6 @@ private:
     // Nominal range for the value
     float m_minValue;
     float m_maxValue;
-
-    // Smoothing (de-zippering)
-    float m_smoothedValue;
 
     AudioParamTimeline m_timeline;
 

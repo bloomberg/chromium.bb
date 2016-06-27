@@ -67,6 +67,11 @@ void GainHandler::process(size_t framesToProcess)
                 float* gainValues = m_sampleAccurateGainValues.data();
                 m_gain->calculateSampleAccurateValues(gainValues, framesToProcess);
                 outputBus->copyWithSampleAccurateGainValuesFrom(*inputBus, gainValues, framesToProcess);
+                // Update m_lastGain so if the timeline ever ends, we get
+                // consistent data for the smoothing below.  (Without this,
+                // m_lastGain was the last value before the timeline started
+                // procesing.
+                m_lastGain = gainValues[framesToProcess - 1];
             }
         } else {
             // Apply the gain with de-zippering into the output bus.

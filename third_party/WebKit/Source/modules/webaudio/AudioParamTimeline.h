@@ -67,6 +67,8 @@ public:
     // Returns true if this AudioParam has any events on it.
     bool hasValues() const;
 
+    float smoothedValue() { return m_smoothedValue; }
+    void setSmoothedValue(float v) { m_smoothedValue = v; }
 private:
     class ParamEvent {
     public:
@@ -121,6 +123,9 @@ private:
     Vector<ParamEvent> m_events;
 
     mutable Mutex m_eventsLock;
+
+    // Smoothing (de-zippering)
+    float m_smoothedValue;
 };
 
 } // namespace blink
