@@ -36,18 +36,16 @@ def infra_kitchen(c):
     b_dir = b_dir[:-1]
 
   if c.PLATFORM in ('linux', 'mac'):
-    c.base_paths['cache'] = ('/', 'b', 'c')
-    c.base_paths['builder_cache'] = c.base_paths['cache'] + ('b',)
-    for path in ('git_cache', 'goma_cache', 'goma_deps_cache'):
+    c.base_paths['cache'] = (
+        '/', 'b', 'cache', 'chromium')
+    for path in ('builder_cache', 'git_cache', 'goma_cache', 'goma_deps_cache'):
       c.base_paths[path] = c.base_paths['cache'] + (path,)
   elif b_dir:
-    c.base_paths['cache'] = b_dir + ('c',)
-    c.base_paths['builder_cache'] = c.base_paths['cache'] + ('b',)
-    for path in ('git_cache', 'goma_cache', 'goma_deps_cache'):
+    c.base_paths['cache'] = b_dir + ('cache', 'chromium')
+    for path in ('builder_cache', 'git_cache', 'goma_cache', 'goma_deps_cache'):
       c.base_paths[path] = c.base_paths['cache'] + (path,)
   else:  # pragma: no cover
-    c.base_paths['cache'] = c.base_paths['root'] + ('c',)
-    c.base_paths['builder_cache'] = c.base_paths['cache'] + ('b',)
+    c.base_paths['cache'] = c.base_paths['root'] + ('cache',)
     c.base_paths['git_cache'] = c.base_paths['root'] + ('cache_dir',)
-    for path in ('goma_cache', 'goma_deps_cache'):
+    for path in ('builder_cache', 'goma_cache', 'goma_deps_cache'):
       c.base_paths[path] = c.base_paths['cache'] + (path,)
