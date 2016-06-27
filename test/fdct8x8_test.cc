@@ -412,10 +412,10 @@ class FwdTrans8x8TestBase {
 
       for (int j = 0; j < kNumCoeffs; ++j) {
 #if CONFIG_AOM_HIGHBITDEPTH
-        const uint32_t diff =
+        const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
 #else
-        const uint32_t diff = dst[j] - src[j];
+        const int diff = dst[j] - src[j];
 #endif
         const uint32_t error = diff * diff;
         EXPECT_GE(1u << 2 * (bit_depth_ - 8), error)
@@ -496,10 +496,10 @@ class FwdTrans8x8TestBase {
 
       for (int j = 0; j < kNumCoeffs; ++j) {
 #if CONFIG_AOM_HIGHBITDEPTH
-        const uint32_t diff =
+        const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - ref[j] : dst16[j] - ref16[j];
 #else
-        const uint32_t diff = dst[j] - ref[j];
+        const int diff = dst[j] - ref[j];
 #endif
         const uint32_t error = diff * diff;
         EXPECT_EQ(0u, error) << "Error: 8x8 IDCT has error " << error
