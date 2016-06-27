@@ -374,6 +374,7 @@
 #if defined(GOOGLE_CHROME_BUILD)
 #define IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE 51205
 #endif  // defined(GOOGLE_CHROME_BUILD)
+#define IDC_MEDIA_ROUTER_MANAGE_DEVICES 51206
 
 // Context menu items for media stream status tray
 #define IDC_MEDIA_STREAM_DEVICE_STATUS_TRAY 51300

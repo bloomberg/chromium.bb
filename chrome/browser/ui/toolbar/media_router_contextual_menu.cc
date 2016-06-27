@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/constants.h"
@@ -42,6 +43,10 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser)
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION,
                                   IDS_EXTENSIONS_UNINSTALL);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_MANAGE_DEVICES,
+                                  IDS_MEDIA_ROUTER_MANAGE_DEVICES);
+#endif
 #if defined(GOOGLE_CHROME_BUILD)
   menu_model_.AddCheckItemWithStringId(IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
                                        IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
@@ -126,6 +131,11 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
     case IDC_MEDIA_ROUTER_LEARN_MORE:
       chrome::ShowSingletonTab(browser_, GURL(kCastLearnMorePageUrl));
       break;
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    case IDC_MEDIA_ROUTER_MANAGE_DEVICES:
+      chrome::ShowSingletonTab(browser_, GURL(chrome::kChromeUICastURL));
+      break;
+#endif
     case IDC_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION:
       RemoveMediaRouterComponentAction();
       break;
