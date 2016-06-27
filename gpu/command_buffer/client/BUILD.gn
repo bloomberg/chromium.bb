@@ -31,14 +31,6 @@ group("gles2_cmd_helper") {
   }
 }
 
-component("client_sources_for_ppapi") {
-  public_deps = [
-    ":client_sources",
-    ":gles2_implementation",
-    "//gpu/ipc/common:command_buffer_traits",
-  ]
-}
-
 source_set("client_sources") {
   # External code should depend on this via //gpu/client above rather than
   # depending on this directly or the component build will break.
