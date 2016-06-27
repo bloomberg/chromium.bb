@@ -83,12 +83,5 @@ bool InitializeGLOneOffImplementation(GLImplementation impl,
   return initialized;
 }
 
-void ClearGLBindings() {
-  ClearGLBindingsPlatform();
-
-  SetGLImplementation(kGLImplementationNone);
-  UnloadGLNativeLibraries();
-}
-
 }  // namespace init
 }  // namespace gl

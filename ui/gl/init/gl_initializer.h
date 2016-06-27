@@ -5,25 +5,14 @@
 #ifndef UI_GL_INIT_GL_INITIALIZER_H_
 #define UI_GL_INIT_GL_INITIALIZER_H_
 
-#include "ui/gl/gl_implementation.h"
-
 namespace gl {
 namespace init {
 
 // Performs platform dependent one-off GL initialization, calling into the
 // appropriate GLSurface code to initialize it. To perform one-off GL
 // initialization you should use InitializeGLOneOff() or for tests possibly
-// InitializeGLOneOffImplementation() instead.
+// InitializeGLOneOffImplementation() instead of this.
 bool InitializeGLOneOffPlatform();
-
-// Initializes a particular GL implementation.
-bool InitializeStaticGLBindings(GLImplementation implementation);
-
-// Initializes debug logging wrappers for GL bindings.
-void InitializeDebugGLBindings();
-
-// Clears GL bindings for all implementations supported by platform.
-void ClearGLBindingsPlatform();
 
 }  // namespace init
 }  // namespace gl

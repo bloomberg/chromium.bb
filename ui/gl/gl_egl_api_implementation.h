@@ -20,9 +20,9 @@ namespace gl {
 class GLContext;
 struct GLWindowSystemBindingInfo;
 
-GL_EXPORT void InitializeStaticGLBindingsEGL();
-GL_EXPORT void InitializeDebugGLBindingsEGL();
-GL_EXPORT void ClearGLBindingsEGL();
+void InitializeStaticGLBindingsEGL();
+void InitializeDebugGLBindingsEGL();
+void ClearGLBindingsEGL();
 bool GetGLWindowSystemBindingInfoEGL(GLWindowSystemBindingInfo* info);
 
 class GL_EXPORT EGLApiBase : public EGLApi {

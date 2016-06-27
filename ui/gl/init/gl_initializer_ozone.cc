@@ -4,39 +4,12 @@
 
 #include "ui/gl/init/gl_initializer.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
-#include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_egl_api_implementation.h"
-#include "ui/gl/gl_gl_api_implementation.h"
-#include "ui/gl/gl_implementation_osmesa.h"
-#include "ui/gl/gl_osmesa_api_implementation.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace gl {
 namespace init {
-
-namespace {
-
-bool InitializeStaticEGLInternal() {
-  auto surface_factory =
-      ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
-  if (!surface_factory->LoadEGLGLES2Bindings(
-          base::Bind(&AddGLNativeLibrary),
-          base::Bind(&SetGLGetProcAddressProc))) {
-    return false;
-  }
-
-  SetGLImplementation(kGLImplementationEGLGLES2);
-  InitializeStaticGLBindingsGL();
-  InitializeStaticGLBindingsEGL();
-
-  return true;
-}
-
-}  // namespace
 
 bool InitializeGLOneOffPlatform() {
   switch (GetGLImplementation()) {
@@ -52,41 +25,6 @@ bool InitializeGLOneOffPlatform() {
     default:
       return false;
   }
-}
-
-bool InitializeStaticGLBindings(GLImplementation implementation) {
-  // Prevent reinitialization with a different implementation. Once the gpu
-  // unit tests have initialized with kGLImplementationMock, we don't want to
-  // later switch to another GL implementation.
-  DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
-  ui::OzonePlatform::InitializeForGPU();
-
-  switch (implementation) {
-    case kGLImplementationOSMesaGL:
-      return InitializeStaticGLBindingsOSMesaGL();
-    case kGLImplementationEGLGLES2:
-      return InitializeStaticEGLInternal();
-    case kGLImplementationMockGL:
-      SetGLImplementation(kGLImplementationMockGL);
-      InitializeStaticGLBindingsGL();
-      return true;
-    default:
-      NOTREACHED();
-  }
-
-  return false;
-}
-
-void InitializeDebugGLBindings() {
-  InitializeDebugGLBindingsEGL();
-  InitializeDebugGLBindingsGL();
-  InitializeDebugGLBindingsOSMESA();
-}
-
-void ClearGLBindingsPlatform() {
-  ClearGLBindingsEGL();
-  ClearGLBindingsGL();
-  ClearGLBindingsOSMESA();
 }
 
 }  // namespace init

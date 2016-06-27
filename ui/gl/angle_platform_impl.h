@@ -8,15 +8,13 @@
 // Implements the ANGLE platform interface, for functionality like
 // histograms and trace profiling.
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "third_party/angle/include/platform/Platform.h"
-#include "ui/gl/gl_export.h"
 
 namespace gl {
 
 // Derives the base ANGLE platform and provides implementations
-class GL_EXPORT ANGLEPlatformImpl : NON_EXPORTED_BASE(public angle::Platform) {
+class ANGLEPlatformImpl : public angle::Platform {
  public:
   ANGLEPlatformImpl();
   ~ANGLEPlatformImpl() override;

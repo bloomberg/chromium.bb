@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_GL_IMPLEMENTATION_OSMESA_H_
-#define UI_GL_GL_IMPLEMENTATION_OSMESA_H_
+#ifndef UI_GL_GL_IMPLEMENTATION_OSMESA_
+#define UI_GL_GL_IMPLEMENTATION_OSMESA_
 
 #include "base/files/file_path.h"
 #include "base/native_library.h"
-#include "ui/gl/gl_export.h"
 
 namespace gl {
 
-GL_EXPORT bool InitializeStaticGLBindingsOSMesaGL();
+bool InitializeStaticGLBindingsOSMesaGL();
 
 }  // namespace gl
 
-#endif  // UI_GL_GL_IMPLEMENTATION_OSMESA_H_
+#endif  // UI_GL_GL_IMPLEMENTATION_OSMESA_

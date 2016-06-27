@@ -14,7 +14,6 @@
 #include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gl_surface_stub.h"
-#include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace gpu {
@@ -136,7 +135,7 @@ class GpuChannelTest : public GpuChannelTestCommon {
     stub_context_ = nullptr;
     stub_surface_ = nullptr;
     gl::MockGLInterface::SetGLInterface(nullptr);
-    gl::init::ClearGLBindings();
+    gl::ClearGLBindings();
     gl_interface_ = nullptr;
   }
 

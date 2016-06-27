@@ -46,10 +46,16 @@ typedef void* (WINAPI *GLGetProcAddressProc)(const char* name);
 typedef void* (*GLGetProcAddressProc)(const char* name);
 #endif
 
+// Initialize a particular GL implementation.
+GL_EXPORT bool InitializeStaticGLBindings(GLImplementation implementation);
+
 // Initialize function bindings that depend on the context for a GL
 // implementation.
 GL_EXPORT bool InitializeDynamicGLBindings(GLImplementation implementation,
                                            GLContext* context);
+
+// Initialize Debug logging wrappers for GL bindings.
+GL_EXPORT void InitializeDebugGLBindings();
 
 // Initialize stub methods for drawing operations in the GL bindings. The
 // null draw bindings default to enabled, so that draw operations do nothing.
@@ -76,6 +82,8 @@ class GL_EXPORT DisableNullDrawGLBindings {
   bool initial_enabled_;
 };
 
+GL_EXPORT void ClearGLBindings();
+
 // Set the current GL implementation.
 GL_EXPORT void SetGLImplementation(GLImplementation implementation);
 
@@ -93,10 +101,10 @@ GL_EXPORT GLImplementation GetNamedGLImplementation(const std::string& name);
 GL_EXPORT const char* GetGLImplementationName(GLImplementation implementation);
 
 // Add a native library to those searched for GL entry points.
-GL_EXPORT void AddGLNativeLibrary(base::NativeLibrary library);
+void AddGLNativeLibrary(base::NativeLibrary library);
 
 // Unloads all native libraries.
-GL_EXPORT void UnloadGLNativeLibraries();
+void UnloadGLNativeLibraries();
 
 // Set an additional function that will be called to find GL entry points.
 // Exported so that tests may set the function used in the mock implementation.
@@ -109,7 +117,7 @@ GL_EXPORT void SetGLGetProcAddressProc(GLGetProcAddressProc proc);
 // and when querying functions from the EGL library supplied by Android, it may
 // return a function that prints a log message about the function being
 // unsupported.
-GL_EXPORT void* GetGLProcAddress(const char* name);
+void* GetGLProcAddress(const char* name);
 
 // Return information about the GL window system binding implementation (e.g.,
 // EGL, GLX, WGL). Returns true if the information was retrieved successfully.
@@ -129,10 +137,9 @@ GL_EXPORT std::string GetGLExtensionsFromCurrentContext();
 GL_EXPORT bool WillUseGLGetStringForExtensions();
 
 // Helpers to load a library and log error on failure.
-GL_EXPORT base::NativeLibrary LoadLibraryAndPrintError(
+base::NativeLibrary LoadLibraryAndPrintError(
     const base::FilePath::CharType* filename);
-GL_EXPORT base::NativeLibrary LoadLibraryAndPrintError(
-    const base::FilePath& filename);
+base::NativeLibrary LoadLibraryAndPrintError(const base::FilePath& filename);
 
 }  // namespace gl
 
