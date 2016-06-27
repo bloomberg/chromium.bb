@@ -122,47 +122,6 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
   std::vector<std::unique_ptr<HttpRequestInfo>> request_info_vector_;
 };
 
-// Tests that HttpNetworkTransaction attempts to fallback from
-// TLS 1.2 to TLS 1.1.
-TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
-  ssl_config_service_ = new TLS12SSLConfigService;
-  session_params_.ssl_config_service = ssl_config_service_.get();
-  // |ssl_data1| is for the first handshake (TLS 1.2), which will fail
-  // for protocol reasons (e.g., simulating a version rollback attack).
-  SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data1);
-  StaticSocketDataProvider data1(NULL, 0, NULL, 0);
-  mock_socket_factory_.AddSocketDataProvider(&data1);
-
-  // |ssl_data2| contains the handshake result for a TLS 1.1
-  // handshake which will be attempted after the TLS 1.2
-  // handshake fails.
-  SSLSocketDataProvider ssl_data2(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
-  StaticSocketDataProvider data2(NULL, 0, NULL, 0);
-  mock_socket_factory_.AddSocketDataProvider(&data2);
-
-  HttpNetworkSession session(session_params_);
-  HttpNetworkTransaction trans(DEFAULT_PRIORITY, &session);
-
-  TestCompletionCallback callback;
-  // This will consume |ssl_data1| and |ssl_data2|.
-  int rv =
-      callback.GetResult(trans.Start(GetRequestInfo("https://www.paypal.com/"),
-                                     callback.callback(), BoundNetLog()));
-  EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
-
-  SocketDataProviderArray<SocketDataProvider>& mock_data =
-      mock_socket_factory_.mock_data();
-  // Confirms that |ssl_data1| and |ssl_data2| are consumed.
-  EXPECT_EQ(2u, mock_data.next_index());
-
-  SSLConfig& ssl_config = GetServerSSLConfig(&trans);
-  // |version_max| falls back to TLS 1.1.
-  EXPECT_EQ(SSL_PROTOCOL_VERSION_TLS1_1, ssl_config.version_max);
-  EXPECT_TRUE(ssl_config.version_fallback);
-}
-
 #if !defined(OS_IOS)
 TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
   ssl_config_service_ = new TokenBindingSSLConfigService;

@@ -3323,14 +3323,9 @@ class TestSSLConfigService : public SSLConfigService {
         rev_checking_required_local_anchors_(
             rev_checking_required_local_anchors),
         token_binding_enabled_(token_binding_enabled),
-        min_version_(kDefaultSSLVersionMin),
-        fallback_min_version_(kDefaultSSLVersionFallbackMin) {}
+        min_version_(kDefaultSSLVersionMin) {}
 
   void set_min_version(uint16_t version) { min_version_ = version; }
-
-  void set_fallback_min_version(uint16_t version) {
-    fallback_min_version_ = version;
-  }
 
   // SSLConfigService:
   void GetSSLConfig(SSLConfig* config) override {
@@ -3339,9 +3334,6 @@ class TestSSLConfigService : public SSLConfigService {
     config->verify_ev_cert = ev_enabled_;
     config->rev_checking_required_local_anchors =
         rev_checking_required_local_anchors_;
-    if (fallback_min_version_) {
-      config->version_fallback_min = fallback_min_version_;
-    }
     if (min_version_) {
       config->version_min = min_version_;
     }
@@ -3359,7 +3351,6 @@ class TestSSLConfigService : public SSLConfigService {
   const bool rev_checking_required_local_anchors_;
   const bool token_binding_enabled_;
   uint16_t min_version_;
-  uint16_t fallback_min_version_;
 };
 
 // TODO(svaldez): Update tests to use EmbeddedTestServer.
@@ -8903,22 +8894,6 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   }
 }
 
-class FallbackTestURLRequestContext : public TestURLRequestContext {
- public:
-  explicit FallbackTestURLRequestContext(bool delay_initialization)
-      : TestURLRequestContext(delay_initialization) {}
-
-  void set_fallback_min_version(uint16_t version) {
-    TestSSLConfigService* ssl_config_service = new TestSSLConfigService(
-        true /* check for EV */, false /* online revocation checking */,
-        false /* require rev. checking for local
-                                          anchors */,
-        false /* token binding enabled */);
-    ssl_config_service->set_fallback_min_version(version);
-    set_ssl_config_service(ssl_config_service);
-  }
-};
-
 class HTTPSFallbackTest : public testing::Test {
  public:
   HTTPSFallbackTest() : context_(true) {}
@@ -8943,10 +8918,6 @@ class HTTPSFallbackTest : public testing::Test {
     base::RunLoop().Run();
   }
 
-  void set_fallback_min_version(uint16_t version) {
-    context_.set_fallback_min_version(version);
-  }
-
   void ExpectConnection(int version) {
     EXPECT_EQ(1, delegate_.response_started_count());
     EXPECT_NE(0, delegate_.bytes_received());
@@ -8965,7 +8936,7 @@ class HTTPSFallbackTest : public testing::Test {
 
  private:
   TestDelegate delegate_;
-  FallbackTestURLRequestContext context_;
+  TestURLRequestContext context_;
   std::unique_ptr<URLRequest> request_;
 };
 
@@ -8980,7 +8951,7 @@ TEST_F(HTTPSFallbackTest, TLSv1NoFallback) {
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 }
 
-// Tests the TLS 1.1 fallback doesn't happen but 1.2-intolerance is detected.
+// Tests the TLS 1.1 fallback doesn't happen.
 TEST_F(HTTPSFallbackTest, TLSv1_1NoFallback) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
@@ -8988,165 +8959,7 @@ TEST_F(HTTPSFallbackTest, TLSv1_1NoFallback) {
       SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_2;
 
   ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectFailure(ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION);
-}
-
-// Tests the TLS 1.1 fallback when explicitly enabled.
-TEST_F(HTTPSFallbackTest, TLSv1_1Fallback) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_2;
-
-  set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1_1);
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectConnection(SSL_CONNECTION_VERSION_TLS1_1);
-}
-
-// Tests that the TLS 1.1 fallback, if enabled, triggers on closed connections.
-TEST_F(HTTPSFallbackTest, TLSv1_1FallbackClosed) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_2;
-  ssl_options.tls_intolerance_type =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
-
-  set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1_1);
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectConnection(SSL_CONNECTION_VERSION_TLS1_1);
-}
-
-// This test is disabled on Android because the remote test server doesn't cause
-// a TCP reset.
-#if !defined(OS_ANDROID)
-// Tests fallback to TLS 1.1, if enabled, on connection reset.
-TEST_F(HTTPSFallbackTest, TLSv1_1FallbackReset) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_2;
-  ssl_options.tls_intolerance_type =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_RESET;
-
-  set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1_1);
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectConnection(SSL_CONNECTION_VERSION_TLS1_1);
-}
-#endif  // !OS_ANDROID
-
-// Tests that we don't fallback, even if enabled, on handshake failure with
-// servers that implement TLS_FALLBACK_SCSV. Also ensure that the original error
-// code is reported.
-TEST_F(HTTPSFallbackTest, FallbackSCSV) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  // Configure HTTPS server to be intolerant of TLS >= 1.1 in order to trigger
-  // a version fallback.
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
-  // Have the server process TLS_FALLBACK_SCSV so that version fallback
-  // connections are rejected.
-  ssl_options.fallback_scsv_enabled = true;
-
-  set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1_1);
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-
-  // ERR_SSL_VERSION_OR_CIPHER_MISMATCH is how the server simulates version
-  // intolerance. If the fallback SCSV is processed when the original error
-  // that caused the fallback should be returned, which should be
-  // ERR_SSL_VERSION_OR_CIPHER_MISMATCH.
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
-}
-
-// Tests that we don't fallback, even if enabled, on connection closed with
-// servers that implement TLS_FALLBACK_SCSV. Also ensure that the original error
-// code is reported.
-TEST_F(HTTPSFallbackTest, FallbackSCSVClosed) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  // Configure HTTPS server to be intolerant of TLS >= 1.1 in order to trigger
-  // a version fallback.
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
-  ssl_options.tls_intolerance_type =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
-  // Have the server process TLS_FALLBACK_SCSV so that version fallback
-  // connections are rejected.
-  ssl_options.fallback_scsv_enabled = true;
-
-  set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1_1);
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-
-  // The original error should be replayed on rejected fallback.
-  ExpectFailure(ERR_CONNECTION_CLOSED);
-}
-
-// Test that fallback probe connections don't cause sessions to be cached.
-TEST_F(HTTPSRequestTest, FallbackProbeNoCache) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_2;
-  ssl_options.tls_intolerance_type =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
-  ssl_options.record_resume = true;
-
-  SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-  ASSERT_TRUE(test_server.Start());
-
-  SSLClientSocket::ClearSessionCache();
-
-  // Make a connection that does a probe fallback to TLSv1.1 but fails because
-  // fallback is disabled. We don't wish a session for this connection to be
-  // inserted locally.
-  {
-    TestDelegate delegate;
-    FallbackTestURLRequestContext context(true);
-
-    context.Init();
-    std::unique_ptr<URLRequest> request(context.CreateRequest(
-        test_server.GetURL("/"), DEFAULT_PRIORITY, &delegate));
-    request->Start();
-
-    base::RunLoop().Run();
-
-    EXPECT_EQ(1, delegate.response_started_count());
-    EXPECT_FALSE(request->status().is_success());
-    EXPECT_EQ(URLRequestStatus::FAILED, request->status().status());
-    EXPECT_EQ(ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
-              request->status().error());
-  }
-
-  // Now allow TLSv1.1 fallback connections and request the session cache log.
-  {
-    TestDelegate delegate;
-    FallbackTestURLRequestContext context(true);
-    context.set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1_1);
-
-    context.Init();
-    std::unique_ptr<URLRequest> request(context.CreateRequest(
-        test_server.GetURL("ssl-session-cache"), DEFAULT_PRIORITY, &delegate));
-    request->Start();
-
-    base::RunLoop().Run();
-
-    EXPECT_EQ(1, delegate.response_started_count());
-    EXPECT_NE(0, delegate.bytes_received());
-    EXPECT_EQ(
-        SSL_CONNECTION_VERSION_TLS1_1,
-        SSLConnectionStatusToVersion(request->ssl_info().connection_status));
-    EXPECT_TRUE(request->ssl_info().connection_status &
-                SSL_CONNECTION_VERSION_FALLBACK);
-
-    std::vector<std::string> lines;
-    // If no sessions were cached then the server should have seen two sessions
-    // inserted with no lookups.
-    AssertTwoDistinctSessionsInserted(delegate.data_received());
-  }
 }
 
 class HTTPSSessionTest : public testing::Test {

@@ -71,20 +71,6 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogSSLVersionFallbackCallback(
-    const GURL* url,
-    int net_error,
-    uint16_t version_before,
-    uint16_t version_after,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("host_and_port", GetHostAndPort(*url));
-  dict->SetInteger("net_error", net_error);
-  dict->SetInteger("version_before", version_before);
-  dict->SetInteger("version_after", version_after);
-  return std::move(dict);
-}
-
 std::unique_ptr<base::Value> NetLogSSLCipherFallbackCallback(
     const GURL* url,
     int net_error,
@@ -108,7 +94,6 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       request_(NULL),
       priority_(priority),
       headers_valid_(false),
-      fallback_error_code_(ERR_SSL_INAPPROPRIATE_FALLBACK),
       request_headers_(),
       read_buf_len_(0),
       total_received_bytes_(0),
@@ -1437,56 +1422,6 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
     server_ssl_config_.deprecated_cipher_suites_enabled = true;
     ResetConnectionAndRequestForResend();
     return OK;
-  }
-
-  // TODO(davidben): Remove this code once the dedicated error code is no
-  // longer needed and the flags to re-enable the fallback expire.
-  bool should_fallback = false;
-  uint16_t version_max = server_ssl_config_.version_max;
-
-  switch (error) {
-    // This could be a TLS-intolerant server or a server that chose a
-    // cipher suite defined only for higher protocol versions (such as
-    // an TLS 1.1 server that chose a TLS-1.2-only cipher suite).  Fall
-    // back to the next lower version and retry.
-    case ERR_CONNECTION_CLOSED:
-    case ERR_SSL_PROTOCOL_ERROR:
-    case ERR_SSL_VERSION_OR_CIPHER_MISMATCH:
-    // Some servers trigger the TLS 1.1 fallback with ERR_CONNECTION_RESET
-    // (https://crbug.com/433406).
-    case ERR_CONNECTION_RESET:
-    // This was added for the TLS 1.0 fallback (https://crbug.com/260358) which
-    // has since been removed, but other servers may be relying on it for the
-    // TLS 1.1 fallback. It will be removed with the remainder of the fallback.
-    case ERR_SSL_BAD_RECORD_MAC_ALERT:
-      // Fallback down to a TLS 1.1 ClientHello. By default, this is rejected
-      // but surfaces ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION to help diagnose
-      // server bugs.
-      if (version_max >= SSL_PROTOCOL_VERSION_TLS1_2 &&
-          version_max > server_ssl_config_.version_min) {
-        version_max--;
-        should_fallback = true;
-      }
-      break;
-    case ERR_SSL_INAPPROPRIATE_FALLBACK:
-      // The server told us that we should not have fallen back. A buggy server
-      // could trigger ERR_SSL_INAPPROPRIATE_FALLBACK with the initial
-      // connection. |fallback_error_code_| is initialised to
-      // ERR_SSL_INAPPROPRIATE_FALLBACK to catch this case.
-      error = fallback_error_code_;
-      break;
-  }
-
-  if (should_fallback) {
-    net_log_.AddEvent(
-        NetLog::TYPE_SSL_VERSION_FALLBACK,
-        base::Bind(&NetLogSSLVersionFallbackCallback, &request_->url, error,
-                   server_ssl_config_.version_max, version_max));
-    fallback_error_code_ = error;
-    server_ssl_config_.version_max = version_max;
-    server_ssl_config_.version_fallback = true;
-    ResetConnectionAndRequestForResend();
-    error = OK;
   }
 
   return error;

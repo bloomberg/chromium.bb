@@ -541,6 +541,9 @@ EVENT_TYPE(SSL_WRITE_ERROR)
 //     "version_before": <SSL version before the fallback>,
 //     "version_after": <SSL version after the fallback>,
 //   }
+//
+// TODO(davidben): Remove this event and the corresponding log_view_painter.js
+// logic in M56.
 EVENT_TYPE(SSL_VERSION_FALLBACK)
 
 // An SSL connection needs to be retried with more cipher suites because the
