@@ -531,16 +531,16 @@ TEST(FunctionalTest, CountCopiesOfBoundArguments)
 {
     CountCopy lvalue;
     std::unique_ptr<Function<int()>> bound = bind(takeCountCopyAsConstReference, lvalue);
-    EXPECT_EQ(1, (*bound)()); // unwrapping.
+    EXPECT_EQ(2, (*bound)()); // wrapping and unwrapping.
 
     bound = bind(takeCountCopyAsConstReference, CountCopy()); // Rvalue.
-    EXPECT_EQ(1, (*bound)());
+    EXPECT_EQ(2, (*bound)());
 
     bound = bind(takeCountCopyAsValue, lvalue);
-    EXPECT_EQ(2, (*bound)()); // unwrapping and copying in the final function argument.
+    EXPECT_EQ(3, (*bound)()); // wrapping, unwrapping and copying in the final function argument.
 
     bound = bind(takeCountCopyAsValue, CountCopy());
-    EXPECT_EQ(2, (*bound)());
+    EXPECT_EQ(3, (*bound)());
 }
 
 TEST(FunctionalTest, MoveUnboundArgumentsByRvalueReference)
@@ -568,7 +568,7 @@ TEST(FunctionalTest, CountCopiesOfUnboundArguments)
     EXPECT_EQ(0, (*bound1)(CountCopy()));
 
     std::unique_ptr<Function<int(CountCopy)>> bound2 = bind(takeCountCopyAsValue);
-    EXPECT_EQ(2, (*bound2)(lvalue)); // At PartBoundFunctionImpl::operator() and at the destination function.
+    EXPECT_EQ(3, (*bound2)(lvalue)); // At Function::operator(), at Callback::Run() and at the destination function.
     EXPECT_LE((*bound2)(CountCopy()), 2); // Compiler is allowed to optimize one copy away if the argument is rvalue.
 }
 
