@@ -308,6 +308,15 @@ void BluetoothLowEnergyDeviceMac::DidModifyServices(
   [GetPeripheral() discoverServices:nil];
 }
 
+void BluetoothLowEnergyDeviceMac::DidUpdateValue(
+    CBCharacteristic* characteristic,
+    NSError* error) {
+  BluetoothRemoteGattServiceMac* gatt_service =
+      GetBluetoothRemoteGattService(characteristic.service);
+  DCHECK(gatt_service);
+  gatt_service->DidUpdateValue(characteristic, error);
+}
+
 // static
 std::string BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(
     CBPeripheral* peripheral) {

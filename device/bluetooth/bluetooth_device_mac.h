@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 
 @class NSDate;
 
@@ -22,6 +23,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceMac : public BluetoothDevice {
   static NSError* GetNSErrorFromConnectErrorCode(
       BluetoothDevice::ConnectErrorCode error_code);
   static BluetoothDevice::ConnectErrorCode GetConnectErrorCodeFromNSError(
+      NSError* error);
+  static NSError* GetNSErrorFromGattErrorCode(
+      BluetoothGattService::GattErrorCode error_code);
+  static BluetoothGattService::GattErrorCode GetGattErrorCodeFromNSError(
       NSError* error);
 
  protected:

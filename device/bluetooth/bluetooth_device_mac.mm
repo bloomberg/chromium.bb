@@ -6,7 +6,8 @@
 
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 
-static NSString* const kErrorDomain = @"ConnectErrorCode";
+static NSString* const kConnectErrorDomain = @"ConnectErrorCode";
+static NSString* const kGattErrorDomain = @"GattErrorCode";
 
 namespace device {
 
@@ -19,12 +20,14 @@ BluetoothDeviceMac::~BluetoothDeviceMac() {
 NSError* BluetoothDeviceMac::GetNSErrorFromConnectErrorCode(
     BluetoothDevice::ConnectErrorCode error_code) {
   // TODO(http://crbug.com/585894): Need to convert the error.
-  return [NSError errorWithDomain:kErrorDomain code:error_code userInfo:nil];
+  return [NSError errorWithDomain:kConnectErrorDomain
+                             code:error_code
+                         userInfo:nil];
 }
 
 BluetoothDevice::ConnectErrorCode
 BluetoothDeviceMac::GetConnectErrorCodeFromNSError(NSError* error) {
-  if ([error.domain isEqualToString:kErrorDomain]) {
+  if ([error.domain isEqualToString:kConnectErrorDomain]) {
     BluetoothDevice::ConnectErrorCode connect_error_code =
         (BluetoothDevice::ConnectErrorCode)error.code;
     if (connect_error_code >= 0 ||
@@ -36,6 +39,31 @@ BluetoothDeviceMac::GetConnectErrorCodeFromNSError(NSError* error) {
   }
   // TODO(http://crbug.com/585894): Need to convert the error.
   return BluetoothDevice::ERROR_FAILED;
+}
+
+NSError* BluetoothDeviceMac::GetNSErrorFromGattErrorCode(
+    BluetoothGattService::GattErrorCode error_code) {
+  // TODO(http://crbug.com/619595): Need to convert the GattErrorCode vale to
+  // a CBError value.
+  return
+      [NSError errorWithDomain:kGattErrorDomain code:error_code userInfo:nil];
+}
+
+BluetoothGattService::GattErrorCode
+BluetoothDeviceMac::GetGattErrorCodeFromNSError(NSError* error) {
+  if ([error.domain isEqualToString:kGattErrorDomain]) {
+    BluetoothGattService::GattErrorCode gatt_error_code =
+        (BluetoothGattService::GattErrorCode)error.code;
+    if (gatt_error_code >= 0 ||
+        gatt_error_code <= BluetoothGattService::GATT_ERROR_NOT_SUPPORTED) {
+      return gatt_error_code;
+    }
+    NOTREACHED();
+    return BluetoothGattService::GATT_ERROR_FAILED;
+  }
+  // TODO(http://crbug.com/619595): Need to convert the error code from
+  // CoreBluetooth to a GattErrorCode value.
+  return BluetoothGattService::GATT_ERROR_FAILED;
 }
 
 }  // namespace device

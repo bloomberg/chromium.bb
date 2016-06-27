@@ -52,6 +52,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   friend class BluetoothRemoteGattServiceMac;
   friend class BluetoothTestMac;
 
+  // Called by the BluetoothRemoteGattServiceMac instance when the
+  // characteristics value has been read.
+  void DidUpdateValue(NSError* error);
+  // Returns true if the characteristic is readable.
+  bool IsReadable() const;
   // Returns CoreBluetooth characteristic.
   CBCharacteristic* GetCBCharacteristic() const;
 
@@ -65,6 +70,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   BluetoothUUID uuid_;
   // Characteristic value.
   std::vector<uint8_t> value_;
+  // True if a gatt read or write request is in progress.
+  bool characteristic_value_read_or_write_in_progress_;
+  // ReadRemoteCharacteristic request callbacks.
+  std::pair<ValueCallback, ErrorCallback> read_characteristic_value_callbacks_;
 };
 
 }  // namespace device

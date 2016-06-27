@@ -31,6 +31,10 @@ class BluetoothLowEnergyPeripheralBridge {
     device_mac_->DidDiscoverCharacteristics(service, error);
   };
 
+  void DidUpdateValue(CBCharacteristic* characteristic, NSError* error) {
+    device_mac_->DidUpdateValue(characteristic, error);
+  }
+
   CBPeripheral* GetPeripheral() { return device_mac_->GetPeripheral(); }
 
  private:
@@ -68,6 +72,12 @@ class BluetoothLowEnergyPeripheralBridge {
     didDiscoverCharacteristicsForService:(CBService*)service
                                    error:(NSError*)error {
   bridge_->DidDiscoverCharacteristics(service, error);
+}
+
+- (void)peripheral:(CBPeripheral*)peripheral
+    didUpdateValueForCharacteristic:(CBCharacteristic*)characteristic
+                              error:(NSError*)error {
+  bridge_->DidUpdateValue(characteristic, error);
 }
 
 @end

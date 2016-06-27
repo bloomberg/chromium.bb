@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
+#include "device/bluetooth/bluetooth_device_mac.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_mac.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_mac.h"
 #include "device/bluetooth/test/mock_bluetooth_cbcharacteristic_mac.h"
@@ -80,7 +81,7 @@ const std::string BluetoothTestMac::kTestPeripheralUUID1 =
 const std::string BluetoothTestMac::kTestPeripheralUUID2 =
     "EC1B8F00-0000-0000-0000-000000000000";
 
-BluetoothTestMac::BluetoothTestMac() {}
+BluetoothTestMac::BluetoothTestMac() : BluetoothTestBase() {}
 
 BluetoothTestMac::~BluetoothTestMac() {}
 
@@ -289,6 +290,25 @@ void BluetoothTestMac::SimulateGattCharacteristic(
   DidDiscoverServices(peripheral_mock);
 }
 
+void BluetoothTestMac::SimulateGattCharacteristicRead(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value) {
+  MockCBCharacteristic* characteristic_mock =
+      GetCBMockCharacteristic(characteristic);
+  scoped_nsobject<NSData> data(
+      [[NSData alloc] initWithBytes:value.data() length:value.size()]);
+  [characteristic_mock simulateReadWithValue:data error:nil];
+}
+
+void BluetoothTestMac::SimulateGattCharacteristicReadError(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    BluetoothRemoteGattService::GattErrorCode error_code) {
+  MockCBCharacteristic* characteristic_mock =
+      GetCBMockCharacteristic(characteristic);
+  NSError* error = BluetoothDeviceMac::GetNSErrorFromGattErrorCode(error_code);
+  [characteristic_mock simulateReadWithValue:nil error:error];
+}
+
 void BluetoothTestMac::SimulateGattCharacteristicRemoved(
     BluetoothRemoteGattService* service,
     BluetoothRemoteGattCharacteristic* characteristic) {
@@ -319,6 +339,10 @@ void BluetoothTestMac::OnFakeBluetoothServiceDiscovery() {
   gatt_discovery_attempts_++;
 }
 
+void BluetoothTest::OnFakeBluetoothCharacteristicReadValue() {
+  gatt_read_characteristic_attempts_++;
+}
+
 MockCBPeripheral* BluetoothTestMac::GetMockCBPeripheral(
     BluetoothRemoteGattService* service) const {
   BluetoothDevice* device = service->GetDevice();
@@ -326,6 +350,16 @@ MockCBPeripheral* BluetoothTestMac::GetMockCBPeripheral(
       static_cast<BluetoothLowEnergyDeviceMac*>(device);
   CBPeripheral* cb_peripheral = device_mac->GetPeripheral();
   return ObjCCast<MockCBPeripheral>(cb_peripheral);
+}
+
+MockCBCharacteristic* BluetoothTest::GetCBMockCharacteristic(
+    device::BluetoothRemoteGattCharacteristic* characteristic) const {
+  device::BluetoothRemoteGattCharacteristicMac* mac_gatt_characteristic =
+      static_cast<device::BluetoothRemoteGattCharacteristicMac*>(
+          characteristic);
+  CBCharacteristic* cb_characteristic =
+      mac_gatt_characteristic->GetCBCharacteristic();
+  return ObjCCast<MockCBCharacteristic>(cb_characteristic);
 }
 
 // Utility function for generating new (CBUUID, address) pairs where CBUUID

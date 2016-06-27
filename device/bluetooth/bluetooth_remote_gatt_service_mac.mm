@@ -119,6 +119,15 @@ void BluetoothRemoteGattServiceMac::DidDiscoverCharacteristics() {
   GetMacAdapter()->NotifyGattServiceChanged(this);
 }
 
+void BluetoothRemoteGattServiceMac::DidUpdateValue(
+    CBCharacteristic* characteristic,
+    NSError* error) {
+  BluetoothRemoteGattCharacteristicMac* gatt_characteristic =
+      GetBluetoothRemoteGattCharacteristicMac(characteristic);
+  DCHECK(gatt_characteristic);
+  gatt_characteristic->DidUpdateValue(error);
+}
+
 bool BluetoothRemoteGattServiceMac::IsDiscoveryComplete() {
   return is_discovery_complete_;
 }

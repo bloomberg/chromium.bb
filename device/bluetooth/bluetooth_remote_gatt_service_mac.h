@@ -23,7 +23,6 @@ class BluetoothAdapterMac;
 class BluetoothDevice;
 class BluetoothRemoteGattCharacteristicMac;
 class BluetoothLowEnergyDeviceMac;
-class BluetoothTestMac;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
     : public BluetoothRemoteGattService {
@@ -46,14 +45,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
       const std::string& identifier) const override;
 
  private:
-  friend BluetoothLowEnergyDeviceMac;
-  friend BluetoothTestMac;
+  friend class BluetoothLowEnergyDeviceMac;
+  friend class BluetoothRemoteGattCharacteristicMac;
+  friend class BluetoothTestMac;
 
   // Starts discovering characteristics by calling CoreBluetooth.
   void DiscoverCharacteristics();
   // Called by the BluetoothLowEnergyDeviceMac instance when the characteristics
   // has been discovered.
   void DidDiscoverCharacteristics();
+  // Called by the BluetoothRemoteGattServiceMac instance when the
+  // characteristics value has been read.
+  void DidUpdateValue(CBCharacteristic* characteristic, NSError* error);
   // Returns true if the characteristics has been discovered.
   bool IsDiscoveryComplete();
 

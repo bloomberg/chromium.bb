@@ -91,6 +91,11 @@ using base::scoped_nsobject;
                      forService:(CBService*)service {
 }
 
+- (void)readValueForCharacteristic:(CBCharacteristic*)characteristic {
+  DCHECK(_bluetoothTestMac);
+  _bluetoothTestMac->OnFakeBluetoothCharacteristicReadValue();
+}
+
 - (void)removeAllServices {
   [_services.get() removeAllObjects];
 }

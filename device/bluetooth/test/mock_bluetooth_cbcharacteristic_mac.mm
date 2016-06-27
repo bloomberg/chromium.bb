@@ -89,16 +89,22 @@ CBCharacteristicProperties GattCharacteristicPropertyToCBCharacteristicProperty(
 }  // device
 
 @interface MockCBCharacteristic () {
+  // Owner of this instance.
+  CBService* _service;
   scoped_nsobject<CBUUID> _UUID;
   CBCharacteristicProperties _cb_properties;
+  base::scoped_nsobject<NSData> _value;
 }
 @end
 
 @implementation MockCBCharacteristic
 
-- (instancetype)initWithCBUUID:(CBUUID*)uuid properties:(int)properties {
+- (instancetype)initWithService:(CBService*)service
+                         CBUUID:(CBUUID*)uuid
+                     properties:(int)properties {
   self = [super init];
   if (self) {
+    _service = service;
     _UUID.reset([uuid retain]);
     _cb_properties =
         device::GattCharacteristicPropertyToCBCharacteristicProperty(
@@ -123,6 +129,14 @@ CBCharacteristicProperties GattCharacteristicPropertyToCBCharacteristicProperty(
   return [super isKindOfClass:aClass];
 }
 
+- (void)simulateReadWithValue:(NSData*)value error:(NSError*)error {
+  _value.reset([value copy]);
+  CBPeripheral* peripheral = _service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+      didUpdateValueForCharacteristic:self.characteristic
+                                error:error];
+}
+
 - (CBUUID*)UUID {
   return _UUID.get();
 }
@@ -131,8 +145,16 @@ CBCharacteristicProperties GattCharacteristicPropertyToCBCharacteristicProperty(
   return ObjCCast<CBCharacteristic>(self);
 }
 
+- (CBService*)service {
+  return _service;
+}
+
 - (CBCharacteristicProperties)properties {
   return _cb_properties;
+}
+
+- (NSData*)value {
+  return _value.get();
 }
 
 @end

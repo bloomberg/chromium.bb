@@ -65,8 +65,9 @@ using base::scoped_nsobject;
 
 - (void)addCharacteristicWithUUID:(CBUUID*)cb_uuid properties:(int)properties {
   scoped_nsobject<MockCBCharacteristic> characteristic_mock(
-      [[MockCBCharacteristic alloc] initWithCBUUID:cb_uuid
-                                        properties:properties]);
+      [[MockCBCharacteristic alloc] initWithService:self.service
+                                             CBUUID:cb_uuid
+                                         properties:properties]);
   [_characteristics.get() addObject:characteristic_mock];
 }
 

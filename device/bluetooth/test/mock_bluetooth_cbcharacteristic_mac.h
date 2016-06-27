@@ -16,7 +16,12 @@
 @property(readonly, nonatomic) CBUUID* UUID;
 @property(readonly, nonatomic) CBCharacteristic* characteristic;
 
-- (instancetype)initWithCBUUID:(CBUUID*)uuid properties:(int)properties;
+- (instancetype)initWithService:(CBService*)service
+                         CBUUID:(CBUUID*)uuid
+                     properties:(int)properties;
+
+// Methods for faking events.
+- (void)simulateReadWithValue:(NSData*)value error:(NSError*)error;
 
 @end
 

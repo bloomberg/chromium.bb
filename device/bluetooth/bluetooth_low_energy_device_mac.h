@@ -93,6 +93,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   void DidDiscoverPrimaryServices(NSError* error);
   void DidModifyServices(NSArray* invalidatedServices);
   void DidDiscoverCharacteristics(CBService* cb_service, NSError* error);
+  void DidUpdateValue(CBCharacteristic* characteristic, NSError* error);
 
   // Updates information about the device.
   virtual void Update(NSDictionary* advertisement_data, int rssi);
@@ -111,6 +112,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   friend class BluetoothLowEnergyPeripheralBridge;
   friend class BluetoothRemoteGattServiceMac;
   friend class BluetoothTestMac;
+  friend class BluetoothRemoteGattServiceMac;
 
   // Returns the Bluetooth adapter.
   BluetoothAdapterMac* GetMacAdapter();
