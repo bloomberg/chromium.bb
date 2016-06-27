@@ -795,6 +795,10 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // (WM_CHAR). Other systems have only keystroke events.
   explicit KeyEvent(const base::NativeEvent& native_event);
 
+  // Create a KeyEvent from a NativeEvent but with mocked flags.
+  // This method is necessary for Windows since MSG does not contain all flags.
+  KeyEvent(const base::NativeEvent& native_event, int event_flags);
+
   // Create a keystroke event from a legacy KeyboardCode.
   // This should not be used in new code.
   KeyEvent(EventType type, KeyboardCode key_code, int flags);

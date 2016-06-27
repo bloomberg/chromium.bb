@@ -13,23 +13,12 @@
 
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
 namespace ui {
 
 namespace {
-
-struct DomCodeEntry {
-  DomCode dom_code;
-  int scan_code;
-};
-#define USB_KEYMAP_DECLARATION const DomCodeEntry supported_dom_code_list[] =
-#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) {DomCode::id, win}
-#include "ui/events/keycodes/dom/keycode_converter_data.inc"
-#undef USB_KEYMAP
-#undef USB_KEYMAP_DECLARATION
 
 // List of modifiers mentioned in https://w3c.github.io/uievents/#keys-modifiers
 // Some modifiers are commented out because they usually don't change keys.
@@ -88,55 +77,6 @@ void SetModifierState(BYTE* keyboard_state, int flags) {
 
   if (flags & EF_SCROLL_LOCK_ON)
     keyboard_state[VK_SCROLL] |= 0x01;
-}
-
-DomKey NumPadKeyCodeToDomKey(KeyboardCode key_code) {
-  switch (key_code) {
-    case VKEY_NUMPAD0:
-      return DomKey::Constant<'0'>::Character;
-    case VKEY_NUMPAD1:
-      return DomKey::Constant<'1'>::Character;
-    case VKEY_NUMPAD2:
-      return DomKey::Constant<'2'>::Character;
-    case VKEY_NUMPAD3:
-      return DomKey::Constant<'3'>::Character;
-    case VKEY_NUMPAD4:
-      return DomKey::Constant<'4'>::Character;
-    case VKEY_NUMPAD5:
-      return DomKey::Constant<'5'>::Character;
-    case VKEY_NUMPAD6:
-      return DomKey::Constant<'6'>::Character;
-    case VKEY_NUMPAD7:
-      return DomKey::Constant<'7'>::Character;
-    case VKEY_NUMPAD8:
-      return DomKey::Constant<'8'>::Character;
-    case VKEY_NUMPAD9:
-      return DomKey::Constant<'9'>::Character;
-    case VKEY_CLEAR:
-      return DomKey::CLEAR;
-    case VKEY_PRIOR:
-      return DomKey::PAGE_UP;
-    case VKEY_NEXT:
-      return DomKey::PAGE_DOWN;
-    case VKEY_END:
-      return DomKey::END;
-    case VKEY_HOME:
-      return DomKey::HOME;
-    case VKEY_LEFT:
-      return DomKey::ARROW_LEFT;
-    case VKEY_UP:
-      return DomKey::ARROW_UP;
-    case VKEY_RIGHT:
-      return DomKey::ARROW_RIGHT;
-    case VKEY_DOWN:
-      return DomKey::ARROW_DOWN;
-    case VKEY_INSERT:
-      return DomKey::INSERT;
-    case VKEY_DELETE:
-      return DomKey::DEL;
-    default:
-      return DomKey::NONE;
-  }
 }
 
 // This table must be sorted by |key_code| for binary search.
@@ -296,9 +236,8 @@ PlatformKeyMap::PlatformKeyMap(HKL layout) {
 
 PlatformKeyMap::~PlatformKeyMap() {}
 
-DomKey PlatformKeyMap::DomKeyFromNativeImpl(DomCode code,
-                                            KeyboardCode key_code,
-                                            int flags) const {
+DomKey PlatformKeyMap::DomKeyFromKeyboardCodeImpl(KeyboardCode key_code,
+                                                  int flags) const {
   DomKey key = NonPrintableKeyboardCodeToDomKey(key_code);
   if (key != DomKey::NONE)
     return key;
@@ -306,12 +245,6 @@ DomKey PlatformKeyMap::DomKeyFromNativeImpl(DomCode code,
   // TODO(chongz): Handle VKEY_KANA/VKEY_HANGUL, VKEY_HANJA/VKEY_KANJI based on
   // layout.
   // https://crbug.com/612736
-
-  if (KeycodeConverter::DomCodeToLocation(code) == DomKeyLocation::NUMPAD) {
-    // Derived the DOM Key value from |key_code| instead of |code|, to address
-    // Windows Numlock/Shift interaction - see crbug.com/594552.
-    return NumPadKeyCodeToDomKey(key_code);
-  }
 
   const int flags_to_try[] = {
       // Trying to match Firefox's behavior and UIEvents DomKey guidelines.
@@ -325,19 +258,21 @@ DomKey PlatformKeyMap::DomKeyFromNativeImpl(DomCode code,
   };
 
   for (auto try_flags : flags_to_try) {
-    const auto& it = code_to_key_.find(std::make_pair(static_cast<int>(code),
-                                                      try_flags));
-    if (it != code_to_key_.end()) {
+    const auto& it = printable_keycode_to_key_.find(
+        std::make_pair(static_cast<int>(key_code), try_flags));
+    if (it != printable_keycode_to_key_.end()) {
       key = it->second;
       if (key != DomKey::NONE)
         break;
     }
   }
+
   return key;
 }
 
 // static
-DomKey PlatformKeyMap::DomKeyFromNative(const base::NativeEvent& native_event) {
+DomKey PlatformKeyMap::DomKeyFromKeyboardCode(KeyboardCode key_code,
+                                              int flags) {
   // Use TLS because KeyboardLayout is per thread.
   // However currently PlatformKeyMap will only be used by the host application,
   // which is just one process and one thread.
@@ -352,9 +287,7 @@ DomKey PlatformKeyMap::DomKeyFromNative(const base::NativeEvent& native_event) {
 
   HKL current_layout = ::GetKeyboardLayout(0);
   platform_key_map->UpdateLayout(current_layout);
-  return platform_key_map->DomKeyFromNativeImpl(
-      CodeFromNative(native_event), KeyboardCodeFromNative(native_event),
-      EventFlagsFromNative(native_event));
+  return platform_key_map->DomKeyFromKeyboardCodeImpl(key_code, flags);
 }
 
 void PlatformKeyMap::UpdateLayout(HKL layout) {
@@ -367,20 +300,24 @@ void PlatformKeyMap::UpdateLayout(HKL layout) {
 
   // TODO(chongz): Optimize layout switching (see crbug.com/587147).
   keyboard_layout_ = layout;
-  code_to_key_.clear();
-  // Map size for some sample keyboard layouts:
-  // US: 428, French: 554, Persian: 434, Vietnamese: 1388
-  code_to_key_.reserve(500);
+  printable_keycode_to_key_.clear();
 
-  for (int eindex = 0; eindex <= kModifierFlagsCombinations; ++eindex) {
+  // Map size for some sample keyboard layouts:
+  // US: 476, French: 602, Persian: 482, Vietnamese: 1436
+  printable_keycode_to_key_.reserve(1500);
+
+  for (int modifier_combination = 0;
+       modifier_combination <= kModifierFlagsCombinations;
+       ++modifier_combination) {
     BYTE keyboard_state[256];
     memset(keyboard_state, 0, sizeof(keyboard_state));
-    int flags = GetModifierFlags(eindex);
+
+    // Setting up keyboard state for modifiers.
+    int flags = GetModifierFlags(modifier_combination);
     SetModifierState(keyboard_state, flags);
-    for (const auto& dom_code_entry : supported_dom_code_list) {
+
+    for (int key_code = 0; key_code <= 0xFF; ++key_code) {
       wchar_t translated_chars[5];
-      int key_code = ::MapVirtualKeyEx(dom_code_entry.scan_code,
-                                       MAPVK_VSC_TO_VK, keyboard_layout_);
       int rv = ::ToUnicodeEx(key_code, 0, keyboard_state, translated_chars,
                              arraysize(translated_chars), 0, keyboard_layout_);
 
@@ -392,16 +329,16 @@ void PlatformKeyMap::UpdateLayout(HKL layout) {
                            arraysize(translated_chars), 0, keyboard_layout_);
         // Expecting a dead key character (not followed by a space).
         if (rv == 1) {
-          code_to_key_[std::make_pair(static_cast<int>(dom_code_entry.dom_code),
-                                      flags)] =
+          printable_keycode_to_key_[std::make_pair(static_cast<int>(key_code),
+                                                   flags)] =
               DomKey::DeadKeyFromCombiningCharacter(translated_chars[0]);
         } else {
           // TODO(chongz): Check if this will actually happen.
         }
       } else if (rv == 1) {
         if (translated_chars[0] >= 0x20) {
-          code_to_key_[std::make_pair(static_cast<int>(dom_code_entry.dom_code),
-                                      flags)] =
+          printable_keycode_to_key_[std::make_pair(static_cast<int>(key_code),
+                                                   flags)] =
               DomKey::FromCharacter(translated_chars[0]);
         } else {
           // Ignores legacy non-printable control characters.

@@ -21,8 +21,6 @@ const wchar_t* LAYOUT_US = L"00000409";
 const wchar_t* LAYOUT_FR = L"0000040c";
 
 struct TestKey {
-  // Have to use KeyboardCode instead of DomCode because we don't know the
-  // physical keyboard layout for try bots.
   KeyboardCode key_code;
   const char* normal;
   const char* shift;
@@ -40,59 +38,55 @@ class PlatformKeyMapTest : public testing::Test {
   PlatformKeyMapTest() {}
   ~PlatformKeyMapTest() override {}
 
-  void CheckDomCodeToKeyString(const char* label,
-                               const PlatformKeyMap& keymap,
-                               const TestKey& test_case,
-                               HKL layout) {
+  void CheckKeyboardCodeToKeyString(const char* label,
+                                    const PlatformKeyMap& keymap,
+                                    const TestKey& test_case,
+                                    HKL layout) {
     KeyboardCode key_code = test_case.key_code;
-    int scan_code = ::MapVirtualKeyEx(key_code, MAPVK_VK_TO_VSC, layout);
-    DomCode dom_code = KeycodeConverter::NativeKeycodeToDomCode(scan_code);
     EXPECT_STREQ(test_case.normal,
                  KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromNativeImpl(dom_code, key_code, EF_NONE))
+                     keymap.DomKeyFromKeyboardCodeImpl(key_code, EF_NONE))
                      .c_str())
         << label;
-    EXPECT_STREQ(test_case.shift, KeycodeConverter::DomKeyToKeyString(
-                                      keymap.DomKeyFromNativeImpl(
-                                          dom_code, key_code, EF_SHIFT_DOWN))
-                                      .c_str())
+    EXPECT_STREQ(test_case.shift,
+                 KeycodeConverter::DomKeyToKeyString(
+                     keymap.DomKeyFromKeyboardCodeImpl(key_code, EF_SHIFT_DOWN))
+                     .c_str())
         << label;
-    EXPECT_STREQ(
-        test_case.capslock,
-        KeycodeConverter::DomKeyToKeyString(
-            keymap.DomKeyFromNativeImpl(dom_code, key_code, EF_CAPS_LOCK_ON))
-            .c_str())
+    EXPECT_STREQ(test_case.capslock, KeycodeConverter::DomKeyToKeyString(
+                                         keymap.DomKeyFromKeyboardCodeImpl(
+                                             key_code, EF_CAPS_LOCK_ON))
+                                         .c_str())
         << label;
-    EXPECT_STREQ(test_case.altgr, KeycodeConverter::DomKeyToKeyString(
-                                      keymap.DomKeyFromNativeImpl(
-                                          dom_code, key_code, EF_ALTGR_DOWN))
-                                      .c_str())
+    EXPECT_STREQ(test_case.altgr,
+                 KeycodeConverter::DomKeyToKeyString(
+                     keymap.DomKeyFromKeyboardCodeImpl(key_code, EF_ALTGR_DOWN))
+                     .c_str())
         << label;
     EXPECT_STREQ(test_case.shift_capslock,
                  KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromNativeImpl(
-                         dom_code, key_code, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON))
+                     keymap.DomKeyFromKeyboardCodeImpl(
+                         key_code, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON))
                      .c_str())
         << label;
     EXPECT_STREQ(test_case.shift_altgr,
                  KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromNativeImpl(dom_code, key_code,
-                                                 EF_SHIFT_DOWN | EF_ALTGR_DOWN))
+                     keymap.DomKeyFromKeyboardCodeImpl(
+                         key_code, EF_SHIFT_DOWN | EF_ALTGR_DOWN))
                      .c_str())
         << label;
     EXPECT_STREQ(test_case.altgr_capslock,
                  KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromNativeImpl(
-                         dom_code, key_code, EF_ALTGR_DOWN | EF_CAPS_LOCK_ON))
+                     keymap.DomKeyFromKeyboardCodeImpl(
+                         key_code, EF_ALTGR_DOWN | EF_CAPS_LOCK_ON))
                      .c_str())
         << label;
   }
 
-  DomKey DomKeyFromNativeImpl(const PlatformKeyMap& keymap,
-                              DomCode dom_code,
-                              KeyboardCode key_code,
-                              int flags) {
-    return keymap.DomKeyFromNativeImpl(dom_code, key_code, flags);
+  DomKey DomKeyFromKeyboardCodeImpl(const PlatformKeyMap& keymap,
+                                    KeyboardCode key_code,
+                                    int flags) {
+    return keymap.DomKeyFromKeyboardCodeImpl(key_code, flags);
   }
 
  private:
@@ -144,7 +138,7 @@ TEST_F(PlatformKeyMapTest, USLayout) {
   };
 
   for (const auto& test_case : kUSLayoutTestCases) {
-    CheckDomCodeToKeyString("USLayout", keymap, test_case, layout);
+    CheckKeyboardCodeToKeyString("USLayout", keymap, test_case, layout);
   }
 }
 
@@ -193,7 +187,7 @@ TEST_F(PlatformKeyMapTest, FRLayout) {
   };
 
   for (const auto& test_case : kFRLayoutTestCases) {
-    CheckDomCodeToKeyString("FRLayout", keymap, test_case, layout);
+    CheckKeyboardCodeToKeyString("FRLayout", keymap, test_case, layout);
   }
 }
 
@@ -230,21 +224,19 @@ TEST_F(PlatformKeyMapTest, NumPad) {
 
   for (const auto& test_case : kNumPadTestCases) {
     KeyboardCode key_code = test_case.key_code;
-    int scan_code = ::MapVirtualKeyEx(key_code, MAPVK_VK_TO_VSC, layout);
-    DomCode dom_code = KeycodeConverter::NativeKeycodeToDomCode(scan_code);
 
     EXPECT_EQ(test_case.key,
-              DomKeyFromNativeImpl(keymap, dom_code, key_code, EF_NONE))
+              DomKeyFromKeyboardCodeImpl(keymap, key_code, EF_NONE))
         << key_code;
     EXPECT_EQ(test_case.key,
-              DomKeyFromNativeImpl(keymap, dom_code, key_code, EF_ALTGR_DOWN))
+              DomKeyFromKeyboardCodeImpl(keymap, key_code, EF_ALTGR_DOWN))
         << key_code;
     EXPECT_EQ(test_case.key,
-              DomKeyFromNativeImpl(keymap, dom_code, key_code, EF_CONTROL_DOWN))
+              DomKeyFromKeyboardCodeImpl(keymap, key_code, EF_CONTROL_DOWN))
         << key_code;
     EXPECT_EQ(test_case.key,
-              DomKeyFromNativeImpl(keymap, dom_code, key_code,
-                                   EF_ALTGR_DOWN | EF_CONTROL_DOWN))
+              DomKeyFromKeyboardCodeImpl(keymap, key_code,
+                                         EF_ALTGR_DOWN | EF_CONTROL_DOWN))
         << key_code;
   }
 }
@@ -271,18 +263,17 @@ TEST_F(PlatformKeyMapTest, NonPrintableKey) {
       continue;
 
     EXPECT_EQ(test_case.dom_key,
-              DomKeyFromNativeImpl(keymap, DomCode::NONE, key_code, EF_NONE))
-        << key_code << ", " << scan_code;
-    EXPECT_EQ(test_case.dom_key, DomKeyFromNativeImpl(keymap, DomCode::NONE,
-                                                      key_code, EF_ALTGR_DOWN))
-        << key_code << ", " << scan_code;
-    EXPECT_EQ(
-        test_case.dom_key,
-        DomKeyFromNativeImpl(keymap, DomCode::NONE, key_code, EF_CONTROL_DOWN))
+              DomKeyFromKeyboardCodeImpl(keymap, key_code, EF_NONE))
         << key_code << ", " << scan_code;
     EXPECT_EQ(test_case.dom_key,
-              DomKeyFromNativeImpl(keymap, DomCode::NONE, key_code,
-                                   EF_ALTGR_DOWN | EF_CONTROL_DOWN))
+              DomKeyFromKeyboardCodeImpl(keymap, key_code, EF_ALTGR_DOWN))
+        << key_code << ", " << scan_code;
+    EXPECT_EQ(test_case.dom_key,
+              DomKeyFromKeyboardCodeImpl(keymap, key_code, EF_CONTROL_DOWN))
+        << key_code << ", " << scan_code;
+    EXPECT_EQ(test_case.dom_key,
+              DomKeyFromKeyboardCodeImpl(keymap, key_code,
+                                         EF_ALTGR_DOWN | EF_CONTROL_DOWN))
         << key_code << ", " << scan_code;
   }
 }

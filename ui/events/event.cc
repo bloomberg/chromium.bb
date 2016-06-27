@@ -984,9 +984,10 @@ bool KeyEvent::IsRepeated(const KeyEvent& event) {
 }
 
 KeyEvent::KeyEvent(const base::NativeEvent& native_event)
-    : Event(native_event,
-            EventTypeFromNative(native_event),
-            EventFlagsFromNative(native_event)),
+    : KeyEvent(native_event, EventFlagsFromNative(native_event)) {}
+
+KeyEvent::KeyEvent(const base::NativeEvent& native_event, int event_flags)
+    : Event(native_event, EventTypeFromNative(native_event), event_flags),
       key_code_(KeyboardCodeFromNative(native_event)),
       code_(CodeFromNative(native_event)),
       is_char_(IsCharFromNative(native_event)) {
@@ -1001,7 +1002,7 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event)
   if (is_char_)
     key_ = DomKey::FromCharacter(native_event.wParam);
   else
-    key_ = PlatformKeyMap::DomKeyFromNative(native_event);
+    key_ = PlatformKeyMap::DomKeyFromKeyboardCode(key_code(), flags());
 #endif
 }
 

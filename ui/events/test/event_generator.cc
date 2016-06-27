@@ -91,14 +91,6 @@ class TestTickClock : public base::TickClock {
   DISALLOW_COPY_AND_ASSIGN(TestTickClock);
 };
 
-class TestKeyEvent : public ui::KeyEvent {
- public:
-  TestKeyEvent(const base::NativeEvent& native_event, int flags)
-      : KeyEvent(native_event) {
-    set_flags(flags);
-  }
-};
-
 class TestTouchEvent : public ui::TouchEvent {
  public:
   TestTouchEvent(ui::EventType type,
@@ -629,7 +621,7 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
       ui::UsLayoutKeyboardCodeToDomCode(key_code), flags);
   if (is_press && character) {
     MSG native_event = { NULL, WM_KEYDOWN, key_code, 0 };
-    TestKeyEvent keyev(native_event, flags);
+    ui::KeyEvent keyev(native_event, flags);
     Dispatch(&keyev);
     // On Windows, WM_KEYDOWN event is followed by WM_CHAR with a character
     // if the key event cooresponds to a real character.
@@ -639,7 +631,7 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
   MSG native_event =
       { NULL, (is_press ? key_press : WM_KEYUP), key_code, 0 };
   native_event.time = (Now() - base::TimeTicks()).InMicroseconds();
-  TestKeyEvent keyev(native_event, flags);
+  ui::KeyEvent keyev(native_event, flags);
 #elif defined(USE_X11)
   ui::ScopedXI2Event xevent;
   xevent.InitKeyEvent(is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
