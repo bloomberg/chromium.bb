@@ -874,9 +874,14 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
 }
 
 bool PictureLayerImpl::ShouldAdjustRasterScale() const {
-  // TODO(vmpstr): We might want to adjust the raster scale once in a while.
-  if (is_directly_composited_image_)
+  if (is_directly_composited_image_) {
+    float max_scale = std::max(1.f, MinimumContentsScale());
+    if (raster_source_scale_ < std::min(ideal_source_scale_, max_scale))
+      return true;
+    if (raster_source_scale_ > 4 * ideal_source_scale_)
+      return true;
     return false;
+  }
 
   if (was_screen_space_transform_animating_ !=
       draw_properties().screen_space_transform_is_animating)
@@ -956,11 +961,25 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
 }
 
 void PictureLayerImpl::RecalculateRasterScales() {
-  // TODO(vmpstr): We might want to adjust these once in a while.
   if (is_directly_composited_image_) {
+    if (!raster_source_scale_)
+      raster_source_scale_ = 1.f;
+
+    float min_scale = MinimumContentsScale();
+    float max_scale = std::max(1.f, MinimumContentsScale());
+    float clamped_ideal_source_scale_ =
+        std::max(min_scale, std::min(ideal_source_scale_, max_scale));
+
+    while (raster_source_scale_ < clamped_ideal_source_scale_)
+      raster_source_scale_ *= 2.f;
+    while (raster_source_scale_ > 4 * clamped_ideal_source_scale_)
+      raster_source_scale_ /= 2.f;
+
+    raster_source_scale_ =
+        std::max(min_scale, std::min(raster_source_scale_, max_scale));
+
     raster_page_scale_ = 1.f;
     raster_device_scale_ = 1.f;
-    raster_source_scale_ = std::max(1.f, MinimumContentsScale());
     raster_contents_scale_ = raster_source_scale_;
     low_res_raster_contents_scale_ = raster_contents_scale_;
     return;
@@ -1195,15 +1214,6 @@ PictureLayerImpl::CreatePictureLayerTilingSet() {
 }
 
 void PictureLayerImpl::UpdateIdealScales() {
-  // TODO(vmpstr): We might want to adjust these once in a while.
-  if (is_directly_composited_image_) {
-    ideal_contents_scale_ = 1.f;
-    ideal_page_scale_ = 1.f;
-    ideal_device_scale_ = 1.f;
-    ideal_source_scale_ = 1.f;
-    return;
-  }
-
   DCHECK(CanHaveTilings());
 
   float min_contents_scale = MinimumContentsScale();

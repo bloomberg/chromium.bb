@@ -4944,5 +4944,67 @@ TEST_F(PictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
   EXPECT_EQ(0, data.num_incomplete_tiles);
 }
 
+TEST_F(PictureLayerImplTest, CompositedImageRasterScaleChanges) {
+  gfx::Size layer_bounds(400, 400);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  host_impl()->CreatePendingTree();
+  LayerTreeImpl* pending_tree = host_impl()->pending_tree();
+
+  std::unique_ptr<FakePictureLayerImpl> pending_layer =
+      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, layer_id(),
+                                                   pending_raster_source);
+  pending_layer->set_is_directly_composited_image(true);
+  pending_layer->SetDrawsContent(true);
+  FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
+  pending_tree->SetRootLayer(std::move(pending_layer));
+  pending_tree->BuildLayerListAndPropertyTreesForTesting();
+
+  float expected_contents_scale = 0.25f;
+  for (int i = 1; i < 30; ++i) {
+    float ideal_contents_scale = 0.1f * i - 1e-6;
+    switch (i) {
+      // Scale 0.3.
+      case 3:
+        expected_contents_scale = 0.5f;
+        break;
+      // Scale 0.6.
+      case 6:
+        expected_contents_scale = 1.f;
+        break;
+    }
+    SetupDrawPropertiesAndUpdateTiles(pending_layer_ptr, ideal_contents_scale,
+                                      1.f, 1.f, 1.f, 1.f, false);
+    EXPECT_FLOAT_EQ(expected_contents_scale,
+                    pending_layer_ptr->picture_layer_tiling_set()
+                        ->FindTilingWithResolution(HIGH_RESOLUTION)
+                        ->contents_scale())
+        << "ideal_contents_scale: " << ideal_contents_scale;
+  }
+
+  expected_contents_scale = 1.f;
+  for (int i = 30; i >= 1; --i) {
+    float ideal_contents_scale = 0.1f * i - 1e-6;
+    switch (i) {
+      // Scale 0.2.
+      case 2:
+        expected_contents_scale = 0.5f;
+        break;
+      // Scale 0.1.
+      case 1:
+        expected_contents_scale = 0.25f;
+        break;
+    }
+    SetupDrawPropertiesAndUpdateTiles(pending_layer_ptr, ideal_contents_scale,
+                                      1.f, 1.f, 1.f, 1.f, false);
+    EXPECT_FLOAT_EQ(expected_contents_scale,
+                    pending_layer_ptr->picture_layer_tiling_set()
+                        ->FindTilingWithResolution(HIGH_RESOLUTION)
+                        ->contents_scale())
+        << "ideal_contents_scale: " << ideal_contents_scale;
+  }
+}
+
 }  // namespace
 }  // namespace cc
