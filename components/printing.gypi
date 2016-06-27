@@ -64,6 +64,7 @@
       'target_name': 'printing_test_support',
       'type': 'static_library',
       'dependencies': [
+        '../content/content_shell_and_tests.gyp:test_support_content',
         '../skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         'printing_renderer',
