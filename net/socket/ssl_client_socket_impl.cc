@@ -1000,22 +1000,8 @@ int SSLClientSocketImpl::Init() {
   }
 
   if (!ssl_config_.alpn_protos.empty()) {
-    // Get list of ciphers that are enabled.
-    STACK_OF(SSL_CIPHER)* enabled_ciphers = SSL_get_ciphers(ssl_);
-    DCHECK(enabled_ciphers);
-    std::vector<uint16_t> enabled_ciphers_vector;
-    for (size_t i = 0; i < sk_SSL_CIPHER_num(enabled_ciphers); ++i) {
-      const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(enabled_ciphers, i);
-      const uint16_t id = static_cast<uint16_t>(SSL_CIPHER_get_id(cipher));
-      enabled_ciphers_vector.push_back(id);
-    }
-
-    NextProtoVector alpn_protos = ssl_config_.alpn_protos;
-    if (!HasCipherAdequateForHTTP2(enabled_ciphers_vector) ||
-        !IsTLSVersionAdequateForHTTP2(ssl_config_)) {
-      DisableHTTP2(&alpn_protos);
-    }
-    std::vector<uint8_t> wire_protos = SerializeNextProtos(alpn_protos);
+    std::vector<uint8_t> wire_protos =
+        SerializeNextProtos(ssl_config_.alpn_protos);
     SSL_set_alpn_protos(ssl_, wire_protos.empty() ? NULL : &wire_protos[0],
                         wire_protos.size());
   }

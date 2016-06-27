@@ -181,17 +181,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
       const SSLConfig& ssl_config,
       ChannelIDService* channel_id_service);
 
-  // Determine if there is at least one enabled cipher suite that satisfies
-  // Section 9.2 of the HTTP/2 specification.  Note that the server might still
-  // pick an inadequate cipher suite.
-  static bool HasCipherAdequateForHTTP2(
-      const std::vector<uint16_t>& cipher_suites);
-
-  // Determine if the TLS version required by Section 9.2 of the HTTP/2
-  // specification is enabled.  Note that the server might still pick an
-  // inadequate TLS version.
-  static bool IsTLSVersionAdequateForHTTP2(const SSLConfig& ssl_config);
-
   // Serialize |next_protos| in the wire format for ALPN and NPN: protocols are
   // listed in order, each prefixed by a one-byte length.
   static std::vector<uint8_t> SerializeNextProtos(
