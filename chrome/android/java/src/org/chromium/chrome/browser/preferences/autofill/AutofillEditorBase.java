@@ -59,19 +59,17 @@ public abstract class AutofillEditorBase
         }
         getActivity().setTitle(getTitleResourceId(mIsNewEntry));
 
-        LinearLayout editorView =
-                (LinearLayout) inflater.inflate(R.layout.autofill_editor_base, container, false);
-
         // Hide the top shadow on the ScrollView because the toolbar draws one.
-        FadingEdgeScrollView scrollView =
-                (FadingEdgeScrollView) editorView.findViewById(R.id.scroll_view);
+        FadingEdgeScrollView scrollView = (FadingEdgeScrollView) inflater.inflate(
+                R.layout.autofill_editor_base, container, false);
         scrollView.setShadowVisibility(false, true);
 
-        // Inflate the editor into the content LinearLayout.
-        LinearLayout contentLayout = (LinearLayout) editorView.findViewById(R.id.content);
+        // Inflate the editor and buttons into the "content" LinearLayout.
+        LinearLayout contentLayout = (LinearLayout) scrollView.findViewById(R.id.content);
         inflater.inflate(getLayoutId(), contentLayout, true);
+        inflater.inflate(R.layout.autofill_editor_base_buttons, contentLayout, true);
 
-        return editorView;
+        return scrollView;
     }
 
     @Override

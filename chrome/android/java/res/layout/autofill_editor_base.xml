@@ -4,41 +4,21 @@
      found in the LICENSE file. -->
 
 <!-- Base layout for Autofill editors.
-     Editor fields are expected to be added to the LinearLayout inside of the ScrollLayout.
+     Editor fields are expected to be added to the LinearLayout inside of the ScrollView.
 -->
-<LinearLayout
+<org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scroll_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:fillViewport="true" >
 
-    <org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView
-        android:id="@+id/scroll_view"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true" >
-
-        <!-- All fields go into this LinearLayout. -->
-        <LinearLayout
-            style="@style/PreferenceScreenLayout"
-            android:id="@+id/content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-
-    </org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
-
-    <!-- CANCEL and SAVE buttons. -->
-    <org.chromium.chrome.browser.widget.DualControlLayout
-        android:id="@+id/button_bar"
+    <!-- All fields go into this LinearLayout. -->
+    <LinearLayout
+        style="@style/PreferenceScreenLayout"
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/payments_section_large_spacing"
-        android:background="@android:color/white"
-        app:stackedMargin="@dimen/infobar_margin_between_stacked_buttons"
-        app:primaryButtonText="@string/save"
-        app:secondaryButtonText="@string/cancel" />
+        android:orientation="vertical" />
 
-</LinearLayout>
+</org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
