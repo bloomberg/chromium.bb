@@ -9,16 +9,24 @@
 namespace ui {
 
 DummyTextInputClient::DummyTextInputClient()
-    : text_input_type_(TEXT_INPUT_TYPE_NONE), insert_char_count_(0) {}
+    : text_input_type_(TEXT_INPUT_TYPE_NONE),
+      insert_char_count_(0),
+      insert_text_count_(0),
+      set_composition_count_(0) {}
 
 DummyTextInputClient::DummyTextInputClient(TextInputType text_input_type)
-    : text_input_type_(text_input_type), insert_char_count_(0) {}
+    : text_input_type_(text_input_type),
+      insert_char_count_(0),
+      insert_text_count_(0),
+      set_composition_count_(0) {}
 
 DummyTextInputClient::~DummyTextInputClient() {
 }
 
 void DummyTextInputClient::SetCompositionText(
     const CompositionText& composition) {
+  ++set_composition_count_;
+  last_composition_.CopyFrom(composition);
 }
 
 void DummyTextInputClient::ConfirmCompositionText() {
@@ -28,6 +36,8 @@ void DummyTextInputClient::ClearCompositionText() {
 }
 
 void DummyTextInputClient::InsertText(const base::string16& text) {
+  ++insert_text_count_;
+  last_insert_text_ = text;
 }
 
 void DummyTextInputClient::InsertChar(const KeyEvent& event) {

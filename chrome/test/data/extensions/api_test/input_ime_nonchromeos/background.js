@@ -70,5 +70,30 @@ chrome.test.runTests([
      }]
     });
     chrome.test.succeed();
+  },
+  function testCommitText() {
+    chrome.input.ime.commitText({
+      contextID: 1,
+      text: 'test_commit_text'
+    }, function () {
+      if (chrome.runtime.lastError) {
+        chrome.test.fail();
+        return;
+      }
+      chrome.test.succeed();
+    });
+  },
+  function testSetComposition() {
+    chrome.input.ime.setComposition({
+      contextID: 1,
+      text: 'test_set_composition',
+      cursor: 2
+    }, function() {
+      if(chrome.runtime.lastError) {
+        chrome.test.fail();
+        return;
+      }
+      chrome.test.succeed();
+    });
   }
 ]);

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_nonchromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 
@@ -27,7 +29,7 @@ class InputImeApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(InputImeApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(InputImeApiTest, CreateWindowTest) {
+IN_PROC_BROWSER_TEST_F(InputImeApiTest, BasicApiTest) {
   // Manipulates the focused text input client because the follow cursor
   // window requires the text input focus.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -42,8 +44,22 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, CreateWindowTest) {
   ASSERT_TRUE(RunExtensionTest("input_ime_nonchromeos")) << message_;
 
   // Test the input.ime.sendKeyEvents API.
-  ASSERT_EQ(client->insert_char_count(), 1);
-  ASSERT_EQ(client->last_insert_char(), L'a');
+  ASSERT_EQ(1, client->insert_char_count());
+  EXPECT_EQ(L'a', client->last_insert_char());
+
+  // Test the input.ime.commitText API.
+  ASSERT_EQ(1, client->insert_text_count());
+  EXPECT_EQ(base::UTF8ToUTF16("test_commit_text"), client->last_insert_text());
+
+  // Test the input.ime.setComposition API.
+  ui::CompositionText composition;
+  composition.text = base::UTF8ToUTF16("test_set_composition");
+  composition.underlines.push_back(
+      ui::CompositionUnderline(0, composition.text.length(), SK_ColorBLACK,
+                               false /* thick */, SK_ColorTRANSPARENT));
+  composition.selection = gfx::Range(2, 2);
+  ASSERT_EQ(1, client->set_composition_count());
+  ASSERT_EQ(composition, client->last_composition());
 
   input_method->DetachTextInputClient(client.get());
 }
