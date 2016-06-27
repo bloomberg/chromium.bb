@@ -59,6 +59,12 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
   // Callback to update the UI about the size of Drive Cache.
   void OnGetDriveCacheSize(int64_t size);
 
+  // Requests updating the size of browsing data.
+  void UpdateBrowsingDataSize();
+
+  // Callback to update the UI about the size of browsing data.
+  void OnGetBrowsingDataSize(bool is_site_data, int64_t size);
+
   // Requests updating the space size used by Android apps and cache.
   void UpdateArcSize();
 
@@ -67,6 +73,12 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
 
   // Callback called when clearing Drive cache is done.
   void OnClearDriveCacheDone(bool success);
+
+  // Total size of cache data in browsing data.
+  int64_t browser_cache_size_;
+
+  // Total size of site data in browsing data.
+  int64_t browser_site_data_size_;
 
   base::WeakPtrFactory<StorageManagerHandler> weak_ptr_factory_;
 

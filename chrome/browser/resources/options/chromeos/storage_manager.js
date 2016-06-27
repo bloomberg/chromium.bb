@@ -51,6 +51,9 @@ cr.define('options', function() {
       $('storage-manager-label-drive-cache').onclick = function() {
         PageManager.showPageByName('storageClearDriveCache');
       };
+      $('storage-manager-label-browsing-data').onclick = function() {
+        PageManager.showPageByName('clearBrowserData');
+      };
       $('storage-manager-label-arc').onclick = function() {
         chrome.send('openArcStorage');
       };
@@ -106,6 +109,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Updates the size of browsing data.
+     * @param {string} size Formatted string of the size of Downloads.
+     * @private
+     */
+    setBrowsingDataSize_: function(size) {
+      $('storage-manager-size-browsing-data').textContent = size;
+    },
+
+    /**
      * Updates the total size of Android apps and cache.
      * @param {string} size Formatted string of the size of Android apps and
      * cache.
@@ -128,6 +140,7 @@ cr.define('options', function() {
   // Forward public APIs to private implementations.
   cr.makePublic(StorageManager, [
     'setArcSize',
+    'setBrowsingDataSize',
     'setDownloadsSize',
     'setDriveCacheSize',
     'setSizeStat',

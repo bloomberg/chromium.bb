@@ -2599,6 +2599,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_DRIVE_CACHE" desc="In storage manager overlay, label for the size of Google Drive's offline files.">
     Offline files
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_BROWSING_DATA" desc="In storage manager overlay, label for the size of browsing data.">
+    Browsing data
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_ARC" desc="In storage manager overlay, label for the total size size of Android apps and cache.">
     Android storage
   </message>

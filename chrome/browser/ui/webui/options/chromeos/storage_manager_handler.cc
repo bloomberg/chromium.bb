@@ -15,7 +15,9 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "components/drive/chromeos/file_system_interface.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -43,7 +45,10 @@ const int64_t kSpaceLowBytes = 1 * 1024 * 1024 * 1024;
 
 }  // namespace
 
-StorageManagerHandler::StorageManagerHandler() : weak_ptr_factory_(this) {
+StorageManagerHandler::StorageManagerHandler()
+    : browser_cache_size_(0),
+      browser_site_data_size_(0),
+      weak_ptr_factory_(this) {
 }
 
 StorageManagerHandler::~StorageManagerHandler() {
@@ -73,6 +78,9 @@ void StorageManagerHandler::GetLocalizedValues(
   localized_strings->SetString(
       "storageSubitemLabelDriveCache", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_DRIVE_CACHE));
+  localized_strings->SetString(
+      "storageSubitemLabelBrowsingData", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_BROWSING_DATA));
   localized_strings->SetString(
       "storageSubitemLabelArc", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_ARC));
@@ -135,6 +143,7 @@ void StorageManagerHandler::HandleUpdateStorageInfo(
   UpdateSizeStat();
   UpdateDownloadsSize();
   UpdateDriveCacheSize();
+  UpdateBrowsingDataSize();
   UpdateArcSize();
 }
 
@@ -235,6 +244,33 @@ void StorageManagerHandler::OnGetDriveCacheSize(int64_t size) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.StorageManager.setDriveCacheSize",
       base::StringValue(ui::FormatBytes(size)));
+}
+
+void StorageManagerHandler::UpdateBrowsingDataSize() {
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  // Fetch the size of http cache in browsing data.
+  // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
+  browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
+      content::BrowserContext::GetDefaultStoragePartition(profile),
+      base::Time(),
+      base::Time::Max())->Count(
+          base::Bind(&StorageManagerHandler::OnGetBrowsingDataSize,
+                     weak_ptr_factory_.GetWeakPtr(), false));
+
+  // TODO(fukino): fetch the size of site data in browsing data.
+}
+
+void StorageManagerHandler::OnGetBrowsingDataSize(bool is_site_data,
+                                                  int64_t size) {
+  if (is_site_data)
+    browser_site_data_size_ = size;
+  else
+    browser_cache_size_ = size;
+
+  web_ui()->CallJavascriptFunctionUnsafe(
+     "options.StorageManager.setBrowsingDataSize",
+     base::StringValue(ui::FormatBytes(static_cast<int64_t>(
+         browser_cache_size_ + browser_site_data_size_))));
 }
 
 void StorageManagerHandler::UpdateArcSize() {
