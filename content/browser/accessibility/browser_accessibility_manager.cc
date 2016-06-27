@@ -764,9 +764,7 @@ BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
   }
 
   // Pre-order traversal might leave some text-only objects behind if we don't
-  // start from the deepest children.
-  if (!start_text_object->PlatformIsLeaf())
-    start_text_object = start_text_object->PlatformDeepestFirstChild();
+  // start from the deepest children of the end object.
   if (!end_text_object->PlatformIsLeaf())
     end_text_object = end_text_object->PlatformDeepestLastChild();
 
@@ -808,13 +806,13 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
     if (start_offset > end_offset)
       std::swap(start_offset, end_offset);
 
-    if (start_offset >= static_cast<int>(start_object.GetValue().length()) ||
-        end_offset > static_cast<int>(start_object.GetValue().length())) {
+    if (start_offset >= static_cast<int>(start_object.GetText().length()) ||
+        end_offset > static_cast<int>(start_object.GetText().length())) {
       return base::string16();
     }
 
-    return start_object.GetValue().substr(start_offset,
-                                          end_offset - start_offset);
+    return start_object.GetText().substr(start_offset,
+                                         end_offset - start_offset);
   }
 
   std::vector<const BrowserAccessibility*> text_only_objects =
@@ -838,6 +836,13 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
 
   base::string16 text;
   const BrowserAccessibility* start_text_object = text_only_objects[0];
+  // Figure out if the start and end positions have been reversed.
+  const BrowserAccessibility* first_object = &start_object;
+  if (!first_object->IsTextOnlyObject())
+    first_object = NextTextOnlyObject(first_object);
+  if (!first_object || first_object != start_text_object)
+    std::swap(start_offset, end_offset);
+
   if (start_offset < static_cast<int>(start_text_object->GetText().length())) {
     text += start_text_object->GetText().substr(start_offset);
   } else {

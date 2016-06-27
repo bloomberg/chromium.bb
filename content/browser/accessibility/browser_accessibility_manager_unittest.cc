@@ -1395,6 +1395,11 @@ TEST(BrowserAccessibilityManagerTest, TestGetTextForRange) {
       base::ASCIIToUTF16("Hello world."),
       BrowserAccessibilityManager::GetTextForRange(
           *paragraph_line1_accessible, 0, *paragraph_line2_accessible, 6));
+  // Start and end positions could be reversed.
+  EXPECT_EQ(
+      base::ASCIIToUTF16("Hello world."),
+      BrowserAccessibilityManager::GetTextForRange(
+          *paragraph_line2_accessible, 6, *paragraph_line1_accessible, 0));
 }
 
 TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {

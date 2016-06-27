@@ -251,21 +251,26 @@ NSAttributedString* GetAttributedTextForTextMarkerRange(
                           &end_object, &end_offset)) {
     return nil;
   }
-  DCHECK(start_object && end_object);
-  DCHECK_GE(start_offset, 0);
-  DCHECK_GE(end_offset, 0);
 
   NSString* text = base::SysUTF16ToNSString(
       BrowserAccessibilityManager::GetTextForRange(*start_object, *end_object));
+  if ([text length] == 0)
+    return nil;
 
-  int end_object_trim_length = 0;
-  if (end_object->IsTextOnlyObject() &&
+  // Be permissive with the start and end offsets.
+  if (start_object == end_object && end_offset < start_offset)
+    std::swap(start_offset, end_offset);
+
+  int trim_length = 0;
+  if ((end_object->IsSimpleTextControl() || end_object->IsTextOnlyObject()) &&
       end_offset < static_cast<int>(end_object->GetText().length())) {
-    end_object_trim_length =
-        static_cast<int>(end_object->GetText().length()) - end_offset;
+    trim_length = static_cast<int>(end_object->GetText().length()) - end_offset;
   }
-  int range_length = [text length] - start_offset - end_object_trim_length;
+  int range_length = [text length] - start_offset - trim_length;
+  DCHECK_GE(range_length, 0);
   NSRange range = NSMakeRange(start_offset, range_length);
+  DCHECK_LE(NSMaxRange(range), [text length]);
+
   NSMutableAttributedString* attributed_text =
       [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
   std::vector<const BrowserAccessibility*> text_only_objects =
@@ -2038,11 +2043,10 @@ bool InitializeAccessibilityTreeSearch(
   }
 
   if ([attribute isEqualToString:@"AXStringForTextMarkerRange"])
-    return GetTextForTextMarkerRange(parameter);
+    GetTextForTextMarkerRange(parameter);
 
-  if ([attribute isEqualToString:@"AXAttributedStringForTextMarkerRange"]) {
+  if ([attribute isEqualToString:@"AXAttributedStringForTextMarkerRange"])
     return GetAttributedTextForTextMarkerRange(parameter);
-  }
 
   if ([attribute isEqualToString:@"AXNextTextMarkerForTextMarker"]) {
     BrowserAccessibility* object;
@@ -2094,6 +2098,63 @@ bool InitializeAccessibilityTreeSearch(
     return CreateTextMarker(*object, offset);
   }
 
+  // Currently we approximate end offsets of words and do not actually calculate
+  // end offsets of lines, but use the start offset of the next line instead.
+  // This seems to work in simple text fields.
+  // TODO(nektar): Fix end offsets of words and lines.
+  if ([attribute isEqualToString:@"AXLeftWordTextMarkerRangeForTextMarker"]) {
+    BrowserAccessibility* object;
+    int original_offset;
+    if (!GetTextMarkerData(parameter, &object, &original_offset))
+      return nil;
+
+    int start_offset =
+        object->GetWordStartBoundary(original_offset, ui::BACKWARDS_DIRECTION);
+    DCHECK_GE(start_offset, 0);
+
+    int end_offset =
+        object->GetWordStartBoundary(start_offset, ui::FORWARDS_DIRECTION);
+    DCHECK_GE(end_offset, 0);
+    if (start_offset < end_offset &&
+        end_offset < static_cast<int>(object->GetText().length())) {
+      --end_offset;
+    }
+    return CreateTextMarkerRange(*object, start_offset, *object, end_offset);
+  }
+
+  if ([attribute isEqualToString:@"AXRightWordTextMarkerRangeForTextMarker"]) {
+    BrowserAccessibility* object;
+    int original_offset;
+    if (!GetTextMarkerData(parameter, &object, &original_offset))
+      return nil;
+
+    int start_offset =
+        object->GetWordStartBoundary(original_offset, ui::FORWARDS_DIRECTION);
+    DCHECK_GE(start_offset, 0);
+
+    int end_offset =
+        object->GetWordStartBoundary(start_offset, ui::FORWARDS_DIRECTION);
+    DCHECK_GE(end_offset, 0);
+    if (start_offset < end_offset &&
+        end_offset < static_cast<int>(object->GetText().length())) {
+      --end_offset;
+    }
+    return CreateTextMarkerRange(*object, start_offset, *object, end_offset);
+  }
+
+  if ([attribute isEqualToString:@"AXNextWordEndTextMarkerForTextMarker"]) {
+    BrowserAccessibility* object;
+    int offset;
+    if (!GetTextMarkerData(parameter, &object, &offset))
+      return nil;
+
+    offset = object->GetWordStartBoundary(offset, ui::FORWARDS_DIRECTION);
+    DCHECK_GE(offset, 0);
+    if (offset > 0 && offset < static_cast<int>(object->GetText().length()))
+      --offset;
+    return CreateTextMarker(*object, offset);
+  }
+
   if ([attribute
           isEqualToString:@"AXPreviousWordStartTextMarkerForTextMarker"]) {
     BrowserAccessibility* object;
@@ -2101,8 +2162,31 @@ bool InitializeAccessibilityTreeSearch(
     if (!GetTextMarkerData(parameter, &object, &offset))
       return nil;
 
-    DCHECK(object);
     offset = object->GetWordStartBoundary(offset, ui::BACKWARDS_DIRECTION);
+    DCHECK_GE(offset, 0);
+    return CreateTextMarker(*object, offset);
+  }
+
+  if ([attribute isEqualToString:@"AXNextLineEndTextMarkerForTextMarker"]) {
+    BrowserAccessibility* object;
+    int offset;
+    if (!GetTextMarkerData(parameter, &object, &offset))
+      return nil;
+
+    offset = object->GetLineStartBoundary(offset, ui::FORWARDS_DIRECTION);
+    DCHECK_GE(offset, 0);
+    return CreateTextMarker(*object, offset);
+  }
+
+  if ([attribute
+          isEqualToString:@"AXPreviousLineStartTextMarkerForTextMarker"]) {
+    BrowserAccessibility* object;
+    int offset;
+    if (!GetTextMarkerData(parameter, &object, &offset))
+      return nil;
+
+    offset = object->GetLineStartBoundary(offset, ui::BACKWARDS_DIRECTION);
+    DCHECK_GE(offset, 0);
     return CreateTextMarker(*object, offset);
   }
 
@@ -2145,6 +2229,22 @@ bool InitializeAccessibilityTreeSearch(
       return result;
     }
     return nil;
+  }
+
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityLineTextMarkerRangeForTextMarkerParameterizedAttribute]) {
+    BrowserAccessibility* object;
+    int offset;
+    if (!GetTextMarkerData(parameter, &object, &offset))
+      return nil;
+
+    DCHECK(object);
+    int start_offset =
+        object->GetLineStartBoundary(offset, ui::BACKWARDS_DIRECTION);
+    int end_offset =
+        object->GetLineStartBoundary(offset, ui::FORWARDS_DIRECTION);
+    return CreateTextMarkerRange(*object, start_offset, *object, end_offset);
   }
 
   return nil;
