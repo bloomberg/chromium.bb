@@ -332,8 +332,8 @@ bool Compositor::IsVisible() {
 void Compositor::SetAuthoritativeVSyncInterval(
     const base::TimeDelta& interval) {
   context_factory_->SetAuthoritativeVSyncInterval(this, interval);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-         cc::switches::kDisableBeginFrameScheduling)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+         cc::switches::kEnableBeginFrameScheduling)) {
     vsync_manager_->SetAuthoritativeVSyncInterval(interval);
   }
 }

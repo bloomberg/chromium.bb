@@ -453,7 +453,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
     settings.create_low_res_tiling = true;
   if (cmd->HasSwitch(switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
-  if (!cmd->HasSwitch(cc::switches::kDisableBeginFrameScheduling))
+  if (cmd->HasSwitch(cc::switches::kEnableBeginFrameScheduling))
     settings.use_external_begin_frame_source = true;
 
   if (cmd->HasSwitch(switches::kEnableRGBA4444Textures) &&
