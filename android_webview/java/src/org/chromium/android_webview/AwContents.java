@@ -1578,10 +1578,6 @@ public class AwContents implements SmartClipProvider,
             }
         }
 
-        // Temporary to generate a Java stack for crbug.com/618807.
-        if (mNativeAwContents == 0) {
-            throw new RuntimeException("Calling load on destroyed webview " + mIsDestroyed);
-        }
         nativeSetExtraHeadersForUrl(
                 mNativeAwContents, params.getUrl(), params.getExtraHttpRequestHeadersString());
         params.setExtraHeaders(new HashMap<String, String>());
