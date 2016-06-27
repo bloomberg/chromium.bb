@@ -69,6 +69,13 @@ class AbstractRebaseliningCommand(Command):
         self._baseline_suffix_list = BASELINE_SUFFIX_LIST
         self._scm_changes = {'add': [], 'delete': [], 'remove-lines': []}
 
+    def _results_url(self, builder_name, master_name, build_number=None):
+        builder = self._tool.buildbot.builder_with_name(builder_name, master_name)
+        if build_number:
+            build = builder.build(build_number)
+            return build.results_url()
+        return builder.latest_layout_test_results_url()
+
     def _add_to_scm_later(self, path):
         self._scm_changes['add'].append(path)
 
@@ -185,13 +192,6 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
 class RebaselineTest(BaseInternalRebaselineCommand):
     name = "rebaseline-test-internal"
     help_text = "Rebaseline a single test from a buildbot. Only intended for use by other webkit-patch commands."
-
-    def _results_url(self, builder_name, master_name, build_number=None):
-        builder = self._tool.buildbot.builder_with_name(builder_name, master_name)
-        if build_number:
-            build = builder.build(build_number)
-            return build.results_url()
-        return builder.latest_layout_test_results_url()
 
     def _save_baseline(self, data, target_baseline):
         if not data:

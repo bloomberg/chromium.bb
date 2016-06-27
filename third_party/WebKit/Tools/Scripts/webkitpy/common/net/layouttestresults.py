@@ -71,6 +71,10 @@ class LayoutTestResult(object):
     def expected_results(self):
         return self._result_dict['expected']
 
+    def has_mismatch_result(self):
+        last_retry_result = self.actual_results().split()[-1]
+        return last_retry_result in ('TEXT', 'IMAGE', 'IMAGE+TEXT', 'AUDIO')
+
 
 # FIXME: This should be unified with ResultsSummary or other NRWT layout tests code
 # in the layout_tests package.
@@ -142,14 +146,16 @@ class LayoutTestResults(object):
     def _test_result_tree(self):
         return self._results['tests']
 
-    def tests_with_new_baselines(self):
-        """Returns a list of tests for which there are new baselines."""
-        tests = []
+    def _filter_tests(self, result_filter):
+        """Returns LayoutTestResult objects for tests which pass the given filter."""
+        results = []
 
-        def add_if_has_new_baseline(test_result):
-            actual = test_result.actual_results()
-            if actual in ('TEXT', 'IMAGE', 'IMAGE+TEXT', 'AUDIO'):
-                tests.append(test_result.test_name())
+        def add_if_passes(result):
+            if result_filter(result):
+                results.append(result)
 
-        LayoutTestResults._for_each_test(self._test_result_tree(), add_if_has_new_baseline)
-        return tests
+        LayoutTestResults._for_each_test(self._test_result_tree(), add_if_passes)
+        return sorted(results, key=lambda r: r.test_name())
+
+    def unexpected_mismatch_results(self):
+        return self._filter_tests(lambda r: r.has_mismatch_result() and not r.did_run_as_expected())

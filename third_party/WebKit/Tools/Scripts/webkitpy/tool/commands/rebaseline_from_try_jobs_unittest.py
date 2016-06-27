@@ -38,10 +38,15 @@ class RebaselineFromTryJobsTest(BaseTestCase):
             self.command.execute(MockOptions(issue=11112222), [], self.tool)
         finally:
             _, _, logs = oc.restore_output()
-        self.assertEqual(logs, ('Getting results for Rietveld issue 11112222.\n'
-                                '  Builder: win_chromium_rel_ng\n'
-                                '  Master: tryserver.chromium.win\n'
-                                '  Build: 5000\n'))
+        self.assertEqual(
+            logs,
+            ('Getting results for Rietveld issue 11112222.\n'
+             '  Builder: win_chromium_rel_ng\n'
+             '  Master: tryserver.chromium.win\n'
+             '  Build: 5000\n'
+             'fast/dom/prototype-inheritance.html (actual: TEXT, expected: PASS)\n'
+             'fast/dom/prototype-taco.html (actual: PASS TEXT, expected: PASS)\n'
+             'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html (actual: IMAGE, expected: PASS)\n'))
 
     def test_execute_with_no_issue_number(self):
         oc = OutputCapture()
