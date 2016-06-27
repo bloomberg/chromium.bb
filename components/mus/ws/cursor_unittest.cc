@@ -55,6 +55,7 @@ class CursorTest : public testing::Test {
     WindowManagerWindowTreeFactorySetTestApi(
         window_server_->window_manager_window_tree_factory_set())
         .Add(kTestId1);
+    window_server_->user_id_tracker()->AddUserId(kTestId1);
     window_server_->user_id_tracker()->SetActiveUserId(kTestId1);
   }
 

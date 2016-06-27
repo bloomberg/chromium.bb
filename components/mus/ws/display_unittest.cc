@@ -33,6 +33,9 @@ namespace ws {
 namespace test {
 namespace {
 
+const UserId kTestId1 = "2";
+const UserId kTestId2 = "21";
+
 ClientWindowId ClientWindowIdForFirstRoot(WindowTree* tree) {
   if (tree->roots().empty())
     return ClientWindowId();
@@ -62,6 +65,8 @@ class DisplayTest : public testing::Test {
     window_server_.reset(new WindowServer(&window_server_delegate_,
                                           scoped_refptr<SurfacesState>()));
     window_server_delegate_.set_window_server(window_server_.get());
+    window_server_->user_id_tracker()->AddUserId(kTestId1);
+    window_server_->user_id_tracker()->AddUserId(kTestId2);
   }
 
  protected:
@@ -79,8 +84,6 @@ TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
   const int kNumHostsToCreate = 2;
   window_server_delegate_.set_num_displays_to_create(kNumHostsToCreate);
 
-  const UserId kTestId1 = "2";
-  const UserId kTestId2 = "21";
   DisplayManager* display_manager = window_server_->display_manager();
   WindowManagerWindowTreeFactorySetTestApi(
       window_server_->window_manager_window_tree_factory_set())
@@ -118,8 +121,6 @@ TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
 TEST_F(DisplayTest, Destruction) {
   window_server_delegate_.set_num_displays_to_create(1);
 
-  const UserId kTestId1 = "2";
-  const UserId kTestId2 = "21";
   WindowManagerWindowTreeFactorySetTestApi(
       window_server_->window_manager_window_tree_factory_set())
       .Add(kTestId1);
@@ -156,8 +157,6 @@ TEST_F(DisplayTest, Destruction) {
 TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
   window_server_delegate_.set_num_displays_to_create(1);
 
-  const UserId kTestId1 = "20";
-  const UserId kTestId2 = "201";
   WindowManagerWindowTreeFactorySetTestApi(
       window_server_->window_manager_window_tree_factory_set())
       .Add(kTestId1);
@@ -205,8 +204,6 @@ TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
 // Verifies capture fails when wm is inactive and succeeds when wm is active.
 TEST_F(DisplayTest, SetCaptureFromWindowManager) {
   window_server_delegate_.set_num_displays_to_create(1);
-  const UserId kTestId1 = "20";
-  const UserId kTestId2 = "201";
   WindowManagerWindowTreeFactorySetTestApi(
       window_server_->window_manager_window_tree_factory_set())
       .Add(kTestId1);
@@ -240,8 +237,6 @@ TEST_F(DisplayTest, SetCaptureFromWindowManager) {
 
 TEST_F(DisplayTest, FocusFailsForInactiveUser) {
   window_server_delegate_.set_num_displays_to_create(1);
-  const UserId kTestId1 = "20";
-  const UserId kTestId2 = "201";
   WindowManagerWindowTreeFactorySetTestApi(
       window_server_->window_manager_window_tree_factory_set())
       .Add(kTestId1);
@@ -282,7 +277,6 @@ TEST_F(DisplayTest, FocusFailsForInactiveUser) {
 // Verifies a single tree is used for multiple displays.
 TEST_F(DisplayTest, MultipleDisplays) {
   window_server_delegate_.set_num_displays_to_create(2);
-  const UserId kTestId1 = "20";
   WindowManagerWindowTreeFactorySetTestApi(
       window_server_->window_manager_window_tree_factory_set())
       .Add(kTestId1);

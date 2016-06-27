@@ -13,6 +13,7 @@ namespace ws {
 UserIdTracker::UserIdTracker() : active_id_(shell::mojom::kRootUserID) {
   ids_.insert(active_id_);
 }
+
 UserIdTracker::~UserIdTracker() {
 }
 
@@ -21,6 +22,7 @@ bool UserIdTracker::IsValidUserId(const UserId& id) const {
 }
 
 void UserIdTracker::SetActiveUserId(const UserId& id) {
+  DCHECK(IsValidUserId(id));
   if (id == active_id_)
     return;
 
