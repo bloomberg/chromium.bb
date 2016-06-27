@@ -258,7 +258,8 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, con
     m_image->setPremultiplied(premultiplyAlpha);
 }
 
-ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options, const bool& isImageDataPremultiplied)
+// The last two parameters are used for structure-cloning.
+ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options, const bool& isImageDataPremultiplied, const bool& isImageDataOriginClean)
 {
     bool flipY;
     bool premultiplyAlpha;
@@ -316,6 +317,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
             m_image = StaticBitmapImage::create(newSkImageFromRaster(info, std::move(copiedDataBuffer), dstPixelBytesPerRow));
         }
         m_image->setPremultiplied(premultiplyAlpha);
+        m_image->setOriginClean(isImageDataOriginClean);
         return;
     }
 
@@ -403,10 +405,10 @@ ImageBitmap* ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropR
     return new ImageBitmap(canvas, normalizedCropRect, options);
 }
 
-ImageBitmap* ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options, const bool& isImageDataPremultiplied)
+ImageBitmap* ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options, const bool& isImageDataPremultiplied, const bool& isImageDataOriginClean)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return new ImageBitmap(data, normalizedCropRect, options, isImageDataPremultiplied);
+    return new ImageBitmap(data, normalizedCropRect, options, isImageDataPremultiplied, isImageDataOriginClean);
 }
 
 ImageBitmap* ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
