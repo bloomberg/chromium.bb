@@ -1124,13 +1124,6 @@ public:
     // Walk the tree after layout issuing paint invalidations for layoutObjects that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);
 
-    // This function only invalidates the visual overflow.
-    //
-    // Note that overflow is a box concept but this function
-    // is only supported for block-flow.
-    virtual void invalidatePaintForOverflow();
-    void invalidatePaintForOverflowIfNeeded();
-
     void invalidatePaintIncludingNonCompositingDescendants();
     void invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer);
     void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
@@ -1340,8 +1333,6 @@ public:
     bool shouldDoFullPaintInvalidation() const { return m_bitfields.fullPaintInvalidationReason() != PaintInvalidationNone; }
     void setShouldDoFullPaintInvalidation(PaintInvalidationReason = PaintInvalidationFull);
     void clearShouldDoFullPaintInvalidation() { m_bitfields.setFullPaintInvalidationReason(PaintInvalidationNone); }
-
-    bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }
 
     virtual void clearPaintInvalidationFlags(const PaintInvalidationState&);
 
@@ -1592,7 +1583,6 @@ protected:
     void setIsBackgroundAttachmentFixedObject(bool);
 
     void clearSelfNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(false); }
-    void setShouldInvalidateOverflowForPaint() { m_bitfields.setShouldInvalidateOverflowForPaint(true); }
     void setEverHadLayout() { m_bitfields.setEverHadLayout(true); }
 
     // Remove this object and all descendants from the containing LayoutFlowThread.
@@ -1735,7 +1725,6 @@ private:
             , m_selfNeedsOverflowRecalcAfterStyleChange(false)
             , m_childNeedsOverflowRecalcAfterStyleChange(false)
             , m_preferredLogicalWidthsDirty(false)
-            , m_shouldInvalidateOverflowForPaint(false)
             , m_childShouldCheckForPaintInvalidation(false)
             , m_mayNeedPaintInvalidation(false)
             , m_mayNeedPaintInvalidationSubtree(false)
@@ -1774,7 +1763,7 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 18 in the second.
+        // 32 bits have been used in the first word, and 17 in the second.
 
         // Self needs layout means that this layout object is marked for a full layout.
         // This is the default layout but it is expensive as it recomputes everything.
@@ -1822,7 +1811,6 @@ private:
         // widths.
         ADD_BOOLEAN_BITFIELD(preferredLogicalWidthsDirty, PreferredLogicalWidthsDirty);
 
-        ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint); // TODO(wangxianzhu): Remove for slimming paint v2.
         ADD_BOOLEAN_BITFIELD(childShouldCheckForPaintInvalidation, ChildShouldCheckForPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidationSubtree, MayNeedPaintInvalidationSubtree);
@@ -1949,7 +1937,6 @@ private:
     void setPosChildNeedsLayout(bool b) { m_bitfields.setPosChildNeedsLayout(b); }
     void setNeedsSimplifiedNormalFlowLayout(bool b) { m_bitfields.setNeedsSimplifiedNormalFlowLayout(b); }
     void setIsDragging(bool b) { m_bitfields.setIsDragging(b); }
-    void clearShouldInvalidateOverflowForPaint() { m_bitfields.setShouldInvalidateOverflowForPaint(false); }
     void setSelfNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(true); }
     void setChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(true); }
 

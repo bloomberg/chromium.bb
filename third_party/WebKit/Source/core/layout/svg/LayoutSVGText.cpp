@@ -247,9 +247,7 @@ void LayoutSVGText::layout()
     setLogicalHeight(beforeEdge);
 
     LayoutState state(*this, locationOffset());
-    LayoutUnit paintInvalidationLogicalTop;
-    LayoutUnit paintInvalidationLogicalBottom;
-    layoutInlineChildren(true, paintInvalidationLogicalTop, paintInvalidationLogicalBottom, afterEdge);
+    layoutInlineChildren(true, afterEdge);
 
     m_needsReordering = false;
 

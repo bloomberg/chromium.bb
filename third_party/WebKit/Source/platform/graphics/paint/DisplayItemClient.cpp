@@ -58,6 +58,14 @@ void DisplayItemClient::beginShouldKeepAlive(const void* owner) const
         addResult.storedValue->value = debugName();
 }
 
+void DisplayItemClient::endShouldKeepAlive() const
+{
+    if (displayItemClientsShouldKeepAlive) {
+        for (auto item : *displayItemClientsShouldKeepAlive)
+            item.value.remove(this);
+    }
+}
+
 void DisplayItemClient::endShouldKeepAliveAllClients(const void* owner)
 {
     if (displayItemClientsShouldKeepAlive)

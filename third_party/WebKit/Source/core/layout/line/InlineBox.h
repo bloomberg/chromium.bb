@@ -301,8 +301,8 @@ public:
     bool dirOverride() const { return m_bitfields.dirOverride(); }
     void setDirOverride(bool dirOverride) { m_bitfields.setDirOverride(dirOverride); }
 
-    // Invalidate display item clients in the whole sub inline box tree.
-    void invalidateDisplayItemClientsRecursively();
+    // Set all LineLayoutItems in the inline box subtree should do full paint invalidation.
+    void setShouldDoFullPaintInvalidationRecursively();
 
 #define ADD_BOOLEAN_BITFIELD(name, Name) \
     private:\
@@ -394,6 +394,8 @@ private:
     // Converts the given (top-left) position from the logical space of the InlineBox to the physical space of the
     // containing block. The size indicates the size of the box whose point is being flipped.
     LayoutPoint logicalPositionToPhysicalPoint(const LayoutPoint&, const LayoutSize&) const;
+
+    void setLineLayoutItemShouldDoFullPaintInvalidationIfNeeded();
 
     InlineBox* m_next; // The next element on the same line as us.
     InlineBox* m_prev; // The previous element on the same line as us.

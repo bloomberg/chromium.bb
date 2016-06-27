@@ -1552,16 +1552,6 @@ void LayoutObject::fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalid
     invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
 }
 
-void LayoutObject::invalidatePaintForOverflow()
-{
-}
-
-void LayoutObject::invalidatePaintForOverflowIfNeeded()
-{
-    if (shouldInvalidateOverflowForPaint())
-        invalidatePaintForOverflow();
-}
-
 LayoutRect LayoutObject::absoluteClippedOverflowRect() const
 {
     LayoutRect rect = localOverflowRectForPaintInvalidation();
@@ -1838,13 +1828,8 @@ void LayoutObject::firstLineStyleDidChange(const ComputedStyle& oldStyle, const 
                     firstLineContainer = toLayoutBlockFlow(containingBlock());
             }
         }
-        if (firstLineContainer) {
-            firstLineContainer->invalidateDisplayItemClientsOfFirstLine();
-            // The following is for rect invalidation. For slimming paint v2, we can invalidate the rects
-            // of the first line display item clients instead of the whole rect of the container.
-            if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-                firstLineContainer->setShouldDoFullPaintInvalidation();
-        }
+        if (firstLineContainer)
+            firstLineContainer->setShouldDoFullPaintInvalidationForFirstLine();
     }
     if (diff.needsLayout())
         setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
@@ -3431,7 +3416,6 @@ void LayoutObject::clearPaintInvalidationFlags(const PaintInvalidationState& pai
     clearShouldDoFullPaintInvalidation();
     m_bitfields.setChildShouldCheckForPaintInvalidation(false);
     m_bitfields.setNeededLayoutBecauseOfChildren(false);
-    m_bitfields.setShouldInvalidateOverflowForPaint(false);
     m_bitfields.setMayNeedPaintInvalidation(false);
     m_bitfields.setMayNeedPaintInvalidationSubtree(false);
     m_bitfields.setShouldInvalidateSelection(false);

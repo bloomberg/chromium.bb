@@ -1556,9 +1556,6 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidati
 
     PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState);
 
-    if (!isFullPaintInvalidationReason(reason))
-        invalidatePaintForOverflowIfNeeded();
-
     if (PaintLayerScrollableArea* area = getScrollableArea())
         area->invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState);
 

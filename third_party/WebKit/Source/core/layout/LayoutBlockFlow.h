@@ -288,7 +288,7 @@ public:
         return containsFloats() ? m_floatingObjects->set().last().get() : nullptr;
     }
 
-    void invalidateDisplayItemClientsOfFirstLine();
+    void setShouldDoFullPaintInvalidationForFirstLine();
 
     void simplifiedNormalFlowInlineLayout();
     bool recalcInlineChildrenOverflowAfterStyleChange();
@@ -303,7 +303,7 @@ public:
 
 protected:
     void rebuildFloatsFromIntruding();
-    void layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge);
+    void layoutInlineChildren(bool relayoutChildren, LayoutUnit afterEdge);
     void addLowestFloatFromChildren(LayoutBlockFlow*);
 
     void createFloatingObjects();
@@ -379,7 +379,6 @@ private:
     bool hitTestFloats(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset);
 
     void invalidatePaintForOverhangingFloats(bool paintAllDescendants) final;
-    void invalidatePaintForOverflow() final;
     void invalidateDisplayItemClients(PaintInvalidationReason) const override;
 
     void clearFloats(EClear);
@@ -608,9 +607,6 @@ private:
     LineBoxList m_lineBoxes; // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
 
     LayoutBlockFlowRareData& ensureRareData();
-
-    LayoutUnit m_paintInvalidationLogicalTop;
-    LayoutUnit m_paintInvalidationLogicalBottom;
 
     bool isSelfCollapsingBlock() const override;
     bool checkIfIsSelfCollapsingBlock() const;

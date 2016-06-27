@@ -35,35 +35,17 @@ namespace blink {
 class LineLayoutState {
     STACK_ALLOCATED();
 public:
-    LineLayoutState(bool fullLayout, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom)
+    LineLayoutState(bool fullLayout)
         : m_lastFloat(nullptr)
         , m_endLine(nullptr)
         , m_floatIndex(0)
         , m_endLineMatched(false)
         , m_hasInlineChild(false)
         , m_isFullLayout(fullLayout)
-        , m_paintInvalidationLogicalTop(paintInvalidationLogicalTop)
-        , m_paintInvalidationLogicalBottom(paintInvalidationLogicalBottom)
-        , m_usesPaintInvalidationBounds(false)
     { }
 
     void markForFullLayout() { m_isFullLayout = true; }
     bool isFullLayout() const { return m_isFullLayout; }
-
-    bool usesPaintInvalidationBounds() const { return m_usesPaintInvalidationBounds; }
-
-    void setPaintInvalidationRange(LayoutUnit logicalHeight)
-    {
-        m_usesPaintInvalidationBounds = true;
-        m_paintInvalidationLogicalTop = m_paintInvalidationLogicalBottom = logicalHeight;
-    }
-
-    void updatePaintInvalidationRangeFromBox(RootInlineBox* box, LayoutUnit paginationDelta = LayoutUnit())
-    {
-        m_usesPaintInvalidationBounds = true;
-        m_paintInvalidationLogicalTop = std::min(m_paintInvalidationLogicalTop, box->logicalTopVisualOverflow() + paginationDelta.clampPositiveToZero());
-        m_paintInvalidationLogicalBottom = std::max(m_paintInvalidationLogicalBottom, box->logicalBottomVisualOverflow() + paginationDelta.clampNegativeToZero());
-    }
 
     bool endLineMatched() const { return m_endLineMatched; }
     void setEndLineMatched(bool endLineMatched) { m_endLineMatched = endLineMatched; }
@@ -106,13 +88,7 @@ private:
 
     bool m_isFullLayout;
 
-    // FIXME: Should this be a range object instead of two ints?
-    LayoutUnit& m_paintInvalidationLogicalTop;
-    LayoutUnit& m_paintInvalidationLogicalBottom;
-
     LayoutUnit m_adjustedLogicalLineTop;
-
-    bool m_usesPaintInvalidationBounds;
 };
 
 } // namespace blink

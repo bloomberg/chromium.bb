@@ -63,9 +63,15 @@ public:
 
     // Tests if this DisplayItemClient object has been created and has not been deleted yet.
     bool isAlive() const;
+
     // Called when any DisplayItem of this DisplayItemClient is added into PaintController
     // using PaintController::createAndAppend() or into a cached subsequence.
     void beginShouldKeepAlive(const void* owner) const;
+
+    // Called when the DisplayItemClient is sure that it can safely die before its owners
+    // have chance to remove it from the aliveness control.
+    void endShouldKeepAlive() const;
+
     // Clears all should-keep-alive DisplayItemClients of a PaintController. Called after
     // PaintController commits new display items or the subsequence owner is invalidated.
     static void endShouldKeepAliveAllClients(const void* owner);

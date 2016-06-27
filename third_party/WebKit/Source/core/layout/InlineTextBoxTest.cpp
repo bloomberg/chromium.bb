@@ -24,6 +24,7 @@ public:
     {
         Text* node = document.createTextNode(string);
         LayoutText* text = new LayoutText(node, string.impl());
+        text->setStyle(ComputedStyle::create());
         return new TestInlineTextBox(LineLayoutItem(text));
     }
 

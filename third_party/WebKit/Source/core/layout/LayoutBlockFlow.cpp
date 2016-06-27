@@ -58,7 +58,6 @@ bool LayoutBlockFlow::s_canPropagateFloatIntoSibling = false;
 
 struct SameSizeAsLayoutBlockFlow : public LayoutBlock {
     LineBoxList lineBoxes;
-    LayoutUnit m_paintInvalidationLogicalTopAndBottom[2];
     void* pointers[2];
 };
 
@@ -397,17 +396,6 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
 
     updateAfterLayout();
 
-    if (m_paintInvalidationLogicalTop != m_paintInvalidationLogicalBottom) {
-        bool hasVisibleContent = style()->visibility() == VISIBLE;
-        if (!hasVisibleContent) {
-            PaintLayer* layer = enclosingLayer();
-            layer->updateDescendantDependentFlags();
-            hasVisibleContent = layer->hasVisibleContent();
-        }
-        if (hasVisibleContent)
-            setShouldInvalidateOverflowForPaint();
-    }
-
     if (isHTMLDialogElement(node()) && isOutOfFlowPositioned())
         positionDialog();
 
@@ -467,8 +455,6 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     LayoutUnit previousHeight = logicalHeight();
     setLogicalHeight(beforeEdge);
 
-    m_paintInvalidationLogicalTop = LayoutUnit();
-    m_paintInvalidationLogicalBottom = LayoutUnit();
     if (!firstChild() && !isAnonymousBlock())
         setChildrenInline(true);
 
@@ -480,7 +466,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     // all inline children are removed from this block.
     setContainsInlineWithOutlineAndContinuation(false);
     if (childrenInline())
-        layoutInlineChildren(relayoutChildren, m_paintInvalidationLogicalTop, m_paintInvalidationLogicalBottom, afterEdge);
+        layoutInlineChildren(relayoutChildren, afterEdge);
     else
         layoutBlockChildren(relayoutChildren, layoutScope, beforeEdge, afterEdge);
 
@@ -2787,48 +2773,6 @@ void LayoutBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendan
             floatingLayoutBox->invalidatePaintForOverhangingFloats(false);
         }
     }
-}
-
-void LayoutBlockFlow::invalidatePaintForOverflow()
-{
-    // FIXME: We could tighten up the left and right invalidation points if we let layoutInlineChildren fill them in based off the particular lines
-    // it had to lay out. We wouldn't need the hasOverflowClip() hack in that case either.
-    LayoutUnit paintInvalidationLogicalLeft = logicalLeftVisualOverflow();
-    LayoutUnit paintInvalidationLogicalRight = logicalRightVisualOverflow();
-    if (hasOverflowClip()) {
-        // If we have clipped overflow, we should use layout overflow as well, since visual overflow from lines didn't propagate to our block's overflow.
-        // Note the old code did this as well but even for overflow:visible. The addition of hasOverflowClip() at least tightens up the hack a bit.
-        // layoutInlineChildren should be patched to compute the entire paint invalidation rect.
-        paintInvalidationLogicalLeft = std::min(paintInvalidationLogicalLeft, logicalLeftLayoutOverflow());
-        paintInvalidationLogicalRight = std::max(paintInvalidationLogicalRight, logicalRightLayoutOverflow());
-    }
-
-    LayoutRect paintInvalidationRect;
-    if (isHorizontalWritingMode())
-        paintInvalidationRect = LayoutRect(paintInvalidationLogicalLeft, m_paintInvalidationLogicalTop, paintInvalidationLogicalRight - paintInvalidationLogicalLeft, m_paintInvalidationLogicalBottom - m_paintInvalidationLogicalTop);
-    else
-        paintInvalidationRect = LayoutRect(m_paintInvalidationLogicalTop, paintInvalidationLogicalLeft, m_paintInvalidationLogicalBottom - m_paintInvalidationLogicalTop, paintInvalidationLogicalRight - paintInvalidationLogicalLeft);
-
-    if (hasOverflowClip()) {
-        // Adjust the paint invalidation rect for scroll offset
-        paintInvalidationRect.move(-scrolledContentOffset());
-
-        // Don't allow this rect to spill out of our overflow box.
-        paintInvalidationRect.intersect(LayoutRect(LayoutPoint(), size()));
-    }
-
-    // Make sure the rect is still non-empty after intersecting for overflow above
-    if (!paintInvalidationRect.isEmpty()) {
-        // Hits in media/event-attributes.html
-        DisableCompositingQueryAsserts disabler;
-
-        invalidatePaintRectangle(paintInvalidationRect); // We need to do a partial paint invalidation of our content.
-        if (hasReflection())
-            invalidatePaintRectangle(reflectedRect(paintInvalidationRect));
-    }
-
-    m_paintInvalidationLogicalTop = LayoutUnit();
-    m_paintInvalidationLogicalBottom = LayoutUnit();
 }
 
 void LayoutBlockFlow::invalidateDisplayItemClients(PaintInvalidationReason invalidationReason) const

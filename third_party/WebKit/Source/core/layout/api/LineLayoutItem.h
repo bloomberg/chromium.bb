@@ -420,11 +420,6 @@ public:
         return m_layoutObject->documentBeingDestroyed();
     }
 
-    void slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason reason)
-    {
-        return m_layoutObject->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(displayItemClient, reason);
-    }
-
     LayoutRect visualRect() const
     {
         return m_layoutObject->visualRect();
@@ -433,6 +428,11 @@ public:
     bool isHashTableDeletedValue() const
     {
         return m_layoutObject == kHashTableDeletedValue;
+    }
+
+    void setShouldDoFullPaintInvalidation()
+    {
+        m_layoutObject->setShouldDoFullPaintInvalidation();
     }
 
     struct LineLayoutItemHash {

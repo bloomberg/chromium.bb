@@ -65,9 +65,17 @@ void InlineBox::destroy()
 {
     // We do not need to issue invalidations if the page is being destroyed
     // since these objects will never be repainted.
-    // TODO(crbug.com/619630): Make this fast.
-    if (!m_lineLayoutItem.documentBeingDestroyed())
-        m_lineLayoutItem.slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*this, PaintInvalidationFull);
+    if (!m_lineLayoutItem.documentBeingDestroyed()) {
+        setLineLayoutItemShouldDoFullPaintInvalidationIfNeeded();
+
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+        // This object may have display items in a cached subsequence, but we are
+        // sure that the subsequence will be invalidated because m_lineLayoutItem has
+        // been setShouldFullPaintInvalidation(), so deletion of this object is safe.
+        endShouldKeepAlive();
+#endif
+    }
+
     delete this;
 }
 
@@ -214,6 +222,8 @@ void InlineBox::move(const LayoutSize& delta)
 
     if (getLineLayoutItem().isAtomicInlineLevel())
         LineLayoutBox(getLineLayoutItem()).move(delta.width(), delta.height());
+
+    setLineLayoutItemShouldDoFullPaintInvalidationIfNeeded();
 }
 
 void InlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /* lineTop */, LayoutUnit /* lineBottom */) const
@@ -383,14 +393,21 @@ LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point) const
     return root().block().flipForWritingMode(point);
 }
 
-void InlineBox::invalidateDisplayItemClientsRecursively()
+void InlineBox::setShouldDoFullPaintInvalidationRecursively()
 {
-    // TODO(crbug.com/619630): Make this fast.
-    getLineLayoutItem().slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*this, PaintInvalidationFull);
+    getLineLayoutItem().setShouldDoFullPaintInvalidation();
     if (!isInlineFlowBox())
         return;
     for (InlineBox* child = toInlineFlowBox(this)->firstChild(); child; child = child->nextOnLine())
-        child->invalidateDisplayItemClientsRecursively();
+        child->setShouldDoFullPaintInvalidationRecursively();
+}
+
+void InlineBox::setLineLayoutItemShouldDoFullPaintInvalidationIfNeeded()
+{
+    // For RootInlineBox, we only need to invalidate if it's using the first line style.
+    // otherwise it paints nothing so we don't need to invalidate it.
+    if (!isRootInlineBox() || isFirstLineStyle())
+        m_lineLayoutItem.setShouldDoFullPaintInvalidation();
 }
 
 } // namespace blink
