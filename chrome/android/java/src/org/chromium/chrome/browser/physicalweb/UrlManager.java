@@ -258,14 +258,21 @@ class UrlManager {
     /**
      * Forget all stored URLs and clear the notification.
      */
-    public void clearUrls() {
-        mNearbyUrls.clear();
+    public void clearAllUrls() {
+        clearNearbyUrls();
         mResolvedUrls.clear();
         mUrlsSortedByTimestamp.clear();
         mUrlInfoMap.clear();
-        putCachedNearbyUrls();
         putCachedResolvedUrls();
         putCachedUrlInfoMap();
+    }
+
+    /**
+     * Forget all nearby URLs and clear the notification.
+     */
+    public void clearNearbyUrls() {
+        mNearbyUrls.clear();
+        putCachedNearbyUrls();
         clearNotification();
         cancelClearNotificationAlarm();
     }

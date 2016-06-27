@@ -36,9 +36,35 @@ public class PhysicalWebBleClient {
     /**
      * Begin a background subscription to URLs broadcasted from BLE beacons.
      * This currently does nothing and should be overridden by a subclass.
+     * @param callback Callback to be run when subscription task is done, regardless of whether it
+     *         is successful.
+     */
+    void backgroundSubscribe(Runnable callback) {
+        Log.d(TAG, "background subscribing in empty client");
+        if (callback != null) {
+            callback.run();
+        }
+    }
+
+    /**
+     * Begin a background subscription to URLs broadcasted from BLE beacons.
+     * This currently does nothing and should be overridden by a subclass.
      */
     void backgroundSubscribe() {
-        Log.d(TAG, "background subscribing in empty client");
+        backgroundSubscribe(null);
+    }
+
+    /**
+     * Cancel a background subscription to URLs broadcasted from BLE beacons.
+     * This currently does nothing and should be overridden by a subclass.
+     * @param callback Callback to be run when subscription cancellation task is done, regardless of
+     *         whether it is successful.
+     */
+    void backgroundUnsubscribe(Runnable callback) {
+        Log.d(TAG, "background unsubscribing in empty client");
+        if (callback != null) {
+            callback.run();
+        }
     }
 
     /**
@@ -46,7 +72,7 @@ public class PhysicalWebBleClient {
      * This currently does nothing and should be overridden by a subclass.
      */
     void backgroundUnsubscribe() {
-        Log.d(TAG, "background unsubscribing in empty client");
+        backgroundUnsubscribe(null);
     }
 
     /**

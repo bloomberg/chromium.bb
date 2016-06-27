@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.physicalweb;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 
 import org.chromium.base.ContextUtils;
@@ -60,10 +59,16 @@ public class PhysicalWeb {
      * @param application An instance of {@link ChromeApplication}, used to get the
      * appropriate PhysicalWebBleClient implementation.
      */
-    public static void startPhysicalWeb(ChromeApplication application) {
-        PhysicalWebBleClient physicalWebBleClient = PhysicalWebBleClient.getInstance(application);
-        physicalWebBleClient.backgroundSubscribe();
-        clearUrlsAsync(application);
+    public static void startPhysicalWeb(final ChromeApplication application) {
+        PhysicalWebBleClient.getInstance(application).backgroundSubscribe(new Runnable() {
+            @Override
+            public void run() {
+                // We need to clear the list of nearby URLs so that they can be repopulated by the
+                // new subscription, but we don't know whether we are already subscribed, so we need
+                // to pass a callback so that we can clear as soon as we are resubscribed.
+                UrlManager.getInstance(application).clearNearbyUrls();
+            }
+        });
     }
 
     /**
@@ -71,10 +76,14 @@ public class PhysicalWeb {
      * @param application An instance of {@link ChromeApplication}, used to get the
      * appropriate PhysicalWebBleClient implementation.
      */
-    public static void stopPhysicalWeb(ChromeApplication application) {
-        PhysicalWebBleClient physicalWebBleClient = PhysicalWebBleClient.getInstance(application);
-        physicalWebBleClient.backgroundUnsubscribe();
-        clearUrlsAsync(application);
+    public static void stopPhysicalWeb(final ChromeApplication application) {
+        PhysicalWebBleClient.getInstance(application).backgroundUnsubscribe(new Runnable() {
+            @Override
+            public void run() {
+                // This isn't absolutely necessary, but it's nice to clean up all our shared prefs.
+                UrlManager.getInstance(application).clearAllUrls();
+            }
+        });
     }
 
     /**
@@ -117,15 +126,5 @@ public class PhysicalWeb {
         } else {
             stopPhysicalWeb(application);
         }
-    }
-
-    private static void clearUrlsAsync(final Context context) {
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                UrlManager.getInstance(context).clearUrls();
-            }
-        };
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(task);
     }
 }

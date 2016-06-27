@@ -75,7 +75,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    public void testAddUrlAfterClearUrlsWorks() {
+    public void testAddUrlAfterClearAllUrlsWorks() {
         addPwsResult1();
         addPwsResult2();
         addPwsResult1();
@@ -83,7 +83,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mUrlManager.addUrl(URL1);
         mUrlManager.addUrl(URL2);
         getInstrumentation().waitForIdleSync();
-        mUrlManager.clearUrls();
+        mUrlManager.clearAllUrls();
 
         // Add some more URLs...this should not crash if we cleared correctly.
         mUrlManager.addUrl(URL1);
@@ -91,6 +91,37 @@ public class UrlManagerTest extends InstrumentationTestCase {
         getInstrumentation().waitForIdleSync();
         List<UrlInfo> urlInfos = mUrlManager.getUrls();
         assertEquals(2, urlInfos.size());
+    }
+
+    @SmallTest
+    public void testClearNearbyUrlsWorks() {
+        addPwsResult1();
+        addPwsResult2();
+        mUrlManager.addUrl(URL1);
+        mUrlManager.addUrl(URL2);
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure that a notification was shown.
+        List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
+        assertEquals(1, notifications.size());
+
+        mUrlManager.clearNearbyUrls();
+
+        // Test that the URLs are not nearby, but do exist in the cache.
+        List<UrlInfo> urlInfos = mUrlManager.getUrls(true);
+        assertEquals(0, urlInfos.size());
+        assertTrue(mUrlManager.containsInAnyCache(URL1));
+        assertTrue(mUrlManager.containsInAnyCache(URL2));
+
+        // Make sure no notification is shown.
+        notifications = mMockNotificationManagerProxy.getNotifications();
+        assertEquals(0, notifications.size());
+
+        mUrlManager.clearAllUrls();
+
+        // Test that cache is empty.
+        assertFalse(mUrlManager.containsInAnyCache(URL1));
+        assertFalse(mUrlManager.containsInAnyCache(URL2));
     }
 
     @SmallTest
@@ -302,7 +333,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    public void testClearUrlsClearsNotification() throws Exception {
+    public void testClearAllUrlsClearsNotification() throws Exception {
         addPwsResult1();
         mUrlManager.addUrl(URL1);
         getInstrumentation().waitForIdleSync();
@@ -311,7 +342,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
         assertEquals(1, notifications.size());
 
-        mUrlManager.clearUrls();
+        mUrlManager.clearAllUrls();
 
         // Make sure all URLs were removed.
         List<UrlInfo> urls = mUrlManager.getUrls(true);
