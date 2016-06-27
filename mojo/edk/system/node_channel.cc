@@ -291,6 +291,7 @@ void NodeChannel::AddBrokerClient(const ports::NodeName& client_name,
   data->client_name = client_name;
 #if !defined(OS_WIN)
   data->process_handle = process_handle;
+  data->padding = 0;
 #endif
   WriteChannelMessage(std::move(message));
 }
