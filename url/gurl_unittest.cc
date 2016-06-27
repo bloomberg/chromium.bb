@@ -660,6 +660,9 @@ TEST(GURLTest, IsStandard) {
 
   GURL c("foo://bar/baz");
   EXPECT_FALSE(c.IsStandard());
+
+  GURL d("cid:bar@baz");
+  EXPECT_FALSE(d.IsStandard());
 }
 
 TEST(GURLTest, SchemeIsHTTPOrHTTPS) {
