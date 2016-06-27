@@ -50,6 +50,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "component_updater_service_unittest.cc",
+    "default_component_installer_unittest.cc",
     "timer_unittest.cc",
   ]
 

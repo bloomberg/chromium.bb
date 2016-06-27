@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
 #include "components/update_client/update_client.h"
@@ -126,6 +127,7 @@ class ComponentUpdateService {
                                    CrxUpdateItem* item) const = 0;
 
   friend class ::ComponentsUI;
+  FRIEND_TEST_ALL_PREFIXES(DefaultComponentInstallerTest, RegisterComponent);
 };
 
 using ServiceObserver = ComponentUpdateService::Observer;

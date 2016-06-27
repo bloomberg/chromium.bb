@@ -130,6 +130,7 @@
     ],
     'component_updater_unittest_sources': [
       'component_updater/component_updater_service_unittest.cc',
+      'component_updater/default_component_installer_unittest.cc',
       'component_updater/timer_unittest.cc',
     ],
     'content_settings_unittest_sources': [
