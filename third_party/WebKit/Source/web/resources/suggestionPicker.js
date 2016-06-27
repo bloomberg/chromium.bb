@@ -251,11 +251,11 @@ SuggestionPicker.prototype._findLastVisibleEntry = function() {
  */
 SuggestionPicker.prototype._handleBodyKeyDown = function(event) {
     var eventHandled = false;
-    var key = event.keyIdentifier;
-    if (key === "U+001B") { // ESC
+    var key = event.key;
+    if (key === "Escape") {
         this.handleCancel();
         eventHandled = true;
-    } else if (key == "Up") {
+    } else if (key == "ArrowUp") {
         if (document.activeElement && document.activeElement.classList.contains(SuggestionPicker.ListEntryClass)) {
             for (var node = document.activeElement.previousElementSibling; node; node = node.previousElementSibling) {
                 if (node.classList.contains(SuggestionPicker.ListEntryClass)) {
@@ -268,7 +268,7 @@ SuggestionPicker.prototype._handleBodyKeyDown = function(event) {
             this._element.querySelector("." + SuggestionPicker.ListEntryClass + ":last-child").focus();
         }
         eventHandled = true;
-    } else if (key == "Down") {
+    } else if (key == "ArrowDown") {
         if (document.activeElement && document.activeElement.classList.contains(SuggestionPicker.ListEntryClass)) {
             for (var node = document.activeElement.nextElementSibling; node; node = node.nextElementSibling) {
                 if (node.classList.contains(SuggestionPicker.ListEntryClass)) {

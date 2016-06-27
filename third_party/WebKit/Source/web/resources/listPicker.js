@@ -198,14 +198,14 @@ ListPicker.prototype._handleChange = function(event) {
 };
 
 ListPicker.prototype._handleKeyDown = function(event) {
-    var key = event.keyIdentifier;
-    if (key === "U+001B") { // ESC
+    var key = event.key;
+    if (key === "Escape") {
         window.pagePopupController.closePopup();
         event.preventDefault();
-    } else if (key === "U+0009" /* TAB */ || key === "Enter") {
+    } else if (key === "Tab" || key === "Enter") {
         window.pagePopupController.setValueAndClosePopup(0, this._selectElement.value);
         event.preventDefault();
-    } else if (event.altKey && (key === "Down" || key === "Up")) {
+    } else if (event.altKey && (key === "ArrowDown" || key === "ArrowUp")) {
         // We need to add a delay here because, if we do it immediately the key
         // press event will be handled by HTMLSelectElement and this popup will
         // be reopened.

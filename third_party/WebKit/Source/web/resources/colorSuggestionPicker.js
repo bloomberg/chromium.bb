@@ -140,29 +140,29 @@ ColorPicker.prototype._handleMouseDown = function(event) {
 };
 
 ColorPicker.prototype._handleKeyDown = function(event) {
-    var key = event.keyIdentifier;
-    if (key === "U+001B") // ESC
+    var key = event.key;
+    if (key === "Escape")
         this.handleCancel();
-    else if (key == "Left" || key == "Up" || key == "Right" || key == "Down") {
+    else if (key == "ArrowLeft" || key == "ArrowUp" || key == "ArrowRight" || key == "ArrowDown") {
         var selectedElement = document.activeElement;
         var index = 0;
         if (selectedElement.classList.contains("other-color")) {
-            if (key != "Right" && key != "Up")
+            if (key != "ArrowRight" && key != "ArrowUp")
                 return;
             index = this._container.childNodes.length - 1;
         } else if (selectedElement.classList.contains("color-swatch")) {
             index = parseInt(selectedElement.dataset.index, 10);
             switch (key) {
-            case "Left":
+            case "ArrowLeft":
                 index--;
                 break;
-            case "Right":
+            case "ArrowRight":
                 index++;
                 break;
-            case "Up":
+            case "ArrowUp":
                 index -= SwatchesPerRow;
                 break;
-            case "Down":
+            case "ArrowDown":
                 index += SwatchesPerRow;
                 break;
             }

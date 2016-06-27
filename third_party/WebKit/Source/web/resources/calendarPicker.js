@@ -2620,18 +2620,18 @@ YearListView.prototype._moveHighlightTo = function(month) {
  * @param {?Event} event
  */
 YearListView.prototype.onKeyDown = function(event) {
-    var key = event.keyIdentifier;
+    var key = event.key;
     var eventHandled = false;
-    if (key == "U+0054") // 't' key.
+    if (key == "t")
         eventHandled = this._moveHighlightTo(Month.createFromToday());
     else if (this.highlightedMonth) {
-        if (global.params.isLocaleRTL ? key == "Right" : key == "Left")
+        if (global.params.isLocaleRTL ? key == "ArrowRight" : key == "ArrowLeft")
             eventHandled = this._moveHighlightTo(this.highlightedMonth.previous());
-        else if (key == "Up")
+        else if (key == "ArrowUp")
             eventHandled = this._moveHighlightTo(this.highlightedMonth.previous(YearListCell.ButtonColumns));
-        else if (global.params.isLocaleRTL ? key == "Left" : key == "Right")
+        else if (global.params.isLocaleRTL ? key == "ArrowLeft" : key == "ArrowRight")
             eventHandled = this._moveHighlightTo(this.highlightedMonth.next());
-        else if (key == "Down")
+        else if (key == "ArrowDown")
             eventHandled = this._moveHighlightTo(this.highlightedMonth.next(YearListCell.ButtonColumns));
         else if (key == "PageUp")
             eventHandled = this._moveHighlightTo(this.highlightedMonth.previous(MonthsPerYear));
@@ -2642,10 +2642,10 @@ YearListView.prototype.onKeyDown = function(event) {
             this.hide();
             eventHandled = true;
         }
-    } else if (key == "Up") {
+    } else if (key == "ArrowUp") {
         this.scrollView.scrollBy(-YearListCell.Height, true);
         eventHandled = true;
-    } else if (key == "Down") {
+    } else if (key == "ArrowDown") {
         this.scrollView.scrollBy(YearListCell.Height, true);
         eventHandled = true;
     } else if (key == "PageUp") {
@@ -3944,9 +3944,9 @@ CalendarPicker.prototype._moveHighlight = function(dateRange) {
  * @param {?Event} event
  */
 CalendarPicker.prototype.onCalendarTableKeyDown = function(event) {
-    var key = event.keyIdentifier;
+    var key = event.key;
     var eventHandled = false;
-    if (key == "U+0054") { // 't' key.
+    if (key == "t") {
         this.selectRangeContainingDay(Day.createFromToday());
         eventHandled = true;
     } else if (key == "PageUp") {
@@ -3962,18 +3962,18 @@ CalendarPicker.prototype.onCalendarTableKeyDown = function(event) {
             eventHandled = true;
         }
     } else if (this._highlight) {
-        if (global.params.isLocaleRTL ? key == "Right" : key == "Left") {
+        if (global.params.isLocaleRTL ? key == "ArrowRight" : key == "ArrowLeft") {
             eventHandled = this._moveHighlight(this._highlight.previous());
-        } else if (key == "Up") {
+        } else if (key == "ArrowUp") {
             eventHandled = this._moveHighlight(this._highlight.previous(this.type === "date" ? DaysPerWeek : 1));
-        } else if (global.params.isLocaleRTL ? key == "Left" : key == "Right") {
+        } else if (global.params.isLocaleRTL ? key == "ArrowLeft" : key == "ArrowRight") {
             eventHandled = this._moveHighlight(this._highlight.next());
-        } else if (key == "Down") {
+        } else if (key == "ArrowDown") {
             eventHandled = this._moveHighlight(this._highlight.next(this.type === "date" ? DaysPerWeek : 1));
         } else if (key == "Enter") {
             this.setSelectionAndCommit(this._highlight);
         }
-    } else if (key == "Left" || key == "Up" || key == "Right" || key == "Down") {
+    } else if (key == "ArrowLeft" || key == "ArrowUp" || key == "ArrowRight" || key == "ArrowDown") {
         // Highlight range near the middle.
         this.highlightRangeContainingDay(this.currentMonth().middleDay());
         eventHandled = true;
@@ -4014,19 +4014,22 @@ CalendarPicker.prototype.setHeight = function(height) {
  * @param {?Event} event
  */
 CalendarPicker.prototype.onBodyKeyDown = function(event) {
-    var key = event.keyIdentifier;
+    var key = event.key;
     var eventHandled = false;
     var offset = 0;
     switch (key) {
-    case "U+001B": // Esc key.
+    case "Escape":
         window.pagePopupController.closePopup();
         eventHandled = true;
         break;
-    case "U+004D": // 'm' key.
+    case "m":
+    case "M":
         offset = offset || 1; // Fall-through.
-    case "U+0059": // 'y' key.
+    case "y":
+    case "Y":
         offset = offset || MonthsPerYear; // Fall-through.
-    case "U+0044": // 'd' key.
+    case "d":
+    case "D":
         offset = offset || MonthsPerYear * 10;
         var oldFirstVisibleRow = this.calendarTableView.columnAndRowForDay(this.currentMonth().firstDay()).row;
         this.setCurrentMonth(event.shiftKey ? this.currentMonth().previous(offset) : this.currentMonth().next(offset), CalendarPicker.NavigationBehavior.WithAnimation);
