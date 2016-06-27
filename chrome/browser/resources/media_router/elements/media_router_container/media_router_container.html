@@ -168,7 +168,7 @@
                 hidden$="[[computeNoMatchesHidden_(searchResultsToShow_, isSearchListHidden_)]]">
               <span>[[i18n('searchNoMatchesText')]]</span>
             </div>
-            <paper-menu id="search-results" selected="0"
+            <paper-menu id="search-results" selected="0" role="presentation"
                 hidden$="[[computeSearchResultsHidden_(searchResultsToShow_, isSearchListHidden_)]]">
               <template is="dom-repeat" id="searchResults"
                   items="[[searchResultsToShow_]]">
