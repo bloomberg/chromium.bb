@@ -206,6 +206,8 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
     CSSStyleSheet* cssSheet = CSSStyleSheet::create(newSheet, this);
     cssSheet->setDisabled(m_alternate);
     cssSheet->setTitle(m_title);
+    if (!m_alternate && !m_title.isEmpty())
+        document().styleEngine().setPreferredStylesheetSetNameIfNotSet(m_title);
     cssSheet->setMediaQueries(MediaQuerySet::create(m_media));
 
     m_sheet = cssSheet;

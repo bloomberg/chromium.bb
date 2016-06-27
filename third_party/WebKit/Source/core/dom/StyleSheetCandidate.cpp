@@ -82,12 +82,6 @@ bool StyleSheetCandidate::isEnabledAndLoading() const
     return isHTMLLink() && !toHTMLLinkElement(node()).isDisabled() && toHTMLLinkElement(node()).styleSheetIsLoading();
 }
 
-bool StyleSheetCandidate::hasPreferrableName() const
-{
-    DCHECK(isEnabledAndLoading() || sheet());
-    return !isEnabledViaScript() && !title().isEmpty() && !isAlternate();
-}
-
 bool StyleSheetCandidate::canBeActivated(const String& currentPreferrableName) const
 {
     StyleSheet* sheet = this->sheet();

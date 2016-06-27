@@ -661,6 +661,10 @@ void LinkStyle::process()
 
         m_loading = true;
 
+        String title = m_owner->title();
+        if (!title.isEmpty() && !m_owner->isAlternate() && m_disabledState != EnabledViaScript)
+            document().styleEngine().setPreferredStylesheetSetNameIfNotSet(title);
+
         bool mediaQueryMatches = true;
         LocalFrame* frame = loadingFrame();
         if (!m_owner->media().isEmpty() && frame && frame->document()) {

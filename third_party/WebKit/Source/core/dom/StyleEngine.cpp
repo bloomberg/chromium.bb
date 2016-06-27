@@ -527,6 +527,8 @@ CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosi
 
     DCHECK(styleSheet);
     styleSheet->setTitle(e->title());
+    if (!e->isInShadowTree())
+        setPreferredStylesheetSetNameIfNotSet(e->title());
     return styleSheet;
 }
 

@@ -57,7 +57,6 @@ public:
     bool isAlternate() const;
     bool isEnabledViaScript() const;
     bool isEnabledAndLoading() const;
-    bool hasPreferrableName() const;
     bool canBeActivated(const String& currentPreferrableName) const;
     bool isCSSStyle() const;
 

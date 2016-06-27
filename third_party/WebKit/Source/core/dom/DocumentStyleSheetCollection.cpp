@@ -60,19 +60,13 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine&
             continue;
         }
 
-        if (candidate.isEnabledAndLoading()) {
-            // it is loading but we should still decide which style sheet set to use
-            if (candidate.hasPreferrableName())
-                engine.setPreferredStylesheetSetNameIfNotSet(candidate.title());
+        if (candidate.isEnabledAndLoading())
             continue;
-        }
 
         StyleSheet* sheet = candidate.sheet();
         if (!sheet)
             continue;
 
-        if (candidate.hasPreferrableName())
-            engine.setPreferredStylesheetSetNameIfNotSet(candidate.title());
         collector.appendSheetForList(sheet);
         if (candidate.canBeActivated(engine.preferredStylesheetSetName()))
             collector.appendActiveStyleSheet(toCSSStyleSheet(sheet));
