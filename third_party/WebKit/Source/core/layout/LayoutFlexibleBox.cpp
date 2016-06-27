@@ -869,10 +869,12 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScop
         // availableFreeSpace is the initial amount of free space in this flexbox.
         // remainingFreeSpace starts out at the same value but as we place and lay out
         // flex items we subtract from it. Note that both values can be negative.
-        const LayoutUnit availableFreeSpace = containerMainInnerSize - sumFlexBaseSize;
-        LayoutUnit remainingFreeSpace = availableFreeSpace;
+        LayoutUnit remainingFreeSpace = containerMainInnerSize - sumFlexBaseSize;
         FlexSign flexSign = (sumHypotheticalMainSize < containerMainInnerSize) ? PositiveFlexibility : NegativeFlexibility;
-        while (!resolveFlexibleLengths(flexSign, orderedChildren, availableFreeSpace, remainingFreeSpace, totalFlexGrow, totalFlexShrink, totalWeightedFlexShrink)) {
+        freezeInflexibleItems(flexSign, orderedChildren, remainingFreeSpace, totalFlexGrow, totalFlexShrink, totalWeightedFlexShrink);
+        // The initial free space gets calculated after freezing inflexible items. https://drafts.csswg.org/css-flexbox/#resolve-flexible-lengths step 3
+        const LayoutUnit initialFreeSpace = remainingFreeSpace;
+        while (!resolveFlexibleLengths(flexSign, orderedChildren, initialFreeSpace, remainingFreeSpace, totalFlexGrow, totalFlexShrink, totalWeightedFlexShrink)) {
             ASSERT(totalFlexGrow >= 0 && totalWeightedFlexShrink >= 0);
         }
 
@@ -1247,8 +1249,27 @@ void LayoutFlexibleBox::freezeViolations(Vector<FlexItem*>& violations, LayoutUn
     }
 }
 
+void LayoutFlexibleBox::freezeInflexibleItems(FlexSign flexSign, OrderedFlexItemList& children, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink)
+{
+    // Per https://drafts.csswg.org/css-flexbox/#resolve-flexible-lengths step 2,
+    // we freeze all items with a flex factor of 0 as well as this with a min/max size violation.
+    Vector<FlexItem*> newInflexibleItems;
+    for (size_t i = 0; i < children.size(); ++i) {
+        FlexItem& flexItem = children[i];
+        LayoutBox* child = flexItem.box;
+        float flexFactor = (flexSign == PositiveFlexibility) ? child->style()->flexGrow() : child->style()->flexShrink();
+        if (flexFactor == 0
+            || (flexSign == PositiveFlexibility && flexItem.innerFlexBaseSize > flexItem.hypotheticalMainSize)
+            || (flexSign == NegativeFlexibility && flexItem.innerFlexBaseSize < flexItem.hypotheticalMainSize)) {
+            flexItem.flexedContentSize = flexItem.hypotheticalMainSize;
+            newInflexibleItems.append(&flexItem);
+        }
+    }
+    freezeViolations(newInflexibleItems, remainingFreeSpace, totalFlexGrow, totalFlexShrink, totalWeightedFlexShrink);
+}
+
 // Returns true if we successfully ran the algorithm and sized the flex items.
-bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, OrderedFlexItemList& children, LayoutUnit availableFreeSpace, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink)
+bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, OrderedFlexItemList& children, LayoutUnit initialFreeSpace, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink)
 {
     LayoutUnit totalViolation;
     LayoutUnit usedFreeSpace;
@@ -1257,7 +1278,7 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, OrderedFlexIte
 
     double sumFlexFactors = (flexSign == PositiveFlexibility) ? totalFlexGrow : totalFlexShrink;
     if (sumFlexFactors > 0 && sumFlexFactors < 1) {
-        LayoutUnit fractional(availableFreeSpace * sumFlexFactors);
+        LayoutUnit fractional(initialFreeSpace * sumFlexFactors);
         if (fractional.abs() < remainingFreeSpace.abs())
             remainingFreeSpace = fractional;
     }

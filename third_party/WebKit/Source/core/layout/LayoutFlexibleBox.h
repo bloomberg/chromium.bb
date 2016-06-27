@@ -172,7 +172,8 @@ private:
     // The hypothetical main size of an item is the flex base size clamped according to its min and max main size properties
     bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren);
 
-    bool resolveFlexibleLengths(FlexSign, OrderedFlexItemList&, LayoutUnit availableFreeSpace, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink);
+    void freezeInflexibleItems(FlexSign, OrderedFlexItemList& children, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink);
+    bool resolveFlexibleLengths(FlexSign, OrderedFlexItemList&, LayoutUnit initialFreeSpace, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink);
     void freezeViolations(Vector<FlexItem*>&, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink);
 
     void resetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& child);
