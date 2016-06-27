@@ -14,26 +14,9 @@ config("google_toolbox_for_mac_public_config") {
 
 component("google_toolbox_for_mac") {
   sources = [
-    # TODO(thakis): On Mac, we only use GTMStringEncoding.  Check which are used
-    # on iOS and remove the unused ones.
-    "src/DebugUtils/GTMMethodCheck.h",
-    "src/DebugUtils/GTMMethodCheck.m",
-    "src/Foundation/GTMLightweightProxy.h",
-    "src/Foundation/GTMLightweightProxy.m",
-    "src/Foundation/GTMLogger.h",
-    "src/Foundation/GTMLogger.m",
-    "src/Foundation/GTMNSDictionary+URLArguments.h",
-    "src/Foundation/GTMNSDictionary+URLArguments.m",
-    "src/Foundation/GTMNSObject+KeyValueObserving.h",
-    "src/Foundation/GTMNSObject+KeyValueObserving.m",
-    "src/Foundation/GTMNSString+HTML.h",
-    "src/Foundation/GTMNSString+HTML.m",
-    "src/Foundation/GTMNSString+URLArguments.h",
-    "src/Foundation/GTMNSString+URLArguments.m",
-    "src/Foundation/GTMRegex.h",
-    "src/Foundation/GTMRegex.m",
     "src/Foundation/GTMStringEncoding.h",
     "src/Foundation/GTMStringEncoding.m",
+    "src/GTMDefines.h",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -64,7 +47,6 @@ component("google_toolbox_for_mac") {
       "src/DebugUtils/GTMTypeCasting.h",
       "src/Foundation/GTMServiceManagement.c",
       "src/Foundation/GTMServiceManagement.h",
-      "src/GTMDefines.h",
     ]
 
     libs = [
@@ -76,6 +58,14 @@ component("google_toolbox_for_mac") {
     ]
   } else {  # is_ios
     sources += [
+      "src/Foundation/GTMLightweightProxy.h",
+      "src/Foundation/GTMLightweightProxy.m",
+
+      # GTMLogger is used by breakpad, which is still used on iOS.
+      "src/Foundation/GTMLogger.h",
+      "src/Foundation/GTMLogger.m",
+      "src/Foundation/GTMNSString+URLArguments.h",
+      "src/Foundation/GTMNSString+URLArguments.m",
       "src/iPhone/GTMFadeTruncatingLabel.h",
       "src/iPhone/GTMFadeTruncatingLabel.m",
       "src/iPhone/GTMRoundedRectPath.h",
