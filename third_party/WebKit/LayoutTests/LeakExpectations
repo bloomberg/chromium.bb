@@ -25,9 +25,6 @@ crbug.com/366029 compositing/fixed-body-background-positioned.html [ Failure Pas
 # FIXME: The below tests crashes when the leak detector is run on debug builds
 crbug.com/366043 [ Debug ] fast/history/history-traversal-is-asynchronous.html [ Crash ]
 
-# FIXME: html imports tests are flaky from extra navigation from leak detector
-crbug.com/366477 http/tests/htmlimports/redirect.html [ Failure Pass ]
-
 # The leak detector doesn't wait for worker threads to completely clean up, so leaks are expected.
 crbug.com/301515 fast/workers/worker-terminate.html [ Leak ]
 
