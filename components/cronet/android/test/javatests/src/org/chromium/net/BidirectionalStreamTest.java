@@ -271,6 +271,91 @@ public class BidirectionalStreamTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
+    // Tests that a delayed flush() only sends buffers that have been written
+    // before it is called, and it doesn't flush buffers in mPendingQueue.
+    public void testFlushData() throws Exception {
+        String url = Http2TestServer.getEchoStreamUrl();
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {
+            // Number of onWriteCompleted callbacks that have been invoked.
+            private int mNumWriteCompleted = 0;
+            @Override
+            public void onWriteCompleted(BidirectionalStream stream, UrlResponseInfo info,
+                    ByteBuffer buffer, boolean endOfStream) {
+                super.onWriteCompleted(stream, info, buffer, endOfStream);
+                mNumWriteCompleted++;
+                if (mNumWriteCompleted <= 3) {
+                    // "6" is in pending queue.
+                    List<ByteBuffer> pendingData =
+                            ((CronetBidirectionalStream) stream).getPendingDataForTesting();
+                    assertEquals(1, pendingData.size());
+                    ByteBuffer pendingBuffer = pendingData.get(0);
+                    byte[] content = new byte[pendingBuffer.remaining()];
+                    pendingBuffer.get(content);
+                    assertTrue(Arrays.equals("6".getBytes(), content));
+
+                    // "4" and "5" have been flushed.
+                    assertEquals(0,
+                            ((CronetBidirectionalStream) stream).getFlushDataForTesting().size());
+                } else if (mNumWriteCompleted == 5) {
+                    // Now flush "6", which is still in pending queue.
+                    List<ByteBuffer> pendingData =
+                            ((CronetBidirectionalStream) stream).getPendingDataForTesting();
+                    assertEquals(1, pendingData.size());
+                    ByteBuffer pendingBuffer = pendingData.get(0);
+                    byte[] content = new byte[pendingBuffer.remaining()];
+                    pendingBuffer.get(content);
+                    assertTrue(Arrays.equals("6".getBytes(), content));
+
+                    stream.flush();
+
+                    assertEquals(0,
+                            ((CronetBidirectionalStream) stream).getPendingDataForTesting().size());
+                    assertEquals(0,
+                            ((CronetBidirectionalStream) stream).getFlushDataForTesting().size());
+                }
+            }
+        };
+        callback.addWriteData("1".getBytes(), false);
+        callback.addWriteData("2".getBytes(), false);
+        callback.addWriteData("3".getBytes(), true);
+        callback.addWriteData("4".getBytes(), false);
+        callback.addWriteData("5".getBytes(), true);
+        callback.addWriteData("6".getBytes(), false);
+        CronetBidirectionalStream stream = (CronetBidirectionalStream) new BidirectionalStream
+                                                   .Builder(url, callback, callback.getExecutor(),
+                                                           mTestFramework.mCronetEngine)
+                                                   .disableAutoFlush(true)
+                                                   .addHeader("foo", "bar")
+                                                   .addHeader("empty", "")
+                                                   .addHeader("Content-Type", "zebra")
+                                                   .build();
+        callback.setAutoAdvance(false);
+        stream.start();
+        callback.waitForNextWriteStep(); // onStreamReady
+
+        assertEquals(0, stream.getPendingDataForTesting().size());
+        assertEquals(0, stream.getFlushDataForTesting().size());
+
+        // Write 1, 2, 3 and flush().
+        callback.startNextWrite(stream);
+        // Write 4, 5 and flush(). 4, 5 will be in flush queue.
+        callback.startNextWrite(stream);
+        // Write 6, but do not flush. 6 will be in pending queue.
+        callback.startNextWrite(stream);
+
+        callback.setAutoAdvance(true);
+        callback.blockForDone();
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("123456", callback.mResponseAsString);
+        assertEquals("bar", callback.mResponseInfo.getAllHeaders().get("echo-foo").get(0));
+        assertEquals("", callback.mResponseInfo.getAllHeaders().get("echo-empty").get(0));
+        assertEquals(
+                "zebra", callback.mResponseInfo.getAllHeaders().get("echo-content-type").get(0));
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testSimpleGetWithFlush() throws Exception {
         // TODO(xunjieli): Use ParameterizedTest instead of the loop.
         for (int i = 0; i < 2; i++) {

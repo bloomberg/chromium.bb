@@ -343,6 +343,14 @@ class CronetBidirectionalStream extends BidirectionalStream {
             // called before pushing data to the native stack.
             return;
         }
+        sendFlushDataLocked();
+    }
+
+    // Helper method to send buffers in mFlushData. Caller needs to acquire
+    // mNativeStreamLock and make sure mWriteState is WAITING_FOR_FLUSH and
+    // mFlushData queue isn't empty.
+    @SuppressWarnings("GuardedByChecker")
+    private void sendFlushDataLocked() {
         assert mWriteState == State.WAITING_FOR_FLUSH;
         int size = mFlushData.size();
         ByteBuffer[] buffers = new ByteBuffer[size];
@@ -357,11 +365,40 @@ class CronetBidirectionalStream extends BidirectionalStream {
         assert mFlushData.isEmpty();
         assert buffers.length >= 1;
         mWriteState = State.WRITING;
-        if (!nativeWritevData(mNativeStream, buffers, positions, limits, mEndOfStreamWritten)) {
+        if (!nativeWritevData(mNativeStream, buffers, positions, limits,
+                    mEndOfStreamWritten && mPendingData.isEmpty())) {
             // Still waiting on flush. This is just to have consistent
             // behavior with the other error cases.
             mWriteState = State.WAITING_FOR_FLUSH;
             throw new IllegalArgumentException("Unable to call native writev.");
+        }
+    }
+
+    /**
+     * Returns a read-only copy of {@code mPendingData} for testing.
+     */
+    @VisibleForTesting
+    public List<ByteBuffer> getPendingDataForTesting() {
+        synchronized (mNativeStreamLock) {
+            List<ByteBuffer> pendingData = new LinkedList<ByteBuffer>();
+            for (ByteBuffer buffer : mPendingData) {
+                pendingData.add(buffer.asReadOnlyBuffer());
+            }
+            return pendingData;
+        }
+    }
+
+    /**
+     * Returns a read-only copy of {@code mFlushData} for testing.
+     */
+    @VisibleForTesting
+    public List<ByteBuffer> getFlushDataForTesting() {
+        synchronized (mNativeStreamLock) {
+            List<ByteBuffer> flushData = new LinkedList<ByteBuffer>();
+            for (ByteBuffer buffer : mFlushData) {
+                flushData.add(buffer.asReadOnlyBuffer());
+            }
+            return flushData;
         }
     }
 
@@ -515,7 +552,7 @@ class CronetBidirectionalStream extends BidirectionalStream {
             mWriteState = State.WAITING_FOR_FLUSH;
             // Flush if there is anything in the flush queue mFlushData.
             if (!mFlushData.isEmpty()) {
-                flushLocked();
+                sendFlushDataLocked();
             }
         }
         for (int i = 0; i < byteBuffers.length; i++) {
@@ -527,7 +564,9 @@ class CronetBidirectionalStream extends BidirectionalStream {
             }
             // Current implementation always writes the complete buffer.
             buffer.position(buffer.limit());
-            postTaskToExecutor(new OnWriteCompletedRunnable(buffer, endOfStream));
+            postTaskToExecutor(new OnWriteCompletedRunnable(buffer,
+                    // Only set endOfStream flag if this buffer is the last in byteBuffers.
+                    endOfStream && i == byteBuffers.length - 1));
         }
     }
 
