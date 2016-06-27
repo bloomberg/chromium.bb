@@ -15,6 +15,7 @@
       '<(sync_proto_sources_dir)/app_setting_specifics.proto',
       '<(sync_proto_sources_dir)/app_specifics.proto',
       '<(sync_proto_sources_dir)/app_list_specifics.proto',
+      '<(sync_proto_sources_dir)/arc_package_specifics.proto',
       '<(sync_proto_sources_dir)/article_specifics.proto',
       '<(sync_proto_sources_dir)/attachments.proto',
       '<(sync_proto_sources_dir)/autofill_specifics.proto',

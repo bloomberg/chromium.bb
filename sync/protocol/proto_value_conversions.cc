@@ -23,6 +23,7 @@
 #include "sync/protocol/app_notification_specifics.pb.h"
 #include "sync/protocol/app_setting_specifics.pb.h"
 #include "sync/protocol/app_specifics.pb.h"
+#include "sync/protocol/arc_package_specifics.pb.h"
 #include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/dictionary_specifics.pb.h"
@@ -268,6 +269,17 @@ std::unique_ptr<base::DictionaryValue> AppListSpecificsToValue(
   SET_STR(parent_id);
   SET_STR(item_ordinal);
   SET_STR(item_pin_ordinal);
+
+  return value;
+}
+
+std::unique_ptr<base::DictionaryValue> ArcPackageSpecificsToValue(
+    const sync_pb::ArcPackageSpecifics& proto) {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  SET_STR(package_name);
+  SET_INT32(package_version);
+  SET_INT64(last_backup_android_id);
+  SET_INT64(last_backup_time);
 
   return value;
 }
@@ -568,6 +580,7 @@ std::unique_ptr<base::DictionaryValue> NigoriSpecificsToValue(
   SET_BOOL(encrypt_dictionary);
   SET_BOOL(encrypt_articles);
   SET_BOOL(encrypt_app_list);
+  SET_BOOL(encrypt_arc_package);
   SET_BOOL(encrypt_everything);
   SET_BOOL(server_only_was_missing_keystore_migration_time);
   SET_BOOL(sync_tab_favicons);
@@ -737,6 +750,7 @@ std::unique_ptr<base::DictionaryValue> EntitySpecificsToValue(
   SET_FIELD(app_list, AppListSpecificsToValue);
   SET_FIELD(app_notification, AppNotificationToValue);
   SET_FIELD(app_setting, AppSettingSpecificsToValue);
+  SET_FIELD(arc_package, ArcPackageSpecificsToValue);
   SET_FIELD(article, ArticleSpecificsToValue);
   SET_FIELD(autofill, AutofillSpecificsToValue);
   SET_FIELD(autofill_profile, AutofillProfileSpecificsToValue);

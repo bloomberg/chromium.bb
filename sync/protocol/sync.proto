@@ -18,6 +18,7 @@ import "app_list_specifics.proto";
 import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
+import "arc_package_specifics.proto";
 import "article_specifics.proto";
 import "attachments.proto";
 import "autofill_specifics.proto";
@@ -134,6 +135,7 @@ message EntitySpecifics {
   optional WifiCredentialSpecifics wifi_credential = 218175;
   optional AutofillWalletSpecifics autofill_wallet = 306270;
   optional WalletMetadataSpecifics wallet_metadata = 330441;
+  optional ArcPackageSpecifics arc_package = 340906;
 }
 
 message SyncEntity {

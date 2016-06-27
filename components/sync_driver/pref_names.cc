@@ -32,6 +32,7 @@ const char kSyncAppList[] = "sync.app_list";
 const char kSyncAppNotifications[] = "sync.app_notifications";
 const char kSyncAppSettings[] = "sync.app_settings";
 const char kSyncApps[] = "sync.apps";
+const char kSyncArcPackage[] = "sync.arc_package";
 const char kSyncArticles[] = "sync.articles";
 const char kSyncAutofillProfile[] = "sync.autofill_profile";
 const char kSyncAutofillWallet[] = "sync.autofill_wallet";

@@ -92,6 +92,9 @@ void SyncRecordDatatypeBin(const std::string& name, int sample, int value);
       case ::syncer::APP_SETTINGS: \
         PER_DATA_TYPE_MACRO("AppSettings"); \
         break; \
+      case ::syncer::ARC_PACKAGE: \
+        PER_DATA_TYPE_MACRO("ArcPackage"); \
+        break; \
       case ::syncer::EXTENSION_SETTINGS: \
         PER_DATA_TYPE_MACRO("ExtensionSettings"); \
         break; \
@@ -113,7 +116,7 @@ void SyncRecordDatatypeBin(const std::string& name, int sample, int value);
       case ::syncer::EXPERIMENTS: \
         PER_DATA_TYPE_MACRO("Experiments"); \
         break; \
-      case ::syncer::PRIORITY_PREFERENCES :\
+      case ::syncer::PRIORITY_PREFERENCES: \
         PER_DATA_TYPE_MACRO("PriorityPreferences"); \
         break; \
       case ::syncer::DICTIONARY: \
@@ -140,7 +143,7 @@ void SyncRecordDatatypeBin(const std::string& name, int sample, int value);
       case ::syncer::ARTICLES: \
         PER_DATA_TYPE_MACRO("Article"); \
         break; \
-      case ::syncer::WIFI_CREDENTIALS:             \
+      case ::syncer::WIFI_CREDENTIALS: \
         PER_DATA_TYPE_MACRO("WifiCredentials"); \
         break; \
       case ::syncer::PROXY_TABS: \
@@ -148,7 +151,7 @@ void SyncRecordDatatypeBin(const std::string& name, int sample, int value);
         break; \
       default: \
         NOTREACHED() << "Unknown datatype " \
-                     << ::syncer::ModelTypeToString(datatype);  \
+                     << ::syncer::ModelTypeToString(datatype); \
     } \
   } while (0)
 

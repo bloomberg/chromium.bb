@@ -23,6 +23,7 @@ extern const char kSyncAppList[];
 extern const char kSyncAppNotifications[];
 extern const char kSyncAppSettings[];
 extern const char kSyncApps[];
+extern const char kSyncArcPackage[];
 extern const char kSyncArticles[];
 extern const char kSyncAutofillProfile[];
 extern const char kSyncAutofillWallet[];

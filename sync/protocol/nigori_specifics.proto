@@ -138,5 +138,8 @@ message NigoriSpecifics {
   // giving the field a value.
   // THIS FIELD SHOULD ONLY BE SET BY THE SERVER.
   optional bool server_only_was_missing_keystore_migration_time = 40;
+
+  // Boolean corresponding to whether arc pakcage items should be encrypted.
+  optional bool encrypt_arc_package = 41;
 }
 

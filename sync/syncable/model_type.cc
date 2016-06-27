@@ -131,6 +131,8 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {SUPERVISED_USER_WHITELISTS, "MANAGED_USER_WHITELIST",
      "managed_user_whitelists", "Managed User Whitelists",
      sync_pb::EntitySpecifics::kManagedUserWhitelistFieldNumber, 33},
+    {ARC_PACKAGE, "ARC_PACKAGE", "arc_package", "Arc Package",
+     sync_pb::EntitySpecifics::kArcPackageFieldNumber, 36},
     {PROXY_TABS, "", "", "Tabs", -1, 25},
     {NIGORI, "NIGORI", "nigori", "Encryption keys",
      sync_pb::EntitySpecifics::kNigoriFieldNumber, 17},
@@ -159,7 +161,7 @@ const char* kUserSelectableDataTypeNames[] = {
 };
 
 static_assert(
-    36 == MODEL_TYPE_COUNT,
+    37 == MODEL_TYPE_COUNT,
     "update kUserSelectableDataTypeName to match UserSelectableTypes");
 
 void AddDefaultFieldValue(ModelType datatype,
@@ -216,6 +218,9 @@ void AddDefaultFieldValue(ModelType datatype,
       break;
     case APP_SETTINGS:
       specifics->mutable_app_setting();
+      break;
+    case ARC_PACKAGE:
+      specifics->mutable_arc_package();
       break;
     case EXTENSION_SETTINGS:
       specifics->mutable_extension_setting();
@@ -365,6 +370,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
   if (specifics.has_app_list())
     return APP_LIST;
+
+  if (specifics.has_arc_package())
+    return ARC_PACKAGE;
 
   if (specifics.has_search_engine())
     return SEARCH_ENGINES;

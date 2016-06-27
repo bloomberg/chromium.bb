@@ -38,6 +38,7 @@ enum UserSelectableSyncType {
 
   // The datatypes below are implicitly synced, and are not exposed via user
   // selectable checkboxes.
+  // TODO(lgcheng) ARC_PACKAGE would be selectable.
 
   // AUTOFILL_PROFILE,
   // NIGORI,
@@ -55,7 +56,8 @@ enum UserSelectableSyncType {
   // FAVICON_IMAGES,
   // FAVICON_TRACKING,
   // ARTICLE,
-  // SYNCED_NOTIFICATION_APP_INFO
+  // SYNCED_NOTIFICATION_APP_INFO,
+  // ARC_PACKAGE
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
   SELECTABLE_DATATYPE_COUNT = 11,

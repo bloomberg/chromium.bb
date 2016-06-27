@@ -98,7 +98,7 @@ enum ModelType {
   // History delete directives.
   HISTORY_DELETE_DIRECTIVES,
   // Synced push notifications.
-  SYNCED_NOTIFICATIONS,   // Deprecated.
+  SYNCED_NOTIFICATIONS,  // Deprecated.
   // Synced Notification app info.
   SYNCED_NOTIFICATION_APP_INFO,  // Deprecated.
   // Custom spelling dictionary.
@@ -131,6 +131,8 @@ enum ModelType {
   // Supervised user whitelists. Each item contains a CRX ID (like an extension
   // ID) and a name.
   SUPERVISED_USER_WHITELISTS,
+  // Arc Package items.
+  ARC_PACKAGE,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered

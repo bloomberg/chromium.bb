@@ -21,6 +21,7 @@ class AppNotification;
 class AppNotificationSettings;
 class AppSettingSpecifics;
 class AppSpecifics;
+class ArcPackageSpecifics;
 class ArticleSpecifics;
 class AttachmentIdProto;
 class AutofillProfileSpecifics;
@@ -109,6 +110,10 @@ SYNC_EXPORT std::unique_ptr<base::DictionaryValue> AppSettingsToValue(
 
 SYNC_EXPORT std::unique_ptr<base::DictionaryValue> LinkedAppIconInfoToValue(
     const sync_pb::LinkedAppIconInfo& linked_app_icon_info);
+
+// Sub-protocol of ArcPackageSpecifics.
+SYNC_EXPORT std::unique_ptr<base::DictionaryValue> ArcPackageSpecificsToValue(
+    const sync_pb::ArcPackageSpecifics& proto);
 
 // Sub-protocols of SessionSpecifics.
 

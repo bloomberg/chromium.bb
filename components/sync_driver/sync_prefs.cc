@@ -317,6 +317,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncDeviceInfo;
     case syncer::WIFI_CREDENTIALS:
       return prefs::kSyncWifiCredentials;
+    case syncer::ARC_PACKAGE:
+      return prefs::kSyncArcPackage;
     default:
       break;
   }
