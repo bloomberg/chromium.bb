@@ -8,10 +8,24 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "chrome/browser/browser_process.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using component_updater::ComponentUpdateService;
+
+namespace {
+
+void PassDataToSubresourceFilterService(const std::string& rules,
+                                        const base::Version& version) {
+  if (g_browser_process->subresource_filter_ruleset_service()) {
+    g_browser_process->subresource_filter_ruleset_service()
+        ->NotifyRulesetVersionAvailable(rules, version);
+  }
+}
+
+}  // namespace
 
 namespace component_updater {
 
@@ -96,8 +110,9 @@ void SubresourceFilterComponentInstallerTraits::
     VLOG(1) << "Failed reading from " << full_path.value();
     return;
   }
-  // TODO(melandory): notify SubresourceFilteringRulesService (accessing it via
-  // g_browser_process) about newely arrived data.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(PassDataToSubresourceFilterService, rules, version));
 }
 
 void RegisterSubresourceFilterComponent(ComponentUpdateService* cus) {

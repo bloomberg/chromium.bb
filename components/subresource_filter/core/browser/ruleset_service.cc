@@ -151,6 +151,10 @@ void RulesetService::RegisterDistributor(
   distributors_.push_back(std::move(distributor));
 }
 
+void RulesetService::NotifyRulesetVersionAvailable(
+    const std::string& rules,
+    const base::Version& version) {}
+
 // static
 bool RulesetService::WriteRuleset(const base::FilePath& base_dir,
                                   const RulesetVersion& version,

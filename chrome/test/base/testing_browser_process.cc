@@ -21,6 +21,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
+#include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -199,7 +200,7 @@ TestingBrowserProcess::safe_browsing_detection_service() {
 
 subresource_filter::RulesetService*
 TestingBrowserProcess::subresource_filter_ruleset_service() {
-  return nullptr;
+  return subresource_filter_ruleset_service_.get();
 }
 
 net::URLRequestContextGetter* TestingBrowserProcess::system_request_context() {
@@ -422,6 +423,11 @@ void TestingBrowserProcess::ShutdownBrowserPolicyConnector() {
 void TestingBrowserProcess::SetSafeBrowsingService(
     safe_browsing::SafeBrowsingService* sb_service) {
   sb_service_ = sb_service;
+}
+
+void TestingBrowserProcess::SetRulesetService(
+    std::unique_ptr<subresource_filter::RulesetService> ruleset_service) {
+  subresource_filter_ruleset_service_.swap(ruleset_service);
 }
 
 void TestingBrowserProcess::SetRapporService(

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/version.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -67,7 +68,11 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   RulesetService(PrefService* local_state,
                  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                  const base::FilePath& base_dir);
-  ~RulesetService();
+  virtual ~RulesetService();
+
+  // Notifies that new data has arrived from the component updater.
+  virtual void NotifyRulesetVersionAvailable(const std::string& rules,
+                                             const base::Version& version);
 
   // Persists a new |content_version| of the |ruleset_data|, then, on success,
   // publishes it through the registered distributors. The |ruleset_data| must
