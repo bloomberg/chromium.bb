@@ -162,6 +162,9 @@ class ASH_EXPORT ShelfLayoutManager
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
+  // Overridden from keyboard::KeyboardControllerObserver:
+  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+
   // Overridden from ash::LockStateObserver:
   void OnLockStateEvent(LockStateObserver::EventType event) override;
 
@@ -300,9 +303,6 @@ class ASH_EXPORT ShelfLayoutManager
   bool IsShelfWindow(aura::Window* window);
 
   int GetWorkAreaInsets(const State& state, int size) const;
-
-  // Overridden from keyboard::KeyboardControllerObserver:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // Overridden from DockedWindowLayoutManagerObserver:
   void OnDockBoundsChanging(

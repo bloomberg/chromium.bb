@@ -566,6 +566,26 @@ void ShelfLayoutManager::OnWindowActivated(
   UpdateAutoHideStateNow();
 }
 
+void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
+  bool keyboard_is_about_to_hide = false;
+  if (new_bounds.IsEmpty() && !keyboard_bounds_.IsEmpty())
+    keyboard_is_about_to_hide = true;
+
+  keyboard_bounds_ = new_bounds;
+  OnWindowResized();
+
+  SessionStateDelegate* session_state_delegate =
+      Shell::GetInstance()->session_state_delegate();
+
+  // On login screen if keyboard has been just hidden, update bounds just once
+  // but ignore target_bounds.work_area_insets since shelf overlaps with login
+  // window.
+  if (session_state_delegate->IsUserSessionBlocked() &&
+      keyboard_is_about_to_hide) {
+    Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, gfx::Insets());
+  }
+}
+
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
   return ::ash::IsHorizontalAlignment(GetAlignment());
 }
@@ -1133,26 +1153,6 @@ int ShelfLayoutManager::GetWorkAreaInsets(const State& state, int size) const {
   if (state.visibility_state == SHELF_AUTO_HIDE)
     return GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
   return 0;
-}
-
-void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
-  bool keyboard_is_about_to_hide = false;
-  if (new_bounds.IsEmpty() && !keyboard_bounds_.IsEmpty())
-    keyboard_is_about_to_hide = true;
-
-  keyboard_bounds_ = new_bounds;
-  OnWindowResized();
-
-  SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
-
-  // On login screen if keyboard has been just hidden, update bounds just once
-  // but ignore target_bounds.work_area_insets since shelf overlaps with login
-  // window.
-  if (session_state_delegate->IsUserSessionBlocked() &&
-      keyboard_is_about_to_hide) {
-    Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, gfx::Insets());
-  }
 }
 
 void ShelfLayoutManager::OnDockBoundsChanging(

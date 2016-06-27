@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm/window_state.h"
@@ -15,7 +16,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
@@ -362,7 +362,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
 
   // Shelf's auto-hide state won't be HIDDEN unless window exists.
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
@@ -394,7 +394,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
 
   // Close the system tray.
   GetSystemTray()->ClickedOutsideBubble();
-  shelf->shelf_layout_manager()->UpdateAutoHideState();
+  shelf->UpdateAutoHideState();
   RunAllPendingInMessageLoop();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   int bottom_hidden_with_tray_notification = GetPopupWorkAreaBottom();
@@ -418,7 +418,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
 
   // Checks the work area for normal auto-hidden state.
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   int bottom_auto_hidden = GetPopupWorkAreaBottom();
@@ -446,13 +446,13 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom_right();
   bottom_right.Offset(-1, -1);
   generator.MoveMouseTo(bottom_right);
-  shelf->shelf_layout_manager()->UpdateAutoHideStateNow();
+  shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(bottom, GetPopupWorkAreaBottom());
 
   generator.MoveMouseTo(
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint());
-  shelf->shelf_layout_manager()->UpdateAutoHideStateNow();
+  shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ(bottom_auto_hidden, GetPopupWorkAreaBottom());
 }

@@ -143,6 +143,10 @@ void WmShelfAura::RemoveObserver(WmShelfObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void WmShelfAura::SetKeyboardBoundsForTesting(const gfx::Rect& bounds) {
+  shelf_layout_manager_->OnKeyboardBoundsChanging(bounds);
+}
+
 void WmShelfAura::WillDeleteShelfLayoutManager() {
   ResetShelfLayoutManager();
 }

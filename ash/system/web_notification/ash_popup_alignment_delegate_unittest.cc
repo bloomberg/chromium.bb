@@ -16,8 +16,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -46,12 +44,6 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
   void TearDown() override {
     alignment_delegate_.reset();
     test::AshTestBase::TearDown();
-  }
-
-  void SetKeyboardBounds(const gfx::Rect& new_bounds) {
-    Shelf::ForPrimaryDisplay()
-        ->shelf_layout_manager()
-        ->OnKeyboardBoundsChanging(new_bounds);
   }
 
  protected:
@@ -179,9 +171,8 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
   // Create a window, otherwise autohide doesn't work.
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(kShellWindowId_DefaultContainer);
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  shelf->shelf_layout_manager()->UpdateAutoHideStateNow();
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
 }
@@ -203,8 +194,9 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 
   // Force dock to right-side
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  WmShelf* shelf = GetPrimaryShelf();
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
 
   // Right-side dock should not affect popup alignment
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
@@ -324,13 +316,14 @@ TEST_F(AshPopupAlignmentDelegateTest, MAYBE_KeyboardShowing) {
   UpdateDisplay("600x600");
   int baseline = alignment_delegate()->GetBaseLine();
 
+  WmShelf* shelf = GetPrimaryShelf();
   gfx::Rect keyboard_bounds(0, 300, 600, 300);
-  SetKeyboardBounds(keyboard_bounds);
+  shelf->SetKeyboardBoundsForTesting(keyboard_bounds);
   int keyboard_baseline = alignment_delegate()->GetBaseLine();
   EXPECT_NE(baseline, keyboard_baseline);
   EXPECT_GT(keyboard_bounds.y(), keyboard_baseline);
 
-  SetKeyboardBounds(gfx::Rect());
+  shelf->SetKeyboardBoundsForTesting(gfx::Rect());
   EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
 }
 

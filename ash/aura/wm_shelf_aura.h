@@ -58,6 +58,7 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   void UpdateAutoHideForGestureEvent(ui::GestureEvent* event) override;
   void AddObserver(WmShelfObserver* observer) override;
   void RemoveObserver(WmShelfObserver* observer) override;
+  void SetKeyboardBoundsForTesting(const gfx::Rect& bounds) override;
 
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;

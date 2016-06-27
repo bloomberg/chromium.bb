@@ -118,5 +118,9 @@ void WmShelfMus::RemoveObserver(WmShelfObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void WmShelfMus::SetKeyboardBoundsForTesting(const gfx::Rect& bounds) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace mus
 }  // namespace ash

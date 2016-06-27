@@ -7,7 +7,6 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/user/tray_user_separator.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -75,11 +74,6 @@ void TrayUserTest::SetUp() {
 
 void TrayUserTest::InitializeParameters(int users_logged_in,
                                         bool multiprofile) {
-  // Show the shelf.
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
-  shelf->shelf_layout_manager()->LayoutShelf();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-
   // Set our default assumptions. Note that it is sufficient to set these
   // after everything was created.
   delegate_->set_logged_in_users(users_logged_in);

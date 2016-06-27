@@ -25,6 +25,11 @@ class WmWindow;
 // Used for accessing global state.
 class ASH_EXPORT WmShelf {
  public:
+  // Returns the shelf for the primary display. Useful in tests that only use
+  // a single display. In production code use WmRootWindowController::GetShelf()
+  // with the appropriate display's root window controller.
+  static WmShelf* ForPrimaryDisplay();
+
   // Returns the window showing the shelf.
   virtual WmWindow* GetWindow() = 0;
 
@@ -70,6 +75,9 @@ class ASH_EXPORT WmShelf {
 
   virtual void AddObserver(WmShelfObserver* observer) = 0;
   virtual void RemoveObserver(WmShelfObserver* observer) = 0;
+
+  // Simulates a virtual keyboard bounds update.
+  virtual void SetKeyboardBoundsForTesting(const gfx::Rect& bounds) = 0;
 
  protected:
   virtual ~WmShelf() {}

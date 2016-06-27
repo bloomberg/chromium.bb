@@ -13,7 +13,6 @@
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"

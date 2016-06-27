@@ -10,8 +10,6 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "grit/ash_resources.h"

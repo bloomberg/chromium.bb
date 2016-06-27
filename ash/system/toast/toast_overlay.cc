@@ -4,10 +4,12 @@
 
 #include "ash/system/toast/toast_overlay.h"
 
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
 #include "base/strings/string_util.h"
@@ -50,6 +52,14 @@ const int kToastHorizontalSpacing = 16;
 const int kToastVerticalSpacing = 16;
 const int kToastMaximumWidth = 568;
 const int kToastMinimumWidth = 288;
+
+// Returns the shelf for the primary display.
+WmShelf* GetPrimaryShelf() {
+  return WmShell::Get()
+      ->GetPrimaryRootWindow()
+      ->GetRootWindowController()
+      ->GetShelf();
+}
 
 }  // anonymous namespace
 
@@ -184,10 +194,7 @@ gfx::Size ToastOverlayView::GetMinimumSize() const {
 }
 
 gfx::Size ToastOverlayView::GetMaximumSize() const {
-  ShelfLayoutManager* shelf_layout_manager =
-      Shelf::ForPrimaryDisplay()->shelf_layout_manager();
-  gfx::Rect work_area_bounds = shelf_layout_manager->user_work_area_bounds();
-
+  gfx::Rect work_area_bounds = GetPrimaryShelf()->GetUserWorkAreaBounds();
   return gfx::Size(kToastMaximumWidth, work_area_bounds.height() - kOffset * 2);
 }
 
@@ -215,6 +222,8 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.remove_standard_frame = true;
   params.bounds = CalculateOverlayBounds();
   // Show toasts above the app list and below the lock screen.
+  // TODO(jamescook): Either this should be the primary root window, or the
+  // work area bounds computation should be for the target root window.
   params.parent = Shell::GetContainer(Shell::GetTargetRootWindow(),
                                       kShellWindowId_SystemModalContainer);
   overlay_widget_.reset(new views::Widget);
@@ -262,10 +271,7 @@ void ToastOverlay::Show(bool visible) {
 }
 
 gfx::Rect ToastOverlay::CalculateOverlayBounds() {
-  ShelfLayoutManager* shelf_layout_manager =
-      Shelf::ForPrimaryDisplay()->shelf_layout_manager();
-
-  gfx::Rect bounds = shelf_layout_manager->user_work_area_bounds();
+  gfx::Rect bounds = GetPrimaryShelf()->GetUserWorkAreaBounds();
   int target_y = bounds.bottom() - widget_size_.height() - kOffset;
   bounds.ClampToCenteredSize(widget_size_);
   bounds.set_y(target_y);

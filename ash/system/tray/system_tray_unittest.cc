@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_container.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
@@ -178,7 +178,7 @@ TEST_F(SystemTrayTest, SystemTrayColoring) {
 TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   // At the beginning the tray coloring is not active.
   ASSERT_FALSE(tray->draw_background_as_active());
@@ -350,7 +350,7 @@ TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
 // Tests that the tray view is laid out properly and is fully contained within
 // the shelf widget.
 TEST_F(SystemTrayTest, TrayBoundsInWidget) {
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   StatusAreaWidget* widget = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
   SystemTray* tray = GetPrimarySystemTray();
 
