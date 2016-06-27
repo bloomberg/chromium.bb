@@ -29,6 +29,7 @@
         '../../skia/skia.gyp:skia',
         '../../third_party/WebKit/public/blink.gyp:blink',
         '../../ui/display/display.gyp:display',
+        '../../ui/events/blink/events_blink.gyp:events_blink',
         '../../ui/events/events.gyp:dom_keycode_converter',
         '../../ui/events/events.gyp:events_base',
         '../../ui/gfx/gfx.gyp:gfx',

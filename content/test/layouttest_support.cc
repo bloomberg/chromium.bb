@@ -34,6 +34,7 @@
 #include "content/test/mailbox_output_surface.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "gpu/ipc/service/image_transport_surface.h"
+#include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
@@ -230,6 +231,12 @@ void ForceResizeRenderView(RenderView* render_view,
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {
   static_cast<RenderViewImpl*>(render_view)->
       SetDeviceScaleFactorForTesting(factor);
+}
+
+float GetWindowToViewportScale(RenderView* render_view) {
+  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
+  static_cast<RenderViewImpl*>(render_view)->convertWindowToViewport(&rect);
+  return rect.width;
 }
 
 void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {

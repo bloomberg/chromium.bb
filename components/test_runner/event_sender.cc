@@ -32,6 +32,7 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "v8/include/v8.h"
@@ -1305,15 +1306,22 @@ void EventSender::SetContextMenuData(const WebContextMenuData& data) {
 
 void EventSender::DoDragDrop(const WebDragData& drag_data,
                               WebDragOperationsMask mask) {
-  WebMouseEvent event;
+  WebMouseEvent unscaled_event;
   InitMouseEvent(WebInputEvent::MouseDown,
                  current_pointer_state_[kRawMousePointerId].pressed_button_,
                  current_pointer_state_[kRawMousePointerId].current_buttons_,
                  current_pointer_state_[kRawMousePointerId].last_pos_,
                  GetCurrentEventTimeSec(), click_count_,
-                 current_pointer_state_[kRawMousePointerId].modifiers_, &event);
-  WebPoint client_point(event.x, event.y);
-  WebPoint screen_point(event.globalX, event.globalY);
+                 current_pointer_state_[kRawMousePointerId].modifiers_,
+                 &unscaled_event);
+
+  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
+  const WebMouseEvent* event =
+      scaled_event.get() ? static_cast<WebMouseEvent*>(scaled_event.get())
+                         : &unscaled_event;
+
+  WebPoint client_point(event->x, event->y);
+  WebPoint screen_point(event->globalX, event->globalY);
   current_drag_data_ = drag_data;
   current_drag_effects_allowed_ = mask;
   current_drag_effect_ = view()->dragTargetDragEnter(
@@ -2001,10 +2009,14 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
       delegate()->RegisterIsolatedFileSystem(absolute_filenames));
   current_drag_effects_allowed_ = blink::WebDragOperationCopy;
 
+  const WebPoint& last_pos =
+      current_pointer_state_[kRawMousePointerId].last_pos_;
+  float scale = delegate()->GetWindowToViewportScale();
+  WebPoint scaled_last_pos(last_pos.x * scale, last_pos.y * scale);
+
   // Provide a drag source.
   view()->dragTargetDragEnter(
-      current_drag_data_, current_pointer_state_[kRawMousePointerId].last_pos_,
-      current_pointer_state_[kRawMousePointerId].last_pos_,
+      current_drag_data_, scaled_last_pos, scaled_last_pos,
       current_drag_effects_allowed_, 0);
   // |is_drag_mode_| saves events and then replays them later. We don't
   // need/want that.
@@ -2636,16 +2648,21 @@ void EventSender::InitPointerProperties(gin::Arguments* args,
     return;
 }
 
-void EventSender::FinishDragAndDrop(const WebMouseEvent& e,
-                                     blink::WebDragOperation drag_effect) {
-  WebPoint client_point(e.x, e.y);
-  WebPoint screen_point(e.globalX, e.globalY);
+void EventSender::FinishDragAndDrop(const WebMouseEvent& unscaled_event,
+                                    blink::WebDragOperation drag_effect) {
+  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
+  const WebMouseEvent* event =
+      scaled_event.get() ? static_cast<const WebMouseEvent*>(scaled_event.get())
+                         : &unscaled_event;
+
+  WebPoint client_point(event->x, event->y);
+  WebPoint screen_point(event->globalX, event->globalY);
   current_drag_effect_ = drag_effect;
   if (current_drag_effect_) {
     // Specifically pass any keyboard modifiers to the drop method. This allows
     // tests to control the drop type (i.e. copy or move).
     view()->dragTargetDrop(current_drag_data_, client_point, screen_point,
-                           e.modifiers);
+                           event->modifiers);
   } else {
     view()->dragTargetDragLeave();
   }
@@ -2655,37 +2672,49 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& e,
   current_drag_data_.reset();
 }
 
-void EventSender::DoDragAfterMouseUp(const WebMouseEvent& e) {
-  last_click_time_sec_ = e.timeStampSeconds;
+void EventSender::DoDragAfterMouseUp(const WebMouseEvent& unscaled_event) {
+  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
+  const WebMouseEvent* event =
+      scaled_event.get() ? static_cast<WebMouseEvent*>(scaled_event.get())
+                         : &unscaled_event;
+
+  last_click_time_sec_ = event->timeStampSeconds;
   last_click_pos_ = current_pointer_state_[kRawMousePointerId].last_pos_;
 
   // If we're in a drag operation, complete it.
   if (current_drag_data_.isNull())
     return;
 
-  WebPoint client_point(e.x, e.y);
-  WebPoint screen_point(e.globalX, e.globalY);
+  WebPoint client_point(event->x, event->y);
+  WebPoint screen_point(event->globalX, event->globalY);
   blink::WebDragOperation drag_effect = view()->dragTargetDragOver(
-      client_point, screen_point, current_drag_effects_allowed_, e.modifiers);
+      client_point, screen_point, current_drag_effects_allowed_,
+      event->modifiers);
 
   // Bail if dragover caused cancellation.
   if (current_drag_data_.isNull())
     return;
 
-  FinishDragAndDrop(e, drag_effect);
+  FinishDragAndDrop(unscaled_event, drag_effect);
 }
 
-void EventSender::DoDragAfterMouseMove(const WebMouseEvent& e) {
+void EventSender::DoDragAfterMouseMove(const WebMouseEvent& unscaled_event) {
   if (current_pointer_state_[kRawMousePointerId].pressed_button_ ==
           WebMouseEvent::ButtonNone ||
       current_drag_data_.isNull()) {
     return;
   }
 
-  WebPoint client_point(e.x, e.y);
-  WebPoint screen_point(e.globalX, e.globalY);
+  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
+  const WebMouseEvent* event =
+      scaled_event.get() ? static_cast<WebMouseEvent*>(scaled_event.get())
+                         : &unscaled_event;
+
+  WebPoint client_point(event->x, event->y);
+  WebPoint screen_point(event->globalX, event->globalY);
   current_drag_effect_ = view()->dragTargetDragOver(
-      client_point, screen_point, current_drag_effects_allowed_, e.modifiers);
+      client_point, screen_point, current_drag_effects_allowed_,
+      event->modifiers);
 }
 
 void EventSender::ReplaySavedEvents() {
@@ -2736,14 +2765,18 @@ void EventSender::ReplaySavedEvents() {
 }
 
 WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
-    const WebInputEvent& event) {
-  last_event_timestamp_ = event.timeStampSeconds;
+    const WebInputEvent& unscaled_event) {
+  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
+  const WebInputEvent* event =
+      scaled_event.get() ? scaled_event.get() : &unscaled_event;
+
+  last_event_timestamp_ = event->timeStampSeconds;
 
   if (WebPagePopup* popup = view()->pagePopup()) {
-    if (!WebInputEvent::isKeyboardEventType(event.type))
-      return popup->handleInputEvent(event);
+    if (!WebInputEvent::isKeyboardEventType(event->type))
+      return popup->handleInputEvent(*event);
   }
-  return view()->handleInputEvent(event);
+  return view()->handleInputEvent(*event);
 }
 
 void EventSender::SendGesturesForMouseWheelEvent(
@@ -2817,6 +2850,13 @@ const blink::WebView* EventSender::view() const {
 
 blink::WebView* EventSender::view() {
   return web_test_proxy_base_->web_view();
+}
+
+std::unique_ptr<WebInputEvent> EventSender::ScaleEvent(
+    const WebInputEvent& event) {
+  // ui::ScaleWebInputEvent returns nullptr when the scale is 1.0f as the event
+  // does not have to be converted.
+  return ui::ScaleWebInputEvent(event, delegate()->GetWindowToViewportScale());
 }
 
 }  // namespace test_runner

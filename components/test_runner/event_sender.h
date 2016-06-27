@@ -205,6 +205,9 @@ class EventSender {
   void SendGesturesForMouseWheelEvent(
       const blink::WebMouseWheelEvent wheel_event);
 
+  std::unique_ptr<blink::WebInputEvent> ScaleEvent(
+      const blink::WebInputEvent& event);
+
   double last_event_timestamp() { return last_event_timestamp_; }
 
   bool force_layout_on_events() const { return force_layout_on_events_; }

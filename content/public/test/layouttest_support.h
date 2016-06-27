@@ -113,6 +113,9 @@ void ForceResizeRenderView(RenderView* render_view,
 // Set the device scale factor and force the compositor to resize.
 void SetDeviceScaleFactor(RenderView* render_view, float factor);
 
+// Get the window to viewport scale.
+float GetWindowToViewportScale(RenderView* render_view);
+
 // Set the device color profile associated with the profile |name|.
 void SetDeviceColorProfile(RenderView* render_view, const std::string& name);
 

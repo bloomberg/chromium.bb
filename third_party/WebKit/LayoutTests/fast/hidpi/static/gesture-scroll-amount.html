@@ -12,8 +12,6 @@ var expectedScrollsTotal = 2;
 var scrollsOccurred = 0;
 var scrollAmountX = ['1', '3'];
 var scrollAmountY = ['1', '3'];
-/* TODO(oshima): Move the scaling to eventSender */
-var dpr = window.devicePixelRatio;
 
 function checkScrollOffset()
 {
@@ -38,7 +36,7 @@ function firstGestureScrollSequence()
     debug("first gesture");
 
     eventSender.gestureScrollBegin(50, 50);
-    eventSender.gestureScrollUpdate(-dpr, -dpr);
+    eventSender.gestureScrollUpdate(-1, -1);
     eventSender.gestureScrollEnd(0, 0);
 
     // Wait for layout.
@@ -50,7 +48,7 @@ function secondGestureScrollSequence()
     debug("second gesture");
 
     eventSender.gestureScrollBegin(50, 50);
-    eventSender.gestureScrollUpdate(-2 * dpr, -2 * dpr);
+    eventSender.gestureScrollUpdate(-2, -2);
     eventSender.gestureScrollEnd(0, 0);
 
     // Wait for layout.

@@ -9,7 +9,6 @@
 
 <script>
     window.jsTestIsAsync = true;
-    var dpr = window.devicePixelRatio;
 
     description("This test ensures that mouse wheel ticks scrolls the right number of pixels in high dpi mode.");
 
@@ -20,7 +19,7 @@
 
         eventSender.mouseMoveTo(20, 20);
         // 1 tick should move 40px.
-        eventSender.mouseScrollBy(-2 * dpr, -2 * dpr);
+        eventSender.mouseScrollBy(-2, -2);
 
         shouldBecomeEqual("document.scrollingElement.scrollTop == 80 && " +
           "document.scrollingElement.scrollLeft == 80", "true", finishJSTest);
@@ -38,7 +37,7 @@
 
         eventSender.mouseMoveTo(20, 20);
         // 1 tick should move 40px.
-        eventSender.mouseScrollBy(-dpr, -dpr);
+        eventSender.mouseScrollBy(-1, -1);
 
         // 40px per tick.
         shouldBecomeEqual("document.scrollingElement.scrollTop == 40 && " +
