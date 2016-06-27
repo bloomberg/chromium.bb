@@ -108,10 +108,6 @@ Extended attributes on partial interface members work as normal. However, only t
 * If different members should be controlled by different flags, this must be specified individually.
 * If a flag obviously applies to only one member of a single-member interface (i.e., it is named after that member), the extended attribute should be on the member.
 
-*** note
-**FIXME:** Currently, `[OriginTrialEnabled]` doesn't work for partial interfaces, see [Bug 585656](https://crbug.com/585656).
-***
-
 The remaining extended attribute, `[ImplementedAs]`, allows the implementation of the partial interface to be different than the implementation of the main interface; for members of the partial interface, this acts as if this `[ImplementedAs=...]` were specified on the interface, for only these members (overriding any existing value). This is stored internally via `[PartialInterfaceImplementedAs]` (see below).
 
 ### implements

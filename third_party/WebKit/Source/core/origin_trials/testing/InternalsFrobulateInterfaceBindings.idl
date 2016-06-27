@@ -1,0 +1,14 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+    OriginTrialEnabled=OriginTrialsSampleAPI
+]
+partial interface Internals {
+    const unsigned short FROBULATE_CONST_PARTIAL = 2;
+    readonly attribute boolean frobulatePartial;
+    // TODO(chasej): Uncomment when methods are supported for origin trials (crbug.com/621641)
+    //boolean frobulateMethodPartial();
+};
+

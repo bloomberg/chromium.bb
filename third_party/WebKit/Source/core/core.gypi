@@ -3900,6 +3900,7 @@
         ],
         'webcore_testing_dependency_idl_files': [
             'origin_trials/testing/InternalsFrobulate.idl',
+            'origin_trials/testing/InternalsFrobulateInterfaceBindings.idl',
             'origin_trials/testing/WorkerInternalsFrobulate.idl',
             'testing/PartialPrivateScriptTest.idl',
         ],
@@ -3918,6 +3919,7 @@
             '<(blink_core_output_dir)/testing/InternalSettingsGenerated.h',
             'origin_trials/testing/InternalsFrobulate.cpp',
             'origin_trials/testing/InternalsFrobulate.h',
+            'origin_trials/testing/InternalsFrobulateInterfaceBindings.h',
             'origin_trials/testing/WorkerInternalsFrobulate.h',
             'testing/DictionaryTest.cpp',
             'testing/DictionaryTest.h',
