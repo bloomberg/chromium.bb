@@ -64,12 +64,12 @@ public:
 
 private:
     // Object graph:
-    //                 +------+                          +-----------------+
-    //     T <-std::unique_ptr- |Bridge| ---------*-------------> |CrossThreadHolder|
-    //                 |      | <-CrossThreadPersistent- |                 |
-    //                 +------+                          +-----------------+
-    //                    |                                    |
-    //                    +--RefPtr--> MutexWrapper <--RefPtr--+
+    //                     +------+                          +-----------------+
+    //     T <-unique_ptr- |Bridge| ---------*-------------> |CrossThreadHolder|
+    //                     |      | <-CrossThreadPersistent- |                 |
+    //                     +------+                          +-----------------+
+    //                        |                                    |
+    //                        +--RefPtr--> MutexWrapper <--RefPtr--+
     // The CrossThreadPersistent<T>/T* between CrossThreadHolder and Bridge
     // are protected by MutexWrapper
     // and cleared when CrossThreadHolder::clearInternal() is called, i.e.:
