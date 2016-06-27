@@ -5,3 +5,7 @@
 #arc-opt-out-confirm-overlay {
   max-width: 500px;
 }
+
+#arc-opt-out-confirm-overlay .content-area {
+  white-space: pre-line;
+}

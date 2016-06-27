@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #change-home-page-section {
-  margin-left: 30px;
+  -webkit-margin-start: 30px;
 }
 
 #home-page-url {
@@ -485,4 +485,8 @@ footer {
  * a checkbox. */
 .spacer-checkbox {
   visibility: hidden;
+}
+
+#android-apps-settings {
+  -webkit-margin-start: 30px;
 }
