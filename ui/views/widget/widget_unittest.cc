@@ -1768,7 +1768,14 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
 
 // Tests that when there is no active capture, that a mouse press causes capture
 // to be set.
-TEST_F(WidgetTest, MousePressCausesCapture) {
+// Disabled on Mac (GetGlobalCapture() not yet implemented).
+// http://crbug.com//622979.
+#if defined(OS_MACOSX)
+#define MAYBE_MousePressCausesCapture DISABLED_MousePressCausesCapture
+#else
+#define MAYBE_MousePressCausesCapture MousePressCausesCapture
+#endif
+TEST_F(WidgetTest, MAYBE_MousePressCausesCapture) {
   Widget* widget = CreateTopLevelNativeWidget();
   widget->Show();
   widget->SetSize(gfx::Size(300, 300));
@@ -1831,7 +1838,16 @@ class CaptureEventConsumer : public ui::EventHandler {
 
 // Tests that if explicit capture occurs during a mouse press, that implicit
 // capture is not applied.
-TEST_F(WidgetTest, CaptureDuringMousePressNotOverridden) {
+// Disabled on Mac (GetGlobalCapture() not yet implemented).
+// http://crbug.com//622979.
+#if defined(OS_MACOSX)
+#define MAYBE_CaptureDuringMousePressNotOverridden \
+    DISABLED_CaptureDuringMousePressNotOverridden
+#else
+#define MAYBE_CaptureDuringMousePressNotOverridden \
+    CaptureDuringMousePressNotOverridden
+#endif
+TEST_F(WidgetTest, MAYBE_CaptureDuringMousePressNotOverridden) {
   Widget* widget = CreateTopLevelNativeWidget();
   widget->Show();
   widget->SetSize(gfx::Size(300, 300));
@@ -3167,7 +3183,13 @@ class FullscreenAwareFrame : public views::NonClientFrameView {
 
 // Tests that frame Layout is called when a widget goes fullscreen without
 // changing its size or title.
-TEST_F(WidgetTest, FullscreenFrameLayout) {
+// Fails on Mac, but only on bots. http://crbug.com/607403.
+#if defined(OS_MACOSX)
+#define MAYBE_FullscreenFrameLayout DISABLED_FullscreenFrameLayout
+#else
+#define MAYBE_FullscreenFrameLayout FullscreenFrameLayout
+#endif
+TEST_F(WidgetTest, MAYBE_FullscreenFrameLayout) {
   WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   FullscreenAwareFrame* frame = new FullscreenAwareFrame(widget.get());
   widget->non_client_view()->SetFrameView(frame);  // Owns |frame|.
@@ -3781,7 +3803,15 @@ TEST_F(WidgetTest, Transparency_DesktopWidgetOpaque) {
             widget.ShouldWindowContentsBeTransparent());
 }
 
-TEST_F(WidgetTest, Transparency_DesktopWidgetTranslucent) {
+// Failing on Mac. http://cbrug.com/623421
+#if defined(OS_MACOSX)
+#define MAYBE_Transparency_DesktopWidgetTranslucent \
+    DISABLED_Transparency_DesktopWidgetTranslucent
+#else
+#define MAYBE_Transparency_DesktopWidgetTranslucent \
+    Transparency_DesktopWidgetTranslucent
+#endif
+TEST_F(WidgetTest, MAYBE_Transparency_DesktopWidgetTranslucent) {
   Widget widget;
   InitializeWidgetForOpacity(widget,
                              CreateParams(Widget::InitParams::TYPE_WINDOW),

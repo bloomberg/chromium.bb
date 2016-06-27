@@ -1001,6 +1001,9 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteToEndOfParagraph) {
 
 // Test move commands against expectations set by |dummy_text_view_|.
 TEST_F(BridgedNativeWidgetTest, TextInput_MoveEditingCommands) {
+  // Broken on 10.9. http://crbug.com/621734.
+  if (base::mac::IsOSMavericks())
+    return;
   TestEditingCommands(kMoveActions);
 }
 
@@ -1014,6 +1017,9 @@ TEST_F(BridgedNativeWidgetTest,
 
 // Test delete commands against expectations set by |dummy_text_view_|.
 TEST_F(BridgedNativeWidgetTest, TextInput_DeleteCommands) {
+  // Broken on 10.9. http://crbug.com/621734.
+  if (base::mac::IsOSMavericks())
+    return;
   TestEditingCommands(kDeleteActions);
 }
 

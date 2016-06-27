@@ -1718,6 +1718,9 @@
       },
       {
         "test": "url_unittests"
+      },
+      {
+        "test": "views_unittests"
       }
     ],
     "scripts": [
@@ -1866,6 +1869,9 @@
       },
       {
         "test": "url_unittests"
+      },
+      {
+        "test": "views_unittests"
       }
     ],
     "isolated_scripts": [
@@ -2045,6 +2051,9 @@
       },
       {
         "test": "url_unittests"
+      },
+      {
+        "test": "views_unittests"
       }
     ],
     "scripts": [
@@ -2929,6 +2938,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "views_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "webkit_unit_tests"
       },
       {
@@ -3388,6 +3403,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "url_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "views_unittests"
       },
       {
         "swarming": {

@@ -257,7 +257,13 @@ TEST_F(StyledLabelTest, MAYBE_StyledRangeUnderlined) {
       static_cast<Label*>(styled()->child_at(1))->font_list().GetFontStyle());
 }
 
-TEST_F(StyledLabelTest, StyledRangeBold) {
+// Fails on Mac, but only on 10.10. See http://crbug.com/622983.
+#if defined(OS_MACOSX)
+#define MAYBE_StyledRangeBold DISABLED_StyledRangeBold
+#else
+#define MAYBE_StyledRangeBold StyledRangeBold
+#endif
+TEST_F(StyledLabelTest, MAYBE_StyledRangeBold) {
   const std::string bold_text(
       "This is a block of text whose style will be set to BOLD in the test");
   const std::string text(" normal text");

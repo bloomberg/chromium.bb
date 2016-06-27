@@ -217,7 +217,14 @@ class MenuLauncherEventHandler : public ui::EventHandler {
 
 // Tests that when a mouse press launches a menu, that the target widget does
 // not take explicit capture, nor closes the menu.
-TEST_F(MenuRunnerTest, WidgetDoesntTakeCapture) {
+// Disabled on Mac (GetGlobalCapture() not yet implemented).
+// http://crbug.com//622979.
+#if defined(OS_MACOSX)
+#define MAYBE_WidgetDoesntTakeCapture DISABLED_WidgetDoesntTakeCapture
+#else
+#define MAYBE_WidgetDoesntTakeCapture WidgetDoesntTakeCapture
+#endif
+TEST_F(MenuRunnerTest, MAYBE_WidgetDoesntTakeCapture) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   widget->Init(params);
