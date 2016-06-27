@@ -55,13 +55,13 @@ void DOMWindowFileSystem::webkitRequestFileSystem(DOMWindow& windowArg, int type
         UseCounter::count(document, UseCounter::RequestFileSystemNonWebbyOrigin);
 
     if (!document->getSecurityOrigin()->canAccessFileSystem()) {
-        DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::SECURITY_ERR));
+        DOMFileSystem::reportError(document, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::INVALID_MODIFICATION_ERR));
+        DOMFileSystem::reportError(document, errorCallback, FileError::create(FileError::INVALID_MODIFICATION_ERR));
         return;
     }
 
@@ -81,12 +81,12 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow& windowArg, 
     SecurityOrigin* securityOrigin = document->getSecurityOrigin();
     KURL completedURL = document->completeURL(url);
     if (!securityOrigin->canAccessFileSystem() || !securityOrigin->canRequest(completedURL)) {
-        DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::SECURITY_ERR));
+        DOMFileSystem::reportError(document, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
     }
 
     if (!completedURL.isValid()) {
-        DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::ENCODING_ERR));
+        DOMFileSystem::reportError(document, errorCallback, FileError::create(FileError::ENCODING_ERR));
         return;
     }
 

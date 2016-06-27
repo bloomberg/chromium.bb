@@ -100,18 +100,19 @@ void DirectoryReader::readEntries(EntriesCallback* entriesCallback, ErrorCallbac
     }
 
     if (m_error) {
-        filesystem()->scheduleCallback(errorCallback, m_error);
+        filesystem()->reportError(errorCallback, m_error.get());
         return;
     }
 
     if (m_entriesCallback) {
         // Non-null m_entriesCallback means multiple readEntries() calls are made concurrently. We don't allow doing it.
-        filesystem()->scheduleCallback(errorCallback, FileError::create(FileError::INVALID_STATE_ERR));
+        filesystem()->reportError(errorCallback, FileError::create(FileError::INVALID_STATE_ERR));
         return;
     }
 
     if (!m_hasMoreEntries || !m_entries.isEmpty()) {
-        filesystem()->scheduleCallback(entriesCallback, m_entries);
+        if (entriesCallback)
+            DOMFileSystem::scheduleCallback(filesystem()->getExecutionContext(), createSameThreadTask(&EntriesCallback::handleEvent, wrapPersistent(entriesCallback), PersistentHeapVector<Member<Entry>>(m_entries)));
         m_entries.clear();
         return;
     }

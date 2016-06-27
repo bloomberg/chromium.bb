@@ -66,6 +66,8 @@ public:
     void removePendingCallbacks() override;
     void reportError(ErrorCallback*, FileError*) override;
 
+    static void reportError(ExecutionContext*, ErrorCallback*, FileError*);
+
     // ActiveScriptWrappable overrides.
     bool hasPendingActivity() const final;
 
@@ -73,32 +75,10 @@ public:
     void createFile(const FileEntry*, BlobCallback*, ErrorCallback*);
 
     // Schedule a callback. This should not cross threads (should be called on the same context thread).
-    // FIXME: move this to a more generic place.
-    template <typename CB, typename CBArg>
-    static void scheduleCallback(ExecutionContext*, CB*, CBArg*);
-
-    template <typename CB, typename CBArg>
-    static void scheduleCallback(ExecutionContext*, CB*, const HeapVector<CBArg>&);
-
-    template <typename CB, typename CBArg>
-    static void scheduleCallback(ExecutionContext*, CB*, const CBArg&);
-
-    template <typename CB, typename CBArg>
-    static void scheduleCallback(ExecutionContext*, CB*, const Member<CBArg>&);
-
-    template <typename CB>
-    static void scheduleCallback(ExecutionContext*, CB*);
-
-    template <typename CB, typename CBArg>
-    void scheduleCallback(CB* callback, CBArg* callbackArg)
+    static void scheduleCallback(ExecutionContext* executionContext, std::unique_ptr<ExecutionContextTask> task)
     {
-        scheduleCallback(getExecutionContext(), callback, callbackArg);
-    }
-
-    template <typename CB, typename CBArg>
-    void scheduleCallback(CB* callback, const CBArg& callbackArg)
-    {
-        scheduleCallback(getExecutionContext(), callback, callbackArg);
+        DCHECK(executionContext->isContextThread());
+        executionContext->postTask(BLINK_FROM_HERE, std::move(task), taskNameForInstrumentation());
     }
 
     DECLARE_VIRTUAL_TRACE();
@@ -111,104 +91,9 @@ private:
         return "FileSystem";
     }
 
-    template <typename CB, typename CBArg>
-    class DispatchCallbackPtrArgTask final : public ExecutionContextTask {
-    public:
-        DispatchCallbackPtrArgTask(CB* callback, CBArg* arg)
-            : m_callback(callback)
-            , m_callbackArg(arg)
-        {
-        }
-
-        void performTask(ExecutionContext*) override
-        {
-            m_callback->handleEvent(m_callbackArg.get());
-        }
-
-    private:
-        Persistent<CB> m_callback;
-        Persistent<CBArg> m_callbackArg;
-    };
-
-    template <typename CB, typename CBArg>
-    class DispatchCallbackNonPtrArgTask final : public ExecutionContextTask {
-    public:
-        DispatchCallbackNonPtrArgTask(CB* callback, const CBArg& arg)
-            : m_callback(callback)
-            , m_callbackArg(arg)
-        {
-        }
-
-        void performTask(ExecutionContext*) override
-        {
-            m_callback->handleEvent(m_callbackArg);
-        }
-
-    private:
-        Persistent<CB> m_callback;
-        CBArg m_callbackArg;
-    };
-
-    template <typename CB>
-    class DispatchCallbackNoArgTask final : public ExecutionContextTask {
-    public:
-        DispatchCallbackNoArgTask(CB* callback)
-            : m_callback(callback)
-        {
-        }
-
-        void performTask(ExecutionContext*) override
-        {
-            m_callback->handleEvent();
-        }
-
-    private:
-        Persistent<CB> m_callback;
-    };
-
     int m_numberOfPendingCallbacks;
     Member<DirectoryEntry> m_rootEntry;
 };
-
-template <typename CB, typename CBArg>
-void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* callback, CBArg* arg)
-{
-    ASSERT(executionContext->isContextThread());
-    if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackPtrArgTask<CB, CBArg>(callback, arg)), taskNameForInstrumentation());
-}
-
-template <typename CB, typename CBArg>
-void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* callback, const HeapVector<CBArg>& arg)
-{
-    ASSERT(executionContext->isContextThread());
-    if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, PersistentHeapVector<CBArg>>(callback, arg)), taskNameForInstrumentation());
-}
-
-template <typename CB, typename CBArg>
-void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* callback, const CBArg& arg)
-{
-    ASSERT(executionContext->isContextThread());
-    if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, CBArg>(callback, arg)), taskNameForInstrumentation());
-}
-
-template <typename CB, typename CBArg>
-void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* callback, const Member<CBArg>& arg)
-{
-    ASSERT(executionContext->isContextThread());
-    if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, Persistent<CBArg>>(callback, arg)), taskNameForInstrumentation());
-}
-
-template <typename CB>
-void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* callback)
-{
-    ASSERT(executionContext->isContextThread());
-    if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNoArgTask<CB>(callback)), taskNameForInstrumentation());
-}
 
 } // namespace blink
 

@@ -117,7 +117,13 @@ bool DOMFileSystem::hasPendingActivity() const
 
 void DOMFileSystem::reportError(ErrorCallback* errorCallback, FileError* fileError)
 {
-    scheduleCallback(errorCallback, fileError);
+    reportError(getExecutionContext(), errorCallback, fileError);
+}
+
+void DOMFileSystem::reportError(ExecutionContext* executionContext, ErrorCallback* errorCallback, FileError* fileError)
+{
+    if (errorCallback)
+        scheduleCallback(executionContext, createSameThreadTask(&ErrorCallback::handleEvent, wrapPersistent(errorCallback), wrapPersistent(fileError)));
 }
 
 namespace {

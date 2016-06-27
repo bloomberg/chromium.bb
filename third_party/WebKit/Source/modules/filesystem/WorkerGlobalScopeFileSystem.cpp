@@ -49,13 +49,13 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope& wor
 {
     ExecutionContext* secureContext = worker.getExecutionContext();
     if (!secureContext->getSecurityOrigin()->canAccessFileSystem()) {
-        DOMFileSystem::scheduleCallback(&worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
+        DOMFileSystem::reportError(&worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        DOMFileSystem::scheduleCallback(&worker, errorCallback, FileError::create(FileError::INVALID_MODIFICATION_ERR));
+        DOMFileSystem::reportError(&worker, errorCallback, FileError::create(FileError::INVALID_MODIFICATION_ERR));
         return;
     }
 
@@ -89,12 +89,12 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
     KURL completedURL = worker.completeURL(url);
     ExecutionContext* secureContext = worker.getExecutionContext();
     if (!secureContext->getSecurityOrigin()->canAccessFileSystem() || !secureContext->getSecurityOrigin()->canRequest(completedURL)) {
-        DOMFileSystem::scheduleCallback(&worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
+        DOMFileSystem::reportError(&worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
     }
 
     if (!completedURL.isValid()) {
-        DOMFileSystem::scheduleCallback(&worker, errorCallback, FileError::create(FileError::ENCODING_ERR));
+        DOMFileSystem::reportError(&worker, errorCallback, FileError::create(FileError::ENCODING_ERR));
         return;
     }
 

@@ -86,10 +86,12 @@ template <typename CB, typename CBArg>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(CB* callback, CBArg* arg)
 {
     ASSERT(callback);
-    if (shouldScheduleCallback())
-        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback, arg);
-    else if (callback)
-        callback->handleEvent(arg);
+    if (callback) {
+        if (shouldScheduleCallback())
+            DOMFileSystem::scheduleCallback(m_executionContext.get(), createSameThreadTask(&CB::handleEvent, wrapPersistent(callback), wrapPersistent(arg)));
+        else
+            callback->handleEvent(arg);
+    }
     m_executionContext.clear();
 }
 
@@ -97,10 +99,12 @@ template <typename CB>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(CB* callback)
 {
     ASSERT(callback);
-    if (shouldScheduleCallback())
-        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback);
-    else if (callback)
-        callback->handleEvent();
+    if (callback) {
+        if (shouldScheduleCallback())
+            DOMFileSystem::scheduleCallback(m_executionContext.get(), createSameThreadTask(&CB::handleEvent, wrapPersistent(callback)));
+        else
+            callback->handleEvent();
+    }
     m_executionContext.clear();
 }
 
