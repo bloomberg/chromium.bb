@@ -74,7 +74,8 @@ int SigninViewControllerDelegateViews::GetDialogButtons() const {
 }
 
 void SigninViewControllerDelegateViews::PerformClose() {
-  modal_signin_widget_->Close();
+  if (modal_signin_widget_)
+    modal_signin_widget_->Close();
 }
 
 void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
