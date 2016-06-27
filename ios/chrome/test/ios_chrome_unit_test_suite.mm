@@ -5,6 +5,7 @@
 #include "ios/chrome/test/ios_chrome_unit_test_suite.h"
 
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -73,15 +74,19 @@ void IOSChromeUnitTestSuite::Initialize() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new IOSChromeUnitTestSuiteInitializer);
 
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
-
   // Ensure that all BrowserStateKeyedServiceFactories are built before any
   // test is run so that the dependencies are correctly resolved.
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
 
   ios::RegisterPathProvider();
   ui::RegisterPathProvider();
+
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+  base::FilePath resources_pack_path;
+  PathService::Get(ios::FILE_RESOURCES_PACK, &resources_pack_path);
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      resources_pack_path, ui::SCALE_FACTOR_100P);
 
   url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITHOUT_PORT);
 
