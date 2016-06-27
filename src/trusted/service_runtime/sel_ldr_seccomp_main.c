@@ -6,7 +6,6 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/seccomp_bpf/seccomp_bpf.h"
-#include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_main.h"
 
 static void EnableSeccompBpfSandbox(void) {

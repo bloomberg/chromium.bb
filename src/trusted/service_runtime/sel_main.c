@@ -46,7 +46,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
-#include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_main_common.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
@@ -54,12 +53,7 @@
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 
 
-static void (*g_enable_outer_sandbox_func)(void) =
-#if NACL_OSX
-    NaClEnableOuterSandbox;
-#else
-    NULL;
-#endif
+static void (*g_enable_outer_sandbox_func)(void) = NULL;
 
 void NaClSetEnableOuterSandboxFunc(void (*func)(void)) {
   g_enable_outer_sandbox_func = func;
@@ -675,20 +669,6 @@ int NaClSelLdrMain(int argc, char **argv) {
   }
 
   RedirectIO(nap, options->redir_queue);
-
-  /*
-   * Tell the debug stub to bind a TCP port before enabling the outer
-   * sandbox.  This is only needed on Mac OS X since that is the only
-   * platform where we have an outer sandbox in standalone sel_ldr.
-   * In principle this call should work on all platforms, but Windows
-   * XP seems to have some problems when we do bind()/listen() on a
-   * separate thread from accept().
-   */
-  if (options->enable_debug_stub && NACL_OSX) {
-    if (!NaClDebugBindSocket()) {
-      exit(1);
-    }
-  }
 
   /*
    * Enable the outer sandbox, if one is defined.  Do this as soon as
