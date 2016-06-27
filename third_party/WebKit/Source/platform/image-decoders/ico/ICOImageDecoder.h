@@ -41,6 +41,7 @@ class PNGImageDecoder;
 
 // This class decodes the ICO and CUR image formats.
 class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
+    WTF_MAKE_NONCOPYABLE(ICOImageDecoder);
 public:
     ICOImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);
     ~ICOImageDecoder() override;
@@ -84,7 +85,7 @@ private:
     static bool compareEntries(const IconDirectoryEntry& a, const IconDirectoryEntry& b);
 
     // ImageDecoder:
-    virtual void decodeSize() { decode(0, true); }
+    void decodeSize() override { decode(0, true); }
     size_t decodeFrameCount() override;
     void decode(size_t index) override { decode(index, false); }
 
@@ -158,6 +159,11 @@ private:
     // The headers for the ICO.
     typedef Vector<IconDirectoryEntry> IconDirectoryEntries;
     IconDirectoryEntries m_dirEntries;
+
+    // Count of directory entries is parsed from header before initializing
+    // m_dirEntries. m_dirEntries is populated only when full header
+    // information including directory entries is available.
+    size_t m_dirEntriesCount;
 
     // The image decoders for the various frames.
     typedef Vector<std::unique_ptr<BMPImageReader>> BMPReaders;

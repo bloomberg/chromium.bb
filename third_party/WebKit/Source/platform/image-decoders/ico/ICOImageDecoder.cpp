@@ -48,6 +48,7 @@ ICOImageDecoder::ICOImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOp
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_fastReader(nullptr)
     , m_decodedOffset(0)
+    , m_dirEntriesCount(0)
 {
 }
 
@@ -182,7 +183,7 @@ bool ICOImageDecoder::decodeDirectory()
         return false;
 
     // Read and process directory entries.
-    return (m_decodedOffset >= (sizeOfDirectory + (m_dirEntries.size() * sizeOfDirEntry))) || processDirectoryEntries();
+    return (m_decodedOffset >= (sizeOfDirectory + (m_dirEntriesCount * sizeOfDirEntry))) || processDirectoryEntries();
 }
 
 bool ICOImageDecoder::decodeAtIndex(size_t index)
@@ -229,20 +230,15 @@ bool ICOImageDecoder::processDirectory()
     if (m_data->size() < sizeOfDirectory)
         return false;
     const uint16_t fileType = readUint16(2);
-    const uint16_t idCount = readUint16(4);
+    m_dirEntriesCount = readUint16(4);
     m_decodedOffset = sizeOfDirectory;
 
     // See if this is an icon filetype we understand, and make sure we have at
     // least one entry in the directory.
-    if (((fileType != ICON) && (fileType != CURSOR)) || (!idCount))
+    if (((fileType != ICON) && (fileType != CURSOR)) || (!m_dirEntriesCount))
         return setFailed();
 
     m_fileType = static_cast<FileType>(fileType);
-
-    // Enlarge member vectors to hold all the entries.
-    m_dirEntries.resize(idCount);
-    m_bmpReaders.resize(idCount);
-    m_pngDecoders.resize(idCount);
     return true;
 }
 
@@ -250,8 +246,14 @@ bool ICOImageDecoder::processDirectoryEntries()
 {
     // Read directory entries.
     ASSERT(m_decodedOffset == sizeOfDirectory);
-    if ((m_decodedOffset > m_data->size()) || ((m_data->size() - m_decodedOffset) < (m_dirEntries.size() * sizeOfDirEntry)))
+    if ((m_decodedOffset > m_data->size()) || ((m_data->size() - m_decodedOffset) < (m_dirEntriesCount * sizeOfDirEntry)))
         return false;
+
+    // Enlarge member vectors to hold all the entries.
+    m_dirEntries.resize(m_dirEntriesCount);
+    m_bmpReaders.resize(m_dirEntriesCount);
+    m_pngDecoders.resize(m_dirEntriesCount);
+
     for (IconDirectoryEntries::iterator i(m_dirEntries.begin()); i != m_dirEntries.end(); ++i)
         *i = readDirectoryEntry();  // Updates m_decodedOffset.
 
