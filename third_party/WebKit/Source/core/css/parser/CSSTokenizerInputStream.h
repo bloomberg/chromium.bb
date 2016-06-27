@@ -14,27 +14,28 @@ class CSSTokenizerInputStream {
     WTF_MAKE_NONCOPYABLE(CSSTokenizerInputStream);
     USING_FAST_MALLOC(CSSTokenizerInputStream);
 public:
-    CSSTokenizerInputStream(String input);
+    explicit CSSTokenizerInputStream(String input);
 
-    UChar peek(unsigned);
-    inline UChar nextInputChar()
-    {
-        return peek(0);
-    }
+    UChar peek(unsigned) const;
+    UChar nextInputChar() const { return peek(0); }
 
     // For fast-path code, don't replace nulls with replacement characters
-    UChar peekWithoutReplacement(unsigned lookaheadOffset)
+    UChar peekWithoutReplacement(unsigned lookaheadOffset) const
     {
-        ASSERT((m_offset + lookaheadOffset) <= m_stringLength);
+        DCHECK((m_offset + lookaheadOffset) <= m_stringLength);
         if ((m_offset + lookaheadOffset) == m_stringLength)
             return '\0';
         return (*m_string)[m_offset + lookaheadOffset];
     }
 
     void advance(unsigned offset = 1) { m_offset += offset; }
-    void pushBack(UChar);
+    void pushBack(UChar cc)
+    {
+        --m_offset;
+        DCHECK(nextInputChar() == cc);
+    }
 
-    double getDouble(unsigned start, unsigned end);
+    double getDouble(unsigned start, unsigned end) const;
 
     template<bool characterPredicate(UChar)>
     unsigned skipWhilePredicate(unsigned offset)

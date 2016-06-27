@@ -17,18 +17,12 @@ CSSTokenizerInputStream::CSSTokenizerInputStream(String input)
 {
 }
 
-UChar CSSTokenizerInputStream::peek(unsigned lookaheadOffset)
+UChar CSSTokenizerInputStream::peek(unsigned lookaheadOffset) const
 {
     if ((m_offset + lookaheadOffset) >= m_stringLength)
         return kEndOfFileMarker;
     UChar result = (*m_string)[m_offset + lookaheadOffset];
     return result ? result : 0xFFFD;
-}
-
-void CSSTokenizerInputStream::pushBack(UChar cc)
-{
-    --m_offset;
-    ASSERT(nextInputChar() == cc);
 }
 
 void CSSTokenizerInputStream::advanceUntilNonWhitespace()
@@ -45,9 +39,9 @@ void CSSTokenizerInputStream::advanceUntilNonWhitespace()
     }
 }
 
-double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end)
+double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end) const
 {
-    ASSERT(start <= end && ((m_offset + end) <= m_stringLength));
+    DCHECK(start <= end && ((m_offset + end) <= m_stringLength));
     bool isResultOK = false;
     double result = 0.0;
     if (start < end) {
@@ -62,7 +56,7 @@ double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end)
 
 StringView CSSTokenizerInputStream::rangeAt(unsigned start, unsigned length) const
 {
-    ASSERT(start + length <= m_stringLength);
+    DCHECK(start + length <= m_stringLength);
     return StringView(m_string.get(), start, length);
 }
 
