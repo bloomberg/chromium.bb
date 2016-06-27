@@ -24,9 +24,16 @@ ConnectorImpl::ConnectorImpl(mojom::ConnectorPtrInfo unbound_state)
 ConnectorImpl::ConnectorImpl(mojom::ConnectorPtr connector)
     : connector_(std::move(connector)) {
   thread_checker_.reset(new base::ThreadChecker);
+  connector_.set_connection_error_handler(
+      base::Bind(&ConnectorImpl::OnConnectionError, base::Unretained(this)));
 }
 
 ConnectorImpl::~ConnectorImpl() {}
+
+void ConnectorImpl::OnConnectionError() {
+  DCHECK(thread_checker_->CalledOnValidThread());
+  connector_.reset();
+}
 
 std::unique_ptr<Connection> ConnectorImpl::Connect(const std::string& name) {
   ConnectParams params(name);
@@ -44,6 +51,8 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
       return nullptr;
     }
     connector_.Bind(std::move(unbound_state_));
+    connector_.set_connection_error_handler(
+        base::Bind(&ConnectorImpl::OnConnectionError, base::Unretained(this)));
     thread_checker_.reset(new base::ThreadChecker);
   }
   DCHECK(thread_checker_->CalledOnValidThread());

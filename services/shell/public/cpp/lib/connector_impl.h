@@ -21,6 +21,8 @@ class ConnectorImpl : public Connector {
   ~ConnectorImpl() override;
 
  private:
+  void OnConnectionError();
+
   // Connector:
   std::unique_ptr<Connection> Connect(const std::string& name) override;
   std::unique_ptr<Connection> Connect(ConnectParams* params) override;
