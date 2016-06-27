@@ -402,6 +402,8 @@ crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-top.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/css/max-height.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/css/max-width.html [ Pass ]
 
+crbug.com/619452 fast/repaint/inline-outline-repaint.html [ NeedsRebaseline ]
+
 crbug.com/537409 virtual/spv2/fast/clip [ Pass ]
 crbug.com/537409 virtual/spv2/fast/overflow [ Pass ]
 crbug.com/619427 [ Linux ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
