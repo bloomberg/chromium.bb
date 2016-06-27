@@ -455,14 +455,22 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
 }
 
 void WindowSelector::SelectWindow(WmWindow* window) {
-  // Record UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED if the user is selecting
-  // a window other than the window that was active prior to entering overview
-  // mode (i.e., the window at the front of the MRU list).
   std::vector<WmWindow*> window_list =
       WmShell::Get()->GetMruWindowTracker()->BuildMruWindowList();
-  if (!window_list.empty() && window_list[0] != window) {
-    WmShell::Get()->RecordUserMetricsAction(
-        UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED);
+  if (!window_list.empty()) {
+    // Record UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED if the user is selecting
+    // a window other than the window that was active prior to entering overview
+    // mode (i.e., the window at the front of the MRU list).
+    if (window_list[0] != window) {
+      WmShell::Get()->RecordUserMetricsAction(
+          UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED);
+    }
+    const auto it = std::find(window_list.begin(), window_list.end(), window);
+    if (it != window_list.end()) {
+      // Record 1-based index so that selecting a top MRU window will record 1.
+      UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.SelectionDepth",
+                               1 + it - window_list.begin());
+    }
   }
 
   window->GetWindowState()->Activate();

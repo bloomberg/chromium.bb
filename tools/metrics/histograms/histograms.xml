@@ -1608,6 +1608,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.WindowSelector.SelectionDepth" units="items">
+  <owner>varkha@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    When a window is selected in overview mode, records that window's position
+    in the global MRU ordering. 1 represents the most-recently used window, 2
+    represents the next most-recently used window, and so on.
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowSelector.TextFilteringStringLength"
     units="characters">
   <owner>tdanderson@chromium.org</owner>
