@@ -402,10 +402,11 @@ static bool parseHSLParameters(CSSParserTokenRange& range, RGBA32& result, bool 
 static bool parseHexColor(CSSParserTokenRange& range, RGBA32& result, bool acceptQuirkyColors)
 {
     const CSSParserToken& token = range.peek();
-    String color;
     if (token.type() == HashToken) {
-        color = token.value().toString();
+        if (!Color::parseHexColor(token.value(), result))
+            return false;
     } else if (acceptQuirkyColors) {
+        String color;
         if (token.type() == NumberToken || token.type() == DimensionToken) {
             if (token.numericValueType() != IntegerValueType
                 || token.numericValue() < 0. || token.numericValue() >= 1000000.)
@@ -422,9 +423,11 @@ static bool parseHexColor(CSSParserTokenRange& range, RGBA32& result, bool accep
         unsigned length = color.length();
         if (length != 3 && length != 6)
             return false;
-    }
-    if (!Color::parseHexColor(color, result))
+        if (!Color::parseHexColor(color, result))
+            return false;
+    } else {
         return false;
+    }
     range.consumeIncludingWhitespace();
     return true;
 }

@@ -667,13 +667,18 @@ StringView CSSTokenizer::consumeName()
     // Names without escapes get handled without allocations
     for (unsigned size = 0; ; ++size) {
         UChar cc = m_input.peekWithoutReplacement(size);
-        if (cc == '\0' || cc == '\\')
+        if (isNameCodePoint(cc))
+            continue;
+        // peekWithoutReplacement will return NUL when we hit the end of the
+        // input. In that case we want to still use the rangeAt() fast path
+        // below.
+        if (cc == '\0' && m_input.offset() + size < m_input.length())
             break;
-        if (!isNameCodePoint(cc)) {
-            unsigned startOffset = m_input.offset();
-            m_input.advance(size);
-            return m_input.rangeAt(startOffset, size);
-        }
+        if (cc == '\\')
+            break;
+        unsigned startOffset = m_input.offset();
+        m_input.advance(size);
+        return m_input.rangeAt(startOffset, size);
     }
 
     StringBuilder result;

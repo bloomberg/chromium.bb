@@ -29,6 +29,7 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
+#include "wtf/text/StringView.h"
 #include "wtf/text/Unicode.h"
 
 namespace blink {
@@ -122,7 +123,7 @@ public:
     Color blend(const Color&) const;
     Color blendWithWhite() const;
 
-    static bool parseHexColor(const String&, RGBA32&);
+    static bool parseHexColor(const StringView&, RGBA32&);
     static bool parseHexColor(const LChar*, unsigned, RGBA32&);
     static bool parseHexColor(const UChar*, unsigned, RGBA32&);
 

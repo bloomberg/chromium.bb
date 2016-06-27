@@ -167,11 +167,9 @@ bool Color::parseHexColor(const UChar* name, unsigned length, RGBA32& rgb)
     return parseHexColorInternal(name, length, rgb);
 }
 
-bool Color::parseHexColor(const String& name, RGBA32& rgb)
+bool Color::parseHexColor(const StringView& name, RGBA32& rgb)
 {
-    unsigned length = name.length();
-
-    if (!length)
+    if (name.isEmpty())
         return false;
     if (name.is8Bit())
         return parseHexColor(name.characters8(), name.length(), rgb);
