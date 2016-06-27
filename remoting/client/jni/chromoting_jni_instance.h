@@ -27,14 +27,14 @@ namespace protocol {
 class ClipboardEvent;
 class CursorShapeInfo;
 class PerformanceTracker;
-class VideoRenderer;
+class FrameConsumer;
 }  // namespace protocol
 
 class AudioPlayerAndroid;
 class ChromotingJniRuntime;
 class JniClient;
-class JniDisplayHandler;
-class JniFrameConsumer;
+class JniVideoRenderer;
+class DisplayHandler;
 class JniPairingSecretFetcher;
 
 // ChromotingJniInstance is scoped to the session.
@@ -43,16 +43,16 @@ class JniPairingSecretFetcher;
 // called on the network thread.
 class ChromotingJniInstance
   : public ClientUserInterface,
-    public protocol::ClipboardStub,
-    public protocol::CursorShapeStub {
+    public protocol::ClipboardStub {
  public:
   // Initiates a connection with the specified host. Call from the UI thread.
   // The instance does not take ownership of |jni_runtime|. To connect with an
   // unpaired host, pass in |pairing_id| and |pairing_secret| as empty strings.
   ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
                         base::WeakPtr<JniClient> jni_client,
-                        base::WeakPtr<JniDisplayHandler> display,
                         base::WeakPtr<JniPairingSecretFetcher> secret_fetcher,
+                        std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
+                        std::unique_ptr<JniVideoRenderer> video_renderer,
                         const std::string& username,
                         const std::string& auth_token,
                         const std::string& host_jid,
@@ -127,9 +127,6 @@ class ChromotingJniInstance
   // CursorShapeStub implementation.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
 
-  // ClipboardStub implementation.
-  void SetCursorShape(const protocol::CursorShapeInfo& shape) override;
-
   // Get the weak pointer of the instance. Please only use it on the network
   // thread.
   base::WeakPtr<ChromotingJniInstance> GetWeakPtr();
@@ -159,8 +156,6 @@ class ChromotingJniInstance
 
   base::WeakPtr<JniClient> jni_client_;
 
-  base::WeakPtr<JniDisplayHandler> display_handler_;
-
   base::WeakPtr<JniPairingSecretFetcher> secret_fetcher_;
 
   // ID of the host we are connecting to.
@@ -173,8 +168,8 @@ class ChromotingJniInstance
   // This group of variables is to be used on the network thread.
   std::unique_ptr<ClientContext> client_context_;
   std::unique_ptr<protocol::PerformanceTracker> perf_tracker_;
-  std::unique_ptr<JniFrameConsumer> view_;
-  std::unique_ptr<protocol::VideoRenderer> video_renderer_;
+  std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub_;
+  std::unique_ptr<JniVideoRenderer> video_renderer_;
   std::unique_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   std::unique_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_

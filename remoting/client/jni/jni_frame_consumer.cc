@@ -15,6 +15,7 @@
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/jni_client.h"
 #include "remoting/client/jni/jni_display_handler.h"
+#include "remoting/client/software_video_renderer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -91,8 +92,9 @@ void JniFrameConsumer::Renderer::RenderFrame(
   display_handler_->RedrawCanvas();
 }
 
-JniFrameConsumer::JniFrameConsumer(ChromotingJniRuntime* jni_runtime,
-                                   base::WeakPtr<JniDisplayHandler> display)
+JniFrameConsumer::JniFrameConsumer(
+    ChromotingJniRuntime* jni_runtime,
+    base::WeakPtr<JniDisplayHandler> display)
     : jni_runtime_(jni_runtime),
       renderer_(new Renderer(jni_runtime, display)),
       weak_factory_(this) {}
@@ -128,6 +130,28 @@ void JniFrameConsumer::OnFrameRendered(const base::Closure& done) {
 
 protocol::FrameConsumer::PixelFormat JniFrameConsumer::GetPixelFormat() {
   return FORMAT_RGBA;
+}
+
+void JniFrameConsumer::OnSessionConfig(const protocol::SessionConfig& config) {
+  DCHECK(video_renderer_);
+  return video_renderer_->OnSessionConfig(config);
+}
+
+protocol::VideoStub* JniFrameConsumer::GetVideoStub() {
+  DCHECK(video_renderer_);
+  return video_renderer_->GetVideoStub();
+}
+
+protocol::FrameConsumer* JniFrameConsumer::GetFrameConsumer() {
+  DCHECK(video_renderer_);
+  return video_renderer_->GetFrameConsumer();
+}
+
+void JniFrameConsumer::Initialize(
+    scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
+    protocol::PerformanceTracker* perf_tracker) {
+  video_renderer_.reset(new SoftwareVideoRenderer(decode_task_runner, this,
+                                                  perf_tracker));
 }
 
 }  // namespace remoting

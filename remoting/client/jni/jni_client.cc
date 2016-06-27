@@ -10,9 +10,11 @@
 #include "jni/Client_jni.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/client/jni/display_updater_factory.h"
 #include "remoting/client/jni/jni_display_handler.h"
 #include "remoting/client/jni/jni_pairing_secret_fetcher.h"
 #include "remoting/client/jni/jni_touch_event_data.h"
+#include "remoting/client/jni/jni_video_renderer.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -33,7 +35,7 @@ JniClient::~JniClient() {
   DisconnectFromHost();
 }
 
-void JniClient::ConnectToHost(base::WeakPtr<JniDisplayHandler> display_handler,
+void JniClient::ConnectToHost(DisplayUpdaterFactory* updater_factory,
                               const std::string& username,
                               const std::string& auth_token,
                               const std::string& host_jid,
@@ -48,18 +50,17 @@ void JniClient::ConnectToHost(base::WeakPtr<JniDisplayHandler> display_handler,
   DCHECK(!secret_fetcher_);
   secret_fetcher_.reset(new JniPairingSecretFetcher(runtime_, GetWeakPtr(),
                                                     host_id));
-
-  display_handler_ = display_handler;
   session_.reset(new ChromotingJniInstance(
-      runtime_, GetWeakPtr(), display_handler_,
-      secret_fetcher_->GetWeakPtr(), username, auth_token, host_jid, host_id,
+      runtime_, GetWeakPtr(), secret_fetcher_->GetWeakPtr(),
+      updater_factory->CreateCursorShapeStub(),
+      updater_factory->CreateVideoRenderer(),
+      username, auth_token, host_jid, host_id,
       host_pubkey, pairing_id, pairing_secret, capabilities, flags));
   session_->Connect();
 }
 
 void JniClient::DisconnectFromHost() {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  display_handler_ = nullptr;
   if (session_) {
     session_->Disconnect();
     runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
@@ -156,10 +157,11 @@ void JniClient::Connect(
     const base::android::JavaParamRef<jstring>& pairSecret,
     const base::android::JavaParamRef<jstring>& capabilities,
     const base::android::JavaParamRef<jstring>& flags) {
-  JniDisplayHandler* raw_handler = reinterpret_cast<JniDisplayHandler*>(
+  // TODO(yuweih): Remove this line when JniClient owns JniDisplayHandler.
+  DisplayUpdaterFactory* factory_ptr = reinterpret_cast<JniDisplayHandler*>(
               display_handler);
-  DCHECK(raw_handler);
-  ConnectToHost(raw_handler->GetWeakPtr(),
+  DCHECK(factory_ptr);
+  ConnectToHost(factory_ptr,
                 ConvertJavaStringToUTF8(env, username),
                 ConvertJavaStringToUTF8(env, authToken),
                 ConvertJavaStringToUTF8(env, hostJid),

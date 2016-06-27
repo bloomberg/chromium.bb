@@ -19,14 +19,14 @@
 #include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/client/jni/display_updater_factory.h"
 #include "remoting/client/jni/jni_client.h"
-#include "remoting/client/jni/jni_display_handler.h"
-#include "remoting/client/jni/jni_frame_consumer.h"
 #include "remoting/client/jni/jni_pairing_secret_fetcher.h"
-#include "remoting/client/software_video_renderer.h"
+#include "remoting/client/jni/jni_video_renderer.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/client_authentication_config.h"
+#include "remoting/protocol/frame_consumer.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/performance_tracker.h"
@@ -51,8 +51,9 @@ const int kPerfStatsIntervalMs = 60000;
 ChromotingJniInstance::ChromotingJniInstance(
     ChromotingJniRuntime* jni_runtime,
     base::WeakPtr<JniClient> jni_client,
-    base::WeakPtr<JniDisplayHandler> display,
     base::WeakPtr<JniPairingSecretFetcher> secret_fetcher,
+    std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub,
+    std::unique_ptr<JniVideoRenderer> video_renderer,
     const std::string& username,
     const std::string& auth_token,
     const std::string& host_jid,
@@ -64,10 +65,11 @@ ChromotingJniInstance::ChromotingJniInstance(
     const std::string& flags)
     : jni_runtime_(jni_runtime),
       jni_client_(jni_client),
-      display_handler_(display),
       secret_fetcher_(secret_fetcher),
       host_jid_(host_jid),
       flags_(flags),
+      cursor_shape_stub_(std::move(cursor_shape_stub)),
+      video_renderer_(std::move(video_renderer)),
       capabilities_(capabilities),
       weak_factory_(this) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
@@ -86,12 +88,6 @@ ChromotingJniInstance::ChromotingJniInstance(
       base::Bind(&JniPairingSecretFetcher::FetchSecret, secret_fetcher);
   client_auth_config_.fetch_third_party_token_callback = base::Bind(
       &ChromotingJniInstance::FetchThirdPartyToken, GetWeakPtr(), host_pubkey);
-
-  // Post a task to start connection
-  jni_runtime_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChromotingJniInstance::ConnectToHostOnNetworkThread,
-                 GetWeakPtr()));
 }
 
 ChromotingJniInstance::~ChromotingJniInstance() {
@@ -363,23 +359,12 @@ protocol::ClipboardStub* ChromotingJniInstance::GetClipboardStub() {
 }
 
 protocol::CursorShapeStub* ChromotingJniInstance::GetCursorShapeStub() {
-  return this;
+  return cursor_shape_stub_.get();
 }
 
 void ChromotingJniInstance::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   NOTIMPLEMENTED();
-}
-
-void ChromotingJniInstance::SetCursorShape(
-    const protocol::CursorShapeInfo& shape) {
-  if (!jni_runtime_->display_task_runner()->BelongsToCurrentThread()) {
-    jni_runtime_->display_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&JniDisplayHandler::UpdateCursorShape,
-                              display_handler_, shape));
-  } else if (display_handler_) {
-    display_handler_->UpdateCursorShape(shape);
-  }
 }
 
 base::WeakPtr<ChromotingJniInstance> ChromotingJniInstance::GetWeakPtr() {
@@ -396,9 +381,8 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   perf_tracker_.reset(new protocol::PerformanceTracker());
 
-  view_.reset(new JniFrameConsumer(jni_runtime_, display_handler_));
-  video_renderer_.reset(new SoftwareVideoRenderer(
-      client_context_->decode_task_runner(), view_.get(), perf_tracker_.get()));
+  video_renderer_->Initialize(client_context_->decode_task_runner(),
+                              perf_tracker_.get());
 
   if (!audio_player_) {
     audio_player_.reset(new AudioPlayerAndroid());
@@ -509,10 +493,10 @@ void ChromotingJniInstance::ReleaseResources() {
   client_.reset();
   audio_player_.reset();
   video_renderer_.reset();
-  view_.reset();
   signaling_.reset();
   perf_tracker_.reset();
   client_context_.reset();
+  cursor_shape_stub_.reset();
 
   weak_factory_.InvalidateWeakPtrs();
 }

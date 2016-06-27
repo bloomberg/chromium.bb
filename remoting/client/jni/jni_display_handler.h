@@ -10,19 +10,32 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "remoting/proto/control.pb.h"
+#include "remoting/client/jni/display_updater_factory.h"
 
 namespace remoting {
 
+namespace protocol {
+class CursorShapeInfo;
+}  // namespace protocol
+
+class ChromotingJniRuntime;
+class JniVideoRenderer;
+
 // Handles display operations. Must be called and deleted on the display thread
 // unless otherwise noted.
-class JniDisplayHandler {
+class JniDisplayHandler : public DisplayUpdaterFactory {
  public:
-  JniDisplayHandler(scoped_refptr<base::SingleThreadTaskRunner> display_runner,
+  JniDisplayHandler(ChromotingJniRuntime* runtime,
                     base::android::ScopedJavaGlobalRef<jobject> java_display);
 
   // Must be deleted on the display thread.
-  ~JniDisplayHandler();
+  ~JniDisplayHandler() override;
+
+  void UpdateCursorShape(const protocol::CursorShapeInfo& cursor_shape);
+
+  // DisplayUpdaterFactory overrides (functions can be called on any thread).
+  std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub() override;
+  std::unique_ptr<JniVideoRenderer> CreateVideoRenderer() override;
 
   // Creates a new Bitmap object to store a video frame. Can be called on any
   // thread.
@@ -33,14 +46,8 @@ class JniDisplayHandler {
   // android.graphics.Bitmap.
   void UpdateFrameBitmap(base::android::ScopedJavaGlobalRef<jobject> bitmap);
 
-  // Updates cursor shape.
-  void UpdateCursorShape(const protocol::CursorShapeInfo& cursor_shape);
-
   // Draws the latest image buffer onto the canvas.
   void RedrawCanvas();
-
-  // Returns a display thread weak pointer to the object.
-  base::WeakPtr<JniDisplayHandler> GetWeakPtr();
 
   static bool RegisterJni(JNIEnv* env);
 
@@ -53,7 +60,7 @@ class JniDisplayHandler {
                       const base::android::JavaParamRef<jobject>& caller);
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> display_runner_;
+  ChromotingJniRuntime* runtime_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_display_;
   base::WeakPtrFactory<JniDisplayHandler> weak_factory_;

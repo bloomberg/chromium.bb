@@ -7,50 +7,66 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "jni/Display_jni.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/jni_client.h"
+#include "remoting/client/jni/jni_frame_consumer.h"
+#include "remoting/client/jni/jni_video_renderer.h"
 
 using base::android::JavaParamRef;
 
 namespace {
 
 const int kBytesPerPixel = 4;
+
 }
 
 namespace remoting {
 
+// CursorShapeStub with a lifetime separated from JniDisplayHandler.
+class DisplayCursorShapeStub : public protocol::CursorShapeStub {
+ public:
+  DisplayCursorShapeStub(
+      base::WeakPtr<JniDisplayHandler> display,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
+ private:
+  base::WeakPtr<JniDisplayHandler> display_handler_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+};
+
+DisplayCursorShapeStub::DisplayCursorShapeStub(
+    base::WeakPtr<JniDisplayHandler> display,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) :
+        display_handler_(display),
+        task_runner_(task_runner) {
+}
+
+void DisplayCursorShapeStub::SetCursorShape(
+    const protocol::CursorShapeInfo& cursor_shape) {
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&JniDisplayHandler::UpdateCursorShape,
+                                    display_handler_,
+                                    cursor_shape));
+}
+
+// JniDisplayHandler definitions.
 JniDisplayHandler::JniDisplayHandler(
-    scoped_refptr<base::SingleThreadTaskRunner> display_runner,
+    ChromotingJniRuntime* runtime,
     base::android::ScopedJavaGlobalRef<jobject> java_display)
-    : display_runner_(display_runner),
+    : runtime_(runtime),
       java_display_(java_display),
       weak_factory_(this) {}
 
 JniDisplayHandler::~JniDisplayHandler() {
-  DCHECK(display_runner_->BelongsToCurrentThread());
-}
-
-// static
-base::android::ScopedJavaLocalRef<jobject> JniDisplayHandler::NewBitmap(
-    int width,
-    int height) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_Display_newBitmap(env, width, height);
-}
-
-void JniDisplayHandler::UpdateFrameBitmap(
-    base::android::ScopedJavaGlobalRef<jobject> bitmap) {
-  DCHECK(display_runner_->BelongsToCurrentThread());
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Display_setVideoFrame(env, java_display_.obj(), bitmap.obj());
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
 }
 
 void JniDisplayHandler::UpdateCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
-  DCHECK(display_runner_->BelongsToCurrentThread());
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
 
   // const_cast<> is safe as long as the Java updateCursorShape() method copies
   // the data out of the buffer without mutating it, and doesn't keep any
@@ -68,15 +84,39 @@ void JniDisplayHandler::UpdateCursorShape(
       cursor_shape.hotspot_x(), cursor_shape.hotspot_y(), buffer.obj());
 }
 
+std::unique_ptr<protocol::CursorShapeStub>
+JniDisplayHandler::CreateCursorShapeStub() {
+  return base::WrapUnique(
+      new DisplayCursorShapeStub(weak_factory_.GetWeakPtr(),
+                                    runtime_->display_task_runner()));
+}
+
+std::unique_ptr<JniVideoRenderer> JniDisplayHandler::CreateVideoRenderer() {
+  return base::WrapUnique(
+      new JniFrameConsumer(runtime_, weak_factory_.GetWeakPtr()));
+}
+
+// static
+base::android::ScopedJavaLocalRef<jobject> JniDisplayHandler::NewBitmap(
+    int width,
+    int height) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_Display_newBitmap(env, width, height);
+}
+
+void JniDisplayHandler::UpdateFrameBitmap(
+    base::android::ScopedJavaGlobalRef<jobject> bitmap) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Display_setVideoFrame(env, java_display_.obj(), bitmap.obj());
+}
+
 void JniDisplayHandler::RedrawCanvas() {
-  DCHECK(display_runner_->BelongsToCurrentThread());
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Display_redrawGraphicsInternal(env, java_display_.obj());
-}
-
-base::WeakPtr<JniDisplayHandler> JniDisplayHandler::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 // static
@@ -87,23 +127,24 @@ bool JniDisplayHandler::RegisterJni(JNIEnv* env) {
 void JniDisplayHandler::Destroy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller) {
-  if (display_runner_->BelongsToCurrentThread()) {
+  if (runtime_->display_task_runner()->BelongsToCurrentThread()) {
     delete this;
   } else {
-    display_runner_->DeleteSoon(FROM_HERE, this);
+    runtime_->display_task_runner()->DeleteSoon(FROM_HERE, this);
   }
 }
 
 void JniDisplayHandler::ScheduleRedraw(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller) {
-  display_runner_->PostTask(
-      FROM_HERE, base::Bind(&JniDisplayHandler::RedrawCanvas, GetWeakPtr()));
+  runtime_->display_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&JniDisplayHandler::RedrawCanvas,
+                            weak_factory_.GetWeakPtr()));
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& caller) {
   return reinterpret_cast<intptr_t>(new JniDisplayHandler(
-      ChromotingJniRuntime::GetInstance()->display_task_runner(),
+      ChromotingJniRuntime::GetInstance(),
       base::android::ScopedJavaGlobalRef<jobject>(env, caller)));
 }
 
