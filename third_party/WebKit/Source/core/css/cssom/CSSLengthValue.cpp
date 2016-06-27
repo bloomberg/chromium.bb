@@ -6,9 +6,9 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/CSSCalcDictionary.h"
 #include "core/css/cssom/CSSCalcLength.h"
 #include "core/css/cssom/CSSSimpleLength.h"
-#include "core/css/cssom/CalcDictionary.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -31,7 +31,7 @@ CSSLengthValue* CSSLengthValue::from(double value, const String& type, Exception
     return CSSSimpleLength::create(value, unitFromName(type));
 }
 
-CSSLengthValue* CSSLengthValue::from(const CalcDictionary& dictionary, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::from(const CSSCalcDictionary& dictionary, ExceptionState& exceptionState)
 {
     return CSSCalcLength::create(dictionary, exceptionState);
 }

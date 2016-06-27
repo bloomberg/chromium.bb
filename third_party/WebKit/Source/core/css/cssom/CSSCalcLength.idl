@@ -1,6 +1,6 @@
 [
     Constructor(CSSLengthValue length),
-    Constructor(CalcDictionary calcDictionary),
+    Constructor(CSSCalcDictionary calcDictionary),
     Exposed=(Window,PaintWorklet),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM

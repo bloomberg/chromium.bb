@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class CalcDictionary;
+class CSSCalcDictionary;
 class ExceptionState;
 
 class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
@@ -28,7 +28,7 @@ public:
 
     static CSSLengthValue* from(const String& cssString, ExceptionState&);
     static CSSLengthValue* from(double value, const String& typeStr, ExceptionState&);
-    static CSSLengthValue* from(const CalcDictionary&, ExceptionState&);
+    static CSSLengthValue* from(const CSSCalcDictionary&, ExceptionState&);
 
 protected:
     CSSLengthValue() {}

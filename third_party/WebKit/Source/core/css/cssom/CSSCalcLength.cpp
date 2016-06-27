@@ -6,8 +6,8 @@
 
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/CSSCalcDictionary.h"
 #include "core/css/cssom/CSSSimpleLength.h"
-#include "core/css/cssom/CalcDictionary.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -35,7 +35,7 @@ CSSCalcLength* CSSCalcLength::create(const CSSLengthValue* length)
     return new CSSCalcLength(*toCSSCalcLength(length));
 }
 
-CSSCalcLength* CSSCalcLength::create(const CalcDictionary& dictionary, ExceptionState& exceptionState)
+CSSCalcLength* CSSCalcLength::create(const CSSCalcDictionary& dictionary, ExceptionState& exceptionState)
 {
     CSSCalcLength* result = new CSSCalcLength();
     int numSet = 0;
@@ -63,7 +63,7 @@ CSSCalcLength* CSSCalcLength::create(const CalcDictionary& dictionary, Exception
     setFromDictValue(pt, Pt, Points)
 
     if (numSet == 0) {
-        exceptionState.throwTypeError("Must specify at least one value in CalcDictionary for creating a CSSCalcLength.");
+        exceptionState.throwTypeError("Must specify at least one value in CSSCalcDictionary for creating a CSSCalcLength.");
     }
     return result;
 }

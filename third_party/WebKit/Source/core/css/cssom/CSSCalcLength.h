@@ -10,14 +10,14 @@
 
 namespace blink {
 
-class CalcDictionary;
+class CSSCalcDictionary;
 class CSSSimpleLength;
 
 class CORE_EXPORT CSSCalcLength final : public CSSLengthValue {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static CSSCalcLength* create(const CSSLengthValue*);
-    static CSSCalcLength* create(const CalcDictionary&, ExceptionState&);
+    static CSSCalcLength* create(const CSSCalcDictionary&, ExceptionState&);
     static CSSCalcLength* create(const CSSLengthValue* length, ExceptionState&)
     {
         return create(length);

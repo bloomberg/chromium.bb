@@ -1,4 +1,4 @@
-dictionary CalcDictionary {
+dictionary CSSCalcDictionary {
   double? px = null;
   double? percent = null;
   double? em = null;
