@@ -50,6 +50,7 @@
 #include <SkPath.h>
 #include <SkPoint.h>
 #include <SkRect.h>
+#include <SkStream.h>
 #include <SkTypeface.h>
 
 
@@ -311,12 +312,38 @@ static hb_blob_t* harfBuzzSkiaGetTable(hb_face_t* face, hb_tag_t tag, void* user
 }
 #endif
 
+#if !OS(MACOSX)
+static void deleteTypefaceStream(void* streamAssetPtr)
+{
+    SkStreamAsset* streamAsset = reinterpret_cast<SkStreamAsset*>(streamAssetPtr);
+    delete streamAsset;
+}
+#endif
+
 hb_face_t* HarfBuzzFace::createFace()
 {
 #if OS(MACOSX)
     hb_face_t* face = hb_coretext_face_create(m_platformData->cgFont());
 #else
-    hb_face_t* face = hb_face_create_for_tables(harfBuzzSkiaGetTable, m_platformData->typeface(), 0);
+    hb_face_t* face = nullptr;
+
+    SkTypeface* typeface = m_platformData->typeface();
+    int ttcIndex = 0;
+    SkStreamAsset* typefaceStream = typeface->openStream(&ttcIndex);
+    if (typefaceStream->getMemoryBase()) {
+        std::unique_ptr<hb_blob_t, void(*)(hb_blob_t*)> faceBlob(hb_blob_create(
+            reinterpret_cast<const char*>(typefaceStream->getMemoryBase()),
+            typefaceStream->getLength(),
+            HB_MEMORY_MODE_READONLY,
+            typefaceStream,
+            deleteTypefaceStream),
+            hb_blob_destroy);
+        face = hb_face_create(faceBlob.get(), ttcIndex);
+    }
+
+    // Fallback to table copies if there is no in-memory access.
+    if (!face)
+        face = hb_face_create_for_tables(harfBuzzSkiaGetTable, m_platformData->typeface(), 0);
 #endif
     ASSERT(face);
     return face;
