@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -405,19 +406,19 @@ public class NewTabPageView extends FrameLayout
     private void updateSearchBoxOnScroll() {
         if (mDisableUrlFocusChangeAnimations) return;
 
-        float percentage = 0;
+        float percentage;
         // During startup the view may not be fully initialized, so we only calculate the current
         // percentage if some basic view properties are sane.
-        if (getWrapperView().getHeight() != 0 && mSearchBoxView.getTop() != 0) {
+        if (getWrapperView().getHeight() == 0 || mSearchBoxView.getTop() == 0) {
+            percentage = 0f;
+        } else if (mUseCardsUi && !mRecyclerView.isFirstItemVisible()) {
             // getVerticalScroll is valid only for the RecyclerView if the first item is visible.
             // Luckily, if the first item is not visible, we know the toolbar transition should
             // be 100%.
-            if (mUseCardsUi && !mRecyclerView.isFirstItemVisible()) {
-                percentage = 1f;
-            } else {
-                int scrollY = getVerticalScroll();
-                percentage = Math.max(0f, Math.min(1f, scrollY / (float) mSearchBoxView.getTop()));
-            }
+            percentage = 1f;
+        } else {
+            percentage = MathUtils.clamp(getVerticalScroll() / (float) mSearchBoxView.getTop(),
+                    0f, 1f);
         }
 
         updateVisualsForToolbarTransition(percentage);
@@ -588,8 +589,6 @@ public class NewTabPageView extends FrameLayout
 
         mMostVisitedDesign.setSearchProviderHasLogo(mMostVisitedLayout, hasLogo);
 
-        if (!hasLogo) setUrlFocusChangeAnimationPercentInternal(0);
-
         // Hide or show all the views above the Most Visited items.
         int visibility = hasLogo ? View.VISIBLE : View.GONE;
         int childCount = mNewTabPageLayout.getChildCount();
@@ -603,7 +602,8 @@ public class NewTabPageView extends FrameLayout
 
         updateMostVisitedPlaceholderVisibility();
 
-        if (hasLogo) setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
+        onUrlFocusAnimationChanged();
+
         mSnapshotMostVisitedChanged = true;
     }
 
@@ -614,7 +614,7 @@ public class NewTabPageView extends FrameLayout
     void setUrlFocusAnimationsDisabled(boolean disable) {
         if (disable == mDisableUrlFocusChangeAnimations) return;
         mDisableUrlFocusChangeAnimations = disable;
-        if (!disable) setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
+        if (!disable) onUrlFocusAnimationChanged();
     }
 
     /**
@@ -654,9 +654,7 @@ public class NewTabPageView extends FrameLayout
      */
     void setUrlFocusChangeAnimationPercent(float percent) {
         mUrlFocusChangePercent = percent;
-        if (!mDisableUrlFocusChangeAnimations && mSearchProviderHasLogo) {
-            setUrlFocusChangeAnimationPercentInternal(percent);
-        }
+        onUrlFocusAnimationChanged();
     }
 
     /**
@@ -667,12 +665,10 @@ public class NewTabPageView extends FrameLayout
         return mUrlFocusChangePercent;
     }
 
-    /**
-     * Unconditionally sets the percentage the URL is focused during an animation, without updating
-     * mUrlFocusChangePercent.
-     * @see #setUrlFocusChangeAnimationPercent
-     */
-    private void setUrlFocusChangeAnimationPercentInternal(float percent) {
+    private void onUrlFocusAnimationChanged() {
+        if (mDisableUrlFocusChangeAnimations) return;
+
+        float percent = mSearchProviderHasLogo ? mUrlFocusChangePercent : 0;
         // Only apply the scrolling offset when not using the cards UI, as there we will either snap
         // to the top of the page (with scrolling offset 0), or snap to below the fold, where Most
         // Likely items are not visible anymore, so they will stay out of sight.
@@ -810,7 +806,7 @@ public class NewTabPageView extends FrameLayout
 
         // Re-apply the url focus change amount after a rotation to ensure the views are correctly
         // placed with their new layout configurations.
-        setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
+        onUrlFocusAnimationChanged();
         updateSearchBoxOnScroll();
 
         if (mUseCardsUi) {
