@@ -438,8 +438,12 @@ void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
     }
 
     addVisualEffectOverflow();
-
     addVisualOverflowFromTheme();
+
+    // An enclosing composited layer will need to update its bounds if we now overflow it.
+    PaintLayer* layer = enclosingLayer();
+    if (!needsLayout() && layer->hasCompositedLayerMapping() && !layer->visualRect().contains(visualOverflowRect()))
+        layer->setNeedsCompositingInputsUpdate();
 }
 
 void LayoutBlock::addOverflowFromBlockChildren()
