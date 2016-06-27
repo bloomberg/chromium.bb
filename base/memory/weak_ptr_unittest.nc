@@ -59,7 +59,7 @@ void WontCompile() {
       SupportsWeakPtr<Producer>::StaticAsWeakPtr<DerivedProducer>(&f);
 }
 
-#elif defined(NCTEST_UNSAFE_HELPER_DOWNCAST)  // [r"fatal error: cannot initialize a member subobject of type 'base::DerivedProducer \*' with an lvalue of type 'base::Producer \*const'"]
+#elif defined(NCTEST_UNSAFE_HELPER_DOWNCAST)  // [r"fatal error: cannot initialize a member subobject of type 'base::DerivedProducer \*' with an lvalue of type 'base::Producer \*'"]
 
 void WontCompile() {
   Producer f;
@@ -73,14 +73,14 @@ void WontCompile() {
   WeakPtr<DerivedProducer> ptr = AsWeakPtr<DerivedProducer>(&f);
 }
 
-#elif defined(NCTEST_UNSAFE_WRONG_INSANTIATED_HELPER_DOWNCAST)  // [r"fatal error: cannot initialize a member subobject of type 'base::DerivedProducer \*' with an lvalue of type 'base::Producer \*const'"]
+#elif defined(NCTEST_UNSAFE_WRONG_INSANTIATED_HELPER_DOWNCAST)  // [r"fatal error: cannot initialize a member subobject of type 'base::DerivedProducer \*' with an lvalue of type 'base::Producer \*'"]
 
 void WontCompile() {
   Producer f; 
   WeakPtr<DerivedProducer> ptr = AsWeakPtr<Producer>(&f);
 }
 
-#elif defined(NCTEST_UNSAFE_HELPER_CAST)  // [r"fatal error: cannot initialize a member subobject of type 'base::OtherDerivedProducer \*' with an lvalue of type 'base::DerivedProducer \*const'"]
+#elif defined(NCTEST_UNSAFE_HELPER_CAST)  // [r"fatal error: cannot initialize a member subobject of type 'base::OtherDerivedProducer \*' with an lvalue of type 'base::DerivedProducer \*'"]
 
 void WontCompile() {
   DerivedProducer f;
@@ -94,14 +94,14 @@ void WontCompile() {
   WeakPtr<OtherDerivedProducer> ptr = AsWeakPtr<OtherDerivedProducer>(&f);
 }
 
-#elif defined(NCTEST_UNSAFE_WRONG_INSTANTIATED_HELPER_SIDECAST)  // [r"fatal error: cannot initialize a member subobject of type 'base::OtherDerivedProducer \*' with an lvalue of type 'base::DerivedProducer \*const'"]
+#elif defined(NCTEST_UNSAFE_WRONG_INSTANTIATED_HELPER_SIDECAST)  // [r"fatal error: cannot initialize a member subobject of type 'base::OtherDerivedProducer \*' with an lvalue of type 'base::DerivedProducer \*'"]
 
 void WontCompile() {
   DerivedProducer f;
   WeakPtr<OtherDerivedProducer> ptr = AsWeakPtr<DerivedProducer>(&f);
 }
 
-#elif defined(NCTEST_UNRELATED_HELPER)  // [r"fatal error: cannot initialize a member subobject of type 'base::Unrelated \*' with an lvalue of type 'base::DerivedProducer \*const'"]
+#elif defined(NCTEST_UNRELATED_HELPER)  // [r"fatal error: cannot initialize a member subobject of type 'base::Unrelated \*' with an lvalue of type 'base::DerivedProducer \*'"]
 
 void WontCompile() {
   DerivedProducer f;
