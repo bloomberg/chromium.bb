@@ -369,9 +369,14 @@ void ProfileImpl::RegisterProfilePrefs(
 #endif
 
   registry->RegisterStringPref(prefs::kSupervisedUserId, std::string());
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  uint32_t home_page_flags = PrefRegistry::NO_REGISTRATION_FLAGS;
+#else
+  uint32_t home_page_flags = user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
+#endif
   registry->RegisterStringPref(prefs::kHomePage,
                                std::string(),
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+                               home_page_flags);
 #if defined(ENABLE_PRINTING)
   registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 #endif
