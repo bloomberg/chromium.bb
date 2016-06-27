@@ -45,6 +45,9 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
   // content, in pixels.
   virtual void ResizeNativeView(int height) = 0;
 
+  // content::WebContentsDelegate:
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+
  protected:
   SigninViewControllerDelegate(SigninViewController* signin_view_controller,
                                content::WebContents* web_contents);

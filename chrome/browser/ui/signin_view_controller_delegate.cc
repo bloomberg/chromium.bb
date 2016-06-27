@@ -34,17 +34,26 @@ void SigninViewControllerDelegate::CloseModalSignin() {
   PerformClose();
 }
 
+void SigninViewControllerDelegate::PerformNavigation() {
+  if (CanGoBack(web_contents_)) {
+    auto auth_web_contents = GetAuthFrameWebContents(web_contents_);
+    auth_web_contents->GetController().GoBack();
+  } else {
+    CloseModalSignin();
+  }
+}
+
+bool SigninViewControllerDelegate::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  // Discard the context menu
+  return true;
+}
+
 void SigninViewControllerDelegate::ResetSigninViewControllerDelegate() {
   if (signin_view_controller_) {
     signin_view_controller_->ResetModalSigninDelegate();
     signin_view_controller_ = nullptr;
   }
-}
-
-bool SigninViewControllerDelegate::CanGoBack(
-    content::WebContents* web_ui_web_contents) const {
-  auto auth_web_contents = GetAuthFrameWebContents(web_ui_web_contents);
-  return auth_web_contents && auth_web_contents->GetController().CanGoBack();
 }
 
 // content::WebContentsDelegate
@@ -59,11 +68,8 @@ void SigninViewControllerDelegate::LoadingStateChanged(
         "inline.login.showCloseButton");
 }
 
-void SigninViewControllerDelegate::PerformNavigation() {
-  if (CanGoBack(web_contents_)) {
-    auto auth_web_contents = GetAuthFrameWebContents(web_contents_);
-    auth_web_contents->GetController().GoBack();
-  } else {
-    CloseModalSignin();
-  }
+bool SigninViewControllerDelegate::CanGoBack(
+    content::WebContents* web_ui_web_contents) const {
+  auto auth_web_contents = GetAuthFrameWebContents(web_ui_web_contents);
+  return auth_web_contents && auth_web_contents->GetController().CanGoBack();
 }
