@@ -45,8 +45,28 @@ private:
     int m_value;
 };
 
+// This class must be wrapped in bind() and unwrapped in closure execution.
+class ClassToBeWrapped {
+    WTF_MAKE_NONCOPYABLE(ClassToBeWrapped);
+public:
+    explicit ClassToBeWrapped(int value)
+        : m_value(value)
+    {
+    }
+
+    int value() const { return m_value; }
+
+private:
+    int m_value;
+};
+
 class WrappedClass {
 public:
+    WrappedClass(const ClassToBeWrapped& to_be_wrapped)
+        : m_value(to_be_wrapped.value())
+    {
+    }
+
     explicit WrappedClass(int value)
         : m_value(value)
     {
@@ -58,25 +78,13 @@ private:
     int m_value;
 };
 
-// This class must be wrapped in bind() and unwrapped in closure execution.
-class ClassToBeWrapped {
-    WTF_MAKE_NONCOPYABLE(ClassToBeWrapped);
-public:
-    explicit ClassToBeWrapped(int value)
-        : m_value(value)
-    {
-    }
-
-    WrappedClass wrap() const { return WrappedClass(m_value); }
-
-private:
-    int m_value;
-};
+UnwrappedClass Unwrap(const WrappedClass& wrapped)
+{
+    return wrapped.unwrap();
+}
 
 template<> struct ParamStorageTraits<ClassToBeWrapped> {
     using StorageType = WrappedClass;
-    static StorageType wrap(const ClassToBeWrapped& value) { return value.wrap(); }
-    static UnwrappedClass unwrap(const StorageType& value) { return value.unwrap(); }
 };
 
 class HasWeakPtrSupport {
@@ -523,16 +531,16 @@ TEST(FunctionalTest, CountCopiesOfBoundArguments)
 {
     CountCopy lvalue;
     std::unique_ptr<Function<int()>> bound = bind(takeCountCopyAsConstReference, lvalue);
-    EXPECT_EQ(2, (*bound)()); // wrapping and unwrapping.
+    EXPECT_EQ(1, (*bound)()); // unwrapping.
 
     bound = bind(takeCountCopyAsConstReference, CountCopy()); // Rvalue.
-    EXPECT_EQ(2, (*bound)());
+    EXPECT_EQ(1, (*bound)());
 
     bound = bind(takeCountCopyAsValue, lvalue);
-    EXPECT_EQ(3, (*bound)()); // wrapping, unwrapping and copying in the final function argument.
+    EXPECT_EQ(2, (*bound)()); // unwrapping and copying in the final function argument.
 
     bound = bind(takeCountCopyAsValue, CountCopy());
-    EXPECT_EQ(3, (*bound)());
+    EXPECT_EQ(2, (*bound)());
 }
 
 TEST(FunctionalTest, MoveUnboundArgumentsByRvalueReference)

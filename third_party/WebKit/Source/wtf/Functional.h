@@ -116,10 +116,10 @@ class PassedWrapper final {
 public:
     explicit PassedWrapper(T&& scoper) : m_scoper(std::move(scoper)) { }
     PassedWrapper(PassedWrapper&& other) : m_scoper(std::move(other.m_scoper)) { }
-    T moveOut() { return std::move(m_scoper); }
+    T moveOut() const { return std::move(m_scoper); }
 
 private:
-    T m_scoper;
+    mutable T m_scoper;
 };
 
 template <typename T>
@@ -219,55 +219,53 @@ struct ParamStorageTraits {
 
     static_assert(!std::is_pointer<T>::value, "Raw pointers are not allowed to bind into WTF::Function. Wrap it with either wrapPersistent, wrapWeakPersistent, wrapCrossThreadPersistent, wrapCrossThreadWeakPersistent, RefPtr or unretained.");
     static_assert(!IsSubclassOfTemplate<T, blink::Member>::value && !IsSubclassOfTemplate<T, blink::WeakMember>::value, "Member and WeakMember are not allowed to bind into WTF::Function. Wrap it with either wrapPersistent, wrapWeakPersistent, wrapCrossThreadPersistent or wrapCrossThreadWeakPersistent.");
-
-    static StorageType wrap(const T& value) { return value; } // Copy.
-    static StorageType wrap(T&& value) { return std::move(value); }
-
-    // Don't move out, because the functor may be called multiple times.
-    static const T& unwrap(const StorageType& value) { return value; }
 };
 
 template <typename T>
 struct ParamStorageTraits<PassRefPtr<T>> {
     typedef RefPtr<T> StorageType;
-
-    static StorageType wrap(PassRefPtr<T> value) { return value; }
-    static T* unwrap(const StorageType& value) { return value.get(); }
 };
 
 template <typename T>
 struct ParamStorageTraits<RefPtr<T>> {
     typedef RefPtr<T> StorageType;
-
-    static StorageType wrap(RefPtr<T> value) { return value.release(); }
-    static T* unwrap(const StorageType& value) { return value.get(); }
 };
+
+template <typename T>
+T* Unwrap(const RefPtr<T>& wrapped)
+{
+    return wrapped.get();
+}
 
 template <typename> class RetainPtr;
 
 template <typename T>
 struct ParamStorageTraits<RetainPtr<T>> {
     typedef RetainPtr<T> StorageType;
-
-    static StorageType wrap(const RetainPtr<T>& value) { return value; }
-    static typename RetainPtr<T>::PtrType unwrap(const StorageType& value) { return value.get(); }
 };
 
 template <typename T>
 struct ParamStorageTraits<PassedWrapper<T>> {
     typedef PassedWrapper<T> StorageType;
-
-    static StorageType wrap(PassedWrapper<T>&& value) { return std::move(value); }
-    static T unwrap(StorageType& value) { return value.moveOut(); }
 };
+
+template <typename T>
+T Unwrap(const PassedWrapper<T>& wrapped)
+{
+    return wrapped.moveOut();
+}
 
 template <typename T, FunctionThreadAffinity threadAffinity>
 struct ParamStorageTraits<UnretainedWrapper<T, threadAffinity>> {
     typedef UnretainedWrapper<T, threadAffinity> StorageType;
-
-    static StorageType wrap(const UnretainedWrapper<T, threadAffinity>& value) { return value; }
-    static T* unwrap(const StorageType& value) { return value.value(); }
 };
+
+template <typename T, FunctionThreadAffinity threadAffinity>
+T* Unwrap(const UnretainedWrapper<T, threadAffinity>& wrapped)
+{
+    return wrapped.value();
+}
+
 
 template<typename, FunctionThreadAffinity threadAffinity = SameThreadAffinity>
 class Function;
@@ -332,7 +330,7 @@ public:
     // Note that BoundParameters can be const T&, T&& or a mix of these.
     explicit PartBoundFunctionImpl(FunctionWrapper functionWrapper, BoundParameters... bound)
         : m_functionWrapper(functionWrapper)
-        , m_bound(ParamStorageTraits<typename std::decay<BoundParameters>::type>::wrap(std::forward<BoundParameters>(bound))...)
+        , m_bound(std::forward<BoundParameters>(bound)...)
     {
     }
 
@@ -349,7 +347,8 @@ private:
     {
         this->checkThread();
         // Get each element in m_bound, unwrap them, and call the function with the desired arguments.
-        return m_functionWrapper(ParamStorageTraits<typename std::decay<BoundParameters>::type>::unwrap(std::get<boundIndices>(m_bound))..., std::forward<IncomingUnboundParameters>(unbound)...);
+        using base::internal::Unwrap;
+        return m_functionWrapper(Unwrap(std::get<boundIndices>(m_bound))..., std::forward<IncomingUnboundParameters>(unbound)...);
     }
 
     FunctionWrapper m_functionWrapper;
