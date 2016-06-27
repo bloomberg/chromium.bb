@@ -37,6 +37,12 @@
 // Returns the webview's gesture recognizers.
 @property(nonatomic, readonly) NSArray* gestureRecognizers;
 
+// Adds a webview gesture recognizers.
+- (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
+
+// Removes a webview gesture recognizers.
+- (void)removeGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
+
 // Whether or not the content view should use the content inset when setting
 // |topContentPadding|. Implementations may or may not respect the setting
 // of this property.

@@ -109,6 +109,14 @@ UIView* GetFirstResponderSubview(UIView* view) {
   return [_contentView gestureRecognizers];
 }
 
+- (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer {
+  [_contentView addGestureRecognizer:gestureRecognizer];
+}
+
+- (void)removeGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer {
+  [_contentView removeGestureRecognizer:gestureRecognizer];
+}
+
 - (BOOL)shouldUseInsetForTopPadding {
   SEL shouldUseInsetSelector = @selector(shouldUseInsetForTopPadding);
   return [_contentView respondsToSelector:shouldUseInsetSelector] &&
