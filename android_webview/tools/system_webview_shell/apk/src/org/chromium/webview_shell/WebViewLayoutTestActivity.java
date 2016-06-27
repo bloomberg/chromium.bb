@@ -50,6 +50,7 @@ public class WebViewLayoutTestActivity extends Activity {
                 return false;
             }
 
+            @SuppressWarnings("deprecation") // because we support api level 19 and up.
             @Override
             public void onReceivedError(WebView view, int errorCode, String description,
                     String failingUrl) {

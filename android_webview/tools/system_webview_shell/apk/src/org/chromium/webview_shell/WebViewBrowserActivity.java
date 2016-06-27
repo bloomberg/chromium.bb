@@ -231,6 +231,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
                 return startBrowsingIntent(WebViewBrowserActivity.this, url);
             }
 
+            @SuppressWarnings("deprecation") // because we support api level 19 and up.
             @Override
             public void onReceivedError(WebView view, int errorCode, String description,
                     String failingUrl) {
@@ -423,7 +424,6 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         // configure local storage apis and their database paths.
         settings.setAppCachePath(getDir("appcache", 0).getPath());
         settings.setGeolocationDatabasePath(getDir("geolocation", 0).getPath());
-        settings.setDatabasePath(getDir("databases", 0).getPath());
 
         settings.setAppCacheEnabled(true);
         settings.setGeolocationEnabled(true);
@@ -450,7 +450,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
                 .setPositiveButton("OK", null)
                 .create();
         dialog.show();
-        dialog.getWindow().setLayout(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+        dialog.getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
     }
 
     // Returns true is a method has no arguments and returns either a boolean or a String.
