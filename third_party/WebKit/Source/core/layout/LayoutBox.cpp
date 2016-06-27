@@ -2628,8 +2628,12 @@ LayoutUnit LayoutBox::computeLogicalHeightWithoutLayout() const
 LayoutUnit LayoutBox::computeLogicalHeightUsing(SizeType heightType, const Length& height, LayoutUnit intrinsicContentHeight) const
 {
     LayoutUnit logicalHeight = computeContentAndScrollbarLogicalHeightUsing(heightType, height, intrinsicContentHeight);
-    if (logicalHeight != -1)
-        logicalHeight = adjustBorderBoxLogicalHeightForBoxSizing(logicalHeight);
+    if (logicalHeight != -1) {
+        if (height.isSpecified())
+            logicalHeight = adjustBorderBoxLogicalHeightForBoxSizing(logicalHeight);
+        else
+            logicalHeight += borderAndPaddingLogicalHeight();
+    }
     return logicalHeight;
 }
 
@@ -2638,7 +2642,12 @@ LayoutUnit LayoutBox::computeContentLogicalHeight(SizeType heightType, const Len
     LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(heightType, height, intrinsicContentHeight);
     if (heightIncludingScrollbar == -1)
         return LayoutUnit(-1);
-    return std::max(LayoutUnit(), adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
+    LayoutUnit adjusted = heightIncludingScrollbar;
+    if (height.isSpecified()) {
+        // Keywords don't get adjusted for box-sizing
+        adjusted = adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar);
+    }
+    return std::max(LayoutUnit(), adjusted - scrollbarLogicalHeight());
 }
 
 LayoutUnit LayoutBox::computeIntrinsicLogicalContentHeightUsing(const Length& logicalHeightLength, LayoutUnit intrinsicContentHeight, LayoutUnit borderAndPadding) const
@@ -3314,11 +3323,15 @@ void LayoutBox::computePositionedLogicalWidthUsing(SizeType widthSizeType, Lengt
     const Length& logicalLeft, const Length& logicalRight, const Length& marginLogicalLeft,
     const Length& marginLogicalRight, LogicalExtentComputedValues& computedValues) const
 {
+    LayoutUnit logicalWidthValue;
+
     ASSERT(widthSizeType == MinSize || widthSizeType == MainOrPreferredSize || !logicalWidth.isAuto());
     if (widthSizeType == MinSize && logicalWidth.isAuto())
-        logicalWidth = Length(0, Fixed);
+        logicalWidthValue = LayoutUnit();
     else if (logicalWidth.isIntrinsic())
-        logicalWidth = Length(computeIntrinsicLogicalWidthUsing(logicalWidth, containerLogicalWidth, bordersPlusPadding) - bordersPlusPadding, Fixed);
+        logicalWidthValue = computeIntrinsicLogicalWidthUsing(logicalWidth, containerLogicalWidth, bordersPlusPadding) - bordersPlusPadding;
+    else
+        logicalWidthValue = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth));
 
     // 'left' and 'right' cannot both be 'auto' because one would of been
     // converted to the static position already
@@ -3330,7 +3343,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(SizeType widthSizeType, Lengt
 
     const LayoutUnit containerRelativeLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock, false);
 
-    bool logicalWidthIsAuto = logicalWidth.isIntrinsicOrAuto();
+    bool logicalWidthIsAuto = logicalWidth.isAuto();
     bool logicalLeftIsAuto = logicalLeft.isAuto();
     bool logicalRightIsAuto = logicalRight.isAuto();
     LayoutUnit& marginLogicalLeftValue = style()->isLeftToRightDirection() ? computedValues.m_margins.m_start : computedValues.m_margins.m_end;
@@ -3351,7 +3364,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(SizeType widthSizeType, Lengt
         // NOTE:  It is not necessary to solve for 'right' in the over constrained
         // case because the value is not used for any further calculations.
 
-        computedValues.m_extent = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth));
+        computedValues.m_extent = logicalWidthValue;
 
         const LayoutUnit availableSpace = containerLogicalWidth - (logicalLeftValue + computedValues.m_extent + logicalRightValue + bordersPlusPadding);
 
@@ -3449,7 +3462,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(SizeType widthSizeType, Lengt
             computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace, bordersPlusPadding);
         } else if (logicalLeftIsAuto && !logicalWidthIsAuto && !logicalRightIsAuto) {
             // RULE 4: (solve for left)
-            computedValues.m_extent = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth));
+            computedValues.m_extent = logicalWidthValue;
             logicalLeftValue = availableSpace - computedValues.m_extent;
         } else if (!logicalLeftIsAuto && logicalWidthIsAuto && !logicalRightIsAuto) {
             // RULE 5: (solve for width)
@@ -3459,7 +3472,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(SizeType widthSizeType, Lengt
                 computedValues.m_extent = std::max(LayoutUnit(), availableSpace);
         } else if (!logicalLeftIsAuto && !logicalWidthIsAuto && logicalRightIsAuto) {
             // RULE 6: (no need solve for right)
-            computedValues.m_extent = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth));
+            computedValues.m_extent = logicalWidthValue;
         }
     }
 
