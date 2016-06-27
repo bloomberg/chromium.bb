@@ -25,8 +25,6 @@ IDBObserver::IDBObserver(IDBObserverCallback& callback, const IDBObserverInit& o
 {
 }
 
-IDBObserver::~IDBObserver() {}
-
 void IDBObserver::observe(IDBDatabase* database, IDBTransaction* transaction, ExceptionState& exceptionState)
 {
     // TODO(palakj): Finish implementation.

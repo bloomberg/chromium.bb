@@ -12,8 +12,6 @@
 
 namespace blink {
 
-IDBObserverChanges::~IDBObserverChanges() {}
-
 ScriptValue IDBObserverChanges::records(ScriptState* scriptState)
 {
     return ScriptValue::from(scriptState, m_records);

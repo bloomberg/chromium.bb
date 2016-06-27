@@ -16,12 +16,11 @@ namespace blink {
 class ScriptState;
 class IDBObserverChangesRecord;
 
-class IDBObserverChanges final : public GarbageCollectedFinalized<IDBObserverChanges>, public ScriptWrappable {
+class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
     static IDBObserverChanges* create(IDBDatabase*, IDBTransaction*, IDBAny* records);
-    ~IDBObserverChanges();
 
     DECLARE_TRACE();
 

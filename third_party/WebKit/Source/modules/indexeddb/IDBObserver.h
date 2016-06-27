@@ -15,19 +15,19 @@ namespace blink {
 class IDBObserverCallback;
 class IDBObserverInit;
 
-class IDBObserver final : public GarbageCollectedFinalized<IDBObserver>, public ScriptWrappable {
+class IDBObserver final : public GarbageCollected<IDBObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
     static IDBObserver* create(IDBObserverCallback&, const IDBObserverInit&);
-    ~IDBObserver();
+
     // API methods
     void observe(IDBDatabase*, IDBTransaction*, ExceptionState&);
 
     DECLARE_TRACE();
 
 private:
-    explicit IDBObserver(IDBObserverCallback&, const IDBObserverInit&);
+    IDBObserver(IDBObserverCallback&, const IDBObserverInit&);
 
     Member<IDBObserverCallback> m_callback;
     bool m_transaction;
