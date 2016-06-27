@@ -34,68 +34,47 @@ namespace blink {
 
 void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    Vector<UntracedMember<ContextLifecycleObserver>> snapshotOfObservers;
-    copyToVector(m_observers, snapshotOfObservers);
-    for (ContextLifecycleObserver* observer : snapshotOfObservers) {
-        // FIXME: Oilpan: At the moment, it's possible that a ActiveDOMObject
-        // observer is destructed while iterating. Once we enable Oilpan by default
-        // for all LifecycleObserver<T>s, we can remove the hack by making m_observers
-        // a HeapHashSet<WeakMember<LifecycleObserver<T>>>.
-        // (i.e., we can just iterate m_observers without taking a snapshot).
-        // For more details, see https://codereview.chromium.org/247253002/.
-        if (m_observers.contains(observer)) {
-            if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
-                continue;
-            ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
+    for (ContextLifecycleObserver* observer : m_observers) {
+        if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
+            continue;
+        ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
 #if DCHECK_IS_ON()
-            DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
-            DCHECK(activeDOMObject->suspendIfNeededCalled());
+        DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
+        DCHECK(activeDOMObject->suspendIfNeededCalled());
 #endif
-            activeDOMObject->resume();
-        }
+        activeDOMObject->resume();
     }
 }
 
 void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    Vector<UntracedMember<ContextLifecycleObserver>> snapshotOfObservers;
-    copyToVector(m_observers, snapshotOfObservers);
-    for (ContextLifecycleObserver* observer : snapshotOfObservers) {
-        // It's possible that the ActiveDOMObject is already destructed.
-        // See a FIXME above.
-        if (m_observers.contains(observer)) {
-            if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
-                continue;
-            ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
+    for (ContextLifecycleObserver* observer : m_observers) {
+        if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
+            continue;
+        ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
 #if DCHECK_IS_ON()
-            DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
-            DCHECK(activeDOMObject->suspendIfNeededCalled());
+        DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
+        DCHECK(activeDOMObject->suspendIfNeededCalled());
 #endif
-            activeDOMObject->suspend();
-        }
+        activeDOMObject->suspend();
     }
 }
 
 void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    Vector<UntracedMember<ContextLifecycleObserver>> snapshotOfObservers;
-    copyToVector(m_observers, snapshotOfObservers);
-    for (ContextLifecycleObserver* observer : snapshotOfObservers) {
-        // It's possible that the ActiveDOMObject is already destructed.
-        // See a FIXME above.
-        if (m_observers.contains(observer)) {
-            if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
-                continue;
-            ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
+    // Neither additions nor removals are allowed while iterating.
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
+    for (ContextLifecycleObserver* observer : m_observers) {
+        if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
+            continue;
+        ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
 #if DCHECK_IS_ON()
-            DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
-            DCHECK(activeDOMObject->suspendIfNeededCalled());
+        DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
+        DCHECK(activeDOMObject->suspendIfNeededCalled());
 #endif
-            activeDOMObject->stop();
-        }
+        activeDOMObject->stop();
     }
 }
 

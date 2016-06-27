@@ -32,14 +32,14 @@ namespace blink {
 
 void PageLifecycleNotifier::notifyPageVisibilityChanged()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
     for (PageLifecycleObserver* observer : m_observers)
         observer->pageVisibilityChanged();
 }
 
 void PageLifecycleNotifier::notifyDidCommitLoad(LocalFrame* frame)
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
     for (PageLifecycleObserver* observer : m_observers)
         observer->didCommitLoad(frame);
 }

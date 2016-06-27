@@ -31,21 +31,21 @@ namespace blink {
 
 void DOMWindowLifecycleNotifier::notifyAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
     for (DOMWindowLifecycleObserver* observer : m_observers)
         observer->didAddEventListener(window, eventType);
 }
 
 void DOMWindowLifecycleNotifier::notifyRemoveEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
     for (DOMWindowLifecycleObserver* observer : m_observers)
         observer->didRemoveEventListener(window, eventType);
 }
 
 void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners(LocalDOMWindow* window)
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
     for (DOMWindowLifecycleObserver* observer : m_observers)
         observer->didRemoveAllEventListeners(window);
 }

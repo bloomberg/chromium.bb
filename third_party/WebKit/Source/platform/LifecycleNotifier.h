@@ -53,29 +53,31 @@ public:
         visitor->trace(m_observers);
     }
 
-    bool isIteratingOverObservers() const { return m_iterating != IteratingNone; }
+    bool isIteratingOverObservers() const { return m_iterationState != NotIterating; }
 
 protected:
     LifecycleNotifier()
-        : m_iterating(IteratingNone)
+        : m_iterationState(NotIterating)
     {
     }
-
-    enum IterationType {
-        IteratingNone,
-        IteratingOverAll,
-    };
-
-    IterationType m_iterating;
-
-protected:
-    using ObserverSet = HeapHashSet<WeakMember<Observer>>;
-
-    ObserverSet m_observers;
 
 #if DCHECK_IS_ON()
     T* context() { return static_cast<T*>(this); }
 #endif
+
+    using ObserverSet = HeapHashSet<WeakMember<Observer>>;
+
+    enum IterationState {
+        AllowingNone = 0,
+        AllowingAddition,
+        AllowingRemoval,
+        NotIterating = AllowingAddition | AllowingRemoval,
+    };
+
+    // Iteration state is recorded while iterating the observer set,
+    // optionally barring add or remove mutations.
+    IterationState m_iterationState;
+    ObserverSet m_observers;
 };
 
 template<typename T, typename Observer>
@@ -88,7 +90,8 @@ inline LifecycleNotifier<T, Observer>::~LifecycleNotifier()
 template<typename T, typename Observer>
 inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    // Observer unregistration is allowed, but effectively a no-op.
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingRemoval);
     ObserverSet observers;
     m_observers.swap(observers);
     for (Observer* observer : observers) {
@@ -100,13 +103,14 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
 template<typename T, typename Observer>
 inline void LifecycleNotifier<T, Observer>::addObserver(Observer* observer)
 {
-    RELEASE_ASSERT(m_iterating != IteratingOverAll);
+    RELEASE_ASSERT(m_iterationState & AllowingAddition);
     m_observers.add(observer);
 }
 
 template<typename T, typename Observer>
 inline void LifecycleNotifier<T, Observer>::removeObserver(Observer* observer)
 {
+    RELEASE_ASSERT(m_iterationState & AllowingRemoval);
     m_observers.remove(observer);
 }
 

@@ -10,7 +10,7 @@ namespace blink {
 
 void LocalFrameLifecycleNotifier::notifyWillDetachFrameHost()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
     for (LocalFrameLifecycleObserver* observer : m_observers)
         observer->willDetachFrameHost();
 }

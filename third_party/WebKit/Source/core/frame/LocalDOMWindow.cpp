@@ -171,14 +171,12 @@ private:
         m_disposalAllowed = false;
         m_window->postMessageTimerFired(this);
         dispose();
+        // Oilpan optimization: unregister as an observer right away.
+        clearContext();
     }
 
     void dispose()
     {
-        // Oilpan optimization: unregister as an observer right away.
-        clearContext();
-        // Will destroy this object, now or after the next GC depending
-        // on whether Oilpan is disabled or not.
         m_window->removePostMessageTimer(this);
     }
 
