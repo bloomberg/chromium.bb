@@ -54,6 +54,12 @@ class URLRequestContextGetter;
 // unit testing, the ability to set the resource is also needed.
 @property(nonatomic, retain) id<UpdatableResourceBridge> updatableResource;
 
+// If YES, the receiver will listen for UIApplicationWillTerminate notifications
+// and will call [self stopUpdateChecks] when one is recieved. Default is NO.
+// Setting this property to NO after it is set to YES will disable notification
+// observation.
+@property(nonatomic, assign) BOOL stopsUpdateChecksOnAppTermination;
+
 // Consistency check defaults to NO and is enabled only by Chrome application,
 // not unit or kif tests.
 + (void)enableConsistencyCheck;

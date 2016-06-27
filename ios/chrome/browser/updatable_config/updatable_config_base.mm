@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/updatable_config/updatable_config_base.h"
 
 #include <stdint.h>
+#include <UIKit/UIKit.h>
 
 #include <memory>
 
@@ -28,6 +29,8 @@
 + (NSString*)defaultAppId;
 // Fetches server-side updatable configuration plist.
 - (void)checkUpdate;
+// Stops updates in response to |notification|
+- (void)stopUpdateChecksForNotification:(NSNotification*)notification;
 #if !defined(NDEBUG)
 // A method that will be executed on a delay if -startUpdate: was NOT called.
 - (void)startUpdateNotCalled:(id)config;
@@ -109,6 +112,9 @@ class ConfigFetcher : public net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> _requestContextGetter;
 }
 
+@synthesize stopsUpdateChecksOnAppTermination =
+    _stopsUpdateChecksOnAppTermination;
+
 + (void)enableConsistencyCheck {
 #if !defined(NDEBUG)
   g_consistency_check_enabled = YES;
@@ -168,12 +174,36 @@ class ConfigFetcher : public net::URLFetcherDelegate {
   [super dealloc];
 }
 
+- (void)setStopsUpdateChecksOnAppTermination:(BOOL)flag {
+  if (flag == _stopsUpdateChecksOnAppTermination)
+    return;
+
+  if (flag) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(stopUpdateChecksForNotification:)
+               name:UIApplicationWillTerminateNotification
+             object:[UIApplication sharedApplication]];
+  } else {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:self
+                  name:UIApplicationWillTerminateNotification
+                object:[UIApplication sharedApplication]];
+  }
+
+  _stopsUpdateChecksOnAppTermination = flag;
+}
+
 - (void)startUpdate:(net::URLRequestContextGetter*)requestContextGetter {
 #if !defined(NDEBUG)
   [self cancelConsistencyCheck];
 #endif
   _requestContextGetter = requestContextGetter;
   [self checkUpdate];
+}
+
+- (void)stopUpdateChecksForNotification:(NSNotification*)NSNotification {
+  [self stopUpdateChecks];
 }
 
 - (void)stopUpdateChecks {
