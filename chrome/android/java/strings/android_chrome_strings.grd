@@ -284,6 +284,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_BILLING_ADDRESS" desc="Label for a spinner input field containing a list of billing addresses for a credit card. [CHAR-LIMIT=32]">
         Billing address
       </message>
+      <message name="IDS_AUTOFILL_BILLING_ADDRESS_SELECT_PROMPT" desc="Prompt for user to select a billing address in autofill settings for a credit card. [CHAR-LIMIT=24]">
+        Select
+      </message>
       <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chrome instance.">
          Copied to Chrome
        </message>

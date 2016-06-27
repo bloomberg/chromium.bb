@@ -117,16 +117,28 @@ public class AutofillCreditCardEditor extends AutofillEditorBase {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mExpirationYear.setAdapter(adapter);
 
+        // Populate the billing address dropdown.
         ArrayAdapter<AutofillProfile> profilesAdapter = new ArrayAdapter<AutofillProfile>(
                 getActivity(), android.R.layout.simple_spinner_item);
-        profilesAdapter.add(new AutofillProfile());  // Indicates no selection.
+        profilesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        AutofillProfile noSelection = new AutofillProfile();
+        noSelection.setLabel(
+                getActivity().getString(R.string.autofill_billing_address_select_prompt));
+        profilesAdapter.add(noSelection);
+
         List<AutofillProfile> profiles = PersonalDataManager.getInstance().getProfilesForSettings();
         for (int i = 0; i < profiles.size(); i++) {
             AutofillProfile profile = profiles.get(i);
             if (profile.getIsLocal()) profilesAdapter.add(profile);
         }
+
         mBillingAddress.setAdapter(profilesAdapter);
         mBillingAddress.setSelection(0);
+
+        // TODO(rouslan): Use an [+ ADD ADDRESS] button instead of disabling the dropdown.
+        // http://crbug.com/623629
+        if (profilesAdapter.getCount() == 1) mBillingAddress.setEnabled(false);
     }
 
     private void addCardDataToEditFields() {
