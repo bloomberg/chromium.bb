@@ -661,7 +661,7 @@ void OutOfProcessInstance::LoadAccessibility() {
   viewport_info.scroll.x = 0;
   viewport_info.scroll.y = -top_toolbar_height_ * device_scale_;
   viewport_info.offset = available_area_.point();
-  viewport_info.zoom = zoom_;
+  viewport_info.zoom = zoom_ * device_scale_;
   pp::PDF::SetAccessibilityViewportInfo(GetPluginInstance(), &viewport_info);
 
   // Schedule loading the first page.
