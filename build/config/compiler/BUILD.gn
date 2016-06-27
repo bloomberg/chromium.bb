@@ -1005,13 +1005,6 @@ config("default_warnings") {
         # TODO(thakis): Enable this, crbug.com/507717
         "-Wno-shift-negative-value",
       ]
-
-      if (llvm_force_head_revision) {
-        cflags += [
-          # TODO(thakis): https://crbug.com/617318
-          "-Wno-nonportable-include-path",
-        ]
-      }
     }
     if (!is_nacl && !use_xcode_clang) {
       # Flags NaCl (Clang 3.7) and Xcode 7.3 (Clang clang-703.0.31) do not
@@ -1019,6 +1012,9 @@ config("default_warnings") {
       cflags += [
         # TODO(thakis): https://crbug.com/604888
         "-Wno-undefined-var-template",
+
+        # TODO(thakis): https://crbug.com/617318
+        "-Wno-nonportable-include-path",
       ]
     }
   }

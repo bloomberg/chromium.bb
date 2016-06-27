@@ -2619,6 +2619,9 @@
 
         # TODO(thakis): https://crbug.com/604888
         '-Wno-undefined-var-template',
+
+        # TODO(thakis): https://crbug.com/617318
+        '-Wno-nonportable-include-path',
       ],
     },
     'includes': [ 'set_clang_warning_flags.gypi', ],
@@ -3026,10 +3029,6 @@
       ['enable_wexit_time_destructors==1 and OS!="win"', {
         # TODO: Enable on Windows too, http://crbug.com/404525
         'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
-      }],
-      ['"<!(python <(DEPTH)/tools/clang/scripts/update.py --print-revision)"!="270823-1"', {
-        # TODO(thakis): https://crbug.com/617318
-        'variables': { 'clang_warning_flags': ['-Wno-nonportable-include-path']},
       }],
       ['chromium_code==0', {
         'variables': {
