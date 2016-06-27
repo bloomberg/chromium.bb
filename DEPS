@@ -350,14 +350,6 @@ deps_os = {
     # class-dump utility to generate header files for undocumented SDKs
     'src/third_party/class-dump/src':
      Var('chromium_git') + '/external/github.com/nygard/class-dump.git' + '@' + '978d177ca6f0d2e5e34acf3e8dadc63e3140ebbc',
-
-    # Code that's not needed due to not building everything
-    'src/chrome/test/data/perf/canvas_bench': None,
-    'src/chrome/test/data/perf/frame_rate/content': None,
-    'src/native_client': None,
-    'src/third_party/ffmpeg': None,
-    'src/third_party/hunspell_dictionaries': None,
-    'src/third_party/webgl': None,
   },
   'mac': {
     'src/third_party/google_toolbox_for_mac/src':
