@@ -8,7 +8,7 @@
     Exposed=(Window,PaintWorklet),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
-] interface CSSTranslation : TransformComponent {
+] interface CSSTranslation : CSSTransformComponent {
     readonly attribute CSSLengthValue x;
     readonly attribute CSSLengthValue y;
     readonly attribute CSSLengthValue z;

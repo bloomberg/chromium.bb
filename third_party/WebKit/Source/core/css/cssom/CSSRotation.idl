@@ -9,7 +9,7 @@
     Constructor(double x, double y, double z, CSSAngleValue angle),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
-] interface CSSRotation : TransformComponent {
+] interface CSSRotation : CSSTransformComponent {
     readonly attribute double angle;
     readonly attribute double x;
     readonly attribute double y;

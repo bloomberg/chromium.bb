@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TransformComponent_h
-#define TransformComponent_h
+#ifndef CSSTransformComponent_h
+#define CSSTransformComponent_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
@@ -13,8 +13,8 @@ namespace blink {
 
 class CSSMatrixTransformComponent;
 
-class CORE_EXPORT TransformComponent : public GarbageCollectedFinalized<TransformComponent>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(TransformComponent);
+class CORE_EXPORT CSSTransformComponent : public GarbageCollectedFinalized<CSSTransformComponent>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(CSSTransformComponent);
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum TransformComponentType {
@@ -22,7 +22,7 @@ public:
         Matrix3DType, Rotation3DType, Scale3DType, Translation3DType
     };
 
-    static TransformComponent* fromCSSValue(const CSSValue&);
+    static CSSTransformComponent* fromCSSValue(const CSSValue&);
 
     static bool is2DComponentType(TransformComponentType transformType)
     {
@@ -33,7 +33,7 @@ public:
             && transformType != Translation3DType;
     }
 
-    virtual ~TransformComponent() { }
+    virtual ~CSSTransformComponent() { }
 
     virtual TransformComponentType type() const = 0;
 
@@ -50,7 +50,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
-    TransformComponent() = default;
+    CSSTransformComponent() = default;
 };
 
 } // namespace blink

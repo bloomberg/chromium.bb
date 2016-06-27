@@ -11,7 +11,7 @@
     Exposed=(Window,PaintWorklet),
     ImplementedAs=CSSMatrixTransformComponent,
     RuntimeEnabled=CSSTypedOM
-] interface CSSMatrix : TransformComponent {
+] interface CSSMatrix : CSSTransformComponent {
     readonly attribute double a;
     readonly attribute double b;
     readonly attribute double c;

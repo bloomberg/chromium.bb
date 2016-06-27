@@ -7,11 +7,11 @@
 
 #include "core/css/cssom/CSSAngleValue.h"
 #include "core/css/cssom/CSSMatrixTransformComponent.h"
-#include "core/css/cssom/TransformComponent.h"
+#include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
 
-class CORE_EXPORT CSSRotation final : public TransformComponent {
+class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
     WTF_MAKE_NONCOPYABLE(CSSRotation);
     DEFINE_WRAPPERTYPEINFO();
 public:

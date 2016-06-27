@@ -5,20 +5,20 @@
 #include "core/css/cssom/TransformValue.h"
 
 #include "core/css/CSSValueList.h"
-#include "core/css/cssom/TransformComponent.h"
+#include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
 
 namespace {
 
-class TransformValueIterationSource final : public ValueIterable<TransformComponent*>::IterationSource {
+class TransformValueIterationSource final : public ValueIterable<CSSTransformComponent*>::IterationSource {
 public:
     explicit TransformValueIterationSource(TransformValue* transformValue)
         : m_transformValue(transformValue)
     {
     }
 
-    bool next(ScriptState*, TransformComponent*& value, ExceptionState&) override
+    bool next(ScriptState*, CSSTransformComponent*& value, ExceptionState&) override
     {
         if (m_index >= m_transformValue->size()) {
             return false;
@@ -30,7 +30,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_transformValue);
-        ValueIterable<TransformComponent*>::IterationSource::trace(visitor);
+        ValueIterable<CSSTransformComponent*>::IterationSource::trace(visitor);
     }
 
 private:
@@ -45,9 +45,9 @@ TransformValue* TransformValue::fromCSSValue(const CSSValue& cssValue)
         // TODO(meade): Also need to check the separator here if we care.
         return nullptr;
     }
-    HeapVector<Member<TransformComponent>> components;
+    HeapVector<Member<CSSTransformComponent>> components;
     for (const CSSValue* value : toCSSValueList(cssValue)) {
-        TransformComponent* component = TransformComponent::fromCSSValue(*value);
+        CSSTransformComponent* component = CSSTransformComponent::fromCSSValue(*value);
         if (!component)
             return nullptr;
         components.append(component);
@@ -55,7 +55,7 @@ TransformValue* TransformValue::fromCSSValue(const CSSValue& cssValue)
     return TransformValue::create(components);
 }
 
-ValueIterable<TransformComponent*>::IterationSource* TransformValue::startIteration(ScriptState*, ExceptionState&)
+ValueIterable<CSSTransformComponent*>::IterationSource* TransformValue::startIteration(ScriptState*, ExceptionState&)
 {
     return new TransformValueIterationSource(this);
 }

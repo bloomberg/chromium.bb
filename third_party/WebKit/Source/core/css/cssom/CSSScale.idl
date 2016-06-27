@@ -7,7 +7,7 @@
     Constructor(double x, double y, double z),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
-] interface CSSScale : TransformComponent {
+] interface CSSScale : CSSTransformComponent {
     readonly attribute double x;
     readonly attribute double y;
     readonly attribute double z;

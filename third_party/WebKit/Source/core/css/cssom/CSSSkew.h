@@ -6,11 +6,11 @@
 #define CSSSkew_h
 
 #include "core/css/cssom/CSSMatrixTransformComponent.h"
-#include "core/css/cssom/TransformComponent.h"
+#include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
 
-class CORE_EXPORT CSSSkew final : public TransformComponent {
+class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
     WTF_MAKE_NONCOPYABLE(CSSSkew);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -34,7 +34,7 @@ public:
     CSSFunctionValue* toCSSValue() const override;
 
 private:
-    CSSSkew(double ax, double ay) : TransformComponent(), m_ax(ax), m_ay(ay) { }
+    CSSSkew(double ax, double ay) : CSSTransformComponent(), m_ax(ax), m_ay(ay) { }
 
     double m_ax;
     double m_ay;

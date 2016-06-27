@@ -7,13 +7,13 @@
 
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSLengthValue.h"
-#include "core/css/cssom/TransformComponent.h"
+#include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT CSSPerspective : public TransformComponent {
+class CORE_EXPORT CSSPerspective : public CSSTransformComponent {
     WTF_MAKE_NONCOPYABLE(CSSPerspective);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -33,7 +33,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_length);
-        TransformComponent::trace(visitor);
+        CSSTransformComponent::trace(visitor);
     }
 
 private:

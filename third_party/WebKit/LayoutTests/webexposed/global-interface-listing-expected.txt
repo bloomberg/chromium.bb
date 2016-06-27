@@ -465,7 +465,7 @@ interface CSSLengthValue : CSSStyleValue
     method divide
     method multiply
     method subtract
-interface CSSMatrix : TransformComponent
+interface CSSMatrix : CSSTransformComponent
     attribute @@toStringTag
     getter a
     getter b
@@ -509,7 +509,7 @@ interface CSSPageRule : CSSRule
     getter style
     method constructor
     setter selectorText
-interface CSSPerspective : TransformComponent
+interface CSSPerspective : CSSTransformComponent
     attribute @@toStringTag
     getter length
     method constructor
@@ -518,7 +518,7 @@ interface CSSPositionValue : CSSStyleValue
     getter x
     getter y
     method constructor
-interface CSSRotation : TransformComponent
+interface CSSRotation : CSSTransformComponent
     attribute @@toStringTag
     getter angle
     getter x
@@ -552,7 +552,7 @@ interface CSSRuleList
     method @@iterator
     method constructor
     method item
-interface CSSScale : TransformComponent
+interface CSSScale : CSSTransformComponent
     attribute @@toStringTag
     getter x
     getter y
@@ -564,7 +564,7 @@ interface CSSSimpleLength : CSSLengthValue
     getter value
     method constructor
     setter value
-interface CSSSkew : TransformComponent
+interface CSSSkew : CSSTransformComponent
     attribute @@toStringTag
     getter ax
     getter ay
@@ -613,7 +613,13 @@ interface CSSSupportsRule : CSSRule
     method constructor
     method deleteRule
     method insertRule
-interface CSSTranslation : TransformComponent
+interface CSSTransformComponent
+    attribute @@toStringTag
+    getter cssString
+    method asMatrix
+    method constructor
+    method is2DComponent
+interface CSSTranslation : CSSTransformComponent
     attribute @@toStringTag
     getter x
     getter y
@@ -6172,12 +6178,6 @@ interface TrackEvent : Event
     attribute @@toStringTag
     getter track
     method constructor
-interface TransformComponent
-    attribute @@toStringTag
-    getter cssString
-    method asMatrix
-    method constructor
-    method is2DComponent
 interface TransformValue : CSSStyleValue
     attribute @@toStringTag
     method @@iterator

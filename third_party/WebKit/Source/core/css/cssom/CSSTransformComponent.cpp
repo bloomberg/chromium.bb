@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/TransformComponent.h"
+#include "core/css/cssom/CSSTransformComponent.h"
 
 #include "core/css/cssom/CSSMatrixTransformComponent.h"
 #include "core/css/cssom/CSSPerspective.h"
@@ -13,7 +13,7 @@
 
 namespace blink {
 
-TransformComponent* TransformComponent::fromCSSValue(const CSSValue& value)
+CSSTransformComponent* CSSTransformComponent::fromCSSValue(const CSSValue& value)
 {
     const CSSFunctionValue& functionValue = toCSSFunctionValue(value);
     switch (functionValue.functionType()) {

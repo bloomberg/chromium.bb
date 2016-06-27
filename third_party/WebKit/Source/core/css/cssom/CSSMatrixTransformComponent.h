@@ -5,13 +5,13 @@
 #ifndef CSSMatrixTransformComponent_h
 #define CSSMatrixTransformComponent_h
 
-#include "core/css/cssom/TransformComponent.h"
+#include "core/css/cssom/CSSTransformComponent.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include <memory>
 
 namespace blink {
 
-class CORE_EXPORT CSSMatrixTransformComponent final : public TransformComponent {
+class CORE_EXPORT CSSMatrixTransformComponent final : public CSSTransformComponent {
     WTF_MAKE_NONCOPYABLE(CSSMatrixTransformComponent);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -78,7 +78,7 @@ public:
 
 private:
     CSSMatrixTransformComponent(double a, double b, double c, double d, double e, double f)
-        : TransformComponent()
+        : CSSTransformComponent()
         , m_matrix(TransformationMatrix::create(a, b, c, d, e, f))
         , m_is2D(true)
     { }
@@ -87,13 +87,13 @@ private:
         double m21, double m22, double m23, double m24,
         double m31, double m32, double m33, double m34,
         double m41, double m42, double m43, double m44)
-        : TransformComponent()
+        : CSSTransformComponent()
         , m_matrix(TransformationMatrix::create(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44))
         , m_is2D(false)
     { }
 
     CSSMatrixTransformComponent(std::unique_ptr<const TransformationMatrix> matrix, TransformComponentType fromType)
-        : TransformComponent()
+        : CSSTransformComponent()
         , m_matrix(std::move(matrix))
         , m_is2D(is2DComponentType(fromType))
     { }

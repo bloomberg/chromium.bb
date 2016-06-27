@@ -34,7 +34,7 @@ CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     method divide
 CONSOLE MESSAGE: line 137:     method multiply
 CONSOLE MESSAGE: line 137:     method subtract
-CONSOLE MESSAGE: line 137: interface CSSMatrix : TransformComponent
+CONSOLE MESSAGE: line 137: interface CSSMatrix : CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter a
 CONSOLE MESSAGE: line 137:     getter b
 CONSOLE MESSAGE: line 137:     getter c
@@ -61,20 +61,20 @@ CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CSSNumberValue : CSSStyleValue
 CONSOLE MESSAGE: line 137:     getter value
 CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137: interface CSSPerspective : TransformComponent
+CONSOLE MESSAGE: line 137: interface CSSPerspective : CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter length
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CSSPositionValue : CSSStyleValue
 CONSOLE MESSAGE: line 137:     getter x
 CONSOLE MESSAGE: line 137:     getter y
 CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137: interface CSSRotation : TransformComponent
+CONSOLE MESSAGE: line 137: interface CSSRotation : CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter angle
 CONSOLE MESSAGE: line 137:     getter x
 CONSOLE MESSAGE: line 137:     getter y
 CONSOLE MESSAGE: line 137:     getter z
 CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137: interface CSSScale : TransformComponent
+CONSOLE MESSAGE: line 137: interface CSSScale : CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter x
 CONSOLE MESSAGE: line 137:     getter y
 CONSOLE MESSAGE: line 137:     getter z
@@ -84,7 +84,7 @@ CONSOLE MESSAGE: line 137:     getter type
 CONSOLE MESSAGE: line 137:     getter value
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     setter value
-CONSOLE MESSAGE: line 137: interface CSSSkew : TransformComponent
+CONSOLE MESSAGE: line 137: interface CSSSkew : CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter ax
 CONSOLE MESSAGE: line 137:     getter ay
 CONSOLE MESSAGE: line 137:     method constructor
@@ -92,7 +92,12 @@ CONSOLE MESSAGE: line 137: interface CSSStyleValue
 CONSOLE MESSAGE: line 137:     static method parse
 CONSOLE MESSAGE: line 137:     getter cssString
 CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137: interface CSSTranslation : TransformComponent
+CONSOLE MESSAGE: line 137: interface CSSTransformComponent
+CONSOLE MESSAGE: line 137:     getter cssString
+CONSOLE MESSAGE: line 137:     method asMatrix
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     method is2DComponent
+CONSOLE MESSAGE: line 137: interface CSSTranslation : CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter x
 CONSOLE MESSAGE: line 137:     getter y
 CONSOLE MESSAGE: line 137:     getter z
@@ -224,11 +229,6 @@ CONSOLE MESSAGE: line 137:     method has
 CONSOLE MESSAGE: line 137:     method keys
 CONSOLE MESSAGE: line 137:     method set
 CONSOLE MESSAGE: line 137:     method values
-CONSOLE MESSAGE: line 137: interface TransformComponent
-CONSOLE MESSAGE: line 137:     getter cssString
-CONSOLE MESSAGE: line 137:     method asMatrix
-CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137:     method is2DComponent
 CONSOLE MESSAGE: line 137: interface TransformValue : CSSStyleValue
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     method entries

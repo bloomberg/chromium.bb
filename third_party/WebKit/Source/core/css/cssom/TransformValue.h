@@ -9,12 +9,12 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"
-#include "core/css/cssom/TransformComponent.h"
+#include "core/css/cssom/CSSTransformComponent.h"
 #include "platform/heap/HeapAllocator.h"
 
 namespace blink {
 
-class CORE_EXPORT TransformValue final : public CSSStyleValue, public ValueIterable<TransformComponent*> {
+class CORE_EXPORT TransformValue final : public CSSStyleValue, public ValueIterable<CSSTransformComponent*> {
     WTF_MAKE_NONCOPYABLE(TransformValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -23,7 +23,7 @@ public:
         return new TransformValue();
     }
 
-    static TransformValue* create(const HeapVector<Member<TransformComponent>>& transformComponents)
+    static TransformValue* create(const HeapVector<Member<CSSTransformComponent>>& transformComponents)
     {
         return new TransformValue(transformComponents);
     }
@@ -36,7 +36,7 @@ public:
 
     StyleValueType type() const override { return TransformType; }
 
-    TransformComponent* componentAtIndex(int index) { return m_transformComponents.at(index); }
+    CSSTransformComponent* componentAtIndex(int index) { return m_transformComponents.at(index); }
 
     size_t size() { return m_transformComponents.size(); }
 
@@ -48,10 +48,10 @@ public:
 
 private:
     TransformValue() {}
-    TransformValue(const HeapVector<Member<TransformComponent>>& transformComponents) : CSSStyleValue(),
+    TransformValue(const HeapVector<Member<CSSTransformComponent>>& transformComponents) : CSSStyleValue(),
         m_transformComponents(transformComponents) {}
 
-    HeapVector<Member<TransformComponent>> m_transformComponents;
+    HeapVector<Member<CSSTransformComponent>> m_transformComponents;
 
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 };

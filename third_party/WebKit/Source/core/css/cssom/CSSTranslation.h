@@ -6,13 +6,13 @@
 #define CSSTranslation_h
 
 #include "core/css/cssom/CSSLengthValue.h"
-#include "core/css/cssom/TransformComponent.h"
+#include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT CSSTranslation final : public TransformComponent {
+class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
     WTF_MAKE_NONCOPYABLE(CSSTranslation);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -40,12 +40,12 @@ public:
         visitor->trace(m_x);
         visitor->trace(m_y);
         visitor->trace(m_z);
-        TransformComponent::trace(visitor);
+        CSSTransformComponent::trace(visitor);
     }
 
 private:
     CSSTranslation(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z)
-        : TransformComponent()
+        : CSSTransformComponent()
         , m_x(x)
         , m_y(y)
         , m_z(z)
