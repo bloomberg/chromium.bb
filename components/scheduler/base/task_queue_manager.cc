@@ -147,9 +147,11 @@ void TaskQueueManager::MaybeScheduleImmediateWork(
     }
     delegate_->PostTask(from_here, from_main_thread_immediate_do_work_closure_);
   } else {
-    base::AutoLock lock(other_thread_lock_);
-    if (!other_thread_pending_wakeups_.insert(base::TimeTicks()).second)
-      return;
+    {
+      base::AutoLock lock(other_thread_lock_);
+      if (!other_thread_pending_wakeups_.insert(base::TimeTicks()).second)
+        return;
+    }
     delegate_->PostTask(from_here,
                         from_other_thread_immediate_do_work_closure_);
   }
