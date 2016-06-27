@@ -4,8 +4,8 @@
 
 #include "ash/wm/workspace_controller_test_helper.h"
 
-#include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_event_handler_test_helper.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
 
 namespace ash {

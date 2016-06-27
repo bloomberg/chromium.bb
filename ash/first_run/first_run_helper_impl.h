@@ -5,8 +5,8 @@
 #ifndef ASH_FIRST_RUN_FIRST_RUN_HELPER_IMPL_H_
 #define ASH_FIRST_RUN_FIRST_RUN_HELPER_IMPL_H_
 
-#include "ash/first_run/first_run_helper.h"
 #include "ash/first_run/desktop_cleaner.h"
+#include "ash/first_run/first_run_helper.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
