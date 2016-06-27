@@ -41,6 +41,7 @@ inline Channel::MessagePtr CreateBrokerMessage(BrokerMessageType type,
   BrokerMessageHeader* header =
       reinterpret_cast<BrokerMessageHeader*>(message->mutable_payload());
   header->type = type;
+  header->padding = 0;
   *out_message_data = reinterpret_cast<T*>(header + 1);
   return message;
 }
@@ -54,6 +55,7 @@ inline Channel::MessagePtr CreateBrokerMessage(
   BrokerMessageHeader* header =
       reinterpret_cast<BrokerMessageHeader*>(message->mutable_payload());
   header->type = type;
+  header->padding = 0;
   return message;
 }
 
