@@ -34,6 +34,18 @@ public interface DesktopViewInterface {
     void transformationChanged();
 
     /**
+     * Informs the view that the cursor has been moved by the TouchInputHandler, which requires
+     * repainting.
+     */
+    void cursorMoved();
+
+    /**
+     * Informs the view that the cursor visibility has been changed (for different input mode) by
+     * the TouchInputHandler, which requires repainting.
+     */
+    void cursorVisibilityChanged();
+
+    /**
      * Starts or stops an animation. Whilst the animation is running, the DesktopView will
      * periodically call TouchInputHandler.processAnimation() and repaint itself.
      */

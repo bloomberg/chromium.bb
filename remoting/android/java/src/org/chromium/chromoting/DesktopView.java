@@ -322,6 +322,18 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     }
 
     @Override
+    public void cursorMoved() {
+        // For current implementation, cursorMoved() is always followed by transformationChanged()
+        // even if the canvas isn't really changed. For future we should improve this by not calling
+        // transformationChanged() if the cursor is moved but the canvas is not changed.
+    }
+
+    @Override
+    public void cursorVisibilityChanged() {
+        requestRepaint();
+    }
+
+    @Override
     public void setAnimationEnabled(boolean enabled) {
         synchronized (mAnimationLock) {
             if (enabled && !mInputAnimationRunning) {

@@ -294,10 +294,7 @@ public class TouchInputHandler {
         }
 
         // Ensure the cursor state is updated appropriately.
-        // TODO (zijiehe): Move repaint control out of DesktopView.
-        if (mViewer instanceof DesktopView) {
-            ((DesktopView) mViewer).requestRepaint();
-        }
+        mViewer.cursorVisibilityChanged();
     }
 
     private void handleSoftInputMethodVisibilityChanged(
@@ -457,6 +454,7 @@ public class TouchInputHandler {
                 mInputStrategy.injectCursorMoveEvent(newX, newY);
             }
         }
+        mViewer.cursorMoved();
     }
 
     /** Processes a (multi-finger) swipe gesture. */
