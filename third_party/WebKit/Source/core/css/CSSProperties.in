@@ -168,7 +168,7 @@ border-top-left-radius interpolable, initial=initialBorderRadius, converter=conv
 border-top-right-radius interpolable, initial=initialBorderRadius, converter=convertRadius
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
 border-top-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>, typedom_types=[Length], keywords=[thin|medium|thick], supports_percentage
-bottom interpolable, initial=initialOffset, converter=convertLengthOrAuto
+bottom typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
 box-shadow interpolable, converter=convertShadow
 box-sizing
 break-after type_name=EBreak
@@ -219,7 +219,7 @@ grid-row-start runtime_flag=CSSGridLayout, converter=convertGridPosition
 grid-template-areas runtime_flag=CSSGridLayout, custom_all
 grid-template-columns runtime_flag=CSSGridLayout, custom_all
 grid-template-rows runtime_flag=CSSGridLayout, custom_all
-height interpolable, initial=initialSize, converter=convertLengthSizing
+height typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialSize, converter=convertLengthSizing
 hyphens runtime_flag=CSSHyphens, inherited, type_name=Hyphens
 image-rendering inherited
 image-orientation runtime_flag=ImageOrientation, inherited, name_for_methods=RespectImageOrientation, converter=convertImageOrientation
@@ -227,7 +227,7 @@ isolation
 justify-content initial=initialContentAlignment, converter=convertContentAlignmentData
 justify-items runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
 justify-self runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
-left interpolable, initial=initialOffset, converter=convertLengthOrAuto
+left typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
 letter-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
 lighting-color interpolable, svg, converter=convertColor
 line-height interpolable, inherited, getter=specifiedLineHeight, converter=convertLineHeight
@@ -275,7 +275,7 @@ pointer-events inherited
 position custom_inherit
 quotes inherited, converter=convertQuotes
 resize custom_value
-right interpolable, initial=initialOffset, converter=convertLengthOrAuto
+right typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
 r interpolable, svg, converter=convertLength
 rx interpolable, svg, converter=convertLengthOrAuto
 ry interpolable, svg, converter=convertLengthOrAuto
@@ -319,7 +319,7 @@ text-overflow type_name=TextOverflow
 text-shadow interpolable, inherited, converter=convertShadow
 text-transform inherited
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
-top interpolable, initial=initialOffset, converter=convertLengthOrAuto
+top typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>, type_name=TouchAction
 transform typedom_types=[Transform], keywords=[none], interpolable, custom_value
 transform-origin interpolable, converter=convertTransformOrigin

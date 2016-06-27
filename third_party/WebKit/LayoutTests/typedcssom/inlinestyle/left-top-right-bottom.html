@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<div id="testElement"></div>
+
+<script>
+
+var styleMap = testElement.styleMap;
+
+test(function() {
+  testElement.style = "";
+
+  styleMap.set('left', new CSSSimpleLength(10, 'px'));
+  styleMap.set('top', new CSSSimpleLength(20, 'px'));
+  styleMap.set('right', new CSSSimpleLength(30, 'px'));
+  styleMap.set('bottom', new CSSSimpleLength(40, 'px'));
+
+  assert_equals(testElement.style.left, '10px');
+  assert_equals(testElement.style.top, '20px');
+  assert_equals(testElement.style.right, '30px');
+  assert_equals(testElement.style.bottom, '40px');
+}, "Setting left, top, right, bottom works with a SimpleLength");
+
+test(function() {
+  testElement.style = "";
+
+  styleMap.set('left', new CSSSimpleLength(10, 'percent'));
+  styleMap.set('top', new CSSSimpleLength(20, 'percent'));
+  styleMap.set('right', new CSSSimpleLength(30, 'percent'));
+  styleMap.set('bottom', new CSSSimpleLength(40, 'percent'));
+
+  assert_equals(testElement.style.left, '10%');
+  assert_equals(testElement.style.top, '20%');
+  assert_equals(testElement.style.right, '30%');
+  assert_equals(testElement.style.bottom, '40%');
+}, "Setting left, top, right, bottom works with a Simple percentage");
+
+test(function() {
+  testElement.style = "";
+
+  styleMap.set('left', new CSSCalcLength({pt: 50, percent: 30}));
+  styleMap.set('top', new CSSCalcLength({percent: 10, em: 4}));
+  styleMap.set('right', new CSSCalcLength({px: 500, percent: 30}));
+  styleMap.set('bottom', new CSSCalcLength({vmin: 0.5, percent: 10}));
+
+  assert_equals(testElement.style.left, 'calc(30% + 50pt)');
+  assert_equals(testElement.style.top, 'calc(10% + 4em)');
+  assert_equals(testElement.style.right, 'calc(30% + 500px)');
+  assert_equals(testElement.style.bottom, 'calc(10% + 0.5vmin)');
+}, "Setting left, top, right, bottom works with a CalcLength");
+
+test(function() {
+  testElement.style = "left:50vmax;";
+
+  var left = styleMap.get('left');
+  assert_equals(left.constructor, CSSSimpleLength);
+  assert_equals(left.value, 50);
+  assert_equals(left.type, 'vmax');
+}, "Getting left works with a SimpleLength");
+
+test(function() {
+  testElement.style = "top:60px;";
+
+  var top = styleMap.get('top');
+  assert_equals(top.constructor, CSSSimpleLength);
+  assert_equals(top.value, 60);
+  assert_equals(top.type, 'px');
+}, "Getting top works with a SimpleLength");
+
+test(function() {
+  testElement.style = "right:70pc;";
+
+  var right = styleMap.get('right');
+  assert_equals(right.constructor, CSSSimpleLength);
+  assert_equals(right.value, 70);
+  assert_equals(right.type, 'pc');
+}, "Getting right works with a SimpleLength");
+
+test(function() {
+  testElement.style = "bottom:80rem;";
+
+  var bottom = styleMap.get('bottom');
+  assert_equals(bottom.constructor, CSSSimpleLength);
+  assert_equals(bottom.value, 80);
+  assert_equals(bottom.type, 'rem');
+}, "Getting bottom works with a SimpleLength");
+
+test(function() {
+  testElement.style = "left:50%;";
+
+  var left = styleMap.get('left');
+  assert_equals(left.constructor, CSSSimpleLength);
+  assert_equals(left.value, 50);
+  assert_equals(left.type, 'percent');
+}, "Getting left works with a simple percent");
+
+test(function() {
+  testElement.style = "top:60%;";
+
+  var top = styleMap.get('top');
+  assert_equals(top.constructor, CSSSimpleLength);
+  assert_equals(top.value, 60);
+  assert_equals(top.type, 'percent');
+}, "Getting top works with a simple percent");
+
+test(function() {
+  testElement.style = "right:70%;";
+
+  var right = styleMap.get('right');
+  assert_equals(right.constructor, CSSSimpleLength);
+  assert_equals(right.value, 70);
+  assert_equals(right.type, 'percent');
+}, "Getting right works with a simple percent");
+
+test(function() {
+  testElement.style = "bottom:80%;";
+
+  var bottom = styleMap.get('bottom');
+  assert_equals(bottom.constructor, CSSSimpleLength);
+  assert_equals(bottom.value, 80);
+  assert_equals(bottom.type, 'percent');
+}, "Getting bottom works with a simple percent");
+
+test(function() {
+  testElement.style = "left:calc(60% + 20px);";
+
+  var left = styleMap.get('left');
+  assert_equals(left.constructor, CSSCalcLength);
+  assert_equals(left.percent, 60);
+  assert_equals(left.px, 20);
+}, "Getting left works with a simple percent");
+
+test(function() {
+  testElement.style = "top:calc(70% - 50px);";
+
+  var top = styleMap.get('top');
+  assert_equals(top.constructor, CSSCalcLength);
+  assert_equals(top.percent, 70);
+  assert_equals(top.px, -50);
+}, "Getting top works with a simple percent");
+
+test(function() {
+  testElement.style = "right:calc(80% + 20em);";
+
+  var right = styleMap.get('right');
+  assert_equals(right.constructor, CSSSimpleLength);
+  assert_equals(right.percent, 80);
+  assert_equals(right.em, 20);
+}, "Getting right works with a simple percent");
+
+test(function() {
+  testElement.style = "bottom:calc(80% - 30rem);";
+
+  var bottom = styleMap.get('bottom');
+  assert_equals(bottom.constructor, CSSSimpleLength);
+  assert_equals(bottom.value, 80);
+  assert_equals(bottom.rem, -30);
+}, "Getting bottom works with a simple percent");
+
+</script>
