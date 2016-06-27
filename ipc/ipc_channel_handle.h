@@ -8,6 +8,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -47,6 +48,7 @@ struct ChannelHandle {
   ChannelHandle(const std::string& n, const base::FileDescriptor& s)
       : name(n), socket(s) {}
 #endif  // defined(OS_POSIX)
+  ChannelHandle(mojo::MessagePipeHandle h) : mojo_handle(h) {}
 
   std::string name;
 #if defined(OS_POSIX)
@@ -60,6 +62,7 @@ struct ChannelHandle {
   };
   PipeHandle pipe;
 #endif  // defined (OS_WIN)
+  mojo::MessagePipeHandle mojo_handle;
 };
 
 }  // namespace IPC

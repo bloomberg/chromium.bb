@@ -12,18 +12,20 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace base {
+class Pickle;
 class PickleIterator;
+class PickleSizer;
 }
 
 namespace IPC {
 
-class Message;
-
 template <>
 struct IPC_EXPORT ParamTraits<mojo::MessagePipeHandle> {
   typedef mojo::MessagePipeHandle param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m, base::PickleIterator* iter,
+                   param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

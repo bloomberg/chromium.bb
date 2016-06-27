@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_mojo.h"
 
 namespace IPC {
 
@@ -11,6 +12,11 @@ namespace IPC {
 std::unique_ptr<Channel> Channel::CreateClient(
     const IPC::ChannelHandle& channel_handle,
     Listener* listener) {
+  if (channel_handle.mojo_handle.is_valid()) {
+    return ChannelMojo::Create(
+        mojo::ScopedMessagePipeHandle(channel_handle.mojo_handle),
+        Channel::MODE_CLIENT, listener);
+  }
   return Channel::Create(channel_handle, Channel::MODE_CLIENT, listener);
 }
 
@@ -42,6 +48,11 @@ std::unique_ptr<Channel> Channel::CreateOpenNamedServer(
 std::unique_ptr<Channel> Channel::CreateServer(
     const IPC::ChannelHandle& channel_handle,
     Listener* listener) {
+  if (channel_handle.mojo_handle.is_valid()) {
+    return ChannelMojo::Create(
+        mojo::ScopedMessagePipeHandle(channel_handle.mojo_handle),
+        Channel::MODE_SERVER, listener);
+  }
   return Channel::Create(channel_handle, Channel::MODE_SERVER, listener);
 }
 

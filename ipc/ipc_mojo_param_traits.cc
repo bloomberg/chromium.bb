@@ -9,14 +9,21 @@
 
 namespace IPC {
 
-void ParamTraits<mojo::MessagePipeHandle>::Write(Message* m,
+void ParamTraits<mojo::MessagePipeHandle>::GetSize(base::PickleSizer* sizer,
+                                                   const param_type& p) {
+  GetParamSize(sizer, p.is_valid());
+  if (p.is_valid())
+    sizer->AddAttachment();
+}
+
+void ParamTraits<mojo::MessagePipeHandle>::Write(base::Pickle* m,
                                                  const param_type& p) {
   WriteParam(m, p.is_valid());
   if (p.is_valid())
     MojoMessageHelper::WriteMessagePipeTo(m, mojo::ScopedMessagePipeHandle(p));
 }
 
-bool ParamTraits<mojo::MessagePipeHandle>::Read(const Message* m,
+bool ParamTraits<mojo::MessagePipeHandle>::Read(const base::Pickle* m,
                                                 base::PickleIterator* iter,
                                                 param_type* r) {
   bool is_valid;

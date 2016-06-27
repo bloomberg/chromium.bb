@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -132,6 +133,29 @@ TEST(IPCMessageUtilsTest, JsonValueSize) {
   IPC::GetParamSize(&sizer, value);
 
   EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+}
+
+TEST(IPCMessageUtilsTest, MojoChannelHandle) {
+  mojo::MessagePipe message_pipe;
+  IPC::ChannelHandle channel_handle(message_pipe.handle0.release());
+
+  IPC::Message message;
+  IPC::WriteParam(&message, channel_handle);
+
+  base::PickleSizer sizer;
+  IPC::GetParamSize(&sizer, channel_handle);
+  EXPECT_EQ(sizer.payload_size(), message.payload_size());
+
+  base::PickleIterator iter(message);
+  IPC::ChannelHandle result_handle;
+  EXPECT_TRUE(IPC::ReadParam(&message, &iter, &result_handle));
+  EXPECT_TRUE(result_handle.name.empty());
+#if defined(OS_POSIX)
+  EXPECT_EQ(-1, result_handle.socket.fd);
+#elif defined(OS_WIN)
+  EXPECT_EQ(nullptr, result_handle.pipe.handle);
+#endif
+  EXPECT_EQ(channel_handle.mojo_handle, result_handle.mojo_handle);
 }
 
 }  // namespace

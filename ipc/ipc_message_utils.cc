@@ -18,6 +18,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_attachment.h"
 #include "ipc/ipc_message_attachment_set.h"
+#include "ipc/ipc_mojo_param_traits.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_platform_file_attachment_posix.h"
@@ -638,7 +639,8 @@ void ParamTraits<base::DictionaryValue>::Log(const param_type& p,
 void ParamTraits<base::FileDescriptor>::GetSize(base::PickleSizer* sizer,
                                                 const param_type& p) {
   GetParamSize(sizer, p.fd >= 0);
-  sizer->AddAttachment();
+  if (p.fd >= 0)
+    sizer->AddAttachment();
 }
 
 void ParamTraits<base::FileDescriptor>::Write(base::Pickle* m,
@@ -1002,6 +1004,7 @@ void ParamTraits<IPC::ChannelHandle>::GetSize(base::PickleSizer* sizer,
 #if defined(OS_POSIX)
   GetParamSize(sizer, p.socket);
 #endif
+  GetParamSize(sizer, p.mojo_handle);
 }
 
 void ParamTraits<IPC::ChannelHandle>::Write(base::Pickle* m,
@@ -1014,6 +1017,7 @@ void ParamTraits<IPC::ChannelHandle>::Write(base::Pickle* m,
 #if defined(OS_POSIX)
   WriteParam(m, p.socket);
 #endif
+  WriteParam(m, p.mojo_handle);
 }
 
 bool ParamTraits<IPC::ChannelHandle>::Read(const base::Pickle* m,
@@ -1023,7 +1027,7 @@ bool ParamTraits<IPC::ChannelHandle>::Read(const base::Pickle* m,
 #if defined(OS_POSIX)
       && ReadParam(m, iter, &r->socket)
 #endif
-      ;
+      && ReadParam(m, iter, &r->mojo_handle);
 }
 
 void ParamTraits<IPC::ChannelHandle>::Log(const param_type& p,
@@ -1033,6 +1037,8 @@ void ParamTraits<IPC::ChannelHandle>::Log(const param_type& p,
   l->append(", ");
   ParamTraits<base::FileDescriptor>::Log(p.socket, l);
 #endif
+  l->append(", ");
+  LogParam(p.mojo_handle, l);
   l->append(")");
 }
 
