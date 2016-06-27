@@ -17,7 +17,6 @@ Removed the following unneeded files/directories:
   1. src/docs/visualization/
   2. src/docs/vuln_samples/
   3. src/testcases/
-  4. third_party/afl/src/experimental/argv_fuzzing/argv-fuzz-inl.h
-  5. third_party/afl/src/llvm_mode/afl-llvm-pass.so.cc
-  6. third_party/afl/src/hash.h
-  7. third_party/afl/experimental/instrumented_cmp/instrumented_cmp.c
+  4. src/experimental/argv_fuzzing/argv-fuzz-inl.h
+  5. src/llvm_mode/afl-llvm-pass.so.cc
+  6. src/experimental/instrumented_cmp/instrumented_cmp.c

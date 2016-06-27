@@ -29,7 +29,7 @@ group("deps") {
     ]
   }
   if (use_afl) {
-    deps += [ "//third_party/afl:afl_runtime" ]
+    deps += [ "//third_party/afl" ]
   }
 }
 
