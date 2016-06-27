@@ -440,6 +440,7 @@
       'browser/extensions/api/dial/dial_device_data_unittest.cc',
       'browser/extensions/api/dial/dial_registry_unittest.cc',
       'browser/extensions/api/dial/dial_service_unittest.cc',
+      'browser/extensions/api/downloads/downloads_api_unittest.cc',
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_api_chromeos_unittest.cc',
       'browser/extensions/api/experience_sampling_private/experience_sampling_private_api_unittest.cc',
       'browser/extensions/api/extension_action/browser_action_unittest.cc',

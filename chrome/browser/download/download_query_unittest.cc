@@ -38,6 +38,11 @@ static const int kSomeKnownTime = 1355864160;
 static const char kSomeKnownTime8601[] = "2012-12-18T20:56:0";
 static const char k8601Suffix[] = ".000Z";
 
+static const int64_t kEightGB = 1LL << 33;
+static const int64_t kSixteenGB = 1LL << 34;
+static const double kEightGBDouble = 8.0 * (1LL << 30);
+static const double kNineGBDouble = 9.0 * (1LL << 30);
+
 bool IdNotEqual(uint32_t not_id, const DownloadItem& item) {
   return item.GetId() != not_id;
 }
@@ -109,8 +114,9 @@ template<> void DownloadQueryTest::AddFilter(
   CHECK(query_.AddFilter(name, *value.get()));
 }
 
-template<> void DownloadQueryTest::AddFilter(
-    DownloadQuery::FilterType name, int cpp_value) {
+template <>
+void DownloadQueryTest::AddFilter(DownloadQuery::FilterType name,
+                                  double cpp_value) {
   std::unique_ptr<base::Value> value(new base::FundamentalValue(cpp_value));
   CHECK(query_.AddFilter(name, *value.get()));
 }
@@ -329,7 +335,7 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterBytesReceived) {
   CreateMocks(2);
   EXPECT_CALL(mock(0), GetReceivedBytes()).WillRepeatedly(Return(0));
   EXPECT_CALL(mock(1), GetReceivedBytes()).WillRepeatedly(Return(1));
-  AddFilter(DownloadQuery::FILTER_BYTES_RECEIVED, 0);
+  AddFilter(DownloadQuery::FILTER_BYTES_RECEIVED, 0.0);
   ExpectStandardFilterResults();
 }
 
@@ -502,27 +508,91 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_SortEndTime) {
   ExpectSortInverted();
 }
 
-TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesGreater) {
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesGreater1) {
   CreateMocks(2);
   EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(2));
   EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(1));
-  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_GREATER, 1);
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_GREATER, 1.0);
   ExpectStandardFilterResults();
 }
 
-TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesLess) {
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesGreater2) {
   CreateMocks(2);
   EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(2));
-  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(4));
-  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_LESS, 4);
+  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(1));
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_GREATER, 1.2);
   ExpectStandardFilterResults();
 }
 
-TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytes) {
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesGreater3) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(kSixteenGB));
+  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(kEightGB));
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_GREATER, kNineGBDouble);
+  ExpectStandardFilterResults();
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesGreater4) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(kSixteenGB));
+  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(kEightGB));
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_GREATER, kEightGBDouble + 1.0);
+  ExpectStandardFilterResults();
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesLess1) {
   CreateMocks(2);
   EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(2));
   EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(4));
-  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES, 2);
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_LESS, 4.0);
+  ExpectStandardFilterResults();
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesLess2) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(1));
+  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(2));
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_LESS, 1.2);
+  ExpectStandardFilterResults();
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesLess3) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(kEightGB));
+  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(kSixteenGB));
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_LESS, kEightGBDouble + 1.0);
+  ExpectStandardFilterResults();
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytesLess4) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(kEightGB));
+  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(kSixteenGB));
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_LESS, kNineGBDouble);
+  ExpectStandardFilterResults();
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytes1) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(2));
+  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(4));
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES, 2.0);
+  ExpectStandardFilterResults();
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytes2) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(1));
+  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(2));
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES, 1.0);
+  ExpectStandardFilterResults();
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterTotalBytes3) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetTotalBytes()).WillRepeatedly(Return(kEightGB));
+  EXPECT_CALL(mock(1), GetTotalBytes()).WillRepeatedly(Return(kSixteenGB));
+  AddFilter(DownloadQuery::FILTER_TOTAL_BYTES, kEightGBDouble);
   ExpectStandardFilterResults();
 }
 

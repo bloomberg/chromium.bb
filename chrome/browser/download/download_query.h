@@ -52,7 +52,7 @@ class DownloadQuery {
 
   // All times are ISO 8601 strings.
   enum FilterType {
-    FILTER_BYTES_RECEIVED,       // int
+    FILTER_BYTES_RECEIVED,       // double
     FILTER_DANGER_ACCEPTED,      // bool
     FILTER_ENDED_AFTER,          // string
     FILTER_ENDED_BEFORE,         // string
@@ -66,9 +66,9 @@ class DownloadQuery {
     FILTER_STARTED_AFTER,        // string
     FILTER_STARTED_BEFORE,       // string
     FILTER_START_TIME,           // string
-    FILTER_TOTAL_BYTES,          // int
-    FILTER_TOTAL_BYTES_GREATER,  // int
-    FILTER_TOTAL_BYTES_LESS,     // int
+    FILTER_TOTAL_BYTES,          // double
+    FILTER_TOTAL_BYTES_GREATER,  // double
+    FILTER_TOTAL_BYTES_LESS,     // double
     FILTER_URL,                  // string
     FILTER_URL_REGEX,            // string
   };

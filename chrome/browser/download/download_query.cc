@@ -41,8 +41,9 @@ template <typename T> bool GetAs(const base::Value& in, T* out);
 template<> bool GetAs(const base::Value& in, bool* out) {
   return in.GetAsBoolean(out);
 }
-template<> bool GetAs(const base::Value& in, int* out) {
-  return in.GetAsInteger(out);
+template <>
+bool GetAs(const base::Value& in, double* out) {
+  return in.GetAsDouble(out);
 }
 template<> bool GetAs(const base::Value& in, std::string* out) {
   return in.GetAsString(out);
@@ -125,11 +126,11 @@ static DownloadDangerType GetDangerType(const DownloadItem& item) {
   return item.GetDangerType();
 }
 
-static int GetReceivedBytes(const DownloadItem& item) {
+static double GetReceivedBytes(const DownloadItem& item) {
   return item.GetReceivedBytes();
 }
 
-static int GetTotalBytes(const DownloadItem& item) {
+static double GetTotalBytes(const DownloadItem& item) {
   return item.GetTotalBytes();
 }
 
@@ -263,7 +264,7 @@ bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
                               const base::Value& value) {
   switch (type) {
     case FILTER_BYTES_RECEIVED:
-      return AddFilter(BuildFilter<int>(value, EQ, &GetReceivedBytes));
+      return AddFilter(BuildFilter<double>(value, EQ, &GetReceivedBytes));
     case FILTER_DANGER_ACCEPTED:
       return AddFilter(BuildFilter<bool>(value, EQ, &GetDangerAccepted));
     case FILTER_EXISTS:
@@ -295,11 +296,11 @@ bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
     case FILTER_START_TIME:
       return AddFilter(BuildFilter<std::string>(value, EQ, &GetStartTime));
     case FILTER_TOTAL_BYTES:
-      return AddFilter(BuildFilter<int>(value, EQ, &GetTotalBytes));
+      return AddFilter(BuildFilter<double>(value, EQ, &GetTotalBytes));
     case FILTER_TOTAL_BYTES_GREATER:
-      return AddFilter(BuildFilter<int>(value, GT, &GetTotalBytes));
+      return AddFilter(BuildFilter<double>(value, GT, &GetTotalBytes));
     case FILTER_TOTAL_BYTES_LESS:
-      return AddFilter(BuildFilter<int>(value, LT, &GetTotalBytes));
+      return AddFilter(BuildFilter<double>(value, LT, &GetTotalBytes));
     case FILTER_URL:
       return AddFilter(BuildFilter<std::string>(value, EQ, &GetUrl));
     case FILTER_URL_REGEX:
@@ -418,10 +419,10 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
       sorters_.push_back(Sorter::Build<std::string>(direction, &GetMimeType));
       break;
     case SORT_BYTES_RECEIVED:
-      sorters_.push_back(Sorter::Build<int>(direction, &GetReceivedBytes));
+      sorters_.push_back(Sorter::Build<double>(direction, &GetReceivedBytes));
       break;
     case SORT_TOTAL_BYTES:
-      sorters_.push_back(Sorter::Build<int>(direction, &GetTotalBytes));
+      sorters_.push_back(Sorter::Build<double>(direction, &GetTotalBytes));
       break;
   }
 }
