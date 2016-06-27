@@ -301,7 +301,8 @@ class Browser : public TabStripModelObserver,
   gfx::Image GetCurrentPageIcon() const;
 
   // Gets the title of the window based on the selected tab's title.
-  base::string16 GetWindowTitleForCurrentTab() const;
+  // Disables additional formatting when |include_app_name| is false.
+  base::string16 GetWindowTitleForCurrentTab(bool include_app_name) const;
 
   // Prepares a title string for display (removes embedded newlines, etc).
   static void FormatTitleForDisplay(base::string16* title);

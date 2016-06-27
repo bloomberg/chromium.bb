@@ -585,7 +585,8 @@ gfx::Image Browser::GetCurrentPageIcon() const {
   return favicon_driver ? favicon_driver->GetFavicon() : gfx::Image();
 }
 
-base::string16 Browser::GetWindowTitleForCurrentTab() const {
+base::string16 Browser::GetWindowTitleForCurrentTab(
+    bool include_app_name) const {
   WebContents* contents = tab_strip_model_->GetActiveWebContents();
   base::string16 title;
 
@@ -602,15 +603,15 @@ base::string16 Browser::GetWindowTitleForCurrentTab() const {
   if (title.empty())
     title = CoreTabHelper::GetDefaultTitle();
 
-#if defined(OS_MACOSX) || defined(USE_ASH)
-  // On Mac and Ash, we don't want to suffix the page title with the application
-  // name.
+#if defined(OS_MACOSX)
+  // On Mac, we don't want to suffix the page title with the application name.
   return title;
 #endif
-  // Don't append the app name to window titles on app frames and app popups
-  return is_app() ?
-      title :
-      l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT, title);
+  // Include the app name in window titles for tabbed browser windows when
+  // requested with |include_app_name|.
+  return (!is_app() && include_app_name) ?
+      l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT, title):
+      title;
 }
 
 // static

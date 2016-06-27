@@ -1654,16 +1654,17 @@ bool BrowserView::CanActivate() const {
 }
 
 base::string16 BrowserView::GetWindowTitle() const {
-  return browser_->GetWindowTitleForCurrentTab();
+  return browser_->GetWindowTitleForCurrentTab(true /* include_app_name */);
 }
 
 base::string16 BrowserView::GetAccessibleWindowTitle() const {
+  const bool include_app_name = false;
   if (IsOffTheRecord()) {
     return l10n_util::GetStringFUTF16(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT,
-        GetWindowTitle());
+        browser_->GetWindowTitleForCurrentTab(include_app_name));
   }
-  return GetWindowTitle();
+  return browser_->GetWindowTitleForCurrentTab(include_app_name);
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {

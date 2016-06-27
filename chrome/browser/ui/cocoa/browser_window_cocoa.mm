@@ -308,16 +308,20 @@ void BrowserWindowCocoa::UpdateTitleBar() {
 }
 
 NSString* BrowserWindowCocoa::WindowTitle() {
+  const bool include_app_name = true;
   if (alert_state_ == TabAlertState::AUDIO_PLAYING) {
     return l10n_util::GetNSStringF(IDS_WINDOW_AUDIO_PLAYING_MAC,
-                                   browser_->GetWindowTitleForCurrentTab(),
+                                   browser_->GetWindowTitleForCurrentTab(
+                                       include_app_name),
                                    base::SysNSStringToUTF16(@"🔊"));
   } else if (alert_state_ == TabAlertState::AUDIO_MUTING) {
     return l10n_util::GetNSStringF(IDS_WINDOW_AUDIO_MUTING_MAC,
-                                   browser_->GetWindowTitleForCurrentTab(),
+                                   browser_->GetWindowTitleForCurrentTab(
+                                       include_app_name),
                                    base::SysNSStringToUTF16(@"🔇"));
   }
-  return base::SysUTF16ToNSString(browser_->GetWindowTitleForCurrentTab());
+  return base::SysUTF16ToNSString(
+      browser_->GetWindowTitleForCurrentTab(include_app_name));
 }
 
 void BrowserWindowCocoa::BookmarkBarStateChanged(

@@ -477,7 +477,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
   EXPECT_EQ("Entered window overview mode", speech_monitor_.GetNextUtterance());
 
   SendKeyPress(ui::VKEY_TAB);
-  EXPECT_EQ("about:blank", speech_monitor_.GetNextUtterance());
+  // On Chrome OS accessibility title for tabbed browser windows contains app
+  // name ("Chrome" or "Chromium") in overview mode.
+  EXPECT_EQ("Chromium - about:blank", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 }
 

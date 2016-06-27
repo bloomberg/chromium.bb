@@ -156,9 +156,8 @@ const base::FilePath::CharType kDocRoot[] =
 
 // Given a page title, returns the expected window caption string.
 base::string16 WindowCaptionFromPageTitle(const base::string16& page_title) {
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  // On Mac or ChromeOS, we don't want to suffix the page title with
-  // the application name.
+#if defined(OS_MACOSX)
+  // On Mac, we don't want to suffix the page title with the application name.
   if (page_title.empty())
     return l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
   return page_title;
@@ -377,7 +376,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitle) {
                      base::FilePath(base::FilePath::kCurrentDirectory),
                      base::FilePath(kTitle1File)));
   EXPECT_EQ(LocaleWindowCaptionFromPageTitle(ASCIIToUTF16("title1.html")),
-            browser()->GetWindowTitleForCurrentTab());
+            browser()->GetWindowTitleForCurrentTab(
+                true /* include_app_name */));
   base::string16 tab_title;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
   EXPECT_EQ(ASCIIToUTF16("title1.html"), tab_title);
@@ -436,7 +436,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
                      base::FilePath(kTitle2File)));
   const base::string16 test_title(ASCIIToUTF16("Title Of Awesomeness"));
   EXPECT_EQ(LocaleWindowCaptionFromPageTitle(test_title),
-            browser()->GetWindowTitleForCurrentTab());
+            browser()->GetWindowTitleForCurrentTab(
+                true /* include_app_name */));
   base::string16 tab_title;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
   EXPECT_EQ(test_title, tab_title);
