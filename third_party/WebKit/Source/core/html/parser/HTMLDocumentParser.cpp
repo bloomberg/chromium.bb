@@ -272,14 +272,11 @@ bool HTMLDocumentParser::canTakeNextToken()
     if (isStopped())
         return false;
 
-    if (isWaitingForScripts()) {
-        // If we're paused waiting for a script, we try to execute scripts before continuing.
+    // If we're paused waiting for a script, we try to execute scripts before continuing.
+    if (m_treeBuilder->hasParserBlockingScript())
         runScriptsForPausedTreeBuilder();
-        if (isStopped())
-            return false;
-        if (isWaitingForScripts())
-            return false;
-    }
+    if (isStopped() || isWaitingForScripts())
+        return false;
 
     // FIXME: It's wrong for the HTMLDocumentParser to reach back to the
     //        LocalFrame, but this approach is how the old parser handled
