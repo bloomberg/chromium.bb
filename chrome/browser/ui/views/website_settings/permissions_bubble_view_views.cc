@@ -23,9 +23,6 @@ views::View* PermissionBubbleViewViews::GetAnchorView() {
   if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
     return browser_view->GetLocationBarView()->location_icon_view();
 
-  if (browser_view->IsFullscreenBubbleVisible())
-    return browser_view->exclusive_access_bubble()->GetView();
-
   return browser_view->top_container();
 }
 
