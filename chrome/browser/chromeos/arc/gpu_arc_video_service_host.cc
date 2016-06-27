@@ -18,7 +18,7 @@
 
 namespace {
 
-void ConnectToVideoAcceleratorServiceOnIOThread(
+void DeprecatedConnectToVideoAcceleratorServiceOnIOThread(
     arc::mojom::VideoAcceleratorServiceClientRequest request) {
   // Note |request| is not a ServiceRequest. It is a ClientRequest but doesn't
   // request for a Client. Instead, it requests for a Service while specified
@@ -26,6 +26,11 @@ void ConnectToVideoAcceleratorServiceOnIOThread(
   // arc's "Host notifies to Instance::Init", not mojo's typical "Client
   // registers to Service".
   // TODO(kcwu): revise the interface.
+  content::GetGpuRemoteInterfaces()->GetInterface(std::move(request));
+}
+
+void ConnectToVideoAcceleratorServiceOnIOThread(
+    arc::mojom::VideoAcceleratorServiceRequest request) {
   content::GetGpuRemoteInterfaces()->GetInterface(std::move(request));
 }
 
@@ -39,7 +44,7 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
       mojom::VideoAcceleratorFactoryRequest request)
       : binding_(this, std::move(request)) {}
 
-  void Create(mojom::VideoAcceleratorServiceClientRequest request) override {
+  void Create(mojom::VideoAcceleratorServiceRequest request) override {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&ConnectToVideoAcceleratorServiceOnIOThread,
@@ -105,7 +110,7 @@ void GpuArcVideoServiceHost::DeprecatedOnRequestArcVideoAcceleratorChannel(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &ConnectToVideoAcceleratorServiceOnIOThread,
+          &DeprecatedConnectToVideoAcceleratorServiceOnIOThread,
           base::Passed(
               mojo::MakeRequest<::arc::mojom::VideoAcceleratorServiceClient>(
                   std::move(server_pipe)))));

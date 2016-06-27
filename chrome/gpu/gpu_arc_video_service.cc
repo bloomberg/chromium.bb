@@ -116,6 +116,14 @@ namespace arc {
 
 GpuArcVideoService::GpuArcVideoService() : binding_(this) {}
 
+GpuArcVideoService::GpuArcVideoService(
+    ::arc::mojom::VideoAcceleratorServiceRequest request)
+    : accelerator_(new ArcGpuVideoDecodeAccelerator()),
+      binding_(this, std::move(request)) {
+  DVLOG(2) << "GpuArcVideoService connected";
+  binding_.set_connection_error_handler(base::Bind(&OnConnectionError));
+}
+
 GpuArcVideoService::~GpuArcVideoService() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
@@ -134,12 +142,13 @@ void GpuArcVideoService::Connect(
   binding_.Bind(GetProxy(&service));
   binding_.set_connection_error_handler(base::Bind(&OnConnectionError));
 
-  client_->Init(std::move(service));
+  client_->DeprecatedInit(std::move(service));
 }
 
 void GpuArcVideoService::OnError(ArcVideoAccelerator::Result error) {
   DVLOG(2) << "OnError " << error;
   DCHECK_NE(error, ArcVideoAccelerator::SUCCESS);
+  DCHECK(client_);
   client_->OnError(
       static_cast<::arc::mojom::VideoAcceleratorService::Result>(error));
 }
@@ -148,29 +157,46 @@ void GpuArcVideoService::OnBufferDone(PortType port,
                                       uint32_t index,
                                       const BufferMetadata& metadata) {
   DVLOG(2) << "OnBufferDone " << port << "," << index;
+  DCHECK(client_);
   client_->OnBufferDone(static_cast<::arc::mojom::PortType>(port), index,
                         ::arc::mojom::BufferMetadata::From(metadata));
 }
 
 void GpuArcVideoService::OnFlushDone() {
   DVLOG(2) << "OnFlushDone";
+  DCHECK(client_);
   client_->OnFlushDone();
 }
 
 void GpuArcVideoService::OnResetDone() {
   DVLOG(2) << "OnResetDone";
+  DCHECK(client_);
   client_->OnResetDone();
 }
 
 void GpuArcVideoService::OnOutputFormatChanged(const VideoFormat& format) {
   DVLOG(2) << "OnOutputFormatChanged";
+  DCHECK(client_);
   client_->OnOutputFormatChanged(::arc::mojom::VideoFormat::From(format));
 }
 
 void GpuArcVideoService::Initialize(
     ::arc::mojom::ArcVideoAcceleratorConfigPtr config,
+    ::arc::mojom::VideoAcceleratorServiceClientPtr client,
     const InitializeCallback& callback) {
   DVLOG(2) << "Initialize";
+  DCHECK(!client_);
+  client_ = std::move(client);
+  ArcVideoAccelerator::Result result =
+      accelerator_->Initialize(config.To<ArcVideoAccelerator::Config>(), this);
+  callback.Run(
+      static_cast<::arc::mojom::VideoAcceleratorService::Result>(result));
+}
+
+void GpuArcVideoService::DeprecatedInitialize(
+    ::arc::mojom::ArcVideoAcceleratorConfigPtr config,
+    const DeprecatedInitializeCallback& callback) {
+  DVLOG(2) << "DeprecatedInitialize";
   ArcVideoAccelerator::Result result =
       accelerator_->Initialize(config.To<ArcVideoAccelerator::Config>(), this);
   callback.Run(
@@ -179,6 +205,7 @@ void GpuArcVideoService::Initialize(
 
 base::ScopedFD GpuArcVideoService::UnwrapFdFromMojoHandle(
     mojo::ScopedHandle handle) {
+  DCHECK(client_);
   if (!handle.is_valid()) {
     LOG(ERROR) << "handle is invalid";
     client_->OnError(

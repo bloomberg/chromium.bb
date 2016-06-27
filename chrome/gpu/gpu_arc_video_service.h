@@ -24,6 +24,8 @@ namespace arc {
 class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
                            public ArcVideoAccelerator::Client {
  public:
+  explicit GpuArcVideoService(
+      ::arc::mojom::VideoAcceleratorServiceRequest request);
   GpuArcVideoService();
   ~GpuArcVideoService() override;
 
@@ -43,7 +45,11 @@ class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
 
   // ::arc::mojom::VideoAcceleratorService implementation.
   void Initialize(::arc::mojom::ArcVideoAcceleratorConfigPtr config,
+                  ::arc::mojom::VideoAcceleratorServiceClientPtr client,
                   const InitializeCallback& callback) override;
+  void DeprecatedInitialize(
+      ::arc::mojom::ArcVideoAcceleratorConfigPtr config,
+      const DeprecatedInitializeCallback& callback) override;
   void BindSharedMemory(::arc::mojom::PortType port,
                         uint32_t index,
                         mojo::ScopedHandle ashmem_handle,

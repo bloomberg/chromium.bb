@@ -34,5 +34,5 @@ interface VideoInstance {
 };
 
 interface VideoAcceleratorFactory {
-  Create@0(VideoAcceleratorServiceClient& client);
+  Create@0(VideoAcceleratorService& accelerator);
 };

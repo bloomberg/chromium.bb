@@ -14,7 +14,7 @@
 #if defined(OS_CHROMEOS)
 namespace {
 
-void CreateGpuArcVideoService(
+void DeprecatedCreateGpuArcVideoService(
     ::arc::mojom::VideoAcceleratorServiceClientRequest request) {
   // GpuArcVideoService is strongly bound to the Mojo message pipe it
   // is connected to. When that message pipe is closed, either explicitly on the
@@ -22,6 +22,15 @@ void CreateGpuArcVideoService(
   // will be destroyed.
   auto* service = new chromeos::arc::GpuArcVideoService();
   service->Connect(std::move(request));
+}
+
+void CreateGpuArcVideoService(
+    ::arc::mojom::VideoAcceleratorServiceRequest request) {
+  // GpuArcVideoService is strongly bound to the Mojo message pipe it
+  // is connected to. When that message pipe is closed, either explicitly on the
+  // other end (in the browser process), or by a connection error, this object
+  // will be destroyed.
+  new chromeos::arc::GpuArcVideoService(std::move(request));
 }
 
 }  // namespace
@@ -35,6 +44,7 @@ void ChromeContentGpuClient::ExposeInterfacesToBrowser(
     shell::InterfaceRegistry* registry) {
 #if defined(OS_CHROMEOS)
   registry->AddInterface(base::Bind(&CreateGpuArcVideoService));
+  registry->AddInterface(base::Bind(&DeprecatedCreateGpuArcVideoService));
 #endif
 }
 
