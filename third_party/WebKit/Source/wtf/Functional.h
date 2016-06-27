@@ -40,7 +40,8 @@
 #include <utility>
 
 namespace blink {
-template<typename T> class CrossThreadPersistent;
+template <typename T> class Member;
+template <typename T> class WeakMember;
 }
 
 namespace base {
@@ -216,6 +217,9 @@ template <typename T>
 struct ParamStorageTraits {
     typedef T StorageType;
 
+    static_assert(!std::is_pointer<T>::value, "Raw pointers are not allowed to bind into WTF::Function. Wrap it with either wrapPersistent, wrapWeakPersistent, wrapCrossThreadPersistent, wrapCrossThreadWeakPersistent, RefPtr or unretained.");
+    static_assert(!IsSubclassOfTemplate<T, blink::Member>::value && !IsSubclassOfTemplate<T, blink::WeakMember>::value, "Member and WeakMember are not allowed to bind into WTF::Function. Wrap it with either wrapPersistent, wrapWeakPersistent, wrapCrossThreadPersistent or wrapCrossThreadWeakPersistent.");
+
     static StorageType wrap(const T& value) { return value; } // Copy.
     static StorageType wrap(T&& value) { return std::move(value); }
 
@@ -263,31 +267,6 @@ struct ParamStorageTraits<UnretainedWrapper<T, threadAffinity>> {
 
     static StorageType wrap(const UnretainedWrapper<T, threadAffinity>& value) { return value; }
     static T* unwrap(const StorageType& value) { return value.value(); }
-};
-
-template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
-
-template<typename T>
-struct PointerParamStorageTraits<T*, false> {
-    STATIC_ONLY(PointerParamStorageTraits);
-    using StorageType = T*;
-
-    static StorageType wrap(T* value) { return value; }
-    static T* unwrap(const StorageType& value) { return value; }
-};
-
-template<typename T>
-struct PointerParamStorageTraits<T*, true> {
-    STATIC_ONLY(PointerParamStorageTraits);
-    using StorageType = blink::CrossThreadPersistent<T>;
-
-    static StorageType wrap(T* value) { return value; }
-    static T* unwrap(const StorageType& value) { return value.get(); }
-};
-
-template<typename T>
-struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, IsGarbageCollectedType<T>::value> {
-    STATIC_ONLY(ParamStorageTraits);
 };
 
 template<typename, FunctionThreadAffinity threadAffinity = SameThreadAffinity>
