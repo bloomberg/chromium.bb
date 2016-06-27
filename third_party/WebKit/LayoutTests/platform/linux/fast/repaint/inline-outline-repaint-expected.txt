@@ -33,34 +33,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox 'Lorem ipsum'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ' '",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
     },
@@ -81,7 +53,7 @@
       "reason": "full"
     },
     {
-      "object": "InlineTextBox 'dolor sit amet'",
+      "object": "InlineTextBox ''",
       "reason": "full"
     },
     {
@@ -249,34 +221,6 @@
       "reason": "full"
     },
     {
-      "object": "InlineTextBox 'dolor sit'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Lorem ipsum'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ' '",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
       "object": "InlineTextBox ''",
       "reason": "full"
     },
@@ -362,34 +306,6 @@
     },
     {
       "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Lorem ipsum'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ' '",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'dolor'",
       "reason": "full"
     },
     {
