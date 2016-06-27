@@ -44,6 +44,8 @@ public:
         return offset;
     }
 
+    void advanceUntilNonWhitespace();
+
     unsigned length() const { return m_stringLength; }
     unsigned offset() const { return std::min(m_offset, m_stringLength); }
     StringView rangeAt(unsigned start, unsigned length) const;

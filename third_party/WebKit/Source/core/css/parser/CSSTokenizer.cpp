@@ -121,7 +121,7 @@ void CSSTokenizer::consume(unsigned offset)
 
 CSSParserToken CSSTokenizer::whiteSpace(UChar cc)
 {
-    consumeUntilNonWhitespace();
+    m_input.advanceUntilNonWhitespace();
     return CSSParserToken(WhitespaceToken);
 }
 
@@ -471,7 +471,7 @@ CSSParserToken CSSTokenizer::consumeIdentLikeToken()
         if (equalIgnoringASCIICase(name, "url")) {
             // The spec is slightly different so as to avoid dropping whitespace
             // tokens, but they wouldn't be used and this is easier.
-            consumeUntilNonWhitespace();
+            m_input.advanceUntilNonWhitespace();
             UChar next = m_input.nextInputChar();
             if (next != '"' && next != '\'')
                 return consumeUrlToken();
@@ -562,7 +562,7 @@ static bool isNonPrintableCodePoint(UChar cc)
 // http://dev.w3.org/csswg/css-syntax/#consume-url-token
 CSSParserToken CSSTokenizer::consumeUrlToken()
 {
-    consumeUntilNonWhitespace();
+    m_input.advanceUntilNonWhitespace();
 
     // URL tokens without escapes get handled without allocations
     for (unsigned size = 0; ; size++) {
@@ -583,7 +583,7 @@ CSSParserToken CSSTokenizer::consumeUrlToken()
             return CSSParserToken(UrlToken, registerString(result.toString()));
 
         if (isHTMLSpace(cc)) {
-            consumeUntilNonWhitespace();
+            m_input.advanceUntilNonWhitespace();
             if (consumeIfNext(')') || m_input.nextInputChar() == kEndOfFileMarker)
                 return CSSParserToken(UrlToken, registerString(result.toString()));
             break;
@@ -617,13 +617,6 @@ void CSSTokenizer::consumeBadUrlRemnants()
         if (twoCharsAreValidEscape(cc, m_input.nextInputChar()))
             consumeEscape();
     }
-}
-
-void CSSTokenizer::consumeUntilNonWhitespace()
-{
-    // Using HTML space here rather than CSS space since we don't do preprocessing
-    while (isHTMLSpace<UChar>(m_input.nextInputChar()))
-        consume();
 }
 
 void CSSTokenizer::consumeSingleWhitespaceIfNext()

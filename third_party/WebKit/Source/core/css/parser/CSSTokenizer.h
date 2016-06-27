@@ -60,7 +60,6 @@ private:
     CSSParserToken consumeUrlToken();
 
     void consumeBadUrlRemnants();
-    void consumeUntilNonWhitespace();
     void consumeSingleWhitespaceIfNext();
     void consumeUntilCommentEndFound();
 

@@ -4,6 +4,7 @@
 
 #include "core/css/parser/CSSTokenizerInputStream.h"
 
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "wtf/text/StringToNumber.h"
 
@@ -28,6 +29,20 @@ void CSSTokenizerInputStream::pushBack(UChar cc)
 {
     --m_offset;
     ASSERT(nextInputChar() == cc);
+}
+
+void CSSTokenizerInputStream::advanceUntilNonWhitespace()
+{
+    // Using HTML space here rather than CSS space since we don't do preprocessing
+    if (m_string->is8Bit()) {
+        const LChar* characters = m_string->characters8();
+        while (m_offset < m_stringLength && isHTMLSpace(characters[m_offset]))
+            ++m_offset;
+    } else {
+        const UChar* characters = m_string->characters16();
+        while (m_offset < m_stringLength && isHTMLSpace(characters[m_offset]))
+            ++m_offset;
+    }
 }
 
 double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end)
