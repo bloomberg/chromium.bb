@@ -7,7 +7,7 @@
 <script>
 
 test(function() {
-  var transform = new TransformValue([new CSSRotation(20)]);
+  var transform = new CSSTransformValue([new CSSRotation(20)]);
 
   assert_equals(testElement.styleMap.get('transform'), null);
 

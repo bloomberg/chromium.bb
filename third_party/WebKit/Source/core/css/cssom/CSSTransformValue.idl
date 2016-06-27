@@ -7,7 +7,7 @@
     Constructor(sequence<CSSTransformComponent> transformComponents),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
-] interface TransformValue : CSSStyleValue {
+] interface CSSTransformValue : CSSStyleValue {
     iterable<CSSTransformComponent>;
     boolean is2D();
 };

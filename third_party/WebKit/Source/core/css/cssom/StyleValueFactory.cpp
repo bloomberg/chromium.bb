@@ -7,8 +7,8 @@
 #include "core/css/CSSValue.h"
 #include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css/cssom/CSSTransformValue.h"
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
-#include "core/css/cssom/TransformValue.h"
 
 namespace blink {
 
@@ -27,7 +27,7 @@ CSSStyleValueVector StyleValueFactory::cssValueToStyleValueVector(CSSPropertyID 
     CSSStyleValue* styleValue = nullptr;
     switch (propertyID) {
     case CSSPropertyTransform:
-        styleValue  = TransformValue::fromCSSValue(value);
+        styleValue  = CSSTransformValue::fromCSSValue(value);
         if (styleValue)
             styleValueVector.append(styleValue);
         return styleValueVector;

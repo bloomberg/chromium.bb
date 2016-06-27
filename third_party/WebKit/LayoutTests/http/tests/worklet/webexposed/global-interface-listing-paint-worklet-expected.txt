@@ -97,6 +97,13 @@ CONSOLE MESSAGE: line 137:     getter cssString
 CONSOLE MESSAGE: line 137:     method asMatrix
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     method is2DComponent
+CONSOLE MESSAGE: line 137: interface CSSTransformValue : CSSStyleValue
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     method entries
+CONSOLE MESSAGE: line 137:     method forEach
+CONSOLE MESSAGE: line 137:     method is2D
+CONSOLE MESSAGE: line 137:     method keys
+CONSOLE MESSAGE: line 137:     method values
 CONSOLE MESSAGE: line 137: interface CSSTranslation : CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter x
 CONSOLE MESSAGE: line 137:     getter y
@@ -228,13 +235,6 @@ CONSOLE MESSAGE: line 137:     method getProperties
 CONSOLE MESSAGE: line 137:     method has
 CONSOLE MESSAGE: line 137:     method keys
 CONSOLE MESSAGE: line 137:     method set
-CONSOLE MESSAGE: line 137:     method values
-CONSOLE MESSAGE: line 137: interface TransformValue : CSSStyleValue
-CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137:     method entries
-CONSOLE MESSAGE: line 137:     method forEach
-CONSOLE MESSAGE: line 137:     method is2D
-CONSOLE MESSAGE: line 137:     method keys
 CONSOLE MESSAGE: line 137:     method values
 CONSOLE MESSAGE: line 137: interface WorkletGlobalScope
 CONSOLE MESSAGE: line 137:     method constructor

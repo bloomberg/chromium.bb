@@ -619,6 +619,15 @@ interface CSSTransformComponent
     method asMatrix
     method constructor
     method is2DComponent
+interface CSSTransformValue : CSSStyleValue
+    attribute @@toStringTag
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method is2D
+    method keys
+    method values
 interface CSSTranslation : CSSTransformComponent
     attribute @@toStringTag
     getter x
@@ -6178,15 +6187,6 @@ interface TrackEvent : Event
     attribute @@toStringTag
     getter track
     method constructor
-interface TransformValue : CSSStyleValue
-    attribute @@toStringTag
-    method @@iterator
-    method constructor
-    method entries
-    method forEach
-    method is2D
-    method keys
-    method values
 interface TransitionEvent : Event
     attribute @@toStringTag
     getter elapsedTime
