@@ -335,5 +335,9 @@ a0ee5fb8a4dbf546b8da197a055dd3997f3dc475
 
 # Move code in ui/gl/* from gfx:: to gl::
 7a4638457b6cb7ba351c57b98f1871209604cb81
+
+# Remove OwnPtr from Blink.
+f5f08765522594f41a1c032754e4fbc30e90c134
+
 # clang-format all of //ash
 b8dcef526018a47e7cd985cef724c464d0d958a6
