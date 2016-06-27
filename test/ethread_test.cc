@@ -27,14 +27,10 @@ class AVxEncoderThreadTest
       : EncoderTest(GET_PARAM(0)), encoder_initialized_(false), tiles_(2),
         encoding_mode_(GET_PARAM(1)), set_cpu_used_(GET_PARAM(2)) {
     init_flags_ = AOM_CODEC_USE_PSNR;
-    aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
-    cfg.w = 1280;
-    cfg.h = 720;
-    decoder_ = codec_->CreateDecoder(cfg, 0);
 
     md5_.clear();
   }
-  virtual ~AVxEncoderThreadTest() { delete decoder_; }
+  virtual ~AVxEncoderThreadTest() {}
 
   virtual void SetUp() {
     InitializeConfig();
@@ -77,27 +73,27 @@ class AVxEncoderThreadTest
     }
   }
 
-  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
-    const aom_codec_err_t res = decoder_->DecodeFrame(
-        reinterpret_cast<uint8_t *>(pkt->data.frame.buf), pkt->data.frame.sz);
-    if (res != AOM_CODEC_OK) {
-      abort_ = true;
-      ASSERT_EQ(AOM_CODEC_OK, res);
-    }
-    const aom_image_t *img = decoder_->GetDxData().Next();
+  virtual void DecompressedFrameHook(const aom_image_t &img,
+                                     aom_codec_pts_t /*pts*/) {
+    ::libaom_test::MD5 md5_res;
+    md5_res.Add(&img);
+    md5_.push_back(md5_res.Get());
+  }
 
-    if (img) {
-      ::libaom_test::MD5 md5_res;
-      md5_res.Add(img);
-      md5_.push_back(md5_res.Get());
+  virtual bool HandleDecodeResult(const aom_codec_err_t res,
+                                  const libaom_test::VideoSource & /*video*/,
+                                  libaom_test::Decoder * /*decoder*/) {
+    if (res != AOM_CODEC_OK) {
+      EXPECT_EQ(AOM_CODEC_OK, res);
+      return false;
     }
+    return true;
   }
 
   bool encoder_initialized_;
   int tiles_;
   ::libaom_test::TestMode encoding_mode_;
   int set_cpu_used_;
-  ::libaom_test::Decoder *decoder_;
   std::vector<std::string> md5_;
 };
 
