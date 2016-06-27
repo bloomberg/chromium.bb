@@ -302,15 +302,8 @@ public class ChromeLauncherActivity extends Activity
                 || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_DISABLED, flavor)) {
             return false;
         } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ELDERBERRY)) {
-            boolean isAllowedToReturnToExternalApp = IntentUtils.safeGetBooleanExtra(getIntent(),
+            return IntentUtils.safeGetBooleanExtra(getIntent(),
                     ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, true);
-
-            if (isAllowedToReturnToExternalApp
-                    && (getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
-                        || (getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
-                getIntent().addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-            }
-            return isAllowedToReturnToExternalApp;
         } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ANISE)
                 || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_BASIL)
                 || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_DILL)) {
@@ -343,13 +336,17 @@ public class ChromeLauncherActivity extends Activity
                 && (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
                         || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
             newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
+            newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
 
-            // Pre-L, the exclude from recents flag on the launcher does not apply to the launched
-            // separate task activity (and provides the desired user behavior).  On L, the flag
-            // needs to be cleared otherwise it is hidden immediately upon exiting.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // Pre-L, the exclude from recents flag on the launcher does not apply to the
+                // launched separate task activity (and provides the desired user behavior).  On L+,
+                // the flag needs to be cleared otherwise it is hidden immediately upon exiting.
                 newIntent.setFlags(
                         newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
+                // Force a new document L+ to ensure the proper task/stack creation.
+                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
             }
             String url = IntentHandler.getUrlFromIntent(newIntent);
             assert url != null;
