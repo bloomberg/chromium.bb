@@ -10,6 +10,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/render_pass_id.h"
 #include "cc/quads/solid_color_draw_quad.h"
+#include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
@@ -467,6 +468,17 @@ TEST_F(StructTraitsTest, QuadListBasic) {
                             background_color, vertex_opacity, y_flipped,
                             nearest_neighbor, secure_output_only);
 
+  const gfx::Rect rect6(321, 765, 11109, 151413);
+  const ResourceId resource_id6(1234);
+  const gfx::Size resource_size_in_pixels(1234, 5678);
+  const gfx::Transform matrix(16.1f, 15.3f, 14.3f, 13.7f, 12.2f, 11.4f, 10.4f,
+                              9.8f, 8.1f, 7.3f, 6.3f, 5.7f, 4.8f, 3.4f, 2.4f,
+                              1.2f);
+  StreamVideoDrawQuad* stream_video_draw_quad =
+      input.AllocateAndConstruct<StreamVideoDrawQuad>();
+  stream_video_draw_quad->SetNew(&sqs, rect6, rect6, rect6, resource_id6,
+                                 resource_size_in_pixels, matrix);
+
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   QuadList output;
   proxy->EchoQuadList(input, &output);
@@ -528,6 +540,16 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(y_flipped, out_texture_draw_quad->y_flipped);
   EXPECT_EQ(nearest_neighbor, out_texture_draw_quad->nearest_neighbor);
   EXPECT_EQ(secure_output_only, out_texture_draw_quad->secure_output_only);
+
+  const StreamVideoDrawQuad* out_stream_video_draw_quad =
+      StreamVideoDrawQuad::MaterialCast(output.ElementAt(5));
+  EXPECT_EQ(rect6, out_stream_video_draw_quad->rect);
+  EXPECT_EQ(rect6, out_stream_video_draw_quad->opaque_rect);
+  EXPECT_EQ(rect6, out_stream_video_draw_quad->visible_rect);
+  EXPECT_EQ(resource_id6, out_stream_video_draw_quad->resource_id());
+  EXPECT_EQ(resource_size_in_pixels,
+            out_stream_video_draw_quad->resource_size_in_pixels());
+  EXPECT_EQ(matrix, out_stream_video_draw_quad->matrix);
 }
 
 TEST_F(StructTraitsTest, RenderPass) {

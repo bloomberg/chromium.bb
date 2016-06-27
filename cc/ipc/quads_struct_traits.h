@@ -145,6 +145,41 @@ struct StructTraits<cc::mojom::SolidColorQuadState, cc::DrawQuad> {
 };
 
 template <>
+struct StructTraits<cc::mojom::StreamVideoQuadState, cc::DrawQuad> {
+  static bool IsNull(const cc::DrawQuad& input) {
+    return input.material != cc::DrawQuad::STREAM_VIDEO_CONTENT;
+  }
+
+  static void SetToNull(cc::DrawQuad* output) {
+    // There is nothing to deserialize here if the DrawQuad is not a
+    // StreamVideoDrawQuad. If it is, then this should not be called.
+    DCHECK_NE(cc::DrawQuad::STREAM_VIDEO_CONTENT, output->material);
+  }
+
+  static uint32_t resource_id(const cc::DrawQuad& input) {
+    const cc::StreamVideoDrawQuad* quad =
+        cc::StreamVideoDrawQuad::MaterialCast(&input);
+    return quad->resources.ids[cc::StreamVideoDrawQuad::kResourceIdIndex];
+  }
+
+  static const gfx::Size& resource_size_in_pixels(const cc::DrawQuad& input) {
+    const cc::StreamVideoDrawQuad* quad =
+        cc::StreamVideoDrawQuad::MaterialCast(&input);
+    return quad->overlay_resources
+        .size_in_pixels[cc::StreamVideoDrawQuad::kResourceIdIndex];
+  }
+
+  static const gfx::Transform& matrix(const cc::DrawQuad& input) {
+    const cc::StreamVideoDrawQuad* quad =
+        cc::StreamVideoDrawQuad::MaterialCast(&input);
+    return quad->matrix;
+  }
+
+  static bool Read(cc::mojom::StreamVideoQuadStateDataView data,
+                   cc::DrawQuad* out);
+};
+
+template <>
 struct StructTraits<cc::mojom::SurfaceQuadState, cc::DrawQuad> {
   static bool IsNull(const cc::DrawQuad& input) {
     return input.material != cc::DrawQuad::SURFACE_CONTENT;
@@ -399,9 +434,8 @@ struct StructTraits<cc::mojom::DrawQuad, cc::DrawQuad> {
     return quad;
   }
 
-  static cc::mojom::StreamVideoQuadStatePtr stream_video_quad_state(
-      const cc::DrawQuad& data) {
-    return nullptr;
+  static const cc::DrawQuad& stream_video_quad_state(const cc::DrawQuad& quad) {
+    return quad;
   }
 
   static const cc::DrawQuad& yuv_video_quad_state(const cc::DrawQuad& data) {

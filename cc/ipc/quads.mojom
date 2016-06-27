@@ -8,6 +8,7 @@ import "cc/ipc/filter_operations.mojom";
 import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/transform.mojom";
 
 struct DebugBorderQuadState {
   // Debug border color.
@@ -68,7 +69,11 @@ struct TileQuadState {
   bool nearest_neighbor;
 };
 
-struct StreamVideoQuadState {};
+struct StreamVideoQuadState {
+  uint32 resource_id;
+  gfx.mojom.Size resource_size_in_pixels;
+  gfx.mojom.Transform matrix;
+};
 
 enum YUVColorSpace {
   REC_601,       // SDTV standard with restricted "studio swing" color range.

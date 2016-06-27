@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/ipc/quads_struct_traits.h"
+#include "ui/gfx/mojo/transform_struct_traits.h"
 
 namespace mojo {
 
@@ -166,6 +167,20 @@ bool StructTraits<cc::mojom::SolidColorQuadState, cc::DrawQuad>::Read(
 }
 
 // static
+bool StructTraits<cc::mojom::StreamVideoQuadState, cc::DrawQuad>::Read(
+    cc::mojom::StreamVideoQuadStateDataView data,
+    cc::DrawQuad* out) {
+  cc::StreamVideoDrawQuad* quad = static_cast<cc::StreamVideoDrawQuad*>(out);
+  quad->resources.ids[cc::StreamVideoDrawQuad::kResourceIdIndex] =
+      data.resource_id();
+  quad->resources.count = 1;
+  return data.ReadResourceSizeInPixels(
+             &quad->overlay_resources
+                  .size_in_pixels[cc::StreamVideoDrawQuad::kResourceIdIndex]) &&
+         data.ReadMatrix(&quad->matrix);
+}
+
+// static
 bool StructTraits<cc::mojom::SurfaceQuadState, cc::DrawQuad>::Read(
     cc::mojom::SurfaceQuadStateDataView data,
     cc::DrawQuad* out) {
@@ -298,9 +313,7 @@ bool StructTraits<cc::mojom::DrawQuad, cc::DrawQuad>::Read(
     case cc::mojom::Material::SOLID_COLOR:
       return data.ReadSolidColorQuadState(out);
     case cc::mojom::Material::STREAM_VIDEO_CONTENT:
-      // TODO(fsamuel): Implement StreamVideoContentDrawQuad
-      // serialization/deserialization.
-      break;
+      return data.ReadStreamVideoQuadState(out);
     case cc::mojom::Material::SURFACE_CONTENT:
       return data.ReadSurfaceQuadState(out);
     case cc::mojom::Material::TEXTURE_CONTENT:

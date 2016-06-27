@@ -17,6 +17,8 @@ namespace cc {
 
 class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
  public:
+  static const size_t kResourceIdIndex = 0;
+
   StreamVideoDrawQuad();
 
   void SetNew(const SharedQuadState* shared_quad_state,
@@ -52,8 +54,6 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
   }
 
  private:
-  static const size_t kResourceIdIndex = 0;
-
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
