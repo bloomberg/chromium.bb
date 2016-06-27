@@ -134,13 +134,13 @@ Color ColorInputType::valueAsColor() const
 {
     Color color;
     bool success = color.setFromString(element().value());
-    ASSERT_UNUSED(success, success);
+    DCHECK(success);
     return color;
 }
 
 void ColorInputType::createShadowSubtree()
 {
-    ASSERT(element().shadow());
+    DCHECK(element().shadow());
 
     Document& document = element().document();
     HTMLDivElement* wrapperElement = HTMLDivElement::create(document);

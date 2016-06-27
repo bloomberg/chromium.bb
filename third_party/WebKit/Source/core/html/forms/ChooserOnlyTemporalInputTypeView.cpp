@@ -50,7 +50,7 @@ ChooserOnlyTemporalInputTypeView* ChooserOnlyTemporalInputTypeView::create(HTMLI
 
 ChooserOnlyTemporalInputTypeView::~ChooserOnlyTemporalInputTypeView()
 {
-    ASSERT(!m_dateTimeChooser);
+    DCHECK(!m_dateTimeChooser);
 }
 
 DEFINE_TRACE(ChooserOnlyTemporalInputTypeView)
@@ -126,7 +126,7 @@ void ChooserOnlyTemporalInputTypeView::didChooseValue(const String& value)
 
 void ChooserOnlyTemporalInputTypeView::didChooseValue(double value)
 {
-    ASSERT(std::isfinite(value) || std::isnan(value));
+    DCHECK(std::isfinite(value) || std::isnan(value));
     if (std::isnan(value))
         element().setValue(emptyString(), DispatchInputAndChangeEvent);
     else

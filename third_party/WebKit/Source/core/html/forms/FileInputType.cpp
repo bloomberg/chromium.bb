@@ -224,7 +224,7 @@ FileList* FileInputType::createFileList(const Vector<FileChooserFileInfo>& files
                 rootPath = directoryName(rootPath);
         }
         rootPath = directoryName(rootPath);
-        ASSERT(rootPath.length());
+        DCHECK(rootPath.length());
         int rootLength = rootPath.length();
         if (rootPath[rootLength - 1] != '\\' && rootPath[rootLength - 1] != '/')
             rootLength += 1;
@@ -257,7 +257,7 @@ void FileInputType::countUsage()
 
 void FileInputType::createShadowSubtree()
 {
-    ASSERT(element().shadow());
+    DCHECK(element().shadow());
     HTMLInputElement* button = HTMLInputElement::create(element().document(), 0, false);
     button->setType(InputTypeNames::button);
     button->setAttribute(valueAttr, AtomicString(locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel)));
@@ -267,14 +267,14 @@ void FileInputType::createShadowSubtree()
 
 void FileInputType::disabledAttributeChanged()
 {
-    ASSERT(element().shadow());
+    DCHECK(element().shadow());
     if (Element* button = toElement(element().userAgentShadowRoot()->firstChild()))
         button->setBooleanAttribute(disabledAttr, element().isDisabledFormControl());
 }
 
 void FileInputType::multipleAttributeChanged()
 {
-    ASSERT(element().shadow());
+    DCHECK(element().shadow());
     if (Element* button = toElement(element().userAgentShadowRoot()->firstChild()))
         button->setAttribute(valueAttr, AtomicString(locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel)));
 }

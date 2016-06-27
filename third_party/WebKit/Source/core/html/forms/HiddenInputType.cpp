@@ -83,7 +83,7 @@ bool HiddenInputType::supportsValidation() const
 
 LayoutObject* HiddenInputType::createLayoutObject(const ComputedStyle&) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 

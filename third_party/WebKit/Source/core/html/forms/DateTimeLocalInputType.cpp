@@ -84,14 +84,14 @@ StepRange DateTimeLocalInputType::createStepRange(AnyStepHandling anyStepHandlin
 
 bool DateTimeLocalInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const
 {
-    ASSERT(out);
+    DCHECK(out);
     unsigned end;
     return out->parseDateTimeLocal(string, 0, end) && end == string.length();
 }
 
 bool DateTimeLocalInputType::setMillisecondToDateComponents(double value, DateComponents* date) const
 {
-    ASSERT(date);
+    DCHECK(date);
     return date->setMillisecondsSinceEpochForDateTimeLocal(value);
 }
 

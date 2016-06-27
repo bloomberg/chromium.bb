@@ -327,19 +327,19 @@ bool InputType::stepMismatch(const String& value) const
 
 String InputType::badInputText() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return locale().queryString(WebLocalizedString::ValidationTypeMismatch);
 }
 
 String InputType::rangeOverflowText(const Decimal&) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
 String InputType::rangeUnderflowText(const Decimal&) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -399,7 +399,7 @@ std::pair<String, String> InputType::validationMessage(const InputTypeView& inpu
         return std::make_pair(rangeOverflowText(stepRange.maximum()), emptyString());
 
     if (stepRange.stepMismatch(numericValue)) {
-        ASSERT(stepRange.hasStep());
+        DCHECK(stepRange.hasStep());
         Decimal candidate1 = stepRange.clampValue(numericValue);
         String localizedCandidate1 = localizeValue(serialize(candidate1));
         Decimal candidate2 = candidate1 < numericValue ? candidate1 + stepRange.step() : candidate1 - stepRange.step();
@@ -416,7 +416,7 @@ std::pair<String, String> InputType::validationMessage(const InputTypeView& inpu
 
 Decimal InputType::parseToNumber(const String&, const Decimal& defaultValue) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return defaultValue;
 }
 
@@ -427,7 +427,7 @@ Decimal InputType::parseToNumberOrNaN(const String& string) const
 
 String InputType::serialize(const Decimal&) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -599,13 +599,13 @@ void InputType::warnIfValueIsInvalid(const String&) const
 
 bool InputType::receiveDroppedFiles(const DragData*)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 String InputType::droppedFileSystemId()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -673,7 +673,7 @@ String InputType::defaultToolTip(const InputTypeView& inputTypeView) const
 
 Decimal InputType::findClosestTickMarkValue(const Decimal&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return Decimal::nan();
 }
 
@@ -767,7 +767,7 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
         //   e.g. <input type=number value=3 min=-100 step=3> -> 2
         //
 
-        ASSERT(!step.isZero());
+        DCHECK(!step.isZero());
         if (count < 0) {
             newValue = base + ((newValue - base) / step).floor() * step;
             ++count;
@@ -793,7 +793,7 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
         newValue = alignedMaximum;
     } else if (newValue < stepRange.minimum()) {
         const Decimal alignedMinimum = base + ((stepRange.minimum() - base) / step).ceil() * step;
-        ASSERT(alignedMinimum >= stepRange.minimum());
+        DCHECK_GE(alignedMinimum, stepRange.minimum());
         newValue = alignedMinimum;
     }
 
@@ -816,7 +816,7 @@ bool InputType::getAllowedValueStep(Decimal* step) const
 
 StepRange InputType::createStepRange(AnyStepHandling) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return StepRange();
 }
 
@@ -860,10 +860,10 @@ void InputType::stepUpFromLayoutObject(int n)
     //
     // n is assumed as -n if step < 0.
 
-    ASSERT(isSteppable());
+    DCHECK(isSteppable());
     if (!isSteppable())
         return;
-    ASSERT(n);
+    DCHECK(n);
     if (!n)
         return;
 

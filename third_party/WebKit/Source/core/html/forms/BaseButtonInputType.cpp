@@ -62,7 +62,7 @@ InputTypeView* BaseButtonInputType::createView()
 
 void BaseButtonInputType::createShadowSubtree()
 {
-    ASSERT(element().userAgentShadowRoot());
+    DCHECK(element().userAgentShadowRoot());
     element().userAgentShadowRoot()->appendChild(Text::create(element().document(), displayValue()));
 }
 

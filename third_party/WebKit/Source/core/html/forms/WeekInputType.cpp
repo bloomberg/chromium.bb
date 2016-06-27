@@ -70,14 +70,14 @@ StepRange WeekInputType::createStepRange(AnyStepHandling anyStepHandling) const
 
 bool WeekInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const
 {
-    ASSERT(out);
+    DCHECK(out);
     unsigned end;
     return out->parseWeek(string, 0, end) && end == string.length();
 }
 
 bool WeekInputType::setMillisecondToDateComponents(double value, DateComponents* date) const
 {
-    ASSERT(date);
+    DCHECK(date);
     return date->setMillisecondsSinceEpochForWeek(value);
 }
 

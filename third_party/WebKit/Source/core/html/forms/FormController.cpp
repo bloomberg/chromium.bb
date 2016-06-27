@@ -58,7 +58,7 @@ static inline HTMLFormElement* ownerFormForState(const HTMLFormControlElementWit
 
 void FormControlState::serializeTo(Vector<String>& stateVector) const
 {
-    ASSERT(!isFailure());
+    DCHECK(!isFailure());
     stateVector.append(String::number(m_values.size()));
     for (size_t i = 0; i < m_values.size(); ++i)
         stateVector.append(m_values[i].isNull() ? emptyString() : m_values[i]);
@@ -262,7 +262,7 @@ FormControlState SavedFormState::takeControlState(const AtomicString& name, cons
     FormElementStateMap::iterator it = m_stateForNewFormElements.find(FormElementKey(name.impl(), type.impl()));
     if (it == m_stateForNewFormElements.end())
         return FormControlState();
-    ASSERT(it->value.size());
+    DCHECK_GT(it->value.size(), 0u);
     FormControlState state = it->value.takeFirst();
     m_controlStateCount--;
     if (!it->value.size())
@@ -359,7 +359,7 @@ const AtomicString& FormKeyGenerator::formKey(const HTMLFormControlElementWithSt
         return it->value;
 
     String signature = formSignature(*form);
-    ASSERT(!signature.isNull());
+    DCHECK(!signature.isNull());
     FormSignatureToNextIndexMap::AddResult result = m_formSignatureToNextIndexMap.add(signature, 0);
     unsigned nextIndex = result.storedValue->value++;
 
@@ -373,7 +373,7 @@ const AtomicString& FormKeyGenerator::formKey(const HTMLFormControlElementWithSt
 
 void FormKeyGenerator::willDeleteForm(HTMLFormElement* form)
 {
-    ASSERT(form);
+    DCHECK(form);
     m_formToKeyMap.remove(form);
 }
 
@@ -391,7 +391,7 @@ DEFINE_TRACE(DocumentState)
 
 void DocumentState::addControl(HTMLFormControlElementWithState* control)
 {
-    ASSERT(!m_formControls.contains(control));
+    DCHECK(!m_formControls.contains(control));
     m_formControls.add(control);
 }
 
@@ -416,7 +416,7 @@ Vector<String> DocumentState::toStateVector()
     std::unique_ptr<SavedFormStateMap> stateMap = wrapUnique(new SavedFormStateMap);
     for (const auto& formControl : m_formControls) {
         HTMLFormControlElementWithState* control = formControl.get();
-        ASSERT(control->inShadowIncludingDocument());
+        DCHECK(control->inShadowIncludingDocument());
         if (!control->shouldSaveAndRestoreFormControlState())
             continue;
         SavedFormStateMap::AddResult result = stateMap->add(keyGenerator->formKey(*control), nullptr);

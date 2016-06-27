@@ -75,7 +75,7 @@ String EmailInputType::convertEmailAddressToASCII(const ScriptRegexp& regexp, co
     // Leak |idna| at the end.
     UErrorCode errorCode = U_ZERO_ERROR;
     static icu::IDNA *idna = icu::IDNA::createUTS46Instance(idnaConversionOption, errorCode);
-    ASSERT(idna);
+    DCHECK(idna);
     icu::IDNAInfo idnaInfo;
     idna->nameToASCII(idnDomainName, domainName, idnaInfo, errorCode);
     if (U_FAILURE(errorCode) || idnaInfo.hasErrors() || domainName.length() > maximumDomainNameLength)
@@ -211,7 +211,7 @@ bool EmailInputType::typeMismatch() const
 String EmailInputType::typeMismatchText() const
 {
     String invalidAddress = findInvalidAddress(element().value());
-    ASSERT(!invalidAddress.isNull());
+    DCHECK(!invalidAddress.isNull());
     if (invalidAddress.isEmpty())
         return locale().queryString(WebLocalizedString::ValidationTypeMismatchForEmailEmpty);
     String atSign = String("@");
@@ -239,7 +239,7 @@ String EmailInputType::typeMismatchText() const
     }
     if (!checkValidDotUsage(domain)) {
         size_t atIndexInUnicode = unicodeAddress.find('@');
-        ASSERT(atIndexInUnicode != kNotFound);
+        DCHECK_NE(atIndexInUnicode, kNotFound);
         return locale().queryString(WebLocalizedString::ValidationTypeMismatchForEmailInvalidDots, String("."), unicodeAddress.substring(atIndexInUnicode + 1));
     }
     if (element().multiple())

@@ -81,8 +81,8 @@ void SearchInputType::createShadowSubtree()
     TextFieldInputType::createShadowSubtree();
     Element* container = containerElement();
     Element* viewPort = element().userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
-    ASSERT(container);
-    ASSERT(viewPort);
+    DCHECK(container);
+    DCHECK(viewPort);
     container->insertBefore(SearchFieldCancelButtonElement::create(element().document()), viewPort->nextSibling());
 }
 
@@ -105,7 +105,7 @@ void SearchInputType::handleKeydownEvent(KeyboardEvent* event)
 
 void SearchInputType::startSearchEventTimer()
 {
-    ASSERT(element().layoutObject());
+    DCHECK(element().layoutObject());
     unsigned length = element().innerEditorValue().length();
 
     if (!length) {

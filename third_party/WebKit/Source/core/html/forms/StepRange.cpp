@@ -60,10 +60,10 @@ StepRange::StepRange(const Decimal& stepBase, const Decimal& minimum, const Deci
     , m_hasStep(step.isFinite())
     , m_hasRangeLimitations(hasRangeLimitations)
 {
-    ASSERT(m_maximum.isFinite());
-    ASSERT(m_minimum.isFinite());
-    ASSERT(m_step.isFinite());
-    ASSERT(m_stepBase.isFinite());
+    DCHECK(m_maximum.isFinite());
+    DCHECK(m_minimum.isFinite());
+    DCHECK(m_step.isFinite());
+    DCHECK(m_stepBase.isFinite());
 }
 
 Decimal StepRange::acceptableError() const
@@ -108,7 +108,7 @@ Decimal StepRange::parseStep(AnyStepHandling anyStepHandling, const StepDescript
         case AnyIsDefaultStep:
             return stepDescription.defaultValue();
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
 
@@ -131,10 +131,10 @@ Decimal StepRange::parseStep(AnyStepHandling anyStepHandling, const StepDescript
         step = std::max(step.round(), Decimal(1));
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
-    ASSERT(step > 0);
+    DCHECK_GT(step, 0);
     return step;
 }
 

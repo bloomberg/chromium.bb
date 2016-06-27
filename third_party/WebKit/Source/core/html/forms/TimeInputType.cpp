@@ -76,7 +76,7 @@ Decimal TimeInputType::defaultValueForStepUp() const
     DateComponents date;
     date.setMillisecondsSinceMidnight(convertToLocalTime(currentTimeMS()));
     double milliseconds = date.millisecondsSinceEpoch();
-    ASSERT(std::isfinite(milliseconds));
+    DCHECK(std::isfinite(milliseconds));
     return Decimal::fromDouble(milliseconds);
 }
 
@@ -89,14 +89,14 @@ StepRange TimeInputType::createStepRange(AnyStepHandling anyStepHandling) const
 
 bool TimeInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const
 {
-    ASSERT(out);
+    DCHECK(out);
     unsigned end;
     return out->parseTime(string, 0, end) && end == string.length();
 }
 
 bool TimeInputType::setMillisecondToDateComponents(double value, DateComponents* date) const
 {
-    ASSERT(date);
+    DCHECK(date);
     return date->setMillisecondsSinceMidnight(value);
 }
 
