@@ -160,3 +160,6 @@ bool FLAGS_quic_socket_walltimestamps = false;
 // server side, and the IPFS connection option disables this instead of
 // enabling it.
 bool FLAGS_quic_default_immediate_forward_secure = false;
+
+// If true, disables support for QUIC version 29 and earlier.
+bool FLAGS_quic_disable_pre_30 = false;

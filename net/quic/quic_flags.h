@@ -51,5 +51,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_rate_based_sending;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_cheap_stateless_rejects;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_socket_walltimestamps;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_default_immediate_forward_secure;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_pre_30;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

@@ -201,6 +201,8 @@ QuicDispatcher::QuicDispatcher(
       delete_sessions_alarm_(
           alarm_factory_->CreateAlarm(new DeleteSessionsAlarm(this))),
       supported_versions_(supported_versions),
+      disable_quic_pre_30_(FLAGS_quic_disable_pre_30),
+      allowed_supported_versions_(supported_versions),
       current_packet_(nullptr),
       framer_(supported_versions,
               /*unused*/ QuicTime::Zero(),
@@ -283,7 +285,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
 
   // Unless the packet provides a version, assume that we can continue
   // processing using our preferred version.
-  QuicVersion version = supported_versions_.front();
+  QuicVersion version = GetSupportedVersions().front();
   if (header.version_flag) {
     QuicVersion packet_version = header.versions.front();
     if (!framer_.IsSupportedVersion(packet_version)) {
@@ -293,7 +295,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       // Since the version is not supported, send a version negotiation
       // packet and stop processing the current packet.
       time_wait_list_manager()->SendVersionNegotiationPacket(
-          connection_id, supported_versions_, current_server_address_,
+          connection_id, GetSupportedVersions(), current_server_address_,
           current_client_address_);
       return false;
     }
@@ -599,7 +601,7 @@ QuicServerSessionBase* QuicDispatcher::CreateQuicSession(
   QuicConnection* connection = new QuicConnection(
       connection_id, client_address, helper_.get(), alarm_factory_.get(),
       CreatePerConnectionWriter(),
-      /* owns_writer= */ true, Perspective::IS_SERVER, supported_versions_);
+      /* owns_writer= */ true, Perspective::IS_SERVER, GetSupportedVersions());
 
   QuicServerSessionBase* session = new QuicSimpleServerSession(
       config_, connection, this, session_helper_.get(), crypto_config_,
@@ -718,6 +720,17 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::MaybeRejectStatelessly(
 
   QUIC_BUG << "Rejector has unknown invalid state.";
   return kFateDrop;
+}
+
+const QuicVersionVector& QuicDispatcher::GetSupportedVersions() {
+  // Filter (or un-filter) the list of supported versions based on the flag.
+  if (disable_quic_pre_30_ != FLAGS_quic_disable_pre_30) {
+    DCHECK_EQ(supported_versions_.capacity(),
+              allowed_supported_versions_.capacity());
+    disable_quic_pre_30_ = FLAGS_quic_disable_pre_30;
+    supported_versions_ = FilterSupportedVersions(allowed_supported_versions_);
+  }
+  return supported_versions_;
 }
 
 }  // namespace net

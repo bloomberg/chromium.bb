@@ -180,9 +180,7 @@ class QuicDispatcher : public QuicServerSessionBase::Visitor,
     return time_wait_list_manager_.get();
   }
 
-  const QuicVersionVector& supported_versions() const {
-    return supported_versions_;
-  }
+  const QuicVersionVector& GetSupportedVersions();
 
   const IPEndPoint& current_server_address() { return current_server_address_; }
   const IPEndPoint& current_client_address() { return current_client_address_; }
@@ -222,8 +220,7 @@ class QuicDispatcher : public QuicServerSessionBase::Visitor,
   void SetLastError(QuicErrorCode error);
 
   // Called when the public header has been parsed and the session has been
-  // looked up, and the session was not found in the active std::list of
-  // sessions.
+  // looked up, and the session was not found in the active list of sessions.
   // Returns false if processing should stop after this call.
   virtual bool OnUnauthenticatedUnknownPublicHeader(
       const QuicPacketPublicHeader& header);
@@ -282,7 +279,13 @@ class QuicDispatcher : public QuicServerSessionBase::Visitor,
   // This should be ordered such that the highest supported version is the first
   // element, with subsequent elements in descending order (versions can be
   // skipped as necessary).
-  const QuicVersionVector supported_versions_;
+  QuicVersionVector supported_versions_;
+
+  // FLAGS_quic_disable_pre_30
+  bool disable_quic_pre_30_;
+  // The list of versions that may be supported by this dispatcher.
+  // |supported_versions| is derived from this list and |disable_quic_pre_30_|.
+  const QuicVersionVector allowed_supported_versions_;
 
   // Information about the packet currently being handled.
   IPEndPoint current_client_address_;
