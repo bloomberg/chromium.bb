@@ -15,8 +15,8 @@ from measurements import v8_gc_times
 import page_sets
 from telemetry import benchmark
 from telemetry import story
+from telemetry.timeline import chrome_trace_config
 from telemetry.timeline import tracing_category_filter
-from telemetry.timeline import tracing_config
 from telemetry.web_perf import timeline_based_measurement
 
 
@@ -210,7 +210,7 @@ class _V8MemoryAndCodeSizeBenchmark(perf_benchmark.PerfBenchmark):
         'disabled-by-default-memory-infra.v8.code_stats')
     options = timeline_based_measurement.Options(category_filter)
     # Trigger periodic light memory dumps every 20 ms.
-    memory_dump_config = tracing_config.MemoryDumpConfig()
+    memory_dump_config = chrome_trace_config.MemoryDumpConfig()
     memory_dump_config.AddTrigger('light', 20)
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
     options.SetTimelineBasedMetric('memoryMetric')

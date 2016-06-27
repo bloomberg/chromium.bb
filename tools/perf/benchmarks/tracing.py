@@ -5,8 +5,8 @@
 from core import perf_benchmark
 
 from telemetry import benchmark
+from telemetry.timeline import chrome_trace_config
 from telemetry.timeline import tracing_category_filter
-from telemetry.timeline import tracing_config
 from telemetry.web_perf import timeline_based_measurement
 
 import page_sets
@@ -40,7 +40,7 @@ class TracingWithBackgroundMemoryInfra(perf_benchmark.PerfBenchmark):
     trace_memory = tracing_category_filter.TracingCategoryFilter(
         filter_string='-*,blink.console,disabled-by-default-memory-infra')
     options = timeline_based_measurement.Options(overhead_level=trace_memory)
-    memory_dump_config = tracing_config.MemoryDumpConfig()
+    memory_dump_config = chrome_trace_config.MemoryDumpConfig()
     memory_dump_config.AddTrigger('background', 200)
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
     options.SetTimelineBasedMetric('tracingMetric')
