@@ -38,7 +38,7 @@ gfx::Size GetDPI() {
 float GetUnforcedDeviceScaleFactor() {
   return g_device_scale_factor
       ? g_device_scale_factor
-      : static_cast<float>(GetDPI().width()) / kDefaultDPI;
+      : GetScalingFactorFromDPI(GetDPI().width());
 }
 
 }  // namespace
@@ -57,6 +57,10 @@ float GetDPIScale() {
 
 int GetDPIFromScalingFactor(float device_scaling_factor) {
   return kDefaultDPI * device_scaling_factor;
+}
+
+float GetScalingFactorFromDPI(int dpi) {
+  return static_cast<float>(dpi) / kDefaultDPI;
 }
 
 int GetSystemMetricsInDIP(int metric) {

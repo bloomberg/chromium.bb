@@ -26,6 +26,9 @@ DISPLAY_EXPORT float GetDPIScale();
 // Returns the equivalent DPI for |device_scaling_factor|.
 DISPLAY_EXPORT int GetDPIFromScalingFactor(float device_scaling_factor);
 
+// Returns the equivalent scaling factor for |dpi|.
+DISPLAY_EXPORT float GetScalingFactorFromDPI(int dpi);
+
 // Win32's GetSystemMetrics uses pixel measures. This function calls
 // GetSystemMetrics for the given |metric|, then converts the result to DIP.
 DISPLAY_EXPORT int GetSystemMetricsInDIP(int metric);
