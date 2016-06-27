@@ -65,16 +65,32 @@ namespace {
 // This class wraps a NetLog that also contains network change events.
 class NetLogWithNetworkChangeEvents {
  public:
-  NetLogWithNetworkChangeEvents() : net_log_(), net_change_logger_(&net_log_) {}
+  NetLogWithNetworkChangeEvents() {}
 
   net::NetLog* net_log() { return &net_log_; }
+  // This function registers with the NetworkChangeNotifier and so must be
+  // called *after* the NetworkChangeNotifier is created. Should only be
+  // called on the UI thread as it is not thread-safe and the UI thread is
+  // the thread the NetworkChangeNotifier is created on. This function is
+  // not thread-safe because accesses to |net_change_logger_| are not atomic.
+  // There might be multiple CronetEngines each with a network thread so
+  // so the UI thread is used. |g_net_log_| also outlives the network threads
+  // so it would be unsafe to receive callbacks on the network threads without
+  // a complicated thread-safe reference-counting system to control callback
+  // registration.
+  void EnsureInitializedOnMainThread() {
+    DCHECK(base::MessageLoopForUI::IsCurrent());
+    if (net_change_logger_)
+      return;
+    net_change_logger_.reset(new net::LoggingNetworkChangeObserver(&net_log_));
+  }
 
  private:
   net::NetLog net_log_;
   // LoggingNetworkChangeObserver logs network change events to a NetLog.
   // This class bundles one LoggingNetworkChangeObserver with one NetLog,
   // so network change event are logged just once in the NetLog.
-  net::LoggingNetworkChangeObserver net_change_logger_;
+  std::unique_ptr<net::LoggingNetworkChangeObserver> net_change_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(NetLogWithNetworkChangeEvents);
 };
@@ -413,6 +429,7 @@ void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
   // TODO(csharrison) Architect the wrapper better so we don't need to cast for
   // android ProxyConfigServices.
   android_proxy_config_service->set_exclude_pac_url(true);
+  g_net_log.Get().EnsureInitializedOnMainThread();
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::InitializeOnNetworkThread,
