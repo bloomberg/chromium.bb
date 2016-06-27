@@ -1,0 +1,18 @@
+# These tests currently fail when they run with --isolate-sites-for-testing=*.is
+
+# https://crbug.com/585194 - back/forward lists look different with --site-per-process
+http/tests/navigation/back-to-dynamic-iframe.html [ Failure Timeout ]
+http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
+
+# https://crbug.com/602493 - Layout tests harness doesn't support history dump across OOPIFs
+# https://crbug.com/582522 - extra mixedContent checks reported
+http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+
+# https://crbug.com/585171 - iframe restored from history should be excluded from performance entries.
+http/tests/misc/resource-timing-iframe-restored-from-history.html [ Failure Timeout ]
+
+# TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
+fast/history/same-document-iframes-changing-fragment.html [ Failure ]
+fast/history/same-document-iframes-changing-pushstate.html [ Failure ]
+fast/loader/form-state-restore-with-frames.html [ Failure ]
+
