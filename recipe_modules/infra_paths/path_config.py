@@ -30,15 +30,21 @@ def infra_kitchen(c):
   c.base_paths['root'] = c.CURRENT_WORKING_DIR
   c.base_paths['slave_build'] = c.CURRENT_WORKING_DIR
   # TODO(phajdan.jr): have one cache dir, let clients append suffixes.
-  # TODO(phajdan.jr): set persistent cache path for remaining platforms.
-  # NOTE: do not use /b/swarm_slave here - it gets deleted on bot redeploy,
-  # and may happen even after a reboot.
+
+  b_dir = c.CURRENT_WORKING_DIR
+  while b_dir and b_dir[-1] != 'b':
+    b_dir = b_dir[:-1]
+
   if c.PLATFORM in ('linux', 'mac'):
     c.base_paths['cache'] = (
         '/', 'b', 'cache', 'chromium')
     for path in ('builder_cache', 'git_cache', 'goma_cache', 'goma_deps_cache'):
       c.base_paths[path] = c.base_paths['cache'] + (path,)
-  else:
+  elif b_dir:
+    c.base_paths['cache'] = b_dir + ('cache', 'chromium')
+    for path in ('builder_cache', 'git_cache', 'goma_cache', 'goma_deps_cache'):
+      c.base_paths[path] = c.base_paths['cache'] + (path,)
+  else:  # pragma: no cover
     c.base_paths['cache'] = c.base_paths['root'] + ('cache',)
     c.base_paths['git_cache'] = c.base_paths['root'] + ('cache_dir',)
     for path in ('builder_cache', 'goma_cache', 'goma_deps_cache'):
