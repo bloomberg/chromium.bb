@@ -115,18 +115,27 @@ std::vector<std::string> ImportantSitesUtil::GetImportantRegisterableDomains(
           site_engagement_service, engagement_map,
           SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM);
 
-  // Second we grab origins with push notifications.
+  // Second we grab origins with desired content settings.
   std::vector<std::pair<GURL, double>> sorted_notification_origins =
       GenerateSortedOriginsForContentTypeAllowed(
           profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, engagement_map);
+
+  std::vector<std::pair<GURL, double>> sorted_durable_origins =
+      GenerateSortedOriginsForContentTypeAllowed(
+          profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, engagement_map);
 
   // Now we transform them into registerable domains, and add them into our
   // final list. Since our # is small, we just iterate our vector to de-dup.
   // Otherwise we can add a set later.
   std::vector<std::string> final_list;
-  // We start with notifications.
+  // We include sites in the following order:
+  // 1. Durable
+  // 2. Notifications
+  FillTopRegisterableDomains(sorted_durable_origins, max_results,
+                             &final_list, optional_example_origins);
   FillTopRegisterableDomains(sorted_notification_origins, max_results,
                              &final_list, optional_example_origins);
+
   // And now we fill the rest with high engagement sites.
   FillTopRegisterableDomains(sorted_engagement_origins, max_results,
                              &final_list, optional_example_origins);
