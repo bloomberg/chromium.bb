@@ -241,6 +241,9 @@ class ChromeLauncherControllerImpl
   // Re-syncs shelf model.
   void UpdateAppLaunchersFromPref();
 
+  // Schedules re-sync of shelf model.
+  void ScheduleUpdateAppLaunchersFromPref();
+
   // Sets the shelf auto-hide behavior from prefs.
   void SetShelfAutoHideBehaviorFromPrefs();
 

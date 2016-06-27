@@ -24,6 +24,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -1265,6 +1266,13 @@ void ChromeLauncherControllerImpl::OnSyncModelUpdated() {
   UpdateAppLaunchersFromPref();
 }
 
+void ChromeLauncherControllerImpl::ScheduleUpdateAppLaunchersFromPref() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref,
+                 base::Unretained(this)));
+}
+
 void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
   // There are various functions which will trigger a |SyncPinPosition| call
   // like a direct call to |DoPinAppWithID|, or an indirect call to the menu
@@ -1607,6 +1615,14 @@ void ChromeLauncherControllerImpl::AttachProfile(Profile* profile) {
       prefs::kPolicyPinnedLauncherApps,
       base::Bind(&ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref,
                  base::Unretained(this)));
+  // Handling of prefs::kArcEnabled change should be called deferred to avoid
+  // race condition when OnAppUninstalledPrepared for Arc apps is called after
+  // UpdateAppLaunchersFromPref.
+  pref_change_registrar_.Add(
+      prefs::kArcEnabled,
+      base::Bind(
+          &ChromeLauncherControllerImpl::ScheduleUpdateAppLaunchersFromPref,
+          base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kShelfAlignmentLocal,
       base::Bind(&ChromeLauncherControllerImpl::SetShelfAlignmentFromPrefs,

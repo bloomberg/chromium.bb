@@ -7,6 +7,9 @@
 #include <string>
 #include <utility>
 
+#include "ash/shelf/shelf_delegate.h"
+#include "ash/shell.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -66,6 +69,9 @@ base::LazyInstance<base::ThreadChecker> thread_checker =
 // Skip creating UI in unit tests
 bool disable_ui_for_testing = false;
 
+// Use specified ash::ShelfDelegate for unit tests.
+ash::ShelfDelegate* shelf_delegate_for_testing = nullptr;
+
 // The Android management check is disabled by default, it's used only for
 // testing.
 bool enable_check_android_management_for_testing = false;
@@ -83,6 +89,14 @@ bool IsAccountManaged(Profile* profile) {
 bool IsArcDisabledForEnterprise() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnterpriseDisableArc);
+}
+
+ash::ShelfDelegate* GetShelfDelegate() {
+  if (shelf_delegate_for_testing)
+    return shelf_delegate_for_testing;
+  if (!ash::Shell::HasInstance())
+    return nullptr;
+  return ash::Shell::GetInstance()->GetShelfDelegate();
 }
 
 }  // namespace
@@ -125,6 +139,12 @@ void ArcAuthService::RegisterProfilePrefs(
 // static
 void ArcAuthService::DisableUIForTesting() {
   disable_ui_for_testing = true;
+}
+
+// static
+void ArcAuthService::SetShelfDelegateForTesting(
+    ash::ShelfDelegate* shelf_delegate) {
+  shelf_delegate_for_testing = shelf_delegate;
 }
 
 // static
@@ -441,9 +461,16 @@ void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
 
   // Update UMA only for local changes
   if (!from_sync) {
-    UpdateOptInActionUMA(profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)
-                             ? OptInActionType::OPTED_IN
-                             : OptInActionType::OPTED_OUT);
+    const bool arc_enabled =
+        profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled);
+    UpdateOptInActionUMA(arc_enabled ? OptInActionType::OPTED_IN
+                                     : OptInActionType::OPTED_OUT);
+
+    if (!disable_arc_from_ui_ && !arc_enabled && !IsArcManaged()) {
+      ash::ShelfDelegate* shelf_delegate = GetShelfDelegate();
+      if (shelf_delegate)
+        shelf_delegate->UnpinAppWithID(ArcSupportHost::kHostAppId);
+    }
   }
 }
 
@@ -455,10 +482,11 @@ void ArcAuthService::OnOptInPreferenceChanged() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInEnabled(arc_enabled));
 
   if (!arc_enabled) {
-    if (state_ != State::STOPPED)
+    if (state_ != State::STOPPED) {
       UpdateEnabledStateUMA(false);
+      profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+    }
     ShutdownBridgeAndCloseUI();
-    profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
     return;
   }
 
@@ -582,7 +610,14 @@ void ArcAuthService::CancelAuthCode() {
   if (ui_page_ != UIPage::ERROR && ui_page_ != UIPage::NO_PAGE)
     UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
 
+  base::AutoReset<bool> auto_reset(&disable_arc_from_ui_, true);
   DisableArc();
+}
+
+bool ArcAuthService::IsArcManaged() const {
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+  DCHECK(profile_);
+  return profile_->GetPrefs()->IsManagedPreference(prefs::kArcEnabled);
 }
 
 bool ArcAuthService::IsArcEnabled() const {

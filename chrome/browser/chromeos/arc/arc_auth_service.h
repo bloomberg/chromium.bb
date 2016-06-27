@@ -28,6 +28,10 @@ class GaiaAuthFetcher;
 class Profile;
 class ProfileOAuth2TokenService;
 
+namespace ash {
+class ShelfDelegate;
+}
+
 namespace content {
 class StoragePartition;
 }
@@ -98,6 +102,7 @@ class ArcAuthService : public ArcService,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static void DisableUIForTesting();
+  static void SetShelfDelegateForTesting(ash::ShelfDelegate* shelf_delegate);
 
   // Checks if OptIn verification was disabled by switch in command line.
   static bool IsOptInVerificationDisabled();
@@ -149,6 +154,7 @@ class ArcAuthService : public ArcService,
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();
 
+  bool IsArcManaged() const;
   bool IsArcEnabled() const;
   void EnableArc();
   void DisableArc();
@@ -213,6 +219,7 @@ class ArcAuthService : public ArcService,
   GetAuthCodeCallback auth_callback_;
   bool initial_opt_in_ = false;
   bool context_prepared_ = false;
+  bool disable_arc_from_ui_ = false;
   UIPage ui_page_ = UIPage::NO_PAGE;
   base::string16 ui_page_status_;
   bool clear_required_ = false;

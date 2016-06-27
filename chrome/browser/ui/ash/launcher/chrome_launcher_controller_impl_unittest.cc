@@ -34,6 +34,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -398,6 +399,9 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
                                     Extension::NO_FLAGS,
                                     "ffffffffffffffffffffffffffffffff",
                                     &error);
+    arc_support_host_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
+                                          manifest, Extension::NO_FLAGS,
+                                          ArcSupportHost::kHostAppId, &error);
   }
 
   // Creates a running V2 app (not pinned) of type |app_id|.
@@ -762,6 +766,10 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
             } else if (app == extension8_->id()) {
               result += "App8";
               EXPECT_TRUE(launcher_controller_->IsAppPinned(extension8_->id()));
+            } else if (app == arc_support_host_->id()) {
+              result += "Play Store";
+              EXPECT_TRUE(
+                  launcher_controller_->IsAppPinned(arc_support_host_->id()));
             } else {
               bool arc_app_found = false;
               for (const auto& arc_app : arc_test_.fake_apps()) {
@@ -816,7 +824,19 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   void EnableArc(bool enable) {
     enable ? arc_test_.arc_auth_service()->EnableArc()
            : arc_test_.arc_auth_service()->DisableArc();
+    arc_test_.arc_auth_service()->OnSyncedPrefChanged(prefs::kArcEnabled,
+                                                      false);
     base::RunLoop().RunUntilIdle();
+  }
+
+  void ValidateArcState(bool arc_enabled,
+                        bool arc_managed,
+                        arc::ArcAuthService::State state,
+                        const std::string& pin_status) {
+    EXPECT_EQ(arc_managed, arc_test_.arc_auth_service()->IsArcManaged());
+    EXPECT_EQ(arc_enabled, arc_test_.arc_auth_service()->IsArcEnabled());
+    EXPECT_EQ(state, arc_test_.arc_auth_service()->state());
+    EXPECT_EQ(pin_status, GetPinnedAppStatus());
   }
 
   // Creates app window and set optional Arc application id.
@@ -843,6 +863,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extension6_;
   scoped_refptr<Extension> extension7_;
   scoped_refptr<Extension> extension8_;
+  scoped_refptr<Extension> arc_support_host_;
 
   ArcAppTest arc_test_;
   std::unique_ptr<ChromeLauncherControllerImpl> launcher_controller_;
@@ -3355,4 +3376,55 @@ TEST_F(ChromeLauncherControllerImplTest, ArcAppPinPolicy) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
   EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
             launcher_controller_->GetPinnable(app_id));
+}
+
+TEST_F(ChromeLauncherControllerImplTest, ArcManaged) {
+  extension_service_->AddExtension(arc_support_host_.get());
+  arc_test_.SetUp(profile());
+  // Test enables Arc, so turn it off for initial values.
+  EnableArc(false);
+
+  InitLauncherController();
+  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
+
+  // Initial run, Arc is not managed and disabled, Play Store pin should be
+  // available.
+  ValidateArcState(false, false, arc::ArcAuthService::State::STOPPED,
+                   "AppList, Chrome, Play Store");
+
+  // Arc is managed and enabled, Play Store pin should be available.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, new base::FundamentalValue(true));
+  base::RunLoop().RunUntilIdle();
+  ValidateArcState(true, true, arc::ArcAuthService::State::FETCHING_CODE,
+                   "AppList, Chrome, Play Store");
+
+  // Arc is managed and disabled, Play Store pin should not be available.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, new base::FundamentalValue(false));
+  base::RunLoop().RunUntilIdle();
+  ValidateArcState(false, true, arc::ArcAuthService::State::STOPPED,
+                   "AppList, Chrome");
+
+  // Arc is not managed and disabled, Play Store pin should be available.
+  profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
+  base::RunLoop().RunUntilIdle();
+  ValidateArcState(false, false, arc::ArcAuthService::State::STOPPED,
+                   "AppList, Chrome, Play Store");
+
+  // Arc is not managed and enabled, Play Store pin should be available.
+  EnableArc(true);
+  ValidateArcState(true, false, arc::ArcAuthService::State::FETCHING_CODE,
+                   "AppList, Chrome, Play Store");
+
+  // User disables Arc. Arc is not managed and disabled, Play Store pin should
+  // be automatically removed.
+  EnableArc(false);
+  ValidateArcState(false, false, arc::ArcAuthService::State::STOPPED,
+                   "AppList, Chrome");
+
+  // Even if re-enable it again, Play Store pin does not appear automatically.
+  EnableArc(true);
+  ValidateArcState(true, false, arc::ArcAuthService::State::FETCHING_CODE,
+                   "AppList, Chrome");
 }
