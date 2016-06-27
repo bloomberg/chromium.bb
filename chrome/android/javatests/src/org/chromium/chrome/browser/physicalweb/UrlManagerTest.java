@@ -10,6 +10,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.content.browser.test.util.Criteria;
@@ -229,7 +230,8 @@ public class UrlManagerTest extends InstrumentationTestCase {
         assertTrue(mUrlManager.containsInAnyCache(URL2));
     }
 
-    @SmallTest
+    //@SmallTest
+    @DisabledTest // crbug.com/622005
     public void testAddUrlInCacheWithOthersMakesNoNotification() throws Exception {
         addPwsResult1();
         addPwsResult2();
