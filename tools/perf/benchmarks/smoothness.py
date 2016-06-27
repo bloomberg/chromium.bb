@@ -37,6 +37,7 @@ class _Smoothness(perf_benchmark.PerfBenchmark):
     return True
 
 
+@benchmark.Disabled('mac')  # crbug.com/623570
 class SmoothnessTop25(_Smoothness):
   """Measures rendering statistics while scrolling down the top 25 web pages.
 

@@ -29,7 +29,8 @@ def CreateV8TimelineBasedMeasurementOptions():
   return options
 
 
-@benchmark.Disabled('win')        # crbug.com/416502
+@benchmark.Disabled('win',  # crbug.com/416502
+                    'mac')  # crbug.com/623570
 class V8Top25(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down the top 25 web pages.
 
