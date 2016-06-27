@@ -10,7 +10,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.content.browser.test.util.Criteria;
@@ -261,8 +261,8 @@ public class UrlManagerTest extends InstrumentationTestCase {
         assertTrue(mUrlManager.containsInAnyCache(URL2));
     }
 
-    //@SmallTest
-    @DisabledTest // crbug.com/622005
+    @SmallTest
+    @FlakyTest  // crbug.com/622005
     public void testAddUrlInCacheWithOthersMakesNoNotification() throws Exception {
         addPwsResult1();
         addPwsResult2();
@@ -271,6 +271,10 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mUrlManager.addUrl(URL2);
         mUrlManager.removeUrl(URL1);
         getInstrumentation().waitForIdleSync();
+
+        // Make sure the cache is in the appropriate state
+        assertTrue(mUrlManager.containsInAnyCache(URL1));
+
         mMockNotificationManagerProxy.cancelAll();
         mUrlManager.addUrl(URL1);
         getInstrumentation().waitForIdleSync();

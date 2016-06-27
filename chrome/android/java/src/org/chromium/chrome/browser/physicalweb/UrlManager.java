@@ -594,8 +594,10 @@ class UrlManager {
             if ((System.currentTimeMillis() - urlInfo.getScanTimestamp() <= MAX_CACHE_TIME
                     && mUrlsSortedByTimestamp.size() <= MAX_CACHE_SIZE)
                     || mNearbyUrls.contains(url)) {
+                Log.d(TAG, "Not garbage collecting: ", urlInfo);
                 break;
             }
+            Log.d(TAG, "Garbage collecting: ", urlInfo);
             // The min value cannot have changed at this point, so it's OK to just remove via
             // poll().
             mUrlsSortedByTimestamp.poll();
