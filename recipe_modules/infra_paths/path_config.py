@@ -33,7 +33,7 @@ def infra_kitchen(c):
   # TODO(phajdan.jr): set persistent cache path for remaining platforms.
   # NOTE: do not use /b/swarm_slave here - it gets deleted on bot redeploy,
   # and may happen even after a reboot.
-  if c.PLATFORM == 'linux':
+  if c.PLATFORM in ('linux', 'mac'):
     c.base_paths['cache'] = (
         '/', 'b', 'cache', 'chromium')
     for path in ('builder_cache', 'git_cache', 'goma_cache', 'goma_deps_cache'):
