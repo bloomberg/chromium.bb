@@ -63,6 +63,7 @@ const CFTimeInterval kOutOfMemoryResetTimeInterval = 5;
 
 - (void)resetForegroundMemoryWarningCount {
   _foregroundMemoryWarningCount = 0;
+  breakpad_helper::SetMemoryWarningCount(0);
 }
 
 @end

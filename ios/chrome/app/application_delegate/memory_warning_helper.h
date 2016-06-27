@@ -18,7 +18,8 @@
 // pressure.
 - (void)handleMemoryPressure;
 
-// Resets the foregroundMemoryWarningCount property, setting its value to 0.
+// Resets the foregroundMemoryWarningCount property and the memoryWarningCount
+// of the breakpad helper, setting their value to 0.
 - (void)resetForegroundMemoryWarningCount;
 
 @end
