@@ -474,9 +474,10 @@ class UrlManager {
 
     private void showNotification() {
         // We should only show notifications if there's no other notification-based client.
-        if (PhysicalWebEnvironment
-                .getInstance((ChromeApplication) mContext.getApplicationContext())
-                .hasNotificationBasedClient()) {
+        if (!PhysicalWeb.shouldIgnoreOtherClients()
+                && PhysicalWebEnvironment
+                        .getInstance((ChromeApplication) mContext.getApplicationContext())
+                        .hasNotificationBasedClient()) {
             return;
         }
 

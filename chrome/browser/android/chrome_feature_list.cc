@@ -38,6 +38,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPSnippetsFeature,
     &kNTPToolbarFeature,
     &kPhysicalWebFeature,
+    &kPhysicalWebIgnoreOtherClientsFeature,
     &kReadItLaterInMenu,
     &kSystemDownloadManager,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
@@ -78,6 +79,10 @@ const base::Feature kAndroidPayIntegrationV1 {
 
 const base::Feature kPhysicalWebFeature {
   "PhysicalWeb", base::FEATURE_ENABLED_BY_DEFAULT
+};
+
+const base::Feature kPhysicalWebIgnoreOtherClientsFeature {
+  "PhysicalWebIgnoreOtherClients", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 const base::Feature kReadItLaterInMenu {
