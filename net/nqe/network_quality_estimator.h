@@ -185,24 +185,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   void RemoveEffectiveConnectionTypeObserver(
       EffectiveConnectionTypeObserver* observer);
 
-  // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
-  // the HTTP layer. Virtualized for testing. |rtt| should not be null. The RTT
-  // at the HTTP layer measures the time from when the request was sent (this
-  // happens after the connection is established) to the time when the response
-  // headers were received.
-  virtual bool GetHttpRTTEstimate(base::TimeDelta* rtt) const
-      WARN_UNUSED_RESULT;
-
-  // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
-  // the transport layer. |rtt| should not be null. Virtualized for testing.
-  virtual bool GetTransportRTTEstimate(base::TimeDelta* rtt) const
-      WARN_UNUSED_RESULT;
-
-  // Returns true if downlink throughput is available and sets |kbps| to
-  // estimated downlink throughput (in kilobits per second).
-  // Virtualized for testing. |kbps| should not be null.
-  virtual bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const;
-
   // Notifies NetworkQualityEstimator that the response header of |request| has
   // been received.
   void NotifyHeadersReceived(const URLRequest& request);
@@ -217,31 +199,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Notifies NetworkQualityEstimator that |request| will be destroyed.
   void NotifyURLRequestDestroyed(const URLRequest& request);
-
-  // Returns true if median RTT at the HTTP layer is available and sets |rtt|
-  // to the median of RTT observations since |start_time|.
-  // Virtualized for testing. |rtt| should not be null. The RTT at the HTTP
-  // layer measures the time from when the request was sent (this happens after
-  // the connection is established) to the time when the response headers were
-  // received.
-  virtual bool GetRecentHttpRTTMedian(const base::TimeTicks& start_time,
-                                      base::TimeDelta* rtt) const
-      WARN_UNUSED_RESULT;
-
-  // Returns true if the median RTT at the transport layer is available and sets
-  // |rtt| to the median of transport layer RTT observations since
-  // |start_time|. |rtt| should not be null. Virtualized for testing.
-  virtual bool GetRecentTransportRTTMedian(const base::TimeTicks& start_time,
-                                           base::TimeDelta* rtt) const
-      WARN_UNUSED_RESULT;
-
-  // Returns true if median downstream throughput is available and sets |kbps|
-  // to the median of downstream throughput (in kilobits per second)
-  // observations since |start_time|. Virtualized for testing. |kbps|
-  // should not be null. Virtualized for testing.
-  virtual bool GetRecentMedianDownlinkThroughputKbps(
-      const base::TimeTicks& start_time,
-      int32_t* kbps) const WARN_UNUSED_RESULT;
 
   // Adds |rtt_observer| to the list of round trip time observers. Must be
   // called on the IO thread.
@@ -328,6 +285,49 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   void OnUpdatedEstimateAvailable(const base::TimeDelta& rtt,
                                   int32_t downstream_throughput_kbps,
                                   int32_t upstream_throughput_kbps) override;
+
+  // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
+  // the HTTP layer. Virtualized for testing. |rtt| should not be null. The RTT
+  // at the HTTP layer measures the time from when the request was sent (this
+  // happens after the connection is established) to the time when the response
+  // headers were received.
+  virtual bool GetHttpRTTEstimate(base::TimeDelta* rtt) const
+      WARN_UNUSED_RESULT;
+
+  // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
+  // the transport layer. |rtt| should not be null. Virtualized for testing.
+  virtual bool GetTransportRTTEstimate(base::TimeDelta* rtt) const
+      WARN_UNUSED_RESULT;
+
+  // Returns true if downlink throughput is available and sets |kbps| to
+  // estimated downlink throughput (in kilobits per second).
+  // Virtualized for testing. |kbps| should not be null.
+  virtual bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const;
+
+  // Returns true if median RTT at the HTTP layer is available and sets |rtt|
+  // to the median of RTT observations since |start_time|.
+  // Virtualized for testing. |rtt| should not be null. The RTT at the HTTP
+  // layer measures the time from when the request was sent (this happens after
+  // the connection is established) to the time when the response headers were
+  // received.
+  virtual bool GetRecentHttpRTTMedian(const base::TimeTicks& start_time,
+                                      base::TimeDelta* rtt) const
+      WARN_UNUSED_RESULT;
+
+  // Returns true if the median RTT at the transport layer is available and sets
+  // |rtt| to the median of transport layer RTT observations since
+  // |start_time|. |rtt| should not be null. Virtualized for testing.
+  virtual bool GetRecentTransportRTTMedian(const base::TimeTicks& start_time,
+                                           base::TimeDelta* rtt) const
+      WARN_UNUSED_RESULT;
+
+  // Returns true if median downstream throughput is available and sets |kbps|
+  // to the median of downstream throughput (in kilobits per second)
+  // observations since |start_time|. Virtualized for testing. |kbps|
+  // should not be null. Virtualized for testing.
+  virtual bool GetRecentMedianDownlinkThroughputKbps(
+      const base::TimeTicks& start_time,
+      int32_t* kbps) const WARN_UNUSED_RESULT;
 
   // Returns the list of intervals at which the accuracy of network quality
   // prediction should be recorded. Virtualized for testing.
