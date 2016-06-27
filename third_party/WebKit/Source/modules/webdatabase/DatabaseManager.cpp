@@ -75,28 +75,11 @@ DatabaseManager::~DatabaseManager()
 {
 }
 
-class DatabaseCreationCallbackTask final : public ExecutionContextTask {
-public:
-    static std::unique_ptr<DatabaseCreationCallbackTask> create(Database* database, DatabaseCallback* creationCallback)
-    {
-        return wrapUnique(new DatabaseCreationCallbackTask(database, creationCallback));
-    }
-
-    void performTask(ExecutionContext*) override
-    {
-        m_creationCallback->handleEvent(m_database.get());
-    }
-
-private:
-    DatabaseCreationCallbackTask(Database* database, DatabaseCallback* callback)
-        : m_database(database)
-        , m_creationCallback(callback)
-    {
-    }
-
-    Persistent<Database> m_database;
-    Persistent<DatabaseCallback> m_creationCallback;
-};
+// This is just for ignoring DatabaseCallback::handleEvent()'s return value.
+static void databaseCallbackHandleEvent(DatabaseCallback* callback, Database* database)
+{
+    callback->handleEvent(database);
+}
 
 DatabaseContext* DatabaseManager::existingDatabaseContextFor(ExecutionContext* context)
 {
@@ -214,7 +197,7 @@ Database* DatabaseManager::openDatabase(ExecutionContext* context,
 
     if (database->isNew() && creationCallback) {
         WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database);
-        database->getExecutionContext()->postTask(BLINK_FROM_HERE, DatabaseCreationCallbackTask::create(database, creationCallback), "openDatabase");
+        database->getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&databaseCallbackHandleEvent, wrapPersistent(creationCallback), wrapPersistent(database)), "openDatabase");
     }
 
     ASSERT(database);

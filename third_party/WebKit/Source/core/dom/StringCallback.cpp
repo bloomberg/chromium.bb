@@ -33,41 +33,13 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-namespace {
-
-class DispatchCallbackTask final : public ExecutionContextTask {
-public:
-    static std::unique_ptr<DispatchCallbackTask> create(StringCallback* callback, const String& data)
-    {
-        return wrapUnique(new DispatchCallbackTask(callback, data));
-    }
-
-    void performTask(ExecutionContext*) override
-    {
-        m_callback->handleEvent(m_data);
-    }
-
-private:
-    DispatchCallbackTask(StringCallback* callback, const String& data)
-        : m_callback(callback)
-        , m_data(data)
-    {
-    }
-
-    Persistent<StringCallback> m_callback;
-    const String m_data;
-};
-
-} // namespace
-
 void StringCallback::scheduleCallback(StringCallback* callback, ExecutionContext* context, const String& data, const String& instrumentationName)
 {
-    context->postTask(BLINK_FROM_HERE, DispatchCallbackTask::create(callback, data), instrumentationName);
+    context->postTask(BLINK_FROM_HERE, createSameThreadTask(&StringCallback::handleEvent, wrapPersistent(callback), data), instrumentationName);
 }
 
 } // namespace blink
