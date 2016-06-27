@@ -13,6 +13,7 @@
 #include "content/public/browser/gpu_service_registry.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/interface_provider.h"
 
 namespace {
@@ -32,6 +33,25 @@ void ConnectToVideoAcceleratorServiceOnIOThread(
 
 namespace arc {
 
+class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
+ public:
+  explicit VideoAcceleratorFactoryService(
+      mojom::VideoAcceleratorFactoryRequest request)
+      : binding_(this, std::move(request)) {}
+
+  void Create(mojom::VideoAcceleratorServiceClientRequest request) override {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&ConnectToVideoAcceleratorServiceOnIOThread,
+                   base::Passed(&request)));
+  }
+
+ private:
+  mojo::StrongBinding<VideoAcceleratorFactory> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoAcceleratorFactoryService);
+};
+
 GpuArcVideoServiceHost::GpuArcVideoServiceHost(
     arc::ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
@@ -50,8 +70,8 @@ void GpuArcVideoServiceHost::OnVideoInstanceReady() {
   video_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
-void GpuArcVideoServiceHost::OnRequestArcVideoAcceleratorChannel(
-    const OnRequestArcVideoAcceleratorChannelCallback& callback) {
+void GpuArcVideoServiceHost::DeprecatedOnRequestArcVideoAcceleratorChannel(
+    const DeprecatedOnRequestArcVideoAcceleratorChannelCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Hardcode pid 0 since it is unused in mojo.
@@ -89,6 +109,45 @@ void GpuArcVideoServiceHost::OnRequestArcVideoAcceleratorChannel(
           base::Passed(
               mojo::MakeRequest<::arc::mojom::VideoAcceleratorServiceClient>(
                   std::move(server_pipe)))));
+}
+
+void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
+    const OnBootstrapVideoAcceleratorFactoryCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Hardcode pid 0 since it is unused in mojo.
+  const base::ProcessHandle kUnusedChildProcessHandle =
+      base::kNullProcessHandle;
+  mojo::edk::PlatformChannelPair channel_pair;
+  std::string child_token = mojo::edk::GenerateRandomToken();
+  mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle,
+                                  channel_pair.PassServerHandle(), child_token);
+
+  MojoHandle wrapped_handle;
+  MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(
+      channel_pair.PassClientHandle(), &wrapped_handle);
+  if (wrap_result != MOJO_RESULT_OK) {
+    LOG(ERROR) << "Pipe failed to wrap handles. Closing: " << wrap_result;
+    callback.Run(mojo::ScopedHandle(), std::string());
+    return;
+  }
+  mojo::ScopedHandle child_handle{mojo::Handle(wrapped_handle)};
+
+  std::string token = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle server_pipe =
+      mojo::edk::CreateParentMessagePipe(token, child_token);
+  if (!server_pipe.is_valid()) {
+    LOG(ERROR) << "Invalid pipe";
+    callback.Run(mojo::ScopedHandle(), std::string());
+    return;
+  }
+  callback.Run(std::move(child_handle), token);
+
+  // The lifetime is managed by the StrongBinding insides the
+  // VideoAcceleratorFactoryService.
+  new VideoAcceleratorFactoryService(
+      mojo::MakeRequest<::arc::mojom::VideoAcceleratorFactory>(
+          std::move(server_pipe)));
 }
 
 }  // namespace arc

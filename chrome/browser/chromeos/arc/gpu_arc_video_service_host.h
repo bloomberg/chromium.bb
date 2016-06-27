@@ -31,8 +31,11 @@ class GpuArcVideoServiceHost : public arc::ArcService,
   void OnVideoInstanceReady() override;
 
   // arc::mojom::VideoHost implementation.
-  void OnRequestArcVideoAcceleratorChannel(
-      const OnRequestArcVideoAcceleratorChannelCallback& callback) override;
+  void DeprecatedOnRequestArcVideoAcceleratorChannel(
+      const DeprecatedOnRequestArcVideoAcceleratorChannelCallback& callback)
+      override;
+  void OnBootstrapVideoAcceleratorFactory(
+      const OnBootstrapVideoAcceleratorFactoryCallback& callback) override;
 
  private:
   base::ThreadChecker thread_checker_;
