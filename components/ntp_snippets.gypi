@@ -28,6 +28,10 @@
         'variations',
       ],
       'sources': [
+        'ntp_snippets/content_suggestion_category.h',
+        'ntp_snippets/content_suggestion.cc',
+        'ntp_snippets/content_suggestion.h',
+        'ntp_snippets/content_suggestions_provider_type.h',
         'ntp_snippets/ntp_snippet.cc',
         'ntp_snippets/ntp_snippet.h',
         'ntp_snippets/ntp_snippets_constants.cc',

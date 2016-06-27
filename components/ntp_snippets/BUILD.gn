@@ -5,6 +5,10 @@
 # GYP version: components/ntp_snippets.gypi:ntp_snippets
 source_set("ntp_snippets") {
   sources = [
+    "content_suggestion.cc",
+    "content_suggestion.h",
+    "content_suggestion_category.h",
+    "content_suggestions_provider_type.h",
     "ntp_snippet.cc",
     "ntp_snippet.h",
     "ntp_snippets_constants.cc",
