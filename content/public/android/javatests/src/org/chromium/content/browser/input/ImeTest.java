@@ -74,8 +74,6 @@ public class ImeTest extends ContentShellTestBase {
         getImeAdapter().setInputConnectionFactory(mConnectionFactory);
 
         mCallbackContainer = new TestCallbackHelperContainer(mContentViewCore);
-        // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
-        assertWaitForPageScaleFactorMatch(1);
         DOMUtils.waitForNonZeroNodeBounds(mWebContents, "input_text");
         DOMUtils.clickNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
