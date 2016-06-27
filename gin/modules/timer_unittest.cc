@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/public/isolate_holder.h"
@@ -66,9 +68,9 @@ struct TestHelper {
   }
 
   void QuitSoon(base::MessageLoop* message_loop) {
-    message_loop->PostDelayedTask(FROM_HERE,
-                                  base::MessageLoop::QuitWhenIdleClosure(),
-                                  base::TimeDelta::FromMilliseconds(0));
+    message_loop->task_runner()->PostDelayedTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+        base::TimeDelta::FromMilliseconds(0));
   }
 
   ShellRunnerDelegate delegate;
@@ -93,7 +95,7 @@ TEST_F(TimerUnittest, OneShot) {
   EXPECT_EQ(0, helper.result->count());
 
   helper.QuitSoon(&message_loop_);
-  message_loop_.Run();
+  base::RunLoop().Run();
   EXPECT_EQ(1, helper.result->count());
 }
 
@@ -109,7 +111,7 @@ TEST_F(TimerUnittest, OneShotCancel) {
   EXPECT_EQ(0, helper.result->count());
 
   helper.QuitSoon(&message_loop_);
-  message_loop_.Run();
+  base::RunLoop().Run();
   EXPECT_EQ(0, helper.result->count());
 }
 
@@ -129,7 +131,7 @@ TEST_F(TimerUnittest, Repeating) {
   helper.runner->Run(source, "script");
   EXPECT_EQ(0, helper.result->count());
 
-  message_loop_.Run();
+  base::RunLoop().Run();
   EXPECT_EQ(3, helper.result->count());
 }
 
@@ -146,7 +148,7 @@ TEST_F(TimerUnittest, TimerCallbackToDestroyedRunner) {
   // Destroy runner, which should destroy the timer object we created.
   helper.QuitSoon(&message_loop_);
   helper.runner.reset(NULL);
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Timer should not have run because it was deleted.
   EXPECT_EQ(0, helper.result->count());

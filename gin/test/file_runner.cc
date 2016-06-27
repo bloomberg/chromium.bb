@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "gin/modules/console.h"
@@ -76,9 +77,9 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
     runner.Run(source, path.AsUTF8Unsafe());
 
     if (run_until_idle) {
-      message_loop.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     } else {
-      message_loop.Run();
+      base::RunLoop().Run();
     }
 
     v8::Local<v8::Value> result = runner.global()->Get(
