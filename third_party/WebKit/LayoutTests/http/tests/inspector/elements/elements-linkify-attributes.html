@@ -1,0 +1,44 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../elements-test.js"></script>
+<script>
+function test()
+{
+    var i = 0;
+    var last = 7;
+
+    function check()
+    {
+        i++;
+        if (i > last)
+            return InspectorTest.completeTest();
+
+        InspectorTest.selectNodeWithId("linkify-" + i, function()
+        {
+            var treeElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+            InspectorTest.addResult(treeElement.title.outerHTML);
+            check();
+        });
+    }
+    check();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that you can click and hover on links in attributes.
+</p>
+<img id="linkify-1" srcset="./1x/googlelogo_color_272x92dp.png 1x, ./2x/googlelogo_color_272x92dp.png 2x">
+<img id="linkify-2" srcset="./1x/googlelogo_color_272x92dp.png">
+<picture>
+    <source id="linkify-3" media="(min-width: 650px)" srcset="./kitten-large.png">
+    <source id="linkify-4" media="(min-width: 465px)" srcset="./kitten-medium.png">
+    <source id="linkify-5" media="(min-width: 400px)" srcset="./kitten-large.png 2x">
+    <img id="linkify-6" src="./kitten-small.png">
+</picture>
+<a id="linkify-7" href="http://www.google.com">a link</a>
+</body>
+</html>
