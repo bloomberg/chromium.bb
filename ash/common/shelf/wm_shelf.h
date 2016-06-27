@@ -25,11 +25,6 @@ class WmWindow;
 // Used for accessing global state.
 class ASH_EXPORT WmShelf {
  public:
-  // Returns the shelf for the primary display. Useful in tests that only use
-  // a single display. In production code use WmRootWindowController::GetShelf()
-  // with the appropriate display's root window controller.
-  static WmShelf* ForPrimaryDisplay();
-
   // Returns the window showing the shelf.
   virtual WmWindow* GetWindow() = 0;
 

@@ -96,7 +96,6 @@
       'common/shelf/shelf_model.h',
       'common/shelf/shelf_model_observer.h',
       'common/shelf/shelf_types.h',
-      'common/shelf/wm_shelf.cc',
       'common/shelf/wm_shelf.h',
       'common/shelf/wm_shelf_observer.h',
       'common/shelf/wm_shelf_util.cc',
