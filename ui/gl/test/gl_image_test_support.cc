@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(USE_OZONE)
@@ -32,7 +33,7 @@ void GLImageTestSupport::InitializeGL() {
 
 // static
 void GLImageTestSupport::CleanupGL() {
-  ClearGLBindings();
+  init::ClearGLBindings();
 }
 
 // static

@@ -25,14 +25,14 @@ class GLContext;
 class GLSurface;
 struct GLVersionInfo;
 
-void InitializeStaticGLBindingsGL();
+GL_EXPORT void InitializeStaticGLBindingsGL();
 void InitializeDynamicGLBindingsGL(GLContext* context);
-void InitializeDebugGLBindingsGL();
+GL_EXPORT void InitializeDebugGLBindingsGL();
 void InitializeNullDrawGLBindingsGL();
 // TODO(danakj): Remove this when all test suites are using null-draw.
 bool HasInitializedNullDrawGLBindingsGL();
 bool SetNullDrawGLBindingsEnabledGL(bool enabled);
-void ClearGLBindingsGL();
+GL_EXPORT void ClearGLBindingsGL();
 void SetGLToRealGLApi();
 void SetGLApi(GLApi* api);
 void SetGLApiToNoContext();

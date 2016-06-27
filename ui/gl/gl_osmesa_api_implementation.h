@@ -13,9 +13,9 @@ namespace gl {
 
 class GLContext;
 
-void InitializeStaticGLBindingsOSMESA();
-void InitializeDebugGLBindingsOSMESA();
-void ClearGLBindingsOSMESA();
+GL_EXPORT void InitializeStaticGLBindingsOSMESA();
+GL_EXPORT void InitializeDebugGLBindingsOSMESA();
+GL_EXPORT void ClearGLBindingsOSMESA();
 
 class GL_EXPORT OSMESAApiBase : public OSMESAApi {
  public:

@@ -20,30 +20,33 @@ class GLSurface;
 
 namespace init {
 
-// Initialize GL bindings.
+// Initializes GL bindings.
 GL_INIT_EXPORT bool InitializeGLOneOff();
 
-// Initialize GL bindings using the provided parameters. This might be required
+// Initializes GL bindings using the provided parameters. This might be required
 // for use in tests, otherwise use InitializeGLOneOff() instead.
 GL_INIT_EXPORT bool InitializeGLOneOffImplementation(GLImplementation impl,
                                                      bool fallback_to_osmesa,
                                                      bool gpu_service_logging,
                                                      bool disable_gl_drawing);
 
-// Create a GL context that is compatible with the given surface. |share_group|,
-// if non-NULL, is a group of contexts which the internally created OpenGL
-// context shares textures and other resources.
+// Clears GL bindings and resets GL implementation.
+GL_INIT_EXPORT void ClearGLBindings();
+
+// Creates a GL context that is compatible with the given surface.
+// |share_group|, if non-NULL, is a group of contexts which the internally
+// created OpenGL context shares textures and other resources.
 GL_INIT_EXPORT scoped_refptr<GLContext> CreateGLContext(
     GLShareGroup* share_group,
     GLSurface* compatible_surface,
     GpuPreference gpu_preference);
 
-// Create a GL surface that renders directly to a view.
+// Creates a GL surface that renders directly to a view.
 GL_INIT_EXPORT scoped_refptr<GLSurface> CreateViewGLSurface(
     gfx::AcceleratedWidget window);
 
 #if defined(USE_OZONE)
-// Create a GL surface that renders directly into a window with surfaceless
+// Creates a GL surface that renders directly into a window with surfaceless
 // semantics - there is no default framebuffer and the primary surface must
 // be presented as an overlay. If surfaceless mode is not supported or
 // enabled it will return a null pointer.
@@ -51,7 +54,7 @@ GL_INIT_EXPORT scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window);
 #endif  // defined(USE_OZONE)
 
-// Create a GL surface used for offscreen rendering.
+// Creates a GL surface used for offscreen rendering.
 GL_INIT_EXPORT scoped_refptr<GLSurface> CreateOffscreenGLSurface(
     const gfx::Size& size);
 
