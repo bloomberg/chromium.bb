@@ -188,9 +188,6 @@ typedef void (*logcallback)(int level, const char *message);
   } logLevels;
   void EXPORT_CALL lou_setLogLevel(logLevels level);
 
-  void EXPORT_CALL lou_log(logLevels level, const char *format, ...);
-/* General log function for callback logging */
-
   /* =========================  BETA API ========================= */
 
 // Use the following two function with care, API is subject to change!

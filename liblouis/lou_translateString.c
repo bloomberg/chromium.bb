@@ -2669,12 +2669,12 @@ doCompTrans (int start, int end)
       return 0;
   for (k = start; k < end; k++)
     {
+      TranslationTableOffset compdots = 0;
       /* HACK: computer braille is one-to-one so it
          can't have any emphasis indicators.
          A better solution is to treat computer braille as its own mode. */
       emphasisBuffer[k] = 0;
       transNoteBuffer[k] = 0;
-      TranslationTableOffset compdots = 0;
       if (currentInput[k] == ENDSEGMENT)
 	{
 	  haveEndsegment = 1;
@@ -3600,9 +3600,9 @@ endCount(
 	const unsigned int bit_begin,
 	const unsigned int bit_word)
 {
+	int i, cnt = 1;	
 	if(!(buffer[at] & bit_end))
 		return 0;
-	int i, cnt = 1;	
 	for(i = at - 1; i >= 0; i--)
 	if(buffer[i] & bit_begin || buffer[i] & bit_word)
 		break;
@@ -3987,9 +3987,9 @@ translateString ()
 			dontContract = typebuf[src] & no_contract;
 		if(typebuf[src] & no_translate)
 		{
+			widechar c = getDotsForChar(currentInput[src]);
 			if(currentInput[src] < 32 || currentInput[src] > 126)
 				goto failure;
-			widechar c = getDotsForChar(currentInput[src]);
 			if(!for_updatePositions(&c, 1, 1, 0))
 				goto failure;
 			src++;
