@@ -168,9 +168,12 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
 
   SkColor background_color = ui::MaterialDesignController::IsModeMaterial()
                                  ? gfx::kGoogleBlue500
-                                 : SkColorSetARGB(255, 218, 0, 24);
+                                 : SkColorSetRGB(218, 0, 24);
   if (SkColorGetA(badge_->background_color) != SK_AlphaTRANSPARENT)
     background_color = badge_->background_color;
+  // Make sure the background color is opaque. See http://crbug.com/619499
+  if (ui::MaterialDesignController::IsModeMaterial())
+    background_color = SkColorSetA(background_color, SK_AlphaOPAQUE);
 
   canvas->Save();
 
