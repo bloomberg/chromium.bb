@@ -60,10 +60,14 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     // Returns the Java surface to configure MediaCodec with.
     virtual gl::ScopedJavaSurface Initialize(int surface_view_id) = 0;
 
-    // Called before the AVDA does any Destroy() work.  This will be
+    // Called before the AVDA does any Destroy() work.  The strategy should
+    // release any pending codec buffers, for example.
+    virtual void BeginCleanup(bool have_context,
+                              const OutputBufferMap& buffer_map) = 0;
+
+    // Called before the AVDA closes up entirely.  This will be
     // the last call that the BackingStrategy receives.
-    virtual void Cleanup(bool have_context,
-                         const OutputBufferMap& buffer_map) = 0;
+    virtual void EndCleanup() = 0;
 
     // This returns the SurfaceTexture created by Initialize, or nullptr if
     // the strategy was initialized with a SurfaceView.

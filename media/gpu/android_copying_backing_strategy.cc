@@ -39,7 +39,7 @@ gl::ScopedJavaSurface AndroidCopyingBackingStrategy::Initialize(
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
-void AndroidCopyingBackingStrategy::Cleanup(
+void AndroidCopyingBackingStrategy::BeginCleanup(
     bool have_context,
     const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
   DCHECK(state_provider_->ThreadChecker().CalledOnValidThread());
@@ -50,6 +50,8 @@ void AndroidCopyingBackingStrategy::Cleanup(
   if (surface_texture_id_ && have_context)
     glDeleteTextures(1, &surface_texture_id_);
 }
+
+void AndroidCopyingBackingStrategy::EndCleanup() {}
 
 scoped_refptr<gl::SurfaceTexture>
 AndroidCopyingBackingStrategy::GetSurfaceTexture() const {

@@ -1364,7 +1364,7 @@ void AndroidVideoDecodeAccelerator::Destroy() {
     LOG(WARNING) << "Failed make GL context current for Destroy, continuing.";
 
   if (strategy_)
-    strategy_->Cleanup(have_context, output_picture_buffers_);
+    strategy_->BeginCleanup(have_context, output_picture_buffers_);
 
   // If we have an OnFrameAvailable handler, tell it that we're going away.
   if (on_frame_available_handler_) {
@@ -1396,6 +1396,9 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
     AVDASurfaceTracker::GetInstance()->UnregisterOnDestroyingSurfaceCallback(
         on_destroying_surface_cb_);
   }
+
+  if (strategy_)
+    strategy_->EndCleanup();
 
   AVDATimerManager* manager = g_avda_timer.Pointer();
 

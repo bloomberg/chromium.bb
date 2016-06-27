@@ -61,14 +61,26 @@ gl::ScopedJavaSurface AndroidDeferredRenderingBackingStrategy::Initialize(
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
-void AndroidDeferredRenderingBackingStrategy::Cleanup(
+void AndroidDeferredRenderingBackingStrategy::BeginCleanup(
     bool have_context,
     const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
   // If we failed before Initialize, then do nothing.
   if (!shared_state_)
     return;
 
+  // TODO(liberato): we should release all codec buffers here without rendering.
+  // CodecChanged() will drop them, but is expected to be called after the codec
+  // is no longer accessible.  It's unclear that VP8 flush in AVDA can't hang
+  // waiting for our buffers.
+
   CodecChanged(nullptr);
+}
+
+void AndroidDeferredRenderingBackingStrategy::EndCleanup() {
+  // Release the surface texture and any back buffers.  This will preserve the
+  // front buffer, if any.
+  if (surface_texture_)
+    surface_texture_->ReleaseSurfaceTexture();
 }
 
 scoped_refptr<gl::SurfaceTexture>

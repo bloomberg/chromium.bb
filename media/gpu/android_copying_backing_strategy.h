@@ -35,9 +35,10 @@ class MEDIA_GPU_EXPORT AndroidCopyingBackingStrategy
 
   // AndroidVideoDecodeAccelerator::BackingStrategy
   gl::ScopedJavaSurface Initialize(int surface_view_id) override;
-  void Cleanup(
+  void BeginCleanup(
       bool have_context,
       const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) override;
+  void EndCleanup() override;
   scoped_refptr<gl::SurfaceTexture> GetSurfaceTexture() const override;
   uint32_t GetTextureTarget() const override;
   gfx::Size GetPictureBufferSize() const override;

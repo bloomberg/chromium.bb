@@ -96,6 +96,11 @@ ANativeWindow* SurfaceTexture::CreateSurface() {
   return native_window;
 }
 
+void SurfaceTexture::ReleaseSurfaceTexture() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SurfaceTexturePlatformWrapper_release(env, j_surface_texture_.obj());
+}
+
 bool SurfaceTexture::RegisterSurfaceTexture(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

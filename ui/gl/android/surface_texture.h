@@ -57,6 +57,11 @@ class GL_EXPORT SurfaceTexture
   // by calling ANativeWindow_release().
   ANativeWindow* CreateSurface();
 
+  // Release the SurfaceTexture back buffers.  The SurfaceTexture is no longer
+  // usable after calling this.  Note that this is not called 'Release', like
+  // the android API, because scoped_refptr<> calls that quite a bit.
+  void ReleaseSurfaceTexture();
+
   const base::android::JavaRef<jobject>& j_surface_texture() const {
     return j_surface_texture_;
   }

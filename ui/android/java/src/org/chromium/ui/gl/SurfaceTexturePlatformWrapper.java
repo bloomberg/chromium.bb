@@ -60,4 +60,9 @@ class SurfaceTexturePlatformWrapper {
     private static void detachFromGLContext(SurfaceTexture surfaceTexture) {
         surfaceTexture.detachFromGLContext();
     }
+
+    @CalledByNative
+    private static void release(SurfaceTexture surfaceTexture) {
+        surfaceTexture.release();
+    }
 }
