@@ -40,6 +40,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -1531,9 +1532,15 @@ private:
   static NSImage* throbberWaitingImage =
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_THROBBER_WAITING).CopyNSImage();
+  static NSImage* throbberWaitingIncognitoImage =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_THROBBER_WAITING_INCOGNITO).CopyNSImage();
   static NSImage* throbberLoadingImage =
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_THROBBER).CopyNSImage();
+  static NSImage* throbberLoadingIncognitoImage =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_THROBBER_INCOGNITO).CopyNSImage();
   static NSImage* sadFaviconImage =
       ResourceBundle::GetSharedInstance()
           .GetNativeImageNamed(IDR_CRASH_SAD_FAVICON)
@@ -1556,10 +1563,20 @@ private:
     newHasIcon = true;
   } else if (contents->IsWaitingForResponse()) {
     newState = kTabWaiting;
-    throbberImage = throbberWaitingImage;
+    if (ui::MaterialDesignController::IsModeMaterial() &&
+        [[[tabController view] window] inIncognitoMode]) {
+      throbberImage = throbberWaitingIncognitoImage;
+    } else {
+      throbberImage = throbberWaitingImage;
+    }
   } else if (contents->IsLoadingToDifferentDocument()) {
     newState = kTabLoading;
-    throbberImage = throbberLoadingImage;
+    if (ui::MaterialDesignController::IsModeMaterial() &&
+        [[[tabController view] window] inIncognitoMode]) {
+      throbberImage = throbberLoadingIncognitoImage;
+    } else {
+      throbberImage = throbberLoadingImage;
+    }
   }
 
   if (oldState != newState)
