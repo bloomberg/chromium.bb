@@ -980,6 +980,12 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
     }
   }
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "ServiceWorkerCache.Cache.AllWritesResponseType",
+      operation.response.response_type,
+      blink::WebServiceWorkerResponseType::WebServiceWorkerResponseTypeLast +
+          1);
+
   ErrorCallback pending_callback =
       base::Bind(&CacheStorageCache::PendingErrorCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback);

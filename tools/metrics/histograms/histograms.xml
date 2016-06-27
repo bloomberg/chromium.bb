@@ -50981,6 +50981,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorkerCache.Cache.AllWritesResponseType"
+    enum="ServiceWorkerCacheResponseType">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records the response type to be added in the Cache by all operations that
+    write to the cache.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorkerCache.CacheStorage" units="ms">
   <owner>dmurph@chromium.org</owner>
   <summary>
