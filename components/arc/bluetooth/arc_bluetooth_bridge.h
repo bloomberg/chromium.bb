@@ -23,6 +23,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
+#include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
@@ -283,7 +284,7 @@ class ArcBluetoothBridge
 
   mojo::Binding<mojom::BluetoothHost> binding_;
 
-  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
+  scoped_refptr<bluez::BluetoothAdapterBlueZ> bluetooth_adapter_;
   scoped_refptr<device::BluetoothAdvertisement> advertisment_;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
   std::map<std::string, std::unique_ptr<device::BluetoothGattNotifySession>>

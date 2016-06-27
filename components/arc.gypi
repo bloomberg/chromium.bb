@@ -18,6 +18,7 @@
         '../base/base.gyp:base',
         '../chromeos/chromeos.gyp:chromeos',
         '../chromeos/chromeos.gyp:power_manager_proto',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../ipc/ipc.gyp:ipc',
         '../third_party/re2/re2.gyp:re2',
         '../skia/skia.gyp:skia',

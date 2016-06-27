@@ -82,7 +82,10 @@ ArcBluetoothBridge::~ArcBluetoothBridge() {
 
 void ArcBluetoothBridge::OnAdapterInitialized(
     scoped_refptr<BluetoothAdapter> adapter) {
-  bluetooth_adapter_ = adapter;
+  // We can downcast here because we are always running on Chrome OS, and
+  // so our adapter uses BlueZ.
+  bluetooth_adapter_ =
+      static_cast<bluez::BluetoothAdapterBlueZ*>(adapter.get());
   bluetooth_adapter_->AddObserver(this);
 }
 
@@ -1185,7 +1188,7 @@ ArcBluetoothBridge::GetAdapterProperties(
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::ADAPTER_DISCOVERY_TIMEOUT) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
-    btp->set_discovery_timeout(120);
+    btp->set_discovery_timeout(bluetooth_adapter_->GetDiscoverableTimeout());
     properties.push_back(std::move(btp));
   }
 
