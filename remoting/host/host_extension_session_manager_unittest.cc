@@ -5,14 +5,13 @@
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "remoting/codec/video_encoder.h"
+#include "remoting/host/client_session_details.h"
 #include "remoting/host/fake_host_extension.h"
 #include "remoting/host/host_extension_session_manager.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 
@@ -36,7 +35,7 @@ class HostExtensionSessionManagerTest : public testing::Test {
   HostExtensionSessionManager::HostExtensions extensions_;
 
   // Mocks of interfaces provided by ClientSession.
-  MockClientSessionControl client_session_control_;
+  MockClientSessionDetails client_session_details_;
   protocol::MockClientStub client_stub_;
 
   DISALLOW_COPY_AND_ASSIGN(HostExtensionSessionManagerTest);
@@ -45,7 +44,7 @@ class HostExtensionSessionManagerTest : public testing::Test {
 // Verifies that messages are handled by the correct extension.
 TEST_F(HostExtensionSessionManagerTest, ExtensionMessages_MessageHandled) {
   HostExtensionSessionManager extension_manager(extensions_,
-                                                &client_session_control_);
+                                                &client_session_details_);
   extension_manager.OnNegotiatedCapabilities(
       &client_stub_, extension_manager.GetCapabilities());
 
@@ -62,7 +61,7 @@ TEST_F(HostExtensionSessionManagerTest, ExtensionMessages_MessageHandled) {
 // crash.
 TEST_F(HostExtensionSessionManagerTest, ExtensionMessages_MessageNotHandled) {
   HostExtensionSessionManager extension_manager(extensions_,
-                                                &client_session_control_);
+                                                &client_session_details_);
   extension_manager.OnNegotiatedCapabilities(
       &client_stub_, extension_manager.GetCapabilities());
 
@@ -79,7 +78,7 @@ TEST_F(HostExtensionSessionManagerTest, ExtensionMessages_MessageNotHandled) {
 // based on the registered extensions.
 TEST_F(HostExtensionSessionManagerTest, ExtensionCapabilities_AreReported) {
   HostExtensionSessionManager extension_manager(extensions_,
-                                                &client_session_control_);
+                                                &client_session_details_);
 
   std::vector<std::string> reported_caps = base::SplitString(
       extension_manager.GetCapabilities(), " ", base::KEEP_WHITESPACE,
@@ -95,7 +94,7 @@ TEST_F(HostExtensionSessionManagerTest, ExtensionCapabilities_AreReported) {
 // support its required capability, and that it does not receive messages.
 TEST_F(HostExtensionSessionManagerTest, ExtensionCapabilities_AreChecked) {
   HostExtensionSessionManager extension_manager(extensions_,
-                                                &client_session_control_);
+                                                &client_session_details_);
   extension_manager.OnNegotiatedCapabilities(&client_stub_, "cap1");
 
   protocol::ExtensionMessage message;

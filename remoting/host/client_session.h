@@ -5,8 +5,8 @@
 #ifndef REMOTING_HOST_CLIENT_SESSION_H_
 #define REMOTING_HOST_CLIENT_SESSION_H_
 
-#include <stdint.h>
-
+#include <cstdint>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/host/client_session_details.h"
 #include "remoting/host/host_extension_session_manager.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
@@ -55,7 +56,8 @@ class ClientSession : public base::NonThreadSafe,
                       public protocol::HostStub,
                       public protocol::ConnectionToClient::EventHandler,
                       public protocol::VideoStream::Observer,
-                      public ClientSessionControl {
+                      public ClientSessionControl,
+                      public ClientSessionDetails {
  public:
   // Callback interface for passing events to the ChromotingHost.
   class EventHandler {
@@ -133,6 +135,10 @@ class ClientSession : public base::NonThreadSafe,
   void DisconnectSession(protocol::ErrorCode error) override;
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
+
+  // ClientSessionDetails interface.
+  uint32_t desktop_session_id() const override;
+  ClientSessionControl* session_control() override;
 
   protocol::ConnectionToClient* connection() const { return connection_.get(); }
 

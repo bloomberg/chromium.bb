@@ -24,11 +24,12 @@ std::string GnubbyExtension::capability() const {
 }
 
 std::unique_ptr<HostExtensionSession> GnubbyExtension::CreateExtensionSession(
-    ClientSessionControl* client_session_control,
+    ClientSessionDetails* client_session_details,
     protocol::ClientStub* client_stub) {
   // TODO(joedow): Update this mechanism to allow for multiple sessions.  The
   //               extension will only send messages through the initial
   //               |client_stub| with the current design.
+  // TODO(joedow): Update GnubbyExtensionSession for |client_session_details|.
   return base::WrapUnique(new GnubbyExtensionSession(client_stub));
 }
 

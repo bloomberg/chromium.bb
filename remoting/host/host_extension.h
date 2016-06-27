@@ -8,10 +8,9 @@
 #include <memory>
 #include <string>
 
-
 namespace remoting {
 
-class ClientSessionControl;
+class ClientSessionDetails;
 class HostExtensionSession;
 
 namespace protocol {
@@ -31,13 +30,13 @@ class HostExtension {
   // with a capability.
   virtual std::string capability() const = 0;
 
-  // Creates an extension session, which can handle extension messages for a
+  // Creates an extension session, which handles extension messages for a
   // client session.
-  // |client_session_control| may be used to e.g. disconnect the session.
+  // |client_session_details| provides session details and control methods.
   // |client_stub| may be used to send messages to the session.
   // Both interfaces are valid for the lifetime of the |HostExtensionSession|.
   virtual std::unique_ptr<HostExtensionSession> CreateExtensionSession(
-      ClientSessionControl* client_session_control,
+      ClientSessionDetails* client_session_details,
       protocol::ClientStub* client_stub) = 0;
 };
 

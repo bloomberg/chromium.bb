@@ -5,23 +5,17 @@
 #ifndef REMOTING_HOST_HOST_EXTENSION_SESSION_MANAGER_H_
 #define REMOTING_HOST_HOST_EXTENSION_SESSION_MANAGER_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 
-namespace webrtc {
-class DesktopCapturer;
-}
-
 namespace remoting {
 
-class ClientSessionControl;
+class ClientSessionDetails;
 class HostExtension;
 class HostExtensionSession;
-class VideoEncoder;
 
 namespace protocol {
 class ClientStub;
@@ -37,7 +31,7 @@ class HostExtensionSessionManager {
 
   // Creates an extension manager for the specified |extensions|.
   HostExtensionSessionManager(const HostExtensions& extensions,
-                              ClientSessionControl* client_session_control);
+                              ClientSessionDetails* client_session_details);
   virtual ~HostExtensionSessionManager();
 
   // Returns the union of all capabilities supported by registered extensions.
@@ -58,7 +52,7 @@ class HostExtensionSessionManager {
 
   // Passed to HostExtensionSessions to allow them to send messages,
   // disconnect the session, etc.
-  ClientSessionControl* client_session_control_;
+  ClientSessionDetails* client_session_details_;
   protocol::ClientStub* client_stub_;
 
   // The HostExtensions to instantiate for the session, if it reaches the

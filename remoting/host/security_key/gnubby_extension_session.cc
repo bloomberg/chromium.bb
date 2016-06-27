@@ -72,10 +72,10 @@ GnubbyExtensionSession::~GnubbyExtensionSession() {}
 
 // Returns true if the |message| is a Security Key ExtensionMessage.
 // This is done so the host does not pass |message| to other HostExtensions.
-// TODO(joedow): Use |client_session_control| to disconnect the session if we
+// TODO(joedow): Use |client_session_details| to disconnect the session if we
 //               receive an invalid extension message.
 bool GnubbyExtensionSession::OnExtensionMessage(
-    ClientSessionControl* client_session_control,
+    ClientSessionDetails* client_session_details,
     protocol::ClientStub* client_stub,
     const protocol::ExtensionMessage& message) {
   DCHECK(thread_checker_.CalledOnValidThread());

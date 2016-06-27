@@ -46,6 +46,7 @@
       'host/client_session.cc',
       'host/client_session.h',
       'host/client_session_control.h',
+      'host/client_session_details.h',
       'host/clipboard.h',
       'host/clipboard_mac.mm',
       'host/clipboard_win.cc',

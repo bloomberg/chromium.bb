@@ -32,7 +32,7 @@ class GnubbyExtensionSession : public HostExtensionSession {
   ~GnubbyExtensionSession() override;
 
   // HostExtensionSession interface.
-  bool OnExtensionMessage(ClientSessionControl* client_session_control,
+  bool OnExtensionMessage(ClientSessionDetails* client_session_details,
                           protocol::ClientStub* client_stub,
                           const protocol::ExtensionMessage& message) override;
 

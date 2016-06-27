@@ -11,10 +11,10 @@
 
 #include "base/macros.h"
 #include "net/base/ip_endpoint.h"
-#include "remoting/codec/video_encoder.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/host/client_session_details.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/input_injector.h"
@@ -69,6 +69,18 @@ class MockClientSessionControl : public ClientSessionControl {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSessionControl);
+};
+
+class MockClientSessionDetails : public ClientSessionDetails {
+ public:
+  MockClientSessionDetails();
+  ~MockClientSessionDetails() override;
+
+  MOCK_METHOD0(session_control, ClientSessionControl*());
+  MOCK_CONST_METHOD0(desktop_session_id, uint32_t());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockClientSessionDetails);
 };
 
 class MockClientSessionEventHandler : public ClientSession::EventHandler {

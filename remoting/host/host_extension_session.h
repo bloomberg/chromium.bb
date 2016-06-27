@@ -11,7 +11,7 @@ class DesktopCapturer;
 
 namespace remoting {
 
-class ClientSessionControl;
+class ClientSessionDetails;
 class VideoEncoder;
 
 namespace protocol {
@@ -29,7 +29,7 @@ class HostExtensionSession {
   // associated with this |HostExtensionSession|.
   // It returns |true| if the message was handled, and |false| otherwise.
   virtual bool OnExtensionMessage(
-      ClientSessionControl* client_session_control,
+      ClientSessionDetails* client_session_details,
       protocol::ClientStub* client_stub,
       const protocol::ExtensionMessage& message) = 0;
 };

@@ -9,10 +9,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "remoting/codec/video_encoder.h"
+#include "remoting/host/client_session_details.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/proto/control.pb.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 
@@ -22,7 +21,7 @@ class FakeExtension::Session : public HostExtensionSession {
   ~Session() override {}
 
   // HostExtensionSession interface.
-  bool OnExtensionMessage(ClientSessionControl* client_session_control,
+  bool OnExtensionMessage(ClientSessionDetails* client_session_details,
                           protocol::ClientStub* client_stub,
                           const protocol::ExtensionMessage& message) override;
 
@@ -38,7 +37,7 @@ FakeExtension::Session::Session(FakeExtension* extension,
     : extension_(extension), message_type_(message_type) {}
 
 bool FakeExtension::Session::OnExtensionMessage(
-    ClientSessionControl* client_session_control,
+    ClientSessionDetails* client_session_details,
     protocol::ClientStub* client_stub,
     const protocol::ExtensionMessage& message) {
   if (message.type() == message_type_) {
@@ -59,7 +58,7 @@ std::string FakeExtension::capability() const {
 }
 
 std::unique_ptr<HostExtensionSession> FakeExtension::CreateExtensionSession(
-    ClientSessionControl* client_session_control,
+    ClientSessionDetails* client_session_details,
     protocol::ClientStub* client_stub) {
   DCHECK(!was_instantiated());
   was_instantiated_ = true;

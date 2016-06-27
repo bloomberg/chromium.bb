@@ -425,6 +425,17 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
   disable_clipboard_filter_.set_enabled(!disable_inputs);
 }
 
+uint32_t ClientSession::desktop_session_id() const {
+  DCHECK(CalledOnValidThread());
+  DCHECK(desktop_environment_);
+  return desktop_environment_->GetDesktopSessionId();
+}
+
+ClientSessionControl* ClientSession::session_control() {
+  DCHECK(CalledOnValidThread());
+  return this;
+}
+
 std::unique_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
   DCHECK(CalledOnValidThread());
 

@@ -68,6 +68,10 @@ MockClientSessionControl::MockClientSessionControl() {}
 
 MockClientSessionControl::~MockClientSessionControl() {}
 
+MockClientSessionDetails::MockClientSessionDetails() {}
+
+MockClientSessionDetails::~MockClientSessionDetails() {}
+
 MockClientSessionEventHandler::MockClientSessionEventHandler() {}
 
 MockClientSessionEventHandler::~MockClientSessionEventHandler() {}

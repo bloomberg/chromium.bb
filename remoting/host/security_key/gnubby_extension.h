@@ -13,6 +13,9 @@
 
 namespace remoting {
 
+class ClientSessionDetails;
+class HostExtensionSession;
+
 // GnubbyExtension extends HostExtension to enable Security Key support.
 class GnubbyExtension : public HostExtension {
  public:
@@ -22,7 +25,7 @@ class GnubbyExtension : public HostExtension {
   // HostExtension interface.
   std::string capability() const override;
   std::unique_ptr<HostExtensionSession> CreateExtensionSession(
-      ClientSessionControl* client_session_control,
+      ClientSessionDetails* client_session_details,
       protocol::ClientStub* client_stub) override;
 
  private:

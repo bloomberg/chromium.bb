@@ -5,18 +5,16 @@
 #include "remoting/host/host_extension_session_manager.h"
 
 #include "remoting/base/capabilities.h"
-#include "remoting/codec/video_encoder.h"
-#include "remoting/host/client_session_control.h"
+#include "remoting/host/client_session_details.h"
 #include "remoting/host/host_extension.h"
 #include "remoting/host/host_extension_session.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 
 HostExtensionSessionManager::HostExtensionSessionManager(
     const std::vector<HostExtension*>& extensions,
-    ClientSessionControl* client_session_control)
-    : client_session_control_(client_session_control),
+    ClientSessionDetails* client_session_details)
+    : client_session_details_(client_session_details),
       client_stub_(nullptr),
       extensions_(extensions) {}
 
@@ -57,7 +55,7 @@ void HostExtensionSessionManager::OnNegotiatedCapabilities(
 
     std::unique_ptr<HostExtensionSession> extension_session =
         (*extension)
-            ->CreateExtensionSession(client_session_control_, client_stub_);
+            ->CreateExtensionSession(client_session_details_, client_stub_);
     DCHECK(extension_session);
 
     extension_sessions_.push_back(extension_session.release());
@@ -68,7 +66,7 @@ bool HostExtensionSessionManager::OnExtensionMessage(
     const protocol::ExtensionMessage& message) {
   for(HostExtensionSessions::const_iterator it = extension_sessions_.begin();
       it != extension_sessions_.end(); ++it) {
-    if ((*it)->OnExtensionMessage(client_session_control_, client_stub_,
+    if ((*it)->OnExtensionMessage(client_session_details_, client_stub_,
                                   message)) {
       return true;
     }
