@@ -171,7 +171,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   virtual EffectiveConnectionType GetEffectiveConnectionType() const;
 
   // Returns the effective type of the current connection based on only the
-  // samples observed after |start_time|. Virtualized for testing.
+  // samples observed after |start_time|. This should only be used for
+  // recording the metrics. Virtualized for testing.
   virtual EffectiveConnectionType GetRecentEffectiveConnectionType(
       const base::TimeTicks& start_time) const;
 
@@ -577,6 +578,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Estimated network quality when the response headers for the last mainframe
   // request were received.
   nqe::internal::NetworkQuality estimated_quality_at_last_main_frame_;
+  EffectiveConnectionType effective_connection_type_at_last_main_frame_;
 
   // ExternalEstimateProvider that provides network quality using operating
   // system APIs. May be NULL.

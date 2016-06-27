@@ -35060,6 +35060,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff"
+    units="kbps">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Records the difference between the estimated downstream throughput (in
+    kilobits per second) and the observed downstream throughput (in kilobits per
+    second). Downstream throughput estimated by the network quality estimator at
+    the time of navigation start is compared with the downstream throughput
+    observed during the specified time interval following the start of the
+    navigation.
+  </summary>
+</histogram>
+
+<histogram name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff"
+    units="Effective connection type">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Records the difference between the estimated effective connection type and
+    the observed effective connection type. Effective connection type is
+    estimated by the network quality estimator at the time of navigation start
+    is compared with the effective connection type observed during the specified
+    time interval following the start of the navigation.
+  </summary>
+</histogram>
+
 <histogram name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff" units="ms">
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -97008,15 +97035,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Tabs.StateTransfer.Time_Inactive"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="NQE.Accuracy.RTT.Accuracy.DiffPositiveOrNegative"
+<histogram_suffixes name="NQE.Accuracy.Metric.Accuracy.DiffPositiveOrNegative"
     separator=".">
-  <suffix name="Negative" label="Estimated RTT was lower than observed RTT"/>
-  <suffix name="Positive" label="Estimated RTT was higher than observed RTT"/>
+  <suffix name="Negative"
+      label="Estimate of the metric was lower than observed metric"/>
+  <suffix name="Positive"
+      label="Estimate of the metric was higher than observed metric"/>
+  <affected-histogram
+      name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff"/>
+  <affected-histogram
+      name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff"/>
   <affected-histogram name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff"/>
   <affected-histogram name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="NQE.Accuracy.RTT.AccuracyRecordingIntervals"
+<histogram_suffixes name="NQE.Accuracy.Metric.AccuracyRecordingIntervals"
     separator=".">
   <suffix name="15"
       label="Recorded approximately 15 seconds after navigation start"/>
@@ -97024,6 +97057,14 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Recorded approximately 30 seconds after navigation start"/>
   <suffix name="60"
       label="Recorded approximately 60 seconds after navigation start"/>
+  <affected-histogram
+      name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff.Negative"/>
+  <affected-histogram
+      name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff.Positive"/>
+  <affected-histogram
+      name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff.Negative"/>
+  <affected-histogram
+      name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff.Positive"/>
   <affected-histogram
       name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Negative"/>
   <affected-histogram
@@ -97034,25 +97075,64 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Positive"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="NQE.Accuracy.RTT.ObservedRTTIntervals" separator=".">
+<histogram_suffixes
+    name="NQE.Accuracy.Metric.EffectiveConnectionType.ObservedIntervals"
+    separator=".">
+  <suffix name="Unknown"
+      label="Observed effective connection type was Unknown"/>
+  <suffix name="Offline"
+      label="Observed effective connection type was Offline"/>
+  <suffix name="Slow2G" label="Observed effective connection type was Slow2G"/>
+  <suffix name="2G" label="Observed effective connection type was 2G"/>
+  <suffix name="3G" label="Observed effective connection type was 3G"/>
+  <suffix name="4G" label="Observed effective connection type was 4G"/>
+  <suffix name="Broadband"
+      label="Observed effective connection type was Broadband"/>
+  <affected-histogram
+      name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff.Negative.15"/>
+  <affected-histogram
+      name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff.Negative.30"/>
+  <affected-histogram
+      name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff.Negative.60"/>
+  <affected-histogram
+      name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff.Positive.15"/>
+  <affected-histogram
+      name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff.Positive.30"/>
+  <affected-histogram
+      name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff.Positive.60"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NQE.Accuracy.RTT.ObservedIntervals" separator=".">
   <suffix name="0_20"
-      label="Observed RTT was between 0 and 20 (inclusive) msec"/>
+      label="Observed metric was between 0 and 20 (inclusive) units"/>
   <suffix name="20_60"
-      label="Observed RTT was between 20 and 60 (inclusive) msec"/>
+      label="Observed metric was between 20 and 60 (inclusive) units"/>
   <suffix name="60_140"
-      label="Observed RTT was between 60 and 140 (inclusive) msec"/>
+      label="Observed metric was between 60 and 140 (inclusive) units"/>
   <suffix name="140_300"
-      label="Observed RTT was between 140 and 300 (inclusive) msec"/>
+      label="Observed metric was between 140 and 300 (inclusive) units"/>
   <suffix name="300_620"
-      label="Observed RTT was between 300 and 620 (inclusive) msec"/>
+      label="Observed metric was between 300 and 620 (inclusive) units"/>
   <suffix name="620_1260"
-      label="Observed RTT was between 620 and 1260 (inclusive) msec"/>
+      label="Observed metric was between 620 and 1260 (inclusive) units"/>
   <suffix name="1260_2540"
-      label="Observed RTT was between 1260 and 2540 (inclusive) msec"/>
+      label="Observed metric was between 1260 and 2540 (inclusive) units"/>
   <suffix name="2540_5100"
-      label="Observed RTT was between 2540 and 51000 (inclusive) msec"/>
+      label="Observed metric was between 2540 and 51000 (inclusive) units"/>
   <suffix name="5100_Infinity"
-      label="Observed RTT was greater than 5100 (inclusive) msec"/>
+      label="Observed metric was greater than 5100 (inclusive) units"/>
+  <affected-histogram
+      name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff.Negative.15"/>
+  <affected-histogram
+      name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff.Negative.30"/>
+  <affected-histogram
+      name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff.Negative.60"/>
+  <affected-histogram
+      name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff.Positive.15"/>
+  <affected-histogram
+      name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff.Positive.30"/>
+  <affected-histogram
+      name="NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff.Positive.60"/>
   <affected-histogram
       name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Negative.15"/>
   <affected-histogram

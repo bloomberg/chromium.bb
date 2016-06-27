@@ -68,13 +68,16 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
                                 allow_smaller_responses_for_tests),
         effective_connection_type_set_(false),
         effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+        recent_effective_connection_type_set_(false),
+        recent_effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
         current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
         accuracy_recording_intervals_set_(false),
         http_rtt_set_(false),
         recent_http_rtt_set_(false),
         transport_rtt_set_(false),
         recent_transport_rtt_set_(false),
-        downlink_throughput_kbps_set_(false) {
+        downlink_throughput_kbps_set_(false),
+        recent_downlink_throughput_kbps_set_(false) {
     // Set up embedded test server.
     embedded_test_server_.ServeFilesFromDirectory(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
@@ -128,6 +131,22 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     if (effective_connection_type_set_)
       return effective_connection_type_;
     return NetworkQualityEstimator::GetEffectiveConnectionType();
+  }
+
+  void set_recent_effective_connection_type(EffectiveConnectionType type) {
+    recent_effective_connection_type_set_ = true;
+    recent_effective_connection_type_ = type;
+  }
+
+  // Returns the effective connection type that was set using
+  // |set_effective_connection_type|. If connection type has not been set, then
+  // the base implementation is called.
+  EffectiveConnectionType GetRecentEffectiveConnectionType(
+      const base::TimeTicks& start_time) const override {
+    if (recent_effective_connection_type_set_)
+      return recent_effective_connection_type_;
+    return NetworkQualityEstimator::GetRecentEffectiveConnectionType(
+        start_time);
   }
 
   void set_http_rtt(const base::TimeDelta& http_rtt) {
@@ -211,13 +230,19 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     return NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimate(kbps);
   }
 
+  void set_recent_downlink_throughput_kbps(
+      int32_t recent_downlink_throughput_kbps) {
+    recent_downlink_throughput_kbps_set_ = true;
+    recent_downlink_throughput_kbps_ = recent_downlink_throughput_kbps;
+  }
+
   // Returns the downlink throughput that was set using
-  // |set_downlink_throughput_kbps|. If the downlink throughput has not been
-  // set, then the base implementation is called.
+  // |set_recent_downlink_throughput_kbps|. If the downlink throughput has not
+  // been set, then the base implementation is called.
   bool GetRecentMedianDownlinkThroughputKbps(const base::TimeTicks& start_time,
                                              int32_t* kbps) const override {
-    if (downlink_throughput_kbps_set_) {
-      *kbps = downlink_throughput_kbps_;
+    if (recent_downlink_throughput_kbps_set_) {
+      *kbps = recent_downlink_throughput_kbps_;
       return true;
     }
     return NetworkQualityEstimator::GetRecentMedianDownlinkThroughputKbps(
@@ -254,6 +279,9 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   bool effective_connection_type_set_;
   EffectiveConnectionType effective_connection_type_;
 
+  bool recent_effective_connection_type_set_;
+  EffectiveConnectionType recent_effective_connection_type_;
+
   NetworkChangeNotifier::ConnectionType current_network_type_;
   std::string current_network_id_;
 
@@ -274,6 +302,9 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   bool downlink_throughput_kbps_set_;
   int32_t downlink_throughput_kbps_;
+
+  bool recent_downlink_throughput_kbps_set_;
+  int32_t recent_downlink_throughput_kbps_;
 
   // Embedded server used for testing.
   EmbeddedTestServer embedded_test_server_;
@@ -644,6 +675,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsNone) {
     estimator.set_recent_http_rtt(
         base::TimeDelta::FromMilliseconds(test.rtt_msec));
     estimator.set_downlink_throughput_kbps(INT32_MAX);
+    estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -716,6 +748,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
     estimator.set_recent_http_rtt(
         base::TimeDelta::FromMilliseconds(test.rtt_msec));
     estimator.set_downlink_throughput_kbps(INT32_MAX);
+    estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -775,6 +808,8 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsRTTandThroughput) {
     estimator.set_recent_http_rtt(
         base::TimeDelta::FromMilliseconds(test.rtt_msec));
     estimator.set_downlink_throughput_kbps(test.downlink_throughput_kbps);
+    estimator.set_recent_downlink_throughput_kbps(
+        test.downlink_throughput_kbps);
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -1615,6 +1650,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
 // Tests if the NQE accuracy metrics are recorded properly.
 TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
   const int expected_rtt_msec = 100;
+  const int expected_downstream_throughput_kbps = 200;
 
   const base::TimeDelta accuracy_recording_delays[] = {
       base::TimeDelta::FromSeconds(0), base::TimeDelta::FromSeconds(1),
@@ -1623,13 +1659,34 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
   const struct {
     base::TimeDelta rtt;
     base::TimeDelta recent_rtt;
+    int32_t downstream_throughput_kbps;
+    int32_t recent_downstream_throughput_kbps;
+    NetworkQualityEstimator::EffectiveConnectionType effective_connection_type;
+    NetworkQualityEstimator::EffectiveConnectionType
+        recent_effective_connection_type;
   } tests[] = {
       {base::TimeDelta::FromMilliseconds(expected_rtt_msec),
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec)},
-      {base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1),
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec)},
-      {base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1),
-       base::TimeDelta::FromMilliseconds(expected_rtt_msec)},
+       base::TimeDelta::FromMilliseconds(expected_rtt_msec),
+       expected_downstream_throughput_kbps, expected_downstream_throughput_kbps,
+       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G,
+       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G},
+
+      {
+          base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1),
+          base::TimeDelta::FromMilliseconds(expected_rtt_msec),
+          expected_downstream_throughput_kbps + 1,
+          expected_downstream_throughput_kbps,
+          NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_3G,
+          NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1),
+          base::TimeDelta::FromMilliseconds(expected_rtt_msec),
+          expected_downstream_throughput_kbps - 1,
+          expected_downstream_throughput_kbps,
+          NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+          NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G,
+      },
   };
 
   for (const auto& accuracy_recording_delay : accuracy_recording_delays) {
@@ -1642,6 +1699,9 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
       std::map<std::string, std::string> variation_params;
       TestNetworkQualityEstimator estimator(variation_params);
       estimator.SetTickClockForTesting(std::move(tick_clock));
+      estimator.SimulateNetworkChangeTo(
+          NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
+      tick_clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
 
       std::vector<base::TimeDelta> accuracy_recording_intervals;
       accuracy_recording_intervals.push_back(accuracy_recording_delay);
@@ -1653,6 +1713,12 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
       estimator.set_recent_http_rtt(test.recent_rtt);
       estimator.set_transport_rtt(test.rtt);
       estimator.set_recent_transport_rtt(test.recent_rtt);
+      estimator.set_downlink_throughput_kbps(test.downstream_throughput_kbps);
+      estimator.set_recent_downlink_throughput_kbps(
+          test.recent_downstream_throughput_kbps);
+      estimator.set_effective_connection_type(test.effective_connection_type);
+      estimator.set_recent_effective_connection_type(
+          test.recent_effective_connection_type);
 
       base::HistogramTester histogram_tester;
 
@@ -1689,6 +1755,24 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
               : "Positive";
       const std::string interval_value =
           base::IntToString(accuracy_recording_delay.InSeconds());
+
+      histogram_tester.ExpectUniqueSample(
+          "NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff." +
+              sign_suffix_with_one_sample + "." + interval_value + ".140_300",
+          diff, 1);
+      histogram_tester.ExpectTotalCount(
+          "NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff." +
+              sign_suffix_with_zero_samples + "." + interval_value + ".140_300",
+          0);
+
+      histogram_tester.ExpectUniqueSample(
+          "NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff." +
+              sign_suffix_with_one_sample + "." + interval_value + ".2G",
+          diff, 1);
+      histogram_tester.ExpectTotalCount(
+          "NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff." +
+              sign_suffix_with_zero_samples + "." + interval_value + ".2G",
+          0);
 
       histogram_tester.ExpectUniqueSample(
           "NQE.Accuracy.HttpRTT.EstimatedObservedDiff." +
