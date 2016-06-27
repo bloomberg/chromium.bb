@@ -94,8 +94,10 @@ public:
 
     void assign(const PtrStorageImpl& other)
     {
-        release();
         T* val = other.get();
+        if (m_ptr == val)
+            return;
+        release();
         WTF::refIfNotNull(val);
         m_ptr = val;
     }
