@@ -67,35 +67,35 @@ namespace chrome_pdf {
 
 namespace {
 
-#define kPageShadowTop    3
-#define kPageShadowBottom 7
-#define kPageShadowLeft   5
-#define kPageShadowRight  5
+const int32_t kPageShadowTop = 3;
+const int32_t kPageShadowBottom = 7;
+const int32_t kPageShadowLeft = 5;
+const int32_t kPageShadowRight = 5;
 
-#define kPageSeparatorThickness 4
-#define kHighlightColorR 153
-#define kHighlightColorG 193
-#define kHighlightColorB 218
+const int32_t kPageSeparatorThickness = 4;
+const int32_t kHighlightColorR = 153;
+const int32_t kHighlightColorG = 193;
+const int32_t kHighlightColorB = 218;
 
 const uint32_t kPendingPageColor = 0xFFEEEEEE;
 
-#define kFormHighlightColor 0xFFE4DD
-#define kFormHighlightAlpha 100
+const uint32_t kFormHighlightColor = 0xFFE4DD;
+const int32_t kFormHighlightAlpha = 100;
 
-#define kMaxPasswordTries 3
+const int32_t kMaxPasswordTries = 3;
 
 // See Table 3.20 in
 // http://www.adobe.com/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
-#define kPDFPermissionPrintLowQualityMask  1 << 2
-#define kPDFPermissionPrintHighQualityMask 1 << 11
-#define kPDFPermissionCopyMask             1 << 4
-#define kPDFPermissionCopyAccessibleMask   1 << 9
+const uint32_t kPDFPermissionPrintLowQualityMask = 1 << 2;
+const uint32_t kPDFPermissionPrintHighQualityMask = 1 << 11;
+const uint32_t kPDFPermissionCopyMask = 1 << 4;
+const uint32_t kPDFPermissionCopyAccessibleMask = 1 << 9;
 
-#define kLoadingTextVerticalOffset 50
+const int32_t kLoadingTextVerticalOffset = 50;
 
 // The maximum amount of time we'll spend doing a paint before we give back
 // control of the thread.
-#define kMaxProgressivePaintTimeMs 300
+const int32_t kMaxProgressivePaintTimeMs = 300;
 
 // The maximum amount of time we'll spend doing the first paint. This is less
 // than the above to keep things smooth if the user is scrolling quickly. This
@@ -108,7 +108,7 @@ const uint32_t kPendingPageColor = 0xFFEEEEEE;
 // the final painting can start.
 // The scrollbar will always be responsive since it is managed by a separate
 // process.
-#define kMaxInitialProgressivePaintTimeMs 250
+const int32_t kMaxInitialProgressivePaintTimeMs = 250;
 
 std::vector<uint32_t> GetPageNumbersFromPrintPageNumberRange(
     const PP_PrintPageNumberRange_Dev* page_ranges,
