@@ -688,6 +688,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/webgl_canvas/*',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     # Nexus 9 failures
+    self.Fail('deqp/data/gles2/shaders/functions.html',
+              ['android', 'nvidia'], bug=478572)
     self.Skip('conformance/extensions/oes-texture-float-with-video.html',
               ['android', 'nvidia'], bug=499555) # flaky
     self.Fail('conformance/glsl/bugs/multiplication-assignment.html',
