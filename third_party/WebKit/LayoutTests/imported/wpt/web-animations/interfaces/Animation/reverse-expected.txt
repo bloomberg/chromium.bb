@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS reverse() inverts playbackRate 
+PASS reverse() starts to play when pausing animation 
+PASS reverse() maintains the same currentTime 
+PASS reverse() when playbackRate > 0 and currentTime > effect end 
+PASS reverse() when playbackRate > 0 and currentTime < 0 
+PASS reverse() when playbackRate < 0 and currentTime < 0 
+PASS reverse() when playbackRate < 0 and currentTime > effect end 
+PASS reverse() when playbackRate > 0 and currentTime < 0 and the target effect end is positive infinity 
+PASS reverse() when playbackRate < 0 and currentTime < 0 and the target effect end is positive infinity 
+PASS reverse() when playbackRate == 0 
+FAIL Reversing an animation without an active timeline throws an InvalidStateError Animation is not defined
+Harness: the test ran to completion.
+

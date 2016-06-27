@@ -49,7 +49,7 @@ crbug.com/622898 fast/repaint/window-resize-background-image-non-fixed.html [ Ne
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
 
-crbug.com/617152 imported/wpt/mediacapture-streams/GUM-impossible-constraint.html [ Skip ]
+crbug.com/617152 imported/wpt/mediacapture-streams/GUM-impossible-constraint.https.html [ Skip ]
 
 # Expected to fail until OffscreenCanvas can render on the gpu
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-strokeRect-in-worker.html [ Failure ]
@@ -571,19 +571,19 @@ crbug.com/552532 [ Win10 ] plugins/tabindex.html [ Pass Crash ]
 
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 
-crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.html [ Skip ]
-crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.html [ Skip ]
-crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-end.html [ Skip ]
-crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-init.html [ Skip ]
-crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-audio-only.html [ Skip ]
-crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-finished-add.html [ Skip ]
-crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-idl.html [ Skip ]
-crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-removetrack.html [ Skip ]
+crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
+crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Skip ]
+crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-end.https.html [ Skip ]
+crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-init.https.html [ Skip ]
+crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-audio-only.https.html [ Skip ]
+crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-finished-add.https.html [ Skip ]
+crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-idl.https.html [ Skip ]
+crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-removetrack.https.html [ Skip ]
 
-crbug.com/412381 imported/wpt/mediacapture-streams/GUM-empty-option-param.html [ Failure ]
-crbug.com/412381 imported/wpt/mediacapture-streams/GUM-trivial-constraint.html [ Failure ]
-crbug.com/412381 imported/wpt/mediacapture-streams/GUM-unknownkey-option-param.html [ Failure ]
-crbug.com/412381 imported/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none.html [ Pass Timeout Failure ]
+crbug.com/412381 imported/wpt/mediacapture-streams/GUM-empty-option-param.https.html [ Failure ]
+crbug.com/412381 imported/wpt/mediacapture-streams/GUM-trivial-constraint.https.html [ Failure ]
+crbug.com/412381 imported/wpt/mediacapture-streams/GUM-unknownkey-option-param.https.html [ Failure ]
+crbug.com/412381 imported/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none.https.html [ Pass Timeout Failure ]
 
 crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
 crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
@@ -1264,6 +1264,8 @@ crbug.com/612924 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_to
 crbug.com/612924 imported/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html  [ Skip ]
 crbug.com/612924 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_touch-action-verification.html  [ Skip ]
 crbug.com/612924 imported/wpt/pointerevents/pointerevent_touch-action-verification.html  [ Skip ]
+crbug.com/612924 imported/wpt/pointerevents/pointerevent_properties_mouse-manual.html [ Skip ]
+crbug.com/612924 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_properties_mouse-manual.html [ Skip ]
 
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
@@ -1564,8 +1566,8 @@ crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.htm
 
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash ]
 
-crbug.com/600261 imported/wpt/mediacapture-streams/GUM-deny.html [ Failure ]
-crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Failure ]
+crbug.com/600261 imported/wpt/mediacapture-streams/GUM-deny.https.html [ Failure ]
+crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Failure ]
 
 crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
@@ -1657,6 +1659,8 @@ crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Fa
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
 crbug.com/622368 [ Linux Win Debug ] fast/repaint/obscured-background-no-repaint.html [ Pass Failure ]
+
+crbug.com/622819 imported/wpt/IndexedDB/transaction-lifetime-empty.html [ Skip ]
 
 crbug.com/621892 css3/filters/effect-brightness-clamping-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-brightness-hw.html [ Pass Failure ]

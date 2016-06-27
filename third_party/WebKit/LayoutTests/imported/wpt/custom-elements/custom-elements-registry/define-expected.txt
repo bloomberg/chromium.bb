@@ -73,9 +73,7 @@ FAIL If extends is spacer, should throw a NotSupportedError assert_throws: funct
 FAIL If extends is elementnametobeunknownelement, should throw a NotSupportedError assert_throws: function "() =>  {
         customElements.define('test-define-extend-' + name, class {}, { extends: name });
       }" did not throw
-FAIL If constructor.observedAttributes throws, should rethrow assert_throws: function "() => {
-      customElements.define('test-define-observedattributes-rethrow', C);
-    }" did not throw
+PASS If constructor.observedAttributes throws, should rethrow 
 PASS If constructor.prototype throws, should rethrow 
 PASS If Type(constructor.prototype) is undefined, should throw a TypeError 
 PASS If Type(constructor.prototype) is string, should throw a TypeError 
