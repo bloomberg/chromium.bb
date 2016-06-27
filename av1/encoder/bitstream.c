@@ -1720,7 +1720,7 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     for (i = 0; i < BLOCK_SIZES; ++i)
       if (is_motion_variation_allowed_bsize(i))
         prob_diff_update(av1_motion_mode_tree, cm->fc->motion_mode_prob[i],
-                         counts->motion_mode[i], MOTION_MODES, &header_bc);
+                         counts->motion_mode[i], MOTION_MODES, header_bc);
 #endif  // CONFIG_MOTION_VAR
     if (cm->interp_filter == SWITCHABLE)
       update_switchable_interp_probs(cm, header_bc, counts);
@@ -1760,10 +1760,10 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if CONFIG_EXT_REFS
       for (i = 0; i < REF_CONTEXTS; i++) {
         for (j = 0; j < (FWD_REFS - 1); j++)
-          av1_cond_prob_diff_update(&header_bc, &fc->comp_fwdref_prob[i][j],
+          av1_cond_prob_diff_update(header_bc, &fc->comp_fwdref_prob[i][j],
                                     counts->comp_fwdref[i][j]);
         for (j = 0; j < (BWD_REFS - 1); j++)
-          av1_cond_prob_diff_update(&header_bc, &fc->comp_bwdref_prob[i][j],
+          av1_cond_prob_diff_update(header_bc, &fc->comp_bwdref_prob[i][j],
                                     counts->comp_bwdref[i][j]);
       }
 #else

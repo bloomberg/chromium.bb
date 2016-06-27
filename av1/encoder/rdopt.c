@@ -3235,7 +3235,7 @@ static int64_t handle_inter_mode(
   memcpy(x->bsse, bsse, sizeof(bsse));
 
 #if CONFIG_MOTION_VAR
-  best_rd = INT64_MAX;
+  rd = INT64_MAX;
   for (mbmi->motion_mode = SIMPLE_TRANSLATION;
        mbmi->motion_mode < (allow_motion_variation ? MOTION_MODES : 1);
        mbmi->motion_mode++) {
@@ -3349,9 +3349,9 @@ static int64_t handle_inter_mode(
 
 #if CONFIG_MOTION_VAR
     tmp_rd = RDCOST(x->rdmult, x->rddiv, *rate2, *distortion);
-    if (mbmi->motion_mode == SIMPLE_TRANSLATION || (tmp_rd < best_rd)) {
+    if (mbmi->motion_mode == SIMPLE_TRANSLATION || (tmp_rd < rd)) {
       best_mbmi = *mbmi;
-      best_rd = tmp_rd;
+      rd = tmp_rd;
       best_rate2 = *rate2;
       best_distortion = *distortion;
       best_skippable = *skippable;
@@ -3360,7 +3360,7 @@ static int64_t handle_inter_mode(
     }
   }
 
-  if (best_rd == INT64_MAX) {
+  if (rd == INT64_MAX) {
     *rate2 = INT_MAX;
     *distortion = INT64_MAX;
     restore_dst_buf(xd, orig_dst, orig_dst_stride);
