@@ -31,3 +31,12 @@ Call stack:
 Event target: VIDEO
 Script execution resumed.
 
+Running: testPointerEventBreakpoint
+Script execution paused.
+Call stack:
+    0) testElementEventListener (event-listener-breakpoints.html:7)
+    1) addListenerAndPointerDown (event-listener-breakpoints.html:23)
+    2)  (:1)
+Event target: INPUT
+Script execution resumed.
+

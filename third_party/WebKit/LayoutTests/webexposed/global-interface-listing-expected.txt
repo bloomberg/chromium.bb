@@ -1254,8 +1254,16 @@ interface Document : Node
     getter onpause
     getter onplay
     getter onplaying
+    getter onpointercancel
+    getter onpointerdown
+    getter onpointerenter
+    getter onpointerleave
     getter onpointerlockchange
     getter onpointerlockerror
+    getter onpointermove
+    getter onpointerout
+    getter onpointerover
+    getter onpointerup
     getter onprogress
     getter onratechange
     getter onreadystatechange
@@ -1415,8 +1423,16 @@ interface Document : Node
     setter onpause
     setter onplay
     setter onplaying
+    setter onpointercancel
+    setter onpointerdown
+    setter onpointerenter
+    setter onpointerleave
     setter onpointerlockchange
     setter onpointerlockerror
+    setter onpointermove
+    setter onpointerout
+    setter onpointerover
+    setter onpointerup
     setter onprogress
     setter onratechange
     setter onreadystatechange
@@ -1514,6 +1530,8 @@ interface Element : Node
     getter onbeforepaste
     getter oncopy
     getter oncut
+    getter ongotpointercapture
+    getter onlostpointercapture
     getter onpaste
     getter onsearch
     getter onselectstart
@@ -1559,6 +1577,7 @@ interface Element : Node
     method prepend
     method querySelector
     method querySelectorAll
+    method releasePointerCapture
     method remove
     method removeAttribute
     method removeAttributeNS
@@ -1575,6 +1594,7 @@ interface Element : Node
     method setAttributeNS
     method setAttributeNode
     method setAttributeNodeNS
+    method setPointerCapture
     method webkitMatchesSelector
     method webkitRequestFullScreen
     method webkitRequestFullscreen
@@ -1587,6 +1607,8 @@ interface Element : Node
     setter onbeforepaste
     setter oncopy
     setter oncut
+    setter ongotpointercapture
+    setter onlostpointercapture
     setter onpaste
     setter onsearch
     setter onselectstart
@@ -2124,6 +2146,14 @@ interface HTMLElement : Element
     getter onpause
     getter onplay
     getter onplaying
+    getter onpointercancel
+    getter onpointerdown
+    getter onpointerenter
+    getter onpointerleave
+    getter onpointermove
+    getter onpointerout
+    getter onpointerover
+    getter onpointerup
     getter onprogress
     getter onratechange
     getter onreset
@@ -2207,6 +2237,14 @@ interface HTMLElement : Element
     setter onpause
     setter onplay
     setter onplaying
+    setter onpointercancel
+    setter onpointerdown
+    setter onpointerenter
+    setter onpointerleave
+    setter onpointermove
+    setter onpointerout
+    setter onpointerover
+    setter onpointerup
     setter onprogress
     setter onratechange
     setter onreset
@@ -4405,6 +4443,17 @@ interface PluginArray
     method item
     method namedItem
     method refresh
+interface PointerEvent : MouseEvent
+    attribute @@toStringTag
+    getter height
+    getter isPrimary
+    getter pointerId
+    getter pointerType
+    getter pressure
+    getter tiltX
+    getter tiltY
+    getter width
+    method constructor
 interface PopStateEvent : Event
     attribute @@toStringTag
     getter state
@@ -4829,6 +4878,14 @@ interface SVGElement : Element
     getter onpause
     getter onplay
     getter onplaying
+    getter onpointercancel
+    getter onpointerdown
+    getter onpointerenter
+    getter onpointerleave
+    getter onpointermove
+    getter onpointerout
+    getter onpointerover
+    getter onpointerup
     getter onprogress
     getter onratechange
     getter onreset
@@ -4899,6 +4956,14 @@ interface SVGElement : Element
     setter onpause
     setter onplay
     setter onplaying
+    setter onpointercancel
+    setter onpointerdown
+    setter onpointerenter
+    setter onpointerleave
+    setter onpointermove
+    setter onpointerout
+    setter onpointerover
+    setter onpointerup
     setter onprogress
     setter onratechange
     setter onreset
@@ -7572,6 +7637,14 @@ interface webkitURL
     attribute onpause
     attribute onplay
     attribute onplaying
+    attribute onpointercancel
+    attribute onpointerdown
+    attribute onpointerenter
+    attribute onpointerleave
+    attribute onpointermove
+    attribute onpointerout
+    attribute onpointerover
+    attribute onpointerup
     attribute onpopstate
     attribute onprogress
     attribute onratechange

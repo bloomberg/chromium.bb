@@ -3,7 +3,9 @@ Verifies that pointerup/down are fired correctly for correponding mouse events o
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+Received pointerdown
 Received mousedown
+Received pointerup
 Received mouseup
 PASS successfullyParsed is true
 

@@ -345,8 +345,6 @@ PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "OrientationE
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "OrientationEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PageTransition" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PageTransitions" 
-PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PointerEvent" 
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PointerEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PopUpEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PopUpEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PresentationConnectionAvailableEvent" assert_throws: function "function () {

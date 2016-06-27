@@ -158,21 +158,6 @@
     "args": ["--enable-smooth-scrolling"]
   },
   {
-    "prefix": "pointerevent",
-    "base": "fast/events",
-    "args": ["--enable-blink-features=PointerEvent"]
-  },
-  {
-    "prefix": "pointerevent",
-    "base": "imported/wpt/pointerevents",
-    "args": ["--enable-blink-features=PointerEvent"]
-  },
-  {
-    "prefix": "pointerevent",
-    "base": "inspector/sources/debugger-breakpoints",
-    "args": ["--enable-blink-features=PointerEvent"]
-  },
-  {
     "prefix": "mediasession",
     "base": "media/mediasession",
     "args": ["--enable-blink-features=MediaSession"]

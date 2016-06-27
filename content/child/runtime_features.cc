@@ -229,10 +229,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::enableMediaDocumentDownloadButton(
       base::FeatureList::IsEnabled(features::kMediaDocumentDownloadButton));
 
-  if (base::FeatureList::IsEnabled(features::kPointerEvents)) {
-    WebRuntimeFeatures::enableFeatureFromString(
-        std::string("PointerEvent"), true);
-  }
+  if (base::FeatureList::IsEnabled(features::kPointerEvents))
+    WebRuntimeFeatures::enableFeatureFromString("PointerEvent", true);
 
   WebRuntimeFeatures::enableFeatureFromString(
       "FontCacheScaling",

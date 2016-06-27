@@ -59,7 +59,6 @@ crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [
 crbug.com/506529 fast/mediastream/MediaStreamConstructor.html [ Leak ]
 crbug.com/506529 fast/events/constructors/media-stream-event-constructor.html [ Leak ]
 crbug.com/506529 fast/files/workers/worker-read-blob-async-crash.html [ Leak ]
-crbug.com/506529 virtual/pointerevent/fast/events/constructors/media-stream-event-constructor.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (IndexedDB).

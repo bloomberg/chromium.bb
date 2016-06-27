@@ -5,6 +5,18 @@ EventDispatch Properties:
 {
     data : {
         stackTrace : <object>
+        type : "pointerover"
+    }
+    endTime : <number>
+    stackTrace : <object>
+    startTime : <number>
+    type : "EventDispatch"
+}
+Text details for EventDispatch: pointerover
+EventDispatch Properties:
+{
+    data : {
+        stackTrace : <object>
         type : "mouseover"
     }
     endTime : <number>
@@ -17,6 +29,18 @@ EventDispatch Properties:
 {
     data : {
         stackTrace : <object>
+        type : "pointermove"
+    }
+    endTime : <number>
+    stackTrace : <object>
+    startTime : <number>
+    type : "EventDispatch"
+}
+Text details for EventDispatch: pointermove
+EventDispatch Properties:
+{
+    data : {
+        stackTrace : <object>
         type : "mousemove"
     }
     endTime : <number>
@@ -25,6 +49,18 @@ EventDispatch Properties:
     type : "EventDispatch"
 }
 Text details for EventDispatch: mousemove
+EventDispatch Properties:
+{
+    data : {
+        stackTrace : <object>
+        type : "pointerdown"
+    }
+    endTime : <number>
+    stackTrace : <object>
+    startTime : <number>
+    type : "EventDispatch"
+}
+Text details for EventDispatch: pointerdown
 EventDispatch Properties:
 {
     data : {
