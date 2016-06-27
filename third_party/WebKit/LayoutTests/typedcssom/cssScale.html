@@ -6,19 +6,19 @@
 var EPSILON = 1e-6; // float epsilon
 var values = [
   {input: new CSSScale(0, 0), x: 0, y: 0, z: 1, is2DComponent: true,
-    cssString: "scale(0, 0)"},
+    cssText: "scale(0, 0)"},
   {input: new CSSScale(1, 2), x: 1, y: 2, z: 1, is2DComponent: true,
-    cssString: "scale(1, 2)"},
+    cssText: "scale(1, 2)"},
   {input: new CSSScale(-2, -4), x: -2, y: -4, z: 1, is2DComponent: true,
-    cssString: "scale(-2, -4)"},
+    cssText: "scale(-2, -4)"},
   {input: new CSSScale(3.4, 2.7), x: 3.4, y: 2.7, z: 1, is2DComponent: true,
-    cssString: "scale(3.4, 2.7)"},
+    cssText: "scale(3.4, 2.7)"},
   {input: new CSSScale(0, 0, 0), x: 0, y: 0, z: 0, is2DComponent: false,
-    cssString: "scale3d(0, 0, 0)"},
+    cssText: "scale3d(0, 0, 0)"},
   {input: new CSSScale(1, 2, 3), x: 1, y: 2, z: 3, is2DComponent: false,
-    cssString: "scale3d(1, 2, 3)"},
+    cssText: "scale3d(1, 2, 3)"},
   {input: new CSSScale(3.5, -2.7, -2), x: 3.5, y: -2.7, z: -2, is2DComponent: false,
-    cssString: "scale3d(3.5, -2.7, -2)"}
+    cssText: "scale3d(3.5, -2.7, -2)"}
 ];
 
 test(function() {
@@ -37,9 +37,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.cssString, values[i].cssString);
+    assert_equals(values[i].input.cssText, values[i].cssText);
   }
-}, "Test that the cssString for CSSScale is correct.");
+}, "Test that the cssText for CSSScale is correct.");
 
 test(function() {
   assert_throws(null, () => { new CSSScale(); });

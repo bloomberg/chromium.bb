@@ -11,7 +11,7 @@ test(function() {
   testElement.styleMap.set('width', new CSSSimpleLength(90, 'px'));
   var result = testElement.styleMap.getAll('width');
   assert_equals(result.length, 1);
-  assert_equals(result[0].cssString, '90px');
+  assert_equals(result[0].cssText, '90px');
 }, "getAll() returns a list of values");
 
 test(function() {
@@ -23,9 +23,9 @@ test(function() {
   assert_equals(lowerResult.length, 1);
   assert_equals(upperResult.length, 1);
   assert_equals(mixedResult.length, 1);
-  assert_equals(lowerResult[0].cssString, '100px');
-  assert_equals(upperResult[0].cssString, '100px');
-  assert_equals(mixedResult[0].cssString, '100px');
+  assert_equals(lowerResult[0].cssText, '100px');
+  assert_equals(upperResult[0].cssText, '100px');
+  assert_equals(mixedResult[0].cssText, '100px');
 }, "getAll is case-insensitive for the property name");
 
 test(function() {

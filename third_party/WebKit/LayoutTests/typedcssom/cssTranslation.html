@@ -52,12 +52,12 @@ var values = [
 ];
 
 function expectedCssString(obj) {
-  var cssString = obj.is2DComponent ? "translate(" : "translate3d(";
-  cssString += obj.x.cssString + ", " + obj.y.cssString;
+  var cssText = obj.is2DComponent ? "translate(" : "translate3d(";
+  cssText += obj.x.cssText + ", " + obj.y.cssText;
   if (!obj.is2DComponent)
-    cssString += ", " + obj.z.cssString;
-  cssString += ")";
-  return cssString;
+    cssText += ", " + obj.z.cssText;
+  cssText += ")";
+  return cssText;
 }
 
 test(function() {
@@ -79,9 +79,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.cssString, expectedCssString(values[i]));
+    assert_equals(values[i].input.cssText, expectedCssString(values[i]));
   }
-}, "Test that cssString values for CSSTranslation is correct.");
+}, "Test that cssText values for CSSTranslation is correct.");
 
 test(function() {
   assert_throws(null, function() { new CSSTranslation(simpleLength, simpleLength, simplePercent); });

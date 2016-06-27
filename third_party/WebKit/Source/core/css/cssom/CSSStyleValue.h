@@ -42,7 +42,7 @@ public:
     {
         return toCSSValue();
     }
-    virtual String cssString() const
+    virtual String cssText() const
     {
         return toCSSValue()->cssText();
     }

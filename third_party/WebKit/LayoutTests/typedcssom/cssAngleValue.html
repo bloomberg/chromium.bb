@@ -50,10 +50,10 @@ test(function() {
 }, 'Test turn conversions');
 
 test(function() {
-  assert_equals((new CSSAngleValue(100, 'deg')).cssString, '100deg');
-  assert_equals((new CSSAngleValue(200, 'rad')).cssString, '200rad');
-  assert_equals((new CSSAngleValue(300, 'grad')).cssString, '300grad');
-  assert_equals((new CSSAngleValue(400, 'turn')).cssString, '400turn');
-}, 'Test cssString');
+  assert_equals((new CSSAngleValue(100, 'deg')).cssText, '100deg');
+  assert_equals((new CSSAngleValue(200, 'rad')).cssText, '200rad');
+  assert_equals((new CSSAngleValue(300, 'grad')).cssText, '300grad');
+  assert_equals((new CSSAngleValue(400, 'turn')).cssText, '400turn');
+}, 'Test cssText');
 
 </script>

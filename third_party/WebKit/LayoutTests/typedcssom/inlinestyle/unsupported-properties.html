@@ -16,8 +16,8 @@ test(function() {
 
   var result = testElement.styleMap.get('background-image');
   assert_equals(result.constructor, CSSStyleValue);
-  assert_equals(result.cssString, 'url("")');
-}, 'Unsupported property returns a base StyleValue with the correct cssString.');
+  assert_equals(result.cssText, 'url("")');
+}, 'Unsupported property returns a base StyleValue with the correct cssText.');
 
 test(function() {
   testElement.style.backgroundImage = 'url("")';
@@ -26,7 +26,7 @@ test(function() {
 
   var result = secondElement.styleMap.get('background-image');
   assert_equals(result.constructor, CSSStyleValue);
-  assert_equals(result.cssString, 'url("")');
+  assert_equals(result.cssText, 'url("")');
 }, 'Setting the same property using the result of getting an unknown value works');
 
 test(function() {
@@ -36,7 +36,7 @@ test(function() {
 
   var result = secondElement.styleMap.get('border-left-color');
   assert_equals(result.constructor, CSSStyleValue);
-  assert_equals(result.cssString, 'green');
+  assert_equals(result.cssText, 'green');
 }, 'Setting a different property using the result of getting an unknown value works');
 
 </script>

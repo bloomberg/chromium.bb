@@ -29,7 +29,7 @@ test(function() {
 
   assert_equals(entry.value[0], 'width');
   assert_true(entry.value[1] instanceof CSSSimpleLength);
-  assert_equals(entry.value[1].cssString, '50px');
+  assert_equals(entry.value[1].cssText, '50px');
 }, "Iterator for single entry returns iterator with a single value");
 
 test(function() {
@@ -54,7 +54,7 @@ test(function() {
   assert_true(iterator.next().done);
 
   assert_true(entry.value instanceof CSSSimpleLength);
-  assert_equals(entry.value.cssString, '70px');
+  assert_equals(entry.value.cssText, '70px');
 }, "Iterator for single value returns iterator with a single value");
 
 test(function() {
@@ -68,26 +68,26 @@ test(function() {
   }
   assert_equals(numEntries, 17);
 
-  assert_equals(entries['border-top-width'].cssString, '5px');
-  assert_equals(entries['border-right-width'].cssString, '5px');
-  assert_equals(entries['border-bottom-width'].cssString, '5px');
-  assert_equals(entries['border-left-width'].cssString, '5px');
+  assert_equals(entries['border-top-width'].cssText, '5px');
+  assert_equals(entries['border-right-width'].cssText, '5px');
+  assert_equals(entries['border-bottom-width'].cssText, '5px');
+  assert_equals(entries['border-left-width'].cssText, '5px');
 
-  assert_equals(entries['border-top-style'].cssString, 'solid');
-  assert_equals(entries['border-right-style'].cssString, 'solid');
-  assert_equals(entries['border-bottom-style'].cssString, 'solid');
-  assert_equals(entries['border-left-style'].cssString, 'solid');
+  assert_equals(entries['border-top-style'].cssText, 'solid');
+  assert_equals(entries['border-right-style'].cssText, 'solid');
+  assert_equals(entries['border-bottom-style'].cssText, 'solid');
+  assert_equals(entries['border-left-style'].cssText, 'solid');
 
-  assert_equals(entries['border-top-color'].cssString, 'lightcoral');
-  assert_equals(entries['border-right-color'].cssString, 'lightcoral');
-  assert_equals(entries['border-bottom-color'].cssString, 'lightcoral');
-  assert_equals(entries['border-left-color'].cssString, 'lightcoral');
+  assert_equals(entries['border-top-color'].cssText, 'lightcoral');
+  assert_equals(entries['border-right-color'].cssText, 'lightcoral');
+  assert_equals(entries['border-bottom-color'].cssText, 'lightcoral');
+  assert_equals(entries['border-left-color'].cssText, 'lightcoral');
 
-  assert_equals(entries['border-image-source'].cssString, 'initial');
-  assert_equals(entries['border-image-slice'].cssString, 'initial'); 
-  assert_equals(entries['border-image-width'].cssString, 'initial');
-  assert_equals(entries['border-image-outset'].cssString, 'initial');
-  assert_equals(entries['border-image-repeat'].cssString, 'initial');
+  assert_equals(entries['border-image-source'].cssText, 'initial');
+  assert_equals(entries['border-image-slice'].cssText, 'initial'); 
+  assert_equals(entries['border-image-width'].cssText, 'initial');
+  assert_equals(entries['border-image-outset'].cssText, 'initial');
+  assert_equals(entries['border-image-repeat'].cssText, 'initial');
 }, "Iterating entries over border element expansion");
 
 </script>

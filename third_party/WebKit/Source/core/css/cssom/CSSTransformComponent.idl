@@ -6,7 +6,7 @@
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
 ] interface CSSTransformComponent {
-    readonly attribute DOMString cssString;
+    readonly attribute DOMString cssText;
     boolean is2DComponent();
     CSSMatrix asMatrix();
 };

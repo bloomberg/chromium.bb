@@ -20,7 +20,7 @@ public:
     StyleValueType type() const override { return StyleValueType::Unknown; }
     CSSValue* toCSSValue() const override;
     CSSValue* toCSSValueWithProperty(CSSPropertyID) const override;
-    String cssString() const override { return m_cssText; }
+    String cssText() const override { return m_cssText; }
 
 private:
     CSSUnsupportedStyleValue(const String& cssText)

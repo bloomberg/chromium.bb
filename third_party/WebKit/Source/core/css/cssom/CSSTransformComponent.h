@@ -39,7 +39,7 @@ public:
 
     bool is2DComponent() const { return is2DComponentType(type()); }
 
-    String cssString() const
+    String cssText() const
     {
         return toCSSValue()->cssText();
     }

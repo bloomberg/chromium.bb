@@ -20,7 +20,7 @@ CSSPrimitiveValue::UnitType CSSLengthValue::unitFromName(const String& name)
     return CSSPrimitiveValue::stringToUnitType(name);
 }
 
-CSSLengthValue* CSSLengthValue::from(const String& cssString, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::from(const String& cssText, ExceptionState& exceptionState)
 {
     // TODO: Implement
     return nullptr;

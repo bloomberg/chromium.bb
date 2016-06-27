@@ -55,17 +55,17 @@ test(function() {
 
 test(function() {
   var values = [
-    {input: new CSSCalcLength({px: 1}), cssString: 'calc(1px)'},
-    {input: new CSSCalcLength({px: -1}), cssString: 'calc(-1px)'},
-    {input: new CSSCalcLength({px: 1, percent: 15.6}), cssString: 'calc(15.6% + 1px)'},
-    {input: new CSSCalcLength({px: 1, percent: -15.6}), cssString: 'calc(-15.6% + 1px)'},
-    {input: new CSSCalcLength({px: -1, percent: -15.6}), cssString: 'calc(-15.6% - 1px)'},
-    {input: new CSSCalcLength({px: -1, percent: -15.6, vw: 5}), cssString: 'calc((-15.6% - 1px) + 5vw)'},
-    {input: new CSSCalcLength({px: -1, percent: -15.6, vw: -5}), cssString: 'calc((-15.6% - 1px) - 5vw)'},
+    {input: new CSSCalcLength({px: 1}), cssText: 'calc(1px)'},
+    {input: new CSSCalcLength({px: -1}), cssText: 'calc(-1px)'},
+    {input: new CSSCalcLength({px: 1, percent: 15.6}), cssText: 'calc(15.6% + 1px)'},
+    {input: new CSSCalcLength({px: 1, percent: -15.6}), cssText: 'calc(-15.6% + 1px)'},
+    {input: new CSSCalcLength({px: -1, percent: -15.6}), cssText: 'calc(-15.6% - 1px)'},
+    {input: new CSSCalcLength({px: -1, percent: -15.6, vw: 5}), cssText: 'calc((-15.6% - 1px) + 5vw)'},
+    {input: new CSSCalcLength({px: -1, percent: -15.6, vw: -5}), cssText: 'calc((-15.6% - 1px) - 5vw)'},
   ];
 
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.cssString, values[i].cssString);
+    assert_equals(values[i].input.cssText, values[i].cssText);
   }
 
 }, 'Test that the CSS string method for a CSSCalcLength produces the correct result');

@@ -90,10 +90,10 @@ CONSOLE MESSAGE: line 137:     getter ay
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CSSStyleValue
 CONSOLE MESSAGE: line 137:     static method parse
-CONSOLE MESSAGE: line 137:     getter cssString
+CONSOLE MESSAGE: line 137:     getter cssText
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CSSTransformComponent
-CONSOLE MESSAGE: line 137:     getter cssString
+CONSOLE MESSAGE: line 137:     getter cssText
 CONSOLE MESSAGE: line 137:     method asMatrix
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     method is2DComponent

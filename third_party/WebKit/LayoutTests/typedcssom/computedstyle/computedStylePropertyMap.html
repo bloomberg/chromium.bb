@@ -28,7 +28,7 @@ test(function() {
     if (styleValues.length == 1) {
       // TODO(meade): Remove this if statement once all properties are supported.
       // TODO(meade): Handle sequence types.
-      assert_equals(computedStyleMap.get(property).cssString, computedStyle[property]);
+      assert_equals(computedStyleMap.get(property).cssText, computedStyle[property]);
     }
   }
 }, 'Properties retrieved from ComputedStyleMap reflect the same values as from ComputedStyle');
@@ -37,7 +37,7 @@ test(function() {
   testElement.style.border = '1px solid #00ff00';
   var styleValue = computedStyleMap.get('border');
   assert_equals(styleValue.constructor, CSSStyleValue);
-  assert_equals(styleValue.cssString, testElement.style.border);
+  assert_equals(styleValue.cssText, testElement.style.border);
 }, 'Unsupported but serializable property returns a base CSSStyleValue.');
 
 test(function() {

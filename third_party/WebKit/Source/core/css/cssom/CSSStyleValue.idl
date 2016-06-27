@@ -6,7 +6,7 @@
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
 ] interface CSSStyleValue {
-    readonly attribute DOMString cssString;
+    readonly attribute DOMString cssText;
     // TODO(meade): Should be (CSSStyleValue or sequence<CSSStyleValue>)? instead of object?. Fix when the code generator supports this.
     [RaisesException, CallWith=ScriptState] static object? parse(DOMString property, DOMString cssText);
 };

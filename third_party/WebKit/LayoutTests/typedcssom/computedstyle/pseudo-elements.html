@@ -20,8 +20,8 @@
 var computedStyleMap = getComputedStyleMap(testElement);
 var pseudoComputedStyleMap = getComputedStyleMap(testElement, '::after');
 test(function() {
-  assert_equals(computedStyleMap.get('border-top-width').cssString, '5px');
-  assert_equals(pseudoComputedStyleMap.get('border-top-width').cssString, '1px');
+  assert_equals(computedStyleMap.get('border-top-width').cssText, '5px');
+  assert_equals(pseudoComputedStyleMap.get('border-top-width').cssText, '1px');
 }, 'get on Computed StyleMap of pseudo element returns correct styles');
 
 test(function() {
@@ -29,7 +29,7 @@ test(function() {
 
   var styleValueList = pseudoComputedStyleMap.getAll('border-top-width');
   assert_equals(styleValueList.length, 1);
-  assert_equals(styleValueList[0].cssString, '1px');
+  assert_equals(styleValueList[0].cssText, '1px');
 }, 'getAll on Computed StyleMap of pseudo element returns list of correct styles');
 
 </script>

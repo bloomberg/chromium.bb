@@ -5,10 +5,10 @@
 <script>
 var EPSILON = 1e-6; // float epsilon
 var values = [
-  {input: new CSSSkew(0, 0), ax: 0, ay: 0, cssString: "skew(0, 0)"},
-  {input: new CSSSkew(1, 2), ax: 1, ay: 2, cssString: "skew(1, 2)"},
-  {input: new CSSSkew(-2, -4), ax: -2, ay: -4, cssString: "skew(-2, -4)"},
-  {input: new CSSSkew(3.4, 2.7), ax: 3.4, ay: 2.7, cssString: "skew(3.4, 2.7)"}
+  {input: new CSSSkew(0, 0), ax: 0, ay: 0, cssText: "skew(0, 0)"},
+  {input: new CSSSkew(1, 2), ax: 1, ay: 2, cssText: "skew(1, 2)"},
+  {input: new CSSSkew(-2, -4), ax: -2, ay: -4, cssText: "skew(-2, -4)"},
+  {input: new CSSSkew(3.4, 2.7), ax: 3.4, ay: 2.7, cssText: "skew(3.4, 2.7)"}
 ];
 
 test(function() {
@@ -26,9 +26,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.cssString, values[i].cssString);
+    assert_equals(values[i].input.cssText, values[i].cssText);
   }
-}, "Test that the cssString for CSSSkew is correct.");
+}, "Test that the cssText for CSSSkew is correct.");
 
 test(function() {
   assert_throws(null, function() { new CSSSkew(); });

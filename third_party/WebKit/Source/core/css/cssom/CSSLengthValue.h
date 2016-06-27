@@ -26,7 +26,7 @@ public:
 
     virtual bool containsPercent() const = 0;
 
-    static CSSLengthValue* from(const String& cssString, ExceptionState&);
+    static CSSLengthValue* from(const String& cssText, ExceptionState&);
     static CSSLengthValue* from(double value, const String& typeStr, ExceptionState&);
     static CSSLengthValue* from(const CSSCalcDictionary&, ExceptionState&);
 

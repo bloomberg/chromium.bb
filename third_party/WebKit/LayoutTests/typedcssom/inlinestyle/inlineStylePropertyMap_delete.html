@@ -9,7 +9,7 @@
 // Delete
 test(function() {
   testElement.style.width = '80px';
-  assert_equals(testElement.styleMap.get('width').cssString, '80px');
+  assert_equals(testElement.styleMap.get('width').cssText, '80px');
 
   testElement.styleMap.delete('width');
   assert_equals(testElement.styleMap.get('width'), null);
@@ -18,7 +18,7 @@ test(function() {
 
 test(function() {
   testElement.styleMap.set('width', new CSSSimpleLength(100, 'px'));
-  assert_equals(testElement.styleMap.get('width').cssString, '100px');
+  assert_equals(testElement.styleMap.get('width').cssText, '100px');
 
   testElement.styleMap.delete('width');
   assert_equals(testElement.styleMap.get('width'), null);
@@ -27,7 +27,7 @@ test(function() {
 
 test(function() {
   testElement.style.width = '90px';
-  assert_equals(testElement.styleMap.get('width').cssString, '90px');
+  assert_equals(testElement.styleMap.get('width').cssText, '90px');
 
   testElement.styleMap.delete('WIdtH');
   assert_equals(testElement.styleMap.get('width'), null);

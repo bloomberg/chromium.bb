@@ -13,7 +13,7 @@ test(function() {
 
   var result = computedStyleMap.get('width');
   assert_true(result instanceof CSSSimpleLength);
-  assert_equals(result.cssString, '10px');
+  assert_equals(result.cssText, '10px');
 }, "Getting a 10px width results in a CSSSimpleLength");
 
 test(function() {
@@ -21,7 +21,7 @@ test(function() {
 
   var result = computedStyleMap.getAll('width');
   assert_equals(result.length, 1);
-  assert_equals(result[0].cssString, '20px');
+  assert_equals(result[0].cssText, '20px');
 }, "getAll for width returns a single value");
 
 </script>

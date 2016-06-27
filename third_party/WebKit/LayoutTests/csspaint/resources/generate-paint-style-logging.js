@@ -16,7 +16,7 @@ function generatePaintStyleLogging(properties) {
                 const properties = styleMap.getProperties().sort();
                 for (let i = 0; i < properties.length; i++) {
                     const value = styleMap.get(properties[i]);
-                    console.log(properties[i] + ': ' + (value ? value.cssString : '[null]'));
+                    console.log(properties[i] + ': ' + (value ? value.cssText: '[null]'));
                 }
             }
         });

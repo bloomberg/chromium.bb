@@ -4,15 +4,15 @@
 
 <script>
 var values = [
-  {input: new CSSNumberValue(0), cssString: '0'},
-  {input: new CSSNumberValue(1), cssString: '1'},
-  {input: new CSSNumberValue(-2), cssString: '-2'},
-  {input: new CSSNumberValue(3.4), cssString: '3.4'}
+  {input: new CSSNumberValue(0), cssText: '0'},
+  {input: new CSSNumberValue(1), cssText: '1'},
+  {input: new CSSNumberValue(-2), cssText: '-2'},
+  {input: new CSSNumberValue(3.4), cssText: '3.4'}
 ];
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.cssString, values[i].cssString);
+    assert_equals(values[i].input.cssText, values[i].cssText);
   }
 }, "Test that the css string for CSSNumberValue is correct.");
 

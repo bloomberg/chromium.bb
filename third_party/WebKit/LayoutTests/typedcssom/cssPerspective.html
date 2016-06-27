@@ -20,9 +20,9 @@ test(function() {
   var perspectiveTransformSimple = new CSSPerspective(simpleLength);
   var perspectiveTransformCalc = new CSSPerspective(calcLength);
 
-  assert_equals(perspectiveTransformSimple.cssString, 'perspective(10px)');
-  assert_equals(perspectiveTransformCalc.cssString,'perspective(calc(3.2em + 10px))');
-}, "cssString should return a string of form perspective(<CSSLengthValue.cssString()>)");
+  assert_equals(perspectiveTransformSimple.cssText, 'perspective(10px)');
+  assert_equals(perspectiveTransformCalc.cssText,'perspective(calc(3.2em + 10px))');
+}, "cssText should return a string of form perspective(<CSSLengthValue.cssString()>)");
 
 </script>
 
