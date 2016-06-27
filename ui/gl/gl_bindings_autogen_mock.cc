@@ -63,6 +63,12 @@ MockGLInterface::Mock_glBeginTransformFeedback(GLenum primitiveMode) {
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glBeginTransformFeedbackEXT(GLenum primitiveMode) {
+  MakeFunctionUnique("glBeginTransformFeedbackEXT");
+  interface_->BeginTransformFeedback(primitiveMode);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glBindAttribLocation(GLuint program,
                                            GLuint index,
                                            const char* name) {
@@ -83,12 +89,29 @@ void GL_BINDING_CALL MockGLInterface::Mock_glBindBufferBase(GLenum target,
   interface_->BindBufferBase(target, index, buffer);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glBindBufferBaseEXT(GLenum target,
+                                                               GLuint index,
+                                                               GLuint buffer) {
+  MakeFunctionUnique("glBindBufferBaseEXT");
+  interface_->BindBufferBase(target, index, buffer);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glBindBufferRange(GLenum target,
                                                              GLuint index,
                                                              GLuint buffer,
                                                              GLintptr offset,
                                                              GLsizeiptr size) {
   MakeFunctionUnique("glBindBufferRange");
+  interface_->BindBufferRange(target, index, buffer, offset, size);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glBindBufferRangeEXT(GLenum target,
+                                           GLuint index,
+                                           GLuint buffer,
+                                           GLintptr offset,
+                                           GLsizeiptr size) {
+  MakeFunctionUnique("glBindBufferRangeEXT");
   interface_->BindBufferRange(target, index, buffer, offset, size);
 }
 
@@ -913,6 +936,11 @@ void GL_BINDING_CALL MockGLInterface::Mock_glEndTransformFeedback(void) {
   interface_->EndTransformFeedback();
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glEndTransformFeedbackEXT(void) {
+  MakeFunctionUnique("glEndTransformFeedbackEXT");
+  interface_->EndTransformFeedback();
+}
+
 GLsync GL_BINDING_CALL MockGLInterface::Mock_glFenceSync(GLenum condition,
                                                          GLbitfield flags) {
   MakeFunctionUnique("glFenceSync");
@@ -1644,6 +1672,19 @@ MockGLInterface::Mock_glGetTransformFeedbackVarying(GLuint program,
                                                     GLenum* type,
                                                     char* name) {
   MakeFunctionUnique("glGetTransformFeedbackVarying");
+  interface_->GetTransformFeedbackVarying(program, index, bufSize, length, size,
+                                          type, name);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glGetTransformFeedbackVaryingEXT(GLuint program,
+                                                       GLuint index,
+                                                       GLsizei bufSize,
+                                                       GLsizei* length,
+                                                       GLsizei* size,
+                                                       GLenum* type,
+                                                       char* name) {
+  MakeFunctionUnique("glGetTransformFeedbackVaryingEXT");
   interface_->GetTransformFeedbackVarying(program, index, bufSize, length, size,
                                           type, name);
 }
@@ -2491,6 +2532,15 @@ MockGLInterface::Mock_glTransformFeedbackVaryings(GLuint program,
   interface_->TransformFeedbackVaryings(program, count, varyings, bufferMode);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glTransformFeedbackVaryingsEXT(
+    GLuint program,
+    GLsizei count,
+    const char* const* varyings,
+    GLenum bufferMode) {
+  MakeFunctionUnique("glTransformFeedbackVaryingsEXT");
+  interface_->TransformFeedbackVaryings(program, count, varyings, bufferMode);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glUniform1f(GLint location,
                                                        GLfloat x) {
   MakeFunctionUnique("glUniform1f");
@@ -2933,14 +2983,20 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glBeginQueryEXT);
   if (strcmp(name, "glBeginTransformFeedback") == 0)
     return reinterpret_cast<void*>(Mock_glBeginTransformFeedback);
+  if (strcmp(name, "glBeginTransformFeedbackEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glBeginTransformFeedbackEXT);
   if (strcmp(name, "glBindAttribLocation") == 0)
     return reinterpret_cast<void*>(Mock_glBindAttribLocation);
   if (strcmp(name, "glBindBuffer") == 0)
     return reinterpret_cast<void*>(Mock_glBindBuffer);
   if (strcmp(name, "glBindBufferBase") == 0)
     return reinterpret_cast<void*>(Mock_glBindBufferBase);
+  if (strcmp(name, "glBindBufferBaseEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glBindBufferBaseEXT);
   if (strcmp(name, "glBindBufferRange") == 0)
     return reinterpret_cast<void*>(Mock_glBindBufferRange);
+  if (strcmp(name, "glBindBufferRangeEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glBindBufferRangeEXT);
   if (strcmp(name, "glBindFragDataLocation") == 0)
     return reinterpret_cast<void*>(Mock_glBindFragDataLocation);
   if (strcmp(name, "glBindFragDataLocationEXT") == 0)
@@ -3157,6 +3213,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glEndQueryEXT);
   if (strcmp(name, "glEndTransformFeedback") == 0)
     return reinterpret_cast<void*>(Mock_glEndTransformFeedback);
+  if (strcmp(name, "glEndTransformFeedbackEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glEndTransformFeedbackEXT);
   if (strcmp(name, "glFenceSync") == 0)
     return reinterpret_cast<void*>(Mock_glFenceSync);
   if (strcmp(name, "glFinish") == 0)
@@ -3350,6 +3408,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glGetTexParameteriv);
   if (strcmp(name, "glGetTransformFeedbackVarying") == 0)
     return reinterpret_cast<void*>(Mock_glGetTransformFeedbackVarying);
+  if (strcmp(name, "glGetTransformFeedbackVaryingEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glGetTransformFeedbackVaryingEXT);
   if (strcmp(name, "glGetTranslatedShaderSourceANGLE") == 0)
     return reinterpret_cast<void*>(Mock_glGetTranslatedShaderSourceANGLE);
   if (strcmp(name, "glGetUniformBlockIndex") == 0)
@@ -3571,6 +3631,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glTexSubImage3D);
   if (strcmp(name, "glTransformFeedbackVaryings") == 0)
     return reinterpret_cast<void*>(Mock_glTransformFeedbackVaryings);
+  if (strcmp(name, "glTransformFeedbackVaryingsEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glTransformFeedbackVaryingsEXT);
   if (strcmp(name, "glUniform1f") == 0)
     return reinterpret_cast<void*>(Mock_glUniform1f);
   if (strcmp(name, "glUniform1fv") == 0)

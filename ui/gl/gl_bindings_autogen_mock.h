@@ -15,6 +15,8 @@ static void GL_BINDING_CALL Mock_glBeginQuery(GLenum target, GLuint id);
 static void GL_BINDING_CALL Mock_glBeginQueryARB(GLenum target, GLuint id);
 static void GL_BINDING_CALL Mock_glBeginQueryEXT(GLenum target, GLuint id);
 static void GL_BINDING_CALL Mock_glBeginTransformFeedback(GLenum primitiveMode);
+static void GL_BINDING_CALL
+Mock_glBeginTransformFeedbackEXT(GLenum primitiveMode);
 static void GL_BINDING_CALL Mock_glBindAttribLocation(GLuint program,
                                                       GLuint index,
                                                       const char* name);
@@ -22,11 +24,19 @@ static void GL_BINDING_CALL Mock_glBindBuffer(GLenum target, GLuint buffer);
 static void GL_BINDING_CALL Mock_glBindBufferBase(GLenum target,
                                                   GLuint index,
                                                   GLuint buffer);
+static void GL_BINDING_CALL Mock_glBindBufferBaseEXT(GLenum target,
+                                                     GLuint index,
+                                                     GLuint buffer);
 static void GL_BINDING_CALL Mock_glBindBufferRange(GLenum target,
                                                    GLuint index,
                                                    GLuint buffer,
                                                    GLintptr offset,
                                                    GLsizeiptr size);
+static void GL_BINDING_CALL Mock_glBindBufferRangeEXT(GLenum target,
+                                                      GLuint index,
+                                                      GLuint buffer,
+                                                      GLintptr offset,
+                                                      GLsizeiptr size);
 static void GL_BINDING_CALL Mock_glBindFragDataLocation(GLuint program,
                                                         GLuint colorNumber,
                                                         const char* name);
@@ -353,6 +363,7 @@ static void GL_BINDING_CALL Mock_glEndQuery(GLenum target);
 static void GL_BINDING_CALL Mock_glEndQueryARB(GLenum target);
 static void GL_BINDING_CALL Mock_glEndQueryEXT(GLenum target);
 static void GL_BINDING_CALL Mock_glEndTransformFeedback(void);
+static void GL_BINDING_CALL Mock_glEndTransformFeedbackEXT(void);
 static GLsync GL_BINDING_CALL Mock_glFenceSync(GLenum condition,
                                                GLbitfield flags);
 static void GL_BINDING_CALL Mock_glFinish(void);
@@ -644,6 +655,14 @@ static void GL_BINDING_CALL Mock_glGetTransformFeedbackVarying(GLuint program,
                                                                GLsizei* size,
                                                                GLenum* type,
                                                                char* name);
+static void GL_BINDING_CALL
+Mock_glGetTransformFeedbackVaryingEXT(GLuint program,
+                                      GLuint index,
+                                      GLsizei bufSize,
+                                      GLsizei* length,
+                                      GLsizei* size,
+                                      GLenum* type,
+                                      char* name);
 static void GL_BINDING_CALL
 Mock_glGetTranslatedShaderSourceANGLE(GLuint shader,
                                       GLsizei bufsize,
@@ -986,6 +1005,11 @@ Mock_glTransformFeedbackVaryings(GLuint program,
                                  GLsizei count,
                                  const char* const* varyings,
                                  GLenum bufferMode);
+static void GL_BINDING_CALL
+Mock_glTransformFeedbackVaryingsEXT(GLuint program,
+                                    GLsizei count,
+                                    const char* const* varyings,
+                                    GLenum bufferMode);
 static void GL_BINDING_CALL Mock_glUniform1f(GLint location, GLfloat x);
 static void GL_BINDING_CALL Mock_glUniform1fv(GLint location,
                                               GLsizei count,

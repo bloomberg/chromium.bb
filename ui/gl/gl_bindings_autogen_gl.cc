@@ -505,6 +505,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_ARB_program_interface_query ") != std::string::npos;
   ext.b_GL_ARB_robustness =
       extensions.find("GL_ARB_robustness ") != std::string::npos;
+  ext.b_GL_ARB_sampler_objects =
+      extensions.find("GL_ARB_sampler_objects ") != std::string::npos;
   ext.b_GL_ARB_shader_image_load_store =
       extensions.find("GL_ARB_shader_image_load_store ") != std::string::npos;
   ext.b_GL_ARB_sync = extensions.find("GL_ARB_sync ") != std::string::npos;
@@ -512,6 +514,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_ARB_texture_storage ") != std::string::npos;
   ext.b_GL_ARB_timer_query =
       extensions.find("GL_ARB_timer_query ") != std::string::npos;
+  ext.b_GL_ARB_transform_feedback2 =
+      extensions.find("GL_ARB_transform_feedback2 ") != std::string::npos;
   ext.b_GL_ARB_vertex_array_object =
       extensions.find("GL_ARB_vertex_array_object ") != std::string::npos;
   ext.b_GL_CHROMIUM_bind_uniform_location =
@@ -557,6 +561,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_EXT_texture_storage ") != std::string::npos;
   ext.b_GL_EXT_timer_query =
       extensions.find("GL_EXT_timer_query ") != std::string::npos;
+  ext.b_GL_EXT_transform_feedback =
+      extensions.find("GL_EXT_transform_feedback ") != std::string::npos;
   ext.b_GL_EXT_unpack_subimage =
       extensions.find("GL_EXT_unpack_subimage ") != std::string::npos;
   ext.b_GL_IMG_multisampled_render_to_texture =
@@ -609,18 +615,28 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glBeginTransformFeedbackFn =
         reinterpret_cast<glBeginTransformFeedbackProc>(
             GetGLProcAddress("glBeginTransformFeedback"));
+  } else if (ext.b_GL_EXT_transform_feedback) {
+    fn.glBeginTransformFeedbackFn =
+        reinterpret_cast<glBeginTransformFeedbackProc>(
+            GetGLProcAddress("glBeginTransformFeedbackEXT"));
   }
 
   debug_fn.glBindBufferBaseFn = 0;
   if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBindBufferBaseFn = reinterpret_cast<glBindBufferBaseProc>(
         GetGLProcAddress("glBindBufferBase"));
+  } else if (ext.b_GL_EXT_transform_feedback) {
+    fn.glBindBufferBaseFn = reinterpret_cast<glBindBufferBaseProc>(
+        GetGLProcAddress("glBindBufferBaseEXT"));
   }
 
   debug_fn.glBindBufferRangeFn = 0;
   if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBindBufferRangeFn = reinterpret_cast<glBindBufferRangeProc>(
         GetGLProcAddress("glBindBufferRange"));
+  } else if (ext.b_GL_EXT_transform_feedback) {
+    fn.glBindBufferRangeFn = reinterpret_cast<glBindBufferRangeProc>(
+        GetGLProcAddress("glBindBufferRangeEXT"));
   }
 
   debug_fn.glBindFragDataLocationFn = 0;
@@ -672,13 +688,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glBindSamplerFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glBindSamplerFn =
         reinterpret_cast<glBindSamplerProc>(GetGLProcAddress("glBindSampler"));
   }
 
   debug_fn.glBindTransformFeedbackFn = 0;
-  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
+      ext.b_GL_ARB_transform_feedback2) {
     fn.glBindTransformFeedbackFn =
         reinterpret_cast<glBindTransformFeedbackProc>(
             GetGLProcAddress("glBindTransformFeedback"));
@@ -896,7 +914,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glDeleteSamplersFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glDeleteSamplersFn = reinterpret_cast<glDeleteSamplersProc>(
         GetGLProcAddress("glDeleteSamplers"));
   }
@@ -909,7 +928,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glDeleteTransformFeedbacksFn = 0;
-  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
+      ext.b_GL_ARB_transform_feedback2) {
     fn.glDeleteTransformFeedbacksFn =
         reinterpret_cast<glDeleteTransformFeedbacksProc>(
             GetGLProcAddress("glDeleteTransformFeedbacks"));
@@ -1029,6 +1049,9 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
     fn.glEndTransformFeedbackFn = reinterpret_cast<glEndTransformFeedbackProc>(
         GetGLProcAddress("glEndTransformFeedback"));
+  } else if (ext.b_GL_EXT_transform_feedback) {
+    fn.glEndTransformFeedbackFn = reinterpret_cast<glEndTransformFeedbackProc>(
+        GetGLProcAddress("glEndTransformFeedbackEXT"));
   }
 
   debug_fn.glFenceSyncFn = 0;
@@ -1159,13 +1182,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glGenSamplersFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glGenSamplersFn =
         reinterpret_cast<glGenSamplersProc>(GetGLProcAddress("glGenSamplers"));
   }
 
   debug_fn.glGenTransformFeedbacksFn = 0;
-  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
+      ext.b_GL_ARB_transform_feedback2) {
     fn.glGenTransformFeedbacksFn =
         reinterpret_cast<glGenTransformFeedbacksProc>(
             GetGLProcAddress("glGenTransformFeedbacks"));
@@ -1387,14 +1412,16 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glGetSamplerParameterfvFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glGetSamplerParameterfvFn =
         reinterpret_cast<glGetSamplerParameterfvProc>(
             GetGLProcAddress("glGetSamplerParameterfv"));
   }
 
   debug_fn.glGetSamplerParameterivFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glGetSamplerParameterivFn =
         reinterpret_cast<glGetSamplerParameterivProc>(
             GetGLProcAddress("glGetSamplerParameteriv"));
@@ -1433,6 +1460,10 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glGetTransformFeedbackVaryingFn =
         reinterpret_cast<glGetTransformFeedbackVaryingProc>(
             GetGLProcAddress("glGetTransformFeedbackVarying"));
+  } else if (ext.b_GL_EXT_transform_feedback) {
+    fn.glGetTransformFeedbackVaryingFn =
+        reinterpret_cast<glGetTransformFeedbackVaryingProc>(
+            GetGLProcAddress("glGetTransformFeedbackVaryingEXT"));
   }
 
   debug_fn.glGetTranslatedShaderSourceANGLEFn = 0;
@@ -1530,7 +1561,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glIsSamplerFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glIsSamplerFn =
         reinterpret_cast<glIsSamplerProc>(GetGLProcAddress("glIsSampler"));
   }
@@ -1543,7 +1575,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glIsTransformFeedbackFn = 0;
-  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
+      ext.b_GL_ARB_transform_feedback2) {
     fn.glIsTransformFeedbackFn = reinterpret_cast<glIsTransformFeedbackProc>(
         GetGLProcAddress("glIsTransformFeedback"));
   }
@@ -1628,7 +1661,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glPauseTransformFeedbackFn = 0;
-  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
+      ext.b_GL_ARB_transform_feedback2) {
     fn.glPauseTransformFeedbackFn =
         reinterpret_cast<glPauseTransformFeedbackProc>(
             GetGLProcAddress("glPauseTransformFeedback"));
@@ -1746,32 +1780,37 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glResumeTransformFeedbackFn = 0;
-  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
+      ext.b_GL_ARB_transform_feedback2) {
     fn.glResumeTransformFeedbackFn =
         reinterpret_cast<glResumeTransformFeedbackProc>(
             GetGLProcAddress("glResumeTransformFeedback"));
   }
 
   debug_fn.glSamplerParameterfFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glSamplerParameterfFn = reinterpret_cast<glSamplerParameterfProc>(
         GetGLProcAddress("glSamplerParameterf"));
   }
 
   debug_fn.glSamplerParameterfvFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glSamplerParameterfvFn = reinterpret_cast<glSamplerParameterfvProc>(
         GetGLProcAddress("glSamplerParameterfv"));
   }
 
   debug_fn.glSamplerParameteriFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glSamplerParameteriFn = reinterpret_cast<glSamplerParameteriProc>(
         GetGLProcAddress("glSamplerParameteri"));
   }
 
   debug_fn.glSamplerParameterivFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_sampler_objects) {
     fn.glSamplerParameterivFn = reinterpret_cast<glSamplerParameterivProc>(
         GetGLProcAddress("glSamplerParameteriv"));
   }
@@ -1894,6 +1933,10 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glTransformFeedbackVaryingsFn =
         reinterpret_cast<glTransformFeedbackVaryingsProc>(
             GetGLProcAddress("glTransformFeedbackVaryings"));
+  } else if (ext.b_GL_EXT_transform_feedback) {
+    fn.glTransformFeedbackVaryingsFn =
+        reinterpret_cast<glTransformFeedbackVaryingsProc>(
+            GetGLProcAddress("glTransformFeedbackVaryingsEXT"));
   }
 
   debug_fn.glUniform1uiFn = 0;

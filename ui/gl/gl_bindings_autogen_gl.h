@@ -1056,10 +1056,12 @@ struct ExtensionsGL {
   bool b_GL_ARB_occlusion_query;
   bool b_GL_ARB_program_interface_query;
   bool b_GL_ARB_robustness;
+  bool b_GL_ARB_sampler_objects;
   bool b_GL_ARB_shader_image_load_store;
   bool b_GL_ARB_sync;
   bool b_GL_ARB_texture_storage;
   bool b_GL_ARB_timer_query;
+  bool b_GL_ARB_transform_feedback2;
   bool b_GL_ARB_vertex_array_object;
   bool b_GL_CHROMIUM_bind_uniform_location;
   bool b_GL_CHROMIUM_gles_depth_binding_hack;
@@ -1081,6 +1083,7 @@ struct ExtensionsGL {
   bool b_GL_EXT_shader_image_load_store;
   bool b_GL_EXT_texture_storage;
   bool b_GL_EXT_timer_query;
+  bool b_GL_EXT_transform_feedback;
   bool b_GL_EXT_unpack_subimage;
   bool b_GL_IMG_multisampled_render_to_texture;
   bool b_GL_INTEL_framebuffer_CMAA;
