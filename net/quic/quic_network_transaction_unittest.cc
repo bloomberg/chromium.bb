@@ -267,7 +267,6 @@ class QuicNetworkTransactionTest
     request_.load_flags = 0;
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
-    params_.enable_alternative_service_with_different_host = true;
     params_.enable_alternative_service_for_insecure_origins = true;
 
     scoped_refptr<X509Certificate> cert(
@@ -713,7 +712,6 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
-  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
   EXPECT_FALSE(
@@ -786,7 +784,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   // no attempt will be made to speak to the proxy over TCP.
 
   request_.url = GURL("http://mail.example.org/");
-  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
@@ -841,7 +838,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
 }
 
 TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
-  params_.enable_alternative_service_with_different_host = true;
   HostPortPair origin("www.example.org", 443);
   HostPortPair alternative("mail.example.org", 443);
 
@@ -897,7 +893,6 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   mock_quic_data1.AddSocketDataToFactory(&socket_factory_);
   mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
 
-  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
   EXPECT_EQ(0U, test_socket_performance_watcher_factory_.watcher_count());
@@ -927,7 +922,6 @@ TEST_P(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
-  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -2239,7 +2233,6 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
-  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
   request_.method = "POST";
   ChunkedUploadDataStream upload_data(0);
@@ -2284,7 +2277,6 @@ class QuicNetworkTransactionWithDestinationTest
         MockCryptoClientStream::CONFIRM_HANDSHAKE);
     params.quic_crypto_client_stream_factory = &crypto_client_stream_factory_;
 
-    params.enable_alternative_service_with_different_host = true;
     params.enable_quic = true;
     params.quic_random = &random_generator_;
     params.client_socket_factory = &socket_factory_;

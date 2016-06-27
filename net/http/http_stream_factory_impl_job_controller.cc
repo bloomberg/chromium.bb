@@ -725,9 +725,6 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
   bool quic_advertised = false;
   bool quic_all_broken = true;
 
-  const bool enable_different_host =
-      session_->params().enable_alternative_service_with_different_host;
-
   // First Alt-Svc that is not marked as broken.
   AlternativeService first_alternative_service;
 
@@ -742,8 +739,6 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
       continue;
     }
 
-    if (origin.host() != alternative_service.host && !enable_different_host)
-      continue;
 
     // Some shared unix systems may have user home directories (like
     // http://foo.com/~mike) which allow users to emit headers.  This is a bad
@@ -762,9 +757,11 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
       if (!HttpStreamFactory::spdy_enabled())
         continue;
 
-      // TODO(bnc): Re-enable when https://crbug.com/615413 is fixed.
-      if (origin.host() != alternative_service.host)
+      if (origin.host() != alternative_service.host &&
+          !session_->params()
+               .enable_http2_alternative_service_with_different_host) {
         continue;
+      }
 
       // Cache this entry if we don't have a non-broken Alt-Svc yet.
       if (first_alternative_service.protocol ==
@@ -774,6 +771,12 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
     }
 
     DCHECK_EQ(QUIC, alternative_service.protocol);
+    if (origin.host() != alternative_service.host &&
+        !session_->params()
+             .enable_quic_alternative_service_with_different_host) {
+      continue;
+    }
+
     quic_all_broken = false;
     if (!session_->params().enable_quic)
       continue;

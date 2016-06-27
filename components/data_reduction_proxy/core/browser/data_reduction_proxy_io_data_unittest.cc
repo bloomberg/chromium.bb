@@ -111,7 +111,6 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
       request_context->GetNetworkSessionParams();
   EXPECT_FALSE(http_params->enable_spdy31);
   EXPECT_FALSE(http_params->enable_http2);
-  EXPECT_TRUE(http_params->enable_alternative_service_with_different_host);
   EXPECT_FALSE(http_params->enable_quic);
 
   // Check that io_data creates an interceptor. Such an interceptor is

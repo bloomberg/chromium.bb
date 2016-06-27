@@ -57,7 +57,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(params_.enable_spdy31);
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
-  EXPECT_TRUE(params_.enable_alternative_service_with_different_host);
+  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
   EXPECT_FALSE(params_.enable_npn);
   EXPECT_TRUE(params_.enable_priority_dependencies);
   EXPECT_FALSE(params_.enable_quic);
@@ -195,7 +195,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_enable_non_blocking_io);
   EXPECT_FALSE(params_.quic_disable_disk_cache);
   EXPECT_FALSE(params_.quic_prefer_aes);
-  EXPECT_TRUE(params_.enable_alternative_service_with_different_host);
+  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
   EXPECT_EQ(0, params_.quic_max_number_of_lossy_connections);
   EXPECT_EQ(1.0f, params_.quic_packet_loss_threshold);
   EXPECT_TRUE(params_.quic_delay_tcp_race);
@@ -259,7 +259,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrialsAndCommandLine();
 
   EXPECT_FALSE(params_.enable_quic);
-  EXPECT_TRUE(params_.enable_alternative_service_with_different_host);
+  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -271,7 +271,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrialsAndCommandLine();
 
   EXPECT_TRUE(params_.enable_quic);
-  EXPECT_TRUE(params_.enable_alternative_service_with_different_host);
+  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromCommandLine) {
@@ -501,7 +501,7 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.enable_alternative_service_with_different_host);
+  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

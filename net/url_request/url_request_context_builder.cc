@@ -184,7 +184,6 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       testing_fixed_https_port(0),
       enable_spdy31(false),
       enable_http2(true),
-      enable_alternative_service_with_different_host(true),
       enable_quic(false),
       quic_max_server_configs_stored_in_properties(0),
       quic_delay_tcp_race(true),
@@ -419,9 +418,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.enable_spdy31;
   network_session_params.enable_http2 =
       http_network_session_params_.enable_http2;
-  network_session_params.enable_alternative_service_with_different_host =
-      http_network_session_params_
-          .enable_alternative_service_with_different_host;
   network_session_params.enable_quic = http_network_session_params_.enable_quic;
   network_session_params.quic_max_server_configs_stored_in_properties =
       http_network_session_params_.quic_max_server_configs_stored_in_properties;

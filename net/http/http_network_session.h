@@ -94,9 +94,12 @@ class NET_EXPORT HttpNetworkSession
     size_t spdy_stream_max_recv_window_size;
     // Source of time for SPDY connections.
     SpdySessionPool::TimeFunc time_func;
-    // Whether to enable Alt-Svc entries with hostname different than that of
-    // the origin.
-    bool enable_alternative_service_with_different_host;
+    // Whether to enable HTTP/2 Alt-Svc entries with hostname different than
+    // that of the origin.
+    bool enable_http2_alternative_service_with_different_host;
+    // Whether to enable QUIC Alt-Svc entries with hostname different than that
+    // of the origin.
+    bool enable_quic_alternative_service_with_different_host;
     // Only set for tests.
     // TODO(bnc) https://crbug.com/615497:
     // Adapt tests to https requests, remove this member.

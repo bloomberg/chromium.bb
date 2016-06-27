@@ -9159,8 +9159,6 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
       },
   };
 
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   for (size_t i = 0; i < arraysize(tests); ++i) {
     session_deps_.proxy_service =
         ProxyService::CreateFixed(tests[i].proxy_server);
@@ -9220,8 +9218,6 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
        false,
       },
   };
-
-  session_deps_.enable_alternative_service_with_different_host = false;
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     session_deps_.proxy_service =
@@ -9290,8 +9286,6 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
        true,
       },
   };
-
-  session_deps_.enable_alternative_service_with_different_host = false;
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     session_deps_.proxy_service =
@@ -9946,8 +9940,6 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
 }
 
 TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   std::string alternative_service_http_header =
       GetAlternativeServiceHttpHeader();
 
@@ -10068,8 +10060,6 @@ TEST_P(HttpNetworkTransactionTest,
 // TODO(bnc): Remove when https://crbug.com/615413 is fixed.
 TEST_P(HttpNetworkTransactionTest,
        DisableHTTP2AlternativeServicesWithDifferentHost) {
-  session_deps_.enable_alternative_service_with_different_host = true;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
@@ -10152,8 +10142,6 @@ TEST_P(HttpNetworkTransactionTest,
 }
 
 TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   // Set an alternative service for origin.
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
@@ -10208,8 +10196,6 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
 }
 
 TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Alt-Svc: "),
@@ -10272,10 +10258,10 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
   EXPECT_EQ(1234, alternative_service_vector[1].port);
 }
 
-// When |enable_alternative_service_with_different_host| is false, do not
+// When |enable_http2_alternative_service_with_different_host| is false, do not
 // observe alternative service entries that point to a different host.
 TEST_P(HttpNetworkTransactionTest, DisableAlternativeServiceToDifferentHost) {
-  session_deps_.enable_alternative_service_with_different_host = false;
+  session_deps_.enable_http2_alternative_service_with_different_host = false;
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -10350,7 +10336,6 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
 
   // Set up a QUIC alternative service for server.
-  session_deps_.enable_alternative_service_with_different_host = false;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
@@ -10410,7 +10395,6 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
   data_refused.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_REFUSED));
   session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
 
-  session_deps_.enable_alternative_service_with_different_host = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
@@ -10454,8 +10438,6 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
 
 TEST_P(HttpNetworkTransactionTest,
        MarkBrokenAlternateProtocolAndFallback) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
@@ -10520,8 +10502,6 @@ TEST_P(HttpNetworkTransactionTest,
 // cases.
 TEST_P(HttpNetworkTransactionTest,
        AlternateProtocolPortRestrictedBlocked) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   HttpRequestInfo restricted_port_request;
   restricted_port_request.method = "GET";
   restricted_port_request.url = GURL("http://www.example.org:1023/");
@@ -10571,7 +10551,6 @@ TEST_P(HttpNetworkTransactionTest,
 // port (port < 1024) if we set |enable_user_alternate_protocol_ports|.
 TEST_P(HttpNetworkTransactionTest,
        AlternateProtocolPortRestrictedPermitted) {
-  session_deps_.enable_alternative_service_with_different_host = false;
   session_deps_.enable_user_alternate_protocol_ports = true;
 
   HttpRequestInfo restricted_port_request;
@@ -10623,8 +10602,6 @@ TEST_P(HttpNetworkTransactionTest,
 // cases.
 TEST_P(HttpNetworkTransactionTest,
        AlternateProtocolPortRestrictedAllowed) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   HttpRequestInfo restricted_port_request;
   restricted_port_request.method = "GET";
   restricted_port_request.url = GURL("http://www.example.org:1023/");
@@ -10675,8 +10652,6 @@ TEST_P(HttpNetworkTransactionTest,
 // cases.
 TEST_P(HttpNetworkTransactionTest,
        AlternateProtocolPortUnrestrictedAllowed1) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   HttpRequestInfo unrestricted_port_request;
   unrestricted_port_request.method = "GET";
   unrestricted_port_request.url = GURL("http://www.example.org:1024/");
@@ -10726,8 +10701,6 @@ TEST_P(HttpNetworkTransactionTest,
 // cases.
 TEST_P(HttpNetworkTransactionTest,
        AlternateProtocolPortUnrestrictedAllowed2) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   HttpRequestInfo unrestricted_port_request;
   unrestricted_port_request.method = "GET";
   unrestricted_port_request.url = GURL("http://www.example.org:1024/");
@@ -10775,8 +10748,6 @@ TEST_P(HttpNetworkTransactionTest,
 // to an unsafe port, and that we resume the second HttpStreamFactoryImpl::Job
 // once the alternate protocol request fails.
 TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
@@ -10825,8 +10796,6 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
 }
 
 TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
-  session_deps_.enable_alternative_service_with_different_host = true;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
@@ -10914,8 +10883,6 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
 }
 
 TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
-  session_deps_.enable_alternative_service_with_different_host = true;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
@@ -11038,8 +11005,6 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
 }
 
 TEST_P(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
-  session_deps_.enable_alternative_service_with_different_host = true;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
@@ -11165,8 +11130,6 @@ class CapturingProxyResolverFactory : public ProxyResolverFactory {
 };
 
 TEST_P(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
-  session_deps_.enable_alternative_service_with_different_host = true;
-
   ProxyConfig proxy_config;
   proxy_config.set_auto_detect(true);
   proxy_config.set_pac_url(GURL("http://fooproxyurl"));
@@ -11290,8 +11253,6 @@ TEST_P(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
 
 TEST_P(HttpNetworkTransactionTest,
        UseAlternativeServiceForNpnSpdyWithExistingSpdySession) {
-  session_deps_.enable_alternative_service_with_different_host = true;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
@@ -11992,8 +11953,6 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
 // This tests the case that a request is issued via http instead of spdy after
 // npn is negotiated.
 TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
@@ -12054,8 +12013,6 @@ TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
 // immediate server closing of the socket.
 // Regression test for https://crbug.com/46369.
 TEST_P(HttpNetworkTransactionTest, SpdyPostNPNServerHangup) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
@@ -12114,8 +12071,6 @@ class UrlRecordingHttpAuthHandlerMock : public HttpAuthHandlerMock {
 // This test ensures that the URL passed into the proxy is upgraded to https
 // when doing an Alternate Protocol upgrade.
 TEST_P(HttpNetworkTransactionTest, SpdyAlternativeServiceThroughProxy) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   session_deps_.proxy_service =
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
   TestNetLog net_log;
@@ -13054,8 +13009,6 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
 }
 
 TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -13151,8 +13104,6 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
 }
 
 TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -13276,8 +13227,6 @@ class OneTimeCachingHostResolver : public HostResolver {
 
 TEST_P(HttpNetworkTransactionTest,
        UseIPConnectionPoolingWithHostCacheExpiration) {
-  session_deps_.enable_alternative_service_with_different_host = false;
-
   // Set up a special HttpNetworkSession with a OneTimeCachingHostResolver.
   OneTimeCachingHostResolver host_resolver(HostPortPair("www.gmail.com", 443));
   HttpNetworkSession::Params params =
@@ -13533,7 +13482,6 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
     data_refused.set_connect_data(mock_connect);
     session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
 
-    session_deps_.enable_alternative_service_with_different_host = true;
     std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
     HttpServerProperties* http_server_properties =
         session->http_server_properties();
@@ -13638,7 +13586,6 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
 
   // Set up alternative service for server.
-  session_deps_.enable_alternative_service_with_different_host = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
@@ -13709,7 +13656,6 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   // Set up alternative service for server.
-  session_deps_.enable_alternative_service_with_different_host = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
@@ -13818,7 +13764,6 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
 
   // Set up alternative service for server.
-  session_deps_.enable_alternative_service_with_different_host = false;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
       session->http_server_properties();

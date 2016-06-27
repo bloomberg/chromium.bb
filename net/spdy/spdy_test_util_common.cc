@@ -364,7 +364,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       stream_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
-      enable_alternative_service_with_different_host(true),
+      enable_http2_alternative_service_with_different_host(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 
@@ -428,8 +428,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->stream_max_recv_window_size;
   params.time_func = session_deps->time_func;
   params.proxy_delegate = session_deps->proxy_delegate.get();
-  params.enable_alternative_service_with_different_host =
-      session_deps->enable_alternative_service_with_different_host;
+  params.enable_http2_alternative_service_with_different_host =
+      session_deps->enable_http2_alternative_service_with_different_host;
   params.net_log = session_deps->net_log;
   return params;
 }

@@ -414,7 +414,7 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
   params->disable_quic_on_timeout_with_open_streams =
       ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(quic_trial_params);
 
-  params->enable_alternative_service_with_different_host =
+  params->enable_quic_alternative_service_with_different_host =
       ShouldQuicEnableAlternativeServicesForDifferentHost(command_line,
                                                           quic_trial_params);
 
