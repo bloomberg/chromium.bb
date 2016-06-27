@@ -196,7 +196,7 @@ void PrerenderAdapterTest::SetUp() {
 
 TEST_F(PrerenderAdapterTest, CanPrerender) {
   // Skip test on low end device until supported.
-  if (!base::SysInfo::IsLowEndDevice())
+  if (base::SysInfo::IsLowEndDevice())
     return;
 
   EXPECT_TRUE(adapter()->CanPrerender());
@@ -207,7 +207,7 @@ TEST_F(PrerenderAdapterTest, CanPrerender) {
 
 TEST_F(PrerenderAdapterTest, StartPrerenderFailsForUnsupportedScheme) {
   // Skip test on low end device until supported.
-  if (!base::SysInfo::IsLowEndDevice())
+  if (base::SysInfo::IsLowEndDevice())
     return;
 
   content::WebContents* session_contents = content::WebContents::Create(
@@ -224,7 +224,7 @@ TEST_F(PrerenderAdapterTest, StartPrerenderFailsForUnsupportedScheme) {
 
 TEST_F(PrerenderAdapterTest, StartPrerenderSucceeds) {
   // Skip test on low end device until supported.
-  if (!base::SysInfo::IsLowEndDevice())
+  if (base::SysInfo::IsLowEndDevice())
     return;
 
   content::WebContents* session_contents = content::WebContents::Create(
