@@ -12,7 +12,7 @@
     <LinearLayout
         android:id="@+id/main_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:orientation="vertical"
@@ -37,6 +37,7 @@
                 android:id="@+id/unimportant_site_data_size_prefix"
                 android:text="@string/storage_management_unimportant_site_data_size_label"
                 android:layout_weight="1"
+                android:layout_width="0dp"
                 style="@style/ManageSpaceActivitySizeTextView" />
 
             <TextView
@@ -66,6 +67,7 @@
                 android:id="@+id/site_data_size_prefix"
                 android:text="@string/storage_management_site_data_size_label"
                 android:layout_weight="1"
+                android:layout_width="0dp"
                 style="@style/ManageSpaceActivitySizeTextView" />
 
             <TextView
