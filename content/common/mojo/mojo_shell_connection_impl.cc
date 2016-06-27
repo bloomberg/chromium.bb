@@ -100,6 +100,32 @@ bool MojoShellConnectionImpl::AcceptConnection(shell::Connection* connection) {
   return accept;
 }
 
+shell::InterfaceRegistry*
+MojoShellConnectionImpl::GetInterfaceRegistryForConnection() {
+  // TODO(beng): This is really horrible since obviously subject to issues
+  // of ordering, but is no more horrible than this API is in general.
+  shell::InterfaceRegistry* registry = nullptr;
+  for (auto& client : embedded_shell_clients_) {
+    registry = client->GetInterfaceRegistryForConnection();
+    if (registry)
+      return registry;
+  }
+  return nullptr;
+}
+
+shell::InterfaceProvider*
+MojoShellConnectionImpl::GetInterfaceProviderForConnection() {
+  // TODO(beng): This is really horrible since obviously subject to issues
+  // of ordering, but is no more horrible than this API is in general.
+  shell::InterfaceProvider* provider = nullptr;
+  for (auto& client : embedded_shell_clients_) {
+    provider = client->GetInterfaceProviderForConnection();
+    if (provider)
+      return provider;
+  }
+  return nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MojoShellConnectionImpl,
 //     shell::InterfaceFactory<shell::mojom::ShellClientFactory> implementation:
@@ -145,7 +171,13 @@ void MojoShellConnectionImpl::SetConnectionLostClosure(
 
 void MojoShellConnectionImpl::AddEmbeddedShellClient(
     std::unique_ptr<shell::ShellClient> shell_client) {
-  embedded_shell_clients_.push_back(std::move(shell_client));
+  embedded_shell_clients_.push_back(shell_client.get());
+  owned_shell_clients_.push_back(std::move(shell_client));
+}
+
+void MojoShellConnectionImpl::AddEmbeddedShellClient(
+    shell::ShellClient* shell_client) {
+  embedded_shell_clients_.push_back(shell_client);
 }
 
 void MojoShellConnectionImpl::AddEmbeddedService(

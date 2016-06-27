@@ -54,9 +54,9 @@
 #include "content/child/websocket_message_filter.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -305,6 +305,13 @@ ChildThreadImpl::Options::Builder::AddStartupFilter(
   return *this;
 }
 
+ChildThreadImpl::Options::Builder&
+ChildThreadImpl::Options::Builder::UseMojoShellConnection(
+    bool use_mojo_shell_connection) {
+  options_.use_mojo_shell_connection = use_mojo_shell_connection;
+  return *this;
+}
+
 ChildThreadImpl::Options ChildThreadImpl::Options::Builder::Build() {
   return options_;
 }
@@ -375,6 +382,7 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel,
 
 void ChildThreadImpl::Init(const Options& options) {
   channel_name_ = options.channel_name;
+  use_mojo_shell_connection_ = options.use_mojo_shell_connection;
 
   g_lazy_tls.Pointer()->Set(this);
   on_channel_error_called_ = false;
@@ -401,23 +409,26 @@ void ChildThreadImpl::Init(const Options& options) {
     mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(GetIOTaskRunner()));
     InitializeMojoIPCChannel();
   }
-  if (shell::ShellIsRemote()) {
-    MojoShellConnection::SetForProcess(
-        MojoShellConnection::Create(
-            shell::GetShellClientRequestFromCommandLine()));
-  }
-  mojo_application_.reset(new MojoApplication());
   std::string mojo_application_token;
   if (!IsInBrowserProcess()) {
     mojo_application_token =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kMojoApplicationChannelToken);
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kMojoApplicationChannelToken);
   } else {
     mojo_application_token = options.in_process_application_token;
   }
-  if (!mojo_application_token.empty())
-    mojo_application_->InitWithToken(mojo_application_token);
-
+  if (use_mojo_shell_connection_) {
+    mojo::ScopedMessagePipeHandle handle =
+        mojo::edk::CreateChildMessagePipe(mojo_application_token);
+    DCHECK(handle.is_valid());
+    mojo_shell_connection_ = MojoShellConnection::Create(
+        mojo::MakeRequest<shell::mojom::ShellClient>(std::move(handle)));
+    mojo_shell_connection_->AddEmbeddedShellClient(this);
+  } else {
+    mojo_application_.reset(new MojoApplication());
+    if (!mojo_application_token.empty())
+      mojo_application_->InitWithToken(mojo_application_token);
+  }
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
   thread_safe_sender_ = new ThreadSafeSender(
       message_loop_->task_runner(), sync_message_filter_.get());
@@ -593,12 +604,34 @@ void ChildThreadImpl::RecordComputedAction(const std::string& action) {
     NOTREACHED();
 }
 
+MojoShellConnection* ChildThreadImpl::GetMojoShellConnection() {
+  return mojo_shell_connection_.get();
+}
+
 shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
+  if (use_mojo_shell_connection_) {
+    if (!interface_registry_.get())
+      interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+    return interface_registry_.get();
+  }
   return mojo_application_->interface_registry();
 }
 
 shell::InterfaceProvider* ChildThreadImpl::GetRemoteInterfaces() {
+  if (use_mojo_shell_connection_) {
+    if (!remote_interfaces_.get())
+      remote_interfaces_.reset(new shell::InterfaceProvider);
+    return remote_interfaces_.get();
+  }
   return mojo_application_->remote_interfaces();
+}
+
+shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistryForConnection() {
+  return GetInterfaceRegistry();
+}
+
+shell::InterfaceProvider* ChildThreadImpl::GetInterfaceProviderForConnection() {
+  return GetRemoteInterfaces();
 }
 
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {

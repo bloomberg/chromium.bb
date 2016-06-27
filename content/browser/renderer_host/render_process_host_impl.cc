@@ -85,7 +85,6 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_impl.h"
 #include "content/browser/mojo/constants.h"
-#include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/mojo/mojo_child_connection.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -543,7 +542,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 #endif
       pending_views_(0),
       child_token_(mojo::edk::GenerateRandomToken()),
-      mojo_application_host_(new MojoApplicationHost(child_token_)),
       visible_widgets_(0),
       is_process_backgrounded_(false),
       is_initialized_(false),
@@ -602,6 +600,29 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
 #endif  // defined(OS_MACOSX)
 #endif  // USE_ATTACHMENT_BROKER
+
+  shell::Connector* connector =
+      BrowserContext::GetShellConnectorFor(browser_context_);
+  // Some embedders may not initialize Mojo or the shell connector for a browser
+  // context (e.g. Android WebView)... so just fall back to the per-process
+  // connector.
+  if (!connector) {
+    // Additionally, some test code may not initialize the process-wide
+    // MojoShellConnection prior to this point. This class of test code doesn't
+    // care about render processes so we can initialize a dummy one.
+    if (!MojoShellConnection::GetForProcess()) {
+      shell::mojom::ShellClientRequest request =
+          mojo::GetProxy(&test_shell_client_);
+      MojoShellConnection::SetForProcess(MojoShellConnection::Create(
+          std::move(request)));
+    }
+    connector = MojoShellConnection::GetForProcess()->GetConnector();
+  }
+  mojo_child_connection_.reset(new MojoChildConnection(
+      kRendererMojoApplicationName,
+      base::StringPrintf("%d_%d", id_, instance_id_++),
+      child_token_,
+      connector));
 }
 
 // static
@@ -680,19 +701,6 @@ bool RenderProcessHostImpl::Init() {
   if (channel_)
     return true;
 
-  shell::Connector* connector =
-      BrowserContext::GetShellConnectorFor(browser_context_);
-  // Some embedders may not initialize Mojo or the shell connector for a browser
-  // context (e.g. Android WebView)... so just fall back to the per-process
-  // connector.
-  if (!connector)
-    connector = MojoShellConnection::GetForProcess()->GetConnector();
-  mojo_child_connection_.reset(new MojoChildConnection(
-      kRendererMojoApplicationName,
-      base::StringPrintf("%d_%d", id_, instance_id_++),
-      child_token_,
-      connector));
-
   base::CommandLine::StringType renderer_prefix;
   // A command prefix is something prepended to the command line of the spawned
   // process.
@@ -741,7 +749,8 @@ bool RenderProcessHostImpl::Init() {
             channel_id,
             BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
                 ->task_runner(),
-            mojo_channel_token_, mojo_application_host_->GetToken())));
+            mojo_channel_token_,
+            mojo_child_connection_->shell_client_token())));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
@@ -1059,11 +1068,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
 #if defined(OS_ANDROID)
   ServiceRegistrarAndroid::RegisterProcessHostServices(
-      mojo_application_host_->service_registry_android());
+      mojo_child_connection_->service_registry_android());
 #endif
 
   GetContentClient()->browser()->ExposeInterfacesToRenderer(
-      mojo_application_host_->interface_registry(), this);
+      GetInterfaceRegistry(), this);
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
@@ -1089,13 +1098,11 @@ void RenderProcessHostImpl::NotifyTimezoneChange(const std::string& zone_id) {
 }
 
 shell::InterfaceRegistry* RenderProcessHostImpl::GetInterfaceRegistry() {
-  DCHECK(mojo_application_host_);
-  return mojo_application_host_->interface_registry();
+  return GetChildConnection()->GetInterfaceRegistry();
 }
 
 shell::InterfaceProvider* RenderProcessHostImpl::GetRemoteInterfaces() {
-  DCHECK(mojo_application_host_);
-  return mojo_application_host_->remote_interfaces();
+  return GetChildConnection()->GetRemoteInterfaces();
 }
 
 shell::Connection* RenderProcessHostImpl::GetChildConnection() {
@@ -1336,7 +1343,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
                                     mojo_channel_token_);
   }
   command_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
-                                  mojo_application_host_->GetToken());
+                                  mojo_child_connection_->shell_client_token());
 }
 
 void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
@@ -1918,14 +1925,6 @@ void RenderProcessHostImpl::Cleanup() {
 
     RemoveUserData(kSessionStorageHolderKey);
 
-    // On shutdown, |this| may not be deleted because the deleter is posted to
-    // the current MessageLoop, but MessageLoop deletes all its pending
-    // callbacks on shutdown. Since the deleter takes |this| as a raw pointer,
-    // deleting the callback doesn't delete |this| resulting in a memory leak.
-    // Valgrind complains, so delete |mojo_application_host_| explicitly here to
-    // stop valgrind from complaining.
-    mojo_application_host_.reset();
-
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
     UnregisterHost(GetID());
@@ -2422,7 +2421,15 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // navigate or perform other actions that require a connection. Ensure that
   // there is one before calling them.
   child_token_ = mojo::edk::GenerateRandomToken();
-  mojo_application_host_.reset(new MojoApplicationHost(child_token_));
+  shell::Connector* connector =
+      BrowserContext::GetShellConnectorFor(browser_context_);
+  if (!connector)
+    connector = MojoShellConnection::GetForProcess()->GetConnector();
+  mojo_child_connection_.reset(new MojoChildConnection(
+      kRendererMojoApplicationName,
+      base::StringPrintf("%d_%d", id_, instance_id_++),
+      child_token_,
+      connector));
 
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(

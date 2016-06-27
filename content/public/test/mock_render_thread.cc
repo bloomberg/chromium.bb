@@ -184,6 +184,10 @@ void MockRenderThread::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
+MojoShellConnection* MockRenderThread::GetMojoShellConnection() {
+  return nullptr;
+}
+
 shell::InterfaceRegistry* MockRenderThread::GetInterfaceRegistry() {
   if (!interface_registry_)
     interface_registry_.reset(new shell::InterfaceRegistry(nullptr));

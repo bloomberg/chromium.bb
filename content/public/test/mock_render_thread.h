@@ -83,6 +83,7 @@ class MockRenderThread : public RenderThread {
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
 #endif
+  MojoShellConnection* GetMojoShellConnection() override;
   shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
 

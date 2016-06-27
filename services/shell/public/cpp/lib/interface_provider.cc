@@ -6,12 +6,15 @@
 
 namespace shell {
 
-InterfaceProvider::InterfaceProvider() : weak_factory_(this) {}
+InterfaceProvider::InterfaceProvider() : weak_factory_(this) {
+  pending_request_ = GetProxy(&interface_provider_);
+}
 InterfaceProvider::~InterfaceProvider() {}
 
 void InterfaceProvider::Bind(mojom::InterfaceProviderPtr interface_provider) {
-  DCHECK(!interface_provider_.is_bound());
-  interface_provider_ = std::move(interface_provider);
+  DCHECK(pending_request_.is_pending());
+  mojo::FuseInterface(std::move(pending_request_),
+                      interface_provider.PassInterface());
 }
 
 void InterfaceProvider::SetConnectionLostClosure(

@@ -30,6 +30,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
 
@@ -53,7 +54,6 @@ class BrowserCdmManager;
 class BrowserDemuxerAndroid;
 class InProcessChildThreadParams;
 class MessagePortMessageFilter;
-class MojoApplicationHost;
 class MojoChildConnection;
 class NotificationMessageFilter;
 #if defined(ENABLE_WEBRTC)
@@ -372,7 +372,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::string child_token_;
 
   std::unique_ptr<MojoChildConnection> mojo_child_connection_;
-  std::unique_ptr<MojoApplicationHost> mojo_application_host_;
+  shell::mojom::ShellClientPtr test_shell_client_;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.

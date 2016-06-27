@@ -24,12 +24,6 @@ MojoChildConnection::MojoChildConnection(const std::string& application_name,
   mojo::ScopedMessagePipeHandle shell_client_pipe =
       mojo::edk::CreateParentMessagePipe(shell_client_token_, child_token);
 
-  // Some process types get created before the main message loop. In this case
-  // the shell request pipe will simply be closed, and the child can detect
-  // this.
-  if (!MojoShellConnection::GetForProcess())
-    return;
-
   shell::mojom::ShellClientPtr client;
   client.Bind(mojo::InterfacePtrInfo<shell::mojom::ShellClient>(
       std::move(shell_client_pipe), 0u));
@@ -42,6 +36,10 @@ MojoChildConnection::MojoChildConnection(const std::string& application_name,
   params.set_client_process_connection(std::move(client),
                                        std::move(pid_receiver_request));
   connection_ = connector->Connect(&params);
+#if defined(OS_ANDROID)
+  service_registry_android_ = ServiceRegistryAndroid::Create(
+      connection_->GetInterfaceRegistry(), connection_->GetRemoteInterfaces());
+#endif
 }
 
 MojoChildConnection::~MojoChildConnection() {}

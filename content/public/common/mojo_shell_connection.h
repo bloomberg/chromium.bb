@@ -82,6 +82,7 @@ class CONTENT_EXPORT MojoShellConnection {
   // registered services.
   virtual void AddEmbeddedShellClient(
       std::unique_ptr<shell::ShellClient> shell_client) = 0;
+  virtual void AddEmbeddedShellClient(shell::ShellClient* shell_client) = 0;
 
   // Adds an embedded service to this connection's ShellClientFactory.
   // |info| provides details on how to construct new instances of the

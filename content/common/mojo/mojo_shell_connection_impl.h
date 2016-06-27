@@ -38,6 +38,7 @@ class MojoShellConnectionImpl
   void SetConnectionLostClosure(const base::Closure& closure) override;
   void AddEmbeddedShellClient(
       std::unique_ptr<shell::ShellClient> shell_client) override;
+  void AddEmbeddedShellClient(shell::ShellClient* shell_client) override;
   void AddEmbeddedService(const std::string& name,
                           const MojoApplicationInfo& info) override;
   void AddShellClientRequestHandler(
@@ -49,6 +50,8 @@ class MojoShellConnectionImpl
                   const shell::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(shell::Connection* connection) override;
+  shell::InterfaceRegistry* GetInterfaceRegistryForConnection() override;
+  shell::InterfaceProvider* GetInterfaceProviderForConnection() override;
 
   // shell::InterfaceFactory<shell::mojom::ShellClientFactory>:
   void Create(shell::Connection* connection,
@@ -60,7 +63,8 @@ class MojoShellConnectionImpl
 
   std::unique_ptr<shell::ShellConnection> shell_connection_;
   mojo::BindingSet<shell::mojom::ShellClientFactory> factory_bindings_;
-  std::vector<std::unique_ptr<shell::ShellClient>> embedded_shell_clients_;
+  std::vector<shell::ShellClient*> embedded_shell_clients_;
+  std::vector<std::unique_ptr<shell::ShellClient>> owned_shell_clients_;
   std::unordered_map<std::string, std::unique_ptr<EmbeddedApplicationRunner>>
       embedded_apps_;
   std::unordered_map<std::string, ShellClientRequestHandler> request_handlers_;

@@ -144,7 +144,6 @@ class Connection {
   // Returns a raw pointer to the InterfaceProvider at the remote end.
   virtual mojom::InterfaceProvider* GetRemoteInterfaceProvider() = 0;
 
- protected:
   // Returns the InterfaceRegistry that implements the mojom::InterfaceProvider
   // exposed to the remote application.
   virtual InterfaceRegistry* GetInterfaceRegistry() = 0;
@@ -152,6 +151,7 @@ class Connection {
   // Returns an object encapsulating a remote InterfaceProvider.
   virtual InterfaceProvider* GetRemoteInterfaces() = 0;
 
+ protected:
   virtual base::WeakPtr<Connection> GetWeakPtr() = 0;
 };
 

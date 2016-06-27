@@ -81,6 +81,7 @@ class InterfaceProvider {
   BinderMap binders_;
 
   mojom::InterfaceProviderPtr interface_provider_;
+  mojom::InterfaceProviderRequest pending_request_;
 
   base::WeakPtrFactory<InterfaceProvider> weak_factory_;
 
