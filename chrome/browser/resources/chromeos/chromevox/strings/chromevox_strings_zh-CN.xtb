@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">不存在下一个列表项。</translation>
 <translation id="1157782847298808853">键盘帮助</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />，<ph name="NAME" />，组合框</translation>
+<translation id="1161762950103988776">跳转</translation>
 <translation id="1167230103353892028"><ph name="NAME" />，菜单项，包含子菜单</translation>
 <translation id="1177863135347784049">自定义</translation>
 <translation id="1188858454923323853">补充内容</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">计时器</translation>
 <translation id="8065607967589909823">当前选择为</translation>
 <translation id="8066678206530322333">横幅</translation>
+<translation id="8076492880354921740">标签页</translation>
 <translation id="8110647606445335195">无ARIA地标。</translation>
 <translation id="8153880621934657047">不在表格内。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{1个下划线}other{#个下划线}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">使用上下箭头键进行浏览，或者直接输入搜索字词。</translation>
 <translation id="9192904702577636854">滚动图片</translation>
 <translation id="9212322457209634662">不存在下一章节。</translation>
+<translation id="923331726185079994">ChromeVox 已更新</translation>
 <translation id="930275611743429116">开始或结束选择。</translation>
 <translation id="948171205378458592">减慢语速</translation>
 <translation id="962913030769097253">下一个1级标题</translation>
 <translation id="973955474346881951">启用/停用粘滞模式</translation>
+<translation id="976849232629612000">无菜单项。</translation>
 </translationbundle>

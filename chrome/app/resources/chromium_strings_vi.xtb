@@ -30,6 +30,7 @@
 <translation id="1881322772814446296">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình Chromium của bạn. Dữ liệu Chromium của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. Bạn có thể tùy chọn tạo cấu hình mới để giữ cho dữ liệu Chromium hiện có của bạn riêng biệt. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium không phản hồi. Chạy lại ngay bây giờ?</translation>
 <translation id="1967743265616885482">Một mô-đun có cùng tên đã được xác định là xung đột với Chromium.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Thao tác này sẽ xóa vĩnh viễn ít nhất $1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng $2.}other{Thao tác này sẽ xóa vĩnh viễn ít nhất $1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng $2.}}</translation>
 <translation id="2077129598763517140">Sử dụng chế độ tăng tốc phần cứng khi khả dụng</translation>
 <translation id="2103655854491303969">Trình chạy ứng dụng Chromium sắp ngừng hoạt động.</translation>
 <translation id="2117181891440368863">Chromium đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh mạch của chứng chỉ nhưng thông tin này không hợp lệ.</translation>
@@ -81,6 +82,7 @@
 <translation id="3549345495227188780">Bắt đầu với Chromium OS</translation>
 <translation id="3582788516608077514">Đang cập nhật Chromium...</translation>
 <translation id="358997566136285270">Biểu trưng Chromium</translation>
+<translation id="3645040538872234961">Thao tác này sẽ xóa vĩnh viễn dữ liệu duyệt web của bạn khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng $2.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="3748537968684000502">Bạn đang xem trang Chromium an toàn.</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
@@ -105,6 +107,7 @@
 <translation id="4567424176335768812">Bạn đã đăng nhập với tên <ph name="USER_EMAIL_ADDRESS" />. Bây giờ, bạn có thể truy cập dấu trang, lịch sử và các cài đặt khác trên tất cả những thiết bị đã đăng nhập của bạn.</translation>
 <translation id="457845228957001925">Thông tin quan trọng liên quan đến dữ liệu Chromium của bạn</translation>
 <translation id="459535195905078186">Ứng dụng Chromium</translation>
+<translation id="4621240073146040695">Gần được cập nhật! Hãy khởi chạy lại Chromium để hoàn tất cập nhật.</translation>
 <translation id="4677944499843243528">Dường như cấu hình này đang được quy trình Chromium khác (<ph name="PROCESS_ID" />) trên máy tính khác (<ph name="HOST_NAME" />) sử dụng. Chromium đã khóa cấu hình này để cấu hình không bị lỗi. Nếu bạn chắc chắn không có quy trình nào khác đang sử dụng cấu hình này, bạn có thể mở khóa cấu hình và chạy lại Chromium.</translation>
 <translation id="4743926867934016338">Chấp nhận và tìm kiếm</translation>
 <translation id="4888717733111232871">Quy tắc kết nối để Chromium cho phép lưu lượng truy cập mDNS.</translation>
@@ -129,10 +132,12 @@
 <translation id="5859963531214966875">Các phiên bản Chromium trong tương lai sẽ không hỗ trợ hệ thống Linux này nữa.</translation>
 <translation id="5862307444128926510">Chào mừng bạn đến với Chromium</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
+<translation id="5906655207909574370">Gần được cập nhật! Hãy khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
 <translation id="5942225298871134766">Chromium sẽ lưu trữ mật khẩu này với <ph name="SAVED_PASSWORD_LINK" /> và ghi nhớ mật khẩu này vào lần sau bạn cần đến.</translation>
 <translation id="5942520288919337908">Đã thêm <ph name="EXTENSION_NAME" /> vào  Chromium.</translation>
 <translation id="59625444380784159">Chi tiết từ danh bạ của bạn có thể giúp bạn điền vào biểu mẫu trong Chromium nhanh hơn.</translation>
 <translation id="6055895534982063517">Hiện đã có phiên bản Chromium mới và phiên bản này nhanh hơn bao giờ hết.</translation>
+<translation id="6077017812234345835">Thao tác này sẽ xóa vĩnh viễn ít nhất <ph name="TOTAL_COUNT" /> mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng $2.</translation>
 <translation id="608189560609172163">Chromium không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
 <translation id="6212496753309875659">Máy tính này đã có phiên bản Chromium mới hơn. Nếu phần mềm không hoạt động, hãy gỡ cài đặt Chromium và thử lại.</translation>
 <translation id="6248213926982192922">Đặt Chromium làm trình duyệt mặc định</translation>
@@ -166,6 +171,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="705851970750939768">Cập nhật Chromium</translation>
 <translation id="7064610482057367130">Không tìm thấy bản cài đặt Chromium cần cập nhật.</translation>
 <translation id="7066436765290594559">Chromium OS không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Thao tác này sẽ xóa vĩnh viễn $1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng $2.}other{Thao tác này sẽ xóa vĩnh viễn $1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng $2.}}</translation>
 <translation id="7138853919861947730">Chromium có thể sử dụng các dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="7162152143154757523">Chromium có thể cung cấp tính năng kiểm tra chính tả thông minh hơn bằng cách gửi những gì bạn nhập vào trình duyệt tới máy chủ Google, cho phép bạn sử dụng cùng một công nghệ kiểm tra chính tả mà tìm kiếm của Google sử dụng.</translation>
 <translation id="7178626992616222740">Chromium đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh bạch của chứng chỉ nhưng Chromium không nhận ra bất kỳ nhật ký nào về Tính minh bạch của chứng chỉ.</translation>

@@ -130,6 +130,7 @@
 <translation id="4156740505453712750">如要保護這台電腦，避免不明人士入侵，請選擇一個<ph name="BOLD_START" />至少 6 位數<ph name="BOLD_END" />的 PIN。當使用者從其他位置連線時，必須先輸入這個 PIN 驗證身分。</translation>
 <translation id="4176825807642096119">存取碼</translation>
 <translation id="4207623512727273241">請先執行安裝程式，然後再繼續操作。</translation>
+<translation id="4227991223508142681">主機帳戶管理公用程式</translation>
 <translation id="4240294130679914010">Chromoting 主機解除安裝程式</translation>
 <translation id="4277463233460010382">這台電腦已設為允許一或多個用戶端可不輸入 PIN 進行連線。</translation>
 <translation id="4277736576214464567">存取碼無效，請再試一次。</translation>

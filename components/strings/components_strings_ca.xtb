@@ -18,7 +18,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> diu:</translation>
 <translation id="1132774398110320017">Configuració d'Emplenament automàtic de Chrome...</translation>
 <translation id="113770840981343808">Per verificar la targeta, introduïu el CVC de quatre dígits que hi ha a la part davantera</translation>
-<translation id="1146673768181266552">Identificador d'error <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el sistema operatiu del vostre ordinador considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="1152921474424827756">Accediu a una <ph name="BEGIN_LINK" />còpia emmagatzemada a la memòria cau<ph name="END_LINK" /> de la pàgina <ph name="URL" />.</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ha tancat la connexió de manera inesperada.</translation>

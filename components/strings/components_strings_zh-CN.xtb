@@ -19,7 +19,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> 显示：</translation>
 <translation id="1132774398110320017">Chrome自动填充设置…</translation>
 <translation id="113770840981343808">请输入信用卡正面显示的 4 位数银行卡验证码 (CVC) 以进行验证</translation>
-<translation id="1146673768181266552">崩溃ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1152921474424827756">访问<ph name="URL" />的<ph name="BEGIN_LINK" />缓存副本<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> 意外终止了连接。</translation>
@@ -277,7 +276,7 @@
 <translation id="3759461132968374835">您最近未收到崩溃报告。崩溃报告停用时发生的崩溃不会在此处显示。</translation>
 <translation id="3788090790273268753">此网站的证书将于 2016 年过期，并且此网站的证书链包含使用 SHA-1 签署的证书。</translation>
 <translation id="382518646247711829">如果您使用代理服务器…</translation>
-<translation id="3828924085048779000">请勿使用空密码。</translation>
+<translation id="3828924085048779000">密码输入字段不能留空。</translation>
 <translation id="3845539888601087042">目前显示的是您登录过的设备中的历史记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" />。</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3858027520442213535">更新日期和时间</translation>

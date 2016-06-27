@@ -5,7 +5,7 @@
 <translation id="1032854598605920125">順時針旋轉</translation>
 <translation id="1038842779957582377">不明名稱</translation>
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
-<translation id="10614374240317010">永不儲存</translation>
+<translation id="10614374240317010">一律不儲存</translation>
 <translation id="1064422015032085147">代管這個網頁的伺服器可能已超載或正在進行維護。
     為了避免產生過多的流量，導致情況惡化，
     目前系統已暫時禁止傳送要求至這個網址。</translation>
@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> 顯示：</translation>
 <translation id="1132774398110320017">Chrome 自動填入設定...</translation>
 <translation id="113770840981343808">請輸入信用卡正面的四位數信用卡安全碼，以便驗證</translation>
-<translation id="1146673768181266552">當機 ID：<ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="1152921474424827756">存取 <ph name="URL" /> 的<ph name="BEGIN_LINK" />頁庫存檔副本<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> 意外中斷連線。</translation>
@@ -253,7 +252,7 @@
 <translation id="3566021033012934673">您的連線不是私人連線</translation>
 <translation id="3583757800736429874">重做移動(&amp;R)</translation>
 <translation id="3586931643579894722">隱藏詳細資訊</translation>
-<translation id="3587482841069643663">[全部]</translation>
+<translation id="3587482841069643663">全部</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />，<ph name="DOMAIN" />，<ph name="TIME" /></translation>
 <translation id="3609138628363401169">伺服器並不支援 TLS 重新交涉擴充功能。</translation>
 <translation id="36224234498066874">清除瀏覽資料...</translation>
@@ -411,7 +410,7 @@
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」發生架構驗證錯誤：<ph name="ERROR" /></translation>
 <translation id="5452270690849572955">找不到 <ph name="HOST_NAME" /> 網頁</translation>
 <translation id="5455374756549232013">政策時間戳記有誤</translation>
-<translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> 個，共 <ph name="TOTAL_MATCHCOUNT" /> 個</translation>
+<translation id="5455790498993699893">第 <ph name="ACTIVE_MATCH" /> 個，共 <ph name="TOTAL_MATCHCOUNT" /> 個</translation>
 <translation id="5470861586879999274">重做編輯(&amp;R)</translation>
 <translation id="5492298309214877701">這個位於公司、機構或學校內部網路的網站使用的網址與某個外部網站相同。
     <ph name="LINE_BREAK" />
@@ -576,7 +575,7 @@
 <translation id="7445762425076701745">您所連線的伺服器身分無法完全驗證，該伺服器所使用的名稱僅在您的網路中有效，無法驗證外部憑證授權單位的擁有權。即使某些憑證授權單位會核發這些憑證，不過無法就此確保您所連上的網站是正確的，而不會遭到網路攻擊。</translation>
 <translation id="7450732239874446337">網路 IO 已暫停。</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />這個問題。</translation>
-<translation id="7481312909269577407">下一頁</translation>
+<translation id="7481312909269577407">往前</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="7514365320538308">下載</translation>
 <translation id="7518003948725431193">找不到此網址的網頁：<ph name="URL" /></translation>
@@ -627,11 +626,11 @@
 <translation id="7938958445268990899">伺服器憑證尚未生效。</translation>
 <translation id="7951415247503192394">(32 位元)</translation>
 <translation id="7956713633345437162">行動版書籤</translation>
-<translation id="7961015016161918242">永不</translation>
+<translation id="7961015016161918242">一律不要</translation>
 <translation id="7983301409776629893">一律將網頁內容由<ph name="ORIGINAL_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">未指定</translation>
 <translation id="8012647001091218357">我們暫時無法與您的家長聯絡，請再試一次。</translation>
-<translation id="8034522405403831421">這個網頁的內容是<ph name="SOURCE_LANGUAGE" />，需要翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
+<translation id="8034522405403831421">這是<ph name="SOURCE_LANGUAGE" />網頁，需要翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
 <translation id="8034955203865359138">找不到任何紀錄項目。</translation>
 <translation id="8088680233425245692">無法查看文章。</translation>
 <translation id="8091372947890762290">尚未在伺服器上啟動</translation>

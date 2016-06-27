@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> изпраща подкана:</translation>
 <translation id="1132774398110320017">Настройки за Автоматично попълване в Chrome...</translation>
 <translation id="113770840981343808">За потвърждение въведете четирицифрения код за проверка от лицевата страна на картата си</translation>
-<translation id="1146673768181266552">Идентификатор на срива <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; операционната система на компютъра ви няма доверие на сертификата му за сигурност. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="1152921474424827756">Вижте <ph name="BEGIN_LINK" />кеширано копие<ph name="END_LINK" /> на <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> неочаквано прекрати връзката.</translation>

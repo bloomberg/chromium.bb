@@ -130,6 +130,7 @@ Vert</translation>
 <translation id="4156740505453712750">For å beskytte tilgangen til denne datamaskinen må du velge en PIN-kode bestående av <ph name="BOLD_START" />minst seks tall<ph name="BOLD_END" />. Denne PIN-koden kreves når man kobler til fra en annen posisjon.</translation>
 <translation id="4176825807642096119">Tilgangskode</translation>
 <translation id="4207623512727273241">Kjør installasjonsprogrammet før du fortsetter.</translation>
+<translation id="4227991223508142681">Verktøy for vertsidentitetshåndtering</translation>
 <translation id="4240294130679914010">Avinstalleringsprogram for Chromoting-vert</translation>
 <translation id="4277463233460010382">Denne datamaskinen er konfigurer for å la én eller flere klienter koble til uten å skrive inn noen PIN-kode.</translation>
 <translation id="4277736576214464567">Tilgangskoden er ugyldig. Prøv på nytt.</translation>

@@ -147,8 +147,10 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="568643307450491754">Cari bookmark Anda dalam menu Chrome atau di bilah bookmark.</translation>
 <translation id="573759479754913123">Tentang Chrome OS</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mengunduh file.</translation>
+<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.}other{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.}}</translation>
 <translation id="5855036575689098185">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
+<translation id="5906655207909574370">Hampir selesai diperbarui! Mulai ulang perangkat untuk menyelesaikan pembaruan.</translation>
 <translation id="5931853610562009806">Di Mac, sandi disimpan pada Keychain Anda dan diakses atau disinkronkan oleh pengguna Chrome lain yang membagikan akun OS X ini.</translation>
 <translation id="5940385492829620908">Web, bookmark, dan file Chrome Anda lainnya tersedia di sini.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
@@ -186,6 +188,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="7125719106133729027">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda melewatkan perbaikan keamanan dan fitur baru yang keren. Anda perlu memasang ulang Chrome secara manual.</translation>
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>
 <translation id="7164397146364144019">Anda dapat membantu membuat Chrome lebih aman dan lebih mudah digunakan dengan melaporkan detail secara otomatis tentang kemungkinan insiden keamanan ke Google.</translation>
+<translation id="7177347454226092725">Tindakan ini akan menghapus data penjelajahan dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> telah ditambahkan ke Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME" />. Tautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Mengapa saya melihat ini?</translation>
@@ -201,6 +204,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="7473136999113284234">Chrome otomatis diperbarui sehingga Anda selalu memiliki versi terbaru.</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="7494905215383356681">Lisensi sumber terbuka Chrome</translation>
+<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Tindakan ini akan menghapus setidaknya $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.}other{Tindakan ini akan menghapus setidaknya $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.}}</translation>
 <translation id="7592736734348559088">Google Chrome tidak dapat menyinkronkan data karena detail ID masuk akun Anda belum diperbarui.</translation>
 <translation id="7626032353295482388">Selamat Datang di Chrome</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang perangkat lunak.</translation>
@@ -211,6 +215,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="7808348361785373670">Hapus dari Chrome...</translation>
 <translation id="7825851276765848807">Pemasangan gagal karena kesalahan yang tidak ditentukan. Silakan unduh Google Chrome lagi.</translation>
 <translation id="7890208801193284374">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chrome sesuai keinginannya.</translation>
+<translation id="7908168227788431038">Hampir selesai diperbarui! Luncurkan ulang Google Chrome untuk menyelesaikan pembaruan.</translation>
 <translation id="795025003224538582">Jangan memulai ulang</translation>
 <translation id="8005540215158006229">Chrome hampir siap.</translation>
 <translation id="8008534537613507642">Pasang Ulang Chrome</translation>
@@ -220,6 +225,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8129812357326543296">Tentang &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome akan meyimpan informasi pribadi Anda dengan aman sehingga Anda tidak perlu mengetiknya lagi.</translation>
 <translation id="8205111949707227942">Opsional: Bantu kami membuat Chrome OS lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis.</translation>
+<translation id="8211929904040702368">Tindakan ini akan menghapus setidaknya <ph name="TOTAL_COUNT" /> item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.</translation>
 <translation id="8227755444512189073">Google Chrome harus menjalankan aplikasi eksternal untuk menangani link <ph name="SCHEME" />. Link yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon Anda.</translation>
 <translation id="8286862437124483331">Google Chrome mencoba menampilkan sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>

@@ -20,7 +20,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> אומר:</translation>
 <translation id="1132774398110320017">‏הגדרות מילוי אוטומטי של Chrome...</translation>
 <translation id="113770840981343808">הזן את קוד האימות בן ארבע הספרות המופיע בחזית הכרטיס כדי לאמת</translation>
-<translation id="1146673768181266552">מזהה קריסה <ph name="CRASH_ID" /> ‏(<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המחשב. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="1152921474424827756">גש אל <ph name="BEGIN_LINK" />עותק בקובץ שמור<ph name="END_LINK" /> של <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> סגר את החיבור באופן בלתי צפוי.</translation>

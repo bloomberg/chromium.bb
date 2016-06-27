@@ -35,6 +35,7 @@
 <translation id="1389974829397082527">Закладок пока нет</translation>
 <translation id="1404122904123200417">Встроено в <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Запрет отслеживания</translation>
+<translation id="1407135791313364759">Открыть все</translation>
 <translation id="1409879593029778104">Скачивание файла <ph name="FILE_NAME" /> остановлено, так как он уже существует.</translation>
 <translation id="1416550906796893042">Версия приложения</translation>
 <translation id="1423209968422390786">На этом устройстве <ph name="BEGIN_LINK" />открыт<ph name="END_LINK" /> доступ к местоположению.</translation>
@@ -101,6 +102,7 @@
 <translation id="219985413780390209">Защитить устройство от опасных сайтов</translation>
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
 <translation id="2268044343513325586">Уточнить</translation>
+<translation id="2286841657746966508">Платежный адрес</translation>
 <translation id="2315043854645842844">Сертификат, выбранный клиентом, не поддерживается операционной системой.</translation>
 <translation id="2321958826496381788">Перемещайте ползунок, пока текст не станет удобным для чтения. После двойного нажатия на абзац текст должен быть такого размера.</translation>
 <translation id="2331464965008647960">Просматривайте веб-страницы, связанные с объектами вокруг вас. Chrome будет искать их с помощью Bluetooth, когда ваше устройство разблокировано. Чтобы улучшить работу функции, страницы будут отправляться через сервис Google.
@@ -207,6 +209,7 @@
 <translation id="360480449234699036">Ищите картинки, определения и другую информацию, не покидая выбранную страницу. Просто выберите слово, и оно будет отправлено в Google Поиск вместе с контекстом.
 
 Чтобы задать новый поисковый запрос, нажмите на нужное слово и не отпускайте палец. Чтобы уточнить запрос, прокрутите панель вверх и коснитесь поисковой строки.</translation>
+<translation id="3616113530831147358">Аудио</translation>
 <translation id="3623048332793834136">Закладки Chrome Canary</translation>
 <translation id="363596933471559332">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
 <translation id="3656115297268584622">Включите определение местоположения в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
@@ -217,6 +220,7 @@
 <translation id="3738139272394829648">Быстрый поиск</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3809549525127675114">Воспроизведение видео "<ph name="VIDEO_TITLE" />" завершено</translation>
+<translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Настроить</translation>
 <translation id="3828029223314399057">Искать в закладках</translation>
 <translation id="3871171699884605801">Историю просмотров нельзя очистить из детского аккаунта</translation>
@@ -286,6 +290,7 @@
 <translation id="4720023427747327413">Открыть в <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Обновление</translation>
 <translation id="4738836084190194332">Последняя синхронизация: <ph name="WHEN" /></translation>
+<translation id="4759238208242260848">Скачанные файлы</translation>
 <translation id="4773299976671772492">Остановлено</translation>
 <translation id="4797039098279997504">Нажмите, чтобы вернуться на страницу <ph name="URL_OF_THE_CURRENT_TAB" />.</translation>
 <translation id="4807098396393229769">Имя владельца</translation>
@@ -298,6 +303,7 @@
 <translation id="4923459931733593730">Платеж</translation>
 <translation id="4943872375798546930">Нет результатов</translation>
 <translation id="497421865427891073">Вперед</translation>
+<translation id="4988526792673242964">Страницы</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
 <translation id="5016205925109358554">С засечками</translation>
@@ -396,7 +402,6 @@
 <translation id="6042308850641462728">Подробнее...</translation>
 <translation id="604996488070107836">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неизвестной ошибки.</translation>
 <translation id="605721222689873409">ГГ</translation>
-<translation id="605904398899306450">Разрешить сайтам автовоспроизведение важных мультимедийных файлов (рекомендуется)</translation>
 <translation id="6075798973483050474">Изменение главной страницы</translation>
 <translation id="6108923351542677676">Настройка…</translation>
 <translation id="6112702117600201073">Обновление страницы</translation>
@@ -485,6 +490,7 @@
 <translation id="7094922512924405309">Ничего не найдено</translation>
 <translation id="7095930899177687653">Открыто вкладок: <ph name="OPEN_TABS" /></translation>
 <translation id="7096034533295549981">Загрузка видео…</translation>
+<translation id="7138678301420049075">Другое</translation>
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
 <translation id="7208788139759694678">Расширение "Экономия трафика" отключено</translation>
@@ -527,6 +533,7 @@
 <translation id="7634554953375732414">Подключение к веб-сайту не защищено</translation>
 <translation id="7638584964844754484">Неверная кодовая фраза</translation>
 <translation id="7648422057306047504">Шифровать пароли с помощью учетных данных аккаунта Google</translation>
+<translation id="7649070708921625228">Справка</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
 <translation id="7682287625158474539">Адрес доставки</translation>
@@ -541,7 +548,6 @@
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7829298379596169484">Доступ к аудиовходу</translation>
 <translation id="7837582000577464779">Не удалось обработать заказ. Проверьте аккаунт и повторите попытку.</translation>
-<translation id="7840369537802583269">Поиск важных мультимедийных файлов и их воспроизведение для конкретного сайта.</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>
 <translation id="7851858861565204677">Другие устройства</translation>
 <translation id="7876243839304621966">Удалить все</translation>
@@ -650,6 +656,7 @@
 <translation id="9192643434065497760">Чтобы разрешить соединение, включите Bluetooth в <ph name="BEGIN_LINK" />настройках устройства<ph name="END_LINK" />.</translation>
 <translation id="9198708126133947749">Данные на устройстве будут заменены данными из аккаунта <ph name="TO_ACCOUNT" />. Чтобы скачать текущие данные, войдите в аккаунт <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">А</translation>
+<translation id="9219103736887031265">Картинки</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Доступ к микрофону</translation>

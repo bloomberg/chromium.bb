@@ -156,8 +156,10 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="568643307450491754">Žymes rasite „Chrome“ meniu arba žymių juostoje.</translation>
 <translation id="573759479754913123">Apie „Chrome“ OS</translation>
 <translation id="5749068826913805084">„Chrome“ reikia prieigos prie saugyklos failams atsisiųsti.</translation>
+<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Atlikus šį veiksmą bus visam laikui ištrintas $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}one{Atlikus šį veiksmą bus visam laikui ištrintas $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}few{Atlikus šį veiksmą bus visam laikui ištrinti $1 elementai iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}many{Atlikus šį veiksmą bus visam laikui ištrinta $1 elemento iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}other{Atlikus šį veiksmą bus visam laikui ištrinta $1 elementų iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}}</translation>
 <translation id="5855036575689098185">Jūsų kompiuteryje veikianti programinė įranga nesuderinama su „Google Chrome“.</translation>
 <translation id="5877064549588274448">Kanalas pakeistas. Kad pritaikytumėte pakeitimus, iš naujo paleiskite įrenginį.</translation>
+<translation id="5906655207909574370">Beveik įdiegta naujausia versija! Paleiskite įrenginį iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="5931853610562009806">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chrome“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
 <translation id="5940385492829620908">Čia saugoma žiniatinklio informacija, žymės ir kiti „Chrome“ duomenys.</translation>
 <translation id="5941830788786076944">Padarykite „Google Chrome“ numatytąja naršykle</translation>
@@ -195,6 +197,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7125719106133729027">„Chrome“ nepavyko atsinaujinti į naujausią versiją, todėl negalite naudoti puikių naujų funkcijų ir saugos pataisymų. Reikia neautomatiškai iš naujo įdiegti „Chrome“.</translation>
 <translation id="7161904924553537242">Sveiki! Tai - „Google Chrome“</translation>
 <translation id="7164397146364144019">Galite padėti sustiprinti „Chrome“ saugą ir palengvinti jos naudojimą automatiškai „Google“ pateikdami išsamią informaciją apie galimas saugos problemas.</translation>
+<translation id="7177347454226092725">Atlikus šį veiksmą bus visam laikui ištrinti naršymo duomenys iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.</translation>
 <translation id="7185038942300673794">„<ph name="EXTENSION_NAME" />“ pridėtas į „Chrome“.</translation>
 <translation id="7191567847629796517">„Google Chrome“ OS negalima paleisti išorinės programos, skirtos „<ph name="SCHEME" />“ nuorodoms tvarkyti. Nuoroda, dėl kurios pateikta užklausa, yra <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Kodėl tai matau?</translation>
@@ -210,6 +213,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7473136999113284234">„Chrome“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija.</translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="7494905215383356681">„Chrome“ atvirojo šaltinio licencijos</translation>
+<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Atlikus šį veiksmą bus visam laikui ištrintas mažiausiai $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}one{Atlikus šį veiksmą bus visam laikui ištrintas mažiausiai $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}few{Atlikus šį veiksmą bus visam laikui ištrinti mažiausiai $1 elementai iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}many{Atlikus šį veiksmą bus visam laikui ištrinta mažiausiai $1 elemento iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}other{Atlikus šį veiksmą bus visam laikui ištrinta mažiausiai $1 elementų iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.}}</translation>
 <translation id="7592736734348559088">„Google Chrome“ negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="7626032353295482388">Sveiki, tai „Chrome“</translation>
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>
@@ -220,6 +224,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7808348361785373670">Pašalinti iš „Chrome“...</translation>
 <translation id="7825851276765848807">Nepavyko įdiegti dėl nenustatytos klaidos. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
+<translation id="7908168227788431038">Beveik atnaujinta! Paleiskite „Google Chrome“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="795025003224538582">Nepaleisti iš naujo</translation>
 <translation id="8005540215158006229">„Chrome“ beveik paruošta.</translation>
 <translation id="8008534537613507642">Iš naujo įdiegti „Chrome“</translation>
@@ -229,6 +234,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8129812357326543296">Apie „&amp;Google Chrome“</translation>
 <translation id="8183957050892517584">„Chrome“ patikimai saugos jūsų išsamią informaciją, kad nebereikėtų jos vėl įvesti.</translation>
 <translation id="8205111949707227942">Pasirenkama: padėkite tobulinti „Chrome“ OS automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
+<translation id="8211929904040702368">Atlikus šį veiksmą, iš įrenginio bus visam laikui ištrinta mažiausiai tiek elementų: <ph name="TOTAL_COUNT" />. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chrome“ kaip $2.</translation>
 <translation id="8227755444512189073">„Google Chrome“ turi paleisti išorinę taikomąją programą <ph name="SCHEME" /> nuorodoms valdyti. Prašyta nuoroda: <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">„Google Chrome“ naudoja jūsų fotoaparatą ir mikrofoną.</translation>
 <translation id="8286862437124483331">„Google Chrome“ bando rodyti slaptažodžius. Įveskite „Windows“ slaptažodį, kad tai leistumėte.</translation>

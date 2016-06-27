@@ -21,7 +21,6 @@
 <translation id="113188000913989374">Komunikat ze strony <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Ustawienia autouzupełniania Chrome...</translation>
 <translation id="113770840981343808">Aby dokonać weryfikacji, wpisz czterocyfrowy kod CVC widoczny na przodzie karty</translation>
-<translation id="1146673768181266552">Identyfikator awarii: <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1152921474424827756">Przejdź do <ph name="BEGIN_LINK" />kopii<ph name="END_LINK" /> <ph name="URL" /> w pamięci podręcznej</translation>
 <translation id="1158211211994409885">Serwer <ph name="HOST_NAME" /> nieoczekiwanie zakończył połączenie.</translation>

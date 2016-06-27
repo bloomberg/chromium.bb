@@ -130,6 +130,7 @@ Chromoting</translation>
 <translation id="4156740505453712750">Aby zabezpieczyć dostęp do tego komputera, wybierz PIN złożony z <ph name="BOLD_START" />co najmniej sześciu cyfr<ph name="BOLD_END" />. Będzie on wymagany przy łączeniu się z innej lokalizacji.</translation>
 <translation id="4176825807642096119">Kod dostępu</translation>
 <translation id="4207623512727273241">Najpierw uruchom instalatora.</translation>
+<translation id="4227991223508142681">Narzędzie konfiguracji hosta</translation>
 <translation id="4240294130679914010">Program do odinstalowywania hosta funkcji Chromoting</translation>
 <translation id="4277463233460010382">Ten komputer jest skonfigurowany do zezwalania jednemu lub wielu klientom na łączenie się bez podawania kodu PIN.</translation>
 <translation id="4277736576214464567">Kod dostępu jest nieprawidłowy. Spróbuj ponownie.</translation>

@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> sakoma:</translation>
 <translation id="1132774398110320017">„Chrome“ automatinio pildymo nustatymai...</translation>
 <translation id="113770840981343808">Įveskite kortelės priekyje nurodytą 4 skaitmenų kortelės saugos kodą (CVC), kad patvirtintumėte</translation>
-<translation id="1146673768181266552">Strigties ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1152921474424827756">Pasiekite <ph name="BEGIN_LINK" />talpykloje saugomą <ph name="URL" /> kopiją<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> netikėtai nutraukė ryšį.</translation>

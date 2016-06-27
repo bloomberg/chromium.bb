@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">Nu există un element de listă următor.</translation>
 <translation id="1157782847298808853">Ajutor tastatură</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, casetă combo</translation>
+<translation id="1161762950103988776">Accesează</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, element din meniu cu submeniu</translation>
 <translation id="1177863135347784049">Personalizează</translation>
 <translation id="1188858454923323853">complementar</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Temporizator</translation>
 <translation id="8065607967589909823">Selecția este</translation>
 <translation id="8066678206530322333">Banner</translation>
+<translation id="8076492880354921740">File</translation>
 <translation id="8110647606445335195">Nu există repere ARIA.</translation>
 <translation id="8153880621934657047">Nu vă aflați în interiorul tabelului.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{caracter de subliniere}few{# caractere de subliniere}other{# de caractere de subliniere}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">Folosiți tastele săgeată în sus și în jos pentru a naviga sau introduceți text pentru a căuta.</translation>
 <translation id="9192904702577636854">Text derulant</translation>
 <translation id="9212322457209634662">Nu există o secțiune următoare.</translation>
+<translation id="923331726185079994">ChromeVox a fost actualizat</translation>
 <translation id="930275611743429116">Începe sau încheie selecția.</translation>
 <translation id="948171205378458592">Scădeți viteza de vorbire</translation>
 <translation id="962913030769097253">Titlul de nivel 1 următor</translation>
 <translation id="973955474346881951">Activează/dezactivează modul taste persistente</translation>
+<translation id="976849232629612000">Niciun element.</translation>
 </translationbundle>

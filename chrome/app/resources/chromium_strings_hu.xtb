@@ -30,6 +30,7 @@
 <translation id="1881322772814446296">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chromium-adatainak elkülönített tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
 <translation id="1967743265616885482">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Chromiummal.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Ezzel véglegesen töröl legalább $1 elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.}other{Ezzel véglegesen töröl legalább $1 elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.}}</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="2103655854491303969">A Chromium Alkalmazásindító meg fog szűnni.</translation>
 <translation id="2117181891440368863">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver megadott tanúsítványátláthatósági adatokat, de azok érvénytelenek.</translation>
@@ -81,6 +82,7 @@
 <translation id="3549345495227188780">A Chromium OS használatának megkezdése</translation>
 <translation id="3582788516608077514">A Chromium frissítése...</translation>
 <translation id="358997566136285270">Chromium embléma</translation>
+<translation id="3645040538872234961">Ezzel az eszközön lévő összes böngészési adat véglegesen törlődik. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.</translation>
 <translation id="3738139272394829648">Érintéssel keresés</translation>
 <translation id="3748537968684000502">Ön egy biztonságos Chromium-oldalt tekint meg.</translation>
 <translation id="378917192836375108">A Chromium egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-on!</translation>
@@ -105,6 +107,7 @@
 <translation id="4567424176335768812">A(z) <ph name="USER_EMAIL_ADDRESS" /> címmel van bejelentkezve. Elérheti könyvjelzőit, előzményeit és más beállításait minden olyan eszközön, amelyen bejelentkezett.</translation>
 <translation id="457845228957001925">Fontos információ az Ön Chromium-adatairól</translation>
 <translation id="459535195905078186">Chromium-alkalmazások</translation>
+<translation id="4621240073146040695">Már majdnem naprakész! Indítsa újra a Chromiumot a frissítés befejezéséhez.</translation>
 <translation id="4677944499843243528">Úgy tűnik, a profilt egy másik Chromium-folyamat (<ph name="PROCESS_ID" />) használja egy másik számítógépen (<ph name="HOST_NAME" />). A Chromium zárolta a profilt, hogy az ne sérülhessen. Ha biztos benne, hogy nem használja másik folyamat a profilt, feloldhatja azt, és újraindíthatja a Chromiumot.</translation>
 <translation id="4743926867934016338">Elfogadás és keresés</translation>
 <translation id="4888717733111232871">Bejövő szabály a Chromiumhoz az mDNS forgalom engedélyezése céljából.</translation>
@@ -129,10 +132,12 @@
 <translation id="5859963531214966875">A Chromium jövőbeli verziói nem fogják támogatni ezt a Linux rendszert.</translation>
 <translation id="5862307444128926510">Üdvözli a Chromium!</translation>
 <translation id="5877064549588274448">Módosult a csatorna. Indítsa újra az eszközt a módosítások alkalmazásához.</translation>
+<translation id="5906655207909574370">Már majdnem naprakész! Indítsa újra az eszközt a frissítés befejezéséhez.</translation>
 <translation id="5942225298871134766">A Chromium tárolja ezt a(z) <ph name="SAVED_PASSWORD_LINK" /> segítségével, és emlékezni fog, amikor legközelebb szükség lesz rá.</translation>
 <translation id="5942520288919337908">A(z) <ph name="EXTENSION_NAME" /> hozzá lett adva a Chromiumhoz.</translation>
 <translation id="59625444380784159">A névjegyek részletei révén gyorsabban kitöltheti az űrlapokat a Chromiumban.</translation>
 <translation id="6055895534982063517">Elérhető a Chromium új verziója, amely minden korábbinál sokkal gyorsabb.</translation>
+<translation id="6077017812234345835">Ezzel véglegesen töröl legalább <ph name="TOTAL_COUNT" /> elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.</translation>
 <translation id="608189560609172163">A Chromium egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
 <translation id="6212496753309875659">A számítógépen már megtalálható a Chromium újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Chromiumot, majd próbálkozzon újra.</translation>
 <translation id="6248213926982192922">Legyen a Chromium az alapértelmezett böngészőm</translation>
@@ -164,6 +169,7 @@
 <translation id="705851970750939768">A Chromium frissítése</translation>
 <translation id="7064610482057367130">Nem található frissíthető Chromium-telepítés.</translation>
 <translation id="7066436765290594559">A Chromium OS nem tudta szinkronizálni az adatokat. Kérjük, frissítse a szinkronizálás jelszavát.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Ezzel véglegesen töröl $1 elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.}other{Ezzel véglegesen töröl $1 elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.}}</translation>
 <translation id="7138853919861947730">A Chromium internetes szolgáltatások használatával javíthatja a böngészési élményt.</translation>
 <translation id="7162152143154757523">A Chromium pontosabb helyesírás-ellenőrzést tud biztosítani azáltal, hogy a böngészőbe beírt szöveget elküldi a Google szervereinek, ami lehetővé teszi, hogy Ön ugyanazt a helyesírás-ellenőrző technológiát használja, amelyet a Google-keresés is.</translation>
 <translation id="7178626992616222740">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver megadott tanúsítványátláthatósági adatokat, de a Chromium nem ismerte fel a tanúsítványátláthatósági naplók egyikét sem.</translation>

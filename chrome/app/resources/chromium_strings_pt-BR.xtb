@@ -30,6 +30,7 @@
 <translation id="1881322772814446296">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Chromium separados. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">O Chromium não está respondendo. Reiniciar agora?</translation>
 <translation id="1967743265616885482">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Chromium.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Isso excluirá permanentemente pelo menos $1 item deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.}one{Isso excluirá permanentemente pelo menos $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.}other{Isso excluirá permanentemente pelo menos $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.}}</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2103655854491303969">O Acesso rápido aos apps do Chromium será desativado.</translation>
 <translation id="2117181891440368863">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor forneceu informações de Transparência de certificado, mas elas eram inválidas.</translation>
@@ -79,6 +80,7 @@
 <translation id="3549345495227188780">Primeiros passos com o Chromium OS</translation>
 <translation id="3582788516608077514">Atualizando o Chromium....</translation>
 <translation id="358997566136285270">Logotipo do Chromium</translation>
+<translation id="3645040538872234961">Essa ação excluirá permanentemente seus dados de navegação deste dispositivo. Para recuperar os dados mais tarde, faça login no Chromium como $2.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3748537968684000502">Você está vendo uma página segura do Chromium.</translation>
 <translation id="378917192836375108">O Chromium permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
@@ -103,6 +105,7 @@
 <translation id="4567424176335768812">Você está conectado como <ph name="USER_EMAIL_ADDRESS" />. Agora você pode acessar seus favoritos, histórico e outras configurações em todos os seus dispositivos conectados.</translation>
 <translation id="457845228957001925">Informação importante sobre seus dados do Chromium</translation>
 <translation id="459535195905078186">Aplicativos do Chromium</translation>
+<translation id="4621240073146040695">Atualização quase concluída. Reinicie o Chromium para concluí-la.</translation>
 <translation id="4677944499843243528">O perfil parece estar em uso por outro processo do Chromium (<ph name="PROCESS_ID" />) em outro computador (<ph name="HOST_NAME" />). O Chromium bloqueou o perfil para que ele não seja corrompido. Se você tiver certeza de que nenhum outro processo está usando este perfil, pode desbloquear o perfil e reiniciar o Chromium.</translation>
 <translation id="4743926867934016338">Aceitar e pesquisar</translation>
 <translation id="4888717733111232871">Regra interna para que o Chromium permita tráfego mDNS.</translation>
@@ -127,10 +130,12 @@
 <translation id="5859963531214966875">As futuras versões do Chromium não serão mais compatíveis com esse sistema Linux.</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
+<translation id="5906655207909574370">Atualização quase concluída. Reinicie o dispositivo para concluí-la.</translation>
 <translation id="5942225298871134766">O Chromium armazenará essa senha com <ph name="SAVED_PASSWORD_LINK" /> e lembrará dela na próxima vez que você precisar.</translation>
 <translation id="5942520288919337908">A extensão <ph name="EXTENSION_NAME" /> foi adicionada ao Chromium.</translation>
 <translation id="59625444380784159">Detalhes dos seus contatos podem ajudar a preencher formulários de forma mais rápida no Chromium.</translation>
 <translation id="6055895534982063517">Há uma nova versão ainda mais rápida do Chromium disponível.</translation>
+<translation id="6077017812234345835">Essa ação excluirá permanentemente pelo menos <ph name="TOTAL_COUNT" /> itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.</translation>
 <translation id="608189560609172163">O Chromium não pôde sincronizar seus dados devido a um erro ao fazer login.</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver funcionando, desinstale o Chromium e tente novamente.</translation>
 <translation id="6248213926982192922">Tornar o Chromium o navegador padrão</translation>
@@ -162,6 +167,7 @@
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7064610482057367130">Nenhuma instalação do Chromium foi encontrada para atualização.</translation>
 <translation id="7066436765290594559">O Chromium OS não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Isso excluirá permanentemente $1 item deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.}one{Isso excluirá permanentemente $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.}other{Isso excluirá permanentemente $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.}}</translation>
 <translation id="7138853919861947730">O Chromium pode usar os serviços da web para melhorar sua experiência de navegação.</translation>
 <translation id="7162152143154757523">O Chromium pode oferecer uma verificação ortográfica mais inteligente, enviando as informações que você digita no navegador para os servidores do Google. Isso permite que você utilize a mesma tecnologia de verificação ortográfica utilizada pela Pesquisa Google.</translation>
 <translation id="7178626992616222740">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor forneceu informações de Transparência de certificado, mas o Chromium não reconheceu nenhum dos registros de Transparência de certificado.</translation>

@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> menyatakan:</translation>
 <translation id="1132774398110320017">Tetapan Auto Isi Chrome...</translation>
 <translation id="113770840981343808">Masukkan CVC 4 digit dari bahagian depan kad anda untuk pengesahan</translation>
-<translation id="1146673768181266552">ID Ranap Sistem <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK" />salinan cache<ph name="END_LINK" /> <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> menutup sambungan tanpa di jangka.</translation>

@@ -69,7 +69,6 @@
 <translation id="1097091804514346906">Viser tellere for datavolum i dialogboksen Slett nettleserdata.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Logg på<ph name="END_SIGN_IN_LINK" /> for å kontrollere og se nettstedene denne personen besøker.</translation>
 <translation id="1097658378307015415">Gå inn som gjest for å aktivere nettverket <ph name="NETWORK_ID" /> før du logger deg på.</translation>
-<translation id="1104054824888299003">lang</translation>
 <translation id="1104652314727136854">Aktiver OS-integrering av filtilknytninger for Chrome-apper.</translation>
 <translation id="1105162038795579389">«<ph name="BUNDLE_NAME" />» legger til disse appene og utvidelsene for <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Stopp</translation>
@@ -454,7 +453,6 @@
 <translation id="161821681072026592">Fyll inn passord på kontoutvalg</translation>
 <translation id="1618268899808219593">&amp;Brukerstøtte</translation>
 <translation id="1620510694547887537">Kamera</translation>
-<translation id="1621207256975573490">Lagre &amp;rammen som...</translation>
 <translation id="1624026626836496796">Dette skjer bare én gang. Påloggingsinformasjonen din lagres ikke.</translation>
 <translation id="1627276047960621195">Filbeskrivelser</translation>
 <translation id="1628736721748648976">Koding</translation>
@@ -514,6 +512,7 @@
 <translation id="1699274548822076330">Dette skal brukes sammen med «Spor nettadresser for opplastinger»-flagget.
         ADVARSEL: Når dette er slått på, registrerer Chrome ytelsesdata for all navigasjon og laster dem opp til den nettadressen som er spesifisert i trace-upload-url-flagget. Det kan hende sporet inneholder personlig identifiserende informasjon (PII), for eksempel titlene og nettadressene til nettstedene du besøker.</translation>
 <translation id="1699395855685456105">Maskinvareversjon:</translation>
+<translation id="1700199471143028312">Administratoren tillater deg ikke å opprette administrerte brukere.</translation>
 <translation id="1701062906490865540">Fjern denne personen</translation>
 <translation id="1702534956030472451">Vestlig</translation>
 <translation id="1707463636381878959">Del dette nettverket med andre brukere</translation>
@@ -626,7 +625,6 @@
 <translation id="1891668193654680795">Stol på dette sertifikatet for å identifisere programvareprodusenter.</translation>
 <translation id="189210018541388520">Åpne fullskjerm</translation>
 <translation id="1892754076732315533">En ny, forenklet brukeropplevelse ved bruk av sideutløst fullskjerm eller musepekerlås.</translation>
-<translation id="1893046049133338222">ARC: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="1893406696975231168">Administrert identitetsprosess mislyktes</translation>
 <translation id="189358972401248634">Andre språk</translation>
 <translation id="1895658205118569222">Avslutning</translation>
@@ -660,7 +658,6 @@
 <translation id="1937256809970138538">Si «Ok Google» når skjermen er på og ulåst</translation>
 <translation id="1942765061641586207">Bildeoppløsning</translation>
 <translation id="1944921356641260203">En oppdatering ble funnet</translation>
-<translation id="194731619017190619">Organisasjonen din har ikke aktivert Android-apper for kontoen din. Kontakt organisasjonsadministratoren for mer informasjon.</translation>
 <translation id="1947424002851288782">Tysk tastatur</translation>
 <translation id="1950295184970569138">*Google-profilbilde (laster inn)</translation>
 <translation id="1951615167417147110">Rull én side oppover</translation>
@@ -1039,6 +1036,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2501278716633472235">Gå tilbake</translation>
 <translation id="2501797496290880632">Skriv inn en snarvei</translation>
 <translation id="2502441965851148920">Automatiske oppdateringer er slått på. Administratoren din har slått av manuelle oppdateringer.</translation>
+<translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Skjerm #}other{Skjerm #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> av <ph name="TOTAL_SIZE" /></translation>
 <translation id="2507649982651274960">Enheten din er nå registrert for Enterprise-administrasjon. Den sendte imidlertid ikke ressurs- og plasseringsinformasjon. Denne informasjonen må legges inn manuelt i administrasjonskonsollen for denne enheten.</translation>
 <translation id="2509739495444557741">Ingen programtillegg er installert.</translation>
@@ -1210,7 +1208,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2743387203779672305">Kopiér til utklippstavlen</translation>
 <translation id="2744221223678373668">Delte</translation>
 <translation id="2745080116229976798">Microsoft kvalifisert underordning</translation>
-<translation id="2745576239403924641">La Android-apper kjøre på Chromebooken din.</translation>
 <translation id="2747990718031257077">Aktiverer den nye utformingen av verktøylinjen for utvidelser, som er i utviklingsfasen.</translation>
 <translation id="2749756011735116528">Logg på <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Kontroller·grammatikk·og·staving</translation>
@@ -1346,6 +1343,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="289426338439836048">Annet mobilnettverk</translation>
 <translation id="2894745200702272315">Slår på en eksperimentell versjon av gjenkjenningsfunksjoner for «Ok Google»-kommandoord som har en maskinvareavhengighet.</translation>
 <translation id="289695669188700754">Nøkkel-id: <ph name="KEY_ID" /></translation>
+<translation id="2897878306272793870">Er du sikker på at du vil åpne <ph name="TAB_COUNT" /> faner?</translation>
 <translation id="2902127500170292085"><ph name="EXTENSION_NAME" /> kunne ikke kommunisere med denne skriveren. Sørg for at skriveren er koblet til, og prøv igjen.</translation>
 <translation id="2902382079633781842">Bokmerke er lagt til.</translation>
 <translation id="2902734494705624966">Amerikansk utvidet</translation>
@@ -1373,7 +1371,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2930644991850369934">Det oppstod et problem under nedlasting av gjenopprettingsbilde. Nettverkstilkoblingen ble brutt.</translation>
 <translation id="293111069139560936">Lar hyllen minimalisere vinduer hvis du klikker på hylleelementer som bare har ett aktivt vindu.</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Konto for barn)</translation>
-<translation id="2932883381142163287">Rapporter misbruk</translation>
+<translation id="2932883381142163287">Rapportér misbruk</translation>
 <translation id="2934522647674136521">Bruk GPU til å rastrere nettinnhold. Krever implementasjon av nettsidefarging.</translation>
 <translation id="2938225289965773019">åpne linker til <ph name="PROTOCOL" /></translation>
 <translation id="2938685643439809023">Mongolsk</translation>
@@ -1501,6 +1499,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3101709781009526431">Dato og klokkeslett</translation>
 <translation id="3108145564672865299">Låsing av skjermretningen</translation>
 <translation id="3108967419958202225">Velg</translation>
+<translation id="310979712355504754">Slett alle</translation>
 <translation id="3112378005171663295">Skjul</translation>
 <translation id="3113551216836192921">Den vedlagte filen er lastet opp til Googles tjenere for feilsøking.</translation>
 <translation id="3115147772012638511">Venter på buffer...</translation>
@@ -1626,6 +1625,7 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL" /> for instruksjoner om dette og
 <translation id="3277710850168074473">Krav om brukerbevegelser for å spille av medieelementer. Hvis du slår av dette alternativet, kan du bruke automatisk avspilling.</translation>
 <translation id="3280237271814976245">L&amp;agre som...</translation>
 <translation id="3280431534455935878">Forbereder</translation>
+<translation id="3282568296779691940">Logg på Chrome</translation>
 <translation id="3285322247471302225">Ny &amp;fane</translation>
 <translation id="3288047731229977326">Utvidelser som kjører i utviklermodus kan skade datamaskinen din. Hvis du ikke er utvikler, bør du deaktivere disse utvidelsene som kjører i utviklermodus, for å være på den sikre siden.</translation>
 <translation id="3289566588497100676">Enkel symbolinndatametode</translation>
@@ -1777,7 +1777,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">Høyreklikk for å aktivere <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Fortsett å gi <ph name="HOST" /> tillatelse til å bruke kameraet og mikrofonen</translation>
 <translation id="3478315065074101056">XPS aktiverer avanserte alternativer for klassiske skrivere som er tilkoblet Cloud Print med Chrome. Skriverne må kobles til på nytt når dette flagget endres.</translation>
-<translation id="3478685642445675458">Du må låse opp profilen din før du fjerner en person.</translation>
+<translation id="3478685642445675458">Du må låse opp profilen din før du kan fjerne en person.</translation>
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="3480892288821151001">Forankre vinduet til venstre</translation>
 <translation id="3481915276125965083">Følgende forgrunnsvinduer er blokkert på siden:</translation>
@@ -1790,7 +1790,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3489147694311384940">MTP-skrivestøtte i File System API (og filbehandleren). Direkte redigering støttes ikke.</translation>
 <translation id="3489444618744432220">Tillatt av en retningslinje</translation>
 <translation id="3493881266323043047">Gyldighet</translation>
-<translation id="3494444535872870968">Lagre &amp;rammen som</translation>
 <translation id="3494768541638400973">Google-inndatametode for japansk (for japansk tastatur)</translation>
 <translation id="3494769164076977169">Spør når et nettsted forsøker å laste ned filer automatisk etter den første filen (anbefales)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> feil.</translation>
@@ -1811,7 +1810,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Sider som ikke lastes inn mens nettleseren er koblet fra nettet, blir bare lastet inn på nytt automatisk hvis fanene for sidene er synlige.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Avbryt nedlastingen}other{Avbryt nedlastingene}}</translation>
 <translation id="3512810056947640266">Nettadresse (valgfritt):</translation>
-<translation id="351486934407749662">veldig lang</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> ønsker å dele innholdet på skjermen din. Velg hva du ønsker å dele.</translation>
 <translation id="3518086201899641494">Varsler om autentiseringsportal</translation>
 <translation id="3519867315646775981">Translitterasjon (shalom ← שלום)</translation>
@@ -1872,7 +1870,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Passordet er lagret. Du finner det og alle dine <ph name="SAVED_PASSWORDS_LINK" /> fra en hvilken som helst nettleser.</translation>
 <translation id="3590587280253938212">rask</translation>
 <translation id="3592260987370335752">&amp;Les mer</translation>
-<translation id="3592313833691251126">Gi utvidelser tillatelse til å opprette panelvinduer som åpnes utenfor nettleserrammen. Hvis du ikke har slått på dette alternativet, fører forsøk på å åpne paneler til at det åpnes forgrunnsvinduer i stedet. Som standard tillates bare godkjente utvidelser. Hvis alternativet er slått på, tillates alle utvidelser, og hvis det er slått av, tillates ikke paneler for noen utvidelser.</translation>
 <translation id="359283478042092570">Angi</translation>
 <translation id="3593152357631900254">Aktiver modusen Fuzzy pinyin</translation>
 <translation id="3593965109698325041">Begrensninger for sertifikatnavn</translation>
@@ -2207,6 +2204,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4075084141581903552">Automatisk pålogging er tilgjengelig for <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">Aggressiv</translation>
 <translation id="408098233265424160">Smart Lock-nærhetspåvisning</translation>
+<translation id="4081683084140995376">Aktiver VR shell.</translation>
 <translation id="4081979157059999345">Link for ekstern behandling av passord</translation>
 <translation id="4084682180776658562">Legg til bokmerke</translation>
 <translation id="4084835346725913160">Lukk <ph name="TAB_NAME" /></translation>
@@ -2250,7 +2248,6 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="4120817667028078560">Filbanen er for lang</translation>
 <translation id="4121428309786185360">Utløper </translation>
 <translation id="412730574613779332">Superhelt</translation>
-<translation id="4127528900246453928"><ph name="ORIGIN" /> er nå i fullskjerm.</translation>
 <translation id="4130199216115862831">Enhetslogg</translation>
 <translation id="4130207949184424187">Denne utvidelsen har endret hvilken side som vises når du søker fra multifunksjonsfeltet.</translation>
 <translation id="4130750466177569591">Godta</translation>
@@ -2352,6 +2349,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="4287502004382794929">Du har ikke tilstrekkelige programvarelisenser for å registrere denne enheten. Ta kontakt med salgsavdelingen for å kjøpe flere. Hvis du tror dette er en feil, kan du ta kontakt med brukerstøtten.</translation>
 <translation id="4289300219472526559">Begynn å snakke</translation>
 <translation id="4289540628985791613">Oversikt</translation>
+<translation id="4291779358799919071">Kapasitet</translation>
 <translation id="4293409159363387562">Gjenopprett likevel</translation>
 <translation id="4296575653627536209">Legg til en administrert bruker</translation>
 <translation id="4297391862525234515">Hylleminimering ved klikk</translation>
@@ -2467,7 +2465,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4492190037599258964">Søkeresultater for «<ph name="SEARCH_STRING" />»</translation>
 <translation id="4495021739234344583">Avregistrer og start på nytt</translation>
 <translation id="4495419450179050807">Ikke vis på denne siden</translation>
-<translation id="449680153165689114">Slå på med feltfremheving</translation>
 <translation id="449782841102640887">Ikke ta sjansen!</translation>
 <translation id="4498934959426056365">Nøkkelgenerering</translation>
 <translation id="450099669180426158">Utropstegnikon</translation>
@@ -2566,11 +2563,12 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4647090755847581616">&amp;Lukk fane</translation>
 <translation id="4647697156028544508">Skriv inn PIN-koden for «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="4648491805942548247">Utilstrekkelige tillatelser</translation>
-<translation id="4648499713050786492">Du må låse opp profilen din før du legger til en person.</translation>
+<translation id="4648499713050786492">Du må låse opp profilen din før du kan legge til en person.</translation>
 <translation id="4653235815000740718">Det oppstod et problem under opprettelse av gjenopprettingsmedium for operativsystem. Fant ikke lagringsenheten som har blitt brukt.</translation>
 <translation id="4654488276758583406">Veldig liten</translation>
 <translation id="465499440663162826">Kunne ikke koble til Chrome Nettmarked.</translation>
 <translation id="4656293982926141856">Denne datamaskinen</translation>
+<translation id="4656631038341342120">Aktiver VR shell hvis det er tilgjengelig for denne enheten.</translation>
 <translation id="4657031070957997341">Tillat alltid programtillegg på <ph name="HOST" /></translation>
 <translation id="4663254525753315077">Når det er mulig, legges rullende innhold på et rulleelement med overflyt over på et sammensatt lag for å gi raskere rulling.</translation>
 <translation id="4664482161435122549">Eksportfeil for PKCS #12</translation>
@@ -2742,7 +2740,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="49027928311173603">Innstillingene som ble lastet ned fra tjeneren er ugyldige: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Kjør opprydningsverktøyet for Chrome</translation>
 <translation id="4906679076183257864">Tilbakestill til standard</translation>
-<translation id="4907125798206348918">Svak MemoryCache.</translation>
+<translation id="4907125798206348918">Svak minnebuffer (MemoryCache).</translation>
 <translation id="49088176676474409">Skjul VPD-verdier.</translation>
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="4910673011243110136">Private nettverk</translation>
@@ -2835,6 +2833,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5055309315264875868">Vis en link på innstillingssiden for passordbehandling for å administrere de synkroniserte passordene dine på nettet.</translation>
 <translation id="5055518462594137986">Husk dette valget for alle lignende linker.</translation>
 <translation id="5061188462607594407">Sikre <ph name="PHONE_TYPE" />-enheten din for å fortsette</translation>
+<translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{Denne mappen inneholder et bokmerke. Er du sikker på at du vil slette den?}other{Denne mappen inneholder # bokmerker. Er du sikker på at du vil slette den?}}</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5062930723426326933">Påloggingen mislyktes. Koble til Internett og prøv på nytt.</translation>
 <translation id="5063180925553000800">Ny personlig kode:</translation>
@@ -2977,6 +2976,12 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5255315797444241226">Passordet du skrev inn, er feil.</translation>
 <translation id="5258266922137542658">PPAPI (i prosess)</translation>
 <translation id="5260508466980570042">Beklager, e-postadressen eller passordet kan ikke verifiseres. Prøv på nytt.</translation>
+<translation id="5262311848634918433"><ph name="MARKUP_1" />Tilgang til filer uansett hvor du er, til og med uten nett.<ph name="MARKUP_2" />
+        Filer i Google Disk er oppdatert og tilgjengelige fra hvilken som helst enhet.<ph name="MARKUP_3" />
+        <ph name="MARKUP_4" />Hold filene dine trygge.<ph name="MARKUP_5" />
+        Uansett hva som skjer med enheten din, er filene dine trygt lagret i Google Disk.<ph name="MARKUP_6" />
+        <ph name="MARKUP_7" />Del, skap og samarbeid<ph name="MARKUP_8" />
+        med andre om filer – alt på ett sted.<ph name="MARKUP_9" /></translation>
 <translation id="5264252276333215551">Koble til Internett for å starte appen din i kioskmodus.</translation>
 <translation id="5265562206369321422">Frakoblet i mer enn én uke</translation>
 <translation id="5266113311903163739">Feil ved importering av sertifiseringsinstans</translation>
@@ -3133,6 +3138,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="546411240573627095">Talltastaturstil</translation>
 <translation id="5464632865477611176">Kjør denne gangen</translation>
 <translation id="5464696796438641524">Polsk tastatur</translation>
+<translation id="5464963058204944785">Dette kan ta opptil ett minutt …</translation>
 <translation id="5465122519792752163">Nepali-tastatur (InScript)</translation>
 <translation id="5465662442746197494">Trenger du hjelp?</translation>
 <translation id="5469868506864199649">Italiensk</translation>
@@ -3189,7 +3195,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5534520101572674276">Beregner størrelse</translation>
 <translation id="5535080075879535355">Omgå proxy-tjener for Captive Portal-autorisasjon</translation>
 <translation id="5537725057119320332">Cast</translation>
-<translation id="5538092967727216836">Last inn rammen på nytt</translation>
 <translation id="5542132724887566711">Profil</translation>
 <translation id="5543983818738093899">Sjekker statusen …</translation>
 <translation id="5544363333869861395">Bufre data fra V8-parseren.</translation>
@@ -3288,7 +3293,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="569109051430110155">Oppdag automatisk</translation>
 <translation id="5691596662111998220">Beklager, <ph name="FILE_NAME" /> eksisterer ikke lenger.</translation>
 <translation id="5694501201003948907">Zipper $1 elementer ...</translation>
-<translation id="5695323626817702678">kort</translation>
 <translation id="5697118958262594262">Oppdag viktig innhold som standard</translation>
 <translation id="5699533844376998780">Utvidelsen «<ph name="EXTENSION_NAME" />» har blitt lagt til.</translation>
 <translation id="5701101281789450335">Språk- og inndatainnstillinger</translation>
@@ -3299,6 +3303,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5707185214361380026">Kunne ikke laste inn utvidelse fra:</translation>
 <translation id="5707604204219538797">Neste ord</translation>
 <translation id="5708171344853220004">Microsoft hovednavn</translation>
+<translation id="5709759315267941741">Spill automatisk av videoer med dempet lyd</translation>
 <translation id="5709885306771508267">Klyping for skalering</translation>
 <translation id="5710406368443808765">Beklager. Systemet kunne ikke lagre enhetstoken og -ID.</translation>
 <translation id="5711983031544731014">Kan ikke låse opp. Skriv inn passordet ditt.</translation>
@@ -3550,7 +3555,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6086696275735738422">Tvinger aktivitetslytterne for touchstart, touchmove, mousewheel og wheel (som ikke har bedt om noe annet) til å bli behandlet som passive. Dette ødelegger trykk-/hjulfunksjonaliteten på enkelte nettsider, men er nyttig for å demonstrere de potensielle ytelsesfordelene som kan oppnås ved å bruke passive aktivitetslyttere.</translation>
 <translation id="6086814797483779854">Kjør når brukeren klikker</translation>
 <translation id="6086846494333236931">Installert av administratoren din</translation>
-<translation id="6087960857463881712">Fabelaktig fjes</translation>
+<translation id="6087960857463881712">Fantastisk-fjes</translation>
 <translation id="6089481419520884864">Destiller siden</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Avbryter oppdatering …</translation>
@@ -3958,7 +3963,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6718273304615422081">Zipper ...</translation>
 <translation id="671928215901716392">Lås skjerm</translation>
 <translation id="6721972322305477112">&amp;Fil</translation>
-<translation id="672213144943476270">Du må låse opp profilen din før du surfer som gjest.</translation>
+<translation id="672213144943476270">Du må låse opp profilen din før du kan surfe som gjest.</translation>
 <translation id="6722177191671650307">BLE-annonsering i Chrome-apper</translation>
 <translation id="6723354935081862304">Skriv ut til Google Dokumenter og andre destinasjoner i nettskyen. <ph name="BEGIN_LINK" />Logg på<ph name="END_LINK" /> for å skrive ut med Google Cloud Print.</translation>
 <translation id="6723661294526996303">Importer bokmerker og innstillinger</translation>
@@ -4004,7 +4009,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6798954102094737107">Programtillegg: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Åpne alle bokmerker i &amp;nytt vindu</translation>
-<translation id="6805542829187142700">Slå på enhetsinnstillingene for automatisk påvisning av tidssone.</translation>
 <translation id="6805647936811177813">Logg på <ph name="TOKEN_NAME" /> for å importere klientsertifikat fra <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Aktiver RLZ-sporing for <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6807889908376551050">Vis alle</translation>
@@ -4365,7 +4369,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7339785458027436441">Kontroller staving mens du skriver</translation>
 <translation id="7339898014177206373">Nytt vindu</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> kjører nå i full skjerm.</translation>
-<translation id="7341982465543599097">ekstremt kort</translation>
 <translation id="734303607351427494">Administrer søkemotorer</translation>
 <translation id="7343116142376328522">Ikke gi noen nettsteder tillatelse til å bruke nøkkelgenerering i skjemaer (anbefales)</translation>
 <translation id="7345706641791090287">Bekreft passordet</translation>
@@ -4383,10 +4386,12 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7364796246159120393">Velg fil</translation>
 <translation id="736515969993332243">Skanner etter nettverk.</translation>
 <translation id="7366762109661450129">Si «Ok Google» når skjermen er på og ulåst.</translation>
+<translation id="7366909168761621528">Nettleserdata</translation>
 <translation id="7369521049655330548">Følgende programtillegg er blokkert på denne siden:</translation>
 <translation id="7371490661692457119">Standard panelbredde</translation>
 <translation id="7374461526650987610">Protokollbehandlere</translation>
 <translation id="7375125077091615385">Type:</translation>
+<translation id="7376553024552204454">Fremhev musepekeren når den beveger seg</translation>
 <translation id="7377169924702866686">Caps Lock er på.</translation>
 <translation id="7378627244592794276">Nei takk</translation>
 <translation id="7378810950367401542">/</translation>
@@ -4607,7 +4612,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7705600705238488017">Vil du heller <ph name="BEGIN_LINK" />ta en titt på Chrome Nettmarked<ph name="END_LINK" />?</translation>
 <translation id="7706319470528945664">Portugisisk tastatur</translation>
-<translation id="7707053413911715161">Slå på uten feltfremheving</translation>
 <translation id="7709152031285164251">Mislykket – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7709980197120276510">Ved å klikke på «Fortsett» godtar du <ph name="LEGAL_DOC_LINK_TEXT_1" />, <ph name="LEGAL_DOC_LINK_TEXT_2" />, <ph name="LEGAL_DOC_LINK_TEXT_3" />, <ph name="LEGAL_DOC_LINK_TEXT_4" /> og <ph name="LEGAL_DOC_LINK_TEXT_5" />.</translation>
 <translation id="7712140766624186755">Spør (iht. retningslinjer)</translation>
@@ -4725,7 +4729,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7881969471599061635">Slå av undertekstene</translation>
 <translation id="7884988936047469945">Eksperimentelle tilgjengelighetsfunksjoner</translation>
 <translation id="7885253890047913815">Nylige destinasjoner</translation>
-<translation id="7885283703487484916">meget kort</translation>
 <translation id="7887192723714330082">Svar «Ok Google» når skjermen er på og ulåst</translation>
 <translation id="7887334752153342268">Dupliser</translation>
 <translation id="7887864092952184874">En Bluetooth-mus er tilkoblet</translation>
@@ -5049,7 +5052,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8327201046748601585">{COUNT,plural, =1{1 til}other{# til}}</translation>
 <translation id="8329978297633540474">Ren tekst</translation>
 <translation id="8330907072332288839">Forslag ved rulling</translation>
-<translation id="8332473670738981565">Slå på svak MemoryCache.</translation>
+<translation id="8332473670738981565">Slå på svak minnebuffer (MemoryCache).</translation>
 <translation id="8335587457941836791">Løsne fra hyllen</translation>
 <translation id="8335971947739877923">Eksporter</translation>
 <translation id="8336153091935557858">I går kl. <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -5208,7 +5211,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="857779305329188634">Aktiver eksperimentell protokollstøtte for QUIC.</translation>
 <translation id="8579285237314169903">Synkroniserer <ph name="NUMBER_OF_FILES" /> elementer …</translation>
 <translation id="8579549103199280730">Spør som standard</translation>
-<translation id="8580634710208701824">Last inn rammen på nytt</translation>
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Trykk for å gå fremover, eller trykk på kontekstmenyen for å se loggen</translation>
 <translation id="8584280235376696778">&amp;Åpne video i ny fane</translation>
@@ -5216,6 +5218,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8590375307970699841">Valg av automatiske oppdateringer</translation>
 <translation id="8592125506633137593">Isolering av toppdokumenter</translation>
 <translation id="8594787581355215556">Pålogget som <ph name="USER_EMAIL_ADDRESS" />. Administrer de synkroniserte dataene dine i <ph name="BEGIN_LINK" />Google Oversikt<ph name="END_LINK" />.</translation>
+<translation id="8595925260712451473">Skriv inn tilbakemeldingen din her.</translation>
 <translation id="8596540852772265699">Egendefinerte filer</translation>
 <translation id="8596785155158796745">Mikrofonen er ikke tilgjengelig for øyeblikket. <ph name="BEGIN_LINK" />Sjekk mikrofoninnstillingene.<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">Områdeformat:</translation>
@@ -5285,6 +5288,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8687485617085920635">Neste vindu</translation>
 <translation id="8688579245973331962">Ser du ikke navnet ditt?</translation>
 <translation id="8688644143607459122">Ved å klikke «Fortsett» samtykker du i å bruke Google Payments. For å beskytte deg mot svindel blir informasjon om datamaskinen din (deriblant hvor den befinner seg) delt med Google Payments.</translation>
+<translation id="8688672835843460752">Tilgjengelig</translation>
 <translation id="8689102680909215706">Utvidelsen <ph name="EXTENSION_NAME" /> ble installert eksternt.</translation>
 <translation id="868926756781121513">Deling av skrivebord med fanekilde</translation>
 <translation id="8689341121182997459">Utløper:</translation>
@@ -5307,6 +5311,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8708671767545720562">Mer informasjon</translation>
 <translation id="8711402221661888347">Burger</translation>
 <translation id="8711453844311572806">Når telefonen er låst opp og i nærheten, klikker du bare for å få tilgang. Ellers kommer du til å se et låst-ikon, og du må skrive inn passordet ditt.</translation>
+<translation id="8712637175834984815">Skjønner</translation>
 <translation id="8713570323158206935">Send <ph name="BEGIN_LINK1" />systeminformasjon<ph name="END_LINK1" /></translation>
 <translation id="8713979477561846077">Aktivér autokorrektur for fysisk, amerikansk tastatur, som kan gi forslag mens det skrives på det fysiske tastaturet.</translation>
 <translation id="871476437400413057">Google-lagrede passord</translation>
@@ -5409,6 +5414,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8860454412039442620">Excel-regneark</translation>
 <translation id="8863489667196658337">Slår på det nye systemet for oppretting av bokmerkeapper.</translation>
 <translation id="8866441758832353668">Rulleforankring</translation>
+<translation id="8868626022555786497">I bruk</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8870413625673593573">Nylig lukket</translation>
 <translation id="8871551568777368300">Festet av administratoren</translation>
@@ -5647,6 +5653,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="9214520840402538427">Beklager. Oppstarten av attributtene for installasjonstid er tidsavbrutt. Ta kontakt med brukerstøtterepresentanten din.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">«<ph name="EXTENSION_NAME" />» ble lagt til</translation>
+<translation id="9215934040295798075">Velg bakgrunn</translation>
 <translation id="9218430445555521422">Bruk som standard</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="9220525904950070496">Fjern konto</translation>
@@ -5680,6 +5687,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="971058943242239041">Aktiverer bruk av HTML-elementene «window-controls» i pakkede apper.</translation>
 <translation id="971774202801778802">Bokmerkenettadresse</translation>
 <translation id="973473557718930265">Avslutt</translation>
+<translation id="97534916655989966">Tillat autoavspilling av videoer med dempet lyd.</translation>
 <translation id="978146274692397928">Opprinnelig tegnsettingsbredde er satt til Full</translation>
 <translation id="981121421437150478">Uten nett</translation>
 <translation id="984870422930397199">Slår på merking av sider for bruk uten nett på nye faner. Bare relevant hvis sider for bruk uten nett er slått på.</translation>

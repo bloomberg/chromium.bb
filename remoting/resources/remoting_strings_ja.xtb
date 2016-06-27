@@ -130,6 +130,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4156740505453712750">このパソコンへのアクセスを保護するには、<ph name="BOLD_START" />6 桁以上<ph name="BOLD_END" />の PIN を選択してください。この PIN は別の場所から接続するときに必要となります。</translation>
 <translation id="4176825807642096119">アクセス コード</translation>
 <translation id="4207623512727273241">続行する前にインストーラを実行してください。</translation>
+<translation id="4227991223508142681">ユーティリティ プロビジョニングをホストします</translation>
 <translation id="4240294130679914010">Chromoting ホスト アンインストーラ</translation>
 <translation id="4277463233460010382">このパソコンは、1 つ以上のクライアントが PIN の入力なしで接続できるように設定されています。</translation>
 <translation id="4277736576214464567">アクセス コードが無効です。もう一度入力してください。</translation>

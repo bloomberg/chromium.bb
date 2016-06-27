@@ -30,6 +30,7 @@
 <translation id="1881322772814446296">Jūs pierakstāties ar pārvaldītu kontu, kura administrators var kontrolēt jūsu profilu. Jūsu Chromium dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi, tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet šos datus saistīt ar citu kontu. Ja vēlaties, varat izveidot jaunu profilu, lai atsevišķi glabātu Chromium datus. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nereaģē. Vai restartēt to tūlīt?</translation>
 <translation id="1967743265616885482">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Chromium.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts vismaz $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}zero{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti vismaz $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}one{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts vismaz $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}other{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti vismaz $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}}</translation>
 <translation id="2077129598763517140">Izmantot aparatūras paātrināšanas režīmu, kad tas ir pieejams</translation>
 <translation id="2103655854491303969">Chromium lietotņu palaidēja darbība tiek pārtraukta.</translation>
 <translation id="2117181891440368863">Chromium verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza Certificate Transparency informāciju, taču tā nebija derīga.</translation>
@@ -81,6 +82,7 @@
 <translation id="3549345495227188780">Darba sākšana operētājsistēmā Chromium OS</translation>
 <translation id="3582788516608077514">Notiek Chromium atjaunināšana...</translation>
 <translation id="358997566136285270">Chromium logotips</translation>
+<translation id="3645040538872234961">Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti jūsu pārlūkošanas dati. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.</translation>
 <translation id="3738139272394829648">Meklēšana pieskaroties</translation>
 <translation id="3748537968684000502">Jūs skatāt drošu Chromium lapu.</translation>
 <translation id="378917192836375108">Chromium ļauj jums noklikšķināt uz tālruņa numura un zvanīt uz to pakalpojumā Skype!</translation>
@@ -105,6 +107,7 @@
 <translation id="4567424176335768812">Jūs esat pierakstījies kā <ph name="USER_EMAIL_ADDRESS" />. Tagad varat piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="457845228957001925">Svarīga informācija par jūsu datiem operētājsistēmā Chromium</translation>
 <translation id="459535195905078186">Chromium lietotnes</translation>
+<translation id="4621240073146040695">Atjaunināšana ir gandrīz pabeigta. Lai pabeigtu atjaunināšanu, atkārtoti palaidiet pārlūku Chromium.</translation>
 <translation id="4677944499843243528">Šķiet, ka profils tiek izmantots citā Chromium procesā (<ph name="PROCESS_ID" />) citā datorā (<ph name="HOST_NAME" />). Lai profils netiktu bojāts, pārlūkā Chromium tas ir bloķēts. Ja esat pārliecināts, ka šis profils netiek izmantots citos procesos, varat to atbloķēt un restartēt pārlūku Chromium.</translation>
 <translation id="4743926867934016338">Pieņemt un meklēt</translation>
 <translation id="4888717733111232871">Ienākošo savienojumu kārtula pārlūkam Chromium, lai atļautu mDNS datplūsmu.</translation>
@@ -129,10 +132,12 @@
 <translation id="5859963531214966875">Nākamajās Chromium versijās vairs netiks atbalstīta šī Linux sistēma.</translation>
 <translation id="5862307444128926510">Laipni lūdzam pārlūkā Chromium!</translation>
 <translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
+<translation id="5906655207909574370">Atjaunināšana ir gandrīz pabeigta. Restartējiet ierīci, lai pabeigtu atjaunināšanu.</translation>
 <translation id="5942225298871134766">Chromium saglabās šo paroli, izmantojot sistēmu <ph name="SAVED_PASSWORD_LINK" />, un atcerēsies to nākamajā reizē, kad jums tā būs nepieciešama.</translation>
 <translation id="5942520288919337908">Paplašinājums <ph name="EXTENSION_NAME" /> ir pievienots pārlūkam Chromium.</translation>
 <translation id="59625444380784159">Izmantojot datus no savas kontaktinformācijas, pakalpojumā Chromium varat ērtāk aizpildīt veidlapas.</translation>
 <translation id="6055895534982063517">Ir pieejama jauna Chromium versija, un tā ir ātrāka nekā jebkad agrāk.</translation>
+<translation id="6077017812234345835">Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti vismaz <ph name="TOTAL_COUNT" /> vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.</translation>
 <translation id="608189560609172163">Chromium nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
 <translation id="6212496753309875659">Šim datoram jau ir jaunākā Chromium versija. Ja programmatūra nedarbojas, atinstalējiet pārlūku Chromium un mēģiniet vēlreiz.</translation>
 <translation id="6248213926982192922">Padarīt Chromium par noklusējuma pārlūku</translation>
@@ -166,6 +171,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="705851970750939768">Atjaunināt Chromium</translation>
 <translation id="7064610482057367130">Netika atrasta neviena Chromium instalācija, kuru varētu atjaunināt.</translation>
 <translation id="7066436765290594559">Chromium OS nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}zero{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}one{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}other{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}}</translation>
 <translation id="7138853919861947730">Lai uzlabotu pārlūkošanu, Chromium var izmantot tīmekļa pakalpojumus.</translation>
 <translation id="7162152143154757523">Chromium var efektīvāk labot pareizrakstības kļūdas, nosūtot pārlūkā rakstīto uz Google serveriem un tādējādi ļaujot izmantot to pašu pareizrakstības pārbaudes tehnoloģiju, kas tiek izmantota pakalpojumā Google meklēšana.</translation>
 <translation id="7178626992616222740">Chromium verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza Certificate Transparency informāciju, taču Chromium neatpazina nevienu no Certificate Transparency žurnāliem.</translation>

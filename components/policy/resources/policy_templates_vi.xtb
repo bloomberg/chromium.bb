@@ -21,18 +21,6 @@
 
       Nếu chính sách này không được thiết lập, cài đặt này sẽ được bật nhưng người dùng sẽ có thể thay đổi cài đặt đó.</translation>
 <translation id="1062011392452772310">Cho phép chứng thực từ xa cho thiết bị</translation>
-<translation id="108735515923160176">Định cấu hình loại trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn trang chủ. Trang chủ có thể được đặt là URL bạn chỉ định hoặc đặt là Trang tab mới.
-
-          Nếu bạn bật cài đặt này, Trang tab mới luôn được sử dụng cho trang chủ và vị trí URL trang chủ được bỏ qua.
-
-          Nếu bạn tắt cài đặt này, trang chủ của người dùng sẽ không bao giờ là Trang tab mới trừ khi URL của trang này được đặt là 'chrome://newtab'.
-
-          Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi loại trang chủ của họ trong <ph name="PRODUCT_NAME" />.
-
-          Không đặt chính sách này sẽ cho phép người dùng tự chọn xem có sử dụng trang tab mới làm trang chủ hay không.
-
-          Chính sách này không áp dụng trên các phiên bản Windows không tham gia
-          vào miền Active Directory.</translation>
 <translation id="1090892140761957285">URL để xác thực mã thông báo xác thực ứng dụng truy cập từ xa.
 
           Nếu chính sách này được đặt, máy chủ truy cập từ xa sẽ sử dụng URL này để xác thực mã thông báo xác thực từ ứng dụng truy cập từ xa nhằm chấp nhận kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenUrl.
@@ -40,6 +28,13 @@
           Tính năng này hiện bị vô hiệu hóa bên máy chủ.</translation>
 <translation id="1096105751829466145">Nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1103860406762205913">Cho phép đăng nhập dựa trên web cũ</translation>
+<translation id="1128903365609589950">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp được lưu trữ trong bộ nhớ cache trên đĩa.
+
+      Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng có chỉ định cờ '--disk-cache-dir' hay không. Để tránh mất dữ liệu hoặc các lỗi không mong đợi khác, không nên đặt chính sách này thành thư mục gốc của ổ đĩa hoặc thành thư mục dùng cho các mục đích khác, vì <ph name="PRODUCT_NAME" /> quản lý các nội dung của nó.
+
+      Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
+
+      Nếu chính sách này không được đặt thì thư mục bộ nhớ cache mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--disk-cache-dir'.</translation>
 <translation id="1138294736309071213">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Xác định khoảng thời gian trước khi trình bảo vệ màn hình hiển thị trên màn hình đăng nhập của các thiết bị ở chế độ bán lẻ.
@@ -193,15 +188,6 @@
       Nếu cài đặt này bị vô hiệu hoặc không được đặt, người dùng sẽ được yêu cầu cho phép chạy plugin yêu cầu ủy quyền. Đây là những plugin có thể ảnh hưởng đến bảo mật.</translation>
 <translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình chạy</translation>
 <translation id="1808715480127969042">Chặn cookie trên các trang web này</translation>
-<translation id="1811270320106005269">Bật khóa khi thiết bị <ph name="PRODUCT_OS_NAME" /> không hoạt động hoặc bị tạm ngừng.
-
-      Nếu bạn bật cài đặt này, người dùng sẽ được yêu cầu cung cấp mật khẩu để mở khóa thiết bị khỏi chế độ ngủ.
-
-      Nếu bạn tắt cài đặt này, người dùng sẽ không được yêu cầu cung cấp mật khẩu để mở khóa thiết bị khỏi chế độ ngủ.
-
-      Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè.
-
-      Nếu chính sách này không được đặt, người dùng có thể chọn liệu họ có muốn được yêu cầu cung cấp mật khẩu để mở khóa thiết bị hay không.</translation>
 <translation id="1827523283178827583">Sử dụng máy chủ proxy cố định</translation>
 <translation id="1843117931376765605">Chính sách tốc độ làm mới cho người dùng</translation>
 <translation id="1847960418907100918">Chỉ định tham số được dùng khi thực hiện tìm kiếm tức thì với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên, tham số đó sẽ được thay thế bằng dữ liệu cụm từ tìm kiếm thực.
@@ -345,6 +331,7 @@
 <translation id="2337466621458842053">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép hiển thị hình ảnh.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
+<translation id="2366415278352956652">Bật truyền</translation>
 <translation id="2371309782685318247">Chỉ định khoảng thời gian tính bằng mili giây mà trong khoảng đó dịch vụ quản lý thiết bị sẽ được truy vấn về thông tin chính sách người dùng.
 
       Việc đặt chính sách này sẽ ghi đè giá trị mặc định 3 giờ. Các giá trị hợp lệ cho chính sách này nằm trong khoảng từ 1800000 (30 phút) tới 86400000 (1 ngày). Mọi giá trị không nằm trong khoảng này sẽ được gắn với ranh giới tương ứng.
@@ -501,9 +488,6 @@
 <translation id="2623014935069176671">Đợi hoạt động người dùng đầu tiên</translation>
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Bật tính năng phản hồi bằng giọng nói</translation>
-<translation id="2646290749315461919">Cho phép bạn đặt liệu các trang web có được phép theo dõi vị trí thực của người dùng hay không. Theo dõi vị trí thực của người dùng có thể được cho phép theo mặc định, từ chối theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web yêu cầu cung cấp vị trí thực.
-
-          Nếu không thiết lập chính sách này, 'AskGeolocation' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="2650049181907741121">Hành động sẽ thực hiện khi người dùng đóng nắp</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
 <translation id="267596348720209223">Chỉ định các mã hóa ký tự được nhà cung cấp dịch vụ tìm kiếm hỗ trợ. Mã hóa là các tên trang mã như UTF-8, GB2312  và ISO-8859-1. Các mã này được thử theo thứ tự cung cấp.
@@ -740,20 +724,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả trang web từ chính sách 'DefaultKeygenSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.</translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
-<translation id="3398137877608138703">Cho phép hoặc từ chối quay video.
-
-      Nếu được bật hoặc không được định cấu hình (mặc định), người dùng sẽ
-      được nhắc cho phép truy cập quay video trừ các URL được định cấu hình
-      trong danh sách VideoCaptureAllowedUrls sẽ được cấp quyền truy cập mà
-      không cần nhắc. Ứng dụng ARC có thể truy cập máy ảnh nếu được
-      cho phép.
-
-      Khi chính sách này được tắt, người dùng sẽ không bao giờ bị nhắc và
-      quay video chỉ khả dụng với các URL đã được định cấu hình trong.
-      VideoCaptureAllowedUrls. Ứng dụng ARC không thể truy cập máy ảnh.
-
-      Bên ngoài ứng dụng ARC, chính sách này ảnh hưởng đến tất cả các loại
-      thiết bị quay video chứ không chỉ máy ảnh tích hợp sẵn.</translation>
 <translation id="3417418267404583991">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ bật tính năng đăng nhập với tư cách khách. Các đăng nhập với tư cách khách là các phiên người dùng ẩn danh và không yêu cầu mật khẩu.
 
       Nếu chính sách này được đặt thành sai, <ph name="PRODUCT_OS_NAME" /> sẽ không cho phép bắt đầu phiên khách.</translation>
@@ -1026,6 +996,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4449545651113180484">Xoay màn hình 270 độ theo chiều kim đồng hồ</translation>
 <translation id="4467952432486360968">Chặn cookie của bên thứ ba</translation>
 <translation id="4474167089968829729">Bật lưu mật khẩu cho trình quản lý mật khẩu</translation>
+<translation id="447686899376429408">Nếu tùy chọn này được đặt là true hoặc không được đặt, thì người dùng có thể truyền tab, trang web hoặc màn hình từ trình duyệt. Nếu được đặt là false, tùy chọn này sẽ bị vô hiệu hóa.</translation>
 <translation id="4480694116501920047">Buộc Tìm kiếm an toàn</translation>
 <translation id="4482640907922304445">Hiển thị nút Trang chủ trên thanh công cụ của <ph name="PRODUCT_NAME" />.
 
@@ -1107,13 +1078,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách
           Nếu không đặt chính sách này, con trỏ lớn bị tắt ngay từ đầu nhưng người dùng có thể bật tính năng này bất cứ lúc nào.</translation>
 <translation id="4807950475297505572">Người dùng gần đây ít sử dụng nhất sẽ bị xóa cho tới khi có đủ dung lượng trống</translation>
-<translation id="480987484799365700">Nếu đặt ở trạng thái bật, chính sách này sẽ buộc chuyển cấu hình sang chế độ tạm thời. Nếu chính sách này được chỉ định là chính sách OS (ví dụ: GPO trên Windows) thì chính sách đó sẽ áp dụng cho mọi cấu hình trên hệ thống; nếu chính sách được đặt thành chính sách Đám mây thì chính sách đó sẽ chỉ áp dụng cho cấu hình đã đăng nhập bằng tài khoản được quản lý.
-
-      Trong chế độ này, dữ liệu cấu hình chỉ được duy trì trên đĩa trong thời lượng phiên người dùng. Các tính năng như lịch sử trình duyệt, tiện ích và dữ liệu của chúng, các dữ liệu web như cookie và cơ sở dữ liệu web sẽ không được lưu giữ sau khi đóng trình duyệt. Tuy nhiên, điều này không ngăn người dùng tải bất kỳ dữ liệu nào xuống đĩa theo cách thủ công, lưu trang hoặc in trang.
-
-      Nếu người dùng đã bật đồng bộ hóa thì toàn bộ dữ liệu này sẽ được lưu giữ trong cấu hình đồng bộ hóa của họ giống như các cấu hình thông thường. Chế độ ẩn danh cũng khả dụng nếu không bị tắt rõ ràng theo chính sách.
-
-      Nếu chính sách được đặt ở trạng thái tắt hoặc không được đặt, việc đăng nhập sẽ dẫn tới cấu hình thông thường.</translation>
 <translation id="4816674326202173458">Cho phép người dùng doanh nghiệp trở thành người dùng vừa chính vừa phụ  (Hành vi mặc định cho người dùng không được quản lý)</translation>
 <translation id="4826326557828204741">Tác vụ sẽ thực hiện khi đạt độ trễ không hoạt động trong khi chạy bằng nguồn pin</translation>
 <translation id="4834526953114077364">Người dùng gần đây ít sử dụng nhất đã không đăng nhập trong 3 tháng qua và sẽ bị xóa cho tới khi đủ dung lượng trống</translation>
@@ -1212,32 +1176,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu chính sách này chưa được thiết lập <ph name="PRODUCT_NAME" /> sẽ tải tất cả máy chủ nhắn tin gốc đã cài đặt.</translation>
 <translation id="5290940294294002042">Chỉ định danh sách plugin mà người dùng có thể bật hoặc tắt</translation>
-<translation id="5298412045697677971">Định cấu hình hình đại diện của người dùng.
-
-      Chính sách này cho phép bạn định cấu hình hình đại diện cho người dùng trên màn hình đăng nhập. Chính sách được thiết lập bằng cách xác định URL mà từ đó <ph name="PRODUCT_OS_NAME" /> có thể tải xuống hình đại diện và một hàm băm mật mã được sử dụng để xác minh tính toàn vẹn của nội dung tải xuống. Hình ảnh phải ở định dạng JPEG, kích thước ảnh không được vượt quá 512kB. URL phải truy cập được mà không cần bất kỳ xác thực nào.
-
-      Hình đại diện được tải xuống và lưu trong bộ nhớ cache. Hình sẽ được tải xuống lại mỗi khi URL hoặc hàm băm thay đổi.
-
-      Chính sách này phải được xác định dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON, theo lược đồ sau:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL mà từ đó có thể tải xuống hình đại diện.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hàm băm SHA-256 của hình đại diện.",
-            "type": "string"
-          }
-        }
-      }
-
-      Nếu chính sách này được thiết lập, <ph name="PRODUCT_OS_NAME" /> sẽ tải xuống và sử dụng hình đại diện.
-
-      Nếu bạn thiết lập chính sách này, người dùng không thể thay đổi hay ghi đè hình đại diện.
-
-      Nếu chính sách này không được thiết lập, người dùng có thể chọn hình đại diện đại diện cho chính họ trên màn hình đăng nhập.</translation>
 <translation id="5302612588919538756">Chính sách này không được dùng nữa, thay vào đó hãy cân nhắc sử dụng SyncDisabled.
 
       Cho phép người dùng đăng nhập vào <ph name="PRODUCT_NAME" />.
@@ -1539,15 +1477,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn bật cài đặt này và nhập một cổng không chuẩn (tức là một cổng không phải là 80 hoặc 443), cổng này sẽ được bao gồm trong Kerberos SPN được tạo.
 
           Nếu bạn tắt cài đặt này, Kerberos SPN được tạo sẽ không bao gồm cổng trong bất kỳ trường hợp nào.</translation>
-<translation id="6279809962528392889">Chỉ định xem cookie xác thực do SAML IdP đặt trong khi đăng nhập có nên được chuyển tới hồ sơ của người dùng không.
-
-      Khi người dùng xác thực qua SAML IdP trong khi đăng nhập, các cookie do IdP đặt được ghi vào hồ sơ tạm thời trước tiên. Các cookie này có thể được chuyển tới hồ sơ của người dùng để chuyển tiếp trạng thái xác thực.
-
-      Khi chính sách này được đặt thành true, cookie do IdP đặt được chuyển tới hồ sơ của người dùng mỗi khi họ xác thực với SAML IdP trong khi đăng nhập.
-
-      Khi chính sách này được đặt thành false hoặc không được đặt, cookie do IdP đặt chỉ được chuyển tới hồ sơ của người dùng trong lần đăng nhập đầu tiên của họ trên thiết bị.
-
-      Chính sách này chỉ ảnh hưởng đến người dùng có miền khớp với miền đăng ký của thiết bị. Đối với tất cả người dùng khác, cookie do IdP đặt chỉ được chuyển tới hồ sơ của người dùng trong lần đăng nhập đầu tiên của họ trên thiết bị.</translation>
 <translation id="6281043242780654992">Định cấu hình chính sách cho Nhắn tin gốc. Máy chủ nhắn tin gốc được đưa vào danh sách cấm sẽ không được phép trừ khi chúng được đưa vào danh sách cho phép.</translation>
 <translation id="6282799760374509080">Cho phép hoặc từ chối ghi âm</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1751,6 +1680,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="7003746348783715221">Tùy chọn <ph name="PRODUCT_NAME" /></translation>
 <translation id="7006788746334555276">Cài đặt nội dung</translation>
+<translation id="7007671350884342624">Định cấu hình thư mục <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ dữ liệu người dùng.
+
+      Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng có chỉ định cờ '--user-data-dir' hay không. Để tránh mất dữ liệu hoặc các lỗi không mong đợi khác, không nên đặt chính sách này thành thư mục gốc của ổ đĩa hoặc thành thư mục cho các mục đích khác, vì <ph name="PRODUCT_NAME" /> quản lý các nội dung của nó.
+
+      Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
+
+      Nếu chính sách này không được đặt thì đường dẫn hồ sơ mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--user-data-dir'.</translation>
 <translation id="7027785306666625591">Định cấu hình việc quản lý nguồn trong <ph name="PRODUCT_OS_NAME" />.
 
       Những chính sách này cho phép bạn định cấu hình cách <ph name="PRODUCT_OS_NAME" /> hoạt động khi người dùng duy trì chế độ rảnh trong một khoảng thời gian.</translation>
@@ -1769,16 +1705,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="706669471845501145">Cho phép các trang web hiển thị thông báo trên màn hình</translation>
 <translation id="7079519252486108041">Chặn cửa sổ bật lên trên các trang web này</translation>
 <translation id="7091198954851103976">Luôn chạy plugin yêu cầu ủy quyền</translation>
-<translation id="7109916642577279530">Cho phép hoặc từ chối ghi âm.
-
-      Nếu được bật hoặc không được định cấu hình (mặc định), người dùng sẽ
-      được nhắc cho phép truy cập ghi âm ngoại trừ các URL được cấu hình trong
-      danh sách AudioCaptureAllowedUrls sẽ được cấp quyền truy cập mà không hiển thị lời nhắc.
-
-      Khi tắt chính sách này, người dùng sẽ không bao giờ được nhắc và
-      ghi âm chỉ khả dụng đối với các URL được định cấu hình trong AudioCaptureAllowedUrls.
-
-      Chính sách này ảnh hưởng đến tất cả các loại thiết bị thu âm, không chỉ micrô được tích hợp sẵn.</translation>
 <translation id="7115494316187648452">Xác định xem liệu có khởi động quá trình <ph name="PRODUCT_NAME" /> khi đăng nhập hệ điều hành và tiếp tục chạy khi cửa sổ trình duyệt cuối cùng đóng hay không, để cho phép các ứng dụng nền và phiên duyệt web hiện tại vẫn hiện hoạt, bao gồm bất kỳ cookie phiên nào. Quá trình nền hiển thị một biểu tượng trong khay hệ thống và luôn có thể được đóng từ đó.
 
       Nếu chính sách này được đặt thành True thì chế độ nền sẽ được bật và người dùng không thể kiểm soát chế độ này trong cài đặt trình duyệt.
@@ -2151,18 +2077,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không thiết lập chính sách này, sẽ không có ngoại lệ nào cho danh sách đen từ chính sách 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Cho phép người dùng doanh nghiệp trở thành người dùng chính duy nhất có nhiều hồ sơ (Hành vi mặc định cho người dùng do doanh nghiệp quản lý)</translation>
-<translation id="8191318459035150777">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cấu hình đó.
-
-          Trang chủ là trang bạn có thể mở bằng nút Home. Trang mở khi khởi động được kiểm soát theo chính sách RestoreOnStartup.
-
-          Có thể đặt loại trang chủ thành URL bạn chỉ định tại đây hoặc thành Trang tab mới. Nếu bạn chọn Trang tab mới thì chính sách này sẽ không có hiệu lực.
-
-          Nếu bạn bật cài đặt này, người dùng không thể thay đổi URL trang chủ trong <ph name="PRODUCT_NAME" /> nhưng họ vẫn có thể chọn Trang tab mới làm trang chủ của mình.
-
-          Không đặt chính sách này sẽ cho phép người dùng tự chọn trang chủ của mình nếu HomepageIsNewTabPage cũng không được đặt.
-
-          Chính sách này không áp dụng cho các phiên bản Windows không tham gia vào
-          miền Active Directory.</translation>
 <translation id="8197918588508433925">Chính sách này nêu rõ các tiện ích cụ thể để sử dụng API khóa nền tảng doanh nghiệp chrome.enterprise.platformKeysPrivate.challengeUserKey() để chứng thực từ xa. Các tiện ích phải được thêm vào danh sách này để sử dụng API.
 
           Nếu tiện ích không có trong danh sách hoặc danh sách không được đặt thì cuộc gọi đến API sẽ không thực hiện được với mã lỗi.</translation>
@@ -2175,6 +2089,28 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách không được đặt, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng ID tài khoản email của tài khoản trong thiết bị làm tên hiển thị trên màn hình đăng nhập.
 
       Chính sách này bị bỏ qua đối với các tài khoản người dùng thông thường.</translation>
+<translation id="8279832363395120715">Xóa phần thông tin nhạy cảm trong bảo mật và quyền riêng tư của URL https:// trước khi gửi URL này tới tập lệnh PAC (Tự động định cấu hình proxy) do <ph name="PRODUCT_NAME" /> sử dụng trong quá trình phân giải proxy.
+
+      Nếu cài đặt là True, tính năng bảo mật sẽ được bật và URL https:// sẽ bị
+      xóa trước khi được gửi tới tập lệnh PAC. Theo cách này, tập lệnh PAC
+      không thể xem dữ liệu do kênh được mã hóa bảo vệ ban đầu
+      (chẳng hạn như truy vấn và đường dẫn của URL).
+
+      Nếu cài đặt là False, tính năng bảo mật sẽ bị vô hiệu hóa và tập lệnh PAC
+      sẽ được cấp cho khả năng xem tất cả thành phần của URL https://.
+      Điều này áp dụng cho tất cả tập lệnh PAC bất kể nguồn gốc là gì (bao gồm
+      các tập lệnh được tìm nạp qua chuyển tuyến không an toàn hoặc bị phát
+      hiện là không an toàn thông qua WPAD).
+
+      Cài đặt này được đặt mặc định này là True (tính năng bảo mật được bật),
+      trừ những người dùng doanh nghiệp Chrome OS có cài đặt này hiện được 
+      đặt này là False.
+
+      Chúng tôi đề xuất đặt cài đặt này là True. Lý do duy nhất để đặt cài
+      đặt này thành False là liệu điều đó có gây ra sự cố tương thích
+      với tập lệnh PAC hiện có hay không.
+
+      Chúng tôi mong muốn xóa ghi đè này trong tương lai.</translation>
 <translation id="8285435910062771358">Đã bật kính lúp toàn màn hình</translation>
 <translation id="8294750666104911727">Thông thường các trang có Tương thích với X-UA được đặt thành chrome=1 sẽ được hiển thị trong <ph name="PRODUCT_FRAME_NAME" /> bất kể chính sách 'ChromeFrameRendererSettings'.
 
@@ -2378,13 +2314,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn độ trễ khi không sử dụng.</translation>
 <translation id="891435090623616439">được mã hóa dưới dạng chuỗi JSON, để biết chi tiết hãy xem <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8929359433203547810">Nếu chính sách này được đặt thành false, <ph name="PRODUCT_OS_NAME" /> sẽ tắt Bluetooth và người dùng không thể bật trở lại.
-
-      Nếu chính sách này được đặt thành true hoặc không được đặt, người dùng có thể bật hoặc tắt Bluetooth theo ý muốn.
-
-      Nếu chính sách này được đặt, người dùng không thể thay đổi hoặc ghi đè chính sách.
-
-      Sau khi bật Bluetooth, cần khởi động lại thiết bị để các thay đổi có hiệu lực (không cần khởi động lại thiết bị khi tắt Bluetooth).</translation>
 <translation id="8947415621777543415">Báo cáo vị trí thiết bị</translation>
 <translation id="8951350807133946005">Thiết lập thư mục bộ nhớ cache trên đĩa</translation>
 <translation id="8955719471735800169">Quay lại đầu trang</translation>
@@ -2393,8 +2322,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       vào thiết bị ghi âm sẽ được cấp mà không cần lời nhắc.
 
       LƯU Ý: Cho đến phiên bản 45, chính sách này chỉ được hỗ trợ trong chế độ Kiosk.</translation>
-<translation id="8965758116018152083">Nếu chính sách này được đặt thành chuỗi trống hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ không hiển thị tùy chọn tự động hoàn thành trong luồng đăng nhập của người dùng.
-      Nếu chính sách này được đặt thành chuỗi đại diện cho tên miền, <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị tùy chọn tự động hoàn thành trong lần đăng nhập của người dùng nhằm cho phép người dùng chỉ nhập tên người dùng của mình mà không có phần mở rộng tên miền.  Người dùng có thể ghi đè phần mở rộng tên miền này.</translation>
 <translation id="8970205333161758602">Loại bỏ lời nhắc từ chối <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Bộ tính giờ tự động đăng nhập vào phiên công khai</translation>
 <translation id="8976248126101463034">Cho phép xác thực gnubby cho máy chủ truy cập từ xa</translation>
@@ -2453,11 +2380,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="9187743794267626640">Vô hiệu hóa việc lắp bộ nhớ ngoài</translation>
 <translation id="9197740283131855199">Tỷ lệ phần trăm xác định độ trễ mờ màn hình nếu người dùng hoạt động sau khi màn hình bị làm mờ</translation>
 <translation id="9200828125069750521">Tham số cho URL hình ảnh sử dụng POST</translation>
-<translation id="9203071022800375458">Tắt tính năng chụp ảnh chụp màn hình.
-
-      Nếu được bật, không thể chụp các ảnh chụp màn hình bằng phím tắt hoặc các API tiện ích.
-
-      Nếu bị tắt hoặc không được chỉ định, tính năng chụp ảnh chụp màn hình sẽ được phép.</translation>
 <translation id="922540222991413931">Định cấu hình nguồn cài đặt tiện ích, ứng dụng và tập lệnh người dùng</translation>
 <translation id="924557436754151212">Nhập mật khẩu đã lưu từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="930930237275114205">Thiết lập thư mục dữ liệu người dùng <ph name="PRODUCT_FRAME_NAME" /></translation>

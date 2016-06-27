@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> ütleb:</translation>
 <translation id="1132774398110320017">Chrome'i automaattäite seaded ...</translation>
 <translation id="113770840981343808">Kinnitamiseks sisestage 4-kohaline CVC kaardi esiküljelt</translation>
-<translation id="1146673768181266552">Krahhi ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, arvuti operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="1152921474424827756">Hankige juurdepääs aadressi <ph name="URL" /> <ph name="BEGIN_LINK" />vahemällu salvestatud koopiale<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885">Host <ph name="HOST_NAME" /> sulges ootamatult ühenduse.</translation>

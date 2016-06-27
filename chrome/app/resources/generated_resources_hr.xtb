@@ -69,7 +69,6 @@
 <translation id="1097091804514346906">Prikazuje brojače količine podataka u dijaloškom okviru Brisanje podataka o pregledavanju.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Prijavite se<ph name="END_SIGN_IN_LINK" /> kako biste upravljali web-lokacijama koje ova osoba posjeti i prikazali ih.</translation>
 <translation id="1097658378307015415">Prije nego što se prijavite, uđite kao gost da biste aktivirali mrežu <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">Duga</translation>
 <translation id="1104652314727136854">Omogućuje OS integraciju pridruživanja datoteka za Chromeove aplikacije.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" dodaje ove aplikacije i proširenja za korisnika <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Stop (Zaustavi)</translation>
@@ -457,7 +456,6 @@
 <translation id="161821681072026592">Popuni zaporke prilikom odabira računa</translation>
 <translation id="1618268899808219593">Centar za pomoć</translation>
 <translation id="1620510694547887537">Fotoaparat</translation>
-<translation id="1621207256975573490">Spremi &amp;okvir kao...</translation>
 <translation id="1624026626836496796">To će se dogoditi samo jedanput i vaše vjerodajnice neće biti spremljene.</translation>
 <translation id="1627276047960621195">Deskriptori datoteke</translation>
 <translation id="1628736721748648976">Kodiranje</translation>
@@ -517,6 +515,7 @@
 <translation id="1699274548822076330">Treba se koristiti zajedno s oznakom "trace-upload-url".
         UPOZORENJE: kada je omogućeno, Chrome će zapisivati podatke o izvedbi za svako kretanje i prenijeti ih na URL naveden oznakom "trace-upload-url". Praćenje može uključivati podatke koji otkrivaju identitet, primjerice, naslove i URL-ove web-lokacija koje posjećujete.</translation>
 <translation id="1699395855685456105">Hardverska revizija:</translation>
+<translation id="1700199471143028312">Administrator vam ne dopušta izradu nadziranih korisnika.</translation>
 <translation id="1701062906490865540">Ukloni ovu osobu</translation>
 <translation id="1702534956030472451">zapadni</translation>
 <translation id="1707463636381878959">Dijeli ovu mrežu s drugim korisnicima</translation>
@@ -629,7 +628,6 @@
 <translation id="1891668193654680795">Vjeruj ovom certifikatu za identifikaciju proizvođača softvera.</translation>
 <translation id="189210018541388520">Otvori cijeli zaslon</translation>
 <translation id="1892754076732315533">Pojednostavljeni novi korisnički doživljaj prilikom otvaranja cijelog zaslona koje pokreće stranica ili stanja zaključavanja pokazivača miša.</translation>
-<translation id="1893046049133338222">ARC: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="1893406696975231168">Pogreška u tijeku omogućivanja oblaka</translation>
 <translation id="189358972401248634">Drugi jezici</translation>
 <translation id="1895658205118569222">Isključivanje</translation>
@@ -663,7 +661,6 @@
 <translation id="1937256809970138538">Recite "OK Google" kada zaslon bude uključen i otključan</translation>
 <translation id="1942765061641586207">Razlučivost slike</translation>
 <translation id="1944921356641260203">Pronađeno je ažuriranje</translation>
-<translation id="194731619017190619">Vaša organizacija nije omogućila Android aplikacije za vaš račun. Više informacija zatražite od administratora.</translation>
 <translation id="1947424002851288782">Njemačka tipkovnica</translation>
 <translation id="1950295184970569138">* Fotografija Google profila (učitavanje)</translation>
 <translation id="1951615167417147110">Pomak za jednu stranicu prema gore</translation>
@@ -1042,6 +1039,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2501278716633472235">Natrag</translation>
 <translation id="2501797496290880632">Upišite prečac</translation>
 <translation id="2502441965851148920">Automatska su ažuriranja omogućena. Ručna ažuriranja onemogućio je administrator.</translation>
+<translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Zaslon #}one{Zaslon #}few{Zaslon #}other{Zaslon #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> od <ph name="TOTAL_SIZE" /></translation>
 <translation id="2507649982651274960">Uređaj je uspješno registriran za poslovno upravljanje, ali nije poslao podatke o uređaju i lokaciji. Unesite te podatke ručno putem Admin consolea za taj uređaj.</translation>
 <translation id="2509739495444557741">Nije instaliran nijedan dodatak.</translation>
@@ -1214,7 +1212,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2743387203779672305">Kopiraj u međuspremnik</translation>
 <translation id="2744221223678373668">Dijeljeno</translation>
 <translation id="2745080116229976798">Microsoftova kvalificirana podređenost</translation>
-<translation id="2745576239403924641">Omogući izvođenje Android aplikacija na Chromebooku.</translation>
 <translation id="2747990718031257077">Omogućuje novi dizajn proširenja alatne trake (u razvoju).</translation>
 <translation id="2749756011735116528">Prijava na uslugu <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Uz pravopis provjeri i gramatiku</translation>
@@ -1350,6 +1347,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="289426338439836048">Druga mobilna mreža...</translation>
 <translation id="2894745200702272315">Omogućuje eksperimentalnu verziju značajki otkrivanja pokretača značajke "OK Google" ovisnih o hardveru.</translation>
 <translation id="289695669188700754">ID ključa: <ph name="KEY_ID" /></translation>
+<translation id="2897878306272793870">Jeste li sigurni da želite otvoriti <ph name="TAB_COUNT" /> kartica?</translation>
 <translation id="2902127500170292085">Proširenje <ph name="EXTENSION_NAME" /> nije uspostavilo komunikaciju s tim pisačem. Provjerite je li pisač priključen i pokušajte ponovo.</translation>
 <translation id="2902382079633781842">Dodana je oznaka!</translation>
 <translation id="2902734494705624966">američka (proširena)</translation>
@@ -1505,6 +1503,7 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3101709781009526431">Datum i vrijeme</translation>
 <translation id="3108145564672865299">Zaključavanje usmjerenja zaslona</translation>
 <translation id="3108967419958202225">Odabir...</translation>
+<translation id="310979712355504754">Izbriši sve</translation>
 <translation id="3112378005171663295">Sažmi</translation>
 <translation id="3113551216836192921">Datoteka u privitku prenosi se na Googleove poslužitelje radi uklanjanja pogrešaka.</translation>
 <translation id="3115147772012638511">Čekanje predmemorije...</translation>
@@ -1630,6 +1629,7 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3277710850168074473">Za reprodukciju medijskih elemenata korisnik mora napraviti određeni pokret. Onemogućivanjem te opcije omogućit će se automatska reprodukcija.</translation>
 <translation id="3280237271814976245">Spremi &amp;kao...</translation>
 <translation id="3280431534455935878">Priprema</translation>
+<translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3285322247471302225">Nova &amp;kartica</translation>
 <translation id="3288047731229977326">Proširenja pokrenuta u načinu rada razvojnog programera mogu naštetiti vašem računalu. Ako niste razvojni programer, trebali biste onemogućiti proširenja koja su pokrenuta u načinu rada razvojnog programera radi svoje zaštite.</translation>
 <translation id="3289566588497100676">Unos jednostavnih simbola</translation>
@@ -1795,7 +1795,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3489147694311384940">Podrška za MTP zapisivanje u File System API-ju (i upravitelju datoteka). Operacije brzog uređivanja nisu podržane.</translation>
 <translation id="3489444618744432220">Dopušteno pravilima</translation>
 <translation id="3493881266323043047">Valjanost</translation>
-<translation id="3494444535872870968">Spremi &amp;okvir kao...</translation>
 <translation id="3494768541638400973">Google japanski unos (za japanske tipkovnice)</translation>
 <translation id="3494769164076977169">Pitaj me kad web-lokacija pokuša automatski preuzeti datoteke nakon prve datoteke (preporučeno)</translation>
 <translation id="3495304270784461826">Broj pogrešaka: <ph name="COUNT" />.</translation>
@@ -1816,7 +1815,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Stranice koje se ne uspiju učitati dok preglednik nije povezan s mrežom automatski će se ponovo učitati ako je njihova kartica vidljiva.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Otkaži preuzimanje}one{Otkaži preuzimanja}few{Otkaži preuzimanja}other{Otkaži preuzimanja}}</translation>
 <translation id="3512810056947640266">URL (nije obavezno):</translation>
-<translation id="351486934407749662">Jako duga</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> želi dijeliti sadržaj vašeg zaslona. Odaberite što želite dijeliti.</translation>
 <translation id="3518086201899641494">Obavijesti o obaveznim portalima za autentifikaciju</translation>
 <translation id="3519867315646775981">transliteracija (shalom ← שלום)</translation>
@@ -1877,7 +1875,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Zaporka je spremljena. Toj i svim drugim zaporkama možete pristupiti tako da otvorite <ph name="SAVED_PASSWORDS_LINK" /> u bilo kojem pregledniku.</translation>
 <translation id="3590587280253938212">brzo</translation>
 <translation id="3592260987370335752">&amp;Saznajte više</translation>
-<translation id="3592313833691251126">Omogućuje proširenjima da izrade prozore ploča koji se otvaraju izvan okvira preglednika. Ako ploče nisu omogućene, otvorit će se skočni prozor. Prema zadanim postavkama prihvaćaju se samo proširenja s popisa dopuštenih. Ako je to pravilo omogućeno, prihvaćaju se sva proširenja. Ako je onemogućeno, ploče nisu dopuštene ni za jedno proširenje.</translation>
 <translation id="359283478042092570">Pridružite se</translation>
 <translation id="3593152357631900254">Omogući način Fuzzy-Pinyin</translation>
 <translation id="3593965109698325041">Ograničenja naziva certifikata</translation>
@@ -2214,6 +2211,7 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4075084141581903552">Za <ph name="EMAIL_ADDRESS" /> dostupna je automatska prijava</translation>
 <translation id="4078738236287221428">Agresivno</translation>
 <translation id="408098233265424160">Otkrivanje udaljenosti za Smart Lock</translation>
+<translation id="4081683084140995376">Omogući VR masku za uređaj.</translation>
 <translation id="4081979157059999345">Veza za daljinsko upravljanje zaporkom</translation>
 <translation id="4084682180776658562">Oznaka</translation>
 <translation id="4084835346725913160">Zatvori karticu <ph name="TAB_NAME" /></translation>
@@ -2257,7 +2255,6 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="4120817667028078560">Putanja je predugačka</translation>
 <translation id="4121428309786185360">Ističe</translation>
 <translation id="412730574613779332">Elastični</translation>
-<translation id="4127528900246453928">Stranica <ph name="ORIGIN" /> prikazuje se na cijelom zaslonu.</translation>
 <translation id="4130199216115862831">Zapisnik uređaja</translation>
 <translation id="4130207949184424187">Ovo proširenje promijenilo je stranicu koja se prikazuje prilikom pretraživanja putem višenamjenskog okvira.</translation>
 <translation id="4130750466177569591">Slažem se</translation>
@@ -2359,6 +2356,7 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="4287502004382794929">Nemate dovoljno softverskih licenci za prijavu ovog uređaja. Obratite se prodaji da biste kupili više. Ako smatrate da vam se ova poruka prikazuje pogreškom, obratite se podršci.</translation>
 <translation id="4289300219472526559">Počni govoriti</translation>
 <translation id="4289540628985791613">Pregled</translation>
+<translation id="4291779358799919071">Kapacitet</translation>
 <translation id="4293409159363387562">Svejedno oporavi</translation>
 <translation id="4296575653627536209">Dodaj nadziranog korisnika</translation>
 <translation id="4297391862525234515">Minimiziraj policu na klik</translation>
@@ -2474,7 +2472,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4492190037599258964">Rezultati pretraživanja za upit '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495021739234344583">Odjavi i ponovo pokreni</translation>
 <translation id="4495419450179050807">Ne prikazuj na ovoj stranici</translation>
-<translation id="449680153165689114">Omogući uz isticanje polja</translation>
 <translation id="449782841102640887">Nemoj oporaviti</translation>
 <translation id="4498934959426056365">Generiranje ključeva</translation>
 <translation id="450099669180426158">Ikona uskličnika</translation>
@@ -2579,6 +2576,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4654488276758583406">Vrlo mali</translation>
 <translation id="465499440663162826">Povezivanje s Chrome web-trgovinom nije uspjelo.</translation>
 <translation id="4656293982926141856">Ovo računalo</translation>
+<translation id="4656631038341342120">Omogućuje se VR maska ako je dostupna za uređaj.</translation>
 <translation id="4657031070957997341">Uvijek dopusti dodatke na <ph name="HOST" /></translation>
 <translation id="4663254525753315077">Kada je to moguće, stavlja sadržaj dodatnog pomičnog elementa na složeni sloj radi bržeg pomicanja.</translation>
 <translation id="4664482161435122549">Pogreška pri izvozu PKCS #12</translation>
@@ -2844,6 +2842,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5055309315264875868">Prikažite vezu u postavkama upravitelja zaporki kako biste svojim sinkroniziranim zaporkama upravljali online.</translation>
 <translation id="5055518462594137986">Zapamti moj odabir za sve veze tog tipa.</translation>
 <translation id="5061188462607594407">Zaštitite telefon <ph name="PHONE_TYPE" /> da biste nastavili</translation>
+<translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{Mapa sadrži oznaku. Jeste li sigurni da je želite izbrisati?}one{Mapa sadrži # oznaku. Jeste li sigurni da je želite izbrisati?}few{Mapa sadrži # oznake. Jeste li sigurni da je želite izbrisati?}other{Mapa sadrži # oznaka. Jeste li sigurni da je želite izbrisati?}}</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5062930723426326933">Prijava nije uspjela. Povežite se s internetom i pokušajte ponovo.</translation>
 <translation id="5063180925553000800">Novi PIN:</translation>
@@ -2988,6 +2987,12 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5255315797444241226">Zaporka koju ste unijeli nije točna.</translation>
 <translation id="5258266922137542658">PPAPI (unutar procesa)</translation>
 <translation id="5260508466980570042">Žao nam je, nije bilo moguće potvrditi e-adresu ili zaporku. Pokušajte ponovo.</translation>
+<translation id="5262311848634918433"><ph name="MARKUP_1" />Pristupite datotekama svugdje, čak i kada niste povezani s internetom.<ph name="MARKUP_2" />
+    Datoteke na Google disku ažurirane su i dostupne putem bilo kojeg uređaja.<ph name="MARKUP_3" />
+    <ph name="MARKUP_4" />Čuvajte svoje datoteke na sigurnom.<ph name="MARKUP_5" />
+    Što god da se dogodi s vašim uređajem, vaše su datoteke sigurno pohranjene na Google disku.<ph name="MARKUP_6" />
+    <ph name="MARKUP_7" />Dijelite, stvarajte i surađujte<ph name="MARKUP_8" />
+    na datotekama s drugima i sve to na jednom mjestu.<ph name="MARKUP_9" /></translation>
 <translation id="5264252276333215551">Povežite se s internetom da biste pokrenuli svoju aplikaciju u načinu kioska.</translation>
 <translation id="5265562206369321422">Izvan mreže više od tjedan dana</translation>
 <translation id="5266113311903163739">Pogreška pri uvozu tijela za izdavanje certifikata</translation>
@@ -3144,6 +3149,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="546411240573627095">Stil Numpad</translation>
 <translation id="5464632865477611176">Ovaj put pokreni</translation>
 <translation id="5464696796438641524">Poljska tipkovnica</translation>
+<translation id="5464963058204944785">To može trajati otprilike minutu...</translation>
 <translation id="5465122519792752163">nepalska tipkovnica (InScript)</translation>
 <translation id="5465662442746197494">Trebate pomoć?</translation>
 <translation id="5469868506864199649">Talijanski</translation>
@@ -3200,7 +3206,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5534520101572674276">Veličina izračuna</translation>
 <translation id="5535080075879535355">Zaobiđi proxy za autorizaciju zaštitnog portala</translation>
 <translation id="5537725057119320332">Emitiraj</translation>
-<translation id="5538092967727216836">Ponovo učitaj okvir</translation>
 <translation id="5542132724887566711">Profil</translation>
 <translation id="5543983818738093899">Provjeravanje statusa...</translation>
 <translation id="5544363333869861395">Predmemoriraj podatke raščlanjivača V8.</translation>
@@ -3299,7 +3304,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="569109051430110155">Automatsko otkrivanje</translation>
 <translation id="5691596662111998220">Ups, stavka <ph name="FILE_NAME" /> više ne postoji.</translation>
 <translation id="5694501201003948907">Komprimiranje stavki ($1)...</translation>
-<translation id="5695323626817702678">Kratka</translation>
 <translation id="5697118958262594262">Otkrij važan sadržaj prema zadanim postavkama</translation>
 <translation id="5699533844376998780">Dodano je proširenje "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5701101281789450335">Postavke jezika i unosa...</translation>
@@ -3310,6 +3314,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5707185214361380026">Nije učitano proširenje s lokacije:</translation>
 <translation id="5707604204219538797">Sljedeća riječ</translation>
 <translation id="5708171344853220004">Microsoftov glavni naziv</translation>
+<translation id="5709759315267941741">Automatski reproduciraj zanemarene videozapise</translation>
 <translation id="5709885306771508267">Skaliranje spajanjem prstiju</translation>
 <translation id="5710406368443808765">Ups! Sustav nije uspio pohraniti token i ID uređaja.</translation>
 <translation id="5711983031544731014">Otključavanje nije moguće. Unesite svoju zaporku.</translation>
@@ -3561,7 +3566,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="6086696275735738422">Nameće da se slušatelji događaja pokretanja dodirom, pomicanja dodirom, kotačića miša i kotačića (koji nisu zatražili suprotno) tretiraju kao pasivni. Na nekim web-lokacijama to će poremetiti ponašanje dodira/kotačića, ali je korisno za demonstraciju potencijalnih prednosti usvajanja pasivnih slušatelja događaja što se tiče performansi.</translation>
 <translation id="6086814797483779854">Pokreni na klik</translation>
 <translation id="6086846494333236931">Instalirao vaš administrator</translation>
-<translation id="6087960857463881712">Strašno lice</translation>
+<translation id="6087960857463881712">Oduševljeno lice</translation>
 <translation id="6089481419520884864">Sažmi stranicu</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Otkazivanje ažuriranja...</translation>
@@ -4016,7 +4021,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="6798954102094737107">Dodatak: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Otvaranje svih oznaka u &amp;novom prozoru</translation>
-<translation id="6805542829187142700">Omogućuje pravilo automatskog otkrivanja vremenske zone sustava za uređaje.</translation>
 <translation id="6805647936811177813">Prijavite se u uređaj <ph name="TOKEN_NAME" /> kako biste uvezli certifikat klijenta s <ph name="HOST_NAME" /></translation>
 <translation id="680572642341004180">Omogući praćenje RLZ-a za <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6807889908376551050">Prikaži sve...</translation>
@@ -4375,7 +4379,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7339785458027436441">Provjeravaj pravopis tijekom pisanja</translation>
 <translation id="7339898014177206373">Novi prozor</translation>
 <translation id="7340431621085453413">Stranica <ph name="FULLSCREEN_ORIGIN" /> sada je na cijelom zaslonu.</translation>
-<translation id="7341982465543599097">Iznimno kratka</translation>
 <translation id="734303607351427494">Upravljaj tražilicama...</translation>
 <translation id="7343116142376328522">Nemoj dopustiti nijednoj web-lokaciji upotrebu generiranja ključeva u obrascima (preporučeno)</translation>
 <translation id="7345706641791090287">Potvrdite zaporku</translation>
@@ -4393,10 +4396,12 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7364796246159120393">Odaberi datoteku</translation>
 <translation id="736515969993332243">Skeniranje mreža.</translation>
 <translation id="7366762109661450129">Recite "OK Google" kad je zaslon uključen i otključan.</translation>
+<translation id="7366909168761621528">Podaci o pregledavanju</translation>
 <translation id="7369521049655330548">Na toj su stranici blokirani sljedeći dodaci:</translation>
 <translation id="7371490661692457119">Zadana širina razlomljenog elementa</translation>
 <translation id="7374461526650987610">Rukovatelji protokolima</translation>
 <translation id="7375125077091615385">Vrsta:</translation>
+<translation id="7376553024552204454">Istakni pokazivač miša kada se kreće</translation>
 <translation id="7377169924702866686">Uključena je opcija Caps Lock.</translation>
 <translation id="7378627244592794276">Ne</translation>
 <translation id="7378810950367401542">/</translation>
@@ -4624,7 +4629,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7705600705238488017">Želite li umjesto toga <ph name="BEGIN_LINK" />pregledati Chrome web-trgovinu<ph name="END_LINK" />?</translation>
 <translation id="7706319470528945664">Portugalska tipkovnica</translation>
-<translation id="7707053413911715161">Omogući bez isticanja polja</translation>
 <translation id="7709152031285164251">Nije uspjelo – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7709980197120276510">Klikom na Nastavi prihvaćate sljedeće: <ph name="LEGAL_DOC_LINK_TEXT_1" />, <ph name="LEGAL_DOC_LINK_TEXT_2" />, <ph name="LEGAL_DOC_LINK_TEXT_3" />, <ph name="LEGAL_DOC_LINK_TEXT_4" /> i <ph name="LEGAL_DOC_LINK_TEXT_5" />.</translation>
 <translation id="7712140766624186755">Traženje na temelju pravila</translation>
@@ -4742,7 +4746,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7881969471599061635">Onemogući titlove</translation>
 <translation id="7884988936047469945">Eksperimentalne značajke pristupačnosti</translation>
 <translation id="7885253890047913815">Nedavna odredišta</translation>
-<translation id="7885283703487484916">Vrlo kratka</translation>
 <translation id="7887192723714330082">Odgovoriti na "OK Google" kada je zaslon uključen i otključan</translation>
 <translation id="7887334752153342268">Udvostruči</translation>
 <translation id="7887864092952184874">Bluetooth miš uparen</translation>
@@ -5225,7 +5228,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="857779305329188634">Omogući podršku eksperimentalnog QUIC protokola.</translation>
 <translation id="8579285237314169903">Sinkronizacija ovoliko stavki: <ph name="NUMBER_OF_FILES" />...</translation>
 <translation id="8579549103199280730">Pitanje prema zadanim postavkama</translation>
-<translation id="8580634710208701824">Ponovo učitaj okvir</translation>
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Pritisnite da biste išli unaprijed, kontekstni izbornik za prikaz povijesti</translation>
 <translation id="8584280235376696778">&amp;Otvori video na novoj kartici</translation>
@@ -5233,6 +5235,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8590375307970699841">Postavi automatsko ažuriranje</translation>
 <translation id="8592125506633137593">Izoliranje glavnog dokumenta</translation>
 <translation id="8594787581355215556">Prijavljeni ste e-adresom <ph name="USER_EMAIL_ADDRESS" />. Upravljajte svojim sinkroniziranim podacima na <ph name="BEGIN_LINK" />Google nadzornoj ploči<ph name="END_LINK" />.</translation>
+<translation id="8595925260712451473">Povratne informacije unesite ovdje.</translation>
 <translation id="8596540852772265699">Prilagođene datoteke</translation>
 <translation id="8596785155158796745">Mikrofon trenutačno nije dostupan. <ph name="BEGIN_LINK" />Upravljanje mikrofonom<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">Oblik svojstva:</translation>
@@ -5302,6 +5305,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8687485617085920635">Sljedeći prozor</translation>
 <translation id="8688579245973331962">Ne vidite svoje ime?</translation>
 <translation id="8688644143607459122">Klikom na Nastavi prihvaćate upotrebu Google Paymentsa. Informacije o vašem računalu (uključujući njegovu lokaciju) dijelit će se s Google Paymentsom radi zaštite od prijevare.</translation>
+<translation id="8688672835843460752">Dostupno</translation>
 <translation id="8689102680909215706">Proširenje "<ph name="EXTENSION_NAME" />" instalirano je daljinski.</translation>
 <translation id="868926756781121513">Dijeljenje radne površine s izvorom kartice</translation>
 <translation id="8689341121182997459">Ističe:</translation>
@@ -5324,6 +5328,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8708671767545720562">&amp;Više informacija</translation>
 <translation id="8711402221661888347">Kiseli krastavci</translation>
 <translation id="8711453844311572806">Kada je vaš telefon otključan i u blizini, samo kliknite za pristup. U suprotnom ćete vidjeti ikonu lokota i morat ćete unijeti zaporku.</translation>
+<translation id="8712637175834984815">Shvaćam</translation>
 <translation id="8713570323158206935">Pošalji <ph name="BEGIN_LINK1" />informacije o sustavu<ph name="END_LINK1" /></translation>
 <translation id="8713979477561846077">Omogućivanje automatskog ispravljanja za američku tipkovnicu koje može davati prijedloge prilikom pisanja pomoću fizičke tipkovnice.</translation>
 <translation id="871476437400413057">Google spremljene zaporke</translation>
@@ -5426,6 +5431,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8860454412039442620">Excelova proračunska tablica</translation>
 <translation id="8863489667196658337">Omogućuje novi sustav za izradu aplikacija oznaka.</translation>
 <translation id="8866441758832353668">Sidrenje pomicanja</translation>
+<translation id="8868626022555786497">U upotrebi</translation>
 <translation id="8870318296973696995">Početna stranica</translation>
 <translation id="8870413625673593573">Nedavno zatvoreno</translation>
 <translation id="8871551568777368300">Prikvačio administrator</translation>
@@ -5663,6 +5669,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="9214520840402538427">Ups! Inicijalizacija atributa vremena instalacije istekla je. Obratite se predstavniku podrške.</translation>
 <translation id="9214695392875603905">Kolač</translation>
 <translation id="9215293857209265904">Dodano je proširenje "<ph name="EXTENSION_NAME" />"</translation>
+<translation id="9215934040295798075">Postavi pozadinu</translation>
 <translation id="9218430445555521422">Postavi kao zadano</translation>
 <translation id="9219103736887031265">Slike</translation>
 <translation id="9220525904950070496">Uklanjanje računa</translation>
@@ -5696,6 +5703,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="971058943242239041">Omogućuje upotrebu HTML elemenata "window-controls" u paketnim aplikacijama.</translation>
 <translation id="971774202801778802">URL oznake</translation>
 <translation id="973473557718930265">Odustani</translation>
+<translation id="97534916655989966">Dopušta se automatska reprodukcija zanemarenih videozapisa.</translation>
 <translation id="978146274692397928">Početna širina interpunkcije je "puna"</translation>
 <translation id="981121421437150478">Izvanmrežno</translation>
 <translation id="984870422930397199">Omogućuje označivanje offline stranica na web-stranici nove kartice . Relevantno samo ako su offline stranice omogućene.</translation>

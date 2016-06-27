@@ -130,6 +130,7 @@ Chromoting</translation>
 <translation id="4156740505453712750">Debes elegir un PIN de <ph name="BOLD_START" />al menos seis dígitos<ph name="BOLD_END" /> para proteger el acceso a este ordenador. Se solicitará ese PIN cada vez que se establezca conexión con ese ordenador desde otra ubicación.</translation>
 <translation id="4176825807642096119">Código de acceso</translation>
 <translation id="4207623512727273241">Ejecuta el archivo de instalación antes de continuar.</translation>
+<translation id="4227991223508142681">Utilidad de asignación de host</translation>
 <translation id="4240294130679914010">Programa de desinstalación del host de Chromoting</translation>
 <translation id="4277463233460010382">Este ordenador está configurado para permitir que uno o más clientes se conecten sin introducir un PIN.</translation>
 <translation id="4277736576214464567">El código de acceso no es válido. Vuelve a intentarlo.</translation>

@@ -147,8 +147,10 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
 <translation id="573759479754913123">Acerca de Chrome OS</translation>
 <translation id="5749068826913805084">Chrome necesita acceder al almacenamiento para descargar archivos.</translation>
+<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Esta acción borrará de forma permanente $1 elemento de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.}other{Esta acción borrará de forma permanente $1 elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.}}</translation>
 <translation id="5855036575689098185">El software que se ejecuta en tu computadora no es compatible con Google Chrome.</translation>
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
+<translation id="5906655207909574370">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="5931853610562009806">En dispositivos Mac, las contraseñas pueden guardarse en la aplicación Keychain. Los usuarios de Chrome con los que compartes esta cuenta del sistema operativo X pueden acceder a las contraseñas o sincronizarlas.</translation>
 <translation id="5940385492829620908">Aquí puedes encontrar tus páginas web, marcadores y otros contenidos de Chrome.</translation>
 <translation id="5941830788786076944">Haga de Google Chrome su navegador predeterminado</translation>
@@ -186,6 +188,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7125719106133729027">Chrome no pudo actualizarse a la versión más reciente, por lo que no estás aprovechando las funciones geniales ni las correcciones de seguridad que se agregaron. Debes reinstalar Chrome de forma manual.</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>
 <translation id="7164397146364144019">Puedes ayudar a que Chrome sea más seguro y fácil de usar si informas automáticamente detalles de posibles incidentes de seguridad en Google.</translation>
+<translation id="7177347454226092725">Esta acción borrará de forma permanente tus datos de navegación de este dispositivo. Si más adelante deseas recuperarlos, accede a Chrome como $2.</translation>
 <translation id="7185038942300673794">Se agregó <ph name="EXTENSION_NAME" /> a Chrome.</translation>
 <translation id="7191567847629796517">El Sistema operativo Google Chrome no puede iniciar una aplicación externa para procesar vínculos <ph name="SCHEME" />. El vínculo solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">¿Por qué estoy viendo esto?</translation>
@@ -201,6 +204,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7473136999113284234">Chrome se actualiza automáticamente para que siempre tengas la versión más reciente.</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7494905215383356681">Licencias de código abierto de Chrome</translation>
+<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Esta acción borrará de forma permanente al menos $1 elemento de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.}other{Esta acción borrará de forma permanente al menos $1 elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.}}</translation>
 <translation id="7592736734348559088">Google Chrome no pudo sincronizar los datos porque los datos de acceso de la cuenta están obsoletos.</translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
 <translation id="7747138024166251722">El instalador no pudo crear un directorio temporal. Verifique si hay espacio disponible en el disco y cuenta con permiso para instalar software.</translation>
@@ -211,6 +215,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7808348361785373670">Eliminar de Chrome…</translation>
 <translation id="7825851276765848807">La instalación falló debido a un error no especificado. Descarga Google Chrome otra vez.</translation>
 <translation id="7890208801193284374">Si compartes una computadora, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome según los gustos individuales.</translation>
+<translation id="7908168227788431038">Google Chrome está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="795025003224538582">No reiniciar</translation>
 <translation id="8005540215158006229">Chrome ya está casi listo.</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
@@ -220,6 +225,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8129812357326543296">Acerca de &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chromium almacenará de forma segura tus datos personales para que no tengas que volver a escribirlos.</translation>
 <translation id="8205111949707227942">Opcional: Ayúdanos a mejorar Chrome SO enviando estadísticas de uso e informes sobre fallos automáticamente a Google.</translation>
+<translation id="8211929904040702368">Esta acción borrará de forma permanente al menos <ph name="TOTAL_COUNT" /> elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.</translation>
 <translation id="8227755444512189073">Google Chrome debe iniciar una aplicación externa para administrar <ph name="SCHEME" /> enlaces. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome está usando tu cámara y tu micrófono.</translation>
 <translation id="8286862437124483331">Google Chrome está intentando mostrar contraseñas. Para permitirlo, ingresa tu contraseña de Windows.</translation>

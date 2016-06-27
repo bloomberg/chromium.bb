@@ -32,6 +32,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1881322772814446296">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="1967743265616885482">A module with the same name has been known to conflict with Google Chrome.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{This will permanently delete at least $1 item from this device. To retrieve your data later, sign in to Chromium as $2.}other{This will permanently delete at least $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}}</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2103655854491303969">The Chromium App Launcher is going away.</translation>
 <translation id="2117181891440368863">Chromium verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied Certificate Transparency information, but it was invalid.</translation>
@@ -83,6 +84,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3549345495227188780">Get Started with Chromium OS</translation>
 <translation id="3582788516608077514">Updating Chromium ...</translation>
 <translation id="358997566136285270">Chromium logo</translation>
+<translation id="3645040538872234961">This will permanently delete your browsing data from this device. To retrieve your data later, sign in to Chromium as $2.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3748537968684000502">You are viewing a secure Chromium page.</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
@@ -107,6 +109,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="457845228957001925">Important information regarding your Chromium data</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
+<translation id="4621240073146040695">Nearly up to date! Relaunch Chromium to finish updating.</translation>
 <translation id="4677944499843243528">The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID" />) on another computer (<ph name="HOST_NAME" />). Chromium has locked the profile so that it doesn't get corrupted. If you are sure that no other processes are using this profile, you can unlock the profile and relaunch Chromium.</translation>
 <translation id="4743926867934016338">Accept &amp; Search</translation>
 <translation id="4888717733111232871">Inbound rule for Chromium to allow mDNS traffic.</translation>
@@ -131,10 +134,12 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5859963531214966875">Future versions of Chromium will no longer support this Linux system.</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
+<translation id="5906655207909574370">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="5942225298871134766">Chromium will store this with <ph name="SAVED_PASSWORD_LINK" /> and remember it the next time that you need it.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> has been added to Chromium.</translation>
 <translation id="59625444380784159">Details from your contacts can help you fill out forms more quickly in Chromium.</translation>
 <translation id="6055895534982063517">There's a new version of Google Chrome available and it's faster than ever.</translation>
+<translation id="6077017812234345835">This will permanently delete at least <ph name="TOTAL_COUNT" /> items from this device. To retrieve your data later, sign in to Chromium as $2.</translation>
 <translation id="608189560609172163">Chromium could not sync your data due to an error signing in.</translation>
 <translation id="6212496753309875659">This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.</translation>
 <translation id="6248213926982192922">Make Chromium the default browser</translation>
@@ -168,6 +173,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="705851970750939768">Update Chromium</translation>
 <translation id="7064610482057367130">No installation of Chromium found to update.</translation>
 <translation id="7066436765290594559">Chromium OS could not sync your data. Please update your Sync passphrase.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{This will permanently delete $1 item from this device. To retrieve your data later, sign in to Chromium as $2.}other{This will permanently delete $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}}</translation>
 <translation id="7138853919861947730">Chromium may use web services to improve your browsing experience.</translation>
 <translation id="7162152143154757523">Chromium can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.</translation>
 <translation id="7178626992616222740">Chromium verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied Certificate Transparency information, but Chromium did not recognise any of the Certificate Transparency logs.</translation>

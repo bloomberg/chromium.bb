@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> cho biết:</translation>
 <translation id="1132774398110320017">Cài đặt tự động điền trên Chrome...</translation>
 <translation id="113770840981343808">Nhập CVC gồm 4 chữ số ở mặt trước thẻ của bạn để xác minh</translation>
-<translation id="1146673768181266552">ID sự cố <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="1152921474424827756">Truy cập <ph name="BEGIN_LINK" />bản sao được lưu trong bộ nhớ cache<ph name="END_LINK" /> của <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> đã bất ngờ đóng kết nối.</translation>

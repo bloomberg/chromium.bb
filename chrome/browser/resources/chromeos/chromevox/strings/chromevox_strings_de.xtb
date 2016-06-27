@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">Kein nächstes Listenelement</translation>
 <translation id="1157782847298808853">Tastaturhilfe</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, Kombinationsfeld "<ph name="NAME" />"</translation>
+<translation id="1161762950103988776">Sprung</translation>
 <translation id="1167230103353892028">Menüpunkt "<ph name="NAME" />" mit Untermenü</translation>
 <translation id="1177863135347784049">Benutzerdefiniert</translation>
 <translation id="1188858454923323853">ergänzend</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Timer</translation>
 <translation id="8065607967589909823">Ausgewählt ist</translation>
 <translation id="8066678206530322333">Banner</translation>
+<translation id="8076492880354921740">Tabs</translation>
 <translation id="8110647606445335195">Keine ARIA-Markierungen</translation>
 <translation id="8153880621934657047">Nicht in der Tabelle</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{Unterstrich}other{# Unterstriche}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">Drücken Sie die Aufwärtspfeil- bzw. Abwärtspfeil-Taste, um den Inhalt zu durchsuchen, oder geben Sie eine Suchanfrage ein.</translation>
 <translation id="9192904702577636854">Laufschrift</translation>
 <translation id="9212322457209634662">Kein weiterer Abschnitt</translation>
+<translation id="923331726185079994">ChromeVox aktualisiert</translation>
 <translation id="930275611743429116">Auswahl starten oder beenden</translation>
 <translation id="948171205378458592">Sprechgeschwindigkeit verringern</translation>
 <translation id="962913030769097253">Nächste Überschrift der Ebene 1</translation>
 <translation id="973955474346881951">Fixierten Modus aktivieren/deaktivieren</translation>
+<translation id="976849232629612000">Keine Elemente.</translation>
 </translationbundle>

@@ -130,6 +130,7 @@ gazdagép</translation>
 <translation id="4156740505453712750">A számítógép hozzáférésének védelméhez válasszon egy <ph name="BOLD_START" />legalább hat számjegyből álló<ph name="BOLD_END" /> PIN kódot. Ezt a PIN kódot kéri a rendszer, ha más helyről kísérlik meg a kapcsolódást.</translation>
 <translation id="4176825807642096119">Elérési kód</translation>
 <translation id="4207623512727273241">Kérjük, futtassa a telepítőt a folytatás előtt.</translation>
+<translation id="4227991223508142681">Gazdagép-ellátási segédprogram</translation>
 <translation id="4240294130679914010">Chromoting gazdagép eltávolítóprogramja</translation>
 <translation id="4277463233460010382">Ez a számítógép úgy van konfigurálva, hogy egy vagy több kliens PIN megadása nélkül csatlakozhasson.</translation>
 <translation id="4277736576214464567">A hozzáférési kód érvénytelen. Kérjük, próbálja újra.</translation>

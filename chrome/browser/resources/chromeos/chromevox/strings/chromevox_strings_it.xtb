@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">Nessuna voce elenco successiva.</translation>
 <translation id="1157782847298808853">Guida tastiera</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, casella combinata</translation>
+<translation id="1161762950103988776">Collegamenti</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, voce di menu, con sottomenu</translation>
 <translation id="1177863135347784049">Personalizzati</translation>
 <translation id="1188858454923323853">elementi complementari</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Timer</translation>
 <translation id="8065607967589909823">La selezione è</translation>
 <translation id="8066678206530322333">Banner</translation>
+<translation id="8076492880354921740">Schede</translation>
 <translation id="8110647606445335195">Nessun landmark ARIA.</translation>
 <translation id="8153880621934657047">Non sei all'interno della tabella.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{carattere di sottolineatura}other{# caratteri di sottolineatura}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">Utilizza i tasti freccia su e giù per sfogliare, oppure digita per cercare.</translation>
 <translation id="9192904702577636854">Testo scorrevole</translation>
 <translation id="9212322457209634662">Nessuna sezione successiva.</translation>
+<translation id="923331726185079994">ChromeVox aggiornato</translation>
 <translation id="930275611743429116">Inizia o termina la selezione.</translation>
 <translation id="948171205378458592">Diminuisci velocità comandi vocali</translation>
 <translation id="962913030769097253">Intestazione livello 1 successiva</translation>
 <translation id="973955474346881951">Attiva/disattiva modalità persistente</translation>
+<translation id="976849232629612000">Nessun elemento.</translation>
 </translationbundle>

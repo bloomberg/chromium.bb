@@ -153,8 +153,10 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="568643307450491754">Je vindt je bladwijzers in het menu 'Chrome' of in de bladwijzerbalk.</translation>
 <translation id="573759479754913123">Over Chrome OS</translation>
 <translation id="5749068826913805084">Chrome heeft toegang tot de opslag nodig om deze bestanden te kunnen downloaden.</translation>
+<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Hiermee wordt $1 item definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.}other{Hiermee worden $1 items definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.}}</translation>
 <translation id="5855036575689098185">De software op je computer is niet compatibel met Google Chrome.</translation>
 <translation id="5877064549588274448">Kanaal gewijzigd. Start het apparaat opnieuw op om de wijzigingen door te voeren.</translation>
+<translation id="5906655207909574370">Updaten bijna voltooid. Start je apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="5931853610562009806">Wachtwoorden kunnen op de Mac worden opgeslagen in je sleutelhanger en worden geopend of gesynchroniseerd door andere Chrome-gebruikers die dit OS X-account delen.</translation>
 <translation id="5940385492829620908">Hier vind je internet, bladwijzers en andere Chrome-instellingen.</translation>
 <translation id="5941830788786076944">Google Chrome instellen als mijn standaardbrowser</translation>
@@ -192,6 +194,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7125719106133729027">Chrome kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chrome handmatig opnieuw installeren.</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
 <translation id="7164397146364144019">Je kunt helpen Chrome veiliger en gebruiksvriendelijker te maken door automatisch informatie over mogelijke beveiligingsincidenten aan Google te melden.</translation>
+<translation id="7177347454226092725">Hiermee worden je browsergegevens definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> is toegevoegd aan Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS biedt geen ondersteuning voor het starten van een externe applicatie voor het verwerken van <ph name="SCHEME" />-links. De opgevraagde link is <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
@@ -207,6 +210,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7473136999113284234">Chrome wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie.</translation>
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="7494905215383356681">Open-sourcelicenties van Chrome</translation>
+<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Hiermee wordt ten minste $1 item definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.}other{Hiermee worden ten minste $1 items definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.}}</translation>
 <translation id="7592736734348559088">Google Chrome kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="7626032353295482388">Welkom bij Chrome</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of je nog schijfruimte hebt en of je toestemming hebt om software te installeren.</translation>
@@ -217,6 +221,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7808348361785373670">Verwijderen uit Chrome…</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
 <translation id="7890208801193284374">Als je een computer deelt, kunnen vrienden en familie afzonderlijk surfen en Chrome configureren zoals zij dat willen.</translation>
+<translation id="7908168227788431038">Updaten bijna voltooid. Start Google Chrome opnieuw op om de update te voltooien.</translation>
 <translation id="795025003224538582">Niet opnieuw starten</translation>
 <translation id="8005540215158006229">Chrome is bijna klaar.</translation>
 <translation id="8008534537613507642">Chrome opnieuw installeren</translation>
@@ -226,6 +231,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8129812357326543296">Over &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome slaat je persoonlijke gegevens veilig op, zodat je ze niet opnieuw hoeft op te geven.</translation>
 <translation id="8205111949707227942">Optioneel: help Chrome OS beter te maken door Google automatisch gebruiksstatistieken en crashmeldingen te sturen.</translation>
+<translation id="8211929904040702368">Hiermee worden ten minste <ph name="TOTAL_COUNT" /> items definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.</translation>
 <translation id="8227755444512189073"><ph name="SCHEME" /> De opgevraagde link is <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome gebruikt je camera en microfoon.</translation>
 <translation id="8286862437124483331">Google Chrome probeert wachtwoorden weer te geven. Geef je Windows-wachtwoord op om dit toe te staan.</translation>

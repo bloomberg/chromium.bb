@@ -130,6 +130,7 @@ Host</translation>
 <translation id="4156740505453712750">หากต้องการป้องกันการเข้าถึงคอมพิวเตอร์เครื่องนี้ โปรดเลือก PIN <ph name="BOLD_START" />อย่างน้อยหกหลัก<ph name="BOLD_END" /> โดยจะต้องป้อน PIN นี้เมื่อเชื่อมต่อจากตำแหน่งอื่น</translation>
 <translation id="4176825807642096119">รหัสการเข้าถึง</translation>
 <translation id="4207623512727273241">โปรดเรียกใช้ตัวติดตั้งก่อนดำเนินการต่อ</translation>
+<translation id="4227991223508142681">ยูทิลิตีของการจัดสรรการโฮสต์</translation>
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
 <translation id="4277463233460010382">คอมพิวเตอร์เครื่องนี้ได้รับการกำหนดค่าให้อนุญาตไคลเอ็นต์หนึ่งหรือมากกว่าสามารถเชื่อมต่อโดยไม่ต้องป้อน PIN</translation>
 <translation id="4277736576214464567">รหัสการเข้าถึงไม่ถูกต้อง โปรดลองอีกครั้ง</translation>

@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">No hay ningún elemento de la lista posterior.</translation>
 <translation id="1157782847298808853">Ayuda del teclado</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, cuadro combinado</translation>
+<translation id="1161762950103988776">Salta</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, elemento del menú, con submenú</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1188858454923323853">complementario</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Temporizador</translation>
 <translation id="8065607967589909823">La selección es</translation>
 <translation id="8066678206530322333">Banner</translation>
+<translation id="8076492880354921740">Pestañas</translation>
 <translation id="8110647606445335195">No hay puntos de referencia de ARIA.</translation>
 <translation id="8153880621934657047">No está dentro de la tabla.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{guion bajo}other{# guiones bajos}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">Usa las teclas de flecha hacia arriba y hacia abajo para navegar o escribe un término para realizar una búsqueda.</translation>
 <translation id="9192904702577636854">Recuadro</translation>
 <translation id="9212322457209634662">No hay ninguna sección posterior.</translation>
+<translation id="923331726185079994">Actualización de ChromeVox</translation>
 <translation id="930275611743429116">Iniciar o finalizar selección</translation>
 <translation id="948171205378458592">Hablar más lento</translation>
 <translation id="962913030769097253">Encabezado siguiente de nivel 1</translation>
 <translation id="973955474346881951">Habilitar/inhabilitar modo permanente</translation>
+<translation id="976849232629612000">Sin elementos</translation>
 </translationbundle>

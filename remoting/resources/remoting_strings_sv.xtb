@@ -130,6 +130,7 @@ Host</translation>
 <translation id="4156740505453712750">Om du vill skydda åtkomsten till den här datorn väljer du en PIN-kod som består av <ph name="BOLD_START" />minst sex siffror<ph name="BOLD_END" />. PIN-koden krävs när du ansluter från en annan plats.</translation>
 <translation id="4176825807642096119">Åtkomstkod</translation>
 <translation id="4207623512727273241">Kör installationsprogrammet innan du fortsätter.</translation>
+<translation id="4227991223508142681">Verktyg för värdprovisionering</translation>
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
 <translation id="4277463233460010382">Den här datorn är konfigurerad för att tillåta att en eller flera klienter ansluter utan att en pinkod måste anges.</translation>
 <translation id="4277736576214464567">Koden är ogiltig. Försök igen.</translation>

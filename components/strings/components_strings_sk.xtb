@@ -18,7 +18,6 @@
 <translation id="113188000913989374">Web <ph name="SITE" /> hovorí:</translation>
 <translation id="1132774398110320017">Nastavenia Automatického dopĺňania prehliadača Chrome...</translation>
 <translation id="113770840981343808">Na účely overenia zadajte štvormiestny kód CVC z prednej strany svojej karty</translation>
-<translation id="1146673768181266552">ID zlyhania <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1152921474424827756">Prístup ku <ph name="BEGIN_LINK" />kópii vo vyrovnávacej pamäti<ph name="END_LINK" /> stránky <ph name="URL" /></translation>
 <translation id="1158211211994409885">Hostiteľský web <ph name="HOST_NAME" /> neočakávane ukončil pripojenie.</translation>

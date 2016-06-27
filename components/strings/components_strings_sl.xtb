@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> sporoča:</translation>
 <translation id="1132774398110320017">Nastavitve samodejnega izpolnjevanja v Chromu …</translation>
 <translation id="113770840981343808">Zaradi preverjanja vnesite štirimestno kodo CVC na sprednji strani kartice</translation>
-<translation id="1146673768181266552">ID zrušitve <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; operacijski sistem vašega računalnika ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="1152921474424827756">Odprite <ph name="BEGIN_LINK" />predpomnjeno kopijo<ph name="END_LINK" /> strani na naslovu <ph name="URL" /></translation>
 <translation id="1158211211994409885">Spletno mesto <ph name="HOST_NAME" /> je nepričakovano prekinilo povezavo.</translation>

@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> บอกว่า:</translation>
 <translation id="1132774398110320017">การตั้งค่าป้อนข้อความอัตโนมัติของ Chrome...</translation>
 <translation id="113770840981343808">ป้อน CVC 4 หลักจากด้านหน้าบัตรเพื่อยืนยัน</translation>
-<translation id="1146673768181266552">รหัสข้อขัดข้อง <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของคอมพิวเตอร์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="1152921474424827756">เข้าถึง<ph name="BEGIN_LINK" />สำเนาแคช<ph name="END_LINK" />ของ <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ปิดการเชื่อมต่อโดยไม่คาดคิด</translation>

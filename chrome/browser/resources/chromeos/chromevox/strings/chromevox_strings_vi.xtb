@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">Không có mục danh sách tiếp theo nào.</translation>
 <translation id="1157782847298808853">Trợ giúp bàn phím</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, hộp kết hợp</translation>
+<translation id="1161762950103988776">Nhảy</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, mục menu, có menu con</translation>
 <translation id="1177863135347784049">Tùy chỉnh</translation>
 <translation id="1188858454923323853">bổ sung</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Bộ tính giờ</translation>
 <translation id="8065607967589909823">Lựa chọn hiện tại là</translation>
 <translation id="8066678206530322333">Biểu ngữ</translation>
+<translation id="8076492880354921740">Tab</translation>
 <translation id="8110647606445335195">Không có mốc ARIA nào.</translation>
 <translation id="8153880621934657047">Không phải bên trong bảng.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{dấu gạch dưới}other{# dấu gạch dưới}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">Sử dụng phím mũi tên lên và xuống để duyệt hoặc nhập để tìm kiếm.</translation>
 <translation id="9192904702577636854">Bảng chữ chạy</translation>
 <translation id="9212322457209634662">Không có phần tiếp theo nào.</translation>
+<translation id="923331726185079994">Đã cập nhật ChromeVox</translation>
 <translation id="930275611743429116">Lựa chọn bắt đầu hoặc kết thúc.</translation>
 <translation id="948171205378458592">Giảm tốc độ nói</translation>
 <translation id="962913030769097253">Tiêu đề cấp 1 tiếp theo</translation>
 <translation id="973955474346881951">Bật/tắt chế độ cố định</translation>
+<translation id="976849232629612000">Không có mục nào.</translation>
 </translationbundle>

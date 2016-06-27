@@ -21,7 +21,6 @@
 <translation id="113188000913989374">Viesti osoitteesta <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Chromen automaattisen täytön asetukset…</translation>
 <translation id="113770840981343808">Anna korttisi etupuolella oleva nelinumeroinen CVC-koodi maksun vahvistusta varten.</translation>
-<translation id="1146673768181266552">Kaatumistunnus <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="1152921474424827756">Käytä osoitteen <ph name="URL" /> <ph name="BEGIN_LINK" />välimuistiversiota<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> katkaisi yhteyden yllättäen.</translation>

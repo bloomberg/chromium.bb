@@ -155,8 +155,10 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="568643307450491754">Retrouvez vos favoris dans le menu Chrome ou dans la barre de favoris.</translation>
 <translation id="573759479754913123">À propos de Chrome OS</translation>
 <translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
+<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Cette action aura pour effet de supprimer définitivement $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.}one{Cette action aura pour effet de supprimer définitivement $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.}other{Cette action aura pour effet de supprimer définitivement $1 éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.}}</translation>
 <translation id="5855036575689098185">Le logiciel exécuté sur votre ordinateur n'est pas compatible avec Google Chrome.</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
+<translation id="5906655207909574370">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
 <translation id="5931853610562009806">Sur Mac, les mots de passe peuvent être enregistrés dans votre trousseau. D'autres utilisateurs de Chrome partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="5940385492829620908">Votre contenu Web, vos favoris et toutes vos données Chrome sont conservés ici.</translation>
 <translation id="5941830788786076944">Définir Google Chrome comme navigateur par défaut</translation>
@@ -194,6 +196,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7125719106133729027">La mise à jour de Chrome a échoué. Vous n'utilisez pas la dernière version, qui vous permet de bénéficier de nouvelles fonctionnalités pratiques et de correctifs de sécurité. Vous devez réinstaller Chrome manuellement.</translation>
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>
 <translation id="7164397146364144019">Vous pouvez nous aider à rendre Chrome plus sûr et plus facile à utiliser en nous signalant automatiquement les incidents de sécurité potentiels.</translation>
+<translation id="7177347454226092725">Cette action aura pour effet de supprimer définitivement vos données de navigation de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.</translation>
 <translation id="7185038942300673794">L'extension "<ph name="EXTENSION_NAME" />" a été ajoutée à Google Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS ne permet pas le lancement d'une application externe pour gérer les liens <ph name="SCHEME" />. Le lien demandé est <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
@@ -209,6 +212,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7473136999113284234">Chrome est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version.</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7494905215383356681">Licences Chrome Open Source</translation>
+<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Cette action aura pour effet de supprimer définitivement au moins $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.}one{Cette action aura pour effet de supprimer définitivement au moins $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.}other{Cette action aura pour effet de supprimer définitivement au moins $1 éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.}}</translation>
 <translation id="7592736734348559088">Impossible de synchroniser vos données dans Google Chrome, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="7626032353295482388">Bienvenue dans Chrome</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
@@ -219,6 +223,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7808348361785373670">Supprimer de Chrome</translation>
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
+<translation id="7908168227788431038">Mise à jour presque terminée. Relancez Google Chrome pour la finaliser.</translation>
 <translation id="795025003224538582">Ne pas redémarrer</translation>
 <translation id="8005540215158006229">Google Chrome est presque prêt</translation>
 <translation id="8008534537613507642">Réinstaller Chrome</translation>
@@ -228,6 +233,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8129812357326543296">À propos de &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome va stocker les informations personnelles vous concernant de manière sécurisée. Ainsi, vous n'aurez pas besoin de les saisir à nouveau.</translation>
 <translation id="8205111949707227942">Facultatif : Aidez-nous à améliorer Google Chrome OS en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
+<translation id="8211929904040702368">Cette action aura pour effet de supprimer définitivement au moins <ph name="TOTAL_COUNT" /> éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.</translation>
 <translation id="8227755444512189073">Chrome va devoir lancer une application tierce pour gérer les liens <ph name="SCHEME" />. Le lien demandé est <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Votre webcam et votre micro sont en cours d'utilisation dans Google Chrome.</translation>
 <translation id="8286862437124483331">Google Chrome tente d'afficher les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>

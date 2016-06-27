@@ -21,7 +21,6 @@
 <translation id="113188000913989374">A(z) <ph name="SITE" /> közlendője:</translation>
 <translation id="1132774398110320017">A Chrome Automatikus kitöltési beállításai…</translation>
 <translation id="113770840981343808">Adja meg a kártya elején szereplő négyjegyű CVC-kódot az ellenőrzéshez</translation>
-<translation id="1146673768181266552"><ph name="CRASH_ID" /> összeomlás-azonosító (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön számítógépének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="1152921474424827756">A(z) <ph name="URL" /> egy <ph name="BEGIN_LINK" />tárolt változatának<ph name="END_LINK" /> megtekintése</translation>
 <translation id="1158211211994409885">A(z) <ph name="HOST_NAME" /> váratlanul megszakította a kapcsolatot.</translation>

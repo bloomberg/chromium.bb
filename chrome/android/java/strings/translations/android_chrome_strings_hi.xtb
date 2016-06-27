@@ -35,6 +35,7 @@
 <translation id="1389974829397082527">यहां कोई बुकमार्क नहीं है</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> में एम्बेड किया गया है</translation>
 <translation id="1406000523432664303">“नज़र न रखें”</translation>
+<translation id="1407135791313364759">सभी खोलें</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> डाउनलोड को रोका गया क्‍योंकि फ़ाइल पहले से मौजूद है.</translation>
 <translation id="1416550906796893042">ऐप्‍लिकेशन वर्शन</translation>
 <translation id="1423209968422390786">स्थान ऐक्सेस को <ph name="BEGIN_LINK" />इस डिवाइस के लिए बंद कर दिया गया है<ph name="END_LINK" />.</translation>
@@ -101,6 +102,7 @@
 <translation id="219985413780390209">खतरनाक साइटों से आपकी और आपके डिवाइस की सुरक्षा करता है</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, वेब ऐप. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">परिशोधित करें</translation>
+<translation id="2286841657746966508">बिलिंग पता</translation>
 <translation id="2315043854645842844">क्लाइंट-साइड प्रमाणपत्र चयन ऑपरेटिंग सिस्टम के द्वारा समर्थित नहीं है.</translation>
 <translation id="2321958826496381788">स्‍लाइडर को तब तक खींचें, जब तक कि आपको इसे पढ़ने में सुविधा न हो. पैराग्राफ़ पर डबल-टैप करने के बाद लेख को इतना बड़ा दिखाई देना चाहिए.</translation>
 <translation id="2331464965008647960">आपके आस-पास के डिवाइस वेबपृष्‍ठों को ब्लूटूथ पर प्रसारित कर रहे हैं. जब आप अपने डिवाइस को सक्रिय करेंगे तो Chrome पृष्ठों के लिए स्कैन करेगा और उन्हें प्रदर्शित करेगा. पृष्ठ परिणामों की गुणवत्ता को बेहतर बनाने के लिए ये पृष्ठ Google सेवा से होकर गुजरेंगे.
@@ -207,6 +209,7 @@
 <translation id="360480449234699036">पृष्‍ठ को छोड़े बिना वेबसाइटों पर मौजूद विषयों के बारे में जानें. स्‍पर्श करने के लिए खोजें, Google खोज को एक शब्‍द और उसके आस-पास का संदर्भ भेजता है, जिससे वह परिभाषाएं, चित्र, खोज परिणाम और अन्‍य विवरण लौटाता है.
 
 अपने खोज शब्‍द को एडजस्‍ट करने के लिए, चुनने हेतु देर तक दबाएं. अपनी खोज को परिष्‍कृत करने के लिए, फलक को सीधे ऊपर स्‍लाइड करें और खोज बॉक्‍स को स्‍पर्श करें.</translation>
+<translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3623048332793834136">Chrome कैनेरी बुकमार्क</translation>
 <translation id="363596933471559332">संग्रहीत क्रेडेंशियल का उपयोग करके वेबसाइटों में अपने आप प्रवेश करें. सुविधा के बंद होने पर, किसी वेबसाइट में प्रवेश करने से पहले आपसे हर बार सत्‍यापन के लिए कहा जाएगा.</translation>
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में स्‍थान चालू करें.</translation>
@@ -217,6 +220,7 @@
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
 <translation id="3744111561329211289">पृष्ठभूमि समन्वयन</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” समाप्‍त</translation>
+<translation id="3810838688059735925">वीडियो</translation>
 <translation id="3810973564298564668">प्रबंधित करें</translation>
 <translation id="3828029223314399057">बुकमार्क खोजें</translation>
 <translation id="3871171699884605801">ब्राउज़िंग इतिहास को बच्‍चों के खातों से साफ़ नहीं किया जा सकता</translation>
@@ -286,6 +290,7 @@
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> में खोलें</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="4738836084190194332">पिछली बार समन्वयित: <ph name="WHEN" /></translation>
+<translation id="4759238208242260848">डाउनलोड</translation>
 <translation id="4773299976671772492">रोक दिया गया</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> पर वापस लौटने के लिए स्पर्श करें</translation>
 <translation id="4807098396393229769">कार्ड पर नाम</translation>
@@ -298,6 +303,7 @@
 <translation id="4923459931733593730">भुगतान</translation>
 <translation id="4943872375798546930">कोई परिणाम नहीं</translation>
 <translation id="497421865427891073">आगे जाएं</translation>
+<translation id="4988526792673242964">पृष्ठ</translation>
 <translation id="4996978546172906250">इसके द्वारा साझा करें</translation>
 <translation id="5000922062037820727">अवरोधित (सुझाया गया)</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -396,7 +402,6 @@
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="604996488070107836">किसी अज्ञात त्रुटि के कारण <ph name="FILE_NAME" /> का डाउनलोड विफल रहा.</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="605904398899306450">साइटों को महत्वपूर्ण मीडिया स्वतः चलाने दें (अनुशंसित)</translation>
 <translation id="6075798973483050474">मुखपृष्ठ संपादित करें</translation>
 <translation id="6108923351542677676">सेटअप प्रगति में है…</translation>
 <translation id="6112702117600201073">पृष्‍ठ रीफ्रेश किया जा रहा है</translation>
@@ -485,6 +490,7 @@
 <translation id="7094922512924405309">आस-पास कोई भी शारीरिक वेब पृष्ठ नहीं मिला</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> खुले टैब</translation>
 <translation id="7096034533295549981">वीडियो लोड हो रहा है</translation>
+<translation id="7138678301420049075">अन्य</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="7191430249889272776">पृष्ठभूमि में टैब खोला गया.</translation>
 <translation id="7208788139759694678">डेटा बचतकर्ता अक्षम किया गया है</translation>
@@ -527,6 +533,7 @@
 <translation id="7634554953375732414">इस साइट से आपका कनेक्‍शन निजी नहीं है.</translation>
 <translation id="7638584964844754484">गलत पासफ़्रेज़</translation>
 <translation id="7648422057306047504">Google प्रमाणिकता के साथ पासवर्ड एन्क्रिप्ट करें</translation>
+<translation id="7649070708921625228">सहायता</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7665369617277396874">खाता जोड़ें</translation>
 <translation id="7682287625158474539">शिपिंग</translation>
@@ -541,7 +548,6 @@
 <translation id="780301667611848630">जी नहीं, रहने दें </translation>
 <translation id="7829298379596169484">ऑडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="7837582000577464779">आपका आदेश संसाधित करने में कोई त्रुटि हुई.  कृपया अपना खाता जांचें और पुनः प्रयास करें.</translation>
-<translation id="7840369537802583269">विशिष्ट साइट के लिए महत्वपूर्ण मीडिया का पता लगाएं और प्लेबैक करें.</translation>
 <translation id="7846076177841592234">चयन हटाएं</translation>
 <translation id="7851858861565204677">अन्य डिवाइस</translation>
 <translation id="7876243839304621966">सभी को निकालें</translation>
@@ -650,6 +656,7 @@
 <translation id="9192643434065497760">युग्‍मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />डिवाइस सेटिंग<ph name="END_LINK" /> में ब्‍लूटूथ चालू करें.</translation>
 <translation id="9198708126133947749">इस डिवाइस के डेटा को <ph name="TO_ACCOUNT" /> के डेटा से बदलें. आप <ph name="FROM_ACCOUNT" /> पर वापस जाकर अपना मौजूदा डेटा पुनः प्राप्त कर सकते हैं.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9219103736887031265">चित्र</translation>
 <translation id="932327136139879170">मुख्यपृष्ठ</translation>
 <translation id="938850635132480979">त्रुटि: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">अपना माइक्रोफ़ोन एक्सेस करें</translation>

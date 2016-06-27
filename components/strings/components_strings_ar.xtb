@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> يعرض:</translation>
 <translation id="1132774398110320017">‏إعدادات الملء التلقائي في Chrome...</translation>
 <translation id="113770840981343808">‏أدخل رمز التحقق من البطاقة (CVC) المكون من أربعة أرقام من الجزء الأمامي من بطاقتك للتحقق</translation>
-<translation id="1146673768181266552">معرِّف العطل <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1152921474424827756">الدخول إلى <ph name="BEGIN_LINK" />النسخة المخزنة مؤقتًا<ph name="END_LINK" /> من <ph name="URL" /></translation>
 <translation id="1158211211994409885">أغلق <ph name="HOST_NAME" /> الاتصال على نحو غير متوقع.</translation>

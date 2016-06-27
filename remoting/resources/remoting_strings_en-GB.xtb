@@ -130,6 +130,7 @@ Host</translation>
 <translation id="4156740505453712750">To protect access to this computer, please choose a PIN of <ph name="BOLD_START" />at least six digits<ph name="BOLD_END" />. This PIN will be required when connecting from another location.</translation>
 <translation id="4176825807642096119">Access code</translation>
 <translation id="4207623512727273241">Please run the installer before continuing.</translation>
+<translation id="4227991223508142681">Host Provisioning Utility</translation>
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
 <translation id="4277463233460010382">This computer is configured to allow one or more clients to connect without entering a PIN.</translation>
 <translation id="4277736576214464567">The access code is invalid. Please try again.</translation>

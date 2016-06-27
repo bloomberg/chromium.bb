@@ -30,6 +30,7 @@
 <translation id="1881322772814446296">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Chromium. Os seus dados do Chromium, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chromium em separado. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">O Chromium não responde. Reiniciar agora?</translation>
 <translation id="1967743265616885482">É conhecido um módulo com o mesmo nome que entra em conflito com o Chromium.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente, no mínimo, $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}other{Esta ação elimina permanentemente, no mínimo, $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}}</translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2103655854491303969">O Iniciador de Aplicações do Chromium será descontinuado.</translation>
 <translation id="2117181891440368863">O Chromium confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website. O servidor forneceu informações de Transparência do certificado, mas estas eram inválidas.</translation>
@@ -81,6 +82,7 @@
 <translation id="3549345495227188780">Introdução ao SO Chromium</translation>
 <translation id="3582788516608077514">A atualizar o Chromium...</translation>
 <translation id="358997566136285270">Logótipo do Chromium</translation>
+<translation id="3645040538872234961">Esta ação elimina permanentemente os seus dados de navegação deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como $2.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3748537968684000502">Está a visualizar uma página do Chromium segura.</translation>
 <translation id="378917192836375108">O Chromium permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
@@ -105,6 +107,7 @@
 <translation id="4567424176335768812">Tem sessão iniciada como <ph name="USER_EMAIL_ADDRESS" />. Agora, pode aceder aos seus marcadores, ao histórico e a outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="457845228957001925">Informações importantes acerca dos seus dados do Chromium</translation>
 <translation id="459535195905078186">Aplicações do Chromium</translation>
+<translation id="4621240073146040695">Quase atualizado! Reinicie o Chromium para concluir a atualização.</translation>
 <translation id="4677944499843243528">O perfil parece estar a ser utilizado por outro processo do Chromium (<ph name="PROCESS_ID" />) noutro computador (<ph name="HOST_NAME" />). O Chromium bloqueou o perfil para que não seja danificado. Se tiver a certeza de que não existem outros processos a utilizar este perfil, pode desbloqueá-lo e reiniciar o Chromium.</translation>
 <translation id="4743926867934016338">Aceitar e pesquisar</translation>
 <translation id="4888717733111232871">Regra de importação para o Chromium permitir o tráfego mDNS.</translation>
@@ -129,10 +132,12 @@
 <translation id="5859963531214966875">As versões futuras do Chromium deixarão de ser suportadas neste sistema Linux.</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
+<translation id="5906655207909574370">Quase atualizado! Reinicie o dispositivo para concluir a atualização.</translation>
 <translation id="5942225298871134766">O Chromium armazena esta informação com o <ph name="SAVED_PASSWORD_LINK" /> e lembra-a da próxima vez que precisar.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> foi adicionada ao Chromium.</translation>
 <translation id="59625444380784159">Os detalhes dos seus contactos podem ajudar a preencher formulários mais rapidamente no Chromium.</translation>
 <translation id="6055895534982063517">Está disponível uma nova versão do Chromium, mais rápida do que nunca.</translation>
+<translation id="6077017812234345835">Esta ação elimina permanentemente, no mínimo, <ph name="TOTAL_COUNT" /> itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.</translation>
 <translation id="608189560609172163">O Chromium não conseguiu sincronizar os dados devido a um erro de início de sessão.</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver a funcionar, desinstale o Chromium e tente novamente.</translation>
 <translation id="6248213926982192922">Definir o Chromium como navegador predefinido</translation>
@@ -166,6 +171,7 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7064610482057367130">Não foi encontrada qualquer instalação do Chromium para atualização.</translation>
 <translation id="7066436765290594559">O SO Chromium não conseguiu sincronizar os dados. Atualize a frase de acesso de sincronização.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}other{Esta ação elimina permanentemente $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}}</translation>
 <translation id="7138853919861947730">O Chromium pode utilizar serviços Web para melhorar a sua experiência de navegação.</translation>
 <translation id="7162152143154757523">O Chromium pode disponibilizar uma verificação ortográfica mais inteligente ao enviar o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da Pesquisa Google.</translation>
 <translation id="7178626992616222740">O Chromium confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website. O servidor forneceu informações de Transparência do certificado, mas o Chromium não reconheceu os registos de Transparência do certificado.</translation>

@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> sier:</translation>
 <translation id="1132774398110320017">Innstillinger for autofyll i Chrome</translation>
 <translation id="113770840981343808">Skriv inn den firesifrede verifiseringskoden du finner på forsiden av kortet ditt</translation>
-<translation id="1146673768181266552">Krasj-ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1152921474424827756">Åpne en <ph name="BEGIN_LINK" />bufret kopi<ph name="END_LINK" /> av <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> avsluttet tilkoblingen uventet.</translation>

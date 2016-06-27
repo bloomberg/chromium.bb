@@ -32,6 +32,7 @@
 <translation id="1881322772814446296">관리 계정으로 로그인하고 Chromium 프로필에 대한 관리자 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정 등 Chromium 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chromium 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="1967743265616885482">같은 이름의 모듈이 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{이 기기에서 $1개 이상의 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chromium에 로그인하세요.}other{이 기기에서 $1개 이상의 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chromium에 로그인하세요.}}</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="2103655854491303969">Chromium 앱 런처 서비스 중단 예정</translation>
 <translation id="2117181891440368863">Chromium에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공했으나, 올바르지 않았습니다.</translation>
@@ -83,6 +84,7 @@
 <translation id="3549345495227188780">Chromium OS 시작하기</translation>
 <translation id="3582788516608077514">Chromium 업데이트 중...</translation>
 <translation id="358997566136285270">Chromium 로고</translation>
+<translation id="3645040538872234961">인터넷 사용 기록이 이 기기에서 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chromium에 로그인하세요.</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3748537968684000502">지금 안전한 Chromium 페이지를 보고 계십니다.</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
@@ -107,6 +109,7 @@
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="457845228957001925">Chromium 데이터 관련 중요 정보</translation>
 <translation id="459535195905078186">Chromium 앱</translation>
+<translation id="4621240073146040695">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 Chromium을 다시 시작하세요.</translation>
 <translation id="4677944499843243528">다른 컴퓨터(<ph name="HOST_NAME" />)의 다른 Chromium 프로세스(<ph name="PROCESS_ID" />)에서 프로필을 사용 중인 것 같습니다. 프로필이 손상되지 않도록 Chromium에서 잠금 설정했습니다. 다른 프로세스에서 프로필을 사용 중이지 않은 것이 확실한 경우 프로필을 잠금 해제하고 Chromium을 다시 시작하세요.</translation>
 <translation id="4743926867934016338">동의 및 검색</translation>
 <translation id="4888717733111232871">Chromium이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
@@ -131,10 +134,12 @@
 <translation id="5859963531214966875">Chromium 향후 버전에서는 더 이상 이 Linux 시스템을 지원하지 않습니다.</translation>
 <translation id="5862307444128926510">Chromium에 오신 것을 환영합니다.</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
+<translation id="5906655207909574370">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 기기를 다시 시작하세요.</translation>
 <translation id="5942225298871134766">Chromium은 <ph name="SAVED_PASSWORD_LINK" />을(를) 사용하여 비밀번호를 저장한 후 다음에 필요할 때 제공합니다.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" />이(가) Chromium에 추가되었습니다.</translation>
 <translation id="59625444380784159">연락처 세부정보를 사용하면 Chromium에서 양식을 더욱 신속하게 작성할 수 있습니다.</translation>
 <translation id="6055895534982063517">이전보다 더 빨라진 Chromium 새 버전을 사용할 수 있습니다.</translation>
+<translation id="6077017812234345835"><ph name="TOTAL_COUNT" />개 이상의 항목이 이 기기에서 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chromium에 로그인하세요.</translation>
 <translation id="608189560609172163">로그인 중 오류가 발생하여 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="6212496753309875659">컴퓨터에 이미 최신 버전의 Chromium이 있습니다. 소프트웨어가 작동하지 않으면 Chromium의 설치를 제거한 뒤 다시 시도하세요.</translation>
 <translation id="6248213926982192922">Chromium을 기본 브라우저로 설정</translation>
@@ -168,6 +173,7 @@
 <translation id="705851970750939768">Chromium 업데이트</translation>
 <translation id="7064610482057367130">업데이트할 Chromium 설치가 없습니다.</translation>
 <translation id="7066436765290594559">Chromium OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{이 기기에서 $1개 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chromium에 로그인하세요.}other{기기에서 $1개 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chromium에 로그인하세요.}}</translation>
 <translation id="7138853919861947730">Chromium은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
 <translation id="7162152143154757523">Chromium에서 제공하는 더욱 지능적인 맞춤법 검사 기능은 사용자가 브라우저에 입력한 내용을 Google 서버에 보내는 방식을 사용하므로 사용자가 Google 검색에서 사용하는 것과 동일한 맞춤법 검사 기술을 사용할 수 있습니다.</translation>
 <translation id="7178626992616222740">Chromium에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공했으나, Chromium에서 인증서 투명성 로그를 인식하지 못했습니다.</translation>

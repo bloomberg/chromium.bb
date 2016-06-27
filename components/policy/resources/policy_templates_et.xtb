@@ -21,18 +21,6 @@
 
       Kui see reegel jäetakse määramata, on see lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="1062011392452772310">Seadme kaugatesteerimise lubamine</translation>
-<translation id="108735515923160176">Seadistab brauseri <ph name="PRODUCT_NAME" /> vaikeavalehe ja takistab kasutajaid avalehe eelistusi muutmast. Avaleheks võib määrata soovitud URL-i või uue vahelehe.
-
-          Seade lubamisel kasutatakse avalehena alati uut vahelehte ja avalehe URL-i asukohta eiratakse.
-
-          Seade keelamisel ei kasutata avalehena kunagi uut vahelehte, v.a juhul, kui seade URL-iks on määratud „chrome://newtab”.
-
-          Kui lubate või keelate seade, ei saa kasutajad brauseris <ph name="PRODUCT_NAME" /> avalehe tüüpi muuta.
-
-          Kui jätate reegli määramata, saab kasutaja ise otsustada, kas avalehena kasutatakse uut vahelehte.
-
-          Reegel ei ole saadaval Windowsi eksemplarides, mis ei ole liidetud
-          Active Directory domeeniga.</translation>
 <translation id="1090892140761957285">URL kaugjuurdepääsu kliendi autentimismärgi valideerimiseks.
 
           Kui reegel on määratud, kasutab kaugjuurdepääsu host seda URL-i kaugjuurdepääsu klientide autentimismärkide valideerimiseks, et ühendusi vastu võtta. Reeglit tuleb kasutada koos reegliga RemoteAccessHostTokenUrl.
@@ -40,6 +28,13 @@
           Funktsioon on praegu serveri poolel keelatud.</translation>
 <translation id="1096105751829466145">Vaikeotsingupakkuja</translation>
 <translation id="1103860406762205913">Lubab vaba veebipõhist sisselogimist</translation>
+<translation id="1128903365609589950">Seadistab kataloogi, mida <ph name="PRODUCT_NAME" /> kasutab vahemälus olevate failide kettale salvestamiseks.
+
+      Kui määrate reegli, kasutab <ph name="PRODUCT_NAME" /> sisestatud kataloogi sellest olenemata, kas kasutaja on määranud märgistuse „--disk-cache-dir”. Andmete kaotsimineku ja muude ootamatute vigade vältimiseks ei tohi reegli jaoks valida ketta juurkataloogi ega muudel eesmärkidel kasutatavat kataloogi, kuna <ph name="PRODUCT_NAME" /> haldab selle kataloogi sisu.
+
+      Vaadake kasutamiseks saadaolevate muutujate loendit aadressilt https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Kui jätate reegli määramata, kasutatakse vahemälu vaikekataloogi ja kasutaja saab selle alistada käsurea märgistusega „--disk-cache-dir”.</translation>
 <translation id="1138294736309071213">See reegel on aktiivne vaid jaemüügirežiimis.
 
       Määrab vahemiku, mille möödudes kuvatakse jaemüügirežiimis seadmete sisselogimiskuval ekraanisäästja.
@@ -189,15 +184,6 @@
 <translation id="1757688868319862958">Võimaldab tootel <ph name="PRODUCT_NAME" /> käitada pistikprogramme, mille jaoks on vajalik volitamine. Kui lubate selle seade, töötavad pistikprogrammid, mis ei ole aegunud, alati. Kui see seade on keelatud või pole määratud, palutakse kasutajatelt volitust vajavate pistikprogrammide käitamiseks luba. Need on pistikprogrammid, mis võivad turvalisust ohustada.</translation>
 <translation id="1803646570632580723">Kinnitatud rakenduste loend, mida näidatakse käivitis</translation>
 <translation id="1808715480127969042">Blokeeri nende saitide küpsised</translation>
-<translation id="1811270320106005269">Lubab lukustuse, kui teenuse <ph name="PRODUCT_OS_NAME" /> seadmed on peatatud või jõudeolekus.
-
-      Kui lubate seade, siis palutakse kasutajal seadme äratamiseks sisestada parool.
-
-      Seade keelamisel ei paluta kasutajal seadme äratamiseks parooli sisestada.
-
-      Kui lubate või keelate selle seade, ei saa kasutajad seda muuta ega alistada.
-
-      Kui jätate selle reegli määramata, siis saab kasutaja valida, kas ta soovib seadme äratamisel parooli sisestada.</translation>
 <translation id="1827523283178827583">Kasuta fikseeritud puhverservereid</translation>
 <translation id="1843117931376765605">Kasutajareegli värskendussagedus</translation>
 <translation id="1847960418907100918">Täpsustab parameetri, mida kasutatakse POST-meetodiga Instant-otsingu tegemisel. See koosneb komaga eraldatud nime/väärtuse paaridest. Kui väärtus on malliparameeter, nt {searchTerms} ülalolevas näites, siis asendatakse see otsingutermini andmetega.
@@ -347,6 +333,7 @@
 <translation id="2337466621458842053">Võimaldab teil määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kujutisi kuvada.
 
           Kui reeglit ei määrata, siis kasutatakse kõikide saitide puhul reegli „DefaultImagesSetting” globaalset vaikeväärtust, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
+<translation id="2366415278352956652">Lubab ülekandmise</translation>
 <translation id="2371309782685318247">Määrab vahemiku millisekundites, mille jooksul saadetakse seadmehaldusteenusele päring kasutaja reeglite teabe kohta.
 
       Reegli määramisel alistatakse vaikeväärtus 3 tundi. Reegli lubatud väärtused on vahemikus 1 800 000 (30 minutit) kuni 86 400 000 (1 päev). Vahemikust väljaspool olevad väärtused kohandatakse piiridesse.
@@ -504,9 +491,6 @@
 <translation id="2623014935069176671">Kasutaja esmase tegevuse ootamine</translation>
 <translation id="262740370354162807">Luba dokumentide saatmine teenusesse <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Luba suuline tagasiside</translation>
-<translation id="2646290749315461919">Võimaldab määrata, kas veebisaitidel on lubatud jälgida kasutajate füüsilist asukohta. Kasutajate füüsilise asukoha jälgimine võib olla vaikimisi lubatud või keelatud või kasutajalt võidakse luba küsida iga kord, kui veebisait taotleb füüsilise asukoha jälgimist.
-
-          Kui jätate selle reegli määramata, siis kasutatakse reeglit „AskGeolocation” ja kasutaja saab seda muuta.</translation>
 <translation id="2650049181907741121">Tehtav toiming, kui kasutaja kaane sulgeb</translation>
 <translation id="2660846099862559570">Ära kunagi kasuta puhverserverit</translation>
 <translation id="267596348720209223">Määrab tähemärkide kodeeringu, mida otsingupakkuja toetab. Kodeeringud on koodilehtede nimed, näiteks UTF-8, GB2312 või ISO-8859-1. Neid proovitakse sisestatud järjestuses.
@@ -735,20 +719,6 @@
 
           Kui jätate reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultKeygenSetting”, kui see on määratud, või kasutaja isiklikku seadistust.</translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
-<translation id="3398137877608138703">Lubage või keelake video jäädvustamine.
-
-      Kui see on lubatud või seadistamata (vaikeseade), küsitakse kasutajalt
-      luba video jäädvustamiseks, v.a loendis VideoCaptureAllowedUrls määratud
-      URL-ide puhul, millele antakse juurdepääs luba küsimata.
-      ARC-rakendustel on juurdepääs kaamerale juhul, kui neile on antud luba.
-
-      Kui reegel on keelatud, ei küsita kasutajalt kunagi luba ja videote
-      jäädvustamine on saadaval vaid URL-ide jaoks. mis on määratud loendis
-      VideoCaptureAllowedUrls.
-      ARC-rakendustel ei ole juurdepääsu kaamerale.
-
-      Peale ARC-rakenduste mõjutab reegel kõiki videosisendi tüüpe,
-      mitte ainult sisseehitatud kaamerat.</translation>
 <translation id="3417418267404583991">Kui lubate selle reegli või jätate seadistamata, siis lubab <ph name="PRODUCT_OS_NAME" /> külastajatel sisse logida. Külastajana sisse logides kasutatakse anonüümseid seansse ja selleks ei ole vaja parooli sisestada.
 
       Selle reegli keelamisel ei luba <ph name="PRODUCT_OS_NAME" /> külastajaseansse alustada.</translation>
@@ -1022,6 +992,7 @@
 <translation id="4449545651113180484">Ekraani pööramine 270 kraadi päripäeva</translation>
 <translation id="4467952432486360968">Blokeeri kolmanda osapoole küpsised</translation>
 <translation id="4474167089968829729">Luba paroolide salvestamine paroolihaldurisse</translation>
+<translation id="447686899376429408">Kui see on tõene või määramata, saavad kasutajad brauseris vahelehti, saite või töölauda üle kanda. Kui see on väär, keelatakse valik.</translation>
 <translation id="4480694116501920047">Jõusta SafeSearchi kasutamine</translation>
 <translation id="4482640907922304445">Kuvab rakenduse <ph name="PRODUCT_NAME" /> tööriistaribal nuppu Kodu.
 
@@ -1104,13 +1075,6 @@
 
           Kui jätate reegli määramata, on suur kursor algselt keelatud, kuid kasutaja võib selle igal ajal lubada.</translation>
 <translation id="4807950475297505572">Kõige kauem aega tagasi kasutanud kasutajad eemaldatakse, kuni on piisavalt vaba ruumi</translation>
-<translation id="480987484799365700">Kui on lubatud, nõuavad eeskirjad, et profiil oleks lülitatud kadumisrežiimile. Kui eeskirjad on määratletud OS-i eeskirjadena (nt GPO Windowsis), rakendub see süsteemi kõikidele profiilidele; kui eeskirjad on määratletud pilve-eeskirjadena, rakenduvad need ainult profiilidele, millele on sisse logitud hallatud kontoga.
-
-      Selles režiimis säilitatakse profiili andmeid kettal ainult kasutajaseansi ajal. Funktsioone (nagu brauseri ajalugu, laiendused ja nende andmed) ning veebiandmeid (nagu küpsised ning veebi andmebaasid) ei säilitata pärast brauseri sulgemist. See ei takista kasutajal käsitsi kettale andmeid alla laadimast, lehti salvestamast ega neid printimast.
-
-      Kui kasutaja on sünkroonimise lubanud, säilitatakse kõik need andmed kasutaja sünkroonimisprofiilil nagu tavaliste profiilide puhul. Saadaval on ka inkognitorežiim, kui eeskirjad ei ole seda sõnaselgelt keelanud.
-
-      Kui ei ole lubatud või on jäetud määramata, viib sisselogimine tavaliste profiilide juurde.</translation>
 <translation id="4816674326202173458">Luba ettevõtte kasutajal olla nii peamine kui ka teisene kasutaja (vaikekäitumine haldamata kasutajate puhul)</translation>
 <translation id="4826326557828204741">Toiming, mis rakendub siis, kui tegevusetuse viivitusaeg saab täis akutoite kasutamise ajal</translation>
 <translation id="4834526953114077364">Kõige kauem aega tagasi kasutanud kasutajad, kes ei ole viimase 3 kuu jooksul sisse loginud, eemaldatakse, kuni on piisavalt vaba ruumi</translation>
@@ -1210,32 +1174,6 @@
 
           Kui seda reeglit ei määrata, laadib <ph name="PRODUCT_NAME" /> kõik installitud omasõnumside hostid.</translation>
 <translation id="5290940294294002042">Määrake pistikprogrammide loend, mida kasutaja saab lubada või keelata</translation>
-<translation id="5298412045697677971">Seadistage kasutaja avatari kujutis.
-
-      See reegel lubab teil seadistada avatari kujutise, mis esindab kasutajat sisselogimisekraanil. URL-i täpsustamisega määratakse reegel, kust operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> saab alla laadida avatari kujutise ja krüptograafilise räsimärgi, mida kasutatakse allalaaditava faili terviklikkuse kontrollimiseks. Kujutis peab olema JPEG-vormingus ja selle maht ei tohi ületada 512 kB. URL peab olema juurdepääsetav ilma igasuguse autentimiseta.
-
-      Avatari kujutis laaditakse alla ja salvestatakse vahemällu. Kui URL või räsimärk muutub, laaditakse see uuesti alla.
-
-      Reegel tuleb määrata stringina, milles on välja toodud URL ja räsimärk JSON-vormingus, mis vastab järgmisele skeemile:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL, kust avatari kujutise saab alla laadida.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Avatari kujutise SHA-256 räsimärk.",
-            "type": "string"
-          }
-        }
-      }
-
-      Kui see reegel määratakse, laadib operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> avatari kujutise alla ja kasutab seda.
-
-      Kui selle reegli määrate, ei saa kasutajad seda muuta ega alistada.
-
-      Kui te reeglit ei määra, saab kasutaja valida teda esindava avatari kujutise sisselogimisekraanil.</translation>
 <translation id="5302612588919538756">Selle reegli tugi on katkestatud, kaaluge selle asemel reegli SyncDisabled kasutamist.
 
       Lubab kasutajal teenusesse <ph name="PRODUCT_NAME" /> sisse logida.
@@ -1533,15 +1471,6 @@
           Seade lubamisel ja ebastandardse pordi sisestamisel (nt muu port kui 80 või 443) lisatakse see loodud Kerberose SPN-i.
 
           Seade keelamisel või määramata jätmisel ei hõlma loodud Kerberose SPN ühtki porti.</translation>
-<translation id="6279809962528392889">Määrab, kas sisselogimisel SAML IdP seadistatud autentimise küpsisefailid tuleks üle kanda kasutajaprofiilile.
-
-      Kui kasutaja autendib sisselogimisel SAML IdP kaudu, kirjutatakse IdP seadistatud küpsisefailid esmalt ajutisele profiilile. Need küpsisefailid saab üle kanda kasutajaprofiilile, et autentimise olek edasi anda.
-
-      Kui selle reegli väärtuseks määratakse Tõene, kantakse IdP seadistatud küpsisefailid kasutajaprofiilile üle iga kord, kui ta sisselogimisel SAML IdP vastu autendib.
-
-      Kui selle reegli väärtuseks määratakse Väär või seda ei määrata, kantakse IdP seadistatud küpsisefailid kasutajaprofiilile üle ainult tema esimesel sisselogimisel seadmesse.
-
-      See reegel mõjutab kasutajaid, kelle domeen ühtib ainult seadme registreerimisdomeeniga. Kõikide teiste kasutajate puhul kantakse IdP seadistatud küpsisefailid kasutajaprofiilile üle ainult tema esimesel sisselogimisel seadmesse.</translation>
 <translation id="6281043242780654992">Omasõnumside reeglite seadistamine. Musta nimekirja lisatud omasõnumside hostid on keelatud seni, kuni need lisatakse lubatud üksuste nimekirja.</translation>
 <translation id="6282799760374509080">Heli jäädvustamise lubamine või keelamine</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1753,6 +1682,14 @@
       Kui jätate selle reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
 <translation id="7003746348783715221">Rakenduse <ph name="PRODUCT_NAME" /> eelistused</translation>
 <translation id="7006788746334555276">Sisu seaded</translation>
+<translation id="7007671350884342624">Seadistab kataloogi, mida <ph name="PRODUCT_NAME" /> kasutab kasutajaandmete salvestamiseks.
+
+      Kui määrate reegli, kasutab <ph name="PRODUCT_NAME" /> sisestatud kataloogi sellest olenemata, kas kasutaja on määranud märgistuse „--user-data-dir”. Andmekao ja muude ootamatute vigade vältimiseks ei tohi reegli jaoks valida ketta juurkataloogi ega muudel eesmärkidel kasutatavat kataloogi, kuna <ph name="PRODUCT_NAME" /> haldab selle kataloogi sisu.
+
+
+      Vaadake kasutamiseks saadaolevate muutujate loendit aadressilt https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Kui jätate reegli määramata, kasutatakse profiili vaiketeed ja kasutaja saab selle alistada käsurea märgistusega „--user-data-dir”.</translation>
 <translation id="7027785306666625591">Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> toitehalduse seadistamine.
 
       Need reeglid võimaldavad teil seadistada, kuidas <ph name="PRODUCT_OS_NAME" /> käitub, kui kasutaja on teatud aja vältel tegevusetu.</translation>
@@ -1771,16 +1708,6 @@
 <translation id="706669471845501145">Luba saitidel töölauateatiste näitamine</translation>
 <translation id="7079519252486108041">Blokeeri hüpikaknad nendel saitidel</translation>
 <translation id="7091198954851103976">Käitab alati pistikprogrammid, mis vajavad volitamist</translation>
-<translation id="7109916642577279530">Heli jäädvustamise lubamine või keelamine.
-
-      Kui reegel on lubatud või pole seadistatud (vaikimisi), küsitakse kasutajalt
-      heli jäädvustamiseks juurdepääsu, v.a loendis AudioCaptureAllowedUrls
-      seadistatud URL-ide puhul, millele antakse juurdepääs ilma küsimata.
-
-      Kui reegel on keelatud, ei küsita kasutajalt kunagi ning heli
-      jäädvustamine on saadaval ainult loendis AudioCaptureAllowedUrls seadistatud URL-ide puhul.
-
-      Reegel mõjutab igat tüüpi helisisendeid, mitte ainult sisseehitatud mikrofone.</translation>
 <translation id="7115494316187648452">Määrab, kas brauseri <ph name="PRODUCT_NAME" /> protsess käivitub operatsioonisüsteemi sisselogimisel ja jätkab töötamist pärast viimase brauseriakna sulgemist. Sel juhul võivad taustarakendused ja praegune sirvimisseanss, sh seansipõhised küpsisefailid, jääda aktiivseks. Taustaprotsess kuvab süsteemisalves ikooni, mis võimaldab protsessi igal ajal sulgeda.
 
       Kui reegel on seatud väärtusele Tõene, on taustarežiim lubatud ja kasutaja ei saa seda brauseri seadetes muuta.
@@ -2157,18 +2084,6 @@
 
       Kui seda reeglit ei määrata, siis ei ole reegli „URLBlacklist” mustas loendis erandeid.</translation>
 <translation id="8176035528522326671">Luba ettevõtte kasutajal olla ainult peamine mitme profiiliga kasutaja (vaikekäitumine ettevõtte hallatud kasutajate puhul)</translation>
-<translation id="8191318459035150777">Seadistab rakenduses <ph name="PRODUCT_NAME" /> avalehe vaike-URL-i ja keelab kasutajatel selle muutmise.
-
-          Avaleht on leht, mis avaneb nupu Avaleht vajutamisel. Käivitamisel avatavaid lehti juhivad reeglid RestoreOnStartup.
-
-          Avalehe tüübiks saab seadistada siin määratud URL-i või uue vahelehe. Kui valite uue vahelehe, siis seda reeglit ei jõustata.
-
-          Kui selle seade lubate, ei saa kasutajad avalehe URL-i teenuses <ph name="PRODUCT_NAME" /> muuta, kuid nad saavad avaleheks valida siiski uue vahelehe.
-
-          Kui seda reeglit ei määrata, saab kasutaja ise valida oma avalehe, kui ka reegel HomepageIsNewTabPage on määramata.
-
-          See reegel pole saadaval Windowsi eksemplarides, mis pole liitunud
-          Active Directory domeeniga.</translation>
 <translation id="8197918588508433925">Reegel määrab lubatud laiendused, mida kasutada kaugatesteerimisel Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() jaoks. API kasutamiseks tuleb laiendused loendisse kanda.
 
           Kui laiendust loendis pole või kui loendit pole koostatud, siis kõne API-le ebaõnnestub ja saate vastuseks veakoodi.</translation>
@@ -2181,6 +2096,27 @@
       Kui jätate reegli määramata, kasutab <ph name="PRODUCT_OS_NAME" /> sisselogimiskuval seadmepõhise konto meilikonto ID-d kuvatava nimena.
 
       Tavapäraste kasutajakontode puhul eiratakse seda reeglit.</translation>
+<translation id="8279832363395120715">Eemaldab protokolliga https:// URL-idelt privaatsed ja turvalisusega seotud tundlikud osad enne, kui need edastatakse PAC-skriptidele (puhverserveri automaatne seadistamine), mida <ph name="PRODUCT_NAME" /> kasutab puhverserveri lahendamisel.
+
+      Kui see on tõene, lubatakse turvafunktsioon ja protokolliga https:// URL-id
+      puhastatakse enne PAC-skripti saatmist. Sel moel ei saa PAC-skript
+      vaadata andmeid, mida tavaliselt kaitseb krüpteeritud kanal (nt URL-i tee
+      ja päring).
+
+      Kui see on väär, keelatakse turvafunktsioon ja PAC-skriptidele antakse
+      vaikimisi õigus vaadata protokolliga https:// URL-ide kõiki komponente.
+      See kehtib kõigi PAC-skriptide puhul päritolust olenemata (sh need,
+      mis toodi ebaturvalise transpordiga või tuvastati ebaturvaliselt WPAD-i
+      kaudu).
+
+      Vaikeseade on Tõene (turvafunktsioon on lubatud), v.a Chrome OS-i
+      ettevõtte kasutajate puhul, kelle vaikeseade on Väär.
+
+      Seade on soovitatav määrata väärtusele Tõene. See tuleks seada
+      väärtusele Väär vaid juhul, kui ilmnevad ühilduvusprobleemid
+      olemasolevate PAC-skriptidega.
+
+      Tulevikus on plaanis see alistusfunktsioon eemaldada.</translation>
 <translation id="8285435910062771358">Täisekraani luup on lubatud</translation>
 <translation id="8294750666104911727">Tavaliselt renderdatakse lehed, mille metasilt X-UA-Compatible on seatud väärtusele chrome=1 teenuses <ph name="PRODUCT_FRAME_NAME" />, olenemata reeglist „ChromeFrameRendererSettings”.
 
@@ -2385,13 +2321,6 @@
 
           Reegli väärtus tuleb määrata millisekundites. Väärtused tuleb kinnitada väiksematena kui jõudeoleku viiteaeg.</translation>
 <translation id="891435090623616439">kodeeritud JSON-stringina. Lisateavet vaadake saidilt <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8929359433203547810">Kui reegli väärtuseks määratakse Väär, keelab operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> Bluetoothi ja kasutaja ei saa seda enam uuesti lubada.
-
-      Kui reegli väärtuseks määratakse Tõene või seda ei määrata, saab kasutaja Bluetoothi lubada või keelata oma soovi järgi.
-
-      Kui see reegel määratakse, ei saa kasutaja seda muuta ega alistada.
-
-      Kui Bluetooth lubatakse, tuleb seade muudatuste jõustamiseks taaskäivitada (Bluetoothi keelamisel pole vaja seadet taaskäivitada).</translation>
 <translation id="8947415621777543415">Esita seadme asukoht</translation>
 <translation id="8951350807133946005">Vahemälu kataloogi seadmine</translation>
 <translation id="8955719471735800169">Tagasi üles</translation>
@@ -2400,8 +2329,6 @@
       helisalvestusseadmetele ilma küsimata.
 
       MÄRKUS. Versioonini 45 toetati seda reeglit ainult kioskirežiimis.</translation>
-<translation id="8965758116018152083">Kui see reegel jäetakse tühjaks stringiks või seda ei seadistata, ei näita teenus <ph name="PRODUCT_OS_NAME" /> kasutaja sisselogimisvoos automaatse täitmise valikut.
-      Kui selleks reegliks on määratud string, mis esindab domeeni nime, kuvab teenus <ph name="PRODUCT_OS_NAME" /> kasutaja sisselogimisel automaatse täitmise valiku, võimaldades kasutajal sisestada ainult oma kasutajanime ilma domeeninime laiendita. Kasutaja saab selle domeeninime laiendi alistada.</translation>
 <translation id="8970205333161758602">Toote <ph name="PRODUCT_FRAME_NAME" /> tagasilükkamisviiba keelamine</translation>
 <translation id="8971221018777092728">Avaliku seansi automaatse sisselogimise ajasti</translation>
 <translation id="8976248126101463034">Gnubby autentimise lubamine kaugjuurdepääsuhostidele</translation>
@@ -2459,11 +2386,6 @@
 <translation id="9187743794267626640">Keela välismäluseadmete ühendamine</translation>
 <translation id="9197740283131855199">Ekraani tumenduse viivituse skaleerimise määr protsentides, kui kasutaja muutub pärast tumendamist aktiivseks.</translation>
 <translation id="9200828125069750521">Parameetrid POST-meetodit kasutava kujutise URL-i jaoks</translation>
-<translation id="9203071022800375458">Keelab ekraanipiltide tegemise.
-
-      Kui seade on lubatud, siis ei saa ekraanipiltide tegemiseks kasutada klaviatuuri otseteid ega laienduse API-sid.
-
-      Kui seade on keelatud või pole määratud, siis saab ekraanipilte teha.</translation>
 <translation id="922540222991413931">Seadistage laienduste, rakenduste ja kasutaja skriptide installimise allikad</translation>
 <translation id="924557436754151212">Impordi salvestatud paroolid vaikebrauserist esimesel käitamisel</translation>
 <translation id="930930237275114205">Määra rakenduse <ph name="PRODUCT_FRAME_NAME" /> kasutaja andmekataloog</translation>

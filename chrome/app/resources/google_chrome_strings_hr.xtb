@@ -147,8 +147,10 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="568643307450491754">Pronađite oznake u izborniku Chrome ili na traci oznaka.</translation>
 <translation id="573759479754913123">O OS-u Chrome</translation>
 <translation id="5749068826913805084">Chrome treba pristup pohrani radi preuzimanja datoteka.</translation>
+<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Time će se trajno izbrisati $1 stavka s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.}one{Time će se trajno izbrisati $1 stavka s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.}few{Time će se trajno izbrisati $1 stavke s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.}other{Time će se trajno izbrisati $1 stavki s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.}}</translation>
 <translation id="5855036575689098185">Softver koji se izvodi na vašem računalu nije kompatibilan s Google Chromeom.</translation>
 <translation id="5877064549588274448">Kanal je promijenjen. Ponovo pokrenite uređaj za primjenu promjena.</translation>
+<translation id="5906655207909574370">Ažuriranje će uskoro biti gotovo. Za dovršetak ponovo pokrenite uređaj.</translation>
 <translation id="5931853610562009806">Na Mac računalima zaporke se mogu spremati u vaš Keychain, a drugi korisnici Chromea koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="5940385492829620908">Ovdje se nalaze vaš web, oznake i ostali sadržaji u Chromeu.</translation>
 <translation id="5941830788786076944">Neka Google Chrome bude zadani preglednik.</translation>
@@ -186,6 +188,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7125719106133729027">Chrome se nije uspio ažurirati na najnoviju verziju, tako da se nisu instalirale sjajne nove značajke i sigurnosni popravci. Ponovo instalirajte Chrome ručno.</translation>
 <translation id="7161904924553537242">Dobro došli u Google Chrome</translation>
 <translation id="7164397146364144019">Možete pomoći da Chrome bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski prijavljuju pojedinosti o mogućim sigurnosnim incidentima.</translation>
+<translation id="7177347454226092725">Time će se trajno izbrisati podaci o pregledavanju s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.</translation>
 <translation id="7185038942300673794">Proširenje "<ph name="EXTENSION_NAME" />" dodano je u Chrome.</translation>
 <translation id="7191567847629796517">OS Google Chrome ne podržava pokretanje vanjskih aplikacija za rad s <ph name="SCHEME" /> vezama. Zatražena je veza <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Zašto vidim ovo?</translation>
@@ -201,6 +204,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7473136999113284234">Chrome se automatski ažurira tako da uvijek imate najnoviju verziju.</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7494905215383356681">Licence otvorenog izvornog koda Chromea</translation>
+<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Time će se trajno izbrisati najmanje $1 stavka s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.}one{Time će se trajno izbrisati najmanje $1 stavka s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.}few{Time će se trajno izbrisati najmanje $1 stavke s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.}other{Time će se trajno izbrisati najmanje $1 stavki s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.}}</translation>
 <translation id="7592736734348559088">Google Chrome nije mogao sinkronizirati vaše podatke jer su vaši podaci za prijavu na račun zastarjeli.</translation>
 <translation id="7626032353295482388">Dobro došli u Chrome</translation>
 <translation id="7747138024166251722">Program za instalaciju nije izradio privremeni direktorij. Provjerite ima li slobodnog prostora na disku i postoji li dopuštenje za instalaciju softvera.</translation>
@@ -211,6 +215,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7808348361785373670">Ukloni iz Chromea...</translation>
 <translation id="7825851276765848807">Instalacija nije uspjela zbog neodređene pogreške. Ponovo preuzmite Google Chrome.</translation>
 <translation id="7890208801193284374">Ako dijelite računalo, prijatelji i članovi obitelji mogu zasebno pregledavati i postaviti Chrome prema svojim željama.</translation>
+<translation id="7908168227788431038">Ažuriranje će uskoro biti gotovo. Za dovršetak ponovo pokrenite Google Chrome.</translation>
 <translation id="795025003224538582">Ne pokreći ponovo</translation>
 <translation id="8005540215158006229">Chrome je skoro spreman.</translation>
 <translation id="8008534537613507642">Ponovo instaliraj Chrome</translation>
@@ -220,6 +225,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="8129812357326543296">O programu Google Chrome</translation>
 <translation id="8183957050892517584">Chrome će pohraniti vaše osobne podatke na siguran način tako da ih ne morate ponovo upisivati.</translation>
 <translation id="8205111949707227942">Dodatno: Pomozite nam da poboljšamo OS Chrome automatskim slanjem statistike o upotrebi i izvješća o padu sustava Googleu.</translation>
+<translation id="8211929904040702368">Time će se trajno izbrisati najmanje <ph name="TOTAL_COUNT" /> stav. s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.</translation>
 <translation id="8227755444512189073">Google Chrome treba pokrenuti vanjsku aplikaciju da bi mogao koristiti veze <ph name="SCHEME" />. Zatražena je veza <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome upotrebljava vašu kameru i mikrofon.</translation>
 <translation id="8286862437124483331">Google Chrome pokušava prikazati zaporke. Upišite svoju zaporku za Windows da biste to dopustili.</translation>

@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">Sonraki liste öğesi yok.</translation>
 <translation id="1157782847298808853">Klavye Yardımı</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, birleşik kutu</translation>
+<translation id="1161762950103988776">Git</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menü öğesi, alt menüye sahip</translation>
 <translation id="1177863135347784049">Özel</translation>
 <translation id="1188858454923323853">tamamlayıcı</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Zamanlayıcı</translation>
 <translation id="8065607967589909823">Yapılan seçim:</translation>
 <translation id="8066678206530322333">Banner</translation>
+<translation id="8076492880354921740">Sekmeler</translation>
 <translation id="8110647606445335195">ARIA önemli noktası yok.</translation>
 <translation id="8153880621934657047">Tablonun içinde değil.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alt çizgi}other{# alt çizgi}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">Göz atmak için yukarı veya aşağı tuşlarını kullanın ya da arama yapmak için aranan metni yazın.</translation>
 <translation id="9192904702577636854">Marquee</translation>
 <translation id="9212322457209634662">Sonraki bölüm yok.</translation>
+<translation id="923331726185079994">ChromeVox Güncellendi</translation>
 <translation id="930275611743429116">Seçimi başlat veya bitir.</translation>
 <translation id="948171205378458592">Konuşma hızını düşür</translation>
 <translation id="962913030769097253">Sonraki 1. düzey başlık</translation>
 <translation id="973955474346881951">Yapışkan modu etkinleştir/devre dışı bırak</translation>
+<translation id="976849232629612000">Öğe yok.</translation>
 </translationbundle>

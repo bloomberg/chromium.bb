@@ -32,6 +32,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1881322772814446296">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Chromium-profiel. Je Chromium-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. Je kunt een nieuw profiel maken om je bestaande Chromium-gegevens apart te houden. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium reageert niet. Nu opnieuw starten?</translation>
 <translation id="1967743265616885482">Van een module met dezelfde naam is bekend dat deze conflicteert met Chromium.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Hiermee wordt ten minste $1 item definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chromium als $2.}other{Hiermee worden ten minste $1 items definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chromium als $2.}}</translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2103655854491303969">De Chromium App Launcher gaat verdwijnen.</translation>
 <translation id="2117181891440368863">Chromium heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft certificaattransparantiegegevens geleverd, maar deze waren ongeldig.</translation>
@@ -83,6 +84,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3549345495227188780">Aan de slag met Chromium OS</translation>
 <translation id="3582788516608077514">Chromium bijwerken...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
+<translation id="3645040538872234961">Hiermee worden je browsergegevens definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chromium als $2.</translation>
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
 <translation id="3748537968684000502">Je bekijkt een veilige Chromium-pagina.</translation>
 <translation id="378917192836375108">Met Chromium kun je klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
@@ -107,6 +109,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4567424176335768812">Je bent ingelogd als <ph name="USER_EMAIL_ADDRESS" />. Je hebt nu toegang tot je bladwijzers, geschiedenis en andere instellingen op al je apparaten waarop je bent ingelogd.</translation>
 <translation id="457845228957001925">Belangrijke informatie over je Chromium-gegevens</translation>
 <translation id="459535195905078186">Chromium-apps</translation>
+<translation id="4621240073146040695">Updaten bijna voltooid. Start Chromium opnieuw op om de update te voltooien.</translation>
 <translation id="4677944499843243528">Het profiel lijkt te worden gebruikt door een ander proces in Chromium (<ph name="PROCESS_ID" />) op een andere computer (<ph name="HOST_NAME" />). Het profiel is vergrendeld zodat het niet wordt beschadigd. Als je zeker weet dat dit profiel niet door andere processen wordt gebruikt, kun je het profiel ontgrendelen en Chromium opnieuw starten.</translation>
 <translation id="4743926867934016338">Accepteren en zoeken</translation>
 <translation id="4888717733111232871">Inkomende regel zodat Chromium mDNS-verkeer toestaat.</translation>
@@ -131,10 +134,12 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5859963531214966875">Toekomstige versies van Chromium bieden geen ondersteuning meer voor dit Linux-systeem.</translation>
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
 <translation id="5877064549588274448">Kanaal gewijzigd. Start het apparaat opnieuw op om de wijzigingen door te voeren.</translation>
+<translation id="5906655207909574370">Updaten bijna voltooid. Start je apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="5942225298871134766">Chromium slaat dit op met <ph name="SAVED_PASSWORD_LINK" /> en onthoudt dit voor de volgende keer dat je het nodig hebt.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> is toegevoegd aan Chromium.</translation>
 <translation id="59625444380784159">Gegevens van je contacten kunnen je helpen sneller formulieren in te vullen in Chromium.</translation>
 <translation id="6055895534982063517">Er is een nieuwe versie van Chromium beschikbaar, en deze is sneller dan ooit.</translation>
+<translation id="6077017812234345835">Hiermee worden ten minste <ph name="TOTAL_COUNT" /> items definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chromium als $2.</translation>
 <translation id="608189560609172163">Chromium kan je gegevens niet synchroniseren door een fout tijdens het inloggen.</translation>
 <translation id="6212496753309875659">Deze computer beschikt al over een recentere versie van Chromium. Als de software niet werkt, moet je Chromium verwijderen en het opnieuw proberen.</translation>
 <translation id="6248213926982192922">Chromium als standaardbrowser instellen</translation>
@@ -168,6 +173,7 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="705851970750939768">Chromium updaten</translation>
 <translation id="7064610482057367130">Geen installatie van Chromium gevonden om te updaten.</translation>
 <translation id="7066436765290594559">Chromium OS kan je gegevens niet synchroniseren. Update je wachtwoordzin voor synchronisatie.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Hiermee wordt $1 item definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chromium als $2.}other{Hiermee worden $1 items definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chromium als $2.}}</translation>
 <translation id="7138853919861947730">Chromium gebruikt mogelijk webservices om je surfervaring te verbeteren.</translation>
 <translation id="7162152143154757523">Chromium kan een betere spellingcontrole leveren door wat je in de browser typt naar Google-servers te verzenden. Hierdoor kun je profiteren van dezelfde technologie voor spellingcontrole die ook voor Google Zoeken wordt gebruikt.</translation>
 <translation id="7178626992616222740">Chromium heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft certificaattransparantiegegevens geleverd, maar Chromium heeft geen van de logboeken voor certificaattransparantie herkend.</translation>

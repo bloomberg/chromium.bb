@@ -32,6 +32,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1881322772814446296">Unaingia katika akaunti ukitumia akaunti inayodhibitiwa na kumpa msimamizi wa akaunti hiyo udhibiti wa wasifu wako kwenye Chromium. Data yako ya Chromium, kama vile programu zako, alamisho, historia, manenosiri, na mipangilio nyingine itahusishwa na<ph name="USER_NAME" /> kabisa. Utaweza kufuta data hii kupitia Dashibodi ya Akaunti za Google, lakini hutaweza  kuunganisha data hii na akaunti nyingine. Unaweza kwa hiari kuunda wasifu mpya ili kuweka data yako ya Chromium iliyo kando. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium haiamiliki. Zindua upya sasa?</translation>
 <translation id="1967743265616885482">Kijenzi kilicho na jina sawa kimejulikana kuwa na ukinzani na Chromium.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Hatua hii itafuta kabisa angalau kipengee $1 kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chromium ukitumia $2.}other{Hatua hii itafuta kabisa angalau vipengee $1 kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chromium ukitumia $2.}}</translation>
 <translation id="2077129598763517140">Tumia uongezaji kasi wa maunzi wakati unapatikana</translation>
 <translation id="2103655854491303969">Kifungua Programu cha Chromium kinatoweka.</translation>
 <translation id="2117181891440368863">Chromium ilithibitisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii. Seva ilitoa maelezo ya Cheti cha Uwazi, lakini hayakuwa sahihi.</translation>
@@ -83,6 +84,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="3549345495227188780">Anza kutumia Chromium OS</translation>
 <translation id="3582788516608077514">Inasasisha Chromium...</translation>
 <translation id="358997566136285270">Nembo ya Chromium</translation>
+<translation id="3645040538872234961">Hatua hii itafuta kabisa data yako ya kuvinjari kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chromium ukitumia $2.</translation>
 <translation id="3738139272394829648">Gusa ili Utafute</translation>
 <translation id="3748537968684000502">Unatazama ukurasa salama wa Chromium.</translation>
 <translation id="378917192836375108">Chromium hukuruhusu kubofya nambari ya simu kwenye wavuti na kuipiga kwa Skype.</translation>
@@ -107,6 +109,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="4567424176335768812">Umeingia katika akaunti kama <ph name="USER_EMAIL_ADDRESS" />. Sasa unaweza kupata alamisho, historia, na mipangilio yako mingine kwenye vifaa vyako vyote vilivyoingia katika akaunti.</translation>
 <translation id="457845228957001925">Maelezo muhimu kuhusu data yako ya Chromium</translation>
 <translation id="459535195905078186">Programu za Chromium</translation>
+<translation id="4621240073146040695">Inakaribia kukamilisha kusasishwa! Anzisha Chromium upya ili ukamilishe kusasisha.</translation>
 <translation id="4677944499843243528">Wasifu unaonekana kuwa unatumika na mchakato mwingine wa Chromium (<ph name="PROCESS_ID" />) kwenye kompyuta nyingine (<ph name="HOST_NAME" />). Chromium imefunga wasifu huu ili usifisidiwe. Kama una uhakika hakuna michakato mingine inatumia wasifu huu, unaweza kufungua wasifu na uzindue tena Chromium.</translation>
 <translation id="4743926867934016338">Kubali na Utafute</translation>
 <translation id="4888717733111232871">Sheria ya ndani ya Chromium ili kuruhusu trafiki ya mDNS.</translation>
@@ -131,10 +134,12 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="5859963531214966875">Matoleo ya baadaye ya Chromium hayatatumia tena mfumo huu wa Linux.</translation>
 <translation id="5862307444128926510">Karibu kwenye Chromium</translation>
 <translation id="5877064549588274448">Kituo kimebadilishwa. Zima na uwashe kifaa chako ili mabadiliko yaanze kutumika.</translation>
+<translation id="5906655207909574370">Inakaribia kukamilisha kusasishwa! Zima na uwashe kifaa chako ili ukamilishe kusasisha.</translation>
 <translation id="5942225298871134766">Chromium itahifadhi nenosori hili katika <ph name="SAVED_PASSWORD_LINK" /> na kulikumbuka wakati ujao utakapolihitaji.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> imeongezwa kwenye Chromium.</translation>
 <translation id="59625444380784159">Maelezo kutoka kwa anwani zako yanaweza kukusaidia kujaza fomu kwa haraka zaidi katika Chromium.</translation>
 <translation id="6055895534982063517">Kuna toleo jipya la Chromium linalopatikana, na ni la kasi kuliko la awali.</translation>
+<translation id="6077017812234345835">Hatua hii itafuta kabisa angalau vipengee <ph name="TOTAL_COUNT" /> kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chromium ukitumia $2.</translation>
 <translation id="608189560609172163">Chromium haikuweza kusawazisha data yako kutokana na hitalafu ya kuingia katika akaunti.</translation>
 <translation id="6212496753309875659">Kompyuta hii tayari ina toleo la hivi punde la Chromium. Ikiwa programu haifanyikazi, tafadhali sanidua Chromium na ujaribu tena.</translation>
 <translation id="6248213926982192922">Fanya Chromium kuwa kivinjari chaguo-msingi</translation>
@@ -168,6 +173,7 @@ Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="705851970750939768">Sasisha Chromium</translation>
 <translation id="7064610482057367130">Hakuna usakinishi wa Chromium uliopatikana kusasishwa.</translation>
 <translation id="7066436765290594559">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako. Tafadhali sasisha kauli ya siri unayotumia kusawazisha.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Hatua hii itafuta kabisa kipengee $1 kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chromium ukitumia $2.}other{Hii itafuta kabisa vipengee $1 kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chromium ukitumia $2.}}</translation>
 <translation id="7138853919861947730">Huenda Chromium ikatumia huduma za wavuti kuboresha utumizi wako wa kuvinjari.</translation>
 <translation id="7162152143154757523">Chromium inaweza kutoa ukaguzi bora wa tahajia kwa kutuma unachocharaza katika kivinjari hadi kwenye seva za Google, ikikuruhusu kutumia teknolojia hiyo hiyo ya kukagua tahajia inayotumiwa na utafutaji wa Google.</translation>
 <translation id="7178626992616222740">Chromium ilithibithisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii. Seva ilitoa maelezo ya Cheti cha Uwazi, lakini Chromium haikutambua kumbukumbu zozote za Cheti cha Uwazi.</translation>

@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> diz:</translation>
 <translation id="1132774398110320017">Configurações de preenchimento automático do Google Chrome...</translation>
 <translation id="113770840981343808">Para realizar a confirmação, digite o CVC de quatro dígitos que aparece na parte frontal do cartão.</translation>
-<translation id="1146673768181266552">ID da falha: <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="1152921474424827756">Acessar uma <ph name="BEGIN_LINK" />cópia em cache<ph name="END_LINK" /> de <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> encerrou a conexão inesperadamente.</translation>

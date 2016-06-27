@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> 내용:</translation>
 <translation id="1132774398110320017">Chrome 자동완성 설정...</translation>
 <translation id="113770840981343808">인증을 위해 카드 앞면의 CVC 4자리를 입력하세요.</translation>
-<translation id="1146673768181266552">오류 ID <ph name="CRASH_ID" />(<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1152921474424827756"><ph name="URL" />의 <ph name="BEGIN_LINK" />캐시된 사본<ph name="END_LINK" />에 액세스</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" />와(과)의 연결이 예기치 않게 종료되었습니다.</translation>

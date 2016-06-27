@@ -30,6 +30,7 @@
 <translation id="1881322772814446296">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chromium データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}other{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}}</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2103655854491303969">Chromium アプリ ランチャーを非表示にします。</translation>
 <translation id="2117181891440368863">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報がサーバーから提供されましたが無効でした。</translation>
@@ -81,6 +82,7 @@
 <translation id="3549345495227188780">Chromium OS のスタート ガイド</translation>
 <translation id="3582788516608077514">Chromium を更新しています...</translation>
 <translation id="358997566136285270">Chromium ロゴ</translation>
+<translation id="3645040538872234961">閲覧データがこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。</translation>
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3748537968684000502">Chromium の安全なページを表示しています。</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
@@ -105,6 +107,7 @@
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="457845228957001925">Chromium データに関する重要な情報</translation>
 <translation id="459535195905078186">Chromium アプリ</translation>
+<translation id="4621240073146040695">Chromium を再起動して更新を完了してください。</translation>
 <translation id="4677944499843243528">プロフィールは、別のコンピュータ（<ph name="HOST_NAME" />）の別の Chromium プロセス（<ph name="PROCESS_ID" />）で使用されているようです。Chromium はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chromium を再起動できます。</translation>
 <translation id="4743926867934016338">承諾して検索</translation>
 <translation id="4888717733111232871">mDNS トラフィックを許可する Chromium のインバウンド ルールです。</translation>
@@ -129,10 +132,12 @@
 <translation id="5859963531214966875">Chromium の今後のバージョンではこの Linux システムはサポートされなくなります。</translation>
 <translation id="5862307444128926510">Chromium へようこそ</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
+<translation id="5906655207909574370">端末を再起動して更新を完了してください。</translation>
 <translation id="5942225298871134766">Chromium ではこのパスワードが <ph name="SAVED_PASSWORD_LINK" /> で保存され、次回の入力時に使用されます。</translation>
 <translation id="5942520288919337908">「<ph name="EXTENSION_NAME" />」を Chromium に追加しました。</translation>
 <translation id="59625444380784159">連絡先から詳細を取得すると、Chromium でのフォームの記入が楽になります。</translation>
 <translation id="6055895534982063517">Chromium がさらに速くなりました！最新バージョンをぜひお試しください。</translation>
+<translation id="6077017812234345835">少なくとも <ph name="TOTAL_COUNT" /> 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。</translation>
 <translation id="608189560609172163">ログイン時にエラーが発生したため、Chromium はデータを同期できませんでした。</translation>
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
 <translation id="6248213926982192922">Chromium を既定のブラウザにする</translation>
@@ -166,6 +171,7 @@
 <translation id="705851970750939768">Chromium を更新</translation>
 <translation id="7064610482057367130">更新対象の Chromium のインストールは見つかりませんでした。</translation>
 <translation id="7066436765290594559">Chromium OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{$1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}other{$1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}}</translation>
 <translation id="7138853919861947730">Chromium は、より快適なブラウジングを提供する目的でウェブ サービスを使用することがあります。</translation>
 <translation id="7162152143154757523">Chromium ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されるスペルチェック テクノロジーを活用できます。</translation>
 <translation id="7178626992616222740">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報がサーバーから提供されましたが、証明書の透明性ログを認識できませんでした。</translation>

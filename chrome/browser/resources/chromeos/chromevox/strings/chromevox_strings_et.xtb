@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">Järgmist loendiüksust ei ole.</translation>
 <translation id="1157782847298808853">Klaviatuuri abi</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, liitboks</translation>
+<translation id="1161762950103988776">Hüpe</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menüü-üksus, alammenüüga</translation>
 <translation id="1177863135347784049">Kohandatud</translation>
 <translation id="1188858454923323853">täiendav</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Taimer</translation>
 <translation id="8065607967589909823">Valik on</translation>
 <translation id="8066678206530322333">Bänner</translation>
+<translation id="8076492880354921740">Vahelehed</translation>
 <translation id="8110647606445335195">ARIA maamärke ei ole.</translation>
 <translation id="8153880621934657047">Ei ole tabelis.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alljoon}other{# alljoont}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">Kasutage sirvimiseks üles ja alla nooleklahve või sisestage otsimiseks.</translation>
 <translation id="9192904702577636854">Marquee</translation>
 <translation id="9212322457209634662">Järgmist jaotist ei ole.</translation>
+<translation id="923331726185079994">ChromeVox on värskendatud</translation>
 <translation id="930275611743429116">Valimise alustamine või lõpetamine.</translation>
 <translation id="948171205378458592">Vähenda kõne kiirust</translation>
 <translation id="962913030769097253">Järgmine 1. taseme pealkiri</translation>
 <translation id="973955474346881951">Luba/keela püsiv režiim</translation>
+<translation id="976849232629612000">Üksusi ei ole.</translation>
 </translationbundle>

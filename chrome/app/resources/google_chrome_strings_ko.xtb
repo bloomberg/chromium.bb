@@ -155,8 +155,10 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="568643307450491754">Chrome 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
+<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{이 기기에서 $1개 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}other{이 기기에서 $1개 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}}</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
+<translation id="5906655207909574370">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 기기를 다시 시작하세요.</translation>
 <translation id="5931853610562009806">Mac에서는 비밀번호가 키체인에 저장되어 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="5940385492829620908">웹, 북마크 및 기타 Chrome 콘텐츠가 여기에 저장됩니다.</translation>
 <translation id="5941830788786076944">Chrome을 기본 브라우저로</translation>
@@ -194,6 +196,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7125719106133729027">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 직접 다시 설치해야 합니다.</translation>
 <translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>
 <translation id="7164397146364144019">Google에 발생할 수 있는 보안 문제에 대한 세부정보를 자동으로 보고하도록 설정하면 Chrome을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
+<translation id="7177347454226092725">인터넷 사용 기록이 이 기기에서 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" />이(가) Chrome에 추가되었습니다.</translation>
 <translation id="7191567847629796517">Chrome OS는 외부 애플리케이션 실행을 통한 <ph name="SCHEME" /> 링크 처리를 지원하지 않습니다. 요청된 링크는 <ph name="PROTOLINK" />입니다.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
@@ -209,6 +212,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7473136999113284234">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7494905215383356681">Chrome 오픈소스 라이선스</translation>
+<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{기기에서 $1개 이상의 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}other{기기에서 $1개 이상의 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}}</translation>
 <translation id="7592736734348559088">계정의 로그인 세부정보가 오래되어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="7626032353295482388">Chrome에 오신 것을 환영합니다.</translation>
 <translation id="7747138024166251722">설치 프로그램이 임시 디렉토리를 만들지 못했습니다. 디스크 공간 및 설치 권한을 확인해 보세요.</translation>
@@ -219,6 +223,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7808348361785373670">Chrome에서 삭제...</translation>
 <translation id="7825851276765848807">알 수 없는 오류로 인해 설치에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="7890208801193284374">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
+<translation id="7908168227788431038">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 Chrome을 다시 시작하세요.</translation>
 <translation id="795025003224538582">다시 시작 안함</translation>
 <translation id="8005540215158006229">Chrome을 사용할 준비가 되었습니다.</translation>
 <translation id="8008534537613507642">Chrome 재설치</translation>
@@ -228,6 +233,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8129812357326543296">Chrome 정보(&amp;G)</translation>
 <translation id="8183957050892517584">Chrome은 개인정보를 안전하게 저장하므로 정보를 다시 입력할 필요가 없습니다.</translation>
 <translation id="8205111949707227942" />
+<translation id="8211929904040702368"><ph name="TOTAL_COUNT" />개 이상의 항목이 이 기기에서 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.</translation>
 <translation id="8227755444512189073"><ph name="SCHEME" />SCHEME링크 처리를 위해 Chrome에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는PROTOLINK입니다 <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Chrome에서 카메라와 마이크를 사용 중입니다.</translation>
 <translation id="8286862437124483331">Chrome에서 비밀번호를 표시하려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>

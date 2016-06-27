@@ -21,7 +21,6 @@
 <translation id="113188000913989374">Подтвердите действие на <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Настройки автозаполнения в Chrome...</translation>
 <translation id="113770840981343808">Введите четырехзначный CVC-код, указанный на лицевой стороне карты.</translation>
-<translation id="1146673768181266552">Идентификатор ошибки <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система компьютера не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="1152921474424827756">Открыть <ph name="BEGIN_LINK" />кешированную версию<ph name="END_LINK" /> страницы <ph name="URL" /></translation>
 <translation id="1158211211994409885">Сайт <ph name="HOST_NAME" /> неожиданно разорвал соединение.</translation>

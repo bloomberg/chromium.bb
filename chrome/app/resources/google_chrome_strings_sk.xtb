@@ -153,8 +153,10 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="568643307450491754">Záložky nájdete v ponuke Chrome alebo na paneli so záložkami.</translation>
 <translation id="573759479754913123">Informácie o systéme Chrome OS</translation>
 <translation id="5749068826913805084">Chrome potrebuje na sťahovanie súborov prístup k úložisku.</translation>
+<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Táto akcia natrvalo odstráni $1 položku z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}few{Táto akcia natrvalo odstráni položky v hodnote 1 $ z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}many{Táto akcia natrvalo odstráni $1 položky z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}other{Táto akcia natrvalo odstráni $1 položiek z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}}</translation>
 <translation id="5855036575689098185">Softvér spustený vo vašom počítači nie je kompatibilný s prehliadačom Google Chrome.</translation>
 <translation id="5877064549588274448">Kanál sa zmenil. Ak chcete zmeny použiť, reštartujte zariadenie.</translation>
+<translation id="5906655207909574370">Aktualizácia je takmer hotová! Dokončite ju reštartovaním zariadenia.</translation>
 <translation id="5931853610562009806">Na počítačoch Mac sa heslá môžu ukladať do aplikácie Keychain. Ostatní používatelia prehliadača Chrome, ktorí zdieľajú tento účet systému OS X, k nim môžu pristupovať a môžu ich synchronizovať.</translation>
 <translation id="5940385492829620908">Tu nájdete svoj obsah na webe, záložky a ďalšie položky prehliadača Chrome.</translation>
 <translation id="5941830788786076944">Nastaviť prehľadávač Google Chrome ako predvolený</translation>
@@ -192,6 +194,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7125719106133729027">Prehliadač Chrome sa nedokázal aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré skvelé nové funkcie a bezpečnostné opravy. Prehliadač Chrome je potrebné preinštalovať ručne.</translation>
 <translation id="7161904924553537242">Víta vás prehľadávač Google Chrome</translation>
 <translation id="7164397146364144019">Automatickým nahlasovaním podrobností o možných bezpečnostných problémoch môžete prispieť k zvýšeniu zabezpečenia prehliadača Chrome a k zjednodušeniu jeho používania.</translation>
+<translation id="7177347454226092725">Táto akcia natrvalo odstráni vaše dáta prehliadania z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.</translation>
 <translation id="7185038942300673794">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané do prehliadača Chrome.</translation>
 <translation id="7191567847629796517">OS Google Chrome nepodporuje spúšťanie externých aplikácií na spracovanie odkazov <ph name="SCHEME" />. Požadovaný odkaz: <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Prečo sa zobrazila táto výzva?</translation>
@@ -207,6 +210,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7473136999113284234">Chrome sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu.</translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7494905215383356681">Licencie open source prehliadača Chrome</translation>
+<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Táto akcia natrvalo odstráni minimálne $1 položku z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}few{Táto akcia natrvalo odstráni položky v minimálnej hodnote 1 $ z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}many{Táto akcia natrvalo odstráni minimálne $1 položky z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}other{Táto akcia natrvalo odstráni minimálne $1 položiek z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}}</translation>
 <translation id="7592736734348559088">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
 <translation id="7626032353295482388">Víta vás prehliadač Chrome</translation>
 <translation id="7747138024166251722">Inštalátor nemohol vytvoriť dočasný priečinok. Skontrolujte úroveň zaplnenia disku a povolenie na inštaláciu softvéru.</translation>
@@ -217,6 +221,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7808348361785373670">Odstrániť z prehliadača Chrome...</translation>
 <translation id="7825851276765848807">Inštalácia zlyhala kvôli neznámej chybe. Skúste aplikáciu Google Chrome stiahnuť znova.</translation>
 <translation id="7890208801193284374">Ak počítač zdieľate s rodinou a priateľmi, môžu v prehliadači Chrome prehliadať oddelene a tiež si ho nastaviť podľa vlastných požiadaviek.</translation>
+<translation id="7908168227788431038">Aktualizácia je takmer hotová! Dokončite ju reštartovaním prehliadača Google Chrome.</translation>
 <translation id="795025003224538582">Nereštartovať</translation>
 <translation id="8005540215158006229">Prehliadač Chrome je takmer pripravený.</translation>
 <translation id="8008534537613507642">Preinštalovať prehliadač Chrome</translation>
@@ -226,6 +231,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8129812357326543296">Informácie o prehliadači &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome vaše osobné údaje bezpečne uloží, aby ste ich už nemuseli znova zadávať.</translation>
 <translation id="8205111949707227942">Voliteľné: Chcem pomôcť pri vylepšovaní služieb prehliadača Chrome tým, že bude automaticky odosielať spoločnosti Google štatistické údaje o jeho využívaní a správy o výpadkoch.</translation>
+<translation id="8211929904040702368">Táto akcia natrvalo odstráni niekoľko položiek (najmenej <ph name="TOTAL_COUNT" />) z daného zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.</translation>
 <translation id="8227755444512189073">Prehľadávač Google Chrome potrebuje spustiť externú aplikáciu na spracovanie odkazov <ph name="SCHEME" />. Požadovaný odkaz je <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome používa vašu kameru a mikrofón.</translation>
 <translation id="8286862437124483331">Prehliadač Google Chrome sa pokúša zobraziť heslá. Ak to chcete povoliť, zadajte svoje heslo systému Windows.</translation>

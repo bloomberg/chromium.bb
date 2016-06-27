@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> dice:</translation>
 <translation id="1132774398110320017">Configuración de la función Autocompletar de Chrome...</translation>
 <translation id="113770840981343808">Introduce el código CVC de cuatro dígitos que aparece en el anverso de tu tarjeta para verificarla</translation>
-<translation id="1146673768181266552">ID de error <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, el sistema operativo de tu ordenador no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="1152921474424827756">Accede a una <ph name="BEGIN_LINK" />copia almacenada en caché<ph name="END_LINK" /> de <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ha cerrado la conexión de forma inesperada.</translation>
@@ -657,7 +656,7 @@
 <translation id="8364627913115013041">No establecida</translation>
 <translation id="8412145213513410671">Fallos (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Debes introducir la misma frase de contraseña dos veces.</translation>
-<translation id="8428213095426709021">Configuración</translation>
+<translation id="8428213095426709021">Ajustes</translation>
 <translation id="8437238597147034694">&amp;Deshacer movimiento</translation>
 <translation id="8488350697529856933">Aplicable a</translation>
 <translation id="8494979374722910010">Se ha producido un error al intentar conectar con el servidor.</translation>

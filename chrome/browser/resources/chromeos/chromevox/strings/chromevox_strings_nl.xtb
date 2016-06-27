@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">Geen volgend lijstitem.</translation>
 <translation id="1157782847298808853">Help bij toetsenbord</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, keuzelijst met invoervak</translation>
+<translation id="1161762950103988776">Jump</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menu-item, met submenu</translation>
 <translation id="1177863135347784049">Aangepast</translation>
 <translation id="1188858454923323853">aanvullend</translation>
@@ -336,7 +337,7 @@
 <translation id="4372705107434148843">Spraak stoppen</translation>
 <translation id="4373197658375206385">Geen vorig item dat geen link is.</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
-<translation id="443163561286008705">reset</translation>
+<translation id="443163561286008705">resetten</translation>
 <translation id="4471074325120394300">Geen links.</translation>
 <translation id="4476183483923481720">nieuwe regel</translation>
 <translation id="4482330759234983253">Vorige tabel</translation>
@@ -491,7 +492,7 @@
 <translation id="5891934789323004067">Tabel</translation>
 <translation id="5919442531159595654">kopiëren.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{gelijkteken}other{# gelijktekens}}</translation>
-<translation id="5939518447894949180">Terugzetten</translation>
+<translation id="5939518447894949180">Resetten</translation>
 <translation id="5948123859135882163">Interpretatie van wiskundige formules schakelen tussen structureel en semantisch</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">Dialoogvenster</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Timer</translation>
 <translation id="8065607967589909823">Selectie is</translation>
 <translation id="8066678206530322333">Banner</translation>
+<translation id="8076492880354921740">Tabbladen</translation>
 <translation id="8110647606445335195">Geen ARIA-oriëntatiepunten.</translation>
 <translation id="8153880621934657047">Niet in tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">Gebruik de pijl-omhoog en -omlaag om te browsen of typ om te zoeken.</translation>
 <translation id="9192904702577636854">Rollende tekst (marquee)</translation>
 <translation id="9212322457209634662">Geen volgend gedeelte.</translation>
+<translation id="923331726185079994">ChromeVox geüpdatet</translation>
 <translation id="930275611743429116">Selectie starten of beëindigen.</translation>
 <translation id="948171205378458592">Spreeksnelheid verlagen</translation>
 <translation id="962913030769097253">Volgende kop voor niveau 1</translation>
 <translation id="973955474346881951">Modus voor vastzetten in-/uitschakelen</translation>
+<translation id="976849232629612000">Geen items.</translation>
 </translationbundle>

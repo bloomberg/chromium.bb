@@ -30,6 +30,7 @@
 <translation id="1881322772814446296">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chromium 設定檔。您的 Chromium 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，您可以選擇建立新的設定檔。<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium 沒有回應，要立即重新啟動嗎？</translation>
 <translation id="1967743265616885482">已知相同名稱的模組會與 Chromium 衝突。</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{這會將至少 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。}other{這會將至少 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。}}</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2103655854491303969">Chromium 應用程式啟動器即將停止服務。</translation>
 <translation id="2117181891440368863">Chromium 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器提供了 Certificate Transparency 資訊，但該資訊無效。</translation>
@@ -81,6 +82,7 @@
 <translation id="3549345495227188780">開始使用 Chromium 作業系統</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
 <translation id="358997566136285270">Chromium 標誌</translation>
+<translation id="3645040538872234961">這會將您的瀏覽資料從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3748537968684000502">您正在瀏覽安全型 Chromium 網頁。</translation>
 <translation id="378917192836375108">透過 Chromium，您只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
@@ -105,6 +107,7 @@
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入，可以在所有登入的裝置上使用您的書籤、紀錄和其他設定。</translation>
 <translation id="457845228957001925">Chromium 資料的相關重要資訊</translation>
 <translation id="459535195905078186">Chromium 應用程式</translation>
+<translation id="4621240073146040695">即將更新成最新版本！重新啟動 Chromium 即可完成更新程序。</translation>
 <translation id="4677944499843243528">另一台電腦 (<ph name="HOST_NAME" />) 的 Chromium 處理程序 (<ph name="PROCESS_ID" />) 正在使用這個設定檔。Chromium 已鎖定此設定檔，確保其不致受損。如果您確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chromium。</translation>
 <translation id="4743926867934016338">接受並搜尋</translation>
 <translation id="4888717733111232871">允許 mDNS 流量的 Chromium 輸入規則。</translation>
@@ -129,10 +132,12 @@
 <translation id="5859963531214966875">日後發佈的 Chromium 版本將不再支援這種 Linux 系統。</translation>
 <translation id="5862307444128926510">歡迎使用 Chromium</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
+<translation id="5906655207909574370">即將更新成最新版本！重新啟動您的裝置即可完成更新程序。</translation>
 <translation id="5942225298871134766">Chromium 會使用「<ph name="SAVED_PASSWORD_LINK" />」儲存此密碼，讓您在下次需要使用時套用。</translation>
 <translation id="5942520288919337908">已將「<ph name="EXTENSION_NAME" />」加到 Chromium。</translation>
 <translation id="59625444380784159">利用您的通訊錄詳細資料，快速在 Chromium 中填寫表單。</translation>
 <translation id="6055895534982063517">新版 Chromium 現已推出，速度更勝以往。</translation>
+<translation id="6077017812234345835">這會將至少 <ph name="TOTAL_COUNT" /> 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。</translation>
 <translation id="608189560609172163">登入時發生錯誤，因此 Chromium 無法同步處理您的資料。</translation>
 <translation id="6212496753309875659">這台電腦已安裝較新的 Chromium 版本。如果軟體無法順利運作，請解除安裝 Chromium，然後再試一次。</translation>
 <translation id="6248213926982192922">將 Chromium 設為預設瀏覽器</translation>
@@ -166,6 +171,7 @@
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="7064610482057367130">找不到安裝的 Chromium，無法更新。</translation>
 <translation id="7066436765290594559">Chromium 作業系統無法同步處理您的資料，請更新您的同步通關密語。</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{這會將 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。}other{這會將 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。}}</translation>
 <translation id="7138853919861947730">Chromium 透過網路服務改善瀏覽品質。</translation>
 <translation id="7162152143154757523">Chromium 可將您在瀏覽器中輸入的字詞傳送給 Google 伺服器，並透過 Google 搜尋所使用的拼字檢查技術，為您提供更精確的拼字檢查功能。</translation>
 <translation id="7178626992616222740">Chromium 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器提供了 Certificate Transparency 資訊，但 Chromium 無法辨識任何 Certificate Transparency 紀錄。</translation>

@@ -21,18 +21,6 @@
 
       Jos käytäntöä ei ole määritetty, asetus otetaan käyttöön, mutta käyttäjät voivat vaihtaa sitä.</translation>
 <translation id="1062011392452772310">Salli etätodennus laitteelle</translation>
-<translation id="108735515923160176">Määrittää oletustyypin etusivulle, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta etusivuasetuksia. Etusivuna voidaan käyttää tiettyä URL-osoitetta tai uusi välilehti -sivua.
-
-          Jos tämä asetus on käytössä, etusivuna käytetään aina uusi välilehti -sivua eikä etusivun URL-osoitetta huomioida.
-
-          Jos tämä asetus ei ole käytössä, käyttäjän etusivuna ei koskaan käytetä uusi välilehti -sivua, paitsi jos etusivun URL-osoitteeksi on asetettu chrome://newtab.
-
-          Jos tämä asetus on otettu käyttöön tai poistettu käytöstä, <ph name="PRODUCT_NAME" /> ei salli käyttäjän muokata etusivun tyyppiä.
-
-          Jos tätä käytäntöä ei aseteta, käyttäjä voi itse valita, käytetäänkö etusivuna uusi välilehti -sivua.
-
-          Tämä käytäntö ei ole käytettävissä Windowsin esiintymissä, joita ei ole liitetty
-          Active Directory -toimialueeseen.</translation>
 <translation id="1090892140761957285">URL-osoite, jota käytetään etäkäytön asiakkaan todennustunnuksen vahvistamiseen.
 
           Jos tämä käytäntö on asetettu, etäkäytön isäntä käyttää tätä URL-osoitetta vahvistaessaan todennustunnukset, jotka se vastaanottaa etäkäytön asiakkailta. Tämä on yhteyksien hyväksymisen edellytys. Tämän käytännön kanssa täytyy käyttää myös käytäntöä RemoteAccessHostTokenUrl.
@@ -40,6 +28,13 @@
           Tämä ominaisuus on toistaiseksi poistettu käytöstä palvelimella.</translation>
 <translation id="1096105751829466145">Oletushakupalvelu</translation>
 <translation id="1103860406762205913">Ottaa käyttöön vanhan verkkopohjaisen sisäänkirjautumisen</translation>
+<translation id="1128903365609589950">Määrittää levyllä sijaitsevan hakemiston, johon <ph name="PRODUCT_NAME" /> tallentaa välimuistitiedostot.
+
+      Jos otat tämän käytännön käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä hakemistoa, vaikka käyttäjä antaisi --disk-cache-dir-komennon. Älä määritä käytännön arvoksi juurihakemistoa tai muihin tarkoituksiin käytettävää hakemistoa, sillä <ph name="PRODUCT_NAME" /> hallinnoi sen sisältöä ja seurauksena voi olla tietojen katoamista tai muita odottamattomia ongelmia.
+
+      Katso mahdollisten muuttujien luettelo osoitteesta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Jos tätä käytäntöä ei määritetä, välimuistin oletushakemistoa käytetään ja käyttäjä voi ohittaa tämän antamalla komentorivillä komennon --disk-cache-dir.</translation>
 <translation id="1138294736309071213">Tämä käytäntö on aktiivisena vain jälleenmyyntitilassa.
 
       Määrittää ajan, jonka kuluttua kirjautumisruudulla näytetään näytönsäästäjä jälleenmyyntitilassa olevilla laitteilla.
@@ -175,15 +170,6 @@
 <translation id="1757688868319862958">Määrittää, saako <ph name="PRODUCT_NAME" /> suorittaa todennusta edellyttäviä laajennuksia. Jos otat asetuksen käyttöön, muut kuin vanhentuneet laajennukset suoritetaan automaattisesti. Jos asetus on pois käytöstä tai sitä ei aseteta, todennusta edellyttävien laajennusten suorittamiseen pyydetään erikseen lupa. Tällaiset laajennukset voivat vaarantaa suojauksen.</translation>
 <translation id="1803646570632580723">Luettelo kiinnitetyistä sovelluksista, jotka näytetään käynnistyspalkissa</translation>
 <translation id="1808715480127969042">Estä evästeet näissä sivustoissa</translation>
-<translation id="1811270320106005269">Ota lukitus käyttöön, kun tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävä laite on käyttämättömänä tai virransäästötilassa.
-
-      Jos otat tämän asetuksen käyttöön, käyttäjältä pyydetään salasanaa laitteen herättämiseksi virransäästötilasta.
-
-      Jos poistat tämän asetuksen käytöstä, käyttäjältä ei pyydetä salasanaa laitteen herättämiseksi virransäästötilasta.
-
-      Jos otat tämän asetuksen käyttöön tai poistat sen käytöstä, käyttäjä ei voi muuttaa tai ohittaa sitä.
-
-      Jos tätä käytäntöä ei aseteta, käyttäjä voi valita, pyydetäänkö salasanaa laitteen lukituksen avaamisen yhteydessä.</translation>
 <translation id="1827523283178827583">Käytä kiinteitä välityspalvelimia</translation>
 <translation id="1843117931376765605">Käyttäjäkäytännön päivitystiheys</translation>
 <translation id="1847960418907100918">Määrittää parametrit, joita käytetään tehtäessä pikahakuja POST-metodin avulla. Se koostuu pilkuilla erotetuista nimi/arvo-pareista. Jos arvo on malliparametri kuten yllä olevan esimerkin {searchTerms}, se korvataan oikeilla hakusanatiedoilla.
@@ -315,6 +301,7 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 <translation id="2309390639296060546">Maantieteellisen sijainnin oletusasetus</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
 <translation id="2337466621458842053">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat näyttää kuvia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
+<translation id="2366415278352956652">Mahdollistaa suoratoiston</translation>
 <translation id="2371309782685318247">Määrittää millisekunteina aikavälin, jolla laitteen hallintapalvelulta pyydetään käyttäjäkäytäntötietoja.
 
       Tämän käytännön määrittäminen ohittaa oletusarvon (3 tuntia). Käytännölle voidaan määrittää arvoja väliltä 1800000 (30 minuuttia) – 86400000 (1 päivä). Tämän alueen ulkopuoliset arvot muutetaan lähimpään raja-arvoon.
@@ -466,7 +453,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2623014935069176671">Odota alkuperäisen käyttäjän toimintaa</translation>
 <translation id="262740370354162807">Salli asiakirjojen lähettäminen palveluun <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ota äänipalaute käyttöön</translation>
-<translation id="2646290749315461919">Voit määrittää, voivatko sivustot seurata käyttäjän fyysistä sijaintia. Voit sallia tai kieltää käyttäjien sijainnin seuraamisen oletuksena, tai kysyä käyttäjältä aina sivuston pyytäessä sijaintitietoja. Jos tätä käytäntöä ei ole määritetty, AskGeolocation-käytäntöä käytetään ja käyttäjä voi muuttaa asetusta.</translation>
 <translation id="2650049181907741121">Toiminto, kun käyttäjä sulkee kannen</translation>
 <translation id="2660846099862559570">Älä käytä välityspalvelinta</translation>
 <translation id="267596348720209223">Määrittää hakupalvelun tukemat merkkikoodaukset. Koodaukset ovat koodisivun nimiä, kuten UTF-8, GB2312 ja ISO-8859-1. Koodauksia yritetään käyttää määritetyssä järjestyksessä. Tämä käytäntö on valinnainen, ja jos sitä ei ole määritetty, käytetään oletusasetusta (UTF-8). Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
@@ -689,20 +675,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultKeygenSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
-<translation id="3398137877608138703">Voit sallia tai estää videon kaappaamisen.
-
-      Jos tämä on käytössä tai tätä ei ole määritetty (oletus), käyttäjältä pyydetään lupaa
-      videokaappauksen tekemiseen, paitsi VideoCaptureAllowedUrls-luettelossa listattujen
-      URL-osoitteiden tapauksessa. Nämä osoitteet sallitaan ilman erillistä lupaa.
-      ARC-sovellukset saavat käyttää kameraa, jos niille on annettu
-      lupa.
-
-      Jos tämä ei ole käytössä, käyttäjältä ei koskaan kysytä lupaa ja videokaappaus
-      on käytössä vain VideoCaptureAllowedUrls-luettelossa mainituille URL-osoitteille.
-      ARC-sovelluksille ei silloin anneta lupaa käyttää kameraa.
-
-      Tämä käytäntö vaikuttaa kaikentyyppisiin videotuloihin, ARC-sovelluksia
-      lukuun ottamatta, ei ainoastaan sisäänrakennettuun kameraan.</translation>
 <translation id="3417418267404583991">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii vieraskirjautumisen. Vieraskirjautuminen on anonyymi käyttökerta, johon ei tarvita salasanaa.
 
       Jos tälle käytännölle asetetaan epätosi-arvo, <ph name="PRODUCT_OS_NAME" /> ei salli vieraskirjautumista.</translation>
@@ -963,6 +935,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="4449545651113180484">Kierrä näyttöä 270 astetta myötäpäivään.</translation>
 <translation id="4467952432486360968">Estä kolmannen osapuolen evästeet</translation>
 <translation id="4474167089968829729">Ota käyttöön salasanojen tallentaminen salasanojen hallintaohjelmaan</translation>
+<translation id="447686899376429408">Jos käytännön arvoksi on asetettu Tosi tai sille ei aseteta mitään arvoa, käyttäjät voivat suoratoistaa selaimella välilehtiä, sivustoja tai työpöydän. Jos sen arvo on Epätosi, nämä toiminnot eivät ole käytössä.</translation>
 <translation id="4480694116501920047">Pakota SafeSearch käyttöön</translation>
 <translation id="4482640907922304445">Näyttää Etusivu-painikkeen tuotteen <ph name="PRODUCT_NAME" /> työkalurivissä. Jos otat tämän asetuksen käyttöön, Etusivu-painike näkyy aina. Jos poistat asetuksen käytöstä, Etusivu-painiketta ei näytetä. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos tätä käytäntöä ei ole määritetty, käyttäjä voi valita, haluaako hän Etusivu-painikkeen näkyviin työkalurivissä.</translation>
 <translation id="4492287494009043413">Estä kuvakaappauksien ottaminen</translation>
@@ -1031,13 +1004,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos tätä käytäntöä ei ole määritetty, suuri osoitin ei ole käytössä aluksi, mutta käyttäjä voi ottaa sen käyttöön milloin tahansa.</translation>
 <translation id="4807950475297505572">Kauimmin käyttämättä olleet käyttäjät poistetaan, kunnes vapaata tilaa on riittävästi</translation>
-<translation id="480987484799365700">Jos käytäntö on otettu käyttöön, se pakottaa profiilin lyhytkestoiseen tilaan. Jos tämä käytäntö on määritetty käyttöjärjestelmän käytännöksi (esim. Windowsin GPO), se otetaan käyttöön kaikissa järjestelmän profiileissa. Jos käytännöksi asetetaan pilvikäytäntö, sitä käytetään vain profiilissa, joka on kirjattu sisään hallitulla tilillä.
-
-      Tässä tilassa profiilitietoja säilytetään levyllä vain käyttäjäistunnon ajan. Ominaisuuksia, kuten selainhistoriaa, laajennuksia ja niiden tietoja, verkkotietoja, kuten evästeitä ja verkkotietokantoja, ei säilytetä, kun selain suljetaan. Tämä ei kuitenkaan estä käyttäjää lataamasta tietoja levylle manuaalisesti, tallentamasta sivuja tai tulostamasta niitä.
-
-      Jos käyttäjä on ottanut synkronoinnin käyttöön, kaikki nämä tiedot säilytetään käyttäjän synkronointiprofiilissa samoin kuin tavallisissa profiileissa. Incognito-tila on myös saatavilla, ellei käytäntö ole erikseen poistanut sitä käytöstä.
-
-      Jos käytäntö on poistettu käytöstä tai sitä ei ole asetettu, kirjautuminen avaa tavallisen profiilin.</translation>
 <translation id="4816674326202173458">Anna yrityskäyttäjän olla sekä ensisijainen että toissijainen käyttäjä (oletuskäyttäytyminen ei-hallinnoiduille käyttäjille)</translation>
 <translation id="4826326557828204741">Toiminto, joka suoritetaan, jos käyttäjä ei tee mitään tietyn ajan kuluessa laitteen käyttäessä akun virtaa</translation>
 <translation id="4834526953114077364">Kauimmin käyttämättä olleet käyttäjät, jotka eivät ole kirjautuneet sisään viimeisten kolmen kuukauden aikana, poistetaan, kunnes vapaata tilaa on riittävästi.</translation>
@@ -1117,32 +1083,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> lataa kaikki asennetut laitteen omaa viestijärjestelmää käyttävät isännät.</translation>
 <translation id="5290940294294002042">Määritä laajennukset, jotka käyttäjä voi ottaa käyttöön tai poistaa käytöstä</translation>
-<translation id="5298412045697677971">Käyttäjän avatar-kuvan määrittäminen.
-
-      Tämän käytännön avulla voit määrittää käyttäjän avatar-kuvan kirjautumisruudulle. Käytäntö asetetaan määrittämällä URL-osoite, josta <ph name="PRODUCT_OS_NAME" /> voi ladata avatar-kuvan ja hajautusarvon, jonka avulla latauksen oikeellisuus todennetaan. Kuvan on oltava JPEG-muodossa, eikä sen koko voi olla yli 512 kt. URL-osoitteen käyttäminen ei saa edellyttää todennusta.
-
-      Avatar-kuva ladataan ja tallennetaan välimuistiin. Kuva ladataan uudelleen, jos URL-osoite tai hajautusarvo muuttuvat.
-
-      Käytäntö tulee määrittää merkkijonona, joka ilmoittaa URL-osoitteen ja hajautusarvon JSON-muodossa seuraavan mallin mukaisesti:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL-osoite, josta avatar-kuva ladataan.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Avatar-kuvan SHA-256-hajautusarvo.",
-            "type": "string"
-          }
-        }
-      }
-
-      Jos käytäntö asetetaan, <ph name="PRODUCT_OS_NAME" /> lataa avatar-kuvan ja käyttää sitä.
-
-      Jos asetat käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
-
-      Jos käytäntöä ei aseteta, käyttäjä voi valita itse avatar-kuvansa kirjautumisruudulle.</translation>
 <translation id="5302612588919538756">Tämä käytäntö on vanhentunut, ja sen sijaan tulee harkita käytäntöä SyncDisabled.
 
       Määrittää, salliiko <ph name="PRODUCT_NAME" /> käyttäjän kirjautumisen.
@@ -1417,15 +1357,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6233173491898450179">Aseta lataushakemisto</translation>
 <translation id="6244210204546589761">Käynnistettäessä avattavat sivut</translation>
 <translation id="6258193603492867656">Määrittää, tuleeko luodun Kerberos SPN:n sisältää standardista poikkeava portti. Jos otat tämän asetuksen käyttöön ja standardista poikkeava portti (esim. muu portti kuin 80 tai 443) annetaan, se lisätään luotuun Kerberos SPN:ään. Jos poistat asetuksen käytöstä tai et määritä asetusta, luotu Kerberos SPN ei sisällä porttia missään tapauksessa.</translation>
-<translation id="6279809962528392889">Määrittää, siirretäänkö käyttäjän profiiliin todennusevästeet, jotka SAML-tunnistuspalvelu asettaa kirjautumisen yhteydessä.
-
-      Kun kirjautumisen aikana käytetään SAML-tunnistuspalvelua, tunnistuspalvelun asettamat evästeet tallennetaan ensin tilapäiseen profiiliin. Todennus voidaan välittää edelleen siirtämällä nämä evästeet käyttäjän profiiliin.
-
-      Kun käytännön arvo on Tosi, tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin aina, kun hän käyttää kirjautumisen aikana SAML-tunnistuspalvelua.
-
-      Jos käytännön arvo on Epätosi tai sitä ei aseteta, tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain hänen kirjautuessaan laitteelle ensimmäisen kerran.
-
-      Tämä käytäntö vaikuttaa vain käyttäjiin, joiden verkkotunnus vastaa verkkotunnusta, johon laite on rekisteröity. Muiden käyttäjien osalta tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain käyttäjän kirjautuessa laitteelle ensimmäisen kerran.</translation>
 <translation id="6281043242780654992">Määrittää laitteen oman viestijärjestelmän käytännöt. Kiellettyjen luettelossa olevia laitteen omaa viestijärjestelmää käyttäviä isäntiä ei sallita, ellei niitä ole lisätty sallittujen luetteloon.</translation>
 <translation id="6282799760374509080">Salli tai estä äänen kaappaaminen</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1618,6 +1549,13 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7003334574344702284">Tämä käytäntö pakottaa tallennettujen salasanojen tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, tallennettuja salasanoja ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda salasanat, tai ne voidaan tuoda automaattisesti.</translation>
 <translation id="7003746348783715221">Tuotteen <ph name="PRODUCT_NAME" /> asetukset</translation>
 <translation id="7006788746334555276">Sisältöasetukset</translation>
+<translation id="7007671350884342624">Määrittää levyllä sijaitsevan hakemiston, johon <ph name="PRODUCT_NAME" /> tallentaa käyttäjätietoja.
+
+      Jos otat tämän käytännön käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä hakemistoa, vaikka käyttäjä antaisi --user-data-dir-komennon. Älä määritä käytännön arvoksi juurihakemistoa tai muihin tarkoituksiin käytettävää hakemistoa, sillä <ph name="PRODUCT_NAME" /> hallinnoi sen sisältöä ja seurauksena voi olla tietojen katoamista tai muita odottamattomia ongelmia.
+
+      Katso mahdollisten muuttujien luettelo osoitteesta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Jos tätä käytäntöä ei määritetä, käytetään profiilin oletuspolkua ja käyttäjä voi ohittaa tämän antamalla komentorivillä komennon --user-data-dir.</translation>
 <translation id="7027785306666625591">Määritä tuotteen <ph name="PRODUCT_OS_NAME" /> virranhallinta.
 
       Näillä käytännöillä voit määrittää, miten <ph name="PRODUCT_OS_NAME" /> toimii, kun laite on käyttämättömänä tietyn aikaa.</translation>
@@ -1628,16 +1566,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="706669471845501145">Anna kaikkien sivustojen näyttää työpöytäilmoituksia</translation>
 <translation id="7079519252486108041">Estä ponnahdusikkunat näissä sivustoissa</translation>
 <translation id="7091198954851103976">Suorittaa todennusta edellyttävät laajennukset aina</translation>
-<translation id="7109916642577279530">Salli tai estä äänikaappaus.
-
-      Jos äänikaappaus on käytössä tai sitä ei ole määritetty (oletus), käyttäjää
-      pyydetään hyväksymään äänikaappauksen käyttö, paitsi silloin jos URL-osoite
-      on määritetty AudioCaptureAllowedUrls-luettelossa. Näille osoitteille käyttö sallitaan kysymättä erikseen.
-
-      Kun tämä käytäntö on poistettu käytöstä, käyttäjältä ei koskaan kysytä asiasta
-      ja äänikaappaus on käytettävissä vain AudioCaptureAllowedUrls-luettelossa määritellyille URL-osoitteille.
-
-      Tätä käytäntöä sovelletaan kaikentyyppisiin äänilähteisiin, ei vain sisäänrakennettuun mikrofoniin.</translation>
 <translation id="7115494316187648452">Määrittää, käynnistyykö <ph name="PRODUCT_NAME" /> prosessina käyttöjärjestelmän kirjautumisen jälkeen ja pysyykö se käynnissä myös selainikkunoiden sulkemisen jälkeen. Näin taustasovellukset ja käyttökerta evästeineen pysyvät aktiivisina. Taustaprosessi merkitään ilmaisinalueella kuvakkeella, jonka kautta se voidaan koska tahansa sulkea.
 
       Jos tämän käytännön arvo on Tosi, taustatila on käytössä, eikä käyttäjä voi muokata sitä selaimen asetuksissa.
@@ -1989,17 +1917,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos tätä käytäntöä ei ole määritetty, URLBlacklist-käytännön luettelossa oleviin kiellettyihin osoitteisiin ei tehdä poikkeuksia.</translation>
 <translation id="8176035528522326671">Anna yrityskäyttäjän olla vain ensisijainen käyttäjä usean profiilin käyttökerralla (oletuskäyttäytyminen yrityksen hallinnoimille käyttäjille)</translation>
-<translation id="8191318459035150777">Määrittää tuotteen <ph name="PRODUCT_NAME" /> oletusetusivun URL-osoitteen ja estää käyttäjiä vaihtamasta osoitetta.
-
-          Etusivu on sivu, joka avautuu Etusivu-painiketta painettaessa. Käynnistyksen yhteydessä avautuvia sivuja hallinnoidaan RestoreOnStartup-käytäntöjen avulla.
-
-          Etusivun tyyppi voi olla joko tässä määrittämäsi URL-osoite tai Uusi välilehti -sivu. Jos valitset Uusi välilehti -sivun, tämä käytäntö ei ole voimassa.
-
-          Jos otat tämän asetuksen käyttöön, käyttäjät eivät voi muuttaa etusivun URL-osoitetta tuotteessa <ph name="PRODUCT_NAME" />. He voivat kuitenkin valita etusivukseen Uusi välilehti -sivun.
-
-          Jos tätä käytäntöä ei määritetä, käyttäjä voi valita haluamansa etusivun, jos myöskään HomepageIsNewTabPage-käytäntöä ei ole määritetty.
-
-          Tätä käytäntöä ei voi soveltaa Windows-laitteissa, jotka eivät käytä Active Directory -verkkotunnusta.</translation>
 <translation id="8197918588508433925">Tämä käytäntö määrittää sovellukset, jotka voivat käyttää Enterprise Platform Keys -sovellusliittymää chrome.enterprise.platformKeysPrivate.challengeUserKey() etätodennukseen. Vain tähän luetteloon lisätyt sovellukset voivat käyttää sovellusliittymää.
 
           Jos laajennusta ei ole lisätty luetteloon tai luetteloa ei ole määritetty, sen sovellusliittymäkutsu epäonnistuu ja palauttaa virhekoodin.</translation>
@@ -2012,6 +1929,26 @@ Jos tämä käytäntö on määritetty, kirjautumisruudussa käytetään kunkin 
 Jos tätä käytäntöä ei määritetä, <ph name="PRODUCT_OS_NAME" /> näyttää kirjautumisruudulla laitteeseen lisätyn tilin sähköpostitilin tunnuksen.
 
 Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</translation>
+<translation id="8279832363395120715">Tämä karsii https://-alkuisista URL-osoitteista yksityisyyden ja tietoturvan kannalta riskialttiit osat, ennen kuin osoitteet lähetetään PAC-ohjelmille (Proxy Auto Config), joita <ph name="PRODUCT_NAME" /> käyttää välityspalvelimen selvityksen aikana.
+
+      Jos käytännön arvo on Tosi, tämä suojaustoiminto on käytössä, ja https://-
+      URL-osoitteiden osat karsitaan ennen osoitteiden lähettämistä PAC-ohjelmille.
+      Tällöin PAC-ohjelma ei näe tietoja, jotka 
+      tavallisesti ovat salattuja (esim. URL-osoitteen polku ja kysely).
+
+      Jos tämän käytännön arvo on epätosi, suojaustoiminto poistetaan käytöstä 
+      ja PAC-ohjelmilla on oikeus tarkastella koko https://-URL-osoitetta.
+      Tämä asetus koskee kaikkia PAC-ohjelmia riippumatta niiden alkuperästä,
+      myös WPAD:n kautta löydettyjä ja suojaamattomien yhteyksien kautta
+      noudettuja PAC-ohjelmia.
+
+      Käytännön oletusarvo on Tosi (suojaustoiminto käytössä), paitsi Chrome-
+      käyttöjärjestelmän yrityskäyttäjillä, joiden käytössä oletusarvo on Epätosi.
+
+      Tosi-arvon asettamista suositellaan. Epätosi-arvon asettaminen on tarpeen
+      vain silloin, kun käytäntö aiheuttaa yhteensopivuusongelman PAC-ohjelmien kanssa.
+
+      Käytännön ohittamisvaihtoehto on tarkoitus poistaa tulevaisuudessa.</translation>
 <translation id="8285435910062771358">Koko näytön suurentaja käytössä</translation>
 <translation id="8294750666104911727">Yleensä sivut, joiden X-UA-Compatible-kohdan arvoksi on asetettu chrome=1 hahmonnetaan kohteessa <ph name="PRODUCT_FRAME_NAME" /> riippumatta "ChromeFrameRendererSettings"-käytännöstä.
 
@@ -2201,13 +2138,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan käyttämättömyysajan arvoa pienemmäksi.</translation>
 <translation id="891435090623616439">koodattu JSON-merkkijonoksi; lisätietoja on osoitteessa <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8929359433203547810">Jos tämän käytännön arvo on epätosi, <ph name="PRODUCT_OS_NAME" /> poistaa Bluetoothin käytöstä eikä käyttäjä voi palauttaa sitä käyttöön.
-
-      Jos tämän käytännön arvo on tosi tai sitä ei määritetä, käyttäjä voi itse ottaa Bluetoothin käyttöön tai poistaa sen käytöstä.
-
-      Jos tämä käytäntö on määritetty, käyttäjä ei voi muuttaa tai ohittaa sitä.
-
-      Laite täytyy käynnistää uudelleen Bluetoothin käyttöönoton jälkeen, jotta muutokset tulevat voimaan (laitetta ei tarvitse käynnistää uudelleen, kun Bluetooth poistetaan käytöstä).</translation>
 <translation id="8947415621777543415">Ilmoita laitteen sijainti</translation>
 <translation id="8951350807133946005">Aseta levyn välimuistihakemisto</translation>
 <translation id="8955719471735800169">Sivun alkuun</translation>
@@ -2216,8 +2146,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
       käyttö sallitaan ilman erillistä kehotetta.
 
       Huom. Versioon 45 asti tätä käytäntöä tuettiin vain kioskitilassa.</translation>
-<translation id="8965758116018152083">Jos tämän käytännön arvoksi asetetaan tyhjä merkkijono tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> ei näytä automaattisesti täydennettyä verkkotunnusta kirjautumisen yhteydessä.
-      Jos tämän käytännön arvoksi asetetaan verkkotunnusta vastaava merkkijono, <ph name="PRODUCT_OS_NAME" /> näyttää kirjautumisen yhteydessä automaattisesti täydennetyn verkkotunnuksen, jolloin käyttäjän tarvitsee kirjoittaa vain käyttäjänimi ilman verkkotunnusta. Käyttäjä voi myös korvata automaattisesti täydennetyn osan muulla verkkotunnuksella.</translation>
 <translation id="8970205333161758602">Torju tuotteen <ph name="PRODUCT_FRAME_NAME" /> hylkäyspyyntö</translation>
 <translation id="8971221018777092728">Julkisten istuntojen automaattisen kirjautumisen ajastin</translation>
 <translation id="8976248126101463034">Salli etäkäytön isäntien gnubby-todennus</translation>
@@ -2268,11 +2196,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="9187743794267626640">Estä ulkoisen tallennustilan käyttöönotto</translation>
 <translation id="9197740283131855199">Prosenttimäärä, jonka mukaan näytön himmennys skaalataan, jos käyttäjä on aktiivinen himmennyksen jälkeen</translation>
 <translation id="9200828125069750521">POST-metodia käyttävän kuvahaun URL-osoitteen parametrit</translation>
-<translation id="9203071022800375458">Estää kuvakaappauksien ottamisen.
-
-      Jos asetus on käytössä, kuvakaappauksia ei voi ottaa pikanäppäimien tai laajennuksien sovellusliittymien avulla.
-
-      Jos asetus ei ole käytössä tai sitä ei ole määritetty, kuvakaappauksia saa ottaa.</translation>
 <translation id="922540222991413931">Määritä laajennusten, sovellusten ja käyttäjien komentosarjojen asennuslähteet</translation>
 <translation id="924557436754151212">Tuo tallennetut salasanat oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="930930237275114205">Määritä tuotteen <ph name="PRODUCT_FRAME_NAME" /> käyttäjätietohakemisto</translation>

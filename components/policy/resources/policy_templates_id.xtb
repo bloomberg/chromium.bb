@@ -21,18 +21,6 @@
 
       Jika kebijakan ini dibiarkan tidak disetel, maka akan tetap diaktifkan, namun pengguna dapat mengubahnya.</translation>
 <translation id="1062011392452772310">Mengaktifkan pengesahan jarak jauh untuk perangkat tersebut</translation>
-<translation id="108735515923160176">Mengonfigurasikan jenis beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah preferensi beranda. Beranda dapat disetel ke URL yang Anda tetapkan atau disetel ke Laman Tab Baru.
-
-          Jika Anda mengaktifkan setelan ini, Laman Tab Baru selalu digunakan untuk beranda, dan lokasi URL beranda akan diabaikan.
-
-          Jika Anda menonaktifkan setelan ini, Laman Tab Baru tidak akan pernah dijadikan sebagai beranda pengguna, kecuali URL-nya disetel ke 'chrome://newtab'.
-
-          Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah jenis beranda di <ph name="PRODUCT_NAME" />.
-
-          Jika kebijakan ini tidak disetel, pengguna dapat memilih sendiri apakah laman tab baru akan dijadikan sebagai beranda.
-
-          Kebijakan ini tidak tersedia pada Windows yang tidak bergabung dalam
-          domain Active Directory.</translation>
 <translation id="1090892140761957285">URL untuk memvalidasi token autentikasi klien akses jarak jauh.
 
           Jika kebijakan ini disetel, host akses jarak jauh akan menggunakan URL ini untuk memvalidasi token autentikasi dari klien akses jarak jauh, guna menerima sambungan. Harus digunakan bersamaan dengan RemoteAccessHostTokenUrl.
@@ -40,6 +28,13 @@
           Saat ini, fitur tersebut menonaktifkan sisi server.</translation>
 <translation id="1096105751829466145">Penyedia penelusuran default</translation>
 <translation id="1103860406762205913">Mengaktifkan proses masuk berbasis web yang lama</translation>
+<translation id="1128903365609589950">Mengonfigurasi direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan file yang ada dalam cache pada disk.
+
+      Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang diberikan, terlepas apakah pengguna sudah menentukan tanda '--disk-cache-dir' atau belum. Untuk menghindari hilangnya data atau kesalahan tak terduga lain, kebijakan ini sebaiknya tidak disetel ke direktori akar volume atau ke direktori yang digunakan untuk tujuan lain, karena <ph name="PRODUCT_NAME" /> mengelola kontennya.
+
+      Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.
+
+      Jika kebijakan ini tidak disetel, direktori cache default akan digunakan dan pengguna dapat menggantikannya dengan tanda baris perintah '--disk-cache-dir'.</translation>
 <translation id="1138294736309071213">Kebijakan ini aktif dalam mode eceran saja.
 
       Menentukan durasi sebelum tirai layar ditampilkan di layar masuk dalam mode eceran.
@@ -179,15 +174,6 @@
 <translation id="1757688868319862958">Mengizinkan <ph name="PRODUCT_NAME" /> menjalankan plugin yang membutuhkan otorisasi. Jika Anda mengaktifkan setelan ini, plugin yang tidak kedaluwarsa selalu berjalan. Jika setelan ini dinonaktifkan atau tidak disetel, pengguna akan dimintai izin untuk menjalankan plugin yang membutuhkan otorisasi. Ini adalah plugin yang dapat meretas keamanan.</translation>
 <translation id="1803646570632580723">Daftar aplikasi tersemat untuk ditampilkan pada peluncur</translation>
 <translation id="1808715480127969042">Cekal cookie di situs ini</translation>
-<translation id="1811270320106005269">Mengaktifkan kunci bila perangkat <ph name="PRODUCT_OS_NAME" /> menganggur atau ditangguhkan.
-
-      Jika Anda mengaktifkan setelan ini, pengguna akan dimintai sandi untuk membuka kunci perangkat dari mode tidur.
-
-      Jika Anda menonaktifkan setelan ini, pengguna tidak akan dimintai sandi untuk membuka kunci perangkat dari mode tidur.
-
-      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan ini.
-
-      Jika kebijakan dibiarkan tidak disetel, maka pengguna dapat memilih apakah mereka ingin diminta untuk memasukkan sandi untuk membuka kunci perangkat atau tidak.</translation>
 <translation id="1827523283178827583">Gunakan server proxy tetap</translation>
 <translation id="1843117931376765605">Segarkan peringkat untuk kebijakan pengguna</translation>
 <translation id="1847960418907100918">Menentukan parameter yang digunakan saat melakukan penelusuran instan dengan POST. Berisi pasangan nama/nilai yang dipisahkan koma. Jika nilai adalah parameter template, seperti {searchTerms} dalam contoh di atas, akan diganti dengan data istilah penelusuran nyata.
@@ -319,6 +305,7 @@
 <translation id="2309390639296060546">Setelan geolokasi default</translation>
 <translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi laman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
 <translation id="2337466621458842053">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menampilkan gambar. Jika kebijakan ini dibiarkan tanpa disetel, nilai global default akan digunakan untuk semua situs, baik dari kebijakan 'DefaultImagesSetting', jika disetel, maupun konfigurasi pribadi pengguna.</translation>
+<translation id="2366415278352956652">Mengaktifkan transmisi</translation>
 <translation id="2371309782685318247">Menentukan periode dalam milidetik yang mana layanan pengelolaan perangkat dimintai informasi kebijakan pengguna.
 
       Menyetel kebijakan ini akan menimpa nilai defaukt 3 jam. Nilai yang valid untuk kebijakan ini adalah dalam rentang mulai dari 1800000 (30 menit) hingga 86400000 (1 hari). Nilai yang tidak berada dalam rentang tersebut akan dikunci ke batas masing-masing.
@@ -470,7 +457,6 @@
 <translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="262740370354162807">Aktifkan penyerahan dokumen ke <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktifkan masukan lisan</translation>
-<translation id="2646290749315461919">Memungkinkan Anda mengatur apakah situs web diizinkan untuk melacak lokasi fisik pengguna. Melacak lokasi fisik pengguna dapat diizinkan secara default, ditolak secara default, atau pengguna dapat ditanya setiap kali sebuah situs web meminta lokasi fisik. Jika kebijakan ini dibiarkan tidak disetel, 'AskGeolocation' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="2650049181907741121">Tindakan yang akan diambil saat pengguna menutup penutupnya</translation>
 <translation id="2660846099862559570">Jangan pernah gunakan proxy</translation>
 <translation id="267596348720209223">Menentukan penyandiaksaraan karakter yang didukung oleh penyedia penelusuran. Penyandiaksaraan adalah nama-nama laman kode seperti UTF-8, GB2312, dan ISO-8859-1. Kode tersebut dicoba dalam urutan yang disediakan. Kebijakan ini bersifat opsional. Jika tidak disetel, default yang akan digunakan adalah UTF-8. Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
@@ -694,20 +680,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs dari kebijakan 'DefaultKeygenSetting' jika disetel, atau dari konfigurasi pribadi pengguna.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
-<translation id="3398137877608138703">Mengizinkan atau menolak perekaman video.
-
-      Jika diaktifkan atau tidak dikonfigurasi (default), pengguna akan dimintai
-      akses perekaman video kecuali untuk URL yang dikonfigurasikan dalam
-      daftar VideoCaptureAllowedUrls yang akan diberi akses tanpa ditanya.
-      Aplikasi ARC dapat mengakses kamera jika sudah diberi
-      izin.
-
-      Jika kebijakan ini dinonaktifkan, pengguna tidak akan ditanya dan
-      perekaman video hanya tersedia untuk URL yang dikonfigurasi di VideoCaptureAllowedUrls.
-      Aplikasi ARC tidak dapat mengakses kamera.
-
-      Di luar aplikasi ARC, kebijakan ini memengaruhi semua jenis masukan video,
-      tidak hanya kamera yang sudah terpasang.</translation>
 <translation id="3417418267404583991">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mengaktifkan masuk sebagai tamu. Masuk sebagai tamu adalah sesi pengguna anonim dan tidak memerlukan sandi.
 
       Jika kebijakan ini disetel ke false, <ph name="PRODUCT_OS_NAME" /> tidak akan mengizinkan dimulainya sesi tamu.</translation>
@@ -967,6 +939,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="4449545651113180484">Putar layar searah jarum jam sebesar 270 derajat</translation>
 <translation id="4467952432486360968">Cekal cookie pihak ketiga</translation>
 <translation id="4474167089968829729">Aktifkan penyimpanan sandi di pengelola sandi</translation>
+<translation id="447686899376429408">Jika disetel ke true atau tidak disetel, pengguna dapat mentransmisi tab, situs, atau desktop dari browser. Jika disetel ke false, opsi ini akan dinonaktifkan.</translation>
 <translation id="4480694116501920047">Paksakan TelusurAman</translation>
 <translation id="4482640907922304445">Menampilkan tombol Beranda di bilah alat <ph name="PRODUCT_NAME" />. Jika Anda mengaktifkan setelan ini, tombol Beranda akan selalu ditampilkan. Jika Anda menonaktifkan setelan ini, tombol Beranda tidak akan pernah ditampilkan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan ini di <ph name="PRODUCT_NAME" />. Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih apakah akan menampilkan tombol beranda.</translation>
 <translation id="4492287494009043413">Menonaktifkan pengambilan tangkapan layar</translation>
@@ -1035,13 +1008,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika kebijakan ini tidak disetel, kursor besar pertama-tama akan dinonaktifkan, namun dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="4807950475297505572">Pengguna yang paling jarang digunakan dihapus sampai terdapat cukup ruang kosong</translation>
-<translation id="480987484799365700">Jika disetel ke aktif, kebijakan ini memaksa profil dialihkan ke mode singkat. Jika kebijakan ini dikhususkan sebagai kebijakan OS (misalnya GPO pada Windows), kebijakan tersebut akan berlaku pada setiap profil dalam sistem; jika kebijakan disetel sebagai kebijakan Cloud, kebijakan akan berlaku pada profil yang dimasuki menggunakan akun terkelola.
-
-      Pada mode ini, data profil ditahan di disk hanya selama sesi pengguna. Fitur seperti riwayat browser, ekstensi dan datanya, data web seperti cookie dan basis data web tidak disimpan setelah browser ditutup. Namun, hal ini tidak mencegah pengguna mengunduh data apa pun ke disk secara manual, menyimpan laman, atau mencetaknya.
-
-      Jika pengguna telah mengaktifkan sinkronisasi, semua data ini disimpan di profil sinkronisasinya sama seperti profil reguler. Mode penyamaran juga tersedia jika tidak dinonaktifkan secara eksplisit oleh kebijakan.
-
-      Jika kebijakan disetel ke nonaktif atau tidak disetel, proses masuk mengarah ke profil reguler.</translation>
 <translation id="4816674326202173458">Memungkinkan pengguna perusahaan menjadi primer dan sekunder (Perilaku default untuk pengguna yang tidak dikelola)</translation>
 <translation id="4826326557828204741">Tindakan yang diperlukan saat penundaan nganggur tercapai ketika menjalankan daya baterai</translation>
 <translation id="4834526953114077364">Pengguna yang paling jarang digunakan yang belum masuk dalam 3 bulan terakhir dihapus sampai terdapat cukup ruang kosong</translation>
@@ -1121,32 +1087,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> akan memuat semua hosting perpesanan asli yang terpasang.</translation>
 <translation id="5290940294294002042">Tentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna</translation>
-<translation id="5298412045697677971">Konfigurasi gambar avatar pengguna.
-
-      Kebijakan ini memungkinkan Anda mengonfigurasi gambar avatar yang mewakili pengguna di layar masuk. Kebijakan ini disetel dengan menentukan URL tempat <ph name="PRODUCT_OS_NAME" /> dapat mengunduh gambar avatar dan hash kriptografi yang digunakan untuk memverifikasi integritas unduhan. Gambar harus dalam format JPEG dan ukurannya tidak boleh melebihi 512 KB. URL harus dapat diakses tanpa autentikasi.
-
-      Gambar avatar diunduh dan disimpan dalam cache. Gambar akan diunduh kembali saat URL atau hash berubah.
-
-      Kebijakan ini perlu ditetapkan sebagai string yang mengekspresikan URL dan hash dalam format JSON, sesuai dengan skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL tempat gambar avatar dapat diunduh.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hash SHA-256 gambar avatar.",
-            "type": "string"
-          }
-        }
-      }
-
-      Jika kebijakan ini disetel, <ph name="PRODUCT_OS_NAME" /> akan mengunduh dan menggunakan gambar avatar.
-
-      Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
-
-      Jika kebijakan ini tidak disetel, pengguna dapat memilih gambar avatar yang mewakili dirinya di layar masuk.</translation>
 <translation id="5302612588919538756">Kebijakan ini tidak digunakan lagi, pertimbangkan untuk menggunakan SyncDisabled sebagai gantinya.
 
       Mengizinkan pengguna untuk masuk ke <ph name="PRODUCT_NAME" />.
@@ -1421,15 +1361,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="6233173491898450179">Setel direktori unduhan</translation>
 <translation id="6244210204546589761">URL untuk membuka saat permulaan</translation>
 <translation id="6258193603492867656">Menentukan apakah SPN Kerberos yang dihasilkan harus mencakup port non-standar. Jika Anda mengaktifkan setelan ini, dan port non-standar (selain port 80 atau 443) dimasukkan, port ini akan dimasukkan ke SPN Kerberos yang dihasilkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, SPN Kerberos yang dihasilkan tidak akan pernah mencakup port.</translation>
-<translation id="6279809962528392889">Menentukan apakah cookie autentikasi yang disetel oleh SAML IdP selama proses masuk harus ditransfer ke profil pengguna atau tidak.
-
-      Saat pengguna mengautentikasi melalui SAML IdP saat masuk, cookie yang disetel oleh IdP ditulis ke profil sementara terlebih dahulu. Cookie ini dapat ditransfer ke profil pengguna untuk diteruskan ke status autentikasi.
-
-      Saat kebijakan ini disetel ke True, cookie yang disetel oleh IdP ditransfer ke profil pengguna setiap kali pengguna mengautentikasi menggunakan SAML IdP saat masuk.
-
-      Saat kebijakan ini disetel ke False atau tidak disetel, cookie yang disetel oleh IdP ditransfer ke profil pengguna selama proses masuk pertamanya khusus di perangkat.
-
-      Kebijakan ini memengaruhi pengguna yang domainnya hanya cocok dengan domain pendaftaran perangkat. Untuk semua pengguna lainnya, cookie yang disetel oleh IdP ditransfer ke profil pengguna selama proses masuk pertamanya khusus di perangkat.</translation>
 <translation id="6281043242780654992">Mengonfigurasikan kebijakan untuk Perpesanan Asli. Hosting perpesanan asli yang dimasukkan dalam daftar hitam tidak akan diizinkan kecuali telah dimasukkan dalam daftar putih.</translation>
 <translation id="6282799760374509080">Izinkan atau tolak penangkapan audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1624,6 +1555,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7003334574344702284">Kebijakan ini memaksa sandi tersimpan untuk diimpor dari browser default sebelumnya, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, sandi yang disimpan tidak diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="7003746348783715221">Preferensi <ph name="PRODUCT_NAME" /></translation>
 <translation id="7006788746334555276">Setelan Konten</translation>
+<translation id="7007671350884342624">Mengonfigurasi direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan data pengguna.
+
+      Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang diberikan, terlepas apakah pengguna sudah menentukan tanda '--user-data-dir' atau belum. Untuk menghindari kehilangan data atau kesalahan tak terduga lain, kebijakan ini sebaiknya tidak disetel ke direktori akar volume atau ke direktori yang digunakan untuk tujuan lain, karena <ph name="PRODUCT_NAME" /> mengelola kontennya.
+
+      Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.
+
+      Jika kebijakan ini tidak disetel, jalur profil default akan digunakan dan pengguna dapat menggantinya dengan tanda baris perintah '--user-data-dir'.</translation>
 <translation id="7027785306666625591">Mengonfigurasi pengelolaan daya di <ph name="PRODUCT_OS_NAME" />.
 
       Kebijakan ini memungkinkan Anda mengonfigurasi cara <ph name="PRODUCT_OS_NAME" /> berperilaku saat pengguna tetap menganggur dalam beberapa waktu.</translation>
@@ -1634,16 +1572,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="706669471845501145">Izinkan situs menampilkan pemberitahuan desktop</translation>
 <translation id="7079519252486108041">Cekal munculan di situs ini</translation>
 <translation id="7091198954851103976">Selalu jalankan plugin yang membutuhkan otorisasi</translation>
-<translation id="7109916642577279530">Mengizinkan atau menolak penangkapan audio.
-
-      Jika diaktifkan atau tidak dikonfigurasi (default), pengguna akan dimintai
-      akses penangkapan audio kecuali untuk URL yang dikonfigurasi di
-      daftar AudioCaptureAllowedUrls yang akan diberi akses tanpa meminta.
-
-      Jika kebijakan ini dinonaktifkan, pengguna tidak akan pernah diminta dan
-      penangkapan audio hanya tersedia untuk URL yang dikonfigurasi dalam AudioCaptureAllowedUrls.
-
-      Kebijakan ini mempengaruhi semua jenis masukan audio dan tidak hanya mikrofon yang ada di dalam.</translation>
 <translation id="7115494316187648452">Menentukan apakah proses <ph name="PRODUCT_NAME" /> dimulai pada proses masuk OS dan terus berjalan ketika jendela browser yang terakhir ditutup, memungkinkan aplikasi latar belakang dan sesi penjelajahan saat ini tetap aktif, termasuk cookie sesi apa pun. Proses latar belakang menampilkan ikon pada baki sistem dan selalu dapat ditutup dari sana.
 
       Jika kebijakan ini disetel ke True, mode latar belakang diaktifkan dan tidak dapat dikontrol oleh pengguna di setelan browser.
@@ -1995,18 +1923,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan ini tidak disetel, tidak akan ada pengecualian untuk daftar hitam dari kebijakan 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Memungkinkan pengguna perusahaan menjadi pengguna banyak profil primer saja (Perilaku default untuk pengguna yang dikelola perusahaan)</translation>
-<translation id="8191318459035150777">Mengonfigurasi URL beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
-
-          Beranda adalah laman yang dibuka dengan mengeklik tombol Beranda. Laman yang dibuka saat memulai perangkat akan dikontrol oleh kebijakan RestoreOnStartup.
-
-          Jenis beranda dapat disetel ke URL yang Anda tetapkan di sini atau disetel ke Laman Tab Baru. Jika Anda memilih Laman Tab Baru, kebijakan ini tidak akan berlaku.
-
-          Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah URL beranda di <ph name="PRODUCT_NAME" />, tapi pengguna dapat memilih Laman Tab Baru sebagai beranda.
-
-          Bila Anda membiarkan kebijakan ini tidak disetel, pengguna dapat memilih beranda sendiri jika HomepageIsNewTabPage juga tidak disetel.
-
-          Kebijakan ini tidak tersedia di Jendela yang tidak digabungkan
-          ke domain Direktori Aktif.</translation>
 <translation id="8197918588508433925">Kebijakan ini menentukan ekstensi yang diizinkan untuk menggunakan API Kunci Platform Perusahaan chrome.enterprise.platformKeysPrivate.challengeUserKey() untuk pengesahan jarak jauh. Ekstensi harus ditambahkan ke daftar ini untuk menggunakan API.
 
           Jika ekstensi tidak ada dalam daftar, atau daftar tidak disetel, panggilan ke API akan gagal dengan suatu kode kesalahan.</translation>
@@ -2019,6 +1935,26 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika kebijakan dibiarkan tidak disetel, <ph name="PRODUCT_OS_NAME" /> akan menggunakan ID akun email dari akun lokal perangkat sebagai nama tampilan di layar masuk.
 
       Kebijakan ini diabaikan untuk akun pengguna reguler.</translation>
+<translation id="8279832363395120715">Menyembunyikan bagian sensitif privasi dan keamanan pada URL https:// sebelum meneruskannya ke skrip PAC (Proxy Auto Config) yang digunakan oleh <ph name="PRODUCT_NAME" /> selama resolusi proxy.
+
+      Jika disetel ke True, fitur keamanan diaktifkan, dan URL https://
+      disembunyikan sebelum mengirimnya ke skrip PAC. Dengan cara ini, skrip
+      PAC tidak dapat melihat data yang umumnya dilindungi oleh
+      saluran terenkripsi (seperti jalur dan kueri URL).
+
+      Jika disetel ke False, fitur keamanan dinonaktifkan, dan skrip PAC
+      secara implisit diberi kemampuan untuk melihat semua komponen URL
+      https://. Hal ini berlaku untuk semua skrip PAC, terlepas dari asalnya
+      (termasuk skrip yang diambil melalui transportasi tidak aman atau ditemukan
+      secara tidak aman melalui WPAD).
+
+      Setelan defaultnya adalah True (fitur keamanan aktif), kecuali untuk
+      pengguna perusahaan Chrome OS yang setelan defaultnya adalah False.
+
+      Sebaiknya disetel ke True. Satu-satunya alasan untuk menyetel ke
+      False adalah jika kebijakan ini menyebabkan masalah kompatibilitas dengan skrip PAC yang sudah ada.
+
+      Diharapkan untuk menghapus penggantian ini di masa mendatang.</translation>
 <translation id="8285435910062771358">Lup layar penuh diaktifkan</translation>
 <translation id="8294750666104911727">Umumnya laman dengan X-UA-Compatible yang disetel ke chrome=1 akan dirender di <ph name="PRODUCT_FRAME_NAME" /> terlepas dari kebijakan 'ChromeFrameRendererSettings'.
 
@@ -2207,13 +2143,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Nilai kebijakan ini harus ditentukan dalam milidetik. Nilai dijepit menjadi lebih sedikit dari penundaan waktu menganggur.</translation>
 <translation id="891435090623616439">dienkode sebagai string JSON, untuk detailnya lihat <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8929359433203547810">Jika kebijakan ini disetel ke false, <ph name="PRODUCT_OS_NAME" /> akan menonaktifkan Bluetooth dan pengguna tidak dapat mengaktifkannya kembali.
-
-      Jika kebijakan ini disetel ke true atau tidak disetel, pengguna dapat menonaktifkan atau menonaktifkan Bluetooth kapan saja.
-
-      Jika kebijakan ini disetel, pengguna tidak dapat mengubah atau menggantinya.
-
-      Setelah mengaktifkan Bluetooth, perangkat harus diboot ulang untuk menerapkan perubahan (perangkat tidak perlu diboot ulang saat menonaktifkan Bluetooth).</translation>
 <translation id="8947415621777543415">Laporkan lokasi perangkat</translation>
 <translation id="8951350807133946005">Setel direktori cache disk</translation>
 <translation id="8955719471735800169">Kembali ke atas</translation>
@@ -2222,8 +2151,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       yang merekam audio akan diberikan tanpa permintaan.
 
       CATATAN: Hingga versi 45, kebijakan ini hanya didukung dalam mode Kios.</translation>
-<translation id="8965758116018152083">Jika kebijakan ini disetel ke string kosong atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> tidak akan menampilkan opsi pelengkapan otomatis selama alur masuk pengguna berlangsung.
-      Jika kebijakan ini disetel ke satu string mewakili satu nama domain, <ph name="PRODUCT_OS_NAME" /> akan menampilkan opsi pelengkapan otomatis saat proses masuk pengguna, yang memungkinkan pengguna mengetik nama pengguna saja tanpa ekstensi nama domain.  Pengguna akan dapat mengganti ekstensi nama domain ini.</translation>
 <translation id="8970205333161758602">Tindas permintaan penghentian <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Pewaktu masuk otomatis sesi publik</translation>
 <translation id="8976248126101463034">Izinkan autentikasi gnubby untuk host akses jarak jauh</translation>
@@ -2274,11 +2201,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="9187743794267626640">Menonaktifkan pemasangan penyimpanan eksternal</translation>
 <translation id="9197740283131855199">Persentase yang digunakan untuk menskalakan penundaan layar redup jika pengguna aktif setelah peredupan</translation>
 <translation id="9200828125069750521">Parameter untuk URL gambar yang menggunakan POST</translation>
-<translation id="9203071022800375458">Menonaktifkan pengambilan tangkapan layar.
-
-      Jika diaktifkan, tangkapan layar tidak akan dapat dilakukan dengan menggunakan pintasan keyboard atau API ekstensi.
-
-      Jika dinonaktifkan atau tidak ditentukan, pengambilan tangkapan layar akan diizinkan.</translation>
 <translation id="922540222991413931">Konfigurasi sumber pemasangan skrip pengguna, aplikasi, dan ekstensi</translation>
 <translation id="924557436754151212">Impor sandi yang disimpan dari browser default saat pertama kali dijalankan</translation>
 <translation id="930930237275114205">Setel direktori data pengguna <ph name="PRODUCT_FRAME_NAME" /></translation>

@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">אין עוד פריט ברשימה.</translation>
 <translation id="1157782847298808853">עזרה למקלדת</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, תיבה משולבת</translation>
+<translation id="1161762950103988776">Jump</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, פריט תפריט, עם תפריט משנה</translation>
 <translation id="1177863135347784049">מותאם אישית</translation>
 <translation id="1188858454923323853">משלים</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">טיימר</translation>
 <translation id="8065607967589909823">הבחירה היא</translation>
 <translation id="8066678206530322333">מודעת באנר</translation>
+<translation id="8076492880354921740">כרטיסיות</translation>
 <translation id="8110647606445335195">‏אין ציוני דרך מסוג ARIA.</translation>
 <translation id="8153880621934657047">לא בתוך טבלה.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{קו תחתון}two{# סימני קו תחתון}many{# סימני קו תחתון}other{# סימני קו תחתון}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">השתמש במקשי החצים למעלה ולמטה כדי לדפדף, או הקלד לחיפוש.</translation>
 <translation id="9192904702577636854">Marquee</translation>
 <translation id="9212322457209634662">אין עוד קטע.</translation>
+<translation id="923331726185079994">‏ChromeVox עודכן</translation>
 <translation id="930275611743429116">התחל או סיים בחירה.</translation>
 <translation id="948171205378458592">האט את קצב הדיבור</translation>
 <translation id="962913030769097253">הכותרת הבאה של רמה 1</translation>
 <translation id="973955474346881951">הפעל/השבת מצב דביק</translation>
+<translation id="976849232629612000">אין פריטים.</translation>
 </translationbundle>

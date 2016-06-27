@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">Ni naslednjega elementa seznama.</translation>
 <translation id="1157782847298808853">Pomoč za tipkovnico</translation>
 <translation id="1157843803349774103">Kombinirano polje z vrednostjo <ph name="VALUE" /> in imenom <ph name="NAME" /></translation>
+<translation id="1161762950103988776">Skok</translation>
 <translation id="1167230103353892028">Menijski element <ph name="NAME" /> s podmenijem</translation>
 <translation id="1177863135347784049">Po meri</translation>
 <translation id="1188858454923323853">dopolnilno</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Časovnik</translation>
 <translation id="8065607967589909823">Izbrano je</translation>
 <translation id="8066678206530322333">Pasica</translation>
+<translation id="8076492880354921740">Zavihki</translation>
 <translation id="8110647606445335195">Ni mejnika v različici ARIA.</translation>
 <translation id="8153880621934657047">Zunaj tabele.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podčrtaj}one{# podčrtaj}two{# podčrtaja}few{# podčrtaji}other{# podčrtajev}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">S puščicama za gor in dol lahko brskate; če želite iskati, začnite vnašati.</translation>
 <translation id="9192904702577636854">Potujoči napis</translation>
 <translation id="9212322457209634662">Ni naslednjega razdelka.</translation>
+<translation id="923331726185079994">ChromeVox je posodobljen</translation>
 <translation id="930275611743429116">Začetek ali konec izbora.</translation>
 <translation id="948171205378458592">Zmanjšanje hitrosti govora</translation>
 <translation id="962913030769097253">Naslednji naslov na ravni 1</translation>
 <translation id="973955474346881951">Omogočanje/onemogočanje načina zaklepanja</translation>
+<translation id="976849232629612000">Ni elementov.</translation>
 </translationbundle>

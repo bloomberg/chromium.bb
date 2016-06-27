@@ -32,6 +32,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1881322772814446296">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Chromium“ profilį. „Chromium“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. Galite pasirinktinai sukurti naują profilį, kad esami „Chromium“ duomenys būtų saugomi atskirai. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">„Chromium“ neatsako. Paleisti iš naujo dabar?</translation>
 <translation id="1967743265616885482">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Chromium“.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Atlikus šį veiksmą bus visam laikui ištrintas mažiausiai $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}one{Atlikus šį veiksmą bus visam laikui ištrintas mažiausiai $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}few{Atlikus šį veiksmą bus visam laikui ištrinti mažiausiai $1 elementai iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}many{Atlikus šį veiksmą bus visam laikui ištrinta mažiausiai $1 elemento iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}other{Atlikus šį veiksmą bus visam laikui ištrinta mažiausiai $1 elementų iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}}</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="2103655854491303969">Nutraukiamas „Chromium“ programų paleidimo priemonės teikimas.</translation>
 <translation id="2117181891440368863">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė sertifikato skaidrumo informaciją, bet ji negalioja.</translation>
@@ -83,6 +84,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3549345495227188780">Darbo su „Chromium“ OS pradžia</translation>
 <translation id="3582788516608077514">Atnaujinama „Chromium“...</translation>
 <translation id="358997566136285270">„Chromium“ logotipas</translation>
+<translation id="3645040538872234961">Atlikus šį veiksmą bus visam laikui ištrinti naršymo duomenys iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3748537968684000502">Žiūrite saugų „Chromium“ puslapį.</translation>
 <translation id="378917192836375108">Naudodami „Chromium“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
@@ -107,6 +109,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4567424176335768812">Esate prisijungę kaip <ph name="USER_EMAIL_ADDRESS" />. Dabar galite pasiekti savo žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="457845228957001925">Svarbi informacija apie jūsų „Chromium“ duomenis</translation>
 <translation id="459535195905078186">„Chromium“ programos</translation>
+<translation id="4621240073146040695">Beveik atnaujinta! Paleiskite „Chromium“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="4677944499843243528">Atrodo, kad profilį naudoja kitas „Chromium“ procesas (<ph name="PROCESS_ID" />) kitame kompiuteryje (<ph name="HOST_NAME" />). „Chromium“ užrakino profilį, kad jis nebūtų sugadintas. Jei esate tikri, kad jokie kiti procesai nenaudoja šio profilio, galite atrakinti profilį ir iš naujo paleisti „Chromium“.</translation>
 <translation id="4743926867934016338">Sutikti ir ieškoti</translation>
 <translation id="4888717733111232871">„Chromium“ skirta taisyklė, pagal kurią leidžiamas mDNS srautas.</translation>
@@ -131,10 +134,12 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5859963531214966875">Būsimų versijų „Chromium“ nebebus palaikoma naudojant šią „Linux“ sistemą.</translation>
 <translation id="5862307444128926510">Sveiki, tai „Chromium“</translation>
 <translation id="5877064549588274448">Kanalas pakeistas. Kad pritaikytumėte pakeitimus, iš naujo paleiskite įrenginį.</translation>
+<translation id="5906655207909574370">Beveik įdiegta naujausia versija! Paleiskite įrenginį iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="5942225298871134766">„Chromium“ jį išsaugos naudodama <ph name="SAVED_PASSWORD_LINK" /> ir prisimins, kai jo prireiks kitą kartą.</translation>
 <translation id="5942520288919337908">„<ph name="EXTENSION_NAME" />“ pridėtas prie „Chromium“.</translation>
 <translation id="59625444380784159">Turėdami išsamią kontaktų informaciją galite greičiau užpildyti formas „Chromium“.</translation>
 <translation id="6055895534982063517">Pasiekiama nauja „Chromium“ versija, kuri greitesnė nei bet kada.</translation>
+<translation id="6077017812234345835">Atlikus šį veiksmą, iš įrenginio bus visam laikui ištrinta mažiausiai tiek elementų: <ph name="TOTAL_COUNT" />. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.</translation>
 <translation id="608189560609172163">„Chromium“ negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
 <translation id="6212496753309875659">Šiame kompiuteryje jau yra naujesnės versijos „Chromium“. Jei programinė įranga neveikia, pašalinkite „Chromium“ ir bandykite dar kartą.</translation>
 <translation id="6248213926982192922">Padaryti „Chromium“ numatytąja naršykle</translation>
@@ -168,6 +173,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="705851970750939768">Atnaujinti „Chromium“</translation>
 <translation id="7064610482057367130">Nerasta jokių „Chromium“ įdiegčių, kurias būtų galima atnaujinti.</translation>
 <translation id="7066436765290594559">„Chromium“ OS negali sinchronizuoti duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Atlikus šį veiksmą bus visam laikui ištrintas $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}one{Atlikus šį veiksmą bus visam laikui ištrintas $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}few{Atlikus šį veiksmą bus visam laikui ištrinti $1 elementai iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}many{Atlikus šį veiksmą bus visam laikui ištrinta $1 elemento iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}other{Atlikus šį veiksmą bus visam laikui ištrinta $1 elementų iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}}</translation>
 <translation id="7138853919861947730">„Chromium“ gali naudoti žiniatinklio paslaugas naršymo kokybei pagerinti.</translation>
 <translation id="7162152143154757523">„Chromium“ gali teikti išmanesnę rašybos tikrinimo funkciją, siųsdama tai, ką įvedate naršyklėje, „Google“ serveriams. Tai suteikia galimybę naudoti tą pačią rašybos tikrinimo technologiją, kuri naudojama „Google“ paieškoje.</translation>
 <translation id="7178626992616222740">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė sertifikato skaidrumo informaciją, bet „Chromium“ neatpažino jokių sertifikato skaidrumo žurnalų.</translation>

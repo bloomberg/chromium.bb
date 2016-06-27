@@ -30,6 +30,7 @@
 <translation id="1881322772814446296">Du logger deg på med en administrert konto og gir tilhørende administratorer kontroll over Chromium-profilen din. Chromium-dataene dine, slik som apper, bokmerker, loggen, passord og andre innstillinger knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse dataene via oversikten for Google-kontoer, men du kan ikke knytte disse dataene til en annen konto. Du kan velge om du vil opprette en ny profil for å holde de eksisterende Chromium-dataene atskilte. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du starte den på nytt nå?</translation>
 <translation id="1967743265616885482">Vi har tidligere lagt merke til at en modul med det samme navnet, har kommet i konflikt med Chromium.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Dette sletter minst $1 element permanent fra denne enheten. For å hente dataene dine igjen senere, logg på Chromium som $2.}other{Dette fører til at minst $1 elementer slettes permanent fra denne enheten. For å hente dataene dine igjen senere, logg på Chromium som $2.}}</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2103655854491303969">Chromium-appvelgeren forsvinner.</translation>
 <translation id="2117181891440368863">Chromium bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga informasjon om sertifikatåpenhet, men den var ugyldig.</translation>
@@ -81,6 +82,7 @@
 <translation id="3549345495227188780">Kom i gang med Chromium OS</translation>
 <translation id="3582788516608077514">Oppdaterer Chromium …</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
+<translation id="3645040538872234961">Dette fører til at nettlesingsdataene dine slettes permanent fra denne enheten. For å hente dataene dine igjen senere, logg på Chromium som $2.</translation>
 <translation id="3738139272394829648">Trykk for å søke</translation>
 <translation id="3748537968684000502">Du ser på en sikker Chromium-side.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
@@ -105,6 +107,7 @@
 <translation id="4567424176335768812">Du er logget på som <ph name="USER_EMAIL_ADDRESS" />. Nå kan du bruke bokmerkene, loggen og andre innstillinger på alle enhetene du er logget på.</translation>
 <translation id="457845228957001925">Viktig informasjon om Chromium-dataene dine</translation>
 <translation id="459535195905078186">Chromium-apper</translation>
+<translation id="4621240073146040695">Nå er oppdateringen snart ferdig! Start Chromium på nytt for å fullføre oppdateringen.</translation>
 <translation id="4677944499843243528">Profilen ser ut til å være i bruk av en annen Chromium-prosess (<ph name="PROCESS_ID" />) på en annen datamaskin (<ph name="HOST_NAME" />). Chromium har låst profilen slik at den ikke blir infisert. Hvis du er sikker på at ingen andre prosesser bruker profilen, kan du låse opp profilen og starte Chromium på nytt.</translation>
 <translation id="4743926867934016338">Godta og søk</translation>
 <translation id="4888717733111232871">Regel om innkommende trafikk for Chromium for å tillate mDNS-trafikk.</translation>
@@ -129,10 +132,12 @@
 <translation id="5859963531214966875">Fremtidige versjoner av Chromium kommer ikke til å støtte dette Linux-systemet.</translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
+<translation id="5906655207909574370">Nå er oppdateringen snart ferdig! Start enheten på nytt for å fullføre oppdateringen.</translation>
 <translation id="5942225298871134766">Chromium lagrer dette med <ph name="SAVED_PASSWORD_LINK" /> og husker det neste gang du trenger det.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> har blitt lagt til i Chromium.</translation>
 <translation id="59625444380784159">Informasjon fra kontaktene dine kan hjelpe deg med å fylle ut skjemaer raskere i Chromium.</translation>
 <translation id="6055895534982063517">En nyere versjon av Chromium er tilgjengelig, og den er raskere enn noen gang.</translation>
+<translation id="6077017812234345835">Dette fører til at minst <ph name="TOTAL_COUNT" /> elementer slettes permanent fra denne enheten. For å hente dataene dine igjen, logg på Chromium som $2.</translation>
 <translation id="608189560609172163">Chromium kunne ikke synkronisere dataene dine på grunn av en feil under påloggingen.</translation>
 <translation id="6212496753309875659">Denne datamaskinen har allerede en nyere versjon av Chromium. Hvis programvaren ikke fungerer, må du avinstallere Chromium og prøve på nytt.</translation>
 <translation id="6248213926982192922">Gjør Chromium til standard nettleser</translation>
@@ -166,6 +171,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="705851970750939768">Oppdater Chromium</translation>
 <translation id="7064610482057367130">Finner ingen installasjon av Chromium å oppdatere.</translation>
 <translation id="7066436765290594559">Chromium kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Dette fører til at $1 element slettes permanent fra denne enheten. For å hente dataene dine igjen senere, logg på Chromium som $2.}other{Dette fører til at $1 elementer slettes permanent fra denne enheten. For å hente dataene dine igjen senere, logg på Chromium som $2.}}</translation>
 <translation id="7138853919861947730">Chromium kan bruke nett-tjenester for å forbedre surfingen din.</translation>
 <translation id="7162152143154757523">Chromium kan levere bedre stavekontroll ved å sende det du skriver i nettleseren, til Google-tjenerne. Dette gjør at du kan bruke samme teknologi for stavekontroll som det Google Søk bruker.</translation>
 <translation id="7178626992616222740">Chromium bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga informasjon om sertifikatåpenhet, men Chromium gjenkjente ingen av loggene for sertifikatåpenhet.</translation>

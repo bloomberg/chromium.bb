@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> afișează mesajul:</translation>
 <translation id="1132774398110320017">Setări de completare automată în Chrome...</translation>
 <translation id="113770840981343808">Pentru confirmare, introdu codul CVC alcătuit din 4 cifre înscris pe fața cardului</translation>
-<translation id="1146673768181266552">ID blocare <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1152921474424827756">Accesați o <ph name="BEGIN_LINK" />copie păstrată în memoria cache<ph name="END_LINK" /> a site-ului <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> a închis conexiunea în mod neașteptat.</translation>

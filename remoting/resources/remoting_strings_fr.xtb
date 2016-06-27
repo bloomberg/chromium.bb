@@ -130,6 +130,7 @@ Chromoting</translation>
 <translation id="4156740505453712750">Pour protéger l'accès à cet ordinateur, veuillez choisir un code d'accès d'<ph name="BOLD_START" />au moins six chiffres<ph name="BOLD_END" />. Ce code d'accès sera demandé lors d'une connexion depuis un autre appareil.</translation>
 <translation id="4176825807642096119">Code d'accès</translation>
 <translation id="4207623512727273241">Veuillez lancer le programme d'installation avant de continuer.</translation>
+<translation id="4227991223508142681">Utilitaire de provisionnement de l'hôte</translation>
 <translation id="4240294130679914010">Désinstallation de l'hôte Chromoting</translation>
 <translation id="4277463233460010382">Cet ordinateur est configuré pour permettre à un ou plusieurs clients de se connecter sans saisir de code d'accès.</translation>
 <translation id="4277736576214464567">Le code d'accès n'est pas valide. Veuillez réessayer.</translation>

@@ -30,6 +30,7 @@
 <translation id="1881322772814446296">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Chromium-profiiliasi. Chromium-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. Halutessasi voit luoda uuden profiilin, jolloin aiemmat Chromium-tietosi pysyvät erillään. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="1967743265616885482">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Chromiumin kanssa.</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Vähintään $1 kohde poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}other{Vähintään $1 kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}}</translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2103655854491303969">Chromiumin sovellusten käynnistysohjelma poistuu käytöstä</translation>
 <translation id="2117181891440368863">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin lähetti Certificate Transparency -tiedot, mutta ne eivät pidä paikkaansa.</translation>
@@ -81,6 +82,7 @@
 <translation id="3549345495227188780">Aloita Chromium-käyttöjärjestelmän käyttö</translation>
 <translation id="3582788516608077514">Päivitetään Chromiumia...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
+<translation id="3645040538872234961">Selaustiedot poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.</translation>
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
 <translation id="3748537968684000502">Katselet suojattua Chromium-sivua.</translation>
 <translation id="378917192836375108">Chromiumin avulla voit soittaa Skypellä puhelinnumeroon klikkaamalla sitä verkossa!</translation>
@@ -105,6 +107,7 @@
 <translation id="4567424176335768812">Olet kirjautunut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS" />. Nyt voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="457845228957001925">Tärkeitä tietoja Chromium-tiedoistasi</translation>
 <translation id="459535195905078186">Chromium-sovellukset</translation>
+<translation id="4621240073146040695">Melkein valmista. Viimeistele päivitys käynnistämällä Chromium uudelleen.</translation>
 <translation id="4677944499843243528">Profiili näyttäisi olevan toisen Chromium-prosessin (<ph name="PROCESS_ID" />) käytössä toisella tietokoneella (<ph name="HOST_NAME" />). Chromium on lukinnut profiilin, jotta se ei vioitu. Jos olet varma, että mikään toinen prosessi ei käytä tätä profiilia, voit poistaa profiilin lukituksen ja käynnistää Chromiumin uudelleen.</translation>
 <translation id="4743926867934016338">Hyväksy ja hae</translation>
 <translation id="4888717733111232871">Chromiumin saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
@@ -129,10 +132,12 @@
 <translation id="5859963531214966875">Chromiumin tulevat versiot eivät enää tue tätä Linux-järjestelmää.</translation>
 <translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>
 <translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
+<translation id="5906655207909574370">Melkein ajan tasalla. Viimeistele päivitys käynnistämällä laite uudelleen.</translation>
 <translation id="5942225298871134766">Chromium tallentaa salasanan <ph name="SAVED_PASSWORD_LINK" /> -ominaisuudella ja muistaa sen, kun tarvitset sitä seuraavan kerran.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> on lisätty Chromiumiin.</translation>
 <translation id="59625444380784159">Yhteystietojesi avulla lomakkeiden täyttäminen Chromiumissa sujuu helpommin.</translation>
 <translation id="6055895534982063517">Chromiumista on saatavilla uusi versio, joka on entistäkin nopeampi.</translation>
+<translation id="6077017812234345835">Vähintään <ph name="TOTAL_COUNT" /> kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.</translation>
 <translation id="608189560609172163">Chromium ei voinut synkronoida tietoja kirjautumisvirheen vuoksi.</translation>
 <translation id="6212496753309875659">Tälle tietokoneelle on jo asennettu Chromiumin uudempi versio. Jos Chromium ei toimi, poista sen asennus ja yritä uudelleen.</translation>
 <translation id="6248213926982192922">Tee Chromiumista oletusselain</translation>
@@ -166,6 +171,7 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="705851970750939768">Päivitä Chromium</translation>
 <translation id="7064610482057367130">Päivitettävää Chromium-asennusta ei löytynyt.</translation>
 <translation id="7066436765290594559">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{$1 kohde poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}other{$1 kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}}</translation>
 <translation id="7138853919861947730">Chromium voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
 <translation id="7162152143154757523">Chromium voi tarjota älykkäämmän oikeinkirjoituksen tarkistuspalvelun lähettämällä selaimeen kirjoittamasi tekstin Googlen palvelimille. Näin voit käyttää Google-haun kanssa samaa oikeinkirjoituksen tarkistustekniikkaa.</translation>
 <translation id="7178626992616222740">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin lähetti Certificate Transparency -tiedot, mutta Chromium ei tunnistanut Certificate Transparency -lokitietoja.</translation>

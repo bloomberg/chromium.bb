@@ -21,17 +21,6 @@
 
       Iwapo sera hii itasalia kama haijawekwa, hii itawezeshwa lakini mtumiaji ataweza kuibadilisha.</translation>
 <translation id="1062011392452772310">Washa usahihishaji wa mbali wa kifaa</translation>
-<translation id="108735515923160176">Husanidi aina ya ukurasa wa kwanza chaguo-msingi katika <ph name="PRODUCT_NAME" /> na kuzuia watumiaji kubadilisha mapendeleo ya ukurasa wa kwanza. Ukurasa wa kwanza unaweza kuwekwa kuwa URL utakayobainisha au Ukurasa wa Kichupo Kipya.
-
-         Ukiwasha mipangilio hii, Ukurasa wa Kichupo Kipya hutumiwa kwa ukurasa wa kwanza, na eneo la URL hupuuzwa.
-
-          Ukizima mipangilio hii, ukurasa wa kwanza wa mtumiaji hautawahi kuwa Ukurasa wa Kichupo Kipya, isipokuwa kama URL yake imewekwa kuwa 'chrome://newtab'.
-
-          Ukiwasha au kuzima mipangilio hii, watumiaji hawawezi kubadilisha aina ya ukurasa wao wa kwanza katika <ph name="PRODUCT_NAME" />.
-
-          Kuacha sera hii bila kuiweka kutamruhusu mtumiaji kuchagua mwenyewe kama ukurasa wa kichupo kipya ndio ukurasa wake kwanza.
-
-          Sera hii haipatikani kwenye matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha Saraka Inayotumika.</translation>
 <translation id="1090892140761957285">URL ya kuidhinisha tokeni ya uthibitishaji wa seva teja ya uwezo wa kufikia kwa mbali.
 
           Sera hii ikiwekwa, seva pangishi ya uwezo wa kufikia kwa mbali itatumia URL hii ili kuidhinisha tokeni kutoka kwenye seva teja za uwezo wa kufikia kwa mbali, ili kukubali miunganisho. Lazima itumiwe pamoja na RemoteAccessHostTokenUrl.
@@ -39,6 +28,13 @@
            Kwa sasa kipengele hiki kimezimwa upande wa seva.</translation>
 <translation id="1096105751829466145">Kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="1103860406762205913">Huwasha kuingia katika akaunti kulingana na wavuti</translation>
+<translation id="1128903365609589950">Huweka mipangilio ya saraka ambayo <ph name="PRODUCT_NAME" /> itatumia kuhifadhi faili zilizoakibishwa kwenye diski.
+
+      Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia saraka iliyotolewa bila kujali kama mtumiaji amebainisha ripoti ya '--disk-cache-dir' au la. Ili kuepuka kupoteza data au hitilafu zisizotarajiwa sera hii haipaswi kuwekwa kuwa thamani ya kipeo cha saraka au kwenye saraka iliyotumiwa kwa madhumuni mengine, kwa sababu <ph name="PRODUCT_NAME" /> hudhibiti maudhui yake.
+
+      Angalia https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables upate orodha ya aina zinazoweza kutumiwa.
+
+      Sera hii isipowekwa saraka ya akiba chaguo-msingi itatumiwa na mtumiaji ataweza kuibatilisha kwa amri ya ripoti ya mstari ya '--disk-cache-dir'.</translation>
 <translation id="1138294736309071213">Sera hii ni amilifu katika modi ya rejareja tu.
 
       Inathibitisha kipindi kabla ya kuonyeshwa kwa taswira ya skrini katika skrini ya kuingia kwa vifaa hivi katika modi ya reje reja.
@@ -181,15 +177,6 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
       Ikiwa mpangilio huu umelemazwa au haujawekwa, watumiaji wataombwa kibali ili kuendesha programu jalizi ambazo zinahitaji idhinisho. Hizi ni programu ambazo zinaweza kuathiri usalama.</translation>
 <translation id="1803646570632580723">Orodha ya programu zilizobanwa ili kuonekana kwenye kizunduzi</translation>
 <translation id="1808715480127969042">Zuia vidakuzi katika tovuti hizi</translation>
-<translation id="1811270320106005269">Wezesha kufunga wakati vifaa <ph name="PRODUCT_OS_NAME" /> vinakuwa tulivu na vimesimamishwa.
-
-      Ukiwezesha mpangilio huu, watumiaji wataulizwa nenosiri ili kufungua kifaa kinacholala.
-
-      Ukilemaza mpangilio huu, watumiaji hawataulizwa nenosiri ili kufungua kifaa kinacholala.
-
-      Ukiwezesha au kulemaza mpangilio huu, watumiaji hawawezi kukibadilisha au kukifuta.
-
-      Ikiwa sera itasalia kama haijawekwa mtumiaji anaweza kuchagua iwapo anataka kuulizwa nenosiri ili kufungua kifaa au la.</translation>
 <translation id="1827523283178827583">Tumia seva za proksi thabiti</translation>
 <translation id="1843117931376765605">Kiwango cha kuonyesha upya kwa sera ya mtumiaji</translation>
 <translation id="1847960418907100918">Hubainisha vigezo vinavyotumika wakati wa kufanya utafutaji wa papo hapo kwa kutumia POST. Ina vikundi vya jina/thamani vinavyotenganishwa na koma. Kama thamani ni kigezo cha kiolezo, kama {Hoja za utafutaji} katika mfano hapo juu, 
@@ -341,6 +328,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2337466621458842053">Inakuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zinazoruhusiwa kuonyesha picha.
 
          Ikiwa sera hii itaachwa bila thamani chaguo-msingi yote itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultImageSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
+<translation id="2366415278352956652">Huwasha kipengele cha kutuma</translation>
 <translation id="2371309782685318247">Inabainisha muda katika milisekunde ambapo huduma ya usimamizi wa kifaa inahojiwa kwa maelezo ya sera ya mtumiaji.
 
       Kuweka sera hii kunafuta thamani chaguo-msingi ya saa 3. Thamani halali za sera hii zinaanzia kutoka1800000 (dakika 30) hadi 86400000 (siku 1). Thamani zozote ambazo hazimo katika kiwango hiki zitasogezwa hadi katika mpaka unaolingana nazo.
@@ -494,9 +482,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2623014935069176671">Subiri shughuli ya kwanza ya mtumiaji</translation>
 <translation id="262740370354162807">Wezesha uwasilishaji wa nyaraka kwenye <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Wezesha maoni yaliyozungumzwa</translation>
-<translation id="2646290749315461919">Inaruhusu iwapo tovuti zinaruhusiwa kufuatilia eneo halisi la mtumiaji. Kufuatilia eneo halisi la mtumiaji kunaweza kuruhusiwa kwa chaguo-msingi, kukataliwa kwa chaguo-msingi au mtumiaji anaweza kuulizwa kila wakati tovuti ambayo inaomba eneo halisi.
-
-          Ikiwa sera hii itasalia kama haijawekwa, 'AskGeolocation' itatumika na mtumiaji ataweza kuibadilisha.</translation>
 <translation id="2650049181907741121">Hatua ya kuchukua mtumiaji anapofunga mfuniko</translation>
 <translation id="2660846099862559570">Usitumie proksi kamwe</translation>
 <translation id="267596348720209223">Inabainisha usimbaji wa vibambo unaohimiliwa na kitoaji cha utafutaji. Usimbaji ni majini ya ukurasa msimbo kama UTF-8, GB2312, na ISO-8859-1. Yanajaribiwa katika mpangilio uliotolewa.
@@ -729,18 +714,6 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 
           Sera hii ikiachwa bila kuwekwa, thamani chaguo-msingi ya kote duniani itatumiwa kwenye tovuti zote iwe ni kutoka sera ya 'DefaultKeygenSetting', ikiwa imewekwa, la sivyo mipangilio ya kibinafsi ya mtumiaji itatumika.</translation>
 <translation id="3381968327636295719">Tumia kivinjari kipangishi kwa chaguo-msingi</translation>
-<translation id="3398137877608138703">Ruhusu au ukatae kurekodi video.
-
-      Kipengee hiki kikiwashwa au kisipowekwa (huwa hivyo kwa chaguo-msingi), mtumiaji atadokezewa
-      kuhusu ufikiaji wa kurekodi video isipokuwa kwa URL zilizowekwa katika
-      orodha ya VideoCaptureAllowedUrls ambayo itapewa idhini ya ufikiaji bila kudokeza.
-      Programu za ARC zitaweza kufikia kamera ikiwa zimeruhusiwa.
-
-      Sera hii inapozimwa, mtumiaji hatawahi kudokezewa tena na kipengee
-      cha kupiga picha za video kitapatikana tu kwa URL iliyowekwa ya VideoCaptureAllowedUrls.
-      Programu za ARC hazitaweza kufikia kamera.
-
-      Nje ya programu za ARC, sera hii inaathiri aina zote za vifaa vya kuingiza video na siyo tu kamera iliyojumuishwa ndani.</translation>
 <translation id="3417418267404583991">Ikiwa sera hii itawekwa kwenye Ndivyo au haitasanidiwa, <ph name="PRODUCT_OS_NAME" /> haitawezesha uingiaji wa mgeni. Uingiaji wa mgeni ni vipindi visivyojulikana vya mtumiaji na havihitaji nenosiri..
 
       Ikiwa sera hii itawekwa kwenye Sivyo, <ph name="PRODUCT_OS_NAME" /> haitaruhusu vipindi vya mgeni kuanzishwa.</translation>
@@ -1015,6 +988,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 <translation id="4449545651113180484">Zungusha skrini kwa mwendo wa saa kwa digrii 270</translation>
 <translation id="4467952432486360968">Zuia vidakuzi vya wengine</translation>
 <translation id="4474167089968829729">Washa kipengele cha kuhifadhi manenosiri kwenye kidhibiti cha nenosiri</translation>
+<translation id="447686899376429408">Kipengele hiki kikiwekwa ndivyo au kisipowekwa, watumiaji wataweza kutuma vichupo, tovuti au eneo-kazi kutoka kivinjari. Kikiwekwa sivyo, chaguo hili litazimwa.</translation>
 <translation id="4480694116501920047">Lazimisha SafeSearch</translation>
 <translation id="4482640907922304445">Inaonyesha kitufe cha Mwanzo kwenye upauzana wa <ph name="PRODUCT_NAME" />.
 
@@ -1093,13 +1067,6 @@ Iwapo sera hii imewekwa kuwa haitumiki, kishale kikubwa kitawashwa kila wakati.
 Iwapo utaweka sera hii, watumiaji hawezi kuibadilisha au kuipuuza. 
 Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa na mtumiaji wakati wowote.</translation>
 <translation id="4807950475297505572">Watumiaji waliotumiwa mara chache hivi karibuni huondolewa hadi kuwe na nafasi ya kutosha</translation>
-<translation id="480987484799365700">Kama imewekwa kuwashwa sera hii hulazimisha mfumo kubadilishwa kuwa hali ya muda mfupi. Kama sera hii imebainishwa kama sera ya Mfumo wa Uendeshaji (k.m. GPO kwenye Windows) itatumika kwa kila wasifu kwenye mfumo; ikiwa sera imewekwa kama sera ya Wingu itatumika tu kwa wasifu uliyoingia katika akaunti na akaunti inayosimamiwa.
-
-      Katika hali hii data ya wasifu inawekwa kwenye diski kwa urefu wa kipindi cha mtumiaji. Vipengee kama vile historia ya kivinjari, viendelezi na data zao, data ya wavuti kama vidakuzi na hifadhidata haziwekwi salama baada kivinjari kimefungwa. Hata hivyo, hii haizuii mtumiaji kujipakulia data yoyote kwenye diski, kuhifadhi kurasa au kuzichapisha.
-
-       Kama mtumiaji amewasha sawazisha zote data hii inahifadhiwa katika wasifu wake wa kusawazisha kama ilivyo na wasifu za kawaida. Pia Hali fiche inapatikana kama haijazimwa na sera.
-       
-        Kama sera imewekwa kuwa imezimwa ama imeachwa bila kuwekwa kuingia katika akaunti huelekeza katika wasifu wa kawaida.</translation>
 <translation id="4816674326202173458">Ruhusu mtumiaji wa biashara kuwa wa kwanza na wa pili (Tabia ya chaguo-msingi kwa watumiaji wasiosimamiwa)</translation>
 <translation id="4826326557828204741">Kitendo cha kuchukua wakati ucheleweshaji wa kutofanya kitu umefikiwa ikiendeshwa kutumia nishati ya betri</translation>
 <translation id="4834526953114077364">Watumiaji waliotumiwa mara chache hivi karibuni ambao hawajaingia katika akaunti ndani ya miezi 3 huondolewa hadi kuwe na nafasi ya kutosha</translation>
@@ -1201,33 +1168,6 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
 
          Kama sera hii haitawekwa <ph name="PRODUCT_NAME" /> itapakia wapangishi wote waliosakinishwa wa ujumbe asili.</translation>
 <translation id="5290940294294002042">Bainisha orodha ya programu jalizi ambayo mtumiaji anaweza kuwezesha au kulemaza</translation>
-<translation id="5298412045697677971">Sanidi picha ya ishara ya mtumiaji.
-
-      Sera hii inakuruhusu kusanidi picha ya ishara inayowakilisha mtumiaji kwenye skrini ya kuingia katika akaunti. Sera huwekwa kwa kubainisha URL ambayo 
- <ph name="PRODUCT_OS_NAME" /> inaweza kupakua picha ya ishara na alama ya reli ya kusimba inayotumiwa kuthibitisha uadilifu wa kipakuzi. Picha lazima iwe katika muundo wa JPEG, ukubwa wake usizidi kB 512. URL lazima iweze kufikiwa bila uthibitishaji wowote.
-
-      Picha ya ishara hupakuliwa na kuakibishwa. Itapakuliwa tena wakati wowote URL au alama ya reli inapopakuliwa.
-
-      Sera lazima ibainishwe kama mfuatano unaoonyesha URL na alama ya reli katika muundo wa JSON, ifanane na muundo ufuatao:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL ambayo picha ya ishara inaweza kupakuliwa.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Alama ya reli ya SHA-256 ya picha ya ishara.",
-            "type": "string"
-          }
-        }
-      }
-
-      Iwapo sera hii imewekwa, <ph name="PRODUCT_OS_NAME" /> itapakua na kutumia picha ya ishara.
-
-      Iwapo utaweka sera hii, watumiaji hawataweza kuifuta.
-
-      If the policy is left not set, the user can choose the avatar image representing him/her on the login screen.</translation>
 <translation id="5302612588919538756">Sera hii imeacha kuendesha huduma, badala yake jaribu kutumia kipengee cha SyncDisabled.
 
       Humruhusu mtumiaji kuingia katika <ph name="PRODUCT_NAME" />.
@@ -1521,15 +1461,6 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
           Ukiwezesha mpangilio huu, na lango lisilo wastani (yaani, lango jingine lisilo la 80 au 443) liingizwe, itajumuishwa katika Kerberos SPN iliyotengenezwa.
 
           Ukilemaza mpangilio huu au uuache bila kuwekwa, Kerberos SPN zilizotengenezwa hazitajumuisha lango kwa namna yoyote.</translation>
-<translation id="6279809962528392889">Hubainisha ikiwa vidakuzi vya uthibitishaji vilivyowekwa na SAML IdP wakati wa kuingia katika akaunti vinafaa kuhamishwa hadi kwenye wasifu wa mtumiaji.
-
-      Mtumiaji anapothibitisha kupitia SAML IdP wakati wa kuingia katika akaunti, vidakuzi vilivyowekwa na IdP huandikwa kwenye wasifu wa muda kwanza. Vidakuzi hivi vinaweza kuhamishwa hadi kwenye wasifu wa mtumiaji ili kuendeleza hali ya uthibitishaji.
-
-      Sera hii inapowekwa kuwa ndivyo, vidakuzi vilivyowekwa na IdP huhamishwa hadi kwenye wasifu wa mtumiaji kila wakati anapothibitisha dhidi ya SAML IdP wakati wa kuingia katika akaunti.
-
-     Sera hii inapowekwa kuwa sivyo au kutowekwa, vidakuzi vilivyowekwa na IdP huhamishwa hadi kwenye wasifu wa mtumiaji wakati anapoingia kwenye kifaa kwa mara ya kwanza pekee.
-
-      Sera hii huathiri watumiaji ambao kikoa chao kinalingana na usajili wa kikoa cha kifaa pekee. Kwa watumiaji wengine wote, vidakuzi vilivyowekwa na IdP huhamishwa hadi kwenye wasifu wa mtumiaji anapoingia kwenye kifaa kwa mara ya kwanza pekee.</translation>
 <translation id="6281043242780654992">Sanidi sera za Ujumbe Asili. Wapangishi wa ujumbe asili ambao hawajaidhinishwa hawataruhusiwa isipokuwa kama wamepewa idhini.</translation>
 <translation id="6282799760374509080">Ruhusu au upinge kurekodi sauti</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1739,6 +1670,13 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
       Ikiwa haitawekwa, huenda mtumiaji akaombwa kuleta, au huenda uletaji ukatendeka kiotomatiki.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> mapendeleo</translation>
 <translation id="7006788746334555276">Mipangilio ya Maudhui</translation>
+<translation id="7007671350884342624">Huweka mipangilio ya saraka ambayo <ph name="PRODUCT_NAME" /> itatumia kuhifadhi data ya mtumiaji.
+
+      Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia saraka iliyotolewa bila kujali iwapo mtumiaji amebainisha ripoti ya '--user-data-dir' au la. Ili kuepuka kupoteza data au hitilafu zisizotarajiwa sera hii haipaswi kuwekwa kuwa thamani ya kipeo cha saraka au saraka iliyotumiwa kwa madhumuni mengine, kwa sababu <ph name="PRODUCT_NAME" /> inadhibiti maudhui yake.
+
+      Angalia https://www.chromium.org/administrators/policy-list-3/user-data-directory upate orodha ya aina zinazoweza kutumiwa.
+
+      Sera hii isipowekwa njia ya wasifu chaguo-msingi itatumiwa na mtumiaji ataweza kuibatilisha kwa amri ya ripoti ya mstari ya '--disk-cache-dir'.</translation>
 <translation id="7027785306666625591">Sanidi udhibiti wa nishati katika <ph name="PRODUCT_OS_NAME" />.
 
       Sera hizi zinakuwezesha kusanidi jinsi <ph name="PRODUCT_OS_NAME" /> hufanya kazi mtumiaji anapokuwa hana shughuli kwa muda fulani.</translation>
@@ -1757,10 +1695,6 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
 <translation id="706669471845501145">Ruhusu tovuti kuonyesha arifa za eneo-kazi</translation>
 <translation id="7079519252486108041">Zuia madirisha ibukizi kwenye tovuti hizi</translation>
 <translation id="7091198954851103976">Kila wakati inaendesha programu jalizi ambazo zinahitaji uidhinishaji.</translation>
-<translation id="7109916642577279530">Ruhusu au kataza kuchukuliwa kwa sauti. 
-Ikiwashwa au ikiwa hijasanidiwa (chaguo-msingi), mtumiaji ataombwa ufikiaji wa kuchukua sauti isipokuwa za URL zilizosanidiwa katika orodha ya AudioCaptureAllowedUrls ambayo itapewa ufikiaji bila kuomba. 
-Sera hii ikiwa imezimwa, mtumiaji kamwe hataombwa na uchukuaji wa sauti upatikana kwa URL zilizosanidiwa katika AudioCaptureAllowedUrls pekee. 
-Sera hii huathiri aina zote za vifaa vya kuingiza sauti na si tu maikrofoni iliyojengewa ndani.</translation>
 <translation id="7115494316187648452">Huamua ikiwa machakato wa <ph name="PRODUCT_NAME" /> utaanza wakati wa kuingia katika Mfumo wa Uendeshaji na kuendelea kutekeleza dirisha la mwisho la kivinjari linapofungwa, hivyo kuruhusu programu za chini chini na kipindi cha kuvinjari cha sasa kuendelea, ikiwa ni pamoja na vidakuzi vya kipindi. Mchakato wa chini chini huonyesha aikoni katika treya ya mfumo na unaweza kufungwa kutoka huko wakati wowote.
 
      Sera hii ikiwekwa kuwa Ndivyo, kipengee cha hali ya chinichini huwashwa na hakiwezi kudhibitiwa na mtumiaji katika mipangilio ya kivinjari.
@@ -2135,17 +2069,6 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 
       Iwapo sera hii haijawekwa hakutakuwa na ruhusa katika orodha ya kuondoa idhini kutoka sera ya 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Ruhusu mtumiaji wa biashara kuwa mtumiaji wa kwanza wa multiprofile pekee (Tabia ya chaguo-msingi kwa watumiaji wanaosimamiwa kibiashara)</translation>
-<translation id="8191318459035150777">Huweka mipangilio ya URL ya ukurasa wa kwanza ya chaguo-msingi katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kuibadilisha.
-
-          Ukurasa wa kwanza ni ukurasa unaofunguliwa na kitufe cha Mwanzo. Kurasa zinazofunguka mwanzoni zinadhibitiwa na sera za RestoreOnStartup.
-
-          Aina ya ukurasa wa kwanza inaweza kuwekwa kwenye URL unayobainisha hapa au kuwekwa kwenye Ukurasa Mpya wa Kichupo. Ukichagua Ukurasa Mpya wa Kichupo, basi sera hii haifanyi kazi.
-
-        Ukiwasha mipangilio hii, watumiaji hawawezi kubadilisha URL ya ukurasa wao wa kwanza katika <ph name="PRODUCT_NAME" />, lakini bado wanaweza kuchagua Ukurasa Mpya wa Kichupo kama ukurasa wao wa kwanza.
-
-          Kuiacha sera hii bila kuwekwa kutamruhusu mtumiaji kuchagua ukurasa huu wa kwanza mwenyewe iwapo HomepageIsNewTabPage haijawekwa pia.
-
-          Sera hii haipatikani kwenye matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha Saraka Inayotumika.</translation>
 <translation id="8197918588508433925">Sera hii inabainisha viendelezi vilivyoruhusiwa ili kutumia Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() kwa uthibitishaji wa mbali. Lazima viendelezi viongezwe kwenye orodha hii ili kutumia API.
 
           Iwapo kiendelezi hakipo kwenye orodha, au orodha haijawekwa, upigaji simu katika API utashindwa kwa msimbo wa hitilafu.</translation>
@@ -2158,6 +2081,21 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
       Iwapo sera itaachwa bila kuwekwa, <ph name="PRODUCT_OS_NAME" /> itatumia Kitambulisho cha akaunti ya barua pepe ya akaunti ya kifaa cha karibu nawe kama jina la onyesho kwenye skrini ya kuingia.
 
     Sera hii inaapuzwa kwa akaunti za mtumiaji wa mara kwa mara.</translation>
+<translation id="8279832363395120715">Huondoa sehemu muhimu za faragha na usalama za URL za https:// kabla ya kuzituma kwenye hati za PAC (Uwekaji Mipangilio ya Seva Mbadala Kiotomatiki) zinazotumiwa na <ph name="PRODUCT_NAME" /> wakati wa utatuzi wa seva mbadala.
+
+      Kikiwa Ndivyo, kipengele cha usalama huwashwa na URL za https:// huondolewa kabla ya kuziwasilisha kwenye hati ya PAC. Katika hali hii, hati ya PAC haiwezi kuona data ambayo kwa kawaida imelindwa na kituo kilichosimbwa kwa njia fiche (kama vile njia na hoja ya URL).
+
+      Kikiwa Sivyo, kipengele cha usalama huzimwa, na hati za PAC
+      hupewa uwezo wa kuona sehemu zote za URL za https://.
+      Hali hii inatumika kwenye hati zote za PAC bila kuzingatia asili yake (pamoja
+      na zile zilizoletwa kupitia usafiri usio salama, au zilizogunduliwa kwa njia isiyo salama kupitia WPAD).
+
+      Hii hubadilika kuwa Ndivyo (kipengele cha usalama kimewashwa), isipokuwa watumiaji wa Chrome OS ya biashara ambayo inabadilika kuwa Sivyo kwa sasa.
+
+      Inashauriwa kipengele hiki kiwekwe Ndivyo. Sababu pekee ya kuiweka kuwa
+      Sivyo ni ikiwa inasababisha tatizo la kuoana na hati za sasa za PAC.
+
+      Lengo ni kuondoa ubatilishaji huu siku za usoni.</translation>
 <translation id="8285435910062771358">Kikuza skrini nzima kimewashwa</translation>
 <translation id="8294750666104911727">Kwa kawaida kurasa Zinazooana na X-UA zilizowekwa kwa chrome=1  zitaonyeshwa katika <ph name="PRODUCT_FRAME_NAME" /> bila kujali sera ya 'ChromeFrameRendererSettings'.
 
@@ -2363,13 +2301,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 
           Sera ya thamani inastahili kubainishwa kwa nukta. Thamani zinabanwa ili kuwa chini ya ucheleweshaji wa kutokuwa na shughuli.</translation>
 <translation id="891435090623616439">imesimbwa kama mfuatano wa JSON, kwa maelezo angalia <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8929359433203547810">Sera hii ikiwekwa katika hali ya sivyo, <ph name="PRODUCT_OS_NAME" /> itazima Bluetooth na mtumiaji hawezi kuiwasha tena.
-
-     Sera hii ikiwekwa katika hali ya ndivyo au isipowekwa, mtumiaji ataweza kuwasha au kuzima Bluetooth apendavyo.
-
-      Sera hii ikiwekwa, mtumiaji hawezi kuibadilisha au kuibatilisha.
-
-      Baada ya kuwasha Bluetooth, lazima kifaa kiwashwe tena ili mabadiliko yafanye kazi (hakuna haja ya kuwasha kifaa tena unapozima Bluetooth).</translation>
 <translation id="8947415621777543415">Ripoti eneo la kifaa</translation>
 <translation id="8951350807133946005">Weka saraka ya akiba ya diski</translation>
 <translation id="8955719471735800169">Rudi juu</translation>
@@ -2378,8 +2309,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
       kunasa sauti itatolewa bila ombi.
 
       KUMBUKA: Kabla ya toleo la 45, sera hii ilitumika katika Skrini nzima pekee.</translation>
-<translation id="8965758116018152083">Sera hii ikiwekwa kuwa mfuatano wazi au isisanidiwe, <ph name="PRODUCT_OS_NAME" /> haitaonyesha chaguo la kukamilisha kiotomatiki wakati mtiririko wa kuingia katika akaunti kwa mtumiaji.
-      Sera hii ikiwekwa kuwa mfuatano unaowakilisha jina la kikoa, <ph name="PRODUCT_OS_NAME" /> itaonyesha chaguo la kukamilisha kiotomatiki wakati wa mtumiaji kuingia katika akaunti hivyo kumruhusu mtumiaji kuandika jina lake la mtumiaji pekee bila kiendelezi cha jina la kikoa.  Mtumiaji ataweza kufuta jina la kiendelezi cha kikoa hiki.</translation>
 <translation id="8970205333161758602">Didimiza kukataa kuuliza kwa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Saa ya kipindi cha umma cha uingiaji otomatiki</translation>
 <translation id="8976248126101463034">Ruhusu kipengele cha uthibitishaji wa gnubby kwa seva pangishi za uwezo wa kufikia kwa mbali</translation>
@@ -2437,11 +2366,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="9187743794267626640">Lemaza uangikaji wa hifadhi ya nje</translation>
 <translation id="9197740283131855199">Asilimia ambayo mwangaza wa skrini utaongezwa uchelewaji iwapo mtumiaji anaanza kutumia baada ya kupunguza mwangaza</translation>
 <translation id="9200828125069750521">Vigezo vya URL ya picha inayotumia POST</translation>
-<translation id="9203071022800375458">Inazuia kipengele cha kupiga picha za skrini.
-
-      Ikiwashwa picha za skrini haziwezi kupigwa kwa kutumia mikato ya kibodi au APl za kiendelezi.
-
-      Ikizimwa au isipobainishwa, upigaji picha za skrini unaruhusiwa.</translation>
 <translation id="922540222991413931">Sanidi viendelezi, programu, na vyanzo vya kusakinisha hati</translation>
 <translation id="924557436754151212">Leta manenosiri yaliyohifadhiwa kutoka kwenye kivinjari chaguo-msingi kwenye uendeshaji wa kwanza</translation>
 <translation id="930930237275114205">Weka saraka ya data ya mtumiaji wa <ph name="PRODUCT_FRAME_NAME" /></translation>

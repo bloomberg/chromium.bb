@@ -21,7 +21,6 @@
 <translation id="113188000913989374"><ph name="SITE" /> says:</translation>
 <translation id="1132774398110320017">Chrome Auto-fill settings...</translation>
 <translation id="113770840981343808">Enter the 4-digit CVC from the front of your card for verification</translation>
-<translation id="1146673768181266552">Crash ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="1152921474424827756">Access a <ph name="BEGIN_LINK" />cached copy<ph name="END_LINK" /> of <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> unexpectedly closed the connection.</translation>

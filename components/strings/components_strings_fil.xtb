@@ -21,7 +21,6 @@
 <translation id="113188000913989374">Isinasaad ng <ph name="SITE" /> na:</translation>
 <translation id="1132774398110320017">Mga setting ng Autofill ng Chrome...</translation>
 <translation id="113770840981343808">Ilagay ang 4 na digit na CVC mula sa harap ng iyong card para sa pag-verify</translation>
-<translation id="1146673768181266552">Crash ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng operating system ng iyong computer ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="1152921474424827756">Mag-access ng <ph name="BEGIN_LINK" />naka-cache na kopya<ph name="END_LINK" /> ng <ph name="URL" /></translation>
 <translation id="1158211211994409885">Pinutol ng <ph name="HOST_NAME" /> ang koneksyon nang hindi inaasahan.</translation>
