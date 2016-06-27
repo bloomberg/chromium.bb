@@ -137,7 +137,11 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
   window = window->GetToplevelWindow();
   if (!window_->Contains(window))
     return;
+
   wm::WindowState* window_state = window->GetWindowState();
+  if (window_state->ignore_keyboard_bounds_change())
+    return;
+
   if (!new_bounds.IsEmpty()) {
     // Store existing bounds to be restored before resizing for keyboard if it
     // is not already stored.

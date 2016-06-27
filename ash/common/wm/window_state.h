@@ -287,6 +287,17 @@ class ASH_EXPORT WindowState {
     in_immersive_fullscreen_ = enable;
   }
 
+  // True if the window should not adjust the window's bounds when
+  // virtual keyboard bounds changes.
+  // TODO(oshima): This is hack. Replace this with proper
+  // implementation based on EnsureCaretInRect.
+  bool ignore_keyboard_bounds_change() const {
+    return ignore_keyboard_bounds_change_;
+  }
+  void set_ignore_keyboard_bounds_change(bool ignore_keyboard_bounds_change) {
+    ignore_keyboard_bounds_change_ = ignore_keyboard_bounds_change;
+  }
+
   // Creates and takes ownership of a pointer to DragDetails when resizing is
   // active. This should be done before a resizer gets created.
   void CreateDragDetails(const gfx::Point& point_in_parent,
@@ -369,6 +380,7 @@ class ASH_EXPORT WindowState {
 
   bool unminimize_to_restore_bounds_;
   bool in_immersive_fullscreen_;
+  bool ignore_keyboard_bounds_change_ = false;
   bool hide_shelf_when_fullscreen_;
   bool minimum_visibility_;
   bool can_be_dragged_;

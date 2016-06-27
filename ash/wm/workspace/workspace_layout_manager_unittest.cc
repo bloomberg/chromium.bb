@@ -1080,7 +1080,16 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
     layout_manager_->OnKeyboardBoundsChanging(gfx::Rect());
   }
 
-  void SetKeyboardBounds(const gfx::Rect& bounds) { keyboard_bounds_ = bounds; }
+  // Initializes the keyboard bounds using the bottom half of the work area.
+  void InitKeyboardBounds() {
+    gfx::Rect work_area(
+        display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+    keyboard_bounds_.SetRect(work_area.x(),
+                             work_area.y() + work_area.height() / 2,
+                             work_area.width(), work_area.height() / 2);
+  }
+
+  const gfx::Rect& keyboard_bounds() const { return keyboard_bounds_; }
 
  private:
   gfx::Insets restore_work_area_insets_;
@@ -1093,13 +1102,10 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
 // Tests that when a child window gains focus the top level window containing it
 // is resized to fit the remaining workspace area.
 TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
+  InitKeyboardBounds();
+
   gfx::Rect work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
-  gfx::Rect keyboard_bounds(work_area.x(),
-                            work_area.y() + work_area.height() / 2,
-                            work_area.width(), work_area.height() / 2);
-
-  SetKeyboardBounds(keyboard_bounds);
 
   aura::test::TestWindowDelegate delegate1;
   std::unique_ptr<aura::Window> parent_window(
@@ -1113,7 +1119,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
 
   int available_height =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height() -
-      keyboard_bounds.height();
+      keyboard_bounds().height();
 
   gfx::Rect initial_window_bounds(50, 50, 100, 500);
   parent_window->SetBounds(initial_window_bounds);
@@ -1128,13 +1134,9 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
 }
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
+  InitKeyboardBounds();
   gfx::Rect work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
-  gfx::Rect keyboard_bounds(work_area.x(),
-                            work_area.y() + work_area.height() / 2,
-                            work_area.width(), work_area.height() / 2);
-
-  SetKeyboardBounds(keyboard_bounds);
 
   aura::test::TestWindowDelegate delegate;
   std::unique_ptr<aura::Window> window(
@@ -1142,7 +1144,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
 
   int available_height =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height() -
-      keyboard_bounds.height();
+      keyboard_bounds().height();
 
   wm::ActivateWindow(window.get());
 
@@ -1165,19 +1167,33 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   EXPECT_EQ(small_window_bound.ToString(), window->bounds().ToString());
 
   gfx::Rect occluded_window_bounds(
-      50, keyboard_bounds.y() + keyboard_bounds.height() / 2, 50,
-      keyboard_bounds.height() / 2);
+      50, keyboard_bounds().y() + keyboard_bounds().height() / 2, 50,
+      keyboard_bounds().height() / 2);
   window->SetBounds(occluded_window_bounds);
   EXPECT_EQ(occluded_window_bounds.ToString(),
             occluded_window_bounds.ToString());
   ShowKeyboard();
   EXPECT_EQ(
-      gfx::Rect(50, keyboard_bounds.y() - keyboard_bounds.height() / 2,
+      gfx::Rect(50, keyboard_bounds().y() - keyboard_bounds().height() / 2,
                 occluded_window_bounds.width(), occluded_window_bounds.height())
           .ToString(),
       window->bounds().ToString());
   HideKeyboard();
   EXPECT_EQ(occluded_window_bounds.ToString(), window->bounds().ToString());
+}
+
+TEST_F(WorkspaceLayoutManagerKeyboardTest, IgnoreKeyboardBoundsChagne) {
+  InitKeyboardBounds();
+
+  aura::test::TestWindowDelegate delegate2;
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithDelegate(&delegate2, -1, keyboard_bounds()));
+  wm::GetWindowState(window.get())->set_ignore_keyboard_bounds_change(true);
+  wm::ActivateWindow(window.get());
+
+  EXPECT_EQ(keyboard_bounds(), window->bounds());
+  ShowKeyboard();
+  EXPECT_EQ(keyboard_bounds(), window->bounds());
 }
 
 }  // namespace ash

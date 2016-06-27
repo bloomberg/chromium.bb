@@ -853,9 +853,6 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   widget_ = new ShellSurfaceWidget(this);
   widget_->Init(params);
 
-  // Disable movement if initial bounds were specified.
-  widget_->set_movement_disabled(!initial_bounds_.IsEmpty());
-
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");
   window->AddChild(surface_->window());
@@ -865,7 +862,12 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
 
   // Start tracking changes to window bounds and window state.
   window->AddObserver(this);
-  ash::wm::GetWindowState(window)->AddObserver(this);
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  window_state->AddObserver(this);
+
+  // Disable movement if initial bounds were specified.
+  widget_->set_movement_disabled(!initial_bounds_.IsEmpty());
+  window_state->set_ignore_keyboard_bounds_change(!initial_bounds_.IsEmpty());
 
   // Make shell surface a transient child if |parent_| has been set.
   if (parent_)
@@ -874,7 +876,7 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   // Allow Ash to manage the position of a top-level shell surfaces if show
   // state is one that allows auto positioning and |initial_bounds_| has
   // not been set.
-  ash::wm::GetWindowState(window)->set_window_position_managed(
+  window_state->set_window_position_managed(
       ash::wm::ToWindowShowState(ash::wm::WINDOW_STATE_TYPE_AUTO_POSITIONED) ==
           show_state &&
       initial_bounds_.IsEmpty());
