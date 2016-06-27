@@ -121,6 +121,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /** If the panel should be ignoring swipe events (for compatibility mode). */
     private boolean mIgnoreSwipeEvents;
 
+    /** This is used to make sure there is one show request to one close request. */
+    private boolean mPanelShowRequested;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -184,7 +187,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     public void closePanel(StateChangeReason reason, boolean animate) {
-        if (!isShowing()) return;
+        // If the panel hasn't peeked, then it shouldn't need to close.
+        if (!mPanelShowRequested) return;
+        mPanelShowRequested = false;
 
         super.closePanel(reason, animate);
     }
@@ -194,7 +199,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * @param reason The reason the panel is being shown.
      */
     public void requestPanelShow(StateChangeReason reason) {
-        if (isShowing()) return;
+        if (mPanelShowRequested) return;
+        mPanelShowRequested = true;
 
         if (mPanelManager != null) {
             mPanelManager.requestPanelShow(this, reason);
