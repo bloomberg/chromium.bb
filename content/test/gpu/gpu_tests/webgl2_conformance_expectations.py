@@ -162,8 +162,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['win', ('amd', 0x6779)], bug=621201)
-    self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
-        ['win', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/array.int.html',
+        ['win', ('amd', 0x6779)], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/array.uint.html',
+        ['win', ('amd', 0x6779)], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_00.html',
+        ['win', ('amd', 0x6779)], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_01.html',
+        ['win', ('amd', 0x6779)], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_02.html',
+        ['win', ('amd', 0x6779)], bug=483282)
 
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
@@ -208,6 +216,20 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
+        ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/array.int.html',
+        ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/array.uint.html',
+        ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/basic.int.html',
+        ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/basic.uint.html',
+        ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_00.html',
+        ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_01.html',
+        ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_02.html',
         ['win', 'intel'], bug=483282)
 
     # Mac only.
