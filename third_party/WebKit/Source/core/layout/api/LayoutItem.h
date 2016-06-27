@@ -177,6 +177,11 @@ public:
         return m_layoutObject->styleRef();
     }
 
+    ComputedStyle& mutableStyleRef() const
+    {
+        return m_layoutObject->mutableStyleRef();
+    }
+
     LayoutSize offsetFromContainer(const LayoutItem& item) const
     {
         return m_layoutObject->offsetFromContainer(item.layoutObject());

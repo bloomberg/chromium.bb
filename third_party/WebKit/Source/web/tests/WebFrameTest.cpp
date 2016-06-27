@@ -881,11 +881,11 @@ void enableViewportSettings(WebSettings* settings)
 bool setTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierSet = false;
-    for (LayoutObject* layoutObject = document->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
-        if (layoutObject->style()) {
-            layoutObject->mutableStyleRef().setTextAutosizingMultiplier(multiplier);
+    for (LayoutItem layoutItem = document->layoutViewItem(); !layoutItem.isNull(); layoutItem = layoutItem.nextInPreOrder()) {
+        if (layoutItem.style()) {
+            layoutItem.mutableStyleRef().setTextAutosizingMultiplier(multiplier);
 
-            EXPECT_EQ(multiplier, layoutObject->style()->textAutosizingMultiplier());
+            EXPECT_EQ(multiplier, layoutItem.style()->textAutosizingMultiplier());
             multiplierSet = true;
         }
     }
@@ -896,9 +896,9 @@ bool setTextAutosizingMultiplier(Document* document, float multiplier)
 bool checkTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierChecked = false;
-    for (LayoutObject* layoutObject = document->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
-        if (layoutObject->style() && layoutObject->isText()) {
-            EXPECT_EQ(multiplier, layoutObject->style()->textAutosizingMultiplier());
+    for (LayoutItem layoutItem = document->layoutViewItem(); !layoutItem.isNull(); layoutItem = layoutItem.nextInPreOrder()) {
+        if (layoutItem.style() && layoutItem.isText()) {
+            EXPECT_EQ(multiplier, layoutItem.style()->textAutosizingMultiplier());
             multiplierChecked = true;
         }
     }
@@ -977,9 +977,9 @@ TEST_P(ParameterizedWebFrameTest, VisualViewportSetSizeInvalidatesTextAutosizing
         if (!frame->isLocalFrame())
             continue;
         EXPECT_TRUE(setTextAutosizingMultiplier(toLocalFrame(frame)->document(), 2));
-        for (LayoutObject* layoutObject = toLocalFrame(frame)->document()->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
-            if (layoutObject->isText())
-                EXPECT_FALSE(layoutObject->needsLayout());
+        for (LayoutItem layoutItem = toLocalFrame(frame)->document()->layoutViewItem(); !layoutItem.isNull(); layoutItem = layoutItem.nextInPreOrder()) {
+            if (layoutItem.isText())
+                EXPECT_FALSE(layoutItem.needsLayout());
         }
     }
 
@@ -988,9 +988,9 @@ TEST_P(ParameterizedWebFrameTest, VisualViewportSetSizeInvalidatesTextAutosizing
     for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        for (LayoutObject* layoutObject = toLocalFrame(frame)->document()->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
-            if (layoutObject->isText())
-                EXPECT_TRUE(layoutObject->needsLayout());
+        for (LayoutItem layoutItem = toLocalFrame(frame)->document()->layoutViewItem(); !layoutItem.isNull(); layoutItem = layoutItem.nextInPreOrder()) {
+            if (layoutItem.isText())
+                EXPECT_TRUE(layoutItem.needsLayout());
         }
     }
 }
