@@ -9,14 +9,7 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 
-namespace blink {
-class WebGestureEvent;
-class WebTouchEvent;
-class WebTouchPoint;
-}
-
 namespace ui {
-class GestureEvent;
 class TouchEvent;
 }
 
@@ -41,12 +34,6 @@ CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
     const TouchEventWithLatencyInfo& touch,
     ScopedVector<ui::TouchEvent>* list,
     TouchEventCoordinateSystem coordinate_system);
-
-// Creates a WebGestureEvent from a ui::GestureEvent. Note that it does not
-// populate the event coordinates (i.e. |x|, |y|, |globalX|, and |globalY|). So
-// the caller must populate these fields.
-blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
-    const ui::GestureEvent& event);
 
 }  // namespace content
 

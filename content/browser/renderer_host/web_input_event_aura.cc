@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
-#include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
@@ -50,6 +49,16 @@ blink::WebPointerProperties::PointerType EventPointerTypeToWebPointerType(
   }
   NOTREACHED() << "Unexpected EventPointerType";
   return blink::WebPointerProperties::PointerType::Unknown;
+}
+
+// Creates a WebGestureEvent from a ui::GestureEvent. Note that it does not
+// populate the event coordinates (i.e. |x|, |y|, |globalX|, and |globalY|). So
+// the caller must populate these fields.
+blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
+    const ui::GestureEvent& event) {
+  return ui::CreateWebGestureEvent(
+      event.details(), event.time_stamp(), event.location_f(),
+      event.root_location_f(), event.flags(), event.unique_touch_event_id());
 }
 
 }  // namespace

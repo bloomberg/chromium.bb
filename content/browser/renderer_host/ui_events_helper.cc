@@ -10,7 +10,6 @@
 #include "content/common/input/web_touch_event_traits.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
@@ -86,13 +85,6 @@ bool MakeUITouchEventsFromWebTouchEvents(
     list->push_back(uievent);
   }
   return true;
-}
-
-blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
-    const ui::GestureEvent& event) {
-  return ui::CreateWebGestureEvent(
-      event.details(), event.time_stamp(), event.location_f(),
-      event.root_location_f(), event.flags(), event.unique_touch_event_id());
 }
 
 }  // namespace content
