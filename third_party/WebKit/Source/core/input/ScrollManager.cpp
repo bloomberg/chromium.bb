@@ -206,7 +206,8 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(const PlatformGestur
     if (!m_scrollGestureHandlingNode)
         m_scrollGestureHandlingNode = m_frame->document()->documentElement();
 
-    DCHECK(m_scrollGestureHandlingNode);
+    if (!m_scrollGestureHandlingNode)
+        return WebInputEventResult::NotHandled;
 
     passScrollGestureEventToWidget(gestureEvent, m_scrollGestureHandlingNode->layoutObject());
 
