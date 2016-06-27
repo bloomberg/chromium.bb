@@ -588,6 +588,61 @@
           ],
         }, # target_name: chromium_builder_perf
         {
+          'target_name': 'chromium_gpu_builder',
+          'type': 'none',
+          'dependencies': [
+            '../chrome/chrome.gyp:chrome',
+            '../chrome/chrome.gyp:performance_browser_tests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
+            '../gpu/khronos_glcts_support/khronos_glcts_test.gyp:khronos_glcts_test',
+            '../gpu/gpu.gyp:gl_tests',
+            '../gpu/gpu.gyp:angle_unittests',
+            '../gpu/gpu.gyp:gpu_unittests',
+            '../gpu/gpu.gyp:command_buffer_gles2_tests',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
+          ],
+          'conditions': [
+            ['OS!="ios" and OS!="win"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:minidump_stackwalk',
+              ],
+            }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:linux_symbols'
+              ],
+            }],
+          ],
+        }, # target_name: chromium_gpu_builder
+        {
+          'target_name': 'chromium_gpu_debug_builder',
+          'type': 'none',
+          'dependencies': [
+            '../chrome/chrome.gyp:chrome',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
+            '../gpu/khronos_glcts_support/khronos_glcts_test.gyp:khronos_glcts_test',
+            '../gpu/gpu.gyp:gl_tests',
+            '../gpu/gpu.gyp:angle_unittests',
+            '../gpu/gpu.gyp:gpu_unittests',
+            '../gpu/gpu.gyp:command_buffer_gles2_tests',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
+          ],
+          'conditions': [
+            ['OS!="ios" and OS!="win"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:minidump_stackwalk',
+              ],
+            }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:linux_symbols'
+              ],
+            }],
+          ],
+        }, # target_name: chromium_gpu_debug_builder
+        {
           # This target contains everything we need to run tests on the special
           # device-equipped WebRTC bots. We have device-requiring tests in
           # browser_tests and content_browsertests.
