@@ -172,6 +172,24 @@ gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
 
 void InkDropHostView::AnimateInkDrop(InkDropState state,
                                      const ui::LocatedEvent* event) {
+#if defined(OS_WIN)
+  // On Windows, don't initiate ink-drops. Additionally, certain event states
+  // should dismiss existing ink-drop animations.
+  if (event && event->IsGestureEvent()) {
+    // Don't transition the ink-drop to a "pending" state from a touch event.
+    if (state == InkDropState::ACTION_PENDING ||
+        state == InkDropState::ALTERNATE_ACTION_PENDING)
+      return;
+    // If the state is already pending, presumably from a mouse or keyboard
+    // event, then a "triggered" action state should be allowed. Conversely,
+    // if the state had already transitioned to hidden, then the touch event
+    // is ignored.
+    if ((state == InkDropState::ACTION_TRIGGERED ||
+         state == InkDropState::ALTERNATE_ACTION_TRIGGERED) &&
+        ink_drop_->GetTargetInkDropState() == InkDropState::HIDDEN)
+      return;
+  }
+#endif
   last_ripple_triggering_event_.reset(
       event ? ui::Event::Clone(*event).release()->AsLocatedEvent() : nullptr);
   ink_drop_->AnimateToState(state);
