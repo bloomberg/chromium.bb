@@ -391,7 +391,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
       // time. It's safe to use Unretained here since both destructor and
       // Initialize can only be called on the worker thread.
       chrome_worker_thread_.task_runner()->PostTask(
-          FROM_HERE, base::Bind(&FilteringNetworkManager::Initialize,
+          FROM_HERE, base::Bind(&FilteringNetworkManager::CheckPermission,
                                 base::Unretained(filtering_network_manager)));
     }
     network_manager.reset(filtering_network_manager);

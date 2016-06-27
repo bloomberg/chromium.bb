@@ -48,7 +48,7 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
 
   // Check mic/camera permission.
   // This is called by PeerConnectionDependencyFactory.
-  CONTENT_EXPORT void Initialize();
+  CONTENT_EXPORT void CheckPermission();
 
   // rtc::NetworkManager:
   void StartUpdating() override;
@@ -110,8 +110,8 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   // StartUpdating.
   int start_count_ = 0;
 
-  // Track whether Initialize has been called before StartUpdating.
-  bool initialized_ = false;
+  // Track whether CheckPermission has been called before StartUpdating.
+  bool started_permission_check_ = false;
 
   // Track how long it takes for client to receive SignalNetworksChanged. This
   // helps to identify if the signal is delayed by permission check and increase

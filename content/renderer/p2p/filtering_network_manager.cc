@@ -27,18 +27,18 @@ FilteringNetworkManager::FilteringNetworkManager(
 
   // If the feature is not enabled, just return ALLOWED as it's requested.
   if (!media_permission_) {
-    initialized_ = true;
+    started_permission_check_ = true;
     set_enumeration_permission(ENUMERATION_ALLOWED);
     VLOG(3) << "media_permission is not passed, granting permission";
     return;
   }
 }
 
-void FilteringNetworkManager::Initialize() {
+void FilteringNetworkManager::CheckPermission() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!initialized_);
+  DCHECK(!started_permission_check_);
 
-  initialized_ = true;
+  started_permission_check_ = true;
   pending_permission_checks_ = 2;
 
   // Request for media permission asynchronously.
@@ -63,7 +63,7 @@ base::WeakPtr<FilteringNetworkManager> FilteringNetworkManager::GetWeakPtr() {
 
 void FilteringNetworkManager::StartUpdating() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(initialized_);
+  DCHECK(started_permission_check_);
 
   if (start_updating_time_.is_null()) {
     start_updating_time_ = base::TimeTicks::Now();
