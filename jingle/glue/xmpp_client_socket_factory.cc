@@ -48,14 +48,15 @@ std::unique_ptr<net::SSLClientSocket>
 XmppClientSocketFactory::CreateSSLClientSocket(
     std::unique_ptr<net::ClientSocketHandle> transport_socket,
     const net::HostPortPair& host_and_port) {
-  net::SSLClientSocketContext context;
-  context.cert_verifier =
-      request_context_getter_->GetURLRequestContext()->cert_verifier();
-  context.transport_security_state = request_context_getter_->
-      GetURLRequestContext()->transport_security_state();
-  DCHECK(context.transport_security_state);
-  // TODO(rkn): context.channel_id_service is NULL because the
-  // ChannelIDService class is not thread safe.
+  const net::URLRequestContext* url_context =
+      request_context_getter_->GetURLRequestContext();
+  net::SSLClientSocketContext context(
+      url_context->cert_verifier(),
+      nullptr, /* TODO(rkn): ChannelIDService is not thread safe. */
+      url_context->transport_security_state(),
+      url_context->cert_transparency_verifier(),
+      url_context->ct_policy_enforcer(),
+      std::string() /* TODO(rsleevi): Ensure a proper unique shard. */);
   return client_socket_factory_->CreateSSLClientSocket(
       std::move(transport_socket), host_and_port, ssl_config_, context);
 }
