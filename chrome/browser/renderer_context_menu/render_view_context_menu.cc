@@ -1005,35 +1005,37 @@ void RenderViewContextMenu::AppendLinkItems() {
                                   kOpenLinkAsUserMaxProfilesReported);
       }
 
-      if (target_profiles_entries.size() == 1u) {
-        int menu_index = static_cast<int>(profile_link_paths_.size());
-        ProfileAttributesEntry* entry = target_profiles_entries.front();
-        profile_link_paths_.push_back(entry->GetPath());
-        menu_model_.AddItem(
-            IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index,
-            l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_OPENLINKINPROFILE,
-                                       entry->GetName()));
-        AddAvatarToLastMenuItem(entry->GetAvatarIcon(), &menu_model_);
-      } else if (target_profiles_entries.size() > 1u) {
-        for (ProfileAttributesEntry* entry : target_profiles_entries) {
+      if (multiple_profiles_open_ && !target_profiles_entries.empty()) {
+        if (target_profiles_entries.size() == 1) {
           int menu_index = static_cast<int>(profile_link_paths_.size());
-          // In extreme cases, we might have more profiles than available
-          // command ids. In that case, just stop creating new entries - the
-          // menu is probably useless at this point already.
-          if (IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index >
-              IDC_OPEN_LINK_IN_PROFILE_LAST) {
-            break;
-          }
+          ProfileAttributesEntry* entry = target_profiles_entries.front();
           profile_link_paths_.push_back(entry->GetPath());
-          profile_link_submenu_model_.AddItem(
-              IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index, entry->GetName());
-          AddAvatarToLastMenuItem(entry->GetAvatarIcon(),
-                                  &profile_link_submenu_model_);
+          menu_model_.AddItem(
+              IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index,
+              l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_OPENLINKINPROFILE,
+                                         entry->GetName()));
+          AddAvatarToLastMenuItem(entry->GetAvatarIcon(), &menu_model_);
+        } else {
+          for (ProfileAttributesEntry* entry : target_profiles_entries) {
+            int menu_index = static_cast<int>(profile_link_paths_.size());
+            // In extreme cases, we might have more profiles than available
+            // command ids. In that case, just stop creating new entries - the
+            // menu is probably useless at this point already.
+            if (IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index >
+                IDC_OPEN_LINK_IN_PROFILE_LAST) {
+              break;
+            }
+            profile_link_paths_.push_back(entry->GetPath());
+            profile_link_submenu_model_.AddItem(
+                IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index, entry->GetName());
+            AddAvatarToLastMenuItem(entry->GetAvatarIcon(),
+                                    &profile_link_submenu_model_);
+          }
+          menu_model_.AddSubMenuWithStringId(
+              IDC_CONTENT_CONTEXT_OPENLINKINPROFILE,
+              IDS_CONTENT_CONTEXT_OPENLINKINPROFILES,
+              &profile_link_submenu_model_);
         }
-        menu_model_.AddSubMenuWithStringId(
-            IDC_CONTENT_CONTEXT_OPENLINKINPROFILE,
-            IDS_CONTENT_CONTEXT_OPENLINKINPROFILES,
-            &profile_link_submenu_model_);
       }
     }
 #endif  // !defined(OS_CHROMEOS)
