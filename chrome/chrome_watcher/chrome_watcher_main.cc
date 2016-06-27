@@ -35,12 +35,10 @@
 #include "base/win/win_util.h"
 
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
-#include "chrome/chrome_watcher/kasko_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/browser_watcher/window_hang_monitor_win.h"
-#include "third_party/kasko/kasko_features.h"
 
 namespace {
 
@@ -181,16 +179,6 @@ void BrowserMonitor::BrowserExited() {
   }
 }
 
-void OnWindowEvent(
-    base::Process process,
-    const base::Callback<void(const base::Process&)>& on_hung_callback,
-    browser_watcher::WindowHangMonitor::WindowEvent window_event) {
-  if (window_event == browser_watcher::WindowHangMonitor::WINDOW_HUNG &&
-      !on_hung_callback.is_null()) {
-    on_hung_callback.Run(process);
-  }
-}
-
 }  // namespace
 
 // The main entry point to the watcher, declared as extern "C" to avoid name
@@ -215,22 +203,6 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   // chrome.exe in order to report its exit status.
   ::SetProcessShutdownParameters(0x100, SHUTDOWN_NORETRY);
 
-  base::Callback<void(const base::Process&)> on_hung_callback;
-
-#if BUILDFLAG(ENABLE_KASKO)
-  bool launched_kasko = InitializeKaskoReporter(GetKaskoEndpoint(process.Pid()),
-                                                browser_data_directory);
-
-#if BUILDFLAG(ENABLE_KASKO_HANG_REPORTS)
-  // Only activate hang reports for the canary channel.
-  if (launched_kasko &&
-      base::StringPiece16(channel_name) == installer::kChromeChannelCanary) {
-    on_hung_callback = base::Bind(&DumpHungProcess, main_thread_id,
-                                  channel_name, L"hung-process");
-  }
-#endif  // BUILDFLAG(ENABLE_KASKO_HANG_REPORTS)
-#endif  // BUILDFLAG(ENABLE_KASKO)
-
   // Run a UI message loop on the main thread.
   base::PlatformThread::SetName("WatcherMainThread");
   base::MessageLoop msg_loop(base::MessageLoop::TYPE_UI);
@@ -241,22 +213,8 @@ extern "C" int WatcherMain(const base::char16* registry_path,
                              std::move(on_initialized_event))) {
     return 1;
   }
-
-  {
-    // Scoped to force |hang_monitor| destruction before Kasko is shut down.
-    browser_watcher::WindowHangMonitor hang_monitor(
-        base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(20),
-        base::Bind(&OnWindowEvent, base::Passed(process.Duplicate()),
-                   on_hung_callback));
-    hang_monitor.Initialize(process.Duplicate());
-
-    run_loop.Run();
-  }
-
-#if BUILDFLAG(ENABLE_KASKO)
-  if (launched_kasko)
-    ShutdownKaskoReporter();
-#endif  // BUILDFLAG(ENABLE_KASKO)
+  run_loop.Run();
+  // TODO(manzagop): hang monitoring using WindowHangMonitor.
 
   // Wind logging down.
   logging::LogEventProvider::Uninitialize();

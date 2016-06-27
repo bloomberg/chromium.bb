@@ -4,17 +4,6 @@
 
 import("//build/config/sanitizers/sanitizers.gni")
 
-declare_args() {
-  # Enable the reporting of browser hangs with Kasko.
-  # TODO(pmonette): ensure hang reporting is disabled for syzyasan builds.
-  enable_kasko_hang_reports = false
-
-  # Enable the reporting of failed browser rendez-vous with Kasko.
-  # TODO(pmonette): ensure hang reporting is disabled for syzyasan builds.
-  enable_kasko_failed_rdv_reports = false
-}
-
 # Enable the Kasko crash reporter. Enabled by default on Syzyasan official
 # build.
-enable_kasko = (is_official_build && is_syzyasan) ||
-               enable_kasko_hang_reports || enable_kasko_failed_rdv_reports
+enable_kasko = is_official_build && is_syzyasan

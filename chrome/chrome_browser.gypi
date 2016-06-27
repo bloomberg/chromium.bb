@@ -3730,15 +3730,6 @@
             '../components/components.gyp:generate_version_info',
           ],
         }],
-        ['OS == "win" and kasko_failed_rdv_reports == 1', {
-          'sources': [
-            'app/chrome_crash_reporter_client_win.cc',
-            'app/chrome_crash_reporter_client_win.h',
-          ],
-          'dependencies': [
-            '../components/components.gyp:crash_component_lib',
-          ],
-        }],
         ['use_nss_certs==1', {
           'sources': [ '<@(chrome_browser_nss_sources)' ],
           'conditions': [
@@ -3905,7 +3896,6 @@
             'chrome_watcher_client',
             'file_pre_reader',
             'installer_util_strings',
-            'kasko_util',
             'metrics_constants_util_win',
             '../chrome/common_constants.gyp:version_header',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',

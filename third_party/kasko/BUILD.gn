@@ -9,11 +9,7 @@ import("//third_party/kasko/kasko.gni")
 # GYP version: target 'kasko_features' in third_party/kasko/kasko.gyp
 buildflag_header("kasko_features") {
   header = "kasko_features.h"
-  flags = [
-    "ENABLE_KASKO=$enable_kasko",
-    "ENABLE_KASKO_HANG_REPORTS=$enable_kasko_hang_reports",
-    "ENABLE_KASKO_FAILED_RDV_REPORTS=$enable_kasko_failed_rdv_reports",
-  ]
+  flags = [ "ENABLE_KASKO=$enable_kasko" ]
 }
 
 if (enable_kasko) {

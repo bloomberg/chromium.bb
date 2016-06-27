@@ -1036,19 +1036,6 @@
           # http://crbug.com/574476
           'fastbuild%': 2,
         }],
-        # Enable hang report capture. Capture can only be enabled for 32bit
-        # Windows.
-        ['OS=="win" and target_arch=="ia32" and branding=="Chrome"', {
-          # Enable hang reports from the watcher process.
-          'kasko_hang_reports%': 0,
-          # Enable failed rendez-vous reports.
-          'kasko_failed_rdv_reports%': 0,
-        }, {
-          # Enable hang reports from the watcher process.
-          'kasko_hang_reports%': 0,
-          # Enable failed rendez-vous reports.
-          'kasko_failed_rdv_reports%': 0,
-        }],
       ],
 
       # Kasko reporting is disabled by default, but may get enabled below.
@@ -1203,8 +1190,6 @@
     'use_sanitizer_options%': '<(use_sanitizer_options)',
     'syzyasan%': '<(syzyasan)',
     'kasko%': '<(kasko)',
-    'kasko_hang_reports%': '<(kasko_hang_reports)',
-    'kasko_failed_rdv_reports%': '<(kasko_failed_rdv_reports)',
     'syzygy_optimize%': '<(syzygy_optimize)',
     'lsan%': '<(lsan)',
     'msan%': '<(msan)',
@@ -2014,14 +1999,8 @@
           }, {
             'win_console_app%': 0,
           }],
-          # Disable hang reporting for syzyasan builds.
+          # Enable the Kasko reporter for syzyasan builds.
           ['syzyasan==1', {
-            # Note: override.
-            'kasko_hang_reports': 0,
-            'kasko_failed_rdv_reports': 0,
-          }],
-          # Enable the Kasko reporter for syzyasan builds and hang reporting.
-          ['syzyasan==1 or kasko_hang_reports==1 or kasko_failed_rdv_reports==1', {
             'kasko': 1,
           }],
           ['component=="shared_library"', {
