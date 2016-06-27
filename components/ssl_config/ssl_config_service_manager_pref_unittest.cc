@@ -178,28 +178,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoSSL3) {
   EXPECT_LE(net::SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_min);
 }
 
-// Tests that fallback beyond TLS 1.0 cannot be re-enabled.
-TEST_F(SSLConfigServiceManagerPrefTest, NoTLS1Fallback) {
-  scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
-
-  TestingPrefServiceSimple local_state;
-  local_state.SetUserPref(ssl_config::prefs::kSSLVersionFallbackMin,
-                          new base::StringValue("tls1"));
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-
-  std::unique_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(
-          &local_state, base::ThreadTaskRunnerHandle::Get()));
-  ASSERT_TRUE(config_manager.get());
-  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
-  ASSERT_TRUE(config_service.get());
-
-  SSLConfig ssl_config;
-  config_service->GetSSLConfig(&ssl_config);
-  // The command-line option must not have been honored.
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2, ssl_config.version_fallback_min);
-}
-
 // Tests that DHE may be re-enabled via features.
 TEST_F(SSLConfigServiceManagerPrefTest, DHEFeature) {
   // Toggle the feature.

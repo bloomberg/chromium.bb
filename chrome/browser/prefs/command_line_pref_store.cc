@@ -42,8 +42,6 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
       { switches::kAuthServerWhitelist, prefs::kAuthServerWhitelist },
       { switches::kSSLVersionMin, ssl_config::prefs::kSSLVersionMin },
       { switches::kSSLVersionMax, ssl_config::prefs::kSSLVersionMax },
-      { switches::kSSLVersionFallbackMin,
-          ssl_config::prefs::kSSLVersionFallbackMin },
 #if defined(OS_ANDROID)
       { switches::kAuthAndroidNegotiateAccountType,
           prefs::kAuthAndroidNegotiateAccountType },

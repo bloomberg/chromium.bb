@@ -114,7 +114,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/security_interstitials/core/controller_client.h"
-#include "components/ssl_config/ssl_config_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
@@ -170,8 +169,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/http/http_stream_factory.h"
-#include "net/ssl/ssl_config.h"
-#include "net/ssl/ssl_config_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
@@ -2624,53 +2621,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
 
   CheckCanOpenURL(browser(), file_path1.c_str());
   CheckURLIsBlocked(browser(), file_path2.c_str());
-}
-
-namespace {
-
-void GetSSLVersionFallbackMinOnIOThread(
-    const scoped_refptr<net::SSLConfigService>& config_service,
-    uint16_t* version_fallback_min) {
-  net::SSLConfig config;
-  config_service->GetSSLConfig(&config);
-  *version_fallback_min = config.version_fallback_min;
-}
-
-uint16_t GetSSLVersionFallbackMin(Profile* profile) {
-  scoped_refptr<net::SSLConfigService> config_service(
-      profile->GetSSLConfigService());
-  uint16_t version_fallback_min;
-  base::RunLoop loop;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetSSLVersionFallbackMinOnIOThread, config_service,
-                 base::Unretained(&version_fallback_min)),
-      loop.QuitClosure());
-  loop.Run();
-  return version_fallback_min;
-}
-
-}  // namespace
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, SSLVersionFallbackMin) {
-  PrefService* prefs = g_browser_process->local_state();
-
-  const std::string new_value("tls1.1");
-  const std::string default_value(
-      prefs->GetString(ssl_config::prefs::kSSLVersionFallbackMin));
-
-  EXPECT_NE(default_value, new_value);
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2,
-            GetSSLVersionFallbackMin(browser()->profile()));
-
-  PolicyMap policies;
-  policies.Set(key::kSSLVersionFallbackMin, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::StringValue(new_value)), nullptr);
-  UpdateProviderPolicy(policies);
-
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_1,
-            GetSSLVersionFallbackMin(browser()->profile()));
 }
 
 #if !defined(OS_MACOSX)

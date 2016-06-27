@@ -1862,9 +1862,6 @@
   },
 
   "SSLVersionFallbackMin": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "SSLVersionFallbackMin": "tls1.2" },
-    "pref_mappings": []
   },
 
   "RC4Enabled": {

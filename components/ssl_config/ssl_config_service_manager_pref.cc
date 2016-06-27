@@ -172,7 +172,6 @@ class SSLConfigServiceManagerPref : public ssl_config::SSLConfigServiceManager {
   BooleanPrefMember rev_checking_required_local_anchors_;
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
-  StringPrefMember ssl_version_fallback_min_;
   BooleanPrefMember dhe_enabled_;
 
   // The cached list of disabled SSL cipher suites.
@@ -213,8 +212,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
                         local_state_callback);
   ssl_version_max_.Init(ssl_config::prefs::kSSLVersionMax, local_state,
                         local_state_callback);
-  ssl_version_fallback_min_.Init(ssl_config::prefs::kSSLVersionFallbackMin,
-                                 local_state, local_state_callback);
   dhe_enabled_.Init(ssl_config::prefs::kDHEEnabled, local_state,
                     local_state_callback);
 
@@ -241,8 +238,6 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMin,
                                std::string());
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMax,
-                               std::string());
-  registry->RegisterStringPref(ssl_config::prefs::kSSLVersionFallbackMin,
                                std::string());
   registry->RegisterListPref(ssl_config::prefs::kCipherSuiteBlacklist);
   registry->RegisterBooleanPref(ssl_config::prefs::kDHEEnabled,
@@ -282,25 +277,16 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
       rev_checking_required_local_anchors_.GetValue();
   std::string version_min_str = ssl_version_min_.GetValue();
   std::string version_max_str = ssl_version_max_.GetValue();
-  std::string version_fallback_min_str = ssl_version_fallback_min_.GetValue();
   config->version_min = net::kDefaultSSLVersionMin;
   config->version_max = net::kDefaultSSLVersionMax;
-  config->version_fallback_min = net::kDefaultSSLVersionFallbackMin;
   uint16_t version_min = SSLProtocolVersionFromString(version_min_str);
   uint16_t version_max = SSLProtocolVersionFromString(version_max_str);
-  uint16_t version_fallback_min =
-      SSLProtocolVersionFromString(version_fallback_min_str);
   if (version_min) {
     config->version_min = version_min;
   }
   if (version_max) {
     uint16_t supported_version_max = config->version_max;
     config->version_max = std::min(supported_version_max, version_max);
-  }
-  // Values below TLS 1.1 are invalid.
-  if (version_fallback_min &&
-      version_fallback_min >= net::SSL_PROTOCOL_VERSION_TLS1_1) {
-    config->version_fallback_min = version_fallback_min;
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;
   config->dhe_enabled = dhe_enabled_.GetValue();

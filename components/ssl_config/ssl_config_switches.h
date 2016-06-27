@@ -9,7 +9,6 @@ namespace switches {
 
 extern const char kSSLVersionMax[];
 extern const char kSSLVersionMin[];
-extern const char kSSLVersionFallbackMin[];
 extern const char kSSLVersionTLSv1[];
 extern const char kSSLVersionTLSv11[];
 extern const char kSSLVersionTLSv12[];
