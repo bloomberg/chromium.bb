@@ -35,17 +35,13 @@
 
 namespace blink {
 
-// Vertical padding that is added to the element's logical height.
-// This is needed so that the select's layout is consistent with other browsers, e.g. Gecko.
-const int cInnerBlockVerticalPaddingEm = 1;
-
 LayoutMenuList::LayoutMenuList(Element* element)
     : LayoutFlexibleBox(element)
     , m_buttonText(nullptr)
     , m_innerBlock(nullptr)
     , m_isEmpty(false)
     , m_hasUpdatedActiveOption(false)
-    , m_optionsHeight(0)
+    , m_innerBlockHeight(LayoutUnit())
     , m_optionsWidth(0)
     , m_lastActiveIndex(-1)
 {
@@ -84,6 +80,8 @@ void LayoutMenuList::createInnerBlock()
 
     adjustInnerStyle();
     LayoutFlexibleBox::addChild(m_innerBlock);
+
+    m_innerBlockHeight = style()->getFontMetrics().height() + m_innerBlock->borderAndPaddingHeight();
 }
 
 void LayoutMenuList::adjustInnerStyle()
@@ -151,9 +149,8 @@ void LayoutMenuList::styleDidChange(StyleDifference diff, const ComputedStyle* o
     adjustInnerStyle();
 }
 
-void LayoutMenuList::updateOptionsHeightWidth() const
+void LayoutMenuList::updateOptionsWidth() const
 {
-    float maxOptionHeight = 0;
     float maxOptionWidth = 0;
 
     for (const auto& element : selectElement()->listItems()) {
@@ -165,18 +162,9 @@ void LayoutMenuList::updateOptionsHeightWidth() const
         applyTextTransform(itemStyle, text, ' ');
         TextRun textRun = constructTextRun(itemStyle->font(), text, *itemStyle);
 
-        maxOptionHeight = std::max(maxOptionHeight, computeTextHeight(textRun, *itemStyle));
         maxOptionWidth = std::max(maxOptionWidth, computeTextWidth(textRun, *itemStyle));
     }
-    m_optionsHeight = static_cast<int>(ceilf(maxOptionHeight));
     m_optionsWidth = static_cast<int>(ceilf(maxOptionWidth));
-}
-
-float LayoutMenuList::computeTextHeight(const TextRun& textRun, const ComputedStyle& computedStyle) const
-{
-    FloatRect glyphBounds;
-    computedStyle.font().width(textRun, nullptr /* fallbackFonts */, &glyphBounds);
-    return glyphBounds.height();
 }
 
 float LayoutMenuList::computeTextWidth(const TextRun& textRun, const ComputedStyle& computedStyle) const
@@ -280,7 +268,7 @@ LayoutRect LayoutMenuList::controlClipRect(const LayoutPoint& additionalOffset) 
 
 void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    updateOptionsHeightWidth();
+    updateOptionsWidth();
 
     maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(styleRef()))
         + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
@@ -293,10 +281,7 @@ void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, 
 void LayoutMenuList::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop,
     LogicalExtentComputedValues& computedValues) const
 {
-    if (!m_optionsHeight)
-        updateOptionsHeightWidth();
-    logicalHeight = LayoutUnit(m_optionsHeight) + borderAndPaddingHeight()
-        + LayoutUnit(cInnerBlockVerticalPaddingEm * style()->computedFontSize());
+    logicalHeight = m_innerBlockHeight + borderAndPaddingHeight();
     LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 }
 

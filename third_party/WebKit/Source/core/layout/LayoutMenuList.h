@@ -80,8 +80,7 @@ private:
     void adjustInnerStyle();
     void setText(const String&);
     void setTextFromOption(int optionIndex);
-    void updateOptionsHeightWidth() const;
-    float computeTextHeight(const TextRun&, const ComputedStyle&) const;
+    void updateOptionsWidth() const;
     float computeTextWidth(const TextRun&, const ComputedStyle&) const;
     void setIndexToSelectOnCancel(int listIndex);
 
@@ -92,9 +91,9 @@ private:
 
     bool m_isEmpty : 1;
     bool m_hasUpdatedActiveOption : 1;
-    // m_optionsHeight and m_optionsWidth are calculated and cached on demand.
-    // updateOptionsHeightWidth() should be called before reading them.
-    mutable int m_optionsHeight;
+    LayoutUnit m_innerBlockHeight;
+    // m_optionsWidth is calculated and cached on demand.
+    // updateOptionsWidth() should be called before reading them.
     mutable int m_optionsWidth;
 
     int m_lastActiveIndex;
