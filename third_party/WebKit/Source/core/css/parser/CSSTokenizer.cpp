@@ -114,11 +114,6 @@ UChar CSSTokenizer::consume()
     return current;
 }
 
-void CSSTokenizer::consume(unsigned offset)
-{
-    m_input.advance(offset);
-}
-
 CSSParserToken CSSTokenizer::whiteSpace(UChar cc)
 {
     m_input.advanceUntilNonWhitespace();
@@ -204,7 +199,7 @@ CSSParserToken CSSTokenizer::lessThan(UChar cc)
 {
     ASSERT(cc == '<');
     if (m_input.peek(0) == '!' && m_input.peek(1) == '-' && m_input.peek(2) == '-') {
-        consume(3);
+        m_input.advance(3);
         return CSSParserToken(CDOToken);
     }
     return CSSParserToken(DelimiterToken, '<');
@@ -222,7 +217,7 @@ CSSParserToken CSSTokenizer::hyphenMinus(UChar cc)
         return consumeNumericToken();
     }
     if (m_input.peek(0) == '-' && m_input.peek(1) == '>') {
-        consume(2);
+        m_input.advance(2);
         return CSSParserToken(CDCToken);
     }
     if (nextCharsAreIdentifier(cc)) {
@@ -325,7 +320,7 @@ CSSParserToken CSSTokenizer::letterU(UChar cc)
 {
     if (m_input.nextInputChar() == '+'
         && (isASCIIHexDigit(m_input.peek(1)) || m_input.peek(1) == '?')) {
-        consume();
+        m_input.advance();
         return consumeUnicodeRange();
     }
     reconsume(cc);
@@ -541,7 +536,7 @@ CSSParserToken CSSTokenizer::consumeUnicodeRange()
             --lengthRemaining;
         } while (lengthRemaining && consumeIfNext('?'));
     } else if (m_input.nextInputChar() == '-' && isASCIIHexDigit(m_input.peek(1))) {
-        consume();
+        m_input.advance();
         lengthRemaining = 6;
         end = 0;
         do {
@@ -624,9 +619,9 @@ void CSSTokenizer::consumeSingleWhitespaceIfNext()
     // We check for \r\n and HTML spaces since we don't do preprocessing
     UChar c = m_input.nextInputChar();
     if (c == '\r' && m_input.peek(1) == '\n')
-        consume(2);
+        m_input.advance(2);
     else if (isHTMLSpace(c))
-        consume();
+        m_input.advance();
 }
 
 void CSSTokenizer::consumeUntilCommentEndFound()
@@ -648,7 +643,7 @@ void CSSTokenizer::consumeUntilCommentEndFound()
 bool CSSTokenizer::consumeIfNext(UChar character)
 {
     if (m_input.nextInputChar() == character) {
-        consume();
+        m_input.advance();
         return true;
     }
     return false;

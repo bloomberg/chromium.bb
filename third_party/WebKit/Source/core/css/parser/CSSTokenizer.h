@@ -49,7 +49,6 @@ private:
     CSSParserToken nextToken();
 
     UChar consume();
-    void consume(unsigned);
     void reconsume(UChar);
 
     CSSParserToken consumeNumericToken();
