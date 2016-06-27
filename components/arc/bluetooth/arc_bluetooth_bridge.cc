@@ -45,13 +45,14 @@ using device::BluetoothRemoteGattService;
 using device::BluetoothUUID;
 
 namespace {
-const int kMinBtleVersion = 1;
-const uint32_t kGattReadPermission =
+constexpr int32_t kMinBtleVersion = 1;
+constexpr int32_t kMinBtleNotifyVersion = 2;
+constexpr uint32_t kGattReadPermission =
     BluetoothGattCharacteristic::Permission::PERMISSION_READ |
     BluetoothGattCharacteristic::Permission::PERMISSION_READ_ENCRYPTED |
     BluetoothGattCharacteristic::Permission::
         PERMISSION_READ_ENCRYPTED_AUTHENTICATED;
-const uint32_t kGattWritePermission =
+constexpr uint32_t kGattWritePermission =
     BluetoothGattCharacteristic::Permission::PERMISSION_WRITE |
     BluetoothGattCharacteristic::Permission::PERMISSION_WRITE_ENCRYPTED |
     BluetoothGattCharacteristic::Permission::
@@ -134,10 +135,8 @@ void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
   arc_bridge_service()->bluetooth_instance()->OnDeviceFound(
       std::move(properties));
 
-  if (arc_bridge_service()->bluetooth_version() < kMinBtleVersion) {
-    LOG(WARNING) << "Bluetooth instance is too old and does not support BTLE";
+  if (!CheckBluetoothInstanceVersion(kMinBtleVersion))
     return;
-  }
 
   mojom::BluetoothAddressPtr addr =
       mojom::BluetoothAddress::From(device->GetAddress());
@@ -208,10 +207,8 @@ void ArcBluetoothBridge::GattServicesDiscovered(BluetoothAdapter* adapter,
   if (!HasBluetoothInstance())
     return;
 
-  if (arc_bridge_service()->bluetooth_version() < kMinBtleVersion) {
-    LOG(WARNING) << "Bluetooth instance is too old and does not support BTLE";
+  if (!CheckBluetoothInstanceVersion(kMinBtleVersion))
     return;
-  }
 
   mojom::BluetoothAddressPtr addr =
       mojom::BluetoothAddress::From(device->GetAddress());
@@ -260,7 +257,30 @@ void ArcBluetoothBridge::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
-  // Placeholder for GATT client functionality
+  if (!HasBluetoothInstance())
+    return;
+
+  if (!CheckBluetoothInstanceVersion(kMinBtleNotifyVersion))
+    return;
+
+  BluetoothRemoteGattService* service = characteristic->GetService();
+  BluetoothDevice* device = service->GetDevice();
+  mojom::BluetoothAddressPtr address =
+      mojom::BluetoothAddress::From(device->GetAddress());
+  mojom::BluetoothGattServiceIDPtr service_id =
+      mojom::BluetoothGattServiceID::New();
+  service_id->is_primary = service->IsPrimary();
+  service_id->id = mojom::BluetoothGattID::New();
+  service_id->id->inst_id = ConvertGattIdentifierToId(service->GetIdentifier());
+  service_id->id->uuid = mojom::BluetoothUUID::From(service->GetUUID());
+
+  mojom::BluetoothGattIDPtr char_id = mojom::BluetoothGattID::New();
+  char_id->inst_id = ConvertGattIdentifierToId(characteristic->GetIdentifier());
+  char_id->uuid = mojom::BluetoothUUID::From(characteristic->GetUUID());
+
+  arc_bridge_service()->bluetooth_instance()->OnGattNotify(
+      std::move(address), std::move(service_id), std::move(char_id),
+      true /* is_notify */, mojo::Array<uint8_t>::From(value));
 }
 
 void ArcBluetoothBridge::GattDescriptorValueChanged(
@@ -540,10 +560,8 @@ void ArcBluetoothBridge::OnGattConnectStateChanged(
   if (!HasBluetoothInstance())
     return;
 
-  if (arc_bridge_service()->bluetooth_version() < kMinBtleVersion) {
-    LOG(WARNING) << "Bluetooth instance is too old and does not support BTLE";
+  if (!CheckBluetoothInstanceVersion(kMinBtleVersion))
     return;
-  }
 
   DCHECK(addr);
 
@@ -904,6 +922,19 @@ void ArcBluetoothBridge::WriteGattDescriptor(
                          std::move(char_id), std::move(desc_id));
   DCHECK(descriptor);
   DCHECK(descriptor->GetPermissions() & kGattWritePermission);
+
+  // To register / deregister GATT notification, we need to
+  // 1) Write to CCC Descriptor to enable/disable the notification
+  // 2) Ask BT hw to register / deregister the notification
+  // The Chrome API groups both steps into one API, and does not support writing
+  // directly to the CCC Descriptor. Therefore, until we fix
+  // https://crbug.com/622832, we return successfully when we encounter this.
+  // TODO(http://crbug.com/622832)
+  if (descriptor->GetUUID() ==
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()) {
+    OnGattWriteDone(callback);
+    return;
+  }
 
   descriptor->WriteRemoteDescriptor(
       value->value.To<std::vector<uint8_t>>(),
@@ -1318,6 +1349,16 @@ void ArcBluetoothBridge::SendCachedPairedDevices() const {
     OnPairing(addr->Clone());
     OnPairedDone(std::move(addr));
   }
+}
+
+bool ArcBluetoothBridge::CheckBluetoothInstanceVersion(
+    int32_t version_need) const {
+  int32_t version = arc_bridge_service()->bluetooth_version();
+  if (version >= version_need)
+    return true;
+  LOG(WARNING) << "Bluetooth instance is too old (version " << version
+               << ") need version " << version_need;
+  return false;
 }
 
 }  // namespace arc

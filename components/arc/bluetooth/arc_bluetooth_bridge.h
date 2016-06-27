@@ -264,6 +264,7 @@ class ArcBluetoothBridge
 
   void SendCachedDevicesFound() const;
   bool HasBluetoothInstance() const;
+  bool CheckBluetoothInstanceVersion(int32_t version_need) const;
 
   template <class T>
   T* FindGattObjectFromUuid(const std::vector<T*> objs,

@@ -321,4 +321,9 @@ interface BluetoothInstance {
                                       uint16 end_handle);
   [MinVersion=1] OnServicesAdded@12(BluetoothAddress remote_addr,
                                     array<BluetoothGattDBElement> db);
+  [MinVersion=2] OnGattNotify@13(BluetoothAddress remote_addr,
+                                 BluetoothGattServiceID service_id,
+                                 BluetoothGattID char_id,
+                                 bool is_notify,
+                                 array<uint8> value);
 };
