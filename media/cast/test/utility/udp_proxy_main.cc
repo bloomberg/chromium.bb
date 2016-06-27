@@ -15,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/cast/test/utility/udp_proxy.h"
@@ -201,6 +202,6 @@ int main(int argc, char** argv) {
   base::MessageLoop message_loop;
   g_counter.Get().last_printout = base::TimeTicks::Now();
   CheckByteCounters();
-  message_loop.Run();
+  base::RunLoop().Run();
   return 1;
 }

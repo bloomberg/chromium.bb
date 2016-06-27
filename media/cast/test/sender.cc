@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
@@ -334,7 +335,7 @@ int main(int argc, char** argv) {
   // CastSender initialization.
   std::unique_ptr<media::cast::CastSender> cast_sender =
       media::cast::CastSender::Create(cast_environment, transport_sender.get());
-  io_message_loop.PostTask(
+  io_message_loop.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&media::cast::CastSender::InitializeVideo,
                  base::Unretained(cast_sender.get()),
@@ -343,12 +344,10 @@ int main(int argc, char** argv) {
                  media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
                  media::cast::CreateDefaultVideoEncodeMemoryCallback()));
   io_message_loop.Run();  // Wait for video initialization.
-  io_message_loop.PostTask(
-      FROM_HERE,
-      base::Bind(&media::cast::CastSender::InitializeAudio,
-                 base::Unretained(cast_sender.get()),
-                 audio_config,
-                 base::Bind(&QuitLoopOnInitializationResult)));
+  io_message_loop.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&media::cast::CastSender::InitializeAudio,
+                            base::Unretained(cast_sender.get()), audio_config,
+                            base::Bind(&QuitLoopOnInitializationResult)));
   io_message_loop.Run();  // Wait for audio initialization.
 
   fake_media_source->Start(cast_sender->audio_frame_input(),

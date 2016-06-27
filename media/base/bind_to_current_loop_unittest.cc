@@ -9,6 +9,7 @@
 
 #include "base/memory/free_deleter.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,7 +57,7 @@ TEST_F(BindToCurrentLoopTest, Closure) {
       &base::WaitableEvent::Signal, base::Unretained(&waiter)));
   cb.Run();
   EXPECT_FALSE(waiter.IsSignaled());
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(waiter.IsSignaled());
 }
 
@@ -66,7 +67,7 @@ TEST_F(BindToCurrentLoopTest, Bool) {
       &BoundBoolSet, &bool_var));
   cb.Run(true);
   EXPECT_FALSE(bool_var);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(bool_var);
 }
 
@@ -77,7 +78,7 @@ TEST_F(BindToCurrentLoopTest, BoundScopedPtrBool) {
       &BoundBoolSetFromScopedPtr, &bool_val, base::Passed(&scoped_ptr_bool)));
   cb.Run();
   EXPECT_FALSE(bool_val);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(bool_val);
 }
 
@@ -88,7 +89,7 @@ TEST_F(BindToCurrentLoopTest, PassedScopedPtrBool) {
       BindToCurrentLoop(base::Bind(&BoundBoolSetFromScopedPtr, &bool_val));
   cb.Run(std::move(scoped_ptr_bool));
   EXPECT_FALSE(bool_val);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(bool_val);
 }
 
@@ -101,7 +102,7 @@ TEST_F(BindToCurrentLoopTest, BoundScopedArrayBool) {
       base::Passed(&scoped_array_bool)));
   cb.Run();
   EXPECT_FALSE(bool_val);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(bool_val);
 }
 
@@ -113,7 +114,7 @@ TEST_F(BindToCurrentLoopTest, PassedScopedArrayBool) {
       BindToCurrentLoop(base::Bind(&BoundBoolSetFromScopedArray, &bool_val));
   cb.Run(std::move(scoped_array_bool));
   EXPECT_FALSE(bool_val);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(bool_val);
 }
 
@@ -127,7 +128,7 @@ TEST_F(BindToCurrentLoopTest, BoundScopedPtrFreeDeleterBool) {
       base::Passed(&scoped_ptr_free_deleter_bool)));
   cb.Run();
   EXPECT_FALSE(bool_val);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(bool_val);
 }
 
@@ -141,7 +142,7 @@ TEST_F(BindToCurrentLoopTest, PassedScopedPtrFreeDeleterBool) {
           base::Bind(&BoundBoolSetFromScopedPtrFreeDeleter, &bool_val));
   cb.Run(std::move(scoped_ptr_free_deleter_bool));
   EXPECT_FALSE(bool_val);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(bool_val);
 }
 
@@ -153,7 +154,7 @@ TEST_F(BindToCurrentLoopTest, BoolConstRef) {
       &BoundBoolSetFromConstRef, &bool_var, true_ref));
   cb.Run();
   EXPECT_FALSE(bool_var);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(bool_var);
 }
 
@@ -165,7 +166,7 @@ TEST_F(BindToCurrentLoopTest, Integers) {
   cb.Run(1, -1);
   EXPECT_EQ(a, 0);
   EXPECT_EQ(b, 0);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(a, 1);
   EXPECT_EQ(b, -1);
 }

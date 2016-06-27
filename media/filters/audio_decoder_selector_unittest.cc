@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/media_util.h"
@@ -63,9 +64,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
     // InitializeDecoderSelector().
   }
 
-  ~AudioDecoderSelectorTest() {
-    message_loop_.RunUntilIdle();
-  }
+  ~AudioDecoderSelectorTest() { base::RunLoop().RunUntilIdle(); }
 
   MOCK_METHOD2(OnDecoderSelected,
                void(AudioDecoder*, DecryptingDemuxerStream*));
@@ -123,7 +122,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
                    base::Unretained(this)),
         base::Bind(&AudioDecoderSelectorTest::OnDecoderOutput),
         base::Bind(&AudioDecoderSelectorTest::OnWaitingForDecryptionKey));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SelectDecoderAndDestroy() {
@@ -131,7 +130,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
     EXPECT_CALL(*this, OnDecoderSelected(IsNull(), IsNull()));
     decoder_selector_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   static void OnDecoderOutput(const scoped_refptr<AudioBuffer>& output) {

@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_log.h"
@@ -116,7 +117,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     // NOTE: This should be done before any other member variables are
     // destructed since WMPI may reference them during destruction.
     wmpi_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     web_view_->close();
     web_local_frame_->close();

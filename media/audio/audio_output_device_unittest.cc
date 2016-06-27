@@ -14,6 +14,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sync_socket.h"
 #include "base/task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -245,8 +246,9 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
 
 void AudioOutputDeviceTest::WaitUntilRenderCallback() {
   // Don't hang the test if we never get the Render() callback.
-  io_loop_.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-                           TestTimeouts::action_timeout());
+  io_loop_.task_runner()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      TestTimeouts::action_timeout());
   io_loop_.Run();
 }
 

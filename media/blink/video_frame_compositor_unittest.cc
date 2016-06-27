@@ -71,7 +71,7 @@ class VideoFrameCompositorTest : public testing::Test,
     compositor()->Start(this);
     // If we previously had a frame, we should still have one now.
     EXPECT_EQ(had_current_frame, !!compositor_->GetCurrentFrame());
-    message_loop.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void StopVideoRendererSink(bool have_client) {
@@ -81,7 +81,7 @@ class VideoFrameCompositorTest : public testing::Test,
     compositor()->Stop();
     // If we previously had a frame, we should still have one now.
     EXPECT_EQ(had_current_frame, !!compositor_->GetCurrentFrame());
-    message_loop.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void RenderFrame() {

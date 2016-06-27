@@ -37,6 +37,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -655,12 +656,12 @@ class CastBenchmark {
       SearchVector ac = a.blend(c, static_cast<double>(x) / max);
       SearchVector v = ab.blend(ac, x == y ? 1.0 : static_cast<double>(y) / x);
       thread_num++;
-      (*threads)[thread_num % threads->size()]->message_loop()->PostTask(
-          FROM_HERE,
-          base::Bind(&CastBenchmark::BinarySearch,
-                     base::Unretained(this),
-                     v,
-                     accuracy));
+      (*threads)[thread_num % threads->size()]
+          ->message_loop()
+          ->task_runner()
+          ->PostTask(FROM_HERE,
+                     base::Bind(&CastBenchmark::BinarySearch,
+                                base::Unretained(this), v, accuracy));
     } else {
       skip *= 2;
       SpanningSearch(max, x, y, skip, a, b, c, accuracy, threads);
@@ -686,12 +687,9 @@ class CastBenchmark {
       a.bitrate.grade = 1.0;
       a.latency.grade = 1.0;
       a.packet_drop.grade = 1.0;
-      threads[0]->message_loop()->PostTask(
-          FROM_HERE,
-          base::Bind(base::IgnoreResult(&CastBenchmark::RunOnePoint),
-                     base::Unretained(this),
-                     a,
-                     1.0));
+      threads[0]->message_loop()->task_runner()->PostTask(
+          FROM_HERE, base::Bind(base::IgnoreResult(&CastBenchmark::RunOnePoint),
+                                base::Unretained(this), a, 1.0));
     } else {
       SearchVector a, b, c;
       a.bitrate.base = b.bitrate.base = c.bitrate.base = 100.0;

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
@@ -61,9 +62,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
     // InitializeDecoderSelector().
   }
 
-  ~VideoDecoderSelectorTest() {
-    message_loop_.RunUntilIdle();
-  }
+  ~VideoDecoderSelectorTest() { base::RunLoop().RunUntilIdle(); }
 
   MOCK_METHOD2(OnDecoderSelected,
                void(VideoDecoder*, DecryptingDemuxerStream*));
@@ -118,7 +117,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
                    base::Unretained(this)),
         base::Bind(&VideoDecoderSelectorTest::OnWaitingForDecryptionKey,
                    base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SelectDecoderAndDestroy() {
@@ -126,7 +125,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
     EXPECT_CALL(*this, OnDecoderSelected(IsNull(), IsNull()));
     decoder_selector_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void FrameReady(const scoped_refptr<VideoFrame>& frame) {

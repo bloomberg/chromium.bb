@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 
@@ -152,7 +153,7 @@ void MidiManagerMac::RunOnClientThread(const base::Closure& closure) {
   if (!client_thread_.IsRunning())
     client_thread_.Start();
 
-  client_thread_.message_loop()->PostTask(FROM_HERE, closure);
+  client_thread_.task_runner()->PostTask(FROM_HERE, closure);
 }
 
 void MidiManagerMac::InitializeCoreMIDI() {

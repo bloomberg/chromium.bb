@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/gmock_callback_support.h"
@@ -91,7 +92,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
                          NewExpectedBoolCB(success),
                          base::Bind(&DecryptingVideoDecoderTest::FrameReady,
                                     base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Initialize the |decoder_| and expects it to succeed.
@@ -123,7 +124,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
     decoder_->Decode(buffer,
                      base::Bind(&DecryptingVideoDecoderTest::DecodeDone,
                                 base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Helper function to simulate the decrypting and decoding process in the
@@ -175,7 +176,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
     decoder_->Decode(encrypted_buffer_,
                      base::Bind(&DecryptingVideoDecoderTest::DecodeDone,
                                 base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     // Make sure the Decode() on the decoder triggers a DecryptAndDecode() on
     // the decryptor.
     EXPECT_FALSE(pending_video_decode_cb_.is_null());
@@ -188,7 +189,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
     decoder_->Decode(encrypted_buffer_,
                      base::Bind(&DecryptingVideoDecoderTest::DecodeDone,
                                 base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void AbortPendingVideoDecodeCB() {
@@ -214,7 +215,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
             this, &DecryptingVideoDecoderTest::AbortPendingVideoDecodeCB));
 
     decoder_->Reset(NewExpectedClosure());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void Destroy() {
@@ -223,7 +224,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
             this, &DecryptingVideoDecoderTest::AbortAllPendingCBs));
 
     decoder_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   MOCK_METHOD1(FrameReady, void(const scoped_refptr<VideoFrame>&));
@@ -331,7 +332,7 @@ TEST_F(DecryptingVideoDecoderTest, KeyAdded_DuringWaitingForKey) {
   EXPECT_CALL(*this, FrameReady(decoded_video_frame_));
   EXPECT_CALL(*this, DecodeDone(DecodeStatus::OK));
   key_added_cb_.Run();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test the case where the a key is added when the decryptor is in
@@ -350,7 +351,7 @@ TEST_F(DecryptingVideoDecoderTest, KeyAdded_DuringPendingDecode) {
   key_added_cb_.Run();
   base::ResetAndReturn(&pending_video_decode_cb_).Run(Decryptor::kNoKey,
                                                       null_video_frame_);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test resetting when the decoder is in kIdle state but has not decoded any

@@ -148,7 +148,7 @@ class BufferedDataSourceTest : public testing::Test {
     EXPECT_CALL(*this, OnInitialize(expected));
     data_source_->Initialize(base::Bind(&BufferedDataSourceTest::OnInitialize,
                                         base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     bool is_http = gurl.SchemeIsHTTPOrHTTPS();
     EXPECT_EQ(data_source_->downloading(), is_http);
@@ -190,24 +190,24 @@ class BufferedDataSourceTest : public testing::Test {
   void Stop() {
     if (data_source_->loading()) {
       loader()->didFail(url_loader(), response_generator_->GenerateError());
-      message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
 
     data_source_->Stop();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ExpectCreateResourceLoader() {
     EXPECT_CALL(*data_source_, CreateResourceLoader(_, _))
         .WillOnce(Invoke(data_source_.get(),
                          &MockBufferedDataSource::CreateMockResourceLoader));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     bytes_received_ = 0;
   }
 
   void Respond(const WebURLResponse& response) {
     loader()->didReceiveResponse(url_loader(), response);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ReceiveData(int size) {
@@ -215,7 +215,7 @@ class BufferedDataSourceTest : public testing::Test {
     memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
 
     loader()->didReceiveData(url_loader(), data.get(), size, size);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     bytes_received_ += size;
     EXPECT_EQ(bytes_received_, data_source_->GetMemoryUsage());
   }
@@ -223,7 +223,7 @@ class BufferedDataSourceTest : public testing::Test {
   void FinishLoading() {
     data_source_->set_loading(false);
     loader()->didFinishLoading(url_loader(), 0, -1);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   MOCK_METHOD1(ReadCallback, void(int size));
@@ -232,7 +232,7 @@ class BufferedDataSourceTest : public testing::Test {
     data_source_->Read(position, kDataSize, buffer_,
                        base::Bind(&BufferedDataSourceTest::ReadCallback,
                                   base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ExecuteMixedResponseSuccessTest(const WebURLResponse& response1,
@@ -427,7 +427,7 @@ TEST_F(BufferedDataSourceTest, Http_AbortWhileReading) {
   // Abort!!!
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   data_source_->Abort();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(data_source_->loading());
   Stop();
@@ -442,7 +442,7 @@ TEST_F(BufferedDataSourceTest, File_AbortWhileReading) {
   // Abort!!!
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   data_source_->Abort();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(data_source_->loading());
   Stop();
@@ -761,7 +761,7 @@ TEST_F(BufferedDataSourceTest, StopDuringRead) {
     EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
     data_source_->Stop();
   }
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BufferedDataSourceTest, DefaultValues) {
@@ -784,7 +784,7 @@ TEST_F(BufferedDataSourceTest, SetBitrate) {
   InitializeWith206Response();
 
   data_source_->SetBitrate(1234);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1234, data_source_bitrate());
   EXPECT_EQ(1234, loader_bitrate());
 
@@ -807,7 +807,7 @@ TEST_F(BufferedDataSourceTest, MediaPlaybackRateChanged) {
   InitializeWith206Response();
 
   data_source_->MediaPlaybackRateChanged(2.0);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2.0, data_source_playback_rate());
   EXPECT_EQ(2.0, loader_playback_rate());
 

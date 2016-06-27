@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -52,7 +53,7 @@ class FakeVideoDecoderTest
     decoder_->Initialize(
         config, false, nullptr, NewExpectedBoolCB(success),
         base::Bind(&FakeVideoDecoderTest::FrameReady, base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     current_config_ = config;
   }
 
@@ -67,7 +68,7 @@ class FakeVideoDecoderTest
 
   void SatisfyInit() {
     decoder_->SatisfyInit();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Callback for VideoDecoder::Decode().
@@ -136,7 +137,7 @@ class FakeVideoDecoderTest
     decoder_->Decode(
         buffer,
         base::Bind(&FakeVideoDecoderTest::DecodeDone, base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ReadOneFrame() {
@@ -162,7 +163,7 @@ class FakeVideoDecoderTest
 
   void SatisfyDecodeAndExpect(CallbackResult result) {
     decoder_->SatisfyDecode();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ExpectReadResult(result);
   }
 
@@ -193,7 +194,7 @@ class FakeVideoDecoderTest
     is_reset_pending_ = true;
     decoder_->Reset(base::Bind(&FakeVideoDecoderTest::OnDecoderReset,
                                base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ExpectResetResult(result);
   }
 
@@ -204,13 +205,13 @@ class FakeVideoDecoderTest
 
   void SatisfyReset() {
     decoder_->SatisfyReset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ExpectResetResult(OK);
   }
 
   void Destroy() {
     decoder_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // All pending callbacks must have been fired.
     DCHECK_EQ(pending_decode_requests_, 0);
@@ -334,7 +335,7 @@ TEST_P(FakeVideoDecoderTest, ReadWithHold_DecodingDelay) {
       Decode();
     decoder_->SatisfySingleDecode();
     ++num_decodes_satisfied;
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   DCHECK_EQ(num_decoded_frames_, 1);

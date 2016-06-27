@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -181,7 +182,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
       read_callback_called_ = false;
       stream->Read(base::Bind(&FrameProcessorTest::StoreStatusAndBuffer,
                               base::Unretained(this)));
-      message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     } while (++loop_count < 2 && read_callback_called_ &&
              last_read_status_ == DemuxerStream::kAborted);
 
@@ -207,7 +208,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
         read_callback_called_ = false;
         stream->Read(base::Bind(&FrameProcessorTest::StoreStatusAndBuffer,
                                 base::Unretained(this)));
-        message_loop_.RunUntilIdle();
+        base::RunLoop().RunUntilIdle();
         EXPECT_TRUE(read_callback_called_);
       } while (++loop_count < 2 &&
                last_read_status_ == DemuxerStream::kAborted);

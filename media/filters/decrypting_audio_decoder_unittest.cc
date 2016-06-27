@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -99,7 +100,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
     decoder_->Initialize(config, cdm_context_.get(), NewExpectedBoolCB(success),
                          base::Bind(&DecryptingAudioDecoderTest::FrameReady,
                                     base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   enum CdmType { CDM_WITHOUT_DECRYPTOR, CDM_WITH_DECRYPTOR };
@@ -146,7 +147,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
     decoder_->Decode(buffer,
                      base::Bind(&DecryptingAudioDecoderTest::DecodeDone,
                                 base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Helper function to simulate the decrypting and decoding process in the
@@ -198,7 +199,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
     decoder_->Decode(encrypted_buffer_,
                      base::Bind(&DecryptingAudioDecoderTest::DecodeDone,
                                 base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     // Make sure the Decode() on the decoder triggers a DecryptAndDecode() on
     // the decryptor.
     EXPECT_FALSE(pending_audio_decode_cb_.is_null());
@@ -212,7 +213,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
     decoder_->Decode(encrypted_buffer_,
                      base::Bind(&DecryptingAudioDecoderTest::DecodeDone,
                                 base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void AbortPendingAudioDecodeCB() {
@@ -238,7 +239,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
             this, &DecryptingAudioDecoderTest::AbortPendingAudioDecodeCB));
 
     decoder_->Reset(NewExpectedClosure());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void Destroy() {
@@ -247,7 +248,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
             this, &DecryptingAudioDecoderTest::AbortAllPendingCBs));
 
     decoder_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   MOCK_METHOD1(FrameReady, void(const scoped_refptr<AudioBuffer>&));
@@ -391,7 +392,7 @@ TEST_F(DecryptingAudioDecoderTest, Reinitialize_ConfigChange) {
   EXPECT_NE(new_config.samples_per_second(), config_.samples_per_second());
 
   ReinitializeConfigChange(new_config);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test the case where the a key is added when the decryptor is in
@@ -405,7 +406,7 @@ TEST_F(DecryptingAudioDecoderTest, KeyAdded_DuringWaitingForKey) {
   EXPECT_CALL(*this, FrameReady(decoded_frame_));
   EXPECT_CALL(*this, DecodeDone(DecodeStatus::OK));
   key_added_cb_.Run();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test the case where the a key is added when the decryptor is in
@@ -423,7 +424,7 @@ TEST_F(DecryptingAudioDecoderTest, KeyAdded_DruingPendingDecode) {
   key_added_cb_.Run();
   base::ResetAndReturn(&pending_audio_decode_cb_).Run(
       Decryptor::kNoKey, Decryptor::AudioFrames());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test resetting when the decoder is in kIdle state but has not decoded any

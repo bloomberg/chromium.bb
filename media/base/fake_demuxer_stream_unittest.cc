@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,7 +105,7 @@ class FakeDemuxerStreamTest : public testing::Test {
     read_pending_ = true;
     stream_->Read(base::Bind(&FakeDemuxerStreamTest::BufferReady,
                              base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ExpectReadResult(result);
   }
 
@@ -113,7 +114,7 @@ class FakeDemuxerStreamTest : public testing::Test {
       read_pending_ = true;
       stream_->Read(base::Bind(&FakeDemuxerStreamTest::BufferReady,
                                base::Unretained(this)));
-      message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       if (read_pending_)
         break;
     }
@@ -122,14 +123,14 @@ class FakeDemuxerStreamTest : public testing::Test {
   void SatisfyReadAndExpect(ReadResult result) {
     EXPECT_TRUE(read_pending_);
     stream_->SatisfyRead();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ExpectReadResult(result);
   }
 
   void Reset() {
     bool had_read_pending = read_pending_;
     stream_->Reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_FALSE(read_pending_);
     if (had_read_pending)

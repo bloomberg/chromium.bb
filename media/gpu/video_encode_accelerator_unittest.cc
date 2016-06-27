@@ -22,6 +22,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -1591,7 +1592,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
         encoder_save_to_file, keyframe_period, force_bitrate, test_perf,
         mid_stream_bitrate_switch, mid_stream_framerate_switch, verify_output));
 
-    encoder_thread.message_loop()->PostTask(
+    encoder_thread.task_runner()->PostTask(
         FROM_HERE, base::Bind(&VEAClient::CreateEncoder,
                               base::Unretained(clients.back())));
   }
@@ -1614,7 +1615,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   }
 
   for (size_t i = 0; i < num_concurrent_encoders; ++i) {
-    encoder_thread.message_loop()->PostTask(
+    encoder_thread.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&VEAClient::DestroyEncoder, base::Unretained(clients[i])));
   }

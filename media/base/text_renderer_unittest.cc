@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
@@ -68,7 +69,7 @@ class TextRendererTest : public testing::Test {
 
   void Destroy() {
     text_renderer_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void AddTextTrack(TextKind kind,
@@ -83,7 +84,7 @@ class TextRendererTest : public testing::Test {
 
     const TextTrackConfig config(kind, name, language, std::string());
     text_renderer_->AddTextStream(text_track_streams_.back(), config);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(text_tracks_.size(), text_track_streams_.size());
     FakeTextTrack* const text_track = text_tracks_.back();
@@ -125,7 +126,7 @@ class TextRendererTest : public testing::Test {
   void AbortPendingRead(unsigned idx) {
     FakeTextTrackStream* const stream = text_track_streams_[idx];
     stream->AbortPendingRead();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void AbortPendingReads() {
@@ -137,7 +138,7 @@ class TextRendererTest : public testing::Test {
   void SendEosNotification(unsigned idx) {
     FakeTextTrackStream* const stream = text_track_streams_[idx];
     stream->SendEosNotification();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SendEosNotifications() {
@@ -165,7 +166,7 @@ class TextRendererTest : public testing::Test {
     }
 
     text_stream->SatisfyPendingRead(start, duration, id, content, settings);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SendCues(bool expect_cue) {
@@ -185,7 +186,7 @@ class TextRendererTest : public testing::Test {
   void Pause() {
     text_renderer_->Pause(base::Bind(&TextRendererTest::OnPause,
                                      base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void Flush() {

@@ -13,6 +13,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_config.h"
@@ -264,7 +265,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
                      base::Unretained(this)),
           base::Bind(&AesDecryptorTest::OnCdmCreated, base::Unretained(this)));
 
-      message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
   }
 

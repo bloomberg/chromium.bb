@@ -991,7 +991,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   void ShutdownDemuxer() {
     if (demuxer_) {
       demuxer_->Shutdown();
-      message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
   }
 
@@ -1109,7 +1109,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
   void Read(DemuxerStream::Type type, const DemuxerStream::ReadCB& read_cb) {
     demuxer_->GetStream(type)->Read(read_cb);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ReadAudio(const DemuxerStream::ReadCB& read_cb) {
@@ -1242,7 +1242,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     EXPECT_CALL(*this, ReadDone(DemuxerStream::kOk, IsEndOfStream()));
     demuxer_->GetStream(type)->Read(base::Bind(
         &ChunkDemuxerTest::ReadDone, base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ExpectRead(DemuxerStream::Type type, int64_t timestamp_in_ms) {
@@ -1250,14 +1250,14 @@ class ChunkDemuxerTest : public ::testing::Test {
                                 HasTimestamp(timestamp_in_ms)));
     demuxer_->GetStream(type)->Read(base::Bind(
         &ChunkDemuxerTest::ReadDone, base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ExpectConfigChanged(DemuxerStream::Type type) {
     EXPECT_CALL(*this, ReadDone(DemuxerStream::kConfigChanged, _));
     demuxer_->GetStream(type)->Read(base::Bind(
         &ChunkDemuxerTest::ReadDone, base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void CheckExpectedBuffers(DemuxerStream* stream,
@@ -1369,12 +1369,12 @@ class ChunkDemuxerTest : public ::testing::Test {
   void Seek(base::TimeDelta seek_time) {
     demuxer_->StartWaitingForSeek(seek_time);
     demuxer_->Seek(seek_time, NewExpectedStatusCB(PIPELINE_OK));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void MarkEndOfStream(PipelineStatus status) {
     demuxer_->MarkEndOfStream(status);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   bool SetTimestampOffset(const std::string& id,
@@ -1726,7 +1726,7 @@ TEST_F(ChunkDemuxerTest, Shutdown_EndOfStreamWhileWaitingForData) {
   audio_stream->Read(base::Bind(&OnReadDone_EOSExpected, &audio_read_done));
   video_stream->Read(base::Bind(&OnReadDone_EOSExpected, &video_read_done));
   text_stream->Read(base::Bind(&OnReadDone_EOSExpected, &text_read_done));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(audio_read_done);
   EXPECT_FALSE(video_read_done);
@@ -1757,7 +1757,7 @@ TEST_F(ChunkDemuxerTest, AppendDataAfterSeek) {
 
   ASSERT_TRUE(AppendCluster(kDefaultSecondCluster()));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   Checkpoint(2);
 }
@@ -2065,7 +2065,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWithPendingReads) {
   ReadVideo(base::Bind(&OnReadDone,
                        base::TimeDelta::FromMilliseconds(0),
                        &video_read_done_1));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(audio_read_done_1);
   EXPECT_TRUE(video_read_done_1);
@@ -2358,7 +2358,7 @@ TEST_F(ChunkDemuxerTest, IncrementalClusterParsing) {
   int i = 0;
   for (; i < cluster->size() && !(audio_read_done || video_read_done); ++i) {
     ASSERT_TRUE(AppendData(cluster->data() + i, 1));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   EXPECT_TRUE(audio_read_done || video_read_done);
@@ -2382,7 +2382,7 @@ TEST_F(ChunkDemuxerTest, IncrementalClusterParsing) {
   ASSERT_LT(i, cluster->size());
   ASSERT_TRUE(AppendData(cluster->data() + i, cluster->size() - i));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(audio_read_done);
   EXPECT_TRUE(video_read_done);
@@ -2586,7 +2586,7 @@ TEST_F(ChunkDemuxerTest, RemoveId) {
   // Read() from audio should return "end of stream" buffers.
   bool audio_read_done = false;
   ReadAudio(base::Bind(&OnReadDone_EOSExpected, &audio_read_done));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(audio_read_done);
 
   // Read() from video should still return normal buffers.
@@ -2625,7 +2625,7 @@ TEST_F(ChunkDemuxerTest, SeekCanceled) {
   // buffers.
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(0);
   demuxer_->CancelPendingSeek(seek_time);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(audio_read_done);
   EXPECT_TRUE(video_read_done);
 
@@ -2709,7 +2709,7 @@ TEST_F(ChunkDemuxerTest, SeekAudioAndVideoSources) {
       video_id, GenerateSingleStreamCluster(3000, 3132, kVideoTrackNum,
                                             kVideoBlockDuration)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read() should return buffers at 3.
   EXPECT_TRUE(audio_read_done);
@@ -2736,7 +2736,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamAfterPastEosSeek) {
   demuxer_->StartWaitingForSeek(seek_time);
   demuxer_->Seek(seek_time,
                  base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(seek_cb_was_called);
 
@@ -2744,7 +2744,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamAfterPastEosSeek) {
       base::TimeDelta::FromMilliseconds(120)));
   MarkEndOfStream(PIPELINE_OK);
   CheckExpectedRanges("{ [0,120) }");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(seek_cb_was_called);
 
@@ -2770,13 +2770,13 @@ TEST_F(ChunkDemuxerTest, EndOfStreamDuringPendingSeek) {
   demuxer_->StartWaitingForSeek(seek_time);
   demuxer_->Seek(seek_time,
                  base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(seek_cb_was_called);
 
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(300)));
   MarkEndOfStream(PIPELINE_OK);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(seek_cb_was_called);
 
@@ -2787,7 +2787,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamDuringPendingSeek) {
       MuxedStreamInfo(kVideoTrackNum, "140K 145K 150K 155K 160K 165K 170K 175K",
                       20));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(seek_cb_was_called);
 
@@ -3735,7 +3735,7 @@ TEST_F(ChunkDemuxerTest, Shutdown_BeforeInitialize) {
   demuxer_->Shutdown();
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(DEMUXER_ERROR_COULD_NOT_OPEN), true);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Verifies that signaling end of stream while stalled at a gap
@@ -3773,7 +3773,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
 
   ASSERT_TRUE(AppendCluster(138, 22));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   CheckExpectedRanges("{ [0,435) }");
 
@@ -4346,7 +4346,7 @@ TEST_F(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
   demuxer_->StartWaitingForSeek(seek_time);
   demuxer_->Seek(seek_time,
                  base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(seek_cb_was_called);
 
@@ -4361,7 +4361,7 @@ TEST_F(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
                       "0K 20K 40K 60K 80K 100K 120K 140K 160K 180K 200K", 20),
       MuxedStreamInfo(kVideoTrackNum, "0K 30 60 90 120K 150 180 210", 30));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(seek_cb_was_called);
   EXPECT_FALSE(text_read_done);
 
@@ -4377,7 +4377,7 @@ TEST_F(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
                      MuxedStreamInfo(kVideoTrackNum, "240K 270 300 330", 30),
                      MuxedStreamInfo(kTextTrackNum, "225K 275K 325K"));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(text_read_done);
 
   // NOTE: we start at 275 here because the buffer at 225 was returned

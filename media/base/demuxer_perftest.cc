@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -48,7 +50,8 @@ class DemuxerHostImpl : public media::DemuxerHost {
 static void QuitLoopWithStatus(base::MessageLoop* message_loop,
                                media::PipelineStatus status) {
   CHECK_EQ(status, media::PIPELINE_OK);
-  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  message_loop->task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 static void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
@@ -128,7 +131,7 @@ void StreamReader::Read() {
   streams_[index]->Read(base::Bind(
       &StreamReader::OnReadDone, base::Unretained(this),
       base::MessageLoop::current(), &end_of_stream, &timestamp));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   CHECK(end_of_stream || timestamp != media::kNoTimestamp());
   end_of_stream_[index] = end_of_stream;
@@ -154,7 +157,8 @@ void StreamReader::OnReadDone(
   CHECK(buffer.get());
   *end_of_stream = buffer->end_of_stream();
   *timestamp = *end_of_stream ? media::kNoTimestamp() : buffer->timestamp();
-  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  message_loop->task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 int StreamReader::GetNextStreamIndexToRead() {
@@ -198,7 +202,7 @@ static void RunDemuxerBenchmark(const std::string& filename) {
     demuxer.Initialize(&demuxer_host,
                        base::Bind(&QuitLoopWithStatus, &message_loop),
                        false);
-    message_loop.Run();
+    base::RunLoop().Run();
     StreamReader stream_reader(&demuxer, false);
 
     // Benchmark.
@@ -210,7 +214,7 @@ static void RunDemuxerBenchmark(const std::string& filename) {
     total_time += (end - start).InSecondsF();
     demuxer.Stop();
     QuitLoopWithStatus(&message_loop, PIPELINE_OK);
-    message_loop.Run();
+    base::RunLoop().Run();
   }
 
   perf_test::PrintResult("demuxer_bench",

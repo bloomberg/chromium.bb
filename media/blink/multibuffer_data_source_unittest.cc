@@ -251,7 +251,7 @@ class MultibufferDataSourceTest : public testing::Test {
     EXPECT_CALL(*this, OnInitialize(expected));
     data_source_->Initialize(base::Bind(
         &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // Not really loading until after OnInitialize is called.
     EXPECT_EQ(data_source_->downloading(), false);
@@ -301,11 +301,11 @@ class MultibufferDataSourceTest : public testing::Test {
     if (loading()) {
       data_provider()->didFail(url_loader(),
                                response_generator_->GenerateError());
-      message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
 
     data_source_->Stop();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void Respond(const WebURLResponse& response) {
@@ -313,7 +313,7 @@ class MultibufferDataSourceTest : public testing::Test {
     if (!active_loader())
       return;
     data_provider()->didReceiveResponse(url_loader(), response);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ReceiveData(int size) {
@@ -324,7 +324,7 @@ class MultibufferDataSourceTest : public testing::Test {
     memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
 
     data_provider()->didReceiveData(url_loader(), data.get(), size, size);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void FinishLoading() {
@@ -332,13 +332,13 @@ class MultibufferDataSourceTest : public testing::Test {
     if (!url_loader())
       return;
     data_provider()->didFinishLoading(url_loader(), 0, -1);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void FailLoading() {
     data_provider()->didFail(url_loader(),
                              response_generator_->GenerateError());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void Restart() {
@@ -355,7 +355,7 @@ class MultibufferDataSourceTest : public testing::Test {
     data_source_->Read(position, howmuch, buffer_,
                        base::Bind(&MultibufferDataSourceTest::ReadCallback,
                                   base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ExecuteMixedResponseSuccessTest(const WebURLResponse& response1,
@@ -613,7 +613,7 @@ TEST_F(MultibufferDataSourceTest, Http_AbortWhileReading) {
   // Abort!!!
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   data_source_->Abort();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(loading());
   Stop();
@@ -628,7 +628,7 @@ TEST_F(MultibufferDataSourceTest, File_AbortWhileReading) {
   // Abort!!!
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   data_source_->Abort();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(loading());
   Stop();
@@ -913,7 +913,7 @@ TEST_F(MultibufferDataSourceTest, StopDuringRead) {
     EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
     data_source_->Stop();
   }
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MultibufferDataSourceTest, DefaultValues) {
@@ -935,7 +935,7 @@ TEST_F(MultibufferDataSourceTest, SetBitrate) {
   InitializeWith206Response();
 
   data_source_->SetBitrate(1234);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1234, data_source_bitrate());
 
   // Read so far ahead to cause the loader to get recreated.
@@ -955,7 +955,7 @@ TEST_F(MultibufferDataSourceTest, MediaPlaybackRateChanged) {
   InitializeWith206Response();
 
   data_source_->MediaPlaybackRateChanged(2.0);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2.0, data_source_playback_rate());
 
   // Read so far ahead to cause the loader to get recreated.
@@ -1017,7 +1017,7 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
   EXPECT_CALL(host2, SetTotalBytes(response_generator_->content_length()));
   source2.Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
                                 base::Unretained(this)));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Always loading after initialize.
   EXPECT_EQ(source2.downloading(), true);
@@ -1309,7 +1309,7 @@ TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
   EXPECT_CALL(*this, OnInitialize(true));
   data_source_->Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
                                       base::Unretained(this)));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Not really loading until after OnInitialize is called.
   EXPECT_EQ(data_source_->downloading(), false);

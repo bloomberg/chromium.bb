@@ -235,13 +235,13 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
     encoder_.reset(new H264VideoToolboxEncoder(
         cast_environment_, video_sender_config_,
         base::Bind(&SaveOperationalStatus, &operational_status_)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(STATUS_INITIALIZED, operational_status_);
   }
 
   void TearDown() final {
     encoder_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     power_monitor_.reset();
   }
 
@@ -292,7 +292,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFrameMetadataSequence) {
       RtpTimeTicks::FromTimeDelta(frame_->timestamp(), kVideoFrequency),
       clock_->NowTicks());
   EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   for (FrameId frame_id = FrameId::first() + 1;
        frame_id < FrameId::first() + 10; ++frame_id) {
@@ -305,7 +305,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFrameMetadataSequence) {
   }
 
   encoder_.reset();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(10, metadata_recorder->count_frames_delivered());
 }
@@ -343,7 +343,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckVideoFrameFactory) {
   // request a frame again.
   ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
       gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   CreateFrameAndMemsetPlane(video_frame_factory.get());
 }
 
@@ -379,7 +379,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoringVideoFrameFactory) {
   // request a frame again.
   ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
       gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   CreateFrameAndMemsetPlane(video_frame_factory.get());
 
   // After a power suspension, the factory should not produce frames.
@@ -387,7 +387,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoringVideoFrameFactory) {
 
   ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
       gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
       gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
 
@@ -408,7 +408,7 @@ TEST_F(H264VideoToolboxEncoderTest,
 
   ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
       gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
       gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
 

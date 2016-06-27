@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
@@ -77,7 +78,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
     decoder_->Initialize(config, false, nullptr, NewExpectedBoolCB(success),
                          base::Bind(&FFmpegVideoDecoderTest::FrameReady,
                                     base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void InitializeWithConfig(const VideoDecoderConfig& config) {
@@ -90,12 +91,12 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   void Reset() {
     decoder_->Reset(NewExpectedClosure());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void Destroy() {
     decoder_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Sets up expectations and actions to put FFmpegVideoDecoder in an active
@@ -184,7 +185,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
     decoder_->Decode(buffer, decode_cb_);
 
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     return status;
   }

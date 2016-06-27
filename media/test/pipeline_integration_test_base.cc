@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
@@ -57,7 +59,7 @@ PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
     Stop();
 
   pipeline_.reset();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // TODO(xhwang): Method definitions in this file needs to be reordered.
@@ -70,7 +72,8 @@ void PipelineIntegrationTestBase::OnSeeked(base::TimeDelta seek_time,
 
 void PipelineIntegrationTestBase::OnStatusCallback(PipelineStatus status) {
   pipeline_status_ = status;
-  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 void PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB(
@@ -98,13 +101,14 @@ void PipelineIntegrationTestBase::OnEnded() {
   DCHECK(!ended_);
   ended_ = true;
   pipeline_status_ = PIPELINE_OK;
-  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 bool PipelineIntegrationTestBase::WaitUntilOnEnded() {
   if (ended_)
     return (pipeline_status_ == PIPELINE_OK);
-  message_loop_.Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(ended_);
   return ended_ && (pipeline_status_ == PIPELINE_OK);
 }
@@ -112,14 +116,15 @@ bool PipelineIntegrationTestBase::WaitUntilOnEnded() {
 PipelineStatus PipelineIntegrationTestBase::WaitUntilEndedOrError() {
   if (ended_ || pipeline_status_ != PIPELINE_OK)
     return pipeline_status_;
-  message_loop_.Run();
+  base::RunLoop().Run();
   return pipeline_status_;
 }
 
 void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
   DCHECK_NE(status, PIPELINE_OK);
   pipeline_status_ = status;
-  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartInternal(
@@ -155,7 +160,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
   pipeline_->Start(demuxer_.get(), CreateRenderer(), this,
                    base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
                               base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
   return pipeline_status_;
 }
 
@@ -206,14 +211,14 @@ bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
       .WillOnce(InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitNow));
   pipeline_->Seek(seek_time, base::Bind(&PipelineIntegrationTestBase::OnSeeked,
                                         base::Unretained(this), seek_time));
-  message_loop_.Run();
+  base::RunLoop().Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
 
 bool PipelineIntegrationTestBase::Suspend() {
   pipeline_->Suspend(base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
                                 base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
 
@@ -225,14 +230,14 @@ bool PipelineIntegrationTestBase::Resume(base::TimeDelta seek_time) {
   pipeline_->Resume(CreateRenderer(), seek_time,
                     base::Bind(&PipelineIntegrationTestBase::OnSeeked,
                                base::Unretained(this), seek_time));
-  message_loop_.Run();
+  base::RunLoop().Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
 
 void PipelineIntegrationTestBase::Stop() {
   DCHECK(pipeline_->IsRunning());
   pipeline_->Stop();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void PipelineIntegrationTestBase::FailTest(PipelineStatus status) {
@@ -248,7 +253,7 @@ void PipelineIntegrationTestBase::QuitAfterCurrentTimeTask(
     return;
   }
 
-  message_loop_.PostDelayedTask(
+  message_loop_.task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PipelineIntegrationTestBase::QuitAfterCurrentTimeTask,
                  base::Unretained(this), quit_time),
@@ -261,12 +266,12 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
   DCHECK_GT(pipeline_->GetPlaybackRate(), 0);
   DCHECK(wait_time <= pipeline_->GetMediaDuration());
 
-  message_loop_.PostDelayedTask(
+  message_loop_.task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PipelineIntegrationTestBase::QuitAfterCurrentTimeTask,
                  base::Unretained(this), wait_time),
       base::TimeDelta::FromMilliseconds(10));
-  message_loop_.Run();
+  base::RunLoop().Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
 

@@ -12,6 +12,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/audio_buffer_converter.h"
@@ -273,13 +274,13 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
                                  DecoderBuffer::CreateEOSBuffer()));
 
     // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
-    message_loop_.PostTask(
+    message_loop_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(base::ResetAndReturn(&decode_cb_), DecodeStatus::OK));
 
     WaitForPendingRead();
 
-    message_loop_.PostTask(
+    message_loop_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(base::ResetAndReturn(&decode_cb_), DecodeStatus::OK));
 
@@ -376,9 +377,9 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
                      const AudioDecoder::DecodeCB& decode_cb) {
     // TODO(scherkus): Make this a DCHECK after threading semantics are fixed.
     if (base::MessageLoop::current() != &message_loop_) {
-      message_loop_.PostTask(FROM_HERE, base::Bind(
-          &AudioRendererImplTest::DecodeDecoder,
-          base::Unretained(this), buffer, decode_cb));
+      message_loop_.task_runner()->PostTask(
+          FROM_HERE, base::Bind(&AudioRendererImplTest::DecodeDecoder,
+                                base::Unretained(this), buffer, decode_cb));
       return;
     }
 
@@ -398,7 +399,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
       return;
     }
 
-    message_loop_.PostTask(FROM_HERE, reset_cb);
+    message_loop_.task_runner()->PostTask(FROM_HERE, reset_cb);
   }
 
   void DeliverBuffer(DecodeStatus status,

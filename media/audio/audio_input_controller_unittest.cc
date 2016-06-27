@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "media/audio/audio_device_description.h"
@@ -42,7 +43,7 @@ ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop_or_proxy) {
 // Closes AudioOutputController synchronously.
 static void CloseAudioController(AudioInputController* controller) {
   controller->Close(base::MessageLoop::QuitWhenIdleClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 class MockAudioInputControllerEventHandler
@@ -71,11 +72,11 @@ class AudioInputControllerTest : public testing::Test {
       : audio_manager_(
             AudioManager::CreateForTesting(message_loop_.task_runner())) {
     // Flush the message loop to ensure that AudioManager is fully initialized.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   ~AudioInputControllerTest() override {
     audio_manager_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -103,7 +104,7 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
   ASSERT_TRUE(controller.get());
 
   // Wait for OnCreated() to fire.
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Close the AudioInputController synchronously.
   CloseAudioController(controller.get());
@@ -141,7 +142,7 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
   controller->Record();
 
   // Record and wait until ten OnData() callbacks are received.
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Close the AudioInputController synchronously.
   CloseAudioController(controller.get());
@@ -190,12 +191,12 @@ TEST_F(AudioInputControllerTest, DISABLED_RecordAndError) {
   controller->Record();
 
   // Record and wait until ten OnData() callbacks are received.
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Stop the stream and verify that OnError() is posted.
   AudioInputStream* stream = controller->stream_for_testing();
   stream->Stop();
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   // Close the AudioInputController synchronously.
   CloseAudioController(controller.get());
@@ -245,10 +246,10 @@ TEST_F(AudioInputControllerTest, CloseTwice) {
   controller->Record();
 
   controller->Close(base::MessageLoop::QuitWhenIdleClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   controller->Close(base::MessageLoop::QuitWhenIdleClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace media

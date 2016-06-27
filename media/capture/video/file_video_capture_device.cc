@@ -313,7 +313,7 @@ void FileVideoCaptureDevice::AllocateAndStart(
   CHECK(!capture_thread_.IsRunning());
 
   capture_thread_.Start();
-  capture_thread_.message_loop()->PostTask(
+  capture_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&FileVideoCaptureDevice::OnAllocateAndStart,
                  base::Unretained(this), params, base::Passed(&client)));
@@ -323,7 +323,7 @@ void FileVideoCaptureDevice::StopAndDeAllocate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(capture_thread_.IsRunning());
 
-  capture_thread_.message_loop()->PostTask(
+  capture_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&FileVideoCaptureDevice::OnStopAndDeAllocate,
                             base::Unretained(this)));
   capture_thread_.Stop();
@@ -346,7 +346,7 @@ void FileVideoCaptureDevice::OnAllocateAndStart(
   DVLOG(1) << "Opened video file " << capture_format_.frame_size.ToString()
            << ", fps: " << capture_format_.frame_rate;
 
-  capture_thread_.message_loop()->PostTask(
+  capture_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&FileVideoCaptureDevice::OnCaptureTask,
                             base::Unretained(this)));
 }

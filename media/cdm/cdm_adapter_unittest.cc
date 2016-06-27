@@ -204,7 +204,7 @@ class CdmAdapterTest : public testing::Test {
     return promise;
   }
 
-  void RunUntilIdle() { message_loop_.RunUntilIdle(); }
+  void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
   std::unique_ptr<CdmFileIO> CreateCdmFileIO(cdm::FileIOClient* client) {
     ADD_FAILURE() << "Should never be called";
