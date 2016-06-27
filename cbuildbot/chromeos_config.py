@@ -680,7 +680,6 @@ _waterfall_config_map = {
         'veyron_fievel-release',
         # other
         'amd64-generic-goofy-release',
-        'gale-release',
         'glimmer-cheets-release',
         'lakitu_next-release',
         'nyan_freon-release',
@@ -3011,9 +3010,6 @@ def GetConfig():
   # gale-based boards
   _AdjustLeaderFollowerReleaseConfigs(
       'gale', None,
-      unimportant_boards=(
-        'gale',
-      ),
   )
 
   # reef-based boards
