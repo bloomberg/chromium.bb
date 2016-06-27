@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/cma/backend/alsa/alsa_wrapper.h"
@@ -207,8 +208,9 @@ StreamMixerAlsa::StreamMixerAlsa()
   if (single_threaded_for_test_) {
     mixer_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   } else {
-    // TODO(kmackay) Start thread with higher priority?
-    mixer_thread_->Start();
+    base::Thread::Options options;
+    options.priority = base::ThreadPriority::REALTIME_AUDIO;
+    mixer_thread_->StartWithOptions(options);
     mixer_task_runner_ = mixer_thread_->task_runner();
   }
 
