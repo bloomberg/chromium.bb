@@ -830,7 +830,7 @@ void Program::UpdateFragmentInputs() {
 }
 
 void Program::UpdateProgramOutputs() {
-  if (!feature_info().gl_version_info().IsES3Capable() ||
+  if (!feature_info().gl_version_info().is_es3_capable ||
       feature_info().disable_shader_translator())
     return;
 

@@ -168,7 +168,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     DCHECK(max_dual_source_draw_buffers_ >= 1);
   }
 
-  if (feature_info_->gl_version_info().IsES3Capable()) {
+  if (feature_info_->gl_version_info().is_es3_capable) {
     const GLint kMinTransformFeedbackSeparateAttribs = 4;
     if (!QueryGLFeatureU(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS,
                          kMinTransformFeedbackSeparateAttribs,
@@ -255,7 +255,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                 << kMinCubeMapSize << ").";
     return false;
   }
-  if (feature_info_->gl_version_info().IsES3Capable() &&
+  if (feature_info_->gl_version_info().is_es3_capable &&
       !QueryGLFeature(GL_MAX_3D_TEXTURE_SIZE, kMin3DTextureSize,
                       &max_3d_texture_size)) {
     DLOG(ERROR) << "ContextGroup::Initialize failed because maximum "
@@ -263,7 +263,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                 << ", should be " << kMin3DTextureSize << ").";
     return false;
   }
-  if (feature_info_->gl_version_info().IsES3Capable() &&
+  if (feature_info_->gl_version_info().is_es3_capable &&
       !QueryGLFeature(GL_MAX_ARRAY_TEXTURE_LAYERS, kMinArrayTextureLayers,
                       &max_array_texture_layers)) {
     DLOG(ERROR) << "ContextGroup::Initialize failed because maximum "

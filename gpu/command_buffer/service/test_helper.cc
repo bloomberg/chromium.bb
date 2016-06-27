@@ -374,7 +374,7 @@ void TestHelper::SetupContextGroupInitExpectations(
         .RetiresOnSaturation();
   }
 
-  if (gl_info.IsES3Capable()) {
+  if (gl_info.is_es3_capable) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, _))
         .WillOnce(SetArgumentPointee<1>(kMaxTransformFeedbackSeparateAttribs))
         .RetiresOnSaturation();
@@ -398,12 +398,12 @@ void TestHelper::SetupContextGroupInitExpectations(
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
       .RetiresOnSaturation();
-  if (gl_info.IsES3Capable()) {
+  if (gl_info.is_es3_capable) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_3D_TEXTURE_SIZE, _))
         .WillOnce(SetArgumentPointee<1>(kMax3DTextureSize))
         .RetiresOnSaturation();
   }
-  if (gl_info.IsES3Capable()) {
+  if (gl_info.is_es3_capable) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, _))
         .WillOnce(SetArgumentPointee<1>(kMaxArrayTextureLayers))
         .RetiresOnSaturation();
@@ -566,7 +566,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
           .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
           .RetiresOnSaturation();
 
-      if (enable_es3 && gl_info.IsES3Capable()) {
+      if (enable_es3 && gl_info.is_es3_capable) {
         EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width,
             0, GL_RED, GL_FLOAT, _))
             .Times(1)
@@ -943,7 +943,7 @@ void TestHelper::SetupProgramSuccessExpectations(
             .RetiresOnSaturation();
       }
   }
-  if (feature_info->gl_version_info().IsES3Capable() &&
+  if (feature_info->gl_version_info().is_es3_capable &&
       !feature_info->disable_shader_translator()) {
     for (size_t ii = 0; ii < num_program_outputs; ++ii) {
       ProgramOutputInfo& info = program_outputs[ii];
