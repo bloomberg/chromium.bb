@@ -8,7 +8,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_delegate.h"
@@ -50,9 +49,10 @@ ServerWindowSurface::~ServerWindowSurface() {
 }
 
 void ServerWindowSurface::SubmitCompositorFrame(
-    cc::mojom::CompositorFramePtr frame,
+    cc::CompositorFrame frame,
     const SubmitCompositorFrameCallback& callback) {
-  gfx::Size frame_size = frame->passes[0]->output_rect.size();
+  gfx::Size frame_size =
+      frame.delegated_frame_data->render_pass_list[0]->output_rect.size();
   if (!surface_id_.is_null()) {
     // If the size of the CompostiorFrame has changed then destroy the existing
     // Surface and create a new one of the appropriate size.
@@ -70,8 +70,9 @@ void ServerWindowSurface::SubmitCompositorFrame(
       surface_factory_.Create(surface_id_);
     }
   }
-  surface_factory_.SubmitCompositorFrame(surface_id_,
-                                         ConvertToCompositorFrame(frame),
+  std::unique_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame);
+  *frame_copy = std::move(frame);
+  surface_factory_.SubmitCompositorFrame(surface_id_, std::move(frame_copy),
                                          base::Bind(&CallCallback, callback));
   last_submitted_frame_size_ = frame_size;
   window()->delegate()->OnScheduleWindowPaint(window());

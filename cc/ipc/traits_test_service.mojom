@@ -5,6 +5,7 @@
 module cc.mojom;
 
 import "cc/ipc/begin_frame_args.mojom";
+import "cc/ipc/compositor_frame.mojom";
 import "cc/ipc/compositor_frame_metadata.mojom";
 import "cc/ipc/filter_operation.mojom";
 import "cc/ipc/filter_operations.mojom";
@@ -23,6 +24,9 @@ import "cc/ipc/transferable_resource.mojom";
 interface TraitsTestService {
   [Sync]
   EchoBeginFrameArgs(BeginFrameArgs b) => (BeginFrameArgs pass);
+
+  [Sync]
+  EchoCompositorFrame(CompositorFrame c) => (CompositorFrame pass);
 
   [Sync]
   EchoCompositorFrameMetadata(CompositorFrameMetadata c) =>

@@ -43,7 +43,7 @@ class ServerWindowSurface : public mojom::Surface,
 
   // mojom::Surface:
   void SubmitCompositorFrame(
-      cc::mojom::CompositorFramePtr frame,
+      cc::CompositorFrame frame,
       const SubmitCompositorFrameCallback& callback) override;
 
   const cc::SurfaceId& id() const { return surface_id_; }

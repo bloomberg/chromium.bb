@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"

@@ -5,7 +5,6 @@
 #include "components/mus/public/cpp/window_surface.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/cpp/window_surface_client.h"
 
 namespace mus {
@@ -34,7 +33,7 @@ void WindowSurface::BindToThread() {
       this, std::move(client_request_)));
 }
 
-void WindowSurface::SubmitCompositorFrame(cc::mojom::CompositorFramePtr frame,
+void WindowSurface::SubmitCompositorFrame(cc::CompositorFrame frame,
                                           const base::Closure& callback) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());

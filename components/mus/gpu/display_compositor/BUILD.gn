@@ -22,7 +22,6 @@ source_set("display_compositor") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
-    "//components/mus/public/cpp/surfaces",
     "//components/mus/public/interfaces/gpu:interfaces",
 
     # TODO(fsamuel): Remove this dependency.

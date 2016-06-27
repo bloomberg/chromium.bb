@@ -8,7 +8,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
-#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/cpp/window_surface.h"
 
 namespace mus {
@@ -52,7 +51,7 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   // destroyed then SubmitCompositorFrame's callback will never get called.
   // Thus, base::Unretained is safe here.
   surface_->SubmitCompositorFrame(
-      cc::mojom::CompositorFrame::From(frame),
+      std::move(frame),
       base::Bind(&OutputSurface::SwapBuffersComplete, base::Unretained(this)));
 }
 

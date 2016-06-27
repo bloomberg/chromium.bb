@@ -7,7 +7,6 @@
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/surfaces/surface_factory.h"
 #include "components/mus/gpu/display_compositor/compositor_frame_sink_delegate.h"
-#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 
 namespace mus {
 namespace gpu {
@@ -56,14 +55,10 @@ void CompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 void CompositorFrameSinkImpl::SubmitCompositorFrame(
-    cc::mojom::CompositorFramePtr frame,
+    cc::CompositorFrame compositor_frame,
     const SubmitCompositorFrameCallback& callback) {
-  // TODO(fsamuel): Validate that SurfaceDrawQuad refer to allowable surface
-  // IDs.
-  std::unique_ptr<cc::CompositorFrame> compositor_frame =
-      ConvertToCompositorFrame(frame);
   gfx::Size frame_size =
-      compositor_frame->delegated_frame_data->render_pass_list.back()
+      compositor_frame.delegated_frame_data->render_pass_list.back()
           ->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != last_submitted_frame_size_) {
     if (!surface_id_.is_null())
@@ -73,7 +68,10 @@ void CompositorFrameSinkImpl::SubmitCompositorFrame(
     factory_.Create(surface_id_);
     last_submitted_frame_size_ = frame_size;
   }
-  factory_.SubmitCompositorFrame(surface_id_, std::move(compositor_frame),
+  std::unique_ptr<cc::CompositorFrame> compositor_frame_copy(
+      new cc::CompositorFrame);
+  *compositor_frame_copy = std::move(compositor_frame);
+  factory_.SubmitCompositorFrame(surface_id_, std::move(compositor_frame_copy),
                                  base::Bind(&CallCallback, callback));
 }
 

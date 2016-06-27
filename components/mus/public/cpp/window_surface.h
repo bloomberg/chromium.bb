@@ -35,7 +35,7 @@ class WindowSurface : public mojom::SurfaceClient {
   // object.
   void BindToThread();
 
-  void SubmitCompositorFrame(cc::mojom::CompositorFramePtr frame,
+  void SubmitCompositorFrame(cc::CompositorFrame frame,
                              const base::Closure& callback);
 
   void set_client(WindowSurfaceClient* client) { client_ = client; }

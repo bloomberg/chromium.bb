@@ -14,7 +14,6 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "components/mus/gles2/gpu_state.h"
-#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/surfaces/display_compositor.h"
 #include "components/mus/surfaces/surfaces_state.h"

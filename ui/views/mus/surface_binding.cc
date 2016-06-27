@@ -21,7 +21,6 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "components/mus/public/cpp/context_provider.h"
 #include "components/mus/public/cpp/output_surface.h"
-#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_client.h"
 #include "mojo/public/cpp/bindings/binding.h"

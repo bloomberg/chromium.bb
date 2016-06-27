@@ -5,11 +5,19 @@
 mojom = "//cc/ipc/transferable_resource.mojom"
 public_headers = [ "//cc/resources/transferable_resource.h" ]
 traits_headers = [ "//cc/ipc/transferable_resource_struct_traits.h" ]
-deps = [ "//cc", "//gpu/command_buffer/common", "//skia",]
+sources = [
+  "//cc/ipc/transferable_resource_struct_traits.cc",
+]
+deps = [
+  "//cc",
+  "//gpu/command_buffer/common",
+  "//skia",
+]
 public_deps = [
   "//cc",
   "//gpu/command_buffer/common",
-  "//skia", "//ui/gfx",
+  "//skia",
+  "//ui/gfx",
   "//ui/gfx/geometry",
 ]
 type_mappings = [ "cc.mojom.TransferableResource=cc::TransferableResource" ]

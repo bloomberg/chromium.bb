@@ -62,7 +62,6 @@ component("mus") {
     "//components/mus/common:mus_common",
     "//components/mus/gles2:lib",
     "//components/mus/public/cpp",
-    "//components/mus/public/cpp/surfaces",
     "//components/mus/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",

@@ -46,7 +46,6 @@ source_set("cpp") {
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//components/mus/common:mus_common",
-    "//components/mus/public/cpp/surfaces",
     "//components/mus/public/interfaces",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_implementation",

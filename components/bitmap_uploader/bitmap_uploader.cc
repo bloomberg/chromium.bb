@@ -14,7 +14,6 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "components/mus/public/cpp/gles2_context.h"
-#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_surface.h"
 
@@ -75,10 +74,11 @@ void BitmapUploader::SetBitmap(int width,
 void BitmapUploader::Upload() {
   const gfx::Rect bounds(window_->bounds().size());
 
-  cc::mojom::CompositorFramePtr frame = cc::mojom::CompositorFrame::New();
+  cc::CompositorFrame frame;
   // TODO(rjkroege): Support device scale factors other than 1.
-  frame->metadata.device_scale_factor = 1.0f;
-  frame->resources.resize(0u);
+  frame.metadata.device_scale_factor = 1.0f;
+  frame.delegated_frame_data.reset(new cc::DelegatedFrameData());
+  frame.delegated_frame_data->resource_list.resize(0u);
 
   const cc::RenderPassId render_pass_id(1, 1);
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
@@ -121,7 +121,7 @@ void BitmapUploader::Upload() {
     resource.read_lock_fences_enabled = false;
     resource.is_software = false;
     resource.is_overlay_candidate = false;
-    frame->resources.push_back(std::move(resource));
+    frame.delegated_frame_data->resource_list.push_back(std::move(resource));
 
     cc::TextureDrawQuad* quad =
         pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
@@ -164,7 +164,7 @@ void BitmapUploader::Upload() {
                  force_antialiasing_off);
   }
 
-  frame->passes.push_back(std::move(pass));
+  frame.delegated_frame_data->render_pass_list.push_back(std::move(pass));
 
   // TODO(rjkroege, fsamuel): We should throttle frames.
   surface_->SubmitCompositorFrame(std::move(frame), base::Closure());

@@ -38,6 +38,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(b);
   }
 
+  void EchoCompositorFrame(
+      CompositorFrame c,
+      const EchoCompositorFrameCallback& callback) override {
+    callback.Run(std::move(c));
+  }
+
   void EchoCompositorFrameMetadata(
       const CompositorFrameMetadata& c,
       const EchoCompositorFrameMetadataCallback& callback) override {
@@ -131,6 +137,123 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   EXPECT_EQ(interval, output.interval);
   EXPECT_EQ(type, output.type);
   EXPECT_EQ(on_critical_path, output.on_critical_path);
+}
+
+// Note that this is a fairly trivial test of CompositorFrame serialization as
+// most of the heavy lifting has already been done by CompositorFrameMetadata,
+// RenderPass, and QuadListBasic unit tests.
+TEST_F(StructTraitsTest, CompositorFrame) {
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+
+  // SharedQuadState.
+  const gfx::Transform sqs_quad_to_target_transform(
+      1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f, 13.f, 14.f,
+      15.f, 16.f);
+  const gfx::Size sqs_layer_bounds(1234, 5678);
+  const gfx::Rect sqs_visible_layer_rect(12, 34, 56, 78);
+  const gfx::Rect sqs_clip_rect(123, 456, 789, 101112);
+  const bool sqs_is_clipped = true;
+  const float sqs_opacity = 0.9f;
+  const SkXfermode::Mode sqs_blend_mode = SkXfermode::kSrcOver_Mode;
+  const int sqs_sorting_context_id = 1337;
+  SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
+  sqs->SetAll(sqs_quad_to_target_transform, sqs_layer_bounds,
+              sqs_visible_layer_rect, sqs_clip_rect, sqs_is_clipped,
+              sqs_opacity, sqs_blend_mode, sqs_sorting_context_id);
+
+  // DebugBorderDrawQuad.
+  const gfx::Rect rect1(1234, 4321, 1357, 7531);
+  const SkColor color1 = SK_ColorRED;
+  const int32_t width1 = 1337;
+  DebugBorderDrawQuad* debug_quad =
+      render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
+  debug_quad->SetNew(sqs, rect1, rect1, color1, width1);
+
+  // SolidColorDrawQuad.
+  const gfx::Rect rect2(2468, 8642, 4321, 1234);
+  const uint32_t color2 = 0xffffffff;
+  const bool force_anti_aliasing_off = true;
+  SolidColorDrawQuad* solid_quad =
+      render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  solid_quad->SetNew(sqs, rect2, rect2, color2, force_anti_aliasing_off);
+
+  // TransferableResource constants.
+  const uint32_t tr_id = 1337;
+  const ResourceFormat tr_format = ALPHA_8;
+  const uint32_t tr_filter = 1234;
+  const gfx::Size tr_size(1234, 5678);
+  TransferableResource resource;
+  resource.id = tr_id;
+  resource.format = tr_format;
+  resource.filter = tr_filter;
+  resource.size = tr_size;
+
+  // CompositorFrameMetadata constants.
+  const float device_scale_factor = 2.6f;
+  const gfx::Vector2dF root_scroll_offset(1234.5f, 6789.1f);
+  const float page_scale_factor = 1337.5f;
+  const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
+
+  CompositorFrame input;
+  input.metadata.device_scale_factor = device_scale_factor;
+  input.metadata.root_scroll_offset = root_scroll_offset;
+  input.metadata.page_scale_factor = page_scale_factor;
+  input.metadata.scrollable_viewport_size = scrollable_viewport_size;
+  input.delegated_frame_data.reset(new DelegatedFrameData);
+  input.delegated_frame_data->render_pass_list.push_back(
+      std::move(render_pass));
+  input.delegated_frame_data->resource_list.push_back(resource);
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  CompositorFrame output;
+  proxy->EchoCompositorFrame(std::move(input), &output);
+
+  EXPECT_EQ(device_scale_factor, output.metadata.device_scale_factor);
+  EXPECT_EQ(root_scroll_offset, output.metadata.root_scroll_offset);
+  EXPECT_EQ(page_scale_factor, output.metadata.page_scale_factor);
+  EXPECT_EQ(scrollable_viewport_size, output.metadata.scrollable_viewport_size);
+
+  EXPECT_NE(nullptr, output.delegated_frame_data);
+  ASSERT_EQ(1u, output.delegated_frame_data->resource_list.size());
+  TransferableResource out_resource =
+      output.delegated_frame_data->resource_list[0];
+  EXPECT_EQ(tr_id, out_resource.id);
+  EXPECT_EQ(tr_format, out_resource.format);
+  EXPECT_EQ(tr_filter, out_resource.filter);
+  EXPECT_EQ(tr_size, out_resource.size);
+
+  EXPECT_EQ(1u, output.delegated_frame_data->render_pass_list.size());
+  const RenderPass* out_render_pass =
+      output.delegated_frame_data->render_pass_list[0].get();
+  ASSERT_EQ(2u, out_render_pass->quad_list.size());
+  ASSERT_EQ(1u, out_render_pass->shared_quad_state_list.size());
+
+  const SharedQuadState* out_sqs =
+      out_render_pass->shared_quad_state_list.ElementAt(0);
+  EXPECT_EQ(sqs_quad_to_target_transform, out_sqs->quad_to_target_transform);
+  EXPECT_EQ(sqs_layer_bounds, out_sqs->quad_layer_bounds);
+  EXPECT_EQ(sqs_visible_layer_rect, out_sqs->visible_quad_layer_rect);
+  EXPECT_EQ(sqs_clip_rect, out_sqs->clip_rect);
+  EXPECT_EQ(sqs_is_clipped, out_sqs->is_clipped);
+  EXPECT_EQ(sqs_opacity, out_sqs->opacity);
+  EXPECT_EQ(sqs_blend_mode, out_sqs->blend_mode);
+  EXPECT_EQ(sqs_sorting_context_id, out_sqs->sorting_context_id);
+
+  const DebugBorderDrawQuad* out_debug_border_draw_quad =
+      DebugBorderDrawQuad::MaterialCast(
+          out_render_pass->quad_list.ElementAt(0));
+  EXPECT_EQ(rect1, out_debug_border_draw_quad->rect);
+  EXPECT_EQ(rect1, out_debug_border_draw_quad->visible_rect);
+  EXPECT_EQ(color1, out_debug_border_draw_quad->color);
+  EXPECT_EQ(width1, out_debug_border_draw_quad->width);
+
+  const SolidColorDrawQuad* out_solid_color_draw_quad =
+      SolidColorDrawQuad::MaterialCast(out_render_pass->quad_list.ElementAt(1));
+  EXPECT_EQ(rect2, out_solid_color_draw_quad->rect);
+  EXPECT_EQ(rect2, out_solid_color_draw_quad->visible_rect);
+  EXPECT_EQ(color2, out_solid_color_draw_quad->color);
+  EXPECT_EQ(force_anti_aliasing_off,
+            out_solid_color_draw_quad->force_anti_aliasing_off);
 }
 
 TEST_F(StructTraitsTest, CompositorFrameMetadata) {

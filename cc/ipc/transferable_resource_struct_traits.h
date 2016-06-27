@@ -48,18 +48,7 @@ struct StructTraits<cc::mojom::TransferableResource, cc::TransferableResource> {
   }
 
   static bool Read(cc::mojom::TransferableResourceDataView data,
-                   cc::TransferableResource* out) {
-    if (!data.ReadSize(&out->size) ||
-        !data.ReadMailboxHolder(&out->mailbox_holder))
-      return false;
-    out->id = data.id();
-    out->format = static_cast<cc::ResourceFormat>(data.format());
-    out->filter = data.filter();
-    out->read_lock_fences_enabled = data.read_lock_fences_enabled();
-    out->is_software = data.is_software();
-    out->is_overlay_candidate = data.is_overlay_candidate();
-    return true;
-  }
+                   cc::TransferableResource* out);
 };
 
 }  // namespace mojo
