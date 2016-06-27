@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.test.util.browser;
 
+import android.content.Context;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.preferences.LocationSettings;
+import org.chromium.components.location.LocationUtils;
 
 /**
  * Methods for testing location-related features.
@@ -19,10 +21,15 @@ public class LocationSettingsTestUtil {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                LocationSettings.setInstanceForTesting(new LocationSettings(null) {
+                LocationUtils.setFactory(new LocationUtils.Factory() {
                     @Override
-                    public boolean isSystemLocationSettingEnabled() {
-                        return enabled;
+                    public LocationUtils create() {
+                        return new LocationUtils() {
+                            @Override
+                            public boolean isSystemLocationSettingEnabled(Context context) {
+                                return enabled;
+                            }
+                        };
                     }
                 });
             }

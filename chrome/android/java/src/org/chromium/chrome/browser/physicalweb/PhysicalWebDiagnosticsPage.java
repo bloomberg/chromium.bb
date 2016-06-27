@@ -19,6 +19,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.components.location.LocationUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -100,8 +101,9 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
         boolean isSdkVersionCorrect = isSdkVersionCorrect();
         boolean isDataConnectionActive = Utils.isDataConnectionActive(mContext);
         int bluetoothStatus = Utils.getBluetoothEnabledStatus(mContext);
-        boolean isLocationServicesEnabled = Utils.isLocationServicesEnabled(mContext);
-        boolean isLocationPermissionGranted = Utils.isLocationPermissionGranted(mContext);
+        LocationUtils locationUtils = LocationUtils.getInstance();
+        boolean isLocationServicesEnabled = locationUtils.isSystemLocationSettingEnabled(mContext);
+        boolean isLocationPermissionGranted = locationUtils.hasAndroidLocationPermission(mContext);
         boolean isPreferenceEnabled = PhysicalWeb.isPhysicalWebPreferenceEnabled(mContext);
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
 

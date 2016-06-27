@@ -12,6 +12,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.components.location.LocationUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -226,10 +227,11 @@ public class PhysicalWebUma {
      * - The Physical Web preference status
      */
     public static void recordPhysicalWebState(Context context, String actionName) {
+        LocationUtils locationUtils = LocationUtils.getInstance();
         handleEnum(context, createStateString(LOCATION_SERVICES, actionName),
-                Utils.isLocationServicesEnabled(context) ? 1 : 0, BOOLEAN_BOUNDARY);
+                locationUtils.isSystemLocationSettingEnabled(context) ? 1 : 0, BOOLEAN_BOUNDARY);
         handleEnum(context, createStateString(LOCATION_PERMISSION, actionName),
-                Utils.isLocationPermissionGranted(context) ? 1 : 0, BOOLEAN_BOUNDARY);
+                locationUtils.hasAndroidLocationPermission(context) ? 1 : 0, BOOLEAN_BOUNDARY);
         handleEnum(context, createStateString(BLUETOOTH, actionName),
                 Utils.getBluetoothEnabledStatus(context), TRISTATE_BOUNDARY);
         handleEnum(context, createStateString(DATA_CONNECTION, actionName),

@@ -4,7 +4,6 @@
 
 package org.chromium.device.bluetooth;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanFilter;
@@ -23,9 +22,7 @@ import org.chromium.base.annotations.JNINamespace;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -68,7 +65,7 @@ class Fakes {
 
         @CalledByNative("FakeBluetoothAdapter")
         public void denyPermission() {
-            mFakeContext.mPermissions.clear();
+            mFakeContext.mHasLocation = false;
         }
 
         /**
@@ -194,16 +191,15 @@ class Fakes {
      * Fakes android.content.Context.
      */
     static class FakeContext extends Wrappers.ContextWrapper {
-        public final Set<String> mPermissions = new HashSet<String>();
+        public boolean mHasLocation = true;
 
         public FakeContext() {
             super(null);
-            mPermissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         }
 
         @Override
-        public boolean checkPermission(String permission) {
-            return mPermissions.contains(permission);
+        public boolean hasAndroidLocationPermission() {
+            return mHasLocation;
         }
 
         @Override
