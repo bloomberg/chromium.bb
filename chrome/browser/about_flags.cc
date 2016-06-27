@@ -1519,10 +1519,12 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(
          switches::kSyncServiceURL,
          "https://chrome-sync.sandbox.google.com/chrome-sync/alpha")},
+#if !defined(OS_ANDROID)
     {"enable-child-account-detection", IDS_FLAGS_CHILD_ACCOUNT_DETECTION_NAME,
      IDS_FLAGS_CHILD_ACCOUNT_DETECTION_DESCRIPTION, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableChildAccountDetection,
                                switches::kDisableChildAccountDetection)},
+#endif
 #if defined(OS_CHROMEOS) && defined(USE_OZONE)
     {"ozone-test-single-overlay-support",
      IDS_FLAGS_OZONE_TEST_SINGLE_HARDWARE_OVERLAY,
