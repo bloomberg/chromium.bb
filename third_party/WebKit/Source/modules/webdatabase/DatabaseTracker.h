@@ -78,7 +78,6 @@ private:
     using DatabaseSet = HashSet<CrossThreadPersistent<Database>>;
     using DatabaseNameMap = HashMap<String, DatabaseSet*>;
     using DatabaseOriginMap = HashMap<String, DatabaseNameMap*>;
-    class CloseOneDatabaseImmediatelyTask;
 
     DatabaseTracker();
 
