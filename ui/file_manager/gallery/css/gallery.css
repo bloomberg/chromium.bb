@@ -4,6 +4,7 @@
 
 body {
   -webkit-user-select: none;
+  background-color: black;
   font-size: 84%;
   margin: 0;
 }
