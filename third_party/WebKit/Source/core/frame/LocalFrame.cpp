@@ -103,14 +103,10 @@ namespace {
 class DragImageBuilder {
     STACK_ALLOCATED();
 public:
-    DragImageBuilder(const LocalFrame* localFrame, const FloatRect& bounds, Node* draggedNode, float opacity = 1)
-        : m_localFrame(localFrame)
-        , m_draggedNode(draggedNode)
+    DragImageBuilder(const LocalFrame& localFrame, const FloatRect& bounds)
+        : m_localFrame(&localFrame)
         , m_bounds(bounds)
-        , m_opacity(opacity)
     {
-        if (m_draggedNode && m_draggedNode->layoutObject())
-            m_draggedNode->layoutObject()->updateDragState(true);
         // TODO(oshima): Remove this when all platforms are migrated to use-zoom-for-dsf.
         float deviceScaleFactor = m_localFrame->host()->deviceScaleFactorDeprecated();
         m_bounds.setWidth(m_bounds.width() * deviceScaleFactor);
@@ -125,31 +121,105 @@ public:
 
     GraphicsContext& context() { return m_pictureBuilder->context(); }
 
-    std::unique_ptr<DragImage> createImage()
+    std::unique_ptr<DragImage> createImage(
+        float opacity,
+        RespectImageOrientationEnum imageOrientation = DoNotRespectImageOrientation)
     {
-        if (m_draggedNode && m_draggedNode->layoutObject())
-            m_draggedNode->layoutObject()->updateDragState(false);
         context().getPaintController().endItem<EndTransformDisplayItem>(*m_pictureBuilder);
         // TODO(fmalita): endRecording() should return a non-const SKP.
         sk_sp<SkPicture> recording(const_cast<SkPicture*>(m_pictureBuilder->endRecording().leakRef()));
         RefPtr<SkImage> skImage = fromSkSp(SkImage::MakeFromPicture(std::move(recording),
             SkISize::Make(m_bounds.width(), m_bounds.height()), nullptr, nullptr));
         RefPtr<Image> image = StaticBitmapImage::create(skImage.release());
-        RespectImageOrientationEnum imageOrientation = DoNotRespectImageOrientation;
-        if (m_draggedNode && m_draggedNode->layoutObject())
-            imageOrientation = LayoutObject::shouldRespectImageOrientation(m_draggedNode->layoutObject());
-
         float screenDeviceScaleFactor = m_localFrame->page()->chromeClient().screenInfo().deviceScaleFactor;
 
-        return DragImage::create(image.get(), imageOrientation, screenDeviceScaleFactor, InterpolationHigh, m_opacity);
+        return DragImage::create(image.get(), imageOrientation, screenDeviceScaleFactor, InterpolationHigh, opacity);
     }
 
 private:
-    Member<const LocalFrame> m_localFrame;
-    Member<Node> m_draggedNode;
+    const Member<const LocalFrame> m_localFrame;
     FloatRect m_bounds;
-    float m_opacity;
     std::unique_ptr<SkPictureBuilder> m_pictureBuilder;
+};
+
+class NodeImageBuilder {
+    STACK_ALLOCATED();
+public:
+    NodeImageBuilder(const LocalFrame& localFrame, const Node& node)
+        : m_localFrame(&localFrame)
+        , m_draggedLayoutObject(draggedLayoutObjectOf(localFrame, node))
+#if DCHECK_IS_ON()
+        , m_layoutCount(m_localFrame->view()->layoutCount())
+#endif
+    {
+    }
+
+    ~NodeImageBuilder()
+    {
+        DCHECK(isValid());
+        if (!m_draggedLayoutObject)
+            return;
+        DCHECK(m_draggedLayoutObject->isDragging());
+        m_draggedLayoutObject->updateDragState(false);
+    }
+
+    std::unique_ptr<DragImage> createImage()
+    {
+        DCHECK(isValid());
+        if (!m_draggedLayoutObject)
+            return nullptr;
+        // Paint starting at the nearest stacking context, clipped to the object
+        // itself. This will also paint the contents behind the object if the
+        // object contains transparency and there are other elements in the same
+        // stacking context which stacked below.
+        PaintLayer* layer = m_draggedLayoutObject->enclosingLayer();
+        if (!layer->stackingNode()->isStackingContext())
+            layer = layer->stackingNode()->ancestorStackingContextNode()->layer();
+        IntRect absoluteBoundingBox = m_draggedLayoutObject->absoluteBoundingBoxRectIncludingDescendants();
+        FloatRect boundingBox = layer->layoutObject()->absoluteToLocalQuad(FloatQuad(absoluteBoundingBox), UseTransforms).boundingBox();
+        DragImageBuilder dragImageBuilder(*m_localFrame, boundingBox);
+        {
+            PaintLayerPaintingInfo paintingInfo(layer, LayoutRect(boundingBox), GlobalPaintFlattenCompositingLayers, LayoutSize());
+            PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects;
+            PaintLayerPainter(*layer).paintLayer(dragImageBuilder.context(), paintingInfo, flags);
+        }
+        return dragImageBuilder.createImage(1.0f, LayoutObject::shouldRespectImageOrientation(m_draggedLayoutObject));
+    }
+
+private:
+    static LayoutObject* draggedLayoutObjectOf(const LocalFrame& localFrame, const Node& node)
+    {
+        // TODO(yosin): We should handle pseudo-class ":-webkit-drag" as similar
+        // as ":hover" and ":active", rather than using flag in |LayoutObject|,
+        // to avoid update layout tree here.
+        localFrame.view()->updateAllLifecyclePhasesExceptPaint();
+        LayoutObject* layoutObject = node.layoutObject();
+        if (!layoutObject)
+            return nullptr;
+        // Update layout object for |node| with pseudo-class ":-webkit-drag".
+        layoutObject->updateDragState(true);
+        localFrame.view()->updateAllLifecyclePhasesExceptPaint();
+        // |node| with pseudo-class ":-webkit-drag" may blow away layout object.
+        return node.layoutObject();
+    }
+
+    bool isValid() const
+    {
+#if DCHECK_IS_ON()
+        return m_layoutCount == m_localFrame->view()->layoutCount();
+#else
+        return true;
+#endif
+    }
+
+    const Member<const LocalFrame> m_localFrame;
+
+    // This class manages |isDrag()| of |m_draggedLayoutObject|.
+    LayoutObject* const m_draggedLayoutObject;
+
+#if DCHECK_IS_ON()
+    const int m_layoutCount;
+#endif
 };
 
 inline float parentPageZoomFactor(LocalFrame* frame)
@@ -585,26 +655,8 @@ double LocalFrame::devicePixelRatio() const
 
 std::unique_ptr<DragImage> LocalFrame::nodeImage(Node& node)
 {
-    m_view->updateAllLifecyclePhasesExceptPaint();
-    LayoutObject* layoutObject = node.layoutObject();
-    if (!layoutObject)
-        return nullptr;
-
-    // Paint starting at the nearest stacking context, clipped to the object itself.
-    // This will also paint the contents behind the object if the object contains transparency
-    // and there are other elements in the same stacking context which stacked below.
-    PaintLayer* layer = layoutObject->enclosingLayer();
-    if (!layer->stackingNode()->isStackingContext())
-        layer = layer->stackingNode()->ancestorStackingContextNode()->layer();
-    IntRect absoluteBoundingBox = layoutObject->absoluteBoundingBoxRectIncludingDescendants();
-    FloatRect boundingBox = layer->layoutObject()->absoluteToLocalQuad(FloatQuad(absoluteBoundingBox), UseTransforms).boundingBox();
-    DragImageBuilder dragImageBuilder(this, boundingBox, &node);
-    {
-        PaintLayerPaintingInfo paintingInfo(layer, LayoutRect(boundingBox), GlobalPaintFlattenCompositingLayers, LayoutSize());
-        PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects;
-        PaintLayerPainter(*layer).paintLayer(dragImageBuilder.context(), paintingInfo, flags);
-    }
-    return dragImageBuilder.createImage();
+    NodeImageBuilder imageNode(*this, node);
+    return imageNode.createImage();
 }
 
 std::unique_ptr<DragImage> LocalFrame::dragImageForSelection(float opacity)
@@ -616,10 +668,10 @@ std::unique_ptr<DragImage> LocalFrame::dragImageForSelection(float opacity)
     ASSERT(document()->isActive());
 
     FloatRect paintingRect = FloatRect(selection().bounds());
-    DragImageBuilder dragImageBuilder(this, paintingRect, nullptr, opacity);
+    DragImageBuilder dragImageBuilder(*this, paintingRect);
     GlobalPaintFlags paintFlags = GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers;
     m_view->paintContents(dragImageBuilder.context(), paintFlags, enclosingIntRect(paintingRect));
-    return dragImageBuilder.createImage();
+    return dragImageBuilder.createImage(opacity);
 }
 
 String LocalFrame::selectedText() const

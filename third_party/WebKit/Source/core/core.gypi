@@ -4087,6 +4087,7 @@
             'frame/FrameViewTest.cpp',
             'frame/HistoryTest.cpp',
             'frame/ImageBitmapTest.cpp',
+            'frame/LocalFrameTest.cpp',
             'frame/OriginsUsingFeaturesTest.cpp',
             'frame/RootFrameViewportTest.cpp',
             'frame/SubresourceIntegrityTest.cpp',
