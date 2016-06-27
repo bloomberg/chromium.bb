@@ -596,8 +596,8 @@ static sk_sp<SkImage> WrapTexture(
   GrGLTextureInfo texture_info;
   texture_info.fTarget = lock.target();
   texture_info.fID = lock.texture_id();
-  backend_texture_description.fWidth = lock.size().width();
-  backend_texture_description.fHeight = lock.size().height();
+  backend_texture_description.fWidth = lock.texture_size().width();
+  backend_texture_description.fHeight = lock.texture_size().height();
   backend_texture_description.fConfig = kSkia8888_GrPixelConfig;
   backend_texture_description.fTextureHandle =
       skia::GrGLTextureInfoToGrBackendObject(texture_info);
@@ -831,8 +831,8 @@ std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
       bounding_rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
       resource_provider_->best_texture_format());
   {
-    ResourceProvider::ScopedWriteLockGL lock(
-        resource_provider_, device_background_texture->id(), false);
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
+                                             device_background_texture->id());
     GetFramebufferTexture(lock.texture_id(), bounding_rect);
   }
   return device_background_texture;
@@ -2505,7 +2505,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
     uv_transform = UVTransform(quad);
   if (sampler == SAMPLER_TYPE_2D_RECT) {
     // Un-normalize the texture coordiantes for rectangle targets.
-    gfx::Size texture_size = lock.size();
+    gfx::Size texture_size = lock.texture_size();
     uv_transform.data[0] *= texture_size.width();
     uv_transform.data[2] *= texture_size.width();
     uv_transform.data[1] *= texture_size.height();
@@ -3057,7 +3057,7 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_);
   current_framebuffer_lock_ =
       base::WrapUnique(new ResourceProvider::ScopedWriteLockGL(
-          resource_provider_, texture->id(), false));
+          resource_provider_, texture->id()));
   current_framebuffer_format_ = texture->format();
   unsigned texture_id = current_framebuffer_lock_->texture_id();
   gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,

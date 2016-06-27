@@ -216,23 +216,21 @@ class CC_EXPORT ResourceProvider
    public:
     ScopedReadLockGL(ResourceProvider* resource_provider,
                      ResourceId resource_id);
-    ~ScopedReadLockGL();
+    virtual ~ScopedReadLockGL();
 
-    unsigned texture_id() const { return texture_id_; }
-    GLenum target() const { return target_; }
-    const gfx::Size& size() const { return size_; }
+    unsigned texture_id() const { return resource_->gl_id; }
+    GLenum target() const { return resource_->target; }
+    const gfx::Size& texture_size() const { return resource_->size; }
 
    private:
     ResourceProvider* resource_provider_;
     ResourceId resource_id_;
-    unsigned texture_id_;
-    GLenum target_;
-    gfx::Size size_;
+    const ResourceProvider::Resource* resource_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
   };
 
-  class CC_EXPORT ScopedSamplerGL {
+  class CC_EXPORT ScopedSamplerGL : public ScopedReadLockGL {
    public:
     ScopedSamplerGL(ResourceProvider* resource_provider,
                     ResourceId resource_id,
@@ -241,13 +239,11 @@ class CC_EXPORT ResourceProvider
                     ResourceId resource_id,
                     GLenum unit,
                     GLenum filter);
-    ~ScopedSamplerGL();
+    ~ScopedSamplerGL() override;
 
-    unsigned texture_id() const { return resource_lock_.texture_id(); }
     GLenum target() const { return target_; }
 
    private:
-    ScopedReadLockGL resource_lock_;
     GLenum unit_;
     GLenum target_;
 
@@ -257,72 +253,24 @@ class CC_EXPORT ResourceProvider
   class CC_EXPORT ScopedWriteLockGL {
    public:
     ScopedWriteLockGL(ResourceProvider* resource_provider,
-                      ResourceId resource_id,
-                      bool create_mailbox);
+                      ResourceId resource_id);
     ~ScopedWriteLockGL();
 
     unsigned texture_id() const { return texture_id_; }
-    GLenum target() const { return target_; }
-    ResourceFormat format() const { return format_; }
-    const gfx::Size& size() const { return size_; }
 
-    const TextureMailbox& mailbox() const { return mailbox_; }
-
-    void set_sync_token(const gpu::SyncToken& sync_token) {
+    void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) {
+      set_sync_token_ = true;
       sync_token_ = sync_token;
     }
 
-    void set_synchronized(bool synchronized) { synchronized_ = synchronized; }
-
    private:
     ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
+    ResourceProvider::Resource* resource_;
     unsigned texture_id_;
-    GLenum target_;
-    ResourceFormat format_;
-    gfx::Size size_;
-    TextureMailbox mailbox_;
+    bool set_sync_token_;
     gpu::SyncToken sync_token_;
-    bool synchronized_;
-    base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
-  };
-
-  class CC_EXPORT ScopedTextureProvider {
-   public:
-    ScopedTextureProvider(gpu::gles2::GLES2Interface* gl,
-                          ScopedWriteLockGL* resource_lock,
-                          bool use_mailbox);
-    ~ScopedTextureProvider();
-
-    unsigned texture_id() const { return texture_id_; }
-
-   private:
-    gpu::gles2::GLES2Interface* gl_;
-    bool use_mailbox_;
-    unsigned texture_id_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedTextureProvider);
-  };
-
-  class CC_EXPORT ScopedSkSurfaceProvider {
-   public:
-    ScopedSkSurfaceProvider(ContextProvider* context_provider,
-                            ScopedWriteLockGL* resource_lock,
-                            bool use_mailbox,
-                            bool use_distance_field_text,
-                            bool can_use_lcd_text,
-                            int msaa_sample_count);
-    ~ScopedSkSurfaceProvider();
-
-    SkSurface* sk_surface() { return sk_surface_.get(); }
-
-   private:
-    ScopedTextureProvider texture_provider_;
-    sk_sp<SkSurface> sk_surface_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedSkSurfaceProvider);
   };
 
   class CC_EXPORT ScopedReadLockSoftware {
@@ -357,7 +305,7 @@ class CC_EXPORT ResourceProvider
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
+    ResourceProvider::Resource* resource_;
     SkBitmap sk_bitmap_;
     base::ThreadChecker thread_checker_;
 
@@ -374,13 +322,43 @@ class CC_EXPORT ResourceProvider
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
-    ResourceFormat format_;
-    gfx::Size size_;
+    ResourceProvider::Resource* resource_;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
     base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
+  };
+
+  class CC_EXPORT ScopedWriteLockGr {
+   public:
+    ScopedWriteLockGr(ResourceProvider* resource_provider,
+                      ResourceId resource_id);
+    ~ScopedWriteLockGr();
+
+    void InitSkSurface(GrContext* gr_context,
+                       bool use_distance_field_text,
+                       bool can_use_lcd_text,
+                       int msaa_sample_count);
+    void ReleaseSkSurface();
+
+    SkSurface* sk_surface() { return sk_surface_.get(); }
+
+    gfx::Size GetResourceSize() const { return resource_->size; }
+
+    void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) {
+      set_sync_token_ = true;
+      sync_token_ = sync_token;
+    }
+
+   private:
+    ResourceProvider* resource_provider_;
+    ResourceProvider::Resource* resource_;
+    base::ThreadChecker thread_checker_;
+    sk_sp<SkSurface> sk_surface_;
+    bool set_sync_token_;
+    gpu::SyncToken sync_token_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGr);
   };
 
   class Fence : public base::RefCounted<Fence> {

@@ -120,7 +120,6 @@ class CC_EXPORT TileManager {
   void SetResources(ResourcePool* resource_pool,
                     ImageDecodeController* image_decode_controller,
                     TileTaskManager* tile_task_manager,
-                    RasterBufferProvider* raster_buffer_provider,
                     size_t scheduled_raster_task_limit,
                     bool use_gpu_rasterization);
 
@@ -149,7 +148,8 @@ class CC_EXPORT TileManager {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
       draw_info.resource_ = resource_pool_->AcquireResource(
           tiles[i]->desired_texture_size(),
-          raster_buffer_provider_->GetResourceFormat(false));
+          tile_task_manager_->GetRasterBufferProvider()->GetResourceFormat(
+              false));
     }
   }
 
@@ -166,9 +166,6 @@ class CC_EXPORT TileManager {
   }
 
   void SetTileTaskManagerForTesting(TileTaskManager* tile_task_manager);
-
-  void SetRasterBufferProviderForTesting(
-      RasterBufferProvider* raster_buffer_provider);
 
   void FreeResourcesAndCleanUpReleasedTilesForTesting() {
     FreeResourcesForReleasedTiles();
@@ -297,7 +294,6 @@ class CC_EXPORT TileManager {
   base::SequencedTaskRunner* task_runner_;
   ResourcePool* resource_pool_;
   TileTaskManager* tile_task_manager_;
-  RasterBufferProvider* raster_buffer_provider_;
   GlobalStateThatImpactsTilePriority global_state_;
   size_t scheduled_raster_task_limit_;
   const bool use_partial_raster_;

@@ -62,6 +62,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
+#include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
@@ -2167,7 +2168,8 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
 }
 
 void LayerTreeHostImpl::CreateTileManagerResources() {
-  CreateResourceAndRasterBufferProvider(&raster_buffer_provider_,
+  std::unique_ptr<RasterBufferProvider> raster_buffer_provider;
+  CreateResourceAndRasterBufferProvider(&raster_buffer_provider,
                                         &resource_pool_);
 
   if (use_gpu_rasterization_) {
@@ -2192,12 +2194,13 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
     task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
   }
 
-  tile_task_manager_ = TileTaskManagerImpl::Create(task_graph_runner);
+  tile_task_manager_ = TileTaskManagerImpl::Create(
+      std::move(raster_buffer_provider), task_graph_runner);
 
   // TODO(vmpstr): Initialize tile task limit at ctor time.
   tile_manager_.SetResources(
       resource_pool_.get(), image_decode_controller_.get(),
-      tile_task_manager_.get(), raster_buffer_provider_.get(),
+      tile_task_manager_.get(),
       is_synchronous_single_threaded_ ? std::numeric_limits<size_t>::max()
                                       : settings_.scheduled_raster_task_limit,
       use_gpu_rasterization_);
@@ -2236,7 +2239,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     *raster_buffer_provider = base::MakeUnique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
-        msaa_sample_count, settings_.async_worker_context_enabled);
+        msaa_sample_count);
     return;
   }
 
@@ -2272,8 +2275,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
       GetTaskRunner(), compositor_context_provider, worker_context_provider,
       resource_provider_.get(), max_copy_texture_chromium_size,
       settings_.use_partial_raster, settings_.max_staging_buffer_usage_in_bytes,
-      settings_.renderer_settings.preferred_tile_format,
-      settings_.async_worker_context_enabled);
+      settings_.renderer_settings.preferred_tile_format);
 }
 
 void LayerTreeHostImpl::SetLayerTreeMutator(

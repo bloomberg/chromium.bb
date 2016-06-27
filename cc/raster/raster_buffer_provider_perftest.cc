@@ -13,11 +13,11 @@
 #include "cc/output/context_provider.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
+#include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
-#include "cc/resources/platform_color.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
@@ -29,7 +29,6 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/tiles/tile_task_manager.h"
-#include "gpu/command_buffer/common/sync_token.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -68,13 +67,6 @@ class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                             GLuint* params) override {
     if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
       *params = 1;
-  }
-  void GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
-                                      GLbyte* sync_token) override {
-    // Copy the data over after setting the data to ensure alignment.
-    gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO, 0,
-                                   gpu::CommandBufferId(), fence_sync);
-    memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
   }
 };
 
@@ -319,43 +311,43 @@ class RasterBufferProviderPerfTest
  public:
   // Overridden from testing::Test:
   void SetUp() override {
+    std::unique_ptr<RasterBufferProvider> raster_buffer_provider;
     switch (GetParam()) {
       case RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_buffer_provider_ = ZeroCopyRasterBufferProvider::Create(
+        raster_buffer_provider = ZeroCopyRasterBufferProvider::Create(
             resource_provider_.get(), PlatformColor::BestTextureFormat());
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_buffer_provider_ = base::MakeUnique<OneCopyRasterBufferProvider>(
+        raster_buffer_provider = base::MakeUnique<OneCopyRasterBufferProvider>(
             task_runner_.get(), compositor_context_provider_.get(),
             worker_context_provider_.get(), resource_provider_.get(),
             std::numeric_limits<int>::max(), false,
-            std::numeric_limits<int>::max(), PlatformColor::BestTextureFormat(),
-            false);
+            std::numeric_limits<int>::max(),
+            PlatformColor::BestTextureFormat());
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
+        raster_buffer_provider = base::MakeUnique<GpuRasterBufferProvider>(
             compositor_context_provider_.get(), worker_context_provider_.get(),
-            resource_provider_.get(), false, 0, false);
+            resource_provider_.get(), false, 0);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();
-        raster_buffer_provider_ =
+        raster_buffer_provider =
             BitmapRasterBufferProvider::Create(resource_provider_.get());
         break;
     }
 
-    DCHECK(raster_buffer_provider_);
+    DCHECK(raster_buffer_provider);
 
-    tile_task_manager_ = TileTaskManagerImpl::Create(task_graph_runner_.get());
+    tile_task_manager_ = TileTaskManagerImpl::Create(
+        std::move(raster_buffer_provider), task_graph_runner_.get());
   }
   void TearDown() override {
     tile_task_manager_->Shutdown();
     tile_task_manager_->CheckForCompletedTasks();
-
-    raster_buffer_provider_->Shutdown();
   }
 
   // Overridden from PerfRasterBufferProviderHelper:
@@ -363,11 +355,13 @@ class RasterBufferProviderPerfTest
       const Resource* resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) override {
-    return raster_buffer_provider_->AcquireBufferForRaster(
-        resource, resource_content_id, previous_content_id);
+    return tile_task_manager_->GetRasterBufferProvider()
+        ->AcquireBufferForRaster(resource, resource_content_id,
+                                 previous_content_id);
   }
   void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override {
-    raster_buffer_provider_->ReleaseBufferForRaster(std::move(buffer));
+    tile_task_manager_->GetRasterBufferProvider()->ReleaseBufferForRaster(
+        std::move(buffer));
   }
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
@@ -392,14 +386,12 @@ class RasterBufferProviderPerfTest
       graph.Reset();
       ResetRasterTasks(raster_tasks);
       BuildTileTaskGraph(&graph, raster_tasks);
-      raster_buffer_provider_->OrderingBarrier();
       tile_task_manager_->ScheduleTasks(&graph);
       tile_task_manager_->CheckForCompletedTasks();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     TaskGraph empty;
-    raster_buffer_provider_->OrderingBarrier();
     tile_task_manager_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
     tile_task_manager_->CheckForCompletedTasks();
@@ -430,7 +422,6 @@ class RasterBufferProviderPerfTest
       // Reset the tasks as for scheduling new state tasks are needed.
       ResetRasterTasks(raster_tasks[count % kNumVersions]);
       BuildTileTaskGraph(&graph, raster_tasks[count % kNumVersions]);
-      raster_buffer_provider_->OrderingBarrier();
       tile_task_manager_->ScheduleTasks(&graph);
       tile_task_manager_->CheckForCompletedTasks();
       ++count;
@@ -438,7 +429,6 @@ class RasterBufferProviderPerfTest
     } while (!timer_.HasTimeLimitExpired());
 
     TaskGraph empty;
-    raster_buffer_provider_->OrderingBarrier();
     tile_task_manager_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
     tile_task_manager_->CheckForCompletedTasks();
@@ -463,14 +453,12 @@ class RasterBufferProviderPerfTest
     do {
       graph.Reset();
       BuildTileTaskGraph(&graph, raster_tasks);
-      raster_buffer_provider_->OrderingBarrier();
       tile_task_manager_->ScheduleTasks(&graph);
       RunMessageLoopUntilAllTasksHaveCompleted();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     TaskGraph empty;
-    raster_buffer_provider_->OrderingBarrier();
     tile_task_manager_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
 
@@ -511,7 +499,6 @@ class RasterBufferProviderPerfTest
   }
 
   std::unique_ptr<TileTaskManager> tile_task_manager_;
-  std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestSharedBitmapManager shared_bitmap_manager_;
 };
