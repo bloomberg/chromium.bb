@@ -684,6 +684,10 @@ bool OfflinePageModelImpl::is_loaded() const {
   return is_loaded_;
 }
 
+OfflineEventLogger* OfflinePageModelImpl::GetLogger() {
+  return &offline_event_logger_;
+}
+
 void OfflinePageModelImpl::OnCreateArchiveDone(const GURL& requested_url,
                                                int64_t offline_id,
                                                const ClientId& client_id,
@@ -728,6 +732,9 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
     offline_pages_[offline_page.offline_id] = offline_page;
     result = SavePageResult::SUCCESS;
     ReportPageHistogramAfterSave(offline_page);
+    offline_event_logger_.RecordPageSaved(
+        offline_page.client_id.name_space, offline_page.url.spec(),
+        std::to_string(offline_page.offline_id));
   } else {
     result = SavePageResult::STORE_FAILURE;
   }
@@ -880,6 +887,7 @@ void OfflinePageModelImpl::OnRemoveOfflinePagesDone(
   ReportPageHistogramsAfterDelete(offline_pages_, offline_ids);
 
   for (int64_t offline_id : offline_ids) {
+    offline_event_logger_.RecordPageDeleted(std::to_string(offline_id));
     auto iter = offline_pages_.find(offline_id);
     if (iter == offline_pages_.end())
       continue;
@@ -979,6 +987,7 @@ void OfflinePageModelImpl::OnResetStoreDoneForClearAll(
     bool success) {
   DCHECK(success);
   if (!success) {
+    offline_event_logger_.RecordStoreClearError();
     UMA_HISTOGRAM_ENUMERATION("OfflinePages.ClearAllStatus2",
                               STORE_RESET_FAILED, CLEAR_ALL_STATUS_COUNT);
   }
@@ -999,6 +1008,12 @@ void OfflinePageModelImpl::OnReloadStoreDoneForClearAll(
           ? CLEAR_ALL_SUCCEEDED
           : STORE_RELOAD_FAILED,
       CLEAR_ALL_STATUS_COUNT);
+
+  if (load_status == OfflinePageMetadataStore::LOAD_SUCCEEDED) {
+    offline_event_logger_.RecordStoreCleared();
+  } else {
+    offline_event_logger_.RecordStoreReloadError();
+  }
 
   CacheLoadedData(offline_pages);
   callback.Run();

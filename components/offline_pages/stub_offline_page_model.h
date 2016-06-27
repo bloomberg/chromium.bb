@@ -68,6 +68,7 @@ class StubOfflinePageModel : public OfflinePageModel {
                    const base::Callback<void(bool)>& callback) override;
   ClientPolicyController* GetPolicyController() override;
   bool is_loaded() const override;
+  OfflineEventLogger* GetLogger() override;
 
  private:
   std::vector<int64_t> offline_ids_;

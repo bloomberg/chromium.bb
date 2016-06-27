@@ -74,5 +74,7 @@ ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
 bool StubOfflinePageModel::is_loaded() const {
   return true;
 }
-
+OfflineEventLogger* StubOfflinePageModel::GetLogger() {
+  return nullptr;
+}
 }  // namespace offline_pages

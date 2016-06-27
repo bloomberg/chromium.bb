@@ -439,6 +439,7 @@
       'ntp_tiles/most_visited_sites_unittest.cc',
     ],
     'offline_pages_background_unittest_sources': [
+      'offline_pages/background/request_coordinator_event_logger_unittest.cc',
       'offline_pages/background/request_coordinator_unittest.cc',
       'offline_pages/background/request_picker_unittest.cc',
       'offline_pages/background/request_queue_store_unittest.cc',
@@ -449,6 +450,7 @@
       'offline_pages/archive_manager_unittest.cc',
       'offline_pages/client_policy_controller_unittest.cc',
       'offline_pages/offline_page_metadata_store_impl_unittest.cc',
+      'offline_pages/offline_page_model_event_logger_unittest.cc',
       'offline_pages/offline_page_model_impl_unittest.cc',
       'offline_pages/offline_page_storage_manager_unittest.cc',
       'offline_pages/snapshot_controller_unittest.cc',

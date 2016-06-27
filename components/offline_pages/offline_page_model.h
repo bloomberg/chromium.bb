@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/supports_user_data.h"
+#include "components/offline_pages/offline_event_logger.h"
 #include "components/offline_pages/offline_page_archiver.h"
 #include "components/offline_pages/offline_page_storage_manager.h"
 #include "components/offline_pages/offline_page_types.h"
@@ -193,6 +194,9 @@ class OfflinePageModel : public base::SupportsUserData {
 
   // TODO(dougarnett): Remove this and its uses.
   virtual bool is_loaded() const = 0;
+
+  // Returns the logger. Ownership is retained by the model.
+  virtual OfflineEventLogger* GetLogger() = 0;
 };
 
 }  // namespace offline_pages

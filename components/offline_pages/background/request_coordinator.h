@@ -13,6 +13,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/offliner.h"
+#include "components/offline_pages/background/request_coordinator_event_logger.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/scheduler.h"
 #include "url/gurl.h"
@@ -87,6 +88,10 @@ class RequestCoordinator : public KeyedService {
     return is_canceled_;
   }
 
+  OfflineEventLogger* GetLogger() {
+    return &event_logger_;
+  }
+
  private:
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
@@ -136,6 +141,8 @@ class RequestCoordinator : public KeyedService {
   std::unique_ptr<RequestPicker> picker_;
   // Calling this returns to the scheduler across the JNI bridge.
   base::Callback<void(bool)> scheduler_callback_;
+  // Logger to record events.
+  RequestCoordinatorEventLogger event_logger_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 

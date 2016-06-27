@@ -150,6 +150,10 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   DVLOG(2) << "offliner finished, saved: "
            << (status == Offliner::RequestStatus::SAVED) << ", status: "
            << (int) status << ", " << __FUNCTION__;
+  event_logger_.RecordSavePageRequestUpdated(
+      request.client_id().name_space,
+      "Saved",
+      request.request_id());
   last_offlining_status_ = status;
 
   is_busy_ = false;
@@ -174,9 +178,9 @@ RequestCoordinator::GetTriggerConditionsForUserRequest() {
 }
 
 void RequestCoordinator::GetOffliner() {
-    if (!offliner_) {
-      offliner_ = factory_->GetOffliner(policy_.get());
-    }
+  if (!offliner_) {
+    offliner_ = factory_->GetOffliner(policy_.get());
+  }
 }
 
 }  // namespace offline_pages

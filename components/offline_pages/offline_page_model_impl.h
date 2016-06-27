@@ -27,6 +27,7 @@
 #include "components/offline_pages/offline_page_archiver.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/offline_page_model_event_logger.h"
 #include "components/offline_pages/offline_page_storage_manager.h"
 #include "components/offline_pages/offline_page_types.h"
 
@@ -115,6 +116,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   OfflinePageStorageManager* GetStorageManager();
 
   bool is_loaded() const override;
+
+  OfflineEventLogger* GetLogger() override;
 
  protected:
   // Adding a protected constructor for testing-only purposes in
@@ -282,6 +285,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   // Manager for the offline archive files and directory.
   std::unique_ptr<ArchiveManager> archive_manager_;
+
+  // Logger to facilitate recording of events.
+  OfflinePageModelEventLogger offline_event_logger_;
 
   base::WeakPtrFactory<OfflinePageModelImpl> weak_ptr_factory_;
 
