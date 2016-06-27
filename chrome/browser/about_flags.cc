@@ -1951,10 +1951,14 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_EOL_NOTIFICATION_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableEolNotification)},
 #endif  // defined(OS_CHROMEOS)
-
     {"fill-on-account-select", IDS_FILL_ON_ACCOUNT_SELECT_NAME,
      IDS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},
+    {"new-audio-rendering-mixing-strategy",  // FLAGS:RECORD_UMA
+     IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_NAME,
+     IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_DESCRIPTION,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(media::kNewAudioRenderingMixingStrategy)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

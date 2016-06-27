@@ -80365,6 +80365,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1546903171" label="enable-touch-drag-drop"/>
   <int value="-1514943439" label="ash-enable-swipe-to-close-in-overview-mode"/>
   <int value="-1514611301" label="enable-data-reduction-proxy-bypass-warnings"/>
+  <int value="-1512656386" label="disable-new-audio-rendering-mixing-strategy"/>
   <int value="-1510839574" label="disable-sync-synced-notifications"/>
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
@@ -80466,6 +80467,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-864266073" label="cros-regions-mode"/>
   <int value="-864205629" label="enable-offline-load-stale-cache"/>
   <int value="-861678473" label="disable-offer-upload-credit-cards"/>
+  <int value="-856915246" label="enable-new-audio-rendering-mixing-strategy"/>
   <int value="-853594220" label="disable-new-avatar-menu"/>
   <int value="-842438090" label="enable-md-feedback"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>

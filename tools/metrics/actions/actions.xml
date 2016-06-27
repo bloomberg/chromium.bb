@@ -297,6 +297,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AboutFlags_new-audio-rendering-mixing-strategy">
+  <owner>grunell@chromium.org</owner>
+  <owner>olka@chromium.org</owner>
+  <description>
+    User enabled flag to control new audio rendering mixing strategy.
+  </description>
+</action>
+
 <action name="AboutFlags_page-prerender">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -127,6 +127,10 @@ const char kEnableVp9InMp4[] = "enable-vp9-in-mp4";
 
 namespace media {
 
+// Use new audio rendering mixer.
+const base::Feature kNewAudioRenderingMixingStrategy{
+    "NewAudioRenderingMixingStrategy", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use shared block-based buffering for media.
 const base::Feature kUseNewMediaCache{"use-new-media-cache",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

@@ -71,6 +71,7 @@ namespace media {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
+MEDIA_EXPORT extern const base::Feature kNewAudioRenderingMixingStrategy;
 MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
 
 }  // namespace media
