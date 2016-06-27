@@ -250,6 +250,8 @@ RECOGNIZED_PATHS = {
         CHROMIUM_SRC_URL,
     '/chrome/trunk/src/tools/cros.DEPS':
         CHROMIUM_GIT_HOST + '/chromium/src/tools/cros.DEPS.git',
+    '/chrome-internal/trunk/src-internal':
+        'https://chrome-internal.googlesource.com/chrome/src-internal.git',
 }
 RECOGNIZED_PATHS.update(internal_data.get('RECOGNIZED_PATHS', {}))
 
