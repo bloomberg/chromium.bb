@@ -65,7 +65,7 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest, const Resou
     , m_image(nullptr)
     , m_hasDevicePixelRatioHeaderValue(false)
 {
-    WTF_LOG(Timers, "new ImageResource(ResourceRequest) %p", this);
+    WTF_LOG(ResourceLoading, "new ImageResource(ResourceRequest) %p", this);
 }
 
 ImageResource::ImageResource(blink::Image* image, const ResourceLoaderOptions& options)
@@ -74,13 +74,13 @@ ImageResource::ImageResource(blink::Image* image, const ResourceLoaderOptions& o
     , m_image(image)
     , m_hasDevicePixelRatioHeaderValue(false)
 {
-    WTF_LOG(Timers, "new ImageResource(Image) %p", this);
+    WTF_LOG(ResourceLoading, "new ImageResource(Image) %p", this);
     setStatus(Cached);
 }
 
 ImageResource::~ImageResource()
 {
-    WTF_LOG(Timers, "~ImageResource %p", this);
+    WTF_LOG(ResourceLoading, "~ImageResource %p", this);
     clearImage();
 }
 

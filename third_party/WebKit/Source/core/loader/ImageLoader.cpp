@@ -153,7 +153,7 @@ ImageLoader::ImageLoader(Element* element)
     , m_elementIsProtected(false)
     , m_suppressErrorEvents(false)
 {
-    WTF_LOG(Timers, "new ImageLoader %p", this);
+    WTF_LOG(ResourceLoading, "new ImageLoader %p", this);
     ThreadState::current()->registerPreFinalizer(this);
 }
 
@@ -163,7 +163,7 @@ ImageLoader::~ImageLoader()
 
 void ImageLoader::dispose()
 {
-    WTF_LOG(Timers, "~ImageLoader %p; m_hasPendingLoadEvent=%d, m_hasPendingErrorEvent=%d",
+    WTF_LOG(ResourceLoading, "~ImageLoader %p; m_hasPendingLoadEvent=%d, m_hasPendingErrorEvent=%d",
         this, m_hasPendingLoadEvent, m_hasPendingErrorEvent);
 
     if (m_image) {
@@ -432,7 +432,7 @@ bool ImageLoader::shouldLoadImmediately(const KURL& url) const
 
 void ImageLoader::imageNotifyFinished(ImageResource* resource)
 {
-    WTF_LOG(Timers, "ImageLoader::imageNotifyFinished %p; m_hasPendingLoadEvent=%d",
+    WTF_LOG(ResourceLoading, "ImageLoader::imageNotifyFinished %p; m_hasPendingLoadEvent=%d",
         this, m_hasPendingLoadEvent);
 
     ASSERT(m_failedLoadURL.isEmpty());
@@ -544,7 +544,7 @@ void ImageLoader::timerFired(Timer<ImageLoader>*)
 
 void ImageLoader::dispatchPendingEvent(ImageEventSender* eventSender)
 {
-    WTF_LOG(Timers, "ImageLoader::dispatchPendingEvent %p", this);
+    WTF_LOG(ResourceLoading, "ImageLoader::dispatchPendingEvent %p", this);
     ASSERT(eventSender == &loadEventSender() || eventSender == &errorEventSender());
     const AtomicString& eventType = eventSender->eventType();
     if (eventType == EventTypeNames::load)
