@@ -192,10 +192,10 @@ base::FilePath FindRegulatoryLabelDir() {
 
 // Reads the file containing the regulatory label text, if found, relative to
 // the asset directory. Must be called from the blocking pool.
-std::string ReadRegulatoryLabelText(const base::FilePath& path) {
+std::string ReadRegulatoryLabelText(const base::FilePath& label_dir_path) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::FilePath text_path(chrome::kChromeOSAssetPath);
-  text_path = text_path.Append(path);
+  text_path = text_path.Append(label_dir_path);
   text_path = text_path.AppendASCII(kRegulatoryLabelTextFilename);
 
   std::string contents;
@@ -619,9 +619,10 @@ void AboutHandler::SetPromotionState(VersionUpdater::PromotionState state) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)
-void AboutHandler::OnRegulatoryLabelDirFound(std::string callback_id,
-                                             const base::FilePath& path) {
-  if (path.empty()) {
+void AboutHandler::OnRegulatoryLabelDirFound(
+    std::string callback_id,
+    const base::FilePath& label_dir_path) {
+  if (label_dir_path.empty()) {
     ResolveJavascriptCallback(base::StringValue(callback_id),
                               *base::Value::CreateNullValue());
     return;
@@ -629,20 +630,24 @@ void AboutHandler::OnRegulatoryLabelDirFound(std::string callback_id,
 
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(), FROM_HERE,
-      base::Bind(&ReadRegulatoryLabelText, path),
+      base::Bind(&ReadRegulatoryLabelText, label_dir_path),
       base::Bind(&AboutHandler::OnRegulatoryLabelTextRead,
-                 weak_factory_.GetWeakPtr(), callback_id, path));
+                 weak_factory_.GetWeakPtr(), callback_id, label_dir_path));
 }
 
-void AboutHandler::OnRegulatoryLabelTextRead(std::string callback_id,
-                                             const base::FilePath& path,
-                                             const std::string& text) {
+void AboutHandler::OnRegulatoryLabelTextRead(
+    std::string callback_id,
+    const base::FilePath& label_dir_path,
+    const std::string& text) {
   std::unique_ptr<base::DictionaryValue> regulatory_info(
       new base::DictionaryValue);
   // Remove unnecessary whitespace.
   regulatory_info->SetString("text", base::CollapseWhitespaceASCII(text, true));
-  std::string url = std::string("chrome://") + chrome::kChromeOSAssetHost +
-                    "/" + path.MaybeAsASCII();
+
+  std::string image_path =
+      label_dir_path.AppendASCII(kRegulatoryLabelImageFilename).MaybeAsASCII();
+  std::string url =
+      std::string("chrome://") + chrome::kChromeOSAssetHost + "/" + image_path;
   regulatory_info->SetString("url", url);
 
   ResolveJavascriptCallback(base::StringValue(callback_id), *regulatory_info);
