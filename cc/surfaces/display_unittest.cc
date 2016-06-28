@@ -135,8 +135,8 @@ class DisplayTest : public testing::Test {
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     pass_list->swap(frame_data->render_pass_list);
 
-    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
-    frame->delegated_frame_data = std::move(frame_data);
+    CompositorFrame frame;
+    frame.delegated_frame_data = std::move(frame_data);
 
     factory_.SubmitCompositorFrame(surface_id, std::move(frame),
                                    SurfaceFactory::DrawCallback());
@@ -337,9 +337,9 @@ TEST_F(DisplayTest, DisplayDamaged) {
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     pass_list.swap(frame_data->render_pass_list);
 
-    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
-    frame->delegated_frame_data = std::move(frame_data);
-    frame->metadata.latency_info.push_back(ui::LatencyInfo());
+    CompositorFrame frame;
+    frame.delegated_frame_data = std::move(frame_data);
+    frame.metadata.latency_info.push_back(ui::LatencyInfo());
 
     factory_.SubmitCompositorFrame(surface_id, std::move(frame),
                                    SurfaceFactory::DrawCallback());
@@ -370,8 +370,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     pass_list.swap(frame_data->render_pass_list);
 
-    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
-    frame->delegated_frame_data = std::move(frame_data);
+    CompositorFrame frame;
+    frame.delegated_frame_data = std::move(frame_data);
 
     factory_.SubmitCompositorFrame(surface_id, std::move(frame),
                                    SurfaceFactory::DrawCallback());

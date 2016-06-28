@@ -171,7 +171,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
     }
 
     surface_factory_->SubmitCompositorFrame(child_id_,
-                                            std::move(child_compositor_frame),
+                                            std::move(*child_compositor_frame),
                                             cc::SurfaceFactory::DrawCallback());
   }
 
@@ -218,8 +218,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
   std::unique_ptr<cc::DelegatedFrameData> delegated_frame(
       new cc::DelegatedFrameData);
   delegated_frame->render_pass_list.push_back(std::move(render_pass));
-  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  frame->delegated_frame_data = std::move(delegated_frame);
+  cc::CompositorFrame frame;
+  frame.delegated_frame_data = std::move(delegated_frame);
 
   if (root_id_.is_null()) {
     root_id_ = surface_id_allocator_->GenerateId();

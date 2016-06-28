@@ -74,10 +74,9 @@ void SurfaceFactory::SetSurfaceGpuMemoryBufferClientId(
   it->second->SetGpuMemoryBufferClientId(gpu_memory_buffer_client_id);
 }
 
-void SurfaceFactory::SubmitCompositorFrame(
-    SurfaceId surface_id,
-    std::unique_ptr<CompositorFrame> frame,
-    const DrawCallback& callback) {
+void SurfaceFactory::SubmitCompositorFrame(SurfaceId surface_id,
+                                           CompositorFrame frame,
+                                           const DrawCallback& callback) {
   TRACE_EVENT0("cc", "SurfaceFactory::SubmitCompositorFrame");
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());

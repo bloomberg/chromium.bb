@@ -234,12 +234,12 @@ const RenderPass* SurfaceHittest::GetRenderPassForSurfaceById(
   if (!surface)
     return nullptr;
 
-  const CompositorFrame* surface_frame = surface->GetEligibleFrame();
-  if (!surface_frame)
+  const CompositorFrame& surface_frame = surface->GetEligibleFrame();
+  if (!surface_frame.delegated_frame_data)
     return nullptr;
 
   const DelegatedFrameData* frame_data =
-      surface_frame->delegated_frame_data.get();
+      surface_frame.delegated_frame_data.get();
   if (frame_data->render_pass_list.empty())
     return nullptr;
 

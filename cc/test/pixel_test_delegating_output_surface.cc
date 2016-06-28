@@ -135,10 +135,8 @@ void PixelTestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
       frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
   display_->Resize(frame_size);
 
-  std::unique_ptr<CompositorFrame> frame_copy(new CompositorFrame);
-  *frame_copy = std::move(frame);
   surface_factory_->SubmitCompositorFrame(
-      delegated_surface_id_, std::move(frame_copy),
+      delegated_surface_id_, std::move(frame),
       base::Bind(&PixelTestDelegatingOutputSurface::DrawCallback,
                  weak_ptrs_.GetWeakPtr()));
 
@@ -158,7 +156,8 @@ void PixelTestDelegatingOutputSurface::DrawCallback(SurfaceDrawStatus) {
 
 void PixelTestDelegatingOutputSurface::ForceReclaimResources() {
   if (allow_force_reclaim_resources_ && !delegated_surface_id_.is_null()) {
-    surface_factory_->SubmitCompositorFrame(delegated_surface_id_, nullptr,
+    surface_factory_->SubmitCompositorFrame(delegated_surface_id_,
+                                            CompositorFrame(),
                                             SurfaceFactory::DrawCallback());
   }
 }

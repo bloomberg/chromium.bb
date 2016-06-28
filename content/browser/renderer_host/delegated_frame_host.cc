@@ -486,9 +486,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
       ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn, AsWeakPtr(),
                                 output_surface_id);
     }
-    std::unique_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame);
-    *frame_copy = std::move(frame);
-    surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame_copy),
+    surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                             ack_callback);
   }
   released_front_lock_ = NULL;
