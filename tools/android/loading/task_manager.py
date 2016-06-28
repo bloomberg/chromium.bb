@@ -6,38 +6,30 @@
 
 A Task consists of a 'recipe' (a closure to be executed) and a list of refs to
 tasks that should be executed prior to executing this Task (i.e. dependencies).
+The responsibility of the recipe of a task is to produce the file with the name
+assigned at task creation.
 
-A Task can be either 'static' or 'dynamic'. A static tasks only represents an
-existing file on the filesystem, its recipe is a no-op. The responsibility of
-the recipe of a dynamic task is to produce the file with the name assigned at
-task creation.
-
-A scenario is a ordered list of dynamic tasks to execute such that the
-dependencies of a given task are execute before the said task. The scenario is
-built from a list of final tasks and a list of frozen tasks:
+A scenario is a ordered list of tasks to execute such that the dependencies of a
+given task are execute before the said task. The scenario is built from a list
+of final tasks and a list of frozen tasks:
   - A final task is a task to execute ultimately. Therefore the scenario is
     composed of final tasks and their required intermediary tasks.
-  - A frozen task is dynamic task to not execute. This is a mechanism to morph a
-    dynamic task that may have dependencies to a static task with no dependency
-    at scenario generation time, injecting what the dynamic task have already
-    produced before as an input of the smaller tasks dependency graph covered
-    by the scenario.
+  - A frozen task is task to not execute. This is a mechanism to morph a task
+    that may have dependencies to a task with no dependency at scenario
+    generation time, injecting what the task have already produced before as an
+    input of the smaller tasks dependency graph covered by the scenario.
 
 Example:
   # -------------------------------------------------- Build my dependency graph
   builder = Builder('my/output/dir')
-  input0 = builder.CreateStaticTask('input0', 'path/to/input/file0')
-  input1 = builder.CreateStaticTask('input1', 'path/to/input/file1')
-  input2 = builder.CreateStaticTask('input2', 'path/to/input/file2')
-  input3 = builder.CreateStaticTask('input3', 'path/to/input/file3')
 
-  @builder.RegisterTask('out0', dependencies=[input0, input2])
+  @builder.RegisterTask('out0')
   def BuildOut0():
-    DoStuff(input0.path, input2.path, out=BuildOut0.path)
+    Produce(out=BuildOut0.path)
 
-  @builder.RegisterTask('out1', dependencies=[input1, input3])
+  @builder.RegisterTask('out1')
   def BuildOut1():
-    DoStuff(input1.path, input3.path, out=BuildOut1.path)
+    Produce(out=BuildOut1.path)
 
   @builder.RegisterTask('out2', dependencies=[BuildOut0, BuildOut1])
   def BuildOut2():
@@ -85,7 +77,7 @@ class TaskError(Exception):
 
 
 class Task(object):
-  """Task that can be either a static task or dynamic with a recipe."""
+  """Task with a recipe."""
 
   def __init__(self, name, path, dependencies, recipe):
     """Constructor.
@@ -94,7 +86,7 @@ class Task(object):
       name: The name of the  task.
       path: Path to the file or directory that this task produces.
       dependencies: List of parent task to execute before.
-      recipe: Function to execute if a dynamic task or None if a static task.
+      recipe: Function to execute.
     """
     self.name = name
     self.path = path
@@ -104,15 +96,9 @@ class Task(object):
 
   def Execute(self):
     """Executes this task."""
-    if self.IsStatic():
-      raise TaskError('Task {} is static.'.format(self.name))
     if not self._is_done:
       self._recipe()
     self._is_done = True
-
-  def IsStatic(self):
-    """Returns whether this task is a static task."""
-    return self._recipe == None
 
 
 class Builder(object):
@@ -122,31 +108,18 @@ class Builder(object):
     """Constructor.
 
     Args:
-      output_directory: Output directory where the dynamic tasks work.
+      output_directory: Output directory where the tasks work.
       output_subdirectory: Subdirectory to put all created tasks in or None.
     """
     self.output_directory = output_directory
     self.output_subdirectory = output_subdirectory
     self._tasks = {}
 
-  def CreateStaticTask(self, task_name, path):
-    """Creates and returns a new static task."""
-    task_name = self._RebaseTaskName(task_name)
-    if not os.path.exists(path):
-      raise TaskError('Error while creating task {}: File not found: {}'.format(
-          task_name, path))
-    if task_name in self._tasks:
-      raise TaskError('Task {} already exists.'.format(task_name))
-    task = Task(task_name, path, [], None)
-    self._tasks[task_name] = task
-    return task
-
   # Caution:
-  #   This decorator may not create a dynamic task in the case where
-  #   merge=True and another dynamic target having the same name have already
-  #   been created. In this case, it will just reuse the former task. This is at
-  #   the user responsibility to ensure that merged tasks would do the exact
-  #   same thing.
+  #   This decorator may not create a task in the case where merge=True and
+  #   another task having the same name have already been created. In this case,
+  #   it will just reuse the former task. This is at the user responsibility to
+  #   ensure that merged tasks would do the exact same thing.
   #
   #     @builder.RegisterTask('hello')
   #     def TaskA():
@@ -160,7 +133,7 @@ class Builder(object):
   #     assert TaskA == TaskB
   #     TaskB.Execute() # Sets set my_object.a == 1
   def RegisterTask(self, task_name, dependencies=None, merge=False):
-    """Decorator that wraps a function into a dynamic task.
+    """Decorator that wraps a function into a task.
 
     Args:
       task_name: The name of this new task to register.
@@ -179,9 +152,6 @@ class Builder(object):
         if not merge:
           raise TaskError('Task {} already exists.'.format(rebased_task_name))
         task = self._tasks[rebased_task_name]
-        if task.IsStatic():
-          raise TaskError('Should not merge dynamic task {} with the already '
-                          'existing static one.'.format(rebased_task_name))
         return task
       task_path = self.RebaseOutputPath(task_name)
       task = Task(rebased_task_name, task_path, dependencies, recipe)
@@ -213,8 +183,6 @@ def GenerateScenario(final_tasks, frozen_tasks):
   scenario = []
   task_paths = {}
   def InternalAppendTarget(task):
-    if task.IsStatic():
-      return
     if task in frozen_tasks:
       if not os.path.exists(task.path):
         raise TaskError('Frozen target `{}`\'s path doesn\'t exist.'.format(
@@ -276,7 +244,7 @@ def ListResumingTasksToFreeze(scenario, final_tasks, skipped_tasks):
   walked_tasks = set()
 
   def InternalWalk(task):
-    if task.IsStatic() or task in walked_tasks:
+    if task in walked_tasks:
       return
     walked_tasks.add(task)
     if task not in scenario_tasks or task not in skipped_tasks:
@@ -301,10 +269,9 @@ def OutputGraphViz(scenario, final_tasks, output):
     output: A file-like output stream to receive the dot file.
 
   Graph interpretations:
-    - Static tasks are shape less.
     - Final tasks (the one that where directly appended) are box shaped.
-    - Non final dynamic tasks are ellipse shaped.
-    - Frozen dynamic tasks have a blue shape.
+    - Non final tasks are ellipse shaped.
+    - Frozen tasks have a blue shape.
   """
   task_execution_ids = {t: i for i, t in enumerate(scenario)}
   tasks_node_ids = dict()
@@ -316,9 +283,7 @@ def OutputGraphViz(scenario, final_tasks, output):
     node_label = task.name
     node_color = 'blue'
     node_shape = 'ellipse'
-    if task.IsStatic():
-      node_shape = 'plaintext'
-    elif task in task_execution_ids:
+    if task in task_execution_ids:
       node_color = 'black'
       node_label = str(task_execution_ids[task]) + ': ' + node_label
     if task in final_tasks:
