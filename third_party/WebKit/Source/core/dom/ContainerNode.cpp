@@ -1026,17 +1026,22 @@ void ContainerNode::setActive(bool down)
 
     Node::setActive(down);
 
-    // FIXME: Why does this not need to handle the display: none transition like :hover does?
-    if (layoutObject()) {
-        if (computedStyle()->affectedByActive()) {
-            StyleChangeType changeType = computedStyle()->hasPseudoStyle(PseudoIdFirstLetter) ? SubtreeStyleChange : LocalStyleChange;
-            setNeedsStyleRecalc(changeType, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
-        }
+    if (!layoutObject()) {
         if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
             toElement(this)->pseudoStateChanged(CSSSelector::PseudoActive);
-
-        LayoutTheme::theme().controlStateChanged(*layoutObject(), PressedControlState);
+        else
+            setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
+        return;
     }
+
+    if (computedStyle()->affectedByActive()) {
+        StyleChangeType changeType = computedStyle()->hasPseudoStyle(PseudoIdFirstLetter) ? SubtreeStyleChange : LocalStyleChange;
+        setNeedsStyleRecalc(changeType, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
+    }
+    if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
+        toElement(this)->pseudoStateChanged(CSSSelector::PseudoActive);
+
+    LayoutTheme::theme().controlStateChanged(*layoutObject(), PressedControlState);
 }
 
 void ContainerNode::setHovered(bool over)
