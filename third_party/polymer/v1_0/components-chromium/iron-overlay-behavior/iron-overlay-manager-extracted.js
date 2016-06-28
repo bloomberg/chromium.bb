@@ -312,6 +312,7 @@
      * Returns the deepest overlay in the path.
      * @param {Array<Element>=} path
      * @return {Element|undefined}
+     * @suppress {missingProperties}
      * @private
      */
     _overlayInPath: function(path) {
@@ -369,12 +370,11 @@
      * @param {!Element} overlay1
      * @param {!Element} overlay2
      * @return {boolean}
+     * @suppress {missingProperties}
      * @private
      */
     _shouldBeBehindOverlay: function(overlay1, overlay2) {
-      var o1 = /** @type {?} */ (overlay1);
-      var o2 = /** @type {?} */ (overlay2);
-      return !o1.alwaysOnTop && o2.alwaysOnTop;
+      return !overlay1.alwaysOnTop && overlay2.alwaysOnTop;
     }
   };
 

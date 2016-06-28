@@ -30,7 +30,7 @@ Polymer({
 
       state.value = state.value || '';
 
-      var counter = state.value.length.toString();
+      var counter = state.value.toString().length.toString();
 
       if (state.inputElement.hasAttribute('maxlength')) {
         counter += '/' + state.inputElement.getAttribute('maxlength');
