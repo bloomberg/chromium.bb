@@ -2047,7 +2047,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   bool enable_web_bluetooth = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableWebBluetooth);
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
   enable_web_bluetooth = true;
 #endif
 

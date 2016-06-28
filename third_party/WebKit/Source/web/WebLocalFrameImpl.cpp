@@ -1473,8 +1473,13 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
     provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
     provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));
 
-    if (RuntimeEnabledFeatures::webBluetoothEnabled())
+    bool enableWebBluetooth = RuntimeEnabledFeatures::webBluetoothEnabled();
+#if OS(CHROMEOS) || OS(ANDROID) || OS(MACOSX)
+    enableWebBluetooth = true;
+#endif
+    if (enableWebBluetooth)
         BluetoothSupplement::provideTo(*m_frame, m_client ? m_client->bluetooth() : nullptr);
+
     if (RuntimeEnabledFeatures::screenOrientationEnabled())
         ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : nullptr);
     if (RuntimeEnabledFeatures::presentationEnabled())

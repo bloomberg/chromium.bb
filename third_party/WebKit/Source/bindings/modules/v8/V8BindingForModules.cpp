@@ -565,6 +565,17 @@ void installOriginTrialsForModules(ScriptState* scriptState)
             V8WorkerNavigatorPartial::installDurableStorage(scriptState, navigator);
         }
     }
+
+    if (!originTrialContext->featureBindingsInstalled("WebBluetooth") && (RuntimeEnabledFeatures::webBluetoothEnabled() || originTrialContext->isFeatureEnabled("WebBluetooth", nullptr))) {
+        v8::Local<v8::String> navigatorName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("navigator"), v8::NewStringType::kNormal).ToLocalChecked();
+        if (executionContext->isDocument()) {
+            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
+            // For global interfaces e.g. BluetoothUUID.
+            V8WindowPartial::installWebBluetooth(scriptState, global);
+            // For navigator interfaces e.g. navigator.bluetooth.
+            V8NavigatorPartial::installWebBluetooth(scriptState, navigator);
+        }
+    }
 }
 
 void registerInstallOriginTrialsForModules()

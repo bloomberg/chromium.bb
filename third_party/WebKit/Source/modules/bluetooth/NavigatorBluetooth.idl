@@ -4,14 +4,9 @@
 
 // https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-navigatorbluetooth
 
-[
-    RuntimeEnabled=WebBluetooth,
-] partial interface Navigator {
+partial interface Navigator {
     // [OriginTrialEnabled] doesn't support adding bindings to partial
     // interfaces yet, so we add it to the bluetooth attribute instead.
     // https://crbug.com/585656
-    [
-        // TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
-        // OriginTrialEnabled=WebBluetooth
-    ] readonly attribute Bluetooth bluetooth;
+    [OriginTrialEnabled=WebBluetooth] readonly attribute Bluetooth bluetooth;
 };
