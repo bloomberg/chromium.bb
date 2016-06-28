@@ -6519,8 +6519,6 @@ interface VisualViewport : EventTarget
     getter scrollLeft
     getter scrollTop
     method constructor
-    setter scrollLeft
-    setter scrollTop
 interface WaveShaperNode : AudioNode
     attribute @@toStringTag
     getter curve

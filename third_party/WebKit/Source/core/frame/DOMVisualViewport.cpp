@@ -85,26 +85,6 @@ double DOMVisualViewport::scrollTop()
     return 0;
 }
 
-void DOMVisualViewport::setScrollLeft(double x)
-{
-    LocalFrame* frame = m_window->frame();
-    if (!frame || !frame->isMainFrame())
-        return;
-
-    if (FrameHost* host = frame->host())
-        host->visualViewport().setScrollLeft(x);
-}
-
-void DOMVisualViewport::setScrollTop(double y)
-{
-    LocalFrame* frame = m_window->frame();
-    if (!frame || !frame->isMainFrame())
-        return;
-
-    if (FrameHost* host = frame->host())
-        host->visualViewport().setScrollTop(y);
-}
-
 double DOMVisualViewport::clientWidth()
 {
     LocalFrame* frame = m_window->frame();

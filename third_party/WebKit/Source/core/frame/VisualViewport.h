@@ -203,8 +203,6 @@ public:
     // Visual Viewport API implementation.
     double scrollLeft();
     double scrollTop();
-    void setScrollLeft(double x);
-    void setScrollTop(double y);
     double clientWidth();
     double clientHeight();
     double pageScale();

@@ -44,14 +44,12 @@
       assert_equals(viewport().scale, 2, "scale");
 
       // Set scrollTop/Left.
-      window.visualViewport.scrollTop = 20;
-      window.visualViewport.scrollLeft = 0;
+      internals.setVisualViewportOffset(0, 20);
       assert_equals(viewport().scrollTop, 20, "set scrollTop");
       assert_equals(viewport().scrollLeft, 0, "set scrollLeft");
-      window.visualViewport.scrollTop = -20;
+      internals.setVisualViewportOffset(-20, -20);
       assert_equals(viewport().scrollTop, 0, "negative scrollTop");
-      window.visualViewport.scrollTop = 20.5;
-      assert_equals(viewport().scrollTop, 20.5, "floating point scrollTop");
+      assert_equals(viewport().scrollTop, 0, "negative scrollLeft");
 
       t.done();
     });

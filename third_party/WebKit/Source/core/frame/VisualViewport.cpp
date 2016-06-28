@@ -240,26 +240,6 @@ double VisualViewport::scrollTop()
     return adjustScrollForAbsoluteZoom(visibleRect().y(), mainFrame()->pageZoomFactor());
 }
 
-void VisualViewport::setScrollLeft(double x)
-{
-    if (!mainFrame())
-        return;
-
-    updateStyleAndLayoutIgnorePendingStylesheets();
-
-    setLocation(FloatPoint(x * mainFrame()->pageZoomFactor(), location().y()));
-}
-
-void VisualViewport::setScrollTop(double y)
-{
-    if (!mainFrame())
-        return;
-
-    updateStyleAndLayoutIgnorePendingStylesheets();
-
-    setLocation(FloatPoint(location().x(), y * mainFrame()->pageZoomFactor()));
-}
-
 double VisualViewport::clientWidth()
 {
     if (!mainFrame())

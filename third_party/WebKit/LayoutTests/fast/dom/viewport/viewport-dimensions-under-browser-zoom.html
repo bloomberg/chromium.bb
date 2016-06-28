@@ -14,6 +14,10 @@
 <script>
   var browserZoomFactor = 1.25;
 
+  function viewport() {
+    return window.visualViewport;
+  }
+
   async_test(function(t) {
     window.onload = t.step_func(function() {
       window.scrollTo(100, 100);
@@ -23,33 +27,24 @@
       internals.setPageScaleFactor(2);
 
       // Offset visual viewport by 10px.
-      window.visualViewport.scrollTop =  10;
-      window.visualViewport.scrollLeft = 10;
+      internals.setVisualViewportOffset(10, 10);
 
-      assert_equals(window.visualViewport.scrollTop, 10);
-      assert_equals(window.visualViewport.scrollLeft, 10);
-      assert_equals(window.visualViewport.clientWidth, 400);
-      assert_equals(window.visualViewport.clientHeight, 300);
-      assert_equals(window.visualViewport.scale, 2);
+      assert_equals(viewport().scrollTop, 10);
+      assert_equals(viewport().scrollLeft, 10);
+      assert_equals(viewport().clientWidth, 400);
+      assert_equals(viewport().clientHeight, 300);
+      assert_equals(viewport().scale, 2);
 
       // Apply browser zoom.
       window.internals.setZoomFactor(browserZoomFactor);
 
       // Visual viewport dimensions should be scaled by the browser zoom factor.
-      assert_equals(window.visualViewport.scrollTop, 10 / browserZoomFactor);
-      assert_equals(window.visualViewport.scrollLeft, 10 / browserZoomFactor);
-      assert_equals(window.visualViewport.clientWidth, 400 / browserZoomFactor);
-      assert_equals(window.visualViewport.clientHeight, 300 / browserZoomFactor);
-      assert_equals(window.visualViewport.scale, 2);
+      assert_equals(viewport().scrollTop, 10 / browserZoomFactor);
+      assert_equals(viewport().scrollLeft, 10 / browserZoomFactor);
+      assert_equals(viewport().clientWidth, 400 / browserZoomFactor);
+      assert_equals(viewport().clientHeight, 300 / browserZoomFactor);
+      assert_equals(viewport().scale, 2);
 
-      // Verify setting the visual viewport offset under browser zoom.
-      window.visualViewport.scrollTop = 12.5;
-      window.visualViewport.scrollLeft = 12.5;
-      assert_equals(window.visualViewport.scrollTop, 12.5);
-      assert_equals(window.visualViewport.scrollLeft, 12.5);
-      assert_equals(window.visualViewport.clientWidth, 400 / browserZoomFactor);
-      assert_equals(window.visualViewport.clientHeight, 300 / browserZoomFactor);
-      assert_equals(window.visualViewport.scale, 2);
       t.done();
     });
   }, 'Verify viewport dimensions under bowser zoom.');

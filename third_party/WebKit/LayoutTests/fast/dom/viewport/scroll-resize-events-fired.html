@@ -19,25 +19,6 @@
 
   var t = async_test('verify that the scroll and resize events get fired on window.visualViewport');
 
-  function verifySetViewportOffsets() {
-    // Set viewport offset.
-    window.visualViewport.scrollTop = 20;
-    requestAnimationFrame(function() {
-      t.step(function() {
-        assert_equals(numCallsScroll, 2, "scroll listener called for scrollTop");
-        assert_equals(numCallsResize, 1, "resize listener not called for scrollTop");
-      });
-      window.visualViewport.scrollLeft = 0;
-      requestAnimationFrame(function() {
-        t.step(function() {
-          assert_equals(numCallsScroll, 3, "scroll listener called for scrollLeft");
-          assert_equals(numCallsResize, 1, "resize listener not called for scrollLeft");
-        });
-        t.done();
-      });
-    });
-  }
-
   window.onload = t.step_func(function() {
     // Turn off smooth scrolling.
     internals.settings.setScrollAnimatorEnabled(false);
@@ -72,7 +53,7 @@
           assert_equals(numCallsScroll, 1, "scroll listener called for offset change");
           assert_equals(numCallsResize, 1, "resize listener not called for offset change");
         });
-        verifySetViewportOffsets();
+        t.done();
       });
     });
   });
