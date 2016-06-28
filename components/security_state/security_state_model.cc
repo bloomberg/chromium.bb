@@ -184,6 +184,7 @@ void SecurityInfoForRequest(
   security_info->cert_status = visible_security_state.cert_status;
   security_info->scheme_is_cryptographic =
       visible_security_state.url.SchemeIsCryptographic();
+  security_info->pkp_bypassed = visible_security_state.pkp_bypassed;
   security_info->is_secure_protocol_and_ciphersuite =
       (net::SSLConnectionStatusToVersion(security_info->connection_status) >=
            net::SSL_CONNECTION_VERSION_TLS1_2 &&
@@ -217,7 +218,8 @@ SecurityStateModel::SecurityInfo::SecurityInfo()
       cert_id(0),
       security_bits(-1),
       connection_status(0),
-      is_secure_protocol_and_ciphersuite(false) {}
+      is_secure_protocol_and_ciphersuite(false),
+      pkp_bypassed(false) {}
 
 SecurityStateModel::SecurityInfo::~SecurityInfo() {}
 
@@ -263,7 +265,8 @@ SecurityStateModel::VisibleSecurityState::VisibleSecurityState()
       connection_status(0),
       security_bits(-1),
       displayed_mixed_content(false),
-      ran_mixed_content(false) {}
+      ran_mixed_content(false),
+      pkp_bypassed(false) {}
 
 SecurityStateModel::VisibleSecurityState::~VisibleSecurityState() {}
 
@@ -276,7 +279,8 @@ bool SecurityStateModel::VisibleSecurityState::operator==(
           security_bits == other.security_bits &&
           sct_verify_statuses == other.sct_verify_statuses &&
           displayed_mixed_content == other.displayed_mixed_content &&
-          ran_mixed_content == other.ran_mixed_content);
+          ran_mixed_content == other.ran_mixed_content &&
+          pkp_bypassed == other.pkp_bypassed);
 }
 
 }  // namespace security_state

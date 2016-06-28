@@ -19,7 +19,8 @@ SSLStatus::SSLStatus()
       content_status(NORMAL_CONTENT),
       num_unknown_scts(0),
       num_invalid_scts(0),
-      num_valid_scts(0) {}
+      num_valid_scts(0),
+      pkp_bypassed(false) {}
 
 SSLStatus::SSLStatus(SecurityStyle security_style,
                      int cert_id,
@@ -33,7 +34,8 @@ SSLStatus::SSLStatus(SecurityStyle security_style,
       content_status(NORMAL_CONTENT),
       num_unknown_scts(0),
       num_invalid_scts(0),
-      num_valid_scts(0) {
+      num_valid_scts(0),
+      pkp_bypassed(ssl_info.pkp_bypassed) {
   // Count unknown, invalid and valid SCTs.
   for (const auto& sct_and_status : ssl_info.signed_certificate_timestamps) {
     switch (sct_and_status.status) {

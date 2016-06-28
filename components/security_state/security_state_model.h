@@ -107,6 +107,9 @@ class SecurityStateModel {
     // True if the protocol version and ciphersuite for the connection
     // are considered secure.
     bool is_secure_protocol_and_ciphersuite;
+
+    // True if pinning was bypassed due to a local trust anchor.
+    bool pkp_bypassed;
   };
 
   // Contains the security state relevant to computing the SecurityInfo
@@ -134,6 +137,8 @@ class SecurityStateModel {
     bool displayed_mixed_content;
     // True if the page ran active mixed content.
     bool ran_mixed_content;
+    // True if PKP was bypassed due to a local trust anchor.
+    bool pkp_bypassed;
   };
 
   // These security levels describe the treatment given to pages that

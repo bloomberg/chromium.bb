@@ -41,6 +41,7 @@ std::string SerializeSecurityInfo(const SSLStatus& ssl_status) {
   pickle.WriteUInt32(ssl_status.num_unknown_scts);
   pickle.WriteUInt32(ssl_status.num_invalid_scts);
   pickle.WriteUInt32(ssl_status.num_valid_scts);
+  pickle.WriteBool(ssl_status.pkp_bypassed);
   return std::string(static_cast<const char*>(pickle.data()), pickle.size());
 }
 
@@ -62,7 +63,8 @@ bool DeserializeSecurityInfo(const std::string& state, SSLStatus* ssl_status) {
       !iter.ReadInt(&ssl_status->connection_status) ||
       !iter.ReadUInt32(&ssl_status->num_unknown_scts) ||
       !iter.ReadUInt32(&ssl_status->num_invalid_scts) ||
-      !iter.ReadUInt32(&ssl_status->num_valid_scts)) {
+      !iter.ReadUInt32(&ssl_status->num_valid_scts) ||
+      !iter.ReadBool(&ssl_status->pkp_bypassed)) {
     *ssl_status = SSLStatus();
     return false;
   }

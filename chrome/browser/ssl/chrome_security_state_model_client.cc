@@ -114,6 +114,7 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
   if (!security_info.scheme_is_cryptographic) {
     return security_style;
   }
+  security_style_explanations->pkp_bypassed = security_info.pkp_bypassed;
 
   if (security_info.sha1_deprecation_status ==
       SecurityStateModel::DEPRECATED_SHA1_MAJOR) {
@@ -232,6 +233,7 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
   state->cert_status = ssl.cert_status;
   state->connection_status = ssl.connection_status;
   state->security_bits = ssl.security_bits;
+  state->pkp_bypassed = ssl.pkp_bypassed;
   state->sct_verify_statuses.clear();
   state->sct_verify_statuses.insert(state->sct_verify_statuses.end(),
                                     ssl.num_unknown_scts,

@@ -46,6 +46,9 @@ struct SecurityStyleExplanations {
 
   bool scheme_is_cryptographic;
 
+  // True if PKP was bypassed due to a local trust anchor.
+  bool pkp_bypassed;
+
   std::vector<SecurityStyleExplanation> secure_explanations;
   std::vector<SecurityStyleExplanation> unauthenticated_explanations;
   std::vector<SecurityStyleExplanation> broken_explanations;

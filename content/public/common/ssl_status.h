@@ -48,7 +48,8 @@ struct CONTENT_EXPORT SSLStatus {
            content_status == status.content_status &&
            num_unknown_scts == status.num_unknown_scts &&
            num_invalid_scts == status.num_invalid_scts &&
-           num_valid_scts == status.num_valid_scts;
+           num_valid_scts == status.num_valid_scts &&
+           pkp_bypassed == status.pkp_bypassed;
   }
 
   content::SecurityStyle security_style;
@@ -64,6 +65,8 @@ struct CONTENT_EXPORT SSLStatus {
   uint32_t num_unknown_scts;
   uint32_t num_invalid_scts;
   uint32_t num_valid_scts;
+  // True if PKP was bypassed due to a local trust anchor.
+  bool pkp_bypassed;
 };
 
 }  // namespace content
