@@ -105,7 +105,7 @@ void EntryMetadata::SetLastUsedTime(const base::Time& last_used_time) {
     return;
   }
 
-  last_used_time_seconds_since_epoch_ = base::checked_cast<uint32_t>(
+  last_used_time_seconds_since_epoch_ = base::saturated_cast<uint32_t>(
       (last_used_time - base::Time::UnixEpoch()).InSeconds());
   // Avoid accidental nullity.
   if (last_used_time_seconds_since_epoch_ == 0)

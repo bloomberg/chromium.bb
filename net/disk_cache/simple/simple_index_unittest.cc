@@ -34,8 +34,7 @@ const uint64_t kTestEntrySize = 789;
 
 }  // namespace
 
-
-class EntryMetadataTest  : public testing::Test {
+class EntryMetadataTest : public testing::Test {
  public:
   EntryMetadata NewEntryMetadataWithValues() {
     return EntryMetadata(kTestLastUsedTime, kTestEntrySize);
@@ -183,6 +182,25 @@ TEST_F(EntryMetadataTest, Basics) {
   EXPECT_LT(new_time - base::TimeDelta::FromSeconds(2),
             entry_metadata.GetLastUsedTime());
   EXPECT_GT(new_time + base::TimeDelta::FromSeconds(2),
+            entry_metadata.GetLastUsedTime());
+}
+
+// Tests that setting an unusually small/large last used time results in
+// truncation (rather than crashing).
+TEST_F(EntryMetadataTest, SaturatedLastUsedTime) {
+  EntryMetadata entry_metadata;
+
+  // Set a time that is too large to be represented internally as 32-bit unix
+  // timestamp. Will saturate to a large timestamp (in year 2106).
+  entry_metadata.SetLastUsedTime(base::Time::Max());
+  EXPECT_EQ(INT64_C(15939440895000000),
+            entry_metadata.GetLastUsedTime().ToInternalValue());
+
+  // Set a time that is too small to be represented by a unix timestamp (before
+  // 1970).
+  entry_metadata.SetLastUsedTime(
+      base::Time::FromInternalValue(7u));  // This is a date in 1601.
+  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1),
             entry_metadata.GetLastUsedTime());
 }
 
