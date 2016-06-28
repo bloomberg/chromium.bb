@@ -116,7 +116,7 @@ AutofillManager.prototype = {
    */
   getAddressList: assertNotReached,
 
-  /** @param {!AutofillManager.AddressEntry} address The address to remove.  */
+  /** @param {string} guid The guid of the address to remove.  */
   removeAddress: assertNotReached,
 
   /**
@@ -137,11 +137,11 @@ AutofillManager.prototype = {
    */
   getCreditCardList: assertNotReached,
 
-  /**
-   * @param {!AutofillManager.CreditCardEntry} creditCard The credit card to
-   *     remove.
-   */
+  /** @param {string} guid The GUID of the credit card to remove.  */
   removeCreditCard: assertNotReached,
+
+  /** @param {string} guid The GUID to credit card to remove from the cache. */
+  clearCachedCreditCard: assertNotReached,
 
   /**
    * Saves the given credit card.
@@ -247,8 +247,9 @@ AutofillManagerImpl.prototype = {
   },
 
   /** @override */
-  removeAddress: function(address) {
-    chrome.autofillPrivate.removeEntry(/** @type {string} */(address.guid));
+  removeAddress: function(guid) {
+    assert(guid);
+    chrome.autofillPrivate.removeEntry(guid);
   },
 
   /** @override */
@@ -267,8 +268,15 @@ AutofillManagerImpl.prototype = {
   },
 
   /** @override */
-  removeCreditCard: function(creditCard) {
-    chrome.autofillPrivate.removeEntry(/** @type {string} */(creditCard.guid));
+  removeCreditCard: function(guid) {
+    assert(guid);
+    chrome.autofillPrivate.removeEntry(guid);
+  },
+
+  /** @override */
+  clearCachedCreditCard: function(guid) {
+    assert(guid);
+    chrome.autofillPrivate.maskCreditCard(guid);
   },
 
   /** @override */
@@ -326,6 +334,7 @@ Polymer({
  },
 
   listeners: {
+    'clear-credit-card': 'clearCreditCard_',
     'remove-address': 'removeAddress_',
     'remove-credit-card': 'removeCreditCard_',
     'remove-password-exception': 'removePasswordException_',
@@ -422,7 +431,7 @@ Polymer({
    * @private
    */
   removeAddress_: function(event) {
-    this.autofillManager_.removeAddress(event.detail);
+    this.autofillManager_.removeAddress(event.detail.guid);
   },
 
   /**
@@ -431,7 +440,16 @@ Polymer({
    * @private
    */
   removeCreditCard_: function(event) {
-    this.autofillManager_.removeCreditCard(event.detail);
+    this.autofillManager_.removeCreditCard(event.detail.guid);
+  },
+
+  /**
+   * Listens for the clear-credit-card event, and calls the private API.
+   * @param {!Event} event
+   * @private
+   */
+  clearCreditCard_: function(event) {
+    this.autofillManager_.clearCachedCreditCard(event.detail.guid);
   },
 
   /**

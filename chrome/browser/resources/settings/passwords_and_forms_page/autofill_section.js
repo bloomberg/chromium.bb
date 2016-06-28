@@ -119,6 +119,7 @@
       var creditCard = /** @type {!chrome.autofillPrivate.CreditCardEntry} */(
           menuEvent.model.item);
       this.$.menuRemoveCreditCard.hidden = !creditCard.metadata.isLocal;
+      this.$.menuClearCreditCard.hidden = !creditCard.metadata.isCached;
       this.$.creditCardSharedMenu.toggleMenu(
           Polymer.dom(e).localTarget, creditCard);
       e.stopPropagation();  // Prevent the tap event from closing the menu.
@@ -164,6 +165,16 @@
     onMenuRemoveCreditCardTap_: function() {
       var menu = this.$.creditCardSharedMenu;
       this.fire('remove-credit-card', menu.itemData);
+      menu.closeMenu();
+    },
+
+    /**
+     * Handles tapping on the "Clear copy" button for cached credit cards.
+     * @private
+     */
+    onMenuClearCreditCardTap_: function() {
+      var menu = this.$.creditCardSharedMenu;
+      this.fire('clear-credit-card', menu.itemData);
       menu.closeMenu();
     },
 

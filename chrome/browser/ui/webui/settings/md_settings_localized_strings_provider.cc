@@ -688,6 +688,7 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"addCreditCard", IDS_SETTINGS_AUTOFILL_ADD_CREDIT_CARD_BUTTON},
       {"editCreditCard", IDS_SETTINGS_CREDIT_CARD_EDIT},
       {"removeCreditCard", IDS_SETTINGS_CREDIT_CARD_REMOVE},
+      {"clearCreditCard", IDS_SETTINGS_CREDIT_CARD_CLEAR},
       {"creditCardType", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL},
       {"creditCardExpiration", IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE},
       {"creditCardName", IDS_SETTINGS_NAME_ON_CREDIT_CARD},
