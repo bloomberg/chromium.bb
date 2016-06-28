@@ -1026,6 +1026,50 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Arc OptIn cancelation reason.</summary>
 </histogram>
 
+<histogram name="Arc.Provisioning.Result" enum="ArcProvisioningResult">
+  <owner>alexchau@google.com</owner>
+  <owner>phweiss@google.com</owner>
+  <summary>
+    The result (success or the type of failure) of ARC provisioning.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Provisioning.TimeDelta.Failure.Managed" units="ms">
+  <owner>alexchau@google.com</owner>
+  <owner>phweiss@google.com</owner>
+  <summary>
+    Elapsed time from click on &quot;Sign in&quot; to call to onSignInFailed for
+    managed users.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Provisioning.TimeDelta.Failure.Unmanaged" units="ms">
+  <owner>alexchau@google.com</owner>
+  <owner>phweiss@google.com</owner>
+  <summary>
+    Elapsed time from click on &quot;Sign in&quot; to call to onSignInFailed for
+    unmanaged users.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Provisioning.TimeDelta.Success.Managed" units="ms">
+  <owner>alexchau@google.com</owner>
+  <owner>phweiss@google.com</owner>
+  <summary>
+    Elapsed time from click on &quot;Sign in&quot; to successful call to
+    onSignInComplete for managed users.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Provisioning.TimeDelta.Success.Unmanaged" units="ms">
+  <owner>alexchau@google.com</owner>
+  <owner>phweiss@google.com</owner>
+  <summary>
+    Elapsed time from click on &quot;Sign in&quot; to successful call to
+    onSignInComplete for unmanaged users.
+  </summary>
+</histogram>
+
 <histogram name="Arc.ShutdownTime" units="ms">
   <owner>elijahtaylor@google.com</owner>
   <summary>
@@ -65296,6 +65340,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="ArcOptInCancel" type="int">
   <summary>Defines Arc OptIn cancel reason</summary>
   <int value="0" label="Canceled by user"/>
+  <int value="1" label="Unclassified failure"/>
+  <int value="2" label="Network failure"/>
+  <int value="3" label="GMS Services are not available"/>
+  <int value="4" label="Bad authentication returned by server"/>
+  <int value="5" label="GMS Core is not available"/>
+  <int value="6" label="Cloud provision flow failed"/>
+</enum>
+
+<enum name="ArcProvisioningResult" type="int">
+  <summary>Defines Arc Provisioning success and failure reasons</summary>
+  <int value="0" label="Success"/>
   <int value="1" label="Unclassified failure"/>
   <int value="2" label="Network failure"/>
   <int value="3" label="GMS Services are not available"/>

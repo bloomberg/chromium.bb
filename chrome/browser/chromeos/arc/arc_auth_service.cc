@@ -243,6 +243,7 @@ void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
 void ArcAuthService::OnSignInComplete() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK_EQ(state_, State::ACTIVE);
+  DCHECK(!sign_in_time_.is_null());
 
   if (!IsOptInVerificationDisabled() &&
       !profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
@@ -252,37 +253,50 @@ void ArcAuthService::OnSignInComplete() {
 
   profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
   CloseUI();
+  UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, true,
+                           IsAccountManaged(profile_));
+  UpdateProvisioningResultUMA(ProvisioningResult::SUCCESS);
 }
 
 void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK_EQ(state_, State::ACTIVE);
+  DCHECK(!sign_in_time_.is_null());
 
+  UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, false,
+                           IsAccountManaged(profile_));
   int error_message_id;
   switch (reason) {
     case arc::mojom::ArcSignInFailureReason::NETWORK_ERROR:
       error_message_id = IDS_ARC_SIGN_IN_NETWORK_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
+      UpdateProvisioningResultUMA(ProvisioningResult::NETWORK_ERROR);
       break;
     case arc::mojom::ArcSignInFailureReason::SERVICE_UNAVAILABLE:
       error_message_id = IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::SERVICE_UNAVAILABLE);
+      UpdateProvisioningResultUMA(ProvisioningResult::SERVICE_UNAVAILABLE);
       break;
     case arc::mojom::ArcSignInFailureReason::BAD_AUTHENTICATION:
       error_message_id = IDS_ARC_SIGN_IN_BAD_AUTHENTICATION_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::BAD_AUTHENTICATION);
+      UpdateProvisioningResultUMA(ProvisioningResult::BAD_AUTHENTICATION);
       break;
     case arc::mojom::ArcSignInFailureReason::GMS_CORE_NOT_AVAILABLE:
       error_message_id = IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::GMS_CORE_NOT_AVAILABLE);
+      UpdateProvisioningResultUMA(ProvisioningResult::GMS_CORE_NOT_AVAILABLE);
       break;
     case arc::mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL:
       error_message_id = IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
+      UpdateProvisioningResultUMA(
+          ProvisioningResult::CLOUD_PROVISION_FLOW_FAIL);
       break;
     default:
       error_message_id = IDS_ARC_SIGN_IN_UNKNOWN_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::UNKNOWN_ERROR);
+      UpdateProvisioningResultUMA(ProvisioningResult::UNKNOWN_ERROR);
   }
 
   if (reason == arc::mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL) {
@@ -589,6 +603,8 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
     ShutdownBridgeAndCloseUI();
     return;
   }
+
+  sign_in_time_ = base::Time::Now();
 
   SetUIPage(UIPage::START_PROGRESS, base::string16());
   ShutdownBridge();

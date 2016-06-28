@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_OPTIN_UMA_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_OPTIN_UMA_H_
 
+namespace base {
+class TimeDelta;
+}
+
 namespace arc {
 
 // These enums are used to define the buckets for an enumerated UMA histogram
@@ -31,9 +35,24 @@ enum class OptInCancelReason {
   SIZE,                             // The size of this enum; keep last.
 };
 
+enum class ProvisioningResult {
+  SUCCESS = 0,                    // Provisioning was successful.
+  UNKNOWN_ERROR = 1,              // Unclassified failure.
+  NETWORK_ERROR = 2,              // Network failure.
+  SERVICE_UNAVAILABLE = 3,        // GMS Services are not available.
+  BAD_AUTHENTICATION = 4,         // Bad authentication returned by server.
+  GMS_CORE_NOT_AVAILABLE = 5,     // GMS Core is not available.
+  CLOUD_PROVISION_FLOW_FAIL = 6,  // Cloud provision flow failed.
+  SIZE,                           // The size of this enum; keep last.
+};
+
 void UpdateOptInActionUMA(OptInActionType type);
 void UpdateOptInCancelUMA(OptInCancelReason reason);
 void UpdateEnabledStateUMA(bool enabled);
+void UpdateProvisioningResultUMA(ProvisioningResult result);
+void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
+                              bool success,
+                              bool managed);
 
 }  // namespace arc
 

@@ -229,6 +229,8 @@ class ArcAuthService : public ArcService,
   std::string account_id_;
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
 
+  base::Time sign_in_time_;
+
   base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthService);

@@ -22,4 +22,25 @@ void UpdateEnabledStateUMA(bool enabled) {
   UMA_HISTOGRAM_BOOLEAN("Arc.State", enabled);
 }
 
+void UpdateProvisioningResultUMA(ProvisioningResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Arc.Provisioning.Result", static_cast<int>(result),
+                            static_cast<int>(ProvisioningResult::SIZE));
+}
+
+void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
+                              bool success,
+                              bool managed) {
+  std::string histogram_name = "Arc.Provisioning.TimeDelta.";
+  histogram_name += success ? "Success." : "Failure.";
+  histogram_name += managed ? "Managed" : "Unmanaged";
+  // The macro UMA_HISTOGRAM_CUSTOM_TIMES expects a constant string, but since
+  // this measurement happens very infrequently, we do not need to use a macro
+  // here.
+  base::Histogram::FactoryTimeGet(
+      histogram_name, base::TimeDelta::FromSeconds(1),
+      base::TimeDelta::FromMinutes(6), 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->AddTime(elapsed_time);
+}
+
 }  // namespace arc
