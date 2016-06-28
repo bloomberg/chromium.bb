@@ -2188,7 +2188,8 @@ void AXNodeObject::computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedCh
         return;
 
     Vector<String> idVector;
-    tokenVectorFromAttribute(idVector, aria_ownsAttr);
+    if (canHaveChildren())
+        tokenVectorFromAttribute(idVector, aria_ownsAttr);
 
     axObjectCache().updateAriaOwns(this, idVector, ownedChildren);
 }

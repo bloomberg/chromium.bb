@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<style>
+.hideAllContainers .container { display: none; }
+
+button {
+  display: block;
+}
+</style>
+
+<div class="container" id="container1" role="group" aria-label="Container">
+    <div id="heading1" role="heading" aria-owns="menu1">heading</div>
+    <div id="menu1" role="menu">menu</div>
+</div>
+
+<script>
+test(function(t)
+{
+    // No problem with using aria-owns to put a menu inside a heading.
+    var axHeading1 = accessibilityController.accessibleElementById("heading1");
+    assert_equals(axHeading1.name, "heading menu");
+    var axContainer1 = accessibilityController.accessibleElementById("container1");
+    assert_equals(axContainer1.childrenCount, 1);
+    assert_equals(axContainer1.childAtIndex(0).role, "AXRole: AXHeading");
+}, "Aria-owns should re-parent a target when the source role allows children.");
+</script>
+
+<div class="container" id="container2" role="group" aria-label="Container">
+    <div id="button2" role="button" aria-owns="menu2">button</div>
+    <div id="menu2" role="menu">menu</div>
+</div>
+
+<script>
+test(function(t)
+{
+    // A button can't have children, so we should ignore aria-owns.
+    var axButton2 = accessibilityController.accessibleElementById("button2");
+    assert_equals(axButton2.name, "button");
+    var axContainer2 = accessibilityController.accessibleElementById("container2");
+    assert_equals(axContainer2.childrenCount, 2);
+    assert_equals(axContainer2.childAtIndex(0).role, "AXRole: AXButton");
+    assert_equals(axContainer2.childAtIndex(1).role, "AXRole: AXMenu");
+}, "Aria-owns doesn't move an element if the role doesn't allow children.");
+</script>
+
+<script>
+if (window.testRunner)
+    document.body.className = "hideAllContainers";
+</script>
