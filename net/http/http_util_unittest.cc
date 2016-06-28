@@ -178,6 +178,26 @@ TEST(HttpUtilTest, HeadersIterator_MalformedLine) {
   EXPECT_FALSE(it.GetNext());
 }
 
+TEST(HttpUtilTest, HeadersIterator_MalformedName) {
+  std::string headers = "[ignore me] /: 3\r\n";
+
+  HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\r\n");
+
+  EXPECT_FALSE(it.GetNext());
+}
+
+TEST(HttpUtilTest, HeadersIterator_MalformedNameFollowedByValidLine) {
+  std::string headers = "[ignore me] /: 3\r\nbar: 4\n";
+
+  HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\r\n");
+
+  ASSERT_TRUE(it.GetNext());
+  EXPECT_EQ(std::string("bar"), it.name());
+  EXPECT_EQ(std::string("4"), it.values());
+
+  EXPECT_FALSE(it.GetNext());
+}
+
 TEST(HttpUtilTest, HeadersIterator_AdvanceTo) {
   std::string headers = "foo: 1\r\n: 2\r\n3\r\nbar: 4";
 

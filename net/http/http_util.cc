@@ -910,7 +910,7 @@ bool HttpUtil::HeadersIterator::GetNext() {
       continue;
 
     TrimLWS(&name_begin_, &name_end_);
-    if (name_begin_ == name_end_)
+    if (!IsToken(name_begin_, name_end_))
       continue;  // skip malformed header
 
     values_begin_ = colon + 1;
