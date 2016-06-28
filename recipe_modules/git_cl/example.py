@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -14,6 +15,8 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.git_cl.upload(u"Do the thing foobar\nNow with emoji: 😄")
+  api.git_cl.issue()
   result = api.git_cl.get_description(
       patch='https://code.review/123', codereview='rietveld', suffix='build')
   api.git_cl.set_description(

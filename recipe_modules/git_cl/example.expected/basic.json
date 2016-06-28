@@ -2,6 +2,23 @@
   {
     "cmd": [
       "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "upload",
+      "--message-file",
+      "Do the thing foobar\nNow with emoji: \ud83d\ude04"
+    ],
+    "name": "git_cl upload"
+  },
+  {
+    "cmd": [
+      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "issue"
+    ],
+    "name": "git_cl issue",
+    "stdout": "/path/to/tmp/"
+  },
+  {
+    "cmd": [
+      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
       "description",
       "-d",
       "--rietveld",
