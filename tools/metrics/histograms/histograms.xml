@@ -42186,6 +42186,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.Events" enum="PrecacheEvents">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Enumerates the various failure reasons and events of interest for
+    precaching. The events are persisted when the native library is not loaded,
+    and recorded when the library loads next time.
+  </summary>
+</histogram>
+
 <histogram name="Precache.Fetch.FailureReasons">
   <owner>twifkak@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -85632,6 +85642,28 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Shortcut. Offer. Rollback unavailable."/>
   <int value="4" label="Shortcut. Offer. Rollback available."/>
   <int value="5" label="Shortcut. Restart required."/>
+</enum>
+
+<enum name="PrecacheEvents" type="int">
+  <int value="0" label="PRECACHE_TASK_STARTED_PERIODIC"/>
+  <int value="1" label="PRECACHE_TASK_STARTED_ONEOFF"/>
+  <int value="2" label="PRECACHE_TASK_STARTED_DUPLICATE"/>
+  <int value="3" label="PRECACHE_TASK_LOAD_LIBRARY_FAIL"/>
+  <int value="4" label="PRECACHE_CANCEL_NO_UNMETERED_NETWORK"/>
+  <int value="5" label="PRECACHE_CANCEL_NO_POWER"/>
+  <int value="6" label="PRECACHE_CANCEL_DISABLED_PREF"/>
+  <int value="7" label="DISABLED_IN_PRECACHE_PREF"/>
+  <int value="8" label="SYNC_SERVICE_TIMEOUT"/>
+  <int value="9" label="PRECACHE_SESSION_TIMEOUT"/>
+  <int value="10" label="PRECACHE_SESSION_STARTED"/>
+  <int value="11" label="PERIODIC_TASK_SCHEDULE_BOOT_SIGNAL"/>
+  <int value="12" label="PERIODIC_TASK_SCHEDULE_BOOT_SIGNAL_FAIL"/>
+  <int value="13" label="PERIODIC_TASK_SCHEDULE_UPGRADE"/>
+  <int value="14" label="PERIODIC_TASK_SCHEDULE_UPGRADE_FAIL"/>
+  <int value="15" label="ONEOFF_TASK_SCHEDULE"/>
+  <int value="16" label="ONEOFF_TASK_SCHEDULE_FAIL"/>
+  <int value="17" label="PRECACHE_SESSION_COMPLETE"/>
+  <int value="18" label="PRECACHE_SESSION_INCOMPLETE"/>
 </enum>
 
 <enum name="PreconnectedNavigation" type="int">
