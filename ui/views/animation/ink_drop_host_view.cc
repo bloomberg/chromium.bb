@@ -38,7 +38,8 @@ const int InkDropHostView::kInkDropSmallCornerRadius = 2;
 
 // An EventHandler that is guaranteed to be invoked and is not prone to
 // InkDropHostView descendents who do not call
-// InkDropHostView::OnGestureEvent().
+// InkDropHostView::OnGestureEvent().  Only one instance of this class can exist
+// at any given time for each ink drop host view.
 //
 // TODO(bruthig): Consider getting rid of this class.
 class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
@@ -49,6 +50,8 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
         ink_drop_(ink_drop) {}
 
   ~InkDropGestureHandler() override {}
+
+  void SetInkDrop(InkDrop* ink_drop) { ink_drop_ = ink_drop; }
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override {
@@ -241,7 +244,10 @@ bool InkDropHostView::ShouldShowInkDropForFocus() const {
 void InkDropHostView::SetHasInkDrop(bool has_an_ink_drop) {
   if (has_an_ink_drop) {
     ink_drop_.reset(new InkDropImpl(this));
-    gesture_handler_.reset(new InkDropGestureHandler(this, ink_drop_.get()));
+    if (!gesture_handler_)
+      gesture_handler_.reset(new InkDropGestureHandler(this, ink_drop_.get()));
+    else
+      gesture_handler_->SetInkDrop(ink_drop_.get());
   } else {
     gesture_handler_.reset();
     ink_drop_.reset(new InkDropStub());

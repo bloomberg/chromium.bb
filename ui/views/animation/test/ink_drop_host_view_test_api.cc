@@ -12,9 +12,17 @@ InkDropHostViewTestApi::InkDropHostViewTestApi(InkDropHostView* host_view)
 
 InkDropHostViewTestApi::~InkDropHostViewTestApi() {}
 
+void InkDropHostViewTestApi::SetHasInkDrop(bool has_an_ink_drop) {
+  host_view_->SetHasInkDrop(has_an_ink_drop);
+}
+
 void InkDropHostViewTestApi::SetInkDrop(std::unique_ptr<InkDrop> ink_drop) {
   host_view_->SetHasInkDrop(true);
   host_view_->ink_drop_ = std::move(ink_drop);
+}
+
+bool InkDropHostViewTestApi::HasGestureHandler() const {
+  return host_view_->gesture_handler_ != nullptr;
 }
 
 gfx::Point InkDropHostViewTestApi::GetInkDropCenterBasedOnLastEvent() const {

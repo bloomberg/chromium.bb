@@ -57,5 +57,19 @@ TEST_F(InkDropHostViewTest, GetInkDropCenterBasedOnLastEventForLocatedEvent) {
   EXPECT_EQ(gfx::Point(5, 6), test_api_.GetInkDropCenterBasedOnLastEvent());
 }
 
+// Verifies that SetHasInkDrop() sets up gesture handling properly.
+TEST_F(InkDropHostViewTest, SetHasInkDropGestureHandler) {
+  EXPECT_FALSE(test_api_.HasGestureHandler());
+
+  test_api_.SetHasInkDrop(true);
+  EXPECT_TRUE(test_api_.HasGestureHandler());
+
+  test_api_.SetHasInkDrop(true);
+  EXPECT_TRUE(test_api_.HasGestureHandler());
+
+  test_api_.SetHasInkDrop(false);
+  EXPECT_FALSE(test_api_.HasGestureHandler());
+}
+
 }  // namespace test
 }  // namespace views

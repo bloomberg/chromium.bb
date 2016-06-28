@@ -21,8 +21,12 @@ class InkDropHostViewTestApi {
   explicit InkDropHostViewTestApi(InkDropHostView* host_view);
   ~InkDropHostViewTestApi();
 
+  void SetHasInkDrop(bool has_an_ink_drop);
+
   void SetInkDrop(std::unique_ptr<InkDrop> ink_drop);
   InkDrop* ink_drop() { return host_view_->ink_drop(); }
+
+  bool HasGestureHandler() const;
 
   // Wrapper for InkDropHostView::GetInkDropCenterBasedOnLastEvent().
   gfx::Point GetInkDropCenterBasedOnLastEvent() const;
