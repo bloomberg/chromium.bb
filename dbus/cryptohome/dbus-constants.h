@@ -115,6 +115,7 @@ const char kCryptohomeGetLoginStatus[] = "GetLoginStatus";
 const char kCryptohomeGetTpmStatus[] = "GetTpmStatus";
 const char kCryptohomeGetEndorsementInfo[] = "GetEndorsementInfo";
 const char kCryptohomeRenameCryptohome[] = "RenameCryptohome";
+const char kCryptohomeGetAccountDiskUsage[] = "GetAccountDiskUsage";
 const char kCryptohomeGetFirmwareManagementParameters[] =
     "GetFirmwareManagementParameters";
 const char kCryptohomeSetFirmwareManagementParameters[] =

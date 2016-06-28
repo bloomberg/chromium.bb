@@ -315,3 +315,11 @@ message SetFirmwareManagementParametersRequest {
 
 message RemoveFirmwareManagementParametersRequest {
 }
+
+message GetAccountDiskUsageReply {
+  extend BaseReply {
+    optional GetAccountDiskUsageReply reply = 1009;
+  }
+  // The size of cryptohome in bytes.
+  optional int64 size = 1;
+}
