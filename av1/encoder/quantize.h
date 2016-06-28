@@ -47,7 +47,7 @@ struct AV1Common;
 
 void av1_frame_init_quantizer(struct AV1_COMP *cpi);
 
-void av1_init_plane_quantizers(struct AV1_COMP *cpi, MACROBLOCK *x);
+void av1_init_plane_quantizers(const struct AV1_COMP *cpi, MACROBLOCK *x);
 
 void av1_init_quantizer(struct AV1_COMP *cpi);
 

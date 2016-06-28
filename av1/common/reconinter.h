@@ -198,7 +198,7 @@ void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
 
 #if CONFIG_MOTION_VAR
 void av1_setup_obmc_mask(int length, const uint8_t *mask[2]);
-void av1_build_obmc_inter_prediction(AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int mi_row, int mi_col,
                                      int use_tmp_dst_buf,
                                      uint8_t *final_buf[MAX_MB_PLANE],
@@ -207,15 +207,15 @@ void av1_build_obmc_inter_prediction(AV1_COMMON *cm, MACROBLOCKD *xd,
                                      const int above_pred_stride[MAX_MB_PLANE],
                                      uint8_t *left_pred_buf[MAX_MB_PLANE],
                                      const int left_pred_stride[MAX_MB_PLANE]);
-void av1_build_prediction_by_above_preds(AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int mi_row, int mi_col,
                                          uint8_t *tmp_buf[MAX_MB_PLANE],
                                          const int tmp_stride[MAX_MB_PLANE]);
-void av1_build_prediction_by_left_preds(AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int mi_row, int mi_col,
                                         uint8_t *tmp_buf[MAX_MB_PLANE],
                                         const int tmp_stride[MAX_MB_PLANE]);
-void av1_build_obmc_inter_predictors_sb(AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int mi_row, int mi_col);
 #endif  // CONFIG_MOTION_VAR
 static INLINE int has_subpel_mv_component(const MODE_INFO *const mi,

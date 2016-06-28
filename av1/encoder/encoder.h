@@ -606,23 +606,22 @@ static INLINE int get_ref_frame_map_idx(const AV1_COMP *cpi,
     return cpi->alt_fb_idx;
 }
 
-static INLINE int get_ref_frame_buf_idx(const AV1_COMP *const cpi,
-                                        int ref_frame) {
+static INLINE int get_ref_frame_buf_idx(const AV1_COMP *cpi, int ref_frame) {
   const AV1_COMMON *const cm = &cpi->common;
   const int map_idx = get_ref_frame_map_idx(cpi, ref_frame);
   return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : INVALID_IDX;
 }
 
 static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
-    AV1_COMP *cpi, MV_REFERENCE_FRAME ref_frame) {
-  AV1_COMMON *const cm = &cpi->common;
+    const AV1_COMP *cpi, MV_REFERENCE_FRAME ref_frame) {
+  const AV1_COMMON *const cm = &cpi->common;
   const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
   return buf_idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[buf_idx].buf
                                 : NULL;
 }
 
 static INLINE const YV12_BUFFER_CONFIG *get_upsampled_ref(
-    AV1_COMP *cpi, const MV_REFERENCE_FRAME ref_frame) {
+    const AV1_COMP *cpi, const MV_REFERENCE_FRAME ref_frame) {
   // Use up-sampled reference frames.
   const int buf_idx =
       cpi->upsampled_ref_idx[get_ref_frame_map_idx(cpi, ref_frame)];
@@ -683,7 +682,7 @@ static INLINE int is_altref_enabled(const AV1_COMP *const cpi) {
          cpi->oxcf.enable_auto_arf;
 }
 
-static INLINE void set_ref_ptrs(AV1_COMMON *cm, MACROBLOCKD *xd,
+static INLINE void set_ref_ptrs(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 MV_REFERENCE_FRAME ref0,
                                 MV_REFERENCE_FRAME ref1) {
   xd->block_refs[0] =

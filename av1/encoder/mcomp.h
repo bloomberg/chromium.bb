@@ -128,10 +128,10 @@ int av1_refining_search_8p_c(const MACROBLOCK *x, MV *ref_mv, int error_per_bit,
 
 struct AV1_COMP;
 
-int av1_full_pixel_search(struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                          MV *mvp_full, int step_param, int error_per_bit,
-                          int *cost_list, const MV *ref_mv, MV *tmp_mv,
-                          int var_max, int rd);
+int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
+                          BLOCK_SIZE bsize, MV *mvp_full, int step_param,
+                          int error_per_bit, int *cost_list, const MV *ref_mv,
+                          MV *tmp_mv, int var_max, int rd);
 
 #ifdef __cplusplus
 }  // extern "C"

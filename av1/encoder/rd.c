@@ -200,7 +200,7 @@ static int compute_rd_thresh_factor(int qindex, aom_bit_depth_t bit_depth) {
   return AOMMAX((int)(pow(q, RD_THRESH_POW) * 5.12), 8);
 }
 
-void av1_initialize_me_consts(AV1_COMP *cpi, MACROBLOCK *x, int qindex) {
+void av1_initialize_me_consts(const AV1_COMP *cpi, MACROBLOCK *x, int qindex) {
 #if CONFIG_AOM_HIGHBITDEPTH
   switch (cpi->common.bit_depth) {
     case AOM_BITS_8:
@@ -484,7 +484,7 @@ void av1_get_entropy_contexts(BLOCK_SIZE bsize, TX_SIZE tx_size,
   }
 }
 
-void av1_mv_pred(AV1_COMP *cpi, MACROBLOCK *x, uint8_t *ref_y_buffer,
+void av1_mv_pred(const AV1_COMP *cpi, MACROBLOCK *x, uint8_t *ref_y_buffer,
                  int ref_y_stride, int ref_frame, BLOCK_SIZE block_size) {
   int i;
   int zero_seen = 0;

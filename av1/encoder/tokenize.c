@@ -329,7 +329,7 @@ const struct av1_token av1_coef_encodings[ENTROPY_TOKENS] = {
 };
 
 struct tokenize_b_args {
-  AV1_COMP *cpi;
+  const AV1_COMP *cpi;
   ThreadData *td;
   TOKENEXTRA **tp;
 };
@@ -378,7 +378,7 @@ static INLINE int get_tx_eob(const struct segmentation *seg, int segment_id,
 static void tokenize_b(int plane, int block, int blk_row, int blk_col,
                        BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
   struct tokenize_b_args *const args = arg;
-  AV1_COMP *cpi = args->cpi;
+  const AV1_COMP *cpi = args->cpi;
   ThreadData *const td = args->td;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -498,9 +498,9 @@ int av1_has_high_freq_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
   return result;
 }
 
-void av1_tokenize_sb(AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t, int dry_run,
-                     BLOCK_SIZE bsize) {
-  AV1_COMMON *const cm = &cpi->common;
+void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
+                     int dry_run, BLOCK_SIZE bsize) {
+  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;

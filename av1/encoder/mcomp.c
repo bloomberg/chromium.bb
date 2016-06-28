@@ -2176,7 +2176,7 @@ int av1_full_pixel_diamond(const AV1_COMP *cpi, MACROBLOCK *x, MV *mvp_full,
 #define MIN_INTERVAL 1
 // Runs an limited range exhaustive mesh search using a pattern set
 // according to the encode speed profile.
-static int full_pixel_exhaustive(AV1_COMP *cpi, MACROBLOCK *x,
+static int full_pixel_exhaustive(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  MV *centre_mv_full, int sadpb, int *cost_list,
                                  const aom_variance_fn_ptr_t *fn_ptr,
                                  const MV *ref_mv, MV *dst_mv) {
@@ -2547,7 +2547,7 @@ int av1_refining_search_8p_c(const MACROBLOCK *x, MV *ref_mv, int error_per_bit,
 }
 
 #define MIN_EX_SEARCH_LIMIT 128
-static int is_exhaustive_allowed(AV1_COMP *cpi, MACROBLOCK *x) {
+static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const int max_ex =
       AOMMAX(MIN_EX_SEARCH_LIMIT,
@@ -2558,13 +2558,13 @@ static int is_exhaustive_allowed(AV1_COMP *cpi, MACROBLOCK *x) {
          (*x->ex_search_count_ptr <= max_ex) && !cpi->rc.is_src_frame_alt_ref;
 }
 
-int av1_full_pixel_search(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
+int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                           MV *mvp_full, int step_param, int error_per_bit,
                           int *cost_list, const MV *ref_mv, MV *tmp_mv,
                           int var_max, int rd) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const SEARCH_METHODS method = sf->mv.search_method;
-  aom_variance_fn_ptr_t *fn_ptr = &cpi->fn_ptr[bsize];
+  const aom_variance_fn_ptr_t *const fn_ptr = &cpi->fn_ptr[bsize];
   int var = 0;
   if (cost_list) {
     cost_list[0] = INT_MAX;

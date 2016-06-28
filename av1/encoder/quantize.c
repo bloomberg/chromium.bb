@@ -377,10 +377,10 @@ void av1_init_quantizer(AV1_COMP *cpi) {
   }
 }
 
-void av1_init_plane_quantizers(AV1_COMP *cpi, MACROBLOCK *x) {
+void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
-  QUANTS *const quants = &cpi->quants;
+  const QUANTS *const quants = &cpi->quants;
   const int segment_id = xd->mi[0]->mbmi.segment_id;
   const int qindex = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
   const int rdmult = av1_compute_rd_mult(cpi, qindex + cm->y_dc_delta_q);

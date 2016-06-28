@@ -51,7 +51,7 @@ int av1_has_high_freq_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 struct AV1_COMP;
 struct ThreadData;
 
-void av1_tokenize_sb(struct AV1_COMP *cpi, struct ThreadData *td,
+void av1_tokenize_sb(const struct AV1_COMP *cpi, struct ThreadData *td,
                      TOKENEXTRA **t, int dry_run, BLOCK_SIZE bsize);
 
 extern const int16_t *av1_dct_value_cost_ptr;

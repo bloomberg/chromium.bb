@@ -36,12 +36,12 @@ struct macroblock_plane {
   struct buf_2d src;
 
   // Quantizer setings
-  int16_t *quant_fp;
-  int16_t *round_fp;
-  int16_t *quant;
-  int16_t *quant_shift;
-  int16_t *zbin;
-  int16_t *round;
+  const int16_t *quant_fp;
+  const int16_t *round_fp;
+  const int16_t *quant;
+  const int16_t *quant_shift;
+  const int16_t *zbin;
+  const int16_t *round;
 
   int64_t quant_thred[2];
 };

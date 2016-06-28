@@ -355,7 +355,8 @@ static INLINE YV12_BUFFER_CONFIG *get_ref_frame(AV1_COMMON *cm, int index) {
   return &cm->buffer_pool->frame_bufs[cm->ref_frame_map[index]].buf;
 }
 
-static INLINE YV12_BUFFER_CONFIG *get_frame_new_buffer(AV1_COMMON *cm) {
+static INLINE YV12_BUFFER_CONFIG *get_frame_new_buffer(
+    const AV1_COMMON *const cm) {
   return &cm->buffer_pool->frame_bufs[cm->new_fb_idx].buf;
 }
 
