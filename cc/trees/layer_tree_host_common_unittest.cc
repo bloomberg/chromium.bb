@@ -1150,9 +1150,12 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
         root, root->bounds(), translate, &render_surface_layer_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-    EXPECT_EQ(translate, root->draw_properties().target_space_transform);
-    EXPECT_EQ(translate, child->draw_properties().target_space_transform);
-    EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        translate, root->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        translate, child->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
+                                    root->render_surface()->draw_transform());
   }
 
   gfx::Transform scale;
@@ -1163,9 +1166,12 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
         root, root->bounds(), scale, &render_surface_layer_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-    EXPECT_EQ(scale, root->draw_properties().target_space_transform);
-    EXPECT_EQ(scale, child->draw_properties().target_space_transform);
-    EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        scale, root->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        scale, child->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
+                                    root->render_surface()->draw_transform());
   }
 
   gfx::Transform rotate;
@@ -1176,9 +1182,12 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
         root, root->bounds(), rotate, &render_surface_layer_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-    EXPECT_EQ(rotate, root->draw_properties().target_space_transform);
-    EXPECT_EQ(rotate, child->draw_properties().target_space_transform);
-    EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        rotate, root->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        rotate, child->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
+                                    root->render_surface()->draw_transform());
   }
 
   gfx::Transform composite;
@@ -1191,9 +1200,12 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
         root, root->bounds(), composite, &render_surface_layer_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-    EXPECT_EQ(composite, root->draw_properties().target_space_transform);
-    EXPECT_EQ(composite, child->draw_properties().target_space_transform);
-    EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        composite, root->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        composite, child->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
+                                    root->render_surface()->draw_transform());
   }
 
   // Verify it composes correctly with device scale.
@@ -1208,11 +1220,14 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     gfx::Transform device_scaled_translate = translate;
     device_scaled_translate.Scale(device_scale_factor, device_scale_factor);
-    EXPECT_EQ(device_scaled_translate,
-              root->draw_properties().target_space_transform);
-    EXPECT_EQ(device_scaled_translate,
-              child->draw_properties().target_space_transform);
-    EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        device_scaled_translate,
+        root->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        device_scaled_translate,
+        child->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
+                                    root->render_surface()->draw_transform());
   }
 
   // Verify it composes correctly with page scale.
@@ -1228,11 +1243,12 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     gfx::Transform page_scaled_translate = translate;
     page_scaled_translate.Scale(page_scale_factor, page_scale_factor);
-    EXPECT_EQ(page_scaled_translate,
-              root->draw_properties().target_space_transform);
-    EXPECT_EQ(page_scaled_translate,
-              child->draw_properties().target_space_transform);
-    EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        page_scaled_translate, root->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        page_scaled_translate, child->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
+                                    root->render_surface()->draw_transform());
   }
 
   // Verify that it composes correctly with transforms directly on root layer.
@@ -1250,7 +1266,8 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
         compositeSquared, root->draw_properties().target_space_transform);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         compositeSquared, child->draw_properties().target_space_transform);
-    EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
+                                    root->render_surface()->draw_transform());
   }
 }
 
@@ -2587,8 +2604,8 @@ TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
   EXPECT_FALSE(leaf_node->is_clipped());
   EXPECT_TRUE(leaf_node->render_target()->is_clipped());
   EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->drawable_content_rect());
-  EXPECT_EQ(expected_leaf_draw_transform_with_surfaces,
-            leaf_node->DrawTransform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_leaf_draw_transform_with_surfaces,
+                                  leaf_node->DrawTransform());
 
   root->SetHasRenderSurface(true);
   child->SetHasRenderSurface(true);
@@ -2598,8 +2615,8 @@ TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
   EXPECT_TRUE(leaf_node->is_clipped());
   EXPECT_EQ(gfx::Rect(6, 6, 396, 396), leaf_node->clip_rect());
   EXPECT_EQ(gfx::Rect(30, 30, 372, 372), leaf_node->drawable_content_rect());
-  EXPECT_EQ(expected_leaf_draw_transform_without_surfaces,
-            leaf_node->DrawTransform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_leaf_draw_transform_without_surfaces,
+                                  leaf_node->DrawTransform());
 
   root->SetHasRenderSurface(true);
   child->SetHasRenderSurface(true);
@@ -2609,8 +2626,8 @@ TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
   EXPECT_FALSE(leaf_node->is_clipped());
   EXPECT_TRUE(leaf_node->render_target()->is_clipped());
   EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->drawable_content_rect());
-  EXPECT_EQ(expected_leaf_draw_transform_with_surfaces,
-            leaf_node->DrawTransform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_leaf_draw_transform_with_surfaces,
+                                  leaf_node->DrawTransform());
 }
 
 TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
@@ -6722,7 +6739,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
   EXPECT_EQ(scroll_child->clip_rect(), gfx::Rect(15, 15, 75, 75));
   gfx::Transform scale;
   scale.Scale(1.5f, 1.5f);
-  EXPECT_EQ(scroll_child->DrawTransform(), scale);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(scroll_child->DrawTransform(), scale);
 }
 
 TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
@@ -7054,23 +7071,27 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
 
   gfx::Transform expected_fixed_draw_transform;
   expected_fixed_draw_transform.Translate(10.f, 15.f);
-  EXPECT_EQ(expected_fixed_draw_transform,
-            draw_property_utils::DrawTransform(fixed, tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_fixed_draw_transform,
+      draw_property_utils::DrawTransform(fixed, tree));
 
   gfx::Transform expected_fixed_screen_space_transform;
   expected_fixed_screen_space_transform.Translate(17.f, 24.f);
-  EXPECT_EQ(expected_fixed_screen_space_transform,
-            draw_property_utils::ScreenSpaceTransform(fixed, tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_fixed_screen_space_transform,
+      draw_property_utils::ScreenSpaceTransform(fixed, tree));
 
   gfx::Transform expected_child_draw_transform;
   expected_child_draw_transform.Translate(11.f, 17.f);
-  EXPECT_EQ(expected_child_draw_transform,
-            draw_property_utils::DrawTransform(child, tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_child_draw_transform,
+      draw_property_utils::DrawTransform(child, tree));
 
   gfx::Transform expected_child_screen_space_transform;
   expected_child_screen_space_transform.Translate(18.f, 26.f);
-  EXPECT_EQ(expected_child_screen_space_transform,
-            draw_property_utils::ScreenSpaceTransform(child, tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_child_screen_space_transform,
+      draw_property_utils::ScreenSpaceTransform(child, tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
@@ -9613,7 +9634,8 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
   test_layer->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 20, 20));
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(translation, test_layer->ScreenSpaceTransform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(translation,
+                                  test_layer->ScreenSpaceTransform());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {
