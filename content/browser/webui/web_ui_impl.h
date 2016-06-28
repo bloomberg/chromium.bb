@@ -83,6 +83,8 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
+  class MainFrameNavigationObserver;
+
   // IPC message handling.
   void OnWebUISend(const GURL& source_url,
                    const std::string& message,
@@ -101,6 +103,9 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void AddToSetIfFrameNameMatches(std::set<RenderFrameHost*>* frame_set,
                                   RenderFrameHost* host);
 
+  // Called internally and by the owned MainFrameNavigationObserver.
+  void DisallowJavascriptOnAllHandlers();
+
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
@@ -117,6 +122,9 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   // Non-owning pointer to the WebContents this WebUI is associated with.
   WebContents* web_contents_;
+
+  // Notifies this WebUI about notifications in the main frame.
+  std::unique_ptr<MainFrameNavigationObserver> web_contents_observer_;
 
   // The name of the frame this WebUI is embedded in. If empty, the main frame
   // is used.

@@ -73,10 +73,6 @@ base::string16 WebUIMessageHandler::ExtractStringValue(
   return base::string16();
 }
 
-void WebUIMessageHandler::RenderViewReused() {
-  DisallowJavascript();
-}
-
 void WebUIMessageHandler::ResolveJavascriptCallback(
     const base::Value& callback_id,
     const base::Value& response) {

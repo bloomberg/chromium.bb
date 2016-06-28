@@ -18,14 +18,36 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 
 namespace content {
+
+class WebUIImpl::MainFrameNavigationObserver : public WebContentsObserver {
+ public:
+  MainFrameNavigationObserver(WebUIImpl* web_ui, WebContents* contents)
+      : WebContentsObserver(contents), web_ui_(web_ui) {}
+  ~MainFrameNavigationObserver() override {}
+
+ private:
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    // Only disallow JavaScript on cross-document navigations in the main frame.
+    if (!navigation_handle->IsInMainFrame() ||
+        !navigation_handle->HasCommitted() || navigation_handle->IsSamePage()) {
+      return;
+    }
+
+    web_ui_->DisallowJavascriptOnAllHandlers();
+  }
+
+  WebUIImpl* web_ui_;
+};
 
 const WebUI::TypeID WebUI::kNoWebUI = NULL;
 
@@ -50,6 +72,7 @@ WebUIImpl::WebUIImpl(WebContents* contents, const std::string& frame_name)
     : link_transition_type_(ui::PAGE_TRANSITION_LINK),
       bindings_(BINDINGS_POLICY_WEB_UI),
       web_contents_(contents),
+      web_contents_observer_(new MainFrameNavigationObserver(this, contents)),
       frame_name_(frame_name) {
   DCHECK(contents);
 }
@@ -95,14 +118,10 @@ void WebUIImpl::RenderViewReused(RenderViewHost* render_view_host,
     GURL site_url = render_view_host->GetSiteInstance()->GetSiteURL();
     GetContentClient()->browser()->LogWebUIUrl(site_url);
   }
-
-  for (WebUIMessageHandler* handler : handlers_)
-    handler->RenderViewReused();
 }
 
 void WebUIImpl::RenderFrameHostSwappingOut() {
-  for (WebUIMessageHandler* handler : handlers_)
-    handler->DisallowJavascript();
+  DisallowJavascriptOnAllHandlers();
 }
 
 WebContents* WebUIImpl::GetWebContents() const {
@@ -282,6 +301,11 @@ void WebUIImpl::AddToSetIfFrameNameMatches(
     RenderFrameHost* host) {
   if (host->GetFrameName() == frame_name_)
     frame_set->insert(host);
+}
+
+void WebUIImpl::DisallowJavascriptOnAllHandlers() {
+  for (WebUIMessageHandler* handler : handlers_)
+    handler->DisallowJavascript();
 }
 
 }  // namespace content

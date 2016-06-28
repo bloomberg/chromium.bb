@@ -42,6 +42,8 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // is needed from production code, just publicize AllowJavascript() instead.
   void AllowJavascriptForTesting();
 
+  bool IsJavascriptAllowed() const;
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractIntegerValue);
   FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractDoubleValue);
@@ -50,8 +52,6 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // Subclasses must call this once the page is ready for JavaScript calls
   // from this handler.
   void AllowJavascript();
-
-  bool IsJavascriptAllowed() const;
 
   // Helper methods:
 
@@ -120,9 +120,6 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // RenderViewReused.
   friend class WebUIImpl;
   friend class ::WebUIBrowserTest;
-
-  // Called when a RenderView is reused to display a page (i.e. reload).
-  void RenderViewReused();
 
   // TODO(dbeam): disallow JavaScript when a renderer process crashes.
   // http://crbug.com/610450
