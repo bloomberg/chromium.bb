@@ -239,7 +239,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
   NTPSnippetsFetcher::RequestParams params;
   params.obfuscated_gaia_id = "0BFUSGAIA";
   params.only_return_personalized_results = true;
-  params.user_segment = "en";
+  params.user_locale = "en";
   params.host_restricts = {"chromium.org"};
   params.count_to_fetch = 25;
 
@@ -248,11 +248,11 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
               EqualsJSON("{"
                          "  \"response_detail_level\": \"STANDARD\","
                          "  \"obfuscated_gaia_id\": \"0BFUSGAIA\","
+                         "  \"user_locale\": \"en\","
                          "  \"advanced_options\": {"
                          "    \"local_scoring_params\": {"
                          "      \"content_params\": {"
-                         "        \"only_return_personalized_results\": true,"
-                         "        \"user_segment\": \"en\""
+                         "        \"only_return_personalized_results\": true"
                          "      },"
                          "      \"content_restricts\": ["
                          "        {"

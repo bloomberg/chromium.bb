@@ -136,6 +136,18 @@ bool AddSnippetsFromListValue(bool content_suggestions_api,
   return true;
 }
 
+// Translate the BCP 47 |language_code| into a posix locale string.
+std::string PosixLocaleFromBCP47Language(const std::string& language_code) {
+  char locale[ULOC_FULLNAME_CAPACITY];
+  UErrorCode error = U_ZERO_ERROR;
+  // Translate the input to a posix locale.
+  uloc_forLanguageTag(language_code.c_str(), locale, ULOC_FULLNAME_CAPACITY,
+                      nullptr, &error);
+  DLOG_IF(WARNING, U_ZERO_ERROR != error)
+      << "Error in translating language code to a locale string: " << error;
+  return locale;
+}
+
 }  // namespace
 
 NTPSnippetsFetcher::NTPSnippetsFetcher(
@@ -208,15 +220,7 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
     return;
   }
 
-  // Translate the BCP 47 |language_code| into a posix locale string.
-  char locale[ULOC_FULLNAME_CAPACITY];
-  UErrorCode error = U_ZERO_ERROR;
-  uloc_forLanguageTag(language_code.c_str(), locale, ULOC_FULLNAME_CAPACITY,
-                      nullptr, &error);
-  DLOG_IF(WARNING, U_ZERO_ERROR != error)
-      << "Error in translating language code to a locale string: " << error;
-  locale_ = locale;
-
+  locale_ = PosixLocaleFromBCP47Language(language_code);
   count_to_fetch_ = count;
 
   bool use_authentication = UsesAuthentication();
@@ -242,7 +246,7 @@ NTPSnippetsFetcher::RequestParams::RequestParams()
     : fetch_api(),
       obfuscated_gaia_id(),
       only_return_personalized_results(),
-      user_segment(),
+      user_locale(),
       host_restricts(),
       count_to_fetch() {}
 
@@ -254,9 +258,6 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
     auto content_params = base::MakeUnique<base::DictionaryValue>();
     content_params->SetBoolean("only_return_personalized_results",
                                only_return_personalized_results);
-    if (!user_segment.empty()) {
-      content_params->SetString("user_segment", user_segment);
-    }
 
     auto content_restricts = base::MakeUnique<base::ListValue>();
     for (const auto& metadata : {"TITLE", "SNIPPET", "THUMBNAIL"}) {
@@ -294,9 +295,12 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
     if (!obfuscated_gaia_id.empty()) {
       request->SetString("obfuscated_gaia_id", obfuscated_gaia_id);
     }
+    if (!user_locale.empty()) {
+      request->SetString("user_locale", user_locale);
+    }
   } else {
-    if (!user_segment.empty()) {
-      request->SetString("uiLanguage", user_segment);
+    if (!user_locale.empty()) {
+      request->SetString("uiLanguage", user_locale);
     }
     auto regular_hosts = base::MakeUnique<base::ListValue>();
     for (const auto& host : host_restricts) {
@@ -378,7 +382,7 @@ void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
   params.obfuscated_gaia_id = account_id;
   params.only_return_personalized_results =
       personalization_ == Personalization::kPersonal;
-  params.user_segment = locale_;
+  params.user_locale = locale_;
   params.host_restricts =
       UsesHostRestrictions() ? hosts_ : std::set<std::string>();
   params.count_to_fetch = count_to_fetch_;

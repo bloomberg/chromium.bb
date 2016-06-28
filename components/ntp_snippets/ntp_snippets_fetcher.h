@@ -128,7 +128,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     FetchAPI fetch_api;
     std::string obfuscated_gaia_id;
     bool only_return_personalized_results;
-    std::string user_segment;
+    std::string user_locale;
     std::set<std::string> host_restricts;
     int count_to_fetch;
 
