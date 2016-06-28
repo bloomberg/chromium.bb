@@ -14,63 +14,38 @@
 
 namespace base {
 
-namespace {
-
-struct FakeInvoker {
-  // MSVC 2013 doesn't support Type Alias of function types.
-  // Revisit this after we update it to newer version.
-  typedef void RunType(internal::BindStateBase*);
-  static void Run(internal::BindStateBase*) {
-  }
-};
-
-}  // namespace
-
-namespace internal {
+void NopInvokeFunc(internal::BindStateBase*) {}
 
 // White-box testpoints to inject into a Callback<> object for checking
 // comparators and emptiness APIs.  Use a BindState that is specialized
 // based on a type we declared in the anonymous namespace above to remove any
 // chance of colliding with another instantiation and breaking the
 // one-definition-rule.
-template <>
-struct BindState<void(), void(), FakeInvoker>
-    : public BindStateBase {
- public:
-  BindState() : BindStateBase(&Destroy) {}
-  using InvokerType = FakeInvoker;
+struct FakeBindState1 : internal::BindStateBase {
+  FakeBindState1() : BindStateBase(&Destroy) {}
  private:
-  ~BindState() {}
-  static void Destroy(BindStateBase* self) {
-    delete static_cast<BindState*>(self);
+  ~FakeBindState1() {}
+  static void Destroy(internal::BindStateBase* self) {
+    delete static_cast<FakeBindState1*>(self);
   }
 };
 
-template <>
-struct BindState<void(), void(), FakeInvoker, FakeInvoker>
-    : public BindStateBase {
- public:
-  BindState() : BindStateBase(&Destroy) {}
-  using InvokerType = FakeInvoker;
+struct FakeBindState2 : internal::BindStateBase {
+  FakeBindState2() : BindStateBase(&Destroy) {}
  private:
-  ~BindState() {}
-  static void Destroy(BindStateBase* self) {
-    delete static_cast<BindState*>(self);
+  ~FakeBindState2() {}
+  static void Destroy(internal::BindStateBase* self) {
+    delete static_cast<FakeBindState2*>(self);
   }
 };
-}  // namespace internal
 
 namespace {
-
-using FakeBindState1 = internal::BindState<void(), void(), FakeInvoker>;
-using FakeBindState2 =
-    internal::BindState<void(), void(), FakeInvoker, FakeInvoker>;
 
 class CallbackTest : public ::testing::Test {
  public:
   CallbackTest()
-      : callback_a_(new FakeBindState1()),
-        callback_b_(new FakeBindState2()) {
+      : callback_a_(new FakeBindState1(), &NopInvokeFunc),
+        callback_b_(new FakeBindState2(), &NopInvokeFunc) {
   }
 
   ~CallbackTest() override {}
@@ -113,7 +88,7 @@ TEST_F(CallbackTest, Equals) {
   EXPECT_FALSE(callback_b_.Equals(callback_a_));
 
   // We should compare based on instance, not type.
-  Callback<void()> callback_c(new FakeBindState1());
+  Callback<void()> callback_c(new FakeBindState1(), &NopInvokeFunc);
   Callback<void()> callback_a2 = callback_a_;
   EXPECT_TRUE(callback_a_.Equals(callback_a2));
   EXPECT_FALSE(callback_a_.Equals(callback_c));

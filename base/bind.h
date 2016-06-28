@@ -46,30 +46,12 @@
 
 namespace base {
 
-namespace internal {
-
-// Don't use Alias Template directly here to avoid a compile error on MSVC2013.
 template <typename Functor, typename... Args>
-struct MakeUnboundRunTypeImpl {
-  using Type =
-      typename BindState<
-          typename FunctorTraits<Functor>::RunnableType,
-          typename FunctorTraits<Functor>::RunType,
-          Args...>::UnboundRunType;
-};
-
-}  // namespace internal
-
-template <typename Functor, typename... Args>
-using MakeUnboundRunType =
-    typename internal::MakeUnboundRunTypeImpl<Functor, Args...>::Type;
-
-template <typename Functor, typename... Args>
-base::Callback<MakeUnboundRunType<Functor, Args...>>
+inline base::Callback<MakeUnboundRunType<Functor, Args...>>
 Bind(Functor functor, Args&&... args) {
   // Type aliases for how to store and run the functor.
   using RunnableType = typename internal::FunctorTraits<Functor>::RunnableType;
-  using RunType = typename internal::FunctorTraits<Functor>::RunType;
+
   const bool is_method = internal::HasIsMethodTag<RunnableType>::value;
 
   // For methods, we need to be careful for parameter 1.  We do not require
@@ -82,11 +64,14 @@ Bind(Functor functor, Args&&... args) {
       !internal::HasRefCountedParamAsRawPtr<is_method, Args...>::value,
       "a parameter is a refcounted type and needs scoped_refptr");
 
-  using BindState = internal::BindState<RunnableType, RunType, Args...>;
+  using BindState = internal::BindState<RunnableType, Args...>;
+  using UnboundRunType = MakeUnboundRunType<Functor, Args...>;
+  using CallbackType = Callback<UnboundRunType>;
+  using Invoker = internal::Invoker<BindState, UnboundRunType>;
 
-  return Callback<typename BindState::UnboundRunType>(
-      new BindState(internal::MakeRunnable(functor),
-                    std::forward<Args>(args)...));
+  return CallbackType(new BindState(internal::MakeRunnable(functor),
+                                    std::forward<Args>(args)...),
+                      &Invoker::Run);
 }
 
 }  // namespace base

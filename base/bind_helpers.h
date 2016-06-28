@@ -462,7 +462,7 @@ T Unwrap(const PassedWrapper<T>& o) {
 //
 // The first argument should be the type of the object that will be received by
 // the method.
-template <bool IsMethod, typename... Args>
+template <bool is_method, typename... Args>
 struct IsWeakMethod : std::false_type {};
 
 template <typename T, typename... Args>
@@ -549,19 +549,25 @@ struct MakeFunctionTypeImpl<R, TypeList<Args...>> {
 template <typename R, typename ArgList>
 using MakeFunctionType = typename MakeFunctionTypeImpl<R, ArgList>::Type;
 
-// Used for ExtractArgs.
+// Used for ExtractArgs and ExtractReturnType.
 template <typename Signature>
 struct ExtractArgsImpl;
 
 template <typename R, typename... Args>
 struct ExtractArgsImpl<R(Args...)> {
-  using Type = TypeList<Args...>;
+  using ReturnType = R;
+  using ArgsList = TypeList<Args...>;
 };
 
 // A type-level function that extracts function arguments into a TypeList.
 // E.g. ExtractArgs<R(A, B, C)> is evaluated to TypeList<A, B, C>.
 template <typename Signature>
-using ExtractArgs = typename ExtractArgsImpl<Signature>::Type;
+using ExtractArgs = typename ExtractArgsImpl<Signature>::ArgsList;
+
+// A type-level function that extracts the return type of a function.
+// E.g. ExtractReturnType<R(A, B, C)> is evaluated to R.
+template <typename Signature>
+using ExtractReturnType = typename ExtractArgsImpl<Signature>::ReturnType;
 
 }  // namespace internal
 
