@@ -48,24 +48,17 @@ class BASE_EXPORT TaskScheduler {
   // called once.
   virtual void Shutdown() = 0;
 
-  // SetInstance() and InitializeDefaultTaskScheduler() register a TaskScheduler
-  // to handle tasks posted through the post_task.h API for this process. The
-  // registered TaskScheduler will only be deleted when a new TaskScheduler is
-  // registered (i.e. otherwise leaked on shutdown). The methods must not be
-  // called when TaskRunners created by the previous TaskScheduler are still
-  // alive. The methods are not thread-safe; proper synchronization is required
-  // to use the post_task.h API after registering a new TaskScheduler.
-
   // Registers |task_scheduler| to handle tasks posted through the post_task.h
-  // API for this process.
+  // API for this process. The registered TaskScheduler will only be deleted
+  // when a new TaskScheduler is registered (i.e. otherwise leaked on shutdown).
+  // This must not be called when TaskRunners created by the previous
+  // TaskScheduler are still alive. This method is not thread-safe; proper
+  // synchronization is required to use the post_task.h API after registering a
+  // new TaskScheduler.
   static void SetInstance(std::unique_ptr<TaskScheduler> task_scheduler);
 
-  // Initializes the default task scheduler for this process.
-  static void InitializeDefaultTaskScheduler();
-
-  // Retrieve the TaskScheduler set via SetInstance() or
-  // InitializeDefaultTaskScheduler(). This should be used very rarely; most
-  // users of TaskScheduler should use the post_task.h API.
+  // Retrieve the TaskScheduler set via SetInstance(). This should be used very
+  // rarely; most users of TaskScheduler should use the post_task.h API.
   static TaskScheduler* GetInstance();
 };
 

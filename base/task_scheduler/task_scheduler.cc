@@ -5,7 +5,6 @@
 #include "base/task_scheduler/task_scheduler.h"
 
 #include "base/logging.h"
-#include "base/task_scheduler/task_scheduler_impl.h"
 
 namespace base {
 
@@ -20,11 +19,6 @@ TaskScheduler* g_task_scheduler = nullptr;
 void TaskScheduler::SetInstance(std::unique_ptr<TaskScheduler> task_scheduler) {
   delete g_task_scheduler;
   g_task_scheduler = task_scheduler.release();
-}
-
-// static
-void TaskScheduler::InitializeDefaultTaskScheduler() {
-  SetInstance(internal::TaskSchedulerImpl::Create());
 }
 
 // static

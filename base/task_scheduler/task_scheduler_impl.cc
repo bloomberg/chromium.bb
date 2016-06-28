@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/scheduler_service_thread.h"
-#include "base/task_scheduler/scheduler_worker_pool_impl.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
 #include "base/time/time.h"
@@ -19,9 +18,13 @@ namespace base {
 namespace internal {
 
 // static
-std::unique_ptr<TaskSchedulerImpl> TaskSchedulerImpl::Create() {
-  std::unique_ptr<TaskSchedulerImpl> scheduler(new TaskSchedulerImpl);
-  scheduler->Initialize();
+std::unique_ptr<TaskSchedulerImpl> TaskSchedulerImpl::Create(
+    const std::vector<WorkerPoolCreationArgs>& worker_pools,
+    const WorkerPoolIndexForTraitsCallback&
+        worker_pool_index_for_traits_callback) {
+  std::unique_ptr<TaskSchedulerImpl> scheduler(
+      new TaskSchedulerImpl(worker_pool_index_for_traits_callback));
+  scheduler->Initialize(worker_pools);
   return scheduler;
 }
 
@@ -57,63 +60,47 @@ void TaskSchedulerImpl::JoinForTesting() {
 #if DCHECK_IS_ON()
   DCHECK(!join_for_testing_returned_.IsSignaled());
 #endif
-  background_worker_pool_->JoinForTesting();
-  background_file_io_worker_pool_->JoinForTesting();
-  normal_worker_pool_->JoinForTesting();
-  normal_file_io_worker_pool_->JoinForTesting();
+  for (const auto& worker_pool : worker_pools_)
+    worker_pool->JoinForTesting();
   service_thread_->JoinForTesting();
 #if DCHECK_IS_ON()
   join_for_testing_returned_.Signal();
 #endif
 }
 
-TaskSchedulerImpl::TaskSchedulerImpl()
+TaskSchedulerImpl::TaskSchedulerImpl(const WorkerPoolIndexForTraitsCallback&
+                                         worker_pool_index_for_traits_callback)
     : delayed_task_manager_(
-          Bind(&TaskSchedulerImpl::OnDelayedRunTimeUpdated, Unretained(this)))
+          Bind(&TaskSchedulerImpl::OnDelayedRunTimeUpdated, Unretained(this))),
+      worker_pool_index_for_traits_callback_(
+          worker_pool_index_for_traits_callback)
 #if DCHECK_IS_ON()
       ,
       join_for_testing_returned_(WaitableEvent::ResetPolicy::MANUAL,
                                  WaitableEvent::InitialState::NOT_SIGNALED)
 #endif
 {
+  DCHECK(!worker_pool_index_for_traits_callback_.is_null());
 }
 
-void TaskSchedulerImpl::Initialize() {
-  using IORestriction = SchedulerWorkerPoolImpl::IORestriction;
+void TaskSchedulerImpl::Initialize(
+    const std::vector<WorkerPoolCreationArgs>& worker_pools) {
+  DCHECK(!worker_pools.empty());
 
   const SchedulerWorkerPoolImpl::ReEnqueueSequenceCallback
       re_enqueue_sequence_callback =
           Bind(&TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
 
-  // TODO(fdoray): Derive the number of threads per pool from hardware
-  // characteristics rather than using hard-coded constants.
-
-  // Passing pointers to objects owned by |this| to
-  // SchedulerWorkerPoolImpl::Create() is safe because a TaskSchedulerImpl can't
-  // be deleted before all its worker pools have been joined.
-  background_worker_pool_ = SchedulerWorkerPoolImpl::Create(
-      "TaskSchedulerBackground", ThreadPriority::BACKGROUND, 1U,
-      IORestriction::DISALLOWED, re_enqueue_sequence_callback, &task_tracker_,
-      &delayed_task_manager_);
-  CHECK(background_worker_pool_);
-
-  background_file_io_worker_pool_ = SchedulerWorkerPoolImpl::Create(
-      "TaskSchedulerBackgroundFileIO", ThreadPriority::BACKGROUND, 1U,
-      IORestriction::ALLOWED, re_enqueue_sequence_callback, &task_tracker_,
-      &delayed_task_manager_);
-  CHECK(background_file_io_worker_pool_);
-
-  normal_worker_pool_ = SchedulerWorkerPoolImpl::Create(
-      "TaskSchedulerForeground", ThreadPriority::NORMAL, 4U,
-      IORestriction::DISALLOWED, re_enqueue_sequence_callback, &task_tracker_,
-      &delayed_task_manager_);
-  CHECK(normal_worker_pool_);
-
-  normal_file_io_worker_pool_ = SchedulerWorkerPoolImpl::Create(
-      "TaskSchedulerForegroundFileIO", ThreadPriority::NORMAL, 12U,
-      IORestriction::ALLOWED, re_enqueue_sequence_callback, &task_tracker_,
-      &delayed_task_manager_);
-  CHECK(normal_file_io_worker_pool_);
+  for (const auto& worker_pool : worker_pools) {
+    // Passing pointers to objects owned by |this| to
+    // SchedulerWorkerPoolImpl::Create() is safe because a TaskSchedulerImpl
+    // can't be deleted before all its worker pools have been joined.
+    worker_pools_.push_back(SchedulerWorkerPoolImpl::Create(
+        worker_pool.name, worker_pool.thread_priority, worker_pool.max_threads,
+        worker_pool.io_restriction, re_enqueue_sequence_callback,
+        &task_tracker_, &delayed_task_manager_));
+    CHECK(worker_pools_.back());
+  }
 
   service_thread_ = SchedulerServiceThread::Create(&task_tracker_,
                                                    &delayed_task_manager_);
@@ -122,15 +109,9 @@ void TaskSchedulerImpl::Initialize() {
 
 SchedulerWorkerPool* TaskSchedulerImpl::GetWorkerPoolForTraits(
     const TaskTraits& traits) {
-  if (traits.with_file_io()) {
-    if (traits.priority() == TaskPriority::BACKGROUND)
-      return background_file_io_worker_pool_.get();
-    return normal_file_io_worker_pool_.get();
-  }
-
-  if (traits.priority() == TaskPriority::BACKGROUND)
-    return background_worker_pool_.get();
-  return normal_worker_pool_.get();
+  const size_t index = worker_pool_index_for_traits_callback_.Run(traits);
+  DCHECK_LT(index, worker_pools_.size());
+  return worker_pools_[index].get();
 }
 
 void TaskSchedulerImpl::ReEnqueueSequenceCallback(

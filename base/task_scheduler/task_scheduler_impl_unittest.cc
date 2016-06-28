@@ -38,23 +38,6 @@ struct TraitsExecutionModePair {
   ExecutionMode execution_mode;
 };
 
-class TaskSchedulerImplTest
-    : public testing::TestWithParam<TraitsExecutionModePair> {
- protected:
-  TaskSchedulerImplTest() = default;
-
-  void SetUp() override {
-    scheduler_ = TaskSchedulerImpl::Create();
-    EXPECT_TRUE(scheduler_);
-  }
-  void TearDown() override { scheduler_->JoinForTesting(); }
-
-  std::unique_ptr<TaskSchedulerImpl> scheduler_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerImplTest);
-};
-
 #if ENABLE_THREAD_RESTRICTIONS
 // Returns whether I/O calls are allowed on the current thread.
 bool GetIOAllowed() {
@@ -152,6 +135,65 @@ std::vector<TraitsExecutionModePair> GetTraitsExecutionModePairs() {
   return params;
 }
 
+enum WorkerPoolType {
+  BACKGROUND_WORKER_POOL = 0,
+  BACKGROUND_FILE_IO_WORKER_POOL,
+  FOREGROUND_WORKER_POOL,
+  FOREGROUND_FILE_IO_WORKER_POOL,
+};
+
+size_t GetThreadPoolIndexForTraits(const TaskTraits& traits) {
+  if (traits.with_file_io()) {
+    return traits.priority() == TaskPriority::BACKGROUND
+               ? BACKGROUND_FILE_IO_WORKER_POOL
+               : FOREGROUND_FILE_IO_WORKER_POOL;
+  }
+  return traits.priority() == TaskPriority::BACKGROUND ? BACKGROUND_WORKER_POOL
+                                                       : FOREGROUND_WORKER_POOL;
+}
+
+class TaskSchedulerImplTest
+    : public testing::TestWithParam<TraitsExecutionModePair> {
+ protected:
+  TaskSchedulerImplTest() = default;
+
+  void SetUp() override {
+    using IORestriction = SchedulerWorkerPoolImpl::IORestriction;
+
+    std::vector<TaskSchedulerImpl::WorkerPoolCreationArgs> worker_pools;
+
+    ASSERT_EQ(BACKGROUND_WORKER_POOL, worker_pools.size());
+    worker_pools.push_back({"TaskSchedulerBackground",
+                            ThreadPriority::BACKGROUND,
+                            IORestriction::DISALLOWED, 1U});
+
+    ASSERT_EQ(BACKGROUND_FILE_IO_WORKER_POOL, worker_pools.size());
+    worker_pools.push_back({"TaskSchedulerBackgroundFileIO",
+                            ThreadPriority::BACKGROUND, IORestriction::ALLOWED,
+                            3U});
+
+    ASSERT_EQ(FOREGROUND_WORKER_POOL, worker_pools.size());
+    worker_pools.push_back({"TaskSchedulerForeground", ThreadPriority::NORMAL,
+                            IORestriction::DISALLOWED, 4U});
+
+    ASSERT_EQ(FOREGROUND_FILE_IO_WORKER_POOL, worker_pools.size());
+    worker_pools.push_back({"TaskSchedulerForegroundFileIO",
+                            ThreadPriority::NORMAL, IORestriction::ALLOWED,
+                            12U});
+
+    scheduler_ = TaskSchedulerImpl::Create(worker_pools,
+                                           Bind(&GetThreadPoolIndexForTraits));
+    ASSERT_TRUE(scheduler_);
+  }
+
+  void TearDown() override { scheduler_->JoinForTesting(); }
+
+  std::unique_ptr<TaskSchedulerImpl> scheduler_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerImplTest);
+};
+
 }  // namespace
 
 // Verifies that a Task posted via PostTaskWithTraits with parameterized
@@ -194,13 +236,11 @@ INSTANTIATE_TEST_CASE_P(OneTraitsExecutionModePair,
 // TaskTraits and ExecutionModes. Verifies that each Task runs on a thread with
 // the expected priority and I/O restrictions and respects the characteristics
 // of its ExecutionMode.
-TEST(TaskSchedulerImplTest, MultipleTraitsExecutionModePairs) {
-  std::unique_ptr<TaskSchedulerImpl> scheduler = TaskSchedulerImpl::Create();
-
+TEST_F(TaskSchedulerImplTest, MultipleTraitsExecutionModePairs) {
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (const auto& traits_execution_mode_pair : GetTraitsExecutionModePairs()) {
     threads_posting_tasks.push_back(WrapUnique(new ThreadPostingTasks(
-        scheduler.get(), traits_execution_mode_pair.traits,
+        scheduler_.get(), traits_execution_mode_pair.traits,
         traits_execution_mode_pair.execution_mode)));
     threads_posting_tasks.back()->Start();
   }
@@ -209,8 +249,6 @@ TEST(TaskSchedulerImplTest, MultipleTraitsExecutionModePairs) {
     thread->WaitForAllTasksToRun();
     thread->Join();
   }
-
-  scheduler->JoinForTesting();
 }
 
 // TODO(fdoray): Add tests with Sequences that move around worker pools once
