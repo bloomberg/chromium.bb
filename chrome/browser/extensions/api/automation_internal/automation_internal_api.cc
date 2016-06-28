@@ -307,7 +307,11 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
   content::WebContents* contents =
       content::WebContents::FromRenderFrameHost(rfh);
   AutomationWebContentsObserver::CreateForWebContents(contents);
-  contents->EnableTreeOnlyAccessibilityMode();
+
+  // Only call this if this is the root of a frame tree, to avoid resetting
+  // the accessibility state multiple times.
+  if (!rfh->GetParent())
+    contents->EnableTreeOnlyAccessibilityMode();
 
   return RespondNow(NoArguments());
 }
