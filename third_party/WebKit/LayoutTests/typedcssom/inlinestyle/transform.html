@@ -16,10 +16,10 @@ test(function() {
 }, "Setting transform works on a regular element.");
 
 test(function() {
-  var transform = new TransformValue([new CSSRotation(30)]);
+  var transform = new CSSTransformValue([new CSSRotation(30)]);
 
   testElement.styleMap.set('transform', transform);
-  assert_equals(testElement.styleMap.get('transform').cssString, 'rotate(30deg)');
+  assert_equals(testElement.styleMap.get('transform').cssText, 'rotate(30deg)');
 }, "Getting transform works on a regular element.");
 
 

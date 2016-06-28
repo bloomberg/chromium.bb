@@ -7,16 +7,16 @@
 
 var EPSILON = 1e-6; // float epsilon
 
-function validateTransformWithSingleRotation(transform, x, y, z, angle, cssString) {
-  assert_equals(transform.cssString, cssString);
+function validateTransformWithSingleRotation(transform, x, y, z, angle, cssText) {
+  assert_equals(transform.cssText, cssText);
 
   // Shouldn't be base StyleValue as for unsupported values.
-  assert_true(transform instanceof TransformValue);
+  assert_true(transform instanceof CSSTransformValue);
 
   var components = [...transform.values()];
   assert_equals(components.length, 1);
   assert_true(components[0] instanceof CSSRotation);
-  assert_equals(components[0].cssString, cssString);
+  assert_equals(components[0].cssText, cssText);
 
   assert_approx_equals(components[0].angle, angle, EPSILON);
   assert_approx_equals(components[0].x, x, EPSILON);
