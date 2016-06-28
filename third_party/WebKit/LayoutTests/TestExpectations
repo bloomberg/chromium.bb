@@ -207,14 +207,6 @@ crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-pic
 crbug.com/593567 [ Debug ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Debug ] virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 
-crbug.com/484632 fast/forms/select-popup/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
-crbug.com/484632 [ Win ] fast/forms/select-popup/popup-menu-appearance-tall.html [ NeedsRebaseline ]
-crbug.com/484632 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/484632 fast/text/international/pop-up-button-text-alignment-and-direction.html [ NeedsRebaseline ]
-crbug.com/484632 http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
-crbug.com/484632 transforms/2d/zoom-menulist.html [ NeedsRebaseline ]
-crbug.com/484632 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
-
 # Mac does not support fractional scale factor.
 crbug.com/567837 [ Mac ] virtual/scalefactor150/fast/hidpi/static [ Skip ]
 
