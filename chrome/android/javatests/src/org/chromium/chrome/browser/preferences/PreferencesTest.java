@@ -14,6 +14,7 @@ import android.preference.PreferenceScreen;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -76,6 +77,7 @@ public class PreferencesTest extends NativeLibraryTestBase {
      */
     @SmallTest
     @Feature({"Preferences"})
+    @DisableIf.Build(hardware_is = "sprout", message = "crashes on android-one: crbug.com/540720")
     public void testSearchEnginePreference() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
@@ -138,6 +140,7 @@ public class PreferencesTest extends NativeLibraryTestBase {
      */
     @SmallTest
     @Feature({"Preferences"})
+    @DisableIf.Build(hardware_is = "sprout", message = "fails on android-one: crbug.com/540706")
     public void testSearchEnginePreferenceHttp() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
