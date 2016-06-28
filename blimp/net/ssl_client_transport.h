@@ -16,6 +16,8 @@
 #include "blimp/net/tcp_client_transport.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/transport_security_state.h"
 
 namespace net {
@@ -58,6 +60,8 @@ class BLIMP_NET_EXPORT SSLClientTransport : public TCPClientTransport {
   net::IPEndPoint ip_endpoint_;
   std::unique_ptr<ExactMatchCertVerifier> cert_verifier_;
   net::TransportSecurityState transport_security_state_;
+  net::MultiLogCTVerifier cert_transparency_verifier_;
+  net::CTPolicyEnforcer ct_policy_enforcer_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientTransport);
 };

@@ -61,6 +61,8 @@ void SSLClientTransport::OnTCPConnectComplete(int result) {
   net::SSLClientSocketContext create_context;
   create_context.cert_verifier = cert_verifier_.get();
   create_context.transport_security_state = &transport_security_state_;
+  create_context.ct_policy_enforcer = &ct_policy_enforcer_;
+  create_context.cert_transparency_verifier = &cert_transparency_verifier_;
 
   std::unique_ptr<net::StreamSocket> ssl_socket(
       socket_factory()->CreateSSLClientSocket(std::move(socket_handle),
