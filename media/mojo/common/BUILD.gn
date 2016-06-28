@@ -11,6 +11,8 @@ source_set("common") {
   sources = [
     "media_type_converters.cc",
     "media_type_converters.h",
+    "mojo_decoder_buffer_converter.cc",
+    "mojo_decoder_buffer_converter.h",
     "mojo_shared_buffer_video_frame.cc",
     "mojo_shared_buffer_video_frame.h",
     "mojo_type_trait.h",

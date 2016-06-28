@@ -14,12 +14,12 @@
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {
 
 class MediaKeys;
 class MojoCdmServiceContext;
+class MojoDecoderBufferReader;
 
 class MojoAudioDecoderService : public mojom::AudioDecoder {
  public:
@@ -59,17 +59,11 @@ class MojoAudioDecoderService : public mojom::AudioDecoder {
   // Called by |decoder_| for each decoded buffer.
   void OnAudioBufferReady(const scoped_refptr<AudioBuffer>& audio_buffer);
 
-  // A helper method to read and deserialize DecoderBuffer from data pipe.
-  // Returns empty scoped_refptr in case of an error.
-  scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
-      mojom::DecoderBufferPtr buffer);
-
   // A binding represents the association between the service and the
   // communication channel, i.e. the pipe.
   mojo::StrongBinding<mojom::AudioDecoder> binding_;
 
-  // DataPipe for serializing the data section of DecoderBuffer.
-  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
+  std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
   // A helper object required to get CDM from CDM id.
   base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;

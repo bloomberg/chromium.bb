@@ -13,7 +13,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mojo/common/media_type_converters.h"
-#include "mojo/public/cpp/system/data_pipe.h"
+#include "media/mojo/common/mojo_decoder_buffer_converter.h"
 
 namespace media {
 
@@ -31,24 +31,6 @@ MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() {}
 // we are now ready for business.
 void MojoDemuxerStreamImpl::Initialize(const InitializeCallback& callback) {
   DVLOG(2) << __FUNCTION__;
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-  options.element_num_bytes = 1;
-
-  // Allocate DataPipe sizes based on content type to reduce overhead.  If this
-  // is still too burdensome we can adjust for sample rate or resolution.
-  if (stream_->type() == media::DemuxerStream::VIDEO) {
-    // Video can get quite large; at 4K, VP9 delivers packets which are ~1MB in
-    // size; so allow for 50% headroom.
-    options.capacity_num_bytes = 1.5 * (1024 * 1024);
-  } else {
-    // Other types don't require a lot of room, so use a smaller pipe.
-    options.capacity_num_bytes = 512 * 1024;
-  }
-
-  mojo::DataPipe data_pipe(options);
-  stream_pipe_ = std::move(data_pipe.producer_handle);
 
   // Prepare the initial config.
   mojom::AudioDecoderConfigPtr audio_config;
@@ -64,8 +46,12 @@ void MojoDemuxerStreamImpl::Initialize(const InitializeCallback& callback) {
     return;
   }
 
+  mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
+  mojo_decoder_buffer_writer_ =
+      MojoDecoderBufferWriter::Create(stream_->type(), &remote_consumer_handle);
+
   callback.Run(static_cast<mojom::DemuxerStream::Type>(stream_->type()),
-               std::move(data_pipe.consumer_handle), std::move(audio_config),
+               std::move(remote_consumer_handle), std::move(audio_config),
                std::move(video_config));
 }
 
@@ -114,22 +100,21 @@ void MojoDemuxerStreamImpl::OnBufferReady(
   }
 
   DCHECK_EQ(status, media::DemuxerStream::kOk);
-  if (!buffer->end_of_stream()) {
-    DCHECK_GT(buffer->data_size(), 0u);
-    // Serialize the data section of the DecoderBuffer into our pipe.
-    uint32_t bytes_to_write = base::checked_cast<uint32_t>(buffer->data_size());
-    uint32_t bytes_written = bytes_to_write;
-    CHECK_EQ(WriteDataRaw(stream_pipe_.get(), buffer->data(), &bytes_written,
-                          MOJO_READ_DATA_FLAG_ALL_OR_NONE),
-             MOJO_RESULT_OK);
-    CHECK_EQ(bytes_to_write, bytes_written);
+
+  mojom::DecoderBufferPtr mojo_buffer =
+      mojo_decoder_buffer_writer_->WriteDecoderBuffer(buffer);
+  if (!mojo_buffer) {
+    callback.Run(mojom::DemuxerStream::Status::ABORTED,
+                 mojom::DecoderBufferPtr(), std::move(audio_config),
+                 std::move(video_config));
+    return;
   }
 
   // TODO(dalecurtis): Once we can write framed data to the DataPipe, fill via
   // the producer handle and then read more to keep the pipe full.  Waiting for
   // space can be accomplished using an AsyncWaiter.
   callback.Run(static_cast<mojom::DemuxerStream::Status>(status),
-               mojom::DecoderBuffer::From(buffer), std::move(audio_config),
+               std::move(mojo_buffer), std::move(audio_config),
                std::move(video_config));
 }
 

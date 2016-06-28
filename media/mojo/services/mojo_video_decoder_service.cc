@@ -13,6 +13,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
+#include "media/mojo/common/mojo_decoder_buffer_converter.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -44,7 +45,9 @@ void MojoVideoDecoderService::Construct(
       base::ThreadTaskRunnerHandle::Get());
 
   client_ = std::move(client);
-  decoder_buffer_pipe_ = std::move(decoder_buffer_pipe);
+
+  mojo_decoder_buffer_reader_.reset(
+      new MojoDecoderBufferReader(std::move(decoder_buffer_pipe)));
 }
 
 void MojoVideoDecoderService::Initialize(mojom::VideoDecoderConfigPtr config,
@@ -89,33 +92,11 @@ void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
 
   // TODO(sandersd): After a decode error, we should enter an error state and
   // reject all future method calls.
-  // TODO(sandersd): Extract and share with MojoAudioDecoderService.
-  scoped_refptr<DecoderBuffer> media_buffer(
-      buffer.To<scoped_refptr<DecoderBuffer>>());
-  if (!media_buffer->end_of_stream()) {
-    MojoResult result;
-    MojoHandleSignalsState state;
-
-    // TODO(sandersd): Do not wait indefinitely.
-    result =
-        MojoWait(decoder_buffer_pipe_.get().value(),
-                 MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE, &state);
-    if (result != MOJO_RESULT_OK ||
-        !(state.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE)) {
-      callback.Run(mojom::DecodeStatus::DECODE_ERROR);
-      return;
-    }
-
-    uint32_t data_size = buffer->data_size;
-    uint32_t bytes_read = data_size;
-    DCHECK_EQ(data_size, media_buffer->data_size());
-    result =
-        ReadDataRaw(decoder_buffer_pipe_.get(), media_buffer->writable_data(),
-                    &bytes_read, MOJO_READ_DATA_FLAG_ALL_OR_NONE);
-    if (result != MOJO_RESULT_OK || bytes_read != data_size) {
-      callback.Run(mojom::DecodeStatus::DECODE_ERROR);
-      return;
-    }
+  scoped_refptr<DecoderBuffer> media_buffer =
+      mojo_decoder_buffer_reader_->ReadDecoderBuffer(buffer);
+  if (!media_buffer) {
+    callback.Run(mojom::DecodeStatus::DECODE_ERROR);
+    return;
   }
 
   decoder_->Decode(media_buffer,

@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_CLIENTS_MOJO_DEMUXER_STREAM_IMPL_H_
 #define MEDIA_MOJO_CLIENTS_MOJO_DEMUXER_STREAM_IMPL_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -13,7 +15,9 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
+
 class DemuxerStream;
+class MojoDecoderBufferWriter;
 
 // This class wraps a media::DemuxerStream and exposes it as a
 // mojom::DemuxerStream for use as a proxy from remote applications.
@@ -48,8 +52,7 @@ class MojoDemuxerStreamImpl : public mojom::DemuxerStream {
   // See constructor.  We do not own |stream_|.
   media::DemuxerStream* stream_;
 
-  // DataPipe for serializing the data section of DecoderBuffer into.
-  mojo::ScopedDataPipeProducerHandle stream_pipe_;
+  std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
 
   base::WeakPtrFactory<MojoDemuxerStreamImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(MojoDemuxerStreamImpl);

@@ -11,9 +11,11 @@
 #include "media/base/decryptor.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {
+
+class MojoDecoderBufferReader;
+class MojoDecoderBufferWriter;
 
 // A Decryptor implementation based on mojom::DecryptorPtr.
 // This class is single threaded. The |remote_decryptor| is connected before
@@ -61,24 +63,17 @@ class MojoDecryptor : public Decryptor {
   void ReleaseSharedBuffer(mojo::ScopedSharedBufferHandle buffer,
                            size_t buffer_size);
 
-  // To pass DecoderBuffers to and from the MojoDecryptorService, 2 data pipes
-  // are required (one each way). At initialization both pipes are created,
-  // and then the handles are passed to the MojoDecryptorService.
-  void CreateDataPipes();
-
-  // Helper functions to write and read a DecoderBuffer.
-  mojom::DecoderBufferPtr TransferDecoderBuffer(
-      const scoped_refptr<DecoderBuffer>& buffer);
-  scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
-      mojom::DecoderBufferPtr buffer);
-
   base::ThreadChecker thread_checker_;
 
   mojom::DecryptorPtr remote_decryptor_;
 
-  // DataPipes for serializing the data section of DecoderBuffer into/from.
-  mojo::ScopedDataPipeProducerHandle producer_handle_;
-  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
+  // Helper class to send DecoderBuffer to the |remote_decryptor_| for decrypt
+  // or decrypt-and-decode.
+  std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
+
+  // Helper class to receive decrypted DecoderBuffer from the
+  // |remote_decryptor_|.
+  std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;

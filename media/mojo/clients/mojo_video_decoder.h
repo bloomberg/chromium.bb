@@ -10,7 +10,6 @@
 #include "media/base/video_decoder.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -19,6 +18,7 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class GpuVideoAcceleratorFactories;
+class MojoDecoderBufferWriter;
 
 // A VideoDecoder, for use in the renderer process, that proxies to a
 // mojom::VideoDecoder. It is assumed that the other side will be implemented by
@@ -70,7 +70,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   base::Closure reset_cb_;
 
   mojom::VideoDecoderPtr remote_decoder_;
-  mojo::ScopedDataPipeProducerHandle decoder_buffer_pipe_;
+  std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
   bool remote_decoder_bound_ = false;
   bool has_connection_error_ = false;
   mojo::Binding<VideoDecoderClient> binding_;

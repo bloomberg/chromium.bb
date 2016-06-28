@@ -13,7 +13,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/cdm_context.h"
+#include "media/base/demuxer_stream.h"
 #include "media/mojo/common/media_type_converters.h"
+#include "media/mojo/common/mojo_decoder_buffer_converter.h"
 
 namespace media {
 
@@ -56,12 +58,6 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
     return;
   }
 
-  // If connection error has happened, fail immediately.
-  if (remote_decoder_.encountered_error()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
-    return;
-  }
-
   // Otherwise, set an error handler to catch the connection error.
   // Using base::Unretained(this) is safe because |this| owns |remote_decoder_|,
   // and the error handler can't be invoked once |remote_decoder_| is destroyed.
@@ -90,7 +86,8 @@ void MojoAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& media_buffer,
     return;
   }
 
-  mojom::DecoderBufferPtr buffer = TransferDecoderBuffer(media_buffer);
+  mojom::DecoderBufferPtr buffer =
+      mojo_decoder_buffer_writer_->WriteDecoderBuffer(media_buffer);
   if (!buffer) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
@@ -164,8 +161,13 @@ void MojoAudioDecoder::OnInitialized(bool success,
 
   needs_bitstream_conversion_ = needs_bitstream_conversion;
 
-  if (success)
-    CreateDataPipe();
+  if (success) {
+    mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
+    mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
+        DemuxerStream::AUDIO, &remote_consumer_handle);
+    // Pass consumer end to |remote_decoder_|.
+    remote_decoder_->SetDataSource(std::move(remote_consumer_handle));
+  }
 
   base::ResetAndReturn(&init_cb_).Run(success);
 }
@@ -187,43 +189,6 @@ void MojoAudioDecoder::OnResetDone() {
 
   DCHECK(!reset_cb_.is_null());
   base::ResetAndReturn(&reset_cb_).Run();
-}
-
-void MojoAudioDecoder::CreateDataPipe() {
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-  options.element_num_bytes = 1;
-  // TODO(timav): Consider capacity calculation based on AudioDecoderConfig.
-  options.capacity_num_bytes = 512 * 1024;
-
-  mojo::DataPipe write_pipe(options);
-
-  // Keep producer end.
-  producer_handle_ = std::move(write_pipe.producer_handle);
-
-  // Pass consumer end to |remote_decoder_|.
-  remote_decoder_->SetDataSource(std::move(write_pipe.consumer_handle));
-}
-
-mojom::DecoderBufferPtr MojoAudioDecoder::TransferDecoderBuffer(
-    const scoped_refptr<DecoderBuffer>& media_buffer) {
-  mojom::DecoderBufferPtr buffer = mojom::DecoderBuffer::From(media_buffer);
-  if (media_buffer->end_of_stream())
-    return buffer;
-
-  // Serialize the data section of the DecoderBuffer into our pipe.
-  uint32_t num_bytes = base::checked_cast<uint32_t>(media_buffer->data_size());
-  DCHECK_GT(num_bytes, 0u);
-  MojoResult result =
-      WriteDataRaw(producer_handle_.get(), media_buffer->data(), &num_bytes,
-                   MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-  if (result != MOJO_RESULT_OK || num_bytes != media_buffer->data_size()) {
-    DVLOG(1) << __FUNCTION__ << ": writing to data pipe failed";
-    return nullptr;
-  }
-
-  return buffer;
 }
 
 }  // namespace media

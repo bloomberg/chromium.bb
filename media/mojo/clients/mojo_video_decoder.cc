@@ -11,8 +11,10 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
+#include "media/mojo/common/mojo_decoder_buffer_converter.h"
 
 namespace media {
 
@@ -79,17 +81,12 @@ void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     return;
   }
 
-  mojom::DecoderBufferPtr mojo_buffer = mojom::DecoderBuffer::From(buffer);
-
-  // TODO(sandersd): Destruct cleanly on error.
-  if (!buffer->end_of_stream()) {
-    uint32_t data_size = base::checked_cast<uint32_t>(buffer->data_size());
-    DCHECK_GT(data_size, 0u);
-    uint32_t bytes_written = data_size;
-    CHECK_EQ(WriteDataRaw(decoder_buffer_pipe_.get(), buffer->data(),
-                          &bytes_written, MOJO_READ_DATA_FLAG_ALL_OR_NONE),
-             MOJO_RESULT_OK);
-    CHECK_EQ(bytes_written, data_size);
+  mojom::DecoderBufferPtr mojo_buffer =
+      mojo_decoder_buffer_writer_->WriteDecoderBuffer(buffer);
+  if (!mojo_buffer) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+    return;
   }
 
   // TODO(sandersd): Support more than one decode at a time.
@@ -154,25 +151,16 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   remote_decoder_.Bind(std::move(remote_decoder_info_));
   remote_decoder_bound_ = true;
 
-  if (remote_decoder_.encountered_error()) {
-    has_connection_error_ = true;
-    return;
-  }
-
   remote_decoder_.set_connection_error_handler(
       base::Bind(&MojoVideoDecoder::OnConnectionError, base::Unretained(this)));
 
   // TODO(sandersd): Better buffer sizing.
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(options);
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = 2 * 1024 * 1024;
-  mojo::DataPipe decoder_buffer_pipe(options);
+  mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
+  mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
+      DemuxerStream::VIDEO, &remote_consumer_handle);
 
-  decoder_buffer_pipe_ = std::move(decoder_buffer_pipe.producer_handle);
   remote_decoder_->Construct(binding_.CreateInterfacePtrAndBind(),
-                             std::move(decoder_buffer_pipe.consumer_handle));
+                             std::move(remote_consumer_handle));
 }
 
 void MojoVideoDecoder::OnConnectionError() {

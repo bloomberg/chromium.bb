@@ -12,10 +12,10 @@
 #include "media/base/decode_status.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {
 
+class MojoDecoderBufferReader;
 class MojoMediaClient;
 class VideoDecoder;
 class VideoFrame;
@@ -46,7 +46,7 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
 
   mojo::StrongBinding<mojom::VideoDecoder> binding_;
   mojom::VideoDecoderClientPtr client_;
-  mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe_;
+  std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
   MojoMediaClient* mojo_media_client_;
   std::unique_ptr<media::VideoDecoder> decoder_;

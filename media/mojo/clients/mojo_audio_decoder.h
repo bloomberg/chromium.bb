@@ -5,19 +5,22 @@
 #ifndef MEDIA_MOJO_CLIENTS_MOJO_AUDIO_DECODER_H_
 #define MEDIA_MOJO_CLIENTS_MOJO_AUDIO_DECODER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
 namespace media {
+
+class MojoDecoderBufferWriter;
 
 // An AudioDecoder that proxies to a mojom::AudioDecoder.
 class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
@@ -53,14 +56,6 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
   // called when |remote_decoder_| finished Reset() sequence.
   void OnResetDone();
 
-  // A helper method that creates data pipe and sets the data connection to
-  // the service.
-  void CreateDataPipe();
-
-  // A helper method to serialize the data section of DecoderBuffer into pipe.
-  mojom::DecoderBufferPtr TransferDecoderBuffer(
-      const scoped_refptr<DecoderBuffer>& media_buffer);
-
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // This class is constructed on one thread and used exclusively on another
@@ -71,8 +66,7 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
 
   mojom::AudioDecoderPtr remote_decoder_;
 
-  // DataPipe for serializing the data section of DecoderBuffer.
-  mojo::ScopedDataPipeProducerHandle producer_handle_;
+  std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
 
   // Binding for AudioDecoderClient, bound to the |task_runner_|.
   mojo::Binding<AudioDecoderClient> binding_;

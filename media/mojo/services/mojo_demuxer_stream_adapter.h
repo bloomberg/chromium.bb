@@ -5,6 +5,7 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_DEMUXER_STREAM_ADAPTER_H_
 #define MEDIA_MOJO_SERVICES_MOJO_DEMUXER_STREAM_ADAPTER_H_
 
+#include <memory>
 #include <queue>
 
 #include "base/macros.h"
@@ -15,6 +16,8 @@
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
 
 namespace media {
+
+class MojoDecoderBufferReader;
 
 // This class acts as a MojoRendererService-side stub for a real DemuxerStream
 // that is part of a Pipeline in a remote application. Roughly speaking, it
@@ -44,7 +47,7 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
 
  private:
   void OnStreamReady(mojom::DemuxerStream::Type type,
-                     mojo::ScopedDataPipeConsumerHandle pipe,
+                     mojo::ScopedDataPipeConsumerHandle consumer_handle,
                      mojom::AudioDecoderConfigPtr audio_config,
                      mojom::VideoDecoderConfigPtr video_config);
 
@@ -75,8 +78,7 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
 
   DemuxerStream::Type type_;
 
-  // DataPipe for deserializing the data section of DecoderBuffers from.
-  mojo::ScopedDataPipeConsumerHandle stream_pipe_;
+  std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
   base::WeakPtrFactory<MojoDemuxerStreamAdapter> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(MojoDemuxerStreamAdapter);
