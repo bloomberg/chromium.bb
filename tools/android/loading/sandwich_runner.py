@@ -47,6 +47,7 @@ _TRACING_CATEGORIES = [
   'blink.user_timing',
   'devtools.timeline',
   'java',
+  'navigation',
   'toplevel',
   'v8',
   '-cc',  # A lot of unnecessary events are enabled by default in "cc".
@@ -77,6 +78,10 @@ def _CleanArtefactsFromPastRuns(output_directories_path):
 
 class CacheOperation(object):
   CLEAR, SAVE, PUSH = range(3)
+
+
+class SandwichRunnerError(Exception):
+  pass
 
 
 class SandwichRunner(object):
@@ -209,6 +214,12 @@ class SandwichRunner(object):
             trace = RecordTrace()
         else:
           trace = RecordTrace()
+        for event in trace.request_track.GetEvents():
+          if event.failed:
+            logging.warning(
+                'request to %s failed: %s', event.url, event.error_text)
+        if not trace.tracing_track.HasLoadingSucceeded():
+          raise SandwichRunnerError('Page load has failed.')
     if run_path is not None:
       trace_path = os.path.join(run_path, TRACE_FILENAME)
       trace.ToJsonFile(trace_path)
