@@ -452,6 +452,20 @@ const FeatureEntry::Choice kProgressBarAnimationChoices[] = {
   { IDS_FLAGS_PROGRESS_BAR_ANIMATION_FAST_START,
       switches::kProgressBarAnimation, "fast-start" },
 };
+
+const FeatureEntry::Choice kProgressBarCompletionChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+    {IDS_FLAGS_PROGRESS_BAR_COMPLETION_LOAD_EVENT,
+     switches::kProgressBarCompletion, "loadEvent"},
+    {IDS_FLAGS_PROGRESS_BAR_COMPLETION_RESOURCES_BEFORE_DCL,
+     switches::kProgressBarCompletion, "resourcesBeforeDOMContentLoaded"},
+    {IDS_FLAGS_PROGRESS_BAR_COMPLETION_DOM_CONTENT_LOADED,
+     switches::kProgressBarCompletion, "domContentLoaded"},
+    {IDS_FLAGS_PROGRESS_BAR_COMPLETION_RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES,
+     switches::kProgressBarCompletion,
+     "resourcesBeforeDOMContentLoadedAndSameOriginIFrames"},
+};
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -1640,6 +1654,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"progress-bar-animation", IDS_FLAGS_PROGRESS_BAR_ANIMATION_NAME,
      IDS_FLAGS_PROGRESS_BAR_ANIMATION_DESCRIPTION, kOsAndroid,
      MULTI_VALUE_TYPE(kProgressBarAnimationChoices)},
+    {"progress-bar-completion", IDS_FLAGS_PROGRESS_BAR_COMPLETION_NAME,
+     IDS_FLAGS_PROGRESS_BAR_COMPLETION_DESCRIPTION, kOsAndroid,
+     MULTI_VALUE_TYPE(kProgressBarCompletionChoices)},
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
     {"tab-switcher-theme-colors", IDS_FLAGS_TAB_SWITCHER_THEME_COLORS_NAME,

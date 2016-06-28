@@ -754,6 +754,11 @@ STATIC_ASSERT_ENUM(FrameDetachType::Swap, WebFrameClient::DetachType::Swap);
 STATIC_ASSERT_ENUM(FrameDetachType::Remove, WebRemoteFrameClient::DetachType::Remove);
 STATIC_ASSERT_ENUM(FrameDetachType::Swap, WebRemoteFrameClient::DetachType::Swap);
 
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::LoadEvent, ProgressBarCompletion::LoadEvent);
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::ResourcesBeforeDCL, ProgressBarCompletion::ResourcesBeforeDCL);
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::DOMContentLoaded, ProgressBarCompletion::DOMContentLoaded);
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::ResourcesBeforeDCLAndSameOriginIFrames, ProgressBarCompletion::ResourcesBeforeDCLAndSameOriginIFrames);
+
 static_assert(kSerializedScriptValueVersion == SerializedScriptValue::wireFormatVersion, "");
 
 } // namespace blink

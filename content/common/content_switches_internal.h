@@ -18,6 +18,8 @@ bool IsWin32kRendererLockdownEnabled();
 #endif
 V8CacheOptions GetV8CacheOptions();
 
+ProgressBarCompletion GetProgressBarCompletionPolicy();
+
 CONTENT_EXPORT bool IsUseZoomForDSFEnabled();
 
 } // namespace content

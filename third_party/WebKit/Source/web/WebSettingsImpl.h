@@ -112,6 +112,7 @@ public:
     void setLoadsImagesAutomatically(bool) override;
     void setLoadWithOverviewMode(bool) override;
     void setShouldReuseGlobalForUnownedMainFrame(bool) override;
+    void setProgressBarCompletion(ProgressBarCompletion) override;
     void setLocalStorageEnabled(bool) override;
     void setMainFrameClipsContent(bool) override;
     void setMainFrameResizesAreOrientationChanges(bool) override;

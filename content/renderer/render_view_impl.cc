@@ -1114,6 +1114,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.report_screen_size_in_physical_pixels_quirk);
   settings->setShouldReuseGlobalForUnownedMainFrame(
       prefs.resue_global_for_unowned_main_frame);
+  settings->setProgressBarCompletion(
+      static_cast<WebSettings::ProgressBarCompletion>(
+          prefs.progress_bar_completion));
   settings->setPreferHiddenVolumeControls(true);
   WebRuntimeFeatures::enableAutoplayMutedVideos(
       prefs.autoplay_muted_videos_enabled);

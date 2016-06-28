@@ -372,7 +372,7 @@ textTrackMarginPercentage type=double, initial=0
 
 lowPriorityIframes initial=false
 
-mainResourceOnlyProgress initial=false
+progressBarCompletion type=ProgressBarCompletion, initial=ProgressBarCompletion::LoadEvent
 
 # Do we want to try to save screen real estate in the media player by hiding
 # the volume slider / mute button?

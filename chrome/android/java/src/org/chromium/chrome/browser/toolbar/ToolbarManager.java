@@ -1149,6 +1149,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         progress = Math.max(progress, MINIMUM_LOAD_PROGRESS);
         mToolbar.setLoadProgress(progress / 100f);
+        if (progress == 100) finishLoadProgress(true);
     }
 
     private void finishLoadProgress(boolean delayed) {

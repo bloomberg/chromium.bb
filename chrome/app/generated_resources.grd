@@ -6698,6 +6698,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_FAST_START" desc="Fast start progress bar animation style">
           Fast start
         </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_COMPLETION_NAME" desc="Name of the flag to set when Android's page load progress bar completes.">
+          Android phone page load progress bar completion time.
+        </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_COMPLETION_DESCRIPTION" desc="Description of the flag to set when Android's page load progress bar completes.">
+          Configures Android phone page loading progress bar completion time.
+        </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_COMPLETION_LOAD_EVENT" desc="Complete when the load event completes">
+          Top loading frame's onload event ("everything" is done in the page, historical behavior).
+        </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_COMPLETION_RESOURCES_BEFORE_DCL" desc="Complete when domContentLoaded and any resources loaded started before domContentLoaded are done">
+          Main frame's domContentLoaded and all resources loads started before domContentLoaded (iframes ignored).
+        </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_COMPLETION_DOM_CONTENT_LOADED" desc="Complete when domContentLoaded is done">
+          Main frame's domContentLoaded (iframes ignored).
+        </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_COMPLETION_RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES" desc="Complete when domContentLoaded and any resources loaded started before domContentLoaded, plus the same for same origin iframes">
+          domContentLoaded and all resources loads started before domContentLoaded (main frame and same origin iframes).
+        </message>
       </if>
       <if expr="is_android">
         <message name="IDS_FLAGS_TAB_SWITCHER_THEME_COLORS_NAME" desc="Name of the flag to enable theme colors in the Android phone tab switcher." translateable="false">

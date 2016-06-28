@@ -21,6 +21,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
@@ -371,16 +372,36 @@ void FrameTree::FrameRemoved(FrameTreeNode* frame) {
 
 void FrameTree::UpdateLoadProgress() {
   double progress = 0.0;
+  ProgressBarCompletion completion = GetProgressBarCompletionPolicy();
   int frame_count = 0;
-
-  for (FrameTreeNode* node : Nodes()) {
-    // Ignore the current frame if it has not started loading.
-    if (!node->has_started_loading())
-      continue;
-
-    // Collect progress.
-    progress += node->loading_progress();
-    frame_count++;
+  switch (completion) {
+    case ProgressBarCompletion::DOM_CONTENT_LOADED:
+    case ProgressBarCompletion::RESOURCES_BEFORE_DCL:
+      if (root_->has_started_loading())
+        progress = root_->loading_progress();
+      break;
+    case ProgressBarCompletion::LOAD_EVENT:
+      for (FrameTreeNode* node : Nodes()) {
+        // Ignore the current frame if it has not started loading.
+        if (!node->has_started_loading())
+          continue;
+        progress += node->loading_progress();
+        frame_count++;
+      }
+      break;
+    case ProgressBarCompletion::RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES:
+      for (FrameTreeNode* node : Nodes()) {
+        // Ignore the current frame if it has not started loading,
+        // if the frame is cross-origin, or about:blank.
+        if (!node->has_started_loading() || !node->HasSameOrigin(*root_) ||
+            node->current_url() == GURL(url::kAboutBlankURL))
+          continue;
+        progress += node->loading_progress();
+        frame_count++;
+      }
+      break;
+    default:
+      NOTREACHED();
   }
 
   if (frame_count != 0)

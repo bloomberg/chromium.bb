@@ -54,6 +54,17 @@ enum ImageAnimationPolicy {
 
 enum class ViewportStyle { DEFAULT, MOBILE, TELEVISION, LAST = TELEVISION };
 
+// Controls when the progress bar reports itself as complete. See
+// third_party/WebKit/Source/core/loader/ProgressTracker.cpp for most of its
+// effects.
+enum class ProgressBarCompletion {
+  LOAD_EVENT,
+  RESOURCES_BEFORE_DCL,
+  DOM_CONTENT_LOADED,
+  RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES,
+  LAST = RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES
+};
+
 // The ISO 15924 script code for undetermined script aka Common. It's the
 // default used on WebKit's side to get/set a font setting when no script is
 // specified.
@@ -227,6 +238,7 @@ struct CONTENT_EXPORT WebPreferences {
   // a top-level initial empty document and expect it to persist on navigation.
   bool resue_global_for_unowned_main_frame;
   bool autoplay_muted_videos_enabled;
+  ProgressBarCompletion progress_bar_completion;
 #endif
 
   // String that describes how media element autoplay behavior should be

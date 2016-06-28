@@ -81052,6 +81052,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2005614493" label="tab-management-experiment-type-dill"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
   <int value="2059322877" label="new-avatar-menu"/>
+  <int value="2071340353" label="progress-bar-completion"/>
   <int value="2071461362" label="disable-credit-card-scan"/>
   <int value="2076903744" label="progress-bar-animation"/>
   <int value="2077917024"

@@ -287,6 +287,11 @@ void WebSettingsImpl::setShouldReuseGlobalForUnownedMainFrame(bool enabled)
     m_settings->setShouldReuseGlobalForUnownedMainFrame(enabled);
 }
 
+void WebSettingsImpl::setProgressBarCompletion(ProgressBarCompletion progressBarCompletion)
+{
+    m_settings->setProgressBarCompletion(static_cast<blink::ProgressBarCompletion>(progressBarCompletion));
+}
+
 void WebSettingsImpl::setPluginsEnabled(bool enabled)
 {
     m_devToolsEmulator->setPluginsEnabled(enabled);

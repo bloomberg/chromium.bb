@@ -485,6 +485,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
           (autoplay_group_name.empty() || autoplay_group_name != "Enabled");
   prefs.autoplay_muted_videos_enabled = command_line.HasSwitch(
       switches::kEnableAutoplayMutedVideos);
+
+  prefs.progress_bar_completion = GetProgressBarCompletionPolicy();
 #endif
 
   // Handle autoplay gesture override experiment.

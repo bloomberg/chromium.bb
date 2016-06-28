@@ -101,6 +101,13 @@ enum HistoryScrollRestorationType {
     ScrollRestorationManual
 };
 
+enum class ProgressBarCompletion {
+    LoadEvent,
+    ResourcesBeforeDCL,
+    DOMContentLoaded,
+    ResourcesBeforeDCLAndSameOriginIFrames
+};
+
 } // namespace blink
 
 #endif
