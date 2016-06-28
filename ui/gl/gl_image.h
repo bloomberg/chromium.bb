@@ -85,6 +85,13 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // removed. https://crbug.com/581777#c36
   virtual bool EmulatingRGB() const;
 
+  // An identifier for subclasses. Necessary for safe downcasting.
+  enum class Type {
+    NONE,
+    IOSURFACE
+  };
+  virtual Type GetType() const;
+
  protected:
   virtual ~GLImage() {}
 

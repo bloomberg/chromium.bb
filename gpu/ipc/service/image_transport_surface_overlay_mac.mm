@@ -163,9 +163,9 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
     gpu::TextureInUseResponse response;
     response.texture = query.texture;
     bool in_use = false;
-    if (query.image) {
-      gl::GLImageIOSurface* io_surface_image =
-          static_cast<gl::GLImageIOSurface*>(query.image.get());
+    gl::GLImageIOSurface* io_surface_image =
+        gl::GLImageIOSurface::FromGLImage(query.image.get());
+    if (io_surface_image) {
       in_use = io_surface_image->CanCheckIOSurfaceIsInUse() &&
                IOSurfaceIsInUse(io_surface_image->io_surface());
     }
@@ -320,8 +320,14 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     DLOG(ERROR) << "Invalid non-zero Z order.";
     return false;
   }
+  gl::GLImageIOSurface* io_surface_image =
+      gl::GLImageIOSurface::FromGLImage(image);
+  if (!io_surface_image) {
+    DLOG(ERROR) << "Not an IOSurface image.";
+    return false;
+  }
   return ca_layer_tree_coordinator_->SetPendingGLRendererBackbuffer(
-      static_cast<gl::GLImageIOSurface*>(image)->io_surface());
+      io_surface_image->io_surface());
 }
 
 bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
@@ -336,14 +342,14 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     const gfx::Transform& transform,
     int sorting_context_id,
     unsigned filter) {
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
-  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
-  if (contents_image) {
-    gl::GLImageIOSurface* io_surface_image =
-        static_cast<gl::GLImageIOSurface*>(contents_image);
-    io_surface = io_surface_image->io_surface();
-    cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
-  }
+  gl::GLImageIOSurface* io_surface_image =
+      gl::GLImageIOSurface::FromGLImage(contents_image);
+  if (!io_surface_image)
+    return false;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface =
+      io_surface_image->io_surface();
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer =
+      io_surface_image->cv_pixel_buffer();
   return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
       ->ScheduleCALayer(is_clipped, gfx::ToEnclosingRect(clip_rect),
                         sorting_context_id, transform, io_surface,
