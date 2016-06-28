@@ -99,7 +99,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   explicit FeatureInfo(
       const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds);
 
-  // Constructor with workarounds taken from |command_line|
+  // Constructor with workarounds taken from |command_line|.
   FeatureInfo(const base::CommandLine& command_line,
               const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds);
 

@@ -320,6 +320,8 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   bool bind_generates_resource;
   bool fail_if_major_perf_caveat;
   bool lose_context_when_out_of_memory;
+  bool should_use_native_gmb_for_backbuffer;
+
   ContextType context_type;
 };
 

@@ -44,7 +44,7 @@ class ContextGroupTest : public GpuServiceTest {
     scoped_refptr<FeatureInfo> feature_info = new FeatureInfo;
     group_ = scoped_refptr<ContextGroup>(
         new ContextGroup(gpu_preferences_, NULL, NULL, NULL, NULL, feature_info,
-                         kBindGeneratesResource));
+                         kBindGeneratesResource, nullptr));
   }
 
   GpuPreferences gpu_preferences_;

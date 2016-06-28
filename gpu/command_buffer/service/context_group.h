@@ -25,6 +25,7 @@
 
 namespace gpu {
 
+class ImageFactory;
 struct GpuPreferences;
 class TransferBufferManager;
 
@@ -56,7 +57,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
       const scoped_refptr<FramebufferCompletenessCache>&
           framebuffer_completeness_cache,
       const scoped_refptr<FeatureInfo>& feature_info,
-      bool bind_generates_resource);
+      bool bind_generates_resource,
+      gpu::ImageFactory* image_factory);
 
   // This should only be called by GLES2Decoder. This must be paired with a
   // call to destroy if it succeeds.
@@ -144,6 +146,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   FeatureInfo* feature_info() {
     return feature_info_.get();
   }
+
+  gpu::ImageFactory* image_factory() { return image_factory_; }
 
   const GpuPreferences& gpu_preferences() const {
     return gpu_preferences_;
@@ -275,6 +279,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   std::unique_ptr<SamplerManager> sampler_manager_;
 
   scoped_refptr<FeatureInfo> feature_info_;
+
+  gpu::ImageFactory* image_factory_;
 
   std::vector<base::WeakPtr<gles2::GLES2Decoder> > decoders_;
 

@@ -33,6 +33,7 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_memory_manager.h"
 #include "gpu/ipc/service/gpu_memory_tracking.h"
 #include "gpu/ipc/service/gpu_watchdog.h"
@@ -459,13 +460,16 @@ bool GpuCommandBufferStub::Initialize(
   } else {
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo(manager->gpu_driver_bug_workarounds());
+    gpu::GpuMemoryBufferFactory* gmb_factory =
+        channel_->gpu_channel_manager()->gpu_memory_buffer_factory();
     context_group_ = new gles2::ContextGroup(
         manager->gpu_preferences(), channel_->mailbox_manager(),
         new GpuCommandBufferMemoryTracker(channel_,
                                           command_buffer_id_.GetUnsafeValue()),
         manager->shader_translator_cache(),
         manager->framebuffer_completeness_cache(), feature_info,
-        init_params.attribs.bind_generates_resource);
+        init_params.attribs.bind_generates_resource,
+        gmb_factory ? gmb_factory->AsImageFactory() : nullptr);
   }
 
 #if defined(OS_MACOSX)

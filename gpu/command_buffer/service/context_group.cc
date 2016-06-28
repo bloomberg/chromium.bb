@@ -63,7 +63,8 @@ ContextGroup::ContextGroup(
     const scoped_refptr<FramebufferCompletenessCache>&
         framebuffer_completeness_cache,
     const scoped_refptr<FeatureInfo>& feature_info,
-    bool bind_generates_resource)
+    bool bind_generates_resource,
+    gpu::ImageFactory* image_factory)
     : gpu_preferences_(gpu_preferences),
       mailbox_manager_(mailbox_manager),
       memory_tracker_(memory_tracker),
@@ -99,7 +100,8 @@ ContextGroup::ContextGroup(
       max_uniform_buffer_bindings_(0u),
       uniform_buffer_offset_alignment_(1u),
       program_cache_(NULL),
-      feature_info_(feature_info) {
+      feature_info_(feature_info),
+      image_factory_(image_factory) {
   {
     DCHECK(feature_info_);
     if (!mailbox_manager_.get())

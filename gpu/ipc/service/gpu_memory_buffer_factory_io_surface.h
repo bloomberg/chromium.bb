@@ -53,6 +53,12 @@ class GPU_EXPORT GpuMemoryBufferFactoryIOSurface
       gfx::BufferFormat format,
       unsigned internalformat,
       int client_id) override;
+  scoped_refptr<gl::GLImage> CreateAnonymousImage(
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      unsigned internalformat) override;
+  unsigned RequiredTextureType() override;
+  bool SupportsFormatRGB() override;
 
  private:
   typedef std::pair<gfx::IOSurfaceId, int> IOSurfaceMapKey;

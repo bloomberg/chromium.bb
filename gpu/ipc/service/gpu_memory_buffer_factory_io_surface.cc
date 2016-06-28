@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gl/gl_image_io_surface.h"
@@ -32,7 +33,8 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   if (!io_surface)
     return gfx::GpuMemoryBufferHandle();
 
-  {
+  // A GpuMemoryBuffer with client_id = 0 behaves like anonymous shared memory.
+  if (client_id != 0) {
     base::AutoLock lock(io_surfaces_lock_);
 
     IOSurfaceMapKey key(id, client_id);
@@ -84,6 +86,36 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     return scoped_refptr<gl::GLImage>();
 
   return image;
+}
+
+scoped_refptr<gl::GLImage>
+GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
+                                                      gfx::BufferFormat format,
+                                                      unsigned internalformat) {
+  // Note that the GpuMemoryBufferId and child id don't matter since the texture
+  // will never be directly exposed to other processes, only via a mailbox.
+  int gmb_id = 0;
+  int client_id = 0;
+  gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBuffer(
+      gfx::GpuMemoryBufferId(gmb_id), size, format, gfx::BufferUsage::SCANOUT,
+      client_id, gpu::kNullSurfaceHandle);
+
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
+  io_surface.reset(IOSurfaceLookupFromMachPort(handle.mach_port.get()));
+  DCHECK_NE(nullptr, io_surface.get());
+  scoped_refptr<gl::GLImageIOSurface> image(
+      new gl::GLImageIOSurface(size, internalformat));
+  if (!image->Initialize(io_surface.get(), handle.id, format))
+    return scoped_refptr<gl::GLImage>();
+  return image;
+}
+
+unsigned GpuMemoryBufferFactoryIOSurface::RequiredTextureType() {
+  return GL_TEXTURE_RECTANGLE_ARB;
+}
+
+bool GpuMemoryBufferFactoryIOSurface::SupportsFormatRGB() {
+  return false;
 }
 
 }  // namespace gpu

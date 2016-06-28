@@ -35,6 +35,7 @@ namespace gpu {
 
 class CommandBufferService;
 class CommandExecutor;
+class ImageFactory;
 class SyncPointClient;
 class SyncPointOrderData;
 class SyncPointManager;
@@ -77,6 +78,12 @@ class GLManager : private GpuControl {
     bool force_shader_name_hashing;
     // Whether the buffer is multisampled.
     bool multisampled;
+    // Whether the backbuffer has an alpha channel.
+    bool backbuffer_alpha;
+    // The ImageFactory to use to generate images for the backbuffer.
+    gpu::ImageFactory* image_factory;
+    // Enable the feature |arb_texture_rectangle|.
+    bool enable_arb_texture_rectangle;
   };
   GLManager();
   ~GLManager() override;

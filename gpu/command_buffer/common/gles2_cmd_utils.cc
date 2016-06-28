@@ -1783,7 +1783,8 @@ const int32_t kBufferPreserved = 0x3094;  // EGL_BUFFER_PRESERVED
 const int32_t kBindGeneratesResource = 0x10000;
 const int32_t kFailIfMajorPerfCaveat = 0x10001;
 const int32_t kLoseContextWhenOutOfMemory = 0x10002;
-const int32_t kContextType = 0x10003;
+const int32_t kShouldUseNativeGMBForBackbuffer = 0x10003;
+const int32_t kContextType = 0x10004;
 
 }  // namespace
 
@@ -1800,6 +1801,7 @@ ContextCreationAttribHelper::ContextCreationAttribHelper()
       bind_generates_resource(true),
       fail_if_major_perf_caveat(false),
       lose_context_when_out_of_memory(false),
+      should_use_native_gmb_for_backbuffer(false),
       context_type(CONTEXT_TYPE_OPENGLES2) {}
 
 ContextCreationAttribHelper::ContextCreationAttribHelper(
@@ -1855,6 +1857,9 @@ bool ContextCreationAttribHelper::Parse(const std::vector<int32_t>& attribs) {
         break;
       case kLoseContextWhenOutOfMemory:
         lose_context_when_out_of_memory = value != 0;
+        break;
+      case kShouldUseNativeGMBForBackbuffer:
+        should_use_native_gmb_for_backbuffer = value != 0;
         break;
       case kContextType:
         context_type = static_cast<ContextType>(value);
