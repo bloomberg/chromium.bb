@@ -950,16 +950,6 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(2, 2, &aom_highbd_12_sub_pixel_avg_variance4x4_c, 12)));
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-#if HAVE_MMX
-INSTANTIATE_TEST_CASE_P(
-    MMX, AvxSubpelVarianceTest,
-    ::testing::Values(make_tuple(4, 4, &aom_sub_pixel_variance16x16_mmx, 0),
-                      make_tuple(4, 3, &aom_sub_pixel_variance16x8_mmx, 0),
-                      make_tuple(3, 4, &aom_sub_pixel_variance8x16_mmx, 0),
-                      make_tuple(3, 3, &aom_sub_pixel_variance8x8_mmx, 0),
-                      make_tuple(2, 2, &aom_sub_pixel_variance4x4_mmx, 0)));
-#endif  // HAVE_MMX
-
 #if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(SSE2, SumOfSquaresTest,
                         ::testing::Values(aom_get_mb_ss_sse2));
