@@ -1959,7 +1959,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"new-audio-rendering-mixing-strategy",  // FLAGS:RECORD_UMA
      IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_NAME,
      IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_DESCRIPTION,
-     kOsWin | kOsMac | kOsLinux,
+     kOsWin | kOsMac | kOsLinux | kOsAndroid,
      FEATURE_VALUE_TYPE(media::kNewAudioRenderingMixingStrategy)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

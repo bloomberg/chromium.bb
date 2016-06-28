@@ -210,6 +210,14 @@
             "group_name": "NetworkTimeQueriesEnabled"
         }
     ],
+    "NewAudioRenderingMixingStrategy": [
+        {
+            "enable_features": [
+                "NewAudioRenderingMixingStrategy"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "NonValidatingReloadOnRefreshContent": [
         {
             "enable_features": [
