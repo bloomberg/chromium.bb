@@ -4446,25 +4446,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
   DCHECK(!have_context || context_->IsCurrent(nullptr));
 
-  // Unbind everything.
-  state_.vertex_attrib_manager = nullptr;
-  state_.default_vertex_attrib_manager = nullptr;
-  state_.texture_units.clear();
-  state_.sampler_units.clear();
-  state_.bound_array_buffer = nullptr;
-  state_.bound_copy_read_buffer = nullptr;
-  state_.bound_copy_write_buffer = nullptr;
-  state_.bound_pixel_pack_buffer = nullptr;
-  state_.bound_pixel_unpack_buffer = nullptr;
-  state_.bound_transform_feedback_buffer = nullptr;
-  state_.bound_uniform_buffer = nullptr;
-  framebuffer_state_.bound_read_framebuffer = nullptr;
-  framebuffer_state_.bound_draw_framebuffer = nullptr;
-  state_.bound_renderbuffer = nullptr;
-  state_.bound_transform_feedback = nullptr;
-  state_.default_transform_feedback = nullptr;
-  state_.indexed_uniform_buffer_bindings = nullptr;
-
   ReleaseAllBackTextures(have_context);
   if (have_context) {
     if (apply_framebuffer_attachment_cmaa_intel_.get()) {
@@ -4544,6 +4525,25 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     }
   }
   deschedule_until_finished_fences_.clear();
+
+  // Unbind everything.
+  state_.vertex_attrib_manager = nullptr;
+  state_.default_vertex_attrib_manager = nullptr;
+  state_.texture_units.clear();
+  state_.sampler_units.clear();
+  state_.bound_array_buffer = nullptr;
+  state_.bound_copy_read_buffer = nullptr;
+  state_.bound_copy_write_buffer = nullptr;
+  state_.bound_pixel_pack_buffer = nullptr;
+  state_.bound_pixel_unpack_buffer = nullptr;
+  state_.bound_transform_feedback_buffer = nullptr;
+  state_.bound_uniform_buffer = nullptr;
+  framebuffer_state_.bound_read_framebuffer = nullptr;
+  framebuffer_state_.bound_draw_framebuffer = nullptr;
+  state_.bound_renderbuffer = nullptr;
+  state_.bound_transform_feedback = nullptr;
+  state_.default_transform_feedback = nullptr;
+  state_.indexed_uniform_buffer_bindings = nullptr;
 
   // Current program must be cleared after calling ProgramManager::UnuseProgram.
   // Otherwise, we can leak objects. http://crbug.com/258772.
