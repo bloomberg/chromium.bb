@@ -2544,6 +2544,8 @@
           'tags': ['website-sharing'],
           'desc': '''Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.
 
+          Google's search URL can be specified as: <ph name="GOOGLE_SEARCH_URL">'{google:baseURL}search?q={searchTerms}&amp;{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}{google:instantExtendedEnabledParameter}ie={inputEncoding}'</ph>.
+
           This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.''',
         },
         {
@@ -2563,6 +2565,8 @@
 
           This policy is optional. If not set, no suggest URL will be used.
 
+          Google's suggest URL can be specified as: <ph name="GOOGLE_SUGGEST_SEARCH_URL">'{google:baseURL}complete/search?output=chrome&amp;q={searchTerms}'</ph>.
+
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },
         {
@@ -2581,6 +2585,8 @@
           'desc': '''Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be replaced at query time by the text the user has entered so far.
 
           This policy is optional. If not set, no instant search results will be provided.
+
+          Google's instant results URL can be specified as: <ph name="GOOGLE_INSTANT_SEARCH_URL">'{google:baseURL}suggest?q={searchTerms}'</ph>.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },
