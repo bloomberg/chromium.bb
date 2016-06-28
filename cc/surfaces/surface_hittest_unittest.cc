@@ -81,7 +81,9 @@ TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
   SurfaceIdAllocator root_allocator(2);
   SurfaceId root_surface_id = root_allocator.GenerateId();
   factory.Create(root_surface_id);
-  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame),
+  std::unique_ptr<CompositorFrame> root_frame_copy(new CompositorFrame);
+  *root_frame_copy = std::move(root_frame);
+  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame_copy),
                                 SurfaceFactory::DrawCallback());
 
   {
@@ -110,7 +112,9 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface) {
   SurfaceIdAllocator root_allocator(2);
   SurfaceId root_surface_id = root_allocator.GenerateId();
   factory.Create(root_surface_id);
-  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame),
+  std::unique_ptr<CompositorFrame> root_frame_copy(new CompositorFrame);
+  *root_frame_copy = std::move(root_frame);
+  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame_copy),
                                 SurfaceFactory::DrawCallback());
   TestCase tests[] = {
     {
@@ -153,7 +157,9 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
   SurfaceIdAllocator root_allocator(2);
   SurfaceId root_surface_id = root_allocator.GenerateId();
   factory.Create(root_surface_id);
-  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame),
+  std::unique_ptr<CompositorFrame> root_frame_copy(new CompositorFrame);
+  *root_frame_copy = std::move(root_frame);
+  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame_copy),
                                 SurfaceFactory::DrawCallback());
 
   // Creates a child surface.
@@ -172,7 +178,9 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
 
   // Submit the frame.
   factory.Create(child_surface_id);
-  factory.SubmitCompositorFrame(child_surface_id, std::move(child_frame),
+  std::unique_ptr<CompositorFrame> child_frame_copy(new CompositorFrame);
+  *child_frame_copy = std::move(child_frame);
+  factory.SubmitCompositorFrame(child_surface_id, std::move(child_frame_copy),
                                 SurfaceFactory::DrawCallback());
 
   TestCase tests[] = {
@@ -226,7 +234,9 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
                         root_rect,
                         child_rect,
                         child_surface_id);
-  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame),
+  root_frame_copy.reset(new CompositorFrame);
+  *root_frame_copy = std::move(root_frame);
+  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame_copy),
                                 SurfaceFactory::DrawCallback());
 
   // Verify that point (100, 100) no longer falls on the child surface.
@@ -291,7 +301,9 @@ TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
   SurfaceIdAllocator root_allocator(2);
   SurfaceId root_surface_id = root_allocator.GenerateId();
   factory.Create(root_surface_id);
-  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame),
+  std::unique_ptr<CompositorFrame> root_frame_copy(new CompositorFrame);
+  *root_frame_copy = std::move(root_frame);
+  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame_copy),
                                 SurfaceFactory::DrawCallback());
 
   // Creates a child surface.
@@ -310,7 +322,9 @@ TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
 
   // Submit the frame.
   factory.Create(child_surface_id);
-  factory.SubmitCompositorFrame(child_surface_id, std::move(child_frame),
+  std::unique_ptr<CompositorFrame> child_frame_copy(new CompositorFrame);
+  *child_frame_copy = std::move(child_frame);
+  factory.SubmitCompositorFrame(child_surface_id, std::move(child_frame_copy),
                                 SurfaceFactory::DrawCallback());
 
   TestCase tests[] = {
@@ -409,7 +423,9 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
   SurfaceIdAllocator root_allocator(1);
   SurfaceId root_surface_id = root_allocator.GenerateId();
   factory.Create(root_surface_id);
-  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame),
+  std::unique_ptr<CompositorFrame> root_frame_copy(new CompositorFrame);
+  *root_frame_copy = std::move(root_frame);
+  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame_copy),
                                 SurfaceFactory::DrawCallback());
 
   TestCase tests[] = {
@@ -487,7 +503,9 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   SurfaceIdAllocator root_allocator(2);
   SurfaceId root_surface_id = root_allocator.GenerateId();
   factory.Create(root_surface_id);
-  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame),
+  std::unique_ptr<CompositorFrame> root_frame_copy(new CompositorFrame);
+  *root_frame_copy = std::move(root_frame);
+  factory.SubmitCompositorFrame(root_surface_id, std::move(root_frame_copy),
                                 SurfaceFactory::DrawCallback());
 
   // Creates a child surface.
@@ -504,7 +522,9 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
 
   // Submit the frame.
   factory.Create(child_surface_id);
-  factory.SubmitCompositorFrame(child_surface_id, std::move(child_frame),
+  std::unique_ptr<CompositorFrame> frame_copy(new CompositorFrame);
+  *frame_copy = std::move(child_frame);
+  factory.SubmitCompositorFrame(child_surface_id, std::move(frame_copy),
                                 SurfaceFactory::DrawCallback());
 
   TestCase test_expectations_without_insets[] = {

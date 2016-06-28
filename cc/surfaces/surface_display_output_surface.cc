@@ -76,8 +76,10 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame frame) {
 
   client_->DidSwapBuffers();
 
+  std::unique_ptr<CompositorFrame> frame_copy(new CompositorFrame);
+  *frame_copy = std::move(frame);
   factory_.SubmitCompositorFrame(
-      delegated_surface_id_, std::move(frame),
+      delegated_surface_id_, std::move(frame_copy),
       base::Bind(&SurfaceDisplayOutputSurface::SwapBuffersComplete,
                  base::Unretained(this)));
 }
@@ -105,7 +107,7 @@ bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
 
 void SurfaceDisplayOutputSurface::ForceReclaimResources() {
   if (!delegated_surface_id_.is_null()) {
-    factory_.SubmitCompositorFrame(delegated_surface_id_, CompositorFrame(),
+    factory_.SubmitCompositorFrame(delegated_surface_id_, nullptr,
                                    SurfaceFactory::DrawCallback());
   }
 }

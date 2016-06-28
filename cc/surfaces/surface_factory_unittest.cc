@@ -94,8 +94,8 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceDamageObserver {
       resource.mailbox_holder.sync_token = frame_sync_token_;
       frame_data->resource_list.push_back(resource);
     }
-    CompositorFrame frame;
-    frame.delegated_frame_data = std::move(frame_data);
+    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());
   }
@@ -133,7 +133,7 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceDamageObserver {
   void RefCurrentFrameResources() {
     Surface* surface = manager_.GetSurfaceForId(surface_id_);
     factory_->RefResources(
-        surface->GetEligibleFrame().delegated_frame_data->resource_list);
+        surface->GetEligibleFrame()->delegated_frame_data->resource_list);
   }
 
  protected:
@@ -424,8 +424,8 @@ TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
   Surface* surface = manager_.GetSurfaceForId(surface_id);
   ASSERT_NE(nullptr, surface);
   EXPECT_EQ(2, surface->frame_index());
-  CompositorFrame frame;
-  frame.delegated_frame_data.reset(new DelegatedFrameData);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+  frame->delegated_frame_data.reset(new DelegatedFrameData);
 
   factory_->SubmitCompositorFrame(surface_id, std::move(frame),
                                   SurfaceFactory::DrawCallback());
@@ -447,8 +447,8 @@ void CreateSurfaceDrawCallback(SurfaceFactory* factory,
 TEST_F(SurfaceFactoryTest, AddDuringDestroy) {
   SurfaceId surface_id(0, 6, 0);
   factory_->Create(surface_id);
-  CompositorFrame frame;
-  frame.delegated_frame_data.reset(new DelegatedFrameData);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+  frame->delegated_frame_data.reset(new DelegatedFrameData);
 
   uint32_t execute_count = 0;
   SurfaceDrawStatus drawn = SurfaceDrawStatus::DRAW_SKIPPED;
@@ -479,8 +479,8 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
   frame_data->resource_list.push_back(resource);
-  CompositorFrame frame;
-  frame.delegated_frame_data = std::move(frame_data);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+  frame->delegated_frame_data = std::move(frame_data);
   uint32_t execute_count = 0;
   SurfaceDrawStatus drawn = SurfaceDrawStatus::DRAW_SKIPPED;
 
@@ -505,10 +505,10 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
   factory_->Destroy(id2);
 
   std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-  CompositorFrame frame;
-  frame.metadata.satisfies_sequences.push_back(6);
-  frame.metadata.satisfies_sequences.push_back(4);
-  frame.delegated_frame_data = std::move(frame_data);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+  frame->metadata.satisfies_sequences.push_back(6);
+  frame->metadata.satisfies_sequences.push_back(4);
+  frame->delegated_frame_data = std::move(frame_data);
   DCHECK(manager_.GetSurfaceForId(id2));
   factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                   SurfaceFactory::DrawCallback());
@@ -559,9 +559,9 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
     std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     frame_data->render_pass_list.push_back(std::move(render_pass));
-    CompositorFrame frame;
-    frame.metadata.referenced_surfaces.push_back(surface_id_);
-    frame.delegated_frame_data = std::move(frame_data);
+    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->metadata.referenced_surfaces.push_back(surface_id_);
+    frame->delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(id2, std::move(frame),
                                     SurfaceFactory::DrawCallback());
   }
@@ -572,9 +572,9 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
     std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     frame_data->render_pass_list.push_back(std::move(render_pass));
-    CompositorFrame frame;
-    frame.metadata.referenced_surfaces.push_back(id2);
-    frame.delegated_frame_data = std::move(frame_data);
+    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->metadata.referenced_surfaces.push_back(id2);
+    frame->delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());
   }
@@ -606,9 +606,9 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
     std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     frame_data->render_pass_list.push_back(std::move(render_pass));
-    CompositorFrame frame;
-    frame.metadata.referenced_surfaces.push_back(surface_id_);
-    frame.delegated_frame_data = std::move(frame_data);
+    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->metadata.referenced_surfaces.push_back(surface_id_);
+    frame->delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());
   }

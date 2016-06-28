@@ -207,8 +207,7 @@ void Display::DidLoseOutputSurface() {
 
 void Display::UpdateRootSurfaceResourcesLocked() {
   Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
-  bool root_surface_resources_locked =
-      !surface || !surface->GetEligibleFrame().delegated_frame_data;
+  bool root_surface_resources_locked = !surface || !surface->GetEligibleFrame();
   if (scheduler_)
     scheduler_->SetRootSurfaceResourcesLocked(root_surface_resources_locked);
 }
@@ -227,8 +226,9 @@ bool Display::DrawAndSwap() {
     return false;
   }
 
-  CompositorFrame frame = aggregator_->Aggregate(current_surface_id_);
-  if (!frame.delegated_frame_data) {
+  std::unique_ptr<CompositorFrame> frame =
+      aggregator_->Aggregate(current_surface_id_);
+  if (!frame) {
     TRACE_EVENT_INSTANT0("cc", "Empty aggregated frame.",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
@@ -241,11 +241,11 @@ bool Display::DrawAndSwap() {
       surface->RunDrawCallbacks(SurfaceDrawStatus::DRAWN);
   }
 
-  DelegatedFrameData* frame_data = frame.delegated_frame_data.get();
+  DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
-  frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
-                                     stored_latency_info_.begin(),
-                                     stored_latency_info_.end());
+  frame->metadata.latency_info.insert(frame->metadata.latency_info.end(),
+                                      stored_latency_info_.begin(),
+                                      stored_latency_info_.end());
   stored_latency_info_.clear();
   bool have_copy_requests = false;
   for (const auto& pass : frame_data->render_pass_list) {
@@ -300,21 +300,21 @@ bool Display::DrawAndSwap() {
   bool should_swap = should_draw && size_matches;
   if (should_swap) {
     swapped_since_resize_ = true;
-    for (auto& latency : frame.metadata.latency_info) {
+    for (auto& latency : frame->metadata.latency_info) {
       TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
           TRACE_ID_DONT_MANGLE(latency.trace_id()),
           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
           "step", "Display::DrawAndSwap");
     }
     benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
-    renderer_->SwapBuffers(std::move(frame.metadata));
+    renderer_->SwapBuffers(std::move(frame->metadata));
   } else {
     if (have_damage && !size_matches)
       aggregator_->SetFullDamageForSurface(current_surface_id_);
     TRACE_EVENT_INSTANT0("cc", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
     stored_latency_info_.insert(stored_latency_info_.end(),
-                                frame.metadata.latency_info.begin(),
-                                frame.metadata.latency_info.end());
+                                frame->metadata.latency_info.begin(),
+                                frame->metadata.latency_info.end());
     DidSwapBuffers();
     DidSwapBuffersComplete();
   }
@@ -393,9 +393,9 @@ void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {
       aggregator_->previous_contained_surfaces().count(surface_id)) {
     Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
     if (surface) {
-      const CompositorFrame& current_frame = surface->GetEligibleFrame();
-      if (!current_frame.delegated_frame_data ||
-          !current_frame.delegated_frame_data->resource_list.size()) {
+      const CompositorFrame* current_frame = surface->GetEligibleFrame();
+      if (!current_frame || !current_frame->delegated_frame_data ||
+          !current_frame->delegated_frame_data->resource_list.size()) {
         aggregator_->ReleaseResources(surface_id);
       }
     }

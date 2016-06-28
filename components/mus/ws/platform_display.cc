@@ -257,7 +257,7 @@ void DefaultPlatformDisplay::Draw() {
     return;
 
   // TODO(fsamuel): We should add a trace for generating a top level frame.
-  cc::CompositorFrame frame(GenerateCompositorFrame());
+  std::unique_ptr<cc::CompositorFrame> frame(GenerateCompositorFrame());
   frame_pending_ = true;
   if (display_compositor_) {
     display_compositor_->SubmitCompositorFrame(
@@ -306,7 +306,8 @@ void DefaultPlatformDisplay::UpdateMetrics(const gfx::Size& size,
   delegate_->OnViewportMetricsChanged(old_metrics, metrics_);
 }
 
-cc::CompositorFrame DefaultPlatformDisplay::GenerateCompositorFrame() {
+std::unique_ptr<cc::CompositorFrame>
+DefaultPlatformDisplay::GenerateCompositorFrame() {
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->damage_rect = dirty_rect_;
   render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels);
@@ -319,8 +320,8 @@ cc::CompositorFrame DefaultPlatformDisplay::GenerateCompositorFrame() {
   frame_data->device_scale_factor = metrics_.device_scale_factor;
   frame_data->render_pass_list.push_back(std::move(render_pass));
 
-  cc::CompositorFrame frame;
-  frame.delegated_frame_data = std::move(frame_data);
+  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  frame->delegated_frame_data = std::move(frame_data);
   return frame;
 }
 

@@ -422,7 +422,9 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
   DCHECK_LT(ack_pending_count_, 1000U);
-  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
+  std::unique_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame);
+  *frame_copy = std::move(frame);
+  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame_copy),
                                           ack_callback);
 
   ProcessFrameSwappedCallbacks();

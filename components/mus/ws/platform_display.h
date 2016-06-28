@@ -150,7 +150,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   // if there is budget for it.
   void DidDraw(cc::SurfaceDrawStatus status);
   void UpdateMetrics(const gfx::Size& size, float device_scale_factor);
-  cc::CompositorFrame GenerateCompositorFrame();
+  std::unique_ptr<cc::CompositorFrame> GenerateCompositorFrame();
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;

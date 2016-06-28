@@ -90,8 +90,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       }
 
       frame_data->render_pass_list.push_back(std::move(pass));
-      CompositorFrame frame;
-      frame.delegated_frame_data = std::move(frame_data);
+      std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+      frame->delegated_frame_data = std::move(frame_data);
       factory_.SubmitCompositorFrame(SurfaceId(0, i, 0), std::move(frame),
                                      SurfaceFactory::DrawCallback());
     }
@@ -115,13 +115,13 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         pass->damage_rect = gfx::Rect(0, 0, 1, 1);
 
       frame_data->render_pass_list.push_back(std::move(pass));
-      CompositorFrame frame;
-      frame.delegated_frame_data = std::move(frame_data);
+      std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+      frame->delegated_frame_data = std::move(frame_data);
       factory_.SubmitCompositorFrame(SurfaceId(0, num_surfaces + 1, 0),
                                      std::move(frame),
                                      SurfaceFactory::DrawCallback());
 
-      CompositorFrame aggregated =
+      std::unique_ptr<CompositorFrame> aggregated =
           aggregator_->Aggregate(SurfaceId(0, num_surfaces + 1, 0));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
