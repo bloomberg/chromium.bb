@@ -55,7 +55,7 @@ bool StructTraits<ui::mojom::InputDevice, ui::InputDevice>::Read(
   if (!data.ReadName(&out->name))
     return false;
 
-  base::StringPiece sys_path_string;
+  std::string sys_path_string;
   if (!data.ReadSysPath(&sys_path_string))
     return false;
   out->sys_path = base::FilePath::FromUTF8Unsafe(sys_path_string);

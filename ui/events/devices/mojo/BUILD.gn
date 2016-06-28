@@ -13,3 +13,13 @@ mojom("mojo") {
     "//ui/gfx/geometry/mojo",
   ]
 }
+
+mojom("test_interfaces") {
+  sources = [
+    "device_struct_traits_test.mojom",
+  ]
+
+  public_deps = [
+    ":mojo",
+  ]
+}

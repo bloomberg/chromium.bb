@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/strings/string_piece.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/mojo/input_devices.mojom.h"
 #include "ui/events/devices/touchscreen_device.h"
@@ -34,7 +33,7 @@ struct StructTraits<ui::mojom::InputDevice, ui::InputDevice> {
     return device.name;
   }
 
-  static base::StringPiece sys_path(const ui::InputDevice& device) {
+  static std::string sys_path(const ui::InputDevice& device) {
     return device.sys_path.AsUTF8Unsafe();
   }
 
