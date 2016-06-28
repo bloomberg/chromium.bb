@@ -19,18 +19,14 @@ MAX_IPC_MESSAGES_PER_TESTCASE = 1500
 
 
 class GenerationalFuzzer:
-  def parse_arguments(self):
+  def __init__(self):
     self.args = utils.parse_arguments()
 
-  def set_application_paths(self):
     chrome_application_path = utils.get_application_path()
     chrome_application_directory = os.path.dirname(chrome_application_path)
     self.ipc_fuzzer_binary = utils.get_fuzzer_application_name()
-    self.ipc_replay_binary = utils.get_replay_application_name()
     self.ipc_fuzzer_binary_path = os.path.join(
         chrome_application_directory, self.ipc_fuzzer_binary)
-    self.ipc_replay_binary_path = os.path.join(
-        chrome_application_directory, self.ipc_replay_binary)
 
   def generate_ipcdump_testcase(self):
     ipcdump_testcase_path = (
@@ -48,15 +44,14 @@ class GenerationalFuzzer:
     if subprocess.call(cmd):
       sys.exit('%s failed.' % self.ipc_fuzzer_binary)
 
-    utils.create_flags_file(ipcdump_testcase_path, self.ipc_replay_binary_path)
+    utils.create_flags_file(ipcdump_testcase_path)
 
   def main(self):
-    self.parse_arguments()
-    self.set_application_paths()
     for _ in xrange(self.args.no_of_files):
       self.generate_ipcdump_testcase()
 
     return 0
+
 
 if __name__ == "__main__":
   fuzzer = GenerationalFuzzer()

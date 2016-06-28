@@ -33,10 +33,13 @@ def application_name_for_platform(application_name):
     return application_name + '.exe'
   return application_name
 
-def create_flags_file(ipcdump_testcase_path, ipc_replay_application_path):
+def create_flags_file(ipcdump_testcase_path):
   """Create a flags file to add launch prefix to application command line."""
   random_launch_prefix = random.choice(LAUNCH_PREFIXES)
-  file_content = '%s=%s' % (random_launch_prefix, ipc_replay_application_path)
+  application_name = application_name_for_platform(IPC_REPLAY_APPLICATION)
+  file_content = '%s=%%APP_DIR%%%s%s' % (random_launch_prefix,
+                                         os.path.sep,
+                                         application_name)
 
   flags_file_path = ipcdump_testcase_path.replace(FUZZ_PREFIX, FLAGS_PREFIX)
   file_handle = open(flags_file_path, 'w')
