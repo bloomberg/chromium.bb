@@ -317,7 +317,6 @@ DefaultPlatformDisplay::GenerateCompositorFrame() {
 
   std::unique_ptr<cc::DelegatedFrameData> frame_data(
       new cc::DelegatedFrameData);
-  frame_data->device_scale_factor = metrics_.device_scale_factor;
   frame_data->render_pass_list.push_back(std::move(render_pass));
 
   std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);

@@ -723,7 +723,7 @@ void ParamTraits<cc::DelegatedFrameData>::Write(base::Pickle* m,
                                                 const param_type& p) {
   DCHECK_NE(0u, p.render_pass_list.size());
 
-  size_t to_reserve = sizeof(p.device_scale_factor);
+  size_t to_reserve = 0u;
   to_reserve += p.resource_list.size() * sizeof(cc::TransferableResource);
   for (const auto& pass : p.render_pass_list) {
     to_reserve += sizeof(size_t) * 2;
@@ -731,7 +731,6 @@ void ParamTraits<cc::DelegatedFrameData>::Write(base::Pickle* m,
   }
   m->Reserve(to_reserve);
 
-  WriteParam(m, p.device_scale_factor);
   WriteParam(m, p.resource_list);
   WriteParam(m, base::checked_cast<uint32_t>(p.render_pass_list.size()));
   for (const auto& pass : p.render_pass_list) {
@@ -748,9 +747,6 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const base::Pickle* m,
   const size_t kMaxRenderPasses = 10000;
   const size_t kMaxSharedQuadStateListSize = 100000;
   const size_t kMaxQuadListSize = 1000000;
-
-  if (!ReadParam(m, iter, &p->device_scale_factor))
-    return false;
 
   std::set<cc::RenderPassId> pass_set;
 
@@ -791,7 +787,6 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const base::Pickle* m,
 void ParamTraits<cc::DelegatedFrameData>::Log(const param_type& p,
                                               std::string* l) {
   l->append("DelegatedFrameData(");
-  LogParam(p.device_scale_factor, l);
   LogParam(p.resource_list, l);
   l->append(", [");
   for (size_t i = 0; i < p.render_pass_list.size(); ++i) {

@@ -17,9 +17,6 @@ class CC_EXPORT DelegatedFrameData {
   DelegatedFrameData();
   ~DelegatedFrameData();
 
-  // The device scale factor used when generating this frame.
-  float device_scale_factor;
-
   TransferableResourceArray resource_list;
   RenderPassList render_pass_list;
 

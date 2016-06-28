@@ -84,7 +84,6 @@ void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   delegated_frame_data_ = base::WrapUnique(new DelegatedFrameData);
   DelegatedFrameData& out_data = *delegated_frame_data_;
-  out_data.device_scale_factor = device_scale_factor;
   // Move the render passes and resources into the |out_frame|.
   out_data.render_pass_list.swap(*render_passes_in_draw_order);
 

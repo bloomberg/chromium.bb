@@ -719,8 +719,6 @@ struct FuzzTraits<cc::CompositorFrameAck> {
 template <>
 struct FuzzTraits<cc::DelegatedFrameData> {
   static bool Fuzz(cc::DelegatedFrameData* p, Fuzzer* fuzzer) {
-    if (!FuzzParam(&p->device_scale_factor, fuzzer))
-      return false;
     if (!FuzzParam(&p->resource_list, fuzzer))
       return false;
     if (!FuzzParam(&p->render_pass_list, fuzzer))

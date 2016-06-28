@@ -1036,14 +1036,6 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
   CheckOutputSurfaceChanged(output_surface_id);
   bool has_content = !texture_size_in_layer_.IsEmpty();
 
-  // DelegatedRendererLayerImpl applies the inverse device_scale_factor of the
-  // renderer frame, assuming that the browser compositor will scale
-  // it back up to device scale.  But on Android we put our browser layers in
-  // physical pixels and set our browser CC device_scale_factor to 1, so this
-  // suppresses the transform.  This line may need to be removed when fixing
-  // http://crbug.com/384134 or http://crbug.com/310763
-  frame.delegated_frame_data->device_scale_factor = 1.0f;
-
   base::Closure ack_callback =
       base::Bind(&RenderWidgetHostViewAndroid::SendDelegatedFrameAck,
                  weak_ptr_factory_.GetWeakPtr(),

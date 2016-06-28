@@ -153,11 +153,6 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
     std::unique_ptr<cc::CompositorFrame> child_compositor_frame =
         std::move(child_frame_->frame);
 
-    // On Android we put our browser layers in physical pixels and set our
-    // browser CC device_scale_factor to 1, so suppress the transform between
-    // DIP and pixels.
-    child_compositor_frame->delegated_frame_data->device_scale_factor = 1.0f;
-
     gfx::Size frame_size =
         child_compositor_frame->delegated_frame_data->render_pass_list.back()
             ->output_rect.size();
