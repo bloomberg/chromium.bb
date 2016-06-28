@@ -689,6 +689,8 @@ TEST_F(OfflinePageModelImplTest, DeletePageByPredicate) {
 TEST_F(OfflinePageModelImplTest, DeletePageNotFound) {
   DeletePage(1234LL, base::Bind(&OfflinePageModelImplTest::OnDeletePageDone,
                                 AsWeakPtr()));
+  PumpLoop();
+
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_result());
 
   ResetResults();
@@ -696,6 +698,8 @@ TEST_F(OfflinePageModelImplTest, DeletePageNotFound) {
   model()->DeletePagesByURLPredicate(
       base::Bind(&URLSpecContains, "page.com"),
       base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
+  PumpLoop();
+
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_result());
 }
 

@@ -152,6 +152,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void GetBestPageForOnlineURLWhenLoadDone(
       const GURL& online_url,
       const SingleOfflinePageItemCallback& callback) const;
+  void MarkPageAccessedWhenLoadDone(int64_t offline_id);
+  void CheckMetadataConsistencyWhenLoadDone();
 
   // Callback for checking whether we have offline pages.
   void HasPagesAfterLoadDone(const std::string& name_space,
@@ -197,7 +199,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                              bool success);
 
   // Callbacks for checking metadata consistency.
-  void DoCheckMetadataConsistency(
+  void CheckMetadataConsistencyForArchivePaths(
       const std::set<base::FilePath>& archive_paths);
   // Callback called after headless archives deleted. Orphaned archives are
   // archives files on disk which are not pointed to by any of the page items

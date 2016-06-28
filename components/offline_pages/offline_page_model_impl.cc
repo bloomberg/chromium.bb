@@ -304,7 +304,13 @@ void OfflinePageModelImpl::SavePage(
 }
 
 void OfflinePageModelImpl::MarkPageAccessed(int64_t offline_id) {
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::MarkPageAccessedWhenLoadDone,
+                           weak_ptr_factory_.GetWeakPtr(), offline_id));
+}
+
+void OfflinePageModelImpl::MarkPageAccessedWhenLoadDone(int64_t offline_id) {
   DCHECK(is_loaded_);
+
   auto iter = offline_pages_.find(offline_id);
   if (iter == offline_pages_.end() || iter->second.IsExpired())
     return;
@@ -327,14 +333,9 @@ void OfflinePageModelImpl::MarkPageAccessed(int64_t offline_id) {
 void OfflinePageModelImpl::DeletePagesByOfflineId(
     const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback) {
-  if (!is_loaded_) {
-    delayed_tasks_.push_back(
-        base::Bind(&OfflinePageModelImpl::DoDeletePagesByOfflineId,
-                   weak_ptr_factory_.GetWeakPtr(), offline_ids, callback));
-
-    return;
-  }
-  DoDeletePagesByOfflineId(offline_ids, callback);
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::DoDeletePagesByOfflineId,
+                           weak_ptr_factory_.GetWeakPtr(), offline_ids,
+                           callback));
 }
 
 void OfflinePageModelImpl::DoDeletePagesByOfflineId(
@@ -377,14 +378,9 @@ void OfflinePageModelImpl::ClearAll(const base::Closure& callback) {
 void OfflinePageModelImpl::DeletePagesByURLPredicate(
     const UrlPredicate& predicate,
     const DeletePageCallback& callback) {
-  if (!is_loaded_) {
-    delayed_tasks_.push_back(
-        base::Bind(&OfflinePageModelImpl::DoDeletePagesByURLPredicate,
-                   weak_ptr_factory_.GetWeakPtr(), predicate, callback));
-
-    return;
-  }
-  DoDeletePagesByURLPredicate(predicate, callback);
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::DoDeletePagesByURLPredicate,
+                           weak_ptr_factory_.GetWeakPtr(), predicate,
+                           callback));
 }
 
 void OfflinePageModelImpl::DoDeletePagesByURLPredicate(
@@ -611,10 +607,14 @@ const OfflinePageItem* OfflinePageModelImpl::MaybeGetBestPageForOnlineURL(
 }
 
 void OfflinePageModelImpl::CheckMetadataConsistency() {
-  DCHECK(is_loaded_);
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModelImpl::CheckMetadataConsistencyWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
 
+void OfflinePageModelImpl::CheckMetadataConsistencyWhenLoadDone() {
   archive_manager_->GetAllArchives(
-      base::Bind(&OfflinePageModelImpl::DoCheckMetadataConsistency,
+      base::Bind(&OfflinePageModelImpl::CheckMetadataConsistencyForArchivePaths,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -915,7 +915,7 @@ void OfflinePageModelImpl::InformDeletePageDone(
     callback.Run(result);
 }
 
-void OfflinePageModelImpl::DoCheckMetadataConsistency(
+void OfflinePageModelImpl::CheckMetadataConsistencyForArchivePaths(
     const std::set<base::FilePath>& archive_paths) {
   ExpirePagesMissingArchiveFile(archive_paths);
   DeleteOrphanedArchives(archive_paths);
