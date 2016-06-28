@@ -22,7 +22,6 @@ namespace ash {
 
 enum class LoginStatus;
 class ScreenTrayItem;
-class StatusAreaWidget;
 class SystemBubbleWrapper;
 class SystemTrayDelegate;
 class SystemTrayItem;
@@ -30,6 +29,7 @@ class TrayAccessibility;
 class TrayDate;
 class TrayUpdate;
 class TrayUser;
+class WebNotificationTray;
 
 // There are different methods for creating bubble views.
 enum BubbleCreationType {
@@ -40,12 +40,16 @@ enum BubbleCreationType {
 class ASH_EXPORT SystemTray : public TrayBackgroundView,
                               public views::TrayBubbleView::Delegate {
  public:
-  explicit SystemTray(StatusAreaWidget* status_area_widget);
+  explicit SystemTray(WmShelf* wm_shelf);
   ~SystemTray() override;
 
   // Calls TrayBackgroundView::Initialize(), creates the tray items, and
   // adds them to SystemTrayNotifier.
-  void InitializeTrayItems(SystemTrayDelegate* delegate);
+  void InitializeTrayItems(SystemTrayDelegate* delegate,
+                           WebNotificationTray* web_notification_tray);
+
+  // Resets internal pointers.
+  void Shutdown();
 
   // Adds a new item in the tray.
   void AddTrayItem(SystemTrayItem* item);
@@ -214,8 +218,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override;
 
-  // The widget containing this view.
-  StatusAreaWidget* status_area_widget_;
+  // The web notification tray view that appears adjacent to this view.
+  WebNotificationTray* web_notification_tray_;
 
   // Owned items.
   ScopedVector<SystemTrayItem> items_;

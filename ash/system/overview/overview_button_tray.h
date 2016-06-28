@@ -17,8 +17,6 @@ class ImageView;
 
 namespace ash {
 
-class StatusAreaWidget;
-
 // Status area tray for showing a toggle for Overview Mode. Overview Mode
 // is equivalent to WindowSelectorController being in selection mode.
 // This hosts a ShellObserver that listens for the activation of Maximize Mode
@@ -28,7 +26,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
                                       public SessionStateObserver,
                                       public ShellObserver {
  public:
-  explicit OverviewButtonTray(StatusAreaWidget* status_area_widget);
+  explicit OverviewButtonTray(WmShelf* wm_shelf);
   ~OverviewButtonTray() override;
 
   // Updates the tray's visibility based on the LoginStatus and the current

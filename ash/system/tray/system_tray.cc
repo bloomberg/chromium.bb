@@ -18,15 +18,14 @@
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/update/tray_update.h"
 #include "ash/common/system/user/tray_user_separator.h"
+#include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/system/cast/tray_cast.h"
-#include "ash/system/status_area_widget.h"
 #include "ash/system/user/tray_user.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -127,10 +126,9 @@ class SystemBubbleWrapper {
 
 // SystemTray
 
-SystemTray::SystemTray(StatusAreaWidget* status_area_widget)
-    : TrayBackgroundView(status_area_widget->wm_shelf()),
-      status_area_widget_(status_area_widget),
-      items_(),
+SystemTray::SystemTray(WmShelf* wm_shelf)
+    : TrayBackgroundView(wm_shelf),
+      web_notification_tray_(nullptr),
       detailed_item_(nullptr),
       default_bubble_height_(0),
       hide_notifications_(false),
@@ -141,7 +139,6 @@ SystemTray::SystemTray(StatusAreaWidget* status_area_widget)
       tray_update_(nullptr),
       screen_capture_tray_item_(nullptr),
       screen_share_tray_item_(nullptr) {
-  DCHECK(status_area_widget_);
   SetContentsBackground();
 }
 
@@ -155,9 +152,18 @@ SystemTray::~SystemTray() {
   }
 }
 
-void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
+void SystemTray::InitializeTrayItems(
+    SystemTrayDelegate* delegate,
+    WebNotificationTray* web_notification_tray) {
+  DCHECK(web_notification_tray);
+  web_notification_tray_ = web_notification_tray;
   TrayBackgroundView::Initialize();
   CreateItems(delegate);
+}
+
+void SystemTray::Shutdown() {
+  DCHECK(web_notification_tray_);
+  web_notification_tray_ = nullptr;
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
@@ -588,7 +594,8 @@ void SystemTray::UpdateWebNotifications() {
     height =
         std::max(0, work_area.height() - bubble_view->GetBoundsInScreen().y());
   }
-  status_area_widget_->web_notification_tray()->SetSystemTrayHeight(height);
+  if (web_notification_tray_)
+    web_notification_tray_->SetTrayBubbleHeight(height);
 }
 
 base::string16 SystemTray::GetAccessibleTimeString(

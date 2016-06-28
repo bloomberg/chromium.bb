@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/ash_popup_alignment_delegate.h"
+#include "ash/common/system/web_notification/ash_popup_alignment_delegate.h"
 
 #include <utility>
 #include <vector>
@@ -15,7 +15,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -28,6 +27,7 @@
 
 namespace ash {
 
+// TODO(jamescook): Move this to //ash/common. http://crbug.com/620955
 class AshPopupAlignmentDelegateTest : public test::AshTestBase {
  public:
   AshPopupAlignmentDelegateTest() {}
@@ -255,8 +255,9 @@ TEST_F(AshPopupAlignmentDelegateTest, TrayHeight) {
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
   int baseline = alignment_delegate()->GetBaseLine();
 
+  // Simulate the system tray bubble being open.
   const int kTrayHeight = 100;
-  alignment_delegate()->SetSystemTrayHeight(kTrayHeight);
+  alignment_delegate()->SetTrayBubbleHeight(kTrayHeight);
 
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_EQ(baseline - kTrayHeight - message_center::kMarginBetweenItems,
@@ -270,7 +271,8 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
   SetAlignmentDelegate(
       base::WrapUnique(new AshPopupAlignmentDelegate(GetPrimaryShelf())));
 
-  display::Display second_display = ScreenUtil::GetSecondaryDisplay();
+  display::Display second_display =
+      Shell::GetInstance()->display_manager()->GetDisplayAt(1u);
   WmShelf* second_shelf =
       WmLookup::Get()
           ->GetRootWindowControllerWithDisplayId(second_display.id())

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_WEB_NOTIFICATION_ASH_POPUP_ALIGNMENT_DELEGATE_H_
-#define ASH_SYSTEM_WEB_NOTIFICATION_ASH_POPUP_ALIGNMENT_DELEGATE_H_
+#ifndef ASH_COMMON_SYSTEM_WEB_NOTIFICATION_ASH_POPUP_ALIGNMENT_DELEGATE_H_
+#define ASH_COMMON_SYSTEM_WEB_NOTIFICATION_ASH_POPUP_ALIGNMENT_DELEGATE_H_
 
 #include <stdint.h>
 
@@ -41,12 +41,12 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   // Start observing the system.
   void StartObserving(display::Screen* screen, const display::Display& display);
 
-  // Sets the current height of the system tray so that the notification toasts
-  // can avoid it.
-  void SetSystemTrayHeight(int height);
+  // Sets the current height of the system tray bubble (or legacy notification
+  // bubble) so that web notification toasts can avoid it.
+  void SetTrayBubbleHeight(int height);
 
-  // Returns the current system tray height.
-  int system_tray_height_for_test() const { return system_tray_height_; }
+  // Returns the current tray bubble height or 0 if there is no bubble.
+  int tray_bubble_height_for_test() const { return tray_bubble_height_; }
 
   // Overridden from message_center::PopupAlignmentDelegate:
   int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
@@ -88,11 +88,11 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   display::Screen* screen_;
   gfx::Rect work_area_;
   WmShelf* shelf_;
-  int system_tray_height_;
+  int tray_bubble_height_;
 
   DISALLOW_COPY_AND_ASSIGN(AshPopupAlignmentDelegate);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_WEB_NOTIFICATION_ASH_POPUP_ALIGNMENT_DELEGATE_H_
+#endif  // ASH_COMMON_SYSTEM_WEB_NOTIFICATION_ASH_POPUP_ALIGNMENT_DELEGATE_H_

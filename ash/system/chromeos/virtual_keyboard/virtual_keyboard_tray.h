@@ -15,14 +15,13 @@ class ImageButton;
 }
 
 namespace ash {
-class StatusAreaWidget;
 
 // TODO(sky): make this visible on non-chromeos platforms.
 class VirtualKeyboardTray : public TrayBackgroundView,
                             public views::ButtonListener,
                             public KeyboardUIObserver {
  public:
-  explicit VirtualKeyboardTray(StatusAreaWidget* status_area_widget);
+  explicit VirtualKeyboardTray(WmShelf* wm_shelf);
   ~VirtualKeyboardTray() override;
 
   // TrayBackgroundView:

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/common/system/web_notification/web_notification_tray.h"
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
@@ -15,13 +15,12 @@
 #include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
@@ -203,14 +202,19 @@ class WebNotificationButton : public views::CustomButton {
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButton);
 };
 
-WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
-    : TrayBackgroundView(status_area_widget->wm_shelf()),
-      status_area_widget_(status_area_widget),
-      button_(NULL),
+WebNotificationTray::WebNotificationTray(WmShelf* shelf,
+                                         WmWindow* status_area_window,
+                                         SystemTray* system_tray)
+    : TrayBackgroundView(shelf),
+      status_area_window_(status_area_window),
+      system_tray_(system_tray),
+      button_(nullptr),
       show_message_center_on_unlock_(false),
       should_update_tray_content_(false),
       should_block_shelf_auto_hide_(false) {
-  DCHECK(status_area_widget_);
+  DCHECK(shelf);
+  DCHECK(status_area_window_);
+  DCHECK(system_tray_);
   button_ = new WebNotificationButton(this);
   button_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                        ui::EF_RIGHT_MOUSE_BUTTON);
@@ -220,17 +224,12 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
   tray_container()->SetBorder(views::Border::NullBorder());
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this, message_center::MessageCenter::Get()));
-  WmShelf* shelf = WmLookup::Get()
-                       ->GetWindowForWidget(status_area_widget)
-                       ->GetRootWindowController()
-                       ->GetShelf();
   popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate(shelf));
   popup_collection_.reset(new message_center::MessagePopupCollection(
       message_center(), message_center_tray_.get(),
       popup_alignment_delegate_.get()));
-  const display::Display& display = WmLookup::Get()
-                                        ->GetWindowForWidget(status_area_widget)
-                                        ->GetDisplayNearestWindow();
+  const display::Display& display =
+      status_area_window_->GetDisplayNearestWindow();
   popup_alignment_delegate_->StartObserving(display::Screen::GetScreen(),
                                             display);
   OnMessageCenterTrayChanged();
@@ -259,11 +258,9 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
     max_height = shelf()->GetIdealBounds().y();
   } else {
     // Assume the status area and bubble bottoms are aligned when vertical.
-    WmWindow* status_area_window =
-        WmLookup::Get()->GetWindowForWidget(status_area_widget_);
     gfx::Rect bounds_in_root =
-        status_area_window->GetRootWindow()->ConvertRectFromScreen(
-            status_area_window->GetBoundsInScreen());
+        status_area_window_->GetRootWindow()->ConvertRectFromScreen(
+            status_area_window_->GetBoundsInScreen());
     max_height = bounds_in_root.bottom();
   }
   message_center_bubble->SetMaxHeight(
@@ -273,7 +270,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   message_center_bubble_.reset(
       new WebNotificationBubbleWrapper(this, message_center_bubble));
 
-  status_area_widget_->SetHideSystemNotifications(true);
+  system_tray_->SetHideNotifications(true);
   shelf()->UpdateAutoHideState();
   button_->SetBubbleVisible(true);
   SetDrawBackgroundAsActive(true);
@@ -291,17 +288,17 @@ void WebNotificationTray::HideMessageCenter() {
   message_center_bubble_.reset();
   should_block_shelf_auto_hide_ = false;
   show_message_center_on_unlock_ = false;
-  status_area_widget_->SetHideSystemNotifications(false);
+  system_tray_->SetHideNotifications(false);
   shelf()->UpdateAutoHideState();
   button_->SetBubbleVisible(false);
 }
 
-void WebNotificationTray::SetSystemTrayHeight(int height) {
-  popup_alignment_delegate_->SetSystemTrayHeight(height);
+void WebNotificationTray::SetTrayBubbleHeight(int height) {
+  popup_alignment_delegate_->SetTrayBubbleHeight(height);
 }
 
-int WebNotificationTray::system_tray_height_for_test() const {
-  return popup_alignment_delegate_->system_tray_height_for_test();
+int WebNotificationTray::tray_bubble_height_for_test() const {
+  return popup_alignment_delegate_->tray_bubble_height_for_test();
 }
 
 bool WebNotificationTray::ShowPopups() {
@@ -320,8 +317,7 @@ void WebNotificationTray::HidePopups() {
 // Private methods.
 
 bool WebNotificationTray::ShouldShowMessageCenter() {
-  return !(status_area_widget_->system_tray() &&
-           status_area_widget_->system_tray()->HasNotificationBubble());
+  return !system_tray_->HasNotificationBubble();
 }
 
 bool WebNotificationTray::ShouldBlockShelfAutoHide() const {
@@ -502,7 +498,7 @@ void WebNotificationTray::UpdateTrayContent() {
   Layout();
   SchedulePaint();
   if (IsLoggedIn())
-    status_area_widget_->system_tray()->SetNextFocusableView(this);
+    system_tray_->SetNextFocusableView(this);
 }
 
 void WebNotificationTray::ClickedOutsideBubble() {

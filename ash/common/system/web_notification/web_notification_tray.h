@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_
-#define ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_
+#ifndef ASH_COMMON_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_
+#define ASH_COMMON_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_
 
 #include <memory>
 
@@ -40,10 +40,11 @@ class MessagePopupCollection;
 }
 
 namespace ash {
-class StatusAreaWidget;
+class AshPopupAlignmentDelegate;
+class SystemTray;
 class WebNotificationBubbleWrapper;
 class WebNotificationButton;
-class AshPopupAlignmentDelegate;
+class WmWindow;
 
 class ASH_EXPORT WebNotificationTray
     : public TrayBackgroundView,
@@ -53,16 +54,18 @@ class ASH_EXPORT WebNotificationTray
       public base::SupportsWeakPtr<WebNotificationTray>,
       public ui::SimpleMenuModel::Delegate {
  public:
-  explicit WebNotificationTray(StatusAreaWidget* status_area_widget);
+  WebNotificationTray(WmShelf* shelf,
+                      WmWindow* status_area_window,
+                      SystemTray* system_tray);
   ~WebNotificationTray() override;
 
-  // Sets the height of the system tray from the edge of the work area so that
-  // the notification popups don't overlap with the tray. Passes 0 if no UI is
-  // shown in the system tray side.
-  void SetSystemTrayHeight(int height);
+  // Sets the height of the system tray bubble (or legacy notification bubble)
+  // from the edge of the work area so that the web notification popups don't
+  // overlap with the tray. Pass 0 if no bubble is shown.
+  void SetTrayBubbleHeight(int height);
 
-  // Returns the current system tray height.
-  int system_tray_height_for_test() const;
+  // Returns the current tray bubble height or 0 if there is no bubble.
+  int tray_bubble_height_for_test() const;
 
   // Returns true if it should block the auto hide behavior of the shelf.
   bool ShouldBlockShelfAutoHide() const;
@@ -169,7 +172,8 @@ class ASH_EXPORT WebNotificationTray
   bool IsPopupVisible() const;
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
 
-  StatusAreaWidget* status_area_widget_;
+  WmWindow* status_area_window_;
+  SystemTray* system_tray_;
   std::unique_ptr<message_center::MessageCenterTray> message_center_tray_;
   std::unique_ptr<WebNotificationBubbleWrapper> message_center_bubble_;
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
@@ -192,4 +196,4 @@ class ASH_EXPORT WebNotificationTray
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_
+#endif  // ASH_COMMON_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_

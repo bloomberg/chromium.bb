@@ -11,7 +11,6 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/shell.h"
-#include "ash/system/status_area_widget.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,8 +23,8 @@
 
 namespace ash {
 
-VirtualKeyboardTray::VirtualKeyboardTray(StatusAreaWidget* status_area_widget)
-    : TrayBackgroundView(status_area_widget->wm_shelf()), button_(nullptr) {
+VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
+    : TrayBackgroundView(wm_shelf), button_(nullptr) {
   button_ = new views::ImageButton(this);
   if (MaterialDesignController::IsShelfMaterial()) {
     gfx::ImageSkia image_md =

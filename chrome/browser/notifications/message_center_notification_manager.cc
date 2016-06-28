@@ -40,8 +40,8 @@
 #endif
 
 #if defined(USE_ASH)
+#include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/shell.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #endif
 
 

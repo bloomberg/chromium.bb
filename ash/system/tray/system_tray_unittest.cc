@@ -12,9 +12,9 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_container.h"
+#include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/window_util.h"
@@ -536,19 +536,19 @@ TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()
           ->web_notification_tray();
 
-  // Ensure the initial system tray height is zero.
-  EXPECT_EQ(0, notification_tray->system_tray_height_for_test());
+  // Ensure the initial tray bubble height is zero.
+  EXPECT_EQ(0, notification_tray->tray_bubble_height_for_test());
 
-  // Show the default view, ensure the system tray height is changed.
+  // Show the default view, ensure the tray bubble height is changed.
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
-  EXPECT_LT(0, notification_tray->system_tray_height_for_test());
+  EXPECT_LT(0, notification_tray->tray_bubble_height_for_test());
 
-  // Hide the default view, ensure the system tray height is back to zero.
+  // Hide the default view, ensure the tray bubble height is back to zero.
   ASSERT_TRUE(tray->CloseSystemBubble());
   RunAllPendingInMessageLoop();
 
-  EXPECT_EQ(0, notification_tray->system_tray_height_for_test());
+  EXPECT_EQ(0, notification_tray->tray_bubble_height_for_test());
 }
 #endif  // OS_CHROMEOS
 

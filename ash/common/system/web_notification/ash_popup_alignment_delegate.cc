@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/ash_popup_alignment_delegate.h"
+#include "ash/common/system/web_notification/ash_popup_alignment_delegate.h"
 
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_types.h"
@@ -32,7 +32,7 @@ const int kNoToastMarginBorderAndShadowOffset = 2;
 }  // namespace
 
 AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(WmShelf* shelf)
-    : screen_(NULL), shelf_(shelf), system_tray_height_(0) {
+    : screen_(NULL), shelf_(shelf), tray_bubble_height_(0) {
   shelf_->AddObserver(this);
 }
 
@@ -50,25 +50,25 @@ void AshPopupAlignmentDelegate::StartObserving(
   work_area_ = display.work_area();
   screen->AddObserver(this);
   WmShell::Get()->AddShellObserver(this);
-  if (system_tray_height_ > 0)
+  if (tray_bubble_height_ > 0)
     UpdateWorkArea();
 }
 
-void AshPopupAlignmentDelegate::SetSystemTrayHeight(int height) {
-  system_tray_height_ = height;
+void AshPopupAlignmentDelegate::SetTrayBubbleHeight(int height) {
+  tray_bubble_height_ = height;
 
   // If the shelf is shown during auto-hide state, the distance from the edge
   // should be reduced by the height of shelf's shown height.
   if (shelf_->GetVisibilityState() == SHELF_AUTO_HIDE &&
       shelf_->GetAutoHideState() == SHELF_AUTO_HIDE_SHOWN) {
-    system_tray_height_ -= GetShelfConstant(SHELF_SIZE) -
+    tray_bubble_height_ -= GetShelfConstant(SHELF_SIZE) -
                            GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
   }
 
-  if (system_tray_height_ > 0)
-    system_tray_height_ += message_center::kMarginBetweenItems;
+  if (tray_bubble_height_ > 0)
+    tray_bubble_height_ += message_center::kMarginBetweenItems;
   else
-    system_tray_height_ = 0;
+    tray_bubble_height_ = 0;
 
   DoUpdateIfPossible();
 }
@@ -87,11 +87,11 @@ int AshPopupAlignmentDelegate::GetToastOriginX(
 
 int AshPopupAlignmentDelegate::GetBaseLine() const {
   return work_area_.bottom() - kNoToastMarginBorderAndShadowOffset -
-         system_tray_height_;
+         tray_bubble_height_;
 }
 
 int AshPopupAlignmentDelegate::GetWorkAreaBottom() const {
-  return work_area_.bottom() - system_tray_height_;
+  return work_area_.bottom() - tray_bubble_height_;
 }
 
 bool AshPopupAlignmentDelegate::IsTopDown() const {
