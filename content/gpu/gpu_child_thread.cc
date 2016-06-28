@@ -517,7 +517,8 @@ void GpuChildThread::OnDisableWatchdog() {
 void GpuChildThread::OnGpuSwitched() {
   DVLOG(1) << "GPU: GPU has switched";
   // Notify observers in the GPU process.
-  ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
+  if (!in_browser_process_)
+    ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
 }
 
 void GpuChildThread::OnEstablishChannel(const EstablishChannelParams& params) {
