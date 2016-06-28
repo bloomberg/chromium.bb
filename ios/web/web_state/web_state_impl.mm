@@ -450,12 +450,6 @@ void WebStateImpl::SetContentsMimeType(const std::string& mime_type) {
   mime_type_ = mime_type;
 }
 
-void WebStateImpl::ExecuteJavaScriptAsync(const base::string16& javascript) {
-  DCHECK(Configured());
-  [web_controller_ evaluateJavaScript:base::SysUTF16ToNSString(javascript)
-                  stringResultHandler:nil];
-}
-
 bool WebStateImpl::ShouldAllowRequest(NSURLRequest* request) {
   base::ObserverListBase<WebStatePolicyDecider>::Iterator it(&policy_deciders_);
   WebStatePolicyDecider* policy_decider = nullptr;

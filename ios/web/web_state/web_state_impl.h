@@ -183,11 +183,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // that is the point where MIME type is set from HTTP headers.
   void SetContentsMimeType(const std::string& mime_type);
 
-  // Executes a JavaScript string on the page asynchronously.
-  // TODO(shreyasv): Rename this to ExecuteJavaScript for consistency with
-  // upstream API.
-  virtual void ExecuteJavaScriptAsync(const base::string16& script);
-
   // Returns whether the navigation corresponding to |request| should be allowed
   // to continue by asking its policy deciders. Defaults to true.
   bool ShouldAllowRequest(NSURLRequest* request);

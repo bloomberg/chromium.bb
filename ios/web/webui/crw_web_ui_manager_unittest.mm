@@ -43,8 +43,8 @@ NSString* kHtml = @"<html>Hello World</html>";
 // Mojo module for WebUI page.
 NSString* kMojoModule = @"service_provider.connect('Test');";
 
-// Mock of WebStateImpl to check that LoadHtml and ExecuteJavaScriptAsync are
-// called as expected.
+// Mock of WebStateImpl to check that LoadHtml and ExecuteJavaScript are called
+// as expected.
 class MockWebStateImpl : public WebStateImpl {
  public:
   MockWebStateImpl(BrowserState* browser_state)

@@ -147,7 +147,7 @@ void WebUIIOSImpl::AddMessageHandler(WebUIIOSMessageHandler* handler) {
 }
 
 void WebUIIOSImpl::ExecuteJavascript(const base::string16& javascript) {
-  web_state_->ExecuteJavaScriptAsync(javascript);
+  web_state_->ExecuteJavaScript(javascript);
 }
 
 }  // namespace web
