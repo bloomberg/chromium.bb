@@ -91,6 +91,9 @@ class CONTENT_EXPORT GeolocationProviderImpl
   // True only in testing, where we want to use a custom position.
   bool ignore_location_updates_;
 
+  // The system provided Delegate for the |arbitrator_|.
+  std::unique_ptr<GeolocationProvider::Delegate> delegate_;
+
   // Only to be used on the geolocation thread.
   std::unique_ptr<LocationArbitrator> arbitrator_;
 

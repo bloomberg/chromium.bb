@@ -6,7 +6,6 @@
 #define BLIMP_ENGINE_APP_BLIMP_CONTENT_BROWSER_CLIENT_H_
 
 #include "base/macros.h"
-#include "blimp/engine/feature/geolocation/blimp_location_provider.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace blimp {
@@ -33,16 +32,13 @@ class BlimpContentBrowserClient : public content::ContentBrowserClient {
       shell::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
 
-  content::LocationProvider* OverrideSystemLocationProvider() override;
-  bool UseNetworkLocationProviders() override;
+  content::GeolocationProvider::Delegate* CreateGeolocationDelegate() override;
 
   BlimpBrowserContext* GetBrowserContext();
 
  private:
   // Owned by BrowserMainLoop
   BlimpBrowserMainParts* blimp_browser_main_parts_ = nullptr;
-
-  std::unique_ptr<BlimpLocationProvider> location_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentBrowserClient);
 };

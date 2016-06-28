@@ -160,6 +160,19 @@ class AwAccessTokenStore : public content::AccessTokenStore {
   DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
 };
 
+// A provider of Geolocation services to override AccessTokenStore.
+class AwGeolocationDelegate : public content::GeolocationProvider::Delegate {
+ public:
+  AwGeolocationDelegate() = default;
+
+  content::AccessTokenStore* CreateAccessTokenStore() final {
+    return new AwAccessTokenStore();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AwGeolocationDelegate);
+};
+
 AwLocaleManager* g_locale_manager = NULL;
 
 }  // anonymous namespace
@@ -428,8 +441,9 @@ net::NetLog* AwContentBrowserClient::GetNetLog() {
   return browser_context_->GetAwURLRequestContext()->GetNetLog();
 }
 
-content::AccessTokenStore* AwContentBrowserClient::CreateAccessTokenStore() {
-  return new AwAccessTokenStore();
+content::GeolocationProvider::Delegate*
+AwContentBrowserClient::CreateGeolocationDelegate() {
+  return new AwGeolocationDelegate();
 }
 
 bool AwContentBrowserClient::IsFastShutdownPossible() {

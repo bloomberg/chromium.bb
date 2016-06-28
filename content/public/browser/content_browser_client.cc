@@ -307,7 +307,9 @@ net::NetLog* ContentBrowserClient::GetNetLog() {
   return nullptr;
 }
 
-AccessTokenStore* ContentBrowserClient::CreateAccessTokenStore() {
+GeolocationProvider::Delegate*
+ContentBrowserClient::CreateGeolocationDelegate() {
+  // We don't need to override anything, the default implementation is good.
   return nullptr;
 }
 
@@ -354,14 +356,6 @@ std::unique_ptr<VpnServiceProxy> ContentBrowserClient::GetVpnServiceProxy(
 ui::SelectFilePolicy* ContentBrowserClient::CreateSelectFilePolicy(
     WebContents* web_contents) {
   return nullptr;
-}
-
-LocationProvider* ContentBrowserClient::OverrideSystemLocationProvider() {
-  return nullptr;
-}
-
-bool ContentBrowserClient::UseNetworkLocationProviders() {
-  return true;
 }
 
 DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {

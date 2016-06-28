@@ -208,7 +208,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
   net::NetLog* GetNetLog() override;
-  content::AccessTokenStore* CreateAccessTokenStore() override;
+
+  content::GeolocationProvider::Delegate* CreateGeolocationDelegate() override;
+
   bool IsFastShutdownPossible() override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* prefs) override;

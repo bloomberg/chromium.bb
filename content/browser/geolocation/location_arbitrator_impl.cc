@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "content/browser/geolocation/network_location_provider.h"
 #include "content/public/browser/access_token_store.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "url/gurl.h"
 
@@ -29,15 +28,16 @@ const int64_t LocationArbitratorImpl::kFixStaleTimeoutMilliseconds =
     11 * base::Time::kMillisecondsPerSecond;
 
 LocationArbitratorImpl::LocationArbitratorImpl(
-    const LocationUpdateCallback& callback)
-    : arbitrator_update_callback_(callback),
+    const LocationUpdateCallback& callback,
+    GeolocationProvider::Delegate* delegate)
+    : delegate_(delegate),
+      arbitrator_update_callback_(callback),
       provider_update_callback_(
           base::Bind(&LocationArbitratorImpl::OnLocationUpdate,
                      base::Unretained(this))),
       position_provider_(NULL),
       is_permission_granted_(false),
-      is_running_(false) {
-}
+      is_running_(false) {}
 
 LocationArbitratorImpl::~LocationArbitratorImpl() {
 }
@@ -61,8 +61,7 @@ void LocationArbitratorImpl::StartProviders(bool enable_high_accuracy) {
     RegisterSystemProvider();
 
     AccessTokenStore* access_token_store = GetAccessTokenStore();
-    if (access_token_store &&
-        GetContentClient()->browser()->UseNetworkLocationProviders()) {
+    if (access_token_store && delegate_->UseNetworkLocationProviders()) {
       DCHECK(DefaultNetworkProviderURL().is_valid());
       token_store_callback_.Reset(
           base::Bind(&LocationArbitratorImpl::OnAccessTokenStoresLoaded,
@@ -122,8 +121,8 @@ void LocationArbitratorImpl::RegisterProvider(
 }
 
 void LocationArbitratorImpl::RegisterSystemProvider() {
-  std::unique_ptr<LocationProvider> provider = base::WrapUnique(
-      GetContentClient()->browser()->OverrideSystemLocationProvider());
+  std::unique_ptr<LocationProvider> provider =
+      base::WrapUnique(delegate_->OverrideSystemLocationProvider());
   if (!provider)
     provider = NewSystemLocationProvider();
   RegisterProvider(std::move(provider));
@@ -142,7 +141,7 @@ void LocationArbitratorImpl::OnLocationUpdate(const LocationProvider* provider,
 }
 
 AccessTokenStore* LocationArbitratorImpl::NewAccessTokenStore() {
-  return GetContentClient()->browser()->CreateAccessTokenStore();
+  return delegate_->CreateAccessTokenStore();
 }
 
 AccessTokenStore* LocationArbitratorImpl::GetAccessTokenStore() {

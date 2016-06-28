@@ -17,6 +17,7 @@
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/access_token_store.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/location_provider.h"
 #include "content/public/common/geoposition.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -41,7 +42,8 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
 
   typedef base::Callback<void(const Geoposition&)> LocationUpdateCallback;
 
-  explicit LocationArbitratorImpl(const LocationUpdateCallback& callback);
+  LocationArbitratorImpl(const LocationUpdateCallback& callback,
+                         GeolocationProvider::Delegate* delegate);
   ~LocationArbitratorImpl() override;
 
   static GURL DefaultNetworkProviderURL();
@@ -66,6 +68,8 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   virtual std::unique_ptr<LocationProvider> NewSystemLocationProvider();
   virtual base::Time GetTimeNow() const;
 
+  GeolocationProvider::Delegate* GetDelegateForTesting() { return delegate_; }
+
  private:
   // Provider will either be added to |providers_| or
   // deleted on error (e.g. it fails to start).
@@ -87,6 +91,8 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   bool IsNewPositionBetter(const Geoposition& old_position,
                            const Geoposition& new_position,
                            bool from_same_provider) const;
+
+  GeolocationProvider::Delegate* delegate_;
 
   scoped_refptr<AccessTokenStore> access_token_store_;
   LocationUpdateCallback arbitrator_update_callback_;

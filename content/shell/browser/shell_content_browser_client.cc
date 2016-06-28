@@ -118,6 +118,22 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
+// A provider of services for Geolocation.
+class ShellGeolocationDelegate : public content::GeolocationProvider::Delegate {
+ public:
+  explicit ShellGeolocationDelegate(ShellBrowserContext* context)
+      : context_(context) {}
+
+  AccessTokenStore* CreateAccessTokenStore() final {
+    return new ShellAccessTokenStore(context_);
+  }
+
+ private:
+  ShellBrowserContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellGeolocationDelegate);
+};
+
 }  // namespace
 
 ShellContentBrowserClient* ShellContentBrowserClient::Get() {
@@ -353,8 +369,9 @@ ShellBrowserContext*
   return shell_browser_main_parts_->off_the_record_browser_context();
 }
 
-AccessTokenStore* ShellContentBrowserClient::CreateAccessTokenStore() {
-  return new ShellAccessTokenStore(browser_context());
+GeolocationProvider::Delegate*
+ShellContentBrowserClient::CreateGeolocationDelegate() {
+  return new ShellGeolocationDelegate(browser_context());
 }
 
 }  // namespace content

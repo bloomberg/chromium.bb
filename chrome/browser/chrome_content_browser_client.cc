@@ -627,6 +627,20 @@ class SafeBrowsingSSLCertReporter : public SSLCertReporter {
       safe_browsing_ui_manager_;
 };
 
+// A provider of Geolocation services to override AccessTokenStore.
+class ChromeGeolocationDelegate
+    : public content::GeolocationProvider::Delegate {
+ public:
+  ChromeGeolocationDelegate() = default;
+
+  AccessTokenStore* CreateAccessTokenStore() final {
+    return new ChromeAccessTokenStore();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationDelegate);
+};
+
 #if BUILDFLAG(ANDROID_JAVA_UI)
 void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
   WebContents* web_contents = tab_util::GetWebContentsByFrameID(
@@ -2245,8 +2259,9 @@ net::NetLog* ChromeContentBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
 }
 
-AccessTokenStore* ChromeContentBrowserClient::CreateAccessTokenStore() {
-  return new ChromeAccessTokenStore();
+content::GeolocationProvider::Delegate*
+ChromeContentBrowserClient::CreateGeolocationDelegate() {
+  return new ChromeGeolocationDelegate();
 }
 
 bool ChromeContentBrowserClient::IsFastShutdownPossible() {

@@ -83,6 +83,22 @@ static std::unique_ptr<::shell::ShellClient> CreateMojoMediaApplication(
                                         quit_closure));
 }
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+
+// A provider of services for Geolocation.
+class CastGeolocationDelegate : public content::GeolocationProvider::Delegate {
+ public:
+  explicit CastGeolocationDelegate(CastBrowserContext* context)
+      : context_(context) {}
+  content::AccessTokenStore* CreateAccessTokenStore() override {
+    return new CastAccessTokenStore(context_);
+  }
+
+ private:
+  CastBrowserContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastGeolocationDelegate);
+};
+
 }  // namespace
 
 CastContentBrowserClient::CastContentBrowserClient()
@@ -260,8 +276,9 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   AppendExtraCommandLineSwitches(command_line);
 }
 
-content::AccessTokenStore* CastContentBrowserClient::CreateAccessTokenStore() {
-  return new CastAccessTokenStore(
+content::GeolocationProvider::Delegate*
+CastContentBrowserClient::CreateGeolocationDelegate() {
+  return new CastGeolocationDelegate(
       CastBrowserProcess::GetInstance()->browser_context());
 }
 

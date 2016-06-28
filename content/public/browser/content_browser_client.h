@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/certificate_request_result_type.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
@@ -530,8 +531,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Getters for common objects.
   virtual net::NetLog* GetNetLog();
 
-  // Creates a new AccessTokenStore for gelocation.
-  virtual AccessTokenStore* CreateAccessTokenStore();
+  // Allows the embedder to provide a Delegate for Geolocation to override some
+  // functionality of the API (e.g. AccessTokenStore, LocationProvider).
+  virtual GeolocationProvider::Delegate* CreateGeolocationDelegate();
 
   // Returns true if fast shutdown is possible.
   virtual bool IsFastShutdownPossible();
@@ -620,18 +622,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const base::FilePath& storage_partition_path,
       ScopedVector<storage::FileSystemBackend>* additional_backends) {}
-
-  // Allows an embedder to return its own LocationProvider implementation.
-  // Return nullptr to use the default one for the platform to be created.
-  // Caller takes ownership of the returned LocationProvider.
-  // FYI: Used by an external project; please don't remove.
-  // Contact Viatcheslav Ostapenko at sl.ostapenko@samsung.com for more
-  // information.
-  virtual LocationProvider* OverrideSystemLocationProvider();
-
-  // Returns true if the location API should use network-based
-  // location approximation in addition to the system provider, if any.
-  virtual bool UseNetworkLocationProviders();
 
   // Creates a new DevToolsManagerDelegate. The caller owns the returned value.
   // It's valid to return nullptr.
