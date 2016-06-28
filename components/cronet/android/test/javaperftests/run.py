@@ -15,11 +15,11 @@ This script:
 Prerequisites:
 1. A rooted (i.e. "adb root" succeeds) Android device connected via a USB cable
    to the host machine (i.e. the computer running this script).
-2. quic_server and quic_client have been built for the host machine, e.g. via:
-     ./build/gyp_chromium
-     ninja -C out/Release quic_server quic_client
+2. quic_server has been built for the host machine, e.g. via:
+     gn gen out/Release --args="is_debug=false"
+     ninja -C out/Release quic_server
 3. cronet_perf_test_apk has been built for the Android device, e.g. via:
-     ./components/cronet/tools/cr_cronet.py gyp
+     ./components/cronet/tools/cr_cronet.py gn -r
      ninja -C out/Release cronet_perf_test_apk
 
 Invocation:
@@ -65,7 +65,6 @@ from telemetry.web_perf import timeline_based_measurement
 BUILD_TYPE = 'Release'
 BUILD_DIR = os.path.join(REPOSITORY_ROOT, 'out', BUILD_TYPE)
 QUIC_SERVER = os.path.join(BUILD_DIR, 'quic_server')
-QUIC_CLIENT = os.path.join(BUILD_DIR, 'quic_client')
 CERT_PATH = os.path.join('net', 'data', 'ssl', 'certificates')
 QUIC_CERT_DIR = os.path.join(REPOSITORY_ROOT, CERT_PATH)
 QUIC_CERT_HOST = 'test.example.com'
