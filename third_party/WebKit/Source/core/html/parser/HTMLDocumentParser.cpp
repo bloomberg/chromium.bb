@@ -1024,6 +1024,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
         return;
 
     if (shouldUseThreading()) {
+        double bytesReceivedTime = monotonicallyIncreasingTimeMS();
         if (!m_haveBackgroundParser)
             startBackgroundParser();
 
@@ -1031,7 +1032,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
         memcpy(buffer->data(), data, length);
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
-        postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, m_backgroundParser, passed(std::move(buffer))));
+        postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, m_backgroundParser, passed(std::move(buffer)), bytesReceivedTime));
         return;
     }
 

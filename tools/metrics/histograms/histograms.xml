@@ -37423,6 +37423,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Parser.AppendBytesDelay" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The delay from when bytes are received on the main thread to when the
+    BackgroundHTMLParser starts tokenizing them. Always a shorter time than the
+    time emitted to Parser.PreloadTokenizeDelay.
+  </summary>
+</histogram>
+
 <histogram name="Parser.ChunkEnqueueTime" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -37451,6 +37460,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The maximum number of pending tokens in the ParsedChunkQueue after the
     parser is detached.
+  </summary>
+</histogram>
+
+<histogram name="Parser.PreloadTokenizeDelay" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The delay from when bytes are received on the main thread to when they are
+    tokenized and preloads are sent back to the main parser. Always a greater
+    time than the time emitted to Parser.AppendBytesDelay.
   </summary>
 </histogram>
 

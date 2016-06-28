@@ -78,9 +78,7 @@ public:
         String unparsedInput;
     };
 
-    void appendRawBytesFromParserThread(const char* data, int dataLength);
-
-    void appendRawBytesFromMainThread(std::unique_ptr<Vector<char>>);
+    void appendRawBytesFromMainThread(std::unique_ptr<Vector<char>>, double bytesReceivedTime);
     void setDecoder(std::unique_ptr<TextResourceDecoder>);
     void flush();
     void resumeFrom(std::unique_ptr<Checkpoint>);
@@ -128,6 +126,7 @@ private:
     RefPtr<ParsedChunkQueue> m_parsedChunkQueue;
 
     bool m_startingScript;
+    double m_lastBytesReceivedTime;
 };
 
 } // namespace blink

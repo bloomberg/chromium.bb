@@ -112,6 +112,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHT
     , m_loadingTaskRunner(std::move(loadingTaskRunner))
     , m_parsedChunkQueue(config->parsedChunkQueue.release())
     , m_startingScript(false)
+    , m_lastBytesReceivedTime(0.0)
 {
     ASSERT(m_outstandingTokenLimit > 0);
     ASSERT(m_pendingTokenLimit > 0);
@@ -122,15 +123,12 @@ BackgroundHTMLParser::~BackgroundHTMLParser()
 {
 }
 
-void BackgroundHTMLParser::appendRawBytesFromParserThread(const char* data, int dataLength)
+void BackgroundHTMLParser::appendRawBytesFromMainThread(std::unique_ptr<Vector<char>> buffer, double bytesReceivedTime)
 {
     ASSERT(m_decoder);
-    updateDocument(m_decoder->decode(data, dataLength));
-}
-
-void BackgroundHTMLParser::appendRawBytesFromMainThread(std::unique_ptr<Vector<char>> buffer)
-{
-    ASSERT(m_decoder);
+    m_lastBytesReceivedTime = bytesReceivedTime;
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, queueDelay, ("Parser.AppendBytesDelay", 1, 5000, 50));
+    queueDelay.count(monotonicallyIncreasingTimeMS() - bytesReceivedTime);
     updateDocument(m_decoder->decode(buffer->data(), buffer->size()));
 }
 
@@ -180,6 +178,7 @@ void BackgroundHTMLParser::resumeFrom(std::unique_ptr<Checkpoint> checkpoint)
     m_preloadScanner->rewindTo(checkpoint->preloadScannerCheckpoint);
     m_startingScript = false;
     m_parsedChunkQueue->clear();
+    m_lastBytesReceivedTime = monotonicallyIncreasingTimeMS();
     pumpTokenizer();
 }
 
@@ -292,6 +291,12 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     double chunkStartTime = monotonicallyIncreasingTimeMS();
     std::unique_ptr<HTMLDocumentParser::ParsedChunk> chunk = wrapUnique(new HTMLDocumentParser::ParsedChunk);
     TRACE_EVENT_WITH_FLOW0("blink,loading", "BackgroundHTMLParser::sendTokensToMainThread", chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
+
+    if (!m_pendingPreloads.isEmpty()) {
+        double delay = monotonicallyIncreasingTimeMS() - m_lastBytesReceivedTime;
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, preloadTokenizeDelay, ("Parser.PreloadTokenizeDelay", 1, 10000, 50));
+        preloadTokenizeDelay.count(delay);
+    }
 
     chunk->preloads.swap(m_pendingPreloads);
     if (m_viewportDescription.set)
