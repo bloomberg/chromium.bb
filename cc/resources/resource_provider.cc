@@ -1162,6 +1162,38 @@ ResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware() {
   resource_provider_->UnlockForRead(resource_id_);
 }
 
+ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
+    ResourceProvider* resource_provider,
+    ResourceId resource_id)
+    : resource_provider_(resource_provider), resource_id_(resource_id) {
+  const Resource* resource = resource_provider->LockForRead(resource_id);
+  if (resource->gl_id) {
+    GrGLTextureInfo texture_info;
+    texture_info.fID = resource->gl_id;
+    texture_info.fTarget = resource->target;
+    GrBackendTextureDesc desc;
+    desc.fFlags = kRenderTarget_GrBackendTextureFlag;
+    desc.fWidth = resource->size.width();
+    desc.fHeight = resource->size.height();
+    desc.fConfig = ToGrPixelConfig(resource->format);
+    desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+    desc.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(texture_info);
+    sk_image_ = SkImage::MakeFromTexture(
+        resource_provider->compositor_context_provider_->GrContext(), desc);
+  } else if (resource->pixels) {
+    SkBitmap sk_bitmap;
+    ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap, resource);
+    sk_bitmap.setImmutable();
+    sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
+  } else {
+    NOTREACHED() << "Image not valid";
+  }
+}
+
+ResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
+  resource_provider_->UnlockForRead(resource_id_);
+}
+
 ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
     ResourceProvider* resource_provider,
     ResourceId resource_id)

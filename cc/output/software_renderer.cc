@@ -412,15 +412,14 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
   }
 
   // TODO(skaslev): Add support for non-premultiplied alpha.
-  ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
-                                                quad->resource_id());
+  ResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
+                                               quad->resource_id());
   if (!lock.valid())
     return;
-  const SkBitmap* bitmap = lock.sk_bitmap();
-  gfx::RectF uv_rect = gfx::ScaleRect(gfx::BoundingRect(quad->uv_top_left,
-                                                        quad->uv_bottom_right),
-                                      bitmap->width(),
-                                      bitmap->height());
+  const SkImage* image = lock.sk_image();
+  gfx::RectF uv_rect = gfx::ScaleRect(
+      gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
+      image->width(), image->height());
   gfx::RectF visible_uv_rect = MathUtil::ScaleRectProportional(
       uv_rect, gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
   SkRect sk_uv_rect = gfx::RectFToSkRect(visible_uv_rect);
@@ -431,8 +430,8 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
   if (quad->y_flipped)
     current_canvas_->scale(1, -1);
 
-  bool blend_background = quad->background_color != SK_ColorTRANSPARENT &&
-                          !bitmap->isOpaque();
+  bool blend_background =
+      quad->background_color != SK_ColorTRANSPARENT && !image->isOpaque();
   bool needs_layer = blend_background && (current_paint_.getAlpha() != 0xFF);
   if (needs_layer) {
     current_canvas_->saveLayerAlpha(&quad_rect, current_paint_.getAlpha());
@@ -445,8 +444,7 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
   }
   current_paint_.setFilterQuality(
       quad->nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality);
-  current_canvas_->drawBitmapRect(*bitmap, sk_uv_rect, quad_rect,
-                                  &current_paint_);
+  current_canvas_->drawImageRect(image, sk_uv_rect, quad_rect, &current_paint_);
   if (needs_layer)
     current_canvas_->restore();
 }
@@ -458,8 +456,8 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
   DCHECK(resource_provider_);
   DCHECK(IsSoftwareResource(quad->resource_id()));
 
-  ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
-                                                quad->resource_id());
+  ResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
+                                               quad->resource_id());
   if (!lock.valid())
     return;
 
@@ -472,9 +470,9 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
   SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
   current_paint_.setFilterQuality(
       quad->nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality);
-  current_canvas_->drawBitmapRect(*lock.sk_bitmap(), uv_rect,
-                                  gfx::RectFToSkRect(visible_quad_vertex_rect),
-                                  &current_paint_);
+  current_canvas_->drawImageRect(lock.sk_image(), uv_rect,
+                                 gfx::RectFToSkRect(visible_quad_vertex_rect),
+                                 &current_paint_);
 }
 
 void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,

@@ -346,6 +346,24 @@ class CC_EXPORT ResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
   };
 
+  class CC_EXPORT ScopedReadLockSkImage {
+   public:
+    ScopedReadLockSkImage(ResourceProvider* resource_provider,
+                          ResourceId resource_id);
+    ~ScopedReadLockSkImage();
+
+    const SkImage* sk_image() const { return sk_image_.get(); }
+
+    bool valid() const { return !!sk_image_; }
+
+   private:
+    ResourceProvider* resource_provider_;
+    ResourceId resource_id_;
+    sk_sp<SkImage> sk_image_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
+  };
+
   class CC_EXPORT ScopedWriteLockSoftware {
    public:
     ScopedWriteLockSoftware(ResourceProvider* resource_provider,
