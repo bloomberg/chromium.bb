@@ -111,4 +111,8 @@ class TestImporterTest(unittest.TestCase):
 
     def test_executablebit(self):
         # executable source files are executable after importing
-        pass
+        host = MockHost()
+        host.filesystem = MockFileSystem(files=FAKE_FILES)
+        importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
+        importer.do_import()
+        self.assertEquals(host.filesystem.executable_files, set(['/mock-checkout/third_party/WebKit/LayoutTests/w3c/blink/w3c/dir/has_shebang.txt']))

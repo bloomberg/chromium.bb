@@ -772,9 +772,6 @@ imported/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives
 # crbug.com/441355: MutationObserver incorrect for replaceChild (causes timeout)
 imported/wpt/dom/nodes/MutationObserver-childList.html [ Skip ]
 
-# crbug.com/574461: update-w3c-deps imports .py file with x-bit cleared
-# imported/wpt/dom/nodes/Document-createElement-namespace-tests/generate.py [ Skip ]
-
 # Untriaged: Test results contain local file paths
 imported/wpt/html/semantics/document-metadata/the-base-element/base_about_blank.html [ Skip ]
 imported/wpt/html/semantics/document-metadata/the-base-element/base_srcdoc.html [ Skip ]
