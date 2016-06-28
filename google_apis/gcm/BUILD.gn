@@ -56,6 +56,8 @@ component("gcm") {
 
   defines = [ "GCM_IMPLEMENTATION" ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [
     ":proto",
   ]

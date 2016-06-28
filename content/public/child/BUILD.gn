@@ -31,7 +31,10 @@ source_set("child_sources") {
                         ".",
                         "//content")
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    "//content:content_implementation",
+  ]
 
   deps = [
     "//content/child",  # Must not be public_deps!

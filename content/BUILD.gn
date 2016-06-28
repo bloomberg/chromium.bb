@@ -8,6 +8,7 @@ import("//build/config/nacl/config.gni")
 # Applied by targets internal to content.
 config("content_implementation") {
   defines = [ "CONTENT_IMPLEMENTATION" ]
+  configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 # When targets depend on, e.g. //content/public/browser, what happens? To

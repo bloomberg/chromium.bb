@@ -472,6 +472,8 @@ if (is_win) {
       "app/chrome_exe_main_mac.c",
     ]
 
+    extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
+
     deps = [
       ":chrome_app_strings_bundle_data",
       ":chrome_resources",
@@ -616,6 +618,8 @@ if (is_win) {
     sources = [
       "app/chrome_exe_main_mac.c",
     ]
+
+    extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 
     defines = [ "HELPER_EXECUTABLE" ]
 
@@ -928,6 +932,8 @@ if (is_win) {
     if (enable_package_mash_services) {
       deps += [ "//chrome/app/mash" ]
     }
+
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
   }
 
   mac_framework_bundle("chrome_framework") {

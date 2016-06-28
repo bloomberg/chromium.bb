@@ -416,6 +416,8 @@ source_set("app_mode_app_support") {
     "mac/app_mode_common.mm",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     ":constants",
     "//base",

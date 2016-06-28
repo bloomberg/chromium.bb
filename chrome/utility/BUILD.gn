@@ -21,7 +21,10 @@ config("utility_ldflags") {
 static_library("utility") {
   sources = rebase_path(gypi_values.chrome_utility_sources, ".", "..")
   defines = []
-  configs += [ "//build/config:precompiled_headers" ]
+  configs += [
+    "//build/config:precompiled_headers",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
   all_dependent_configs = [ ":utility_ldflags" ]
 
   public_deps = []

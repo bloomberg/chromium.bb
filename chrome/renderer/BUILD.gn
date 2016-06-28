@@ -72,6 +72,8 @@ static_library("renderer") {
     "//v8:v8",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   if (!is_ios) {
     deps += [
       "//chrome/common/net",

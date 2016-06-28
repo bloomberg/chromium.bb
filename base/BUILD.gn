@@ -54,6 +54,7 @@ config("base_flags") {
 
 config("base_implementation") {
   defines = [ "BASE_IMPLEMENTATION" ]
+  configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 if (is_win) {

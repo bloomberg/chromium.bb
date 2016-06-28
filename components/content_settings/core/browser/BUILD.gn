@@ -64,7 +64,10 @@ source_set("browser") {
     "//url",
   ]
 
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 }
 
 source_set("unit_tests") {

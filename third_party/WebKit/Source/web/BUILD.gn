@@ -32,6 +32,7 @@ component("web") {
   ]
 
   configs += [
+    "//build/config/compiler:wexit_time_destructors",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
     "//third_party/WebKit/Source:non_test_config",
