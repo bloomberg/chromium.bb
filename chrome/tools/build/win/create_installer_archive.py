@@ -86,8 +86,8 @@ def CompressUsingLZMA(build_dir, compressed_file, input_file, verbose):
           '-mb0:1',
           '-mb0s1:2',
           '-mb0s2:3',
-          compressed_file,
-          input_file,]
+          os.path.abspath(compressed_file),
+          os.path.abspath(input_file),]
   if os.path.exists(compressed_file):
     os.remove(compressed_file)
   RunSystemCommand(cmd, verbose)
