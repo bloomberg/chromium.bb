@@ -939,9 +939,7 @@ void FrameView::layout()
 
     ScriptForbiddenScope forbidScript;
 
-    CHECK(m_frame->document()->isActive());
-
-    if (isInPerformLayout() || shouldThrottleRendering())
+    if (isInPerformLayout() || shouldThrottleRendering() || !m_frame->document()->isActive())
         return;
 
     TRACE_EVENT0("blink,benchmark", "FrameView::layout");
