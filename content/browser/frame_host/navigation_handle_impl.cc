@@ -183,9 +183,12 @@ net::Error NavigationHandleImpl::GetNetErrorCode() {
 }
 
 RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
-  CHECK(state_ >= READY_TO_COMMIT)
-      << "This accessor should only be called "
-         "after the navigation is ready to commit.";
+  // TODO(mkwst): Change this to check against 'READY_TO_COMMIT' once
+  // ReadyToCommitNavigation is available whether or not PlzNavigate is
+  // enabled. https://crbug.com/621856
+  CHECK_GE(state_, WILL_PROCESS_RESPONSE)
+      << "This accessor should only be called after a response has been "
+         "delivered for processing.";
   return render_frame_host_;
 }
 
