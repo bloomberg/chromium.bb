@@ -67,11 +67,14 @@ protected:
 
     using ObserverSet = HeapHashSet<WeakMember<Observer>>;
 
+    void removePending(ObserverSet&);
+
     enum IterationState {
-        AllowingNone = 0,
-        AllowingAddition,
-        AllowingRemoval,
-        NotIterating = AllowingAddition | AllowingRemoval,
+        AllowingNone        = 0,
+        AllowingAddition    = 1,
+        AllowingRemoval     = 2,
+        NotIterating        = AllowingAddition | AllowingRemoval,
+        AllowPendingRemoval = 4,
     };
 
     // Iteration state is recorded while iterating the observer set,
@@ -110,8 +113,26 @@ inline void LifecycleNotifier<T, Observer>::addObserver(Observer* observer)
 template<typename T, typename Observer>
 inline void LifecycleNotifier<T, Observer>::removeObserver(Observer* observer)
 {
+    // If immediate removal isn't currently allowed,
+    // |observer| is recorded for pending removal.
+    if (m_iterationState & AllowPendingRemoval) {
+        m_observers.add(observer);
+        return;
+    }
     RELEASE_ASSERT(m_iterationState & AllowingRemoval);
     m_observers.remove(observer);
+}
+
+template<typename T, typename Observer>
+inline void LifecycleNotifier<T, Observer>::removePending(ObserverSet& observers)
+{
+    if (m_observers.size()) {
+        // Prevent allocation (==shrinking) while removing;
+        // the table is likely to become garbage soon.
+        ThreadState::NoAllocationScope scope(ThreadState::current());
+        observers.removeAll(m_observers);
+    }
+    m_observers.swap(observers);
 }
 
 } // namespace blink

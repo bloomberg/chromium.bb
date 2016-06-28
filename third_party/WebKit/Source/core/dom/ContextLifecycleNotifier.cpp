@@ -64,9 +64,11 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 
 void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
 {
-    // Neither additions nor removals are allowed while iterating.
-    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
-    for (ContextLifecycleObserver* observer : m_observers) {
+    // Observers may be removed, but handled after iteration has completed.
+    TemporaryChange<IterationState> scope(m_iterationState, AllowPendingRemoval);
+    ObserverSet observers;
+    m_observers.swap(observers);
+    for (ContextLifecycleObserver* observer : observers) {
         if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
             continue;
         ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
@@ -76,10 +78,12 @@ void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
 #endif
         activeDOMObject->stop();
     }
+    removePending(observers);
 }
 
 unsigned ContextLifecycleNotifier::activeDOMObjectCount() const
 {
+    DCHECK(!isIteratingOverObservers());
     unsigned activeDOMObjects = 0;
     for (ContextLifecycleObserver* observer : m_observers) {
         if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
@@ -92,6 +96,7 @@ unsigned ContextLifecycleNotifier::activeDOMObjectCount() const
 #if DCHECK_IS_ON()
 bool ContextLifecycleNotifier::contains(ActiveDOMObject* object) const
 {
+    DCHECK(!isIteratingOverObservers());
     for (ContextLifecycleObserver* observer : m_observers) {
         if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
             continue;
