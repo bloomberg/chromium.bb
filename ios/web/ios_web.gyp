@@ -520,7 +520,6 @@
         'test/web_int_test.mm',
         'test/web_test_with_web_controller.h',
         'test/web_test_with_web_controller.mm',
-        'test/web_test_suite.h',
         'test/web_test_suite.mm',
         'test/wk_web_view_crash_utils.h',
         'test/wk_web_view_crash_utils.mm',
