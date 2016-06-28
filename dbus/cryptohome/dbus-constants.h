@@ -127,6 +127,7 @@ const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
 const char kSignalAsyncCallStatusWithData[] = "AsyncCallStatusWithData";
 const char kSignalTpmInitStatus[] = "TpmInitStatus";
 const char kSignalCleanupUsersRemoved[] = "CleanupUsersRemoved";
+const char kSignalLowDiskSpace[] = "LowDiskSpace";
 // Error code
 enum MountError {
   MOUNT_ERROR_NONE = 0,
