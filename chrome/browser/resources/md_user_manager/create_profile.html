@@ -144,6 +144,7 @@
       }
 
       #actions paper-spinner {
+        -webkit-margin-end: 8px;
         align-self: center;
         height: 20px;
         width: 20px;
@@ -194,13 +195,17 @@
         </template>
       </div>
       <div id="actions">
-        <paper-spinner active="[[createInProgress_]]"></paper-spinner>
+        <paper-spinner active="[[isSpinnerActive_(createInProgress_,
+                                                  loadingSupervisedUsers_)]]">
+        </paper-spinner>
         <paper-button id="cancel" class="action secondary"
             on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>
         <paper-button id="save" class="action primary" on-tap="onSaveTap_"
-            disabled="[[isSaveDisabled_(createInProgress_, profileName_)]]">
+            disabled="[[isSaveDisabled_(createInProgress_,
+                                        loadingSupervisedUsers_,
+                                        profileName_)]]">
           $i18n{createProfileConfirm}
         </paper-button>
       </div>

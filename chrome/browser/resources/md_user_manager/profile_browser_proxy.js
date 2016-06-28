@@ -86,6 +86,13 @@ cr.define('signin', function() {
     },
 
     /**
+     * Cancels loading supervised users.
+     */
+    cancelLoadingSupervisedUsers: function() {
+      assertNotReached();
+    },
+
+    /**
      * Initializes the UserManager
      * @param {string} locationHash
      */
@@ -178,6 +185,11 @@ cr.define('signin', function() {
     /** @override */
     cancelCreateProfile: function() {
       chrome.send('cancelCreateProfile');
+    },
+
+    /** @override */
+    cancelLoadingSupervisedUsers: function() {
+      chrome.send('cancelLoadingSupervisedUsers');
     },
 
     /** @override */

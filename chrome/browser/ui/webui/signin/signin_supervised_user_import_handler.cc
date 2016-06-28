@@ -82,6 +82,11 @@ void SigninSupervisedUserImportHandler::RegisterMessages() {
       "authenticateCustodian",
       base::Bind(&SigninSupervisedUserImportHandler::AuthenticateCustodian,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "cancelLoadingSupervisedUsers",
+      base::Bind(
+          &SigninSupervisedUserImportHandler::HandleCancelLoadSupervisedUsers,
+          base::Unretained(this)));
 }
 
 void SigninSupervisedUserImportHandler::AssignWebUICallbackId(
@@ -162,6 +167,11 @@ void SigninSupervisedUserImportHandler::GetExistingSupervisedUsers(
           &SigninSupervisedUserImportHandler::LoadCustodianProfileCallback,
           weak_ptr_factory_.GetWeakPtr()),
       base::string16(), std::string(), std::string());
+}
+
+void SigninSupervisedUserImportHandler::HandleCancelLoadSupervisedUsers(
+    const base::ListValue* args) {
+  webui_callback_id_.clear();
 }
 
 void SigninSupervisedUserImportHandler::LoadCustodianProfileCallback(

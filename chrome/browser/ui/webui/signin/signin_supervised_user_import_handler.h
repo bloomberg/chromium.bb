@@ -50,6 +50,10 @@ class SigninSupervisedUserImportHandler : public content::WebUIMessageHandler {
   // browser is not tabbed.
   void OpenUrlInLastActiveProfileBrowser(const base::ListValue* args);
 
+  // Used to cancel loading existing supervised users. Resets WebUI callback ID
+  // of the last in-flight async request.
+  void HandleCancelLoadSupervisedUsers(const base::ListValue* args);
+
   // Callback for the "getExistingSupervisedUsers" message. Returns a list of
   // supervised users attached to the given custodian profile.
   void GetExistingSupervisedUsers(const base::ListValue* args);
