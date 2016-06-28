@@ -105,6 +105,7 @@
             'allocator/Partitions.h',
             'asm/SaturatedArithmeticARM.h',
             'build_config.h',
+            'debug/CrashLogging.h',
             'dtoa.cpp',
             'dtoa.h',
             'dtoa/bignum-dtoa.cc',
