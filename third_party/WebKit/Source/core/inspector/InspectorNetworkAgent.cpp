@@ -819,18 +819,9 @@ std::unique_ptr<protocol::Network::Initiator> InspectorNetworkAgent::buildInitia
         .setType(protocol::Network::Initiator::TypeEnum::Other).build();
 }
 
-void InspectorNetworkAgent::didCreateWebSocket(Document* document, unsigned long identifier, const KURL& requestURL, const String&)
+void InspectorNetworkAgent::didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&)
 {
-    std::unique_ptr<protocol::Runtime::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
-    if (!currentStackTrace) {
-        frontend()->webSocketCreated(IdentifiersFactory::requestId(identifier), urlWithoutFragment(requestURL).getString());
-        return;
-    }
-
-    std::unique_ptr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
-        .setType(protocol::Network::Initiator::TypeEnum::Script).build();
-    initiatorObject->setStack(std::move(currentStackTrace));
-    frontend()->webSocketCreated(IdentifiersFactory::requestId(identifier), urlWithoutFragment(requestURL).getString(), std::move(initiatorObject));
+    frontend()->webSocketCreated(IdentifiersFactory::requestId(identifier), urlWithoutFragment(requestURL).getString());
 }
 
 void InspectorNetworkAgent::willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest* request)

@@ -1404,8 +1404,7 @@
                 "description": "Fired upon WebSocket creation.",
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
-                    { "name": "url", "type": "string", "description": "WebSocket request URL." },
-                    { "name": "initiator", "$ref": "Initiator", "optional": true, "description": "Request initiator." }
+                    { "name": "url", "type": "string", "description": "WebSocket request URL." }
                 ],
                 "hidden": true
             },
