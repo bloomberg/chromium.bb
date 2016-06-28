@@ -43,6 +43,7 @@ class AppListControllerDelegate {
   };
 
   // Whether apps can be pinned, and whether pinned apps are editable or fixed.
+  // TODO(khmel): Find better home for Pinnable enum.
   enum Pinnable {
     NO_PIN,
     PIN_EDITABLE,

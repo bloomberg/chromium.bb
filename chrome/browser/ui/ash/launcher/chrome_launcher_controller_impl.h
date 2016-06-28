@@ -114,8 +114,6 @@ class ChromeLauncherControllerImpl
   ash::ShelfID GetShelfIDForWebContents(
       content::WebContents* contents) override;
   void SetRefocusURLPatternForTest(ash::ShelfID id, const GURL& url) override;
-  const extensions::Extension* GetExtensionForAppID(
-      const std::string& app_id) const override;
   ash::ShelfItemDelegate::PerformedAction ActivateWindowOrMinimizeIfActive(
       ui::BaseWindow* window,
       bool allow_minimize) override;
@@ -138,13 +136,10 @@ class ChromeLauncherControllerImpl
   void MayUpdateBrowserShortcutItem() override;
   LauncherItemController* GetLauncherItemController(
       const ash::ShelfID id) override;
-  bool IsBrowserFromActiveUser(Browser* browser) override;
   bool ShelfBoundsChangesProbablyWithUser(
       ash::Shelf* shelf,
       const std::string& user_id) const override;
   void OnUserProfileReadyToSwitch(Profile* profile) override;
-  AppListControllerDelegate::Pinnable GetPinnable(
-      const std::string& app_id) override;
   ArcAppDeferredLauncherController* GetArcDeferredLauncher() override;
 
   // Access to the BrowserStatusMonitor for tests.

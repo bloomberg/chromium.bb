@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/browser.h"
@@ -122,7 +123,7 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
     content::WebContents* web_contents) {
   // We need to call SetShelfIDForWindow for V1 applications since they are
   // content which might change and as such change the application type.
-  if (!browser || !launcher_controller()->IsBrowserFromActiveUser(browser) ||
+  if (!browser || !IsBrowserFromActiveUser(browser) ||
       IsSettingsBrowser(browser))
     return;
 
@@ -135,7 +136,7 @@ bool BrowserShortcutLauncherItemController::IsOpen() const {
   const BrowserList* browser_list = BrowserList::GetInstance();
   for (BrowserList::const_iterator it = browser_list->begin();
        it != browser_list->end(); ++it) {
-    if (launcher_controller()->IsBrowserFromActiveUser(*it))
+    if (IsBrowserFromActiveUser(*it))
       return true;
   }
   return false;
@@ -333,7 +334,7 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
 bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     Browser* browser) {
   // Only Ash desktop browser windows for the active user are represented.
-  if (!browser || !launcher_controller()->IsBrowserFromActiveUser(browser))
+  if (!browser || !IsBrowserFromActiveUser(browser))
     return false;
 
   // v1 App popup windows with a valid app id have their own icon.
@@ -357,7 +358,7 @@ BrowserShortcutLauncherItemController::GetListOfActiveBrowsers() {
   for (auto* browser : *BrowserList::GetInstance()) {
     // Make sure that the browser is from the current user, has a proper window,
     // and the window was already shown.
-    if (!launcher_controller()->IsBrowserFromActiveUser(browser))
+    if (!IsBrowserFromActiveUser(browser))
       continue;
     if (!browser->window()->GetNativeWindow()->IsVisible() &&
         !browser->window()->IsMinimized()) {

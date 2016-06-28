@@ -559,6 +559,8 @@
       'browser/ui/ash/launcher/chrome_launcher_controller.h',
       'browser/ui/ash/launcher/chrome_launcher_controller_impl.cc',
       'browser/ui/ash/launcher/chrome_launcher_controller_impl.h',
+      'browser/ui/ash/launcher/chrome_launcher_controller_util.cc',
+      'browser/ui/ash/launcher/chrome_launcher_controller_util.h',
       'browser/ui/ash/launcher/desktop_shell_launcher_context_menu.cc',
       'browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h',
       'browser/ui/ash/launcher/extension_app_window_launcher_controller.cc',

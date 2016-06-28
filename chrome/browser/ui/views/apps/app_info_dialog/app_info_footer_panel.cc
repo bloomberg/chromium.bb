@@ -23,7 +23,7 @@
 #if defined(USE_ASH)
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #endif
 
 AppInfoFooterPanel::AppInfoFooterPanel(gfx::NativeWindow parent_window,
@@ -171,9 +171,8 @@ bool AppInfoFooterPanel::CanSetPinnedToShelf() const {
 
   // The Chrome app can't be unpinned, and extensions can't be pinned.
   return app_->id() != extension_misc::kChromeAppId && !app_->is_extension() &&
-         (!ChromeLauncherController::instance() ||
-          ChromeLauncherController::instance()->GetPinnable(app_->id()) ==
-              AppListControllerDelegate::PIN_EDITABLE);
+         (GetPinnableForAppID(app_->id(), profile_) ==
+          AppListControllerDelegate::PIN_EDITABLE);
 }
 #endif  // USE_ASH
 

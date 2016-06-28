@@ -8,6 +8,7 @@
 
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -148,7 +149,7 @@ bool AppWindowLauncherItemController::IsDraggable() {
 }
 
 bool AppWindowLauncherItemController::CanPin() const {
-  return launcher_controller()->GetPinnable(app_id()) ==
+  return GetPinnableForAppID(app_id(), launcher_controller()->GetProfile()) ==
          AppListControllerDelegate::PIN_EDITABLE;
 }
 

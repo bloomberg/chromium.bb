@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/common/pref_names.h"
@@ -159,7 +160,7 @@ void LauncherContextMenu::AddPinMenu() {
   DCHECK(item_.id);
   int menu_pin_string_id;
   const std::string app_id = controller_->GetAppIDForShelfID(item_.id);
-  switch (controller_->GetPinnable(app_id)) {
+  switch (GetPinnableForAppID(app_id, controller_->GetProfile())) {
     case AppListControllerDelegate::PIN_EDITABLE:
       menu_pin_string_id = controller_->IsPinned(item_.id)
                                ? IDS_LAUNCHER_CONTEXT_MENU_UNPIN

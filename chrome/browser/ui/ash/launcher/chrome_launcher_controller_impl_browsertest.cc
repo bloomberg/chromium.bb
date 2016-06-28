@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
@@ -2120,7 +2121,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
 
   // Create a windowed application.
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
-      profile(), controller_->GetExtensionForAppID(extensions::kWebStoreAppId),
+      profile(), GetExtensionForAppID(extensions::kWebStoreAppId, profile()),
       NEW_FOREGROUND_TAB, extensions::SOURCE_TEST);
   params.container = extensions::LAUNCH_CONTAINER_WINDOW;
   OpenApplication(params);

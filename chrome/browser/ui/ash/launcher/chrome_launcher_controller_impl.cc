@@ -39,7 +39,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -54,6 +53,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
@@ -83,7 +83,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
@@ -487,7 +486,7 @@ bool ChromeLauncherControllerImpl::IsPlatformApp(ash::ShelfID id) {
     return false;
 
   std::string app_id = GetAppIDForShelfID(id);
-  const Extension* extension = GetExtensionForAppID(app_id);
+  const Extension* extension = GetExtensionForAppID(app_id, profile_);
   // An extension can be synced / updated at any time and therefore not be
   // available.
   return extension ? extension->is_platform_app() : false;
@@ -522,7 +521,8 @@ void ChromeLauncherControllerImpl::ActivateApp(const std::string& app_id,
 
 extensions::LaunchType ChromeLauncherControllerImpl::GetLaunchType(
     ash::ShelfID id) {
-  const Extension* extension = GetExtensionForAppID(GetAppIDForShelfID(id));
+  const Extension* extension =
+      GetExtensionForAppID(GetAppIDForShelfID(id), profile_);
 
   // An extension can be unloaded/updated/unavailable at any time.
   if (!extension)
@@ -645,12 +645,6 @@ void ChromeLauncherControllerImpl::SetRefocusURLPatternForTest(
   } else {
     NOTREACHED() << "Invalid launcher type";
   }
-}
-
-const Extension* ChromeLauncherControllerImpl::GetExtensionForAppID(
-    const std::string& app_id) const {
-  return extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-      app_id, extensions::ExtensionRegistry::EVERYTHING);
 }
 
 ash::ShelfItemDelegate::PerformedAction
@@ -782,8 +776,8 @@ bool ChromeLauncherControllerImpl::ContentCanBeHandledByGmailApp(
     // overlap with the offline app ("/mail/mu/").
     if (!base::MatchPattern(url.path(), "/mail/mu/*") &&
         base::MatchPattern(url.path(), "/mail/*") &&
-        GetExtensionForAppID(kGmailAppId) &&
-        GetExtensionForAppID(kGmailAppId)->OverlapsWithOrigin(url))
+        GetExtensionForAppID(kGmailAppId, profile_) &&
+        GetExtensionForAppID(kGmailAppId, profile_)->OverlapsWithOrigin(url))
       return true;
   }
   return false;
@@ -811,7 +805,8 @@ base::string16 ChromeLauncherControllerImpl::GetAppListTitle(
       web_contents_to_app_id_.find(web_contents);
   if (iter != web_contents_to_app_id_.end()) {
     std::string app_id = iter->second;
-    const extensions::Extension* extension = GetExtensionForAppID(app_id);
+    const extensions::Extension* extension =
+        GetExtensionForAppID(app_id, profile_);
     if (extension)
       return base::UTF8ToUTF16(extension->name());
   }
@@ -853,15 +848,6 @@ LauncherItemController* ChromeLauncherControllerImpl::GetLauncherItemController(
   return id_to_item_controller_map_[id];
 }
 
-bool ChromeLauncherControllerImpl::IsBrowserFromActiveUser(Browser* browser) {
-  // If running multi user mode with separate desktops, we have to check if the
-  // browser is from the active user.
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED)
-    return true;
-  return multi_user_util::IsProfileFromActiveUser(browser->profile());
-}
-
 bool ChromeLauncherControllerImpl::ShelfBoundsChangesProbablyWithUser(
     ash::Shelf* shelf,
     const std::string& user_id) const {
@@ -892,42 +878,6 @@ void ChromeLauncherControllerImpl::OnUserProfileReadyToSwitch(
     Profile* profile) {
   if (user_switch_observer_.get())
     user_switch_observer_->OnUserProfileReadyToSwitch(profile);
-}
-
-AppListControllerDelegate::Pinnable ChromeLauncherControllerImpl::GetPinnable(
-    const std::string& app_id) {
-  const base::ListValue* pref =
-      profile_->GetPrefs()->GetList(prefs::kPolicyPinnedLauncherApps);
-  if (!pref)
-    return AppListControllerDelegate::PIN_EDITABLE;
-
-  // Pinned ARC apps policy defines the package name of the apps, that must
-  // be pinned. All the launch activities of any package in policy are pinned.
-  // In turn the input parameter to this function is app_id, which
-  // is 32 chars hash. In case of ARC app this is a hash of
-  // (package name + activity). This means that we must identify the package
-  // from the hash, and check if this package is pinned by policy.
-  const ArcAppListPrefs* const arc_prefs = ArcAppListPrefs::Get(GetProfile());
-  std::string arc_app_packege_name;
-  if (arc_prefs) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        arc_prefs->GetApp(app_id);
-    if (app_info)
-      arc_app_packege_name = app_info->package_name;
-  }
-
-  for (size_t index = 0; index < pref->GetSize(); ++index) {
-    const base::DictionaryValue* app = nullptr;
-    std::string app_id_or_package;
-    if (pref->GetDictionary(index, &app) &&
-        app->GetString(ash::launcher::kPinnedAppsPrefAppIDPath,
-                       &app_id_or_package) &&
-        (app_id == app_id_or_package ||
-         arc_app_packege_name == app_id_or_package)) {
-      return AppListControllerDelegate::PIN_FIXED;
-    }
-  }
-  return AppListControllerDelegate::PIN_EDITABLE;
 }
 
 ArcAppDeferredLauncherController*
@@ -995,7 +945,8 @@ const std::string& ChromeLauncherControllerImpl::GetAppIDForShelfID(
 }
 
 void ChromeLauncherControllerImpl::PinAppWithID(const std::string& app_id) {
-  if (GetPinnable(app_id) == AppListControllerDelegate::PIN_EDITABLE)
+  if (GetPinnableForAppID(app_id, profile_) ==
+      AppListControllerDelegate::PIN_EDITABLE)
     DoPinAppWithID(app_id);
   else
     NOTREACHED();
@@ -1012,7 +963,8 @@ bool ChromeLauncherControllerImpl::IsAppPinned(const std::string& app_id) {
 }
 
 void ChromeLauncherControllerImpl::UnpinAppWithID(const std::string& app_id) {
-  if (GetPinnable(app_id) == AppListControllerDelegate::PIN_EDITABLE)
+  if (GetPinnableForAppID(app_id, profile_) ==
+      AppListControllerDelegate::PIN_EDITABLE)
     DoUnpinAppWithID(app_id);
   else
     NOTREACHED();

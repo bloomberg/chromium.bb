@@ -149,12 +149,6 @@ void ChromeLauncherControllerMus::SetRefocusURLPatternForTest(ash::ShelfID id,
   NOTIMPLEMENTED();
 }
 
-const extensions::Extension* ChromeLauncherControllerMus::GetExtensionForAppID(
-    const std::string& app_id) const {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 ash::ShelfItemDelegate::PerformedAction
 ChromeLauncherControllerMus::ActivateWindowOrMinimizeIfActive(
     ui::BaseWindow* window,
@@ -233,11 +227,6 @@ LauncherItemController* ChromeLauncherControllerMus::GetLauncherItemController(
   return nullptr;
 }
 
-bool ChromeLauncherControllerMus::IsBrowserFromActiveUser(Browser* browser) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool ChromeLauncherControllerMus::ShelfBoundsChangesProbablyWithUser(
     ash::Shelf* shelf,
     const std::string& user_id) const {
@@ -247,12 +236,6 @@ bool ChromeLauncherControllerMus::ShelfBoundsChangesProbablyWithUser(
 
 void ChromeLauncherControllerMus::OnUserProfileReadyToSwitch(Profile* profile) {
   NOTIMPLEMENTED();
-}
-
-AppListControllerDelegate::Pinnable ChromeLauncherControllerMus::GetPinnable(
-    const std::string& app_id) {
-  NOTIMPLEMENTED();
-  return AppListControllerDelegate::NO_PIN;
 }
 
 ArcAppDeferredLauncherController*

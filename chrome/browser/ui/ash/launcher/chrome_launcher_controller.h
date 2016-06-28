@@ -172,10 +172,6 @@ class ChromeLauncherController {
   virtual void SetRefocusURLPatternForTest(ash::ShelfID id,
                                            const GURL& url) = 0;
 
-  // Returns the extension identified by |app_id|.
-  virtual const extensions::Extension* GetExtensionForAppID(
-      const std::string& app_id) const = 0;
-
   // Activates a |window|. If |allow_minimize| is true and the system allows
   // it, the the window will get minimized instead.
   // Returns the action performed. Should be one of kNoAction,
@@ -236,9 +232,6 @@ class ChromeLauncherController {
   virtual LauncherItemController* GetLauncherItemController(
       const ash::ShelfID id) = 0;
 
-  // Returns true if |browser| is owned by the active user.
-  virtual bool IsBrowserFromActiveUser(Browser* browser) = 0;
-
   // Check if the shelf visibility (location, visibility) will change with a new
   // user profile or not. However, since the full visibility calculation of the
   // shelf cannot be performed here, this is only a probability used for
@@ -249,10 +242,6 @@ class ChromeLauncherController {
 
   // Called when the user profile is fully loaded and ready to switch to.
   virtual void OnUserProfileReadyToSwitch(Profile* profile) = 0;
-
-  // TODO(khmel): Find better home for Pinnable enum.
-  virtual AppListControllerDelegate::Pinnable GetPinnable(
-      const std::string& app_id) = 0;
 
   // Controller to launch Arc apps in deferred mode.
   virtual ArcAppDeferredLauncherController* GetArcDeferredLauncher() = 0;

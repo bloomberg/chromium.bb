@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
@@ -282,7 +283,7 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   }
   bool IsDraggable() override { return false; }
   bool CanPin() const override {
-    return launcher_controller()->GetPinnable(app_id()) ==
+    return GetPinnableForAppID(app_id(), launcher_controller()->GetProfile()) ==
            AppListControllerDelegate::PIN_EDITABLE;
   }
   bool ShouldShowTooltip() override { return false; }
@@ -1331,13 +1332,13 @@ TEST_F(ChromeLauncherControllerImplTest, MergePolicyAndUserPrefPinnedApps) {
 
   // Check user can manually pin or unpin these apps
   EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
-            launcher_controller_->GetPinnable(extension1_->id()));
+            GetPinnableForAppID(extension1_->id(), profile()));
   EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
-            launcher_controller_->GetPinnable(extension2_->id()));
+            GetPinnableForAppID(extension2_->id(), profile()));
   EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
-            launcher_controller_->GetPinnable(extension3_->id()));
+            GetPinnableForAppID(extension3_->id(), profile()));
   EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
-            launcher_controller_->GetPinnable(extension4_->id()));
+            GetPinnableForAppID(extension4_->id(), profile()));
 
   // Check the order of shelf pinned apps
   EXPECT_EQ("AppList, App2, App4, App1, Chrome, App3", GetPinnedAppStatus());
@@ -3375,7 +3376,7 @@ TEST_F(ChromeLauncherControllerImplTest, ArcAppPinPolicy) {
 
   EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
   EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
-            launcher_controller_->GetPinnable(app_id));
+            GetPinnableForAppID(app_id, profile()));
 }
 
 TEST_F(ChromeLauncherControllerImplTest, ArcManaged) {

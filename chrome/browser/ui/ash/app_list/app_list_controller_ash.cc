@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -57,7 +58,8 @@ void AppListControllerDelegateAsh::UnpinApp(const std::string& app_id) {
 
 AppListControllerDelegate::Pinnable AppListControllerDelegateAsh::GetPinnable(
     const std::string& app_id) {
-  return ChromeLauncherController::instance()->GetPinnable(app_id);
+  return GetPinnableForAppID(
+      app_id, ChromeLauncherController::instance()->GetProfile());
 }
 
 void AppListControllerDelegateAsh::OnShowChildDialog() {
