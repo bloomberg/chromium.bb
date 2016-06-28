@@ -8,13 +8,7 @@
 
 namespace cc {
 
-FakeTileTaskManagerImpl::FakeTileTaskManagerImpl()
-    : raster_buffer_provider_(base::WrapUnique<RasterBufferProvider>(
-          new FakeRasterBufferProviderImpl)) {}
-
-FakeTileTaskManagerImpl::FakeTileTaskManagerImpl(
-    std::unique_ptr<RasterBufferProvider> raster_buffer_provider)
-    : raster_buffer_provider_(std::move(raster_buffer_provider)) {}
+FakeTileTaskManagerImpl::FakeTileTaskManagerImpl() {}
 
 FakeTileTaskManagerImpl::~FakeTileTaskManagerImpl() {
   DCHECK_EQ(0u, completed_tasks_.size());
@@ -41,9 +35,5 @@ void FakeTileTaskManagerImpl::CheckForCompletedTasks() {
 }
 
 void FakeTileTaskManagerImpl::Shutdown() {}
-
-RasterBufferProvider* FakeTileTaskManagerImpl::GetRasterBufferProvider() const {
-  return raster_buffer_provider_.get();
-}
 
 }  // namespace cc
