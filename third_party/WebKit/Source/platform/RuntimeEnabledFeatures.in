@@ -35,7 +35,6 @@ AudioVideoTracks status=experimental
 BackgroundSync status=stable
 BackspaceDefaultHandler status=test
 CacheIgnoreSearchOption status=experimental
-Canvas2dFixedRenderingMode status=test
 Canvas2dImageChromium status=experimental
 ClientHints status=stable
 CompositedSelectionUpdate

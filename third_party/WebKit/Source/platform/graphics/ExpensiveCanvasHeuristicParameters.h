@@ -62,11 +62,6 @@ enum {
     // failure of subsequent allocations required for double buffering.
     PreferDisplayListOverGpuSizeThreshold = 4096 * 4096,
 
-    // Disable Acceleration heuristic parameters
-    //===========================================
-
-    GetImageDataForcesNoAcceleration = 1,
-
 }; // enum
 
 } // namespace ExpensiveCanvasHeuristicParameters

@@ -175,7 +175,6 @@ public:
     // ImageBufferClient implementation
     void notifySurfaceInvalid() override;
     bool isDirty() override { return !m_dirtyRect.isEmpty(); }
-    void didDisableAcceleration() override;
     void didFinalizeFrame() override;
     void restoreCanvasMatrixClipStack(SkCanvas*) const override;
 

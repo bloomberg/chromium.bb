@@ -1272,7 +1272,6 @@
       'graphics/ImageFrameGeneratorTest.cpp',
       'graphics/ImageLayerChromiumTest.cpp',
       'graphics/test/FakeGLES2Interface.h',
-      'graphics/test/FakeWebGraphicsContext3DProvider.h',
       'graphics/test/MockImageDecoder.h',
     ],
     'platform_test_support_files': [

@@ -43,18 +43,6 @@ public:
         : ImageBufferSurface(size, opacityMode)
         , m_layerBridge(Canvas2DLayerBridge::create(size, msaaSampleCount, opacityMode, accelerationMode))
     {
-        init();
-    }
-
-    Canvas2DImageBufferSurface(PassRefPtr<Canvas2DLayerBridge> bridge, const IntSize& size)
-        : ImageBufferSurface(size, bridge->opacityMode())
-        , m_layerBridge(std::move(bridge))
-    {
-        init();
-    }
-
-    void init()
-    {
         clear();
         if (isValid())
             m_layerBridge->flush();

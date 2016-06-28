@@ -25,14 +25,16 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
 #include "SkSurface.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
-#include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalBitmap.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
@@ -42,6 +44,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
@@ -57,6 +61,40 @@ using testing::_;
 namespace blink {
 
 namespace {
+
+class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
+public:
+    FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl)
+        : m_gl(gl)
+    {
+        RefPtr<const GrGLInterface> glInterface = adoptRef(GrGLCreateNullInterface());
+        m_grContext = adoptRef(GrContext::Create(kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(glInterface.get())));
+    }
+
+    GrContext* grContext() override
+    {
+        return m_grContext.get();
+    }
+
+    gpu::Capabilities getCapabilities()
+    {
+        return gpu::Capabilities();
+    }
+
+    gpu::gles2::GLES2Interface* contextGL() override
+    {
+        return m_gl;
+    }
+
+    bool bindToCurrentThread() override { return false; }
+
+    void setLostContextCallback(WebClosure) override {}
+    void setErrorMessageCallback(WebFunction<void(const char*, int32_t id)>) {}
+
+private:
+    gpu::gles2::GLES2Interface* m_gl;
+    RefPtr<GrContext> m_grContext;
+};
 
 class Canvas2DLayerBridgePtr {
 public:
@@ -1061,5 +1099,6 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
     // without crashing due to thread checks
     postAndWaitDestroyBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge);
 }
+
 
 } // namespace blink
