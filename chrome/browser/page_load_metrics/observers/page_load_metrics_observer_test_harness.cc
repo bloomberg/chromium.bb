@@ -9,6 +9,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace page_load_metrics {
@@ -133,6 +136,17 @@ PageLoadMetricsObserverTestHarness::histogram_tester() const {
 const PageLoadExtraInfo
 PageLoadMetricsObserverTestHarness::GetPageLoadExtraInfoForCommittedLoad() {
   return observer_->GetPageLoadExtraInfoForCommittedLoad();
+}
+
+void PageLoadMetricsObserverTestHarness::NavigateWithPageTransitionAndCommit(
+    const GURL& url,
+    ui::PageTransition transition) {
+  controller().LoadURL(url, content::Referrer(), transition, std::string());
+  int pending_id = controller().GetPendingEntry()->GetUniqueID();
+  const bool did_create_new_entry = true;
+  content::WebContentsTester::For(web_contents())
+      ->TestDidNavigate(web_contents()->GetMainFrame(), 1, pending_id,
+                        did_create_new_entry, url, transition);
 }
 
 }  // namespace page_load_metrics

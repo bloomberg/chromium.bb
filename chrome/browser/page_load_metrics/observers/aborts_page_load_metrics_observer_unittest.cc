@@ -36,6 +36,40 @@ TEST_F(AbortsPageLoadMetricsObserverTest, NewNavigationBeforePaint) {
   NavigateAndCommit(GURL("https://www.example.com"));
   histogram_tester().ExpectTotalCount(
       internal::kHistogramAbortNewNavigationBeforePaint, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortReloadBeforePaint, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortForwardBackBeforePaint, 0);
+}
+
+TEST_F(AbortsPageLoadMetricsObserverTest, ReloadBeforePaint) {
+  NavigateAndCommit(GURL("https://www.example.com"));
+  SimulateTimingWithoutPaint();
+  // Simulate the user performing a reload navigation before paint.
+  NavigateWithPageTransitionAndCommit(GURL("https://www.google.com"),
+                                      ui::PAGE_TRANSITION_RELOAD);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortReloadBeforePaint, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortNewNavigationBeforePaint, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortForwardBackBeforePaint, 0);
+}
+
+TEST_F(AbortsPageLoadMetricsObserverTest, ForwardBackBeforePaint) {
+  NavigateAndCommit(GURL("https://www.example.com"));
+  SimulateTimingWithoutPaint();
+  // Simulate the user performing a forward/back navigation before paint.
+  NavigateWithPageTransitionAndCommit(
+      GURL("https://www.google.com"),
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FORWARD_BACK));
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortForwardBackBeforePaint, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortNewNavigationBeforePaint, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortReloadBeforePaint, 0);
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, StopBeforeCommit) {
@@ -124,8 +158,6 @@ TEST_F(AbortsPageLoadMetricsObserverTest,
   histogram_tester().ExpectTotalCount(internal::kHistogramAbortCloseBeforePaint,
                                       1);
 }
-
-// TODO(bmcquade): add tests for reload, back/forward, and other aborts.
 
 TEST_F(AbortsPageLoadMetricsObserverTest, NoAbortNewNavigationFromAboutURL) {
   NavigateAndCommit(GURL("about:blank"));

@@ -485,3 +485,62 @@ TEST_F(CorePageLoadMetricsObserverTest, RapporQuickPageLoad) {
   EXPECT_NE(flag_it, sample_obj->flag_fields.end());
   EXPECT_EQ(0u, flag_it->second);
 }
+
+TEST_F(CorePageLoadMetricsObserverTest, Reload) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(10);
+  PopulateRequiredTimingFields(&timing);
+
+  GURL url(kDefaultTestUrl);
+  NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_RELOAD);
+  SimulateTimingUpdate(timing);
+  NavigateAndCommit(url);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintReload, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation, 0);
+}
+
+TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(10);
+  PopulateRequiredTimingFields(&timing);
+
+  GURL url(kDefaultTestUrl);
+  NavigateWithPageTransitionAndCommit(
+      url, ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                     ui::PAGE_TRANSITION_FORWARD_BACK));
+  SimulateTimingUpdate(timing);
+  NavigateAndCommit(url);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintReload, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintForwardBack, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation, 0);
+}
+
+TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(10);
+  PopulateRequiredTimingFields(&timing);
+
+  GURL url(kDefaultTestUrl);
+  NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_LINK);
+  SimulateTimingUpdate(timing);
+  NavigateAndCommit(url);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintReload, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation, 1);
+}

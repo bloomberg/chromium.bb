@@ -97696,18 +97696,38 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="PageLoadMetricsClients.Reload" separator="."
     ordering="prefix">
+  <obsolete>
+    Deprecated in favor of LoadType.Reload.
+  </obsolete>
   <suffix name="Clients.Reload"
       label="PageLoadMetrics from a page that is reloaded"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PageLoadMetricsClients.Reload.UserGesture"
-    separator=".">
-  <suffix name="UserGesture"
-      label="PageLoadMetrics from a page that is reloaded by a user gesture"/>
+<histogram_suffixes name="PageLoadMetricsLoadType" separator=".">
+  <suffix name="LoadType.Reload" label="Restricted to reloaded pages."/>
+  <suffix name="LoadType.ForwardBackNavigation"
+      label="Restricted to forward/back navigations."/>
+  <suffix name="LoadType.NewNavigation"
+      label="Restricted to new navigations (link clicks, URLs typed into the
+             URL box, etc)."/>
   <affected-histogram
-      name="PageLoad.Clients.Reload.PaintTiming.NavigationToFirstContentfulPaint"/>
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsUserGesture" separator=".">
+  <suffix name="UserGesture"
+      label="Restricted to pages loaded via a user gesture."/>
+  <affected-histogram
+      name="PageLoad.Clients.Reload.PaintTiming.NavigationToFirstContentfulPaint">
+    <obsolete>
+      Deprecated in favor of
+      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType.Reload.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType.Reload"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadType">

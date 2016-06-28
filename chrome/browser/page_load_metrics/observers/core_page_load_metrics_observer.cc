@@ -12,6 +12,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
+#include "ui/base/page_transition_types.h"
 
 namespace {
 
@@ -36,6 +37,29 @@ uint64_t RapporHistogramBucketIndex(base::TimeDelta time) {
   if (seconds < 32)
     return 4;
   return 5;
+}
+
+// TODO(bmcquade): If other observers want to log histograms based on load type,
+// promote this enum to page_load_metrics_observer.h.
+enum PageLoadType {
+  LOAD_TYPE_NONE = 0,
+  LOAD_TYPE_RELOAD,
+  LOAD_TYPE_FORWARD_BACK,
+  LOAD_TYPE_NEW_NAVIGATION
+};
+
+PageLoadType GetPageLoadType(ui::PageTransition transition) {
+  if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
+    return LOAD_TYPE_FORWARD_BACK;
+  }
+  if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD)) {
+    return LOAD_TYPE_RELOAD;
+  }
+  if (ui::PageTransitionIsNewNavigation(transition)) {
+    return LOAD_TYPE_NEW_NAVIGATION;
+  }
+  NOTREACHED() << "Received PageTransition with no matching PageLoadType.";
+  return LOAD_TYPE_NONE;
 }
 
 }  // namespace
@@ -153,6 +177,19 @@ const char
         "PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite."
         "Background";
 
+const char kHistogramLoadTypeFirstContentfulPaintReload[] =
+    "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
+    "Reload";
+const char kHistogramLoadTypeFirstContentfulPaintReloadByGesture[] =
+    "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
+    "Reload.UserGesture";
+const char kHistogramLoadTypeFirstContentfulPaintForwardBack[] =
+    "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
+    "ForwardBackNavigation";
+const char kHistogramLoadTypeFirstContentfulPaintNewNavigation[] =
+    "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
+    "NewNavigation";
+
 const char kHistogramFirstContentfulPaintHigh[] =
     "PageLoad.Timing2.NavigationToFirstContentfulPaint.HighResolutionClock";
 const char kHistogramFirstContentfulPaintLow[] =
@@ -180,9 +217,17 @@ const char kRapporMetricsNameCoarseTiming[] =
 
 }  // namespace internal
 
-CorePageLoadMetricsObserver::CorePageLoadMetricsObserver() {}
+CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
+    : transition_(ui::PAGE_TRANSITION_LINK),
+      initiated_by_user_gesture_(false) {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
+
+void CorePageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle) {
+  transition_ = navigation_handle->GetPageTransition();
+  initiated_by_user_gesture_ = navigation_handle->HasUserGesture();
+}
 
 void CorePageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::PageLoadTiming& timing,
@@ -267,6 +312,32 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramParseStartToFirstContentfulPaintImmediate,
         timing.first_contentful_paint - timing.parse_start);
+
+    switch (GetPageLoadType(transition_)) {
+      case LOAD_TYPE_RELOAD:
+        PAGE_LOAD_HISTOGRAM(
+            internal::kHistogramLoadTypeFirstContentfulPaintReload,
+            timing.first_contentful_paint);
+        if (initiated_by_user_gesture_) {
+          PAGE_LOAD_HISTOGRAM(
+              internal::kHistogramLoadTypeFirstContentfulPaintReloadByGesture,
+              timing.first_contentful_paint);
+        }
+        break;
+      case LOAD_TYPE_FORWARD_BACK:
+        PAGE_LOAD_HISTOGRAM(
+            internal::kHistogramLoadTypeFirstContentfulPaintForwardBack,
+            timing.first_contentful_paint);
+        break;
+      case LOAD_TYPE_NEW_NAVIGATION:
+        PAGE_LOAD_HISTOGRAM(
+            internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation,
+            timing.first_contentful_paint);
+        break;
+      case LOAD_TYPE_NONE:
+        NOTREACHED();
+        break;
+    }
   } else {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramFirstContentfulPaintImmediate,

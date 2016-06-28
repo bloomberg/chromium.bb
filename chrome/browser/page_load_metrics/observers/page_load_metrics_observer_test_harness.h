@@ -11,6 +11,7 @@
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "content/public/test/web_contents_tester.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/base/page_transition_types.h"
 
 namespace page_load_metrics {
 
@@ -34,6 +35,11 @@ class PageLoadMetricsObserverTestHarness
   // Simulates starting a navigation to the given gurl, without committing the
   // navigation.
   void StartNavigation(const GURL& gurl);
+
+  // Simulates committing a navigation to the given URL with the given
+  // PageTransition.
+  void NavigateWithPageTransitionAndCommit(const GURL& url,
+                                           ui::PageTransition transition);
 
   // Call this to simulate sending a PageLoadTiming IPC from the render process
   // to the browser process. These will update the timing information for the
