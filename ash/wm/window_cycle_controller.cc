@@ -94,6 +94,8 @@ void WindowCycleController::StartCycling() {
   event_handler_.reset(new WindowCycleEventFilter());
   cycle_start_time_ = base::Time::Now();
   WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_CYCLE);
+  UMA_HISTOGRAM_COUNTS_100("Ash.WindowCycleController.Items",
+                           window_list.size());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -105,6 +107,8 @@ void WindowCycleController::Step(Direction direction) {
 }
 
 void WindowCycleController::StopCycling() {
+  UMA_HISTOGRAM_COUNTS_100("Ash.WindowCycleController.SelectionDepth",
+                           window_cycle_list_->current_index() + 1);
   window_cycle_list_.reset();
 
   WmWindow* active_window_after_window_cycle = GetActiveWindow(

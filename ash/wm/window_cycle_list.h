@@ -31,6 +31,8 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
   // Cycles to the next or previous window based on |direction|.
   void Step(WindowCycleController::Direction direction);
 
+  int current_index() const { return current_index_; }
+
  private:
   friend class WindowCycleControllerTest;
   const WindowList& windows() const { return windows_; }
@@ -47,7 +49,8 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
   // alt key).
   WindowList windows_;
 
-  // Current position in the |windows_|
+  // Current position in the |windows_|. Can be used to query selection depth,
+  // i.e., the position of an active window in a global MRU ordering.
   int current_index_;
 
   // Wrapper for the window brought to the front.

@@ -1516,18 +1516,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Ash.WindowCycleController.CycleTime" units="ms">
-  <owner>flackr@chromium.org</owner>
-  <owner>kuscher@google.com</owner>
+  <owner>varkha@chromium.org</owner>
+  <owner>tbuckley@google.com</owner>
   <summary>
     The amount of time the Alt key is held after pressing Alt+Tab to begin
     cycling through windows.
   </summary>
 </histogram>
 
+<histogram name="Ash.WindowCycleController.Items" units="items">
+  <owner>varkha@chromium.org</owner>
+  <owner>tbuckley@google.com</owner>
+  <summary>
+    The number of windows in the Alt+Tab selector. Only recorded once when
+    cycling starts, not every time when Tab is pressed without releasing Alt.
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowCycleController.SelectionDepth" units="items">
+  <owner>varkha@chromium.org</owner>
+  <owner>tbuckley@google.com</owner>
+  <summary>
+    When a window is selected after pressing Alt+Tab, records that window's
+    position in the global MRU ordering. 1 represents the most-recently used
+    window, 2 represents the next most-recently used window, and so on. Recorded
+    when Alt+Tab cycling stops, i.e., when Alt key is released.
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowCycleController.TimeBetweenTaskSwitches"
     units="seconds">
-  <owner>tdanderson@google.com</owner>
-  <owner>bruthig@google.com</owner>
+  <owner>varkha@chromium.org</owner>
+  <owner>tbuckley@google.com</owner>
   <summary>
     The number of seconds between task switches triggered by the next window and
     previous window accelerator keys (ie Alt+Tab, Alt+Shift+Tab).
