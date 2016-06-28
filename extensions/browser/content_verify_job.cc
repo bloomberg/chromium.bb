@@ -96,10 +96,9 @@ void ContentVerifyJob::BytesRead(int count, const char* data) {
     if (current_block_ >= hash_reader_->block_count())
       return DispatchFailureCallback(HASH_MISMATCH);
 
-    if (!current_hash_.get()) {
+    if (!current_hash_) {
       current_hash_byte_count_ = 0;
-      current_hash_.reset(
-          crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+      current_hash_ = crypto::SecureHash::Create(crypto::SecureHash::SHA256);
     }
     // Compute how many bytes we should hash, and add them to the current hash.
     int bytes_to_hash =

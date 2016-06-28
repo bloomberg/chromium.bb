@@ -31,7 +31,7 @@ CryptohomeTokenEncryptor::CryptohomeTokenEncryptor(
   DCHECK(!system_salt.empty());
   // TODO(davidroche): should this use the system salt for both the password
   // and the salt value, or should this use a separate salt value?
-  system_salt_key_.reset(PassphraseToKey(system_salt_, system_salt_));
+  system_salt_key_ = PassphraseToKey(system_salt_, system_salt_);
 }
 
 CryptohomeTokenEncryptor::~CryptohomeTokenEncryptor() {
@@ -67,7 +67,7 @@ std::string CryptohomeTokenEncryptor::DecryptWithSystemSalt(
                              encrypted_token_hex);
 }
 
-crypto::SymmetricKey* CryptohomeTokenEncryptor::PassphraseToKey(
+std::unique_ptr<crypto::SymmetricKey> CryptohomeTokenEncryptor::PassphraseToKey(
     const std::string& passphrase,
     const std::string& salt) {
   return crypto::SymmetricKey::DeriveKeyFromPassword(

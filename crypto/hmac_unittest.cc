@@ -287,7 +287,7 @@ TEST(HMACTest, EmptyKey) {
   base::StringPiece data("");
 
   crypto::HMAC hmac(crypto::HMAC::SHA1);
-  ASSERT_TRUE(hmac.Init(NULL, 0));
+  ASSERT_TRUE(hmac.Init(nullptr, 0));
 
   unsigned char digest[kSHA1DigestSize];
   EXPECT_TRUE(hmac.Sign(data, digest, kSHA1DigestSize));

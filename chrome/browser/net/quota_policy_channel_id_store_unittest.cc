@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -84,11 +83,9 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
       crypto::ECPrivateKey::Create());
   std::unique_ptr<crypto::ECPrivateKey> foo_key(crypto::ECPrivateKey::Create());
   store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
-      "google.com", base::Time::FromInternalValue(1),
-      base::WrapUnique(goog_key->Copy())));
+      "google.com", base::Time::FromInternalValue(1), goog_key->Copy()));
   store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
-      "foo.com", base::Time::FromInternalValue(3),
-      base::WrapUnique(foo_key->Copy())));
+      "foo.com", base::Time::FromInternalValue(3), foo_key->Copy()));
 
   std::vector<std::unique_ptr<net::DefaultChannelIDStore::ChannelID>>
       channel_ids;
@@ -143,10 +140,10 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
 TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
   store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
       "google.com", base::Time::FromInternalValue(1),
-      base::WrapUnique(crypto::ECPrivateKey::Create())));
+      crypto::ECPrivateKey::Create()));
   store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
       "nonpersistent.com", base::Time::FromInternalValue(3),
-      base::WrapUnique(crypto::ECPrivateKey::Create())));
+      crypto::ECPrivateKey::Create()));
 
   std::vector<std::unique_ptr<net::DefaultChannelIDStore::ChannelID>>
       channel_ids;
@@ -176,10 +173,10 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
   // being committed to disk.
   store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
       "nonpersistent.com", base::Time::FromInternalValue(5),
-      base::WrapUnique(crypto::ECPrivateKey::Create())));
+      crypto::ECPrivateKey::Create()));
   store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
       "persistent.com", base::Time::FromInternalValue(7),
-      base::WrapUnique(crypto::ECPrivateKey::Create())));
+      crypto::ECPrivateKey::Create()));
 
   // Now close the store, and the nonpersistent.com channel IDs should be
   // deleted according to policy.

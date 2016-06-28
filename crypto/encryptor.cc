@@ -23,7 +23,8 @@ const EVP_CIPHER* GetCipherForKey(SymmetricKey* key) {
   switch (key->key().length()) {
     case 16: return EVP_aes_128_cbc();
     case 32: return EVP_aes_256_cbc();
-    default: return NULL;
+    default:
+      return nullptr;
   }
 }
 
@@ -84,10 +85,7 @@ size_t Encryptor::Counter::GetLengthInBytes() const {
 /////////////////////////////////////////////////////////////////////////////
 // Encryptor Implementation.
 
-Encryptor::Encryptor()
-    : key_(NULL),
-      mode_(CBC) {
-}
+Encryptor::Encryptor() : key_(nullptr), mode_(CBC) {}
 
 Encryptor::~Encryptor() {
 }
@@ -102,7 +100,7 @@ bool Encryptor::Init(SymmetricKey* key,
   if (mode == CBC && iv.size() != AES_BLOCK_SIZE)
     return false;
 
-  if (GetCipherForKey(key) == NULL)
+  if (GetCipherForKey(key) == nullptr)
     return false;
 
   key_ = key;
@@ -191,9 +189,10 @@ bool Encryptor::Crypt(bool do_encrypt,
   DCHECK_EQ(EVP_CIPHER_key_length(cipher), key.length());
 
   ScopedCipherCTX ctx;
-  if (!EVP_CipherInit_ex(
-          ctx.get(), cipher, NULL, reinterpret_cast<const uint8_t*>(key.data()),
-          reinterpret_cast<const uint8_t*>(iv_.data()), do_encrypt))
+  if (!EVP_CipherInit_ex(ctx.get(), cipher, nullptr,
+                         reinterpret_cast<const uint8_t*>(key.data()),
+                         reinterpret_cast<const uint8_t*>(iv_.data()),
+                         do_encrypt))
     return false;
 
   // When encrypting, add another block size of space to allow for any padding.

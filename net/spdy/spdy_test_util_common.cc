@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include <cstddef>
-#include <memory>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -324,12 +323,12 @@ MockECSignatureCreatorFactory::MockECSignatureCreatorFactory() {
 }
 
 MockECSignatureCreatorFactory::~MockECSignatureCreatorFactory() {
-  crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
+  crypto::ECSignatureCreator::SetFactoryForTesting(nullptr);
 }
 
-crypto::ECSignatureCreator* MockECSignatureCreatorFactory::Create(
-    crypto::ECPrivateKey* key) {
-  return new MockECSignatureCreator(key);
+std::unique_ptr<crypto::ECSignatureCreator>
+MockECSignatureCreatorFactory::Create(crypto::ECPrivateKey* key) {
+  return base::MakeUnique<MockECSignatureCreator>(key);
 }
 
 SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)

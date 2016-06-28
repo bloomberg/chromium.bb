@@ -493,8 +493,7 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
                              base::Time creation_time) {
     GetChannelIDStore()->SetChannelID(
         base::WrapUnique(new net::ChannelIDStore::ChannelID(
-            server_identifier, creation_time,
-            base::WrapUnique(crypto::ECPrivateKey::Create()))));
+            server_identifier, creation_time, crypto::ECPrivateKey::Create())));
   }
 
   // Add a server bound cert for |server|, with the current time as the

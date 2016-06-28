@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -100,9 +99,8 @@ void MockChannelIDStoreWithAsyncGet::CallGetChannelIDCallbackWithResult(
   if (err == OK)
     channel_id_count_ = 1;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback_, err, server_identifier_,
-                 base::Passed(base::WrapUnique(key ? key->Copy() : nullptr))));
+      FROM_HERE, base::Bind(callback_, err, server_identifier_,
+                            base::Passed(key ? key->Copy() : nullptr)));
 }
 
 class ChannelIDServiceTest : public testing::Test {

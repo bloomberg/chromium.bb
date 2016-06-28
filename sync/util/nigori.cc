@@ -77,45 +77,46 @@ bool Nigori::InitByDerivation(const std::string& hostname,
   std::unique_ptr<SymmetricKey> user_salt(SymmetricKey::DeriveKeyFromPassword(
       SymmetricKey::HMAC_SHA1, salt_password.str(), kSaltSalt, kSaltIterations,
       kSaltKeySizeInBits));
-  DCHECK(user_salt.get());
+  DCHECK(user_salt);
 
   std::string raw_user_salt;
   if (!user_salt->GetRawKey(&raw_user_salt))
     return false;
 
   // Kuser = PBKDF2(P, Suser, Nuser, 16)
-  user_key_.reset(SymmetricKey::DeriveKeyFromPassword(SymmetricKey::AES,
-      password, raw_user_salt, kUserIterations, kDerivedKeySizeInBits));
-  DCHECK(user_key_.get());
+  user_key_ = SymmetricKey::DeriveKeyFromPassword(
+      SymmetricKey::AES, password, raw_user_salt, kUserIterations,
+      kDerivedKeySizeInBits);
+  DCHECK(user_key_);
 
   // Kenc = PBKDF2(P, Suser, Nenc, 16)
-  encryption_key_.reset(SymmetricKey::DeriveKeyFromPassword(SymmetricKey::AES,
-      password, raw_user_salt, kEncryptionIterations, kDerivedKeySizeInBits));
-  DCHECK(encryption_key_.get());
+  encryption_key_ = SymmetricKey::DeriveKeyFromPassword(
+      SymmetricKey::AES, password, raw_user_salt, kEncryptionIterations,
+      kDerivedKeySizeInBits);
+  DCHECK(encryption_key_);
 
   // Kmac = PBKDF2(P, Suser, Nmac, 16)
-  mac_key_.reset(SymmetricKey::DeriveKeyFromPassword(
+  mac_key_ = SymmetricKey::DeriveKeyFromPassword(
       SymmetricKey::HMAC_SHA1, password, raw_user_salt, kSigningIterations,
-      kDerivedKeySizeInBits));
-  DCHECK(mac_key_.get());
+      kDerivedKeySizeInBits);
+  DCHECK(mac_key_);
 
-  return user_key_.get() && encryption_key_.get() && mac_key_.get();
+  return user_key_ && encryption_key_ && mac_key_;
 }
 
 bool Nigori::InitByImport(const std::string& user_key,
                           const std::string& encryption_key,
                           const std::string& mac_key) {
-  user_key_.reset(SymmetricKey::Import(SymmetricKey::AES, user_key));
-  DCHECK(user_key_.get());
+  user_key_ = SymmetricKey::Import(SymmetricKey::AES, user_key);
+  DCHECK(user_key_);
 
-  encryption_key_.reset(SymmetricKey::Import(SymmetricKey::AES,
-                                             encryption_key));
-  DCHECK(encryption_key_.get());
+  encryption_key_ = SymmetricKey::Import(SymmetricKey::AES, encryption_key);
+  DCHECK(encryption_key_);
 
-  mac_key_.reset(SymmetricKey::Import(SymmetricKey::HMAC_SHA1, mac_key));
-  DCHECK(mac_key_.get());
+  mac_key_ = SymmetricKey::Import(SymmetricKey::HMAC_SHA1, mac_key);
+  DCHECK(mac_key_);
 
-  return user_key_.get() && encryption_key_.get() && mac_key_.get();
+  return user_key_ && encryption_key_ && mac_key_;
 }
 
 // Permute[Kenc,Kmac](type || name)

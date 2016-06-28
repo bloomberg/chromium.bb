@@ -47,8 +47,9 @@ class CryptohomeTokenEncryptor : public TokenEncryptor {
 
  private:
   // Converts |passphrase| to a SymmetricKey using the given |salt|.
-  crypto::SymmetricKey* PassphraseToKey(const std::string& passphrase,
-                                        const std::string& salt);
+  std::unique_ptr<crypto::SymmetricKey> PassphraseToKey(
+      const std::string& passphrase,
+      const std::string& salt);
 
   // Encrypts (AES) the token given |key| and |salt|.
   std::string EncryptTokenWithKey(crypto::SymmetricKey* key,

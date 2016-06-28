@@ -44,11 +44,11 @@ class BrowsingDataChannelIDHelperTest
     channel_id_store->SetChannelID(
         base::WrapUnique(new net::ChannelIDStore::ChannelID(
             "https://www.google.com:443", base::Time(),
-            base::WrapUnique(crypto::ECPrivateKey::Create()))));
+            crypto::ECPrivateKey::Create())));
     channel_id_store->SetChannelID(
         base::WrapUnique(new net::ChannelIDStore::ChannelID(
             "https://www.youtube.com:443", base::Time(),
-            base::WrapUnique(crypto::ECPrivateKey::Create()))));
+            crypto::ECPrivateKey::Create())));
   }
 
   void FetchCallback(
@@ -142,7 +142,7 @@ TEST_F(BrowsingDataChannelIDHelperTest, CannedEmpty) {
 
   ASSERT_TRUE(helper->empty());
   helper->AddChannelID(net::ChannelIDStore::ChannelID(
-      origin, base::Time(), base::WrapUnique(crypto::ECPrivateKey::Create())));
+      origin, base::Time(), crypto::ECPrivateKey::Create()));
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());

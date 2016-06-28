@@ -481,9 +481,8 @@ void AesDecryptor::Decrypt(StreamType stream_type,
       return;
     }
 
-    crypto::SymmetricKey* decryption_key = key->decryption_key();
-    decrypted = DecryptData(*encrypted.get(), decryption_key);
-    if (!decrypted.get()) {
+    decrypted = DecryptData(*encrypted.get(), key->decryption_key());
+    if (!decrypted) {
       DVLOG(1) << "Decryption failed.";
       decrypt_cb.Run(kError, NULL);
       return;
@@ -607,8 +606,8 @@ AesDecryptor::DecryptionKey::~DecryptionKey() {}
 
 bool AesDecryptor::DecryptionKey::Init() {
   CHECK(!secret_.empty());
-  decryption_key_.reset(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, secret_));
+  decryption_key_ =
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, secret_);
   if (!decryption_key_)
     return false;
   return true;

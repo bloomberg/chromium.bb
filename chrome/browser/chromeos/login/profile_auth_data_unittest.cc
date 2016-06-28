@@ -110,17 +110,15 @@ class ProfileAuthDataTest : public testing::Test {
 };
 
 void ProfileAuthDataTest::SetUp() {
-  channel_id_key1_.reset(crypto::ECPrivateKey::Create());
-  channel_id_key2_.reset(crypto::ECPrivateKey::Create());
+  channel_id_key1_ = crypto::ECPrivateKey::Create();
+  channel_id_key2_ = crypto::ECPrivateKey::Create();
   PopulateBrowserContext(&login_browser_context_, kProxyAuthPassword1,
-                         kCookieValue1,
-                         base::WrapUnique(channel_id_key1_->Copy()));
+                         kCookieValue1, channel_id_key1_->Copy());
 }
 
 void ProfileAuthDataTest::PopulateUserBrowserContext() {
   PopulateBrowserContext(&user_browser_context_, kProxyAuthPassword2,
-                         kCookieValue2,
-                         base::WrapUnique(channel_id_key2_->Copy()));
+                         kCookieValue2, channel_id_key2_->Copy());
 }
 
 void ProfileAuthDataTest::Transfer(

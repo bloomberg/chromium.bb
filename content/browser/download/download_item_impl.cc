@@ -31,7 +31,6 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -1175,9 +1174,9 @@ void DownloadItemImpl::Start(
 
     int64_t offset = new_create_info.save_info->offset;
     std::unique_ptr<crypto::SecureHash> hash_state =
-        base::WrapUnique(new_create_info.save_info->hash_state
-                             ? new_create_info.save_info->hash_state->Clone()
-                             : nullptr);
+        new_create_info.save_info->hash_state
+            ? new_create_info.save_info->hash_state->Clone()
+            : nullptr;
 
     // Interrupted downloads also need a target path.
     if (target_path_.empty()) {

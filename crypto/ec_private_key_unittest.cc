@@ -45,7 +45,7 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
   static const char kPassword2[] = "test";
 
   std::unique_ptr<crypto::ECPrivateKey> keypair(crypto::ECPrivateKey::Create());
-  ASSERT_TRUE(keypair.get());
+  ASSERT_TRUE(keypair);
 
   // Re-import as a PrivateKeyInfo.
   std::vector<uint8_t> privkey;
@@ -61,16 +61,16 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
   EXPECT_TRUE(
       keypair->ExportEncryptedPrivateKey(kPassword1, 1, &encrypted_privkey));
   EXPECT_TRUE(keypair->ExportPublicKey(&pubkey));
-  keypair_copy.reset(crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-      kPassword1, encrypted_privkey, pubkey));
+  keypair_copy = crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
+      kPassword1, encrypted_privkey, pubkey);
   ASSERT_TRUE(keypair_copy);
   ExpectKeysEqual(keypair.get(), keypair_copy.get());
 
   // Re-import as an EncryptedPrivateKeyInfo with kPassword2.
   EXPECT_TRUE(
       keypair->ExportEncryptedPrivateKey(kPassword2, 1, &encrypted_privkey));
-  keypair_copy.reset(crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-      kPassword2, encrypted_privkey, pubkey));
+  keypair_copy = crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
+      kPassword2, encrypted_privkey, pubkey);
   ASSERT_TRUE(keypair_copy);
   ExpectKeysEqual(keypair.get(), keypair_copy.get());
 }
@@ -79,8 +79,8 @@ TEST(ECPrivateKeyUnitTest, Copy) {
   std::unique_ptr<crypto::ECPrivateKey> keypair1(
       crypto::ECPrivateKey::Create());
   std::unique_ptr<crypto::ECPrivateKey> keypair2(keypair1->Copy());
-  ASSERT_TRUE(keypair1.get());
-  ASSERT_TRUE(keypair2.get());
+  ASSERT_TRUE(keypair1);
+  ASSERT_TRUE(keypair2);
 
   ExpectKeysEqual(keypair1.get(), keypair2.get());
 }
@@ -206,7 +206,7 @@ TEST(ECPrivateKeyUnitTest, BadPasswordTest) {
 
   std::unique_ptr<crypto::ECPrivateKey> keypair1(
       crypto::ECPrivateKey::Create());
-  ASSERT_TRUE(keypair1.get());
+  ASSERT_TRUE(keypair1);
 
   std::vector<uint8_t> privkey1;
   std::vector<uint8_t> pubkey1;
@@ -217,7 +217,7 @@ TEST(ECPrivateKeyUnitTest, BadPasswordTest) {
   std::unique_ptr<crypto::ECPrivateKey> keypair2(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
           password2, privkey1, pubkey1));
-  ASSERT_FALSE(keypair2.get());
+  ASSERT_FALSE(keypair2);
 }
 
 TEST(ECPrivateKeyUnitTest, LoadNSSKeyTest) {
@@ -256,7 +256,7 @@ TEST(ECPrivateKeyUnitTest, LoadNSSKeyTest) {
           std::vector<uint8_t>(std::begin(kNSSPublicKey),
                                std::end(kNSSPublicKey))));
 
-  EXPECT_TRUE(keypair_nss.get());
+  EXPECT_TRUE(keypair_nss);
 }
 
 TEST(ECPrivateKeyUnitTest, LoadOpenSSLKeyTest) {
@@ -303,7 +303,7 @@ TEST(ECPrivateKeyUnitTest, LoadOpenSSLKeyTest) {
           std::vector<uint8_t>(std::begin(kOpenSSLPublicKey),
                                std::end(kOpenSSLPublicKey))));
 
-  EXPECT_TRUE(keypair_openssl.get());
+  EXPECT_TRUE(keypair_openssl);
 
   std::vector<uint8_t> public_key;
   EXPECT_TRUE(keypair_openssl->ExportPublicKey(&public_key));
@@ -398,5 +398,5 @@ TEST(ECPrivateKeyUnitTest, LoadOldOpenSSLKeyTest) {
           std::vector<uint8_t>(std::begin(kOpenSSLPublicKey),
                                std::end(kOpenSSLPublicKey))));
 
-  EXPECT_TRUE(keypair_openssl.get());
+  EXPECT_TRUE(keypair_openssl);
 }

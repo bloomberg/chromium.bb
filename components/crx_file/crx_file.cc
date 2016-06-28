@@ -111,7 +111,7 @@ CrxFile::ValidateError CrxFile::ValidateSignature(
   base::ScopedFILE file(base::OpenFile(crx_path, "rb"));
   std::unique_ptr<crypto::SecureHash> hash;
   if (!expected_hash.empty())
-    hash.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+    hash = crypto::SecureHash::Create(crypto::SecureHash::SHA256);
 
   if (!file.get())
     return ValidateError::CRX_FILE_NOT_READABLE;

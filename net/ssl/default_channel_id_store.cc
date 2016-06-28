@@ -242,7 +242,7 @@ int DefaultChannelIDStore::GetChannelID(
     return ERR_FILE_NOT_FOUND;
 
   ChannelID* channel_id = it->second;
-  key_result->reset(channel_id->key()->Copy());
+  *key_result = channel_id->key()->Copy();
 
   return OK;
 }
@@ -290,7 +290,7 @@ void DefaultChannelIDStore::SetForceKeepSessionState() {
   DCHECK(CalledOnValidThread());
   InitIfNecessary();
 
-  if (store_.get())
+  if (store_)
     store_->SetForceKeepSessionState();
 }
 
@@ -310,7 +310,7 @@ void DefaultChannelIDStore::DeleteAllInMemory() {
 
 void DefaultChannelIDStore::InitStore() {
   DCHECK(CalledOnValidThread());
-  DCHECK(store_.get()) << "Store must exist to initialize";
+  DCHECK(store_) << "Store must exist to initialize";
   DCHECK(!loaded_);
 
   store_->Load(base::Bind(&DefaultChannelIDStore::OnLoaded,
@@ -381,7 +381,7 @@ void DefaultChannelIDStore::SyncDeleteForDomainsCreatedBetween(
          channel_id->creation_time() >= delete_begin) &&
         (delete_end.is_null() || channel_id->creation_time() < delete_end) &&
         domain_predicate.Run(channel_id->server_identifier())) {
-      if (store_.get())
+      if (store_)
         store_->DeleteChannelID(*channel_id);
       delete channel_id;
       channel_ids_.erase(cur);
@@ -428,7 +428,7 @@ void DefaultChannelIDStore::InternalDeleteChannelID(
     return;  // There is nothing to delete.
 
   ChannelID* channel_id = it->second;
-  if (store_.get())
+  if (store_)
     store_->DeleteChannelID(*channel_id);
   channel_ids_.erase(it);
   delete channel_id;
@@ -439,14 +439,14 @@ void DefaultChannelIDStore::InternalInsertChannelID(
   DCHECK(CalledOnValidThread());
   DCHECK(loaded_);
 
-  if (store_.get())
-    store_->AddChannelID(*(channel_id.get()));
+  if (store_)
+    store_->AddChannelID(*channel_id);
   const std::string& server_identifier = channel_id->server_identifier();
   channel_ids_[server_identifier] = channel_id.release();
 }
 
 bool DefaultChannelIDStore::IsEphemeral() {
-  return store_.get() == nullptr;
+  return !store_;
 }
 
 DefaultChannelIDStore::PersistentStore::PersistentStore() {}

@@ -164,7 +164,8 @@ class MockECSignatureCreatorFactory : public crypto::ECSignatureCreatorFactory {
   ~MockECSignatureCreatorFactory() override;
 
   // crypto::ECSignatureCreatorFactory
-  crypto::ECSignatureCreator* Create(crypto::ECPrivateKey* key) override;
+  std::unique_ptr<crypto::ECSignatureCreator> Create(
+      crypto::ECPrivateKey* key) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockECSignatureCreatorFactory);

@@ -51,8 +51,7 @@ bool TransportEncryptionHandler::Initialize(const std::string& aes_key,
   is_activated_ = false;
   if (aes_iv_mask.size() == kAesKeySize && aes_key.size() == kAesKeySize) {
     iv_mask_ = aes_iv_mask;
-    key_.reset(
-        crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, aes_key));
+    key_ = crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, aes_key);
     encryptor_.reset(new crypto::Encryptor());
     encryptor_->Init(key_.get(), crypto::Encryptor::CTR, std::string());
     is_activated_ = true;

@@ -208,7 +208,7 @@ std::string BaseFile::DebugString() const {
 
 DownloadInterruptReason BaseFile::CalculatePartialHash(
     const std::string& hash_to_expect) {
-  secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+  secure_hash_ = crypto::SecureHash::Create(crypto::SecureHash::SHA256);
 
   if (bytes_so_far_ == 0)
     return DOWNLOAD_INTERRUPT_REASON_NONE;

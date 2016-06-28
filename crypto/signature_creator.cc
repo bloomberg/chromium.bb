@@ -9,8 +9,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
-
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
@@ -27,7 +25,7 @@ const EVP_MD* ToOpenSSLDigest(SignatureCreator::HashAlgorithm hash_alg) {
     case SignatureCreator::SHA256:
       return EVP_sha256();
   }
-  return NULL;
+  return nullptr;
 }
 
 int ToOpenSSLDigestType(SignatureCreator::HashAlgorithm hash_alg) {
@@ -42,21 +40,26 @@ int ToOpenSSLDigestType(SignatureCreator::HashAlgorithm hash_alg) {
 
 }  // namespace
 
+SignatureCreator::~SignatureCreator() {
+  EVP_MD_CTX_destroy(sign_context_);
+}
+
 // static
-SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key,
-                                           HashAlgorithm hash_alg) {
+std::unique_ptr<SignatureCreator> SignatureCreator::Create(
+    RSAPrivateKey* key,
+    HashAlgorithm hash_alg) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   std::unique_ptr<SignatureCreator> result(new SignatureCreator);
   const EVP_MD* const digest = ToOpenSSLDigest(hash_alg);
   DCHECK(digest);
   if (!digest) {
-    return NULL;
+    return nullptr;
   }
-  if (!EVP_DigestSignInit(result->sign_context_, NULL, digest, NULL,
+  if (!EVP_DigestSignInit(result->sign_context_, nullptr, digest, nullptr,
                           key->key())) {
-    return NULL;
+    return nullptr;
   }
-  return result.release();
+  return result;
 }
 
 // static
@@ -80,14 +83,6 @@ bool SignatureCreator::Sign(RSAPrivateKey* key,
   return true;
 }
 
-SignatureCreator::SignatureCreator()
-    : sign_context_(EVP_MD_CTX_create()) {
-}
-
-SignatureCreator::~SignatureCreator() {
-  EVP_MD_CTX_destroy(sign_context_);
-}
-
 bool SignatureCreator::Update(const uint8_t* data_part, int data_part_len) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   return !!EVP_DigestSignUpdate(sign_context_, data_part, data_part_len);
@@ -98,7 +93,7 @@ bool SignatureCreator::Final(std::vector<uint8_t>* signature) {
 
   // Determine the maximum length of the signature.
   size_t len = 0;
-  if (!EVP_DigestSignFinal(sign_context_, NULL, &len)) {
+  if (!EVP_DigestSignFinal(sign_context_, nullptr, &len)) {
     signature->clear();
     return false;
   }
@@ -112,5 +107,7 @@ bool SignatureCreator::Final(std::vector<uint8_t>* signature) {
   signature->resize(len);
   return true;
 }
+
+SignatureCreator::SignatureCreator() : sign_context_(EVP_MD_CTX_create()) {}
 
 }  // namespace crypto
