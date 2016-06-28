@@ -70,16 +70,16 @@ void ScheduledAction::execute(ExecutionContext* context)
     if (context->isDocument()) {
         LocalFrame* frame = toDocument(context)->frame();
         if (!frame) {
-            WTF_LOG(Timers, "ScheduledAction::execute %p: no frame", this);
+            DVLOG(1) << "ScheduledAction::execute " << this << ": no frame";
             return;
         }
         if (!frame->script().canExecuteScripts(AboutToExecuteScript)) {
-            WTF_LOG(Timers, "ScheduledAction::execute %p: frame can not execute scripts", this);
+            DVLOG(1) << "ScheduledAction::execute " << this << ": frame can not execute scripts";
             return;
         }
         execute(frame);
     } else {
-        WTF_LOG(Timers, "ScheduledAction::execute %p: worker scope", this);
+        DVLOG(1) << "ScheduledAction::execute " << this << ": worker scope";
         execute(toWorkerGlobalScope(context));
     }
 }
@@ -106,19 +106,19 @@ ScheduledAction::ScheduledAction(ScriptState* scriptState, const String& code)
 void ScheduledAction::execute(LocalFrame* frame)
 {
     if (!m_scriptState->contextIsValid()) {
-        WTF_LOG(Timers, "ScheduledAction::execute %p: context is empty", this);
+        DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
         return;
     }
 
     TRACE_EVENT0("v8", "ScheduledAction::execute");
     ScriptState::Scope scope(m_scriptState.get());
     if (!m_function.isEmpty()) {
-        WTF_LOG(Timers, "ScheduledAction::execute %p: have function", this);
+        DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
         Vector<v8::Local<v8::Value>> info;
         createLocalHandlesForArgs(&info);
         frame->script().callFunction(m_function.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), info.size(), info.data());
     } else {
-        WTF_LOG(Timers, "ScheduledAction::execute %p: executing from source", this);
+        DVLOG(1) << "ScheduledAction::execute " << this << ": executing from source";
         frame->script().executeScriptAndReturnValue(m_scriptState->context(), ScriptSourceCode(m_code));
     }
 

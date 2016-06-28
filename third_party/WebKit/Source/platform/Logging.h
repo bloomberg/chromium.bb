@@ -38,11 +38,11 @@
 
 namespace blink {
 
+// WTFLogChannel is deprecated.  Do not add new channels.
 PLATFORM_EXPORT extern WTFLogChannel LogNetwork;
 PLATFORM_EXPORT extern WTFLogChannel LogResourceLoading;
 PLATFORM_EXPORT extern WTFLogChannel LogSQLDatabase;
 PLATFORM_EXPORT extern WTFLogChannel LogStorageAPI;
-PLATFORM_EXPORT extern WTFLogChannel LogTimers;
 
 PLATFORM_EXPORT WTFLogChannel* getChannelFromName(const String& channelName);
 

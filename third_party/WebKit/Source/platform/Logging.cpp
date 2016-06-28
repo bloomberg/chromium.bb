@@ -35,7 +35,6 @@ WTFLogChannel LogNetwork =            { WTFLogChannelOff };
 WTFLogChannel LogResourceLoading =    { WTFLogChannelOff };
 WTFLogChannel LogSQLDatabase =        { WTFLogChannelOff };
 WTFLogChannel LogStorageAPI =         { WTFLogChannelOff };
-WTFLogChannel LogTimers =             { WTFLogChannelOff };
 
 WTFLogChannel* getChannelFromName(const String& channelName)
 {
@@ -53,9 +52,6 @@ WTFLogChannel* getChannelFromName(const String& channelName)
 
     if (equalIgnoringCase(channelName, String("StorageAPI")))
         return &LogStorageAPI;
-
-    if (equalIgnoringCase(channelName, String("Timers")))
-        return &LogTimers;
 
     return 0;
 }
