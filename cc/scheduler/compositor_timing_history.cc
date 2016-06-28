@@ -236,7 +236,7 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddBeginMainFrameStartToCommitDuration(
       base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
-        "Scheduling.Browser.BeginMainFrameStartToCommit", duration);
+        "Scheduling.Browser.BeginMainFrameStartToCommitDuration", duration);
   }
 
   void AddCommitToReadyToActivateDuration(base::TimeDelta duration) override {
