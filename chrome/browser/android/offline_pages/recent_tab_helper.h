@@ -42,17 +42,6 @@ class RecentTabHelper
   // SnapshotController::Client
   void StartSnapshot() override;
 
-  // Test support.
-  // A factory that supplies the instances of an OfflinePageArchiver.
-  // This is used for testing, where we want to use a specific mock.
-  class TestArchiveFactory {
-   public:
-    virtual ~TestArchiveFactory() {}
-    virtual std::unique_ptr<OfflinePageArchiver> CreateArchiver(
-        content::WebContents* web_contents) = 0;
-  };
-
-
   // Delegate that is used by RecentTabHelper to get external dependencies.
   // Default implementation lives in .cc file, while tests provide an override.
   class Delegate {
