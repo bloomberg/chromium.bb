@@ -2915,14 +2915,14 @@ PaintTiming* PaintLayer::paintTiming()
     return nullptr;
 }
 
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
 void PaintLayer::endShouldKeepAliveAllClientsRecursive()
 {
     for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->endShouldKeepAliveAllClientsRecursive();
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     DisplayItemClient::endShouldKeepAliveAllClients(this);
-#endif
 }
+#endif
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
     : m_disabler(gCompositingQueryMode, CompositingQueriesAreAllowed) { }
