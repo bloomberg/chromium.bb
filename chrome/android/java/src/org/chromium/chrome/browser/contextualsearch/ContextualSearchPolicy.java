@@ -259,6 +259,7 @@ class ContextualSearchPolicy {
         // Always completely reset the tap counter, since it just counts taps
         // since the last open.
         mPreferenceManager.setContextualSearchTapCount(0);
+        mPreferenceManager.setContextualSearchTapQuickAnswerCount(0);
 
         // Disable the "promo tap" counter, but only if we're using the Opt-out onboarding.
         // For Opt-in, we never disable the promo tap counter.
@@ -269,6 +270,20 @@ class ContextualSearchPolicy {
             int count = mPreferenceManager.getContextualSearchPromoOpenCount();
             mPreferenceManager.setContextualSearchPromoOpenCount(++count);
             ContextualSearchUma.logPromoOpenCount(count);
+        }
+    }
+
+    /**
+     * Updates Tap counters to account for a quick-answer caption shown on the panel.
+     * @param wasActivatedByTap Whether the triggering gesture was a Tap or not.
+     * @param doesAnswer Whether the caption is considered an answer rather than just
+     *                          informative.
+     */
+    void updateCountersForQuickAnswer(boolean wasActivatedByTap, boolean doesAnswer) {
+        if (wasActivatedByTap && doesAnswer) {
+            int tapsWithAnswerSinceOpen =
+                    mPreferenceManager.getContextualSearchTapQuickAnswerCount();
+            mPreferenceManager.setContextualSearchTapQuickAnswerCount(++tapsWithAnswerSinceOpen);
         }
     }
 
@@ -527,7 +542,9 @@ class ContextualSearchPolicy {
      * @return Whether the tap resolve/prefetch limit has been exceeded.
      */
     private boolean isTapBeyondTheLimit() {
-        return getTapCount() > getTapLimit();
+        // Discount taps that caused a Quick Answer since the tap may not have been totally ignored.
+        return getTapCount() - mPreferenceManager.getContextualSearchTapQuickAnswerCount()
+                > getTapLimit();
     }
 
     /**

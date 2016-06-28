@@ -36,6 +36,8 @@ public class ChromePreferenceManager {
             "contextual_search_peek_promo_show_count";
     private static final String CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME =
             "contextual_search_last_animation_time";
+    private static final String CONTEXTUAL_SEARCH_TAP_QUICK_ANSWER_COUNT =
+            "contextual_search_tap_quick_answer_count";
     private static final String HERB_FLAVOR_KEY = "herb_flavor";
     private static final String APP_LINK_KEY = "applink.app_link_enabled";
     private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
@@ -268,18 +270,38 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * @return Number of tap gestures that have been received when not waiting for the promo.
+     * @return Number of tap gestures that have been received since the last time the panel was
+     *         opened.
      */
     public int getContextualSearchTapCount() {
         return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_TAP_COUNT, 0);
     }
 
     /**
-     * Sets the number of tap gestures that have been received when not waiting for the promo.
-     * @param count Number of taps that have been received when not waiting for the promo.
+     * Sets the number of tap gestures that have been received since the last time the panel was
+     * opened.
+     * @param count Number of taps that have been received since the last time the panel was opened.
      */
     public void setContextualSearchTapCount(int count) {
         writeInt(CONTEXTUAL_SEARCH_TAP_COUNT, count);
+    }
+
+    /**
+     * @return Number of Tap triggered Quick Answers (that "do answer") that have been shown since
+     *         the last time the panel was opened.
+     */
+    public int getContextualSearchTapQuickAnswerCount() {
+        return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_TAP_QUICK_ANSWER_COUNT, 0);
+    }
+
+    /**
+     * Sets the number of tap triggered Quick Answers (that "do answer") that have been shown since
+     * the last time the panel was opened.
+     * @param count Number of Tap triggered Quick Answers (that "do answer") that have been shown
+     *              since the last time the panel was opened.
+     */
+    public void setContextualSearchTapQuickAnswerCount(int count) {
+        writeInt(CONTEXTUAL_SEARCH_TAP_QUICK_ANSWER_COUNT, count);
     }
 
     /**
