@@ -32,7 +32,10 @@ if (is_debug || !is_win || !is_official_build) {
 }
 
 # Core targets also get wexit time destructors.
-core_config_add += [ "//build/config/compiler:wexit_time_destructors" ]
+core_config_add += [
+  "//build/config/compiler:wexit_time_destructors",
+  "//third_party/WebKit/Source:non_test_config",
+]
 
 if (remove_webcore_debug_symbols) {
   core_config_remove += [ "//build/config/compiler:default_symbols" ]
