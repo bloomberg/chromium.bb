@@ -81,7 +81,7 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
         ->children[0]
         ->test_properties()
         ->AddChild(LayerImpl::Create(host_impl->active_tree(), 7));
-    host_impl->active_tree()->SetRootLayer(std::move(root));
+    host_impl->active_tree()->SetRootLayerForTesting(std::move(root));
     return root_ptr;
   }
 

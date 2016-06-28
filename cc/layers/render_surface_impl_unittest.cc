@@ -93,7 +93,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
 
   surface->test_properties()->AddChild(std::move(child));
   root->test_properties()->AddChild(std::move(surface));
-  impl.host_impl()->active_tree()->SetRootLayer(std::move(root));
+  impl.host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
 
   impl.host_impl()->SetViewportSize(viewport_size);
   impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
@@ -101,7 +101,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
 
   LayerImpl* surface_raw = impl.host_impl()
                                ->active_tree()
-                               ->root_layer()
+                               ->root_layer_for_testing()
                                ->test_properties()
                                ->children[0];
   RenderSurfaceImpl* render_surface_impl = surface_raw->render_surface();

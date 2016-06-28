@@ -755,8 +755,8 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    FakePictureLayerImpl* picture_impl =
-        static_cast<FakePictureLayerImpl*>(impl->active_tree()->root_layer());
+    FakePictureLayerImpl* picture_impl = static_cast<FakePictureLayerImpl*>(
+        impl->active_tree()->root_layer_for_testing());
     EXPECT_TRUE(picture_impl->HighResTiling()
                     ->TileAt(0, 0)
                     ->draw_info()
@@ -855,7 +855,7 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
     FakePictureLayerImpl* grandchild_picture = NULL;
 
     root_picture = static_cast<FakePictureLayerImpl*>(
-        host_impl->active_tree()->root_layer());
+        host_impl->active_tree()->root_layer_for_testing());
     child_picture = static_cast<FakePictureLayerImpl*>(
         host_impl->active_tree()->LayerById(child_->id()));
     grandchild_picture = static_cast<FakePictureLayerImpl*>(

@@ -98,9 +98,9 @@ class DamageTrackerTest : public testing::Test {
     child->SetBounds(gfx::Size(30, 30));
     child->SetDrawsContent(true);
     root->test_properties()->AddChild(std::move(child));
-    host_impl_.active_tree()->SetRootLayer(std::move(root));
+    host_impl_.active_tree()->SetRootLayerForTesting(std::move(root));
 
-    return host_impl_.active_tree()->root_layer();
+    return host_impl_.active_tree()->root_layer_for_testing();
   }
 
   LayerImpl* CreateTestTreeWithTwoSurfaces() {
@@ -149,9 +149,9 @@ class DamageTrackerTest : public testing::Test {
     child1->test_properties()->AddChild(std::move(grand_child2));
     root->test_properties()->AddChild(std::move(child1));
     root->test_properties()->AddChild(std::move(child2));
-    host_impl_.active_tree()->SetRootLayer(std::move(root));
+    host_impl_.active_tree()->SetRootLayerForTesting(std::move(root));
 
-    return host_impl_.active_tree()->root_layer();
+    return host_impl_.active_tree()->root_layer_for_testing();
   }
 
   LayerImpl* CreateAndSetUpTestTreeWithOneSurface() {
@@ -1552,8 +1552,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl_.active_tree(), 1);
   root->test_properties()->force_render_surface = true;
-  host_impl_.active_tree()->SetRootLayer(std::move(root));
-  LayerImpl* root_ptr = host_impl_.active_tree()->root_layer();
+  host_impl_.active_tree()->SetRootLayerForTesting(std::move(root));
+  LayerImpl* root_ptr = host_impl_.active_tree()->root_layer_for_testing();
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root_ptr);
 

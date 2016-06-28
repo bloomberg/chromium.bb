@@ -85,13 +85,13 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
 
   parent->test_properties()->AddChild(std::move(child));
   root_impl->test_properties()->AddChild(std::move(parent));
-  tree->SetRootLayer(std::move(root_impl));
+  tree->SetRootLayerForTesting(std::move(root_impl));
 
   std::string json = host_impl.LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, NULL);
   ASSERT_TRUE(root.get());
-  EXPECT_TRUE(
-      LayerTreesMatch(host_impl.active_tree()->root_layer(), root.get()));
+  EXPECT_TRUE(LayerTreesMatch(host_impl.active_tree()->root_layer_for_testing(),
+                              root.get()));
 }
 
 TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
@@ -114,13 +114,13 @@ TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
   touch_layer->SetTouchEventHandlerRegion(touch_region);
 
   root_impl->test_properties()->AddChild(std::move(touch_layer));
-  tree->SetRootLayer(std::move(root_impl));
+  tree->SetRootLayerForTesting(std::move(root_impl));
 
   std::string json = host_impl.LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, NULL);
   ASSERT_TRUE(root.get());
-  EXPECT_TRUE(
-      LayerTreesMatch(host_impl.active_tree()->root_layer(), root.get()));
+  EXPECT_TRUE(LayerTreesMatch(host_impl.active_tree()->root_layer_for_testing(),
+                              root.get()));
 }
 
 }  // namespace cc

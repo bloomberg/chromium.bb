@@ -54,7 +54,7 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
-        impl->active_tree()->root_layer()->render_surface();
+        impl->active_tree()->root_layer_for_testing()->render_surface();
     gfx::Rect root_damage =
         root_surface->damage_tracker()->current_damage_rect();
 
@@ -116,7 +116,7 @@ class LayerTreeHostDamageTestSetViewportSize
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
-        impl->active_tree()->root_layer()->render_surface();
+        impl->active_tree()->root_layer_for_testing()->render_surface();
     gfx::Rect root_damage =
         root_surface->damage_tracker()->current_damage_rect();
 
@@ -260,7 +260,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
-        host_impl->active_tree()->root_layer()->render_surface();
+        host_impl->active_tree()->root_layer_for_testing()->render_surface();
     gfx::Rect root_damage =
         root_surface->damage_tracker()->current_damage_rect();
     root_damage.Intersect(root_surface->content_rect());
@@ -385,7 +385,7 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
-        host_impl->active_tree()->root_layer()->render_surface();
+        host_impl->active_tree()->root_layer_for_testing()->render_surface();
     gfx::Rect root_damage =
         root_surface->damage_tracker()->current_damage_rect();
     root_damage.Intersect(root_surface->content_rect());
@@ -470,7 +470,7 @@ class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
-        host_impl->active_tree()->root_layer()->render_surface();
+        host_impl->active_tree()->root_layer_for_testing()->render_surface();
     gfx::Rect root_damage =
         root_surface->damage_tracker()->current_damage_rect();
     root_damage.Intersect(root_surface->content_rect());

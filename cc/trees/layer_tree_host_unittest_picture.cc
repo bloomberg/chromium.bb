@@ -76,7 +76,7 @@ class LayerTreeHostPictureTestTwinLayer
   }
 
   void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* active_root_impl = impl->active_tree()->root_layer();
+    LayerImpl* active_root_impl = impl->active_tree()->root_layer_for_testing();
     int picture_id = impl->active_tree()->source_frame_number() < 2
                          ? picture_id1_
                          : picture_id2_;
@@ -289,7 +289,7 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
     PictureLayerTiling* tiling = picture_impl->HighResTiling();
     int num_tiles_y = tiling->TilingDataForTesting().num_tiles_y();
 
-    if (!impl->active_tree()->root_layer()) {
+    if (!impl->active_tree()->root_layer_for_testing()) {
       // If active tree doesn't have the layer, then pending tree should have
       // all needed tiles.
       EXPECT_TRUE(tiling->TileAt(0, 0));

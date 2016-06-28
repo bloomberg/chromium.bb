@@ -103,7 +103,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
   root_layer->test_properties()->AddChild(std::move(owning_layer));
-  host_impl.active_tree()->SetRootLayer(std::move(root_layer));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::Rect content_rect(0, 0, 50, 50);

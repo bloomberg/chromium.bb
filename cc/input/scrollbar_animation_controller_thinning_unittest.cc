@@ -63,7 +63,7 @@ class ScrollbarAnimationControllerThinningTest
 
     scroll_layer->test_properties()->AddChild(std::move(scrollbar));
     clip_layer_->test_properties()->AddChild(std::move(scroll_layer));
-    host_impl_.active_tree()->SetRootLayer(std::move(clip));
+    host_impl_.active_tree()->SetRootLayerForTesting(std::move(clip));
 
     scrollbar_layer_->SetScrollLayerId(scroll_layer_ptr->id());
     scrollbar_layer_->test_properties()->opacity_can_animate = true;

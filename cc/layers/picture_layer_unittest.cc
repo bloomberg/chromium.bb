@@ -287,10 +287,10 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
   host_impl.CreatePendingTree();
-  host_impl.pending_tree()->SetRootLayer(
+  host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
-      host_impl.pending_tree()->root_layer());
+      host_impl.pending_tree()->root_layer_for_testing());
   layer->PushPropertiesTo(layer_impl);
 
   EXPECT_EQ(invalidation_bounds,
@@ -329,10 +329,10 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
   host_impl.CreatePendingTree();
-  host_impl.pending_tree()->SetRootLayer(
+  host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
-      host_impl.pending_tree()->root_layer());
+      host_impl.pending_tree()->root_layer_for_testing());
   layer->PushPropertiesTo(layer_impl);
 
   EXPECT_EQ(gfx::Rect(), layer_impl->GetPendingInvalidation()->bounds());
@@ -376,12 +376,12 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
 
   host_impl.CreatePendingTree();
-  host_impl.pending_tree()->SetRootLayer(
+  host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
   host_impl.pending_tree()->BuildLayerListForTesting();
 
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
-      host_impl.pending_tree()->root_layer());
+      host_impl.pending_tree()->root_layer_for_testing());
 
   layer->PushPropertiesTo(layer_impl);
 
@@ -389,6 +389,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   EXPECT_EQ(2, host->source_frame_number());
 
   host_impl.ActivateSyncTree();
+  host_impl.active_tree()->SetRootLayerFromLayerListForTesting();
 
   // By updating the draw proprties on the active tree, we will set the viewport
   // rect for tile priorities to something non-empty.
@@ -402,7 +403,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   host_impl.CreatePendingTree();
   layer_impl = static_cast<FakePictureLayerImpl*>(
-      host_impl.pending_tree()->root_layer());
+      host_impl.pending_tree()->root_layer_for_testing());
 
   // We should now have invalid contents and should therefore clear the
   // recording source.
@@ -412,9 +413,11 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  host_impl.active_tree()->root_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
-  host_impl.active_tree()->root_layer()->AppendQuads(render_pass.get(), &data);
-  host_impl.active_tree()->root_layer()->DidDraw(nullptr);
+  host_impl.active_tree()->root_layer_for_testing()->WillDraw(
+      DRAW_MODE_SOFTWARE, nullptr);
+  host_impl.active_tree()->root_layer_for_testing()->AppendQuads(
+      render_pass.get(), &data);
+  host_impl.active_tree()->root_layer_for_testing()->DidDraw(nullptr);
 }
 
 TEST(PictureLayerTest, SuitableForGpuRasterization) {

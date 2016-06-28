@@ -103,7 +103,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   }
 
   active_tree()->UpdatePropertyTreesForBoundsDelta();
-  return active_tree()->root_layer();
+  return active_tree()->root_layer_for_testing();
 }
 
 LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
@@ -114,7 +114,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
   animation_host()->PushPropertiesTo(host_impl_.animation_host());
 
   pending_tree()->UpdatePropertyTreeScrollOffset(property_trees());
-  return pending_tree()->root_layer();
+  return pending_tree()->root_layer_for_testing();
 }
 
 }  // namespace cc

@@ -2141,7 +2141,7 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
       FakePictureLayerImpl::CreateWithRasterSource(pending_tree, layer_id(),
                                                    pending_raster_source);
   pending_layer->SetDrawsContent(true);
-  pending_tree->SetRootLayer(std::move(pending_layer));
+  pending_tree->SetRootLayerForTesting(std::move(pending_layer));
   pending_tree->BuildLayerListForTesting();
 
   FakePictureLayerImpl* raw_pending_layer = static_cast<FakePictureLayerImpl*>(
@@ -4876,7 +4876,7 @@ TEST_F(PictureLayerImplTest, CompositedImageCalculateContentsScale) {
   pending_layer->set_is_directly_composited_image(true);
   pending_layer->SetDrawsContent(true);
   FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
-  pending_tree->SetRootLayer(std::move(pending_layer));
+  pending_tree->SetRootLayerForTesting(std::move(pending_layer));
   pending_tree->BuildLayerListAndPropertyTreesForTesting();
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_ptr, 2.f, 3.f, 4.f, 1.f, 1.f,
@@ -4899,7 +4899,7 @@ TEST_F(PictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
   pending_layer->set_is_directly_composited_image(true);
   pending_layer->SetDrawsContent(true);
   FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
-  pending_tree->SetRootLayer(std::move(pending_layer));
+  pending_tree->SetRootLayerForTesting(std::move(pending_layer));
   pending_tree->BuildLayerListAndPropertyTreesForTesting();
 
   // Set PictureLayerImpl::ideal_contents_scale_ to 2.f.
@@ -4918,7 +4918,7 @@ TEST_F(PictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
   host_impl()->ActivateSyncTree();
 
   FakePictureLayerImpl* active_layer = static_cast<FakePictureLayerImpl*>(
-      host_impl()->active_tree()->root_layer());
+      host_impl()->active_tree()->root_layer_for_testing());
   SetupDrawPropertiesAndUpdateTiles(
       active_layer, suggested_ideal_contents_scale, device_scale_factor,
       page_scale_factor, animation_contents_scale, animation_contents_scale,
@@ -4958,7 +4958,7 @@ TEST_F(PictureLayerImplTest, CompositedImageRasterScaleChanges) {
   pending_layer->set_is_directly_composited_image(true);
   pending_layer->SetDrawsContent(true);
   FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
-  pending_tree->SetRootLayer(std::move(pending_layer));
+  pending_tree->SetRootLayerForTesting(std::move(pending_layer));
   pending_tree->BuildLayerListAndPropertyTreesForTesting();
 
   float expected_contents_scale = 0.25f;

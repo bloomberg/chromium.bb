@@ -105,7 +105,7 @@ class OcclusionTrackerTest : public testing::Test {
     TestContentLayerImpl* layer_ptr = layer.get();
     SetProperties(layer_ptr, transform, position, bounds);
 
-    host_->host_impl()->active_tree()->SetRootLayer(std::move(layer));
+    host_->host_impl()->active_tree()->SetRootLayerForTesting(std::move(layer));
 
     layer_ptr->test_properties()->force_render_surface = true;
     SetRootLayerOnMainThread(layer_ptr);
@@ -198,7 +198,7 @@ class OcclusionTrackerTest : public testing::Test {
   }
 
   void DestroyLayers() {
-    host_->host_impl()->active_tree()->SetRootLayer(nullptr);
+    host_->host_impl()->active_tree()->SetRootLayerForTesting(nullptr);
     render_surface_layer_list_impl_.clear();
     replica_layers_.clear();
     mask_layers_.clear();
@@ -221,7 +221,8 @@ class OcclusionTrackerTest : public testing::Test {
   }
 
   void CalcDrawEtc(TestContentLayerImpl* root) {
-    DCHECK(root == root->layer_tree_impl()->root_layer());
+    root->layer_tree_impl()->BuildLayerListForTesting();
+    DCHECK(root == root->layer_tree_impl()->root_layer_for_testing());
 
     // These occlusion tests attach and detach layers in multiple
     // iterations, so rebuild property trees every time.

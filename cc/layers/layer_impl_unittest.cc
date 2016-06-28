@@ -128,7 +128,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* root = root_ptr.get();
   root_clip_ptr->test_properties()->AddChild(std::move(root_ptr));
-  host_impl.active_tree()->SetRootLayer(std::move(root_clip_ptr));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root_clip_ptr));
 
   root->test_properties()->force_render_surface = true;
   root->layer_tree_impl()->ResetAllChangeTracking();
@@ -233,9 +233,9 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
-  host_impl.active_tree()->SetRootLayer(
+  host_impl.active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl.active_tree(), 1));
-  LayerImpl* root = host_impl.active_tree()->root_layer();
+  LayerImpl* root = host_impl.active_tree()->root_layer_for_testing();
   root->SetHasRenderSurface(true);
   std::unique_ptr<LayerImpl> layer_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
@@ -350,9 +350,9 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
-  host_impl.active_tree()->SetRootLayer(
+  host_impl.active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl.active_tree(), 1));
-  LayerImpl* layer = host_impl.active_tree()->root_layer();
+  LayerImpl* layer = host_impl.active_tree()->root_layer_for_testing();
 
   for (int contents_opaque = 0; contents_opaque < 2; ++contents_opaque) {
     for (int layer_opaque = 0; layer_opaque < 2; ++layer_opaque) {
@@ -388,15 +388,18 @@ class LayerImplScrollTest : public testing::Test {
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         root_id_(7) {
-    host_impl_.active_tree()->SetRootLayer(
+    host_impl_.active_tree()->SetRootLayerForTesting(
         LayerImpl::Create(host_impl_.active_tree(), root_id_));
-    host_impl_.active_tree()->root_layer()->test_properties()->AddChild(
-        LayerImpl::Create(host_impl_.active_tree(), root_id_ + 1));
+    host_impl_.active_tree()
+        ->root_layer_for_testing()
+        ->test_properties()
+        ->AddChild(LayerImpl::Create(host_impl_.active_tree(), root_id_ + 1));
     layer()->SetScrollClipLayer(root_id_);
     // Set the max scroll offset by noting that the root layer has bounds (1,1),
     // thus whatever bounds are set for the layer will be the max scroll
     // offset plus 1 in each direction.
-    host_impl_.active_tree()->root_layer()->SetBounds(gfx::Size(1, 1));
+    host_impl_.active_tree()->root_layer_for_testing()->SetBounds(
+        gfx::Size(1, 1));
     gfx::Vector2d max_scroll_offset(51, 81);
     layer()->SetBounds(gfx::Size(max_scroll_offset.x(), max_scroll_offset.y()));
     host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
@@ -404,7 +407,7 @@ class LayerImplScrollTest : public testing::Test {
 
   LayerImpl* layer() {
     return host_impl_.active_tree()
-        ->root_layer()
+        ->root_layer_for_testing()
         ->test_properties()
         ->children[0];
   }

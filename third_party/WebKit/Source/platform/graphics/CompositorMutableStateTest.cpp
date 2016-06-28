@@ -52,7 +52,7 @@ public:
 
     FakeLayerTreeHostImpl& hostImpl() { return *m_hostImpl; }
 
-    LayerImpl* rootLayer() { return m_hostImpl->active_tree()->root_layer(); }
+    LayerImpl* rootLayer() { return m_hostImpl->active_tree()->root_layer_for_testing(); }
 
 private:
     // The cc testing machinery has fairly deep dependency on having a main
@@ -74,7 +74,7 @@ TEST_F(CompositorMutableStateTest, NoMutableState)
     SetLayerPropertiesForTesting(root.get());
 
     hostImpl().SetViewportSize(root->bounds());
-    hostImpl().active_tree()->SetRootLayer(std::move(root));
+    hostImpl().active_tree()->SetRootLayerForTesting(std::move(root));
     hostImpl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
     CompositorMutations mutations;
@@ -92,7 +92,7 @@ TEST_F(CompositorMutableStateTest, MutableStateNoMutableProperties)
     root->SetElementId(42);
 
     hostImpl().SetViewportSize(root->bounds());
-    hostImpl().active_tree()->SetRootLayer(std::move(root));
+    hostImpl().active_tree()->SetRootLayerForTesting(std::move(root));
     hostImpl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
     CompositorMutations mutations;
@@ -123,7 +123,7 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     layer->SetMutableProperties(CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop);
 
     hostImpl().SetViewportSize(layer->bounds());
-    hostImpl().active_tree()->SetRootLayer(std::move(root));
+    hostImpl().active_tree()->SetRootLayerForTesting(std::move(root));
     hostImpl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
     CompositorMutations mutations;

@@ -48,7 +48,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
 
     // Verify the draw properties are valid.
@@ -104,7 +104,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
     RenderSurfaceImpl* surface = child->render_surface();
 
@@ -171,7 +171,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
     RenderSurfaceImpl* surface = child->render_surface();
     LayerImpl* mask = surface->MaskLayer();
@@ -312,7 +312,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
     RenderSurfaceImpl* surface = child->render_surface();
     LayerImpl* mask = surface->MaskLayer();

@@ -281,7 +281,7 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
                      base::TimeTicks monotonic_time) override {
     // TODO(ajuma): This test only checks the active tree. Add checks for
     // pending tree too.
-    if (!host_impl->active_tree()->root_layer())
+    if (!host_impl->active_tree()->root_layer_for_testing())
       return;
 
     // Wait for the commit with the animation to happen.
@@ -1010,7 +1010,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     if (!host_impl->pending_tree())
       return false;
 
-    if (!host_impl->active_tree()->root_layer())
+    if (!host_impl->active_tree()->root_layer_for_testing())
       return false;
 
     scoped_refptr<AnimationTimeline> timeline_impl =
@@ -1339,7 +1339,7 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     EXPECT_EQ(2u, element_animations_copy.size());
     for (auto& it : element_animations_copy) {
       int id = it.first;
-      if (id == host_impl->active_tree()->root_layer()->id()) {
+      if (id == host_impl->active_tree()->root_layer_for_testing()->id()) {
         Animation* anim = it.second->GetAnimation(TargetProperty::TRANSFORM);
         EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
       } else if (id == layer_->id()) {
@@ -1667,8 +1667,10 @@ class LayerTreeHostAnimationTestChangeAnimationPlayer
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     PropertyTrees* property_trees = host_impl->sync_tree()->property_trees();
-    TransformNode* node = property_trees->transform_tree.Node(
-        host_impl->sync_tree()->root_layer()->transform_tree_index());
+    TransformNode* node =
+        property_trees->transform_tree.Node(host_impl->sync_tree()
+                                                ->root_layer_for_testing()
+                                                ->transform_tree_index());
     gfx::Transform translate;
     translate.Translate(5, 5);
     switch (host_impl->sync_tree()->source_frame_number()) {
@@ -1724,11 +1726,11 @@ class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (host_impl->pending_tree()->source_frame_number() <= 1) {
       EXPECT_TRUE(host_impl->pending_tree()
-                      ->root_layer()
+                      ->root_layer_for_testing()
                       ->screen_space_transform_is_animating());
     } else {
       EXPECT_FALSE(host_impl->pending_tree()
-                       ->root_layer()
+                       ->root_layer_for_testing()
                        ->screen_space_transform_is_animating());
     }
   }
@@ -1748,7 +1750,7 @@ class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
                                    DrawResult draw_result) override {
     const bool screen_space_transform_is_animating =
         host_impl->active_tree()
-            ->root_layer()
+            ->root_layer_for_testing()
             ->screen_space_transform_is_animating();
 
     // Check that screen_space_transform_is_animating changes only once.

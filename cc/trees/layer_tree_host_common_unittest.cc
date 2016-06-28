@@ -112,7 +112,7 @@ class LayerTreeHostCommonDrawRectsTest : public LayerTreeHostCommonTest {
       const gfx::Rect& target_rect,
       const gfx::Transform& layer_transform,
       const gfx::Rect& layer_rect) {
-    LayerImpl* root = root_layer();
+    LayerImpl* root = root_layer_for_testing();
     LayerImpl* target = AddChild<LayerImpl>(root);
     LayerImpl* drawing_layer = AddChild<LayerImpl>(target);
 
@@ -145,7 +145,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
   // screen space transform, and the hierarchy passed on to children
   // layers should also be identity transforms.
 
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
 
@@ -171,7 +171,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
 TEST_F(LayerTreeHostCommonTest, EffectTreeTransformIdTest) {
   // Tests that effect tree node gets a valid transform id when a layer
   // has opacity but doesn't create a render surface.
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(parent);
   child->SetDrawsContent(true);
 
@@ -194,7 +194,7 @@ TEST_F(LayerTreeHostCommonTest, EffectTreeTransformIdTest) {
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   gfx::Transform identity_matrix;
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* layer = AddChild<LayerImpl>(root);
 
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
@@ -344,7 +344,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   root->test_properties()->AddChild(std::move(clip_layer_scoped_ptr));
   root->SetHasRenderSurface(true);
   LayerImpl* root_layer = root.get();
-  host_impl.active_tree()->SetRootLayer(std::move(root));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
 
   ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
                                  scroll_layer->test_properties()->parent);
@@ -410,7 +410,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   gfx::Transform identity_matrix;
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -499,7 +499,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChildToRoot<LayerImpl>();
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -567,7 +567,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsWhenCannotRenderToSeparateSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChildToRoot<LayerImpl>();
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -622,7 +622,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsWhenCannotRenderToSeparateSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChildToRoot<LayerImpl>();
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -703,7 +703,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   //   - verifying that each layer has a reference to the correct render surface
   //   and render target values.
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChildToRoot<LayerImpl>();
   parent->SetDrawsContent(true);
   LayerImpl* render_surface1 = AddChild<LayerImpl>(parent);
@@ -945,7 +945,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
   // Note that the way the code is currently implemented, it is not expected to
   // use a canonical orthographic projection.
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   child->SetDrawsContent(true);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -1013,7 +1013,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
 }
 
 TEST_F(LayerTreeHostCommonTest, LayerFullyContainedWithinClipInTargetSpace) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
 
@@ -1057,7 +1057,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
   // implicitly inherited by the rest of the subtree, which then is positioned
   // incorrectly as a result.
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   grand_child->SetDrawsContent(true);
@@ -1088,7 +1088,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceWithSublayerScale) {
   const gfx::Transform identity_matrix;
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface = AddChild<LayerImpl>(root);
   LayerImpl* child = AddChild<LayerImpl>(render_surface);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -1128,7 +1128,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   // Transformations applied at the root of the tree should be forwarded
   // to child layers instead of applied to the root RenderSurface.
   const gfx::Transform identity_matrix;
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   root->SetDrawsContent(true);
   LayerImpl* child = AddChild<LayerImpl>(root);
   child->SetDrawsContent(true);
@@ -1256,7 +1256,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
 
 TEST_F(LayerTreeHostCommonTest,
        RenderSurfaceListForRenderSurfaceWithClippedLayer) {
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   parent->SetMasksToBounds(true);
   LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
   LayerImpl* child = AddChild<LayerImpl>(render_surface1);
@@ -1285,7 +1285,7 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(parent);
   LayerImpl* child = AddChild<LayerImpl>(render_surface1);
   child->SetDrawsContent(true);
@@ -1317,7 +1317,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
 
 TEST_F(LayerTreeHostCommonTest,
        RenderSurfaceListForTransparentChildWithBackgroundFilter) {
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(parent);
   LayerImpl* child = AddChild<LayerImpl>(render_surface1);
   child->SetDrawsContent(true);
@@ -1376,7 +1376,7 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child1 = AddChild<LayerImpl>(parent);
   LayerImpl* child2 = AddChild<LayerImpl>(parent);
@@ -1419,7 +1419,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
 }
 
 TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilter) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   child->SetDrawsContent(true);
 
@@ -1448,7 +1448,7 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilter) {
 TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilterHighDpi) {
   const float device_scale_factor = 2.0f;
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   root->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
   LayerImpl* child = AddChild<LayerImpl>(root);
   child->SetDrawsContent(true);
@@ -1477,7 +1477,7 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilterHighDpi) {
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(parent);
   child->SetDrawsContent(true);
 
@@ -1506,7 +1506,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceDrawOpacity) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* surface1 = AddChildToRoot<LayerImpl>();
   LayerImpl* not_surface = AddChild<LayerImpl>(surface1);
   LayerImpl* surface2 = AddChild<LayerImpl>(not_surface);
@@ -1548,7 +1548,7 @@ TEST_F(LayerTreeHostCommonTest, DrawOpacityWhenCannotRenderToSeparateSurface) {
   // (Rendering will still be incorrect in situations where we really do need
   // surfaces to apply opacity, such as when we have overlapping layers with an
   // ancestor whose opacity is <1.)
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child1 = AddChild<LayerImpl>(parent);
   LayerImpl* child2 = AddChild<LayerImpl>(parent);
@@ -1620,7 +1620,7 @@ TEST_F(LayerTreeHostCommonTest, DrawOpacityWhenCannotRenderToSeparateSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
   LayerImpl* child = AddChild<LayerImpl>(render_surface1);
 
@@ -1656,7 +1656,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
   // Render surfaces act as a flattening point for their subtree, so should
   // always flatten the target-to-screen space transform seen by descendants.
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -1732,7 +1732,7 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   // outside the clip rect, and they should never get scheduled on the list of
   // render surfaces.
 
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   LayerImpl* great_grand_child = AddChild<LayerImpl>(grand_child);
@@ -1793,7 +1793,7 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
   // content rect of the child, making grand_child not appear in the
   // render_surface_layer_list.
 
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   LayerImpl* leaf_node = AddChild<LayerImpl>(grand_child);
@@ -1841,7 +1841,7 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectlyLayerImpl) {
   //    and propagates the clip to the subtree.
 
   const gfx::Transform identity_matrix;
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   parent->SetDrawsContent(true);
   LayerImpl* child1 = AddChild<LayerImpl>(parent);
@@ -1941,7 +1941,7 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectlyLayerImpl) {
 TEST_F(LayerTreeHostCommonTest, UpdateClipRectCorrectly) {
   // Tests that when as long as layer is clipped, it's clip rect is set to
   // correct value.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child = AddChild<LayerImpl>(parent);
 
@@ -1986,7 +1986,7 @@ TEST_F(LayerTreeHostCommonTest, IsClippedWhenCannotRenderToSeparateSurface) {
   // when a layer or its ancestor has a clip; in particular, if a layer
   // is_clipped, so is its entire subtree (since there are no render surfaces
   // that can reset is_clipped).
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child1 = AddChild<LayerImpl>(parent);
   LayerImpl* child2 = AddChild<LayerImpl>(parent);
@@ -2175,7 +2175,7 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForLayers) {
   //   be empty.
 
   const gfx::Transform identity_matrix;
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child1 = AddChild<LayerImpl>(child);
   grand_child1->SetDrawsContent(true);
@@ -2227,7 +2227,7 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
   // clipping; instead the surface will enforce the clip for the entire subtree.
   // They may still have a clip rect of their own layer bounds, however, if
   // masksToBounds was true.
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   LayerImpl* grand_child1 = AddChild<LayerImpl>(child);
   LayerImpl* grand_child2 = AddChild<LayerImpl>(child);
@@ -2309,7 +2309,7 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   // intersection of all ancestor clips in screen space; in particular, if a
   // layer masks to bounds, it contributes to the clip_rect of all layers in its
   // subtree (since there are no render surfaces that can reset the clip_rect).
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child1 = AddChild<LayerImpl>(parent);
   LayerImpl* child2 = AddChild<LayerImpl>(parent);
@@ -2489,7 +2489,7 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, HitTestingWhenSurfacesDisabled) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -2539,7 +2539,7 @@ TEST_F(LayerTreeHostCommonTest, HitTestingWhenSurfacesDisabled) {
 TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
   // Tests that draw properties are computed correctly when we disable and then
   // re-enable separate surfaces.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -2614,7 +2614,7 @@ TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
 }
 
 TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
   LayerImpl* child_of_rs1 = AddChild<LayerImpl>(render_surface1);
   LayerImpl* grand_child_of_rs1 = AddChild<LayerImpl>(child_of_rs1);
@@ -2754,7 +2754,7 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
 }
 
 TEST_F(LayerTreeHostCommonTest, LargeTransforms) {
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
 
@@ -2780,7 +2780,7 @@ TEST_F(LayerTreeHostCommonTest, LargeTransforms) {
 
 TEST_F(LayerTreeHostCommonTest,
        ScreenSpaceTransformIsAnimatingWithDelayedAnimation) {
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   LayerImpl* great_grand_child = AddChild<LayerImpl>(grand_child);
@@ -3133,7 +3133,7 @@ TEST_F(LayerTreeHostCommonDrawRectsTest, DrawRectsForPerspectiveUnprojection) {
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleRectsForPositionedRootLayerClippedByViewport) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   root->SetDrawsContent(true);
 
   gfx::Transform identity_matrix;
@@ -3154,7 +3154,7 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsForSimpleLayers) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child1_layer = AddChildToRoot<LayerImpl>();
   child1_layer->SetDrawsContent(true);
   LayerImpl* child2_layer = AddChildToRoot<LayerImpl>();
@@ -3197,7 +3197,7 @@ TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsForSimpleLayers) {
 
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersClippedByLayer) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   LayerImpl* grand_child1 = AddChild<LayerImpl>(child);
   grand_child1->SetDrawsContent(true);
@@ -3245,7 +3245,7 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectWithClippingAndScaling) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
 
@@ -3274,7 +3274,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectWithClippingAndScaling) {
 
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersInUnclippedRenderSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* child1 = AddChild<LayerImpl>(render_surface);
   child1->SetDrawsContent(true);
@@ -3328,7 +3328,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleRectsWhenCannotRenderToSeparateSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChild<LayerImpl>(root);
   LayerImpl* child1 = AddChild<LayerImpl>(parent);
   LayerImpl* child2 = AddChild<LayerImpl>(parent);
@@ -3525,7 +3525,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleContentRectsForClippedSurfaceWithEmptyClip) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child1 = AddChild<LayerImpl>(root);
   LayerImpl* child2 = AddChild<LayerImpl>(root);
   LayerImpl* child3 = AddChild<LayerImpl>(root);
@@ -3570,7 +3570,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersWithUninvertibleTransform) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   child->SetDrawsContent(true);
 
@@ -3624,7 +3624,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleContentRectForLayerWithUninvertibleDrawTransform) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   child->SetDrawsContent(true);
@@ -3708,7 +3708,7 @@ TEST_F(LayerTreeHostCommonTest,
   child->test_properties()->AddChild(std::move(grand_child));
   root->test_properties()->AddChild(std::move(child));
   root->test_properties()->AddChild(std::move(occluding_child));
-  host_impl.active_tree()->SetRootLayer(std::move(root));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
@@ -3716,7 +3716,7 @@ TEST_F(LayerTreeHostCommonTest,
   host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
 
   LayerImpl* grand_child_ptr = host_impl.active_tree()
-                                   ->root_layer()
+                                   ->root_layer_for_testing()
                                    ->test_properties()
                                    ->children[0]
                                    ->test_properties()
@@ -3742,7 +3742,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersInClippedRenderSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* child1 = AddChild<LayerImpl>(render_surface);
   child1->SetDrawsContent(true);
@@ -3801,7 +3801,7 @@ TEST_F(LayerTreeHostCommonTest,
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForSurfaceHierarchy) {
   // Check that clipping does not propagate down surfaces.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
   LayerImpl* child1 = AddChild<LayerImpl>(render_surface2);
@@ -3870,7 +3870,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleRectsForClippedDescendantsOfUnclippedSurfaces) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
   LayerImpl* child1 = AddChild<LayerImpl>(render_surface1);
   LayerImpl* child2 = AddChild<LayerImpl>(child1);
@@ -3906,7 +3906,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleRectsWhenClipChildIsBetweenTwoRenderSurfaces) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface1);
@@ -3946,7 +3946,7 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface1);
@@ -3985,7 +3985,7 @@ TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWhenLayerNotDrawn) {
   // Test that only drawn layers contribute to render surface content rect.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* surface = AddChildToRoot<LayerImpl>();
   LayerImpl* test_layer = AddChild<LayerImpl>(surface);
 
@@ -4015,7 +4015,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectsMultipleSurfaces) {
   // surface_with_unclipped_descendants->clipped_surface, checks that the bounds
   // of surface_with_unclipped_descendants doesn't propagate to the
   // clipped_surface below it.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* unclipped_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* clip_parent = AddChild<LayerImpl>(unclipped_surface);
   LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
@@ -4061,7 +4061,7 @@ TEST_F(LayerTreeHostCommonTest, RootClipPropagationToClippedSurface) {
   // Tests visible rects computation when we have unclipped_surface->
   // surface_with_unclipped_descendants->clipped_surface, checks that the bounds
   // of root propagate to the clipped_surface.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* unclipped_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* clip_parent = AddChild<LayerImpl>(unclipped_surface);
   LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
@@ -4108,7 +4108,7 @@ TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsWithTransformOnUnclippedSurface) {
   // Layers that have non-axis aligned bounds (due to transforms) have an
   // expanded, axis-aligned DrawableContentRect and visible content rect.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* child1 = AddChild<LayerImpl>(render_surface);
   child1->SetDrawsContent(true);
@@ -4157,7 +4157,7 @@ TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsWithTransformOnClippedSurface) {
   // Layers that have non-axis aligned bounds (due to transforms) have an
   // expanded, axis-aligned DrawableContentRect and visible content rect.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* child1 = AddChild<LayerImpl>(render_surface);
   child1->SetDrawsContent(true);
@@ -4204,7 +4204,7 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsInHighDPI) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   FakePictureLayerImpl* render_surface1 =
       AddChildToRoot<FakePictureLayerImpl>();
   render_surface1->SetDrawsContent(true);
@@ -4284,7 +4284,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   // "flattened" to each parent layer according to current W3C spec.
 
   const gfx::Transform identity_matrix;
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* front_facing_child = AddChildToRoot<LayerImpl>();
   LayerImpl* back_facing_child = AddChildToRoot<LayerImpl>();
   LayerImpl* front_facing_surface = AddChildToRoot<LayerImpl>();
@@ -4388,7 +4388,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   // is used.
 
   const gfx::Transform identity_matrix;
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* front_facing_child = AddChildToRoot<LayerImpl>();
   LayerImpl* back_facing_child = AddChildToRoot<LayerImpl>();
   LayerImpl* front_facing_surface = AddChildToRoot<LayerImpl>();
@@ -4504,7 +4504,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   // Even layers that are animating get culled if their back face is showing and
   // they are not double sided.
   const gfx::Transform identity_matrix;
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   LayerImpl* animating_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* child_of_animating_surface =
@@ -4580,7 +4580,7 @@ TEST_F(LayerTreeHostCommonTest,
   // created when it flattens its subtree, and its parent has preserves-3d.
 
   const gfx::Transform identity_matrix;
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   LayerImpl* front_facing_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* back_facing_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* child1 = AddChild<LayerImpl>(front_facing_surface);
@@ -4639,7 +4639,7 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   // Verify draw and screen space transforms of layers not in a surface.
   gfx::Transform identity_matrix;
 
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   parent->SetDrawsContent(true);
   SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(100, 100), false, true,
@@ -4734,7 +4734,7 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
   gfx::Transform scale_small_matrix;
   scale_small_matrix.Scale(SK_MScalar1 / 10.f, SK_MScalar1 / 12.f);
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(100, 100), false, true,
                                false);
@@ -4838,7 +4838,7 @@ TEST_F(LayerTreeHostCommonScalingTest, SmallIdealScale) {
   SkMScalar initial_child_scale = 0.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   root->SetBounds(gfx::Size(100, 100));
 
   LayerImpl* parent = AddChildToRoot<LayerImpl>();
@@ -4882,7 +4882,7 @@ TEST_F(LayerTreeHostCommonScalingTest, IdealScaleForAnimatingLayer) {
   SkMScalar initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   root->SetBounds(gfx::Size(100, 100));
 
   LayerImpl* parent = AddChildToRoot<LayerImpl>();
@@ -4911,7 +4911,7 @@ TEST_F(LayerTreeHostCommonScalingTest, IdealScaleForAnimatingLayer) {
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   gfx::Transform identity_matrix;
 
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   parent->SetDrawsContent(true);
   SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(30, 30), false, true,
@@ -5025,7 +5025,7 @@ TEST_F(LayerTreeHostCommonTest,
      RenderSurfaceTransformsInHighDPIAccurateScaleZeroPosition) {
   gfx::Transform identity_matrix;
 
-  LayerImpl* parent = root_layer();
+  LayerImpl* parent = root_layer_for_testing();
   parent->SetDrawsContent(true);
   SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(33, 31), false, true,
@@ -5098,7 +5098,7 @@ TEST_F(LayerTreeHostCommonTest, LayerSearch) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   grand_child->SetDrawsContent(true);
@@ -5146,7 +5146,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   root->test_properties()->AddChild(std::move(child));
   root->SetHasRenderSurface(true);
   LayerImpl* root_layer = root.get();
-  host_impl.pending_tree()->SetRootLayer(std::move(root));
+  host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
   host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   // Add opacity animation.
   scoped_refptr<AnimationTimeline> timeline =
@@ -5203,7 +5203,8 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   // But if the opacity of the layer remains 0 after activation, it should not
   // be drawn.
   host_impl.ActivateSyncTree();
-  LayerImpl* active_root = host_impl.active_tree()->root_layer();
+  host_impl.active_tree()->SetRootLayerFromLayerListForTesting();
+  LayerImpl* active_root = host_impl.active_tree()->root_layer_for_testing();
   LayerImpl* active_child = host_impl.active_tree()->LayerById(child_ptr->id());
 
   EffectTree& active_effect_tree =
@@ -5264,7 +5265,7 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
 
     child_->test_properties()->AddChild(std::move(grand_child_ptr));
     root_->test_properties()->AddChild(std::move(child_ptr));
-    host_impl_.active_tree()->SetRootLayer(std::move(root_ptr));
+    host_impl_.active_tree()->SetRootLayerForTesting(std::move(root_ptr));
 
     root_->SetContentsOpaque(true);
     child_->SetContentsOpaque(true);
@@ -5478,7 +5479,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   child->test_properties()->AddChild(std::move(grand_child));
   root->test_properties()->AddChild(std::move(child));
   root->SetHasRenderSurface(true);
-  host_impl.pending_tree()->SetRootLayer(std::move(root));
+  host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -5528,7 +5529,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
 
   child->test_properties()->AddChild(std::move(grand_child));
   root->test_properties()->AddChild(std::move(child));
-  host_impl.pending_tree()->SetRootLayer(std::move(root));
+  host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -5628,7 +5629,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
       std::move(copy_grand_parent_sibling_before));
   root->test_properties()->AddChild(std::move(copy_grand_parent));
   root->test_properties()->AddChild(std::move(copy_grand_parent_sibling_after));
-  host_impl.pending_tree()->SetRootLayer(std::move(root));
+  host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
 
   // Hide the copy_grand_parent and its subtree. But make a copy request in that
   // hidden subtree on copy_layer. Also hide the copy grand child and its
@@ -5753,7 +5754,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
 
   LayerImplList render_surface_layer_list;
   LayerImpl* root_layer = root.get();
-  root_layer->layer_tree_impl()->SetRootLayer(std::move(root));
+  root_layer->layer_tree_impl()->SetRootLayerForTesting(std::move(root));
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_layer, root_layer->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
@@ -5773,7 +5774,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
 TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   const gfx::Transform identity_matrix;
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
@@ -5834,7 +5835,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* surface = AddChild<LayerImpl>(root);
   LayerImpl* surface_child = AddChild<LayerImpl>(surface);
 
@@ -5870,7 +5871,7 @@ TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
   //
   // The render surface should be resized correctly and the clip child should
   // inherit the right clip rect.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* clip_parent = AddChild<LayerImpl>(render_surface);
   clip_parent->SetDrawsContent(true);
@@ -5943,7 +5944,7 @@ TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
   //          + render_surface2 (also sets opacity)
   //            + clip_child
   //
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
   LayerImpl* intervening = AddChild<LayerImpl>(render_surface1);
@@ -6032,7 +6033,7 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   //          + render_surface2 (also sets opacity)
   //            + clip_child
   //
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
   LayerImpl* intervening = AddChild<LayerImpl>(render_surface1);
@@ -6120,7 +6121,7 @@ TEST_F(LayerTreeHostCommonTest, DescendantsOfClipChildren) {
   //        + clip_child
   //          + child
   //
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChild<LayerImpl>(root);
   LayerImpl* intervening = AddChild<LayerImpl>(clip_parent);
   LayerImpl* clip_child = AddChild<LayerImpl>(intervening);
@@ -6178,7 +6179,7 @@ TEST_F(LayerTreeHostCommonTest,
   //        + non_clip_child
   //
   // In this example render_surface2 should be unaffected by clip_child.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
   render_surface1->SetDrawsContent(true);
@@ -6256,7 +6257,7 @@ TEST_F(LayerTreeHostCommonTest,
        CreateRenderSurfaceWhenFlattenInsideRenderingContext) {
   // Verifies that Render Surfaces are created at the edge of rendering context.
 
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child1 = AddChildToRoot<LayerImpl>();
   LayerImpl* child2 = AddChild<LayerImpl>(child1);
   LayerImpl* child3 = AddChild<LayerImpl>(child2);
@@ -6334,7 +6335,7 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   child1->test_properties()->AddChild(std::move(child2));
   root->test_properties()->AddChild(std::move(child1));
   LayerImpl* root_layer = root.get();
-  root_layer->layer_tree_impl()->SetRootLayer(std::move(root));
+  root_layer->layer_tree_impl()->SetRootLayerForTesting(std::move(root));
 
   {
     LayerImplList render_surface_layer_list;
@@ -6401,7 +6402,7 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* back_facing = AddChild<LayerImpl>(root);
   LayerImpl* render_surface1 = AddChild<LayerImpl>(back_facing);
   LayerImpl* render_surface2 = AddChild<LayerImpl>(back_facing);
@@ -6475,7 +6476,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
 }
 
 TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   grand_child->SetDrawsContent(true);
@@ -6569,7 +6570,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformAnimationUpdatesBackfaceVisibility) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* back_facing = AddChild<LayerImpl>(root);
   LayerImpl* render_surface1 = AddChild<LayerImpl>(back_facing);
   LayerImpl* render_surface2 = AddChild<LayerImpl>(back_facing);
@@ -6628,7 +6629,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
   //   |   + scroll_parent
   //   + scroll_child
   //
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* scroll_parent_border = AddChildToRoot<LayerImpl>();
   LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
   LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_clip);
@@ -6673,7 +6674,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
 TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
   // Tests the computation of draw transform for the scroll child when its
   // target is different from its scroll parent's target.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* scroll_child_target = AddChildToRoot<LayerImpl>();
   LayerImpl* scroll_child = AddChild<LayerImpl>(scroll_child_target);
   LayerImpl* scroll_parent_target = AddChild<LayerImpl>(scroll_child_target);
@@ -6725,7 +6726,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
 }
 
 TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   root->SetDrawsContent(true);
   LayerImpl* parent = AddChildToRoot<LayerImpl>();
   parent->SetDrawsContent(true);
@@ -6779,7 +6780,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
   //       + scroll_parent
   //   + scroll_child
   //
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* scroll_parent_border = AddChild<LayerImpl>(root);
   LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
   LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_clip);
@@ -6835,7 +6836,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
   //     + scroll_grandparent_clip
   //       + scroll_grandparent
   //
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* scroll_child = AddChild<LayerImpl>(root);
   LayerImpl* scroll_parent_border = AddChild<LayerImpl>(root);
   LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
@@ -6920,7 +6921,7 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   //       + scroll_grandparent
   //         + render_surface1
   //
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   root->SetDrawsContent(true);
 
   LayerImpl* scroll_child = AddChild<LayerImpl>(root);
@@ -7018,7 +7019,7 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
   //     + fixed
   //       + child
   //
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface = AddChild<LayerImpl>(root);
   LayerImpl* fixed = AddChild<LayerImpl>(render_surface);
   LayerImpl* child = AddChild<LayerImpl>(fixed);
@@ -7136,7 +7137,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
   // Rounded to integers already.
   {
-    root->layer_tree_impl()->SetRootLayer(std::move(root_ptr));
+    root->layer_tree_impl()->SetRootLayerForTesting(std::move(root_ptr));
     root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
 
     gfx::Vector2dF scroll_delta(3.0, 5.0);
@@ -7225,7 +7226,7 @@ TEST_F(LayerTreeHostCommonTest,
   //       + container
   //         + scroller
   //
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* animated_layer = AddChildToRoot<FakePictureLayerImpl>();
   LayerImpl* surface = AddChild<LayerImpl>(animated_layer);
   LayerImpl* container = AddChild<LayerImpl>(surface);
@@ -7330,7 +7331,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
                                gfx::PointF(), gfx::Size(1, 2), true, false,
                                false);
 
-  host_impl.active_tree()->SetRootLayer(std::move(grand_parent));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(grand_parent));
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
@@ -7672,7 +7673,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   child->test_properties()->AddChild(std::move(grand_child2));
   parent->test_properties()->AddChild(std::move(child));
   grand_parent->test_properties()->AddChild(std::move(parent));
-  host_impl.active_tree()->SetRootLayer(std::move(grand_parent));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(grand_parent));
 
   SetLayerPropertiesForTesting(grand_parent_raw, identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(1, 2),
@@ -7921,7 +7922,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   root->test_properties()->AddChild(std::move(child2));
   root->test_properties()->force_render_surface = true;
   root->SetDrawsContent(true);
-  host_impl.active_tree()->SetRootLayer(std::move(root));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
 
   gfx::Transform identity_matrix, scale_transform_child1,
       scale_transform_child2;
@@ -8042,7 +8043,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip = AddChild<LayerImpl>(root);
   LayerImpl* content = AddChild<LayerImpl>(clip);
 
@@ -8099,10 +8100,10 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
   gfx::Transform identity_matrix;
 
   host_impl.SetViewportSize(device_viewport_size);
-  host_impl.active_tree()->SetRootLayer(
+  host_impl.active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl.active_tree(), 1));
 
-  LayerImpl* root = host_impl.active_tree()->root_layer();
+  LayerImpl* root = host_impl.active_tree()->root_layer_for_testing();
   SetLayerPropertiesForTesting(root,
                                identity_matrix,
                                gfx::Point3F(),
@@ -8305,7 +8306,7 @@ TEST_F(LayerTreeHostCommonTest,
 // Verify that having an animated filter (but no current filter, as these
 // are mutually exclusive) correctly creates a render surface.
 TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grandchild = AddChild<LayerImpl>(child);
 
@@ -8337,7 +8338,7 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
 // Verify that having a filter animation with a delayed start time creates a
 // render surface.
 TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grandchild = AddChild<LayerImpl>(child);
 
@@ -8387,7 +8388,7 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
 // Ensures that the property tree code accounts for offsets between fixed
 // position layers and their respective containers.
 TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grandchild = AddChild<LayerImpl>(child);
 
@@ -8422,7 +8423,7 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
 // own transform tree node.
 TEST_F(LayerTreeHostCommonTest,
        PropertyTreesAccountForFixedParentOffsetWhenContainerIsParent) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grandchild = AddChild<LayerImpl>(child);
 
@@ -8505,7 +8506,7 @@ TEST_F(LayerTreeHostCommonTest, CombineClipsUsingContentTarget) {
 }
 
 TEST_F(LayerTreeHostCommonTest, OnlyApplyFixedPositioningOnce) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* frame_clip = AddChild<LayerImpl>(root);
   LayerImpl* fixed = AddChild<LayerImpl>(frame_clip);
   gfx::Transform identity;
@@ -8536,7 +8537,7 @@ TEST_F(LayerTreeHostCommonTest, OnlyApplyFixedPositioningOnce) {
 }
 
 TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* frame_clip = AddChild<LayerImpl>(root);
   LayerImpl* scroller = AddChild<LayerImpl>(frame_clip);
   LayerImpl* fixed = AddChild<LayerImpl>(scroller);
@@ -8602,7 +8603,7 @@ TEST_F(LayerTreeHostCommonTest, ChangingAxisAlignmentTriggersRebuild) {
 }
 
 TEST_F(LayerTreeHostCommonTest, ChangeTransformOrigin) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
 
   gfx::Transform identity_matrix;
@@ -8629,7 +8630,7 @@ TEST_F(LayerTreeHostCommonTest, ChangeTransformOrigin) {
 }
 
 TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* scroll_parent = AddChild<LayerImpl>(root);
   LayerImpl* scroll_child = AddChild<LayerImpl>(scroll_parent);
 
@@ -8833,7 +8834,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
 
   child->test_properties()->AddChild(std::move(grandchild));
   root->test_properties()->AddChild(std::move(child));
-  host_impl.active_tree()->SetRootLayer(std::move(root));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
 
   // Check the non-skipped case.
   // ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
@@ -8948,7 +8949,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
 }
 
 TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
 
@@ -9039,7 +9040,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   child->test_properties()->AddChild(std::move(grandchild));
   root->test_properties()->AddChild(std::move(child));
 
-  host_impl.pending_tree()->SetRootLayer(std::move(root));
+  host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
 
   // Check the non-skipped case.
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
@@ -9075,7 +9076,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
 
 TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   gfx::Transform identity;
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
 
   SetLayerPropertiesForTesting(root, identity, gfx::Point3F(), gfx::PointF(),
@@ -9178,7 +9179,7 @@ TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   // Ensure that a Clip Node is added when a render surface applies clip.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* significant_transform = AddChildToRoot<LayerImpl>();
   LayerImpl* layer_clips_subtree = AddChild<LayerImpl>(significant_transform);
   LayerImpl* render_surface = AddChild<LayerImpl>(layer_clips_subtree);
@@ -9240,7 +9241,7 @@ TEST_F(LayerTreeHostCommonTest, TransformOfParentClipNodeAncestorOfTarget) {
   // Ensure that when parent clip node's transform is an ancestor of current
   // clip node's target, clip is 'projected' from parent space to current
   // target space and visible rects are calculated correctly.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_layer = AddChild<LayerImpl>(root);
   LayerImpl* target_layer = AddChild<LayerImpl>(clip_layer);
   LayerImpl* test_layer = AddChild<LayerImpl>(target_layer);
@@ -9273,7 +9274,7 @@ TEST_F(LayerTreeHostCommonTest,
        RenderSurfaceWithUnclippedDescendantsClipsSubtree) {
   // Ensure clip rect is calculated correctly when render surface has unclipped
   // descendants.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* between_clip_parent_and_child = AddChild<LayerImpl>(clip_parent);
   LayerImpl* render_surface =
@@ -9319,7 +9320,7 @@ TEST_F(LayerTreeHostCommonTest,
   // Ensure that the visible layer rect of a descendant of a surface with
   // unclipped descendants is computed correctly, when the surface doesn't apply
   // a clip.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface);
@@ -9355,7 +9356,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        RenderSurfaceClipsSubtreeAndHasUnclippedDescendants) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
   LayerImpl* test_layer1 = AddChild<LayerImpl>(render_surface);
@@ -9401,7 +9402,7 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, UnclippedClipParent) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface);
@@ -9443,7 +9444,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
   // Tests the value of render surface content rect when we have multiple types
   // of surfaces : unclipped surfaces, surfaces with unclipped surfaces and
   // clipped surfaces.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* unclipped_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* clip_parent = AddChild<LayerImpl>(unclipped_surface);
   LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
@@ -9501,7 +9502,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
 TEST_F(LayerTreeHostCommonTest, ClipBetweenClipChildTargetAndClipParentTarget) {
   // Tests the value of render surface content rect when we have a layer that
   // clips between the clip parent's target and clip child's target.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* surface = AddChildToRoot<LayerImpl>();
   LayerImpl* clip_layer = AddChild<LayerImpl>(surface);
   LayerImpl* clip_parent = AddChild<LayerImpl>(clip_layer);
@@ -9546,7 +9547,7 @@ TEST_F(LayerTreeHostCommonTest, ClipBetweenClipChildTargetAndClipParentTarget) {
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleRectForDescendantOfScaledSurface) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* surface = AddChildToRoot<LayerImpl>();
   LayerImpl* clip_layer = AddChild<LayerImpl>(surface);
   LayerImpl* clip_parent = AddChild<LayerImpl>(clip_layer);
@@ -9589,7 +9590,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectForDescendantOfScaledSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface = AddChild<LayerImpl>(root);
   LayerImpl* test_layer = AddChild<LayerImpl>(render_surface);
 
@@ -9616,7 +9617,7 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface);
@@ -9650,7 +9651,7 @@ TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {
 
 TEST_F(LayerTreeHostCommonTest,
        LayerClipRectLargerThanClippingRenderSurfaceRect) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface = AddChild<LayerImpl>(root);
   LayerImpl* test_layer = AddChild<LayerImpl>(render_surface);
   const gfx::Transform identity_matrix;
@@ -9678,7 +9679,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest, SubtreeIsHiddenTest) {
   // Tests that subtree is hidden is updated.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* hidden = AddChild<LayerImpl>(root);
   LayerImpl* test = AddChild<LayerImpl>(hidden);
 
@@ -9704,7 +9705,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeIsHiddenTest) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(root);
   LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface2);
@@ -9740,7 +9741,7 @@ TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
 
 TEST_F(LayerTreeHostCommonTest, MaskLayerDrawProperties) {
   // Tests that a mask layer's draw properties are computed correctly.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   child->test_properties()->SetMaskLayer(
       LayerImpl::Create(root->layer_tree_impl(), 100));
@@ -9787,7 +9788,7 @@ TEST_F(LayerTreeHostCommonTest, MaskLayerDrawProperties) {
 
 TEST_F(LayerTreeHostCommonTest, ReplicaMaskLayerDrawProperties) {
   // Tests that a replica mask layer's draw properties are computed correctly.
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChild<LayerImpl>(root);
   child->test_properties()->SetReplicaLayer(
       LayerImpl::Create(root->layer_tree_impl(), 100));
@@ -9844,7 +9845,7 @@ TEST_F(LayerTreeHostCommonTest, ReplicaMaskLayerDrawProperties) {
 
 TEST_F(LayerTreeHostCommonTest,
        SublayerScaleWithTransformNodeBetweenTwoTargets) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(root);
   LayerImpl* between_targets = AddChild<LayerImpl>(render_surface1);
   LayerImpl* render_surface2 = AddChild<LayerImpl>(between_targets);
@@ -9891,7 +9892,7 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
-  LayerImpl* root = root_layer();
+  LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(root);
   LayerImpl* child = AddChild<LayerImpl>(render_surface1);
 

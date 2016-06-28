@@ -110,7 +110,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
     EXPECT_VECTOR_EQ(gfx::Vector2d(), ScrollDelta(scroll_layer));
 
@@ -912,7 +912,7 @@ class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
     if (impl->pending_tree())
       impl->SetNeedsRedraw();
 
-    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
     LayerImpl* pending_root =
         impl->active_tree()->FindPendingTreeLayerById(root->id());
@@ -1031,7 +1031,7 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
   void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
     // Scroll after the 2nd commit has started.
     if (impl->active_tree()->source_frame_number() == 0) {
-      LayerImpl* active_root = impl->active_tree()->root_layer();
+      LayerImpl* active_root = impl->active_tree()->root_layer_for_testing();
       LayerImpl* active_scroll_layer = impl->OuterViewportScrollLayer();
       ASSERT_TRUE(active_root);
       ASSERT_TRUE(active_scroll_layer);
@@ -1043,10 +1043,10 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     // We force a second draw here of the first commit before activating
     // the second commit.
-    LayerImpl* active_root = impl->active_tree()->root_layer();
+    LayerImpl* active_root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* active_scroll_layer =
         active_root ? impl->OuterViewportScrollLayer() : NULL;
-    LayerImpl* pending_root = impl->pending_tree()->root_layer();
+    LayerImpl* pending_root = impl->pending_tree()->root_layer_for_testing();
     LayerImpl* pending_scroll_layer =
         impl->pending_tree()->OuterViewportScrollLayer();
 
@@ -1627,7 +1627,7 @@ class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {
 
  private:
   void Scroll(LayerTreeHostImpl* impl) {
-    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
 
     scroll_layer->SetScrollClipLayer(outer_viewport_container_layer_id_);

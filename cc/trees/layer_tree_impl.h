@@ -131,11 +131,14 @@ class CC_EXPORT LayerTreeImpl {
 
   // Other public methods
   // ---------------------------------------------------------------------------
-  LayerImpl* root_layer() const { return root_layer_; }
+  LayerImpl* root_layer_for_testing() {
+    return layer_list_.empty() ? nullptr : layer_list_[0];
+  }
   RenderSurfaceImpl* RootRenderSurface() const;
   bool LayerListIsEmpty() const;
-  void SetRootLayer(std::unique_ptr<LayerImpl>);
-  void SetRootLayerFromLayerList();
+  void SetRootLayerForTesting(std::unique_ptr<LayerImpl>);
+  void SetRootLayerFromLayerListForTesting();
+  void OnCanDrawStateChangedForTree();
   bool IsRootLayer(const LayerImpl* layer) const;
   std::unique_ptr<OwnedLayerImplList> DetachLayers();
 
@@ -500,7 +503,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
   int is_first_frame_after_commit_tracker_;
-  LayerImpl* root_layer_;
+  LayerImpl* root_layer_for_testing_;
   HeadsUpDisplayLayerImpl* hud_layer_;
   PropertyTrees property_trees_;
   SkColor background_color_;

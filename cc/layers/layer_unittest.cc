@@ -1733,7 +1733,7 @@ TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
                                   layer_tree_host_->SetRootLayer(test_layer));
 
-  host_impl_.active_tree()->SetRootLayer(std::move(impl_layer));
+  host_impl_.active_tree()->SetRootLayerForTesting(std::move(impl_layer));
   host_impl_.active_tree()->BuildLayerListForTesting();
   LayerImpl* impl_layer_ptr = host_impl_.active_tree()->LayerById(1);
   test_layer->SetNeedsDisplayRect(gfx::Rect(5, 5));

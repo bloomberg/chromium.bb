@@ -617,7 +617,7 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    VerifyAfterValues(impl->active_tree()->root_layer());
+    VerifyAfterValues(impl->active_tree()->root_layer_for_testing());
   }
 
   void DidCommitAndDrawFrame() override {
@@ -838,12 +838,16 @@ class LayerTreeHostTestDamageWithReplica : public LayerTreeHostTest {
     switch (index_) {
       case 0:
         impl->sync_tree()->ResetAllChangeTracking();
-        EXPECT_FALSE(impl->sync_tree()->root_layer()->LayerPropertyChanged());
+        EXPECT_FALSE(impl->sync_tree()
+                         ->root_layer_for_testing()
+                         ->LayerPropertyChanged());
         PostSetNeedsCommitToMainThread();
         index_++;
         break;
       case 1:
-        EXPECT_TRUE(impl->sync_tree()->root_layer()->LayerPropertyChanged());
+        EXPECT_TRUE(impl->sync_tree()
+                        ->root_layer_for_testing()
+                        ->LayerPropertyChanged());
         EndTest();
         break;
     }
@@ -900,7 +904,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
       case OPACITY:
         index_++;
         impl->active_tree()->ResetAllChangeTracking();
-        impl->active_tree()->root_layer()->OnOpacityAnimated(0.5f);
+        impl->active_tree()->root_layer_for_testing()->OnOpacityAnimated(0.5f);
         PostSetNeedsCommitToMainThread();
         break;
       case TRANSFORM:
@@ -916,26 +920,34 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
                          ->LayerById(child_->id())
                          ->LayerPropertyChanged());
         transform.Translate(10, 10);
-        impl->active_tree()->root_layer()->OnTransformAnimated(transform);
+        impl->active_tree()->root_layer_for_testing()->OnTransformAnimated(
+            transform);
         PostSetNeedsCommitToMainThread();
         break;
       case FILTER:
         index_++;
-        EXPECT_TRUE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        EXPECT_TRUE(impl->active_tree()
+                        ->root_layer_for_testing()
+                        ->LayerPropertyChanged());
         EXPECT_TRUE(impl->active_tree()
                         ->LayerById(child_->id())
                         ->LayerPropertyChanged());
         impl->active_tree()->ResetAllChangeTracking();
-        EXPECT_FALSE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        EXPECT_FALSE(impl->active_tree()
+                         ->root_layer_for_testing()
+                         ->LayerPropertyChanged());
         EXPECT_FALSE(impl->active_tree()
                          ->LayerById(child_->id())
                          ->LayerPropertyChanged());
         filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
-        impl->active_tree()->root_layer()->OnFilterAnimated(filters);
+        impl->active_tree()->root_layer_for_testing()->OnFilterAnimated(
+            filters);
         PostSetNeedsCommitToMainThread();
         break;
       case END:
-        EXPECT_TRUE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        EXPECT_TRUE(impl->active_tree()
+                        ->root_layer_for_testing()
+                        ->LayerPropertyChanged());
         EndTest();
         break;
     }
@@ -977,16 +989,16 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     EffectTree& effect_tree = impl->sync_tree()->property_trees()->effect_tree;
-    EffectNode* node =
-        effect_tree.Node(impl->sync_tree()->root_layer()->effect_tree_index());
+    EffectNode* node = effect_tree.Node(
+        impl->sync_tree()->root_layer_for_testing()->effect_tree_index());
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
-        impl->sync_tree()->root_layer()->OnOpacityAnimated(0.75f);
+        impl->sync_tree()->root_layer_for_testing()->OnOpacityAnimated(0.75f);
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
         EXPECT_EQ(node->data.opacity, 0.75f);
-        impl->sync_tree()->root_layer()->OnOpacityAnimated(0.75f);
+        impl->sync_tree()->root_layer_for_testing()->OnOpacityAnimated(0.75f);
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
@@ -1038,24 +1050,27 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
     TransformTree& transform_tree =
         impl->sync_tree()->property_trees()->transform_tree;
     TransformNode* node = transform_tree.Node(
-        impl->sync_tree()->root_layer()->transform_tree_index());
+        impl->sync_tree()->root_layer_for_testing()->transform_tree_index());
     gfx::Transform rotate10;
     rotate10.Rotate(10.f);
     gfx::Transform rotate20;
     rotate20.Rotate(20.f);
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
-        impl->sync_tree()->root_layer()->OnTransformAnimated(rotate20);
+        impl->sync_tree()->root_layer_for_testing()->OnTransformAnimated(
+            rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
         EXPECT_EQ(node->data.local, rotate20);
-        impl->sync_tree()->root_layer()->OnTransformAnimated(rotate20);
+        impl->sync_tree()->root_layer_for_testing()->OnTransformAnimated(
+            rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
         EXPECT_EQ(node->data.local, rotate20);
-        impl->sync_tree()->root_layer()->OnTransformAnimated(rotate20);
+        impl->sync_tree()->root_layer_for_testing()->OnTransformAnimated(
+            rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
@@ -1194,12 +1209,16 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
     switch (index_) {
       case 0:
         index_++;
-        EXPECT_FALSE(
-            impl->sync_tree()->root_layer()->render_surface()->MaskLayer());
+        EXPECT_FALSE(impl->sync_tree()
+                         ->root_layer_for_testing()
+                         ->render_surface()
+                         ->MaskLayer());
         break;
       case 1:
-        EXPECT_TRUE(
-            impl->sync_tree()->root_layer()->render_surface()->MaskLayer());
+        EXPECT_TRUE(impl->sync_tree()
+                        ->root_layer_for_testing()
+                        ->render_surface()
+                        ->MaskLayer());
         EndTest();
         break;
     }
@@ -1346,13 +1365,13 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (num_draws_ == 2) {
       auto pending_tree = host_impl->pending_tree();
-      auto pending_layer_impl =
-          static_cast<FakePictureLayerImpl*>(pending_tree->root_layer());
+      auto pending_layer_impl = static_cast<FakePictureLayerImpl*>(
+          pending_tree->root_layer_for_testing());
       EXPECT_NE(pending_layer_impl, nullptr);
 
       auto active_tree = host_impl->pending_tree();
-      auto active_layer_impl =
-          static_cast<FakePictureLayerImpl*>(active_tree->root_layer());
+      auto active_layer_impl = static_cast<FakePictureLayerImpl*>(
+          active_tree->root_layer_for_testing());
       EXPECT_NE(pending_layer_impl, nullptr);
 
       auto active_tiling_set = active_layer_impl->picture_layer_tiling_set();
@@ -1542,8 +1561,10 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
     } else {
       gfx::Rect root_damage_rect =
           frame_data->render_passes.back()->damage_rect;
-      EXPECT_EQ(gfx::Rect(host_impl->active_tree()->root_layer()->bounds()),
-                root_damage_rect);
+      EXPECT_EQ(
+          gfx::Rect(
+              host_impl->active_tree()->root_layer_for_testing()->bounds()),
+          root_damage_rect);
       EXPECT_EQ(4.f, host_impl->active_tree()->device_scale_factor());
       EndTest();
     }
@@ -2145,8 +2166,8 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     // Device viewport is scaled.
     EXPECT_EQ(gfx::Size(60, 60), impl->DrawViewportSize());
 
-    FakePictureLayerImpl* root =
-        static_cast<FakePictureLayerImpl*>(impl->active_tree()->root_layer());
+    FakePictureLayerImpl* root = static_cast<FakePictureLayerImpl*>(
+        impl->active_tree()->root_layer_for_testing());
     FakePictureLayerImpl* child = static_cast<FakePictureLayerImpl*>(
         impl->active_tree()->LayerById(child_layer_->id()));
 
@@ -2435,10 +2456,10 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    PictureLayerImpl* root_layer =
-        static_cast<PictureLayerImpl*>(host_impl->active_tree()->root_layer());
+    PictureLayerImpl* root_layer = static_cast<PictureLayerImpl*>(
+        host_impl->active_tree()->root_layer_for_testing());
     bool can_use_lcd_text =
-        host_impl->active_tree()->root_layer()->CanUseLCDText();
+        host_impl->active_tree()->root_layer_for_testing()->CanUseLCDText();
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
         // The first draw.
@@ -3221,7 +3242,7 @@ class LayerTreeHostTestImplLayersPushProperties
 
         // Make sure the new root is pushed.
         EXPECT_EQ(1u, static_cast<PushPropertiesCountingLayerImpl*>(
-                          host_impl->active_tree()->root_layer())
+                          host_impl->active_tree()->root_layer_for_testing())
                           ->push_properties_count());
         return;
       case 4:
@@ -3327,7 +3348,7 @@ class LayerTreeHostTestImplLayersPushProperties
     // Pull the layers that we need from the tree assuming the same structure
     // as LayerTreeHostTestLayersPushProperties
     root_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
-        host_impl->active_tree()->root_layer());
+        host_impl->active_tree()->root_layer_for_testing());
 
     LayerTreeImpl* impl = root_impl_->layer_tree_impl();
     if (impl->LayerById(child_->id())) {

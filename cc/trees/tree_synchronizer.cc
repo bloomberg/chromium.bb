@@ -84,7 +84,7 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
     tree_impl->AddToLayerList(layer_impl.get());
     tree_impl->AddLayer(std::move(layer_impl));
   }
-  tree_impl->SetRootLayerFromLayerList();
+  tree_impl->OnCanDrawStateChangedForTree();
 }
 
 template <typename LayerType>

@@ -239,7 +239,7 @@ TEST(LayerListIteratorTest, VerifyTraversalOrderImpl) {
   layer1->test_properties()->AddChild(std::move(layer2));
   layer1->test_properties()->AddChild(std::move(layer5));
 
-  host_impl.active_tree()->SetRootLayer(std::move(layer1));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(layer1));
   host_impl.active_tree()->BuildLayerListForTesting();
 
   int i = 1;
@@ -263,7 +263,7 @@ TEST(LayerListIteratorTest, VerifySingleLayerImpl) {
   // This test constructs a tree consisting of a single layer.
   std::unique_ptr<LayerImpl> layer1 =
       LayerImpl::Create(host_impl.active_tree(), 1);
-  host_impl.active_tree()->SetRootLayer(std::move(layer1));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(layer1));
   host_impl.active_tree()->BuildLayerListForTesting();
 
   int i = 1;
@@ -329,7 +329,7 @@ TEST(LayerListReverseIteratorTest, VerifyTraversalOrderImpl) {
   layer1->test_properties()->AddChild(std::move(layer2));
   layer1->test_properties()->AddChild(std::move(layer5));
 
-  host_impl.active_tree()->SetRootLayer(std::move(layer1));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(layer1));
   host_impl.active_tree()->BuildLayerListForTesting();
 
   int i = 7;
@@ -355,7 +355,7 @@ TEST(LayerListReverseIteratorTest, VerifySingleLayerImpl) {
   // This test constructs a tree consisting of a single layer.
   std::unique_ptr<LayerImpl> layer1 =
       LayerImpl::Create(host_impl.active_tree(), 1);
-  host_impl.active_tree()->SetRootLayer(std::move(layer1));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(layer1));
   host_impl.active_tree()->BuildLayerListForTesting();
 
   int i = 1;

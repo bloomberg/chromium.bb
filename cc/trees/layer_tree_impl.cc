@@ -55,7 +55,7 @@ LayerTreeImpl::LayerTreeImpl(
     : layer_tree_host_impl_(layer_tree_host_impl),
       source_frame_number_(-1),
       is_first_frame_after_commit_tracker_(-1),
-      root_layer_(nullptr),
+      root_layer_for_testing_(nullptr),
       hud_layer_(nullptr),
       background_color_(0),
       has_transparent_background_(false),
@@ -261,17 +261,21 @@ bool LayerTreeImpl::LayerListIsEmpty() const {
   return layer_list_.empty();
 }
 
-void LayerTreeImpl::SetRootLayer(std::unique_ptr<LayerImpl> layer) {
-  if (root_layer_ && layer.get() != root_layer_)
-    RemoveLayer(root_layer_->id());
-  root_layer_ = layer.get();
+void LayerTreeImpl::SetRootLayerForTesting(std::unique_ptr<LayerImpl> layer) {
+  if (root_layer_for_testing_ && layer.get() != root_layer_for_testing_)
+    RemoveLayer(root_layer_for_testing_->id());
+  root_layer_for_testing_ = layer.get();
   if (layer)
     AddLayer(std::move(layer));
+  BuildLayerListForTesting();
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
-void LayerTreeImpl::SetRootLayerFromLayerList() {
-  root_layer_ = layer_list_.empty() ? nullptr : layer_list_[0];
+void LayerTreeImpl::SetRootLayerFromLayerListForTesting() {
+  root_layer_for_testing_ = layer_list_.empty() ? nullptr : layer_list_[0];
+}
+
+void LayerTreeImpl::OnCanDrawStateChangedForTree() {
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
@@ -285,7 +289,7 @@ void LayerTreeImpl::ClearLayerList() {
 
 void LayerTreeImpl::BuildLayerListForTesting() {
   ClearLayerList();
-  LayerListIterator<LayerImpl> it(root_layer_);
+  LayerListIterator<LayerImpl> it(root_layer_for_testing_);
   for (; it != LayerListIterator<LayerImpl>(nullptr); ++it) {
     AddToLayerList(*it);
   }
@@ -328,7 +332,7 @@ gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
 }
 
 std::unique_ptr<OwnedLayerImplList> LayerTreeImpl::DetachLayers() {
-  root_layer_ = nullptr;
+  root_layer_for_testing_ = nullptr;
   layer_list_.clear();
   render_surface_layer_list_.clear();
   set_needs_update_draw_properties();
@@ -1011,10 +1015,11 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 
 void LayerTreeImpl::BuildLayerListAndPropertyTreesForTesting() {
   BuildLayerListForTesting();
-  PropertyTreeBuilder::PreCalculateMetaInformationForTesting(root_layer_);
+  PropertyTreeBuilder::PreCalculateMetaInformationForTesting(
+      root_layer_for_testing_);
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(true);
   PropertyTreeBuilder::BuildPropertyTrees(
-      root_layer_, PageScaleLayer(), InnerViewportScrollLayer(),
+      root_layer_for_testing_, PageScaleLayer(), InnerViewportScrollLayer(),
       OuterViewportScrollLayer(), OverscrollElasticityLayer(),
       elastic_overscroll()->Current(IsActiveTree()),
       current_page_scale_factor(), device_scale_factor(),
@@ -1098,8 +1103,6 @@ void LayerTreeImpl::AddLayer(std::unique_ptr<LayerImpl> layer) {
 }
 
 std::unique_ptr<LayerImpl> LayerTreeImpl::RemoveLayer(int id) {
-  if (root_layer_ && root_layer_->id() == id)
-    root_layer_ = nullptr;
   for (auto it = layers_->begin(); it != layers_->end(); ++it) {
     if ((*it) && (*it)->id() != id)
       continue;
