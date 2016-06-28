@@ -48,7 +48,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "courgette/third_party/bsdiff/bsdiff.h"
 
 #include <stddef.h>
@@ -62,6 +61,7 @@
 
 #include "courgette/crc.h"
 #include "courgette/streams.h"
+#include "courgette/third_party/bsdiff/bsdiff_search.h"
 #include "courgette/third_party/bsdiff/paged_array.h"
 #include "courgette/third_party/bsdiff/qsufsort.h"
 
@@ -174,7 +174,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
     scan += match_length;
     for (int scsc = scan; scan < newsize; ++scan) {
-      match_length = qsuf::search<PagedArray<int>&>(
+      match_length = courgette::search<PagedArray<int>&>(
           I, old, oldsize, newbuf + scan, newsize - scan, &pos);
 
       for (; scsc < scan + match_length; scsc++)

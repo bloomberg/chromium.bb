@@ -48,9 +48,6 @@
 #ifndef COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_
 #define COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_
 
-#include <algorithm>
-#include <cstring>
-
 namespace courgette {
 namespace qsuf {
 
@@ -220,50 +217,10 @@ static void qsufsort(T I, T V, const unsigned char* old, int oldsize) {
     I[V[i]] = i;
 }
 
-static int matchlen(const unsigned char* old,
-                    int oldsize,
-                    const unsigned char* newbuf,
-                    int newsize) {
-  int i;
-
-  for (i = 0; (i < oldsize) && (i < newsize); i++)
-    if (old[i] != newbuf[i])
-      break;
-
-  return i;
-}
-
-template <class T>
-static int search(T I,
-                  const unsigned char* old,
-                  int oldsize,
-                  const unsigned char* newbuf,
-                  int newsize,
-                  int* pos) {
-  int lo = 0;
-  int hi = oldsize;
-  while (hi - lo >= 2) {
-    int mid = (lo + hi) / 2;
-    if (memcmp(old + I[mid], newbuf, std::min(oldsize - I[mid], newsize)) < 0) {
-      lo = mid;
-    } else {
-      hi = mid;
-    }
-  }
-
-  int x = matchlen(old + I[lo], oldsize - I[lo], newbuf, newsize);
-  int y = matchlen(old + I[hi], oldsize - I[hi], newbuf, newsize);
-  if (x > y) {
-    *pos = I[lo];
-    return x;
-  }
-  *pos = I[hi];
-  return y;
-}
-
 //  End of 'verbatim' code.
 // ------------------------------------------------------------------------
 
 }  // namespace qsuf
 }  // namespace courgette
+
 #endif  // COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_
