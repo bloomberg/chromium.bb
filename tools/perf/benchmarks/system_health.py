@@ -91,7 +91,7 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
 class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
-  page_set = page_sets.DesktopMemorySystemHealthStorySet
+  page_set = page_sets.DesktopSystemHealthStorySet
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -100,7 +100,7 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
 
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Mobile Chrome Memory System Health Benchmark."""
-  page_set = page_sets.MobileMemorySystemHealthStorySet
+  page_set = page_sets.MobileSystemHealthStorySet
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
