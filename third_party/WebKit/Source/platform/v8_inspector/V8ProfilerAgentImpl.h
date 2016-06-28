@@ -9,6 +9,8 @@
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/protocol/Profiler.h"
 
+#include <vector>
+
 namespace v8 {
 class Isolate;
 }
@@ -50,7 +52,7 @@ private:
     bool m_enabled;
     bool m_recordingCPUProfile;
     class ProfileDescriptor;
-    protocol::Vector<ProfileDescriptor> m_startedProfiles;
+    std::vector<ProfileDescriptor> m_startedProfiles;
     String16 m_frontendInitiatedProfileId;
 };
 

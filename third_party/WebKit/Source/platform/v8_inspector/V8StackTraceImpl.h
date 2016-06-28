@@ -5,9 +5,10 @@
 #ifndef V8StackTraceImpl_h
 #define V8StackTraceImpl_h
 
-#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
+
+#include <vector>
 
 namespace blink {
 
@@ -66,11 +67,11 @@ public:
     String16 toString() const override;
 
 private:
-    V8StackTraceImpl(int contextGroupId, const String16& description, protocol::Vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent);
+    V8StackTraceImpl(int contextGroupId, const String16& description, std::vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent);
 
     int m_contextGroupId;
     String16 m_description;
-    protocol::Vector<Frame> m_frames;
+    std::vector<Frame> m_frames;
     std::unique_ptr<V8StackTraceImpl> m_parent;
 };
 

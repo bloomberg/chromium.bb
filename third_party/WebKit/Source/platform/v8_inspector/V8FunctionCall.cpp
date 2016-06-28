@@ -50,27 +50,27 @@ V8FunctionCall::V8FunctionCall(V8DebuggerImpl* debugger, v8::Local<v8::Context> 
 
 void V8FunctionCall::appendArgument(v8::Local<v8::Value> value)
 {
-    m_arguments.append(value);
+    m_arguments.push_back(value);
 }
 
 void V8FunctionCall::appendArgument(const String16& argument)
 {
-    m_arguments.append(toV8String(m_context->GetIsolate(), argument));
+    m_arguments.push_back(toV8String(m_context->GetIsolate(), argument));
 }
 
 void V8FunctionCall::appendArgument(int argument)
 {
-    m_arguments.append(v8::Number::New(m_context->GetIsolate(), argument));
+    m_arguments.push_back(v8::Number::New(m_context->GetIsolate(), argument));
 }
 
 void V8FunctionCall::appendArgument(bool argument)
 {
-    m_arguments.append(argument ? v8::True(m_context->GetIsolate()) : v8::False(m_context->GetIsolate()));
+    m_arguments.push_back(argument ? v8::True(m_context->GetIsolate()) : v8::False(m_context->GetIsolate()));
 }
 
 void V8FunctionCall::appendUndefinedArgument()
 {
-    m_arguments.append(v8::Undefined(m_context->GetIsolate()));
+    m_arguments.push_back(v8::Undefined(m_context->GetIsolate()));
 }
 
 v8::Local<v8::Value> V8FunctionCall::call(bool& hadException, bool reportExceptions)

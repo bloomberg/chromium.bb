@@ -18,7 +18,7 @@ DispatcherBase::WeakPtr::WeakPtr(DispatcherBase* dispatcher) : m_dispatcher(disp
 DispatcherBase::WeakPtr::~WeakPtr()
 {
     if (m_dispatcher)
-        m_dispatcher->m_weakPtrs.remove(this);
+        m_dispatcher->m_weakPtrs.erase(this);
 }
 
 DispatcherBase::Callback::Callback(std::unique_ptr<DispatcherBase::WeakPtr> backendImpl, int callId)
@@ -113,14 +113,14 @@ void DispatcherBase::clearFrontend()
 {
     m_frontendChannel = nullptr;
     for (auto& weak : m_weakPtrs)
-        weak.first->dispose();
+        weak->dispose();
     m_weakPtrs.clear();
 }
 
 std::unique_ptr<DispatcherBase::WeakPtr> DispatcherBase::weakPtr()
 {
     std::unique_ptr<DispatcherBase::WeakPtr> weak(new DispatcherBase::WeakPtr(this));
-    m_weakPtrs.add(weak.get());
+    m_weakPtrs.insert(weak.get());
     return weak;
 }
 
@@ -129,7 +129,7 @@ UberDispatcher::UberDispatcher(FrontendChannel* frontendChannel)
 
 void UberDispatcher::registerBackend(const String16& name, std::unique_ptr<protocol::DispatcherBase> dispatcher)
 {
-    m_dispatchers.set(name, std::move(dispatcher));
+    m_dispatchers[name] = std::move(dispatcher);
 }
 
 void UberDispatcher::dispatch(const String16& message)

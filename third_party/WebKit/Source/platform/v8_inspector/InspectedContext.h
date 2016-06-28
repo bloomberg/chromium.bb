@@ -6,7 +6,6 @@
 #define InspectedContext_h
 
 #include "platform/inspector_protocol/Allocator.h"
-#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
 #include <v8.h>
 

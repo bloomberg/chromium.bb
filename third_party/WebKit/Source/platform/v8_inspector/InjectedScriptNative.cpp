@@ -43,20 +43,21 @@ int InjectedScriptNative::bind(v8::Local<v8::Value> value, const String16& group
     if (m_lastBoundObjectId <= 0)
         m_lastBoundObjectId = 1;
     int id = m_lastBoundObjectId++;
-    m_idToWrappedObject.set(id, wrapUnique(new v8::Global<v8::Value>(m_isolate, value)));
+    m_idToWrappedObject[id] = wrapUnique(new v8::Global<v8::Value>(m_isolate, value));
     addObjectToGroup(id, groupName);
     return id;
 }
 
 void InjectedScriptNative::unbind(int id)
 {
-    m_idToWrappedObject.remove(id);
-    m_idToObjectGroupName.remove(id);
+    m_idToWrappedObject.erase(id);
+    m_idToObjectGroupName.erase(id);
 }
 
 v8::Local<v8::Value> InjectedScriptNative::objectForId(int id)
 {
-    return m_idToWrappedObject.contains(id) ? m_idToWrappedObject.get(id)->Get(m_isolate) : v8::Local<v8::Value>();
+    auto iter = m_idToWrappedObject.find(id);
+    return iter != m_idToWrappedObject.end() ? iter->second->Get(m_isolate) : v8::Local<v8::Value>();
 }
 
 void InjectedScriptNative::addObjectToGroup(int objectId, const String16& groupName)
@@ -65,13 +66,8 @@ void InjectedScriptNative::addObjectToGroup(int objectId, const String16& groupN
         return;
     if (objectId <= 0)
         return;
-    m_idToObjectGroupName.set(objectId, groupName);
-    auto it = m_nameToObjectGroup.find(groupName);
-    if (it == m_nameToObjectGroup.end()) {
-        m_nameToObjectGroup.set(groupName, protocol::Vector<int>());
-        it = m_nameToObjectGroup.find(groupName);
-    }
-    it->second->append(objectId);
+    m_idToObjectGroupName[objectId] = groupName;
+    m_nameToObjectGroup[groupName].push_back(objectId); // Creates an empty vector if key is not there
 }
 
 void InjectedScriptNative::releaseObjectGroup(const String16& groupName)
@@ -81,16 +77,17 @@ void InjectedScriptNative::releaseObjectGroup(const String16& groupName)
     NameToObjectGroup::iterator groupIt = m_nameToObjectGroup.find(groupName);
     if (groupIt == m_nameToObjectGroup.end())
         return;
-    for (int id : *groupIt->second)
+    for (int id : groupIt->second)
         unbind(id);
-    m_nameToObjectGroup.remove(groupName);
+    m_nameToObjectGroup.erase(groupIt);
 }
 
 String16 InjectedScriptNative::groupName(int objectId) const
 {
     if (objectId <= 0)
         return String16();
-    return m_idToObjectGroupName.get(objectId);
+    IdToObjectGroupName::const_iterator iterator = m_idToObjectGroupName.find(objectId);
+    return iterator != m_idToObjectGroupName.end() ? iterator->second : String16();
 }
 
 } // namespace blink

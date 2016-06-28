@@ -11,6 +11,8 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include <v8-profiler.h>
 
+#include <vector>
+
 namespace blink {
 
 namespace ProfilerAgentState {
@@ -28,7 +30,7 @@ std::unique_ptr<protocol::Array<protocol::Profiler::PositionTickInfo>> buildInsp
     if (!lineCount)
         return array;
 
-    protocol::Vector<v8::CpuProfileNode::LineTick> entries(lineCount);
+    std::vector<v8::CpuProfileNode::LineTick> entries(lineCount);
     if (node->GetLineTicks(&entries[0], lineCount)) {
         for (unsigned i = 0; i < lineCount; i++) {
             std::unique_ptr<protocol::Profiler::PositionTickInfo> line = protocol::Profiler::PositionTickInfo::create()
@@ -140,7 +142,7 @@ void V8ProfilerAgentImpl::consoleProfile(const String16& title)
     if (!m_enabled)
         return;
     String16 id = nextProfileId();
-    m_startedProfiles.append(ProfileDescriptor(id, title));
+    m_startedProfiles.push_back(ProfileDescriptor(id, title));
     startProfiling(id);
     m_frontend.consoleProfileStarted(id, currentDebugLocation(m_session->debugger()), title);
 }
@@ -153,17 +155,17 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
     String16 resolvedTitle;
     // Take last started profile if no title was passed.
     if (title.isEmpty()) {
-        if (m_startedProfiles.isEmpty())
+        if (m_startedProfiles.empty())
             return;
-        id = m_startedProfiles.last().m_id;
-        resolvedTitle = m_startedProfiles.last().m_title;
-        m_startedProfiles.removeLast();
+        id = m_startedProfiles.back().m_id;
+        resolvedTitle = m_startedProfiles.back().m_title;
+        m_startedProfiles.pop_back();
     } else {
         for (size_t i = 0; i < m_startedProfiles.size(); i++) {
             if (m_startedProfiles[i].m_title == title) {
                 resolvedTitle = title;
                 id = m_startedProfiles[i].m_id;
-                m_startedProfiles.remove(i);
+                m_startedProfiles.erase(m_startedProfiles.begin() + i);
                 break;
             }
         }
@@ -286,7 +288,7 @@ std::unique_ptr<protocol::Profiler::CPUProfile> V8ProfilerAgentImpl::stopProfili
 
 bool V8ProfilerAgentImpl::isRecording() const
 {
-    return m_recordingCPUProfile || !m_startedProfiles.isEmpty();
+    return m_recordingCPUProfile || !m_startedProfiles.empty();
 }
 
 } // namespace blink

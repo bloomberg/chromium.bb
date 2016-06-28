@@ -162,10 +162,13 @@ V8DebuggerAgentImpl* V8DebuggerImpl::findEnabledDebuggerAgent(int contextGroupId
 {
     if (!contextGroupId)
         return nullptr;
-    V8InspectorSessionImpl* session = m_sessions.get(contextGroupId);
-    if (session && session->debuggerAgent()->enabled())
-        return session->debuggerAgent();
-    return nullptr;
+    SessionMap::iterator it = m_sessions.find(contextGroupId);
+    if (it == m_sessions.end())
+        return nullptr;
+    V8DebuggerAgentImpl* agent = it->second->debuggerAgent();
+    if (!agent->enabled())
+        return nullptr;
+    return agent;
 }
 
 V8DebuggerAgentImpl* V8DebuggerImpl::findEnabledDebuggerAgent(v8::Local<v8::Context> context)
@@ -173,7 +176,7 @@ V8DebuggerAgentImpl* V8DebuggerImpl::findEnabledDebuggerAgent(v8::Local<v8::Cont
     return findEnabledDebuggerAgent(getGroupId(context));
 }
 
-void V8DebuggerImpl::getCompiledScripts(int contextGroupId, protocol::Vector<V8DebuggerParsedScript>& result)
+void V8DebuggerImpl::getCompiledScripts(int contextGroupId, std::vector<V8DebuggerParsedScript>& result)
 {
     v8::HandleScope scope(m_isolate);
     v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
@@ -407,8 +410,10 @@ bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& n
         {
             *stackChanged = resultTuple->Get(1)->BooleanValue();
             // Call stack may have changed after if the edited function was on the stack.
-            if (!preview && isPaused())
-                newCallFrames->swap(currentCallFrames());
+            if (!preview && isPaused()) {
+                JavaScriptCallFrames frames = currentCallFrames();
+                newCallFrames->swap(frames);
+            }
             return true;
         }
     // Compile error.
@@ -449,7 +454,7 @@ JavaScriptCallFrames V8DebuggerImpl::currentCallFrames(int limit)
         if (!callFrameValue->IsObject())
             return JavaScriptCallFrames();
         v8::Local<v8::Object> callFrameObject = callFrameValue.As<v8::Object>();
-        callFrames.append(JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(callFrameObject)));
+        callFrames.push_back(JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(callFrameObject)));
     }
     return callFrames;
 }
@@ -480,13 +485,13 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
     if (!agent)
         return;
 
-    protocol::Vector<String16> breakpointIds;
+    std::vector<String16> breakpointIds;
     if (!hitBreakpointNumbers.IsEmpty()) {
-        breakpointIds.resize(hitBreakpointNumbers->Length());
+        breakpointIds.reserve(hitBreakpointNumbers->Length());
         for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++) {
             v8::Local<v8::Value> hitBreakpointNumber = hitBreakpointNumbers->Get(i);
             DCHECK(!hitBreakpointNumber.IsEmpty() && hitBreakpointNumber->IsInt32());
-            breakpointIds[i] = String16::number(hitBreakpointNumber->Int32Value());
+            breakpointIds.push_back(String16::number(hitBreakpointNumber->Int32Value()));
         }
     }
 
@@ -599,7 +604,7 @@ V8StackTraceImpl* V8DebuggerImpl::currentAsyncCallChain()
 {
     if (!m_currentStacks.size())
         return nullptr;
-    return m_currentStacks.last();
+    return m_currentStacks.back().get();
 }
 
 V8DebuggerParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8::Object> object, bool success)
@@ -760,16 +765,30 @@ std::unique_ptr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::Sta
 
 std::unique_ptr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
 {
-    DCHECK(!m_sessions.contains(contextGroupId));
-    std::unique_ptr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, channel, client, state);
-    m_sessions.set(contextGroupId, session.get());
+    DCHECK(m_sessions.find(contextGroupId) == m_sessions.cend());
+    std::unique_ptr<V8InspectorSessionImpl> session =
+        V8InspectorSessionImpl::create(this, contextGroupId, channel, client, state);
+    m_sessions[contextGroupId] = session.get();
     return std::move(session);
 }
 
 void V8DebuggerImpl::disconnect(V8InspectorSessionImpl* session)
 {
-    DCHECK(m_sessions.contains(session->contextGroupId()));
-    m_sessions.remove(session->contextGroupId());
+    DCHECK(m_sessions.find(session->contextGroupId()) != m_sessions.end());
+    m_sessions.erase(session->contextGroupId());
+}
+
+InspectedContext* V8DebuggerImpl::getContext(int groupId, int contextId) const
+{
+    ContextsByGroupMap::const_iterator contextGroupIt = m_contexts.find(groupId);
+    if (contextGroupIt == m_contexts.cend())
+        return nullptr;
+
+    ContextByIdMap::iterator contextIt = contextGroupIt->second->find(contextId);
+    if (contextIt == contextGroupIt->second->end())
+        return nullptr;
+
+    return contextIt->second.get();
 }
 
 void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
@@ -782,52 +801,53 @@ void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
     v8::Context::Scope contextScope(info.context);
     info.context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), toV8String(m_isolate, debugData));
 
-    if (!m_contexts.contains(info.contextGroupId))
-        m_contexts.set(info.contextGroupId, wrapUnique(new ContextByIdMap()));
-    DCHECK(!m_contexts.get(info.contextGroupId)->contains(contextId));
+    ContextsByGroupMap::iterator contextIt = m_contexts.find(info.contextGroupId);
+    if (contextIt == m_contexts.end())
+        contextIt = m_contexts.insert(std::make_pair(info.contextGroupId, wrapUnique(new ContextByIdMap()))).first;
 
-    std::unique_ptr<InspectedContext> contextOwner(new InspectedContext(this, info, contextId));
-    InspectedContext* inspectedContext = contextOwner.get();
-    m_contexts.get(info.contextGroupId)->set(contextId, std::move(contextOwner));
+    const auto& contextById = contextIt->second;
 
-    if (V8InspectorSessionImpl* session = m_sessions.get(info.contextGroupId))
-        session->runtimeAgent()->reportExecutionContextCreated(inspectedContext);
+    DCHECK(contextById->find(contextId) == contextById->cend());
+    InspectedContext* context = new InspectedContext(this, info, contextId);
+    (*contextById)[contextId] = wrapUnique(context);
+    SessionMap::iterator sessionIt = m_sessions.find(info.contextGroupId);
+    if (sessionIt != m_sessions.end())
+        sessionIt->second->runtimeAgent()->reportExecutionContextCreated(context);
 }
 
 void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
 {
     int contextId = V8Debugger::contextId(context);
     int contextGroupId = getGroupId(context);
-    if (!m_contexts.contains(contextGroupId) || !m_contexts.get(contextGroupId)->contains(contextId))
+    InspectedContext* inspectedContext = getContext(contextGroupId, contextId);
+    if (!inspectedContext)
         return;
 
-    InspectedContext* inspectedContext = m_contexts.get(contextGroupId)->get(contextId);
-    if (V8InspectorSessionImpl* session = m_sessions.get(contextGroupId))
-        session->runtimeAgent()->reportExecutionContextDestroyed(inspectedContext);
-
-    m_contexts.get(contextGroupId)->remove(contextId);
-    if (m_contexts.get(contextGroupId)->isEmpty())
-        m_contexts.remove(contextGroupId);
+    SessionMap::iterator iter = m_sessions.find(contextGroupId);
+    if (iter != m_sessions.end())
+        iter->second->runtimeAgent()->reportExecutionContextDestroyed(inspectedContext);
+    discardInspectedContext(contextGroupId, contextId);
 }
 
 void V8DebuggerImpl::resetContextGroup(int contextGroupId)
 {
-    if (V8InspectorSessionImpl* session = m_sessions.get(contextGroupId))
-        session->reset();
-    m_contexts.remove(contextGroupId);
+    SessionMap::iterator session = m_sessions.find(contextGroupId);
+    if (session != m_sessions.end())
+        session->second->reset();
+    m_contexts.erase(contextGroupId);
 }
 
 void V8DebuggerImpl::setAsyncCallStackDepth(V8DebuggerAgentImpl* agent, int depth)
 {
     if (depth <= 0)
-        m_maxAsyncCallStackDepthMap.remove(agent);
+        m_maxAsyncCallStackDepthMap.erase(agent);
     else
-        m_maxAsyncCallStackDepthMap.set(agent, depth);
+        m_maxAsyncCallStackDepthMap[agent] = depth;
 
     int maxAsyncCallStackDepth = 0;
     for (const auto& pair : m_maxAsyncCallStackDepthMap) {
-        if (*pair.second > maxAsyncCallStackDepth)
-            maxAsyncCallStackDepth = *pair.second;
+        if (pair.second > maxAsyncCallStackDepth)
+            maxAsyncCallStackDepth = pair.second;
     }
 
     if (m_maxAsyncCallStackDepth == maxAsyncCallStackDepth)
@@ -851,9 +871,9 @@ void V8DebuggerImpl::asyncTaskScheduled(const String16& taskName, void* task, bo
     int contextGroupId = m_isolate->InContext() ? getGroupId(m_isolate->GetCurrentContext()) : 0;
     std::unique_ptr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, contextGroupId, V8StackTrace::maxCallStackSizeToCapture, taskName);
     if (chain) {
-        m_asyncTaskStacks.set(task, std::move(chain));
+        m_asyncTaskStacks[task] = std::move(chain);
         if (recurring)
-            m_recurringTasks.add(task);
+            m_recurringTasks.insert(task);
     }
 }
 
@@ -861,8 +881,8 @@ void V8DebuggerImpl::asyncTaskCanceled(void* task)
 {
     if (!m_maxAsyncCallStackDepth)
         return;
-    m_asyncTaskStacks.remove(task);
-    m_recurringTasks.remove(task);
+    m_asyncTaskStacks.erase(task);
+    m_recurringTasks.erase(task);
 }
 
 void V8DebuggerImpl::asyncTaskStarted(void* task)
@@ -871,8 +891,8 @@ void V8DebuggerImpl::asyncTaskStarted(void* task)
     if (!m_maxAsyncCallStackDepth)
         return;
 
-    m_currentTasks.append(task);
-    V8StackTraceImpl* stack = m_asyncTaskStacks.get(task);
+    m_currentTasks.push_back(task);
+    AsyncTaskToStackTrace::iterator stackIt = m_asyncTaskStacks.find(task);
     // Needs to support following order of events:
     // - asyncTaskScheduled
     //   <-- attached here -->
@@ -880,7 +900,10 @@ void V8DebuggerImpl::asyncTaskStarted(void* task)
     // - asyncTaskCanceled <-- canceled before finished
     //   <-- async stack requested here -->
     // - asyncTaskFinished
-    m_currentStacks.append(stack ? stack->cloneImpl() : nullptr);
+    std::unique_ptr<V8StackTraceImpl> stack;
+    if (stackIt != m_asyncTaskStacks.end() && stackIt->second)
+        stack = stackIt->second->cloneImpl();
+    m_currentStacks.push_back(std::move(stack));
 }
 
 void V8DebuggerImpl::asyncTaskFinished(void* task)
@@ -891,12 +914,12 @@ void V8DebuggerImpl::asyncTaskFinished(void* task)
     if (!m_currentStacks.size())
         return;
 
-    DCHECK(m_currentTasks.last() == task);
-    m_currentTasks.removeLast();
+    DCHECK(m_currentTasks.back() == task);
+    m_currentTasks.pop_back();
 
-    m_currentStacks.removeLast();
-    if (!m_recurringTasks.contains(task))
-        m_asyncTaskStacks.remove(task);
+    m_currentStacks.pop_back();
+    if (m_recurringTasks.find(task) == m_recurringTasks.end())
+        m_asyncTaskStacks.erase(task);
 }
 
 void V8DebuggerImpl::allAsyncTasksCanceled()
@@ -944,23 +967,25 @@ v8::Local<v8::Context> V8DebuggerImpl::regexContext()
 
 void V8DebuggerImpl::discardInspectedContext(int contextGroupId, int contextId)
 {
-    if (!m_contexts.contains(contextGroupId) || !m_contexts.get(contextGroupId)->contains(contextId))
+    if (!getContext(contextGroupId, contextId))
         return;
-    m_contexts.get(contextGroupId)->remove(contextId);
-    if (m_contexts.get(contextGroupId)->isEmpty())
-        m_contexts.remove(contextGroupId);
+    m_contexts[contextGroupId]->erase(contextId);
+    if (m_contexts[contextGroupId]->empty())
+        m_contexts.erase(contextGroupId);
 }
 
 const V8DebuggerImpl::ContextByIdMap* V8DebuggerImpl::contextGroup(int contextGroupId)
 {
-    if (!m_contexts.contains(contextGroupId))
-        return nullptr;
-    return m_contexts.get(contextGroupId);
+    ContextsByGroupMap::iterator iter = m_contexts.find(contextGroupId);
+    return iter == m_contexts.end() ? nullptr : iter->second.get();
 }
 
 V8InspectorSessionImpl* V8DebuggerImpl::sessionForContextGroup(int contextGroupId)
 {
-    return contextGroupId ? m_sessions.get(contextGroupId) : nullptr;
+    if (!contextGroupId)
+        return nullptr;
+    SessionMap::iterator iter = m_sessions.find(contextGroupId);
+    return iter == m_sessions.end() ? nullptr : iter->second;
 }
 
 } // namespace blink

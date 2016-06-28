@@ -5,9 +5,10 @@
 #ifndef ErrorSupport_h
 #define ErrorSupport_h
 
-#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
+
+#include <vector>
 
 namespace blink {
 namespace protocol {
@@ -28,8 +29,8 @@ public:
     String16 errors();
 
 private:
-    protocol::Vector<String16> m_path;
-    protocol::Vector<String16> m_errors;
+    std::vector<String16> m_path;
+    std::vector<String16> m_errors;
     String16* m_errorString;
 };
 

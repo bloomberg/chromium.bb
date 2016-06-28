@@ -140,7 +140,7 @@ public:
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
     {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
-        m_dispatchMap.set("{{domain.domain}}.{{command.name}}", &DispatcherImpl::{{command.name}});
+        m_dispatchMap["{{domain.domain}}.{{command.name}}"] = &DispatcherImpl::{{command.name}};
   {% endfor %}
     }
     ~DispatcherImpl() override { }
@@ -169,7 +169,7 @@ void DispatcherImpl::dispatch(int callId, const String16& method, std::unique_pt
     }
 
     protocol::ErrorSupport errors;
-    ((*this).*(*it->second))(callId, std::move(messageObject), &errors);
+    (this->*(it->second))(callId, std::move(messageObject), &errors);
 }
 
   {% for command in domain.commands %}

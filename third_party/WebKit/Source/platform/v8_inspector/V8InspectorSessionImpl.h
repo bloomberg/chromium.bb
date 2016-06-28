@@ -6,7 +6,6 @@
 #define V8InspectorSessionImpl_h
 
 #include "platform/inspector_protocol/Allocator.h"
-#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
@@ -15,6 +14,8 @@
 #include "platform/v8_inspector/public/V8InspectorSessionClient.h"
 
 #include <v8.h>
+
+#include <vector>
 
 namespace blink {
 
@@ -83,7 +84,7 @@ private:
     std::unique_ptr<V8DebuggerAgentImpl> m_debuggerAgent;
     std::unique_ptr<V8HeapProfilerAgentImpl> m_heapProfilerAgent;
     std::unique_ptr<V8ProfilerAgentImpl> m_profilerAgent;
-    protocol::Vector<std::unique_ptr<V8InspectorSession::Inspectable>> m_inspectedObjects;
+    std::vector<std::unique_ptr<V8InspectorSession::Inspectable>> m_inspectedObjects;
 };
 
 } // namespace blink

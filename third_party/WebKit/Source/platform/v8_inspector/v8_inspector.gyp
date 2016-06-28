@@ -160,7 +160,6 @@
         '../inspector_protocol/Allocator.h',
         '../inspector_protocol/Array.h',
         '../inspector_protocol/Collections.h',
-        '../inspector_protocol/CollectionsSTL.h',
         '../inspector_protocol/DispatcherBase.cpp',
         '../inspector_protocol/DispatcherBase.h',
         '../inspector_protocol/ErrorSupport.cpp',

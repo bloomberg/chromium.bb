@@ -45,10 +45,8 @@ private:
 
 class GlobalObjectNameResolver final : public v8::HeapProfiler::ObjectNameResolver {
 public:
-    explicit GlobalObjectNameResolver(V8InspectorSessionImpl* session) : m_offset(0), m_session(session)
-    {
-        m_strings.resize(10000);
-    }
+    explicit GlobalObjectNameResolver(V8InspectorSessionImpl* session)
+        : m_offset(0), m_strings(10000), m_session(session) {}
 
     const char* GetName(v8::Local<v8::Object> object) override
     {
@@ -75,7 +73,7 @@ public:
 
 private:
     size_t m_offset;
-    protocol::Vector<char> m_strings;
+    std::vector<char> m_strings;
     V8InspectorSessionImpl* m_session;
 };
 

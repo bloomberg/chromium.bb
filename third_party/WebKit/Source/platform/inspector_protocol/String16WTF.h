@@ -138,4 +138,14 @@ struct HashTraits<String16> : SimpleClassHashTraits<String16> {
 
 } // namespace WTF
 
+namespace std {
+template<> struct hash<String16> {
+    std::size_t operator()(const String16& string) const
+    {
+        return StringHash::hash(string.impl());
+    }
+};
+
+} // namespace std
+
 #endif // !defined(String16WTF_h)

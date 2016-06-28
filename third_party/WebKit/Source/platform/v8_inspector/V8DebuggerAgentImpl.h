@@ -10,6 +10,8 @@
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/protocol/Debugger.h"
 
+#include <vector>
+
 namespace blink {
 
 class JavaScriptCallFrame;
@@ -141,7 +143,7 @@ public:
     void reset();
 
     // Interface for V8DebuggerImpl
-    SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Value> exception, const protocol::Vector<String16>& hitBreakpoints, bool isPromiseRejection);
+    SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Value> exception, const std::vector<String16>& hitBreakpoints, bool isPromiseRejection);
     void didContinue();
     void didParseSource(const V8DebuggerParsedScript&);
     void willExecuteScript(int scriptId);
@@ -180,7 +182,7 @@ private:
     bool setBlackboxPattern(ErrorString*, const String16& pattern);
 
     using ScriptsMap = protocol::HashMap<String16, V8DebuggerScript>;
-    using BreakpointIdToDebuggerBreakpointIdsMap = protocol::HashMap<String16, protocol::Vector<String16>>;
+    using BreakpointIdToDebuggerBreakpointIdsMap = protocol::HashMap<String16, std::vector<String16>>;
     using DebugServerBreakpointToBreakpointIdAndSourceMap = protocol::HashMap<String16, std::pair<String16, BreakpointSource>>;
     using MuteBreakpoins = protocol::HashMap<String16, std::pair<String16, int>>;
 
@@ -217,7 +219,7 @@ private:
     bool m_skipAllPauses;
 
     std::unique_ptr<V8Regex> m_blackboxPattern;
-    protocol::HashMap<String16, protocol::Vector<std::pair<int, int>>> m_blackboxedPositions;
+    protocol::HashMap<String16, std::vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 
 } // namespace blink

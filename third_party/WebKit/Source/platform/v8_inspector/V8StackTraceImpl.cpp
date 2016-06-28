@@ -35,7 +35,7 @@ V8StackTraceImpl::Frame toFrame(v8::Local<v8::StackFrame> frame)
     return V8StackTraceImpl::Frame(functionName, scriptId, sourceName, sourceLineNumber, sourceColumn);
 }
 
-void toFramesVector(v8::Local<v8::StackTrace> stackTrace, protocol::Vector<V8StackTraceImpl::Frame>& frames, size_t maxStackSize, v8::Isolate* isolate)
+void toFramesVector(v8::Local<v8::StackTrace> stackTrace, std::vector<V8StackTraceImpl::Frame>& frames, size_t maxStackSize, v8::Isolate* isolate)
 {
     DCHECK(isolate->InContext());
     int frameCount = stackTrace->GetFrameCount();
@@ -43,7 +43,7 @@ void toFramesVector(v8::Local<v8::StackTrace> stackTrace, protocol::Vector<V8Sta
         frameCount = maxStackSize;
     for (int i = 0; i < frameCount; i++) {
         v8::Local<v8::StackFrame> stackFrame = stackTrace->GetFrame(i);
-        frames.append(toFrame(stackFrame));
+        frames.push_back(toFrame(stackFrame));
     }
 }
 
@@ -93,7 +93,7 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerImpl* debug
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
-    protocol::Vector<V8StackTraceImpl::Frame> frames;
+    std::vector<V8StackTraceImpl::Frame> frames;
     if (!stackTrace.IsEmpty())
         toFramesVector(stackTrace, frames, maxStackSize, isolate);
 
@@ -152,7 +152,7 @@ std::unique_ptr<V8StackTrace> V8StackTraceImpl::clone()
 
 std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::cloneImpl()
 {
-    protocol::Vector<Frame> framesCopy(m_frames);
+    std::vector<Frame> framesCopy(m_frames);
     return wrapUnique(new V8StackTraceImpl(m_contextGroupId, m_description, framesCopy, m_parent ? m_parent->cloneImpl() : nullptr));
 }
 
@@ -163,13 +163,13 @@ std::unique_ptr<V8StackTrace> V8StackTraceImpl::isolatedCopy()
 
 std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::isolatedCopyImpl()
 {
-    protocol::Vector<Frame> frames;
+    std::vector<Frame> frames;
     for (size_t i = 0; i < m_frames.size(); i++)
-        frames.append(m_frames.at(i).isolatedCopy());
+        frames.push_back(m_frames.at(i).isolatedCopy());
     return wrapUnique(new V8StackTraceImpl(m_contextGroupId, m_description.isolatedCopy(), frames, m_parent ? m_parent->isolatedCopyImpl() : nullptr));
 }
 
-V8StackTraceImpl::V8StackTraceImpl(int contextGroupId, const String16& description, protocol::Vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent)
+V8StackTraceImpl::V8StackTraceImpl(int contextGroupId, const String16& description, std::vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent)
     : m_contextGroupId(contextGroupId)
     , m_description(description)
     , m_parent(std::move(parent))

@@ -295,7 +295,7 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
 
     String16 scriptValueId = String16::number(script->GetUnboundScript()->GetId());
     std::unique_ptr<v8::Global<v8::Script>> global(new v8::Global<v8::Script>(m_debugger->isolate(), script));
-    m_compiledScripts.set(scriptValueId, std::move(global));
+    m_compiledScripts[scriptValueId] = std::move(global);
     *scriptId = scriptValueId;
 }
 
@@ -313,7 +313,8 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
         return;
     }
 
-    if (!m_compiledScripts.contains(scriptId)) {
+    auto it = m_compiledScripts.find(scriptId);
+    if (it == m_compiledScripts.end()) {
         *errorString = "Script execution failed";
         return;
     }
@@ -325,7 +326,8 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         scope.ignoreExceptionsAndMuteConsole();
 
-    std::unique_ptr<v8::Global<v8::Script>> scriptWrapper = m_compiledScripts.take(scriptId);
+    std::unique_ptr<v8::Global<v8::Script>> scriptWrapper = std::move(it->second);
+    m_compiledScripts.erase(it);
     v8::Local<v8::Script> script = scriptWrapper->Get(m_debugger->isolate());
     if (script.IsEmpty()) {
         *errorString = "Script execution failed";

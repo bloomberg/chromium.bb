@@ -111,13 +111,17 @@ void V8InspectorSessionImpl::discardInjectedScripts()
     if (!contexts)
         return;
 
-    protocol::Vector<int> keys;
+    std::vector<int> keys;
+    keys.reserve(contexts->size());
     for (auto& idContext : *contexts)
-        keys.append(idContext.first);
+        keys.push_back(idContext.first);
     for (auto& key : keys) {
         contexts = m_debugger->contextGroup(m_contextGroupId);
-        if (contexts && contexts->contains(key))
-            contexts->get(key)->discardInjectedScript(); // This may destroy some contexts.
+        if (!contexts)
+            continue;
+        auto contextIt = contexts->find(key);
+        if (contextIt != contexts->end())
+            contextIt->second->discardInjectedScript(); // This may destroy some contexts.
     }
 }
 
@@ -129,12 +133,13 @@ InjectedScript* V8InspectorSessionImpl::findInjectedScript(ErrorString* errorStr
     }
 
     const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
-    if (!contexts || !contexts->contains(contextId)) {
+    auto contextsIt = contexts ? contexts->find(contextId) : contexts->end();
+    if (contextsIt == contexts->end()) {
         *errorString = "Cannot find context with specified id";
         return nullptr;
     }
 
-    InspectedContext* context = contexts->get(contextId);
+    const std::unique_ptr<InspectedContext>& context = contextsIt->second;
     if (!context->getInjectedScript()) {
         context->createInjectedScript();
         if (!context->getInjectedScript()) {
@@ -158,16 +163,19 @@ void V8InspectorSessionImpl::releaseObjectGroup(const String16& objectGroup)
     if (!contexts)
         return;
 
-    protocol::Vector<int> keys;
+    std::vector<int> keys;
     for (auto& idContext : *contexts)
-        keys.append(idContext.first);
+        keys.push_back(idContext.first);
     for (auto& key : keys) {
         contexts = m_debugger->contextGroup(m_contextGroupId);
-        if (contexts && contexts->contains(key)) {
-            InjectedScript* injectedScript = contexts->get(key)->getInjectedScript();
-            if (injectedScript)
-                injectedScript->releaseObjectGroup(objectGroup); // This may destroy some contexts.
-        }
+        if (!contexts)
+            continue;
+        auto contextsIt = contexts->find(key);
+        if (contextsIt == contexts->end())
+            continue;
+        InjectedScript* injectedScript = contextsIt->second->getInjectedScript();
+        if (injectedScript)
+            injectedScript->releaseObjectGroup(objectGroup); // This may destroy some contexts.
     }
 }
 
@@ -227,7 +235,7 @@ void V8InspectorSessionImpl::reportAllContexts(V8RuntimeAgentImpl* agent)
     if (!contexts)
         return;
     for (auto& idContext : *contexts)
-        agent->reportExecutionContextCreated(idContext.second);
+        agent->reportExecutionContextCreated(idContext.second.get());
 }
 
 void V8InspectorSessionImpl::changeInstrumentationCounter(int delta)
@@ -252,16 +260,16 @@ String16 V8InspectorSessionImpl::stateJSON()
 
 void V8InspectorSessionImpl::addInspectedObject(std::unique_ptr<V8InspectorSession::Inspectable> inspectable)
 {
-    m_inspectedObjects.prepend(std::move(inspectable));
-    while (m_inspectedObjects.size() > kInspectedObjectBufferSize)
-        m_inspectedObjects.removeLast();
+    m_inspectedObjects.insert(m_inspectedObjects.begin(), std::move(inspectable));
+    if (m_inspectedObjects.size() > kInspectedObjectBufferSize)
+        m_inspectedObjects.resize(kInspectedObjectBufferSize);
 }
 
 V8InspectorSession::Inspectable* V8InspectorSessionImpl::inspectedObject(unsigned num)
 {
     if (num >= m_inspectedObjects.size())
         return nullptr;
-    return m_inspectedObjects[num];
+    return m_inspectedObjects[num].get();
 }
 
 void V8InspectorSessionImpl::schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)

@@ -5,15 +5,38 @@
 #ifndef Collections_h
 #define Collections_h
 
-#if V8_INSPECTOR_USE_STL
-#include "platform/inspector_protocol/CollectionsSTL.h"
+#include <cstddef>
+
+#if V8_INSPECTOR_USE_OLD_STL
+#include <map>
+#include <set>
+
+namespace blink {
+namespace protocol {
+
+template <class Key, class T> using HashMap = std::map<Key, T>;
+template <class Key> using HashSet = std::set<Key>;
+
+} // namespace protocol
+} // namespace blink
+
 #else
-#include "platform/inspector_protocol/CollectionsWTF.h"
+#include <unordered_map>
+#include <unordered_set>
+
+namespace blink {
+namespace protocol {
+
+template <class Key, class T> using HashMap = std::unordered_map<Key, T>;
+template <class Key> using HashSet = std::unordered_set<Key>;
+
+} // namespace protocol
+} // namespace blink
+
 #endif // V8_INSPECTOR_USE_STL
 
-
 // Macro that returns a compile time constant with the length of an array, but gives an error if passed a non-array.
-template<typename T, size_t Size> char (&ArrayLengthHelperFunction(T (&)[Size]))[Size];
+template<typename T, std::size_t Size> char (&ArrayLengthHelperFunction(T (&)[Size]))[Size];
 // GCC needs some help to deduce a 0 length array.
 #if defined(__GNUC__)
 template<typename T> char (&ArrayLengthHelperFunction(T (&)[0]))[0];

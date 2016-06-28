@@ -31,7 +31,6 @@
 #ifndef V8FunctionCall_h
 #define V8FunctionCall_h
 
-#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
 
 #include <v8.h>
@@ -58,7 +57,7 @@ public:
 protected:
     V8DebuggerImpl* m_debugger;
     v8::Local<v8::Context> m_context;
-    protocol::Vector<v8::Local<v8::Value>> m_arguments;
+    std::vector<v8::Local<v8::Value>> m_arguments;
     v8::Local<v8::String> m_name;
     v8::Local<v8::Value> m_value;
 };

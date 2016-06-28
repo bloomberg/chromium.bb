@@ -6,6 +6,8 @@
 
 #include "platform/inspector_protocol/Parser.h"
 #include "platform/inspector_protocol/String16.h"
+
+#include <algorithm>
 #include <cmath>
 
 namespace blink {
@@ -193,23 +195,17 @@ void DictionaryValue::setString(const String16& name, const String16& value)
 
 void DictionaryValue::setValue(const String16& name, std::unique_ptr<Value> value)
 {
-    DCHECK(value);
-    if (m_data.set(name, std::move(value)))
-        m_order.append(name);
+    set(name, value);
 }
 
 void DictionaryValue::setObject(const String16& name, std::unique_ptr<DictionaryValue> value)
 {
-    DCHECK(value);
-    if (m_data.set(name, std::move(value)))
-        m_order.append(name);
+    set(name, value);
 }
 
 void DictionaryValue::setArray(const String16& name, std::unique_ptr<ListValue> value)
 {
-    DCHECK(value);
-    if (m_data.set(name, std::move(value)))
-        m_order.append(name);
+    set(name, value);
 }
 
 bool DictionaryValue::getBoolean(const String16& name, bool* output) const
@@ -243,13 +239,13 @@ protocol::Value* DictionaryValue::get(const String16& name) const
     Dictionary::const_iterator it = m_data.find(name);
     if (it == m_data.end())
         return nullptr;
-    return it->second;
+    return it->second.get();
 }
 
 DictionaryValue::Entry DictionaryValue::at(size_t index) const
 {
-    String16 key = m_order[index];
-    return std::make_pair(key, m_data.get(key));
+    const String16 key = m_order[index];
+    return std::make_pair(key, m_data.find(key)->second.get());
 }
 
 bool DictionaryValue::booleanProperty(const String16& name, bool defaultValue) const
@@ -268,13 +264,8 @@ double DictionaryValue::numberProperty(const String16& name, double defaultValue
 
 void DictionaryValue::remove(const String16& name)
 {
-    m_data.remove(name);
-    for (size_t i = 0; i < m_order.size(); ++i) {
-        if (m_order[i] == name) {
-            m_order.remove(i);
-            break;
-        }
-    }
+    m_data.erase(name);
+    m_order.erase(std::remove(m_order.begin(), m_order.end(), name), m_order.end());
 }
 
 void DictionaryValue::writeJSON(String16Builder* output) const
@@ -297,9 +288,9 @@ std::unique_ptr<Value> DictionaryValue::clone() const
     std::unique_ptr<DictionaryValue> result = DictionaryValue::create();
     for (size_t i = 0; i < m_order.size(); ++i) {
         String16 key = m_order[i];
-        Value* value = m_data.get(key);
-        DCHECK(value);
-        result->setValue(key, value->clone());
+        Dictionary::const_iterator value = m_data.find(key);
+        DCHECK(value != m_data.cend() && value->second);
+        result->setValue(key, value->second->clone());
     }
     return std::move(result);
 }
@@ -316,10 +307,12 @@ ListValue::~ListValue()
 void ListValue::writeJSON(String16Builder* output) const
 {
     output->append('[');
-    for (Vector<std::unique_ptr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
-        if (it != m_data.begin())
+    bool first = true;
+    for (const std::unique_ptr<protocol::Value>& value : m_data) {
+        if (!first)
             output->append(',');
-        (*it)->writeJSON(output);
+        value->writeJSON(output);
+        first = false;
     }
     output->append(']');
 }
@@ -327,8 +320,8 @@ void ListValue::writeJSON(String16Builder* output) const
 std::unique_ptr<Value> ListValue::clone() const
 {
     std::unique_ptr<ListValue> result = ListValue::create();
-    for (Vector<std::unique_ptr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it)
-        result->pushValue((*it)->clone());
+    for (const std::unique_ptr<protocol::Value>& value : m_data)
+        result->pushValue(value->clone());
     return std::move(result);
 }
 
@@ -340,13 +333,13 @@ ListValue::ListValue()
 void ListValue::pushValue(std::unique_ptr<protocol::Value> value)
 {
     DCHECK(value);
-    m_data.append(std::move(value));
+    m_data.push_back(std::move(value));
 }
 
 protocol::Value* ListValue::at(size_t index)
 {
     DCHECK_LT(index, m_data.size());
-    return m_data[index];
+    return m_data[index].get();
 }
 
 } // namespace protocol

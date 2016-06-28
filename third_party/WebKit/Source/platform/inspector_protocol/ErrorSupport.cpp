@@ -29,12 +29,12 @@ void ErrorSupport::setName(const String16& name)
 
 void ErrorSupport::push()
 {
-    m_path.append(String16());
+    m_path.push_back(String16());
 }
 
 void ErrorSupport::pop()
 {
-    m_path.removeLast();
+    m_path.pop_back();
 }
 
 void ErrorSupport::addError(const String16& error)
@@ -47,7 +47,7 @@ void ErrorSupport::addError(const String16& error)
     }
     builder.append(": ");
     builder.append(error);
-    m_errors.append(builder.toString());
+    m_errors.push_back(builder.toString());
 }
 
 bool ErrorSupport::hasErrors()

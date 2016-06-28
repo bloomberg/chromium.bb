@@ -5,12 +5,13 @@
 #ifndef Array_h
 #define Array_h
 
-#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/ErrorSupport.h"
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/ValueConversions.h"
 #include "platform/inspector_protocol/Values.h"
+
+#include <vector>
 
 namespace blink {
 namespace protocol {
@@ -35,7 +36,7 @@ public:
         for (size_t i = 0; i < array->size(); ++i) {
             errors->setName(String16::number(i));
             T item = FromValue<T>::parse(array->at(i), errors);
-            result->m_vector.append(item);
+            result->m_vector.push_back(item);
         }
         errors->pop();
         if (errors->hasErrors())
@@ -45,7 +46,7 @@ public:
 
     void addItem(const T& value)
     {
-        m_vector.append(value);
+        m_vector.push_back(value);
     }
 
     size_t length()
@@ -67,7 +68,7 @@ public:
     }
 
 private:
-    protocol::Vector<T> m_vector;
+    std::vector<T> m_vector;
 };
 
 template<> class Array<String> : public ArrayBase<String> {};
@@ -96,7 +97,7 @@ public:
         for (size_t i = 0; i < array->size(); ++i) {
             errors->setName(String16::number(i));
             std::unique_ptr<T> item = FromValue<T>::parse(array->at(i), errors);
-            result->m_vector.append(std::move(item));
+            result->m_vector.push_back(std::move(item));
         }
         errors->pop();
         if (errors->hasErrors())
@@ -106,7 +107,7 @@ public:
 
     void addItem(std::unique_ptr<T> value)
     {
-        m_vector.append(std::move(value));
+        m_vector.push_back(std::move(value));
     }
 
     size_t length()
@@ -116,7 +117,7 @@ public:
 
     T* get(size_t index)
     {
-        return m_vector[index];
+        return m_vector[index].get();
     }
 
     std::unique_ptr<protocol::ListValue> serialize()
@@ -128,7 +129,7 @@ public:
     }
 
 private:
-    protocol::Vector<std::unique_ptr<T>> m_vector;
+    std::vector<std::unique_ptr<T>> m_vector;
 };
 
 } // namespace platform

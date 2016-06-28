@@ -31,6 +31,7 @@
 #ifndef V8DebuggerImpl_h
 #define V8DebuggerImpl_h
 
+#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/Maybe.h"
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
@@ -40,6 +41,8 @@
 
 #include <v8-debug.h>
 #include <v8.h>
+
+#include <vector>
 
 namespace blink {
 
@@ -87,7 +90,7 @@ public:
     // Each script inherits debug data from v8::Context where it has been compiled.
     // Only scripts whose debug data matches |contextGroupId| will be reported.
     // Passing 0 will result in reporting all scripts.
-    void getCompiledScripts(int contextGroupId, protocol::Vector<V8DebuggerParsedScript>&);
+    void getCompiledScripts(int contextGroupId, std::vector<V8DebuggerParsedScript>&);
     void debuggerAgentEnabled();
     void debuggerAgentDisabled();
 
@@ -155,10 +158,12 @@ private:
     v8::Local<v8::String> v8InternalizedString(const char*) const;
 
     void handleV8AsyncTaskEvent(v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
+    InspectedContext* getContext(int groupId, int contextId) const;
+
+    using ContextsByGroupMap = protocol::HashMap<int, std::unique_ptr<ContextByIdMap>>;
 
     v8::Isolate* m_isolate;
     V8DebuggerClient* m_client;
-    using ContextsByGroupMap = protocol::HashMap<int, std::unique_ptr<ContextByIdMap>>;
     ContextsByGroupMap m_contexts;
     using SessionMap = protocol::HashMap<int, V8InspectorSessionImpl*>;
     SessionMap m_sessions;
@@ -175,8 +180,8 @@ private:
     AsyncTaskToStackTrace m_asyncTaskStacks;
     protocol::HashSet<void*> m_recurringTasks;
     int m_maxAsyncCallStackDepth;
-    protocol::Vector<void*> m_currentTasks;
-    protocol::Vector<std::unique_ptr<V8StackTraceImpl>> m_currentStacks;
+    std::vector<void*> m_currentTasks;
+    std::vector<std::unique_ptr<V8StackTraceImpl>> m_currentStacks;
     protocol::HashMap<V8DebuggerAgentImpl*, int> m_maxAsyncCallStackDepthMap;
 };
 

@@ -10,6 +10,8 @@
 #include "platform/inspector_protocol/String16.h"
 #include <v8.h>
 
+#include <vector>
+
 namespace blink {
 
 class InjectedScriptNative final {
@@ -35,7 +37,7 @@ private:
     protocol::HashMap<int, std::unique_ptr<v8::Global<v8::Value>>> m_idToWrappedObject;
     typedef protocol::HashMap<int, String16> IdToObjectGroupName;
     IdToObjectGroupName m_idToObjectGroupName;
-    typedef protocol::HashMap<String16, protocol::Vector<int>> NameToObjectGroup;
+    typedef protocol::HashMap<String16, std::vector<int>> NameToObjectGroup;
     NameToObjectGroup m_nameToObjectGroup;
 };
 

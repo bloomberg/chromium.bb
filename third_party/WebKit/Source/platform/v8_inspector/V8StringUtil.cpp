@@ -95,9 +95,9 @@ String16 createSearchRegexSource(const String16& text)
     return result.toString();
 }
 
-std::unique_ptr<protocol::Vector<unsigned>> lineEndings(const String16& text)
+std::unique_ptr<std::vector<unsigned>> lineEndings(const String16& text)
 {
-    std::unique_ptr<protocol::Vector<unsigned>> result(new protocol::Vector<unsigned>());
+    std::unique_ptr<std::vector<unsigned>> result(new std::vector<unsigned>());
 
     unsigned start = 0;
     while (start < text.length()) {
@@ -105,21 +105,21 @@ std::unique_ptr<protocol::Vector<unsigned>> lineEndings(const String16& text)
         if (lineEnd == kNotFound)
             break;
 
-        result->append(static_cast<unsigned>(lineEnd));
+        result->push_back(static_cast<unsigned>(lineEnd));
         start = lineEnd + 1;
     }
-    result->append(text.length());
+    result->push_back(text.length());
 
     return result;
 }
 
-protocol::Vector<std::pair<int, String16>> scriptRegexpMatchesByLines(const V8Regex& regex, const String16& text)
+std::vector<std::pair<int, String16>> scriptRegexpMatchesByLines(const V8Regex& regex, const String16& text)
 {
-    protocol::Vector<std::pair<int, String16>> result;
+    std::vector<std::pair<int, String16>> result;
     if (text.isEmpty())
         return result;
 
-    std::unique_ptr<protocol::Vector<unsigned>> endings(lineEndings(text));
+    std::unique_ptr<std::vector<unsigned>> endings(lineEndings(text));
     unsigned size = endings->size();
     unsigned start = 0;
     for (unsigned lineNumber = 0; lineNumber < size; ++lineNumber) {
@@ -130,7 +130,7 @@ protocol::Vector<std::pair<int, String16>> scriptRegexpMatchesByLines(const V8Re
 
         int matchLength;
         if (regex.match(line, 0, &matchLength) != -1)
-            result.append(std::pair<int, String16>(lineNumber, line));
+            result.push_back(std::pair<int, String16>(lineNumber, line));
 
         start = lineEnd + 1;
     }
@@ -199,7 +199,7 @@ std::unique_ptr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextBy
 {
     std::unique_ptr<protocol::Array<protocol::Debugger::SearchMatch>> result = protocol::Array<protocol::Debugger::SearchMatch>::create();
     std::unique_ptr<V8Regex> regex = createSearchRegex(static_cast<V8InspectorSessionImpl*>(session)->debugger(), query, caseSensitive, isRegex);
-    protocol::Vector<std::pair<int, String16>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
+    std::vector<std::pair<int, String16>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
 
     for (const auto& match : matches)
         result->addItem(buildObjectForSearchMatch(match.first, match.second));
