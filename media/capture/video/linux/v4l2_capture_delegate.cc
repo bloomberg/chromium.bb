@@ -26,7 +26,9 @@ namespace media {
 // buffers back to driver in time.
 const uint32_t kNumVideoBuffers = 4;
 // Timeout in milliseconds v4l2_thread_ blocks waiting for a frame from the hw.
-const int kCaptureTimeoutMs = 200;
+// This value has been fine tuned. Before changing or modifying it see
+// https://crbug.com/470717
+const int kCaptureTimeoutMs = 1000;
 // The number of continuous timeouts tolerated before treated as error.
 const int kContinuousTimeoutLimit = 10;
 // MJPEG is preferred if the requested width or height is larger than this.
