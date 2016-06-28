@@ -5,6 +5,7 @@ include_rules = [
   "+components/leveldb",
   "+components/link_header_util",
   "+components/mime_util",
+  "+components/mus/common",
   "+components/mus/public/interfaces",
   "+components/mus/public",
   "+components/network_session_configurator/switches.h",

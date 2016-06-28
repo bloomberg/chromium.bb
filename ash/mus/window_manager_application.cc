@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/mus/common/event_matcher_util.h"
+#include "components/mus/common/gpu_service.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_client.h"
 #include "services/shell/public/cpp/connection.h"
@@ -67,6 +68,7 @@ void WindowManagerApplication::Initialize(shell::Connector* connector,
                                           const shell::Identity& identity,
                                           uint32_t id) {
   connector_ = connector;
+  ::mus::GpuService::Initialize(connector);
   window_manager_.reset(new WindowManager(this, connector_));
 
   aura_init_.reset(new views::AuraInit(connector_, "ash_mus_resources.pak"));

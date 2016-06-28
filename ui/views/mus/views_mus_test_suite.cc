@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
+#include "components/mus/common/gpu_service.h"
 #include "components/mus/common/switches.h"
 #include "services/shell/background/background_shell.h"
 #include "services/shell/public/cpp/connector.h"
@@ -44,11 +45,14 @@ class PlatformTestHelperMus : public PlatformTestHelper {
  public:
   PlatformTestHelperMus(shell::Connector* connector,
                         const shell::Identity& identity) {
+    mus::GpuService::Initialize(connector);
     // It is necessary to recreate the WindowManagerConnection for each test,
     // since a new MessageLoop is created for each test.
     connection_ = WindowManagerConnection::Create(connector, identity);
   }
-  ~PlatformTestHelperMus() override {}
+  ~PlatformTestHelperMus() override {
+    mus::GpuService::Terminate();
+  }
 
  private:
   std::unique_ptr<WindowManagerConnection> connection_;

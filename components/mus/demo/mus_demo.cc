@@ -6,6 +6,7 @@
 
 #include "base/time/time.h"
 #include "components/bitmap_uploader/bitmap_uploader.h"
+#include "components/mus/common/gpu_service.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_client.h"
 #include "services/shell/public/cpp/connector.h"
@@ -66,6 +67,7 @@ void MusDemo::Initialize(shell::Connector* connector,
                          const shell::Identity& identity,
                          uint32_t id) {
   connector_ = connector;
+  mus::GpuService::GetInstance()->Initialize(connector_);
   window_tree_client_ = new mus::WindowTreeClient(this, this, nullptr);
   window_tree_client_->ConnectAsWindowManager(connector);
 }

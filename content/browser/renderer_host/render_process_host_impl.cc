@@ -232,8 +232,8 @@
 #include "content/common/media/media_stream_messages.h"
 #endif
 
-#if defined(MOJO_RUNNER_CLIENT)
-#include "components/mus/common/switches.h"
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#include "components/mus/common/switches.h"  // nogncheck
 #endif
 
 #if defined(OS_WIN)
@@ -1547,14 +1547,12 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_CHROMEOS)
     switches::kDisableVaapiAcceleratedVideoEncode,
 #endif
-#if defined(MOJO_SHELL_CLIENT)
-    switches::kUseMusInRenderer,
-#endif
 #if defined(ENABLE_IPC_FUZZER)
     switches::kIpcDumpDirectory,
     switches::kIpcFuzzerTestcase,
 #endif
-#if defined(MOJO_RUNNER_CLIENT)
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+    switches::kUseMusInRenderer,
     mus::switches::kUseMojoGpuCommandBufferInMus,
 #endif
   };

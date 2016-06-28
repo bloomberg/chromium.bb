@@ -198,7 +198,8 @@
 #include "v8/src/third_party/vtune/v8-vtune.h"
 #endif
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#include "components/mus/common/gpu_service.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
@@ -829,7 +830,7 @@ void RenderThreadImpl::Init(
   GetInterfaceRegistry()->AddInterface(base::Bind(CreateFrameFactory));
   GetInterfaceRegistry()->AddInterface(base::Bind(CreateEmbeddedWorkerSetup));
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
   // We may not have a MojoShellConnection object in tests that directly
   // instantiate a RenderThreadImpl.
   if (MojoShellConnection::GetForProcess() &&
@@ -1801,9 +1802,11 @@ RenderThreadImpl::CreateCompositorOutputSurface(
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     use_software = true;
 
-#if defined(MOJO_SHELL_CLIENT)
-  if (MojoShellConnection::GetForProcess() && !use_software &&
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+  auto shell_connection = MojoShellConnection::GetForProcess();
+  if (shell_connection && !use_software &&
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
+    mus::GpuService::Initialize(shell_connection->GetConnector());
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);
     return connection->CreateOutputSurface();

@@ -191,6 +191,11 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#include "components/mus/common/gpu_service.h"  // nogncheck
+#endif
+
+
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
@@ -1171,8 +1176,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
     // TODO(rockot): Remove the blocking wait for init.
     // http://crbug.com/594852.
-    if (MojoShellConnection::GetForProcess())
+    auto connection = MojoShellConnection::GetForProcess();
+    if (connection) {
       WaitForMojoShellInitialize();
+      mus::GpuService::Initialize(connection->GetConnector());
+    }
 #endif
   }
 

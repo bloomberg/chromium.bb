@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/mus/common/gpu_service.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
@@ -167,6 +168,7 @@ void QuickLaunchApplication::Initialize(shell::Connector* connector,
                                         const shell::Identity& identity,
                                         uint32_t id) {
   connector_ = connector;
+  mus::GpuService::Initialize(connector);
   tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));

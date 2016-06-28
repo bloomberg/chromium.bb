@@ -46,7 +46,7 @@ bool GLES2Context::Initialize(const std::vector<int32_t>& attribs,
     gpu_control = command_buffer_client_impl_.get();
   } else {
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-        GpuService::GetInstance()->EstablishGpuChannel(connector);
+        GpuService::GetInstance()->EstablishGpuChannelSync();
     if (!gpu_channel_host)
       return false;
     gpu::SurfaceHandle surface_handle = gfx::kNullAcceleratedWidget;

@@ -30,6 +30,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/mus/common/gpu_service.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "services/catalog/public/cpp/resource_loader.h"
@@ -308,6 +309,8 @@ SysUIApplication::~SysUIApplication() {}
 void SysUIApplication::Initialize(::shell::Connector* connector,
                                   const ::shell::Identity& identity,
                                   uint32_t id) {
+  mus::GpuService::Initialize(connector);
+
   ash_init_.reset(new AshInit());
   ash_init_->Initialize(connector, identity);
 
