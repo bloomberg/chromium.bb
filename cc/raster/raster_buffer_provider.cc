@@ -109,9 +109,7 @@ void RasterBufferProvider::PlaybackToMemory(
         TRACE_EVENT0("cc",
                      "RasterBufferProvider::PlaybackToMemory::ConvertRGBA4444");
         SkImageInfo dst_info =
-            SkImageInfo::Make(info.width(), info.height(),
-                              ResourceFormatToClosestSkColorType(format),
-                              info.alphaType(), info.profileType());
+            info.makeColorType(ResourceFormatToClosestSkColorType(format));
         bool rv = surface->readPixels(dst_info, memory, stride, 0, 0);
         DCHECK(rv);
       }

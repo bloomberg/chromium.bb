@@ -25,7 +25,8 @@ enum AlphaType {
   UNPREMUL,
 };
 
-// Mirror of SkColorProfileType.
+// Capture of the (simple) gamma of SkColorSpace. Need to eventually
+// serialize the actual colorspace object.
 enum ColorProfileType {
   LINEAR,
   SRGB,

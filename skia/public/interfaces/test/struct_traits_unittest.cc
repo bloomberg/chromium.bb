@@ -53,6 +53,10 @@ static sk_sp<SkImageFilter> make_scale(float amount,
   return SkColorFilterImageFilter::Make(std::move(filter), std::move(input));
 }
 
+static bool colorspace_srgb_gamma(SkColorSpace* cs) {
+  return cs && cs->gammaCloseToSRGB();
+}
+
 }  // namespace
 
 TEST_F(StructTraitsTest, Bitmap) {
@@ -65,7 +69,8 @@ TEST_F(StructTraitsTest, Bitmap) {
   proxy->EchoBitmap(input, &output);
   EXPECT_EQ(input.colorType(), output.colorType());
   EXPECT_EQ(input.alphaType(), output.alphaType());
-  EXPECT_EQ(input.profileType(), output.profileType());
+  EXPECT_EQ(colorspace_srgb_gamma(input.colorSpace()),
+            colorspace_srgb_gamma(output.colorSpace()));
   EXPECT_EQ(input.width(), output.width());
   EXPECT_EQ(input.height(), output.height());
   EXPECT_TRUE(gfx::BitmapsAreEqual(input, output));

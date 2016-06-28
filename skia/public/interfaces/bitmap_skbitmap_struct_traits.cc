@@ -46,15 +46,15 @@ SkAlphaType MojoAlphaTypeToSk(skia::mojom::AlphaType type) {
   return kUnknown_SkAlphaType;
 }
 
-SkColorProfileType MojoProfileTypeToSk(skia::mojom::ColorProfileType type) {
+sk_sp<SkColorSpace> MojoProfileTypeToSk(skia::mojom::ColorProfileType type) {
   switch (type) {
     case skia::mojom::ColorProfileType::LINEAR:
-      return kLinear_SkColorProfileType;
+      return nullptr;
     case skia::mojom::ColorProfileType::SRGB:
-      return kSRGB_SkColorProfileType;
+      return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
   }
   NOTREACHED();
-  return kLinear_SkColorProfileType;
+  return nullptr;
 }
 
 skia::mojom::ColorType SkColorTypeToMojo(SkColorType type) {
@@ -98,14 +98,9 @@ skia::mojom::AlphaType SkAlphaTypeToMojo(SkAlphaType type) {
   return skia::mojom::AlphaType::UNKNOWN;
 }
 
-skia::mojom::ColorProfileType SkProfileTypeToMojo(SkColorProfileType type) {
-  switch (type) {
-    case kLinear_SkColorProfileType:
-      return skia::mojom::ColorProfileType::LINEAR;
-    case kSRGB_SkColorProfileType:
-      return skia::mojom::ColorProfileType::SRGB;
-  }
-  NOTREACHED();
+skia::mojom::ColorProfileType SkColorSpaceToMojo(SkColorSpace* cs) {
+  if (cs && cs->gammaCloseToSRGB())
+    return skia::mojom::ColorProfileType::SRGB;
   return skia::mojom::ColorProfileType::LINEAR;
 }
 
@@ -136,7 +131,7 @@ skia::mojom::AlphaType StructTraits<skia::mojom::Bitmap, SkBitmap>::alpha_type(
 // static
 skia::mojom::ColorProfileType
 StructTraits<skia::mojom::Bitmap, SkBitmap>::profile_type(const SkBitmap& b) {
-  return SkProfileTypeToMojo(b.profileType());
+  return SkColorSpaceToMojo(b.colorSpace());
 }
 
 // static
