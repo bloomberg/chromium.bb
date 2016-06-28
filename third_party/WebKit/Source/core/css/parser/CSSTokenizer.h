@@ -71,14 +71,10 @@ private:
     bool nextCharsAreNumber();
     bool nextCharsAreIdentifier(UChar);
     bool nextCharsAreIdentifier();
+
     CSSParserToken blockStart(CSSParserTokenType);
     CSSParserToken blockStart(CSSParserTokenType blockType, CSSParserTokenType, StringView);
     CSSParserToken blockEnd(CSSParserTokenType, CSSParserTokenType startType);
-
-    using CodePoint = CSSParserToken (CSSTokenizer::*)(UChar);
-
-    static const CodePoint codePoints[];
-    Vector<CSSParserTokenType> m_blockStack;
 
     CSSParserToken whiteSpace(UChar);
     CSSParserToken leftParenthesis(UChar);
@@ -110,6 +106,10 @@ private:
 
     StringView registerString(const String&);
 
+    using CodePoint = CSSParserToken (CSSTokenizer::*)(UChar);
+    static const CodePoint codePoints[];
+
+    Vector<CSSParserTokenType, 8> m_blockStack;
     CSSTokenizerInputStream& m_input;
     Scope& m_scope;
 };

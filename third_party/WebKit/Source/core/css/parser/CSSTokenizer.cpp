@@ -120,15 +120,6 @@ CSSParserToken CSSTokenizer::whiteSpace(UChar cc)
     return CSSParserToken(WhitespaceToken);
 }
 
-static bool popIfBlockMatches(Vector<CSSParserTokenType>& blockStack, CSSParserTokenType type)
-{
-    if (!blockStack.isEmpty() && blockStack.last() == type) {
-        blockStack.removeLast();
-        return true;
-    }
-    return false;
-}
-
 CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType type)
 {
     m_blockStack.append(type);
@@ -143,8 +134,10 @@ CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType blockType, CSSParserT
 
 CSSParserToken CSSTokenizer::blockEnd(CSSParserTokenType type, CSSParserTokenType startType)
 {
-    if (popIfBlockMatches(m_blockStack, startType))
+    if (!m_blockStack.isEmpty() && m_blockStack.last() == startType) {
+        m_blockStack.removeLast();
         return CSSParserToken(type, CSSParserToken::BlockEnd);
+    }
     return CSSParserToken(type);
 }
 
