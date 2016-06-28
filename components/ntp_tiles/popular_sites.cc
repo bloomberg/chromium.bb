@@ -48,6 +48,13 @@ const int kPopularSitesRedownloadIntervalHours = 24;
 const char kPopularSitesLastDownloadPref[] = "popular_sites_last_download";
 const char kPopularSitesCountryPref[] = "popular_sites_country";
 const char kPopularSitesVersionPref[] = "popular_sites_version";
+const char kPopularSitesURLPref[] = "popular_sites_url";
+
+GURL GetPopularSitesURL(const std::string& country,
+                        const std::string& version) {
+  return GURL(base::StringPrintf(kPopularSitesURLFormat, country.c_str(),
+                                 version.c_str()));
+}
 
 // Extract the country from the default search engine if the default search
 // engine is Google.
@@ -164,73 +171,8 @@ PopularSites::PopularSites(
     const std::string& variation_param_version,
     bool force_download,
     const FinishedCallback& callback)
-    : PopularSites(blocking_pool,
-                   prefs,
-                   download_context,
-                   directory,
-                   GetCountryToUse(prefs,
-                                   template_url_service,
-                                   variations_service,
-                                   variation_param_country),
-                   GetVersionToUse(prefs, variation_param_version),
-                   GURL(),
-                   force_download,
-                   callback) {}
-
-PopularSites::PopularSites(
-    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
-    PrefService* prefs,
-    net::URLRequestContextGetter* download_context,
-    const base::FilePath& directory,
-    const GURL& url,
-    const FinishedCallback& callback)
-    : PopularSites(blocking_pool,
-                   prefs,
-                   download_context,
-                   directory,
-                   std::string(),
-                   std::string(),
-                   url,
-                   true,
-                   callback) {}
-
-PopularSites::~PopularSites() {}
-
-std::string PopularSites::GetCountry() const {
-  return prefs_->GetString(kPopularSitesCountryPref);
-}
-
-std::string PopularSites::GetVersion() const {
-  return prefs_->GetString(kPopularSitesVersionPref);
-}
-
-// static
-void PopularSites::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideCountry,
-                                 std::string());
-  user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideVersion,
-                                 std::string());
-
-  user_prefs->RegisterInt64Pref(kPopularSitesLastDownloadPref, 0);
-  user_prefs->RegisterStringPref(kPopularSitesCountryPref, std::string());
-  user_prefs->RegisterStringPref(kPopularSitesVersionPref, std::string());
-}
-
-PopularSites::PopularSites(
-    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
-    PrefService* prefs,
-    net::URLRequestContextGetter* download_context,
-    const base::FilePath& directory,
-    const std::string& country,
-    const std::string& version,
-    const GURL& override_url,
-    bool force_download,
-    const FinishedCallback& callback)
     : callback_(callback),
       is_fallback_(false),
-      pending_country_(country),
-      pending_version_(version),
       local_path_(directory.empty()
                       ? base::FilePath()
                       : directory.AppendASCII(kPopularSitesLocalFilename)),
@@ -246,11 +188,17 @@ PopularSites::PopularSites(
   const base::TimeDelta redownload_interval =
       base::TimeDelta::FromHours(kPopularSitesRedownloadIntervalHours);
   const bool download_time_is_future = base::Time::Now() < last_download_time;
-  const bool country_changed = GetCountry() != pending_country_;
-  const bool version_changed = GetVersion() != pending_version_;
 
-  const GURL url =
-      override_url.is_valid() ? override_url : GetPopularSitesURL();
+  const std::string country = GetCountryToUse(
+      prefs, template_url_service, variations_service, variation_param_country);
+  const std::string version = GetVersionToUse(prefs, variation_param_version);
+
+  const GURL override_url =
+      GURL(prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL));
+  pending_url_ = override_url.is_valid() ? override_url
+                                         : GetPopularSitesURL(country, version);
+  const bool url_changed =
+      pending_url_.spec() != prefs_->GetString(kPopularSitesURLPref);
 
   // No valid path to save to. Immediately post failure.
   if (local_path_.empty()) {
@@ -261,9 +209,8 @@ PopularSites::PopularSites(
 
   // Download forced, or we need to download a new file.
   if (force_download || download_time_is_future ||
-      (time_since_last_download > redownload_interval) || country_changed ||
-      version_changed) {
-    FetchPopularSites(url);
+      (time_since_last_download > redownload_interval) || url_changed) {
+    FetchPopularSites();
     return;
   }
 
@@ -273,17 +220,34 @@ PopularSites::PopularSites(
       blocking_runner_.get(), FROM_HERE,
       base::Bind(&base::ReadFileToString, local_path_, file_data_ptr),
       base::Bind(&PopularSites::OnReadFileDone, weak_ptr_factory_.GetWeakPtr(),
-                 url, base::Passed(std::move(file_data))));
+                 base::Passed(std::move(file_data))));
 }
 
-GURL PopularSites::GetPopularSitesURL() const {
-  return GURL(base::StringPrintf(kPopularSitesURLFormat,
-                                 pending_country_.c_str(),
-                                 pending_version_.c_str()));
+PopularSites::~PopularSites() {}
+
+GURL PopularSites::LastURL() const {
+  return GURL(prefs_->GetString(kPopularSitesURLPref));
 }
 
-void PopularSites::OnReadFileDone(const GURL& url,
-                                  std::unique_ptr<std::string> data,
+// static
+void PopularSites::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* user_prefs) {
+  user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideURL,
+                                 std::string());
+  user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideCountry,
+                                 std::string());
+  user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideVersion,
+                                 std::string());
+
+  user_prefs->RegisterInt64Pref(kPopularSitesLastDownloadPref, 0);
+  user_prefs->RegisterStringPref(kPopularSitesURLPref, std::string());
+
+  // TODO(sfiera): remove these obsolete preferences.
+  user_prefs->RegisterStringPref(kPopularSitesCountryPref, std::string());
+  user_prefs->RegisterStringPref(kPopularSitesVersionPref, std::string());
+}
+
+void PopularSites::OnReadFileDone(std::unique_ptr<std::string> data,
                                   bool success) {
   if (success) {
     auto json = base::JSONReader::Read(*data, base::JSON_ALLOW_TRAILING_COMMAS);
@@ -294,12 +258,12 @@ void PopularSites::OnReadFileDone(const GURL& url,
     }
   } else {
     // File didn't exist, or couldn't be read for some other reason.
-    FetchPopularSites(url);
+    FetchPopularSites();
   }
 }
 
-void PopularSites::FetchPopularSites(const GURL& url) {
-  fetcher_ = URLFetcher::Create(url, URLFetcher::GET, this);
+void PopularSites::FetchPopularSites() {
+  fetcher_ = URLFetcher::Create(pending_url_, URLFetcher::GET, this);
   fetcher_->SetRequestContext(download_context_);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -345,8 +309,7 @@ void PopularSites::OnFileWriteDone(std::unique_ptr<base::Value> json,
   if (success) {
     prefs_->SetInt64(kPopularSitesLastDownloadPref,
                      base::Time::Now().ToInternalValue());
-    prefs_->SetString(kPopularSitesCountryPref, pending_country_);
-    prefs_->SetString(kPopularSitesVersionPref, pending_version_);
+    prefs_->SetString(kPopularSitesURLPref, pending_url_.spec());
     ParseSiteList(std::move(json));
   } else {
     DLOG(WARNING) << "Could not write file to "
@@ -393,9 +356,9 @@ void PopularSites::OnDownloadFailed() {
   if (!is_fallback_) {
     DLOG(WARNING) << "Download country site list failed";
     is_fallback_ = true;
-    pending_country_ = kPopularSitesDefaultCountryCode;
-    pending_version_ = kPopularSitesDefaultVersion;
-    FetchPopularSites(GetPopularSitesURL());
+    pending_url_ = GetPopularSitesURL(kPopularSitesDefaultCountryCode,
+                                      kPopularSitesDefaultVersion);
+    FetchPopularSites();
   } else {
     DLOG(WARNING) << "Download fallback site list failed";
     callback_.Run(false);

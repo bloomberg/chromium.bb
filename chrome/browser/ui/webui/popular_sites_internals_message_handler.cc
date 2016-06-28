@@ -81,6 +81,14 @@ void PopularSitesInternalsMessageHandler::HandleUpdate(
 
   PrefService* prefs = profile->GetPrefs();
 
+  std::string url;
+  args->GetString(0, &url);
+  if (url.empty())
+    prefs->ClearPref(ntp_tiles::prefs::kPopularSitesOverrideURL);
+  else
+    prefs->SetString(ntp_tiles::prefs::kPopularSitesOverrideURL,
+                     url_formatter::FixupURL(url, std::string()).spec());
+
   std::string country;
   args->GetString(1, &country);
   if (country.empty())
@@ -94,16 +102,6 @@ void PopularSitesInternalsMessageHandler::HandleUpdate(
     prefs->ClearPref(ntp_tiles::prefs::kPopularSitesOverrideVersion);
   else
     prefs->SetString(ntp_tiles::prefs::kPopularSitesOverrideVersion, version);
-
-  std::string url;
-  args->GetString(0, &url);
-  if (!url.empty()) {
-    popular_sites_.reset(new PopularSites(
-        content::BrowserThread::GetBlockingPool(), prefs,
-        profile->GetRequestContext(), ChromePopularSites::GetDirectory(),
-        url_formatter::FixupURL(url, std::string()), callback));
-    return;
-  }
 
   popular_sites_.reset(new PopularSites(
       content::BrowserThread::GetBlockingPool(), prefs,
@@ -130,12 +128,14 @@ void PopularSitesInternalsMessageHandler::HandleViewJson(
 
 void PopularSitesInternalsMessageHandler::SendOverrides() {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  std::string url =
+      prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL);
   std::string country =
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideCountry);
   std::string version =
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideVersion);
   web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.popular_sites_internals.receiveOverrides",
+      "chrome.popular_sites_internals.receiveOverrides", base::StringValue(url),
       base::StringValue(country), base::StringValue(version));
 }
 
@@ -156,8 +156,7 @@ void PopularSitesInternalsMessageHandler::SendSites() {
 
   base::DictionaryValue result;
   result.Set("sites", std::move(sites_list));
-  result.SetString("country", popular_sites_->GetCountry());
-  result.SetString("version", popular_sites_->GetVersion());
+  result.SetString("url", popular_sites_->LastURL().spec());
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.popular_sites_internals.receiveSites", result);
 }

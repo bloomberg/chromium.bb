@@ -80,22 +80,12 @@ class PopularSites : public net::URLFetcherDelegate {
                bool force_download,
                const FinishedCallback& callback);
 
-  // This fetches the popular sites from a given url and is only used for
-  // debugging through the popular-sites-internals page.
-  PopularSites(const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
-               PrefService* prefs,
-               net::URLRequestContextGetter* download_context,
-               const base::FilePath& directory,
-               const GURL& url,
-               const FinishedCallback& callback);
-
   ~PopularSites() override;
 
   const std::vector<Site>& sites() const { return sites_; }
 
-  // The country/version of the file that was last downloaded.
-  std::string GetCountry() const;
-  std::string GetVersion() const;
+  // The URL of the file that was last downloaded.
+  GURL LastURL() const;
 
   const base::FilePath& local_path() const { return local_path_; }
 
@@ -104,25 +94,11 @@ class PopularSites : public net::URLFetcherDelegate {
       user_prefs::PrefRegistrySyncable* user_prefs);
 
  private:
-  PopularSites(const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
-               PrefService* prefs,
-               net::URLRequestContextGetter* download_context,
-               const base::FilePath& directory,
-               const std::string& country,
-               const std::string& version,
-               const GURL& override_url,
-               bool force_download,
-               const FinishedCallback& callback);
-
-  GURL GetPopularSitesURL() const;
-
-  void OnReadFileDone(const GURL& url,
-                      std::unique_ptr<std::string> data,
-                      bool success);
+  void OnReadFileDone(std::unique_ptr<std::string> data, bool success);
 
   // Fetch the popular sites at the given URL, overwriting any file that already
   // exists.
-  void FetchPopularSites(const GURL& url);
+  void FetchPopularSites();
 
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -137,8 +113,7 @@ class PopularSites : public net::URLFetcherDelegate {
   std::unique_ptr<net::URLFetcher> fetcher_;
   bool is_fallback_;
   std::vector<Site> sites_;
-  std::string pending_country_;
-  std::string pending_version_;
+  GURL pending_url_;
 
   base::FilePath local_path_;
 

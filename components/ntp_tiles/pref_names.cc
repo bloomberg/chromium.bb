@@ -14,6 +14,10 @@ const char kNTPSuggestionsURL[] = "ntp.suggestions_url";
 // Whether the suggestion was derived from personal data.
 const char kNTPSuggestionsIsPersonal[] = "ntp.suggestions_is_personal";
 
+// If set, overrides the URL for popular sites, including the individual
+// overrides for country and version below.
+const char kPopularSitesOverrideURL[] = "popular_sites.override_url";
+
 // If set, this will override the country detection for popular sites.
 const char kPopularSitesOverrideCountry[] = "popular_sites.override_country";
 

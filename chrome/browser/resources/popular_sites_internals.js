@@ -8,7 +8,7 @@ cr.define('chrome.popular_sites_internals', function() {
   function initialize() {
     function submitUpdate(event) {
       $('download-result').textContent = '';
-      chrome.send('update', [$('url-input').value,
+      chrome.send('update', [$('override-url').value,
                              $('override-country').value,
                              $('override-version').value]);
       event.preventDefault();
@@ -27,7 +27,8 @@ cr.define('chrome.popular_sites_internals', function() {
     chrome.send('registerForEvents');
   }
 
-  function receiveOverrides(country, version) {
+  function receiveOverrides(url, country, version) {
+    $('override-url').value = url;
     $('override-country').value = country;
     $('override-version').value = version;
   }
