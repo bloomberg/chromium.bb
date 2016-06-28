@@ -27,6 +27,7 @@ public class CastStartStopTest extends CastTestBase {
      */
     @Feature({"VideoFling"})
     @LargeTest
+    @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     public void testCastingGenericVideo() throws InterruptedException, TimeoutException {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
         checkVideoStarted(DEFAULT_VIDEO);
@@ -37,6 +38,7 @@ public class CastStartStopTest extends CastTestBase {
      */
     @Feature({"VideoFling"})
     @LargeTest
+    @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     public void testStopFromVideoControls() throws InterruptedException, TimeoutException {
         Rect videoRect = castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
 
@@ -52,6 +54,7 @@ public class CastStartStopTest extends CastTestBase {
      */
     @Feature({"VideoFling"})
     @LargeTest
+    @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     public void testStopFromNotification() throws InterruptedException, TimeoutException {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
 

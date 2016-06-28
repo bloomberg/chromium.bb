@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.remote;
 import android.graphics.Rect;
 import android.test.suitebuilder.annotation.LargeTest;
 
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.tab.Tab;
@@ -25,6 +26,7 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
+    @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     public void testPlayNewVideoInNewTab() throws InterruptedException, TimeoutException {
         // This won't currently work in document mode because we can't create new tabs
         if (FeatureUtilities.isDocumentMode(getActivity())) return;
@@ -76,6 +78,7 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
+    @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     public void testCastNewVideoInNewTab() throws InterruptedException, TimeoutException {
         // This won't currently work in document mode because we can't create new tabs
         if (FeatureUtilities.isDocumentMode(getActivity())) return;
@@ -111,6 +114,7 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
+    @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     public void testCastTwoVideosSamePage() throws InterruptedException, TimeoutException {
         checkCastSecondVideo(TWO_VIDEO_PAGE, new Runnable() {
             @Override
