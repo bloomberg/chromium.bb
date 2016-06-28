@@ -213,7 +213,7 @@
 
   <!-- Passwords and Autofill Page -->
   <message name="IDS_SETTINGS_OVERFLOW_MENU" desc="Alt text for the overflow button on a list item. Triggers a context menu when clicked.">
-   Menu
+    Menu
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE" desc="Name of the settings page which allows managing passwords and autofill settings.">
     Passwords and forms
@@ -226,6 +226,21 @@
   </message>
   <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_HEADING" desc="Title for the list of addresses that chrome has saved for use in filling in forms.">
     Addresses
+  </message>
+  <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_ADD_TITLE" desc="This is the title for the 'Add address' dialog. This dialog allows a user to create a new address.">
+    Add address
+  </message>
+  <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_EDIT_TITLE" desc="This is the title for the 'Edit address' dialog. This dialog allows a user to edit an address that is already saved.">
+    Edit address
+  </message>
+  <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_COUNTRY" desc="This is the label for the dropdown that lets a user select the country their address is in. Will be shown when editing or adding an address to use in autofill.">
+    Country / Region
+  </message>
+  <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_PHONE" desc="This is the label for the field that lets a user modify the phone number that will be used when auto-filling forms on the web.">
+    Phone
+  </message>
+  <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_EMAIL" desc="This is the label for the field that lets a user modify the email address that will be used when auto-filling forms on the web.">
+    Email
   </message>
   <message name="IDS_SETTINGS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="Label for a button that allows a user to enter a new address that can be used to fill in forms.">
     Add address
@@ -243,16 +258,16 @@
     Enable Autofill to fill out forms in a single click
   </message>
   <message name="IDS_SETTINGS_ADDRESS_EDIT" desc="Label for a context menu item that shows a dialog with edit options for the selected address." meaning="Edit selected address.">
-   Edit
+    Edit
   </message>
   <message name="IDS_SETTINGS_ADDRESS_REMOVE" desc="Label for a context menu item that removes the selected address." meaning="Remove selected address.">
-   Remove
+    Remove
   </message>
   <message name="IDS_SETTINGS_CREDIT_CARD_EDIT" desc="Label for a context menu item that shows a dialog with edit options for the selected credit card." meaning="Edit selected credit card.">
-   Edit
+    Edit
   </message>
   <message name="IDS_SETTINGS_CREDIT_CARD_REMOVE" desc="Label for a context menu item that removes the selected credit card." meaning="Remove selected credit card.">
-   Remove
+    Remove
   </message>
   <message name="IDS_SETTINGS_CREDIT_CARD_CLEAR" desc="Label for a context menu item clears the locally cached credit card that is also saved on Google Payments. Clicking this will NOT remove the credit card from Google Payments.">
    Clear copy
@@ -294,10 +309,10 @@
     Delete this item
   </message>
   <message name="IDS_SETTINGS_PASSWORD_EDIT" desc="Label for a context menu item that shows a dialog with edit options for the selected password." meaning="Edit selected password.">
-   Edit
+    Edit
   </message>
   <message name="IDS_SETTINGS_PASSWORD_REMOVE" desc="Label for a context menu item that removes the selected password." meaning="Remove selected password.">
-   Remove
+    Remove
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_EDIT_TITLE" desc="Title for the 'Edit saved password' dialog. This dialog lets a user see a saved password and copy the username.">
     Edit saved password
