@@ -284,6 +284,8 @@ source_set("browser") {
     "passwords/ios_chrome_password_manager_client.mm",
     "passwords/ios_chrome_password_manager_driver.h",
     "passwords/ios_chrome_password_manager_driver.mm",
+    "passwords/ios_chrome_password_manager_infobar_delegate.h",
+    "passwords/ios_chrome_password_manager_infobar_delegate.mm",
     "passwords/ios_chrome_password_manager_setting_migrator_service_factory.cc",
     "passwords/ios_chrome_password_manager_setting_migrator_service_factory.h",
     "passwords/ios_chrome_password_store_factory.cc",

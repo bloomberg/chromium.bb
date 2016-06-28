@@ -8,8 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_manager_infobar_delegate.h"
 
 namespace password_manager {
 class PasswordFormManager;
@@ -23,7 +22,8 @@ class InfoBarManager;
 // password_manager::PasswordFormManager and move it to a
 // IOSChromeSavePasswordInfoBarDelegate while the user makes up their mind
 // with the "save password" infobar.
-class IOSChromeSavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
+class IOSChromeSavePasswordInfoBarDelegate
+    : public IOSChromePasswordManagerInfoBarDelegate {
  public:
   // Creates the infobar for |form_to_save| and adds it to |infobar_manager|.
   // |is_smart_lock_enabled| controls the branding string.
@@ -40,25 +40,11 @@ class IOSChromeSavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       std::unique_ptr<password_manager::PasswordFormManager> form_to_save);
 
   // ConfirmInfoBarDelegate implementation.
-  Type GetInfoBarType() const override;
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
-  base::string16 GetLinkText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
-  int GetIconId() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
-
-  // The password_manager::PasswordFormManager managing the form we're asking
-  // the user about, and should update as per her decision.
-  std::unique_ptr<password_manager::PasswordFormManager> form_to_save_;
-
-  // Used to track the results we get from the info bar.
-  password_manager::metrics_util::UIDismissalReason infobar_response_;
-
-  // Whether to show the password manager branded as Smart Lock.
-  bool is_smart_lock_branding_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSavePasswordInfoBarDelegate);
 };

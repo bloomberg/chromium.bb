@@ -421,6 +421,8 @@
         'browser/passwords/ios_chrome_password_manager_client.mm',
         'browser/passwords/ios_chrome_password_manager_driver.h',
         'browser/passwords/ios_chrome_password_manager_driver.mm',
+        'browser/passwords/ios_chrome_password_manager_infobar_delegate.h',
+        'browser/passwords/ios_chrome_password_manager_infobar_delegate.mm',
         'browser/passwords/ios_chrome_password_manager_setting_migrator_service_factory.cc',
         'browser/passwords/ios_chrome_password_manager_setting_migrator_service_factory.h',
         'browser/passwords/ios_chrome_password_store_factory.cc',
