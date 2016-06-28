@@ -180,41 +180,66 @@ QuickViewController.prototype.updateQuickView_ = function() {
  * @private
  */
 QuickViewController.prototype.onMetadataLoaded_ = function(entry, items) {
+  var item = items[0];
+  var type = FileType.getType(entry).type;
+
   this.quickView_.clear();
   this.quickView_.filePath = entry.name;
-  var item = items[0];
-  var type = FileType.getType(entry);
-  var thumbnailUrl = item.thumbnailUrl;
-  if (type.type === 'image') {
+  this.quickView_.type = type;
+  if (type === 'image') {
     if (item.externalFileUrl) {
-      // TODO(oka): Support Drive.
+      if (item.thumbnailUrl) {
+        this.loadThumbnailFromDrive_(item.thumbnailUrl, function(result) {
+          if (result.status !== 'success') {
+            return;
+          }
+          this.quickView_.contentUrl = result.data;
+        }.bind(this));
+      }
     } else {
-      var url = thumbnailUrl || entry.toURL();
-      this.quickView_.image = url;
+      this.quickView_.contentUrl = item.thumbnailUrl || entry.toURL();
     }
-  } else if (type.type === 'video') {
-    // TODO(oka): Set thumbnail.
+  } else if (type === 'video') {
     if (item.externalFileUrl) {
-      // TODO(oka): Support Drive.
+      if (item.thumbnailUrl) {
+        this.loadThumbnailFromDrive_(item.thumbnailUrl, function(result) {
+          if (result.status !== 'success') {
+            return;
+          }
+          this.quickView_.videoPoster = result.data;
+        }.bind(this));
+      }
     } else {
-      var url = entry.toURL();
-      this.quickView_.video = url;
+      this.quickView_.contentUrl = entry.toURL();
+      if (item.thumbnailUrl)
+        this.quickView_.videoPoster = item.thumbnailUrl;
+      this.quickView_.autoplay = true;
     }
-  } else if (type.type === 'audio') {
+  } else if (type === 'audio') {
     if (item.externalFileUrl) {
-      // TODO(oka): Support Drive.
+      // If the file is in Drive, we ask user to open it with external app.
     } else {
-      var url = entry.toURL();
-      this.quickView_.audio = url;
+      this.quickView_.contentUrl = entry.toURL();
+      this.quickView_.autoplay = true;
       this.metadataModel_.get([entry], ['contentThumbnailUrl'])
           .then(function(entry, items) {
             var item = items[0];
             if (item.contentThumbnailUrl)
-              this.quickView_.contentThumbnailUrl =
-                  item.contentThumbnailUrl;
+              this.quickView_.audioArtwork = item.contentThumbnailUrl;
           }.bind(this, entry));
     }
-  } else {
-    this.quickView_.unsupported = true;
   }
+};
+
+/**
+ * Loads a thumbnail from Drive.
+ *
+ * @param {string} url Thumbnail url
+ * @param {function({status: string, data:string, width:number,
+ *     height:number})} callback
+ * @private
+ */
+QuickViewController.prototype.loadThumbnailFromDrive_ = function(
+    url, callback) {
+  ImageLoaderClient.getInstance().load(url, callback);
 };

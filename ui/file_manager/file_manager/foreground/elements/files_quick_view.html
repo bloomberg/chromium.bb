@@ -18,46 +18,57 @@
       <paper-toolbar id="toolbar">
         <div>[[filePath]]</div>
         <div id="buttons">
-           <paper-button on-tap="onOpenInNewButtonTap">
+           <paper-button on-tap="onOpenInNewButtonTap" hidden$="[[isUnsupported]]">
              <iron-icon icon="files:open-in-new"></iron-icon>
            </paper-button>
            <paper-button toggles active="{{metadataBoxActive}}">
              <iron-icon  icon="files:info-outline"></iron-icon>
            </paper-button>
-           <paper-button on-tap="onCloseButtonTap_">
-             <iron-icon icon="files:close"></iron-icon>
-           </paper-button>
         </div>
       </paper-toolbar>
-      <!-- TOOD(oka): Show default icon if image, video or audio was broken -->
-      <div>
-        <template is="dom-if" if="[[image]]">
-          <div generic-thumbnail="image">
-            <img class="content" src="[[image]]">
-          </div>
-        </template>
-        <template is="dom-if" if="[[video]]">
-          <div generic-thumbnail="video">
-            <!-- TODO(oka): Stop to autoplay if video is in Drive. -->
-            <video class="content" controls autoplay src="[[video]]" poster="[[videoPoster]]"></video>
-          </div>
-        </template>
-        <template is="dom-if" if="[[audio]]">
-          <template is="dom-if" if="[[contentThumbnailUrl]]">
-            <img class="content" src="[[contentThumbnailUrl]]">
-          </template>
-          <template is="dom-if" if="[[!contentThumbnailUrl]]">
-            <div class="content" generic-thumbnail="audio"></div>
-          </template>
-          <!-- TODO(oka): Stop to autoplay if video is in Drive. -->
-          <audio id="audio-control" autoplay controls src="[[audio]]"></audio>
-        </template>
-        <!-- TODO(oka): Support folder icon -->
-        <template is="dom-if" if="[[unsupported]]">
-          <div class="content" generic-thumbnail><div>
-        </template>
-      </div>
-      <files-metadata-box id="metadata-box" hidden="{{!metadataBoxActive}}"></file-metadata-box>
+      <div id="mainPanel">
+        <div class='close-on-click' id="contentPanel" metadata-box-active$="[[metadataBoxActive]]" on-tap="onContentPanelTap_">
+          <div class='close-on-click' id="innerContentPanel">
+            <template is="dom-if" if="[[isImage_(type)]]">
+              <div class="close-on-click" generic-thumbnail="image">
+                <img class="content" src="[[contentUrl]]">
+              </div>
+            </template>
+            <template is="dom-if" if="[[isVideo_(type)]]">
+              <template is="dom-if" if="[[contentUrl]]">
+                <video class="content" controls autoplay="[[autoplay]]" src="[[contentUrl]]" poster="[[videoPoster]]"></video>
+              </template>
+              <template is="dom-if" if=[[!contentUrl]]">
+                <div class="thumbnail" hidden="[[!videoPoster]]">
+                  <img id="video-poster" src="[[videoPoster]]">
+                </div>
+                <div hidden="[[videoPoster]]" generic-thumbnail="video"></div>
+                <div i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
+              </template>
+            </template>
+            <template is="dom-if" if="[[isAudio_(type)]]">
+              <template is="dom-if" if="[[audioArtwork]]">
+                <img id="audio-artwork" src="[[audioArtwork]]"></img>
+              </template>
+              <template is="dom-if" if="[[contentUrl]]">
+                <div>
+                  <audio autoplay="[[autoplay]]" controls src="[[contentUrl]]"></audio>
+                </div>
+              </template>
+              <template is="dom-if" if="[[!contentUrl]]">
+                <div generic-thumbnail="audio"></div>
+                <div i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
+              </template>
+            </template>
+            <!-- TODO(oka): Support folder icon -->
+            <template is="dom-if" if="[[isUnsupported_(type)]]">
+              <div generic-thumbnail></div>
+              <div i18n-content="QUICK_VIEW_NO_PREVIEW_AVAILABLE"></div>
+            </template>
+            </div> <!-- innerContentPanel -->
+          </div> <!-- contentPanel -->
+        <files-metadata-box id="metadata-box" hidden$="{{!metadataBoxActive}}"></file-metadata-box>
+      </div> <!-- mainPanel -->
     </paper-dialog>
   </template>
 </dom-module>

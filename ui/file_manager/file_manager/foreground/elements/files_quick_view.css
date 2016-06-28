@@ -2,13 +2,65 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:host {
-  display: block;
+:host > ::content > * {
+  margin: 0;
+  padding: 0;
 }
 
 paper-dialog {
-  background: black;
+  background-color: transparent;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.thumbnail {
+  flex: none;
+  max-height: 100%;
+  max-width: 100%;
+}
+
+#video-poster {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+#audio-artwork {
+  margin: 0 auto;
+  max-width: 300px;
+}
+
+#mainPanel {
+  background-color: transparent;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  width: 100%;
+}
+
+#contentPanel {
+  background-color: transparent;
+  height: 100%;
+  position: relative;
+}
+
+#contentPanel[metadata-box-active] {
+  margin-right: 200px;
+}
+
+#innerContentPanel {
+  background-color: transparent;
+  color: white;
+  display: flex;
+  flex-direction: column;
   height: 70%;
+  justify-content: center;
+  margin: auto;
+  position: relative;
+  text-align: center;
+  top: 15%;
   width: 70%;
 }
 
@@ -23,20 +75,13 @@ paper-dialog {
   top: 0;
 }
 
-#audio-control {
-  bottom: 0;
-  left: 0;
-  margin: 0;
-  position: absolute;
-  width: 100%;
-}
-
 #toolbar {
-  --paper-toolbar-background: rgba(127, 127, 127, 0.5);
+  --paper-toolbar-background: black;
   --paper-toolbar-height: 32px;
   color: white;
   margin: 0;
   z-index: 1;
+  width: 100%;
 }
 
 #buttons {
@@ -49,42 +94,49 @@ paper-button {
 }
 
 #metadata-box {
-  background: rgba(0, 0, 0, 0.5);
+  background: black;
   bottom: 0;
+  height: 100%;
   margin: 0;
   position: absolute;
   right: 0;
-  top: 32px;
-  z-index: 1;
+  width: 200px;
 }
 
-#metadata-box[hidden] {
+[hidden] {
   display: none;
 }
 
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
 [generic-thumbnail] {
-  background-image: -webkit-image-set(
+  background: -webkit-image-set(
       url(../images/files/ui/filetype_placeholder_generic.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_generic.png) 2x);
-  background-position: center 50px;
-  background-repeat: no-repeat;
+      url(../images/files/ui/2x/filetype_placeholder_generic.png) 2x)
+    center
+    no-repeat;
+  height: 48px;
 }
 
 [generic-thumbnail='audio'] {
-  background-image: -webkit-image-set(
+  background: -webkit-image-set(
       url(../images/files/ui/filetype_placeholder_audio.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_audio.png) 2x);
+      url(../images/files/ui/2x/filetype_placeholder_audio.png) 2x)
+    center
+    no-repeat;
 }
 
 [generic-thumbnail='image'] {
-  background-image: -webkit-image-set(
+  background: -webkit-image-set(
       url(../images/files/ui/filetype_placeholder_image.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_image.png) 2x);
+      url(../images/files/ui/2x/filetype_placeholder_image.png) 2x)
+    center
+    no-repeat;
 }
 
 [generic-thumbnail='video'] {
-  background-image: -webkit-image-set(
+  background: -webkit-image-set(
       url(../images/files/ui/filetype_placeholder_video.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_video.png) 2x);
+      url(../images/files/ui/2x/filetype_placeholder_video.png) 2x)
+    center
+    no-repeat;
 }
