@@ -1457,5 +1457,5 @@ crbug.com/621892 css3/filters/effect-sepia-hw.html [ Pass Failure ]
 
 crbug.com/622672 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-interrupted-scroll.html [ Pass Failure ]
 
-#TODO(bsalomon): Auto rebaseline after next Skia roll
-crbug.com/623630 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsManualRebaseline ]
+#Rebaseline now that Skia roll has occurred
+crbug.com/623630 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsRebaseline ]
