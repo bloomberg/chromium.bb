@@ -7,6 +7,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
 
+    <Space style="@style/ButtonBarTopSpacerLight" />
+
     <!-- CANCEL and SAVE buttons. -->
     <org.chromium.chrome.browser.widget.DualControlLayout
         android:id="@+id/button_bar"
