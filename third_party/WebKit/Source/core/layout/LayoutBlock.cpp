@@ -202,8 +202,15 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
             // block's list during layout. However the positioned descendant layout logic assumes
             // layout objects to obey parent-child order in the list. Remove our descendants here
             // so they will be re-inserted after us.
-            if (LayoutBlock* cb = containingBlock())
+            if (LayoutBlock* cb = containingBlock()) {
                 cb->removePositionedObjects(this, NewContainingBlock);
+                if (isOutOfFlowPositioned()) {
+                    // Insert this object into containing block's positioned descendants list
+                    // in case the parent won't layout. This is needed especially there are
+                    // descendants scheduled for overflow recalc.
+                    cb->insertPositionedObject(this);
+                }
+            }
         }
     }
 
