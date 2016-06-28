@@ -1896,7 +1896,7 @@ insertBrailleIndicators (int finish)
 	    }
 	  if (transOpcode == CTO_Contraction)
 	    {
-	      ok = 0;//1;
+	      ok = 1;
 	      checkWhat = checkBeginMultCaps;
 	      break;
 	    }
