@@ -336,6 +336,8 @@ SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
   switch (err) {
     case SpdyFramer::SPDY_NO_ERROR:
       return SPDY_ERROR_NO_ERROR;
+    case SpdyFramer::SPDY_INVALID_STREAM_ID:
+      return SPDY_ERROR_INVALID_STREAM_ID;
     case SpdyFramer::SPDY_INVALID_CONTROL_FRAME:
       return SPDY_ERROR_INVALID_CONTROL_FRAME;
     case SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE:
@@ -364,8 +366,8 @@ SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
       return SPDY_ERROR_INTERNAL_FRAMER_ERROR;
     case SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE:
       return SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE;
-    case SpdyFramer::SPDY_INVALID_STREAM_ID:
-      return SPDY_ERROR_INVALID_STREAM_ID;
+    case SpdyFramer::SPDY_OVERSIZED_PAYLOAD:
+      return SPDY_ERROR_OVERSIZED_PAYLOAD;
     default:
       NOTREACHED();
       return static_cast<SpdyProtocolErrorDetails>(-1);

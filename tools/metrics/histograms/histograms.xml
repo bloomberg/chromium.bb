@@ -89477,6 +89477,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="37" label="Invalid control frame size."/>
   <int value="38" label="Invalid stream ID."/>
   <int value="39" label="Invalid padding length."/>
+  <int value="40" label="Oversized payload."/>
 </enum>
 
 <enum name="SpdyProtocolVersion" type="int">

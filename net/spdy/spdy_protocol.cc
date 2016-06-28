@@ -728,9 +728,8 @@ size_t SpdyConstants::GetFrameMaximumSize(SpdyMajorVersion version) {
     return ((1 << 24) - 1) + 8;
   } else {
     // Max payload of 2^14 plus nine-byte frame header.
-    // TODO(mlavan): In HTTP/2 this is actually not a constant;
-    // payload size can be set using the MAX_FRAME_SIZE setting to
-    // anything between 1 << 14 and (1 << 24) - 1
+    // TODO(dahollings): Change this to the actual spec
+    // max of (1 << 24) - 1 + 9.
     return (1 << 14) + 9;
   }
 }
