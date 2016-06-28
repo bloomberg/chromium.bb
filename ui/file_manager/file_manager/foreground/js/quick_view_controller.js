@@ -69,6 +69,10 @@ function QuickViewController(
       'keydown', this.onKeyDownToOpen_.bind(this));
   quickView.addEventListener('keydown', this.onQuickViewKeyDown_.bind(this));
   quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
+
+  var toolTip = this.quickView_.$$('files-tooltip');
+  var elems = this.quickView_.$.buttons.querySelectorAll('[has-tooltip]');
+  toolTip.addTargets(elems);
 }
 
 /**

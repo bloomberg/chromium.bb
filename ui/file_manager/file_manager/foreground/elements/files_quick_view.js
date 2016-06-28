@@ -9,7 +9,6 @@ var FilesQuickView = Polymer({
     // File media type, e.g. image, video.
     type: String,
     filePath: String,
-    isUnsupported: Boolean,
     contentUrl: String,
     videoPoster: String,
     audioArtwork: String,
@@ -29,8 +28,8 @@ var FilesQuickView = Polymer({
 
   // Clears fields.
   clear: function() {
-    this.filePath = '';
     this.type = '';
+    this.filePath = '';
     this.contentUrl = '';
     this.videoPoster = '';
     this.audioArtwork = '';
