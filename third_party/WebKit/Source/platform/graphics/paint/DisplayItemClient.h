@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/PaintInvalidationReason.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
@@ -14,41 +15,7 @@
 
 namespace blink {
 
-// Holds a unique cache generation id of display items and paint controllers.
-//
-// A paint controller sets its cache generation to DisplayItemCacheGeneration::next()
-// at the end of each commitNewDisplayItems, and updates the cache generation of each
-// client with cached drawings by calling DisplayItemClient::setDisplayItemsCached().
-// A display item is treated as validly cached in a paint controller if its cache generation
-// matches the paint controller's cache generation.
-//
-// SPv1 only: If a display item is painted on multiple paint controllers, because cache
-// generations are unique, the client's cache generation matches the last paint controller
-// only. The client will be treated as invalid on other paint controllers regardless if
-// it's validly cached by these paint controllers. The situation is very rare (about 0.07%
-// clients were painted on multiple paint controllers) so the performance penalty is trivial.
-class PLATFORM_EXPORT DisplayItemCacheGeneration {
-    DISALLOW_NEW();
-public:
-    DisplayItemCacheGeneration() : m_value(kInvalidGeneration) { }
-
-    void invalidate() { m_value = kInvalidGeneration; }
-    static DisplayItemCacheGeneration next() { return DisplayItemCacheGeneration(s_nextGeneration++); }
-    bool matches(const DisplayItemCacheGeneration& other)
-    {
-        return m_value != kInvalidGeneration && other.m_value != kInvalidGeneration && m_value == other.m_value;
-    }
-
-private:
-    typedef uint32_t Generation;
-    DisplayItemCacheGeneration(Generation value) : m_value(value) { }
-
-    static const Generation kInvalidGeneration = 0;
-    static Generation s_nextGeneration;
-    Generation m_value;
-};
-
-// The interface for objects that can be associated with display items.
+// The class for objects that can be associated with display items.
 // A DisplayItemClient object should live at least longer than the document cycle
 // in which its display items are created during painting.
 // After the document cycle, a pointer/reference to DisplayItemClient should be
@@ -74,13 +41,6 @@ public:
     // PaintController commits new display items or the subsequence owner is invalidated.
     static void endShouldKeepAliveAllClients(const void* owner);
     static void endShouldKeepAliveAllClients();
-
-    // Called to clear should-keep-alive of DisplayItemClients in a subsequence if this
-    // object is a subsequence.
-#define ON_DISPLAY_ITEM_CLIENT_INVALIDATION() endShouldKeepAliveAllClients(this)
-#else
-    virtual ~DisplayItemClient() { }
-#define ON_DISPLAY_ITEM_CLIENT_INVALIDATION()
 #endif
 
     virtual String debugName() const = 0;
@@ -89,25 +49,75 @@ public:
     // offset by offsetFromLayoutObjectWithSubpixelAccumulation().
     virtual LayoutRect visualRect() const = 0;
 
-    virtual bool displayItemsAreCached(DisplayItemCacheGeneration) const = 0;
-    virtual void setDisplayItemsCached(DisplayItemCacheGeneration) const = 0;
-    virtual void setDisplayItemsUncached() const = 0;
+    void setDisplayItemsUncached(PaintInvalidationReason reason = PaintInvalidationFull) const
+    {
+        m_cacheGenerationOrInvalidationReason.invalidate(reason);
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+        // Clear should-keep-alive of DisplayItemClients in a subsequence if this
+        // object is a subsequence.
+        endShouldKeepAliveAllClients(this);
+#endif
+    }
+
+    PaintInvalidationReason getPaintInvalidationReason() const { return m_cacheGenerationOrInvalidationReason.getPaintInvalidationReason(); }
+
+private:
+    friend class PaintController;
+
+    // Holds a unique cache generation id of DisplayItemClients and PaintControllers,
+    // or PaintInvalidationReason if the DisplayItemClient or PaintController is
+    // invalidated.
+    //
+    // A paint controller sets its cache generation to DisplayItemCacheGeneration::next()
+    // at the end of each commitNewDisplayItems, and updates the cache generation of each
+    // client with cached drawings by calling DisplayItemClient::setDisplayItemsCached().
+    // A display item is treated as validly cached in a paint controller if its cache generation
+    // matches the paint controller's cache generation.
+    //
+    // SPv1 only: If a display item is painted on multiple paint controllers, because cache
+    // generations are unique, the client's cache generation matches the last paint controller
+    // only. The client will be treated as invalid on other paint controllers regardless if
+    // it's validly cached by these paint controllers. The situation is very rare (about 0.07%
+    // clients were painted on multiple paint controllers) so the performance penalty is trivial.
+    class CacheGenerationOrInvalidationReason {
+        DISALLOW_NEW();
+    public:
+        CacheGenerationOrInvalidationReason() { invalidate(); }
+
+        void invalidate(PaintInvalidationReason reason = PaintInvalidationFull) { m_value = static_cast<ValueType>(reason); }
+
+        static CacheGenerationOrInvalidationReason next()
+        {
+            // In case the value overflowed in the previous call.
+            if (s_nextGeneration < kFirstValidGeneration)
+                s_nextGeneration = kFirstValidGeneration;
+            return CacheGenerationOrInvalidationReason(s_nextGeneration++);
+        }
+
+        bool matches(const CacheGenerationOrInvalidationReason& other) const
+        {
+            return m_value >= kFirstValidGeneration && other.m_value >= kFirstValidGeneration && m_value == other.m_value;
+        }
+
+        PaintInvalidationReason getPaintInvalidationReason() const
+        {
+            return m_value < kFirstValidGeneration ? static_cast<PaintInvalidationReason>(m_value) : PaintInvalidationNone;
+        }
+
+    private:
+        typedef uint32_t ValueType;
+        explicit CacheGenerationOrInvalidationReason(ValueType value) : m_value(value) { }
+
+        static const ValueType kFirstValidGeneration = static_cast<ValueType>(PaintInvalidationReasonMax) + 1;
+        static ValueType s_nextGeneration;
+        ValueType m_value;
+    };
+
+    bool displayItemsAreCached(CacheGenerationOrInvalidationReason other) const { return m_cacheGenerationOrInvalidationReason.matches(other); }
+    void setDisplayItemsCached(CacheGenerationOrInvalidationReason cacheGeneration) const { m_cacheGenerationOrInvalidationReason = cacheGeneration; }
+
+    mutable CacheGenerationOrInvalidationReason m_cacheGenerationOrInvalidationReason;
 };
-
-#define DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION \
-    bool displayItemsAreCached(DisplayItemCacheGeneration cacheGeneration) const final { return m_cacheGeneration.matches(cacheGeneration); } \
-    void setDisplayItemsCached(DisplayItemCacheGeneration cacheGeneration) const final { m_cacheGeneration = cacheGeneration; } \
-    void setDisplayItemsUncached() const final \
-    { \
-        m_cacheGeneration.invalidate(); \
-        ON_DISPLAY_ITEM_CLIENT_INVALIDATION(); \
-    } \
-    mutable DisplayItemCacheGeneration m_cacheGeneration;
-
-#define DISPLAY_ITEM_CACHE_STATUS_UNCACHEABLE_IMPLEMENTATION \
-    bool displayItemsAreCached(DisplayItemCacheGeneration) const final { return false; } \
-    void setDisplayItemsCached(DisplayItemCacheGeneration) const final { } \
-    void setDisplayItemsUncached() const final { }
 
 inline bool operator==(const DisplayItemClient& client1, const DisplayItemClient& client2) { return &client1 == &client2; }
 inline bool operator!=(const DisplayItemClient& client1, const DisplayItemClient& client2) { return &client1 != &client2; }

@@ -43,8 +43,6 @@ public:
     LayoutRect visualRect() const final { return LayoutRect(); }
 
 private:
-    DISPLAY_ITEM_CACHE_STATUS_UNCACHEABLE_IMPLEMENTATION
-
     std::unique_ptr<PaintController> m_paintController;
     std::unique_ptr<GraphicsContext> m_context;
     FloatRect m_bounds;

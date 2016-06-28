@@ -56,13 +56,13 @@ public:
 
     InlineBox(LineLayoutItem item, LayoutPoint topLeft, LayoutUnit logicalWidth, bool firstLine, bool constructed,
         bool dirty, bool extracted, bool isHorizontal, InlineBox* next, InlineBox* prev, InlineFlowBox* parent)
-        : m_next(next)
+        : m_bitfields(firstLine, constructed, dirty, extracted, isHorizontal)
+        , m_next(next)
         , m_prev(prev)
         , m_parent(parent)
         , m_lineLayoutItem(item)
         , m_topLeft(topLeft)
         , m_logicalWidth(logicalWidth)
-        , m_bitfields(firstLine, constructed, dirty, extracted, isHorizontal)
 #if ENABLE(ASSERT)
         , m_hasBadParent(false)
 #endif
@@ -397,6 +397,8 @@ private:
 
     void setLineLayoutItemShouldDoFullPaintInvalidationIfNeeded();
 
+    InlineBoxBitfields m_bitfields;
+
     InlineBox* m_next; // The next element on the same line as us.
     InlineBox* m_prev; // The previous element on the same line as us.
 
@@ -427,10 +429,6 @@ protected:
     LayoutUnit m_logicalWidth;
 
 private:
-    InlineBoxBitfields m_bitfields;
-
-    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
-
 #if ENABLE(ASSERT)
     bool m_hasBadParent;
 #endif

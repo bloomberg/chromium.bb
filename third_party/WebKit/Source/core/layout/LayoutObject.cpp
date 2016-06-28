@@ -116,17 +116,16 @@ LayoutObject::SetLayoutNeededForbiddenScope::~SetLayoutNeededForbiddenScope()
 }
 #endif
 
-struct SameSizeAsLayoutObject {
+struct SameSizeAsLayoutObject : DisplayItemClient {
     virtual ~SameSizeAsLayoutObject() { } // Allocate vtable pointer.
+    LayoutPoint position;
+    LayoutRect rect;
     void* pointers[6];
 #if ENABLE(ASSERT)
     unsigned m_debugBitfields : 2;
 #endif
     unsigned m_bitfields;
     unsigned m_bitfields2;
-    LayoutRect rect; // Stores the previous paint invalidation rect.
-    LayoutPoint position; // Stores the previous position from the paint invalidation container.
-    DisplayItemCacheGeneration cacheGeneration;
 };
 
 static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject), "LayoutObject should stay small");
@@ -1199,7 +1198,7 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClient& client, 
     // various ways (e.g. PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
     DCHECK(!paintingLayer() || paintingLayer()->needsRepaint());
 
-    client.setDisplayItemsUncached();
+    client.setDisplayItemsUncached(reason);
 
     if (FrameView* frameView = this->frameView())
         frameView->trackObjectPaintInvalidation(client, reason);

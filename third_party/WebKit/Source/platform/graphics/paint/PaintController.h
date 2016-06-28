@@ -216,7 +216,7 @@ private:
     DisplayItemIndicesByClientMap m_newDisplayItemIndicesByClient;
 #endif
 
-    DisplayItemCacheGeneration m_currentCacheGeneration;
+    DisplayItemClient::CacheGenerationOrInvalidationReason m_currentCacheGeneration;
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     // A stack recording subsequence clients that are currently painting.

@@ -20,8 +20,6 @@ public:
     String debugName() const final { return m_name; }
     LayoutRect visualRect() const override { return m_visualRect; }
 
-    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
-
 private:
     String m_name;
     LayoutRect m_visualRect;

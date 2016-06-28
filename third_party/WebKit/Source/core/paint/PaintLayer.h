@@ -896,8 +896,6 @@ private:
     LayoutRect m_previousPaintDirtyRect;
 
     std::unique_ptr<PaintLayerRareData> m_rareData;
-
-    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
 };
 
 } // namespace blink

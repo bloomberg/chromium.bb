@@ -376,8 +376,6 @@ private:
     std::unique_ptr<PaintController> m_paintController;
 
     IntRect m_previousInterestRect;
-
-    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
 };
 
 } // namespace blink

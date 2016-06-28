@@ -11,7 +11,7 @@
 
 namespace blink {
 
-DisplayItemCacheGeneration::Generation DisplayItemCacheGeneration::s_nextGeneration = 1;
+DisplayItemClient::CacheGenerationOrInvalidationReason::ValueType DisplayItemClient::CacheGenerationOrInvalidationReason::s_nextGeneration = kFirstValidGeneration;
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
 

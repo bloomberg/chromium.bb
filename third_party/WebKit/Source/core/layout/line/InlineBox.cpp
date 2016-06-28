@@ -37,13 +37,12 @@ namespace blink {
 
 class LayoutObject;
 
-struct SameSizeAsInlineBox {
+struct SameSizeAsInlineBox : DisplayItemClient {
     virtual ~SameSizeAsInlineBox() { }
+    uint32_t bitfields;
     void* a[4];
     LayoutPoint b;
     LayoutUnit c;
-    uint32_t d : 32;
-    DisplayItemCacheGeneration cacheGeneration;
 #if ENABLE(ASSERT)
     bool f;
 #endif

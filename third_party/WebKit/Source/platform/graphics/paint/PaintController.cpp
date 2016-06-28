@@ -381,7 +381,7 @@ size_t PaintController::approximateUnsharedMemoryUsage() const
 
 void PaintController::updateCacheGeneration()
 {
-    m_currentCacheGeneration = DisplayItemCacheGeneration::next();
+    m_currentCacheGeneration = DisplayItemClient::CacheGenerationOrInvalidationReason::next();
     for (const DisplayItem& displayItem : m_currentPaintArtifact.getDisplayItemList()) {
         if (!displayItem.isCacheable())
             continue;
