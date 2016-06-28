@@ -18,6 +18,9 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
 if (is_win) {
   import("//build/config/win/visual_studio_version.gni")
 }
+if (is_mac) {
+  import("//build/config/mac/symbols.gni")
+}
 
 declare_args() {
   # Default to warnings as errors for default workflow, where we catch
@@ -1487,6 +1490,14 @@ config("symbols") {
   } else {
     if (is_mac || is_ios) {
       cflags = [ "-gdwarf-2" ]
+      if (is_mac && enable_dsyms) {
+        # If generating dSYMs, specify -fno-standalone-debug. This was
+        # originally specified for https://crbug.com/479841 because dsymutil
+        # could not handle a 4GB dSYM file. But dsymutil from Xcodes prior to
+        # version 7 also produces debug data that is incompatible with Breakpad
+        # dump_syms, so this is still required (https://crbug.com/622406).
+        cflags += [ "-fno-standalone-debug" ]
+      }
     } else {
       cflags = [ "-g2" ]
     }
