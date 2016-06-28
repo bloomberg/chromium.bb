@@ -67,9 +67,9 @@
   <div id="sub-frame-error">
     <!-- Show details when hovering over the icon, in case the details are
          hidden because they're too large. -->
-    <img class="icon" jseval="updateIconClass(this.classList, iconClass)"
-        jsvalues=".title:errorDetails">
-    <div id="sub-frame-error-details" jsvalues=".innerHTML:errorDetails"></div>
+    <div class="icon"
+        jseval="updateIconClass(this.classList, iconClass)"></div>
+    <div id="sub-frame-error-details" jsselect="summary" jsvalues=".innerHTML:msg"></div>
   </div>
 
   <div id="offline-resources">

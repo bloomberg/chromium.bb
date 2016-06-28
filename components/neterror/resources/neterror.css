@@ -268,6 +268,7 @@ html[subframe] body {
   -webkit-justify-content: center;
   left: 0;
   position: absolute;
+  text-align: center;
   top: 0;
   transition: background-color .2s ease-in-out;
   width: 100%;
@@ -350,6 +351,10 @@ html[subframe] body {
   transition: -webkit-filter 1.5s cubic-bezier(0.65, 0.05, 0.36, 1),
               background-color 1.5s cubic-bezier(0.65, 0.05, 0.36, 1);
   will-change: -webkit-filter, background-color;
+}
+
+.offline #main-message > p {
+  display: none;
 }
 
 .offline.inverted {

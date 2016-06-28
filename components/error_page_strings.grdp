@@ -225,78 +225,6 @@
   <message name="IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING" desc="Summary in the error page when DNS resolution failed and we are running a probe to figure out why. The 'abbr' tag is used to indicate that 'DNS address' is an abbreviation.">
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.
   </message>
-  <message name="IDS_ERRORPAGES_DETAILS_TIMED_OUT" desc="The error message displayed when a page takes too long to load.">
-    The operation timed out.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_CLOSED" desc="The error message displayed when the server unexpectedly closes a connection.">
-    The server unexpectedly closed the connection.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_RESET" desc="The error message displayed when a connection was reset.">
-    The connection was reset.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_REFUSED" desc="The error message displayed when we try and connect to a server, but the server doesn't let us.">
-    The server refused the connection.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_FAILED" desc="The error message displayed when we can not reach the website.">
-    The attempt to connect to the server failed.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_NETWORK_CHANGED" desc="The error message displayed when a connection is interrupted because the network changed.">
-    A network change was detected.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
-    Unable to resolve the server's DNS address.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_ICANN_NAME_COLLISION" desc="The error message displayed when a dns look up fails due to containing 127.0.53.53.">
-    This site is using a new generic top-level domain.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_ADDRESS_UNREACHABLE" desc="The error message displayed when we can't reach a server.">
-    Unable to reach the server.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_NETWORK_ACCESS_DENIED" desc="The error message displayed when we're not being allowed to access the network.">
-    Unable to access the network.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_FILE_ACCESS_DENIED" desc="The error message displayed when we're not being allowed to access a file.">
-    Unable to access the file.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED" desc="The error message displayed when the proxy server connection failed.">
-    Proxy server connection failed.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED" desc="The error message displayed when we have no Internet access.">
-    The Internet connection has been lost.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_CACHE_READ_FAILURE" desc="The error message displayed when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
-    Error reading data from cache.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_NETWORK_IO_SUSPENDED" desc="The error message displayed when a page load failed due to the computer entering sleep/suspend mode.">
-    Network IO suspended.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_FILE_NOT_FOUND" desc="The error message displayed when a local file can not be found.">
-    The file or directory could not be found.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_TOO_MANY_REDIRECTS" desc="The error message displayed when there are too many redirects.">
-    There were too many redirects.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_EMPTY_RESPONSE" desc="The error message displayed when no data is received.">
-    The server closed the connection without sending any data.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH" desc="The error message displayed when we received multiple 'Content-Length' header fields in an http response.">
-    Multiple distinct Content-Length headers received.  This is disallowed
-    to protect against HTTP response splitting attacks.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION" desc="The error message displayed when we received multiple 'Content-Disposition' header fields in an http response.">
-    Multiple distinct Content-Disposition headers received.  This is disallowed to
-    protect against HTTP response splitting attacks.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_LOCATION" desc="The error message displayed when we received multiple 'Location' header fields in an http response.">
-    Multiple distinct Location headers received.  This is disallowed to protect
-    against HTTP response splitting attacks.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_DNS_PROBE_RUNNING" desc="The error message displayed when we are waiting to see whether we will run a DNS probe.">
-    Waiting for DNS probe.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
-    Unknown error.
-  </message>
 
   <message name="IDS_ERRORPAGES_HEADING_ACCESS_DENIED" desc="Heading in the error page when a server returns a 403.  Also suitable for similar error codes.">
     Access to <ph name="HOST_NAME">&lt;span jscontent="hostName"&gt;&lt;/span&gt;<ex>www.whatever.com</ex></ph> was denied
@@ -307,107 +235,53 @@
   <message name="IDS_ERRORPAGES_SUMMARY_FORBIDDEN" desc="Summary in the error page when a server returns a 403.">
     You don't have authorization to view this page.
   </message>
-  <message name="IDS_ERRORPAGES_DETAILS_FORBIDDEN" desc="Details in the error page when a server returns a 403.">
-    The server refused to fulfill the request.
-  </message>
 
   <message name="IDS_ERRORPAGES_SUMMARY_GONE" desc="Summary of the error page when the server returns a 410.">
     It may have been moved or deleted.
   </message>
-  <message name="IDS_ERRORPAGES_DETAILS_GONE" desc="Details in the error page when a server returns a 410.">
-    The requested resource no longer exists, and there is no forwarding address.  This is expected to be a permanent condition.
-  </message>
   <message name="IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING" desc="Heading in the error page for HTTP 5xx errors, which are considered to be server side errors. Also used for bad responses.">
     The <ph name="HOST_NAME">&lt;span jscontent="hostName"&gt;&lt;/span&gt;<ex>www.whatever.com</ex></ph> page isn’t working
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_INTERNAL_SERVER_ERROR" desc="The error message displayed when the server returns a 500.">
-    An unexpected condition was encountered while the server was attempting to fulfill the request.
   </message>
 
   <message name="IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE_REQUEST" desc="Summary in the error page when the server returns a 501 or 505.">
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> is currently unable to handle this request.
   </message>
-  <message name="IDS_ERRORPAGES_DETAILS_NOT_IMPLEMENTED" desc="The error message displayed when the server returns a 501.">
-    The server does not support the functionality required to fulfill the request.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_BAD_GATEWAY" desc="The error message displayed when the server returns a 502.">
-    The gateway or proxy server received an invalid response from an upstream server.
-  </message>
 
   <message name="IDS_ERRORPAGES_SUMMARY_SERVICE_UNAVAILABLE" desc="Summary in the error page when the server returns a 503.">
     The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> is currently unavailable.  It may be overloaded or down for maintenance.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_SERVICE_UNAVAILABLE" desc="The error message displayed when the server returns a 503.">
-    The server is currently unable to handle the request.  This code indicates this is a temporary condition, and the server will be up again after a delay.
   </message>
 
   <message name="IDS_ERRORPAGES_SUMMARY_GATEWAY_TIMEOUT" desc="Summary in the error page when the server returns a 504.">
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> took too long to respond.
   </message>
-  <message name="IDS_ERRORPAGES_DETAILS_GATEWAY_TIMEOUT" desc="The error message displayed when the server returns a 504.">
-    The gateway or proxy server timed out while waiting for a response from an upstream server.
-  </message>
 
   <message name="IDS_ERRORPAGES_SUMMARY_SSL_SECURITY_ERROR" desc="Summary in the error page for SSL security errors.">
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> doesn't adhere to security standards.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR" desc="The error message displayed for SSL protocol errors.">
-    SSL protocol error.
-  </message>
-
-  <message name="IDS_ERRORPAGES_DETAILS_SSL_FALLBACK_BEYOND_MINIMUM_VERSION" desc="The error message displayed for SSL fallback errors.">
-    A TLS 1.0 fallback was able to handshake with the server, but we no longer accept TLS 1.0 fallbacks. The server needs to be updated to correctly implement version negotiation and preferably support TLS 1.2.
   </message>
 
   <message name="IDS_ERRORPAGES_SUMMARY_SSL_VERSION_OR_CIPHER_MISMATCH" desc="Summary in the error page for SSL cipher and version errors.">
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> uses an unsupported protocol.
   </message>
-  <message name="IDS_ERRORPAGES_DETAILS_SSL_VERSION_OR_CIPHER_MISMATCH" desc="The error message displayed for SSL cipher and version errors.">
-    The client and server don't support a common SSL protocol version or cipher suite.
-  </message>
 
   <message name="IDS_ERRORPAGES_SUMMARY_PINNING_FAILURE_DETAILS" desc="Summary of the error page for a certificate which doesn't match the built-in pins for that name">
     The server certificate at <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> appears to be a forgery.
   </message>
-
   <message name="IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION" desc="Heading in the error page for insecure connections.">
     This site can’t provide a secure connection
   </message>
   <message name="IDS_ERRORPAGES_SUMMARY_BAD_SSL_CLIENT_AUTH_CERT" desc="Summary in the error page for SSL client certificate authentication failure.">
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> didn’t accept your login certificate, or your login certificate may have expired.
   </message>
-  <message name="IDS_ERRORPAGES_DETAILS_BAD_SSL_CLIENT_AUTH_CERT" desc="The error message for SSL client certificate authentication failure.">
-    Bad SSL client authentication certificate.
-  </message>
-
-  <message name="IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid DDoS.">
-    Visits to this URL being made by an extension have been temporarily restricted.
-  </message>
-
   <message name="IDS_ERRORPAGES_SUMMARY_TEMPORARY_BACKOFF" desc="Summary in the error page when we temporarily stop sending requests to a server because of a Backoff header received earlier.">
     The server hosting the webpage might be overloaded or under maintainance.
     In order to avoid generating too much traffic and making the situation worse,
     requests to this URL has been temporarily disallowed.
   </message>
-  <message name="IDS_ERRORPAGES_DETAILS_TEMPORARY_BACKOFF" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid overloading it.">
-    Requests to this URL have been temporarily throttled.
-  </message>
-
   <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_EXTENSION" desc="Summary in the error page when an extension blocks a request.">
     Requests to the server have been blocked by an extension.
   </message>
   <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_ADMINISTRATOR" desc="Summary in the error page when an administrator policy blocks a request.">
     The person who set up this computer has chosen to block this site.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_BLOCKED_BY_EXTENSION" desc="The error message displayed when an extension blocks a request.">
-    Requests to the server have been blocked by an extension.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_BLOCKED_BY_ADMINISTRATOR" desc="The error message displayed when a policy blocks a request.">
-    Requests to the server have been blocked by a policy.
-  </message>
-  <message name="IDS_ERRORPAGES_DETAILS_BLOCKED_ENROLLMENT_CHECK_PENDING" desc="The error message displayed when the user tries to browse before the forced enrollment check has finished.">
-    Browsing the Internet is disabled until the enterprise enrollment verification check has finished.
-    You can still use the diagnostic tool presented here to troubleshoot issues with your connectivity.
   </message>
 
   <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">
