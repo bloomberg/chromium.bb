@@ -434,6 +434,8 @@ void DOMStorageContextImpl::PurgeMemory(PurgeOption purge_option) {
 
   DOMStorageNamespace::UsageStatistics initial_stats =
       GetTotalNamespaceStatistics(namespaces_);
+  if (!initial_stats.total_area_count)
+    return;
 
   // Track the total localStorage cache size.
   UMA_HISTOGRAM_CUSTOM_COUNTS("LocalStorage.BrowserLocalStorageCacheSizeInKB",
@@ -445,9 +447,6 @@ void DOMStorageContextImpl::PurgeMemory(PurgeOption purge_option) {
     // Purging is done based on the cache sizes without including the database
     // size since it can be expensive trying to estimate the sqlite usage for
     // all databases. For low end devices purge all inactive areas.
-    if (!initial_stats.inactive_area_count)
-      return;
-
     if (initial_stats.total_cache_size > kMaxCacheSize)
       purge_reason = "SizeLimitExceeded";
     else if (initial_stats.total_area_count > kMaxStorageAreaCount)
@@ -458,19 +457,22 @@ void DOMStorageContextImpl::PurgeMemory(PurgeOption purge_option) {
       return;
 
     purge_option = PURGE_UNOPENED;
-  }
-
-  bool aggressively = purge_option == PURGE_AGGRESSIVE;
-  for (const auto& it : namespaces_)
-    it.second->PurgeMemory(aggressively);
-
-  // Track the size of cache purged.
-  if (!purge_reason) {
+  } else {
     if (purge_option == PURGE_AGGRESSIVE)
       purge_reason = "AggressivePurgeTriggered";
     else
       purge_reason = "ModeratePurgeTriggered";
   }
+
+  // Return if no areas can be purged with the given option.
+  bool aggressively = purge_option == PURGE_AGGRESSIVE;
+  if (!aggressively && !initial_stats.inactive_area_count) {
+    return;
+  }
+  for (const auto& it : namespaces_)
+    it.second->PurgeMemory(aggressively);
+
+  // Track the size of cache purged.
   size_t purged_size_kib =
       (initial_stats.total_cache_size -
        GetTotalNamespaceStatistics(namespaces_).total_cache_size) /
