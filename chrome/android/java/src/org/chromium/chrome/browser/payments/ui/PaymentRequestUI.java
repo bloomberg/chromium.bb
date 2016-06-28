@@ -171,6 +171,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         void onPaymentRequestEditorValidationError();
 
         /**
+         * Called when an editor field text has changed.
+         */
+        void onPaymentRequestEditorTextUpdate();
+
+        /**
          * Called when editor is dismissed.
          */
         void onPaymentRequestEditorDismissed();
@@ -582,13 +587,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
     }
 
-    /**
-     * Displays the editor user interface for the given model.
-     *
-     * @param editorModel The description of the editor user interface to display.
-     */
-    public void showEditor(final EditorModel editorModel) {
-        mEditorView.show(editorModel);
+    /** @return The editor user interface. */
+    public EditorView getEditorView() {
+        return mEditorView;
     }
 
     /**
@@ -1013,11 +1014,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     @VisibleForTesting
     public Dialog getDialogForTest() {
         return mDialog;
-    }
-
-    @VisibleForTesting
-    public Dialog getEditorViewForTest() {
-        return mEditorView;
     }
 
     @VisibleForTesting

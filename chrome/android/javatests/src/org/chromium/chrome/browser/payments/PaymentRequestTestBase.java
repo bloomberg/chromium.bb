@@ -46,6 +46,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyToUnmask;
     protected final CallbackHelper mReadyToEdit;
     protected final CallbackHelper mEditorValidationError;
+    protected final CallbackHelper mEditorTextUpdate;
     protected final CallbackHelper mEditorDismissed;
     protected final CallbackHelper mDismissed;
     protected final CallbackHelper mUnableToAbort;
@@ -65,6 +66,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         mReadyToUnmask = new PaymentsCallbackHelper<>();
         mReadyToEdit = new CallbackHelper();
         mEditorValidationError = new CallbackHelper();
+        mEditorTextUpdate = new CallbackHelper();
         mEditorDismissed = new CallbackHelper();
         mDismissed = new CallbackHelper();
         mUnableToAbort = new CallbackHelper();
@@ -140,7 +142,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getEditorViewForTest().findViewById(resourceId).performClick();
+                mUI.getEditorView().findViewById(resourceId).performClick();
             }
         });
         helper.waitForCallback(callCount);
@@ -171,14 +173,16 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     }
 
     /** Directly sets the text in the editor UI. */
-    protected void setTextInEditor(final int resourceId, final String input)
-            throws InterruptedException, TimeoutException {
+    protected void setTextInEditorAndWait(final int resourceId, final String input,
+            CallbackHelper helper) throws InterruptedException, TimeoutException {
+        int callCount = helper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ((EditText) mUI.getEditorViewForTest().findViewById(resourceId)).setText(input);
+                ((EditText) mUI.getEditorView().findViewById(resourceId)).setText(input);
             }
         });
+        helper.waitForCallback(callCount);
     }
 
     /** Directly sets the text in the card unmask UI. */
@@ -241,6 +245,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     public void onPaymentRequestEditorValidationError() {
         ThreadUtils.assertOnUiThread();
         mEditorValidationError.notifyCalled();
+    }
+
+    @Override
+    public void onPaymentRequestEditorTextUpdate() {
+        ThreadUtils.assertOnUiThread();
+        mEditorTextUpdate.notifyCalled();
     }
 
     @Override
