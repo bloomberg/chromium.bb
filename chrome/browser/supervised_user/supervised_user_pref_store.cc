@@ -32,6 +32,10 @@ struct SupervisedUserSettingsPrefMappingEntry {
 
 SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
   {
+    supervised_users::kApprovedExtensions,
+    prefs::kSupervisedUserApprovedExtensions,
+  },
+  {
     supervised_users::kContentPackDefaultFilteringBehavior,
     prefs::kDefaultSupervisedUserFilteringBehavior,
   },

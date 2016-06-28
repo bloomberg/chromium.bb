@@ -418,6 +418,7 @@ if (!is_android) {
       "//net:test_support",
       "//skia",
       "//sync",
+      "//sync:test_support_sync_api",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/hunspell",

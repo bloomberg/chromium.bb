@@ -44,6 +44,7 @@ const char kStateKey[] = "state";
 
 // Request values.
 const char kEventTypeURLRequest[] = "PERMISSION_CHROME_URL";
+const char kEventTypeInstallRequest[] = "PERMISSION_CHROME_CWS_ITEM_INSTALL";
 const char kEventTypeUpdateRequest[] = "PERMISSION_CHROME_CWS_ITEM_UPDATE";
 const char kState[] = "PENDING";
 
@@ -114,6 +115,12 @@ void PermissionRequestCreatorApiary::CreateURLAccessRequest(
     const GURL& url_requested,
     const SuccessCallback& callback) {
   CreateRequest(kEventTypeURLRequest, url_requested.spec(), callback);
+}
+
+void PermissionRequestCreatorApiary::CreateExtensionInstallRequest(
+    const std::string& id,
+    const SuccessCallback& callback) {
+  CreateRequest(kEventTypeInstallRequest, id, callback);
 }
 
 void PermissionRequestCreatorApiary::CreateExtensionUpdateRequest(

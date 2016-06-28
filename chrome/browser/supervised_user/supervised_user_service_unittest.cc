@@ -23,6 +23,7 @@
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service.h"
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
+#include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -47,6 +48,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
+
+using extensions::Extension;
 #endif
 
 using content::MessageLoopRunner;
@@ -260,6 +263,11 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
     callbacks_.push_back(callback);
   }
 
+  void CreateExtensionInstallRequest(const std::string& extension_id,
+                                     const SuccessCallback& callback) override {
+    FAIL();
+  }
+
   void CreateExtensionUpdateRequest(const std::string& id,
                                     const SuccessCallback& callback) override {
     FAIL();
@@ -437,14 +445,30 @@ class SupervisedUserServiceExtensionTest
  public:
   SupervisedUserServiceExtensionTest()
       : SupervisedUserServiceExtensionTestBase(true) {}
+
+ protected:
+  void InitSupervisedUserInitiatedExtensionInstallFeature(bool enabled) {
+    base::FeatureList::ClearInstanceForTesting();
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    if (enabled) {
+      feature_list->InitializeFromCommandLine(
+          "SupervisedUserInitiatedExtensionInstall", std::string());
+    }
+    base::FeatureList::SetInstance(std::move(feature_list));
+  }
 };
 
-TEST_F(SupervisedUserServiceExtensionTest, ExtensionManagementPolicyProvider) {
+TEST_F(SupervisedUserServiceExtensionTest,
+       ExtensionManagementPolicyProviderWithoutSUInitiatedInstalls) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   ASSERT_TRUE(profile_->IsSupervised());
 
-  // Check that a supervised user can install and uninstall a theme.
+  // Disable supervised user initiated installs.
+  InitSupervisedUserInitiatedExtensionInstallFeature(false);
+
+  // Check that a supervised user can install and uninstall a theme even if
+  // they are not allowed to install extensions.
   {
     scoped_refptr<extensions::Extension> theme = MakeThemeExtension();
 
@@ -483,6 +507,75 @@ TEST_F(SupervisedUserServiceExtensionTest, ExtensionManagementPolicyProvider) {
         supervised_user_service->MustRemainInstalled(extension.get(),
                                                      &error_2));
     EXPECT_FALSE(error_2.empty());
+  }
+
+#ifndef NDEBUG
+  EXPECT_FALSE(supervised_user_service->GetDebugPolicyProviderName().empty());
+#endif
+}
+
+TEST_F(SupervisedUserServiceExtensionTest,
+       ExtensionManagementPolicyProviderWithSUInitiatedInstalls) {
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile_.get());
+  ASSERT_TRUE(profile_->IsSupervised());
+
+  // Enable supervised user initiated installs.
+  InitSupervisedUserInitiatedExtensionInstallFeature(true);
+  // The supervised user should be able to load and uninstall the extensions
+  // they install.
+  {
+    scoped_refptr<extensions::Extension> extension = MakeExtension(false);
+
+    base::string16 error;
+    EXPECT_TRUE(supervised_user_service->UserMayLoad(extension.get(), &error));
+    EXPECT_TRUE(error.empty());
+
+    base::string16 error_2;
+    EXPECT_FALSE(supervised_user_service->MustRemainInstalled(extension.get(),
+                                                              &error_2));
+    EXPECT_TRUE(error_2.empty());
+
+    base::string16 error_3;
+    Extension::DisableReason reason = Extension::DISABLE_NONE;
+    EXPECT_TRUE(supervised_user_service->MustRemainDisabled(extension.get(),
+                                                            &reason,
+                                                            &error_3));
+    EXPECT_EQ(Extension::DISABLE_CUSTODIAN_APPROVAL_REQUIRED, reason);
+    EXPECT_FALSE(error_3.empty());
+
+    base::string16 error_4;
+    EXPECT_TRUE(supervised_user_service->UserMayModifySettings(extension.get(),
+                                                               &error_4));
+    EXPECT_TRUE(error_4.empty());
+  }
+
+  {
+    // A custodian-installed extension may be loaded, but not uninstalled.
+    scoped_refptr<extensions::Extension> extension = MakeExtension(true);
+
+    base::string16 error_1;
+    EXPECT_TRUE(
+        supervised_user_service->UserMayLoad(extension.get(), &error_1));
+    EXPECT_TRUE(error_1.empty());
+
+    base::string16 error_2;
+    EXPECT_TRUE(supervised_user_service->MustRemainInstalled(extension.get(),
+                                                             &error_2));
+    EXPECT_FALSE(error_2.empty());
+
+    base::string16 error_3;
+    Extension::DisableReason reason = Extension::DISABLE_NONE;
+    EXPECT_FALSE(supervised_user_service->MustRemainDisabled(extension.get(),
+                                                             &reason,
+                                                             &error_3));
+    EXPECT_EQ(Extension::DISABLE_NONE, reason);
+    EXPECT_TRUE(error_3.empty());
+
+    base::string16 error_4;
+    EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension.get(),
+                                                             &error_4));
+    EXPECT_FALSE(error_4.empty());
   }
 
 #ifndef NDEBUG

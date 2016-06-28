@@ -35,6 +35,7 @@ extern const char kProfileIconVersion[];
 extern const char kRestoreOnStartup[];
 extern const char kSessionExitedCleanly[];
 extern const char kSessionExitType[];
+extern const char kSupervisedUserApprovedExtensions[];
 extern const char kSupervisedUserCustodianEmail[];
 extern const char kSupervisedUserCustodianName[];
 extern const char kSupervisedUserCustodianProfileImageURL[];

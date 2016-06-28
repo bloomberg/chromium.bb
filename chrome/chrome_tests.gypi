@@ -1680,6 +1680,7 @@
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
+	'../sync/sync.gyp:test_support_sync_api',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/hunspell/hunspell.gyp:hunspell',

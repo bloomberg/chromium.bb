@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +28,8 @@
 #include "chrome/browser/supervised_user/experimental/supervised_user_filtering_switches.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_features.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
@@ -70,6 +73,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #endif
 
@@ -81,6 +85,13 @@
 using base::DictionaryValue;
 using base::UserMetricsAction;
 using content::BrowserThread;
+
+#if defined(ENABLE_EXTENSIONS)
+using extensions::Extension;
+using extensions::ExtensionPrefs;
+using extensions::ExtensionRegistry;
+using extensions::ExtensionSystem;
+#endif
 
 #if defined(ENABLE_EXTENSIONS)
 using extensions::ExtensionPrefs;
@@ -112,11 +123,23 @@ void CreateURLAccessRequest(
   creator->CreateURLAccessRequest(url, callback);
 }
 
+void CreateExtensionInstallRequest(
+    const std::string& id,
+    PermissionRequestCreator* creator,
+    const SupervisedUserService::SuccessCallback& callback) {
+  creator->CreateExtensionInstallRequest(id, callback);
+}
+
 void CreateExtensionUpdateRequest(
     const std::string& id,
     PermissionRequestCreator* creator,
     const SupervisedUserService::SuccessCallback& callback) {
   creator->CreateExtensionUpdateRequest(id, callback);
+}
+
+// Default callback for AddExtensionInstallRequest.
+void ExtensionInstallRequestSent(const std::string& id, bool success) {
+  VLOG_IF(1, !success) << "Failed sending install request for " << id;
 }
 
 // Default callback for AddExtensionUpdateRequest.
@@ -140,6 +163,7 @@ SupervisedUserService::~SupervisedUserService() {
 // static
 void SupervisedUserService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kSupervisedUserApprovedExtensions);
   registry->RegisterDictionaryPref(prefs::kSupervisedUserManualHosts);
   registry->RegisterDictionaryPref(prefs::kSupervisedUserManualURLs);
   registry->RegisterIntegerPref(prefs::kDefaultSupervisedUserFilteringBehavior,
@@ -230,11 +254,28 @@ void SupervisedUserService::ReportURL(const GURL& url,
     callback.Run(false);
 }
 
+void SupervisedUserService::AddExtensionInstallRequest(
+    const std::string& extension_id,
+    const base::Version& version,
+    const SuccessCallback& callback) {
+  std::string id = GetExtensionRequestId(extension_id, version);
+  AddPermissionRequestInternal(base::Bind(CreateExtensionInstallRequest, id),
+                               callback, 0);
+}
+
+void SupervisedUserService::AddExtensionInstallRequest(
+    const std::string& extension_id,
+    const base::Version& version) {
+  std::string id = GetExtensionRequestId(extension_id, version);
+  AddPermissionRequestInternal(base::Bind(CreateExtensionInstallRequest, id),
+                               base::Bind(ExtensionInstallRequestSent, id), 0);
+}
+
 void SupervisedUserService::AddExtensionUpdateRequest(
     const std::string& extension_id,
     const base::Version& version,
     const SuccessCallback& callback) {
-  std::string id = GetExtensionUpdateRequestId(extension_id, version);
+  std::string id = GetExtensionRequestId(extension_id, version);
   AddPermissionRequestInternal(
       base::Bind(CreateExtensionUpdateRequest, id), callback, 0);
 }
@@ -242,13 +283,13 @@ void SupervisedUserService::AddExtensionUpdateRequest(
 void SupervisedUserService::AddExtensionUpdateRequest(
     const std::string& extension_id,
     const base::Version& version) {
-  std::string id = GetExtensionUpdateRequestId(extension_id, version);
+  std::string id = GetExtensionRequestId(extension_id, version);
   AddExtensionUpdateRequest(extension_id, version,
                             base::Bind(ExtensionUpdateRequestSent, id));
 }
 
 // static
-std::string SupervisedUserService::GetExtensionUpdateRequestId(
+std::string SupervisedUserService::GetExtensionRequestId(
     const std::string& extension_id,
     const base::Version& version) {
   return base::StringPrintf("%s:%s", extension_id.c_str(),
@@ -488,8 +529,14 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
       did_init_(false),
       did_shutdown_(false),
       blacklist_state_(BlacklistLoadState::NOT_LOADED),
+#if defined(ENABLE_EXTENSIONS)
+      registry_observer_(this),
+#endif
       weak_ptr_factory_(this) {
   url_filter_context_.ui_url_filter()->AddObserver(this);
+#if defined(ENABLE_EXTENSIONS)
+  registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
+#endif
 }
 
 void SupervisedUserService::SetActive(bool active) {
@@ -554,6 +601,12 @@ void SupervisedUserService::SetActive(bool active) {
         prefs::kDefaultSupervisedUserFilteringBehavior,
         base::Bind(&SupervisedUserService::OnDefaultFilteringBehaviorChanged,
             base::Unretained(this)));
+#if defined(ENABLE_EXTENSIONS)
+    pref_change_registrar_.Add(
+        prefs::kSupervisedUserApprovedExtensions,
+        base::Bind(&SupervisedUserService::UpdateApprovedExtensions,
+                   base::Unretained(this)));
+#endif
     pref_change_registrar_.Add(prefs::kSupervisedUserSafeSites,
         base::Bind(&SupervisedUserService::OnSafeSitesSettingChanged,
                    base::Unretained(this)));
@@ -576,6 +629,10 @@ void SupervisedUserService::SetActive(bool active) {
     UpdateManualHosts();
     UpdateManualURLs();
 
+#if defined(ENABLE_EXTENSIONS)
+    UpdateApprovedExtensions();
+#endif
+
 #if !defined(OS_ANDROID)
     // TODO(bauerb): Get rid of the platform-specific #ifdef here.
     // http://crbug.com/313377
@@ -587,6 +644,9 @@ void SupervisedUserService::SetActive(bool active) {
 
     pref_change_registrar_.Remove(
         prefs::kDefaultSupervisedUserFilteringBehavior);
+#if defined(ENABLE_EXTENSIONS)
+    pref_change_registrar_.Remove(prefs::kSupervisedUserApprovedExtensions);
+#endif
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualHosts);
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualURLs);
     for (const char* pref : kCustodianInfoPrefs) {
@@ -924,8 +984,8 @@ void SupervisedUserService::Shutdown() {
 
 #if defined(ENABLE_EXTENSIONS)
 SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
-    const extensions::Extension* extension) const {
-  bool was_installed_by_default = extension->was_installed_by_default();
+    const Extension& extension) const {
+  bool was_installed_by_default = extension.was_installed_by_default();
 #if defined(OS_CHROMEOS)
   // On Chrome OS all external sources are controlled by us so it means that
   // they are "default". Method was_installed_by_default returns false because
@@ -934,25 +994,35 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
   // TODO(dpolukhin): remove this Chrome OS specific code as soon as creation
   // flags are not ignored.
   was_installed_by_default =
-      extensions::Manifest::IsExternalLocation(extension->location());
+      extensions::Manifest::IsExternalLocation(extension.location());
 #endif
   // Note: Component extensions are protected from modification/uninstallation
   // anyway, so there's no need to enforce them again for supervised users.
   // Also, leave policy-installed extensions alone - they have their own
   // management; in particular we don't want to override the force-install list.
-  if (extensions::Manifest::IsComponentLocation(extension->location()) ||
-      extensions::Manifest::IsPolicyLocation(extension->location()) ||
-      extension->is_theme() ||
-      extension->from_bookmark() ||
-      extension->is_shared_module() ||
-      was_installed_by_default) {
-    return ExtensionState::EXTENSION_ALLOWED;
+  if (extensions::Manifest::IsComponentLocation(extension.location()) ||
+      extensions::Manifest::IsPolicyLocation(extension.location()) ||
+      extension.is_theme() || extension.from_bookmark() ||
+      extension.is_shared_module() || was_installed_by_default) {
+    return ExtensionState::ALLOWED;
   }
 
-  if (extensions::util::WasInstalledByCustodian(extension->id(), profile_))
-    return ExtensionState::EXTENSION_FORCED;
+  if (extensions::util::WasInstalledByCustodian(extension.id(), profile_))
+    return ExtensionState::FORCED;
 
-  return ExtensionState::EXTENSION_BLOCKED;
+  if (!base::FeatureList::IsEnabled(
+          supervised_users::kSupervisedUserInitiatedExtensionInstall)) {
+    return ExtensionState::BLOCKED;
+  }
+
+  auto extension_it = approved_extensions_map_.find(extension.id());
+  // If the installed version is approved, then the extension is allowed,
+  // otherwise, it requires approval.
+  if (extension_it != approved_extensions_map_.end() &&
+      extension_it->second == *extension.version()) {
+    return ExtensionState::ALLOWED;
+  }
+  return ExtensionState::REQUIRE_APPROVAL;
 }
 
 std::string SupervisedUserService::GetDebugPolicyProviderName() const {
@@ -965,22 +1035,26 @@ std::string SupervisedUserService::GetDebugPolicyProviderName() const {
 #endif
 }
 
-bool SupervisedUserService::UserMayLoad(const extensions::Extension* extension,
+bool SupervisedUserService::UserMayLoad(const Extension* extension,
                                         base::string16* error) const {
   DCHECK(ProfileIsSupervised());
-  ExtensionState result = GetExtensionState(extension);
-  bool may_load = (result != EXTENSION_BLOCKED);
+  ExtensionState result = GetExtensionState(*extension);
+  bool may_load = result != ExtensionState::BLOCKED;
   if (!may_load && error)
     *error = GetExtensionsLockedMessage();
   return may_load;
 }
 
-bool SupervisedUserService::UserMayModifySettings(
-    const extensions::Extension* extension,
-    base::string16* error) const {
+bool SupervisedUserService::UserMayModifySettings(const Extension* extension,
+                                                  base::string16* error) const {
   DCHECK(ProfileIsSupervised());
-  ExtensionState result = GetExtensionState(extension);
-  bool may_modify = (result == EXTENSION_ALLOWED);
+  ExtensionState result = GetExtensionState(*extension);
+  // While the following check allows the supervised user to modify the settings
+  // and enable or disable the extension, MustRemainDisabled properly takes care
+  // of keeping an extension disabled when required.
+  // For custodian-installed extensions, the state is always FORCED, even if
+  // it's waiting for an update approval.
+  bool may_modify = result != ExtensionState::FORCED;
   if (!may_modify && error)
     *error = GetExtensionsLockedMessage();
   return may_modify;
@@ -989,15 +1063,157 @@ bool SupervisedUserService::UserMayModifySettings(
 // Note: Having MustRemainInstalled always say "true" for custodian-installed
 // extensions does NOT prevent remote uninstalls (which is a bit unexpected, but
 // exactly what we want).
-bool SupervisedUserService::MustRemainInstalled(
-    const extensions::Extension* extension,
-    base::string16* error) const {
+bool SupervisedUserService::MustRemainInstalled(const Extension* extension,
+                                                base::string16* error) const {
   DCHECK(ProfileIsSupervised());
-  ExtensionState result = GetExtensionState(extension);
-  bool may_not_uninstall = (result == EXTENSION_FORCED);
+  ExtensionState result = GetExtensionState(*extension);
+  bool may_not_uninstall = result == ExtensionState::FORCED;
   if (may_not_uninstall && error)
     *error = GetExtensionsLockedMessage();
   return may_not_uninstall;
+}
+
+bool SupervisedUserService::MustRemainDisabled(const Extension* extension,
+                                               Extension::DisableReason* reason,
+                                               base::string16* error) const {
+  DCHECK(ProfileIsSupervised());
+  ExtensionState state = GetExtensionState(*extension);
+  // Only extensions that require approval should be disabled.
+  // Blocked extensions should be not loaded at all, and are taken care of
+  // at UserMayLoad.
+  bool must_remain_disabled = state == ExtensionState::REQUIRE_APPROVAL;
+
+  if (must_remain_disabled) {
+    if (error)
+      *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER);
+    // If the extension must remain disabled due to permission increase,
+    // then the update request has been already sent at update time.
+    // We do nothing and we don't add an extra disable reason.
+    ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+    if (extension_prefs->HasDisableReason(
+            extension->id(), Extension::DISABLE_PERMISSIONS_INCREASE)) {
+      if (reason)
+        *reason = Extension::DISABLE_PERMISSIONS_INCREASE;
+      return true;
+    }
+    if (reason)
+      *reason = Extension::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
+    if (base::FeatureList::IsEnabled(
+            supervised_users::kSupervisedUserInitiatedExtensionInstall)) {
+      // If the Extension isn't pending a custodian approval already, send
+      // an approval request.
+      if (!extension_prefs->HasDisableReason(
+              extension->id(),
+              Extension::DISABLE_CUSTODIAN_APPROVAL_REQUIRED)) {
+        // MustRemainDisabled is a const method and hence cannot call
+        // AddExtensionInstallRequest directly.
+        SupervisedUserService* supervised_user_service =
+            SupervisedUserServiceFactory::GetForProfile(profile_);
+        supervised_user_service->AddExtensionInstallRequest(
+            extension->id(), *extension->version());
+      }
+    }
+  }
+  return must_remain_disabled;
+}
+
+void SupervisedUserService::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    bool is_update) {
+  // This callback method is responsible for updating extension state and
+  // approved_extensions_map_ upon extension updates.
+  if (!is_update)
+    return;
+
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+  const std::string& id = extension->id();
+  const base::Version& version = *extension->version();
+
+  // If an already approved extension is updated without requiring
+  // new permissions, we update the approved_version.
+  if (!extension_prefs->HasDisableReason(
+          id, Extension::DISABLE_PERMISSIONS_INCREASE) &&
+      approved_extensions_map_.count(id) > 0 &&
+      approved_extensions_map_[id] < version) {
+    approved_extensions_map_[id] = version;
+
+    std::string key = SupervisedUserSettingsService::MakeSplitSettingKey(
+        supervised_users::kApprovedExtensions, id);
+    std::unique_ptr<base::Value> version_value(
+        new base::StringValue(version.GetString()));
+    GetSettingsService()->UpdateSetting(key, std::move(version_value));
+  }
+  // Upon extension update, the approved version may (or may not) match the
+  // installed one. Therefore, a change in extension state might be required.
+  ChangeExtensionStateIfNecessary(id);
+}
+
+void SupervisedUserService::UpdateApprovedExtensions() {
+  const base::DictionaryValue* dict = profile_->GetPrefs()->GetDictionary(
+      prefs::kSupervisedUserApprovedExtensions);
+  // Keep track of currently approved extensions. We may need to disable them if
+  // they are not in the approved map anymore.
+  std::set<std::string> extensions_to_be_checked;
+  for (const auto& extension : approved_extensions_map_)
+    extensions_to_be_checked.insert(extension.first);
+
+  approved_extensions_map_.clear();
+
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    std::string version_str;
+    bool result = it.value().GetAsString(&version_str);
+    DCHECK(result);
+    base::Version version(version_str);
+    if (version.IsValid()) {
+      approved_extensions_map_[it.key()] = version;
+      extensions_to_be_checked.insert(it.key());
+    } else {
+      LOG(WARNING) << "Invalid version number " << version_str;
+    }
+  }
+
+  for (const auto& extension_id : extensions_to_be_checked) {
+    ChangeExtensionStateIfNecessary(extension_id);
+  }
+}
+
+void SupervisedUserService::ChangeExtensionStateIfNecessary(
+    const std::string& extension_id) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  const Extension* extension = registry->GetInstalledExtension(extension_id);
+  // If the extension is not installed (yet), do nothing.
+  // Things will be handled after installation.
+  if (!extension)
+    return;
+
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+
+  ExtensionState state = GetExtensionState(*extension);
+  switch (state) {
+    // BLOCKED/FORCED extensions should be already disabled/enabled
+    // and we don't need to change their state here.
+    case ExtensionState::BLOCKED:
+    case ExtensionState::FORCED:
+      break;
+    case ExtensionState::REQUIRE_APPROVAL:
+      service->DisableExtension(extension_id,
+                                Extension::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+      break;
+    case ExtensionState::ALLOWED:
+      extension_prefs->RemoveDisableReason(
+          extension_id, Extension::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+      extension_prefs->RemoveDisableReason(
+          extension_id, Extension::DISABLE_PERMISSIONS_INCREASE);
+      // If not disabled for other reasons, enable it.
+      if (extension_prefs->GetDisableReasons(extension_id) ==
+          Extension::DISABLE_NONE) {
+        service->EnableExtension(extension_id);
+      }
+      break;
+  }
 }
 
 void SupervisedUserService::SetExtensionsActive() {

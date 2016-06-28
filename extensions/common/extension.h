@@ -88,7 +88,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                            // disabled for user prompting.
     DISABLE_UPDATE_REQUIRED_BY_POLICY = 1 << 14,  // Doesn't meet minimum
                                                   // version requirement.
-    DISABLE_REASON_LAST = 1 << 15,  // This should always be the last value
+    DISABLE_CUSTODIAN_APPROVAL_REQUIRED = 1 << 15,  // Supervised user needs
+                                                    // approval by custodian.
+    DISABLE_REASON_LAST = 1 << 16,  // This should always be the last value
   };
 
   // A base class for parsed manifest data that APIs want to store on

@@ -105,7 +105,7 @@ syncer::SyncDataList ToSyncerSyncDataList(
   return result;
 }
 
-static_assert(Extension::DISABLE_REASON_LAST == (1 << 15),
+static_assert(Extension::DISABLE_REASON_LAST == (1 << 16),
               "Please consider whether your new disable reason should be"
               " syncable, and if so update this bitmask accordingly!");
 const int kKnownSyncableDisableReasons =

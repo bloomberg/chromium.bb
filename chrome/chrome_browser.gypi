@@ -2952,6 +2952,8 @@
       'browser/supervised_user/supervised_user_constants.h',
       'browser/supervised_user/supervised_user_content_provider_android.cc',
       'browser/supervised_user/supervised_user_content_provider_android.h',
+      'browser/supervised_user/supervised_user_features.cc',
+      'browser/supervised_user/supervised_user_features.h',
       'browser/supervised_user/supervised_user_interstitial.cc',
       'browser/supervised_user/supervised_user_interstitial.h',
       'browser/supervised_user/supervised_user_navigation_observer.cc',

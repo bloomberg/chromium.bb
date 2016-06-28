@@ -17,6 +17,8 @@
 
 const char kSupervisedUserAccessRequestKeyPrefix[] =
     "X-ManagedUser-AccessRequests";
+const char kSupervisedUserInstallRequestKeyPrefix[] =
+    "X-ManagedUser-InstallRequests";
 const char kSupervisedUserUpdateRequestKeyPrefix[] =
     "X-ManagedUser-UpdateRequests";
 const char kSupervisedUserAccessRequestTime[] = "timestamp";
@@ -56,6 +58,12 @@ void PermissionRequestCreatorSync::CreateURLAccessRequest(
   CreateRequest(kSupervisedUserAccessRequestKeyPrefix,
                 net::EscapeQueryParamValue(url_requested.spec(), true),
                 callback);
+}
+
+void PermissionRequestCreatorSync::CreateExtensionInstallRequest(
+    const std::string& id,
+    const SuccessCallback& callback) {
+  CreateRequest(kSupervisedUserInstallRequestKeyPrefix, id, callback);
 }
 
 void PermissionRequestCreatorSync::CreateExtensionUpdateRequest(

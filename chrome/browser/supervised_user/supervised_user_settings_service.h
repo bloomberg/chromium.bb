@@ -112,6 +112,12 @@ class SupervisedUserSettingsService : public KeyedService,
   // An example of an uploaded item is an access request to a blocked URL.
   void UploadItem(const std::string& key, std::unique_ptr<base::Value> value);
 
+  // Updates supervised user setting and uploads it to the Sync server.
+  // An example is when an extension updates without permission
+  // increase, the approved version information should be updated accordingly.
+  void UpdateSetting(const std::string& key,
+                     std::unique_ptr<base::Value> value);
+
   // Sets the setting with the given |key| to a copy of the given |value|.
   void SetLocalSetting(const std::string& key,
                        std::unique_ptr<base::Value> value);
@@ -158,6 +164,9 @@ class SupervisedUserSettingsService : public KeyedService,
   // Sends the settings to all subscribers. This method should be called by the
   // subclass whenever the settings change.
   void InformSubscribers();
+
+  void PushItemToSync(const std::string& key,
+                      std::unique_ptr<base::Value> value);
 
   // Used for persisting the settings. Unlike other PrefStores, this one is not
   // directly hooked up to the PrefService.

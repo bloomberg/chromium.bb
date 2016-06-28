@@ -33,6 +33,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/management_policy.h"
 #endif
 
@@ -73,6 +74,7 @@ class PrefRegistrySyncable;
 // manual whitelist/blacklist overrides).
 class SupervisedUserService : public KeyedService,
 #if defined(ENABLE_EXTENSIONS)
+                              public extensions::ExtensionRegistryObserver,
                               public extensions::ManagementPolicy::Provider,
 #endif
                               public SyncTypePreferenceProvider,
@@ -129,6 +131,15 @@ class SupervisedUserService : public KeyedService,
   // inappropriate URL.
   void ReportURL(const GURL& url, const SuccessCallback& callback);
 
+  // Adds an install request for the given WebStore item (App/Extension).
+  void AddExtensionInstallRequest(const std::string& extension_id,
+                                  const base::Version& version,
+                                  const SuccessCallback& callback);
+
+  // Same as above, but without a callback, just logging errors on failure.
+  void AddExtensionInstallRequest(const std::string& extension_id,
+                                  const base::Version& version);
+
   // Adds an update request for the given WebStore item (App/Extension).
   void AddExtensionUpdateRequest(const std::string& extension_id,
                                  const base::Version& version,
@@ -138,11 +149,10 @@ class SupervisedUserService : public KeyedService,
   void AddExtensionUpdateRequest(const std::string& extension_id,
                                  const base::Version& version);
 
-  // Get the string used to identify an extension update request. Public for
-  // testing.
-  static std::string GetExtensionUpdateRequestId(
-      const std::string& extension_id,
-      const base::Version& version);
+  // Get the string used to identify an extension install or update request.
+  // Public for testing.
+  static std::string GetExtensionRequestId(const std::string& extension_id,
+                                           const base::Version& version);
 
   // Returns the email address of the custodian.
   std::string GetCustodianEmailAddress() const;
@@ -218,8 +228,12 @@ class SupervisedUserService : public KeyedService,
   friend class SupervisedUserServiceFactory;
   FRIEND_TEST_ALL_PREFIXES(SingleClientSupervisedUserSettingsSyncTest, Sanity);
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest, ClearOmitOnRegistration);
-  FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceExtensionTest,
-                           ExtensionManagementPolicyProvider);
+  FRIEND_TEST_ALL_PREFIXES(
+      SupervisedUserServiceExtensionTest,
+      ExtensionManagementPolicyProviderWithoutSUInitiatedInstalls);
+  FRIEND_TEST_ALL_PREFIXES(
+      SupervisedUserServiceExtensionTest,
+      ExtensionManagementPolicyProviderWithSUInitiatedInstalls);
 
   using CreatePermissionRequestCallback =
       base::Callback<void(PermissionRequestCreator*, const SuccessCallback&)>;
@@ -301,28 +315,42 @@ class SupervisedUserService : public KeyedService,
                              base::string16* error) const override;
   bool MustRemainInstalled(const extensions::Extension* extension,
                            base::string16* error) const override;
+  bool MustRemainDisabled(const extensions::Extension* extension,
+                          extensions::Extension::DisableReason* reason,
+                          base::string16* error) const override;
+
+  // extensions::ExtensionRegistryObserver overrides:
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const extensions::Extension* extension,
+                            bool is_update) override;
 
   // An extension can be in one of the following states:
   //
   // FORCED: if it is installed by the custodian.
+  // REQUIRE_APPROVAL: if it is installed by the supervised user and
+  //    hasn't been approved by the custodian yet.
   // ALLOWED: Components, Themes, Default extensions ..etc
   //    are generally allowed.  Extensions that have been approved by the
   //    custodian are also allowed.
   // BLOCKED: if it is not ALLOWED or FORCED
   //    and supervised users initiated installs are disabled.
-  enum ExtensionState {
-    EXTENSION_FORCED,
-    EXTENSION_BLOCKED,
-    EXTENSION_ALLOWED
-  };
+  enum class ExtensionState { FORCED, BLOCKED, ALLOWED, REQUIRE_APPROVAL };
 
-  // Returns the state of an extension whether being FORCED, BLOCK, or ALLOWED
-  // from the Supervised User service's point of view.
+  // Returns the state of an extension whether being FORCED, BLOCKED, ALLOWED or
+  // REQUIRE_APPROVAL from the Supervised User service's point of view.
   ExtensionState GetExtensionState(
-      const extensions::Extension* extension) const;
+      const extensions::Extension& extension) const;
 
   // Extensions helper to SetActive().
   void SetExtensionsActive();
+
+  // Enables/Disables extensions upon change in approved version of the
+  // extension_id.
+  void ChangeExtensionStateIfNecessary(const std::string& extension_id);
+
+  // Updates the map of approved extensions when the corresponding preference
+  // is changed.
+  void UpdateApprovedExtensions();
 #endif
 
   SupervisedUserSettingsService* GetSettingsService();
@@ -411,6 +439,10 @@ class SupervisedUserService : public KeyedService,
 
   URLFilterContext url_filter_context_;
 
+  // Stores a map from extension_id -> approved version by the custodian.
+  // It is only relevant for SU-initiated installs.
+  std::map<std::string, base::Version> approved_extensions_map_;
+
   enum class BlacklistLoadState {
     NOT_LOADED,
     LOAD_STARTED,
@@ -429,6 +461,12 @@ class SupervisedUserService : public KeyedService,
 
   // Used to report inappropriate URLs to SafeSarch API.
   std::unique_ptr<SafeSearchURLReporter> url_reporter_;
+
+#if defined(ENABLE_EXTENSIONS)
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      registry_observer_;
+#endif
 
   base::ObserverList<SupervisedUserServiceObserver> observer_list_;
 

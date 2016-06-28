@@ -135,7 +135,19 @@ void SupervisedUserSettingsService::UploadItem(
     const std::string& key,
     std::unique_ptr<base::Value> value) {
   DCHECK(!SettingShouldApplyToPrefs(key));
+  PushItemToSync(key, std::move(value));
+}
 
+void SupervisedUserSettingsService::UpdateSetting(
+    const std::string& key,
+    std::unique_ptr<base::Value> value) {
+  PushItemToSync(key, std::move(value));
+  InformSubscribers();
+}
+
+void SupervisedUserSettingsService::PushItemToSync(
+    const std::string& key,
+    std::unique_ptr<base::Value> value) {
   std::string key_suffix = key;
   base::DictionaryValue* dict = nullptr;
   if (sync_processor_) {
@@ -157,7 +169,7 @@ void SupervisedUserSettingsService::UploadItem(
     content::RecordAction(UserMetricsAction("ManagedUsers_UploadItem_Queued"));
     dict = GetQueuedItems();
   }
-  dict->SetWithoutPathExpansion(key_suffix, value.release());
+  dict->SetWithoutPathExpansion(key_suffix, std::move(value));
 }
 
 void SupervisedUserSettingsService::SetLocalSetting(

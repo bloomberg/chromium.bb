@@ -72254,6 +72254,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4096" label="INACTIVE_EPHEMERAL_APP_DEPRECATED"/>
   <int value="8192" label="EXTERNAL_EXTENSION"/>
   <int value="16384" label="UPDATE_REQUIRED_BY_POLICY"/>
+  <int value="32768" label="CUSTODIAN_APPROVAL_REQUIRED"/>
 </enum>
 
 <enum name="ExtensionEvents" type="int">

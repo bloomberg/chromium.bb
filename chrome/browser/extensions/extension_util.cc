@@ -235,12 +235,9 @@ void SetWasInstalledByCustodian(const std::string& extension_id,
   ExtensionPrefs::Get(context)->UpdateExtensionPref(
       extension_id, kWasInstalledByCustodianPrefName,
       installed_by_custodian ? new base::FundamentalValue(true) : nullptr);
-  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
-  const Extension* extension = registry->GetInstalledExtension(extension_id);
   ExtensionService* service =
       ExtensionSystem::Get(context)->extension_service();
 
-  // If the installed_by_custodian flag is reset, do nothing.
   if (!installed_by_custodian) {
     // If installed_by_custodian changes to false, the extension may need to
     // be unloaded now.
@@ -248,6 +245,7 @@ void SetWasInstalledByCustodian(const std::string& extension_id,
     return;
   }
 
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   // If it is already enabled, do nothing.
   if (registry->enabled_extensions().Contains(extension_id))
     return;
@@ -255,7 +253,7 @@ void SetWasInstalledByCustodian(const std::string& extension_id,
   // If the extension is not loaded, it may need to be reloaded.
   // Example is a pre-installed extension that was unloaded when a
   // supervised user flag has been received.
-  if (!extension) {
+  if (!registry->GetInstalledExtension(extension_id)) {
     service->ReloadExtension(extension_id);
   }
 }
