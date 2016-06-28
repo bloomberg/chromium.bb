@@ -31,7 +31,7 @@ PDFModule::PDFModule() {
 
 PDFModule::~PDFModule() {
   if (g_sdk_initialized_via_pepper) {
-    chrome_pdf::ShutdownSDK();
+    ShutdownSDK();
     g_sdk_initialized_via_pepper = false;
   }
 }
@@ -51,8 +51,8 @@ pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
       v8::V8::SetNativesDataBlob(&natives);
       v8::V8::SetSnapshotDataBlob(&snapshot);
     }
-    if (!chrome_pdf::InitializeSDK())
-      return NULL;
+    if (!InitializeSDK())
+      return nullptr;
     g_sdk_initialized_via_pepper = true;
   }
 
@@ -63,78 +63,73 @@ pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
 // Implementation of Global PPP functions ---------------------------------
 int32_t PPP_InitializeModule(PP_Module module_id,
                              PPB_GetInterface get_browser_interface) {
-  PDFModule* module = new PDFModule();
-  if (!module->InternalInit(module_id, get_browser_interface)) {
-    delete module;
+  std::unique_ptr<PDFModule> module(new PDFModule);
+  if (!module->InternalInit(module_id, get_browser_interface))
     return PP_ERROR_FAILED;
-  }
 
-  pp::InternalSetModuleSingleton(module);
+  pp::InternalSetModuleSingleton(module.release());
   return PP_OK;
 }
 
 void PPP_ShutdownModule() {
   delete pp::Module::Get();
-  pp::InternalSetModuleSingleton(NULL);
+  pp::InternalSetModuleSingleton(nullptr);
 }
 
 const void* PPP_GetInterface(const char* interface_name) {
-  if (!pp::Module::Get())
-    return NULL;
-  return pp::Module::Get()->GetPluginInterface(interface_name);
+  auto* module = pp::Module::Get();
+  return module ? module->GetPluginInterface(interface_name) : nullptr;
 }
 
 #if defined(OS_WIN)
 bool RenderPDFPageToDC(const void* pdf_buffer,
-                                 int buffer_size,
-                                 int page_number,
-                                 HDC dc,
-                                 int dpi,
-                                 int bounds_origin_x,
-                                 int bounds_origin_y,
-                                 int bounds_width,
-                                 int bounds_height,
-                                 bool fit_to_bounds,
-                                 bool stretch_to_bounds,
-                                 bool keep_aspect_ratio,
-                                 bool center_in_bounds,
-                                 bool autorotate) {
+                       int buffer_size,
+                       int page_number,
+                       HDC dc,
+                       int dpi,
+                       int bounds_origin_x,
+                       int bounds_origin_y,
+                       int bounds_width,
+                       int bounds_height,
+                       bool fit_to_bounds,
+                       bool stretch_to_bounds,
+                       bool keep_aspect_ratio,
+                       bool center_in_bounds,
+                       bool autorotate) {
   if (!g_sdk_initialized_via_pepper) {
-    if (!chrome_pdf::InitializeSDK()) {
+    if (!InitializeSDK()) {
       return false;
     }
   }
-  chrome_pdf::PDFEngineExports* engine_exports =
-      chrome_pdf::PDFEngineExports::Get();
-  chrome_pdf::PDFEngineExports::RenderingSettings settings(
-      dpi, dpi, pp::Rect(bounds_origin_x, bounds_origin_y, bounds_width,
-                         bounds_height),
+  PDFEngineExports* engine_exports = PDFEngineExports::Get();
+  PDFEngineExports::RenderingSettings settings(
+      dpi, dpi,
+      pp::Rect(bounds_origin_x, bounds_origin_y, bounds_width, bounds_height),
       fit_to_bounds, stretch_to_bounds, keep_aspect_ratio, center_in_bounds,
       autorotate);
   bool ret = engine_exports->RenderPDFPageToDC(pdf_buffer, buffer_size,
                                                page_number, settings, dc);
-  if (!g_sdk_initialized_via_pepper) {
-    chrome_pdf::ShutdownSDK();
-  }
+  if (!g_sdk_initialized_via_pepper)
+    ShutdownSDK();
+
   return ret;
 }
 
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
 bool GetPDFDocInfo(const void* pdf_buffer,
                    int buffer_size, int* page_count,
                    double* max_page_width) {
   if (!g_sdk_initialized_via_pepper) {
-    if (!chrome_pdf::InitializeSDK())
+    if (!InitializeSDK())
       return false;
   }
-  chrome_pdf::PDFEngineExports* engine_exports =
-      chrome_pdf::PDFEngineExports::Get();
+  PDFEngineExports* engine_exports = PDFEngineExports::Get();
   bool ret = engine_exports->GetPDFDocInfo(
       pdf_buffer, buffer_size, page_count, max_page_width);
-  if (!g_sdk_initialized_via_pepper) {
-    chrome_pdf::ShutdownSDK();
-  }
+  if (!g_sdk_initialized_via_pepper)
+    ShutdownSDK();
+
   return ret;
 }
 
@@ -163,19 +158,18 @@ bool RenderPDFPageToBitmap(const void* pdf_buffer,
                            int dpi,
                            bool autorotate) {
   if (!g_sdk_initialized_via_pepper) {
-    if (!chrome_pdf::InitializeSDK())
+    if (!InitializeSDK())
       return false;
   }
-  chrome_pdf::PDFEngineExports* engine_exports =
-      chrome_pdf::PDFEngineExports::Get();
-  chrome_pdf::PDFEngineExports::RenderingSettings settings(
+  PDFEngineExports* engine_exports = PDFEngineExports::Get();
+  PDFEngineExports::RenderingSettings settings(
       dpi, dpi, pp::Rect(bitmap_width, bitmap_height), true, false, true, true,
       autorotate);
   bool ret = engine_exports->RenderPDFPageToBitmap(
       pdf_buffer, pdf_buffer_size, page_number, settings, bitmap_buffer);
-  if (!g_sdk_initialized_via_pepper) {
-    chrome_pdf::ShutdownSDK();
-  }
+  if (!g_sdk_initialized_via_pepper)
+    ShutdownSDK();
+
   return ret;
 }
 
