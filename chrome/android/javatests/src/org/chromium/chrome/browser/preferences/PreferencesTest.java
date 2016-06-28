@@ -14,7 +14,6 @@ import android.preference.PreferenceScreen;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -75,7 +74,6 @@ public class PreferencesTest extends NativeLibraryTestBase {
     /**
      * Change search engine and make sure it works correctly.
      */
-    @DisabledTest // Fails on android-one: crbug.com/540720
     @SmallTest
     @Feature({"Preferences"})
     public void testSearchEnginePreference() throws Exception {
@@ -138,11 +136,18 @@ public class PreferencesTest extends NativeLibraryTestBase {
      * Make sure that when a user switches to a search engine that uses HTTP, the location
      * permission is not added.
      */
-    @DisabledTest // Fails on android-one: crbug.com/540706
     @SmallTest
     @Feature({"Preferences"})
     public void testSearchEnginePreferenceHttp() throws Exception {
         ensureTemplateUrlServiceLoaded();
+
+        // Set the first search engine as the default using TemplateUrlService.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TemplateUrlService.getInstance().setSearchEngine(0);
+            }
+        });
 
         final Preferences prefActivity = startPreferences(getInstrumentation(),
                 MainPreferences.class.getName());
@@ -150,7 +155,7 @@ public class PreferencesTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                // Ensure that the second search engine in the list is selected.
+                // Ensure that the first search engine in the list is selected.
                 PreferenceFragment fragment = (PreferenceFragment)
                         prefActivity.getFragmentForTest();
                 SearchEnginePreference pref = (SearchEnginePreference)
