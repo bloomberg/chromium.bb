@@ -317,6 +317,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     /**
+     * Called when browser activity is launched. For background resumption and cancellation, this
+     * will not be called.
+     */
+    public void onActivityLaunched() {
+        DownloadNotificationService.clearResumptionAttemptLeft();
+    }
+
+    /**
      * Clear any pending OMA downloads by reading them from shared prefs.
      * TODO(qinmin): move this to a separate class.
      */

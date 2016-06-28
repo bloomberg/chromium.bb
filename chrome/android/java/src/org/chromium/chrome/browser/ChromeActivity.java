@@ -70,6 +70,7 @@ import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
+import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAServiceClient;
@@ -917,7 +918,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         } else {
             removeWindowBackground();
         }
-
+        DownloadManagerService.getDownloadManagerService(
+                getApplicationContext()).onActivityLaunched();
         super.finishNativeInitialization();
     }
 

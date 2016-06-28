@@ -62,6 +62,8 @@ public class DownloadNotificationService extends Service {
     private static final String NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
     // Notification Id starting value, to avoid conflicts from IDs used in prior versions.
     private static final int STARTING_NOTIFICATION_ID = 1000000;
+    private static final String AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
+    private static final int MAX_RESUMPTION_ATTEMPT_LEFT = 5;
     @VisibleForTesting static final int SECONDS_PER_MINUTE = 60;
     @VisibleForTesting static final int SECONDS_PER_HOUR = 60 * 60;
     @VisibleForTesting static final int SECONDS_PER_DAY = 24 * 60 * 60;
@@ -73,6 +75,7 @@ public class DownloadNotificationService extends Service {
     private SharedPreferences mSharedPrefs;
     private Context mContext;
     private int mNextNotificationId;
+    private int mNumAutoResumptionAttemptLeft;
 
     /**
      * Class for clients to access.
@@ -126,8 +129,10 @@ public class DownloadNotificationService extends Service {
                     allowMeteredConnection = true;
                 }
             }
-            DownloadResumptionScheduler.getDownloadResumptionScheduler(mContext).schedule(
-                    allowMeteredConnection);
+            if (mNumAutoResumptionAttemptLeft > 0) {
+                DownloadResumptionScheduler.getDownloadResumptionScheduler(mContext).schedule(
+                        allowMeteredConnection);
+            }
         }
         stopSelf();
     }
@@ -137,8 +142,19 @@ public class DownloadNotificationService extends Service {
         if (isDownloadOperationIntent(intent)) {
             handleDownloadOperation(intent);
             DownloadResumptionScheduler.getDownloadResumptionScheduler(mContext).cancelTask();
+            // Limit the number of auto resumption attempts in case Chrome falls into a vicious
+            // cycle.
+            if (intent.getAction() == ACTION_DOWNLOAD_RESUME_ALL) {
+                if (mNumAutoResumptionAttemptLeft > 0) {
+                    mNumAutoResumptionAttemptLeft--;
+                    updateResumptionAttemptLeft();
+                }
+            } else {
+                // Reset number of attempts left if the action is triggered by user.
+                mNumAutoResumptionAttemptLeft = MAX_RESUMPTION_ATTEMPT_LEFT;
+                clearResumptionAttemptLeft();
+            }
         }
-
         // This should restart the service after Chrome gets killed. However, this
         // doesn't work on Android 4.4.2.
         return START_STICKY;
@@ -147,6 +163,26 @@ public class DownloadNotificationService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
+    }
+
+    /**
+     * Helper method to update the remaining number of background resumption attempts left.
+     * @param attamptLeft Number of attempt left.
+     */
+    private void updateResumptionAttemptLeft() {
+        SharedPreferences.Editor editor = mSharedPrefs.edit();
+        editor.putInt(AUTO_RESUMPTION_ATTEMPT_LEFT, mNumAutoResumptionAttemptLeft);
+        editor.apply();
+    }
+
+    /**
+     * Helper method to clear the remaining number of background resumption attempts left.
+     */
+    static void clearResumptionAttemptLeft() {
+        SharedPreferences SharedPrefs = ContextUtils.getAppSharedPreferences();
+        SharedPreferences.Editor editor = SharedPrefs.edit();
+        editor.remove(AUTO_RESUMPTION_ATTEMPT_LEFT);
+        editor.apply();
     }
 
     /**
@@ -547,10 +583,12 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
-     * Parse the DownloadSharedPreferenceEntry from the shared preference and return a list of them.
-     * @return a list of parsed DownloadSharedPreferenceEntry.
+     * Parse a list of the DownloadSharedPreferenceEntry and the number of auto resumption attempt
+     * left from the shared preference.
      */
     void parseDownloadSharedPrefs() {
+        mNumAutoResumptionAttemptLeft = mSharedPrefs.getInt(AUTO_RESUMPTION_ATTEMPT_LEFT,
+                MAX_RESUMPTION_ATTEMPT_LEFT);
         if (!mSharedPrefs.contains(PENDING_DOWNLOAD_NOTIFICATIONS)) return;
         Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
                 mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
