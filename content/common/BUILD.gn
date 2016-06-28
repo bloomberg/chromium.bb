@@ -239,7 +239,6 @@ mojom("mojo_bindings") {
   visibility = [ "//content/*" ]
 
   sources = [
-    "application_setup.mojom",
     "frame.mojom",
     "image_downloader/image_downloader.mojom",
     "leveldb_wrapper.mojom",

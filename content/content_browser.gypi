@@ -1131,8 +1131,6 @@
       'browser/mime_registry_impl.h',
       'browser/mojo/constants.cc',
       'browser/mojo/constants.h',
-      'browser/mojo/mojo_application_host.cc',
-      'browser/mojo/mojo_application_host.h',
       'browser/mojo/mojo_child_connection.cc',
       'browser/mojo/mojo_child_connection.h',
       'browser/mojo/mojo_shell_context.cc',

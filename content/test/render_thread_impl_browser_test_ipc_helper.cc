@@ -41,8 +41,7 @@ void RenderThreadImplBrowserIPCTestHelper::SetupMojo() {
   std::string child_token = mojo::edk::GenerateRandomToken();
   ipc_support_.reset(
       new mojo::edk::test::ScopedIPCSupport(ipc_thread_->task_runner()));
-  mojo_application_host_.reset(new MojoApplicationHost(child_token));
-  mojo_application_token_ = mojo_application_host_->GetToken();
+  mojo_application_token_ = mojo::edk::GenerateRandomToken();
 
   mojo_ipc_token_ = mojo::edk::GenerateRandomToken();
 

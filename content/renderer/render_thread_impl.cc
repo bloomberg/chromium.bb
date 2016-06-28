@@ -591,7 +591,6 @@ RenderThreadImpl::RenderThreadImpl(
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
                           .UseMojoChannel(true)
-                          .UseMojoShellConnection(true)
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()) {
@@ -603,8 +602,7 @@ RenderThreadImpl::RenderThreadImpl(
 RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<base::MessageLoop> main_message_loop,
     std::unique_ptr<scheduler::RendererScheduler> scheduler)
-    : ChildThreadImpl(Options::Builder().UseMojoChannel(true).
-          UseMojoShellConnection(true).Build()),
+    : ChildThreadImpl(Options::Builder().UseMojoChannel(true).Build()),
       renderer_scheduler_(std::move(scheduler)),
       main_message_loop_(std::move(main_message_loop)),
       categorized_worker_pool_(new CategorizedWorkerPool()) {

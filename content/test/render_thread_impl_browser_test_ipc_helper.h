@@ -6,7 +6,6 @@
 #define CONTENT_TEST_RENDER_THREAD_IMPL_BROWSER_TEST_IPC_HELPER_H_
 
 #include "content/app/mojo/mojo_init.h"
-#include "content/browser/mojo/mojo_application_host.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
@@ -52,7 +51,6 @@ class RenderThreadImplBrowserIPCTestHelper {
   std::unique_ptr<base::MessageLoopForIO> message_loop_;
   std::unique_ptr<DummyListener> dummy_listener_;
   std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
-  std::unique_ptr<MojoApplicationHost> mojo_application_host_;
   std::string mojo_ipc_token_;
   std::string mojo_application_token_;
   std::string channel_id_;

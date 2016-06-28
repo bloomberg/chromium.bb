@@ -41,7 +41,6 @@
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/memory/child_memory_message_filter.h"
-#include "content/child/mojo/mojo_application.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/power_monitor_broadcast_source.h"
 #include "content/child/push_messaging/push_dispatcher.h"
@@ -305,13 +304,6 @@ ChildThreadImpl::Options::Builder::AddStartupFilter(
   return *this;
 }
 
-ChildThreadImpl::Options::Builder&
-ChildThreadImpl::Options::Builder::UseMojoShellConnection(
-    bool use_mojo_shell_connection) {
-  options_.use_mojo_shell_connection = use_mojo_shell_connection;
-  return *this;
-}
-
 ChildThreadImpl::Options ChildThreadImpl::Options::Builder::Build() {
   return options_;
 }
@@ -382,7 +374,6 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel,
 
 void ChildThreadImpl::Init(const Options& options) {
   channel_name_ = options.channel_name;
-  use_mojo_shell_connection_ = options.use_mojo_shell_connection;
 
   g_lazy_tls.Pointer()->Set(this);
   on_channel_error_called_ = false;
@@ -417,18 +408,15 @@ void ChildThreadImpl::Init(const Options& options) {
   } else {
     mojo_application_token = options.in_process_application_token;
   }
-  if (use_mojo_shell_connection_) {
+  if (!mojo_application_token.empty()) {
     mojo::ScopedMessagePipeHandle handle =
         mojo::edk::CreateChildMessagePipe(mojo_application_token);
     DCHECK(handle.is_valid());
     mojo_shell_connection_ = MojoShellConnection::Create(
         mojo::MakeRequest<shell::mojom::ShellClient>(std::move(handle)));
     mojo_shell_connection_->AddEmbeddedShellClient(this);
-  } else {
-    mojo_application_.reset(new MojoApplication());
-    if (!mojo_application_token.empty())
-      mojo_application_->InitWithToken(mojo_application_token);
   }
+
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
   thread_safe_sender_ = new ThreadSafeSender(
       message_loop_->task_runner(), sync_message_filter_.get());
@@ -609,21 +597,15 @@ MojoShellConnection* ChildThreadImpl::GetMojoShellConnection() {
 }
 
 shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
-  if (use_mojo_shell_connection_) {
-    if (!interface_registry_.get())
-      interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
-    return interface_registry_.get();
-  }
-  return mojo_application_->interface_registry();
+  if (!interface_registry_.get())
+    interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+  return interface_registry_.get();
 }
 
 shell::InterfaceProvider* ChildThreadImpl::GetRemoteInterfaces() {
-  if (use_mojo_shell_connection_) {
-    if (!remote_interfaces_.get())
-      remote_interfaces_.reset(new shell::InterfaceProvider);
-    return remote_interfaces_.get();
-  }
-  return mojo_application_->remote_interfaces();
+  if (!remote_interfaces_.get())
+    remote_interfaces_.reset(new shell::InterfaceProvider);
+  return remote_interfaces_.get();
 }
 
 shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistryForConnection() {

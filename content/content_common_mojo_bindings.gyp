@@ -11,7 +11,6 @@
       'variables': {
         'mojom_files': [
           # NOTE: Sources duplicated in //content/common/BUILD.gn:mojo_bindings.
-          'common/application_setup.mojom',
           'common/frame.mojom',
           'common/image_downloader/image_downloader.mojom',
           'common/leveldb_wrapper.mojom',

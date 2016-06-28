@@ -135,7 +135,6 @@ ChildThreadImpl::Options GetOptions(
   if (message_filter)
     builder.AddStartupFilter(message_filter);
 #endif
-  builder.UseMojoShellConnection(true);
 
   return builder.Build();
 }
@@ -175,7 +174,6 @@ GpuChildThread::GpuChildThread(
                           .InBrowserProcess(params)
                           .AddStartupFilter(new GpuMemoryBufferMessageFilter(
                               gpu_memory_buffer_factory))
-                          .UseMojoShellConnection(true)
                           .Build()),
       gpu_preferences_(gpu_preferences),
       dead_on_arrival_(false),

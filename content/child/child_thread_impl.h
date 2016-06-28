@@ -18,7 +18,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
-#include "content/child/mojo/mojo_application.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
@@ -254,8 +253,6 @@ class CONTENT_EXPORT ChildThreadImpl
   void EnsureConnected();
 
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
-  bool use_mojo_shell_connection_ = false;
-  std::unique_ptr<MojoApplication> mojo_application_;
   std::unique_ptr<MojoShellConnection> mojo_shell_connection_;
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
@@ -329,7 +326,6 @@ struct ChildThreadImpl::Options {
   std::vector<IPC::MessageFilter*> startup_filters;
   std::string in_process_ipc_token;
   std::string in_process_application_token;
-  bool use_mojo_shell_connection = false;
 
  private:
   Options();
@@ -343,7 +339,6 @@ class ChildThreadImpl::Options::Builder {
   Builder& UseMojoChannel(bool use_mojo_channel);
   Builder& WithChannelName(const std::string& channel_name);
   Builder& AddStartupFilter(IPC::MessageFilter* filter);
-  Builder& UseMojoShellConnection(bool use_mojo_shell_connection);
 
   Options Build();
 
