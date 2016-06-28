@@ -1394,6 +1394,7 @@ void FrameView::invalidateBackgroundAttachmentFixedObjects()
 
 bool FrameView::invalidateViewportConstrainedObjects()
 {
+    bool fastPathAllowed = true;
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
         LayoutObject* layoutObject = viewportConstrainedObject;
         LayoutItem layoutItem = LayoutItem(layoutObject);
@@ -1420,9 +1421,9 @@ bool FrameView::invalidateViewportConstrainedObjects()
         // If the fixed layer has a blur/drop-shadow filter applied on at least one of its parents, we cannot
         // scroll using the fast path, otherwise the outsets of the filter will be moved around the page.
         if (layer->hasAncestorWithFilterThatMovesPixels())
-            return false;
+            fastPathAllowed = false;
     }
-    return true;
+    return fastPathAllowed;
 }
 
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
