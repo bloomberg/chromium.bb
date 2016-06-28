@@ -114,6 +114,7 @@ void AppCacheGroup::AddCache(AppCache* complete_cache) {
 void AppCacheGroup::RemoveCache(AppCache* cache) {
   DCHECK(cache->associated_hosts().empty());
   if (cache == newest_complete_cache_) {
+    CancelUpdate();
     AppCache* tmp_cache = newest_complete_cache_;
     newest_complete_cache_ = NULL;
     tmp_cache->set_owning_group(NULL);  // may cause this group to be deleted

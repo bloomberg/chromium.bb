@@ -1258,8 +1258,8 @@ void AppCacheUpdateJob::FetchUrls() {
     } else {
       URLFetcher* fetcher = new URLFetcher(
           url_to_fetch.url, URLFetcher::URL_FETCH, this);
-      if (url_to_fetch.existing_response_info.get()) {
-        DCHECK(group_->newest_complete_cache());
+      if (url_to_fetch.existing_response_info.get() &&
+          group_->newest_complete_cache()) {
         AppCacheEntry* existing_entry =
             group_->newest_complete_cache()->GetEntry(url_to_fetch.url);
         DCHECK(existing_entry);
